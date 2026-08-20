@@ -62,8 +62,6 @@ class CaptureCoordinator(
             val result = adapter.parse(snapshot)
             if (result !is ParseResult.Success) return
             val conversation = result.viewport.conversation
-            if (conversation.identityConfidence < MIN_IDENTITY_CONFIDENCE) return
-            val conversationKey = conversation.stableKeyOrNull() ?: return
             val rawMessages = result.viewport.messages
             val mediaRequests = rawMessages.mapIndexedNotNull { index, message ->
                 message.mediaBounds?.let { bounds ->
@@ -79,35 +77,57 @@ class CaptureCoordinator(
             } else {
                 emptyMap()
             }
-            var insertedAny = false
-            for ((index, rawMessage) in rawMessages.withIndex()) {
-                val asset = capturedAssets[index]
-                val message = rawMessage.copy(
-                    conversationKey = conversationKey,
-                    assetSha256 = if (asset == null) rawMessage.assetSha256 else
-                        (rawMessage.assetSha256 + asset.sha256).distinct(),
-                    metadata = if (rawMessage.mediaBounds != null && asset == null) {
-                        rawMessage.metadata + ("asset_capture_failed" to "true")
-                    } else {
-                        rawMessage.metadata
-                    },
-                )
-                val fingerprint = messageFingerprint(message) ?: continue
-                val capturedAt = clock()
-                val pending = pendingMessage(conversation, message, fingerprint, capturedAt)
-                if (store.enqueueIfNew(
-                        SeenMessageEntity(fingerprint, capturedAt),
-                        pending,
-                        listOfNotNull(asset),
-                    )
-                ) {
-                    insertedAny = true
-                }
-            }
-            if (insertedAny) wakeUploader()
+            enqueueParsed(conversation, rawMessages, capturedAssets)
         } catch (_: Exception) {
             internalFailureCount.incrementAndGet()
         }
+    }
+
+    suspend fun captureParsed(
+        conversation: CapturedConversation,
+        messages: List<CapturedMessage>,
+        pendingAssetsByMessage: Map<Int, PendingAssetEntity> = emptyMap(),
+    ) {
+        try {
+            enqueueParsed(conversation, messages, pendingAssetsByMessage)
+        } catch (_: Exception) {
+            internalFailureCount.incrementAndGet()
+        }
+    }
+
+    private suspend fun enqueueParsed(
+        conversation: CapturedConversation,
+        rawMessages: List<CapturedMessage>,
+        capturedAssets: Map<Int, PendingAssetEntity>,
+    ) {
+        if (conversation.identityConfidence < MIN_IDENTITY_CONFIDENCE) return
+        val conversationKey = conversation.stableKeyOrNull() ?: return
+        var insertedAny = false
+        for ((index, rawMessage) in rawMessages.withIndex()) {
+            val asset = capturedAssets[index]
+            val message = rawMessage.copy(
+                conversationKey = conversationKey,
+                assetSha256 = if (asset == null) rawMessage.assetSha256 else
+                    (rawMessage.assetSha256 + asset.sha256).distinct(),
+                metadata = if (rawMessage.mediaBounds != null && asset == null) {
+                    rawMessage.metadata + ("asset_capture_failed" to "true")
+                } else {
+                    rawMessage.metadata
+                },
+            )
+            val fingerprint = messageFingerprint(message) ?: continue
+            val capturedAt = clock()
+            val pending = pendingMessage(conversation, message, fingerprint, capturedAt)
+            if (store.enqueueIfNew(
+                    SeenMessageEntity(fingerprint, capturedAt),
+                    pending,
+                    listOfNotNull(asset),
+                )
+            ) {
+                insertedAny = true
+            }
+        }
+        if (insertedAny) wakeUploader()
     }
 
     private fun pendingMessage(

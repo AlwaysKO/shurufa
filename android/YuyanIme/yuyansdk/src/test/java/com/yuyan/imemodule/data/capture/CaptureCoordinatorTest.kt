@@ -139,6 +139,22 @@ class CaptureCoordinatorTest {
         assertTrue(store.pending.single().payloadJson.contains("asset_capture_failed"))
     }
 
+    @Test
+    fun repeatedNotificationAndMatchingPageMessageShareStableFingerprint() = runBlocking {
+        val notificationMessage = message("同一条消息", time = "")
+            .copy(displayedTime = null, metadata = mapOf("capture_source" to "notification"))
+        val adapter = FakeAdapter(success(notificationMessage.copy(metadata = emptyMap())))
+        val store = FakeStore()
+        val coordinator = coordinator(adapter, store)
+
+        coordinator.captureParsed(conversation, listOf(notificationMessage))
+        coordinator.captureParsed(conversation, listOf(notificationMessage))
+        coordinator.capture("com.tencent.mm", snapshot)
+
+        assertEquals(1, store.pending.size)
+        assertEquals(1, store.seen.size)
+    }
+
     private fun coordinator(
         adapter: ChatAppAdapter,
         store: FakeStore,
