@@ -52,6 +52,16 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/cropper_library_file_paths"/>
         </provider>
+        <!-- 斗图表情包：commitContent 发送图片用 -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.sticker.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/sticker_file_paths"/>
+        </provider>
     </application>
 
 </manifest>

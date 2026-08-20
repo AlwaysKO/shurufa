@@ -548,6 +548,12 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
      */
     fun startVoiceInput() = service.startVoiceInput()
 
+    /** 当前输入连接（斗图 commitContent 使用） */
+    fun currentInputConnection(): android.view.inputmethod.InputConnection? = service.currentInputConnection
+
+    /** 当前编辑器声明的 MIME 类型（判断是否支持图片输入） */
+    fun currentEditorMimeTypes(): Array<String>? = service.currentInputEditorInfo?.contentMimeTypes
+
     private fun resetCandidateWindow() {
         DecodingInfo.reset()
         (KeyboardManager.instance.currentContainer as? T9TextContainer)?.updateSymbolListView()

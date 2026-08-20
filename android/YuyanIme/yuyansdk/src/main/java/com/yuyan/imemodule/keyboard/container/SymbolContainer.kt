@@ -1,26 +1,40 @@
 package com.yuyan.imemodule.keyboard.container
 
 import android.annotation.SuppressLint
+import android.content.ClipData
+import android.content.ClipDescription
+import android.content.ContentValues
 import android.content.Context
 import android.graphics.drawable.GradientDrawable
+import android.net.Uri
+import android.os.Build
+import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import android.provider.MediaStore
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputConnection
+import android.view.inputmethod.InputContentInfo
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.core.view.setPadding
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.yuyan.imemodule.R
+import com.yuyan.imemodule.adapter.EmoticonPagerAdapter
 import com.yuyan.imemodule.adapter.SymbolPagerAdapter
 import com.yuyan.imemodule.data.emojicon.EmojiconData
 import com.yuyan.imemodule.data.emojicon.YuyanEmojiCompat
+import com.yuyan.imemodule.data.sticker.StickerItem
+import com.yuyan.imemodule.data.sticker.StickerSync
 import com.yuyan.imemodule.data.theme.ThemeManager
 import com.yuyan.imemodule.data.theme.ThemeManager.activeTheme
 import com.yuyan.imemodule.database.DataBaseKT
@@ -34,12 +48,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import splitties.dimensions.dp
 import splitties.views.dsl.constraintlayout.bottomOfParent
 import splitties.views.dsl.constraintlayout.lParams
 import splitties.views.dsl.core.add
 import splitties.views.dsl.core.matchParent
 import splitties.views.dsl.core.wrapContent
+import java.io.File
 import kotlin.math.max
 import kotlin.random.Random
 
@@ -241,19 +257,123 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
                 } else EmojiconData.emojiconData
             }
         }
-        mVPSymbolsView.adapter = SymbolPagerAdapter(context, mSymbolsEmoji, mShowType){ symbol, _ ->
-            onItemClickOperate(symbol)
-        }
-        val data = mSymbolsEmoji.keys.toList()
-        TabLayoutMediator(tabLayout, mVPSymbolsView) { tab, position ->
-            tab.view.background = null
-            tab.setCustomView(ImageView(context).apply {
-                setImageDrawable(ContextCompat.getDrawable(context,data[position]).apply {
-                    this?.setTint(activeTheme.keyTextColor)
+        if (mShowType == SymbolMode.Emoticon) {
+            // 颜文字 + 斗图（最后一页）：复用颜文字页渲染，追加斗图面板
+            mVPSymbolsView.adapter = EmoticonPagerAdapter(
+                context, mSymbolsEmoji,
+                onClickSymbol = { symbol, _ -> onItemClickOperate(symbol) },
+                onStickerClick = { sticker -> sendSticker(sticker) },
+            )
+            val data = mSymbolsEmoji.keys.toList()
+            TabLayoutMediator(tabLayout, mVPSymbolsView) { tab, position ->
+                tab.view.background = null
+                val iconRes = if (position < data.size) data[position] else R.drawable.ic_menu_search
+                tab.setCustomView(ImageView(context).apply {
+                    setImageDrawable(ContextCompat.getDrawable(context, iconRes).apply {
+                        this?.setTint(activeTheme.keyTextColor)
+                    })
                 })
-            })
-            tab.view.setPadding(dp(5))
-        }.attach()
+                tab.view.setPadding(dp(5))
+            }.attach()
+            mVPSymbolsView.currentItem = 0
+        } else {
+            mVPSymbolsView.adapter = SymbolPagerAdapter(context, mSymbolsEmoji, mShowType){ symbol, _ ->
+                onItemClickOperate(symbol)
+            }
+            val data = mSymbolsEmoji.keys.toList()
+            TabLayoutMediator(tabLayout, mVPSymbolsView) { tab, position ->
+                tab.view.background = null
+                tab.setCustomView(ImageView(context).apply {
+                    setImageDrawable(ContextCompat.getDrawable(context,data[position]).apply {
+                        this?.setTint(activeTheme.keyTextColor)
+                    })
+                })
+                tab.view.setPadding(dp(5))
+            }.attach()
+        }
+    }
+
+    // ---------- 斗图表情包 ----------
+
+    /** 发送斗图：下载 → 目标编辑器支持图片则 commitContent 直发，否则保存到相册 */
+    private fun sendSticker(sticker: StickerItem) {
+        DevicesUtils.tryPlayKeyDown()
+        DevicesUtils.tryVibrate(this)
+        CoroutineScope(Dispatchers.IO).launch {
+            val file = StickerSync.download(context, sticker)
+            if (file == null) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, R.string.sticker_send_failed, Toast.LENGTH_SHORT).show()
+                }
+                return@launch
+            }
+            withContext(Dispatchers.Main) {
+                val conn = inputView.currentInputConnection()
+                val mimes = inputView.currentEditorMimeTypes()
+                if (conn != null && Build.VERSION.SDK_INT >= 25 && mimes?.any { it.startsWith("image/") } == true) {
+                    commitStickerImage(conn, file, sticker.format)
+                } else {
+                    val saved = saveStickerToGallery(file, sticker.format)
+                    Toast.makeText(
+                        context,
+                        if (saved) R.string.sticker_saved_to_gallery else R.string.sticker_send_failed,
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                }
+            }
+            StickerSync.reportUse(sticker.id)
+        }
+    }
+
+    /** 通过 commitContent 把图片直发到当前编辑器（微信/QQ 等支持富文本输入的应用） */
+    private fun commitStickerImage(conn: InputConnection, file: File, format: String) {
+        try {
+            val authority = "${context.packageName}.sticker.fileprovider"
+            val uri: Uri = FileProvider.getUriForFile(context, authority, file)
+            val mime = mimeOf(format)
+            val contentInfo = InputContentInfo(uri, ClipDescription("sticker", arrayOf(mime)), null)
+            if (!conn.commitContent(contentInfo, 1, null)) {
+                // 编辑器拒绝了该内容（如微信图片输入框未聚焦），降级保存相册
+                val saved = saveStickerToGallery(file, format)
+                Toast.makeText(
+                    context,
+                    if (saved) R.string.sticker_saved_to_gallery else R.string.sticker_send_failed,
+                    Toast.LENGTH_SHORT,
+                ).show()
+            }
+        } catch (_: Exception) {
+            Toast.makeText(context, R.string.sticker_send_failed, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    /** 保存到系统相册（API 29+ 用 MediaStore 无需权限） */
+    private fun saveStickerToGallery(file: File, format: String): Boolean {
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val values = ContentValues().apply {
+                    put(MediaStore.Images.Media.DISPLAY_NAME, file.name)
+                    put(MediaStore.Images.Media.MIME_TYPE, mimeOf(format))
+                    put(MediaStore.Images.Media.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/YuyanStickers")
+                }
+                val uri = context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+                    ?: return false
+                context.contentResolver.openOutputStream(uri)?.use { out ->
+                    file.inputStream().use { input -> input.copyTo(out) }
+                } ?: return false
+                true
+            } else {
+                false // Android 9- 无权限不静默处理
+            }
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    private fun mimeOf(format: String): String = when (format.lowercase()) {
+        "gif" -> "image/gif"
+        "jpg", "jpeg" -> "image/jpeg"
+        "webp" -> "image/webp"
+        else -> "image/png"
     }
 
     fun getMenuMode(): SymbolMode {
