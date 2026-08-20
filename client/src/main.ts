@@ -5,6 +5,7 @@ import Overview from './views/Overview.vue';
 import Timeline from './views/Timeline.vue';
 import Applications from './views/Applications.vue';
 import Phrases from './views/Phrases.vue';
+import WordCloud from './views/WordCloud.vue';
 import Completion from './views/Completion.vue';
 import Clipboard from './views/Clipboard.vue';
 import ClipboardHistory from './views/ClipboardHistory.vue';
@@ -22,6 +23,7 @@ const router = createRouter({
     { path: '/timeline', component: Timeline, meta: { title: '输入时间线' } },
     { path: '/apps', component: Applications, meta: { title: 'APP 分布' } },
     { path: '/phrases', component: Phrases, meta: { title: '高频词句' } },
+    { path: '/wordcloud', component: WordCloud, meta: { title: '词云' } },
     { path: '/completion', component: Completion, meta: { title: '智能补全' } },
     { path: '/clipboard', component: Clipboard, meta: { title: '剪贴板' } },
     { path: '/clipboard-history', component: ClipboardHistory, meta: { title: '剪贴板历史' } },

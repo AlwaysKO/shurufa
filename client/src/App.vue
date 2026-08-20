@@ -7,6 +7,7 @@ const navs = [
   { path: '/timeline', label: '时间线' },
   { path: '/apps', label: 'APP 分布' },
   { path: '/phrases', label: '高频词句' },
+  { path: '/wordcloud', label: '词云' },
   { path: '/completion', label: '智能补全' },
   { path: '/clipboard', label: '剪贴板' },
   { path: '/clipboard-history', label: '剪贴板历史' },

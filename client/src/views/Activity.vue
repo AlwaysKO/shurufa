@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import { api, appName, deviceDetailLines, deviceLabel, eventTypeName, networkName, type ActivityItem, type DeviceRow } from '../api';
 
 const items = ref<ActivityItem[]>([]);
@@ -83,6 +84,11 @@ const displayText = (item: ActivityItem) => {
 };
 
 onMounted(async () => {
+  // 支持 URL ?q= 预填搜索（词云等页面点击词跳转过来）
+  const route = useRoute();
+  if (typeof route.query.q === 'string' && route.query.q.trim()) {
+    q.value = route.query.q.trim();
+  }
   try {
     const d = await api.devices();
     devices.value = d.devices;
