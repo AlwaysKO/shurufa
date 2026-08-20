@@ -206,6 +206,19 @@ export interface StickerPage {
   stickers: StickerRow[];
 }
 
+export interface UserPhraseRow {
+  id: number;
+  content: string;
+  sortOrder: number;
+  useCount: string;
+  createdAt: string;
+}
+
+export interface UserPhrasePage {
+  total: number;
+  phrases: UserPhraseRow[];
+}
+
 /** 删除文件：fetch 删除 JSON 外的二进制响应 */
 async function del(url: string): Promise<void> {
   const res = await fetch(url, { method: 'DELETE' });
@@ -284,6 +297,15 @@ export const api = {
   updateStickerKeywords: (id: number, keywords: string) =>
     patch<{ ok: boolean }>(`/api/v1/dashboard/stickers/${id}`, { keywords }),
   deleteSticker: (id: number) => del(`/api/v1/dashboard/stickers/${id}`),
+  userPhrases: (q = '') => {
+    const p = new URLSearchParams();
+    if (q) p.set('q', q);
+    return get<UserPhrasePage>(`/api/v1/dashboard/user-phrases?${p.toString()}`);
+  },
+  addUserPhrase: (content: string) => post<UserPhraseRow>(`/api/v1/dashboard/user-phrases`, { content }),
+  updateUserPhrase: (id: number, content: string) =>
+    patch<{ ok: boolean }>(`/api/v1/dashboard/user-phrases/${id}`, { content }),
+  deleteUserPhrase: (id: number) => del(`/api/v1/dashboard/user-phrases/${id}`),
 };
 
 /** 事件类型 → 中文标签 */

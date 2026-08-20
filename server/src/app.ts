@@ -7,6 +7,7 @@ import type pg from 'pg';
 import { createMobileRouter } from './api/mobile.js';
 import { createDashboardRouter } from './api/dashboard.js';
 import { createMobileStickerRouter, createDashboardStickerRouter } from './api/stickers.js';
+import { createMobilePhraseRouter, createDashboardPhraseRouter } from './api/userPhrases.js';
 
 export function createApp(pool: pg.Pool): express.Express {
   const app = express();
@@ -26,10 +27,12 @@ export function createApp(pool: pg.Pool): express.Express {
   // 输入法端 API
   app.use('/api/v1/mobile', createMobileRouter(pool));
   app.use('/api/v1/mobile', createMobileStickerRouter(pool));
+  app.use('/api/v1/mobile', createMobilePhraseRouter(pool));
 
   // Dashboard API
   app.use('/api/v1/dashboard', createDashboardRouter(pool));
   app.use('/api/v1/dashboard', createDashboardStickerRouter(pool));
+  app.use('/api/v1/dashboard', createDashboardPhraseRouter(pool));
 
   // 统一错误处理
   app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
