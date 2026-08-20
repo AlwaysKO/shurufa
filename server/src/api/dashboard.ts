@@ -643,6 +643,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
     try {
       const userId = (req.query.user_id as string) ?? DEFAULT_USER_ID;
       const deviceId = (req.query.device_id as string) ?? null;
+      const packageName = (req.query.package_name as string) ?? null;
       const q = ((req.query.q as string) ?? '').trim();
       const type = (req.query.type as string) ?? 'all';
       const from = (req.query.from as string) ?? null;
@@ -666,6 +667,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
       };
 
       if (deviceId) add('device_id = ?', deviceId);
+      if (packageName) add('package_name = ?', packageName);
       if (from) add('occurred_at >= ?', new Date(from));
       if (to) add('occurred_at <= ?', new Date(to));
       if (days) add('occurred_at >= ?', daysAgo(days));

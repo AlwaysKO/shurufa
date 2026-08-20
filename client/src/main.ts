@@ -7,6 +7,7 @@ import Applications from './views/Applications.vue';
 import Phrases from './views/Phrases.vue';
 import Completion from './views/Completion.vue';
 import Clipboard from './views/Clipboard.vue';
+import ClipboardHistory from './views/ClipboardHistory.vue';
 import Activity from './views/Activity.vue';
 import LocationTrack from './views/LocationTrack.vue';
 import Report from './views/Report.vue';
@@ -23,6 +24,7 @@ const router = createRouter({
     { path: '/phrases', component: Phrases, meta: { title: '高频词句' } },
     { path: '/completion', component: Completion, meta: { title: '智能补全' } },
     { path: '/clipboard', component: Clipboard, meta: { title: '剪贴板' } },
+    { path: '/clipboard-history', component: ClipboardHistory, meta: { title: '剪贴板历史' } },
     { path: '/activity', component: Activity, meta: { title: '行为明细' } },
     { path: '/locations', component: LocationTrack, meta: { title: '位置轨迹' } },
     { path: '/report', component: Report, meta: { title: '输入报告' } },

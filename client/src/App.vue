@@ -9,6 +9,7 @@ const navs = [
   { path: '/phrases', label: '高频词句' },
   { path: '/completion', label: '智能补全' },
   { path: '/clipboard', label: '剪贴板' },
+  { path: '/clipboard-history', label: '剪贴板历史' },
   { path: '/activity', label: '行为明细' },
   { path: '/locations', label: '位置轨迹' },
   { path: '/report', label: '输入报告' },

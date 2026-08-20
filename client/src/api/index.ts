@@ -111,6 +111,7 @@ export interface ActivityItem {
 
 export interface ActivityQuery {
   device_id?: string;
+  package_name?: string;
   from?: string;
   to?: string;
   days?: number;
@@ -266,6 +267,7 @@ export const api = {
   events: (query: ActivityQuery = {}) => {
     const p = new URLSearchParams();
     if (query.device_id) p.set('device_id', query.device_id);
+    if (query.package_name) p.set('package_name', query.package_name);
     if (query.from) p.set('from', query.from);
     if (query.to) p.set('to', query.to);
     if (query.days) p.set('days', String(query.days));
