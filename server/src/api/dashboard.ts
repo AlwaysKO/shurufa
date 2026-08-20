@@ -131,6 +131,27 @@ export function createDashboardRouter(pool: pg.Pool): Router {
     }
   });
 
+  /** 活跃热力图：星期 × 小时输入量（近 N 天），dow 为 ISODOW（1=周一 … 7=周日） */
+  router.get('/heatmap', async (req, res, next) => {
+    try {
+      const days = Math.min(Number(req.query.days ?? 30) || 30, 365);
+      const result = await pool.query(
+        `SELECT
+           EXTRACT(ISODOW FROM occurred_at)::int AS dow,
+           EXTRACT(HOUR FROM occurred_at)::int AS hour,
+           COALESCE(SUM(length(text)) FILTER (WHERE event_type IN ('commit','candidate_commit','paste','paste_inferred','external_insert','voice')), 0)::bigint AS chars
+         FROM input_event
+         WHERE user_id = $1 AND occurred_at >= $2
+         GROUP BY dow, hour
+         ORDER BY dow ASC, hour ASC`,
+        [DEFAULT_USER_ID, daysAgo(days)],
+      );
+      res.json({ days, cells: result.rows });
+    } catch (err) {
+      next(err);
+    }
+  });
+
   /** APP 分布：各 App 输入字符数/事件数占比 */
   router.get('/apps', async (req, res, next) => {
     try {

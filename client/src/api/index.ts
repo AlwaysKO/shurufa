@@ -19,6 +19,12 @@ export interface HourPoint {
   input_chars: string;
 }
 
+export interface HeatmapCell {
+  dow: number; // ISODOW: 1=周一 … 7=周日
+  hour: number;
+  chars: string;
+}
+
 export interface AppStat {
   package_name: string;
   event_count: string;
@@ -171,6 +177,7 @@ export const api = {
   overview: (days = 7) => get<OverviewData>(`/api/v1/dashboard/overview?days=${days}`),
   timeline: (days = 30) => get<{ days: number; timeline: TimelinePoint[] }>(`/api/v1/dashboard/timeline?days=${days}`),
   hours: (days = 30) => get<{ days: number; hours: HourPoint[] }>(`/api/v1/dashboard/hours?days=${days}`),
+  heatmap: (days = 30) => get<{ days: number; cells: HeatmapCell[] }>(`/api/v1/dashboard/heatmap?days=${days}`),
   apps: (days = 30) => get<{ days: number; apps: AppStat[] }>(`/api/v1/dashboard/apps?days=${days}`),
   phrases: (kind: 'word' | 'phrase', days: number | 'all' = 'all', limit = 50) =>
     get<{ kind: string; phrases: PhraseRow[] }>(`/api/v1/dashboard/phrases?kind=${kind}&days=${days}&limit=${limit}`),
