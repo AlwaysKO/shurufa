@@ -15,6 +15,13 @@
 | `service/ClipboardHelper.kt`（埋点） | 剪贴板变化（复制）上报 |
 | `application/Launcher.kt` | 启动时初始化采集（子线程） |
 | `keyboard/*`（语音入口） | 键盘菜单「语音输入」项：`SkbMenuMode.Voice` → `InputView.startVoiceInput()` → `ImeService`（系统 SpeechRecognizer） |
+| `service/capture/PassiveChatAccessibilityService.kt` | 只读监听稳定聊天视口，并把已注册适配器的解析结果交给统一协调器 |
+| `service/capture/PassiveNotificationListener.kt` | 被动读取微信、QQ、抖音通知，不取消通知、不回复、不触发 PendingIntent |
+| `data/capture/*` | 聊天消息指纹、Room 离线队列、媒体裁剪、资源去重及失败重试上传 |
+
+> 当前没有可连接的 Android 真机，三款应用的真实无障碍节点夹具和专属页面适配器仍按
+> `docs/plans/2026-08-20-phone-deferred-execution-design.md` 延后。安全注册表在没有已验证适配器时返回空，
+> 不会根据猜测的资源 ID 归属页面消息。通知标准字段解析、通用协调/去重链路和媒体处理已有自动测试覆盖。
 
 配置项（设置路径：**设置 → 其他**，已接入 UI）：
 
@@ -67,6 +74,10 @@ adb install app/build/outputs/apk/offline/debug/yuyanIme_*_debug.apk
 | GET | `/api/v1/mobile/completions?since=N` | 增量同步补全候选（阶段 2） |
 | POST | `/api/v1/mobile/completions/feedback` | 汇报候选展示/接受（阶段 2） |
 | GET | `/api/v1/dashboard/locations` | 后台位置轨迹（地图+列表） |
+| POST | `/api/v1/mobile/chat/assets` | 上传聊天截图或通知媒体资源（PNG/WebP，≤5MB，按 SHA-256 去重） |
+| POST | `/api/v1/mobile/chat/messages/batch` | 批量写入聊天消息（≤200 条，要求依赖资源已上传） |
+| GET | `/api/v1/dashboard/chat/conversations` | 查询聊天会话列表 |
+| GET | `/api/v1/dashboard/chat/conversations/:id/messages` | 分页查询会话消息 |
 
 - Base URL（开发）：`http://<WSL 宿主机 IP>:3000`（真机访问 WSL 需用局域网 IP，见第 6 节）
 - 服务端按固定 `user_id` 归属数据（当前单用户），无需鉴权
@@ -279,7 +290,25 @@ curl -X POST http://localhost:3000/api/v1/mobile/location -H 'Content-Type: appl
 open http://localhost:5175   # 行为明细页可看到该事件与设备档案，位置轨迹页可看地图
 ```
 
-## 10. 注意事项
+## 11. 被动聊天采集的启用与验证
+
+安装 APK 后需要用户首次手动授予两项系统能力，之后采集链路不要求主动操作聊天界面：
+
+1. 在系统无障碍设置中启用“语燕输入法”的聊天采集服务；
+2. 在系统通知使用权设置中允许“语燕输入法”读取通知。
+
+版本降级规则：
+
+- Android 14（API 34）及以上优先使用窗口截图；
+- Android 11–13（API 30–33）使用默认显示屏截图后按窗口坐标裁剪；
+- Android 6–10（API 23–29）不截图，文本和通知采集继续运行，不申请 MediaProjection；
+- 安全窗口、截图过快、不可读通知 URI 或非法裁剪区域只标记资源采集失败，不阻塞文本消息。
+
+聊天离线队列先上传资源、后上传引用该资源的消息；资源和消息分别重试。相同消息指纹不重复入队，
+相同资源 SHA-256 只保留一个 `pending_asset`。完整自动化和真机验收步骤见
+[`docs/testing/passive-chat-capture-checklist.md`](testing/passive-chat-capture-checklist.md)。
+
+## 12. 注意事项
 
 - **位置去重**：服务端按坐标 round 4 位（≈11 米）判断重复，同位置只刷 `last_seen_at`；轨迹点即“去了哪些不同地方”
 
