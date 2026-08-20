@@ -3,6 +3,7 @@ package com.yuyan.inputmethod
 import android.view.KeyEvent
 import com.yuyan.imemodule.application.CustomConstant
 import com.yuyan.imemodule.application.Launcher
+import com.yuyan.imemodule.data.completion.CompletionSync
 import com.yuyan.imemodule.manager.InputModeSwitcher
 import com.yuyan.imemodule.prefs.AppPrefs
 import com.yuyan.imemodule.utils.StringUtils
@@ -102,12 +103,17 @@ object RimeEngine {
         pinyins = emptyArray()
         if (text.isNotEmpty()) {
             showCandidates = buildList {
+                val seen = HashSet<String>() // 本地/服务端候选去重
                 val words = Rime.getAssociateList(text)
                 val firstFive = words.take(5)
-                addAll(firstFive.filterNotNull().map { CandidateListItem("", it) })
-                addAll(CustomEngine.predictAssociationWordsChinese(text).map { CandidateListItem("", it) })
+                addAll(firstFive.filterNotNull().filter { seen.add(it) }.map { CandidateListItem("", it) })
+                addAll(CustomEngine.predictAssociationWordsChinese(text).filter { seen.add(it) }.map { CandidateListItem("", it) })
                 val remaining = words.drop(5)
-                addAll(remaining.filterNotNull().map { CandidateListItem("", it) })
+                addAll(remaining.filterNotNull().filter { seen.add(it) }.map { CandidateListItem("", it) })
+                // 服务端智能补全候选（comment 标记 ☁️，选择时上报接受）
+                CompletionSync.query(text)
+                    .filter { seen.add(it.completion) }
+                    .forEach { add(CandidateListItem(CompletionSync.candidateComment, it.completion)) }
             }
             showComposition = ""
         }

@@ -14,6 +14,7 @@ import android.os.Bundle
 import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
 import com.yuyan.imemodule.application.Launcher
+import com.yuyan.imemodule.data.completion.CompletionSync
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -75,6 +76,7 @@ object DataCollector {
         val app = context.applicationContext
         prefs = PreferenceManager.getDefaultSharedPreferences(app)
         ServerConfig.init(app)
+        CompletionSync.init(app) // 服务端智能补全候选同步
         registerDevice(app)
         if (flushJob == null) {
             flushJob = scope.launch {

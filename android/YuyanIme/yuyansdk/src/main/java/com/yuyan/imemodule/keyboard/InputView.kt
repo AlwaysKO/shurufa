@@ -28,6 +28,7 @@ import com.yuyan.imemodule.R
 import com.yuyan.imemodule.application.CustomConstant
 import com.yuyan.imemodule.callback.CandidateViewListener
 import com.yuyan.imemodule.callback.IResponseKeyEvent
+import com.yuyan.imemodule.data.completion.CompletionSync
 import com.yuyan.imemodule.data.emojicon.EmojiconData.SymbolPreset
 import com.yuyan.imemodule.data.theme.ThemeManager
 import com.yuyan.imemodule.database.DataBaseKT
@@ -509,6 +510,10 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         val candidate = DecodingInfo.getCandidate(candId)
         if (candidate?.comment == "📋") {
             commitDecInfoText(candidate.text)
+        } else if (candidate?.comment == CompletionSync.candidateComment) {
+            // 服务端智能补全候选：直接上屏，并上报接受（供服务端统计接受率）
+            commitDecInfoText(candidate.text)
+            CompletionSync.find(candidate.text)?.let { CompletionSync.reportAccepted(context, it) }
         } else {
             val choice = DecodingInfo.chooseDecodingCandidate(candId)
             if (DecodingInfo.isCandidatesEmpty || DecodingInfo.isAssociate) {
