@@ -190,6 +190,38 @@ export interface CleanupResult {
   deleted: Record<string, number>;
 }
 
+export interface StickerRow {
+  id: number;
+  keywords: string;
+  url: string;
+  format: string;
+  width: number | null;
+  height: number | null;
+  useCount: string;
+  createdAt: string;
+}
+
+export interface StickerPage {
+  total: number;
+  stickers: StickerRow[];
+}
+
+/** 删除文件：fetch 删除 JSON 外的二进制响应 */
+async function del(url: string): Promise<void> {
+  const res = await fetch(url, { method: 'DELETE' });
+  if (!res.ok) throw new Error(`API ${url} failed: ${res.status}`);
+}
+
+async function patch<T>(url: string, body: unknown): Promise<T> {
+  const res = await fetch(url, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`API ${url} failed: ${res.status}`);
+  return res.json() as Promise<T>;
+}
+
 async function get<T>(url: string): Promise<T> {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`API ${url} failed: ${res.status}`);
@@ -242,6 +274,16 @@ export const api = {
   exportData: () => get<ExportData>(`/api/v1/dashboard/export`),
   cleanup: (body: { confirm: string; scope: 'events' | 'all'; from?: string; to?: string; package_name?: string }) =>
     post<CleanupResult>(`/api/v1/dashboard/cleanup`, body),
+  stickers: (q = '') => {
+    const p = new URLSearchParams();
+    if (q) p.set('q', q);
+    return get<StickerPage>(`/api/v1/dashboard/stickers?${p.toString()}`);
+  },
+  uploadSticker: (body: { file_base64: string; filename: string; keywords: string; width?: number; height?: number }) =>
+    post<StickerRow>(`/api/v1/dashboard/stickers`, body),
+  updateStickerKeywords: (id: number, keywords: string) =>
+    patch<{ ok: boolean }>(`/api/v1/dashboard/stickers/${id}`, { keywords }),
+  deleteSticker: (id: number) => del(`/api/v1/dashboard/stickers/${id}`),
 };
 
 /** 事件类型 → 中文标签 */

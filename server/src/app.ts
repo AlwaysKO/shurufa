@@ -1,9 +1,12 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import { mkdirSync } from 'node:fs';
+import { join } from 'node:path';
 import type pg from 'pg';
 import { createMobileRouter } from './api/mobile.js';
 import { createDashboardRouter } from './api/dashboard.js';
+import { createMobileStickerRouter, createDashboardStickerRouter } from './api/stickers.js';
 
 export function createApp(pool: pg.Pool): express.Express {
   const app = express();
@@ -15,11 +18,18 @@ export function createApp(pool: pg.Pool): express.Express {
     res.json({ status: 'ok' });
   });
 
+  // 表情包图片静态目录（server/uploads/stickers）
+  const stickerDir = join(process.cwd(), 'uploads', 'stickers');
+  mkdirSync(stickerDir, { recursive: true });
+  app.use('/uploads', express.static(join(process.cwd(), 'uploads')));
+
   // 输入法端 API
   app.use('/api/v1/mobile', createMobileRouter(pool));
+  app.use('/api/v1/mobile', createMobileStickerRouter(pool));
 
   // Dashboard API
   app.use('/api/v1/dashboard', createDashboardRouter(pool));
+  app.use('/api/v1/dashboard', createDashboardStickerRouter(pool));
 
   // 统一错误处理
   app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
