@@ -4,11 +4,14 @@ import com.yuyan.imemodule.data.capture.adapter.AdapterRegistry
 import com.yuyan.imemodule.data.capture.adapter.ChatAppAdapter
 import com.yuyan.imemodule.data.capture.adapter.ParseResult
 import com.yuyan.imemodule.data.capture.db.CaptureDao
+import com.yuyan.imemodule.data.capture.db.PendingAssetEntity
 import com.yuyan.imemodule.data.capture.db.PendingMessageEntity
 import com.yuyan.imemodule.data.capture.db.SeenMessageEntity
 import com.yuyan.imemodule.data.capture.model.CapturedConversation
 import com.yuyan.imemodule.data.capture.model.CapturedMessage
 import com.yuyan.imemodule.data.capture.model.stableKeyOrNull
+import com.yuyan.imemodule.data.capture.media.MediaAssetCapturer
+import com.yuyan.imemodule.data.capture.media.MediaCaptureRequest
 import com.yuyan.imemodule.data.capture.net.PendingMessageUploadPayload
 import com.yuyan.imemodule.data.capture.ui.UiNodeSnapshot
 import kotlinx.serialization.encodeToString
@@ -28,6 +31,7 @@ interface CaptureOutboxStore {
     suspend fun enqueueIfNew(
         seenMessage: SeenMessageEntity,
         pendingMessage: PendingMessageEntity,
+        pendingAssets: List<PendingAssetEntity> = emptyList(),
     ): Boolean
 }
 
@@ -37,7 +41,8 @@ class RoomCaptureOutboxStore(
     override suspend fun enqueueIfNew(
         seenMessage: SeenMessageEntity,
         pendingMessage: PendingMessageEntity,
-    ): Boolean = dao.enqueueIfNew(seenMessage, pendingMessage)
+        pendingAssets: List<PendingAssetEntity>,
+    ): Boolean = dao.enqueueIfNew(seenMessage, pendingMessage, pendingAssets)
 }
 
 class CaptureCoordinator(
@@ -46,10 +51,11 @@ class CaptureCoordinator(
     private val deviceId: () -> String,
     private val clock: () -> Long = System::currentTimeMillis,
     private val wakeUploader: () -> Unit,
+    private val mediaCapturer: MediaAssetCapturer? = null,
 ) {
     val internalFailureCount = AtomicLong(0)
 
-    suspend fun capture(packageName: String, snapshot: UiNodeSnapshot) {
+    suspend fun capture(packageName: String, snapshot: UiNodeSnapshot, windowId: Int? = null) {
         try {
             val adapter = adapterForPackage(packageName) ?: return
             if (adapter.packageName != packageName) return
@@ -58,13 +64,43 @@ class CaptureCoordinator(
             val conversation = result.viewport.conversation
             if (conversation.identityConfidence < MIN_IDENTITY_CONFIDENCE) return
             val conversationKey = conversation.stableKeyOrNull() ?: return
+            val rawMessages = result.viewport.messages
+            val mediaRequests = rawMessages.mapIndexedNotNull { index, message ->
+                message.mediaBounds?.let { bounds ->
+                    MediaCaptureRequest(index, bounds, message.inputAreaBounds)
+                }
+            }
+            val capturedAssets = if (mediaRequests.isNotEmpty() && windowId != null && mediaCapturer != null) {
+                try {
+                    mediaCapturer.capture(windowId, snapshot.bounds, mediaRequests)
+                } catch (_: Exception) {
+                    emptyMap()
+                }
+            } else {
+                emptyMap()
+            }
             var insertedAny = false
-            for (rawMessage in result.viewport.messages) {
-                val message = rawMessage.copy(conversationKey = conversationKey)
+            for ((index, rawMessage) in rawMessages.withIndex()) {
+                val asset = capturedAssets[index]
+                val message = rawMessage.copy(
+                    conversationKey = conversationKey,
+                    assetSha256 = if (asset == null) rawMessage.assetSha256 else
+                        (rawMessage.assetSha256 + asset.sha256).distinct(),
+                    metadata = if (rawMessage.mediaBounds != null && asset == null) {
+                        rawMessage.metadata + ("asset_capture_failed" to "true")
+                    } else {
+                        rawMessage.metadata
+                    },
+                )
                 val fingerprint = messageFingerprint(message) ?: continue
                 val capturedAt = clock()
                 val pending = pendingMessage(conversation, message, fingerprint, capturedAt)
-                if (store.enqueueIfNew(SeenMessageEntity(fingerprint, capturedAt), pending)) {
+                if (store.enqueueIfNew(
+                        SeenMessageEntity(fingerprint, capturedAt),
+                        pending,
+                        listOfNotNull(asset),
+                    )
+                ) {
                     insertedAny = true
                 }
             }

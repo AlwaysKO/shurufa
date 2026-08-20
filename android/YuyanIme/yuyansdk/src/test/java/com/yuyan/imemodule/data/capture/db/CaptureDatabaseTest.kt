@@ -111,6 +111,28 @@ class CaptureDatabaseTest {
         assertFalse(dao.hasPendingMessage("another-id"))
     }
 
+    @Test
+    fun onePendingAssetCanBeReferencedByMultiplePendingMessages() = runBlocking {
+        val hash = "a".repeat(64)
+        val asset = PendingAssetEntity(
+            sha256 = hash,
+            localPath = "/tmp/$hash",
+            mimeType = "image/png",
+            perceptualHash = null,
+            width = 60,
+            height = 60,
+        )
+        val first = pendingMessage("asset-message-1", hash).copy(fingerprint = "1".repeat(64))
+        val second = pendingMessage("asset-message-2", hash).copy(fingerprint = "2".repeat(64))
+
+        assertTrue(dao.enqueueIfNew(SeenMessageEntity(first.fingerprint, 1), first, listOf(asset)))
+        assertTrue(dao.enqueueIfNew(SeenMessageEntity(second.fingerprint, 2), second, listOf(asset)))
+
+        assertEquals(asset, dao.findPendingAsset(hash))
+        assertTrue(dao.hasPendingMessage(first.id))
+        assertTrue(dao.hasPendingMessage(second.id))
+    }
+
     private fun pendingMessage(id: String, requiredHash: String? = null) = PendingMessageEntity(
         id = id,
         fingerprint = "e".repeat(64),

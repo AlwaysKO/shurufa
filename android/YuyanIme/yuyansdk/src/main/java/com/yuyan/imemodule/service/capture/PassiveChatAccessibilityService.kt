@@ -11,6 +11,8 @@ import com.yuyan.imemodule.data.capture.CaptureCoordinator
 import com.yuyan.imemodule.data.capture.RoomCaptureOutboxStore
 import com.yuyan.imemodule.data.capture.adapter.AdapterRegistry
 import com.yuyan.imemodule.data.capture.db.CaptureDatabase
+import com.yuyan.imemodule.data.capture.media.WindowMediaCapturer
+import com.yuyan.imemodule.data.capture.media.WindowScreenshotter
 import com.yuyan.imemodule.data.capture.net.CaptureUploader
 import com.yuyan.imemodule.data.collect.DataCollector
 import kotlinx.coroutines.CoroutineScope
@@ -22,7 +24,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
 
 /**
- * 只读被动采集入口。当前阶段仅筛选支持的窗口事件，不解析、不截图、不操作 UI。
+ * 只读被动采集入口。仅解析稳定视口，并按需截取窗口中的媒体区域，不操作 UI。
  */
 class PassiveChatAccessibilityService : AccessibilityService() {
     private val backgroundDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
@@ -65,6 +67,10 @@ class PassiveChatAccessibilityService : AccessibilityService() {
             store = RoomCaptureOutboxStore(database.captureDao()),
             deviceId = { DataCollector.deviceId(applicationContext) },
             wakeUploader = CaptureUploader::wake,
+            mediaCapturer = WindowMediaCapturer(
+                context = applicationContext,
+                screenshotSource = WindowScreenshotter(this),
+            ),
         )
     }
 
@@ -82,7 +88,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     private fun onStableViewport(viewport: StableViewport) {
         val activeCoordinator = coordinator ?: return
         backgroundScope.launch {
-            activeCoordinator.capture(viewport.packageName, viewport.snapshot)
+            activeCoordinator.capture(viewport.packageName, viewport.snapshot, viewport.windowId)
         }
     }
 

@@ -59,8 +59,10 @@ abstract class CaptureDao {
     open suspend fun enqueueIfNew(
         seenMessage: SeenMessageEntity,
         pendingMessage: PendingMessageEntity,
+        pendingAssets: List<PendingAssetEntity> = emptyList(),
     ): Boolean {
         if (insertSeen(seenMessage) == -1L) return false
+        pendingAssets.forEach { insertPendingAsset(it) }
         check(insertPendingMessage(pendingMessage) != -1L) { "pending message id already exists" }
         return true
     }

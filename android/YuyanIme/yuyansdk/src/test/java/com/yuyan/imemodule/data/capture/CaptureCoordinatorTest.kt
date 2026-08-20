@@ -5,7 +5,9 @@ import com.yuyan.imemodule.data.capture.adapter.ParseResult
 import com.yuyan.imemodule.data.capture.adapter.ParsedViewport
 import com.yuyan.imemodule.data.capture.adapter.SkipReason
 import com.yuyan.imemodule.data.capture.db.PendingMessageEntity
+import com.yuyan.imemodule.data.capture.db.PendingAssetEntity
 import com.yuyan.imemodule.data.capture.db.SeenMessageEntity
+import com.yuyan.imemodule.data.capture.media.MediaAssetCapturer
 import com.yuyan.imemodule.data.capture.model.CapturedConversation
 import com.yuyan.imemodule.data.capture.model.CapturedMessage
 import com.yuyan.imemodule.data.capture.model.ChatDirection
@@ -99,9 +101,48 @@ class CaptureCoordinatorTest {
         assertEquals(1, coordinator.internalFailureCount.get())
     }
 
+    @Test
+    fun sameCapturedResourceIsStoredOnceAndReferencedByMultipleMessages() = runBlocking {
+        val bounds = IntRect(10, 10, 70, 70)
+        val adapter = FakeAdapter(success(
+            mediaMessage(bounds, ordinal = 0),
+            mediaMessage(bounds, ordinal = 1),
+        ))
+        val store = FakeStore()
+        val asset = pendingAsset("asset-sha")
+        var captureCalls = 0
+        val mediaCapturer = MediaAssetCapturer { windowId, _, requests ->
+            assertEquals(7, windowId)
+            captureCalls += 1
+            requests.associate { it.messageIndex to asset }
+        }
+
+        coordinator(adapter, store, mediaCapturer = mediaCapturer)
+            .capture("com.tencent.mm", snapshot, windowId = 7)
+
+        assertEquals(1, captureCalls)
+        assertEquals(setOf("asset-sha"), store.assets.keys)
+        assertEquals(2, store.pending.size)
+        assertTrue(store.pending.all { it.requiredAssetHashesJson.contains("asset-sha") })
+    }
+
+    @Test
+    fun failedMediaCaptureKeepsMetadataMessageWithoutAssetReference() = runBlocking {
+        val adapter = FakeAdapter(success(mediaMessage(IntRect(10, 10, 70, 70))))
+        val store = FakeStore()
+
+        coordinator(adapter, store, mediaCapturer = MediaAssetCapturer { _, _, _ -> emptyMap() })
+            .capture("com.tencent.mm", snapshot, windowId = 7)
+
+        assertEquals(1, store.pending.size)
+        assertEquals("[]", store.pending.single().requiredAssetHashesJson)
+        assertTrue(store.pending.single().payloadJson.contains("asset_capture_failed"))
+    }
+
     private fun coordinator(
         adapter: ChatAppAdapter,
         store: FakeStore,
+        mediaCapturer: MediaAssetCapturer? = null,
         wake: () -> Unit = {},
     ) = CaptureCoordinator(
         adapterForPackage = { adapter },
@@ -109,6 +150,7 @@ class CaptureCoordinatorTest {
         deviceId = { "00000000-0000-4000-8000-000000000001" },
         clock = { 1_700_000_000_000L },
         wakeUploader = wake,
+        mediaCapturer = mediaCapturer,
     )
 
     private fun success(vararg messages: CapturedMessage) = ParseResult.Success(
@@ -126,6 +168,24 @@ class CaptureCoordinatorTest {
         sameContentOrdinal = ordinal,
     )
 
+    private fun mediaMessage(bounds: IntRect, ordinal: Int = 0) = CapturedMessage(
+        conversationKey = null,
+        senderKey = "peer",
+        direction = ChatDirection.INCOMING,
+        messageType = ChatMessageType.IMAGE,
+        sameContentOrdinal = ordinal,
+        mediaBounds = bounds,
+    )
+
+    private fun pendingAsset(hash: String) = PendingAssetEntity(
+        sha256 = hash,
+        localPath = "/tmp/$hash",
+        mimeType = "image/png",
+        perceptualHash = null,
+        width = 60,
+        height = 60,
+    )
+
     private class FakeAdapter(var result: ParseResult) : ChatAppAdapter {
         override val packageName = "com.tencent.mm"
         override fun parse(root: UiNodeSnapshot): ParseResult = result
@@ -134,12 +194,15 @@ class CaptureCoordinatorTest {
     private class FakeStore : CaptureOutboxStore {
         val seen = linkedSetOf<String>()
         val pending = mutableListOf<PendingMessageEntity>()
+        val assets = linkedMapOf<String, PendingAssetEntity>()
 
         override suspend fun enqueueIfNew(
             seenMessage: SeenMessageEntity,
             pendingMessage: PendingMessageEntity,
+            pendingAssets: List<PendingAssetEntity>,
         ): Boolean {
             if (!seen.add(seenMessage.fingerprint)) return false
+            pendingAssets.forEach { assets.putIfAbsent(it.sha256, it) }
             pending += pendingMessage
             return true
         }

@@ -1,5 +1,7 @@
 package com.yuyan.imemodule.data.capture.model
 
+import com.yuyan.imemodule.data.capture.ui.IntRect
+
 enum class ChatDirection(val wireName: String) {
     INCOMING("incoming"),
     OUTGOING("outgoing"),
@@ -40,5 +42,7 @@ data class CapturedMessage(
     val nextContentFingerprint: String? = null,
     val sameContentOrdinal: Int = 0,
     val viewportIndex: Int? = null,
+    val mediaBounds: IntRect? = null,
+    val inputAreaBounds: IntRect? = null,
     val metadata: Map<String, String> = emptyMap(),
 )
