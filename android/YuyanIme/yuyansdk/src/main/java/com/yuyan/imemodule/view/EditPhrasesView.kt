@@ -12,6 +12,7 @@ import androidx.core.view.setPadding
 import com.yuyan.imemodule.R
 import com.yuyan.imemodule.data.theme.Theme
 import com.yuyan.imemodule.data.theme.ThemeManager
+import com.yuyan.imemodule.data.phrase.PhraseSync
 import com.yuyan.imemodule.database.DataBaseKT
 import com.yuyan.imemodule.database.entry.Phrase
 import com.yuyan.imemodule.libs.pinyin4j.PinyinHelper
@@ -94,6 +95,7 @@ class EditPhrasesView(context: Context) : LinearLayout(context){
             val pinYinHeadLX17 = pinYinHeadChar.map { LX17PinYinUtils.pinyin2Lx17Key(it)}.joinToString("")
             val phrase =  Phrase(content = content, t9 = pinYinHeadT9, qwerty = pinYinHeadChar, lx17 = pinYinHeadLX17)
             DataBaseKT.instance.phraseDao().insert(phrase)
+            PhraseSync.upload(content) // 常用语云同步：本地新增上报服务端
             KeyboardManager.instance.switchKeyboard(InputModeSwitcher.skbImeLayout)
         }
     }

@@ -15,6 +15,7 @@ import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
 import com.yuyan.imemodule.application.Launcher
 import com.yuyan.imemodule.data.completion.CompletionSync
+import com.yuyan.imemodule.data.phrase.PhraseSync
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -77,6 +78,7 @@ object DataCollector {
         prefs = PreferenceManager.getDefaultSharedPreferences(app)
         ServerConfig.init(app)
         CompletionSync.init(app) // 服务端智能补全候选同步
+        PhraseSync.init(app) // 常用语云同步
         registerDevice(app)
         if (flushJob == null) {
             flushJob = scope.launch {

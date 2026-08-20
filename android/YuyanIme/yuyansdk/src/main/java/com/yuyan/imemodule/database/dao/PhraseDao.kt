@@ -20,6 +20,18 @@ interface PhraseDao : BaseDao<Phrase> {
     @Query("select * from phrase where content = :content")
     fun queryByContent(content: String): Phrase
 
+    @Query("select * from phrase where cloudId > 0")
+    fun getCloudPhrases(): List<Phrase>
+
+    @Query("update phrase set cloudId = :cloudId where content = :content")
+    fun updateCloudId(content: String, cloudId: Long)
+
+    @Query("update phrase set content = :content, t9 = :t9, qwerty = :qwerty, lx17 = :lx17 where cloudId = :cloudId")
+    fun updateCloudContent(cloudId: Long, content: String, t9: String, qwerty: String, lx17: String)
+
+    @Query("delete from phrase where cloudId = :cloudId")
+    fun deleteByCloudId(cloudId: Long)
+
     @Query("delete from phrase")
     fun deleteAll()
 }

@@ -19,4 +19,6 @@ data class Phrase(
     var lx17: String,
     @ColumnInfo(name = "time")
     val time: Long = System.currentTimeMillis(),
+    @ColumnInfo(name = "cloudId")
+    var cloudId: Long = 0, // 云端常用语 id（0 = 仅本地）
 )

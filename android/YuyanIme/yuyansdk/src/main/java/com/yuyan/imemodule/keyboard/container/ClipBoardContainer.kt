@@ -14,6 +14,7 @@ import com.yuyan.imemodule.R
 import com.yuyan.imemodule.adapter.ClipBoardAdapter
 import com.yuyan.imemodule.application.CustomConstant
 import com.yuyan.imemodule.data.theme.ThemeManager.activeTheme
+import com.yuyan.imemodule.data.phrase.PhraseSync
 import com.yuyan.imemodule.database.DataBaseKT
 import com.yuyan.imemodule.database.entry.Clipboard
 import com.yuyan.imemodule.libs.recyclerview.SwipeMenu
@@ -100,6 +101,7 @@ class ClipBoardContainer(context: Context, inputView: InputView) : BaseContainer
         mRVSymbolsView.setAdapter(null)
         mRVSymbolsView.setOnItemClickListener{ _: View?, position: Int ->
             inputView.responseLongKeyEvent(Pair(PopupMenuMode.Text, copyContents[position].content))
+            if(itemMode == SkbMenuMode.Phrases) PhraseSync.reportUse(copyContents[position].content) // 常用语云同步：使用计数上报
             if(!CustomConstant.lockClipBoardEnable)KeyboardManager.instance.switchKeyboard()
         }
         mRVSymbolsView.setSwipeMenuCreator{ _: SwipeMenu, rightMenu: SwipeMenu, position: Int ->
