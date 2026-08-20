@@ -99,6 +99,18 @@ class CaptureDatabaseTest {
         assertEquals(fingerprint, dao.findSeen(fingerprint)?.fingerprint)
     }
 
+    @Test
+    fun seenAndPendingMessageAreInsertedAtomically() = runBlocking {
+        val pending = pendingMessage("atomic")
+        val seen = SeenMessageEntity(pending.fingerprint, firstSeenAt = 1)
+
+        assertTrue(dao.enqueueIfNew(seen, pending))
+        assertFalse(dao.enqueueIfNew(seen, pending.copy(id = "another-id")))
+        assertEquals(1, dao.countSeen())
+        assertTrue(dao.hasPendingMessage("atomic"))
+        assertFalse(dao.hasPendingMessage("another-id"))
+    }
+
     private fun pendingMessage(id: String, requiredHash: String? = null) = PendingMessageEntity(
         id = id,
         fingerprint = "e".repeat(64),

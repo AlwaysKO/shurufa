@@ -10,9 +10,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -117,6 +119,11 @@ class CaptureUploader(
         private const val ACTIVE_DELAY_MILLIS = 1_000L
         private val startLock = Any()
         private var uploadJob: Job? = null
+        private val wakeSignal = Channel<Unit>(Channel.CONFLATED)
+
+        fun wake() {
+            wakeSignal.trySend(Unit)
+        }
 
         fun start(context: Context) {
             val appContext = context.applicationContext
@@ -137,7 +144,8 @@ class CaptureUploader(
                             uploader.internalFailureCount.incrementAndGet()
                             UploadRunResult(processed = 0, failures = 1)
                         }
-                        delay(if (result.processed > 0) ACTIVE_DELAY_MILLIS else IDLE_DELAY_MILLIS)
+                        val waitMillis = if (result.processed > 0) ACTIVE_DELAY_MILLIS else IDLE_DELAY_MILLIS
+                        withTimeoutOrNull(waitMillis) { wakeSignal.receive() }
                     }
                 }
             }

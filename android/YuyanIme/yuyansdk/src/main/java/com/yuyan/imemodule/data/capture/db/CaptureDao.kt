@@ -55,6 +55,16 @@ abstract class CaptureDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     abstract suspend fun insertPendingMessage(entity: PendingMessageEntity): Long
 
+    @Transaction
+    open suspend fun enqueueIfNew(
+        seenMessage: SeenMessageEntity,
+        pendingMessage: PendingMessageEntity,
+    ): Boolean {
+        if (insertSeen(seenMessage) == -1L) return false
+        check(insertPendingMessage(pendingMessage) != -1L) { "pending message id already exists" }
+        return true
+    }
+
     @Query("SELECT * FROM pending_message WHERE nextRetryAt <= :now ORDER BY nextRetryAt ASC, id ASC")
     protected abstract suspend fun dueMessages(now: Long): List<PendingMessageEntity>
 

