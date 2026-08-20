@@ -15,6 +15,7 @@ import Report from './views/Report.vue';
 import Stickers from './views/Stickers.vue';
 import UserPhrases from './views/Phrases.vue';
 import DataManage from './views/DataManage.vue';
+import ChatCapture from './views/ChatCapture.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -33,6 +34,7 @@ const router = createRouter({
     { path: '/stickers', component: Stickers, meta: { title: '表情包' } },
     { path: '/user-phrases', component: UserPhrases, meta: { title: '常用语' } },
     { path: '/data', component: DataManage, meta: { title: '数据管理' } },
+    { path: '/chat-capture', component: ChatCapture, meta: { title: '聊天采集' } },
   ],
 });
 

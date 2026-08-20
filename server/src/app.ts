@@ -9,6 +9,7 @@ import { createDashboardRouter } from './api/dashboard.js';
 import { createMobileStickerRouter, createDashboardStickerRouter } from './api/stickers.js';
 import { createMobilePhraseRouter, createDashboardPhraseRouter } from './api/userPhrases.js';
 import { createMobileChatCaptureRouter } from './api/chatCapture.js';
+import { createChatDashboardRouter } from './api/chatDashboard.js';
 
 export function createApp(pool: pg.Pool): express.Express {
   const app = express();
@@ -35,6 +36,7 @@ export function createApp(pool: pg.Pool): express.Express {
   app.use('/api/v1/dashboard', createDashboardRouter(pool));
   app.use('/api/v1/dashboard', createDashboardStickerRouter(pool));
   app.use('/api/v1/dashboard', createDashboardPhraseRouter(pool));
+  app.use('/api/v1/dashboard/chat', createChatDashboardRouter(pool));
 
   // 统一错误处理
   app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

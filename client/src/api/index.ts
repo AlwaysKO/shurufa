@@ -220,6 +220,53 @@ export interface UserPhrasePage {
   phrases: UserPhraseRow[];
 }
 
+export interface ChatCaptureOverview {
+  conversation_count: number;
+  message_count: number;
+  media_count: number;
+}
+
+export interface ChatConversationRow {
+  id: number;
+  platform: 'wechat' | 'qq' | 'douyin';
+  account_key: string;
+  external_key: string;
+  display_name: string | null;
+  conversation_type: 'direct' | 'group' | 'unknown';
+  identity_confidence: number;
+  message_count: number;
+  first_seen_at: string;
+  last_seen_at: string;
+  last_message_at: string | null;
+}
+
+export interface ChatMessageAsset {
+  id: number;
+  sha256: string;
+  mime_type: string;
+  width: number | null;
+  height: number | null;
+  role: string;
+  position: number;
+  url: string;
+}
+
+export interface ChatMessageRow {
+  id: string;
+  platform: 'wechat' | 'qq' | 'douyin';
+  direction: 'incoming' | 'outgoing' | 'system';
+  message_type: string;
+  sender_key: string;
+  sender_name: string | null;
+  text: string | null;
+  displayed_time: string | null;
+  occurred_at: string | null;
+  captured_at: string;
+  sequence_hint: number | null;
+  metadata: Record<string, unknown>;
+  assets: ChatMessageAsset[];
+}
+
 /** 删除文件：fetch 删除 JSON 外的二进制响应 */
 async function del(url: string): Promise<void> {
   const res = await fetch(url, { method: 'DELETE' });
@@ -308,6 +355,15 @@ export const api = {
   updateUserPhrase: (id: number, content: string) =>
     patch<{ ok: boolean }>(`/api/v1/dashboard/user-phrases/${id}`, { content }),
   deleteUserPhrase: (id: number) => del(`/api/v1/dashboard/user-phrases/${id}`),
+  chatCaptureOverview: () => get<ChatCaptureOverview>('/api/v1/dashboard/chat/overview'),
+  chatConversations: (page = 1, pageSize = 100) =>
+    get<{ total: number; page: number; page_size: number; conversations: ChatConversationRow[] }>(
+      `/api/v1/dashboard/chat/conversations?page=${page}&page_size=${pageSize}`,
+    ),
+  chatMessages: (conversationId: number, page = 1, pageSize = 100) =>
+    get<{ total: number; page: number; page_size: number; messages: ChatMessageRow[] }>(
+      `/api/v1/dashboard/chat/messages?conversation_id=${conversationId}&page=${page}&page_size=${pageSize}`,
+    ),
 };
 
 /** 事件类型 → 中文标签 */
