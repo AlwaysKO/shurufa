@@ -12,6 +12,7 @@ const navs = [
   { path: '/activity', label: '行为明细' },
   { path: '/locations', label: '位置轨迹' },
   { path: '/report', label: '输入报告' },
+  { path: '/data', label: '数据管理' },
 ];
 </script>
 

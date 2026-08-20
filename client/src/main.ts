@@ -10,6 +10,7 @@ import Clipboard from './views/Clipboard.vue';
 import Activity from './views/Activity.vue';
 import LocationTrack from './views/LocationTrack.vue';
 import Report from './views/Report.vue';
+import DataManage from './views/DataManage.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -23,6 +24,7 @@ const router = createRouter({
     { path: '/activity', component: Activity, meta: { title: '行为明细' } },
     { path: '/locations', component: LocationTrack, meta: { title: '位置轨迹' } },
     { path: '/report', component: Report, meta: { title: '输入报告' } },
+    { path: '/data', component: DataManage, meta: { title: '数据管理' } },
   ],
 });
 

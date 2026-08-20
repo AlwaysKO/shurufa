@@ -502,6 +502,139 @@ export function createDashboardRouter(pool: pg.Pool): Router {
   });
 
   /**
+   * 数据导出：全量采集数据打包为 JSON（个人数据迁移/备份）。
+   * 返回各表全量数据 + 行数统计。
+   */
+  router.get('/export', async (req, res, next) => {
+    try {
+      const [devices, sessions, events, phrases, completions, locations] = await Promise.all([
+        pool.query(`SELECT * FROM device ORDER BY last_seen_at DESC`),
+        pool.query(`SELECT * FROM input_session ORDER BY started_at DESC`),
+        pool.query(`SELECT * FROM input_event WHERE user_id = $1 ORDER BY occurred_at ASC`, [DEFAULT_USER_ID]),
+        pool.query(`SELECT * FROM phrase_stat WHERE user_id = $1`, [DEFAULT_USER_ID]),
+        pool.query(`SELECT * FROM completion_candidate WHERE user_id = $1`, [DEFAULT_USER_ID]),
+        pool.query(`SELECT * FROM location_track WHERE user_id = $1 ORDER BY occurred_at ASC`, [DEFAULT_USER_ID]),
+      ]);
+      res.json({
+        exported_at: new Date().toISOString(),
+        counts: {
+          devices: devices.rowCount,
+          sessions: sessions.rowCount,
+          events: events.rowCount,
+          phrases: phrases.rowCount,
+          completions: completions.rowCount,
+          locations: locations.rowCount,
+        },
+        devices: devices.rows,
+        sessions: sessions.rows,
+        events: events.rows,
+        phrases: phrases.rows,
+        completions: completions.rows,
+        locations: locations.rows,
+      });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  /**
+   * 数据清理：删除事件日志（可带时间/应用范围）或全部采集数据。
+   * body: { confirm: 'DELETE', scope: 'events'|'all', from?, to?, package_name? }
+   * 必须显式传 confirm='DELETE' 防误删；全部清理会同时重置分析游标（统计从零重建）。
+   */
+  router.post('/cleanup', async (req, res, next) => {
+    try {
+      const body = req.body as {
+        confirm?: string;
+        scope?: string;
+        from?: string;
+        to?: string;
+        package_name?: string;
+      };
+      if (body.confirm !== 'DELETE') return res.status(400).json({ error: "must pass confirm='DELETE'" });
+      const scope = body.scope === 'all' ? 'all' : 'events';
+      if (body.from && !/^\d{4}-\d{2}-\d{2}$/.test(body.from)) return res.status(400).json({ error: 'invalid from' });
+      if (body.to && !/^\d{4}-\d{2}-\d{2}$/.test(body.to)) return res.status(400).json({ error: 'invalid to' });
+
+      // 事件表条件（时间/应用均可选）
+      const conds = ['user_id = $1'];
+      const params: unknown[] = [DEFAULT_USER_ID];
+      const add = (cond: string, v: unknown) => {
+        params.push(v);
+        conds.push(cond.replace('?', `$${params.length}`));
+      };
+      if (body.from) add('occurred_at >= ?::date', body.from);
+      if (body.to) add('occurred_at < ?::date + interval \'1 day\'', body.to);
+      if (body.package_name) add('package_name = ?', body.package_name);
+      const where = conds.join(' AND ');
+
+      const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
+        const deleted: Record<string, number> = {};
+
+        const eventsRes = await client.query(`DELETE FROM input_event WHERE ${where}`, params);
+        deleted.events = eventsRes.rowCount ?? 0;
+
+        if (scope === 'all') {
+          // 会话（无 user_id 列，单用户环境按设备全删；带时间则按开始时间过滤）
+          const sConds: string[] = [];
+          const sParams: unknown[] = [];
+          if (body.from) {
+            sParams.push(body.from);
+            sConds.push(`started_at >= $${sParams.length}::date`);
+          }
+          if (body.to) {
+            sParams.push(body.to);
+            sConds.push(`started_at < $${sParams.length}::date + interval '1 day'`);
+          }
+          const sessionsRes = await client.query(
+            `DELETE FROM input_session ${sConds.length ? `WHERE ${sConds.join(' AND ')}` : ''}`,
+            sParams,
+          );
+          deleted.sessions = sessionsRes.rowCount ?? 0;
+
+          // 位置轨迹（带时间则过滤）
+          const lConds = ['user_id = $1'];
+          const lParams: unknown[] = [DEFAULT_USER_ID];
+          if (body.from) {
+            lParams.push(body.from);
+            lConds.push(`occurred_at >= $${lParams.length}::date`);
+          }
+          if (body.to) {
+            lParams.push(body.to);
+            lConds.push(`occurred_at < $${lParams.length}::date + interval '1 day'`);
+          }
+          const locRes = await client.query(`DELETE FROM location_track WHERE ${lConds.join(' AND ')}`, lParams);
+          deleted.locations = locRes.rowCount ?? 0;
+
+          // 分析结果与补全模型全量重建（无条件）
+          const phraseRes = await client.query(`DELETE FROM phrase_stat WHERE user_id = $1`, [DEFAULT_USER_ID]);
+          deleted.phrases = phraseRes.rowCount ?? 0;
+          const compRes = await client.query(`DELETE FROM completion_candidate WHERE user_id = $1`, [DEFAULT_USER_ID]);
+          deleted.completions = compRes.rowCount ?? 0;
+
+          // 重置分析游标，下次分析从零统计
+          await client.query(
+            `INSERT INTO analysis_state (key, value) VALUES ('last_analyzed_epoch_ms', 0)
+             ON CONFLICT (key) DO UPDATE SET value = 0, updated_at = NOW()`,
+          );
+        }
+
+        await client.query('COMMIT');
+        res.json({ scope, deleted });
+      } catch (err) {
+        await client.query('ROLLBACK');
+        throw err;
+      } finally {
+        client.release();
+      }
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  /**
    * 行为明细列表：每一次输入/粘贴/复制/语音/图片行为。
    * 支持筛选：device_id（用户）、from/to（时间范围）、q（关键词）、type（all|text|paste|voice|image）、all=1（含底层事件）
    * 分页：page / page_size（默认 20，最大 100）

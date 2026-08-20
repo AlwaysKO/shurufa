@@ -167,8 +167,41 @@ export interface ReportData {
   }>;
 }
 
+export interface ExportData {
+  exported_at: string;
+  counts: {
+    devices: number;
+    sessions: number;
+    events: number;
+    phrases: number;
+    completions: number;
+    locations: number;
+  };
+  devices: unknown[];
+  sessions: unknown[];
+  events: unknown[];
+  phrases: unknown[];
+  completions: unknown[];
+  locations: unknown[];
+}
+
+export interface CleanupResult {
+  scope: 'events' | 'all';
+  deleted: Record<string, number>;
+}
+
 async function get<T>(url: string): Promise<T> {
   const res = await fetch(url);
+  if (!res.ok) throw new Error(`API ${url} failed: ${res.status}`);
+  return res.json() as Promise<T>;
+}
+
+async function post<T>(url: string, body: unknown): Promise<T> {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
   if (!res.ok) throw new Error(`API ${url} failed: ${res.status}`);
   return res.json() as Promise<T>;
 }
@@ -206,6 +239,9 @@ export const api = {
     return get<{ days: number; total: number; locations: LocationRow[] }>(`/api/v1/dashboard/locations?${p.toString()}`);
   },
   report: (type: 'daily' | 'weekly', date: string) => get<ReportData>(`/api/v1/dashboard/report?type=${type}&date=${date}`),
+  exportData: () => get<ExportData>(`/api/v1/dashboard/export`),
+  cleanup: (body: { confirm: string; scope: 'events' | 'all'; from?: string; to?: string; package_name?: string }) =>
+    post<CleanupResult>(`/api/v1/dashboard/cleanup`, body),
 };
 
 /** 事件类型 → 中文标签 */
