@@ -2,23 +2,70 @@ package com.yuyan.imemodule.service.capture
 
 import android.accessibilityservice.AccessibilityService
 import android.view.accessibility.AccessibilityEvent
+import com.yuyan.imemodule.data.capture.ui.AccessibilityTreeReader
+import com.yuyan.imemodule.data.capture.ui.CoroutineDebounceScheduler
+import com.yuyan.imemodule.data.capture.ui.UiNodeSnapshot
+import com.yuyan.imemodule.data.capture.ui.ViewportDebouncer
+import com.yuyan.imemodule.data.capture.ui.stableTreeSignature
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * 只读被动采集入口。当前阶段仅筛选支持的窗口事件，不解析、不截图、不操作 UI。
  */
 class PassiveChatAccessibilityService : AccessibilityService() {
+    private val backgroundDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+    private val backgroundScope = CoroutineScope(SupervisorJob() + backgroundDispatcher)
+    private val treeReader = AccessibilityTreeReader()
+    private val snapshotGeneration = AtomicLong(0)
+    private val debouncer = ViewportDebouncer(
+        scheduler = CoroutineDebounceScheduler(backgroundScope),
+        onStable = ::onStableViewport,
+    )
+
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         val packageName = event.packageName?.toString() ?: return
         if (packageName !in SUPPORTED_PACKAGES) return
-        onSupportedWindowChanged(packageName, event.windowId)
+        val windowId = event.windowId
+        val root = rootInActiveWindow ?: return
+        val snapshot = try {
+            treeReader.read(root)
+        } finally {
+            recycleRoot(root)
+        } ?: return
+        val generation = snapshotGeneration.incrementAndGet()
+        backgroundScope.launch {
+            if (snapshotGeneration.get() != generation) return@launch
+            val viewport = StableViewport(packageName, windowId, snapshot)
+            debouncer.submit(windowId, snapshot.stableTreeSignature(), viewport)
+        }
     }
 
     override fun onInterrupt() = Unit
 
-    private fun onSupportedWindowChanged(
-        @Suppress("UNUSED_PARAMETER") packageName: String,
-        @Suppress("UNUSED_PARAMETER") windowId: Int,
-    ) = Unit
+    override fun onDestroy() {
+        snapshotGeneration.incrementAndGet()
+        debouncer.close()
+        backgroundScope.cancel()
+        backgroundDispatcher.close()
+        super.onDestroy()
+    }
+
+    private fun onStableViewport(@Suppress("UNUSED_PARAMETER") viewport: StableViewport) = Unit
+
+    @Suppress("DEPRECATION")
+    private fun recycleRoot(root: android.view.accessibility.AccessibilityNodeInfo) = root.recycle()
+
+    private data class StableViewport(
+        val packageName: String,
+        val windowId: Int,
+        val snapshot: UiNodeSnapshot,
+    )
 
     private companion object {
         val SUPPORTED_PACKAGES = setOf(
