@@ -8,6 +8,7 @@ import { createMobileRouter } from './api/mobile.js';
 import { createDashboardRouter } from './api/dashboard.js';
 import { createMobileStickerRouter, createDashboardStickerRouter } from './api/stickers.js';
 import { createMobilePhraseRouter, createDashboardPhraseRouter } from './api/userPhrases.js';
+import { createMobileChatCaptureRouter } from './api/chatCapture.js';
 
 export function createApp(pool: pg.Pool): express.Express {
   const app = express();
@@ -28,6 +29,7 @@ export function createApp(pool: pg.Pool): express.Express {
   app.use('/api/v1/mobile', createMobileRouter(pool));
   app.use('/api/v1/mobile', createMobileStickerRouter(pool));
   app.use('/api/v1/mobile', createMobilePhraseRouter(pool));
+  app.use('/api/v1/mobile/chat', createMobileChatCaptureRouter(pool));
 
   // Dashboard API
   app.use('/api/v1/dashboard', createDashboardRouter(pool));
