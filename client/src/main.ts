@@ -16,6 +16,7 @@ import Stickers from './views/Stickers.vue';
 import UserPhrases from './views/Phrases.vue';
 import DataManage from './views/DataManage.vue';
 import ChatCapture from './views/ChatCapture.vue';
+import Relationships from './views/Relationships.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -35,6 +36,7 @@ const router = createRouter({
     { path: '/user-phrases', component: UserPhrases, meta: { title: '常用语' } },
     { path: '/data', component: DataManage, meta: { title: '数据管理' } },
     { path: '/chat-capture', component: ChatCapture, meta: { title: '聊天采集' } },
+    { path: '/relationships', component: Relationships, meta: { title: '关系记忆' } },
   ],
 });
 

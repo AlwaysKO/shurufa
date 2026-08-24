@@ -17,6 +17,7 @@ const navs = [
   { path: '/stickers', label: '表情包' },
   { path: '/user-phrases', label: '常用语' },
   { path: '/chat-capture', label: '聊天采集' },
+  { path: '/relationships', label: '关系记忆' },
   { path: '/data', label: '数据管理' },
 ];
 </script>

@@ -267,6 +267,56 @@ export interface ChatMessageRow {
   assets: ChatMessageAsset[];
 }
 
+export type RelationshipType =
+  | 'unknown'
+  | 'friend'
+  | 'family'
+  | 'partner'
+  | 'colleague'
+  | 'customer'
+  | 'group'
+  | 'other';
+
+export interface RelationshipRow {
+  conversation_id: number;
+  platform: 'wechat' | 'qq' | 'douyin';
+  account_key: string;
+  external_key: string;
+  display_name: string | null;
+  conversation_type: 'direct' | 'group' | 'unknown';
+  relationship_type: RelationshipType;
+  alias: string | null;
+  intimacy_level: number;
+  humor_level: number;
+  notes: string | null;
+  message_count: number;
+  last_seen_at: string;
+  last_message_at: string | null;
+  updated_at: string | null;
+}
+
+export interface RelationshipProfileInput {
+  relationship_type: RelationshipType;
+  alias: string | null;
+  intimacy_level: number;
+  humor_level: number;
+  notes: string | null;
+}
+
+export interface ZeroTokenCandidateRow {
+  text: string;
+  source: 'context_match' | 'conversation_frequency' | 'relationship_type_frequency' | 'global_frequency';
+  use_count: number;
+  last_used_at: string;
+}
+
+export interface ZeroTokenCandidateResponse {
+  conversation_id: number | null;
+  relationship_type: RelationshipType;
+  candidates: ZeroTokenCandidateRow[];
+  reason?: 'conversation_not_found';
+}
+
 /** 删除文件：fetch 删除 JSON 外的二进制响应 */
 async function del(url: string): Promise<void> {
   const res = await fetch(url, { method: 'DELETE' });
@@ -292,6 +342,16 @@ async function get<T>(url: string): Promise<T> {
 async function post<T>(url: string, body: unknown): Promise<T> {
   const res = await fetch(url, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`API ${url} failed: ${res.status}`);
+  return res.json() as Promise<T>;
+}
+
+async function put<T>(url: string, body: unknown): Promise<T> {
+  const res = await fetch(url, {
+    method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
@@ -364,6 +424,21 @@ export const api = {
     get<{ total: number; page: number; page_size: number; messages: ChatMessageRow[] }>(
       `/api/v1/dashboard/chat/messages?conversation_id=${conversationId}&page=${page}&page_size=${pageSize}`,
     ),
+  relationships: (page = 1, pageSize = 100) =>
+    get<{ total: number; page: number; page_size: number; relationships: RelationshipRow[] }>(
+      `/api/v1/dashboard/relationships?page=${page}&page_size=${pageSize}`,
+    ),
+  updateRelationship: (conversationId: number, body: RelationshipProfileInput) =>
+    put<{ ok: boolean; profile: RelationshipProfileInput & { conversation_id: number } }>(
+      `/api/v1/dashboard/relationships/${conversationId}`,
+      body,
+    ),
+  relationshipCandidates: (conversationId: number, contextText = '', limit = 6) => {
+    const query = new URLSearchParams({ context_text: contextText, limit: String(limit) });
+    return get<ZeroTokenCandidateResponse>(
+      `/api/v1/dashboard/relationships/${conversationId}/candidates?${query.toString()}`,
+    );
+  },
 };
 
 /** 事件类型 → 中文标签 */
