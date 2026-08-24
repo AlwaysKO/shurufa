@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
-    <string name="ime_yuyan_name">语燕输入法</string>
-    <string name="ime_yuyan_name_debug">语燕输入法</string>
+    <string name="ime_yuyan_name">妙言输入法</string>
+    <string name="ime_yuyan_name_debug">妙言输入法</string>
     <!--设置页面-->
     <string name="setting_ime_sdk">输入法设置</string>
     <string name="setting_ime_input">输入设置</string>
@@ -186,8 +186,8 @@
     <string name="ime_hide_icon_tips">启动器不显示图标，部分机型无效</string>
 
     <string name="setting_server_url">服务器地址</string>
-    <string name="setting_server_url_tips">数据上报服务地址（如 http://192.168.1.100:3000），留空自动选择：模拟器用 10.0.2.2</string>
-    <string name="setting_server_url_auto">自动选择（模拟器 10.0.2.2 / 需真机时在此填写 WSL IP）</string>
+    <string name="setting_server_url_tips">仅 Debug 包使用。留空时通过 USB ADB 连接 http://127.0.0.1:3000；Release 包固定连接线上 API</string>
+    <string name="setting_server_url_auto">Debug 默认：http://127.0.0.1:3000（需 adb reverse）</string>
     <string name="setting_location_tracking">位置采集</string>
     <string name="setting_location_tracking_tips">每分钟上报一次位置，仅存储在你的服务器（同位置不重复记录）</string>
     <string name="voice_input">语音输入</string>
