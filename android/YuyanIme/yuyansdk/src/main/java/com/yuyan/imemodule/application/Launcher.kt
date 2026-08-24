@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.preference.PreferenceManager
 import com.yuyan.imemodule.data.emojicon.YuyanEmojiCompat
+import com.yuyan.imemodule.data.completion.OfflineAssociationCompletion
 import com.yuyan.imemodule.data.collect.DataCollector
 import com.yuyan.imemodule.data.capture.net.CaptureUploader
 import com.yuyan.imemodule.data.theme.ThemeManager
@@ -31,6 +32,8 @@ class Launcher {
         ThemeManager.init(context.resources.configuration)
         DataBaseKT.instance.sideSymbolDao().getAllSideSymbolPinyin()  //操作一次查询，提前创建数据库，避免使用时才创建数据库
         ClipboardHelper.init()
+        // EmojiTextView 可能在后台初始化任务完成前创建，必须先配置 EmojiCompat。
+        YuyanEmojiCompat.init(context)
     }
 
     /**
@@ -38,6 +41,7 @@ class Launcher {
      */
     private fun onInitDataChildThread() {
         ThreadPoolUtils.executeSingleton {
+            OfflineAssociationCompletion.init(context)
             // 数据采集：设备注册 + 行为/位置上报（内部自管协程，失败自动重试）
             DataCollector.init(context)
             CaptureUploader.start(context)
@@ -50,7 +54,6 @@ class Launcher {
                 AppPrefs.getInstance().internal.dataDictVersion.setValue(CustomConstant.CURRENT_RIME_DICT_DATA_VERSIOM)
             }
             Kernel.resetIme()  // 解决词库复制慢，导致先调用初始化问题
-            YuyanEmojiCompat.init(context)
             //初始化键盘主题
             val isFollowSystemDayNight = prefs.followSystemDayNightTheme.getValue()
             if (isFollowSystemDayNight) {

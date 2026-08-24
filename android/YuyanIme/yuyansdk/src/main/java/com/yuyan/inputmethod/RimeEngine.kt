@@ -4,6 +4,7 @@ import android.view.KeyEvent
 import com.yuyan.imemodule.application.CustomConstant
 import com.yuyan.imemodule.application.Launcher
 import com.yuyan.imemodule.data.completion.CompletionSync
+import com.yuyan.imemodule.data.completion.OfflineAssociationCompletion
 import com.yuyan.imemodule.manager.InputModeSwitcher
 import com.yuyan.imemodule.prefs.AppPrefs
 import com.yuyan.imemodule.utils.StringUtils
@@ -24,6 +25,7 @@ object RimeEngine {
     var showComposition: String = "" // 候选词上方展示的拼音
     var preCommitText: String = "" // 待提交的文字
     private var customPhraseSize: Int = 0 // 自定义引擎候选词长度
+    private var associationRimeIndexes: List<Int?> = emptyList()
     const val MASK_CASE_LOWER = 0
     private var charCase = 0x0000
     fun init() {
@@ -102,28 +104,27 @@ object RimeEngine {
     fun predictAssociationWords(text: String) {
         pinyins = emptyArray()
         if (text.isNotEmpty()) {
-            showCandidates = buildList {
-                val seen = HashSet<String>() // 本地/服务端候选去重
-                val words = Rime.getAssociateList(text)
-                val firstFive = words.take(5)
-                addAll(firstFive.filterNotNull().filter { seen.add(it) }.map { CandidateListItem("", it) })
-                addAll(CustomEngine.predictAssociationWordsChinese(text).filter { seen.add(it) }.map { CandidateListItem("", it) })
-                val remaining = words.drop(5)
-                addAll(remaining.filterNotNull().filter { seen.add(it) }.map { CandidateListItem("", it) })
-                // 服务端智能补全候选（comment 标记 ☁️，选择时上报接受）
-                CompletionSync.query(text)
-                    .filter { seen.add(it.completion) }
-                    .forEach { add(CandidateListItem(CompletionSync.candidateComment, it.completion)) }
+            val merged = AssociationCandidateMerger.merge(
+                offline = OfflineAssociationCompletion.query(text),
+                rime = Rime.getAssociateList(text).filterNotNull(),
+                custom = CustomEngine.predictAssociationWordsChinese(text),
+                remote = CompletionSync.query(text).map { it.completion },
+            )
+            associationRimeIndexes = merged.map { it.rimeIndex }
+            showCandidates = merged.map {
+                val comment = if (it.source == AssociationCandidateSource.REMOTE) CompletionSync.candidateComment else ""
+                CandidateListItem(comment, it.text)
             }
             showComposition = ""
         }
     }
 
     fun selectAssociation(index: Int) {
-        val indexReal = index - customPhraseSize
-        Rime.chooseAssociate(indexReal)
-        updateCandidatesOrCommitText()
-        preCommitText = showCandidates.getOrNull(indexReal)?.text?:""
+        val selected = showCandidates.getOrNull(index) ?: return
+        associationRimeIndexes.getOrNull(index)?.let(Rime::chooseAssociate)
+        preCommitText = selected.text
+        showCandidates = emptyList()
+        associationRimeIndexes = emptyList()
     }
 
     fun reset() {
@@ -131,6 +132,7 @@ object RimeEngine {
         pinyins = emptyArray()
         showComposition = ""
         preCommitText = ""
+        associationRimeIndexes = emptyList()
         keyRecordStack.clear()
         Rime.clearComposition()
         if(charCase == KeyEvent.META_SHIFT_ON) charCase = MASK_CASE_LOWER

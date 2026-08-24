@@ -3,6 +3,9 @@
 local.properties
 .DS_Store
 build/
+# Rime 的预编译词典目录名固定为 build，属于应用资源，不能忽略。
+!yuyansdk/src/main/assets/rime/build/
+!yuyansdk/src/main/assets/rime/build/**
 captures/
 .externalNativeBuild
 .idea/
