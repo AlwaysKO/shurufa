@@ -2,17 +2,15 @@ package com.yuyan.imemodule.data.collect
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.os.Build
 import androidx.preference.PreferenceManager
+import com.yuyan.imemodule.BuildConfig
 
 /**
- * 服务端地址配置：设置页自定义（key=server_url）优先，否则按运行环境自动选择。
- * 模拟器（AVD）：10.0.2.2 直通宿主机 Windows → WSL2 localhost 转发 → 后端，零配置。
- * 真机：需在设置页填写 WSL 局域网 IP（hostname -I 查询）。
+ * Debug 包默认通过 adb reverse 访问本机，也允许设置页覆盖。
+ * Release 包固定使用线上 API，并忽略设置页中的本地地址，避免环境混用。
  */
 object ServerConfig {
 
-    private const val DEFAULT_PORT = 3000
     private const val KEY_SERVER_URL = "server_url"
 
     @Volatile
@@ -25,13 +23,18 @@ object ServerConfig {
     }
 
     val baseUrl: String
-        get() = prefs?.getString(KEY_SERVER_URL, null)?.takeIf { it.isNotBlank() } ?: autoBaseUrl()
+        get() = resolveServerBaseUrl(
+            buildUrl = BuildConfig.COLLECTOR_API_BASE_URL,
+            allowOverride = BuildConfig.ALLOW_SERVER_URL_OVERRIDE,
+            configuredUrl = prefs?.getString(KEY_SERVER_URL, null),
+        )
+}
 
-    private fun autoBaseUrl(): String {
-        val isEmulator = Build.FINGERPRINT.contains("generic")
-            || Build.MODEL.contains("Emulator")
-            || Build.MODEL.contains("Android SDK built for")
-        val host = if (isEmulator) "10.0.2.2" else "192.168.1.100" // 真机默认占位，请在设置页配置
-        return "http://$host:$DEFAULT_PORT"
-    }
+internal fun resolveServerBaseUrl(
+    buildUrl: String,
+    allowOverride: Boolean,
+    configuredUrl: String?,
+): String {
+    val selected = if (allowOverride) configuredUrl?.takeIf { it.isNotBlank() } ?: buildUrl else buildUrl
+    return selected.trim().trimEnd('/')
 }

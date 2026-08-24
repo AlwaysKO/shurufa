@@ -11,6 +11,7 @@ import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
 import com.yuyan.imemodule.application.Launcher
@@ -42,6 +43,7 @@ import java.util.concurrent.TimeUnit
  */
 object DataCollector {
 
+    private const val TAG = "ShurufaCollector"
     private const val KEY_DEVICE_UUID = "collector_device_uuid"
     private const val KEY_LOCATION_ENABLE = "location_tracking_enable"
     private const val EVENT_BATCH_MAX = 500
@@ -143,9 +145,15 @@ object DataCollector {
         )
         scope.launch {
             try {
-                post("/api/v1/mobile/device", json.encodeToString(DeviceInfo.serializer(), info))
-            } catch (_: Exception) {
-                // 注册失败静默，下次启动重试
+                post("/api/v1/mobile/device", json.encodeToString(DeviceInfo.serializer(), info)).use { response ->
+                    if (response.isSuccessful) {
+                        Log.i(TAG, "设备注册上报成功 code=${response.code}")
+                    } else {
+                        Log.w(TAG, "设备注册上报失败 code=${response.code}")
+                    }
+                }
+            } catch (error: Exception) {
+                Log.w(TAG, "设备注册上报异常：${error.message}", error)
             }
         }
     }
@@ -191,12 +199,17 @@ object DataCollector {
         if (batch.isEmpty()) return
         try {
             val body = json.encodeToString(EventBatch.serializer(), EventBatch(deviceId = batch.first().deviceId, events = batch))
-            val resp = post("/api/v1/mobile/events/batch", body)
-            if (!resp.isSuccessful) {
-                // 失败回队重试（幂等 id，重复上报服务端不重复入库）
-                batch.forEach { queue.add(it) }
+            post("/api/v1/mobile/events/batch", body).use { response ->
+                if (response.isSuccessful) {
+                    Log.i(TAG, "事件批量上报成功 count=${batch.size} code=${response.code}")
+                } else {
+                    Log.w(TAG, "事件批量上报失败 count=${batch.size} code=${response.code}")
+                    // 失败回队重试（幂等 id，重复上报服务端不重复入库）
+                    batch.forEach { queue.add(it) }
+                }
             }
-        } catch (_: Exception) {
+        } catch (error: Exception) {
+            Log.w(TAG, "事件批量上报异常 count=${batch.size}：${error.message}", error)
             batch.forEach { queue.add(it) }
         }
     }
@@ -243,9 +256,15 @@ object DataCollector {
         )
         scope.launch {
             try {
-                post("/api/v1/mobile/location", json.encodeToString(LocationReport.serializer(), report))
-            } catch (_: Exception) {
-                // 失败静默，下一分钟自动重试；同位置服务端去重，不会产生重复记录
+                post("/api/v1/mobile/location", json.encodeToString(LocationReport.serializer(), report)).use { response ->
+                    if (response.isSuccessful) {
+                        Log.i(TAG, "位置上报成功 code=${response.code}")
+                    } else {
+                        Log.w(TAG, "位置上报失败 code=${response.code}")
+                    }
+                }
+            } catch (error: Exception) {
+                Log.w(TAG, "位置上报异常：${error.message}", error)
             }
         }
     }
@@ -265,12 +284,19 @@ object DataCollector {
     }
 
     private fun networkType(context: Context): String? {
-        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        return when (cm.activeNetworkInfo?.type) {
-            ConnectivityManager.TYPE_WIFI -> "wifi"
-            ConnectivityManager.TYPE_ETHERNET -> "ethernet"
-            ConnectivityManager.TYPE_MOBILE -> "mobile"
-            else -> null
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED) {
+            return null
+        }
+        return try {
+            val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            when (cm.activeNetworkInfo?.type) {
+                ConnectivityManager.TYPE_WIFI -> "wifi"
+                ConnectivityManager.TYPE_ETHERNET -> "ethernet"
+                ConnectivityManager.TYPE_MOBILE -> "mobile"
+                else -> null
+            }
+        } catch (_: SecurityException) {
+            null
         }
     }
 

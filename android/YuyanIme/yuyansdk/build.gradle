@@ -59,12 +59,16 @@ android {
 
     buildTypes {
         release {
+            buildConfigField "String", "COLLECTOR_API_BASE_URL", '"https://myapi.dog8ball.com"'
+            buildConfigField "boolean", "ALLOW_SERVER_URL_OVERRIDE", "false"
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard.cfg'
             resValue("string", "app_name", "@string/ime_yuyan_name")
             resValue("drawable", "app_icon", "@drawable/ic_sdk_launcher")
         }
         debug {
+            buildConfigField "String", "COLLECTOR_API_BASE_URL", '"http://127.0.0.1:3000"'
+            buildConfigField "boolean", "ALLOW_SERVER_URL_OVERRIDE", "true"
             resValue("string", "app_name", "@string/ime_yuyan_name_debug")
             resValue("drawable", "app_icon", "@drawable/ic_sdk_launcher_debug")
         }

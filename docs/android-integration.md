@@ -10,7 +10,7 @@
 | 文件 | 职责 |
 |------|------|
 | `data/collect/DataCollector.kt` | 设备注册、事件队列批量上报（30s/500条）、位置采集（每分钟） |
-| `data/collect/ServerConfig.kt` | Base URL 自动选择（模拟器 10.0.2.2 / 真机设置项） |
+| `data/collect/ServerConfig.kt` | Debug/Release API 地址强隔离，Debug 可由设置项覆盖 |
 | `service/ImeService.kt`（埋点） | `commitText` 上屏、`deleteSurroundingText` 删除、位置权限请求、语音输入（`startVoiceInput`） |
 | `service/ClipboardHelper.kt`（埋点） | 剪贴板变化（复制）上报 |
 | `application/Launcher.kt` | 启动时初始化采集（子线程） |
@@ -25,7 +25,7 @@
 
 配置项（设置路径：**设置 → 其他**，已接入 UI）：
 
-- `server_url`：「服务器地址」输入项，留空 = 自动选择（模拟器 10.0.2.2）；真机在此填写 WSL 局域网 IP
+- `server_url`：「服务器地址」输入项，仅 Debug 包生效；留空时通过 USB `adb reverse` 访问本机
 - `location_tracking_enable`：「位置采集」开关，默认 `true`，关闭立即停止定位监听
 
 ---
@@ -79,7 +79,8 @@ adb install app/build/outputs/apk/offline/debug/yuyanIme_*_debug.apk
 | GET | `/api/v1/dashboard/chat/conversations` | 查询聊天会话列表 |
 | GET | `/api/v1/dashboard/chat/conversations/:id/messages` | 分页查询会话消息 |
 
-- Base URL（开发）：`http://<WSL 宿主机 IP>:3000`（真机访问 WSL 需用局域网 IP，见第 6 节）
+- Base URL（Debug）：`http://127.0.0.1:3000`（由 `adb reverse` 转发到电脑，见第 6 节）
+- Base URL（Release）：`https://myapi.dog8ball.com`（设置页无法覆盖，防止误连本地）
 - 服务端按固定 `user_id` 归属数据（当前单用户），无需鉴权
 
 ## 3. 第一步：添加网络依赖
@@ -174,35 +175,37 @@ implementation 'com.squareup.okhttp3:okhttp:4.12.0'
 - `package_name` / `editor_id`：`EditorInfo.packageName` / `editorInfo.privateImeOptions`（或自定 editor 标识）
 - `source`：`candidate`（候选）/ `key`（按键）/ `symbol`（符号）/ `clipboard`（剪贴板）/ `voice`
 
-## 6. 网络配置（Base URL 设计）
+## 6. 网络与环境配置
 
-WSL 中运行后端时，手机无法访问 `localhost`。Base URL 按「设置页自定义 → 环境自动选择」两级设计：
+API 地址由构建类型隔离：
 
-```kotlin
-// DataCollector.kt（或独立 ServerConfig.kt）
-object ServerConfig {
-    const val DEFAULT_PORT = 3000
+| Android 包 | 默认 API | 设置页覆盖 |
+|---|---|---|
+| `offlineDebug` | `http://127.0.0.1:3000` | 允许 |
+| `offlineRelease` | `https://myapi.dog8ball.com` | 禁止 |
 
-    /** 服务端地址：设置页自定义优先，否则按运行环境自动选择 */
-    val baseUrl: String by lazy {
-        prefs.getString("server_url", null) ?: autoBaseUrl()
-    }
+本地真机通过 USB 反向代理访问电脑，不再依赖会变化的 WSL 局域网 IP：
 
-    private fun autoBaseUrl(): String {
-        // 模拟器（AVD）：10.0.2.2 直通宿主机 Windows → WSL2 localhost 自动转发 → 后端
-        val isEmulator = Build.FINGERPRINT.contains("generic")
-            || Build.MODEL.contains("Emulator")
-            || Build.MODEL.contains("Android SDK built for")
-        return if (isEmulator) "http://10.0.2.2:$DEFAULT_PORT"
-        else "http://<WSL局域网IP>:$DEFAULT_PORT"  // 真机：见下
-    }
-}
+```bash
+cd /home/ko/project/shurufa
+./start.sh local
+
+# start.sh 会自动尝试执行；也可手动执行
+~/android-tools/sdk/platform-tools/adb reverse tcp:3000 tcp:3000
 ```
 
-- **模拟器调试**：`10.0.2.2` = 宿主机 Windows 的 loopback，WSL2 默认 localhost 转发会把 `Windows:3000` 转给 `WSL:3000`，**无需任何配置**
-- **真机调试**：手机与电脑同一 Wi-Fi，用 WSL 局域网 IP（`hostname -I` 查询），默认值建议在设置页填写后持久化
-- 建议在设置页新增「服务器地址」输入项（默认留空 = 自动选择），方便日后切换正式环境
-- 服务端已启用 CORS 与 `trust proxy`，事件中的客户端 IP 取自 `X-Forwarded-For`（经反代时）或 socket 地址
+如果 USB 设备由 Windows 管理，可在 `.env.local` 设置 Windows `adb.exe` 路径。`start.sh` 会自动启动仅监听 `127.0.0.1:3001` 的 Windows 中继，再建立“手机 3000 → Windows 3001 → WSL 3000”通道；不需要把 API 暴露到局域网。本机 Platform Tools 37 与部分手机配合时还需 `ADB_USB_LEGACY=1`。
+
+先确认 `adb devices -l` 中手机状态为 `device`；如果为空或为 `unauthorized`，需要先让 WSL 的 ADB 能识别手机并在手机上允许 USB 调试。也可以使用 Android 的无线调试，让该 ADB 连接手机后再执行 reverse。
+
+查看链路状态和实时上报日志：
+
+```bash
+./scripts/report-status.sh local
+./scripts/watch-reporting.sh
+```
+
+正常日志包含 `设备注册上报成功`，实际输入后最多约 30 秒出现 `事件批量上报成功 count=... code=200`。日志不会打印输入正文或坐标。服务端已启用 CORS 与 `trust proxy`，反向代理后的客户端 IP 从 `X-Forwarded-For` 获取。
 
 ## 7. 位置采集
 
