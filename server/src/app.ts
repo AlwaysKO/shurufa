@@ -10,6 +10,8 @@ import { createMobileStickerRouter, createDashboardStickerRouter } from './api/s
 import { createMobilePhraseRouter, createDashboardPhraseRouter } from './api/userPhrases.js';
 import { createMobileChatCaptureRouter } from './api/chatCapture.js';
 import { createChatDashboardRouter } from './api/chatDashboard.js';
+import { createMobileRelationshipsRouter } from './api/mobileRelationships.js';
+import { createRelationshipDashboardRouter } from './api/relationshipDashboard.js';
 
 export function createApp(pool: pg.Pool): express.Express {
   const app = express();
@@ -31,12 +33,14 @@ export function createApp(pool: pg.Pool): express.Express {
   app.use('/api/v1/mobile', createMobileStickerRouter(pool));
   app.use('/api/v1/mobile', createMobilePhraseRouter(pool));
   app.use('/api/v1/mobile/chat', createMobileChatCaptureRouter(pool));
+  app.use('/api/v1/mobile/relationships', createMobileRelationshipsRouter(pool));
 
   // Dashboard API
   app.use('/api/v1/dashboard', createDashboardRouter(pool));
   app.use('/api/v1/dashboard', createDashboardStickerRouter(pool));
   app.use('/api/v1/dashboard', createDashboardPhraseRouter(pool));
   app.use('/api/v1/dashboard/chat', createChatDashboardRouter(pool));
+  app.use('/api/v1/dashboard/relationships', createRelationshipDashboardRouter(pool));
 
   // 统一错误处理
   app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
