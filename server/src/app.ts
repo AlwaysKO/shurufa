@@ -12,6 +12,11 @@ import { createMobileChatCaptureRouter } from './api/chatCapture.js';
 import { createChatDashboardRouter } from './api/chatDashboard.js';
 import { createMobileRelationshipsRouter } from './api/mobileRelationships.js';
 import { createRelationshipDashboardRouter } from './api/relationshipDashboard.js';
+import {
+  createMobileExpressionRouter,
+  expressionAssetRoot,
+  requireExpressionAssetIdentity,
+} from './api/expressions.js';
 
 export function createApp(pool: pg.Pool): express.Express {
   const app = express();
@@ -26,6 +31,11 @@ export function createApp(pool: pg.Pool): express.Express {
   // 表情包图片静态目录（server/uploads/stickers）
   const stickerDir = join(process.cwd(), 'uploads', 'stickers');
   mkdirSync(stickerDir, { recursive: true });
+  app.use(
+    '/uploads/expression',
+    requireExpressionAssetIdentity,
+    express.static(expressionAssetRoot()),
+  );
   app.use('/uploads', express.static(join(process.cwd(), 'uploads')));
 
   // 输入法端 API
@@ -34,6 +44,7 @@ export function createApp(pool: pg.Pool): express.Express {
   app.use('/api/v1/mobile', createMobilePhraseRouter(pool));
   app.use('/api/v1/mobile/chat', createMobileChatCaptureRouter(pool));
   app.use('/api/v1/mobile/relationships', createMobileRelationshipsRouter(pool));
+  app.use('/api/v1/mobile/expressions', createMobileExpressionRouter(pool));
 
   // Dashboard API
   app.use('/api/v1/dashboard', createDashboardRouter(pool));
