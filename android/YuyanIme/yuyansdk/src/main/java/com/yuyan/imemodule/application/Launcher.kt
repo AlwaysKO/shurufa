@@ -12,6 +12,7 @@ import com.yuyan.imemodule.data.theme.ThemeManager
 import com.yuyan.imemodule.data.theme.ThemeManager.prefs
 import com.yuyan.imemodule.database.DataBaseKT
 import com.yuyan.imemodule.prefs.AppPrefs
+import com.yuyan.imemodule.prefs.SogouT9PreferenceMigration
 import com.yuyan.imemodule.service.ClipboardHelper
 import com.yuyan.imemodule.utils.AssetUtils.copyFileOrDir
 import com.yuyan.imemodule.utils.thread.ThreadPoolUtils
@@ -28,7 +29,9 @@ class Launcher {
     }
 
     private fun currentInit() {
-        AppPrefs.init(PreferenceManager.getDefaultSharedPreferences(context))
+        val preferences = PreferenceManager.getDefaultSharedPreferences(context)
+        SogouT9PreferenceMigration.migrate(preferences)
+        AppPrefs.init(preferences)
         ThemeManager.init(context.resources.configuration)
         DataBaseKT.instance.sideSymbolDao().getAllSideSymbolPinyin()  //操作一次查询，提前创建数据库，避免使用时才创建数据库
         ClipboardHelper.init()

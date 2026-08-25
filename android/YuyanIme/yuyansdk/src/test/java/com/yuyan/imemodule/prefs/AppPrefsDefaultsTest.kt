@@ -3,6 +3,7 @@ package com.yuyan.imemodule.prefs
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.yuyan.imemodule.application.Launcher
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Before
 import org.junit.Test
@@ -28,5 +29,15 @@ class AppPrefsDefaultsTest {
         preferences.edit().clear().commit()
 
         assertFalse(AppPrefs(preferences).internal.fullDisplayKeyboardEnable.getValue())
+    }
+
+    @Test
+    fun sogouT9DimensionsAreTheDefaults() {
+        val preferences = context.getSharedPreferences("sogou-layout-defaults-test", Context.MODE_PRIVATE)
+        preferences.edit().clear().commit()
+        val appPrefs = AppPrefs(preferences)
+
+        assertEquals(0.278f, appPrefs.internal.keyboardHeightRatio.getValue(), 0.0001f)
+        assertEquals(45, appPrefs.keyboardSetting.candidateTextSize.getValue())
     }
 }

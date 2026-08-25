@@ -17,6 +17,7 @@ import com.yuyan.imemodule.prefs.behavior.FullDisplayKeyMode
 import com.yuyan.imemodule.prefs.behavior.HalfWidthSymbolsMode
 import com.yuyan.imemodule.prefs.behavior.KeyboardOneHandedMod
 import com.yuyan.imemodule.utils.DevicesUtils
+import com.yuyan.imemodule.keyboard.SogouT9Layout
 
 
 class AppPrefs(private val sharedPreferences: SharedPreferences) {
@@ -26,7 +27,7 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
         val inputDefaultMode = int("input_default_method_mode", InputModeSwitcher.MODE_T9_CHINESE)   //默认输入法类型
         val inputMethodPinyinMode = int("input_method_pinyin_mode", InputModeSwitcher.MODE_T9_CHINESE)  // 保存中文输入法类型
         val dataDictVersion = int("rime_dict_data_version", 0)  //缓存rime词库版本号,用于校验是否覆盖词库文件
-        val keyboardHeightRatio = float("keyboard_height_ratio", 0.3f)     //键盘高度比例
+        val keyboardHeightRatio = float("keyboard_height_ratio", SogouT9Layout.KEYBOARD_HEIGHT_RATIO)     //键盘高度比例
         val keyboardHeightRatioLandscape = float("keyboard_height_ratio_landscape", 0.5f)     //键盘高度比例:横屏
         val candidatesHeightRatio = float("candidates_height_ratio", 0.035f)     //候选词栏高度比例
         val candidatesHeightRatioLandscape = float("candidates_height_ratio_landscape", 0.06f)     //候选词栏高度比例:横屏
@@ -120,7 +121,7 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
         val candidateTextSize = int(
             R.string.candidate_size_input_setting,
             "candidate_size",
-            55,
+            SogouT9Layout.CANDIDATE_TEXT_SIZE_PERCENT,
             25,
             100,
             "%",
