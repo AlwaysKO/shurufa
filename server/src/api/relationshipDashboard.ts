@@ -3,7 +3,12 @@ import type pg from 'pg';
 import {
   validateRelationshipCandidateQuery,
   validateRelationshipProfileInput,
+  validateStickerCandidateQuery,
 } from '../domain/relationshipValidation.js';
+import {
+  getRecentIncomingStickerAssets,
+  getStickerCounterattackCandidates,
+} from '../relationship/stickerCounterattack.js';
 import { getZeroTokenCandidates } from '../relationship/zeroTokenCandidates.js';
 import type { RelationshipConversationIdentity } from '../types/relationship.js';
 
@@ -167,6 +172,78 @@ export function createRelationshipDashboardRouter(pool: pg.Pool): Router {
         DEFAULT_USER_ID,
         query.identity,
         query.contextText,
+        query.limit,
+      );
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.get('/:conversation_id/incoming-sticker-assets', async (req, res, next) => {
+    try {
+      const id = conversationId(req.params.conversation_id);
+      if (id === null) return res.status(400).json({ error: 'conversation_id is invalid' });
+      const conversation = await pool.query<RelationshipConversationIdentity>(
+        `SELECT platform, account_key, external_key
+         FROM chat_conversation
+         WHERE id = $1 AND user_id = $2`,
+        [id, DEFAULT_USER_ID],
+      );
+      if (conversation.rowCount === 0) {
+        return res.status(404).json({ error: 'conversation not found' });
+      }
+      let query;
+      try {
+        query = validateStickerCandidateQuery({
+          ...conversation.rows[0],
+          limit: req.query.limit === undefined ? undefined : Number(req.query.limit),
+        });
+      } catch (error) {
+        return res.status(400).json({ error: validationMessage(error) });
+      }
+      const assets = await getRecentIncomingStickerAssets(
+        pool,
+        DEFAULT_USER_ID,
+        id,
+        query.limit,
+      );
+      res.json({ assets });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.get('/:conversation_id/sticker-candidates', async (req, res, next) => {
+    try {
+      const id = conversationId(req.params.conversation_id);
+      if (id === null) return res.status(400).json({ error: 'conversation_id is invalid' });
+      const conversation = await pool.query<RelationshipConversationIdentity>(
+        `SELECT platform, account_key, external_key
+         FROM chat_conversation
+         WHERE id = $1 AND user_id = $2`,
+        [id, DEFAULT_USER_ID],
+      );
+      if (conversation.rowCount === 0) {
+        return res.status(404).json({ error: 'conversation not found' });
+      }
+      let query;
+      try {
+        query = validateStickerCandidateQuery({
+          ...conversation.rows[0],
+          incoming_asset_sha256: req.query.incoming_asset_sha256 === undefined
+            ? undefined
+            : String(req.query.incoming_asset_sha256),
+          limit: req.query.limit === undefined ? undefined : Number(req.query.limit),
+        });
+      } catch (error) {
+        return res.status(400).json({ error: validationMessage(error) });
+      }
+      const result = await getStickerCounterattackCandidates(
+        pool,
+        DEFAULT_USER_ID,
+        query.identity,
+        query.incomingAssetSha256,
         query.limit,
       );
       res.json(result);
