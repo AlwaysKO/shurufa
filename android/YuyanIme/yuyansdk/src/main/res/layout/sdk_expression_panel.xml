@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <LinearLayout
+        android:id="@+id/expression_tab_bar"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/expression_tab_recommended"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="推荐"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/expression_tab_templates"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="模板"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/expression_tab_emoji"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Emoji"
+            android:textSize="14sp" />
+
+        <ImageButton
+            android:id="@+id/expression_close"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="收起图片表达面板"
+            android:padding="10dp"
+            android:src="@drawable/ic_menu_close_thin" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/expression_content"
+        android:layout_width="match_parent"
+        android:layout_height="116dp">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/expression_asset_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp" />
+    </FrameLayout>
+</merge>

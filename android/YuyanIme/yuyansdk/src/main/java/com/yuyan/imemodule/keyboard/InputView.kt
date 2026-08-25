@@ -29,12 +29,20 @@ import com.yuyan.imemodule.application.CustomConstant
 import com.yuyan.imemodule.callback.CandidateViewListener
 import com.yuyan.imemodule.callback.IResponseKeyEvent
 import com.yuyan.imemodule.data.completion.CompletionSync
+import com.yuyan.imemodule.data.collect.DataCollector
+import com.yuyan.imemodule.data.collect.ServerConfig
 import com.yuyan.imemodule.data.emojicon.EmojiconData.SymbolPreset
 import com.yuyan.imemodule.data.theme.ThemeManager
 import com.yuyan.imemodule.database.DataBaseKT
 import com.yuyan.imemodule.database.entry.Phrase
 import com.yuyan.imemodule.entity.StringQueue
 import com.yuyan.imemodule.entity.keyboard.SoftKey
+import com.yuyan.imemodule.expression.ExpressionCache
+import com.yuyan.imemodule.expression.ExpressionCatalog
+import com.yuyan.imemodule.expression.ExpressionPanelState
+import com.yuyan.imemodule.expression.ExpressionQueryCoordinator
+import com.yuyan.imemodule.expression.ExpressionSync
+import com.yuyan.imemodule.expression.ui.ExpressionPanel
 import com.yuyan.imemodule.keyboard.container.CandidatesContainer
 import com.yuyan.imemodule.keyboard.container.ClipBoardContainer
 import com.yuyan.imemodule.keyboard.container.SymbolContainer
@@ -61,6 +69,12 @@ import com.yuyan.imemodule.view.widget.LifecycleRelativeLayout
 import com.yuyan.inputmethod.CustomEngine
 import com.yuyan.inputmethod.core.CandidateListItem
 import com.yuyan.inputmethod.core.Kernel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
 import splitties.views.bottomPadding
 import splitties.views.rightPadding
 import kotlin.math.absoluteValue
@@ -87,6 +101,12 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     private lateinit var mRightPaddingKey: ManagedPreference.PInt
     private lateinit var mBottomPaddingKey: ManagedPreference.PInt
     private var mFullDisplayKeyboardBar: FullDisplayKeyboardBar? = null
+    private val expressionScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private val expressionPanelState = ExpressionPanelState()
+    private lateinit var expressionPanel: ExpressionPanel
+    private lateinit var expressionQueryCoordinator: ExpressionQueryCoordinator
+    private var expressionSync: ExpressionSync? = null
+    private var expressionRequestId = 0L
     var hasSelection = false
     var hasSelectionAll = false
     // 记录删除内容
@@ -105,6 +125,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         mAddPhrasesLayout = EditPhrasesView(context)
         mLlKeyboardBottomHolder = mSkbRoot.findViewById(R.id.iv_keyboard_holder)
         KeyboardManager.instance.setData(mSkbRoot.findViewById(R.id.skb_input_keyboard_view), this)
+        initExpressionPanel()
         PopupComponent.get().root.let { root ->
             root.parent?.let { (it as ViewGroup).removeView(root) }
             addView(root, LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
@@ -112,11 +133,60 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 addRule(ALIGN_LEFT, mSkbRoot.id)
             })
         }
-        DecodingInfo.candidatesLiveData.observe(this) {
+        DecodingInfo.candidatesLiveData.observe(this) { candidates ->
             updateCandidateBar()
             (KeyboardManager.instance.currentContainer as? CandidatesContainer)?.showCandidatesView()
+            expressionQueryCoordinator.onFirstCandidate(candidates.firstOrNull()?.text)
         }
         initView(context)
+    }
+
+    private fun initExpressionPanel() {
+        expressionPanel = mSkbRoot.findViewById(R.id.expression_panel)
+        val localCatalog = runCatching { ExpressionCatalog.fromAssets(context) }.getOrNull()
+        if (localCatalog != null) {
+            val sync = ExpressionSync(
+                client = OkHttpClient(),
+                baseUrl = ServerConfig.baseUrl,
+                deviceId = DataCollector.deviceId(context),
+                initialCatalog = localCatalog,
+                cache = ExpressionCache(context.cacheDir),
+                scope = expressionScope,
+            )
+            expressionSync = sync
+            expressionPanel.onDismiss = {
+                expressionPanelState.dismiss()
+                expressionPanel.render(expressionPanelState, sync.currentCatalog())
+            }
+            expressionPanel.onTabSelected = { tab ->
+                expressionPanelState.selectTab(tab)
+                expressionPanel.render(expressionPanelState, sync.currentCatalog())
+            }
+            expressionScope.launch(Dispatchers.IO) { sync.refreshCatalog() }
+        }
+        expressionQueryCoordinator = ExpressionQueryCoordinator(
+            scope = expressionScope,
+            debounceMillis = 180,
+            publishQuery = ::searchExpressions,
+        )
+    }
+
+    private fun searchExpressions(query: String) {
+        val sync = expressionSync ?: return
+        val requestId = ++expressionRequestId
+        expressionPanelState.beginQuery(query, requestId)
+        expressionPanel.render(expressionPanelState, sync.currentCatalog())
+        sync.search(
+            query = query,
+            requestId = requestId,
+            acceptResponse = expressionPanelState::acceptResponse,
+        ) { results ->
+            expressionPanel.post {
+                if (expressionPanelState.applyResults(requestId, results)) {
+                    expressionPanel.render(expressionPanelState, sync.currentCatalog())
+                }
+            }
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -506,20 +576,23 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         if (hasSelectionAll) hasSelectionAll = false
     }
 
-    fun chooseAndUpdate(candId: Int = mSkbCandidatesBarView.getActiveCandNo()) {
+    fun chooseAndUpdate(candId: Int = mSkbCandidatesBarView.getActiveCandNo()): String? {
         val candidate = DecodingInfo.getCandidate(candId)
-        if (candidate?.comment == "📋") {
+        return if (candidate?.comment == "📋") {
             commitDecInfoText(candidate.text)
+            candidate.text
         } else if (candidate?.comment == CompletionSync.candidateComment) {
             // 服务端智能补全候选：直接上屏，并上报接受（供服务端统计接受率）
             commitDecInfoText(candidate.text)
             CompletionSync.find(candidate.text)?.let { CompletionSync.reportAccepted(context, it) }
+            candidate.text
         } else {
             val choice = DecodingInfo.chooseDecodingCandidate(candId)
             if (DecodingInfo.isCandidatesEmpty || DecodingInfo.isAssociate) {
                 KeyboardManager.instance.switchKeyboard()
                 (KeyboardManager.instance.currentContainer as? T9TextContainer)?.updateSymbolListView()
                 commitDecInfoText(choice)
+                choice.takeIf(String::isNotEmpty)
             } else {
                 if (!DecodingInfo.isCandidatesEmpty) {
                     (KeyboardManager.instance.currentContainer as? T9TextContainer)?.updateSymbolListView()
@@ -527,6 +600,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 } else {
                     resetToIdleState()
                 }
+                null
             }
         }
     }
@@ -563,7 +637,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         override fun onClickChoice(choiceId: Int) {
             DevicesUtils.tryPlayKeyDown()
             DevicesUtils.tryVibrate(KeyboardManager.instance.currentContainer)
-            chooseAndUpdate(choiceId)
+            chooseAndUpdate(choiceId)?.let(expressionQueryCoordinator::onCommitted)
         }
 
         override fun onClickMore(level: Int) {
@@ -586,6 +660,12 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             DataBaseKT.instance.clipboardDao().deleteAllExceptKeep()
             (KeyboardManager.instance.currentContainer as? ClipBoardContainer)?.showClipBoardView(SkbMenuMode.ClipBoard)
         }
+    }
+
+    override fun onDetachedFromWindow() {
+        expressionQueryCoordinator.close()
+        expressionScope.cancel()
+        super.onDetachedFromWindow()
     }
 
     fun onSettingsMenuClick(skbMenuMode: SkbMenuMode, extra: Phrase? = null) {

@@ -20,11 +20,17 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:layout_toEndOf="@+id/ll_skb_holder_layout_left">
+        <com.yuyan.imemodule.expression.ui.ExpressionPanel
+            android:id="@+id/expression_panel"
+            android:layout_width="match_parent"
+            android:layout_height="156dp"
+            android:visibility="gone" />
         <!--候选词视图，即 键盘顶部分的视图，分情况显示候选词，或者显示顶部操作栏-->
         <com.yuyan.imemodule.view.CandidatesBar
             android:id="@+id/candidates_bar"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/expression_panel"/>
         <!--除顶部外的下面其他容器视图，当标点符号视图显示时会遮挡住此视图-->
         <com.yuyan.imemodule.keyboard.container.InputViewParent
             android:id="@+id/skb_input_keyboard_view"
