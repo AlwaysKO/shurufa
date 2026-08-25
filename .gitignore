@@ -12,6 +12,7 @@ build/
 .env.*
 !.env.*.example
 .runtime/
+assets/expression/contact-sheets/*.draft.png
 
 # IDE
 .idea/

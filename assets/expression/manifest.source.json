@@ -1,0 +1,2003 @@
+{
+  "version": "2026.08.25.1",
+  "expectedCounts": {
+    "templates": 60,
+    "animatedTemplates": 20,
+    "emojiBases": 48
+  },
+  "builtInTemplateIds": [
+    "tpl-01",
+    "tpl-02",
+    "tpl-03",
+    "tpl-04",
+    "tpl-05",
+    "tpl-06",
+    "tpl-07",
+    "tpl-08",
+    "tpl-09",
+    "tpl-10",
+    "tpl-11",
+    "tpl-12"
+  ],
+  "highFrequencyCombinations": [
+    "happy__happy",
+    "happy__laugh",
+    "laugh__laugh",
+    "laugh__wink",
+    "wink__wink",
+    "wink__love",
+    "love__love",
+    "love__proud",
+    "proud__proud",
+    "proud__excited",
+    "excited__excited",
+    "excited__calm",
+    "calm__calm",
+    "calm__relieved",
+    "relieved__relieved",
+    "relieved__surprised",
+    "surprised__surprised",
+    "surprised__shocked",
+    "shocked__shocked",
+    "shocked__confused",
+    "confused__confused",
+    "confused__skeptical",
+    "skeptical__skeptical",
+    "skeptical__speechless",
+    "speechless__speechless",
+    "speechless__embarrassed",
+    "embarrassed__embarrassed",
+    "embarrassed__shy",
+    "shy__shy",
+    "shy__pleading",
+    "pleading__pleading"
+  ],
+  "templates": [
+    {
+      "id": "tpl-01",
+      "type": "gif",
+      "source": "templates/tpl-01.png",
+      "keywords": [
+        "开心庆祝"
+      ],
+      "emotions": [
+        "happy"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-02",
+      "type": "gif",
+      "source": "templates/tpl-02.png",
+      "keywords": [
+        "感谢夸奖"
+      ],
+      "emotions": [
+        "happy"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-03",
+      "type": "gif",
+      "source": "templates/tpl-03.png",
+      "keywords": [
+        "加油打气"
+      ],
+      "emotions": [
+        "encourage"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-04",
+      "type": "gif",
+      "source": "templates/tpl-04.png",
+      "keywords": [
+        "胜利成功"
+      ],
+      "emotions": [
+        "proud"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-05",
+      "type": "gif",
+      "source": "templates/tpl-05.png",
+      "keywords": [
+        "幸运惊喜"
+      ],
+      "emotions": [
+        "surprised"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-06",
+      "type": "gif",
+      "source": "templates/tpl-06.png",
+      "keywords": [
+        "同意点赞"
+      ],
+      "emotions": [
+        "approve"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-07",
+      "type": "gif",
+      "source": "templates/tpl-07.png",
+      "keywords": [
+        "开心跳舞"
+      ],
+      "emotions": [
+        "happy"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-08",
+      "type": "gif",
+      "source": "templates/tpl-08.png",
+      "keywords": [
+        "暖心感谢"
+      ],
+      "emotions": [
+        "grateful"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-09",
+      "type": "gif",
+      "source": "templates/tpl-09.png",
+      "keywords": [
+        "默契击掌"
+      ],
+      "emotions": [
+        "happy"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-10",
+      "type": "gif",
+      "source": "templates/tpl-10.png",
+      "keywords": [
+        "派对庆祝"
+      ],
+      "emotions": [
+        "happy"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-11",
+      "type": "gif",
+      "source": "templates/tpl-11.png",
+      "keywords": [
+        "骄傲成就"
+      ],
+      "emotions": [
+        "proud"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-12",
+      "type": "gif",
+      "source": "templates/tpl-12.png",
+      "keywords": [
+        "期待兴奋"
+      ],
+      "emotions": [
+        "excited"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-13",
+      "type": "gif",
+      "source": "templates/tpl-13.png",
+      "keywords": [
+        "鼓励支持"
+      ],
+      "emotions": [
+        "encourage"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-14",
+      "type": "gif",
+      "source": "templates/tpl-14.png",
+      "keywords": [
+        "乐观阳光"
+      ],
+      "emotions": [
+        "happy"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-15",
+      "type": "gif",
+      "source": "templates/tpl-15.png",
+      "keywords": [
+        "鼓掌喝彩"
+      ],
+      "emotions": [
+        "praise"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-16",
+      "type": "gif",
+      "source": "templates/tpl-16.png",
+      "keywords": [
+        "大笑开心"
+      ],
+      "emotions": [
+        "happy"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-17",
+      "type": "gif",
+      "source": "templates/tpl-17.png",
+      "keywords": [
+        "尴尬无语"
+      ],
+      "emotions": [
+        "speechless"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-18",
+      "type": "gif",
+      "source": "templates/tpl-18.png",
+      "keywords": [
+        "怀疑斜眼"
+      ],
+      "emotions": [
+        "skeptical"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-19",
+      "type": "gif",
+      "source": "templates/tpl-19.png",
+      "keywords": [
+        "调侃嘲讽"
+      ],
+      "emotions": [
+        "tease"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-20",
+      "type": "gif",
+      "source": "templates/tpl-20.png",
+      "keywords": [
+        "捂脸无奈"
+      ],
+      "emotions": [
+        "speechless"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-21",
+      "type": "static",
+      "source": "templates/tpl-21.png",
+      "keywords": [
+        "疑惑不解"
+      ],
+      "emotions": [
+        "confused"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-22",
+      "type": "static",
+      "source": "templates/tpl-22.png",
+      "keywords": [
+        "疲惫叹气"
+      ],
+      "emotions": [
+        "tired"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-23",
+      "type": "static",
+      "source": "templates/tpl-23.png",
+      "keywords": [
+        "社死尴尬"
+      ],
+      "emotions": [
+        "embarrassed"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-24",
+      "type": "static",
+      "source": "templates/tpl-24.png",
+      "keywords": [
+        "嫌弃冷漠"
+      ],
+      "emotions": [
+        "annoyed"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-25",
+      "type": "static",
+      "source": "templates/tpl-25.png",
+      "keywords": [
+        "坏笑调皮"
+      ],
+      "emotions": [
+        "mischievous"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-26",
+      "type": "static",
+      "source": "templates/tpl-26.png",
+      "keywords": [
+        "阴阳鼓掌"
+      ],
+      "emotions": [
+        "tease"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-27",
+      "type": "static",
+      "source": "templates/tpl-27.png",
+      "keywords": [
+        "离谱震惊"
+      ],
+      "emotions": [
+        "surprised"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-28",
+      "type": "static",
+      "source": "templates/tpl-28.png",
+      "keywords": [
+        "无奈摊手"
+      ],
+      "emotions": [
+        "speechless"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-29",
+      "type": "static",
+      "source": "templates/tpl-29.png",
+      "keywords": [
+        "发呆走神"
+      ],
+      "emotions": [
+        "bored"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-30",
+      "type": "static",
+      "source": "templates/tpl-30.png",
+      "keywords": [
+        "尴尬难受"
+      ],
+      "emotions": [
+        "embarrassed"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-31",
+      "type": "static",
+      "source": "templates/tpl-31.png",
+      "keywords": [
+        "偷笑憋笑"
+      ],
+      "emotions": [
+        "mischievous"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-32",
+      "type": "static",
+      "source": "templates/tpl-32.png",
+      "keywords": [
+        "白眼嫌弃"
+      ],
+      "emotions": [
+        "annoyed"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-33",
+      "type": "static",
+      "source": "templates/tpl-33.png",
+      "keywords": [
+        "拒绝不要"
+      ],
+      "emotions": [
+        "refuse"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-34",
+      "type": "static",
+      "source": "templates/tpl-34.png",
+      "keywords": [
+        "生气抗议"
+      ],
+      "emotions": [
+        "angry"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-35",
+      "type": "static",
+      "source": "templates/tpl-35.png",
+      "keywords": [
+        "愤怒爆发"
+      ],
+      "emotions": [
+        "furious"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-36",
+      "type": "static",
+      "source": "templates/tpl-36.png",
+      "keywords": [
+        "警告注意"
+      ],
+      "emotions": [
+        "warning"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-37",
+      "type": "static",
+      "source": "templates/tpl-37.png",
+      "keywords": [
+        "停止别动"
+      ],
+      "emotions": [
+        "refuse"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-38",
+      "type": "static",
+      "source": "templates/tpl-38.png",
+      "keywords": [
+        "催促快点"
+      ],
+      "emotions": [
+        "urgent"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-39",
+      "type": "static",
+      "source": "templates/tpl-39.png",
+      "keywords": [
+        "截止时间"
+      ],
+      "emotions": [
+        "urgent"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-40",
+      "type": "static",
+      "source": "templates/tpl-40.png",
+      "keywords": [
+        "慌张着急"
+      ],
+      "emotions": [
+        "panic"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-41",
+      "type": "static",
+      "source": "templates/tpl-41.png",
+      "keywords": [
+        "震惊吓到"
+      ],
+      "emotions": [
+        "surprised"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-42",
+      "type": "static",
+      "source": "templates/tpl-42.png",
+      "keywords": [
+        "伤心哭泣"
+      ],
+      "emotions": [
+        "sad"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-43",
+      "type": "static",
+      "source": "templates/tpl-43.png",
+      "keywords": [
+        "道歉认错"
+      ],
+      "emotions": [
+        "sorry"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-44",
+      "type": "static",
+      "source": "templates/tpl-44.png",
+      "keywords": [
+        "愧疚后悔"
+      ],
+      "emotions": [
+        "sorry"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-45",
+      "type": "static",
+      "source": "templates/tpl-45.png",
+      "keywords": [
+        "失望孤单"
+      ],
+      "emotions": [
+        "disappointed"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-46",
+      "type": "static",
+      "source": "templates/tpl-46.png",
+      "keywords": [
+        "累瘫没电"
+      ],
+      "emotions": [
+        "exhausted"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-47",
+      "type": "static",
+      "source": "templates/tpl-47.png",
+      "keywords": [
+        "害怕发抖"
+      ],
+      "emotions": [
+        "afraid"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-48",
+      "type": "static",
+      "source": "templates/tpl-48.png",
+      "keywords": [
+        "坚定反击"
+      ],
+      "emotions": [
+        "determined"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-49",
+      "type": "static",
+      "source": "templates/tpl-49.png",
+      "keywords": [
+        "喜欢爱心"
+      ],
+      "emotions": [
+        "love"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-50",
+      "type": "static",
+      "source": "templates/tpl-50.png",
+      "keywords": [
+        "撒娇请求"
+      ],
+      "emotions": [
+        "pleading"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-51",
+      "type": "static",
+      "source": "templates/tpl-51.png",
+      "keywords": [
+        "调皮眨眼"
+      ],
+      "emotions": [
+        "mischievous"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-52",
+      "type": "static",
+      "source": "templates/tpl-52.png",
+      "keywords": [
+        "害羞告白"
+      ],
+      "emotions": [
+        "shy"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-53",
+      "type": "static",
+      "source": "templates/tpl-53.png",
+      "keywords": [
+        "耐心等待"
+      ],
+      "emotions": [
+        "waiting"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-54",
+      "type": "static",
+      "source": "templates/tpl-54.png",
+      "keywords": [
+        "等不及了"
+      ],
+      "emotions": [
+        "urgent"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-55",
+      "type": "static",
+      "source": "templates/tpl-55.png",
+      "keywords": [
+        "晚安睡觉"
+      ],
+      "emotions": [
+        "sleepy"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-56",
+      "type": "static",
+      "source": "templates/tpl-56.png",
+      "keywords": [
+        "早安活力"
+      ],
+      "emotions": [
+        "happy"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-57",
+      "type": "static",
+      "source": "templates/tpl-57.png",
+      "keywords": [
+        "想吃美食"
+      ],
+      "emotions": [
+        "hungry"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-58",
+      "type": "static",
+      "source": "templates/tpl-58.png",
+      "keywords": [
+        "拥抱安慰"
+      ],
+      "emotions": [
+        "love"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-59",
+      "type": "static",
+      "source": "templates/tpl-59.png",
+      "keywords": [
+        "挥手再见"
+      ],
+      "emotions": [
+        "goodbye"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-60",
+      "type": "static",
+      "source": "templates/tpl-60.png",
+      "keywords": [
+        "欢迎你好"
+      ],
+      "emotions": [
+        "hello"
+      ],
+      "textSafeArea": {
+        "x": 40,
+        "y": 20,
+        "width": 432,
+        "height": 170
+      },
+      "layout": {
+        "minFontSize": 24,
+        "maxFontSize": 52,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 3,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    }
+  ],
+  "emojiBases": [
+    {
+      "id": "happy",
+      "name": "开心",
+      "emotions": [
+        "happy"
+      ],
+      "source": "emoji-base/happy.png"
+    },
+    {
+      "id": "laugh",
+      "name": "大笑",
+      "emotions": [
+        "happy"
+      ],
+      "source": "emoji-base/laugh.png"
+    },
+    {
+      "id": "wink",
+      "name": "眨眼",
+      "emotions": [
+        "mischievous"
+      ],
+      "source": "emoji-base/wink.png"
+    },
+    {
+      "id": "love",
+      "name": "喜欢",
+      "emotions": [
+        "love"
+      ],
+      "source": "emoji-base/love.png"
+    },
+    {
+      "id": "proud",
+      "name": "骄傲",
+      "emotions": [
+        "proud"
+      ],
+      "source": "emoji-base/proud.png"
+    },
+    {
+      "id": "excited",
+      "name": "兴奋",
+      "emotions": [
+        "excited"
+      ],
+      "source": "emoji-base/excited.png"
+    },
+    {
+      "id": "calm",
+      "name": "平静",
+      "emotions": [
+        "calm"
+      ],
+      "source": "emoji-base/calm.png"
+    },
+    {
+      "id": "relieved",
+      "name": "释然",
+      "emotions": [
+        "relieved"
+      ],
+      "source": "emoji-base/relieved.png"
+    },
+    {
+      "id": "surprised",
+      "name": "惊讶",
+      "emotions": [
+        "surprised"
+      ],
+      "source": "emoji-base/surprised.png"
+    },
+    {
+      "id": "shocked",
+      "name": "震惊",
+      "emotions": [
+        "surprised"
+      ],
+      "source": "emoji-base/shocked.png"
+    },
+    {
+      "id": "confused",
+      "name": "疑惑",
+      "emotions": [
+        "confused"
+      ],
+      "source": "emoji-base/confused.png"
+    },
+    {
+      "id": "skeptical",
+      "name": "怀疑",
+      "emotions": [
+        "skeptical"
+      ],
+      "source": "emoji-base/skeptical.png"
+    },
+    {
+      "id": "speechless",
+      "name": "无语",
+      "emotions": [
+        "speechless"
+      ],
+      "source": "emoji-base/speechless.png"
+    },
+    {
+      "id": "embarrassed",
+      "name": "尴尬",
+      "emotions": [
+        "embarrassed"
+      ],
+      "source": "emoji-base/embarrassed.png"
+    },
+    {
+      "id": "shy",
+      "name": "害羞",
+      "emotions": [
+        "shy"
+      ],
+      "source": "emoji-base/shy.png"
+    },
+    {
+      "id": "pleading",
+      "name": "恳求",
+      "emotions": [
+        "pleading"
+      ],
+      "source": "emoji-base/pleading.png"
+    },
+    {
+      "id": "sad",
+      "name": "伤心",
+      "emotions": [
+        "sad"
+      ],
+      "source": "emoji-base/sad.png"
+    },
+    {
+      "id": "cry",
+      "name": "哭泣",
+      "emotions": [
+        "sad"
+      ],
+      "source": "emoji-base/cry.png"
+    },
+    {
+      "id": "sob",
+      "name": "大哭",
+      "emotions": [
+        "sad"
+      ],
+      "source": "emoji-base/sob.png"
+    },
+    {
+      "id": "disappointed",
+      "name": "失望",
+      "emotions": [
+        "disappointed"
+      ],
+      "source": "emoji-base/disappointed.png"
+    },
+    {
+      "id": "tired",
+      "name": "疲惫",
+      "emotions": [
+        "tired"
+      ],
+      "source": "emoji-base/tired.png"
+    },
+    {
+      "id": "sleepy",
+      "name": "困倦",
+      "emotions": [
+        "sleepy"
+      ],
+      "source": "emoji-base/sleepy.png"
+    },
+    {
+      "id": "exhausted",
+      "name": "累瘫",
+      "emotions": [
+        "exhausted"
+      ],
+      "source": "emoji-base/exhausted.png"
+    },
+    {
+      "id": "bored",
+      "name": "无聊",
+      "emotions": [
+        "bored"
+      ],
+      "source": "emoji-base/bored.png"
+    },
+    {
+      "id": "angry",
+      "name": "生气",
+      "emotions": [
+        "angry"
+      ],
+      "source": "emoji-base/angry.png"
+    },
+    {
+      "id": "furious",
+      "name": "暴怒",
+      "emotions": [
+        "furious"
+      ],
+      "source": "emoji-base/furious.png"
+    },
+    {
+      "id": "annoyed",
+      "name": "烦躁",
+      "emotions": [
+        "annoyed"
+      ],
+      "source": "emoji-base/annoyed.png"
+    },
+    {
+      "id": "grumpy",
+      "name": "不爽",
+      "emotions": [
+        "annoyed"
+      ],
+      "source": "emoji-base/grumpy.png"
+    },
+    {
+      "id": "disgusted",
+      "name": "嫌弃",
+      "emotions": [
+        "disgusted"
+      ],
+      "source": "emoji-base/disgusted.png"
+    },
+    {
+      "id": "afraid",
+      "name": "害怕",
+      "emotions": [
+        "afraid"
+      ],
+      "source": "emoji-base/afraid.png"
+    },
+    {
+      "id": "panic",
+      "name": "惊慌",
+      "emotions": [
+        "panic"
+      ],
+      "source": "emoji-base/panic.png"
+    },
+    {
+      "id": "nervous",
+      "name": "紧张",
+      "emotions": [
+        "nervous"
+      ],
+      "source": "emoji-base/nervous.png"
+    },
+    {
+      "id": "kiss",
+      "name": "亲亲",
+      "emotions": [
+        "love"
+      ],
+      "source": "emoji-base/kiss.png"
+    },
+    {
+      "id": "hug",
+      "name": "拥抱",
+      "emotions": [
+        "love"
+      ],
+      "source": "emoji-base/hug.png"
+    },
+    {
+      "id": "party",
+      "name": "派对",
+      "emotions": [
+        "happy"
+      ],
+      "source": "emoji-base/party.png"
+    },
+    {
+      "id": "celebrate",
+      "name": "庆祝",
+      "emotions": [
+        "happy"
+      ],
+      "source": "emoji-base/celebrate.png"
+    },
+    {
+      "id": "cool",
+      "name": "酷",
+      "emotions": [
+        "proud"
+      ],
+      "source": "emoji-base/cool.png"
+    },
+    {
+      "id": "mischievous",
+      "name": "坏笑",
+      "emotions": [
+        "mischievous"
+      ],
+      "source": "emoji-base/mischievous.png"
+    },
+    {
+      "id": "silly",
+      "name": "调皮",
+      "emotions": [
+        "silly"
+      ],
+      "source": "emoji-base/silly.png"
+    },
+    {
+      "id": "crazy",
+      "name": "疯狂",
+      "emotions": [
+        "silly"
+      ],
+      "source": "emoji-base/crazy.png"
+    },
+    {
+      "id": "thinking",
+      "name": "思考",
+      "emotions": [
+        "thinking"
+      ],
+      "source": "emoji-base/thinking.png"
+    },
+    {
+      "id": "idea",
+      "name": "灵感",
+      "emotions": [
+        "thinking"
+      ],
+      "source": "emoji-base/idea.png"
+    },
+    {
+      "id": "focused",
+      "name": "专注",
+      "emotions": [
+        "focused"
+      ],
+      "source": "emoji-base/focused.png"
+    },
+    {
+      "id": "determined",
+      "name": "坚定",
+      "emotions": [
+        "determined"
+      ],
+      "source": "emoji-base/determined.png"
+    },
+    {
+      "id": "hungry",
+      "name": "饥饿",
+      "emotions": [
+        "hungry"
+      ],
+      "source": "emoji-base/hungry.png"
+    },
+    {
+      "id": "delicious",
+      "name": "美味",
+      "emotions": [
+        "happy"
+      ],
+      "source": "emoji-base/delicious.png"
+    },
+    {
+      "id": "sick",
+      "name": "生病",
+      "emotions": [
+        "sick"
+      ],
+      "source": "emoji-base/sick.png"
+    },
+    {
+      "id": "dizzy",
+      "name": "头晕",
+      "emotions": [
+        "dizzy"
+      ],
+      "source": "emoji-base/dizzy.png"
+    }
+  ]
+}

@@ -11,6 +11,8 @@
     "migrate": "tsx src/db/migrate.ts",
     "analyze": "tsx src/jobs/analyze.ts",
     "analyze:once": "tsx src/jobs/analyze.ts --once",
+    "expression:crop": "tsx scripts/crop-expression-contact-sheets.ts",
+    "expression:generate": "tsx scripts/generate-expression-assets.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -21,6 +23,7 @@
     "node-cron": "^3.0.3",
     "pg": "^8.12.0",
     "pinyin-pro": "^3.25.0",
+    "sharp": "^0.35.3",
     "uuid": "^10.0.0"
   },
   "devDependencies": {
