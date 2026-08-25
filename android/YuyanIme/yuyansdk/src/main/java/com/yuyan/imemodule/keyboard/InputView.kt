@@ -162,6 +162,28 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 expressionPanelState.selectTab(tab)
                 expressionPanel.render(expressionPanelState, sync.currentCatalog())
             }
+            expressionPanel.onEmojiCombinationMissing = { combination, deliver ->
+                val remoteUrl = combination.url
+                if (remoteUrl == null) {
+                    deliver(null)
+                } else {
+                    expressionScope.launch {
+                        val url = if (remoteUrl.startsWith("http://") || remoteUrl.startsWith("https://")) {
+                            remoteUrl
+                        } else {
+                            ServerConfig.baseUrl + remoteUrl
+                        }
+                        deliver(
+                            sync.download(
+                                version = combination.version,
+                                relativePath = combination.fileName,
+                                url = url,
+                                sha256 = combination.sha256,
+                            ),
+                        )
+                    }
+                }
+            }
             expressionScope.launch(Dispatchers.IO) { sync.refreshCatalog() }
         }
         expressionQueryCoordinator = ExpressionQueryCoordinator(

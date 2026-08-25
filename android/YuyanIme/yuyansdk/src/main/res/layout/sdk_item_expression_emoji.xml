@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/expression_emoji_image"
+    android:layout_width="48dp"
+    android:layout_height="42dp"
+    android:background="?android:attr/selectableItemBackground"
+    android:contentDescription="基础表情"
+    android:padding="3dp"
+    android:scaleType="fitCenter" />

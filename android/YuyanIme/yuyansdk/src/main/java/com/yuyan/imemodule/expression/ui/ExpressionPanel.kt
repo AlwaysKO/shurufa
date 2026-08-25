@@ -22,11 +22,18 @@ class ExpressionPanel @JvmOverloads constructor(
     private val recommendedTab: TextView
     private val templatesTab: TextView
     private val emojiTab: TextView
+    private val assetList: RecyclerView
+    private val emojiPicker: EmojiCombinationPicker
     private val adapter = ExpressionAssetAdapter { onAssetClick?.invoke(it) }
 
     var onDismiss: (() -> Unit)? = null
     var onTabSelected: ((ExpressionPanelTab) -> Unit)? = null
     var onAssetClick: ((ExpressionAsset) -> Unit)? = null
+    var onEmojiCombinationMissing: ((com.yuyan.imemodule.expression.model.EmojiCombination, (java.io.File?) -> Unit) -> Unit)?
+        get() = emojiPicker.onCombinationMissing
+        set(value) {
+            emojiPicker.onCombinationMissing = value
+        }
 
     init {
         orientation = VERTICAL
@@ -35,10 +42,11 @@ class ExpressionPanel @JvmOverloads constructor(
         templatesTab = findViewById(R.id.expression_tab_templates)
         emojiTab = findViewById(R.id.expression_tab_emoji)
         findViewById<ImageButton>(R.id.expression_close).setOnClickListener { onDismiss?.invoke() }
-        findViewById<RecyclerView>(R.id.expression_asset_list).apply {
+        assetList = findViewById<RecyclerView>(R.id.expression_asset_list).apply {
             layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
             adapter = this@ExpressionPanel.adapter
         }
+        emojiPicker = findViewById(R.id.expression_emoji_picker)
         recommendedTab.setOnClickListener { onTabSelected?.invoke(ExpressionPanelTab.RECOMMENDED) }
         templatesTab.setOnClickListener { onTabSelected?.invoke(ExpressionPanelTab.TEMPLATES) }
         emojiTab.setOnClickListener { onTabSelected?.invoke(ExpressionPanelTab.EMOJI) }
@@ -49,6 +57,10 @@ class ExpressionPanel @JvmOverloads constructor(
         recommendedTab.isSelected = state.selectedTab == ExpressionPanelTab.RECOMMENDED
         templatesTab.isSelected = state.selectedTab == ExpressionPanelTab.TEMPLATES
         emojiTab.isSelected = state.selectedTab == ExpressionPanelTab.EMOJI
+        val showingEmoji = state.selectedTab == ExpressionPanelTab.EMOJI
+        assetList.visibility = if (showingEmoji) View.GONE else View.VISIBLE
+        emojiPicker.visibility = if (showingEmoji) View.VISIBLE else View.GONE
+        if (showingEmoji) emojiPicker.render(catalog)
         adapter.submitList(
             when (state.selectedTab) {
                 ExpressionPanelTab.RECOMMENDED -> state.results
