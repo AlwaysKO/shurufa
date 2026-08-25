@@ -1,6 +1,7 @@
 package com.yuyan.imemodule.keyboard
 
 import android.view.KeyEvent
+import android.view.inputmethod.EditorInfo
 import com.yuyan.imemodule.entity.keyboard.LongPressAction
 import com.yuyan.imemodule.manager.InputModeSwitcher
 import org.junit.Assert.assertArrayEquals
@@ -52,5 +53,14 @@ class SogouT9LayoutTest {
         assertEquals(KeyEvent.KEYCODE_ENTER, key.code)
         assertEquals("换行", key.keyLabel)
         assertTrue(key.preferTextLabel)
+    }
+
+    @Test
+    fun imeActionNoneAlsoShowsLineBreakText() {
+        val key = SogouT9Layout.createEnterKey()
+
+        key.enableToggleState(EditorInfo.IME_ACTION_NONE)
+
+        assertEquals("换行", key.keyLabel)
     }
 }

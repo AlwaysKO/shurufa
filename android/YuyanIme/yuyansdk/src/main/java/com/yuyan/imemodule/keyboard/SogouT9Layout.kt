@@ -57,6 +57,7 @@ object SogouT9Layout {
         setToggleStates(
             listOf(
                 ToggleState("换行", 0),
+                ToggleState("换行", 1),
                 ToggleState("去往", 2),
                 ToggleState("搜索", 3),
                 ToggleState("发送", 4),
