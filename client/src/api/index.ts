@@ -317,6 +317,42 @@ export interface ZeroTokenCandidateResponse {
   reason?: 'conversation_not_found';
 }
 
+export type StickerCandidateSource =
+  | 'sticker_counterattack'
+  | 'sticker_conversation_frequency'
+  | 'sticker_relationship_type_frequency'
+  | 'sticker_global_frequency';
+
+export interface IncomingStickerAsset {
+  asset_id: number;
+  sha256: string;
+  mime_type: string;
+  width: number | null;
+  height: number | null;
+  url: string;
+  last_seen_at: string;
+}
+
+export interface StickerAssetCandidate {
+  asset_id: number;
+  sha256: string;
+  mime_type: string;
+  width: number | null;
+  height: number | null;
+  url: string;
+  source: StickerCandidateSource;
+  use_count: number;
+  last_used_at: string;
+}
+
+export interface StickerCandidateResponse {
+  conversation_id: number | null;
+  relationship_type: RelationshipType;
+  incoming_asset_sha256: string | null;
+  candidates: StickerAssetCandidate[];
+  reason?: 'conversation_not_found';
+}
+
 /** 删除文件：fetch 删除 JSON 外的二进制响应 */
 async function del(url: string): Promise<void> {
   const res = await fetch(url, { method: 'DELETE' });
@@ -437,6 +473,21 @@ export const api = {
     const query = new URLSearchParams({ context_text: contextText, limit: String(limit) });
     return get<ZeroTokenCandidateResponse>(
       `/api/v1/dashboard/relationships/${conversationId}/candidates?${query.toString()}`,
+    );
+  },
+  relationshipIncomingStickerAssets: (conversationId: number, limit = 6) =>
+    get<{ assets: IncomingStickerAsset[] }>(
+      `/api/v1/dashboard/relationships/${conversationId}/incoming-sticker-assets?limit=${limit}`,
+    ),
+  relationshipStickerCandidates: (
+    conversationId: number,
+    incomingAssetSha256: string | null,
+    limit = 6,
+  ) => {
+    const query = new URLSearchParams({ limit: String(limit) });
+    if (incomingAssetSha256) query.set('incoming_asset_sha256', incomingAssetSha256);
+    return get<StickerCandidateResponse>(
+      `/api/v1/dashboard/relationships/${conversationId}/sticker-candidates?${query.toString()}`,
     );
   },
 };

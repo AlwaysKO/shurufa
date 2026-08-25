@@ -2,9 +2,12 @@
 import { computed, onMounted, ref } from 'vue';
 import {
   api,
+  type IncomingStickerAsset,
   type RelationshipProfileInput,
   type RelationshipRow,
   type RelationshipType,
+  type StickerAssetCandidate,
+  type StickerCandidateSource,
   type ZeroTokenCandidateRow,
 } from '../api';
 
@@ -19,8 +22,12 @@ const form = ref<RelationshipProfileInput>({
 });
 const contextText = ref('');
 const candidates = ref<ZeroTokenCandidateRow[]>([]);
+const incomingStickers = ref<IncomingStickerAsset[]>([]);
+const selectedIncomingSha256 = ref<string | null>(null);
+const stickerCandidates = ref<StickerAssetCandidate[]>([]);
 const loading = ref(false);
 const saving = ref(false);
+const stickerLoading = ref(false);
 const error = ref('');
 const saved = ref('');
 
@@ -41,6 +48,12 @@ const sourceNames = {
   relationship_type_frequency: '同关系类型',
   global_frequency: '用户通用',
 } as const;
+const stickerSourceNames: Record<StickerCandidateSource, string> = {
+  sticker_counterattack: '相同表情反击',
+  sticker_conversation_frequency: '当前关系高频',
+  sticker_relationship_type_frequency: '同关系类型',
+  sticker_global_frequency: '用户通用',
+};
 const selectedTitle = computed(() => selected.value?.alias
   || selected.value?.display_name
   || selected.value?.external_key
@@ -62,8 +75,31 @@ function selectRelationship(row: RelationshipRow): void {
   };
   contextText.value = '';
   candidates.value = [];
+  incomingStickers.value = [];
+  selectedIncomingSha256.value = null;
+  stickerCandidates.value = [];
   error.value = '';
   saved.value = '';
+  void loadStickerPreview(row.conversation_id);
+}
+
+async function loadStickerPreview(conversationId: number): Promise<void> {
+  stickerLoading.value = true;
+  try {
+    const [incoming, preview] = await Promise.all([
+      api.relationshipIncomingStickerAssets(conversationId),
+      api.relationshipStickerCandidates(conversationId, null),
+    ]);
+    if (selected.value?.conversation_id !== conversationId) return;
+    incomingStickers.value = incoming.assets;
+    stickerCandidates.value = preview.candidates;
+  } catch (reason) {
+    if (selected.value?.conversation_id === conversationId) {
+      error.value = `表情预览加载失败：${(reason as Error).message}`;
+    }
+  } finally {
+    if (selected.value?.conversation_id === conversationId) stickerLoading.value = false;
+  }
 }
 
 async function load(preferredId?: number): Promise<void> {
@@ -110,6 +146,27 @@ async function preview(): Promise<void> {
     candidates.value = result.candidates;
   } catch (reason) {
     error.value = `候选预览失败：${(reason as Error).message}`;
+  }
+}
+
+async function previewStickers(incomingSha256: string | null): Promise<void> {
+  if (!selected.value) return;
+  const conversationId = selected.value.conversation_id;
+  selectedIncomingSha256.value = incomingSha256;
+  stickerLoading.value = true;
+  error.value = '';
+  try {
+    const result = await api.relationshipStickerCandidates(conversationId, incomingSha256);
+    if (selected.value?.conversation_id !== conversationId
+      || selectedIncomingSha256.value !== incomingSha256) return;
+    stickerCandidates.value = result.candidates;
+  } catch (reason) {
+    error.value = `表情候选预览失败：${(reason as Error).message}`;
+  } finally {
+    if (selected.value?.conversation_id === conversationId
+      && selectedIncomingSha256.value === incomingSha256) {
+      stickerLoading.value = false;
+    }
   }
 }
 
@@ -196,6 +253,44 @@ onMounted(() => load());
           </article>
         </div>
       </section>
+
+      <section class="card candidate-card">
+        <h3>零 Token 表情反击预览</h3>
+        <p class="hint">只使用采集到的真实收发表情和精确哈希，不调用 AI。</p>
+        <div class="incoming-stickers">
+          <button
+            type="button"
+            class="sticker-selector frequency-selector"
+            :class="{ selected: selectedIncomingSha256 === null }"
+            :disabled="!selected || stickerLoading"
+            @click="previewStickers(null)"
+          >
+            关系高频
+          </button>
+          <button
+            v-for="asset in incomingStickers"
+            :key="asset.sha256"
+            type="button"
+            class="sticker-selector"
+            :class="{ selected: selectedIncomingSha256 === asset.sha256 }"
+            :title="`最近收到：${formatTime(asset.last_seen_at)}`"
+            :disabled="stickerLoading"
+            @click="previewStickers(asset.sha256)"
+          >
+            <img :src="asset.url" alt="收到的表情" />
+          </button>
+        </div>
+        <p v-if="stickerLoading" class="empty">加载表情候选中…</p>
+        <p v-else-if="stickerCandidates.length === 0" class="empty">暂无表情候选</p>
+        <div v-else class="sticker-candidate-list">
+          <article v-for="candidate in stickerCandidates" :key="candidate.sha256">
+            <img :src="candidate.url" alt="候选表情" />
+            <span>{{ stickerSourceNames[candidate.source] }}</span>
+            <small>使用 {{ candidate.use_count }} 次</small>
+            <small>{{ formatTime(candidate.last_used_at) }}</small>
+          </article>
+        </div>
+      </section>
     </div>
   </div>
 </template>
@@ -223,6 +318,17 @@ textarea { resize: vertical; }
 .candidate-list article { padding: 12px 14px; border-radius: 8px; background: #f7f8ff; }
 .candidate-list p { white-space: pre-wrap; word-break: break-word; }
 .candidate-list span { display: block; margin-top: 6px; color: #747d8c; font-size: 12px; }
+.incoming-stickers { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.sticker-selector { display: grid; place-items: center; width: 72px; height: 72px; padding: 5px; border: 1px solid #dfe4ea; border-radius: 8px; background: #fff; cursor: pointer; }
+.sticker-selector:hover, .sticker-selector.selected { border-color: #3742fa; background: #f1f3ff; box-shadow: 0 0 0 2px rgb(55 66 250 / 12%); }
+.sticker-selector:disabled { opacity: .55; cursor: not-allowed; }
+.sticker-selector img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.frequency-selector { color: #3742fa; font-size: 12px; font-weight: 600; }
+.sticker-candidate-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-top: 16px; }
+.sticker-candidate-list article { display: grid; justify-items: center; gap: 5px; padding: 12px; border-radius: 8px; background: #f7f8ff; text-align: center; }
+.sticker-candidate-list img { width: 88px; height: 88px; object-fit: contain; }
+.sticker-candidate-list span { color: #2f3542; font-size: 12px; font-weight: 600; }
+.sticker-candidate-list small { color: #747d8c; font-size: 11px; }
 .notice { padding: 10px 14px; margin-bottom: 16px; border-radius: 6px; }
 .error { background: #fff0f0; color: #c0392b; }
 .success { background: #effaf3; color: #218c4f; }
