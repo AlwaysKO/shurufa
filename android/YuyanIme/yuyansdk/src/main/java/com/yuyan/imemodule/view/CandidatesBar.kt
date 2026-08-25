@@ -8,6 +8,7 @@ import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupMenu
@@ -27,7 +28,6 @@ import com.yuyan.imemodule.data.theme.ThemeManager
 import com.yuyan.imemodule.database.DataBaseKT
 import com.yuyan.imemodule.entity.SkbFunItem
 import com.yuyan.imemodule.prefs.AppPrefs
-import com.yuyan.imemodule.prefs.behavior.KeyboardOneHandedMod
 import com.yuyan.imemodule.prefs.behavior.SkbMenuMode
 import com.yuyan.imemodule.service.DecodingInfo
 import com.yuyan.imemodule.singleton.EnvironmentSingleton.Companion.instance
@@ -41,6 +41,35 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import splitties.dimensions.dp
+
+internal fun createCandidateOverlay(
+    context: Context,
+    candidates: RecyclerView,
+    action: ImageView,
+): FrameLayout {
+    candidates.apply {
+        if (layoutManager == null) {
+            layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+        }
+        isNestedScrollingEnabled = false
+        layoutParams = FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT,
+        )
+    }
+    action.apply {
+        translationZ = dp(2).toFloat()
+        layoutParams = FrameLayout.LayoutParams(
+            dp(CandidateOverlaySpec.touchTargetDp),
+            dp(CandidateOverlaySpec.touchTargetDp),
+            Gravity.END or Gravity.CENTER_VERTICAL,
+        )
+    }
+    return FrameLayout(context).apply {
+        addView(candidates)
+        addView(action)
+    }
+}
 
 /**
  * 候选词集装箱
@@ -60,7 +89,7 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
     private lateinit var mCandidatesAdapter: CandidatesBarAdapter
     private lateinit var mRVContainerMenu:RecyclerView   // 候选词栏菜单
     private lateinit var mCandidatesMenuAdapter: CandidatesMenuAdapter
-    private lateinit var candidatesData: LinearLayout //候选词视图
+    private lateinit var candidatesData: FrameLayout //候选词视图
     private var activeCandNo:Int = 0
 
     fun initialize(cvListener: CandidateViewListener) {
@@ -80,17 +109,15 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
                 includeFontPadding = false
                 setPadding(dp(10), 0, dp(10), 0)
             }
-            candidatesData = LinearLayout(context).apply {
-                gravity = Gravity.CENTER_VERTICAL
-            }
             mRightArrowBtn = ImageView(context).apply {
                 isClickable = true
                 isEnabled = true
                 setImageResource(R.drawable.sdk_level_list_candidates_display)
+                setBackgroundResource(R.drawable.shape_candidate_action_overlay)
+                setPadding(dp(12), dp(12), dp(13), dp(13))
             }
             mRVCandidates = RecyclerView(context).apply {
                 setItemAnimator(null)
-                layoutParams = LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT, 1f)
                 layoutManager =
                     CustomLinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
             }
@@ -113,16 +140,19 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
                 }
             })
             mCandidatesDataContainer.addView(mComposingView)
-            mCandidatesDataContainer.addView(candidatesData)
             this.addView(mCandidatesDataContainer, LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
         } else {
-            (mRightArrowBtn.parent as ViewGroup).removeView(mRightArrowBtn)
-            (mRVCandidates.parent as ViewGroup).removeView(mRVCandidates)
+            (mRightArrowBtn.parent as? ViewGroup)?.removeView(mRightArrowBtn)
+            (mRVCandidates.parent as? ViewGroup)?.removeView(mRVCandidates)
+            if (::candidatesData.isInitialized) {
+                mCandidatesDataContainer.removeView(candidatesData)
+            }
         }
-        var candidatesHeight = instance.heightForCandidates
+        val candidatesHeight = instance.heightForCandidates
         mComposingView.layoutParams = LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, instance.heightForcomposing)
-        mRightArrowBtn.layoutParams = LinearLayout.LayoutParams(candidatesHeight, candidatesHeight, 0f).apply { marginEnd = dp(10) }
+        candidatesData = createCandidateOverlay(context, mRVCandidates, mRightArrowBtn)
         candidatesData.layoutParams = LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, candidatesHeight)
+        mCandidatesDataContainer.addView(candidatesData)
         mRightArrowBtn.setOnClickListener { view: View ->
             when (val level = (view as ImageView).drawable.level) {
                 2 -> mCvListener.onClickClearCandidate()
@@ -131,15 +161,6 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
                     view.drawable.setLevel(1 - level)
                 }
             }
-        }
-        val oneHandedModSwitch = AppPrefs.getInstance().keyboardSetting.oneHandedModSwitch.getValue()
-        val oneHandedMod = AppPrefs.getInstance().keyboardSetting.oneHandedMod.getValue()
-        if (oneHandedModSwitch && oneHandedMod == KeyboardOneHandedMod.LEFT) {
-            candidatesData.addView(mRightArrowBtn)
-            candidatesData.addView(mRVCandidates, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, candidatesHeight, 1f))
-        } else {
-            candidatesData.addView(mRVCandidates, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, candidatesHeight, 1f))
-            candidatesData.addView(mRightArrowBtn)
         }
         mComposingView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, instance.composingTextSize)
         mCandidatesAdapter.notifyChanged()

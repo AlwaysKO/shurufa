@@ -7,6 +7,6 @@
         android:drawable="@drawable/ic_menu_arrow_up"
         android:maxLevel="1" />
     <item
-        android:drawable="@drawable/ic_menu_close"
+        android:drawable="@drawable/ic_menu_close_thin"
         android:maxLevel="2" />
 </level-list>
