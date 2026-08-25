@@ -1,9 +1,11 @@
 package com.yuyan.imemodule.keyboard
 
 import android.view.KeyEvent
+import com.yuyan.imemodule.entity.keyboard.LongPressAction
 import com.yuyan.imemodule.manager.InputModeSwitcher
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SogouT9LayoutTest {
@@ -33,5 +35,22 @@ class SogouT9LayoutTest {
             SogouT9Layout.bottomRowCodes,
         )
         assertEquals(0.99f, SogouT9Layout.bottomRowWidths.sum(), 0.0001f)
+    }
+
+    @Test
+    fun centerBottomKeyUsesSpaceForTapAndVoiceForLongPress() {
+        val key = SogouT9Layout.createVoiceSpaceKey()
+
+        assertEquals(KeyEvent.KEYCODE_SPACE, key.code)
+        assertEquals(LongPressAction.Voice, key.longPressAction)
+    }
+
+    @Test
+    fun normalEnterKeyShowsLineBreakText() {
+        val key = SogouT9Layout.createEnterKey()
+
+        assertEquals(KeyEvent.KEYCODE_ENTER, key.code)
+        assertEquals("换行", key.keyLabel)
+        assertTrue(key.preferTextLabel)
     }
 }

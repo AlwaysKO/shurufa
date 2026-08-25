@@ -26,6 +26,8 @@ open class SoftKey(var code: Int = 0, var label: String = "", var labelSmall: St
     var stateId = 0
     var pressed = false
     var keyType = KeyType.Normal
+    var longPressAction = LongPressAction.Default
+    var preferTextLabel = false
 
     fun onPressed() {
         pressed = true

@@ -25,6 +25,9 @@ import kotlin.math.max
 import kotlin.math.min
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.withSave
+import androidx.core.content.ContextCompat
+import com.yuyan.imemodule.R
+import com.yuyan.imemodule.entity.keyboard.LongPressAction
 import com.yuyan.imemodule.prefs.behavior.SkbStyleMode
 
 /**
@@ -200,7 +203,11 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
         }
         val keyLabelSmall = softKey.getmKeyLabelSmall()
         val keyMnemonic = softKey.keyMnemonic
-        var keyIcon = if(skbStyleMode == SkbStyleMode.Google && softKey.code == KeyEvent.KEYCODE_SPACE) null
+        var keyIcon = if (softKey.preferTextLabel) {
+            null
+        } else if (softKey.longPressAction == LongPressAction.Voice) {
+            ContextCompat.getDrawable(context, R.drawable.ic_menu_voice)
+        } else if(skbStyleMode == SkbStyleMode.Google && softKey.code == KeyEvent.KEYCODE_SPACE) null
             else if(skbStyleMode == SkbStyleMode.Google && softKey.code == InputModeSwitcher.USER_KEYCODE_CURSOR_DIRECTION && !DecodingInfo.isCandidatesEmpty) null
             else softKey.keyIcon
         val weightHeigth = softKey.height() / 4f

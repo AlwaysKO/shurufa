@@ -1,6 +1,10 @@
 package com.yuyan.imemodule.keyboard
 
 import android.view.KeyEvent
+import com.yuyan.imemodule.entity.keyboard.LongPressAction
+import com.yuyan.imemodule.entity.keyboard.SoftKey
+import com.yuyan.imemodule.entity.keyboard.SoftKeyToggle
+import com.yuyan.imemodule.entity.keyboard.ToggleState
 import com.yuyan.imemodule.manager.InputModeSwitcher
 
 /** 中文九宫格的搜狗式几何与键位规格。 */
@@ -42,4 +46,24 @@ object SogouT9Layout {
         KeyEvent.KEYCODE_ENTER,
     )
     val bottomRowWidths = floatArrayOf(0.17f, 0.165f, 0.32f, 0.165f, 0.17f)
+
+    fun createVoiceSpaceKey() = SoftKey(code = KeyEvent.KEYCODE_SPACE).apply {
+        longPressAction = LongPressAction.Voice
+    }
+
+    fun createEnterKey() = SoftKeyToggle(KeyEvent.KEYCODE_ENTER).apply {
+        stateId = 0
+        preferTextLabel = true
+        setToggleStates(
+            listOf(
+                ToggleState("换行", 0),
+                ToggleState("去往", 2),
+                ToggleState("搜索", 3),
+                ToggleState("发送", 4),
+                ToggleState("下一个", 5),
+                ToggleState("完成", 6),
+                ToggleState("上一个", 7),
+            )
+        )
+    }
 }

@@ -15,6 +15,7 @@ import android.view.View
 import com.yuyan.imemodule.data.theme.ThemeManager
 import com.yuyan.imemodule.entity.keyboard.SoftKey
 import com.yuyan.imemodule.entity.keyboard.SoftKeyboard
+import com.yuyan.imemodule.entity.keyboard.LongPressAction
 import com.yuyan.imemodule.manager.InputModeSwitcher
 import com.yuyan.imemodule.prefs.AppPrefs
 import com.yuyan.imemodule.prefs.behavior.KeyboardSymbolSlideUpMod
@@ -97,6 +98,12 @@ open class BaseKeyboardView(mContext: Context?) : View(mContext) {
     private fun openPopupIfRequired() {
         if(mCurrentKey != null) {
             val softKey = mCurrentKey!!
+            if (softKey.longPressAction == LongPressAction.Voice) {
+                mLongPressKey = true
+                mAbortKey = true
+                mService?.startVoiceInput()
+                return
+            }
             val keyboardSymbol = ThemeManager.prefs.keyboardSymbol.getValue()
             if (softKey.getkeyLabel().isNotBlank() && softKey.code != InputModeSwitcher.USER_KEYCODE_COMMA_EMOJI ) {
                 val keyLabel = if (InputModeSwitcher.isLower) softKey.keyLabel.lowercase() else softKey.keyLabel
@@ -327,7 +334,9 @@ open class BaseKeyboardView(mContext: Context?) : View(mContext) {
      */
     private fun dismissPreview() {
         if (mLongPressKey) {
-            mService?.responseLongKeyEvent(popupComponent.triggerFocused())
+            if (mCurrentKey?.longPressAction != LongPressAction.Voice) {
+                mService?.responseLongKeyEvent(popupComponent.triggerFocused())
+            }
             mLongPressKey = false
         }
         if (mCurrentKey != null) {
