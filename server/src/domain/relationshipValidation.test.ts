@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  validateStickerCandidateQuery,
   validateRelationshipCandidateQuery,
   validateRelationshipProfileInput,
 } from './relationshipValidation.js';
@@ -55,6 +56,54 @@ describe('validateRelationshipProfileInput', () => {
       humor_level: 50,
       notes: '注'.repeat(2001),
     })).toThrow('notes');
+  });
+});
+
+describe('validateStickerCandidateQuery', () => {
+  it('接受完整身份、可选资源哈希和候选数量', () => {
+    expect(validateStickerCandidateQuery({
+      platform: 'qq',
+      account_key: ' account ',
+      external_key: ' group ',
+      incoming_asset_sha256: 'a'.repeat(64),
+      limit: 8,
+    })).toEqual({
+      identity: {
+        platform: 'qq',
+        account_key: 'account',
+        external_key: 'group',
+      },
+      incomingAssetSha256: 'a'.repeat(64),
+      limit: 8,
+    });
+  });
+
+  it('空哈希表示只查询高频表情', () => {
+    expect(validateStickerCandidateQuery({
+      platform: 'wechat',
+      account_key: 'account',
+      external_key: 'peer',
+      incoming_asset_sha256: '',
+    }).incomingAssetSha256).toBeNull();
+  });
+
+  it('拒绝非法哈希、数量和不完整身份', () => {
+    expect(() => validateStickerCandidateQuery({
+      platform: 'wechat',
+      account_key: 'account',
+      external_key: 'peer',
+      incoming_asset_sha256: 'BAD',
+    })).toThrow('incoming_asset_sha256');
+    expect(() => validateStickerCandidateQuery({
+      platform: 'wechat',
+      account_key: 'account',
+      external_key: 'peer',
+      limit: 21,
+    })).toThrow('limit');
+    expect(() => validateStickerCandidateQuery({
+      platform: 'wechat',
+      account_key: 'account',
+    })).toThrow('external_key');
   });
 });
 

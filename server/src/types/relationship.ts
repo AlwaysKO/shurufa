@@ -55,3 +55,48 @@ export interface ZeroTokenCandidateResult {
   candidates: ZeroTokenCandidate[];
   reason?: 'conversation_not_found';
 }
+
+export const STICKER_CANDIDATE_SOURCES = [
+  'sticker_counterattack',
+  'sticker_conversation_frequency',
+  'sticker_relationship_type_frequency',
+  'sticker_global_frequency',
+] as const;
+
+export type StickerCandidateSource = typeof STICKER_CANDIDATE_SOURCES[number];
+
+export interface StickerAssetCandidate {
+  asset_id: number;
+  sha256: string;
+  mime_type: string;
+  width: number | null;
+  height: number | null;
+  url: string;
+  source: StickerCandidateSource;
+  use_count: number;
+  last_used_at: string;
+}
+
+export interface IncomingStickerAsset {
+  asset_id: number;
+  sha256: string;
+  mime_type: string;
+  width: number | null;
+  height: number | null;
+  url: string;
+  last_seen_at: string;
+}
+
+export interface StickerCandidateQuery {
+  identity: RelationshipConversationIdentity;
+  incomingAssetSha256: string | null;
+  limit: number;
+}
+
+export interface StickerCandidateResult {
+  conversation_id: number | null;
+  relationship_type: RelationshipType;
+  incoming_asset_sha256: string | null;
+  candidates: StickerAssetCandidate[];
+  reason?: 'conversation_not_found';
+}

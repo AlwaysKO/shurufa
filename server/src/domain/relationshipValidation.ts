@@ -3,7 +3,10 @@ import {
   RELATIONSHIP_TYPES,
   type RelationshipCandidateQuery,
   type RelationshipProfileInput,
+  type StickerCandidateQuery,
 } from '../types/relationship.js';
+
+const SHA256_PATTERN = /^[a-f0-9]{64}$/;
 
 function object(input: unknown, name: string): Record<string, unknown> {
   if (!input || typeof input !== 'object' || Array.isArray(input)) {
@@ -80,5 +83,28 @@ export function validateRelationshipCandidateQuery(input: unknown): Relationship
     },
     contextText: (value.context_text as string | undefined) ?? '',
     limit: Number(rawLimit),
+  };
+}
+
+export function validateStickerCandidateQuery(input: unknown): StickerCandidateQuery {
+  const value = object(input, 'query');
+  const common = validateRelationshipCandidateQuery({
+    platform: value.platform,
+    account_key: value.account_key,
+    external_key: value.external_key,
+    limit: value.limit,
+  });
+  const rawSha256 = value.incoming_asset_sha256;
+  let incomingAssetSha256: string | null = null;
+  if (rawSha256 !== undefined && rawSha256 !== null && rawSha256 !== '') {
+    if (typeof rawSha256 !== 'string' || !SHA256_PATTERN.test(rawSha256)) {
+      throw new Error('incoming_asset_sha256 is invalid');
+    }
+    incomingAssetSha256 = rawSha256;
+  }
+  return {
+    identity: common.identity,
+    incomingAssetSha256,
+    limit: common.limit,
   };
 }
