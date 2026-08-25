@@ -9,6 +9,7 @@ import com.yuyan.imemodule.entity.keyboard.SoftKeyboard
 import com.yuyan.imemodule.entity.keyboard.ToggleState
 import com.yuyan.imemodule.keyboard.KeyPreset
 import com.yuyan.imemodule.keyboard.KeyboardData
+import com.yuyan.imemodule.keyboard.SogouT9Layout
 import com.yuyan.imemodule.manager.InputModeSwitcher
 import com.yuyan.imemodule.prefs.AppPrefs
 import com.yuyan.imemodule.prefs.behavior.DoublePinyinSchemaMode
@@ -102,31 +103,34 @@ class KeyboardLoaderUtil private constructor() {
             }
             InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN -> {  // 2000  T9键键
                 var keyBeans: MutableList<SoftKey> = LinkedList()
-                val keys = KeyboardData.layoutT9Cn[skbStyleMode]!!
-                var t9Key = createT9Keys(keys[0])
+                val keys = SogouT9Layout.keyRows
+                var t9Key = createT9Keys(keys[0].toTypedArray())
                 t9Key.first().apply {
-                    widthF = 0.18f
+                    widthF = SogouT9Layout.SIDE_WIDTH
                     heightF = 0.75f
                 }
-                t9Key.last().widthF = 0.18f
+                t9Key.sliceArray(1..3).forEach { it.widthF = SogouT9Layout.MAIN_WIDTH }
+                t9Key.last().widthF = SogouT9Layout.SIDE_WIDTH
                 keyBeans.addAll(t9Key)
                 rows.add(keyBeans)
                 keyBeans = LinkedList()
-                t9Key = createT9Keys(keys[1])
-                t9Key.first().mLeftF = 0.185f
-                t9Key.last().widthF = 0.18f
+                t9Key = createT9Keys(keys[1].toTypedArray())
+                t9Key.first().mLeftF = SogouT9Layout.START_X + SogouT9Layout.SIDE_WIDTH
+                t9Key.sliceArray(0..2).forEach { it.widthF = SogouT9Layout.MAIN_WIDTH }
+                t9Key.last().widthF = SogouT9Layout.SIDE_WIDTH
                 keyBeans.addAll(t9Key)
                 rows.add(keyBeans)
                 keyBeans = LinkedList()
-                t9Key = createT9Keys(keys[2])
-                t9Key.first().mLeftF = 0.185f
+                t9Key = createT9Keys(keys[2].toTypedArray())
+                t9Key.first().mLeftF = SogouT9Layout.START_X + SogouT9Layout.SIDE_WIDTH
+                t9Key.sliceArray(0..2).forEach { it.widthF = SogouT9Layout.MAIN_WIDTH }
                 t9Key.last().apply {
-                    widthF = 0.18f
+                    widthF = SogouT9Layout.SIDE_WIDTH
                     stateId = 7
                 }
                 keyBeans.addAll(t9Key)
                 rows.add(keyBeans)
-                keyBeans = lastRows(skbValue)
+                keyBeans = sogouT9LastRow()
                 rows.add(keyBeans)
 
             }
@@ -309,12 +313,8 @@ class KeyboardLoaderUtil private constructor() {
 
     // 键盘最后一行（各键盘统一，数字键盘稍微不同）
     private fun lastRows(skbValue: Int): MutableList<SoftKey> {
-        val enterToggleStates = listOf(ToggleState("去往", 2), ToggleState("搜索", 3), ToggleState("发送", 4),
-            ToggleState("下一个", 5), ToggleState("完成", 6), ToggleState("上一个", 7))
-        val softKeyToggle = createKeyToggle(KeyEvent.KEYCODE_ENTER)
+        val softKeyToggle = createEnterToggle()
         softKeyToggle.widthF = 0.18f
-        softKeyToggle.stateId = 0
-        softKeyToggle.setToggleStates(enterToggleStates)
         val keyBeans = mutableListOf<SoftKey>()
         val t9Keys = when(skbValue){
             InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN, InputModeSwitcher.MASK_SKB_LAYOUT_HANDWRITING, InputModeSwitcher.MASK_SKB_LAYOUT_STROKE ->{
@@ -425,6 +425,29 @@ class KeyboardLoaderUtil private constructor() {
         return keyBeans
     }
 
+    private fun sogouT9LastRow(): MutableList<SoftKey> {
+        val keys = createT9Keys(SogouT9Layout.bottomRowCodes.dropLast(1).toTypedArray())
+        keys.forEachIndexed { index, key -> key.widthF = SogouT9Layout.bottomRowWidths[index] }
+        keys.first().label = "符"
+        return keys.toMutableList().apply {
+            add(createEnterToggle().apply { widthF = SogouT9Layout.bottomRowWidths.last() })
+        }
+    }
+
+    private fun createEnterToggle() = createKeyToggle(KeyEvent.KEYCODE_ENTER).apply {
+        stateId = 0
+        setToggleStates(
+            listOf(
+                ToggleState("去往", 2),
+                ToggleState("搜索", 3),
+                ToggleState("发送", 4),
+                ToggleState("下一个", 5),
+                ToggleState("完成", 6),
+                ToggleState("上一个", 7),
+            )
+        )
+    }
+
     fun changeSKBNumberRow() {
         for (skbValue in mSoftKeyboardMap.keys) {
             loadBaseSkb(skbValue)
@@ -467,7 +490,12 @@ class KeyboardLoaderUtil private constructor() {
                 lastKeyBottom = keyYPos + keyHeight
             }
         }
-        return SoftKeyboard(rows)
+        val isSogouT9 = mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN
+        return SoftKeyboard(
+            rows,
+            keyXMarginScale = if (isSogouT9) SogouT9Layout.X_MARGIN_SCALE else 1f,
+            keyYMarginScale = if (isSogouT9) SogouT9Layout.Y_MARGIN_SCALE else 1f,
+        )
     }
 
     private fun createT9Keys(codes: Array<Int>): Array<SoftKey> {

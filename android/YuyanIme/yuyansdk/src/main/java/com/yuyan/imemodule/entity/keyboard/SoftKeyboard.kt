@@ -8,11 +8,15 @@ import com.yuyan.imemodule.singleton.EnvironmentSingleton
  * The width of the soft keyboard. 键盘的宽度
  * The height of the soft keyboard. 键盘的高度
  */
-class SoftKeyboard(var mKeyRows: List<List<SoftKey>>) {
+class SoftKeyboard(
+    var mKeyRows: List<List<SoftKey>>,
+    keyXMarginScale: Float = 1f,
+    keyYMarginScale: Float = 1f,
+) {
     // 按键左右间隔距离
-    val keyXMargin = EnvironmentSingleton.instance.keyXMargin
+    val keyXMargin = (EnvironmentSingleton.instance.keyXMargin * keyXMarginScale).toInt()
     // 按键上下间隔距离
-    val keyYMargin = EnvironmentSingleton.instance.keyYMargin
+    val keyYMargin = (EnvironmentSingleton.instance.keyYMargin * keyYMarginScale).toInt()
     /**
      * 根据坐标查找按键，如果坐标在某个按键区域内，就返回这个按键，如果坐标不在所有的按键区域内，返回离它最近的按键。
      * 可以在判断坐标在某个按键区域内的时候，并且加上判断离它最近的按键，这样就只需要一次遍历就行了。
