@@ -18,6 +18,7 @@ class ExpressionPanelStateTest {
         state.applyResults(requestId = 1, results = listOf(asset("happy")))
         assertTrue(state.isVisible)
         assertEquals(ExpressionPanelTab.RECOMMENDED, state.selectedTab)
+        assertEquals(ExpressionPanelPresentation.COMPACT, state.presentation)
     }
 
     @Test
@@ -45,6 +46,20 @@ class ExpressionPanelStateTest {
 
         assertEquals(ExpressionPanelTab.TEMPLATES, state.selectedTab)
         assertEquals("放箭", state.query)
+        assertEquals(ExpressionPanelPresentation.EXPANDED, state.presentation)
+    }
+
+    @Test
+    fun `再次点击当前标签展开而新查询恢复紧凑态`() {
+        val state = ExpressionPanelState()
+        state.beginQuery("放箭", requestId = 4)
+        state.applyResults(4, listOf(asset("arrow")))
+
+        state.selectTab(ExpressionPanelTab.RECOMMENDED)
+        assertEquals(ExpressionPanelPresentation.EXPANDED, state.presentation)
+
+        state.beginQuery("你好", requestId = 5)
+        assertEquals(ExpressionPanelPresentation.COMPACT, state.presentation)
     }
 
     @Test
@@ -73,6 +88,7 @@ class ExpressionPanelStateTest {
         assertTrue(state.results.isEmpty())
         assertEquals(null, state.query)
         assertEquals(ExpressionPanelTab.RECOMMENDED, state.selectedTab)
+        assertEquals(ExpressionPanelPresentation.COMPACT, state.presentation)
     }
 
     private fun asset(id: String) = ExpressionAsset(

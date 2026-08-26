@@ -14,6 +14,13 @@ class ExpressionAssetAdapter(
     private val onClick: (ExpressionAsset) -> Unit,
 ) : RecyclerView.Adapter<ExpressionAssetAdapter.AssetHolder>() {
     private var items: List<ExpressionAsset> = emptyList()
+    private var expanded = false
+
+    fun setExpanded(expanded: Boolean) {
+        if (this.expanded == expanded) return
+        this.expanded = expanded
+        notifyDataSetChanged()
+    }
 
     fun submitList(items: List<ExpressionAsset>) {
         this.items = items
@@ -42,6 +49,10 @@ class ExpressionAssetAdapter(
         val image: ImageView = view.findViewById(R.id.expression_asset_image)
 
         fun bind(asset: ExpressionAsset) {
+            itemView.layoutParams = itemView.layoutParams.apply {
+                width = if (expanded) ViewGroup.LayoutParams.MATCH_PARENT else itemSizePx(itemView)
+                height = itemSizePx(itemView)
+            }
             Glide.with(image)
                 .load(previewSource(asset))
                 .centerCrop()
@@ -49,6 +60,9 @@ class ExpressionAssetAdapter(
             itemView.setOnClickListener { onClick(asset) }
         }
     }
+
+    private fun itemSizePx(view: View): Int =
+        (ITEM_SIZE_DP * view.resources.displayMetrics.density).toInt()
 
     private fun previewSource(asset: ExpressionAsset): String {
         val path = if (asset.format.equals("gif", ignoreCase = true)) {
@@ -61,5 +75,9 @@ class ExpressionAssetAdapter(
             path.startsWith("/") -> ServerConfig.baseUrl + path
             else -> "file:///android_asset/expression/$path"
         }
+    }
+
+    private companion object {
+        const val ITEM_SIZE_DP = 104
     }
 }

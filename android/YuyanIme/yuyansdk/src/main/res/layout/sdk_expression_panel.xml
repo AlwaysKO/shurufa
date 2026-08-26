@@ -13,8 +13,10 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:background="@drawable/selector_expression_tab_background"
             android:gravity="center"
             android:text="推荐"
+            android:textColor="@color/selector_expression_tab_text"
             android:textSize="14sp" />
 
         <TextView
@@ -22,8 +24,10 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:background="@drawable/selector_expression_tab_background"
             android:gravity="center"
             android:text="模板"
+            android:textColor="@color/selector_expression_tab_text"
             android:textSize="14sp" />
 
         <TextView
@@ -31,8 +35,10 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:background="@drawable/selector_expression_tab_background"
             android:gravity="center"
             android:text="Emoji"
+            android:textColor="@color/selector_expression_tab_text"
             android:textSize="14sp" />
 
         <ImageButton

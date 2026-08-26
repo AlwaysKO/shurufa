@@ -8,6 +8,11 @@ enum class ExpressionPanelTab {
     EMOJI,
 }
 
+enum class ExpressionPanelPresentation {
+    COMPACT,
+    EXPANDED,
+}
+
 class ExpressionPanelState {
     var query: String? = null
         private set
@@ -16,6 +21,8 @@ class ExpressionPanelState {
     var results: List<ExpressionAsset> = emptyList()
         private set
     var isVisible: Boolean = false
+        private set
+    var presentation: ExpressionPanelPresentation = ExpressionPanelPresentation.COMPACT
         private set
 
     private var requestId = 0L
@@ -27,6 +34,7 @@ class ExpressionPanelState {
         if (normalized != this.query) {
             dismissedQuery = null
             selectedTab = ExpressionPanelTab.RECOMMENDED
+            presentation = ExpressionPanelPresentation.COMPACT
         }
         this.query = normalized
         this.requestId = requestId
@@ -45,11 +53,13 @@ class ExpressionPanelState {
 
     fun selectTab(tab: ExpressionPanelTab) {
         selectedTab = tab
+        presentation = ExpressionPanelPresentation.EXPANDED
     }
 
     fun dismiss() {
         dismissedQuery = query
         isVisible = false
+        presentation = ExpressionPanelPresentation.COMPACT
     }
 
     fun clear() {
@@ -57,6 +67,7 @@ class ExpressionPanelState {
         selectedTab = ExpressionPanelTab.RECOMMENDED
         results = emptyList()
         isVisible = false
+        presentation = ExpressionPanelPresentation.COMPACT
         dismissedQuery = null
         requestId += 1
     }

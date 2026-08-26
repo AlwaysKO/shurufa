@@ -7,12 +7,14 @@ import android.view.View
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.yuyan.imemodule.R
 import com.yuyan.imemodule.expression.ExpressionCatalog
 import com.yuyan.imemodule.expression.ExpressionPanelState
 import com.yuyan.imemodule.expression.ExpressionPanelTab
+import com.yuyan.imemodule.expression.ExpressionPanelPresentation
 import com.yuyan.imemodule.expression.model.ExpressionAsset
 
 class ExpressionPanel @JvmOverloads constructor(
@@ -22,6 +24,7 @@ class ExpressionPanel @JvmOverloads constructor(
     private val recommendedTab: TextView
     private val templatesTab: TextView
     private val emojiTab: TextView
+    private val content: View
     private val assetList: RecyclerView
     private val emojiPicker: EmojiCombinationPicker
     private val adapter = ExpressionAssetAdapter { onAssetClick?.invoke(it) }
@@ -46,6 +49,7 @@ class ExpressionPanel @JvmOverloads constructor(
         recommendedTab = findViewById(R.id.expression_tab_recommended)
         templatesTab = findViewById(R.id.expression_tab_templates)
         emojiTab = findViewById(R.id.expression_tab_emoji)
+        content = findViewById(R.id.expression_content)
         findViewById<ImageButton>(R.id.expression_close).setOnClickListener { onDismiss?.invoke() }
         assetList = findViewById<RecyclerView>(R.id.expression_asset_list).apply {
             layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
@@ -62,6 +66,16 @@ class ExpressionPanel @JvmOverloads constructor(
         recommendedTab.isSelected = state.selectedTab == ExpressionPanelTab.RECOMMENDED
         templatesTab.isSelected = state.selectedTab == ExpressionPanelTab.TEMPLATES
         emojiTab.isSelected = state.selectedTab == ExpressionPanelTab.EMOJI
+        val expanded = state.presentation == ExpressionPanelPresentation.EXPANDED
+        content.layoutParams = content.layoutParams.apply {
+            height = dp(if (expanded) EXPANDED_CONTENT_HEIGHT_DP else COMPACT_CONTENT_HEIGHT_DP)
+        }
+        assetList.layoutManager = if (expanded) {
+            GridLayoutManager(context, EXPANDED_SPAN_COUNT)
+        } else {
+            LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+        }
+        adapter.setExpanded(expanded)
         val showingEmoji = state.selectedTab == ExpressionPanelTab.EMOJI
         assetList.visibility = if (showingEmoji) View.GONE else View.VISIBLE
         emojiPicker.visibility = if (showingEmoji) View.VISIBLE else View.GONE
@@ -76,4 +90,12 @@ class ExpressionPanel @JvmOverloads constructor(
     }
 
     fun resetEmojiSelection() = emojiPicker.reset()
+
+    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
+
+    private companion object {
+        const val COMPACT_CONTENT_HEIGHT_DP = 116
+        const val EXPANDED_CONTENT_HEIGHT_DP = 300
+        const val EXPANDED_SPAN_COUNT = 3
+    }
 }

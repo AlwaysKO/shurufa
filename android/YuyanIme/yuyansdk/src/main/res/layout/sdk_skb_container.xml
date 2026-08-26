@@ -23,7 +23,7 @@
         <com.yuyan.imemodule.expression.ui.ExpressionPanel
             android:id="@+id/expression_panel"
             android:layout_width="match_parent"
-            android:layout_height="156dp"
+            android:layout_height="wrap_content"
             android:visibility="gone" />
         <!--候选词视图，即 键盘顶部分的视图，分情况显示候选词，或者显示顶部操作栏-->
         <com.yuyan.imemodule.view.CandidatesBar
