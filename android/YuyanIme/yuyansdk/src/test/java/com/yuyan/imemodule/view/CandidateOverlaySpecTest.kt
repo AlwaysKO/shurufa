@@ -1,6 +1,9 @@
 package com.yuyan.imemodule.view
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -42,5 +45,16 @@ class CandidateOverlaySpecTest {
         assertEquals(overlay, candidates.parent)
         assertEquals(FrameLayout.LayoutParams.MATCH_PARENT, candidates.layoutParams.width)
         assertTrue(action.translationZ > candidates.translationZ)
+    }
+
+    @Test
+    fun `关闭区域背景从左到右均完全不透明`() {
+        val drawable = createCandidateActionBackground(0x00eceff1)
+        val bitmap = Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888)
+        drawable.setBounds(0, 0, bitmap.width, bitmap.height)
+        drawable.draw(Canvas(bitmap))
+
+        assertEquals(255, Color.alpha(bitmap.getPixel(1, 24)))
+        assertEquals(255, Color.alpha(bitmap.getPixel(46, 24)))
     }
 }

@@ -1,6 +1,7 @@
 package com.yuyan.imemodule.view
 
 import android.content.Context
+import android.graphics.drawable.ColorDrawable
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.ContextThemeWrapper
@@ -71,6 +72,9 @@ internal fun createCandidateOverlay(
     }
 }
 
+internal fun createCandidateActionBackground(color: Number): ColorDrawable =
+    ColorDrawable(color.toInt() or 0xff000000.toInt())
+
 /**
  * 候选词集装箱
  */
@@ -113,7 +117,7 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
                 isClickable = true
                 isEnabled = true
                 setImageResource(R.drawable.sdk_level_list_candidates_display)
-                setBackgroundResource(R.drawable.shape_candidate_action_overlay)
+                background = createCandidateActionBackground(ThemeManager.activeTheme.barColor)
                 setPadding(dp(12), dp(12), dp(13), dp(13))
             }
             mRVCandidates = RecyclerView(context).apply {
