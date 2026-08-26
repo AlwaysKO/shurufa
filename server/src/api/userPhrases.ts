@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import type pg from 'pg';
 
-const DEFAULT_USER_ID = process.env.DEFAULT_USER_ID ?? '00000000-0000-0000-0000-000000000001';
 
 export function createMobilePhraseRouter(pool: pg.Pool): Router {
   const router = Router();
@@ -14,7 +13,7 @@ export function createMobilePhraseRouter(pool: pg.Pool): Router {
          FROM user_phrase
          WHERE user_id = $1
          ORDER BY sort_order DESC, id DESC`,
-        [DEFAULT_USER_ID],
+        [res.locals.userId],
       );
       const phrases = (result.rows as Array<Record<string, unknown>>).map((r) => ({
         id: r.id,
@@ -36,9 +35,9 @@ export function createMobilePhraseRouter(pool: pg.Pool): Router {
       const result = await pool.query(
         `INSERT INTO user_phrase (user_id, content)
          VALUES ($1, $2)
-         ON CONFLICT (content) DO UPDATE SET updated_at = NOW()
+         ON CONFLICT (user_id, content) DO UPDATE SET updated_at = NOW()
          RETURNING id, content, sort_order`,
-        [DEFAULT_USER_ID, content],
+        [res.locals.userId, content],
       );
       const row = result.rows[0] as Record<string, unknown>;
       res.status(201).json({ id: row.id, content: row.content });
@@ -54,7 +53,7 @@ export function createMobilePhraseRouter(pool: pg.Pool): Router {
       if (!content) return res.status(400).json({ error: 'content required' });
       await pool.query(
         `UPDATE user_phrase SET use_count = use_count + 1 WHERE user_id = $1 AND content = $2`,
-        [DEFAULT_USER_ID, content],
+        [res.locals.userId, content],
       );
       res.json({ ok: true });
     } catch (err) {
@@ -77,7 +76,7 @@ export function createDashboardPhraseRouter(pool: pg.Pool): Router {
          FROM user_phrase
          WHERE user_id = $1 AND ($2 = '' OR content ILIKE '%' || $2 || '%')
          ORDER BY sort_order DESC, use_count DESC, id DESC`,
-        [DEFAULT_USER_ID, q],
+        [res.locals.userId, q],
       );
       const phrases = (result.rows as Array<Record<string, unknown>>).map((r) => ({
         id: r.id,
@@ -102,9 +101,9 @@ export function createDashboardPhraseRouter(pool: pg.Pool): Router {
       const result = await pool.query(
         `INSERT INTO user_phrase (user_id, content)
          VALUES ($1, $2)
-         ON CONFLICT (content) DO UPDATE SET updated_at = NOW()
+         ON CONFLICT (user_id, content) DO UPDATE SET updated_at = NOW()
          RETURNING id, content, sort_order, use_count, created_at`,
-        [DEFAULT_USER_ID, content],
+        [res.locals.userId, content],
       );
       const row = result.rows[0] as Record<string, unknown>;
       res.status(201).json({
@@ -130,7 +129,7 @@ export function createDashboardPhraseRouter(pool: pg.Pool): Router {
       }
       await pool.query(
         `UPDATE user_phrase SET content = $1, updated_at = NOW() WHERE id = $2 AND user_id = $3`,
-        [content, id, DEFAULT_USER_ID],
+        [content, id, res.locals.userId],
       );
       res.json({ ok: true });
     } catch (err) {
@@ -145,7 +144,7 @@ export function createDashboardPhraseRouter(pool: pg.Pool): Router {
       if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: 'invalid id' });
       const result = await pool.query(
         `DELETE FROM user_phrase WHERE id = $1 AND user_id = $2`,
-        [id, DEFAULT_USER_ID],
+        [id, res.locals.userId],
       );
       if (result.rowCount === 0) return res.status(404).json({ error: 'not found' });
       res.json({ ok: true });

@@ -57,11 +57,22 @@ beforeEach(async () => {
     'e'.repeat(64),
     new Date('2026-08-20T11:00:00.000Z'),
   ]);
+  await pool.query(`INSERT INTO chat_message
+    (id, user_id, device_id, conversation_id, platform, fingerprint,
+     content_fingerprint, sender_key, direction, message_type, text, captured_at)
+    VALUES ($1, $2, $2, $3, 'wechat', $4, $5, 'other', 'incoming', 'text', '其他手机', $6)`, [
+    crypto.randomUUID(),
+    '00000000-0000-4000-8000-000000000099',
+    conversationId,
+    'f'.repeat(64),
+    '0'.repeat(64),
+    new Date('2026-08-20T12:00:00.000Z'),
+  ]);
 });
 
 describe('chat dashboard API', () => {
   it('概览返回稳定的会话、消息和媒体计数', async () => {
-    const response = await request(createApp(pool)).get('/api/v1/dashboard/chat/overview');
+    const response = await request(createApp(pool)).get(`/api/v1/dashboard/chat/overview?user_id=${userId}`);
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
@@ -73,7 +84,7 @@ describe('chat dashboard API', () => {
 
   it('会话列表返回稳定字段并支持分页', async () => {
     const response = await request(createApp(pool))
-      .get('/api/v1/dashboard/chat/conversations?page=1&page_size=1');
+      .get(`/api/v1/dashboard/chat/conversations?page=1&page_size=1&user_id=${userId}`);
 
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({ page: 1, page_size: 1, total: 1 });
@@ -90,7 +101,7 @@ describe('chat dashboard API', () => {
 
   it('消息列表返回资源 URL、方向、类型、发送者、文本、时间和平台', async () => {
     const response = await request(createApp(pool))
-      .get(`/api/v1/dashboard/chat/messages?conversation_id=${conversationId}&page=2&page_size=1`);
+      .get(`/api/v1/dashboard/chat/messages?conversation_id=${conversationId}&page=2&page_size=1&user_id=${userId}`);
 
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({ page: 2, page_size: 1, total: 2 });

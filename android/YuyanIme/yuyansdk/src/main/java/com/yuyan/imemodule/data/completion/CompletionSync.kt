@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
 import com.yuyan.imemodule.data.collect.ServerConfig
+import com.yuyan.imemodule.data.collect.DataCollector
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -25,7 +26,7 @@ import java.util.concurrent.TimeUnit
  */
 object CompletionSync {
 
-    private const val KEY_VERSION = "completion_sync_version"
+    private const val KEY_VERSION_PREFIX = "completion_sync_version:"
     private const val SYNC_INTERVAL_MS = 30 * 60 * 1000L
     private const val CANDIDATE_COMMENT = "☁️" // 候选栏标记：服务端补全候选
     private const val MAX_QUERY_TAIL = 6 // 服务端最多生成 6 字前缀，只匹配文本末尾 6 字
@@ -43,12 +44,17 @@ object CompletionSync {
     @Volatile
     private var prefs: SharedPreferences? = null
     @Volatile
+    private var deviceId: String? = null
+    private var versionKey: String = KEY_VERSION_PREFIX
+    @Volatile
     private var syncedVersion = 0
 
     fun init(context: Context) {
         val app = context.applicationContext
         prefs = PreferenceManager.getDefaultSharedPreferences(app)
-        syncedVersion = prefs?.getInt(KEY_VERSION, 0) ?: 0
+        deviceId = DataCollector.deviceId(app)
+        versionKey = KEY_VERSION_PREFIX + deviceId
+        syncedVersion = prefs?.getInt(versionKey, 0) ?: 0
         scope.launch {
             sync(app)
             while (true) {
@@ -110,11 +116,20 @@ object CompletionSync {
             val request = Request.Builder()
                 .url(ServerConfig.baseUrl + "/api/v1/mobile/completions?since=$syncedVersion")
                 .header("Content-Type", "application/json")
+                .header("X-Device-Id", deviceId ?: return)
                 .get()
                 .build()
             http.newCall(request).execute().use { resp ->
                 if (!resp.isSuccessful) return
                 val data = json.decodeFromString(CompletionSyncResponse.serializer(), resp.body?.string() ?: return)
+                if (data.version < syncedVersion) {
+                    synchronized(lock) {
+                        cache.clear()
+                        syncedVersion = 0
+                    }
+                    prefs?.edit()?.putInt(versionKey, 0)?.apply()
+                    return sync(context)
+                }
                 if (data.version <= syncedVersion) return
                 synchronized(lock) {
                     data.candidates.forEach { c ->
@@ -124,7 +139,7 @@ object CompletionSync {
                     }
                     syncedVersion = data.version
                 }
-                prefs?.edit()?.putInt(KEY_VERSION, syncedVersion)?.apply()
+                prefs?.edit()?.putInt(versionKey, syncedVersion)?.apply()
             }
         } catch (_: Exception) {
             // 同步失败静默，下一周期重试
@@ -135,6 +150,7 @@ object CompletionSync {
         val request = Request.Builder()
             .url(ServerConfig.baseUrl + path)
             .header("Content-Type", "application/json")
+            .header("X-Device-Id", deviceId ?: error("CompletionSync is not initialized"))
             .post(bodyJson.toRequestBody("application/json; charset=utf-8".toMediaType()))
             .build()
         return http.newCall(request).execute()

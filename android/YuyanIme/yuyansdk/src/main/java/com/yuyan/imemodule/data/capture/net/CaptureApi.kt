@@ -39,6 +39,7 @@ private data class MessageBatchRequest(
 
 class CaptureApi(
     baseUrl: String,
+    private val deviceId: String,
     private val http: OkHttpClient = OkHttpClient(),
 ) {
     private val baseUrl = baseUrl.trimEnd('/')
@@ -79,6 +80,7 @@ class CaptureApi(
     private fun post(path: String, jsonBody: String): Boolean {
         val request = Request.Builder()
             .url(baseUrl + path)
+            .header("X-Device-Id", deviceId)
             .post(jsonBody.toRequestBody(JSON_MEDIA_TYPE))
             .build()
         return http.newCall(request).execute().use { response -> response.isSuccessful }

@@ -5,7 +5,6 @@ import { mkdirSync, writeFileSync, unlinkSync, existsSync } from 'node:fs';
 import { join, extname } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
-const DEFAULT_USER_ID = process.env.DEFAULT_USER_ID ?? '00000000-0000-0000-0000-000000000001';
 
 /** 表情包文件存储目录（server/uploads/stickers），由 app.ts 挂载为 /uploads 静态路径 */
 const STICKER_DIR = join(process.cwd(), 'uploads', 'stickers');
@@ -37,7 +36,7 @@ export function createMobileStickerRouter(pool: pg.Pool): Router {
          WHERE user_id = $1 AND ($2 = '' OR keywords ILIKE '%' || $2 || '%')
          ORDER BY use_count DESC, id DESC
          LIMIT $3`,
-        [DEFAULT_USER_ID, q, limit],
+        [res.locals.userId, q, limit],
       );
       const stickers = (result.rows as Array<Record<string, unknown>>).map((r) => ({
         id: r.id,
@@ -57,7 +56,10 @@ export function createMobileStickerRouter(pool: pg.Pool): Router {
     try {
       const id = Number(req.params.id);
       if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: 'invalid id' });
-      await pool.query(`UPDATE sticker SET use_count = use_count + 1 WHERE id = $1`, [id]);
+      await pool.query(
+        `UPDATE sticker SET use_count = use_count + 1 WHERE id = $1 AND user_id = $2`,
+        [id, res.locals.userId],
+      );
       res.json({ ok: true });
     } catch (err) {
       next(err);
@@ -79,7 +81,7 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
          FROM sticker
          WHERE user_id = $1 AND ($2 = '' OR keywords ILIKE '%' || $2 || '%')
          ORDER BY id DESC`,
-        [DEFAULT_USER_ID, q],
+        [res.locals.userId, q],
       );
       const stickers = (result.rows as Array<Record<string, unknown>>).map((r) => ({
         id: r.id,
@@ -122,7 +124,7 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
         `INSERT INTO sticker (user_id, keywords, file_name, format, width, height)
          VALUES ($1, $2, $3, $4, $5, $6)
          RETURNING id, keywords, file_name, format, width, height, use_count, created_at`,
-        [DEFAULT_USER_ID, keywords, fileName, format, body.width ?? null, body.height ?? null],
+        [res.locals.userId, keywords, fileName, format, body.width ?? null, body.height ?? null],
       );
       const row = result.rows[0] as Record<string, unknown>;
       res.status(201).json({
@@ -150,7 +152,7 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
       await pool.query(`UPDATE sticker SET keywords = $1 WHERE id = $2 AND user_id = $3`, [
         keywords,
         id,
-        DEFAULT_USER_ID,
+        res.locals.userId,
       ]);
       res.json({ ok: true });
     } catch (err) {
@@ -165,7 +167,7 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
       if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: 'invalid id' });
       const result = await pool.query(
         `DELETE FROM sticker WHERE id = $1 AND user_id = $2 RETURNING file_name`,
-        [id, DEFAULT_USER_ID],
+        [id, res.locals.userId],
       );
       if (result.rowCount === 0) return res.status(404).json({ error: 'not found' });
       const fileName = (result.rows[0] as { file_name: string }).file_name;

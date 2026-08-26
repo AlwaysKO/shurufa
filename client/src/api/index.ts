@@ -1,4 +1,29 @@
 /** 与后端 /api/v1/dashboard/* 对应的数据类型 */
+import { ref } from 'vue';
+
+const USER_STORAGE_KEY = 'shurufa_dashboard_user_id';
+export const currentUserId = ref(localStorage.getItem(USER_STORAGE_KEY) ?? '');
+
+export function setCurrentUserId(userId: string): void {
+  currentUserId.value = userId;
+  if (userId) localStorage.setItem(USER_STORAGE_KEY, userId);
+  else localStorage.removeItem(USER_STORAGE_KEY);
+}
+
+export function scopedAssetUrl(url: string): string {
+  if (!url.startsWith('/uploads/') || !currentUserId.value) return url;
+  const parsed = new URL(url, window.location.origin);
+  parsed.searchParams.set('user_id', currentUserId.value);
+  return `${parsed.pathname}${parsed.search}`;
+}
+
+function withDashboardUser(url: string): string {
+  if (!url.startsWith('/api/v1/dashboard') || !currentUserId.value) return url;
+  const parsed = new URL(url, window.location.origin);
+  parsed.searchParams.set('user_id', currentUserId.value);
+  return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+}
+
 export interface OverviewData {
   days: number;
   today: { input_events: string; input_chars: string; clipboard_count: string; delete_count: string };
@@ -78,6 +103,8 @@ export interface ClipboardData {
 
 export interface DeviceRow {
   id: string;
+  dashboard_name: string | null;
+  tags: string | null;
   name: string | null;
   platform: string | null;
   model: string | null;
@@ -92,6 +119,13 @@ export interface DeviceRow {
   rom_version: string | null;
   ram_mb: number | null;
   last_seen_at: string;
+}
+
+export interface UserDirectoryPage {
+  total: number;
+  page: number;
+  page_size: number;
+  users: DeviceRow[];
 }
 
 export interface ActivityItem {
@@ -355,11 +389,13 @@ export interface StickerCandidateResponse {
 
 /** 删除文件：fetch 删除 JSON 外的二进制响应 */
 async function del(url: string): Promise<void> {
+  url = withDashboardUser(url);
   const res = await fetch(url, { method: 'DELETE' });
   if (!res.ok) throw new Error(`API ${url} failed: ${res.status}`);
 }
 
 async function patch<T>(url: string, body: unknown): Promise<T> {
+  url = withDashboardUser(url);
   const res = await fetch(url, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
@@ -370,12 +406,14 @@ async function patch<T>(url: string, body: unknown): Promise<T> {
 }
 
 async function get<T>(url: string): Promise<T> {
+  url = withDashboardUser(url);
   const res = await fetch(url);
   if (!res.ok) throw new Error(`API ${url} failed: ${res.status}`);
   return res.json() as Promise<T>;
 }
 
 async function post<T>(url: string, body: unknown): Promise<T> {
+  url = withDashboardUser(url);
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -386,6 +424,7 @@ async function post<T>(url: string, body: unknown): Promise<T> {
 }
 
 async function put<T>(url: string, body: unknown): Promise<T> {
+  url = withDashboardUser(url);
   const res = await fetch(url, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -406,6 +445,16 @@ export const api = {
   prefixes: () => get<{ prefixes: PrefixRow[] }>(`/api/v1/dashboard/prefixes`),
   completions: () => get<CompletionStats>(`/api/v1/dashboard/completions`),
   clipboard: (days = 30) => get<ClipboardData>(`/api/v1/dashboard/clipboard?days=${days}`),
+  users: (query: { q?: string; id?: string; page?: number; page_size?: number } = {}) => {
+    const p = new URLSearchParams();
+    if (query.q) p.set('q', query.q);
+    if (query.id) p.set('id', query.id);
+    if (query.page) p.set('page', String(query.page));
+    if (query.page_size) p.set('page_size', String(query.page_size));
+    return get<UserDirectoryPage>(`/api/v1/dashboard/users?${p.toString()}`);
+  },
+  updateUser: (id: string, body: { dashboard_name: string; tags: string }) =>
+    patch<{ user: DeviceRow }>(`/api/v1/dashboard/users/${id}`, body),
   devices: () => get<{ devices: DeviceRow[] }>(`/api/v1/dashboard/devices`),
   events: (query: ActivityQuery = {}) => {
     const p = new URLSearchParams();
@@ -513,6 +562,7 @@ export const eventTypeName = (t: string): string =>
 /** 设备显示名：品牌 + 型号（+ 自定义名） */
 export const deviceLabel = (d?: DeviceRow | null): string => {
   if (!d) return '-';
+  if (d.dashboard_name?.trim()) return d.dashboard_name.trim();
   const parts = [d.brand, d.model, d.name].filter(Boolean);
   return parts.join(' ') || d.id.slice(0, 8);
 };

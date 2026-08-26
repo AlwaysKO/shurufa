@@ -83,6 +83,7 @@ describe('relationship APIs', () => {
 
     const response = await request(createApp(pool))
       .post('/api/v1/mobile/relationships/candidates')
+      .set('X-Device-Id', USER_ID)
       .send({
         platform: 'wechat',
         account_key: 'account',
@@ -101,6 +102,7 @@ describe('relationship APIs', () => {
   it('移动端未知会话安全返回空候选且非法请求返回 400', async () => {
     const missing = await request(createApp(pool))
       .post('/api/v1/mobile/relationships/candidates')
+      .set('X-Device-Id', USER_ID)
       .send({ platform: 'qq', account_key: 'account', external_key: 'missing' });
     expect(missing.status).toBe(200);
     expect(missing.body).toMatchObject({
@@ -111,6 +113,7 @@ describe('relationship APIs', () => {
 
     const invalid = await request(createApp(pool))
       .post('/api/v1/mobile/relationships/candidates')
+      .set('X-Device-Id', USER_ID)
       .send({ platform: 'wechat', account_key: 'account' });
     expect(invalid.status).toBe(400);
     expect(invalid.body.error).toContain('external_key');
@@ -124,6 +127,7 @@ describe('relationship APIs', () => {
 
     const response = await request(createApp(pool))
       .post('/api/v1/mobile/relationships/sticker-candidates')
+      .set('X-Device-Id', USER_ID)
       .send({
         platform: 'wechat',
         account_key: 'account',
@@ -142,6 +146,7 @@ describe('relationship APIs', () => {
   it('移动端表情候选对未知会话安全返回空结果并拒绝非法哈希', async () => {
     const missing = await request(createApp(pool))
       .post('/api/v1/mobile/relationships/sticker-candidates')
+      .set('X-Device-Id', USER_ID)
       .send({
         platform: 'qq',
         account_key: 'account',
@@ -157,6 +162,7 @@ describe('relationship APIs', () => {
 
     const invalid = await request(createApp(pool))
       .post('/api/v1/mobile/relationships/sticker-candidates')
+      .set('X-Device-Id', USER_ID)
       .send({
         platform: 'wechat',
         account_key: 'account',
@@ -171,7 +177,7 @@ describe('relationship APIs', () => {
     await addMessage('outgoing', '好的');
 
     const response = await request(createApp(pool))
-      .get('/api/v1/dashboard/relationships?page=1&page_size=10');
+      .get(`/api/v1/dashboard/relationships?page=1&page_size=10&user_id=${USER_ID}`);
 
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({ total: 1, page: 1, page_size: 10 });
@@ -196,20 +202,20 @@ describe('relationship APIs', () => {
       notes: '可以开玩笑',
     };
     const created = await request(app)
-      .put(`/api/v1/dashboard/relationships/${conversationId}`)
+      .put(`/api/v1/dashboard/relationships/${conversationId}?user_id=${USER_ID}`)
       .send(payload);
     expect(created.status).toBe(200);
     expect(created.body.profile).toMatchObject(payload);
 
     const updated = await request(app)
-      .put(`/api/v1/dashboard/relationships/${conversationId}`)
+      .put(`/api/v1/dashboard/relationships/${conversationId}?user_id=${USER_ID}`)
       .send({ ...payload, alias: '老明', humor_level: 80 });
     expect(updated.status).toBe(200);
     expect(updated.body.profile).toMatchObject({ alias: '老明', humor_level: 80 });
     expect((await pool.query('SELECT id FROM relationship_profile')).rowCount).toBe(1);
 
     const invalid = await request(app)
-      .put(`/api/v1/dashboard/relationships/${conversationId}`)
+      .put(`/api/v1/dashboard/relationships/${conversationId}?user_id=${USER_ID}`)
       .send({ ...payload, relationship_type: 'stranger' });
     expect(invalid.status).toBe(400);
     expect(invalid.body.error).toContain('relationship_type');
@@ -221,7 +227,7 @@ describe('relationship APIs', () => {
       VALUES ($1, 'wechat', 'account', 'other', 'direct', 0.95)
       RETURNING id`, [randomUUID()]);
     const forbidden = await request(createApp(pool))
-      .put(`/api/v1/dashboard/relationships/${otherUserConversation.rows[0].id}`)
+      .put(`/api/v1/dashboard/relationships/${otherUserConversation.rows[0].id}?user_id=${USER_ID}`)
       .send({
         relationship_type: 'friend',
         intimacy_level: 50,
@@ -232,7 +238,7 @@ describe('relationship APIs', () => {
     await addMessage('incoming', '吃饭了吗');
     await addMessage('outgoing', '刚吃完');
     const preview = await request(createApp(pool))
-      .get(`/api/v1/dashboard/relationships/${conversationId}/candidates`)
+      .get(`/api/v1/dashboard/relationships/${conversationId}/candidates?user_id=${USER_ID}`)
       .query({ context_text: '吃饭了吗', limit: 3 });
     expect(preview.status).toBe(200);
     expect(preview.body.candidates[0]).toMatchObject({
@@ -249,12 +255,12 @@ describe('relationship APIs', () => {
     const app = createApp(pool);
 
     const recent = await request(app)
-      .get(`/api/v1/dashboard/relationships/${conversationId}/incoming-sticker-assets`);
+      .get(`/api/v1/dashboard/relationships/${conversationId}/incoming-sticker-assets?user_id=${USER_ID}`);
     expect(recent.status).toBe(200);
     expect(recent.body.assets[0]).toMatchObject({ sha256: incoming });
 
     const preview = await request(app)
-      .get(`/api/v1/dashboard/relationships/${conversationId}/sticker-candidates`)
+      .get(`/api/v1/dashboard/relationships/${conversationId}/sticker-candidates?user_id=${USER_ID}`)
       .query({ incoming_asset_sha256: incoming, limit: 3 });
     expect(preview.status).toBe(200);
     expect(preview.body.candidates[0]).toMatchObject({
@@ -271,9 +277,9 @@ describe('relationship APIs', () => {
     const id = otherUserConversation.rows[0].id;
 
     const recent = await request(createApp(pool))
-      .get(`/api/v1/dashboard/relationships/${id}/incoming-sticker-assets`);
+      .get(`/api/v1/dashboard/relationships/${id}/incoming-sticker-assets?user_id=${USER_ID}`);
     const preview = await request(createApp(pool))
-      .get(`/api/v1/dashboard/relationships/${id}/sticker-candidates`);
+      .get(`/api/v1/dashboard/relationships/${id}/sticker-candidates?user_id=${USER_ID}`);
 
     expect(recent.status).toBe(404);
     expect(preview.status).toBe(404);

@@ -9,6 +9,7 @@ import {
   type StickerAssetCandidate,
   type StickerCandidateSource,
   type ZeroTokenCandidateRow,
+  scopedAssetUrl,
 } from '../api';
 
 const relationships = ref<RelationshipRow[]>([]);
@@ -277,14 +278,14 @@ onMounted(() => load());
             :disabled="stickerLoading"
             @click="previewStickers(asset.sha256)"
           >
-            <img :src="asset.url" alt="收到的表情" />
+            <img :src="scopedAssetUrl(asset.url)" alt="收到的表情" />
           </button>
         </div>
         <p v-if="stickerLoading" class="empty">加载表情候选中…</p>
         <p v-else-if="stickerCandidates.length === 0" class="empty">暂无表情候选</p>
         <div v-else class="sticker-candidate-list">
           <article v-for="candidate in stickerCandidates" :key="candidate.sha256">
-            <img :src="candidate.url" alt="候选表情" />
+            <img :src="scopedAssetUrl(candidate.url)" alt="候选表情" />
             <span>{{ stickerSourceNames[candidate.source] }}</span>
             <small>使用 {{ candidate.use_count }} 次</small>
             <small>{{ formatTime(candidate.last_used_at) }}</small>

@@ -5,6 +5,7 @@ import com.yuyan.imemodule.data.capture.db.CaptureDao
 import com.yuyan.imemodule.data.capture.db.CaptureDatabase
 import com.yuyan.imemodule.data.capture.db.PendingAssetEntity
 import com.yuyan.imemodule.data.capture.db.PendingMessageEntity
+import com.yuyan.imemodule.data.collect.DataCollector
 import com.yuyan.imemodule.data.collect.ServerConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -133,7 +134,7 @@ class CaptureUploader(
                 val database = CaptureDatabase.create(appContext)
                 val uploader = CaptureUploader(
                     dao = database.captureDao(),
-                    api = CaptureApi(ServerConfig.baseUrl),
+                    api = CaptureApi(ServerConfig.baseUrl, DataCollector.deviceId(appContext)),
                     assetFile = { hash -> File(appContext.cacheDir, "chat-capture/$hash") },
                 )
                 uploadJob = CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {

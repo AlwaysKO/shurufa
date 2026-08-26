@@ -12,7 +12,6 @@ import {
 import { getZeroTokenCandidates } from '../relationship/zeroTokenCandidates.js';
 import type { RelationshipConversationIdentity } from '../types/relationship.js';
 
-const DEFAULT_USER_ID = process.env.DEFAULT_USER_ID ?? '00000000-0000-0000-0000-000000000001';
 
 function validationMessage(error: unknown): string {
   return error instanceof Error ? error.message : 'invalid request';
@@ -42,7 +41,7 @@ export function createRelationshipDashboardRouter(pool: pg.Pool): Router {
       const [totalResult, rowsResult] = await Promise.all([
         pool.query<{ count: string }>(
           'SELECT COUNT(*) AS count FROM chat_conversation WHERE user_id = $1',
-          [DEFAULT_USER_ID],
+          [res.locals.userId],
         ),
         pool.query(
           `SELECT c.id AS conversation_id, c.platform, c.account_key, c.external_key,
@@ -64,7 +63,7 @@ export function createRelationshipDashboardRouter(pool: pg.Pool): Router {
                     r.humor_level, r.notes, r.updated_at
            ORDER BY c.last_seen_at DESC, c.id DESC
            LIMIT $2 OFFSET $3`,
-          [DEFAULT_USER_ID, pageSize, offset],
+          [res.locals.userId, pageSize, offset],
         ),
       ]);
       res.json({
@@ -99,7 +98,7 @@ export function createRelationshipDashboardRouter(pool: pg.Pool): Router {
       }
       const owned = await pool.query(
         'SELECT id FROM chat_conversation WHERE id = $1 AND user_id = $2',
-        [id, DEFAULT_USER_ID],
+        [id, res.locals.userId],
       );
       if (owned.rowCount === 0) return res.status(404).json({ error: 'conversation not found' });
 
@@ -118,7 +117,7 @@ export function createRelationshipDashboardRouter(pool: pg.Pool): Router {
          RETURNING conversation_id, relationship_type, alias,
                    intimacy_level, humor_level, notes, created_at, updated_at`,
         [
-          DEFAULT_USER_ID,
+          res.locals.userId,
           id,
           input.relationship_type,
           input.alias ?? null,
@@ -152,7 +151,7 @@ export function createRelationshipDashboardRouter(pool: pg.Pool): Router {
         `SELECT platform, account_key, external_key
          FROM chat_conversation
          WHERE id = $1 AND user_id = $2`,
-        [id, DEFAULT_USER_ID],
+        [id, res.locals.userId],
       );
       if (conversation.rowCount === 0) {
         return res.status(404).json({ error: 'conversation not found' });
@@ -169,7 +168,7 @@ export function createRelationshipDashboardRouter(pool: pg.Pool): Router {
       }
       const result = await getZeroTokenCandidates(
         pool,
-        DEFAULT_USER_ID,
+        res.locals.userId,
         query.identity,
         query.contextText,
         query.limit,
@@ -188,7 +187,7 @@ export function createRelationshipDashboardRouter(pool: pg.Pool): Router {
         `SELECT platform, account_key, external_key
          FROM chat_conversation
          WHERE id = $1 AND user_id = $2`,
-        [id, DEFAULT_USER_ID],
+        [id, res.locals.userId],
       );
       if (conversation.rowCount === 0) {
         return res.status(404).json({ error: 'conversation not found' });
@@ -204,7 +203,7 @@ export function createRelationshipDashboardRouter(pool: pg.Pool): Router {
       }
       const assets = await getRecentIncomingStickerAssets(
         pool,
-        DEFAULT_USER_ID,
+        res.locals.userId,
         id,
         query.limit,
       );
@@ -222,7 +221,7 @@ export function createRelationshipDashboardRouter(pool: pg.Pool): Router {
         `SELECT platform, account_key, external_key
          FROM chat_conversation
          WHERE id = $1 AND user_id = $2`,
-        [id, DEFAULT_USER_ID],
+        [id, res.locals.userId],
       );
       if (conversation.rowCount === 0) {
         return res.status(404).json({ error: 'conversation not found' });
@@ -241,7 +240,7 @@ export function createRelationshipDashboardRouter(pool: pg.Pool): Router {
       }
       const result = await getStickerCounterattackCandidates(
         pool,
-        DEFAULT_USER_ID,
+        res.locals.userId,
         query.identity,
         query.incomingAssetSha256,
         query.limit,

@@ -7,7 +7,6 @@ import {
 import { getStickerCounterattackCandidates } from '../relationship/stickerCounterattack.js';
 import { getZeroTokenCandidates } from '../relationship/zeroTokenCandidates.js';
 
-const DEFAULT_USER_ID = process.env.DEFAULT_USER_ID ?? '00000000-0000-0000-0000-000000000001';
 
 function validationMessage(error: unknown): string {
   return error instanceof Error ? error.message : 'invalid request';
@@ -26,7 +25,7 @@ export function createMobileRelationshipsRouter(pool: pg.Pool): Router {
       }
       const result = await getZeroTokenCandidates(
         pool,
-        DEFAULT_USER_ID,
+        res.locals.userId,
         query.identity,
         query.contextText,
         query.limit,
@@ -47,7 +46,7 @@ export function createMobileRelationshipsRouter(pool: pg.Pool): Router {
       }
       const result = await getStickerCounterattackCandidates(
         pool,
-        DEFAULT_USER_ID,
+        res.locals.userId,
         query.identity,
         query.incomingAssetSha256,
         query.limit,

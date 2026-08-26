@@ -3,7 +3,6 @@ import type pg from 'pg';
 import { resolveMissingIps } from '../lib/ipgeo.js';
 import { resolveMissingAddresses } from '../lib/geocoder.js';
 
-const DEFAULT_USER_ID = process.env.DEFAULT_USER_ID ?? '00000000-0000-0000-0000-000000000001';
 
 /** 事件内容类型：语音 / 图片 / 文字（用于列表展示与筛选） */
 const CONTENT_TYPE_SQL = `CASE
@@ -37,7 +36,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
            COUNT(*) FILTER (WHERE event_type = 'delete') AS delete_count
          FROM input_event
          WHERE user_id = $1 AND occurred_at >= date_trunc('day', NOW())`,
-        [DEFAULT_USER_ID],
+        [res.locals.userId],
       );
 
       const period = await pool.query(
@@ -47,7 +46,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
            COUNT(DISTINCT date(occurred_at)) AS active_days
          FROM input_event
          WHERE user_id = $1 AND occurred_at >= $2`,
-        [DEFAULT_USER_ID, daysAgo(days)],
+        [res.locals.userId, daysAgo(days)],
       );
 
       // 输入方式占比（近 N 天）
@@ -59,13 +58,13 @@ export function createDashboardRouter(pool: pg.Pool): Router {
            COALESCE(SUM(length(text)) FILTER (WHERE event_type = 'voice'), 0)::bigint AS voiced
          FROM input_event
          WHERE user_id = $1 AND occurred_at >= $2`,
-        [DEFAULT_USER_ID, daysAgo(days)],
+        [res.locals.userId, daysAgo(days)],
       );
 
       const total = await pool.query(
         `SELECT COALESCE(SUM(length(text)) FILTER (WHERE event_type IN ('commit','candidate_commit','paste','paste_inferred','external_insert','voice')), 0)::bigint AS total_chars
          FROM input_event WHERE user_id = $1`,
-        [DEFAULT_USER_ID],
+        [res.locals.userId],
       );
 
       const s = sources.rows[0];
@@ -102,7 +101,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
          WHERE user_id = $1 AND occurred_at >= $2
          GROUP BY date(occurred_at)
          ORDER BY day ASC`,
-        [DEFAULT_USER_ID, daysAgo(days)],
+        [res.locals.userId, daysAgo(days)],
       );
       res.json({ days, timeline: result.rows });
     } catch (err) {
@@ -123,7 +122,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
          WHERE user_id = $1 AND occurred_at >= $2
          GROUP BY hour
          ORDER BY hour ASC`,
-        [DEFAULT_USER_ID, daysAgo(days)],
+        [res.locals.userId, daysAgo(days)],
       );
       res.json({ days, hours: result.rows });
     } catch (err) {
@@ -144,7 +143,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
          WHERE user_id = $1 AND occurred_at >= $2
          GROUP BY dow, hour
          ORDER BY dow ASC, hour ASC`,
-        [DEFAULT_USER_ID, daysAgo(days)],
+        [res.locals.userId, daysAgo(days)],
       );
       res.json({ days, cells: result.rows });
     } catch (err) {
@@ -166,7 +165,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
          GROUP BY package_name
          ORDER BY input_chars DESC
          LIMIT 20`,
-        [DEFAULT_USER_ID, daysAgo(days)],
+        [res.locals.userId, daysAgo(days)],
       );
       res.json({ days, apps: result.rows });
     } catch (err) {
@@ -183,7 +182,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
 
       // 直接对原始事件按文本聚合（比 phrase_stat 更灵活，可带时间范围）
       const whereDays = daysRaw && daysRaw !== 'all' ? `AND occurred_at >= $2` : '';
-      const params: unknown[] = [DEFAULT_USER_ID];
+      const params: unknown[] = [res.locals.userId];
       if (whereDays) params.push(daysAgo(Number(daysRaw) || 7));
 
       const baseType = `event_type IN ('commit','candidate_commit','paste','paste_inferred','external_insert','voice')`;
@@ -218,7 +217,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
          WHERE user_id = $1 AND use_count >= 3 AND length(phrase) >= 2
          ORDER BY use_count DESC
          LIMIT $2`,
-        [DEFAULT_USER_ID, limit],
+        [res.locals.userId, limit],
       );
 
       const phrases = result.rows as Array<{ phrase: string; use_count: number }>;
@@ -227,7 +226,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
         `SELECT phrase, use_count
          FROM phrase_stat
          WHERE user_id = $1 AND use_count >= 2 AND length(phrase) <= 100`,
-        [DEFAULT_USER_ID],
+        [res.locals.userId],
       );
       const allRows = all.rows as Array<{ phrase: string; use_count: number }>;
 
@@ -273,7 +272,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
            COALESCE(SUM(use_count), 0)::bigint AS use_count,
            COUNT(*) AS candidate_count
          FROM completion_candidate WHERE user_id = $1`,
-        [DEFAULT_USER_ID],
+        [res.locals.userId],
       );
       const top = await pool.query(
         `SELECT prefix, completion, package_name, use_count, show_count, accept_count, score, last_used_at
@@ -281,7 +280,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
          WHERE user_id = $1
          ORDER BY use_count DESC, score DESC
          LIMIT 50`,
-        [DEFAULT_USER_ID],
+        [res.locals.userId],
       );
       const s = stats.rows[0];
       const show = Number(s.show_count);
@@ -309,7 +308,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
            COUNT(*) FILTER (WHERE event_type IN ('paste','paste_inferred'))::bigint AS paste_count
          FROM input_event
          WHERE user_id = $1 AND occurred_at >= $2`,
-        [DEFAULT_USER_ID, daysAgo(days)],
+        [res.locals.userId, daysAgo(days)],
       );
 
       // 复制内容类型分布：URL / 邮箱 / 电话 / 纯文字
@@ -321,7 +320,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
            COUNT(*) FILTER (WHERE text !~* '^https?://' AND text !~* '[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}' AND text !~ '^[0-9+\\- ]{6,}$')::bigint AS plain
          FROM input_event
          WHERE user_id = $1 AND event_type = 'clipboard_change' AND text IS NOT NULL AND occurred_at >= $2`,
-        [DEFAULT_USER_ID, daysAgo(days)],
+        [res.locals.userId, daysAgo(days)],
       );
 
       // 复制→粘贴间隔：用 clipboard_change 与最近 paste 的时间差聚合
@@ -347,7 +346,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
              ORDER BY c.occurred_at DESC LIMIT 1
            ) c ON true
          ) t`,
-        [DEFAULT_USER_ID, daysAgo(days)],
+        [res.locals.userId, daysAgo(days)],
       );
 
       // 高频复制内容
@@ -357,7 +356,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
          WHERE user_id = $1 AND event_type = 'clipboard_change' AND text IS NOT NULL
            AND length(text) BETWEEN 1 AND 200 AND occurred_at >= $2
          GROUP BY text ORDER BY count DESC LIMIT 30`,
-        [DEFAULT_USER_ID, daysAgo(days)],
+        [res.locals.userId, daysAgo(days)],
       );
 
       const t = types.rows[0];
@@ -378,14 +377,79 @@ export function createDashboardRouter(pool: pg.Pool): Router {
     }
   });
 
-  /** 设备列表（行为明细的“用户”维度筛选） */
+  /** 用户目录：以设备作为用户空间，支持服务端搜索和分页。 */
+  router.get('/users', async (req, res, next) => {
+    try {
+      const page = Math.min(1_000_000, Math.max(1, Math.floor(Number(req.query.page ?? 1) || 1)));
+      const pageSize = Math.min(100, Math.max(1, Math.floor(Number(req.query.page_size ?? 20) || 20)));
+      const q = String(req.query.q ?? '').trim().slice(0, 100);
+      const id = String(req.query.id ?? '').trim().slice(0, 100);
+      const where = `($1 = '' OR id::text ILIKE '%' || $1 || '%'
+          OR COALESCE(dashboard_name, '') ILIKE '%' || $1 || '%'
+          OR COALESCE(tags, '') ILIKE '%' || $1 || '%'
+          OR COALESCE(name, '') ILIKE '%' || $1 || '%'
+          OR COALESCE(brand, '') ILIKE '%' || $1 || '%'
+          OR COALESCE(model, '') ILIKE '%' || $1 || '%')
+        AND ($2 = '' OR id::text = $2)`;
+      const [count, result] = await Promise.all([
+        pool.query(`SELECT COUNT(*)::int AS total FROM device WHERE ${where}`, [q, id]),
+        pool.query(
+          `SELECT id, dashboard_name, tags, name, platform, model, os_version, app_version,
+                  brand, sdk_int, screen_resolution, locale, region, hardware, rom_version, ram_mb,
+                  last_seen_at
+           FROM device WHERE ${where}
+           ORDER BY last_seen_at DESC, id
+           LIMIT $3 OFFSET $4`,
+          [q, id, pageSize, (page - 1) * pageSize],
+        ),
+      ]);
+      res.json({
+        total: Number(count.rows[0]?.total ?? 0),
+        page,
+        page_size: pageSize,
+        users: result.rows,
+      });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  /** 为大量同型号手机设置后台易识别名称和标签。 */
+  router.patch('/users/:id', async (req, res, next) => {
+    try {
+      const dashboardName = typeof req.body?.dashboard_name === 'string'
+        ? req.body.dashboard_name.trim().slice(0, 100) || null
+        : null;
+      const tags = typeof req.body?.tags === 'string'
+        ? req.body.tags.trim().slice(0, 500) || null
+        : null;
+      const result = await pool.query(
+        `UPDATE device SET dashboard_name = $2, tags = $3
+         WHERE id::text = $1
+         RETURNING id, dashboard_name, tags, name, platform, model, os_version, app_version,
+                   brand, sdk_int, screen_resolution, locale, region, hardware, rom_version, ram_mb,
+                   last_seen_at`,
+        [req.params.id, dashboardName, tags],
+      );
+      if (!result.rows[0]) {
+        res.status(404).json({ error: 'user not found' });
+        return;
+      }
+      res.json({ user: result.rows[0] });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  /** 当前用户的设备列表（当前模型中一台设备即一个用户空间）。 */
   router.get('/devices', async (_req, res, next) => {
     try {
       const result = await pool.query(
-        `SELECT id, name, platform, model, os_version, app_version,
+        `SELECT id, dashboard_name, tags, name, platform, model, os_version, app_version,
                 brand, sdk_int, screen_resolution, locale, region, hardware, rom_version, ram_mb,
                 last_seen_at
-         FROM device ORDER BY last_seen_at DESC`,
+         FROM device WHERE id = $1 ORDER BY last_seen_at DESC`,
+        [res.locals.userId],
       );
       res.json({ devices: result.rows });
     } catch (err) {
@@ -411,7 +475,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
         ? `occurred_at >= date_trunc('week', $2::date) AND occurred_at < date_trunc('week', $2::date) + interval '7 days'`
         : `occurred_at >= $2::date AND occurred_at < $2::date + interval '1 day'`;
       const cond = `user_id = $1 AND ${rangeSql}`;
-      const params: unknown[] = [DEFAULT_USER_ID, dateRaw];
+      const params: unknown[] = [res.locals.userId, dateRaw];
 
       const summary = await pool.query(
         `SELECT
@@ -508,12 +572,12 @@ export function createDashboardRouter(pool: pg.Pool): Router {
   router.get('/export', async (req, res, next) => {
     try {
       const [devices, sessions, events, phrases, completions, locations] = await Promise.all([
-        pool.query(`SELECT * FROM device ORDER BY last_seen_at DESC`),
-        pool.query(`SELECT * FROM input_session ORDER BY started_at DESC`),
-        pool.query(`SELECT * FROM input_event WHERE user_id = $1 ORDER BY occurred_at ASC`, [DEFAULT_USER_ID]),
-        pool.query(`SELECT * FROM phrase_stat WHERE user_id = $1`, [DEFAULT_USER_ID]),
-        pool.query(`SELECT * FROM completion_candidate WHERE user_id = $1`, [DEFAULT_USER_ID]),
-        pool.query(`SELECT * FROM location_track WHERE user_id = $1 ORDER BY occurred_at ASC`, [DEFAULT_USER_ID]),
+        pool.query(`SELECT * FROM device WHERE id = $1`, [res.locals.userId]),
+        pool.query(`SELECT * FROM input_session WHERE device_id = $1 ORDER BY started_at DESC`, [res.locals.userId]),
+        pool.query(`SELECT * FROM input_event WHERE user_id = $1 ORDER BY occurred_at ASC`, [res.locals.userId]),
+        pool.query(`SELECT * FROM phrase_stat WHERE user_id = $1`, [res.locals.userId]),
+        pool.query(`SELECT * FROM completion_candidate WHERE user_id = $1`, [res.locals.userId]),
+        pool.query(`SELECT * FROM location_track WHERE user_id = $1 ORDER BY occurred_at ASC`, [res.locals.userId]),
       ]);
       res.json({
         exported_at: new Date().toISOString(),
@@ -558,7 +622,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
 
       // 事件表条件（时间/应用均可选）
       const conds = ['user_id = $1'];
-      const params: unknown[] = [DEFAULT_USER_ID];
+      const params: unknown[] = [res.locals.userId];
       const add = (cond: string, v: unknown) => {
         params.push(v);
         conds.push(cond.replace('?', `$${params.length}`));
@@ -578,8 +642,8 @@ export function createDashboardRouter(pool: pg.Pool): Router {
 
         if (scope === 'all') {
           // 会话（无 user_id 列，单用户环境按设备全删；带时间则按开始时间过滤）
-          const sConds: string[] = [];
-          const sParams: unknown[] = [];
+          const sConds: string[] = ['device_id = $1'];
+          const sParams: unknown[] = [res.locals.userId];
           if (body.from) {
             sParams.push(body.from);
             sConds.push(`started_at >= $${sParams.length}::date`);
@@ -596,7 +660,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
 
           // 位置轨迹（带时间则过滤）
           const lConds = ['user_id = $1'];
-          const lParams: unknown[] = [DEFAULT_USER_ID];
+          const lParams: unknown[] = [res.locals.userId];
           if (body.from) {
             lParams.push(body.from);
             lConds.push(`occurred_at >= $${lParams.length}::date`);
@@ -609,15 +673,16 @@ export function createDashboardRouter(pool: pg.Pool): Router {
           deleted.locations = locRes.rowCount ?? 0;
 
           // 分析结果与补全模型全量重建（无条件）
-          const phraseRes = await client.query(`DELETE FROM phrase_stat WHERE user_id = $1`, [DEFAULT_USER_ID]);
+          const phraseRes = await client.query(`DELETE FROM phrase_stat WHERE user_id = $1`, [res.locals.userId]);
           deleted.phrases = phraseRes.rowCount ?? 0;
-          const compRes = await client.query(`DELETE FROM completion_candidate WHERE user_id = $1`, [DEFAULT_USER_ID]);
+          const compRes = await client.query(`DELETE FROM completion_candidate WHERE user_id = $1`, [res.locals.userId]);
           deleted.completions = compRes.rowCount ?? 0;
 
           // 重置分析游标，下次分析从零统计
           await client.query(
-            `INSERT INTO analysis_state (key, value) VALUES ('last_analyzed_epoch_ms', 0)
+            `INSERT INTO analysis_state (key, value) VALUES ($1, 0)
              ON CONFLICT (key) DO UPDATE SET value = 0, updated_at = NOW()`,
+            [`last_analyzed_epoch_ms:${res.locals.userId}`],
           );
         }
 
@@ -641,7 +706,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
    */
   router.get('/events', async (req, res, next) => {
     try {
-      const userId = (req.query.user_id as string) ?? DEFAULT_USER_ID;
+      const userId = (req.query.user_id as string) ?? res.locals.userId;
       const deviceId = (req.query.device_id as string) ?? null;
       const packageName = (req.query.package_name as string) ?? null;
       const q = ((req.query.q as string) ?? '').trim();
@@ -716,7 +781,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
    */
   router.get('/locations', async (req, res, next) => {
     try {
-      const userId = (req.query.user_id as string) ?? DEFAULT_USER_ID;
+      const userId = (req.query.user_id as string) ?? res.locals.userId;
       const deviceId = (req.query.device_id as string) ?? null;
       const days = req.query.days ? Math.min(Math.max(Number(req.query.days) || 0, 1), 3650) : 7;
       const limit = Math.min(Math.max(1, Number(req.query.limit ?? 200) || 200), 1000);

@@ -4,7 +4,6 @@ import { validateCapturedConversation, validateCapturedMessage } from '../domain
 import { AssetValidationError, storeAsset, type StoreAssetInput } from '../chat/assetStorage.js';
 import { ingestCapturedMessages } from '../chat/chatRepository.js';
 
-const DEFAULT_USER_ID = process.env.DEFAULT_USER_ID ?? '00000000-0000-0000-0000-000000000001';
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function validationMessage(error: unknown): string {
@@ -16,7 +15,7 @@ export function createMobileChatCaptureRouter(pool: pg.Pool): Router {
 
   router.post('/assets', async (req, res, next) => {
     try {
-      const result = await storeAsset(pool, DEFAULT_USER_ID, req.body as StoreAssetInput);
+      const result = await storeAsset(pool, res.locals.userId, req.body as StoreAssetInput);
       res.json({ ok: true, ...result });
     } catch (error) {
       if (error instanceof AssetValidationError) {
@@ -54,7 +53,7 @@ export function createMobileChatCaptureRouter(pool: pg.Pool): Router {
 
       const result = await ingestCapturedMessages(
         pool,
-        DEFAULT_USER_ID,
+        res.locals.userId,
         body.device_id,
         conversation,
         messages,

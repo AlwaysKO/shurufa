@@ -17,6 +17,8 @@ import {
   expressionAssetRoot,
   requireExpressionAssetIdentity,
 } from './api/expressions.js';
+import { requireDashboardIdentity, requireMobileIdentity } from './lib/requestIdentity.js';
+import { authorizeUpload } from './lib/uploadAuthorization.js';
 
 export function createApp(pool: pg.Pool): express.Express {
   const app = express();
@@ -36,9 +38,10 @@ export function createApp(pool: pg.Pool): express.Express {
     requireExpressionAssetIdentity,
     express.static(expressionAssetRoot()),
   );
-  app.use('/uploads', express.static(join(process.cwd(), 'uploads')));
+  app.use('/uploads', authorizeUpload(pool), express.static(join(process.cwd(), 'uploads')));
 
   // 输入法端 API
+  app.use('/api/v1/mobile', requireMobileIdentity);
   app.use('/api/v1/mobile', createMobileRouter(pool));
   app.use('/api/v1/mobile', createMobileStickerRouter(pool));
   app.use('/api/v1/mobile', createMobilePhraseRouter(pool));
@@ -47,6 +50,7 @@ export function createApp(pool: pg.Pool): express.Express {
   app.use('/api/v1/mobile/expressions', createMobileExpressionRouter(pool));
 
   // Dashboard API
+  app.use('/api/v1/dashboard', requireDashboardIdentity);
   app.use('/api/v1/dashboard', createDashboardRouter(pool));
   app.use('/api/v1/dashboard', createDashboardStickerRouter(pool));
   app.use('/api/v1/dashboard', createDashboardPhraseRouter(pool));

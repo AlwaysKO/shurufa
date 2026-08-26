@@ -68,8 +68,12 @@ class CaptureUploaderTest {
 
         uploader().runOnce(now = 1_000)
 
-        assertEquals("/api/v1/mobile/chat/assets", server.takeRequest().path)
-        assertEquals("/api/v1/mobile/chat/messages/batch", server.takeRequest().path)
+        val assetRequest = server.takeRequest()
+        val messageRequest = server.takeRequest()
+        assertEquals("/api/v1/mobile/chat/assets", assetRequest.path)
+        assertEquals("/api/v1/mobile/chat/messages/batch", messageRequest.path)
+        assertEquals(DEVICE_ID, assetRequest.getHeader("X-Device-Id"))
+        assertEquals(DEVICE_ID, messageRequest.getHeader("X-Device-Id"))
         assertFalse(dao.hasPendingMessage(message.id))
         assertEquals(null, dao.findPendingAsset(asset.sha256))
         assertFalse(File(asset.localPath).exists())
@@ -148,7 +152,7 @@ class CaptureUploaderTest {
 
     private fun uploader() = CaptureUploader(
         dao = dao,
-        api = CaptureApi(server.url("/").toString(), OkHttpClient()),
+        api = CaptureApi(server.url("/").toString(), DEVICE_ID, OkHttpClient()),
         assetFile = { hash -> File(tempDir, hash) },
     )
 
@@ -162,7 +166,7 @@ class CaptureUploaderTest {
     private fun pendingMessage(id: String, requiredHash: String? = null): PendingMessageEntity {
         val fingerprint = sha256(id.toByteArray())
         val payload = PendingMessageUploadPayload(
-            deviceId = "00000000-0000-4000-8000-000000000001",
+            deviceId = DEVICE_ID,
             conversation = buildJsonObject {
                 put("platform", "wechat")
                 put("account_key", "account")
@@ -187,5 +191,9 @@ class CaptureUploaderTest {
             payloadJson = Json.encodeToString(payload),
             requiredAssetHashesJson = requiredHash?.let { "[\"$it\"]" } ?: "[]",
         )
+    }
+
+    private companion object {
+        const val DEVICE_ID = "00000000-0000-4000-8000-000000000001"
     }
 }

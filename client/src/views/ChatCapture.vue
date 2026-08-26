@@ -5,6 +5,7 @@ import {
   type ChatCaptureOverview,
   type ChatConversationRow,
   type ChatMessageRow,
+  scopedAssetUrl,
 } from '../api';
 
 const overview = ref<ChatCaptureOverview>({
@@ -123,8 +124,8 @@ onMounted(load);
           </div>
           <p v-if="message.text" class="message-text">{{ message.text }}</p>
           <div v-if="message.assets.length" class="media-grid">
-            <a v-for="asset in message.assets" :key="asset.id" :href="asset.url" target="_blank">
-              <img :src="asset.url" :alt="message.text || message.message_type" loading="lazy" />
+            <a v-for="asset in message.assets" :key="asset.id" :href="scopedAssetUrl(asset.url)" target="_blank">
+              <img :src="scopedAssetUrl(asset.url)" :alt="message.text || message.message_type" loading="lazy" />
             </a>
           </div>
         </article>

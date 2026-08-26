@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { api, type StickerRow } from '../api';
+import { api, scopedAssetUrl, type StickerRow } from '../api';
 
 const stickers = ref<StickerRow[]>([]);
 const total = ref(0);
@@ -139,7 +139,7 @@ onMounted(load);
 
     <div v-else class="sticker-grid">
       <div v-for="s in filtered" :key="s.id" class="sticker-cell">
-        <img :src="s.url" :alt="s.keywords" loading="lazy" />
+        <img :src="scopedAssetUrl(s.url)" :alt="s.keywords" loading="lazy" />
         <div class="sticker-meta">
           <template v-if="editingId === s.id">
             <input v-model="editingKeywords" class="input" @keyup.enter="saveEdit(s)" />

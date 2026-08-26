@@ -2,6 +2,7 @@ package com.yuyan.imemodule.data.phrase
 
 import android.content.Context
 import com.yuyan.imemodule.data.collect.ServerConfig
+import com.yuyan.imemodule.data.collect.DataCollector
 import com.yuyan.imemodule.database.DataBaseKT
 import com.yuyan.imemodule.database.entry.Phrase
 import com.yuyan.imemodule.libs.pinyin4j.PinyinHelper
@@ -37,9 +38,12 @@ object PhraseSync {
         .readTimeout(10, TimeUnit.SECONDS)
         .build()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    @Volatile
+    private var deviceId: String? = null
 
     fun init(context: Context) {
         val app = context.applicationContext
+        deviceId = DataCollector.deviceId(app)
         scope.launch {
             delay(3_000) // 等输入法初始化完成
             sync(app)
@@ -81,6 +85,7 @@ object PhraseSync {
             val request = Request.Builder()
                 .url(ServerConfig.baseUrl + "/api/v1/mobile/phrases")
                 .header("Content-Type", "application/json")
+                .header("X-Device-Id", deviceId ?: return)
                 .get()
                 .build()
             http.newCall(request).execute().use { resp ->
@@ -132,6 +137,7 @@ object PhraseSync {
         val request = Request.Builder()
             .url(ServerConfig.baseUrl + path)
             .header("Content-Type", "application/json")
+            .header("X-Device-Id", deviceId ?: error("PhraseSync is not initialized"))
             .post(bodyJson.toRequestBody("application/json; charset=utf-8".toMediaType()))
             .build()
         return http.newCall(request).execute()

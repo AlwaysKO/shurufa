@@ -169,6 +169,7 @@ class ImeService : InputMethodService() {
     }
 
     override fun onDestroy() {
+        DataCollector.setInputActive(baseContext, false)
         voiceRecognizer?.destroy()
         super.onDestroy()
         removeOnChangedListener(onThemeChangeListener)
@@ -273,11 +274,13 @@ class ImeService : InputMethodService() {
     }
 
     override fun onWindowShown() {
+        DataCollector.setInputActive(baseContext, true)
         if (isSoftKeyboard) mInputView.onWindowShown()
         super.onWindowShown()
     }
 
     override fun onWindowHidden() {
+        DataCollector.setInputActive(baseContext, false)
         if(isSoftKeyboard) mInputView.onWindowHidden()
         super.onWindowHidden()
     }

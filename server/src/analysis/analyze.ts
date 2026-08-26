@@ -1,8 +1,6 @@
 import type pg from 'pg';
 import { pinyin } from 'pinyin-pro';
 
-const DEFAULT_USER_ID = process.env.DEFAULT_USER_ID ?? '00000000-0000-0000-0000-000000000001';
-
 /** 计入高频统计的事件类型 */
 const TEXT_EVENT_TYPES = ['commit', 'candidate_commit', 'paste', 'paste_inferred', 'external_insert', 'voice'];
 
@@ -29,12 +27,14 @@ function extractWords(text: string): string[] {
  * 短语/词频分析（增量）：
  * 统计 analysis_state['last_analyzed_at'] 之后的新事件，UPSERT 到 phrase_stat。
  */
-export async function analyzePhrases(pool: pg.Pool, now: Date): Promise<{ phrases: number; words: number }> {
+export async function analyzePhrases(pool: pg.Pool, now: Date, userId: string): Promise<{ phrases: number; words: number }> {
+  const cursorKey = `last_analyzed_epoch_ms:${userId}`;
   // 获取上次分析游标
   const cursorRes = await pool.query(
-    `INSERT INTO analysis_state (key, value) VALUES ('last_analyzed_epoch_ms', 0)
+    `INSERT INTO analysis_state (key, value) VALUES ($1, 0)
      ON CONFLICT (key) DO UPDATE SET value = analysis_state.value
      RETURNING value`,
+    [cursorKey],
   );
   const lastCursor = Number(cursorRes.rows[0].value);
 
@@ -49,7 +49,7 @@ export async function analyzePhrases(pool: pg.Pool, now: Date): Promise<{ phrase
        AND length(text) BETWEEN 1 AND 200
        AND created_at > $3
      ORDER BY created_at ASC`,
-    [DEFAULT_USER_ID, TEXT_EVENT_TYPES, cursorTs],
+    [userId, TEXT_EVENT_TYPES, cursorTs],
   );
 
   const phraseCounts = new Map<string, { count: number; pkg: string | null; lastUsed: string }>();
@@ -87,7 +87,7 @@ export async function analyzePhrases(pool: pg.Pool, now: Date): Promise<{ phrase
          use_days = (SELECT COUNT(DISTINCT date(occurred_at)) FROM input_event
                      WHERE user_id = $1 AND text = $2 AND event_type = ANY($6::text[]))
        RETURNING id`,
-      [DEFAULT_USER_ID, phrase, pkg ?? null, v.count, v.lastUsed, TEXT_EVENT_TYPES],
+      [userId, phrase, pkg ?? null, v.count, v.lastUsed, TEXT_EVENT_TYPES],
     );
     phrases += r.rowCount ?? 0;
   }
@@ -103,23 +103,23 @@ export async function analyzePhrases(pool: pg.Pool, now: Date): Promise<{ phrase
          use_count = phrase_stat.use_count + EXCLUDED.use_count,
          last_used_at = GREATEST(phrase_stat.last_used_at, EXCLUDED.last_used_at)
        RETURNING id`,
-      [DEFAULT_USER_ID, word, pkg ?? null, v.count, v.lastUsed],
+      [userId, word, pkg ?? null, v.count, v.lastUsed],
     );
     words += r.rowCount ?? 0;
   }
 
   // 更新游标
   await pool.query(
-    `INSERT INTO analysis_state (key, value) VALUES ('last_analyzed_epoch_ms', $1)
+    `INSERT INTO analysis_state (key, value) VALUES ($1, $2)
      ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
-    [now.getTime()],
+    [cursorKey, now.getTime()],
   );
 
   return { phrases, words };
 }
 
 /** 补全候选生成：从高频短语生成 prefix → completion 映射，评分并写入 completion_candidate */
-export async function generateCompletions(pool: pg.Pool): Promise<number> {
+export async function generateCompletions(pool: pg.Pool, userId: string): Promise<number> {
   // 至少使用 3 次才认为是习惯（对话设计：use_count < 3 不生成候选）
   const phrases = await pool.query(
     `SELECT phrase, package_name, use_count, last_used_at
@@ -127,7 +127,7 @@ export async function generateCompletions(pool: pg.Pool): Promise<number> {
      WHERE user_id = $1 AND use_count >= 3 AND length(phrase) >= 2
      ORDER BY use_count DESC
      LIMIT 5000`,
-    [DEFAULT_USER_ID],
+    [userId],
   );
 
   const rows = phrases.rows as Array<{
@@ -140,10 +140,10 @@ export async function generateCompletions(pool: pg.Pool): Promise<number> {
   // 全量重算：清空旧候选，version + 1
   const versionRes = await pool.query(
     `SELECT COALESCE(MAX(version), 0) + 1 AS v FROM completion_candidate WHERE user_id = $1`,
-    [DEFAULT_USER_ID],
+    [userId],
   );
   const version = Number(versionRes.rows[0].v);
-  await pool.query('DELETE FROM completion_candidate WHERE user_id = $1', [DEFAULT_USER_ID]);
+  await pool.query('DELETE FROM completion_candidate WHERE user_id = $1', [userId]);
 
   const days = (ts: string | null): number => {
     if (!ts) return 0;
@@ -182,7 +182,7 @@ export async function generateCompletions(pool: pg.Pool): Promise<number> {
            last_used_at = EXCLUDED.last_used_at,
            version = EXCLUDED.version
          RETURNING id`,
-        [DEFAULT_USER_ID, prefix, prefixFull, prefixInitials, phrase, package_name, use_count, score, last_used_at, version],
+        [userId, prefix, prefixFull, prefixInitials, phrase, package_name, use_count, score, last_used_at, version],
       );
       inserted += pRes.rowCount ?? 0;
     }
@@ -194,7 +194,17 @@ export async function generateCompletions(pool: pg.Pool): Promise<number> {
 /** 完整分析流程（job 入口） */
 export async function runAnalysis(pool: pg.Pool): Promise<{ phrases: number; words: number; completions: number }> {
   const now = new Date();
-  const phraseRes = await analyzePhrases(pool, now);
-  const completions = await generateCompletions(pool);
-  return { ...phraseRes, completions };
+  const users = await pool.query<{ user_id: string }>(
+    `SELECT DISTINCT user_id FROM input_event
+     UNION SELECT DISTINCT user_id FROM phrase_stat`,
+  );
+  const total = { phrases: 0, words: 0, completions: 0 };
+  for (const { user_id: userId } of users.rows) {
+    const phraseRes = await analyzePhrases(pool, now, userId);
+    const completions = await generateCompletions(pool, userId);
+    total.phrases += phraseRes.phrases;
+    total.words += phraseRes.words;
+    total.completions += completions;
+  }
+  return total;
 }

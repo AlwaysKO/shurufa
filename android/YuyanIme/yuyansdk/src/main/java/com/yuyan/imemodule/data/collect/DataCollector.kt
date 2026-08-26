@@ -11,18 +11,22 @@ import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
 import com.yuyan.imemodule.application.Launcher
 import com.yuyan.imemodule.data.completion.CompletionSync
 import com.yuyan.imemodule.data.phrase.PhraseSync
+import com.yuyan.imemodule.data.sticker.StickerSync
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -46,6 +50,11 @@ object DataCollector {
     private const val TAG = "ShurufaCollector"
     private const val KEY_DEVICE_UUID = "collector_device_uuid"
     private const val KEY_LOCATION_ENABLE = "location_tracking_enable"
+    private const val KEY_LAST_LOCATION_LATITUDE = "collector_last_location_latitude"
+    private const val KEY_LAST_LOCATION_LONGITUDE = "collector_last_location_longitude"
+    private const val KEY_LAST_LOCATION_ACCURACY = "collector_last_location_accuracy"
+    private const val KEY_LAST_LOCATION_TIME = "collector_last_location_time"
+    private const val KEY_LAST_LOCATION_UPLOADED_AT = "collector_last_location_uploaded_at"
     private const val EVENT_BATCH_MAX = 500
     private const val FLUSH_INTERVAL_MS = 30_000L
     private const val LOCATION_INTERVAL_MS = 60_000L
@@ -59,11 +68,16 @@ object DataCollector {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val queue = ConcurrentLinkedQueue<MobileEvent>()
+    private val locationUploadMutex = Mutex()
+    private val passiveRegistrationGate = LocationRegistrationGate()
+    private val activeRegistrationGate = LocationRegistrationGate()
     // SimpleDateFormat 非线程安全（IME 主线程 + IO 协程并发调用），用 ThreadLocal 隔离
     private val iso8601 = ThreadLocal.withInitial { SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US) }
 
     @Volatile
     private var prefs: SharedPreferences? = null
+    @Volatile
+    private var currentDeviceId: String? = null
     @Volatile
     private var flushJob: Job? = null
     @Volatile
@@ -71,16 +85,22 @@ object DataCollector {
     @Volatile
     private var locationManager: LocationManager? = null
     @Volatile
-    private var locationListener: LocationListener? = null
+    private var passiveLocationListener: LocationListener? = null
+    @Volatile
+    private var activeLocationListener: LocationListener? = null
+    @Volatile
+    private var inputActive = false
 
     // ---------- 初始化 ----------
 
     fun init(context: Context) {
         val app = context.applicationContext
         prefs = PreferenceManager.getDefaultSharedPreferences(app)
+        currentDeviceId = deviceId(app)
         ServerConfig.init(app)
         CompletionSync.init(app) // 服务端智能补全候选同步
         PhraseSync.init(app) // 常用语云同步
+        StickerSync.init(app) // 表情包请求按当前设备隔离
         registerDevice(app)
         if (flushJob == null) {
             flushJob = scope.launch {
@@ -90,9 +110,7 @@ object DataCollector {
                 }
             }
         }
-        if (locationJob == null) {
-            locationJob = scope.launch { startLocationUpdates(app) }
-        }
+        ensureLocationUpdates(app)
     }
 
     /** 设备 UUID：首次生成后持久化 */
@@ -112,15 +130,23 @@ object DataCollector {
         val sp = prefs ?: PreferenceManager.getDefaultSharedPreferences(context).also { prefs = it }
         sp.edit().putBoolean(KEY_LOCATION_ENABLE, enabled).apply()
         if (enabled) {
-            if (locationJob == null) {
-                locationJob = scope.launch { startLocationUpdates(context) }
-            }
+            ensureLocationUpdates(context.applicationContext)
         } else {
             locationJob?.cancel()
             locationJob = null
-            locationListener?.let { locationManager?.removeUpdates(it) }
-            locationManager = null
-            locationListener = null
+            stopLocationUpdates()
+        }
+    }
+
+    /** 输入法活跃时主动定位；非活跃时仅保留被动定位。 */
+    fun setInputActive(context: Context, active: Boolean) {
+        inputActive = active
+        if (prefs == null || !locationTrackingEnabled) return
+        if (active) {
+            ensureLocationUpdates(context.applicationContext)
+            locationManager?.let { registerActiveLocationUpdates(context.applicationContext, it) }
+        } else {
+            stopActiveLocationUpdates()
         }
     }
 
@@ -216,6 +242,13 @@ object DataCollector {
 
     // ---------- 位置采集 ----------
 
+    private fun ensureLocationUpdates(context: Context) {
+        val current = locationJob
+        if (current == null || current.isCompleted) {
+            locationJob = scope.launch { startLocationUpdates(context) }
+        }
+    }
+
     @SuppressLint("MissingPermission")
     private suspend fun startLocationUpdates(context: Context) {
         // 等待权限就绪（ImeService 请求授权后回调 enableLocationTracking）
@@ -227,15 +260,9 @@ object DataCollector {
         if (!hasLocationPermission(context) || !locationTrackingEnabled) return
 
         val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        val listener = LocationListener { loc -> reportLocation(context, loc) }
         locationManager = lm
-        locationListener = listener
-        try {
-            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_INTERVAL_MS, LOCATION_MIN_DISTANCE_M, listener)
-        } catch (_: Exception) { /* GPS 不可用时忽略 */ }
-        try {
-            lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL_MS, LOCATION_MIN_DISTANCE_M, listener)
-        } catch (_: Exception) { /* 网络定位不可用时忽略 */ }
+        registerPassiveLocationUpdates(context, lm)
+        if (inputActive) registerActiveLocationUpdates(context, lm)
         // 启动时先补一次最后已知位置
         val best = listOf(LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER)
             .mapNotNull { lm.getLastKnownLocation(it) }
@@ -243,30 +270,142 @@ object DataCollector {
         if (best != null) reportLocation(context, best)
     }
 
+    @SuppressLint("MissingPermission")
+    @Synchronized
+    private fun registerPassiveLocationUpdates(context: Context, lm: LocationManager) {
+        if (passiveLocationListener != null || !hasLocationPermission(context) || !passiveRegistrationGate.tryStart()) return
+        val listener = LocationListener { loc -> reportLocation(context, loc) }
+        try {
+            lm.requestLocationUpdates(
+                LocationManager.PASSIVE_PROVIDER,
+                LOCATION_INTERVAL_MS,
+                0f,
+                listener,
+                Looper.getMainLooper(),
+            )
+            passiveLocationListener = listener
+        } catch (_: Exception) {
+            passiveRegistrationGate.reset()
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    @Synchronized
+    private fun registerActiveLocationUpdates(context: Context, lm: LocationManager) {
+        if (activeLocationListener != null || !inputActive || !hasLocationPermission(context) || !activeRegistrationGate.tryStart()) return
+        val listener = LocationListener { loc -> reportLocation(context, loc) }
+        var registered = false
+        try {
+            lm.requestLocationUpdates(
+                LocationManager.GPS_PROVIDER,
+                LOCATION_INTERVAL_MS,
+                LOCATION_MIN_DISTANCE_M,
+                listener,
+                Looper.getMainLooper(),
+            )
+            registered = true
+        } catch (_: Exception) { /* GPS 不可用时忽略 */ }
+        try {
+            lm.requestLocationUpdates(
+                LocationManager.NETWORK_PROVIDER,
+                LOCATION_INTERVAL_MS,
+                LOCATION_MIN_DISTANCE_M,
+                listener,
+                Looper.getMainLooper(),
+            )
+            registered = true
+        } catch (_: Exception) { /* 网络定位不可用时忽略 */ }
+        if (registered && inputActive) {
+            activeLocationListener = listener
+        } else {
+            if (registered) lm.removeUpdates(listener)
+            activeRegistrationGate.reset()
+        }
+    }
+
+    @Synchronized
+    private fun stopActiveLocationUpdates() {
+        activeLocationListener?.let { listener ->
+            try {
+                locationManager?.removeUpdates(listener)
+            } catch (_: Exception) { /* 已注销时忽略 */ }
+        }
+        activeLocationListener = null
+        activeRegistrationGate.reset()
+    }
+
+    @Synchronized
+    private fun stopLocationUpdates() {
+        stopActiveLocationUpdates()
+        passiveLocationListener?.let { listener ->
+            try {
+                locationManager?.removeUpdates(listener)
+            } catch (_: Exception) { /* 已注销时忽略 */ }
+        }
+        passiveLocationListener = null
+        passiveRegistrationGate.reset()
+        locationManager = null
+    }
+
     private fun reportLocation(context: Context, loc: Location) {
         if (!locationTrackingEnabled) return  // 开关关闭后不再上报（双保险）
-        val report = LocationReport(
-            deviceId = deviceId(context),
+        val candidate = LocationCandidate(
             latitude = loc.latitude,
             longitude = loc.longitude,
-            accuracy = loc.accuracy,
-            provider = loc.provider,
-            speed = if (loc.hasSpeed()) loc.speed else null,
-            occurredAt = iso8601.get().format(Date()),
+            accuracyMeters = if (loc.hasAccuracy()) loc.accuracy else Float.POSITIVE_INFINITY,
+            locationTimeMs = loc.time,
         )
         scope.launch {
-            try {
-                post("/api/v1/mobile/location", json.encodeToString(LocationReport.serializer(), report)).use { response ->
-                    if (response.isSuccessful) {
-                        Log.i(TAG, "位置上报成功 code=${response.code}")
-                    } else {
-                        Log.w(TAG, "位置上报失败 code=${response.code}")
+            locationUploadMutex.withLock {
+                val nowMs = System.currentTimeMillis()
+                if (!LocationUploadPolicy.shouldUpload(nowMs, candidate, readLastUploadedLocation())) return@withLock
+                val report = LocationReport(
+                    deviceId = deviceId(context),
+                    latitude = loc.latitude,
+                    longitude = loc.longitude,
+                    accuracy = if (loc.hasAccuracy()) loc.accuracy else null,
+                    provider = loc.provider,
+                    speed = if (loc.hasSpeed()) loc.speed else null,
+                    occurredAt = iso8601.get().format(Date(loc.time)),
+                )
+                try {
+                    post("/api/v1/mobile/location", json.encodeToString(LocationReport.serializer(), report)).use { response ->
+                        if (response.isSuccessful) {
+                            saveLastUploadedLocation(candidate, nowMs)
+                            Log.i(TAG, "位置上报成功 code=${response.code}")
+                        } else {
+                            Log.w(TAG, "位置上报失败 code=${response.code}")
+                        }
                     }
+                } catch (error: Exception) {
+                    Log.w(TAG, "位置上报异常：${error.message}", error)
                 }
-            } catch (error: Exception) {
-                Log.w(TAG, "位置上报异常：${error.message}", error)
             }
         }
+    }
+
+    private fun readLastUploadedLocation(): UploadedLocation? {
+        val sp = prefs ?: return null
+        if (!sp.contains(KEY_LAST_LOCATION_UPLOADED_AT)) return null
+        val latitude = sp.getString(KEY_LAST_LOCATION_LATITUDE, null)?.toDoubleOrNull() ?: return null
+        val longitude = sp.getString(KEY_LAST_LOCATION_LONGITUDE, null)?.toDoubleOrNull() ?: return null
+        return UploadedLocation(
+            latitude = latitude,
+            longitude = longitude,
+            accuracyMeters = sp.getFloat(KEY_LAST_LOCATION_ACCURACY, Float.POSITIVE_INFINITY),
+            locationTimeMs = sp.getLong(KEY_LAST_LOCATION_TIME, 0L),
+            uploadedAtMs = sp.getLong(KEY_LAST_LOCATION_UPLOADED_AT, 0L),
+        )
+    }
+
+    private fun saveLastUploadedLocation(candidate: LocationCandidate, uploadedAtMs: Long) {
+        prefs?.edit()
+            ?.putString(KEY_LAST_LOCATION_LATITUDE, candidate.latitude.toString())
+            ?.putString(KEY_LAST_LOCATION_LONGITUDE, candidate.longitude.toString())
+            ?.putFloat(KEY_LAST_LOCATION_ACCURACY, candidate.accuracyMeters)
+            ?.putLong(KEY_LAST_LOCATION_TIME, candidate.locationTimeMs)
+            ?.putLong(KEY_LAST_LOCATION_UPLOADED_AT, uploadedAtMs)
+            ?.apply()
     }
 
     // ---------- 工具 ----------
@@ -278,6 +417,7 @@ object DataCollector {
         val request = Request.Builder()
             .url(ServerConfig.baseUrl + path)
             .header("Content-Type", "application/json")
+            .header("X-Device-Id", currentDeviceId ?: error("DataCollector is not initialized"))
             .post(bodyJson.toRequestBody("application/json; charset=utf-8".toMediaType()))
             .build()
         return http.newCall(request).execute()

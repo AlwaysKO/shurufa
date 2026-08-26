@@ -2,6 +2,7 @@ package com.yuyan.imemodule.data.sticker
 
 import android.content.Context
 import com.yuyan.imemodule.data.collect.ServerConfig
+import com.yuyan.imemodule.data.collect.DataCollector
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -23,13 +24,23 @@ object StickerSync {
         .connectTimeout(5, TimeUnit.SECONDS)
         .readTimeout(15, TimeUnit.SECONDS)
         .build()
+    @Volatile
+    private var deviceId: String? = null
+
+    fun init(context: Context) {
+        deviceId = DataCollector.deviceId(context.applicationContext)
+    }
 
     /** 关键词搜索表情包（阻塞 IO，需在 IO 线程调用） */
     fun search(keyword: String): List<StickerItem> {
         return try {
             val url = ServerConfig.baseUrl + "/api/v1/mobile/stickers?q=" +
                 URLEncoder.encode(keyword.trim(), "UTF-8") + "&limit=80"
-            val request = Request.Builder().url(url).get().build()
+            val request = Request.Builder()
+                .url(url)
+                .header("X-Device-Id", deviceId ?: return emptyList())
+                .get()
+                .build()
             http.newCall(request).execute().use { resp ->
                 if (!resp.isSuccessful) return emptyList()
                 val data = json.decodeFromString(StickerListResponse.serializer(), resp.body?.string() ?: return emptyList())
@@ -45,6 +56,7 @@ object StickerSync {
         try {
             val request = Request.Builder()
                 .url(ServerConfig.baseUrl + "/api/v1/mobile/stickers/$id/use")
+                .header("X-Device-Id", deviceId ?: return)
                 .post("".toRequestBody("application/json; charset=utf-8".toMediaType()))
                 .build()
             http.newCall(request).execute().close()
@@ -57,7 +69,11 @@ object StickerSync {
     fun download(context: Context, sticker: StickerItem): File? {
         return try {
             val url = ServerConfig.baseUrl + sticker.url
-            val request = Request.Builder().url(url).get().build()
+            val request = Request.Builder()
+                .url(url)
+                .header("X-Device-Id", deviceId ?: return null)
+                .get()
+                .build()
             http.newCall(request).execute().use { resp ->
                 if (!resp.isSuccessful) return null
                 val dir = File(context.cacheDir, "sticker").apply { mkdirs() }

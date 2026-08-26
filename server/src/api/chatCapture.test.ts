@@ -11,6 +11,7 @@ import { createApp } from '../app.js';
 
 let pool: pg.Pool;
 let root: string;
+const deviceId = '00000000-0000-4000-8000-000000000001';
 
 const bytes = Buffer.from('524946460000000057454250', 'hex');
 const actualSha256 = createHash('sha256').update(bytes).digest('hex');
@@ -37,6 +38,7 @@ describe('mobile chat capture API', () => {
   it('客户端声明哈希不匹配时返回 400', async () => {
     const response = await request(createApp(pool))
       .post('/api/v1/mobile/chat/assets')
+      .set('X-Device-Id', deviceId)
       .send({
         sha256: '0'.repeat(64),
         mime_type: 'image/webp',
@@ -55,13 +57,18 @@ describe('mobile chat capture API', () => {
       file_base64: bytes.toString('base64'),
     };
 
-    expect((await request(app).post('/api/v1/mobile/chat/assets').send(payload)).body)
+    expect((await request(app).post('/api/v1/mobile/chat/assets').set('X-Device-Id', deviceId).send(payload)).body)
       .toMatchObject({ ok: true, duplicated: false, sha256: actualSha256 });
-    expect((await request(app).post('/api/v1/mobile/chat/assets').send(payload)).body)
+    expect((await request(app).post('/api/v1/mobile/chat/assets').set('X-Device-Id', deviceId).send(payload)).body)
       .toMatchObject({ ok: true, duplicated: true, sha256: actualSha256 });
     expect((await pool.query('SELECT id FROM media_asset')).rowCount).toBe(1);
     const files = await readdir(join(root, 'uploads', 'chat', actualSha256.slice(0, 2)));
     expect(files).toEqual([`${actualSha256}.webp`]);
+
+    const assetPath = `/uploads/chat/${actualSha256.slice(0, 2)}/${actualSha256}.webp`;
+    expect((await request(app).get(assetPath)).status).toBe(400);
+    expect((await request(app).get(assetPath).set('X-Device-Id', crypto.randomUUID())).status).toBe(404);
+    expect((await request(app).get(assetPath).set('X-Device-Id', deviceId)).status).toBe(200);
   });
 
   it('批量消息重复提交时返回正确计数', async () => {

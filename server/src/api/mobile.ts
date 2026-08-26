@@ -4,7 +4,6 @@ import type pg from 'pg';
 import { EVENT_TYPES, type DeviceInfo, type MobileEvent, type SessionInfo } from '../types/events.js';
 import { locationKey } from '../lib/geocoder.js';
 
-const DEFAULT_USER_ID = process.env.DEFAULT_USER_ID ?? '00000000-0000-0000-0000-000000000001';
 
 /** 批量插入事件（幂等：冲突跳过），返回实际插入数 */
 async function insertEvents(pool: pg.Pool, userId: string, events: MobileEvent[], clientIp?: string): Promise<number> {
@@ -110,15 +109,25 @@ export function createMobileRouter(pool: pg.Pool): Router {
     try {
       const info = req.body as SessionInfo;
       if (!info?.id || !info?.device_id) return res.status(400).json({ error: 'session_id and device_id required' });
+      const existing = await pool.query<{ device_id: string }>(
+        'SELECT device_id FROM input_session WHERE id = $1',
+        [info.id],
+      );
+      if (existing.rows[0] && existing.rows[0].device_id !== info.device_id) {
+        return res.status(409).json({ error: 'session belongs to another device' });
+      }
       const startedAt = info.started_at ?? new Date().toISOString();
-      await pool.query(
+      const result = await pool.query(
         `INSERT INTO input_session (id, device_id, started_at, ended_at, package_name, editor_id, event_count)
          VALUES ($1,$2,$3,$4,$5,$6,$7)
          ON CONFLICT (id) DO UPDATE SET
            ended_at = EXCLUDED.ended_at,
-           event_count = GREATEST(input_session.event_count, EXCLUDED.event_count)`,
+           event_count = GREATEST(input_session.event_count, EXCLUDED.event_count)
+         WHERE input_session.device_id = EXCLUDED.device_id
+         RETURNING id`,
         [info.id, info.device_id, startedAt, info.ended_at ?? null, info.package_name ?? null, info.editor_id ?? null, info.event_count ?? 0],
       );
+      if (result.rowCount === 0) return res.status(409).json({ error: 'session belongs to another device' });
       res.json({ ok: true });
     } catch (err) {
       next(err);
@@ -136,8 +145,11 @@ export function createMobileRouter(pool: pg.Pool): Router {
       // 只接受已知事件类型，防止脏数据
       const valid = events.filter((e) => e?.id && EVENT_TYPES.includes(e.event_type));
       if (valid.length === 0) return res.json({ ok: true, inserted: 0 });
+      if (valid.some((event) => event.device_id !== res.locals.userId)) {
+        return res.status(400).json({ error: 'device_id mismatch' });
+      }
 
-      const inserted = await insertEvents(pool, DEFAULT_USER_ID, valid, requestIp(req));
+      const inserted = await insertEvents(pool, res.locals.userId, valid, requestIp(req));
 
       // 顺手更新设备最近活跃时间（不阻塞主流程）
       await pool.query('UPDATE device SET last_seen_at = NOW() WHERE id = $1', [body.device_id ?? valid[0].device_id]).catch(() => {});
@@ -178,14 +190,14 @@ export function createMobileRouter(pool: pg.Pool): Router {
         `SELECT latitude, longitude FROM location_track
          WHERE user_id = $1 AND device_id = $2
          ORDER BY occurred_at DESC LIMIT 1`,
-        [DEFAULT_USER_ID, body.device_id],
+        [res.locals.userId, body.device_id],
       );
       const prev = last.rows[0] as { latitude: string; longitude: string } | undefined;
       if (prev && locationKey(Number(prev.latitude), Number(prev.longitude)) === locationKey(lat, lng)) {
         await pool.query(
           `UPDATE location_track SET last_seen_at = NOW()
            WHERE user_id = $1 AND device_id = $2 AND latitude = $3 AND longitude = $4`,
-          [DEFAULT_USER_ID, body.device_id, prev.latitude, prev.longitude],
+          [res.locals.userId, body.device_id, prev.latitude, prev.longitude],
         );
         return res.json({ ok: true, recorded: 'same' });
       }
@@ -195,7 +207,7 @@ export function createMobileRouter(pool: pg.Pool): Router {
            (user_id, device_id, latitude, longitude, accuracy, provider, speed, occurred_at)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
         [
-          DEFAULT_USER_ID,
+          res.locals.userId,
           body.device_id,
           lat,
           lng,
@@ -224,7 +236,7 @@ export function createMobileRouter(pool: pg.Pool): Router {
          WHERE user_id = $1 AND version > $2
          ORDER BY version ASC
          LIMIT $3`,
-        [DEFAULT_USER_ID, since, limit],
+        [res.locals.userId, since, limit],
       );
       const rows = result.rows as Array<{
         id: number;
@@ -234,7 +246,7 @@ export function createMobileRouter(pool: pg.Pool): Router {
       // 最新版本号（供客户端下次增量）
       const latest = await pool.query(
         `SELECT COALESCE(MAX(version), 0) AS version FROM completion_candidate WHERE user_id = $1`,
-        [DEFAULT_USER_ID],
+        [res.locals.userId],
       );
 
       res.json({
@@ -257,7 +269,7 @@ export function createMobileRouter(pool: pg.Pool): Router {
         `UPDATE completion_candidate
          SET ${col} = ${col} + 1, last_used_at = NOW()
          WHERE user_id = $1 AND completion = $2 AND ($3::text IS NULL OR package_name = $3)`,
-        [DEFAULT_USER_ID, body.completion, body.package_name ?? null],
+        [res.locals.userId, body.completion, body.package_name ?? null],
       );
       res.json({ ok: true });
     } catch (err) {

@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import type pg from 'pg';
 
-const DEFAULT_USER_ID = process.env.DEFAULT_USER_ID ?? '00000000-0000-0000-0000-000000000001';
 
 function pagination(query: Record<string, unknown>): { page: number; pageSize: number; offset: number } {
   const page = Math.max(1, Math.trunc(Number(query.page) || 1));
@@ -21,15 +20,15 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
       const [conversations, messages, media] = await Promise.all([
         pool.query<{ count: string }>(
           'SELECT COUNT(*) AS count FROM chat_conversation WHERE user_id = $1',
-          [DEFAULT_USER_ID],
+          [res.locals.userId],
         ),
         pool.query<{ count: string }>(
           'SELECT COUNT(*) AS count FROM chat_message WHERE user_id = $1',
-          [DEFAULT_USER_ID],
+          [res.locals.userId],
         ),
         pool.query<{ count: string }>(
           'SELECT COUNT(*) AS count FROM media_asset WHERE user_id = $1',
-          [DEFAULT_USER_ID],
+          [res.locals.userId],
         ),
       ]);
       res.json({
@@ -48,7 +47,7 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
       const [totalResult, rowsResult] = await Promise.all([
         pool.query<{ count: string }>(
           'SELECT COUNT(*) AS count FROM chat_conversation WHERE user_id = $1',
-          [DEFAULT_USER_ID],
+          [res.locals.userId],
         ),
         pool.query(
           `SELECT
@@ -57,14 +56,14 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
              c.last_seen_at, COUNT(m.id) AS message_count,
              MAX(m.captured_at) AS last_message_at
            FROM chat_conversation c
-           LEFT JOIN chat_message m ON m.conversation_id = c.id
+           LEFT JOIN chat_message m ON m.conversation_id = c.id AND m.user_id = c.user_id
            WHERE c.user_id = $1
            GROUP BY c.id, c.platform, c.account_key, c.external_key, c.display_name,
                     c.conversation_type, c.identity_confidence, c.first_seen_at,
                     c.last_seen_at
            ORDER BY c.last_seen_at DESC, c.id DESC
            LIMIT $2 OFFSET $3`,
-          [DEFAULT_USER_ID, pageSize, offset],
+          [res.locals.userId, pageSize, offset],
         ),
       ]);
       res.json({
@@ -97,7 +96,7 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
         pool.query<{ count: string }>(
           `SELECT COUNT(*) AS count FROM chat_message
            WHERE user_id = $1 AND conversation_id = $2`,
-          [DEFAULT_USER_ID, conversationId],
+          [res.locals.userId, conversationId],
         ),
         pool.query(
           `SELECT id, platform, direction, message_type, sender_key, sender_name,
@@ -107,7 +106,7 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
            WHERE user_id = $1 AND conversation_id = $2
            ORDER BY captured_at DESC, id DESC
            LIMIT $3 OFFSET $4`,
-          [DEFAULT_USER_ID, conversationId, pageSize, offset],
+          [res.locals.userId, conversationId, pageSize, offset],
         ),
       ]);
 
