@@ -155,7 +155,10 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         DecodingInfo.candidatesLiveData.observe(this) { candidates ->
             updateCandidateBar()
             (KeyboardManager.instance.currentContainer as? CandidatesContainer)?.showCandidatesView()
-            if (expressionQueryCoordinator.onComposingChanged(candidates.firstOrNull()?.text)) {
+            if (expressionQueryCoordinator.onCandidatesChanged(
+                    candidates.firstOrNull()?.text,
+                    DecodingInfo.isAssociate,
+                )) {
                 clearExpressionQuery()
             }
         }

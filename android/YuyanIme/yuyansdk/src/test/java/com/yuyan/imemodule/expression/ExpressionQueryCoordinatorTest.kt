@@ -52,6 +52,21 @@ class ExpressionQueryCoordinatorTest {
     }
 
     @Test
+    fun `上屏后的联想候选不会清除表情查询`() = runBlocking {
+        val seen = mutableListOf<String>()
+        val coordinator = ExpressionQueryCoordinator(this, 0) { seen += it }
+
+        coordinator.onCommitted("你好")
+        delay(1)
+        assertFalse(coordinator.onCandidatesChanged("呀", isAssociate = true))
+        assertFalse(coordinator.onCandidatesChanged("啊", isAssociate = true))
+
+        assertEquals(listOf("你好"), seen)
+        assertTrue(coordinator.acceptResponse(1))
+        coordinator.close()
+    }
+
+    @Test
     fun `组合态开始时通知调用方清理已提交图片结果`() = runBlocking {
         val coordinator = ExpressionQueryCoordinator(this, 0) { }
 

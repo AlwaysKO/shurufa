@@ -13,7 +13,6 @@ class ExpressionQueryCoordinator(
     private var pendingQuery: Job? = null
     private var currentQuery: String? = null
     private var requestId = 0L
-    private var preserveCommittedQuery = false
     private var closed = false
 
     init {
@@ -22,20 +21,17 @@ class ExpressionQueryCoordinator(
 
     fun onComposingChanged(text: String?): Boolean {
         if (closed) return false
-        val isComposing = !text.isNullOrBlank()
-        if (!isComposing && preserveCommittedQuery) {
-            preserveCommittedQuery = false
-            return false
-        }
-        preserveCommittedQuery = false
+        if (text.isNullOrBlank()) return false
         if (currentQuery == null && pendingQuery == null) return false
         updateQuery(null)
         return true
     }
 
+    fun onCandidatesChanged(text: String?, isAssociate: Boolean): Boolean =
+        onComposingChanged(text.takeUnless { isAssociate })
+
     fun onCommitted(text: String) {
         if (closed) return
-        preserveCommittedQuery = true
         text.trim().takeIf(String::isNotEmpty)?.let(::updateQuery)
     }
 
