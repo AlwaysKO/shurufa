@@ -50,7 +50,7 @@ class ExpressionAssetAdapter(
 
         fun bind(asset: ExpressionAsset) {
             itemView.layoutParams = itemView.layoutParams.apply {
-                width = if (expanded) ViewGroup.LayoutParams.MATCH_PARENT else itemSizePx(itemView)
+                width = itemSizePx(itemView)
                 height = itemSizePx(itemView)
             }
             Glide.with(image)

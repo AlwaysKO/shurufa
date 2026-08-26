@@ -71,6 +71,22 @@ class ExpressionPanelTest {
         assertEquals(3, (list.layoutManager as GridLayoutManager).spanCount)
     }
 
+    @Test
+    fun `展开态素材项保持固定正方形`() {
+        val adapter = ExpressionAssetAdapter {}
+        val parent = RecyclerView(context).apply {
+            layoutManager = GridLayoutManager(context, 3)
+        }
+        val holder = adapter.onCreateViewHolder(parent, 0)
+        adapter.setExpanded(true)
+        adapter.submitList(listOf(asset()))
+
+        adapter.onBindViewHolder(holder, 0)
+
+        assertTrue(holder.itemView.layoutParams.width > 0)
+        assertEquals(holder.itemView.layoutParams.width, holder.itemView.layoutParams.height)
+    }
+
     private fun visibleState() = ExpressionPanelState().apply {
         beginQuery("你好", requestId = 1)
         applyResults(1, listOf(asset()))
