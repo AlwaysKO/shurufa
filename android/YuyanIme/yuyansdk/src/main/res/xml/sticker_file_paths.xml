@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 斗图表情包缓存目录（下载后经 FileProvider 授权给目标应用读取） -->
+<!-- 图片表达缓存目录（下载或合成后经 FileProvider 授权给目标应用读取） -->
 <paths>
     <cache-path name="sticker_cache" path="sticker/" />
+    <cache-path name="expression_asset_cache" path="expression/" />
+    <cache-path name="expression_composed_cache" path="expression-composed/" />
 </paths>
