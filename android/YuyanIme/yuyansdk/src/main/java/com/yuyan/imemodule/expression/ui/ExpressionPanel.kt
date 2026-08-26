@@ -2,6 +2,7 @@ package com.yuyan.imemodule.expression.ui
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageButton
@@ -32,12 +33,17 @@ class ExpressionPanel @JvmOverloads constructor(
     private val content: View
     private val assetList: RecyclerView
     private val emojiPicker: EmojiCombinationPicker
-    private val adapter = ExpressionAssetAdapter { onAssetClick?.invoke(it) }
+    private val adapter = ExpressionAssetAdapter(
+        onClick = { onAssetClick?.invoke(it) },
+        onLongPress = { requestExpand() },
+    )
+    private var expandedContentHeightPx = 0
 
     var onDismiss: (() -> Unit)? = null
     var onAiStickerEnabledChange: ((Boolean) -> Unit)? = null
     var onAnimationPreviewChange: ((Boolean) -> Unit)? = null
     var onClearCache: (() -> Unit)? = null
+    var onExpandRequested: (() -> Unit)? = null
     var onTabSelected: ((ExpressionPanelTab) -> Unit)? = null
     var onAssetClick: ((ExpressionAsset) -> Unit)? = null
     var onEmojiCombinationMissing: ((com.yuyan.imemodule.expression.model.EmojiCombination, (java.io.File?) -> Unit) -> Unit)?
@@ -70,6 +76,10 @@ class ExpressionPanel @JvmOverloads constructor(
         assetList = findViewById<RecyclerView>(R.id.expression_asset_list).apply {
             layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
             adapter = this@ExpressionPanel.adapter
+            setOnLongClickListener {
+                requestExpand()
+                true
+            }
         }
         emojiPicker = findViewById(R.id.expression_emoji_picker)
         recommendedTab.setOnClickListener { onTabSelected?.invoke(ExpressionPanelTab.RECOMMENDED) }
@@ -92,7 +102,11 @@ class ExpressionPanel @JvmOverloads constructor(
         emojiTab.isSelected = state.selectedTab == ExpressionPanelTab.EMOJI_SYNTHESIS
         val expanded = state.presentation == ExpressionPanelPresentation.EXPANDED
         content.layoutParams = content.layoutParams.apply {
-            height = dp(if (expanded) EXPANDED_CONTENT_HEIGHT_DP else COMPACT_CONTENT_HEIGHT_DP)
+            height = if (expanded && expandedContentHeightPx > 0) {
+                expandedContentHeightPx
+            } else {
+                dp(if (expanded) EXPANDED_CONTENT_HEIGHT_DP else COMPACT_CONTENT_HEIGHT_DP)
+            }
         }
         content.visibility = if (state.isContentVisible) View.VISIBLE else View.GONE
         assetList.layoutManager = if (expanded) {
@@ -117,6 +131,15 @@ class ExpressionPanel @JvmOverloads constructor(
     }
 
     fun resetEmojiSelection() = emojiPicker.reset()
+
+    fun setExpandedContentHeight(heightPx: Int) {
+        expandedContentHeightPx = heightPx.coerceAtLeast(0)
+    }
+
+    private fun requestExpand() {
+        performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+        onExpandRequested?.invoke()
+    }
 
     private fun showSettingsMenu() {
         PopupMenu(context, moreButton).apply {

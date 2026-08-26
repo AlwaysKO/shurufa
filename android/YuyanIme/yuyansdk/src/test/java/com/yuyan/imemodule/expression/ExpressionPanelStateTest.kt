@@ -38,7 +38,7 @@ class ExpressionPanelStateTest {
     }
 
     @Test
-    fun `切换标签保留当前查询`() {
+    fun `切换标签保留当前查询且不自动展开`() {
         val state = ExpressionPanelState()
         state.beginQuery("放箭", requestId = 4)
         state.applyResults(4, listOf(asset("arrow")))
@@ -47,20 +47,22 @@ class ExpressionPanelStateTest {
 
         assertEquals(ExpressionPanelTab.AI_SYNTHESIS, state.selectedTab)
         assertEquals("放箭", state.query)
-        assertEquals(ExpressionPanelPresentation.EXPANDED, state.presentation)
+        assertEquals(ExpressionPanelPresentation.COMPACT, state.presentation)
     }
 
     @Test
-    fun `再次点击当前标签展开而新查询恢复紧凑态`() {
+    fun `长按展开时收起键盘而退出后恢复`() {
         val state = ExpressionPanelState()
         state.beginQuery("放箭", requestId = 4)
         state.applyResults(4, listOf(asset("arrow")))
 
-        state.selectTab(ExpressionPanelTab.RECOMMENDED)
+        state.expand()
         assertEquals(ExpressionPanelPresentation.EXPANDED, state.presentation)
+        assertFalse(state.keyboardVisible)
 
-        state.beginQuery("你好", requestId = 5)
+        state.collapse()
         assertEquals(ExpressionPanelPresentation.COMPACT, state.presentation)
+        assertTrue(state.keyboardVisible)
     }
 
     @Test
@@ -91,6 +93,7 @@ class ExpressionPanelStateTest {
         assertEquals(null, state.query)
         assertEquals(ExpressionPanelTab.RECOMMENDED, state.selectedTab)
         assertEquals(ExpressionPanelPresentation.COMPACT, state.presentation)
+        assertTrue(state.keyboardVisible)
     }
 
     private fun asset(id: String) = ExpressionAsset(

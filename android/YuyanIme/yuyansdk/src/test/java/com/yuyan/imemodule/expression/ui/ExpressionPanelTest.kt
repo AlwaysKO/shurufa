@@ -56,7 +56,10 @@ class ExpressionPanelTest {
     @Test
     fun `展开态显示三列纵向网格且标签选中状态唯一`() {
         val panel = ExpressionPanel(context)
-        val state = visibleState().apply { selectTab(ExpressionPanelTab.AI_SYNTHESIS) }
+        val state = visibleState().apply {
+            selectTab(ExpressionPanelTab.AI_SYNTHESIS)
+            expand()
+        }
 
         panel.render(state, catalog)
 
@@ -129,6 +132,17 @@ class ExpressionPanelTest {
             "file:///android_asset/expression/thumbnails/a.webp",
             previewSource(gif),
         )
+    }
+
+    @Test
+    fun `长按推荐列表请求展开`() {
+        val panel = ExpressionPanel(context)
+        var expansions = 0
+        panel.onExpandRequested = { expansions += 1 }
+
+        panel.findViewById<RecyclerView>(R.id.expression_asset_list).performLongClick()
+
+        assertEquals(1, expansions)
     }
 
     private fun visibleState() = ExpressionPanelState().apply {

@@ -16,6 +16,7 @@ import com.yuyan.imemodule.data.collect.ServerConfig
 import com.yuyan.imemodule.expression.model.ExpressionAsset
 
 class ExpressionAssetAdapter(
+    private val onLongPress: (ExpressionAsset) -> Unit = {},
     private val onClick: (ExpressionAsset) -> Unit,
 ) : RecyclerView.Adapter<ExpressionAssetAdapter.AssetHolder>() {
     private var items: List<ExpressionAsset> = emptyList()
@@ -86,6 +87,10 @@ class ExpressionAssetAdapter(
                 })
                 .into(image)
             itemView.setOnClickListener { onClick(asset) }
+            itemView.setOnLongClickListener {
+                onLongPress(asset)
+                true
+            }
         }
     }
 

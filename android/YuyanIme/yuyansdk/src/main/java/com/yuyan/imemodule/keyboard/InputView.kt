@@ -41,6 +41,7 @@ import com.yuyan.imemodule.entity.keyboard.SoftKey
 import com.yuyan.imemodule.expression.ExpressionCache
 import com.yuyan.imemodule.expression.ExpressionCatalog
 import com.yuyan.imemodule.expression.ExpressionPanelState
+import com.yuyan.imemodule.expression.ExpressionPanelPresentation
 import com.yuyan.imemodule.expression.ExpressionQueryCoordinator
 import com.yuyan.imemodule.expression.ExpressionRecommendationResolver
 import com.yuyan.imemodule.expression.ExpressionSync
@@ -127,6 +128,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     private var expressionPreviewJob: Job? = null
     private var expressionDownloadJob: Job? = null
     private var expressionPreparationJob: Job? = null
+    private var expressionKeyboardVisibility: Pair<Int, Int>? = null
     private var expressionRequestId = 0L
     var hasSelection = false
     var hasSelectionAll = false
@@ -206,6 +208,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 prepareCombination = { combination -> prepareCombination(sync, cache, combination) },
             )
             expressionPanel.onAiStickerEnabledChange = { enabled ->
+                if (!enabled) setExpressionExpanded(false)
                 aiStickerPreference.setValue(enabled)
                 expressionPanelState.setAiStickerEnabled(enabled)
                 expressionPanel.render(expressionPanelState, sync.currentCatalog())
@@ -230,6 +233,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 expressionPanelState.selectTab(tab)
                 expressionPanel.render(expressionPanelState, sync.currentCatalog())
             }
+            expressionPanel.onExpandRequested = { setExpressionExpanded(true) }
             expressionPanel.onAssetClick = { asset -> sendDirectly(asset) }
             expressionPanel.onEmojiCombinationClick = { combination, _ ->
                 sendDirectly(combination)
@@ -362,6 +366,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     }
 
     private fun clearExpressionQuery() {
+        setExpressionExpanded(false)
         expressionSearchJob?.cancel()
         expressionSearchJob = null
         expressionPreviewJob?.cancel()
@@ -374,6 +379,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
     private fun searchExpressions(query: String) {
         val sync = expressionSync ?: return
+        setExpressionExpanded(false)
         val requestId = ++expressionRequestId
         expressionPanelState.beginQuery(query, requestId)
         expressionPanel.render(expressionPanelState, sync.currentCatalog())
@@ -392,6 +398,37 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 }
             }
         }
+    }
+
+    private fun setExpressionExpanded(expanded: Boolean) {
+        val sync = expressionSync ?: return
+        val candidates = mSkbRoot.findViewById<View>(R.id.candidates_bar)
+        val keyboard = mSkbRoot.findViewById<View>(R.id.skb_input_keyboard_view)
+        if (expanded) {
+            if (expressionPanelState.presentation == ExpressionPanelPresentation.EXPANDED) return
+            expressionPanelState.expand()
+            if (expressionPanelState.presentation != ExpressionPanelPresentation.EXPANDED) return
+            expressionKeyboardVisibility = candidates.visibility to keyboard.visibility
+            expressionPanel.setExpandedContentHeight(candidates.height + keyboard.height)
+            candidates.visibility = View.GONE
+            keyboard.visibility = View.GONE
+        } else {
+            expressionPanelState.collapse()
+            expressionKeyboardVisibility?.let { (candidatesVisibility, keyboardVisibility) ->
+                candidates.visibility = candidatesVisibility
+                keyboard.visibility = keyboardVisibility
+            }
+            expressionKeyboardVisibility = null
+        }
+        expressionPanel.render(expressionPanelState, sync.currentCatalog())
+    }
+
+    fun handleExpressionBack(): Boolean {
+        if (expressionPanelState.presentation != ExpressionPanelPresentation.EXPANDED) {
+            return false
+        }
+        setExpressionExpanded(false)
+        return true
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -1027,6 +1064,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     }
 
     private fun resetExpressionTarget() {
+        setExpressionExpanded(false)
         expressionQueryCoordinator.close()
         expressionQueryCoordinator = ExpressionQueryCoordinator(
             scope = expressionScope,

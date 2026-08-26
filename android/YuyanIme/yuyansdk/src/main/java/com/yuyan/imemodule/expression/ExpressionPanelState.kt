@@ -28,6 +28,8 @@ class ExpressionPanelState(aiStickerEnabled: Boolean = true) {
         private set
     var presentation: ExpressionPanelPresentation = ExpressionPanelPresentation.COMPACT
         private set
+    var keyboardVisible: Boolean = true
+        private set
 
     private var requestId = 0L
     fun beginQuery(query: String, requestId: Long) {
@@ -35,7 +37,7 @@ class ExpressionPanelState(aiStickerEnabled: Boolean = true) {
         require(normalized.isNotEmpty()) { "query must not be blank" }
         if (normalized != this.query) {
             selectedTab = ExpressionPanelTab.RECOMMENDED
-            presentation = ExpressionPanelPresentation.COMPACT
+            collapse()
         }
         this.query = normalized
         this.requestId = requestId
@@ -55,18 +57,27 @@ class ExpressionPanelState(aiStickerEnabled: Boolean = true) {
     fun selectTab(tab: ExpressionPanelTab) {
         if (!aiStickerEnabled) return
         selectedTab = tab
+    }
+
+    fun expand() {
+        if (!aiStickerEnabled || !isContentVisible) return
         presentation = ExpressionPanelPresentation.EXPANDED
+        keyboardVisible = false
+    }
+
+    fun collapse() {
+        presentation = ExpressionPanelPresentation.COMPACT
+        keyboardVisible = true
     }
 
     fun setAiStickerEnabled(enabled: Boolean) {
         aiStickerEnabled = enabled
         isContentVisible = enabled && results.isNotEmpty()
-        if (!enabled) presentation = ExpressionPanelPresentation.COMPACT
+        if (!enabled) collapse()
     }
 
     fun dismiss() {
         setAiStickerEnabled(false)
-        presentation = ExpressionPanelPresentation.COMPACT
     }
 
     fun clear() {
@@ -74,7 +85,7 @@ class ExpressionPanelState(aiStickerEnabled: Boolean = true) {
         selectedTab = ExpressionPanelTab.RECOMMENDED
         results = emptyList()
         isContentVisible = false
-        presentation = ExpressionPanelPresentation.COMPACT
+        collapse()
         requestId += 1
     }
 }
