@@ -51,4 +51,13 @@ class ExpressionPanelState {
         dismissedQuery = query
         isVisible = false
     }
+
+    fun clear() {
+        query = null
+        selectedTab = ExpressionPanelTab.RECOMMENDED
+        results = emptyList()
+        isVisible = false
+        dismissedQuery = null
+        requestId += 1
+    }
 }

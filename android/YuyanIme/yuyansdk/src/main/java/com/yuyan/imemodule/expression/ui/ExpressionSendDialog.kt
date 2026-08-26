@@ -22,6 +22,11 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
+internal fun resetExpressionSendButtons(confirmButton: Button, cancelButton: Button) {
+    confirmButton.isEnabled = true
+    cancelButton.isEnabled = true
+}
+
 class ExpressionSendDialog(
     private val anchor: View,
     private val controller: ExpressionSendController,
@@ -55,20 +60,21 @@ class ExpressionSendDialog(
                 gravity = Gravity.BOTTOM
                 dimAmount = 0.55f
                 width = WindowManager.LayoutParams.MATCH_PARENT
-                token = anchor.windowToken
-                type = WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG
             }
         }
     }
 
     fun show(expression: PreparedExpression) {
         this.expression = expression
-        controller.prepare(expression)
         error.visibility = View.GONE
         fallbacks.visibility = View.GONE
-        confirmButton.isEnabled = true
+        resetExpressionSendButtons(confirmButton, cancelButton)
         confirmButton.text = "发送"
         Glide.with(preview).load(expression.file).fitCenter().into(preview)
+        window?.apply {
+            setType(WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG)
+            attributes = attributes.apply { token = anchor.windowToken }
+        }
         super.show()
         window?.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT)
     }
@@ -123,7 +129,11 @@ class ExpressionSendDialog(
 
     fun close() {
         controller.cancel()
-        scope.cancel()
         if (isShowing) dismiss()
+    }
+
+    fun destroy() {
+        close()
+        scope.cancel()
     }
 }

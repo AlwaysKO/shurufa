@@ -4,15 +4,23 @@ import com.yuyan.imemodule.expression.model.ExpressionAsset
 import com.yuyan.imemodule.expression.model.ExpressionCatalogDocument
 import java.io.File
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.coroutines.suspendCancellableCoroutine
+import okhttp3.Call
+import okhttp3.Callback
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.Response
+import java.io.IOException
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 class ExpressionSync(
     private val client: OkHttpClient,
@@ -29,7 +37,7 @@ class ExpressionSync(
     fun currentCatalog(): ExpressionCatalog = catalog
 
     suspend fun refreshCatalog(): ExpressionCatalog = withContext(Dispatchers.IO) {
-        runCatching {
+        try {
             val url = "$baseUrl/api/v1/mobile/expressions/catalog"
                 .toHttpUrl()
                 .newBuilder()
@@ -39,8 +47,8 @@ class ExpressionSync(
                 .url(url)
                 .header("X-Device-Id", deviceId)
                 .build()
-            client.newCall(request).execute().use { response ->
-                if (response.code == 304) return@runCatching catalog
+            client.newCall(request).awaitResponse().use { response ->
+                if (response.code == 304) return@withContext catalog
                 check(response.isSuccessful) { "catalog request failed: ${response.code}" }
                 val remote = json.decodeFromString<ExpressionCatalogDocument>(
                     response.body?.string().orEmpty(),
@@ -48,7 +56,11 @@ class ExpressionSync(
                 catalog = catalog.merge(remote)
                 catalog
             }
-        }.getOrElse { catalog }
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            catalog
+        }
     }
 
     fun search(
@@ -59,7 +71,7 @@ class ExpressionSync(
     ): Job {
         onResult(catalog.search(query))
         return scope.launch(Dispatchers.IO) {
-            runCatching {
+            val remoteResults = try {
                 val url = "$baseUrl/api/v1/mobile/expressions/recommend"
                     .toHttpUrl()
                     .newBuilder()
@@ -69,13 +81,18 @@ class ExpressionSync(
                     .url(url)
                     .header("X-Device-Id", deviceId)
                     .build()
-                client.newCall(request).execute().use { response ->
+                client.newCall(request).awaitResponse().use { response ->
                     check(response.isSuccessful) { "recommend request failed: ${response.code}" }
                     json.decodeFromString<RecommendationResponse>(
                         response.body?.string().orEmpty(),
                     ).results
                 }
-            }.getOrNull()?.takeIf { acceptResponse(requestId) }?.let(onResult)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                null
+            }
+            remoteResults?.takeIf { acceptResponse(requestId) }?.let(onResult)
         }
     }
 
@@ -85,21 +102,40 @@ class ExpressionSync(
         url: String,
         sha256: String,
     ): File? = withContext(Dispatchers.IO) {
-        runCatching {
+        try {
             val request = Request.Builder()
                 .url(url)
                 .header("X-Device-Id", deviceId)
                 .build()
-            client.newCall(request).execute().use { response ->
+            client.newCall(request).awaitResponse().use { response ->
                 check(response.isSuccessful) { "asset request failed: ${response.code}" }
                 val body = response.body ?: error("empty asset response")
                 cache.writeVerified(version, relativePath, sha256, body.byteStream())
             }
-        }.getOrNull()
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            null
+        }
     }
 
     @Serializable
     private data class RecommendationResponse(
         val results: List<ExpressionAsset>,
     )
+}
+
+private suspend fun Call.awaitResponse(): Response = suspendCancellableCoroutine { continuation ->
+    continuation.invokeOnCancellation { cancel() }
+    enqueue(object : Callback {
+        override fun onFailure(call: Call, error: IOException) {
+            if (continuation.isActive) continuation.resumeWithException(error)
+        }
+
+        override fun onResponse(call: Call, response: Response) {
+            continuation.resume(response) { _, unconsumedResponse, _ ->
+                unconsumedResponse.close()
+            }
+        }
+    })
 }

@@ -61,6 +61,20 @@ class ExpressionPanelStateTest {
         assertEquals(listOf("fresh"), state.results.map { it.id })
     }
 
+    @Test
+    fun `候选清空时移除旧查询和图片结果`() {
+        val state = ExpressionPanelState()
+        state.beginQuery("放箭", requestId = 1)
+        state.applyResults(1, listOf(asset("arrow")))
+
+        state.clear()
+
+        assertFalse(state.isVisible)
+        assertTrue(state.results.isEmpty())
+        assertEquals(null, state.query)
+        assertEquals(ExpressionPanelTab.RECOMMENDED, state.selectedTab)
+    }
+
     private fun asset(id: String) = ExpressionAsset(
         id = id,
         type = "template",

@@ -56,4 +56,19 @@ class EmojiSelectionStateTest {
         assertEquals("angry__cry", forward.combinationKey)
         assertEquals("cry__angry", reverse.combinationKey)
     }
+
+    @Test
+    fun `输入目标切换会清空完整选择状态`() {
+        val state = EmojiSelectionState().apply {
+            select("happy")
+            select("laugh")
+        }
+
+        state.reset()
+
+        assertEquals(EmojiSelectionStep.FIRST, state.step)
+        assertNull(state.firstId)
+        assertNull(state.secondId)
+        assertNull(state.combinationKey)
+    }
 }

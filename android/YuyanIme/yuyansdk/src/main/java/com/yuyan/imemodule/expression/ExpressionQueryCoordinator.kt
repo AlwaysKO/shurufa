@@ -20,15 +20,15 @@ class ExpressionQueryCoordinator(
         require(debounceMillis >= 0) { "debounceMillis must not be negative" }
     }
 
-    fun onFirstCandidate(text: String?) {
-        if (closed) return
+    fun onFirstCandidate(text: String?): Boolean {
+        if (closed) return false
         val query = text?.trim()?.takeIf(String::isNotEmpty)
         if (query == null && preserveCommittedQuery) {
             preserveCommittedQuery = false
-            return
+            return false
         }
         preserveCommittedQuery = false
-        updateQuery(query)
+        return updateQuery(query)
     }
 
     fun onCommitted(text: String) {
@@ -47,13 +47,13 @@ class ExpressionQueryCoordinator(
         pendingQuery = null
     }
 
-    private fun updateQuery(query: String?) {
-        if (query == currentQuery) return
+    private fun updateQuery(query: String?): Boolean {
+        if (query == currentQuery) return false
         currentQuery = query
         requestId += 1
         pendingQuery?.cancel()
         pendingQuery = null
-        if (query == null) return
+        if (query == null) return true
 
         val scheduledRequestId = requestId
         pendingQuery = scope.launch {
@@ -62,5 +62,6 @@ class ExpressionQueryCoordinator(
                 publishQuery(query)
             }
         }
+        return false
     }
 }

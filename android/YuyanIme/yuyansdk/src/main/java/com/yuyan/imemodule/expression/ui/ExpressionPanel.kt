@@ -34,6 +34,11 @@ class ExpressionPanel @JvmOverloads constructor(
         set(value) {
             emojiPicker.onCombinationMissing = value
         }
+    var onEmojiCombinationClick: ((com.yuyan.imemodule.expression.model.EmojiCombination, java.io.File?) -> Unit)?
+        get() = emojiPicker.onCombinationClick
+        set(value) {
+            emojiPicker.onCombinationClick = value
+        }
 
     init {
         orientation = VERTICAL
@@ -69,4 +74,6 @@ class ExpressionPanel @JvmOverloads constructor(
             },
         )
     }
+
+    fun resetEmojiSelection() = emojiPicker.reset()
 }

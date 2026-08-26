@@ -45,11 +45,23 @@ class ExpressionQueryCoordinatorTest {
         coordinator.onFirstCandidate("放箭")
         delay(40)
         coordinator.onCommitted("放箭")
-        coordinator.onFirstCandidate(null)
+        assertFalse(coordinator.onFirstCandidate(null))
         delay(40)
 
         assertEquals(listOf("放箭"), seen)
         assertTrue(coordinator.acceptResponse(1))
+        coordinator.close()
+    }
+
+    @Test
+    fun `未上屏候选清空时通知调用方清理图片结果`() = runBlocking {
+        val coordinator = ExpressionQueryCoordinator(this, 0) { }
+
+        coordinator.onFirstCandidate("放箭")
+        delay(1)
+
+        assertTrue(coordinator.onFirstCandidate(null))
+        assertFalse(coordinator.acceptResponse(1))
         coordinator.close()
     }
 

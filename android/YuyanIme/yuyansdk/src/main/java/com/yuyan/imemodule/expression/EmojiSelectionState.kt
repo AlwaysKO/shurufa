@@ -39,4 +39,10 @@ class EmojiSelectionState {
         secondId = null
         step = EmojiSelectionStep.FIRST
     }
+
+    fun reset() {
+        firstId = null
+        secondId = null
+        step = EmojiSelectionStep.FIRST
+    }
 }

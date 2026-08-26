@@ -4,12 +4,18 @@ import com.yuyan.imemodule.expression.model.ExpressionAsset
 import com.yuyan.imemodule.expression.model.ExpressionCatalogDocument
 import java.io.File
 import java.security.MessageDigest
+import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
+import okhttp3.mockwebserver.SocketPolicy
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -95,12 +101,29 @@ class ExpressionSyncTest {
         assertEquals(listOf(listOf("local")), seen)
     }
 
+    @Test
+    fun `取消搜索会终止底层 HTTP 调用`() {
+        val client = OkHttpClient.Builder().readTimeout(2, TimeUnit.SECONDS).build()
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        server.enqueue(MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE))
+        val sync = sync(ExpressionCatalog(document()), scope, client = client)
+
+        val job = sync.search("放箭", requestId = 1, acceptResponse = { true }) { }
+        requireNotNull(server.takeRequest(1, TimeUnit.SECONDS))
+        job.cancel()
+        Thread.sleep(100)
+
+        assertEquals(0, client.dispatcher.runningCallsCount())
+        scope.cancel()
+    }
+
     private fun sync(
         catalog: ExpressionCatalog,
         scope: kotlinx.coroutines.CoroutineScope,
         cache: ExpressionCache = ExpressionCache(root),
+        client: OkHttpClient = OkHttpClient(),
     ) = ExpressionSync(
-        client = OkHttpClient(),
+        client = client,
         baseUrl = server.url("/").toString().removeSuffix("/"),
         deviceId = deviceId,
         initialCatalog = catalog,

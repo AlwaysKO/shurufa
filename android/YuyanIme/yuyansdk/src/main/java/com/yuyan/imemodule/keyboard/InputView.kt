@@ -17,6 +17,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
+import android.widget.Toast
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.graphics.scale
 import androidx.core.view.ViewCompat
@@ -42,7 +43,15 @@ import com.yuyan.imemodule.expression.ExpressionCatalog
 import com.yuyan.imemodule.expression.ExpressionPanelState
 import com.yuyan.imemodule.expression.ExpressionQueryCoordinator
 import com.yuyan.imemodule.expression.ExpressionSync
+import com.yuyan.imemodule.expression.model.EmojiCombination
+import com.yuyan.imemodule.expression.model.ExpressionAsset
+import com.yuyan.imemodule.expression.render.ExpressionRenderer
+import com.yuyan.imemodule.expression.send.ExpressionContentSender
+import com.yuyan.imemodule.expression.send.ExpressionFlowController
+import com.yuyan.imemodule.expression.send.ExpressionSendController
+import com.yuyan.imemodule.expression.send.PreparedExpression
 import com.yuyan.imemodule.expression.ui.ExpressionPanel
+import com.yuyan.imemodule.expression.ui.ExpressionSendDialog
 import com.yuyan.imemodule.keyboard.container.CandidatesContainer
 import com.yuyan.imemodule.keyboard.container.ClipBoardContainer
 import com.yuyan.imemodule.keyboard.container.SymbolContainer
@@ -70,13 +79,17 @@ import com.yuyan.inputmethod.CustomEngine
 import com.yuyan.inputmethod.core.CandidateListItem
 import com.yuyan.inputmethod.core.Kernel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import splitties.views.bottomPadding
 import splitties.views.rightPadding
+import java.io.File
 import kotlin.math.absoluteValue
 
 /**
@@ -102,10 +115,15 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     private lateinit var mBottomPaddingKey: ManagedPreference.PInt
     private var mFullDisplayKeyboardBar: FullDisplayKeyboardBar? = null
     private val expressionScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private val expressionPanelState = ExpressionPanelState()
+    private var expressionPanelState = ExpressionPanelState()
     private lateinit var expressionPanel: ExpressionPanel
     private lateinit var expressionQueryCoordinator: ExpressionQueryCoordinator
+    private lateinit var expressionFlow: ExpressionFlowController
+    private lateinit var expressionSendDialog: ExpressionSendDialog
     private var expressionSync: ExpressionSync? = null
+    private var expressionSearchJob: Job? = null
+    private var expressionDownloadJob: Job? = null
+    private var expressionPreparationJob: Job? = null
     private var expressionRequestId = 0L
     var hasSelection = false
     var hasSelectionAll = false
@@ -136,7 +154,9 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         DecodingInfo.candidatesLiveData.observe(this) { candidates ->
             updateCandidateBar()
             (KeyboardManager.instance.currentContainer as? CandidatesContainer)?.showCandidatesView()
-            expressionQueryCoordinator.onFirstCandidate(candidates.firstOrNull()?.text)
+            if (expressionQueryCoordinator.onFirstCandidate(candidates.firstOrNull()?.text)) {
+                clearExpressionQuery()
+            }
         }
         initView(context)
     }
@@ -145,15 +165,29 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         expressionPanel = mSkbRoot.findViewById(R.id.expression_panel)
         val localCatalog = runCatching { ExpressionCatalog.fromAssets(context) }.getOrNull()
         if (localCatalog != null) {
+            val cache = ExpressionCache(context.cacheDir)
             val sync = ExpressionSync(
                 client = OkHttpClient(),
                 baseUrl = ServerConfig.baseUrl,
                 deviceId = DataCollector.deviceId(context),
                 initialCatalog = localCatalog,
-                cache = ExpressionCache(context.cacheDir),
+                cache = cache,
                 scope = expressionScope,
             )
             expressionSync = sync
+            val contentSender = ExpressionContentSender(
+                context = context,
+                inputConnection = ::currentInputConnection,
+                editorMimeTypes = ::currentEditorMimeTypes,
+            )
+            val sendController = ExpressionSendController(contentSender)
+            val renderer = ExpressionRenderer(context.cacheDir)
+            expressionFlow = ExpressionFlowController(
+                sendController = sendController,
+                prepareAsset = { asset, query -> prepareAsset(sync, cache, renderer, asset, query) },
+                prepareCombination = { combination -> prepareCombination(sync, cache, combination) },
+            )
+            expressionSendDialog = ExpressionSendDialog(this, sendController, contentSender)
             expressionPanel.onDismiss = {
                 expressionPanelState.dismiss()
                 expressionPanel.render(expressionPanelState, sync.currentCatalog())
@@ -162,12 +196,17 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 expressionPanelState.selectTab(tab)
                 expressionPanel.render(expressionPanelState, sync.currentCatalog())
             }
+            expressionPanel.onAssetClick = { asset -> prepareForConfirmation(asset) }
+            expressionPanel.onEmojiCombinationClick = { combination, _ ->
+                prepareForConfirmation(combination)
+            }
             expressionPanel.onEmojiCombinationMissing = { combination, deliver ->
                 val remoteUrl = combination.url
                 if (remoteUrl == null) {
                     deliver(null)
                 } else {
-                    expressionScope.launch {
+                    expressionDownloadJob?.cancel()
+                    expressionDownloadJob = expressionScope.launch {
                         val url = if (remoteUrl.startsWith("http://") || remoteUrl.startsWith("https://")) {
                             remoteUrl
                         } else {
@@ -193,12 +232,116 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         )
     }
 
+    private suspend fun prepareAsset(
+        sync: ExpressionSync,
+        cache: ExpressionCache,
+        renderer: ExpressionRenderer,
+        asset: ExpressionAsset,
+        query: String,
+    ): PreparedExpression {
+        val source = resolveExpressionFile(
+            sync = sync,
+            cache = cache,
+            version = asset.version,
+            relativePath = asset.fileName,
+            sha256 = asset.sha256,
+            remoteUrl = asset.url,
+        )
+        val output = if (asset.textSafeArea != null && asset.layout != null && query.isNotBlank()) {
+            renderer.render(asset, source, query)
+        } else {
+            source
+        }
+        return PreparedExpression(
+            file = output,
+            mimeType = ExpressionContentSender.mimeOf(asset.format),
+        )
+    }
+
+    private suspend fun prepareCombination(
+        sync: ExpressionSync,
+        cache: ExpressionCache,
+        combination: EmojiCombination,
+    ): PreparedExpression = PreparedExpression(
+        file = resolveExpressionFile(
+            sync = sync,
+            cache = cache,
+            version = combination.version,
+            relativePath = combination.fileName,
+            sha256 = combination.sha256,
+            remoteUrl = combination.url,
+        ),
+        mimeType = "image/webp",
+    )
+
+    private suspend fun resolveExpressionFile(
+        sync: ExpressionSync,
+        cache: ExpressionCache,
+        version: String,
+        relativePath: String,
+        sha256: String,
+        remoteUrl: String?,
+    ): File = withContext(Dispatchers.IO) {
+        cache.validFile(version, relativePath, sha256)?.let { return@withContext it }
+        val builtIn = runCatching {
+            context.assets.open("expression/$relativePath").use { input ->
+                cache.writeVerified(version, relativePath, sha256, input)
+            }
+        }.getOrNull()
+        if (builtIn != null) return@withContext builtIn
+        val url = remoteUrl ?: error("素材尚未下载")
+        val absoluteUrl = if (url.startsWith("http://") || url.startsWith("https://")) {
+            url
+        } else {
+            ServerConfig.baseUrl + url
+        }
+        sync.download(version, relativePath, absoluteUrl, sha256)
+            ?: error("素材下载失败")
+    }
+
+    private fun prepareForConfirmation(asset: ExpressionAsset) {
+        val query = expressionPanelState.query ?: return
+        expressionPreparationJob?.cancel()
+        expressionPreparationJob = expressionScope.launch {
+            try {
+                expressionSendDialog.show(expressionFlow.prepare(asset, query))
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                Toast.makeText(context, error.message ?: "图片准备失败", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun prepareForConfirmation(combination: EmojiCombination) {
+        expressionPreparationJob?.cancel()
+        expressionPreparationJob = expressionScope.launch {
+            try {
+                expressionSendDialog.show(expressionFlow.prepare(combination))
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                Toast.makeText(context, error.message ?: "图片准备失败", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun clearExpressionQuery() {
+        expressionSearchJob?.cancel()
+        expressionSearchJob = null
+        expressionPreparationJob?.cancel()
+        expressionPreparationJob = null
+        expressionPanelState.clear()
+        expressionSync?.let { expressionPanel.render(expressionPanelState, it.currentCatalog()) }
+    }
+
     private fun searchExpressions(query: String) {
         val sync = expressionSync ?: return
         val requestId = ++expressionRequestId
         expressionPanelState.beginQuery(query, requestId)
         expressionPanel.render(expressionPanelState, sync.currentCatalog())
-        sync.search(
+        expressionSearchJob?.cancel()
+        expressionSearchJob = sync.search(
             query = query,
             requestId = requestId,
             acceptResponse = expressionPanelState::acceptResponse,
@@ -686,6 +829,10 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
     override fun onDetachedFromWindow() {
         expressionQueryCoordinator.close()
+        expressionSearchJob?.cancel()
+        expressionDownloadJob?.cancel()
+        expressionPreparationJob?.cancel()
+        if (::expressionSendDialog.isInitialized) expressionSendDialog.destroy()
         expressionScope.cancel()
         super.onDetachedFromWindow()
     }
@@ -812,6 +959,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     }
 
     fun onStartInputView(editorInfo: EditorInfo, restarting: Boolean) {
+        resetExpressionTarget()
         InputModeSwitcher.requestInputWithSkb(editorInfo)
         if (!restarting) {
             resetToIdleState()
@@ -828,6 +976,25 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 }
             }
         }
+    }
+
+    private fun resetExpressionTarget() {
+        expressionQueryCoordinator.close()
+        expressionQueryCoordinator = ExpressionQueryCoordinator(
+            scope = expressionScope,
+            debounceMillis = 180,
+            publishQuery = ::searchExpressions,
+        )
+        expressionSearchJob?.cancel()
+        expressionSearchJob = null
+        expressionDownloadJob?.cancel()
+        expressionDownloadJob = null
+        expressionPreparationJob?.cancel()
+        expressionPreparationJob = null
+        if (::expressionSendDialog.isInitialized) expressionSendDialog.close()
+        expressionPanel.resetEmojiSelection()
+        expressionPanelState = ExpressionPanelState()
+        expressionSync?.let { expressionPanel.render(expressionPanelState, it.currentCatalog()) }
     }
 
     fun onWindowShown() {

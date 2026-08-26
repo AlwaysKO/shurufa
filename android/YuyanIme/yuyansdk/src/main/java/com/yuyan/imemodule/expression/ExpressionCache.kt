@@ -11,6 +11,9 @@ class ExpressionCache(cacheDir: File) {
 
     fun file(version: String, relativePath: String): File = safeFile(version, relativePath)
 
+    fun validFile(version: String, relativePath: String, expectedSha256: String): File? =
+        safeFile(version, relativePath).takeIf { it.isFile && sha256(it) == expectedSha256 }
+
     fun writeVerified(
         version: String,
         relativePath: String,
@@ -18,9 +21,13 @@ class ExpressionCache(cacheDir: File) {
         input: InputStream,
     ): File? {
         val target = safeFile(version, relativePath)
-        val validExisting = target.takeIf { it.isFile && sha256(it) == expectedSha256 }
+        val validExisting = validFile(version, relativePath, expectedSha256)
         target.parentFile?.mkdirs()
-        val part = File(target.parentFile, "${target.name}.part")
+        val part = Files.createTempFile(
+            target.parentFile.toPath(),
+            "${target.name}.",
+            ".part",
+        ).toFile()
         return try {
             input.use { source -> part.outputStream().use(source::copyTo) }
             if (sha256(part) != expectedSha256) {

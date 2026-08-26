@@ -33,8 +33,11 @@ class EmojiCombinationPicker @JvmOverloads constructor(
     private val adapter = EmojiAdapter(::select)
     private var catalog: ExpressionCatalog? = null
     private var pendingDownloadKey: String? = null
+    private var readyCombination: EmojiCombination? = null
+    private var readyFile: File? = null
 
     var onCombinationMissing: ((EmojiCombination, (File?) -> Unit) -> Unit)? = null
+    var onCombinationClick: ((EmojiCombination, File?) -> Unit)? = null
 
     init {
         orientation = VERTICAL
@@ -45,6 +48,9 @@ class EmojiCombinationPicker @JvmOverloads constructor(
         preview = findViewById(R.id.expression_emoji_preview)
         list.layoutManager = GridLayoutManager(context, 2, RecyclerView.HORIZONTAL, false)
         list.adapter = adapter
+        preview.setOnClickListener {
+            readyCombination?.let { onCombinationClick?.invoke(it, readyFile) }
+        }
         back.setOnClickListener {
             state.backToFirst()
             render(requireNotNull(catalog))
@@ -66,6 +72,13 @@ class EmojiCombinationPicker @JvmOverloads constructor(
         if (showingPreview) showCombination(catalog)
     }
 
+    fun reset() {
+        state.reset()
+        pendingDownloadKey = null
+        clearReadyCombination()
+        catalog?.let(::render)
+    }
+
     private fun select(base: EmojiBase) {
         state.select(base.id)
         render(requireNotNull(catalog))
@@ -76,22 +89,35 @@ class EmojiCombinationPicker @JvmOverloads constructor(
         val secondId = state.secondId ?: return
         val combination = catalog.findCombination(firstId, secondId)
         if (combination == null) {
+            clearReadyCombination()
             showPlaceholder(catalog, secondId)
             return
         }
         if (assetExists(combination.fileName)) {
+            readyCombination = combination
+            readyFile = null
             load("file:///android_asset/expression/${combination.fileName}")
             return
         }
+        clearReadyCombination()
         showPlaceholder(catalog, secondId)
         if (pendingDownloadKey == combination.key) return
         pendingDownloadKey = combination.key
         onCombinationMissing?.invoke(combination) { file ->
             post {
                 if (pendingDownloadKey == combination.key) pendingDownloadKey = null
-                if (state.combinationKey == combination.key && file?.isFile == true) load(file)
+                if (state.combinationKey == combination.key && file?.isFile == true) {
+                    readyCombination = combination
+                    readyFile = file
+                    load(file)
+                }
             }
         }
+    }
+
+    private fun clearReadyCombination() {
+        readyCombination = null
+        readyFile = null
     }
 
     private fun showPlaceholder(catalog: ExpressionCatalog, id: String) {
