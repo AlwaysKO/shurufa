@@ -5,6 +5,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.yuyan.imemodule.application.Launcher
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -39,5 +40,17 @@ class AppPrefsDefaultsTest {
 
         assertEquals(0.278f, appPrefs.internal.keyboardHeightRatio.getValue(), 0.0001f)
         assertEquals(45, appPrefs.keyboardSetting.candidateTextSize.getValue())
+    }
+
+    @Test
+    fun aiStickerIsEnabledByDefaultAndPersistsDisabledValue() {
+        val preferences = context.getSharedPreferences("ai-sticker-defaults-test", Context.MODE_PRIVATE)
+        preferences.edit().clear().commit()
+
+        assertTrue(AppPrefs(preferences).internal.aiStickerEnabled.getValue())
+
+        AppPrefs(preferences).internal.aiStickerEnabled.setValue(false)
+
+        assertFalse(AppPrefs(preferences).internal.aiStickerEnabled.getValue())
     }
 }

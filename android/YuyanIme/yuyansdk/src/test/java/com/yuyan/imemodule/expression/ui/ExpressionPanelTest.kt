@@ -1,6 +1,7 @@
 package com.yuyan.imemodule.expression.ui
 
 import android.content.Context
+import android.view.View
 import android.widget.TextView
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -55,7 +56,7 @@ class ExpressionPanelTest {
     @Test
     fun `展开态显示三列纵向网格且标签选中状态唯一`() {
         val panel = ExpressionPanel(context)
-        val state = visibleState().apply { selectTab(ExpressionPanelTab.TEMPLATES) }
+        val state = visibleState().apply { selectTab(ExpressionPanelTab.AI_SYNTHESIS) }
 
         panel.render(state, catalog)
 
@@ -69,6 +70,35 @@ class ExpressionPanelTest {
         assertNotNull(templates.background)
         assertTrue(list.layoutManager is GridLayoutManager)
         assertEquals(3, (list.layoutManager as GridLayoutManager).spanCount)
+    }
+
+    @Test
+    fun `开启时显示搜狗式标签和操作入口`() {
+        val panel = ExpressionPanel(context)
+
+        panel.render(visibleState(), catalog)
+
+        assertEquals("推荐", panel.findViewById<TextView>(R.id.expression_tab_recommended).text.toString())
+        assertEquals("AI合成", panel.findViewById<TextView>(R.id.expression_tab_templates).text.toString())
+        assertEquals("Emoji合成", panel.findViewById<TextView>(R.id.expression_tab_emoji).text.toString())
+        assertEquals(View.VISIBLE, panel.findViewById<View>(R.id.expression_more).visibility)
+        assertEquals(View.VISIBLE, panel.findViewById<View>(R.id.expression_close).visibility)
+        assertEquals(View.GONE, panel.findViewById<View>(R.id.expression_enable).visibility)
+    }
+
+    @Test
+    fun `关闭时保留空工具行和右侧 AI斗图入口`() {
+        val panel = ExpressionPanel(context)
+        val state = visibleState().apply { setAiStickerEnabled(false) }
+
+        panel.render(state, catalog)
+
+        assertEquals(View.VISIBLE, panel.visibility)
+        assertEquals(View.GONE, panel.findViewById<View>(R.id.expression_tab_recommended).visibility)
+        assertEquals(View.GONE, panel.findViewById<View>(R.id.expression_content).visibility)
+        val enable = panel.findViewById<TextView>(R.id.expression_enable)
+        assertEquals(View.VISIBLE, enable.visibility)
+        assertEquals("AI斗图", enable.text.toString())
     }
 
     @Test

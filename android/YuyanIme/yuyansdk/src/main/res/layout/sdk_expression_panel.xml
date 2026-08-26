@@ -26,7 +26,7 @@
             android:layout_weight="1"
             android:background="@drawable/selector_expression_tab_background"
             android:gravity="center"
-            android:text="模板"
+            android:text="AI合成"
             android:textColor="@color/selector_expression_tab_text"
             android:textSize="14sp" />
 
@@ -37,18 +37,48 @@
             android:layout_weight="1"
             android:background="@drawable/selector_expression_tab_background"
             android:gravity="center"
-            android:text="Emoji"
+            android:text="Emoji合成"
             android:textColor="@color/selector_expression_tab_text"
             android:textSize="14sp" />
+
+        <ImageButton
+            android:id="@+id/expression_more"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="AI斗图设置"
+            android:padding="10dp"
+            android:src="@drawable/ic_menu_more_horiz" />
 
         <ImageButton
             android:id="@+id/expression_close"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:contentDescription="收起图片表达面板"
+            android:contentDescription="关闭AI斗图"
             android:padding="10dp"
             android:src="@drawable/ic_menu_close_thin" />
+
+        <View
+            android:id="@+id/expression_disabled_spacer"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/expression_enable"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="?android:attr/selectableItemBackground"
+            android:drawableStart="@drawable/ic_ai_sticker_toggle"
+            android:drawablePadding="4dp"
+            android:gravity="center"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:text="AI斗图"
+            android:textSize="14sp"
+            android:visibility="gone" />
     </LinearLayout>
 
     <FrameLayout

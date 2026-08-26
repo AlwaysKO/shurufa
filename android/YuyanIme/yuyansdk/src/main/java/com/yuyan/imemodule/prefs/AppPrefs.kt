@@ -45,6 +45,7 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
         val fullDisplayKeyModeLeft = string("full_display_key_mode_left", FullDisplayKeyMode.SwitchIme.name)     //全面屏键盘优化:左键盘
         val fullDisplayKeyModeRight = string("full_display_key_mode_right", FullDisplayKeyMode.Clipboard.name)     //全面屏键盘优化：右键盘
         val fullDisplayCenterMode = string("full_display_center_mode", FullDisplayCenterMode.MoveCursor.name)     //全面屏键盘优化：中间区域
+        val aiStickerEnabled = bool("ai_sticker_enabled", true)
 
         val soundOnKeyPress = int("key_press_vibration_amplitude",0)     //按键音量
         val vibrationAmplitude = int("key_press_sound_volume", 0)     //触感强度

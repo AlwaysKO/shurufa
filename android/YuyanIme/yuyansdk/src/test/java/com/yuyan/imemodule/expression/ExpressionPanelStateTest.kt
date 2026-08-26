@@ -8,15 +8,16 @@ import org.junit.Test
 
 class ExpressionPanelStateTest {
     @Test
-    fun `无结果隐藏而有结果默认打开推荐标签`() {
+    fun `工具行始终可见而有结果时打开推荐内容`() {
         val state = ExpressionPanelState()
 
         state.beginQuery("开心", requestId = 1)
         state.applyResults(requestId = 1, results = emptyList())
-        assertFalse(state.isVisible)
+        assertTrue(state.isVisible)
+        assertFalse(state.isContentVisible)
 
         state.applyResults(requestId = 1, results = listOf(asset("happy")))
-        assertTrue(state.isVisible)
+        assertTrue(state.isContentVisible)
         assertEquals(ExpressionPanelTab.RECOMMENDED, state.selectedTab)
         assertEquals(ExpressionPanelPresentation.COMPACT, state.presentation)
     }
@@ -27,13 +28,13 @@ class ExpressionPanelStateTest {
         state.beginQuery("开心", requestId = 1)
         state.applyResults(1, listOf(asset("happy")))
 
-        state.dismiss()
+        state.setAiStickerEnabled(false)
         state.applyResults(1, listOf(asset("remote-happy")))
-        assertFalse(state.isVisible)
-
-        state.beginQuery("生气", requestId = 2)
-        state.applyResults(2, listOf(asset("angry")))
         assertTrue(state.isVisible)
+        assertFalse(state.isContentVisible)
+
+        state.setAiStickerEnabled(true)
+        assertTrue(state.isContentVisible)
     }
 
     @Test
@@ -42,9 +43,9 @@ class ExpressionPanelStateTest {
         state.beginQuery("放箭", requestId = 4)
         state.applyResults(4, listOf(asset("arrow")))
 
-        state.selectTab(ExpressionPanelTab.TEMPLATES)
+        state.selectTab(ExpressionPanelTab.AI_SYNTHESIS)
 
-        assertEquals(ExpressionPanelTab.TEMPLATES, state.selectedTab)
+        assertEquals(ExpressionPanelTab.AI_SYNTHESIS, state.selectedTab)
         assertEquals("放箭", state.query)
         assertEquals(ExpressionPanelPresentation.EXPANDED, state.presentation)
     }
@@ -70,7 +71,7 @@ class ExpressionPanelStateTest {
 
         assertFalse(state.applyResults(7, listOf(asset("stale"))))
         assertTrue(state.results.isEmpty())
-        assertFalse(state.isVisible)
+        assertFalse(state.isContentVisible)
 
         assertTrue(state.applyResults(8, listOf(asset("fresh"))))
         assertEquals(listOf("fresh"), state.results.map { it.id })
@@ -84,7 +85,8 @@ class ExpressionPanelStateTest {
 
         state.clear()
 
-        assertFalse(state.isVisible)
+        assertTrue(state.isVisible)
+        assertFalse(state.isContentVisible)
         assertTrue(state.results.isEmpty())
         assertEquals(null, state.query)
         assertEquals(ExpressionPanelTab.RECOMMENDED, state.selectedTab)
@@ -93,7 +95,7 @@ class ExpressionPanelStateTest {
 
     private fun asset(id: String) = ExpressionAsset(
         id = id,
-        type = "template",
+        type = "synthesis-template",
         format = "webp",
         version = "v1",
         fileName = "templates/$id.webp",

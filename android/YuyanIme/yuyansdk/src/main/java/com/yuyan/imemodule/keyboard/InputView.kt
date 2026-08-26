@@ -170,6 +170,8 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
     private fun initExpressionPanel() {
         expressionPanel = mSkbRoot.findViewById(R.id.expression_panel)
+        val aiStickerPreference = getInstance().internal.aiStickerEnabled
+        expressionPanelState.setAiStickerEnabled(aiStickerPreference.getValue())
         val localCatalog = runCatching { ExpressionCatalog.fromAssets(context) }.getOrNull()
         if (localCatalog != null) {
             val cache = ExpressionCache(context.cacheDir)
@@ -205,9 +207,26 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 prepareCombination = { combination -> prepareCombination(sync, cache, combination) },
             )
             expressionSendDialog = ExpressionSendDialog(this, sendController, contentSender)
-            expressionPanel.onDismiss = {
-                expressionPanelState.dismiss()
+            expressionPanel.onAiStickerEnabledChange = { enabled ->
+                aiStickerPreference.setValue(enabled)
+                expressionPanelState.setAiStickerEnabled(enabled)
                 expressionPanel.render(expressionPanelState, sync.currentCatalog())
+                if (enabled && expressionPanelState.results.isEmpty()) {
+                    expressionPanelState.query?.let(::searchExpressions)
+                }
+            }
+            expressionPanel.onAnimationPreviewChange = { enabled ->
+                Toast.makeText(
+                    context,
+                    if (enabled) "已开启动画预览" else "已关闭动画预览",
+                    Toast.LENGTH_SHORT,
+                ).show()
+            }
+            expressionPanel.onClearCache = {
+                listOf("expression", "expression-previews", "expression-composed").forEach { name ->
+                    java.io.File(context.cacheDir, name).deleteRecursively()
+                }
+                Toast.makeText(context, "AI斗图缓存已清理", Toast.LENGTH_SHORT).show()
             }
             expressionPanel.onTabSelected = { tab ->
                 expressionPanelState.selectTab(tab)
@@ -241,6 +260,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 }
             }
             expressionScope.launch(Dispatchers.IO) { sync.refreshCatalog() }
+            expressionPanel.render(expressionPanelState, sync.currentCatalog())
         }
         expressionQueryCoordinator = ExpressionQueryCoordinator(
             scope = expressionScope,
@@ -1026,7 +1046,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         expressionPreparationJob = null
         if (::expressionSendDialog.isInitialized) expressionSendDialog.close()
         expressionPanel.resetEmojiSelection()
-        expressionPanelState = ExpressionPanelState()
+        expressionPanelState = ExpressionPanelState(getInstance().internal.aiStickerEnabled.getValue())
         expressionSync?.let { expressionPanel.render(expressionPanelState, it.currentCatalog()) }
     }
 
