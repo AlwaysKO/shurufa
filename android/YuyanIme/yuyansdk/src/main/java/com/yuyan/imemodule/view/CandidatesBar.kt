@@ -75,6 +75,10 @@ internal fun createCandidateOverlay(
 internal fun createCandidateActionBackground(color: Number): ColorDrawable =
     ColorDrawable(color.toInt() or 0xff000000.toInt())
 
+internal fun applyCandidateActionBackground(view: View, color: Number) {
+    view.background = createCandidateActionBackground(color)
+}
+
 /**
  * 候选词集装箱
  */
@@ -117,7 +121,7 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
                 isClickable = true
                 isEnabled = true
                 setImageResource(R.drawable.sdk_level_list_candidates_display)
-                background = createCandidateActionBackground(ThemeManager.activeTheme.barColor)
+                applyCandidateActionBackground(this, ThemeManager.activeTheme.barColor)
                 setPadding(dp(12), dp(12), dp(13), dp(13))
             }
             mRVCandidates = RecyclerView(context).apply {
@@ -412,6 +416,7 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
         initCandidateView()
         mIvMenuSetting.setImageResource(R.drawable.sdk_level_candidates_menu_left)
         mComposingView.setTextColor(textColor)
+        applyCandidateActionBackground(mRightArrowBtn, ThemeManager.activeTheme.barColor)
         mRightArrowBtn.drawable.setTint(textColor)
         mMenuRightArrowBtn.drawable.setTint(textColor)
         mIvMenuSetting.drawable.setTint(textColor)

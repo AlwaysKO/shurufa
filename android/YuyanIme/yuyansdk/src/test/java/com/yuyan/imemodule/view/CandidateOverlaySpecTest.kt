@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.widget.FrameLayout
 import android.widget.ImageView
+import android.graphics.drawable.ColorDrawable
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ApplicationProvider
@@ -56,5 +57,16 @@ class CandidateOverlaySpecTest {
 
         assertEquals(255, Color.alpha(bitmap.getPixel(1, 24)))
         assertEquals(255, Color.alpha(bitmap.getPixel(46, 24)))
+    }
+
+    @Test
+    fun `主题更新会替换关闭区域的不透明背景色`() {
+        val action = ImageView(context)
+
+        applyCandidateActionBackground(action, 0x00112233)
+        applyCandidateActionBackground(action, 0x00445566)
+
+        val background = action.background as ColorDrawable
+        assertEquals(0xff445566.toInt(), background.color)
     }
 }
