@@ -58,7 +58,8 @@
       "type": "gif",
       "source": "templates/tpl-01.png",
       "keywords": [
-        "开心庆祝"
+        "开心庆祝",
+        "开心"
       ],
       "emotions": [
         "happy"
@@ -84,7 +85,8 @@
       "type": "gif",
       "source": "templates/tpl-02.png",
       "keywords": [
-        "感谢夸奖"
+        "感谢夸奖",
+        "谢谢"
       ],
       "emotions": [
         "happy"
@@ -110,7 +112,8 @@
       "type": "gif",
       "source": "templates/tpl-03.png",
       "keywords": [
-        "加油打气"
+        "加油打气",
+        "加油"
       ],
       "emotions": [
         "encourage"
@@ -136,7 +139,8 @@
       "type": "gif",
       "source": "templates/tpl-04.png",
       "keywords": [
-        "胜利成功"
+        "胜利成功",
+        "加油"
       ],
       "emotions": [
         "proud"
@@ -188,7 +192,9 @@
       "type": "gif",
       "source": "templates/tpl-06.png",
       "keywords": [
-        "同意点赞"
+        "同意点赞",
+        "好的",
+        "可以"
       ],
       "emotions": [
         "approve"
@@ -214,7 +220,8 @@
       "type": "gif",
       "source": "templates/tpl-07.png",
       "keywords": [
-        "开心跳舞"
+        "开心跳舞",
+        "开心"
       ],
       "emotions": [
         "happy"
@@ -240,7 +247,8 @@
       "type": "gif",
       "source": "templates/tpl-08.png",
       "keywords": [
-        "暖心感谢"
+        "暖心感谢",
+        "谢谢"
       ],
       "emotions": [
         "grateful"
@@ -266,7 +274,9 @@
       "type": "gif",
       "source": "templates/tpl-09.png",
       "keywords": [
-        "默契击掌"
+        "默契击掌",
+        "好的",
+        "可以"
       ],
       "emotions": [
         "happy"
@@ -292,7 +302,8 @@
       "type": "gif",
       "source": "templates/tpl-10.png",
       "keywords": [
-        "派对庆祝"
+        "派对庆祝",
+        "开心"
       ],
       "emotions": [
         "happy"
@@ -344,7 +355,8 @@
       "type": "gif",
       "source": "templates/tpl-12.png",
       "keywords": [
-        "期待兴奋"
+        "期待兴奋",
+        "你好"
       ],
       "emotions": [
         "excited"
@@ -370,7 +382,8 @@
       "type": "gif",
       "source": "templates/tpl-13.png",
       "keywords": [
-        "鼓励支持"
+        "鼓励支持",
+        "加油"
       ],
       "emotions": [
         "encourage"
@@ -396,7 +409,9 @@
       "type": "gif",
       "source": "templates/tpl-14.png",
       "keywords": [
-        "乐观阳光"
+        "乐观阳光",
+        "你好",
+        "早安"
       ],
       "emotions": [
         "happy"
@@ -422,7 +437,8 @@
       "type": "gif",
       "source": "templates/tpl-15.png",
       "keywords": [
-        "鼓掌喝彩"
+        "鼓掌喝彩",
+        "谢谢"
       ],
       "emotions": [
         "praise"
@@ -448,7 +464,9 @@
       "type": "gif",
       "source": "templates/tpl-16.png",
       "keywords": [
-        "大笑开心"
+        "大笑开心",
+        "开心",
+        "哈哈"
       ],
       "emotions": [
         "happy"
@@ -474,7 +492,8 @@
       "type": "gif",
       "source": "templates/tpl-17.png",
       "keywords": [
-        "尴尬无语"
+        "尴尬无语",
+        "无语"
       ],
       "emotions": [
         "speechless"
@@ -552,7 +571,8 @@
       "type": "gif",
       "source": "templates/tpl-20.png",
       "keywords": [
-        "捂脸无奈"
+        "捂脸无奈",
+        "无语"
       ],
       "emotions": [
         "speechless"
@@ -760,7 +780,8 @@
       "type": "static",
       "source": "templates/tpl-28.png",
       "keywords": [
-        "无奈摊手"
+        "无奈摊手",
+        "无语"
       ],
       "emotions": [
         "speechless"
@@ -838,7 +859,8 @@
       "type": "static",
       "source": "templates/tpl-31.png",
       "keywords": [
-        "偷笑憋笑"
+        "偷笑憋笑",
+        "哈哈"
       ],
       "emotions": [
         "mischievous"
@@ -890,7 +912,8 @@
       "type": "static",
       "source": "templates/tpl-33.png",
       "keywords": [
-        "拒绝不要"
+        "拒绝不要",
+        "不要"
       ],
       "emotions": [
         "refuse"
@@ -916,7 +939,8 @@
       "type": "static",
       "source": "templates/tpl-34.png",
       "keywords": [
-        "生气抗议"
+        "生气抗议",
+        "生气"
       ],
       "emotions": [
         "angry"
@@ -942,7 +966,8 @@
       "type": "static",
       "source": "templates/tpl-35.png",
       "keywords": [
-        "愤怒爆发"
+        "愤怒爆发",
+        "生气"
       ],
       "emotions": [
         "furious"
@@ -994,7 +1019,8 @@
       "type": "static",
       "source": "templates/tpl-37.png",
       "keywords": [
-        "停止别动"
+        "停止别动",
+        "不要"
       ],
       "emotions": [
         "refuse"
@@ -1020,7 +1046,8 @@
       "type": "static",
       "source": "templates/tpl-38.png",
       "keywords": [
-        "催促快点"
+        "催促快点",
+        "快点"
       ],
       "emotions": [
         "urgent"
@@ -1046,7 +1073,8 @@
       "type": "static",
       "source": "templates/tpl-39.png",
       "keywords": [
-        "截止时间"
+        "截止时间",
+        "快点"
       ],
       "emotions": [
         "urgent"
@@ -1150,7 +1178,9 @@
       "type": "static",
       "source": "templates/tpl-43.png",
       "keywords": [
-        "道歉认错"
+        "道歉认错",
+        "抱歉",
+        "对不起"
       ],
       "emotions": [
         "sorry"
@@ -1176,7 +1206,9 @@
       "type": "static",
       "source": "templates/tpl-44.png",
       "keywords": [
-        "愧疚后悔"
+        "愧疚后悔",
+        "抱歉",
+        "对不起"
       ],
       "emotions": [
         "sorry"
@@ -1280,7 +1312,8 @@
       "type": "static",
       "source": "templates/tpl-48.png",
       "keywords": [
-        "坚定反击"
+        "坚定反击",
+        "加油"
       ],
       "emotions": [
         "determined"
@@ -1306,7 +1339,9 @@
       "type": "static",
       "source": "templates/tpl-49.png",
       "keywords": [
-        "喜欢爱心"
+        "喜欢爱心",
+        "喜欢",
+        "爱你"
       ],
       "emotions": [
         "love"
@@ -1384,7 +1419,9 @@
       "type": "static",
       "source": "templates/tpl-52.png",
       "keywords": [
-        "害羞告白"
+        "害羞告白",
+        "喜欢",
+        "爱你"
       ],
       "emotions": [
         "shy"
@@ -1410,7 +1447,9 @@
       "type": "static",
       "source": "templates/tpl-53.png",
       "keywords": [
-        "耐心等待"
+        "耐心等待",
+        "晚安",
+        "再见"
       ],
       "emotions": [
         "waiting"
@@ -1436,7 +1475,8 @@
       "type": "static",
       "source": "templates/tpl-54.png",
       "keywords": [
-        "等不及了"
+        "等不及了",
+        "快点"
       ],
       "emotions": [
         "urgent"
@@ -1462,7 +1502,8 @@
       "type": "static",
       "source": "templates/tpl-55.png",
       "keywords": [
-        "晚安睡觉"
+        "晚安睡觉",
+        "晚安"
       ],
       "emotions": [
         "sleepy"
@@ -1488,7 +1529,8 @@
       "type": "static",
       "source": "templates/tpl-56.png",
       "keywords": [
-        "早安活力"
+        "早安活力",
+        "早安"
       ],
       "emotions": [
         "happy"
@@ -1540,7 +1582,10 @@
       "type": "static",
       "source": "templates/tpl-58.png",
       "keywords": [
-        "拥抱安慰"
+        "拥抱安慰",
+        "谢谢",
+        "喜欢",
+        "爱你"
       ],
       "emotions": [
         "love"
@@ -1566,7 +1611,9 @@
       "type": "static",
       "source": "templates/tpl-59.png",
       "keywords": [
-        "挥手再见"
+        "挥手再见",
+        "你好",
+        "再见"
       ],
       "emotions": [
         "goodbye"
@@ -1592,7 +1639,8 @@
       "type": "static",
       "source": "templates/tpl-60.png",
       "keywords": [
-        "欢迎你好"
+        "欢迎你好",
+        "你好"
       ],
       "emotions": [
         "hello"

@@ -13,21 +13,15 @@ export function rankExpressionAssets(
   query: string,
 ): ExpressionAsset[] {
   const normalizedQuery = normalize(query);
-  const tier = (asset: ExpressionAsset): number => {
-    if (normalizedQuery && asset.keywords.some((keyword) => normalize(keyword) === normalizedQuery)) {
-      return 0;
-    }
-    if (normalizedQuery && asset.emotions.some((emotion) => normalize(emotion) === normalizedQuery)) {
-      return 1;
-    }
-    return 2;
-  };
+  if (!normalizedQuery) return [];
 
   return assets
-    .map((asset, index) => ({ asset, index, tier: tier(asset) }))
+    .map((asset, index) => ({ asset, index }))
+    .filter(({ asset }) => (
+      asset.keywords.some((keyword) => normalize(keyword) === normalizedQuery)
+    ))
     .sort((left, right) => (
-      left.tier - right.tier
-      || right.asset.heat - left.asset.heat
+      right.asset.heat - left.asset.heat
       || left.index - right.index
     ))
     .map(({ asset }) => asset);

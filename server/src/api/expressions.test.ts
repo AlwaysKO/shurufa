@@ -21,7 +21,7 @@ const catalog: GeneratedExpressionCatalog = {
       id: 'hot', type: 'template', format: 'webp', version: 'api-v1',
       fileName: 'templates/hot.webp', thumbnailFileName: 'thumbnails/hot.webp',
       sha256: 'a'.repeat(64), width: 512, height: 512,
-      keywords: [], emotions: [], textSafeArea: null, layout: null, heat: 100,
+      keywords: ['放箭'], emotions: [], textSafeArea: null, layout: null, heat: 100,
     },
     {
       id: 'emotion', type: 'template', format: 'gif', version: 'api-v1',
@@ -103,19 +103,29 @@ describe('mobile expression API', () => {
     expect(unchanged.status).toBe(304);
   });
 
-  it('推荐最多返回 20 项并按精确关键词、情绪和热度排序', async () => {
+  it('推荐最多返回 20 项且只包含精确关键词匹配的预制原图', async () => {
     const response = await request(createApp(pool))
       .get('/api/v1/mobile/expressions/recommend?q=放箭')
       .set('X-Device-Id', USER_A);
 
     expect(response.status).toBe(200);
     expect(response.body.results.map((item: { id: string }) => item.id))
-      .toEqual(['exact', 'emotion', 'hot']);
+      .toEqual(['hot', 'exact']);
     expect(response.body.results[0]).toMatchObject({
-      url: '/uploads/expression/templates/exact.webp',
-      thumbnail_url: '/uploads/expression/thumbnails/exact.webp',
+      type: 'recommendation',
+      url: '/uploads/expression/templates/hot.webp',
+      thumbnail_url: '/uploads/expression/thumbnails/hot.webp',
     });
     expect(response.body.results.length).toBeLessThanOrEqual(20);
+  });
+
+  it('未知词不回退到热门模板', async () => {
+    const response = await request(createApp(pool))
+      .get('/api/v1/mobile/expressions/recommend?q=未知词')
+      .set('X-Device-Id', USER_A);
+
+    expect(response.status).toBe(200);
+    expect(response.body.results).toEqual([]);
   });
 
   it('只按有序键返回 Emoji 组合且未知组合为 404', async () => {

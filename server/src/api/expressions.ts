@@ -134,7 +134,7 @@ export function createMobileExpressionRouter(pool: pg.Pool): Router {
       const catalog = await loadCatalog();
       const results = rankExpressionAssets(catalog.templates, query)
         .slice(0, 20)
-        .map(publicAsset);
+        .map((asset) => publicAsset({ ...asset, type: 'recommendation' }));
       res.json({ query, results });
     } catch (error) {
       next(error);

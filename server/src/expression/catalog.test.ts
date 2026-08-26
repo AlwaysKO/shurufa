@@ -9,6 +9,9 @@ import { emojiCombinationKey, rankExpressionAssets } from './catalog.js';
 const migration = readFileSync(fileURLToPath(
   new URL('../../migrations/011_expression_assets.sql', import.meta.url),
 ), 'utf8');
+const sourceManifest = JSON.parse(readFileSync(fileURLToPath(
+  new URL('../../../assets/expression/manifest.source.json', import.meta.url),
+), 'utf8')) as { templates: Array<{ keywords: string[] }> };
 
 function asset(overrides: Partial<ExpressionAsset>): ExpressionAsset {
   return {
@@ -36,26 +39,33 @@ describe('expression catalog', () => {
     expect(emojiCombinationKey('cry', 'angry')).toBe('cry__angry');
   });
 
-  it('按精确关键词、情绪标签和热度三级回退', () => {
+  it('只返回完整关键词精确匹配并按热度排序', () => {
     const rows = [
       asset({ id: 'hot', fileName: 'hot.webp', heat: 100 }),
       asset({ id: 'emotion', fileName: 'emotion.webp', emotions: ['放箭'], heat: 1 }),
-      asset({ id: 'exact', fileName: 'exact.webp', keywords: ['放箭'], heat: 0 }),
+      asset({ id: 'exact-low', fileName: 'exact-low.webp', keywords: ['放箭'], heat: 1 }),
+      asset({ id: 'exact-high', fileName: 'exact-high.webp', keywords: ['放箭'], heat: 10 }),
     ];
 
     expect(rankExpressionAssets(rows, ' 放箭 ').map((item) => item.id))
-      .toEqual(['exact', 'emotion', 'hot']);
+      .toEqual(['exact-high', 'exact-low']);
   });
 
-  it('同一层按热度降序且不改变输入对象', () => {
+  it('未知词返回空结果且不改变输入对象', () => {
     const rows = [
       asset({ id: 'cold', fileName: 'cold.webp', heat: 1 }),
       asset({ id: 'hot', fileName: 'hot.webp', heat: 10 }),
     ];
 
-    expect(rankExpressionAssets(rows, '未知').map((item) => item.id))
-      .toEqual(['hot', 'cold']);
+    expect(rankExpressionAssets(rows, '未知')).toEqual([]);
     expect(rows.map((item) => item.id)).toEqual(['cold', 'hot']);
+  });
+
+  it('常用词在源清单中各自关联多张预制图片', () => {
+    for (const phrase of ['你好', '谢谢', '加油', '晚安', '早安', '再见', '抱歉', '喜欢', '不要', '快点']) {
+      const matches = sourceManifest.templates.filter(({ keywords }) => keywords.includes(phrase));
+      expect(matches.length, phrase).toBeGreaterThanOrEqual(2);
+    }
   });
 });
 

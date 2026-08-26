@@ -12,14 +12,17 @@ class ExpressionCatalog(
 ) {
     fun search(query: String): List<ExpressionAsset> {
         val normalizedQuery = normalize(query)
+        if (normalizedQuery.isEmpty()) return emptyList()
         return document.templates
-            .mapIndexed { index, asset -> RankedAsset(asset, index, tier(asset, normalizedQuery)) }
+            .mapIndexed { index, asset -> RankedAsset(asset, index) }
+            .filter { ranked ->
+                ranked.asset.keywords.any { normalize(it) == normalizedQuery }
+            }
             .sortedWith(
-                compareBy<RankedAsset> { it.tier }
-                    .thenByDescending { it.asset.heat }
+                compareByDescending<RankedAsset> { it.asset.heat }
                     .thenBy { it.index },
             )
-            .map { it.asset }
+            .map { it.asset.copy(type = "recommendation") }
     }
 
     fun findCombination(firstId: String, secondId: String): EmojiCombination? =
@@ -37,16 +40,9 @@ class ExpressionCatalog(
         ),
     )
 
-    private fun tier(asset: ExpressionAsset, query: String): Int = when {
-        query.isNotEmpty() && asset.keywords.any { normalize(it) == query } -> 0
-        query.isNotEmpty() && asset.emotions.any { normalize(it) == query } -> 1
-        else -> 2
-    }
-
     private data class RankedAsset(
         val asset: ExpressionAsset,
         val index: Int,
-        val tier: Int,
     )
 
     companion object {

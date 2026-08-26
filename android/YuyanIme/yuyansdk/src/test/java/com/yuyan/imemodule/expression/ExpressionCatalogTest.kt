@@ -9,18 +9,33 @@ import org.junit.Test
 
 class ExpressionCatalogTest {
     @Test
-    fun `按精确关键词情绪标签和热度回退且不修改源顺序`() {
+    fun `只返回完整关键词精确匹配并标记为推荐`() {
         val document = document(
             assets = listOf(
                 asset("hot", heat = 100),
                 asset("emotion", emotions = listOf("放箭"), heat = 1),
-                asset("exact", keywords = listOf("放箭")),
+                asset("exact-low", keywords = listOf("放箭"), heat = 1),
+                asset("exact-high", keywords = listOf("放箭"), heat = 10),
             ),
         )
         val catalog = ExpressionCatalog(document)
 
-        assertEquals(listOf("exact", "emotion", "hot"), catalog.search(" 放箭 ").map { it.id })
-        assertEquals(listOf("hot", "emotion", "exact"), document.templates.map { it.id })
+        val results = catalog.search(" 放箭 ")
+
+        assertEquals(listOf("exact-high", "exact-low"), results.map { it.id })
+        assertEquals(listOf("recommendation", "recommendation"), results.map { it.type })
+        assertEquals(
+            listOf("hot", "emotion", "exact-low", "exact-high"),
+            document.templates.map { it.id },
+        )
+        assertEquals(listOf("template", "template", "template", "template"), document.templates.map { it.type })
+    }
+
+    @Test
+    fun `未知词不回退到热门模板`() {
+        val catalog = ExpressionCatalog(document(assets = listOf(asset("hot", heat = 100))))
+
+        assertEquals(emptyList<ExpressionAsset>(), catalog.search("未知词"))
     }
 
     @Test
