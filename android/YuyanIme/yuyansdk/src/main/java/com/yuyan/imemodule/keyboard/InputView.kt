@@ -642,7 +642,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             KeyEvent.KEYCODE_CLEAR -> resetToIdleState()
             KeyEvent.KEYCODE_ENTER -> {
                 if (DecodingInfo.isCandidatesEmpty || DecodingInfo.isAssociate) sendKeyEvent(keyCode)
-                else commitDecInfoText(DecodingInfo.composingStrForCommit)
+                else commitCandidateAndNotify(DecodingInfo.composingStrForCommit)
                 resetToIdleState()
             }
             KeyEvent.KEYCODE_SHIFT_LEFT, KeyEvent.KEYCODE_SHIFT_RIGHT -> {
@@ -745,20 +745,20 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     fun chooseAndUpdate(candId: Int = mSkbCandidatesBarView.getActiveCandNo()): String? {
         val candidate = DecodingInfo.getCandidate(candId)
         return if (candidate?.comment == "📋") {
-            commitDecInfoText(candidate.text)
-            candidate.text.also(expressionQueryCoordinator::onCommitted)
+            commitCandidateAndNotify(candidate.text)
+            candidate.text
         } else if (candidate?.comment == CompletionSync.candidateComment) {
             // 服务端智能补全候选：直接上屏，并上报接受（供服务端统计接受率）
-            commitDecInfoText(candidate.text)
+            commitCandidateAndNotify(candidate.text)
             CompletionSync.find(candidate.text)?.let { CompletionSync.reportAccepted(context, it) }
-            candidate.text.also(expressionQueryCoordinator::onCommitted)
+            candidate.text
         } else {
             val choice = DecodingInfo.chooseDecodingCandidate(candId)
             if (DecodingInfo.isCandidatesEmpty || DecodingInfo.isAssociate) {
                 KeyboardManager.instance.switchKeyboard()
                 (KeyboardManager.instance.currentContainer as? T9TextContainer)?.updateSymbolListView()
-                commitDecInfoText(choice)
-                choice.takeIf(String::isNotEmpty)?.also(expressionQueryCoordinator::onCommitted)
+                commitCandidateAndNotify(choice)
+                choice
             } else {
                 if (!DecodingInfo.isCandidatesEmpty) {
                     (KeyboardManager.instance.currentContainer as? T9TextContainer)?.updateSymbolListView()
@@ -769,6 +769,14 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 null
             }
         }
+    }
+
+    private fun commitCandidateAndNotify(text: String?) {
+        ExpressionCommitDispatcher.dispatch(
+            text = text,
+            commitText = ::commitDecInfoText,
+            notifyExpression = expressionQueryCoordinator::onCommitted,
+        )
     }
 
     private fun updateCandidate() {
