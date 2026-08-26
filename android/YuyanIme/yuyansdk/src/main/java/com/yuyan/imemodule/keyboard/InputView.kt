@@ -42,6 +42,7 @@ import com.yuyan.imemodule.expression.ExpressionCache
 import com.yuyan.imemodule.expression.ExpressionCatalog
 import com.yuyan.imemodule.expression.ExpressionPanelState
 import com.yuyan.imemodule.expression.ExpressionQueryCoordinator
+import com.yuyan.imemodule.expression.ExpressionRecommendationResolver
 import com.yuyan.imemodule.expression.ExpressionSync
 import com.yuyan.imemodule.expression.model.EmojiCombination
 import com.yuyan.imemodule.expression.model.ExpressionAsset
@@ -120,9 +121,11 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     private lateinit var expressionPanel: ExpressionPanel
     private lateinit var expressionQueryCoordinator: ExpressionQueryCoordinator
     private lateinit var expressionFlow: ExpressionFlowController
+    private lateinit var expressionRecommendationResolver: ExpressionRecommendationResolver
     private lateinit var expressionSendDialog: ExpressionSendDialog
     private var expressionSync: ExpressionSync? = null
     private var expressionSearchJob: Job? = null
+    private var expressionPreviewJob: Job? = null
     private var expressionDownloadJob: Job? = null
     private var expressionPreparationJob: Job? = null
     private var expressionRequestId = 0L
@@ -186,6 +189,16 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             )
             val sendController = ExpressionSendController(contentSender)
             val renderer = ExpressionRenderer(context.cacheDir)
+            expressionRecommendationResolver = ExpressionRecommendationResolver(context.cacheDir) { asset ->
+                resolveExpressionFile(
+                    sync = sync,
+                    cache = cache,
+                    version = asset.version,
+                    relativePath = asset.fileName,
+                    sha256 = asset.sha256,
+                    remoteUrl = asset.url,
+                )
+            }
             expressionFlow = ExpressionFlowController(
                 sendController = sendController,
                 prepareAsset = { asset, query -> prepareAsset(sync, cache, renderer, asset, query) },
@@ -333,6 +346,8 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     private fun clearExpressionQuery() {
         expressionSearchJob?.cancel()
         expressionSearchJob = null
+        expressionPreviewJob?.cancel()
+        expressionPreviewJob = null
         expressionPreparationJob?.cancel()
         expressionPreparationJob = null
         expressionPanelState.clear()
@@ -345,13 +360,16 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         expressionPanelState.beginQuery(query, requestId)
         expressionPanel.render(expressionPanelState, sync.currentCatalog())
         expressionSearchJob?.cancel()
+        expressionPreviewJob?.cancel()
         expressionSearchJob = sync.search(
             query = query,
             requestId = requestId,
             acceptResponse = expressionPanelState::acceptResponse,
         ) { results ->
-            expressionPanel.post {
-                if (expressionPanelState.applyResults(requestId, results)) {
+            expressionPreviewJob?.cancel()
+            expressionPreviewJob = expressionScope.launch {
+                val resolved = expressionRecommendationResolver.resolve(results, query)
+                if (expressionPanelState.applyResults(requestId, resolved)) {
                     expressionPanel.render(expressionPanelState, sync.currentCatalog())
                 }
             }
@@ -842,6 +860,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     override fun onDetachedFromWindow() {
         expressionQueryCoordinator.close()
         expressionSearchJob?.cancel()
+        expressionPreviewJob?.cancel()
         expressionDownloadJob?.cancel()
         expressionPreparationJob?.cancel()
         if (::expressionSendDialog.isInitialized) expressionSendDialog.destroy()
@@ -999,6 +1018,8 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         )
         expressionSearchJob?.cancel()
         expressionSearchJob = null
+        expressionPreviewJob?.cancel()
+        expressionPreviewJob = null
         expressionDownloadJob?.cancel()
         expressionDownloadJob = null
         expressionPreparationJob?.cancel()

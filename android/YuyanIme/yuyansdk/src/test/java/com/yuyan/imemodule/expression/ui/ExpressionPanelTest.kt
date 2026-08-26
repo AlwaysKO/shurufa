@@ -87,6 +87,20 @@ class ExpressionPanelTest {
         assertEquals(holder.itemView.layoutParams.width, holder.itemView.layoutParams.height)
     }
 
+    @Test
+    fun `GIF 也优先使用缩略图预览`() {
+        val gif = asset().copy(
+            format = "gif",
+            fileName = "templates/a.gif",
+            thumbnailFileName = "thumbnails/a.webp",
+        )
+
+        assertEquals(
+            "file:///android_asset/expression/thumbnails/a.webp",
+            previewSource(gif),
+        )
+    }
+
     private fun visibleState() = ExpressionPanelState().apply {
         beginQuery("你好", requestId = 1)
         applyResults(1, listOf(asset()))
@@ -94,7 +108,7 @@ class ExpressionPanelTest {
 
     private fun asset() = ExpressionAsset(
         id = "hello",
-        type = "recommendation",
+        type = "prebuilt",
         format = "webp",
         version = "v1",
         fileName = "templates/hello.webp",

@@ -1,11 +1,16 @@
 package com.yuyan.imemodule.expression.ui
 
+import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import com.yuyan.imemodule.R
 import com.yuyan.imemodule.data.collect.ServerConfig
 import com.yuyan.imemodule.expression.model.ExpressionAsset
@@ -49,6 +54,7 @@ class ExpressionAssetAdapter(
         val image: ImageView = view.findViewById(R.id.expression_asset_image)
 
         fun bind(asset: ExpressionAsset) {
+            itemView.visibility = View.VISIBLE
             itemView.layoutParams = itemView.layoutParams.apply {
                 width = itemSizePx(itemView)
                 height = itemSizePx(itemView)
@@ -56,6 +62,28 @@ class ExpressionAssetAdapter(
             Glide.with(image)
                 .load(previewSource(asset))
                 .centerCrop()
+                .listener(object : RequestListener<Drawable> {
+                    override fun onLoadFailed(
+                        error: GlideException?,
+                        model: Any?,
+                        target: Target<Drawable>,
+                        isFirstResource: Boolean,
+                    ): Boolean {
+                        itemView.visibility = View.GONE
+                        return false
+                    }
+
+                    override fun onResourceReady(
+                        resource: Drawable,
+                        model: Any,
+                        target: Target<Drawable>?,
+                        dataSource: DataSource,
+                        isFirstResource: Boolean,
+                    ): Boolean {
+                        itemView.visibility = View.VISIBLE
+                        return false
+                    }
+                })
                 .into(image)
             itemView.setOnClickListener { onClick(asset) }
         }
@@ -64,20 +92,16 @@ class ExpressionAssetAdapter(
     private fun itemSizePx(view: View): Int =
         (ITEM_SIZE_DP * view.resources.displayMetrics.density).toInt()
 
-    private fun previewSource(asset: ExpressionAsset): String {
-        val path = if (asset.format.equals("gif", ignoreCase = true)) {
-            asset.url ?: asset.fileName
-        } else {
-            asset.thumbnailUrl ?: asset.url ?: asset.thumbnailFileName ?: asset.fileName
-        }
-        return when {
-            path.startsWith("http://") || path.startsWith("https://") || path.startsWith("file://") -> path
-            path.startsWith("/") -> ServerConfig.baseUrl + path
-            else -> "file:///android_asset/expression/$path"
-        }
-    }
-
     private companion object {
         const val ITEM_SIZE_DP = 104
+    }
+}
+
+internal fun previewSource(asset: ExpressionAsset): String {
+    val path = asset.thumbnailUrl ?: asset.thumbnailFileName ?: asset.url ?: asset.fileName
+    return when {
+        path.startsWith("http://") || path.startsWith("https://") || path.startsWith("file://") -> path
+        path.startsWith("/") -> ServerConfig.baseUrl + path
+        else -> "file:///android_asset/expression/$path"
     }
 }

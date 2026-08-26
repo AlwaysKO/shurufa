@@ -10,22 +10,22 @@ import org.junit.Test
 class ExpressionRenderPolicyTest {
     @Test
     fun `预制推荐始终直接使用原图`() {
-        assertFalse(ExpressionRenderPolicy.shouldOverlayText(asset(type = "recommendation"), "你好"))
+        assertFalse(ExpressionRenderPolicy.shouldOverlayText(asset(type = "prebuilt"), "你好"))
     }
 
     @Test
     fun `模板仅在查询和文字布局完整时叠字`() {
-        assertTrue(ExpressionRenderPolicy.shouldOverlayText(asset(type = "template"), "你好"))
-        assertFalse(ExpressionRenderPolicy.shouldOverlayText(asset(type = "template"), "   "))
+        assertTrue(ExpressionRenderPolicy.shouldOverlayText(asset(type = "synthesis-template"), "你好"))
+        assertFalse(ExpressionRenderPolicy.shouldOverlayText(asset(type = "synthesis-template"), "   "))
         assertFalse(
             ExpressionRenderPolicy.shouldOverlayText(
-                asset(type = "template").copy(textSafeArea = null),
+                asset(type = "synthesis-template").copy(textSafeArea = null),
                 "你好",
             ),
         )
         assertFalse(
             ExpressionRenderPolicy.shouldOverlayText(
-                asset(type = "template").copy(layout = null),
+                asset(type = "synthesis-template").copy(layout = null),
                 "你好",
             ),
         )
