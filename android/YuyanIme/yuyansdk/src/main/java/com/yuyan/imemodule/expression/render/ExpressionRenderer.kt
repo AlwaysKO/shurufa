@@ -17,7 +17,7 @@ class ExpressionRenderer(
 
     fun cacheKey(asset: ExpressionAsset, text: String): String {
         val digest = MessageDigest.getInstance("SHA-256")
-            .digest("${asset.id}\u0000${asset.version}\u0000$text".toByteArray())
+            .digest("${asset.id}\u0000${asset.version}\u0000${asset.sha256}\u0000$text".toByteArray())
             .joinToString("") { "%02x".format(it) }
         return "${asset.id}-${asset.version}-$digest"
     }

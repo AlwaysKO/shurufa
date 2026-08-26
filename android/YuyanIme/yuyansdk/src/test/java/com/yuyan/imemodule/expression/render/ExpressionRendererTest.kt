@@ -39,6 +39,16 @@ class ExpressionRendererTest {
     }
 
     @Test
+    fun `合成缓存键包含素材哈希`() {
+        val renderer = ExpressionRenderer(temporaryFolder.root)
+
+        val oldKey = renderer.cacheKey(asset(version = "v1", sha256 = "a".repeat(64)), "你好")
+        val newKey = renderer.cacheKey(asset(version = "v1", sha256 = "b".repeat(64)), "你好")
+
+        assertNotEquals(oldKey, newKey)
+    }
+
+    @Test
     fun `两帧 GIF 合成后保留帧数延迟透明度且每帧出现文字像素`() = runBlocking {
         val source = temporaryFolder.newFile("source.gif").apply { writeBytes(TWO_FRAME_GIF) }
         val target = temporaryFolder.newFile("rendered.gif")
@@ -85,13 +95,13 @@ class ExpressionRendererTest {
         return DecodedGif(frames, List(decoder.frameCount, decoder::getDelay))
     }
 
-    private fun asset(version: String) = ExpressionAsset(
+    private fun asset(version: String, sha256: String = "a".repeat(64)) = ExpressionAsset(
         id = "tpl",
         type = "template",
         format = "gif",
         version = version,
         fileName = "templates/tpl.gif",
-        sha256 = "a".repeat(64),
+        sha256 = sha256,
         width = 32,
         height = 32,
     )
