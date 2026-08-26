@@ -51,9 +51,9 @@ import com.yuyan.imemodule.expression.render.ExpressionRenderer
 import com.yuyan.imemodule.expression.send.ExpressionContentSender
 import com.yuyan.imemodule.expression.send.ExpressionFlowController
 import com.yuyan.imemodule.expression.send.ExpressionSendController
+import com.yuyan.imemodule.expression.send.ExpressionSendResult
 import com.yuyan.imemodule.expression.send.PreparedExpression
 import com.yuyan.imemodule.expression.ui.ExpressionPanel
-import com.yuyan.imemodule.expression.ui.ExpressionSendDialog
 import com.yuyan.imemodule.keyboard.container.CandidatesContainer
 import com.yuyan.imemodule.keyboard.container.ClipBoardContainer
 import com.yuyan.imemodule.keyboard.container.SymbolContainer
@@ -122,7 +122,6 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     private lateinit var expressionQueryCoordinator: ExpressionQueryCoordinator
     private lateinit var expressionFlow: ExpressionFlowController
     private lateinit var expressionRecommendationResolver: ExpressionRecommendationResolver
-    private lateinit var expressionSendDialog: ExpressionSendDialog
     private var expressionSync: ExpressionSync? = null
     private var expressionSearchJob: Job? = null
     private var expressionPreviewJob: Job? = null
@@ -206,7 +205,6 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 prepareAsset = { asset, query -> prepareAsset(sync, cache, renderer, asset, query) },
                 prepareCombination = { combination -> prepareCombination(sync, cache, combination) },
             )
-            expressionSendDialog = ExpressionSendDialog(this, sendController, contentSender)
             expressionPanel.onAiStickerEnabledChange = { enabled ->
                 aiStickerPreference.setValue(enabled)
                 expressionPanelState.setAiStickerEnabled(enabled)
@@ -232,9 +230,9 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 expressionPanelState.selectTab(tab)
                 expressionPanel.render(expressionPanelState, sync.currentCatalog())
             }
-            expressionPanel.onAssetClick = { asset -> prepareForConfirmation(asset) }
+            expressionPanel.onAssetClick = { asset -> sendDirectly(asset) }
             expressionPanel.onEmojiCombinationClick = { combination, _ ->
-                prepareForConfirmation(combination)
+                sendDirectly(combination)
             }
             expressionPanel.onEmojiCombinationMissing = { combination, deliver ->
                 val remoteUrl = combination.url
@@ -336,31 +334,31 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             ?: error("素材下载失败")
     }
 
-    private fun prepareForConfirmation(asset: ExpressionAsset) {
+    private fun sendDirectly(asset: ExpressionAsset) {
         val query = expressionPanelState.query ?: return
-        expressionPreparationJob?.cancel()
+        if (expressionPreparationJob?.isActive == true) return
         expressionPreparationJob = expressionScope.launch {
-            try {
-                expressionSendDialog.show(expressionFlow.prepare(asset, query))
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (error: Exception) {
-                Toast.makeText(context, error.message ?: "图片准备失败", Toast.LENGTH_SHORT).show()
-            }
+            showExpressionSendResult(expressionFlow.prepareAndSend(asset, query))
         }
     }
 
-    private fun prepareForConfirmation(combination: EmojiCombination) {
-        expressionPreparationJob?.cancel()
+    private fun sendDirectly(combination: EmojiCombination) {
+        if (expressionPreparationJob?.isActive == true) return
         expressionPreparationJob = expressionScope.launch {
-            try {
-                expressionSendDialog.show(expressionFlow.prepare(combination))
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (error: Exception) {
-                Toast.makeText(context, error.message ?: "图片准备失败", Toast.LENGTH_SHORT).show()
-            }
+            showExpressionSendResult(expressionFlow.prepareAndSend(combination))
         }
+    }
+
+    private fun showExpressionSendResult(result: ExpressionSendResult) {
+        val message = when (result) {
+            ExpressionSendResult.Sent,
+            ExpressionSendResult.AlreadySending,
+            -> null
+            ExpressionSendResult.UnsupportedTarget -> "当前应用不支持图片发送"
+            is ExpressionSendResult.Failed -> result.reason.ifBlank { "图片发送失败" }
+            ExpressionSendResult.NotPrepared -> "图片发送失败"
+        }
+        message?.let { Toast.makeText(context, it, Toast.LENGTH_SHORT).show() }
     }
 
     private fun clearExpressionQuery() {
@@ -883,7 +881,6 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         expressionPreviewJob?.cancel()
         expressionDownloadJob?.cancel()
         expressionPreparationJob?.cancel()
-        if (::expressionSendDialog.isInitialized) expressionSendDialog.destroy()
         expressionScope.cancel()
         super.onDetachedFromWindow()
     }
@@ -1044,7 +1041,6 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         expressionDownloadJob = null
         expressionPreparationJob?.cancel()
         expressionPreparationJob = null
-        if (::expressionSendDialog.isInitialized) expressionSendDialog.close()
         expressionPanel.resetEmojiSelection()
         expressionPanelState = ExpressionPanelState(getInstance().internal.aiStickerEnabled.getValue())
         expressionSync?.let { expressionPanel.render(expressionPanelState, it.currentCatalog()) }

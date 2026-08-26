@@ -9,14 +9,81 @@ import com.yuyan.imemodule.expression.send.ExpressionSendResult
 import com.yuyan.imemodule.expression.send.ExpressionSender
 import com.yuyan.imemodule.expression.send.PreparedExpression
 import java.io.File
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ExpressionFlowTest {
+    @Test
+    fun `准备完成后立即只发送一次并清空内容`() = runBlocking {
+        val sender = RecordingSender()
+        val sendController = ExpressionSendController(sender)
+        val flow = flow(sendController)
+
+        val result = flow.prepareAndSend(asset("hello", "webp", emptyList()), "你好")
+
+        assertSame(ExpressionSendResult.Sent, result)
+        assertEquals(1, sender.calls)
+        assertNull(sendController.prepared)
+    }
+
+    @Test
+    fun `不支持目标和渲染失败返回明确结果且不留待发内容`() = runBlocking {
+        val unsupportedController = ExpressionSendController(
+            RecordingSender(ExpressionSendResult.UnsupportedTarget),
+        )
+        val unsupported = flow(unsupportedController).prepareAndSend(
+            asset("hello", "webp", emptyList()),
+            "你好",
+        )
+        assertSame(ExpressionSendResult.UnsupportedTarget, unsupported)
+        assertNull(unsupportedController.prepared)
+
+        val failedController = ExpressionSendController(RecordingSender())
+        val failedFlow = ExpressionFlowController(
+            sendController = failedController,
+            prepareAsset = { _, _ -> error("渲染失败") },
+            prepareCombination = { error("本用例不选择 Emoji") },
+        )
+        assertEquals(
+            ExpressionSendResult.Failed("渲染失败"),
+            failedFlow.prepareAndSend(asset("broken", "webp", emptyList()), "你好"),
+        )
+        assertNull(failedController.prepared)
+    }
+
+    @Test
+    fun `重复点击在首次发送完成前被忽略`() = runBlocking {
+        val started = CompletableDeferred<Unit>()
+        val release = CompletableDeferred<Unit>()
+        val sender = object : ExpressionSender {
+            var calls = 0
+            override suspend fun send(expression: PreparedExpression): ExpressionSendResult {
+                calls += 1
+                started.complete(Unit)
+                release.await()
+                return ExpressionSendResult.Sent
+            }
+        }
+        val flow = flow(ExpressionSendController(sender))
+        val selected = asset("hello", "webp", emptyList())
+
+        val first = async { flow.prepareAndSend(selected, "你好") }
+        started.await()
+        assertSame(ExpressionSendResult.AlreadySending, flow.prepareAndSend(selected, "你好"))
+        release.complete(Unit)
+
+        assertSame(ExpressionSendResult.Sent, first.await())
+        assertEquals(1, sender.calls)
+    }
+
     @Test
     fun `候选推荐到 GIF 准备取消和单次确认形成完整链路`() = runBlocking {
         val gif = asset("arrow-gif", "gif", keywords = listOf("放箭"))
@@ -83,11 +150,21 @@ class ExpressionFlowTest {
         assertNotEquals(preparedFiles[0], preparedFiles[1])
     }
 
-    private class RecordingSender : ExpressionSender {
+    private fun flow(sendController: ExpressionSendController) = ExpressionFlowController(
+        sendController = sendController,
+        prepareAsset = { asset, _ ->
+            PreparedExpression(File("/tmp/${asset.id}.${asset.format}"), "image/${asset.format}")
+        },
+        prepareCombination = { error("本用例不选择 Emoji") },
+    )
+
+    private class RecordingSender(
+        private val result: ExpressionSendResult = ExpressionSendResult.Sent,
+    ) : ExpressionSender {
         var calls = 0
         override suspend fun send(expression: PreparedExpression): ExpressionSendResult {
             calls += 1
-            return ExpressionSendResult.Sent
+            return result
         }
     }
 
@@ -97,7 +174,7 @@ class ExpressionFlowTest {
         keywords: List<String>,
     ) = ExpressionAsset(
         id = id,
-        type = "template",
+        type = "synthesis-template",
         format = format,
         version = "v1",
         fileName = "templates/$id.$format",
