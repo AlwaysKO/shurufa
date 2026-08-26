@@ -8,20 +8,21 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-01.gif",
       "thumbnailFileName": "thumbnails/tpl-01.webp",
-      "sha256": "aabb994340db845cd495e52390fea3e60bc2f5a482efaa3274733e0ebc09c1ed",
+      "sha256": "758d31ecbeaf76bbdf98a11db4ab5f3c1330965bfa8fdb6ec3b68e67e8f8a0bb",
       "width": 512,
       "height": 512,
       "keywords": [
-        "开心庆祝"
+        "开心庆祝",
+        "开心"
       ],
       "emotions": [
         "happy"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -41,20 +42,21 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-02.gif",
       "thumbnailFileName": "thumbnails/tpl-02.webp",
-      "sha256": "ab3886da8f01ff7c72f9cfe6b01192e0416e48b57c8508cd953482e955147b15",
+      "sha256": "ec1a90a487371eecf40fc0731aa81a68d23515c738eca23afcd9bd411d028350",
       "width": 512,
       "height": 512,
       "keywords": [
-        "感谢夸奖"
+        "感谢夸奖",
+        "谢谢"
       ],
       "emotions": [
         "happy"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -74,20 +76,21 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-03.gif",
       "thumbnailFileName": "thumbnails/tpl-03.webp",
-      "sha256": "0c4324b6a655219c29dc42ea0d22587ecfa81a997f05b8509c14ff9958026591",
+      "sha256": "fbb466ce115bb23fc05002b0c2b8b825472017066d0b47aa4bd7303ab88f9bdf",
       "width": 512,
       "height": 512,
       "keywords": [
-        "加油打气"
+        "加油打气",
+        "加油"
       ],
       "emotions": [
         "encourage"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -107,20 +110,21 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-04.gif",
       "thumbnailFileName": "thumbnails/tpl-04.webp",
-      "sha256": "d074ec5738da124882f4e51802ea12047812b6bd306bc4d841b10f82e4856e6a",
+      "sha256": "0998c8ffc522333a024e9b32420530a817703f011723e47f0712aefb4e79f392",
       "width": 512,
       "height": 512,
       "keywords": [
-        "胜利成功"
+        "胜利成功",
+        "加油"
       ],
       "emotions": [
         "proud"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -140,7 +144,7 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-05.gif",
       "thumbnailFileName": "thumbnails/tpl-05.webp",
-      "sha256": "1245c6d57dcfc92c688805c9d0f2cab4d6fc4144bff9010206054caf8096943f",
+      "sha256": "c1e26fc1795cd82e9c95eb8cd2ab2914599c12332f333c9e412fd366046a6021",
       "width": 512,
       "height": 512,
       "keywords": [
@@ -150,10 +154,10 @@
         "surprised"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -173,20 +177,22 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-06.gif",
       "thumbnailFileName": "thumbnails/tpl-06.webp",
-      "sha256": "3980536594e6ab5bb971bf3ff0e122527746211471b7d62764311de93dd4912f",
+      "sha256": "2b6b166bf86aa56666b254627da1077271ebbcfbfb9b522c8df1a3ba01da7f6c",
       "width": 512,
       "height": 512,
       "keywords": [
-        "同意点赞"
+        "同意点赞",
+        "好的",
+        "可以"
       ],
       "emotions": [
         "approve"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -206,20 +212,21 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-07.gif",
       "thumbnailFileName": "thumbnails/tpl-07.webp",
-      "sha256": "edbaf091065ac7b260cd2ae34e77b1df34e590e234d8a4d21934f1345aefe4c4",
+      "sha256": "ac5d2f80fabb7e378ad85f28e3d5ad9f24eda10c18b5fa0fcea8195a3d1b5695",
       "width": 512,
       "height": 512,
       "keywords": [
-        "开心跳舞"
+        "开心跳舞",
+        "开心"
       ],
       "emotions": [
         "happy"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -239,20 +246,21 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-08.gif",
       "thumbnailFileName": "thumbnails/tpl-08.webp",
-      "sha256": "3c46370c384cee6244002d9fc71c242a9413a5a80fefdc638ecc4c3a7506d02b",
+      "sha256": "fc860efa5e98c8f61c6cc125ddd317a6131636cfdb26364c0eaf03d08327eff1",
       "width": 512,
       "height": 512,
       "keywords": [
-        "暖心感谢"
+        "暖心感谢",
+        "谢谢"
       ],
       "emotions": [
         "grateful"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -272,20 +280,22 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-09.gif",
       "thumbnailFileName": "thumbnails/tpl-09.webp",
-      "sha256": "06cb2ab695cb1cb013fe001bc03606e63486b1273b5f49ff840f63987514b503",
+      "sha256": "fda476f4799ec789419ddddbf279f0fa739643e8a9c44afc45de271f7124395e",
       "width": 512,
       "height": 512,
       "keywords": [
-        "默契击掌"
+        "默契击掌",
+        "好的",
+        "可以"
       ],
       "emotions": [
         "happy"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -305,20 +315,21 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-10.gif",
       "thumbnailFileName": "thumbnails/tpl-10.webp",
-      "sha256": "7241b4bee261795b0d8dff9f12c03b790caccf2dbd3e1945d682afb45072ed16",
+      "sha256": "54ed73e5073b0d06e5f66ab41b09ce05175c60812582d3bddb7b19ba5f391ef7",
       "width": 512,
       "height": 512,
       "keywords": [
-        "派对庆祝"
+        "派对庆祝",
+        "开心"
       ],
       "emotions": [
         "happy"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -338,7 +349,7 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-11.gif",
       "thumbnailFileName": "thumbnails/tpl-11.webp",
-      "sha256": "892eea553b1b2a12c6972d058daeecb07712e9c1ffacdd4856b765aa982a4bc9",
+      "sha256": "e8327f7582d41d56f43a7a0f9b88836144a79f8ca78e84bb1c6b1b67a44964ea",
       "width": 512,
       "height": 512,
       "keywords": [
@@ -348,10 +359,10 @@
         "proud"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -371,20 +382,21 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-12.gif",
       "thumbnailFileName": "thumbnails/tpl-12.webp",
-      "sha256": "0574961f6e0af78da04f429d228e820752eb6af09ecf0d77ca6cf5c85fecc79b",
+      "sha256": "b44e7db25c8e0326623b7de7c00fb83e6b999d1e4242625aca2e5b9f0ab59e68",
       "width": 512,
       "height": 512,
       "keywords": [
-        "期待兴奋"
+        "期待兴奋",
+        "你好"
       ],
       "emotions": [
         "excited"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -404,20 +416,21 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-13.gif",
       "thumbnailFileName": "thumbnails/tpl-13.webp",
-      "sha256": "03ff38086dbc01e4143f0c966a82dd9b0951a5e5a8f5a80395c5ff7aed63072c",
+      "sha256": "1285ad9ec32e91d0fa87677ff1bcffb85d09003f459a7b295cbc714dc9c49c02",
       "width": 512,
       "height": 512,
       "keywords": [
-        "鼓励支持"
+        "鼓励支持",
+        "加油"
       ],
       "emotions": [
         "encourage"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -437,20 +450,22 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-14.gif",
       "thumbnailFileName": "thumbnails/tpl-14.webp",
-      "sha256": "cee5a49eef66d7ef8ab2ec9d61b528a8c2a0d50995edd6949d21fed6553ba8ed",
+      "sha256": "0870f535549b3eebdc1684fdb9d16a1e66f8b7ecad8eb0c4ceacb00424e43c09",
       "width": 512,
       "height": 512,
       "keywords": [
-        "乐观阳光"
+        "乐观阳光",
+        "你好",
+        "早安"
       ],
       "emotions": [
         "happy"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -470,20 +485,21 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-15.gif",
       "thumbnailFileName": "thumbnails/tpl-15.webp",
-      "sha256": "5d9a468d458aa319b91c6837f0bb8c3a994fa9e7f669cd44ce63d998deb55712",
+      "sha256": "eb57fcc2898e5c89740b62a5b486d3ab4c19db580dd7786579c9986b82dd0253",
       "width": 512,
       "height": 512,
       "keywords": [
-        "鼓掌喝彩"
+        "鼓掌喝彩",
+        "谢谢"
       ],
       "emotions": [
         "praise"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -503,20 +519,22 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-16.gif",
       "thumbnailFileName": "thumbnails/tpl-16.webp",
-      "sha256": "b3e3e24e6d4a3c1e487808126627bd62edd6fd4754698f5b5f66ac26d51b30d4",
+      "sha256": "bf32c13166b43b7a79ddbd79edf75866f51229b2a328dfeaa22e51c6cfb2ba4e",
       "width": 512,
       "height": 512,
       "keywords": [
-        "大笑开心"
+        "大笑开心",
+        "开心",
+        "哈哈"
       ],
       "emotions": [
         "happy"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -536,20 +554,21 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-17.gif",
       "thumbnailFileName": "thumbnails/tpl-17.webp",
-      "sha256": "4c935e1e93ffbae68af2c98c8f6cb5b54675042b1a906ecd99e2516a0ee1958f",
+      "sha256": "3418af11d6a23741b7d92c9abfd955f81823a8e0076a721babbc0387eb09f411",
       "width": 512,
       "height": 512,
       "keywords": [
-        "尴尬无语"
+        "尴尬无语",
+        "无语"
       ],
       "emotions": [
         "speechless"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -569,7 +588,7 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-18.gif",
       "thumbnailFileName": "thumbnails/tpl-18.webp",
-      "sha256": "a76787a2593e9b7c026543a90089973e729e710fbd07e9b0d6fb413827cc1a13",
+      "sha256": "468e98c1b35aff8ca6d4dd6041296f594f28108deda78933bb19f122a6643087",
       "width": 512,
       "height": 512,
       "keywords": [
@@ -579,10 +598,10 @@
         "skeptical"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -602,7 +621,7 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-19.gif",
       "thumbnailFileName": "thumbnails/tpl-19.webp",
-      "sha256": "36c4a4c23f68b25a7aadf9779479a3e82c77d40637f87f8b4125dd6383f78f8a",
+      "sha256": "63d9409354c4e85041899068e229121fcb53094a27dbca310ff090af04f7863e",
       "width": 512,
       "height": 512,
       "keywords": [
@@ -612,10 +631,10 @@
         "tease"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -635,20 +654,21 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-20.gif",
       "thumbnailFileName": "thumbnails/tpl-20.webp",
-      "sha256": "c998f417b94d9a96e3098d8f5dbb8955428050cfa0b3e2d40365da436ea02ce8",
+      "sha256": "7f1c9ebe2b6db057b4b369ca9d7498a853144f7373c6c3378605a25524a7ffbc",
       "width": 512,
       "height": 512,
       "keywords": [
-        "捂脸无奈"
+        "捂脸无奈",
+        "无语"
       ],
       "emotions": [
         "speechless"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -668,7 +688,7 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-21.webp",
       "thumbnailFileName": "thumbnails/tpl-21.webp",
-      "sha256": "c033e8ee920f6c965da45e6c9bd8ee500906685283e8f3b5bbb41f178b69d743",
+      "sha256": "36f06c30eab75a5d0d123b699cf95cf1f16c060cafd5cad1560e6ab063d69b8a",
       "width": 512,
       "height": 512,
       "keywords": [
@@ -678,10 +698,10 @@
         "confused"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -701,7 +721,7 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-22.webp",
       "thumbnailFileName": "thumbnails/tpl-22.webp",
-      "sha256": "31fc815d7f89a071b231a51c70d8eefe0923eab37160e0feec612e7d65d00261",
+      "sha256": "44a1aa27f932b84a5c75636fe7ce7b180ea94207f5fb352d35616f68aa2b9003",
       "width": 512,
       "height": 512,
       "keywords": [
@@ -711,10 +731,10 @@
         "tired"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -734,7 +754,7 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-23.webp",
       "thumbnailFileName": "thumbnails/tpl-23.webp",
-      "sha256": "f452b96ab5053cffdfe1a18075fc8928ac5bd0720af02995d6b607e4d460e09f",
+      "sha256": "cd93523c51a1a32205059a12ab80219d76c81ced2e218c278032790f66587cd8",
       "width": 512,
       "height": 512,
       "keywords": [
@@ -744,10 +764,10 @@
         "embarrassed"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -767,7 +787,7 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-24.webp",
       "thumbnailFileName": "thumbnails/tpl-24.webp",
-      "sha256": "19724c4e43b96b02d5c53a279dc73cb19748c63021771b750da0d83728d1db7f",
+      "sha256": "a183a2662b8c4cf415630c6930180c713db54df9e6900263a1af718dd55d8a30",
       "width": 512,
       "height": 512,
       "keywords": [
@@ -777,10 +797,10 @@
         "annoyed"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -800,7 +820,7 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-25.webp",
       "thumbnailFileName": "thumbnails/tpl-25.webp",
-      "sha256": "56e17184ac4238b41bef1df9463a2ffe4338f12271db954369c8fc94b7da2bde",
+      "sha256": "f62048ac0e8e77e40098b588b0d1d5bef7419682929e4eeb2f99cd5ea8fe6bd6",
       "width": 512,
       "height": 512,
       "keywords": [
@@ -810,10 +830,10 @@
         "mischievous"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -833,7 +853,7 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-26.webp",
       "thumbnailFileName": "thumbnails/tpl-26.webp",
-      "sha256": "e58a3f7036882b5fe5fc1bbfc7aaea7672b4841a193bcfba9bdce89236637989",
+      "sha256": "2501e2e011d017066201c1c6d87859228eb14b1cc12e4105084c74445ee1143f",
       "width": 512,
       "height": 512,
       "keywords": [
@@ -843,10 +863,10 @@
         "tease"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -866,7 +886,7 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-27.webp",
       "thumbnailFileName": "thumbnails/tpl-27.webp",
-      "sha256": "6f5dccbdb13c106a7e6301657489aeca19dd26ff7ac6f5a2e9ea5c81f290cf52",
+      "sha256": "fa6dbb23fee8338109f25d0674b631f7e56685724410be6c0544a26bd1fc8b3e",
       "width": 512,
       "height": 512,
       "keywords": [
@@ -876,10 +896,10 @@
         "surprised"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -899,20 +919,21 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-28.webp",
       "thumbnailFileName": "thumbnails/tpl-28.webp",
-      "sha256": "0e8f2bf5e87fb6bc28ca4a6f075652c47c91fa5b2acb73382cc1a42074f82527",
+      "sha256": "342e333a1cde6729708d1c8508aedeb10b9e3b07055dc3d19e7a69fa13036abf",
       "width": 512,
       "height": 512,
       "keywords": [
-        "无奈摊手"
+        "无奈摊手",
+        "无语"
       ],
       "emotions": [
         "speechless"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -932,7 +953,7 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-29.webp",
       "thumbnailFileName": "thumbnails/tpl-29.webp",
-      "sha256": "97537dbd31c2c790fe8c0cc5b26bde3105f1aed85bf473ce9f858ecf37a65d13",
+      "sha256": "aa705b74289ee6d5b9f984509e862cb170bc62f6f5519da569c0bbf96419bc60",
       "width": 512,
       "height": 512,
       "keywords": [
@@ -942,10 +963,10 @@
         "bored"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -965,7 +986,7 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-30.webp",
       "thumbnailFileName": "thumbnails/tpl-30.webp",
-      "sha256": "ae6b74d5b5e2f739d4dba41ba3a7d1cfe24aff9eb7a91d6b4cfeba988db89de9",
+      "sha256": "ca19c0c5a44a9c7c72a657963b4ee411a7607df195a8c84972e6c5b5572342f5",
       "width": 512,
       "height": 512,
       "keywords": [
@@ -975,10 +996,10 @@
         "embarrassed"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -998,20 +1019,21 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-31.webp",
       "thumbnailFileName": "thumbnails/tpl-31.webp",
-      "sha256": "3342656aa76dc81baeb6ea3909982366edec3b91c84f32554320940a6b321523",
+      "sha256": "a7defee0bf488fb122bdad77c11c4f6f36b4224bf0eb0393c486c3499bfd8002",
       "width": 512,
       "height": 512,
       "keywords": [
-        "偷笑憋笑"
+        "偷笑憋笑",
+        "哈哈"
       ],
       "emotions": [
         "mischievous"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1031,7 +1053,7 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-32.webp",
       "thumbnailFileName": "thumbnails/tpl-32.webp",
-      "sha256": "d3b89db7d3414e5f232b584e190088021fa8e9cfa23201fcc0ae63d9f28d8723",
+      "sha256": "ccbe0b59f8f14c57f6ad9d44ede6c4ffcf65d995ff9f5c3bb49d8fc220d0f5a3",
       "width": 512,
       "height": 512,
       "keywords": [
@@ -1041,10 +1063,10 @@
         "annoyed"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1064,20 +1086,21 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-33.webp",
       "thumbnailFileName": "thumbnails/tpl-33.webp",
-      "sha256": "28054aedd04dead322ff747a3c5a0d5f13ab7b5b0ea1d6b4a9f50d054e23d736",
+      "sha256": "b1460b8ee647cff908e538ae488aec6e4b831b58e490ee2dd0519ea066a8eb15",
       "width": 512,
       "height": 512,
       "keywords": [
-        "拒绝不要"
+        "拒绝不要",
+        "不要"
       ],
       "emotions": [
         "refuse"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1097,20 +1120,21 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-34.webp",
       "thumbnailFileName": "thumbnails/tpl-34.webp",
-      "sha256": "f3a007ea700f05a382d83fc10ad8351a0b0ba04f14b1ea099f499e0da76cd635",
+      "sha256": "44e829ec2161dee0aa8844de740c557c8a0b63f592e21b91f77d80cee4077f1c",
       "width": 512,
       "height": 512,
       "keywords": [
-        "生气抗议"
+        "生气抗议",
+        "生气"
       ],
       "emotions": [
         "angry"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1130,20 +1154,21 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-35.webp",
       "thumbnailFileName": "thumbnails/tpl-35.webp",
-      "sha256": "3706d955d3873c605536f7deead0b3b311b91f3ee3fa2663ab88a5bd71e84977",
+      "sha256": "453ca27fc2b88c02c989b2ab4a68c7530d5727996da3aee1f0a4e961007d0f51",
       "width": 512,
       "height": 512,
       "keywords": [
-        "愤怒爆发"
+        "愤怒爆发",
+        "生气"
       ],
       "emotions": [
         "furious"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1163,7 +1188,7 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-36.webp",
       "thumbnailFileName": "thumbnails/tpl-36.webp",
-      "sha256": "be641a5362947b24f6659617b0d0365facd53eb50864cec1923293803d0d6d4f",
+      "sha256": "d7637200e051fed5c8538574a176e1b88cae1885d24266bd64512e042a6cbd07",
       "width": 512,
       "height": 512,
       "keywords": [
@@ -1173,10 +1198,10 @@
         "warning"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1196,20 +1221,21 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-37.webp",
       "thumbnailFileName": "thumbnails/tpl-37.webp",
-      "sha256": "6479d67def3cb9ba2b1bf0ed5f58e4a0e21c7dd90dea4d6c151331fa03a8bf3b",
+      "sha256": "6425d868eb9e28726f280c06f4b90edf88aeca776d084c6c1c3db6ba634ffb82",
       "width": 512,
       "height": 512,
       "keywords": [
-        "停止别动"
+        "停止别动",
+        "不要"
       ],
       "emotions": [
         "refuse"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1229,20 +1255,21 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-38.webp",
       "thumbnailFileName": "thumbnails/tpl-38.webp",
-      "sha256": "a66ca80fe571393e099f065c65fa2fcc0fcbfa95333e4d67edc1d857bf100ba1",
+      "sha256": "2a50d41b024a66ad89303e698a61835b21d7bd557282dbbb2ae0a89c7d041cea",
       "width": 512,
       "height": 512,
       "keywords": [
-        "催促快点"
+        "催促快点",
+        "快点"
       ],
       "emotions": [
         "urgent"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1262,20 +1289,21 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-39.webp",
       "thumbnailFileName": "thumbnails/tpl-39.webp",
-      "sha256": "84e69c1a35c9e9477ee6273db992a9632875f2c565c05f8dabaf98c9656da6b8",
+      "sha256": "8cb7e97ab13a1a98f513cb0e8f8946460eba0bd0c829d80a1062d697f4f84d4f",
       "width": 512,
       "height": 512,
       "keywords": [
-        "截止时间"
+        "截止时间",
+        "快点"
       ],
       "emotions": [
         "urgent"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1295,7 +1323,7 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-40.webp",
       "thumbnailFileName": "thumbnails/tpl-40.webp",
-      "sha256": "984bedaa9e1b7fb1032d20bc52f2702020991e80e36110d08956a62553f248ce",
+      "sha256": "8fbf441f5c9e9d9fdc06b3f342260f29a96bb48135cab454d76ab095aa45f3a5",
       "width": 512,
       "height": 512,
       "keywords": [
@@ -1305,10 +1333,10 @@
         "panic"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1328,7 +1356,7 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-41.webp",
       "thumbnailFileName": "thumbnails/tpl-41.webp",
-      "sha256": "1b8700c5e82270319b66c67ff49d629aab7da11bdd46642484a3e2be871bcac8",
+      "sha256": "5698b186f597ed55a3de9c87be732d1013e83e2d843a869b14c56f108f804d52",
       "width": 512,
       "height": 512,
       "keywords": [
@@ -1338,10 +1366,10 @@
         "surprised"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1361,7 +1389,7 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-42.webp",
       "thumbnailFileName": "thumbnails/tpl-42.webp",
-      "sha256": "355e8392599380cc46c73ca254a1ca5cce9d88ff6dd9845eb1a8e3efa6d224cb",
+      "sha256": "3794bdd72093aacefd067a96aac3e5196c8806cc85382a75f2909fc08d6cafad",
       "width": 512,
       "height": 512,
       "keywords": [
@@ -1371,10 +1399,10 @@
         "sad"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1394,20 +1422,22 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-43.webp",
       "thumbnailFileName": "thumbnails/tpl-43.webp",
-      "sha256": "2b6238246ed0888f4d328e6df985ecdb501be67d22066bc9820034229a61cc3b",
+      "sha256": "62970b61586f51b3ff63bb06c22b4878dc730aafb809d2f4682bebf62def9eb1",
       "width": 512,
       "height": 512,
       "keywords": [
-        "道歉认错"
+        "道歉认错",
+        "抱歉",
+        "对不起"
       ],
       "emotions": [
         "sorry"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1427,20 +1457,22 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-44.webp",
       "thumbnailFileName": "thumbnails/tpl-44.webp",
-      "sha256": "0c74f2daf6518846fdb060ae5abdf646eca91d035fc08bfa2ddc085237f6923a",
+      "sha256": "12aa1deb288e7a583a8e8be7a57c720696b48e109288b3d8c6662b8a4055231a",
       "width": 512,
       "height": 512,
       "keywords": [
-        "愧疚后悔"
+        "愧疚后悔",
+        "抱歉",
+        "对不起"
       ],
       "emotions": [
         "sorry"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1460,7 +1492,7 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-45.webp",
       "thumbnailFileName": "thumbnails/tpl-45.webp",
-      "sha256": "65fb1bd3617e1a7e8dcfaea77e086f70b58df4b244987ffc9a1ea007ce309fb5",
+      "sha256": "e85ca444f662140b5afc22afa483cfe428477f566bc0d8a2eb08732ace008ee1",
       "width": 512,
       "height": 512,
       "keywords": [
@@ -1470,10 +1502,10 @@
         "disappointed"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1493,7 +1525,7 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-46.webp",
       "thumbnailFileName": "thumbnails/tpl-46.webp",
-      "sha256": "4684c6f40d7580721f0da6f89cfd0d291ab70121f66ee0f77bc9484a159942a0",
+      "sha256": "e2d23f554409e5602c6384d01a7700b60cdb041a1da958394fe3119898c2ff2e",
       "width": 512,
       "height": 512,
       "keywords": [
@@ -1503,10 +1535,10 @@
         "exhausted"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1526,7 +1558,7 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-47.webp",
       "thumbnailFileName": "thumbnails/tpl-47.webp",
-      "sha256": "386153053a065e494305e21dd877d393cf596341897d34f9e64a06f75be3444d",
+      "sha256": "49d2f95f47c55603dd4d1dbcec01932c0272935a45948ff71e81827b33c89021",
       "width": 512,
       "height": 512,
       "keywords": [
@@ -1536,10 +1568,10 @@
         "afraid"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1559,20 +1591,21 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-48.webp",
       "thumbnailFileName": "thumbnails/tpl-48.webp",
-      "sha256": "19672f690ff2c159a97a8f6f07caee7989d25cf5b4cb089a31aae2a3b0e0b986",
+      "sha256": "934e24267e1a7347872e9a48d43782e488f2a4a2d4f69e26346b039fa506c3f3",
       "width": 512,
       "height": 512,
       "keywords": [
-        "坚定反击"
+        "坚定反击",
+        "加油"
       ],
       "emotions": [
         "determined"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1592,20 +1625,22 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-49.webp",
       "thumbnailFileName": "thumbnails/tpl-49.webp",
-      "sha256": "6ec1e4a74644c57d2f6cc7cce0016d69deaa6de5650fc65ed4f23846ca07a1ca",
+      "sha256": "10a692e10fedb4371386c093814720d77a781d80e007a5cce5fb7ea3312a506c",
       "width": 512,
       "height": 512,
       "keywords": [
-        "喜欢爱心"
+        "喜欢爱心",
+        "喜欢",
+        "爱你"
       ],
       "emotions": [
         "love"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1625,7 +1660,7 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-50.webp",
       "thumbnailFileName": "thumbnails/tpl-50.webp",
-      "sha256": "bec6f5dd23f0c24e88f02846e50e35ed8992686269a647c6b18c910ada6e58d5",
+      "sha256": "dc4ee5c9de5a304bd45d01c55349d829a6265d70d61cf5b08a8d6648d4678393",
       "width": 512,
       "height": 512,
       "keywords": [
@@ -1635,10 +1670,10 @@
         "pleading"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1658,7 +1693,7 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-51.webp",
       "thumbnailFileName": "thumbnails/tpl-51.webp",
-      "sha256": "09f3aeb59a5eff788b06a9ab399b732adf433ac4b8f4ea890560ba74bf575d11",
+      "sha256": "a85accbee6ec959d430681184bde5b5a20b58f814e59db871b52b5d1afbc5c56",
       "width": 512,
       "height": 512,
       "keywords": [
@@ -1668,10 +1703,10 @@
         "mischievous"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1691,20 +1726,22 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-52.webp",
       "thumbnailFileName": "thumbnails/tpl-52.webp",
-      "sha256": "3d9a1effa6bf80422198247d2b1da9f7e27ec942a55b92048082e99fe17dc3cf",
+      "sha256": "4b42aff1e151d331dc34f8702eee7e262c2e3f9468ec5e9d19e191a8a201f765",
       "width": 512,
       "height": 512,
       "keywords": [
-        "害羞告白"
+        "害羞告白",
+        "喜欢",
+        "爱你"
       ],
       "emotions": [
         "shy"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1724,20 +1761,22 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-53.webp",
       "thumbnailFileName": "thumbnails/tpl-53.webp",
-      "sha256": "eaa355be79bf6318ab330cd1e9ae35a0e2284f2c65054262af78c99c1642756c",
+      "sha256": "0d3edbcd481b1b94cb4c557fd26e9e686315c7c0073f697f240f8d3b729b2633",
       "width": 512,
       "height": 512,
       "keywords": [
-        "耐心等待"
+        "耐心等待",
+        "晚安",
+        "再见"
       ],
       "emotions": [
         "waiting"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1757,20 +1796,21 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-54.webp",
       "thumbnailFileName": "thumbnails/tpl-54.webp",
-      "sha256": "8356f5e86c79046fbfc2ab99c67934c855e5e49e52a195050ca0b9c893123f3e",
+      "sha256": "826eeeb2c55181730a3e29733b9e661018d3f6cfa387f3f0d6ccf2f23d93d153",
       "width": 512,
       "height": 512,
       "keywords": [
-        "等不及了"
+        "等不及了",
+        "快点"
       ],
       "emotions": [
         "urgent"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1790,20 +1830,21 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-55.webp",
       "thumbnailFileName": "thumbnails/tpl-55.webp",
-      "sha256": "6c0dcceacd54fdc175b386cba2acdf5f0620fc07f9c70907241685791a2a061e",
+      "sha256": "80a915fecb09816335c16b7d577af8ffc0f77f278bb5e0354be2b153d027535b",
       "width": 512,
       "height": 512,
       "keywords": [
-        "晚安睡觉"
+        "晚安睡觉",
+        "晚安"
       ],
       "emotions": [
         "sleepy"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1823,20 +1864,21 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-56.webp",
       "thumbnailFileName": "thumbnails/tpl-56.webp",
-      "sha256": "726051f2b23ec8c08e0fb94b7b421c266aee49c457f336f1dc5986d82eeaf3ff",
+      "sha256": "ad86a4a16d2dd72bbcb8979233d58fa675e7e496d80124b32f36eb63091c7947",
       "width": 512,
       "height": 512,
       "keywords": [
-        "早安活力"
+        "早安活力",
+        "早安"
       ],
       "emotions": [
         "happy"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1856,7 +1898,7 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-57.webp",
       "thumbnailFileName": "thumbnails/tpl-57.webp",
-      "sha256": "9672fb0aad8c93c1a367944b3588d6fd953286493b3b1e12ed8b9a49caf0ef51",
+      "sha256": "0c25adc2d4f133626c593d6ba8ca61bd6a0208e25a68ee2532ac11240b886fca",
       "width": 512,
       "height": 512,
       "keywords": [
@@ -1866,10 +1908,10 @@
         "hungry"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1889,20 +1931,23 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-58.webp",
       "thumbnailFileName": "thumbnails/tpl-58.webp",
-      "sha256": "1d3273bb99e2099ecc857015e40ca10758bf6140b4d1f8e811ea633e61c2a007",
+      "sha256": "6df7bb3fbf6d25678bf80933de3c38c0c1a5931e62df43e746e9dce5e56ba5c5",
       "width": 512,
       "height": 512,
       "keywords": [
-        "拥抱安慰"
+        "拥抱安慰",
+        "谢谢",
+        "喜欢",
+        "爱你"
       ],
       "emotions": [
         "love"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1922,20 +1967,22 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-59.webp",
       "thumbnailFileName": "thumbnails/tpl-59.webp",
-      "sha256": "8ca778f573207f1ec3d1c9e2da0857f6e06b97188b4fd7bb6226fb6bff177b5a",
+      "sha256": "a0352e7d3e5073cb9ba13274ab6b15cc622e5f470790f0bf6e574eadb7809395",
       "width": 512,
       "height": 512,
       "keywords": [
-        "挥手再见"
+        "挥手再见",
+        "你好",
+        "再见"
       ],
       "emotions": [
         "goodbye"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,
@@ -1955,20 +2002,21 @@
       "version": "2026.08.25.1",
       "fileName": "templates/tpl-60.webp",
       "thumbnailFileName": "thumbnails/tpl-60.webp",
-      "sha256": "2b9f3daf526fd72bdadd9d270d72366b7c7a3fdec50d81695d7e645811b5f9e2",
+      "sha256": "afded109bf5348c1076d8df5fa42f7eaa48441849d60fcf58a551d5f63a101fa",
       "width": 512,
       "height": 512,
       "keywords": [
-        "欢迎你好"
+        "欢迎你好",
+        "你好"
       ],
       "emotions": [
         "hello"
       ],
       "textSafeArea": {
-        "x": 40,
-        "y": 20,
-        "width": 432,
-        "height": 170
+        "x": 32,
+        "y": 32,
+        "width": 448,
+        "height": 160
       },
       "layout": {
         "minFontSize": 24,

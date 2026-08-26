@@ -25,6 +25,61 @@ async function createSourceImage(path: string, color: string): Promise<void> {
 }
 
 describe('generateExpressionAssets', () => {
+  it('按源裁剪框去掉顶部空白后再铺满模板画面', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'expression-generator-crop-'));
+    temporaryRoots.push(root);
+    const sourceRoot = join(root, 'source');
+    const outputRoot = join(root, 'output');
+    await mkdir(join(sourceRoot, 'templates'), { recursive: true });
+    const sourcePath = join(sourceRoot, 'templates', 'cropped.png');
+    await sharp({
+      create: {
+        width: 320,
+        height: 320,
+        channels: 3,
+        background: '#ffffff',
+      },
+    }).composite([{
+      input: await sharp({
+        create: {
+          width: 320,
+          height: 160,
+          channels: 3,
+          background: '#e53935',
+        },
+      }).png().toBuffer(),
+      left: 0,
+      top: 160,
+    }]).png().toFile(sourcePath);
+    const manifestPath = join(sourceRoot, 'manifest.source.json');
+    await writeFile(manifestPath, JSON.stringify({
+      version: 'crop-v1',
+      expectedCounts: { templates: 1, animatedTemplates: 0, emojiBases: 0 },
+      templates: [{
+        id: 'cropped', type: 'static', source: 'templates/cropped.png',
+        keywords: ['裁剪'], emotions: [],
+        sourceCrop: { x: 0, y: 160, width: 320, height: 160 },
+        textSafeArea: { x: 32, y: 32, width: 448, height: 128 },
+        layout: {
+          minFontSize: 24, maxFontSize: 48, textColor: '#ffffff',
+          strokeColor: '#000000', strokeWidth: 2, alignment: 'center', maxLines: 2,
+        },
+      }],
+      emojiBases: [],
+    }));
+
+    const catalog = await generateExpressionAssets({ manifestPath, sourceRoot, outputRoot });
+    const { data, info } = await sharp(join(outputRoot, catalog.templates[0].fileName))
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+
+    expect(info).toMatchObject({ width: 512, height: 512, channels: 3 });
+    const [red, green, blue] = data.subarray(0, 3);
+    expect(red).toBeGreaterThan(200);
+    expect(green).toBeLessThan(80);
+    expect(blue).toBeLessThan(80);
+  });
+
   it('生成模板、基础表情和完整有序组合并复制 Android 内置子集', async () => {
     const root = await mkdtemp(join(tmpdir(), 'expression-generator-'));
     temporaryRoots.push(root);

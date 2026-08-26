@@ -17,6 +17,12 @@ interface SourceTemplate {
   source: string;
   keywords: string[];
   emotions: string[];
+  sourceCrop?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
   textSafeArea: ExpressionTextSafeArea;
   layout: ExpressionTextLayout;
 }
@@ -158,8 +164,35 @@ export async function cropExpressionContactSheet(
   return paths;
 }
 
-async function renderAnimatedTemplate(sourcePath: string, targetPath: string): Promise<void> {
-  const base = await sharp(sourcePath)
+async function prepareTemplateSource(
+  sourcePath: string,
+  crop: SourceTemplate['sourceCrop'],
+): Promise<Buffer> {
+  const image = sharp(sourcePath);
+  if (!crop) return image.png().toBuffer();
+  const metadata = await image.metadata();
+  if (
+    !metadata.width
+    || !metadata.height
+    || crop.x < 0
+    || crop.y < 0
+    || crop.width <= 0
+    || crop.height <= 0
+    || crop.x + crop.width > metadata.width
+    || crop.y + crop.height > metadata.height
+  ) {
+    throw new Error(`模板源裁剪框越界：${sourcePath}`);
+  }
+  return image.extract({
+    left: crop.x,
+    top: crop.y,
+    width: crop.width,
+    height: crop.height,
+  }).png().toBuffer();
+}
+
+async function renderAnimatedTemplate(source: Buffer, targetPath: string): Promise<void> {
+  const base = await sharp(source)
     .resize(TEMPLATE_SIZE, TEMPLATE_SIZE, { fit: 'cover' })
     .png()
     .toBuffer();
@@ -201,6 +234,7 @@ async function renderTemplate(
   version: string,
 ): Promise<ExpressionAsset> {
   const sourcePath = join(sourceRoot, template.source);
+  const source = await prepareTemplateSource(sourcePath, template.sourceCrop);
   const extension = template.type === 'gif' ? 'gif' : 'webp';
   const fileName = posix.join('templates', `${template.id}.${extension}`);
   const thumbnailFileName = posix.join('thumbnails', `${template.id}.webp`);
@@ -209,14 +243,14 @@ async function renderTemplate(
   await ensureParent(outputPath);
   await ensureParent(thumbnailPath);
   if (template.type === 'gif') {
-    await renderAnimatedTemplate(sourcePath, outputPath);
+    await renderAnimatedTemplate(source, outputPath);
   } else {
-    await sharp(sourcePath)
+    await sharp(source)
       .resize(TEMPLATE_SIZE, TEMPLATE_SIZE, { fit: 'cover' })
       .webp({ quality: 88 })
       .toFile(outputPath);
   }
-  await sharp(sourcePath)
+  await sharp(source)
     .resize(256, 256, { fit: 'cover' })
     .webp({ quality: 82 })
     .toFile(thumbnailPath);

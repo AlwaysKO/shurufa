@@ -119,7 +119,8 @@ const templates = templateDefinitions.map(([keyword, emotion], index) => {
     source: `templates/${id}.png`,
     keywords: [...keyword.split(/[，、]/), ...(recommendationAliases[id] ?? [])],
     emotions: [emotion],
-    textSafeArea: { x: 40, y: 20, width: 432, height: 170 },
+    sourceCrop: { x: 0, y: 112, width: 384, height: 272 },
+    textSafeArea: { x: 32, y: 32, width: 448, height: 160 },
     layout: {
       minFontSize: 24,
       maxFontSize: 52,

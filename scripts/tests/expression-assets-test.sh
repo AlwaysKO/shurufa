@@ -23,6 +23,16 @@ catalog = json.loads(catalog_path.read_text())
 android_catalog = json.loads((android / "catalog.json").read_text())
 source_manifest = json.loads(source_manifest_path.read_text())
 
+for template in source_manifest["templates"]:
+    crop = template.get("sourceCrop")
+    assert crop is not None, f"模板缺少源裁剪框：{template['id']}"
+    assert crop["x"] >= 0 and crop["y"] >= 96, f"模板顶部裁剪不足：{template['id']}"
+    assert crop["width"] > 0 and crop["height"] > 0, f"模板裁剪尺寸非法：{template['id']}"
+    safe = template["textSafeArea"]
+    assert safe["x"] >= 0 and safe["y"] >= 0, f"文字区起点非法：{template['id']}"
+    assert safe["x"] + safe["width"] <= 512, f"文字区横向越界：{template['id']}"
+    assert safe["y"] + safe["height"] <= 512, f"文字区纵向越界：{template['id']}"
+
 templates = catalog["templates"]
 bases = catalog["emojiBases"]
 combinations = catalog["emojiCombinations"]
