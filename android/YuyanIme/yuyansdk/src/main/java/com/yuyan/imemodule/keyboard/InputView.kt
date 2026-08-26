@@ -45,6 +45,7 @@ import com.yuyan.imemodule.expression.ExpressionQueryCoordinator
 import com.yuyan.imemodule.expression.ExpressionSync
 import com.yuyan.imemodule.expression.model.EmojiCombination
 import com.yuyan.imemodule.expression.model.ExpressionAsset
+import com.yuyan.imemodule.expression.render.ExpressionRenderPolicy
 import com.yuyan.imemodule.expression.render.ExpressionRenderer
 import com.yuyan.imemodule.expression.send.ExpressionContentSender
 import com.yuyan.imemodule.expression.send.ExpressionFlowController
@@ -247,7 +248,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             sha256 = asset.sha256,
             remoteUrl = asset.url,
         )
-        val output = if (asset.textSafeArea != null && asset.layout != null && query.isNotBlank()) {
+        val output = if (ExpressionRenderPolicy.shouldOverlayText(asset, query)) {
             renderer.render(asset, source, query)
         } else {
             source
