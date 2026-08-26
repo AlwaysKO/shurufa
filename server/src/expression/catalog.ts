@@ -11,18 +11,27 @@ export function emojiCombinationKey(firstId: string, secondId: string): string {
 export function rankExpressionAssets(
   assets: readonly ExpressionAsset[],
   query: string,
+  limit = 20,
 ): ExpressionAsset[] {
   const normalizedQuery = normalize(query);
-  if (!normalizedQuery) return [];
+  if (!normalizedQuery || limit <= 0) return [];
 
-  return assets
-    .map((asset, index) => ({ asset, index }))
-    .filter(({ asset }) => (
-      asset.keywords.some((keyword) => normalize(keyword) === normalizedQuery)
-    ))
+  const ranked = (candidates: readonly { asset: ExpressionAsset; index: number }[]) => candidates
+    .slice()
     .sort((left, right) => (
       right.asset.heat - left.asset.heat
       || left.index - right.index
     ))
+    .slice(0, limit)
     .map(({ asset }) => asset);
+
+  const indexed = assets.map((asset, index) => ({ asset, index }));
+  const prebuilt = indexed.filter(({ asset }) => (
+    asset.type === 'prebuilt'
+    && asset.embeddedText !== null
+    && normalize(asset.embeddedText) === normalizedQuery
+  ));
+  if (prebuilt.length > 0) return ranked(prebuilt);
+
+  return ranked(indexed.filter(({ asset }) => asset.type === 'synthesis-template'));
 }

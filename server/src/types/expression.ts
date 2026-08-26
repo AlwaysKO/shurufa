@@ -1,4 +1,4 @@
-export const EXPRESSION_ASSET_TYPES = ['recommendation', 'template'] as const;
+export const EXPRESSION_ASSET_TYPES = ['prebuilt', 'synthesis-template'] as const;
 export type ExpressionAssetType = typeof EXPRESSION_ASSET_TYPES[number];
 
 export const EXPRESSION_ASSET_FORMATS = ['gif', 'png', 'jpg', 'jpeg', 'webp'] as const;
@@ -33,6 +33,7 @@ export interface ExpressionAsset {
   height: number;
   keywords: string[];
   emotions: string[];
+  embeddedText: string | null;
   textSafeArea: ExpressionTextSafeArea | null;
   layout: ExpressionTextLayout | null;
   heat: number;

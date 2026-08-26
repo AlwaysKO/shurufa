@@ -9,33 +9,43 @@ import org.junit.Test
 
 class ExpressionCatalogTest {
     @Test
-    fun `只返回完整关键词精确匹配并标记为推荐`() {
+    fun `优先返回 embeddedText 完整精确匹配的预制图`() {
         val document = document(
             assets = listOf(
-                asset("hot", heat = 100),
-                asset("emotion", emotions = listOf("放箭"), heat = 1),
-                asset("exact-low", keywords = listOf("放箭"), heat = 1),
-                asset("exact-high", keywords = listOf("放箭"), heat = 10),
+                asset("fallback", heat = 100),
+                asset("unrelated", type = "prebuilt", embeddedText = "谢谢", heat = 100),
+                asset("exact-low", type = "prebuilt", embeddedText = "放箭", heat = 1),
+                asset("exact-high", type = "prebuilt", embeddedText = "放箭", heat = 10),
             ),
         )
         val catalog = ExpressionCatalog(document)
 
-        val results = catalog.search(" 放箭 ")
+        val results = catalog.recommend(" 放箭 ")
 
         assertEquals(listOf("exact-high", "exact-low"), results.map { it.id })
-        assertEquals(listOf("recommendation", "recommendation"), results.map { it.type })
+        assertEquals(listOf("prebuilt", "prebuilt"), results.map { it.type })
         assertEquals(
-            listOf("hot", "emotion", "exact-low", "exact-high"),
+            listOf("fallback", "unrelated", "exact-low", "exact-high"),
             document.templates.map { it.id },
         )
-        assertEquals(listOf("template", "template", "template", "template"), document.templates.map { it.type })
     }
 
     @Test
-    fun `未知词不回退到热门模板`() {
-        val catalog = ExpressionCatalog(document(assets = listOf(asset("hot", heat = 100))))
+    fun `无预制结果时只返回限定数量的静态合成模板`() {
+        val catalog = ExpressionCatalog(
+            document(
+                assets = listOf(
+                    asset("cold", heat = 1),
+                    asset("hot", heat = 10),
+                    asset("unrelated", type = "prebuilt", embeddedText = "你好", heat = 100),
+                ),
+            ),
+        )
 
-        assertEquals(emptyList<ExpressionAsset>(), catalog.search("未知词"))
+        val results = catalog.recommend("今天的云像棉花糖", limit = 1)
+
+        assertEquals(listOf("hot"), results.map { it.id })
+        assertEquals(listOf("synthesis-template"), results.map { it.type })
     }
 
     @Test
@@ -73,13 +83,15 @@ class ExpressionCatalogTest {
 
     private fun asset(
         id: String,
+        type: String = "synthesis-template",
+        embeddedText: String? = null,
         version: String = "v1",
         keywords: List<String> = emptyList(),
         emotions: List<String> = emptyList(),
         heat: Long = 0,
     ) = ExpressionAsset(
         id = id,
-        type = "template",
+        type = type,
         format = "webp",
         version = version,
         fileName = "templates/$id.webp",
@@ -89,6 +101,7 @@ class ExpressionCatalogTest {
         height = 512,
         keywords = keywords,
         emotions = emotions,
+        embeddedText = embeddedText,
         heat = heat,
     )
 

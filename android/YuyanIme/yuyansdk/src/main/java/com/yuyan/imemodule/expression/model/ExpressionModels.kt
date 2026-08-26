@@ -35,6 +35,7 @@ data class ExpressionAsset(
     val height: Int,
     val keywords: List<String> = emptyList(),
     val emotions: List<String> = emptyList(),
+    val embeddedText: String? = null,
     val textSafeArea: ExpressionTextSafeArea? = null,
     val layout: ExpressionTextLayout? = null,
     val heat: Long = 0,

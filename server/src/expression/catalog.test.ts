@@ -16,7 +16,7 @@ const sourceManifest = JSON.parse(readFileSync(fileURLToPath(
 function asset(overrides: Partial<ExpressionAsset>): ExpressionAsset {
   return {
     id: 'asset',
-    type: 'recommendation',
+    type: 'synthesis-template',
     format: 'webp',
     version: 'v1',
     fileName: 'asset.webp',
@@ -26,6 +26,7 @@ function asset(overrides: Partial<ExpressionAsset>): ExpressionAsset {
     height: 256,
     keywords: [],
     emotions: [],
+    embeddedText: null,
     textSafeArea: null,
     layout: null,
     heat: 0,
@@ -39,26 +40,27 @@ describe('expression catalog', () => {
     expect(emojiCombinationKey('cry', 'angry')).toBe('cry__angry');
   });
 
-  it('只返回完整关键词精确匹配并按热度排序', () => {
+  it('优先返回 embeddedText 完整精确匹配的预制图', () => {
     const rows = [
-      asset({ id: 'hot', fileName: 'hot.webp', heat: 100 }),
-      asset({ id: 'emotion', fileName: 'emotion.webp', emotions: ['放箭'], heat: 1 }),
-      asset({ id: 'exact-low', fileName: 'exact-low.webp', keywords: ['放箭'], heat: 1 }),
-      asset({ id: 'exact-high', fileName: 'exact-high.webp', keywords: ['放箭'], heat: 10 }),
+      asset({ id: 'fallback', heat: 100 }),
+      asset({ id: 'unrelated', type: 'prebuilt', embeddedText: '谢谢', heat: 100 }),
+      asset({ id: 'exact-low', type: 'prebuilt', embeddedText: '放箭', heat: 1 }),
+      asset({ id: 'exact-high', type: 'prebuilt', embeddedText: '放箭', heat: 10 }),
     ];
 
     expect(rankExpressionAssets(rows, ' 放箭 ').map((item) => item.id))
       .toEqual(['exact-high', 'exact-low']);
   });
 
-  it('未知词返回空结果且不改变输入对象', () => {
+  it('无预制结果时只返回限定数量的静态合成模板', () => {
     const rows = [
-      asset({ id: 'cold', fileName: 'cold.webp', heat: 1 }),
-      asset({ id: 'hot', fileName: 'hot.webp', heat: 10 }),
+      asset({ id: 'cold', heat: 1 }),
+      asset({ id: 'hot', heat: 10 }),
+      asset({ id: 'unrelated', type: 'prebuilt', embeddedText: '你好', heat: 100 }),
     ];
 
-    expect(rankExpressionAssets(rows, '未知')).toEqual([]);
-    expect(rows.map((item) => item.id)).toEqual(['cold', 'hot']);
+    expect(rankExpressionAssets(rows, '今天的云像棉花糖', 1).map((item) => item.id)).toEqual(['hot']);
+    expect(rows.map((item) => item.id)).toEqual(['cold', 'hot', 'unrelated']);
   });
 
   it('常用词在源清单中各自关联多张预制图片', () => {

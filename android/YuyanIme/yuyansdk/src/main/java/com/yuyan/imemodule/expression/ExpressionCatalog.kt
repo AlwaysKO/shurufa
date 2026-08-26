@@ -10,20 +10,30 @@ import kotlinx.serialization.json.Json
 class ExpressionCatalog(
     val document: ExpressionCatalogDocument,
 ) {
-    fun search(query: String): List<ExpressionAsset> {
+    fun recommend(query: String, limit: Int = 20): List<ExpressionAsset> {
         val normalizedQuery = normalize(query)
-        if (normalizedQuery.isEmpty()) return emptyList()
-        return document.templates
+        if (normalizedQuery.isEmpty() || limit <= 0) return emptyList()
+        val indexed = document.templates
             .mapIndexed { index, asset -> RankedAsset(asset, index) }
-            .filter { ranked ->
-                ranked.asset.keywords.any { normalize(it) == normalizedQuery }
-            }
+        val prebuilt = indexed.filter { ranked ->
+            ranked.asset.type == "prebuilt" &&
+                ranked.asset.embeddedText?.let(::normalize) == normalizedQuery
+        }
+        return rank(if (prebuilt.isNotEmpty()) prebuilt else indexed.filter {
+            it.asset.type == "synthesis-template"
+        }, limit)
+    }
+
+    fun search(query: String): List<ExpressionAsset> = recommend(query)
+
+    private fun rank(assets: List<RankedAsset>, limit: Int): List<ExpressionAsset> =
+        assets
             .sortedWith(
                 compareByDescending<RankedAsset> { it.asset.heat }
                     .thenBy { it.index },
             )
-            .map { it.asset.copy(type = "recommendation") }
-    }
+            .take(limit)
+            .map { it.asset }
 
     fun findCombination(firstId: String, secondId: String): EmojiCombination? =
         document.emojiCombinations.firstOrNull { it.key == "${firstId}__${secondId}" }
