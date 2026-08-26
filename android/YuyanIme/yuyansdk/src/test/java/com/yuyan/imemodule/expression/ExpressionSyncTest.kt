@@ -56,13 +56,16 @@ class ExpressionSyncTest {
 
     @Test
     fun `断网时安全回退本地目录`() = runBlocking {
-        val local = ExpressionCatalog(document("offline-v1", listOf(asset("local"))))
+        val local = ExpressionCatalog(
+            document("offline-v1", listOf(asset("local", keywords = listOf("你好")))),
+        )
         server.shutdown()
 
         val refreshed = sync(local, this).refreshCatalog()
 
         assertEquals("offline-v1", refreshed.document.version)
-        assertEquals(listOf("local"), refreshed.search("任意").map { it.id })
+        assertEquals(listOf("local"), refreshed.search("你好").map { it.id })
+        assertTrue(refreshed.search("任意").isEmpty())
     }
 
     @Test
