@@ -49,6 +49,14 @@ object SogouT9Layout {
     )
     val bottomRowWidths = floatArrayOf(0.17f, 0.165f, 0.32f, 0.165f, 0.17f)
 
+    fun applyBottomRowGeometry(keys: List<SoftKey>) {
+        require(keys.size == bottomRowWidths.size)
+        keys.forEachIndexed { index, key ->
+            key.widthF = bottomRowWidths[index]
+            key.heightF = ROW_HEIGHT
+        }
+    }
+
     fun createVoiceSpaceKey() = SoftKey(code = KeyEvent.KEYCODE_SPACE).apply {
         heightF = ROW_HEIGHT
         longPressAction = LongPressAction.Voice

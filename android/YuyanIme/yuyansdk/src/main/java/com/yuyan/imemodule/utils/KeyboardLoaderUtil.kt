@@ -440,10 +440,10 @@ class KeyboardLoaderUtil private constructor() {
     private fun sogouT9LastRow(): MutableList<SoftKey> {
         val keys = createT9Keys(SogouT9Layout.bottomRowCodes.dropLast(1).toTypedArray())
         keys[2] = SogouT9Layout.createVoiceSpaceKey()
-        keys.forEachIndexed { index, key -> key.widthF = SogouT9Layout.bottomRowWidths[index] }
         keys.first().label = "符"
         return keys.toMutableList().apply {
-            add(SogouT9Layout.createEnterKey().apply { widthF = SogouT9Layout.bottomRowWidths.last() })
+            add(SogouT9Layout.createEnterKey())
+            SogouT9Layout.applyBottomRowGeometry(this)
         }
     }
 

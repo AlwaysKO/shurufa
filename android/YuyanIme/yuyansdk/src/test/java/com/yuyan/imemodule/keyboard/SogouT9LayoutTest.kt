@@ -3,6 +3,7 @@ package com.yuyan.imemodule.keyboard
 import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
 import com.yuyan.imemodule.entity.keyboard.LongPressAction
+import com.yuyan.imemodule.entity.keyboard.SoftKey
 import com.yuyan.imemodule.manager.InputModeSwitcher
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
@@ -39,6 +40,18 @@ class SogouT9LayoutTest {
             SogouT9Layout.bottomRowCodes,
         )
         assertEquals(0.99f, SogouT9Layout.bottomRowWidths.sum(), 0.0001f)
+    }
+
+    @Test
+    fun `底栏所有按键使用相同高度和规格宽度`() {
+        val keys = SogouT9Layout.bottomRowCodes.map(::SoftKey)
+
+        SogouT9Layout.applyBottomRowGeometry(keys)
+
+        keys.forEachIndexed { index, key ->
+            assertEquals(SogouT9Layout.bottomRowWidths[index], key.widthF, 0.0001f)
+            assertEquals(SogouT9Layout.ROW_HEIGHT, key.heightF, 0.0001f)
+        }
     }
 
     @Test
