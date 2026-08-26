@@ -17,6 +17,9 @@ class SogouT9LayoutTest {
         assertEquals(0.17f, SogouT9Layout.columnWidths.first(), 0.0001f)
         assertEquals(0.17f, SogouT9Layout.columnWidths.last(), 0.0001f)
         assertEquals(0.21666667f, SogouT9Layout.columnWidths[1], 0.0001f)
+        assertEquals(0.245f, SogouT9Layout.ROW_HEIGHT, 0.0001f)
+        assertEquals(0.735f, SogouT9Layout.SIDE_HEIGHT, 0.0001f)
+        assertEquals(0.8f, SogouT9Layout.Y_MARGIN_SCALE, 0.0001f)
     }
 
     @Test

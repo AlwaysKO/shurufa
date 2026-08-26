@@ -14,8 +14,10 @@ object SogouT9Layout {
     const val START_X = 0.005f
     const val SIDE_WIDTH = 0.17f
     const val MAIN_WIDTH = 0.21666667f
+    const val ROW_HEIGHT = 0.245f
+    const val SIDE_HEIGHT = ROW_HEIGHT * 3
     const val X_MARGIN_SCALE = 0.7f
-    const val Y_MARGIN_SCALE = 0.6f
+    const val Y_MARGIN_SCALE = 0.8f
 
     val columnWidths = floatArrayOf(SIDE_WIDTH, MAIN_WIDTH, MAIN_WIDTH, MAIN_WIDTH, SIDE_WIDTH)
     val columnLeftEdges = columnWidths.runningFold(START_X) { left, width -> left + width }
@@ -48,10 +50,12 @@ object SogouT9Layout {
     val bottomRowWidths = floatArrayOf(0.17f, 0.165f, 0.32f, 0.165f, 0.17f)
 
     fun createVoiceSpaceKey() = SoftKey(code = KeyEvent.KEYCODE_SPACE).apply {
+        heightF = ROW_HEIGHT
         longPressAction = LongPressAction.Voice
     }
 
     fun createEnterKey() = SoftKeyToggle(KeyEvent.KEYCODE_ENTER).apply {
+        heightF = ROW_HEIGHT
         stateId = 0
         preferTextLabel = true
         setToggleStates(
