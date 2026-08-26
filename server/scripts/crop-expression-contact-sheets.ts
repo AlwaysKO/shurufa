@@ -1,6 +1,7 @@
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { cropExpressionContactSheet } from '../src/expression/assetGenerator.js';
+import { EXPRESSION_CATALOG_VERSION } from '../src/expression/catalogVersion.js';
 
 const projectRoot = resolve(import.meta.dirname, '..', '..');
 const sourceRoot = resolve(projectRoot, 'assets', 'expression');
@@ -143,7 +144,7 @@ const highFrequencyCombinations = highFrequencyIds.flatMap((firstId, index) => (
   highFrequencyIds.slice(index, index + 2).map((secondId) => `${firstId}__${secondId}`)
 ));
 const manifest = {
-  version: '2026.08.25.1',
+  version: EXPRESSION_CATALOG_VERSION,
   expectedCounts: { templates: 60, animatedTemplates: 20, emojiBases: 48 },
   builtInTemplateIds: templates.slice(0, 12).map(({ id }) => id),
   highFrequencyCombinations,
