@@ -40,10 +40,14 @@ for (const item of files) {
   }
 }
 const animated = catalog.templates.filter((item) => item.format === 'gif').length;
+const prebuilt = catalog.templates.filter((item) => item.type === 'prebuilt').length;
+const synthesis = catalog.templates.filter((item) => item.type === 'synthesis-template').length;
 const duplicateKeys = catalog.emojiCombinations.length
   - new Set(catalog.emojiCombinations.map((item) => item.key)).size;
 console.log([
   `${catalog.templates.length} templates`,
+  `${prebuilt} prebuilt`,
+  `${synthesis} synthesis`,
   `${animated} GIF`,
   `${catalog.templates.length - animated} static`,
   `${catalog.emojiBases.length} bases`,
@@ -52,7 +56,8 @@ console.log([
   `${missingFiles} missing files`,
 ].join(', '));
 if (
-  catalog.templates.length !== 60
+  prebuilt < 80
+  || synthesis !== 60
   || animated !== 20
   || catalog.emojiBases.length !== 48
   || catalog.emojiCombinations.length !== 2304

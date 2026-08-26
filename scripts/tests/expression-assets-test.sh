@@ -34,12 +34,24 @@ for template in source_manifest["templates"]:
     assert safe["y"] + safe["height"] <= 512, f"文字区纵向越界：{template['id']}"
 
 templates = catalog["templates"]
+prebuilt_phrases = source_manifest.get("prebuiltPhrases", [])
+assert len(prebuilt_phrases) >= 20, len(prebuilt_phrases)
+for phrase in prebuilt_phrases:
+    matches = [
+        item for item in templates
+        if item.get("type") == "prebuilt" and item.get("embeddedText") == phrase["text"]
+    ]
+    assert len(matches) >= 4, f"预制图不足：{phrase['text']} / {len(matches)}"
+
 bases = catalog["emojiBases"]
 combinations = catalog["emojiCombinations"]
 animated = [item for item in templates if item["format"] == "gif"]
-static = [item for item in templates if item["format"] != "gif"]
+prebuilt = [item for item in templates if item.get("type") == "prebuilt"]
+synthesis = [item for item in templates if item.get("type") == "synthesis-template"]
+static = [item for item in synthesis if item["format"] != "gif"]
 
-assert len(templates) == 60, len(templates)
+assert len(prebuilt) >= 80, len(prebuilt)
+assert len(synthesis) == 60, len(synthesis)
 assert len(animated) == 20, len(animated)
 assert len(static) == 40, len(static)
 assert len(bases) == 48, len(bases)
@@ -70,6 +82,7 @@ for item in [*templates, *bases, *combinations]:
 for item in templates:
     thumbnail = runtime / item["thumbnailFileName"]
     assert thumbnail.is_file(), f"缺少缩略图：{thumbnail}"
+    assert digest(thumbnail), f"缩略图无效：{thumbnail}"
 
 built_in_templates = set(source_manifest.get("builtInTemplateIds", []))
 high_frequency = set(source_manifest.get("highFrequencyCombinations", []))
@@ -77,6 +90,7 @@ expected_android_files = {
     "catalog.json",
     *(item["fileName"] for item in bases),
     *(item["thumbnailFileName"] for item in templates),
+    *(item["fileName"] for item in prebuilt),
     *(item["fileName"] for item in templates if item["id"] in built_in_templates),
     *(item["fileName"] for item in combinations if item["key"] in high_frequency),
 }
@@ -90,7 +104,8 @@ for relative in expected_android_files - {"catalog.json"}:
 
 print(
     "素材审计通过："
-    f"{len(templates)} templates / {len(animated)} GIF / {len(static)} static / "
+    f"{len(prebuilt)} prebuilt / {len(synthesis)} synthesis / "
+    f"{len(animated)} GIF / {len(static)} static / "
     f"{len(bases)} bases / {len(combinations)} ordered WebP，"
     f"Android 内置 {len(expected_android_files) - 1} 个素材文件"
 )

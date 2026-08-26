@@ -34,6 +34,12 @@ interface SourceEmojiBase {
   source: string;
 }
 
+interface SourcePrebuiltPhrase {
+  text: string;
+  aliases: string[];
+  templateIds: string[];
+}
+
 interface ExpressionSourceManifest {
   version: string;
   expectedCounts: {
@@ -43,6 +49,7 @@ interface ExpressionSourceManifest {
   };
   builtInTemplateIds?: string[];
   highFrequencyCombinations?: string[];
+  prebuiltPhrases?: SourcePrebuiltPhrase[];
   templates: SourceTemplate[];
   emojiBases: SourceEmojiBase[];
 }
@@ -108,6 +115,17 @@ function validateManifest(manifest: ExpressionSourceManifest): void {
   const templateIds = new Set(manifest.templates.map(({ id }) => id));
   for (const id of manifest.builtInTemplateIds ?? []) {
     if (!templateIds.has(id)) throw new Error(`内置清单引用未知模板：${id}`);
+  }
+  const phraseTexts = new Set<string>();
+  for (const phrase of manifest.prebuiltPhrases ?? []) {
+    const text = phrase.text.trim();
+    if (!text) throw new Error('预制短语不能为空');
+    if (phraseTexts.has(text)) throw new Error(`预制短语重复：${text}`);
+    phraseTexts.add(text);
+    if (phrase.templateIds.length === 0) throw new Error(`预制短语未关联模板：${text}`);
+    for (const id of phrase.templateIds) {
+      if (!templateIds.has(id)) throw new Error(`预制短语引用未知模板：${text}/${id}`);
+    }
   }
   const emojiIds = new Set(manifest.emojiBases.map(({ id }) => id));
   for (const key of manifest.highFrequencyCombinations ?? []) {
@@ -256,7 +274,7 @@ async function renderTemplate(
     .toFile(thumbnailPath);
   return {
     id: template.id,
-    type: 'template',
+    type: 'synthesis-template',
     format: template.type === 'gif' ? 'gif' : 'webp',
     version,
     fileName,
@@ -266,8 +284,95 @@ async function renderTemplate(
     height: TEMPLATE_SIZE,
     keywords: template.keywords,
     emotions: template.emotions,
+    embeddedText: null,
     textSafeArea: template.textSafeArea,
     layout: template.layout,
+    heat: 0,
+  };
+}
+
+function escapeXml(value: string): string {
+  return value.replace(/[<>&"']/g, (character) => ({
+    '<': '&lt;',
+    '>': '&gt;',
+    '&': '&amp;',
+    '"': '&quot;',
+    "'": '&apos;',
+  })[character]!);
+}
+
+function textOverlay(
+  text: string,
+  safeArea: ExpressionTextSafeArea,
+  layout: ExpressionTextLayout,
+): Buffer {
+  const characterCount = Math.max(1, Array.from(text).length);
+  const fontSize = Math.max(
+    layout.minFontSize,
+    Math.min(layout.maxFontSize, Math.floor(safeArea.width / (characterCount * 1.1))),
+  );
+  const x = layout.alignment === 'start'
+    ? safeArea.x
+    : layout.alignment === 'end'
+      ? safeArea.x + safeArea.width
+      : safeArea.x + safeArea.width / 2;
+  const anchor = layout.alignment === 'start'
+    ? 'start'
+    : layout.alignment === 'end'
+      ? 'end'
+      : 'middle';
+  const y = safeArea.y + safeArea.height / 2 + fontSize * 0.35;
+  return Buffer.from(`<svg width="${TEMPLATE_SIZE}" height="${TEMPLATE_SIZE}" xmlns="http://www.w3.org/2000/svg">
+    <text x="${x}" y="${y}" text-anchor="${anchor}"
+      font-family="Droid Sans Fallback, Source Han Serif SC, Noto Sans CJK SC, sans-serif"
+      font-size="${fontSize}" font-weight="700"
+      fill="${escapeXml(layout.textColor)}" stroke="${escapeXml(layout.strokeColor)}"
+      stroke-width="${layout.strokeWidth}" paint-order="stroke fill"
+      stroke-linejoin="round">${escapeXml(text)}</text>
+  </svg>`);
+}
+
+async function renderPrebuilt(
+  phrase: SourcePrebuiltPhrase,
+  phraseIndex: number,
+  template: SourceTemplate,
+  templateAsset: ExpressionAsset,
+  outputRoot: string,
+  version: string,
+): Promise<ExpressionAsset> {
+  const id = `prebuilt-${String(phraseIndex + 1).padStart(2, '0')}-${template.id}`;
+  const fileName = posix.join('prebuilt', `${id}.webp`);
+  const thumbnailFileName = posix.join('thumbnails', `${id}.webp`);
+  const outputPath = join(outputRoot, fileName);
+  const thumbnailPath = join(outputRoot, thumbnailFileName);
+  const base = await sharp(join(outputRoot, templateAsset.fileName), { pages: 1 })
+    .resize(TEMPLATE_SIZE, TEMPLATE_SIZE, { fit: 'cover' })
+    .toBuffer();
+  await ensureParent(outputPath);
+  await ensureParent(thumbnailPath);
+  await sharp(base)
+    .composite([{ input: textOverlay(phrase.text, template.textSafeArea, template.layout) }])
+    .webp({ quality: 88 })
+    .toFile(outputPath);
+  await sharp(outputPath)
+    .resize(256, 256, { fit: 'cover' })
+    .webp({ quality: 82 })
+    .toFile(thumbnailPath);
+  return {
+    id,
+    type: 'prebuilt',
+    format: 'webp',
+    version,
+    fileName,
+    thumbnailFileName,
+    sha256: await sha256(outputPath),
+    width: TEMPLATE_SIZE,
+    height: TEMPLATE_SIZE,
+    keywords: [phrase.text, ...phrase.aliases],
+    emotions: template.emotions,
+    embeddedText: phrase.text,
+    textSafeArea: null,
+    layout: null,
     heat: 0,
   };
 }
@@ -352,6 +457,7 @@ async function copyAndroidSubset(
   const relativeFiles = [
     ...catalog.emojiBases.map((item) => item.fileName),
     ...catalog.templates.map((item) => item.thumbnailFileName).filter((item): item is string => Boolean(item)),
+    ...catalog.templates.filter((item) => item.type === 'prebuilt').map((item) => item.fileName),
     ...catalog.templates.filter((item) => builtInTemplateIds.has(item.id)).map((item) => item.fileName),
     ...catalog.emojiCombinations
       .filter((item) => highFrequencyCombinations.has(item.key))
@@ -386,6 +492,20 @@ export async function generateExpressionAssets(
       options.outputRoot,
       manifest.version,
     ));
+  }
+  const sourceTemplates = new Map(manifest.templates.map((template) => [template.id, template]));
+  const templateAssets = new Map(templates.map((template) => [template.id, template]));
+  for (const [phraseIndex, phrase] of (manifest.prebuiltPhrases ?? []).entries()) {
+    for (const templateId of phrase.templateIds) {
+      templates.push(await renderPrebuilt(
+        phrase,
+        phraseIndex,
+        sourceTemplates.get(templateId)!,
+        templateAssets.get(templateId)!,
+        options.outputRoot,
+        manifest.version,
+      ));
+    }
   }
   const emojiBases: EmojiBase[] = [];
   for (const [index, base] of manifest.emojiBases.entries()) {

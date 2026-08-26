@@ -25,6 +25,59 @@ async function createSourceImage(path: string, color: string): Promise<void> {
 }
 
 describe('generateExpressionAssets', () => {
+  it('为中文短语生成四张含完整文字的预制图', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'expression-generator-prebuilt-'));
+    temporaryRoots.push(root);
+    const sourceRoot = join(root, 'source');
+    const outputRoot = join(root, 'output');
+    await mkdir(join(sourceRoot, 'templates'), { recursive: true });
+    const templateIds = ['one', 'two', 'three', 'four'];
+    for (const [index, id] of templateIds.entries()) {
+      await createSourceImage(
+        join(sourceRoot, 'templates', `${id}.png`),
+        ['#ef5350', '#42a5f5', '#66bb6a', '#ab47bc'][index],
+      );
+    }
+    const textSafeArea = { x: 32, y: 32, width: 448, height: 160 };
+    const layout = {
+      minFontSize: 24, maxFontSize: 52, textColor: '#ffffff',
+      strokeColor: '#000000', strokeWidth: 3, alignment: 'center', maxLines: 2,
+    };
+    const manifestPath = join(sourceRoot, 'manifest.source.json');
+    await writeFile(manifestPath, JSON.stringify({
+      version: 'prebuilt-v1',
+      expectedCounts: { templates: 4, animatedTemplates: 0, emojiBases: 0 },
+      prebuiltPhrases: [{ text: '你好', aliases: ['您好'], templateIds }],
+      templates: templateIds.map((id) => ({
+        id, type: 'static', source: `templates/${id}.png`,
+        keywords: [], emotions: [], textSafeArea, layout,
+      })),
+      emojiBases: [],
+    }));
+
+    const catalog = await generateExpressionAssets({ manifestPath, sourceRoot, outputRoot });
+    const prebuilt = catalog.templates.filter((item) => (
+      item.type === 'prebuilt' && item.embeddedText === '你好'
+    ));
+
+    expect(prebuilt).toHaveLength(4);
+    for (const item of prebuilt) {
+      const sourceId = item.id.replace(/^prebuilt-\d+-/, '');
+      const base = catalog.templates.find((candidate) => candidate.id === sourceId)!;
+      const region = {
+        left: textSafeArea.x,
+        top: textSafeArea.y,
+        width: textSafeArea.width,
+        height: textSafeArea.height,
+      };
+      const [basePixels, prebuiltPixels] = await Promise.all([
+        sharp(join(outputRoot, base.fileName)).extract(region).raw().toBuffer(),
+        sharp(join(outputRoot, item.fileName)).extract(region).raw().toBuffer(),
+      ]);
+      expect(prebuiltPixels.equals(basePixels)).toBe(false);
+    }
+  });
+
   it('按源裁剪框去掉顶部空白后再铺满模板画面', async () => {
     const root = await mkdtemp(join(tmpdir(), 'expression-generator-crop-'));
     temporaryRoots.push(root);

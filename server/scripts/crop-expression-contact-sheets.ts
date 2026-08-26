@@ -66,6 +66,29 @@ const recommendationAliases: Record<string, readonly string[]> = {
   'tpl-60': ['你好'],
 };
 
+const prebuiltPhrases = [
+  { text: '你好', aliases: ['您好'], templateIds: ['tpl-12', 'tpl-14', 'tpl-59', 'tpl-60'] },
+  { text: '谢谢', aliases: ['多谢'], templateIds: ['tpl-02', 'tpl-08', 'tpl-15', 'tpl-58'] },
+  { text: '晚安', aliases: [], templateIds: ['tpl-53', 'tpl-55', 'tpl-46', 'tpl-21'] },
+  { text: '早安', aliases: [], templateIds: ['tpl-14', 'tpl-56', 'tpl-12', 'tpl-60'] },
+  { text: '加油', aliases: [], templateIds: ['tpl-03', 'tpl-04', 'tpl-13', 'tpl-48'] },
+  { text: '好的', aliases: ['好'], templateIds: ['tpl-06', 'tpl-09', 'tpl-01', 'tpl-15'] },
+  { text: '可以', aliases: [], templateIds: ['tpl-06', 'tpl-09', 'tpl-14', 'tpl-48'] },
+  { text: '抱歉', aliases: [], templateIds: ['tpl-43', 'tpl-44', 'tpl-42', 'tpl-58'] },
+  { text: '对不起', aliases: [], templateIds: ['tpl-43', 'tpl-44', 'tpl-42', 'tpl-58'] },
+  { text: '再见', aliases: [], templateIds: ['tpl-53', 'tpl-59', 'tpl-55', 'tpl-60'] },
+  { text: '开心', aliases: [], templateIds: ['tpl-01', 'tpl-07', 'tpl-10', 'tpl-16'] },
+  { text: '哈哈', aliases: ['哈哈哈'], templateIds: ['tpl-16', 'tpl-31', 'tpl-25', 'tpl-51'] },
+  { text: '喜欢', aliases: [], templateIds: ['tpl-49', 'tpl-52', 'tpl-58', 'tpl-50'] },
+  { text: '爱你', aliases: [], templateIds: ['tpl-49', 'tpl-52', 'tpl-58', 'tpl-50'] },
+  { text: '生气', aliases: [], templateIds: ['tpl-34', 'tpl-35', 'tpl-36', 'tpl-40'] },
+  { text: '不要', aliases: [], templateIds: ['tpl-33', 'tpl-37', 'tpl-24', 'tpl-32'] },
+  { text: '快点', aliases: [], templateIds: ['tpl-38', 'tpl-39', 'tpl-54', 'tpl-40'] },
+  { text: '无语', aliases: [], templateIds: ['tpl-17', 'tpl-20', 'tpl-28', 'tpl-32'] },
+  { text: '收到', aliases: [], templateIds: ['tpl-06', 'tpl-09', 'tpl-15', 'tpl-48'] },
+  { text: '在吗', aliases: [], templateIds: ['tpl-12', 'tpl-21', 'tpl-29', 'tpl-60'] },
+];
+
 const emojiDefinitions = [
   ['happy', '开心', 'happy'], ['laugh', '大笑', 'happy'], ['wink', '眨眼', 'mischievous'], ['love', '喜欢', 'love'],
   ['proud', '骄傲', 'proud'], ['excited', '兴奋', 'excited'], ['calm', '平静', 'calm'], ['relieved', '释然', 'relieved'],
@@ -146,6 +169,7 @@ const highFrequencyCombinations = highFrequencyIds.flatMap((firstId, index) => (
 const manifest = {
   version: EXPRESSION_CATALOG_VERSION,
   expectedCounts: { templates: 60, animatedTemplates: 20, emojiBases: 48 },
+  prebuiltPhrases,
   builtInTemplateIds: templates.slice(0, 12).map(({ id }) => id),
   highFrequencyCombinations,
   templates,
