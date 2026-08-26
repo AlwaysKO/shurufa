@@ -9,13 +9,15 @@ import org.junit.Test
 
 class ExpressionQueryCoordinatorTest {
     @Test
-    fun `只发布防抖后的最新候选`() = runBlocking {
+    fun `组合态候选不发布而最终上屏文字才发布`() = runBlocking {
         val seen = mutableListOf<String>()
         val coordinator = ExpressionQueryCoordinator(this, 150) { seen += it }
 
-        coordinator.onFirstCandidate("放")
-        delay(100)
-        coordinator.onFirstCandidate("放箭")
+        coordinator.onComposingChanged("放")
+        delay(170)
+        assertTrue(seen.isEmpty())
+
+        coordinator.onCommitted("放箭")
         delay(170)
 
         assertEquals(listOf("放箭"), seen)
@@ -23,17 +25,15 @@ class ExpressionQueryCoordinatorTest {
     }
 
     @Test
-    fun `候选变化后丢弃过期响应`() = runBlocking {
+    fun `新组合态使已提交查询的过期响应失效`() = runBlocking {
         val coordinator = ExpressionQueryCoordinator(this, 30) { }
 
-        coordinator.onFirstCandidate("旧候选")
+        coordinator.onCommitted("旧候选")
         delay(40)
         assertTrue(coordinator.acceptResponse(1))
 
-        coordinator.onFirstCandidate("新候选")
+        assertTrue(coordinator.onComposingChanged("新候选"))
         assertFalse(coordinator.acceptResponse(1))
-        delay(40)
-        assertTrue(coordinator.acceptResponse(2))
         coordinator.close()
     }
 
@@ -42,10 +42,8 @@ class ExpressionQueryCoordinatorTest {
         val seen = mutableListOf<String>()
         val coordinator = ExpressionQueryCoordinator(this, 30) { seen += it }
 
-        coordinator.onFirstCandidate("放箭")
-        delay(40)
         coordinator.onCommitted("放箭")
-        assertFalse(coordinator.onFirstCandidate(null))
+        assertFalse(coordinator.onComposingChanged(null))
         delay(40)
 
         assertEquals(listOf("放箭"), seen)
@@ -54,13 +52,13 @@ class ExpressionQueryCoordinatorTest {
     }
 
     @Test
-    fun `未上屏候选清空时通知调用方清理图片结果`() = runBlocking {
+    fun `组合态开始时通知调用方清理已提交图片结果`() = runBlocking {
         val coordinator = ExpressionQueryCoordinator(this, 0) { }
 
-        coordinator.onFirstCandidate("放箭")
+        coordinator.onCommitted("放箭")
         delay(1)
 
-        assertTrue(coordinator.onFirstCandidate(null))
+        assertTrue(coordinator.onComposingChanged("新输入"))
         assertFalse(coordinator.acceptResponse(1))
         coordinator.close()
     }
@@ -70,7 +68,7 @@ class ExpressionQueryCoordinatorTest {
         val seen = mutableListOf<String>()
         val coordinator = ExpressionQueryCoordinator(this, 30) { seen += it }
 
-        coordinator.onFirstCandidate("放箭")
+        coordinator.onCommitted("放箭")
         coordinator.close()
         delay(40)
 

@@ -154,7 +154,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         DecodingInfo.candidatesLiveData.observe(this) { candidates ->
             updateCandidateBar()
             (KeyboardManager.instance.currentContainer as? CandidatesContainer)?.showCandidatesView()
-            if (expressionQueryCoordinator.onFirstCandidate(candidates.firstOrNull()?.text)) {
+            if (expressionQueryCoordinator.onComposingChanged(candidates.firstOrNull()?.text)) {
                 clearExpressionQuery()
             }
         }
@@ -745,19 +745,19 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         val candidate = DecodingInfo.getCandidate(candId)
         return if (candidate?.comment == "📋") {
             commitDecInfoText(candidate.text)
-            candidate.text
+            candidate.text.also(expressionQueryCoordinator::onCommitted)
         } else if (candidate?.comment == CompletionSync.candidateComment) {
             // 服务端智能补全候选：直接上屏，并上报接受（供服务端统计接受率）
             commitDecInfoText(candidate.text)
             CompletionSync.find(candidate.text)?.let { CompletionSync.reportAccepted(context, it) }
-            candidate.text
+            candidate.text.also(expressionQueryCoordinator::onCommitted)
         } else {
             val choice = DecodingInfo.chooseDecodingCandidate(candId)
             if (DecodingInfo.isCandidatesEmpty || DecodingInfo.isAssociate) {
                 KeyboardManager.instance.switchKeyboard()
                 (KeyboardManager.instance.currentContainer as? T9TextContainer)?.updateSymbolListView()
                 commitDecInfoText(choice)
-                choice.takeIf(String::isNotEmpty)
+                choice.takeIf(String::isNotEmpty)?.also(expressionQueryCoordinator::onCommitted)
             } else {
                 if (!DecodingInfo.isCandidatesEmpty) {
                     (KeyboardManager.instance.currentContainer as? T9TextContainer)?.updateSymbolListView()
@@ -802,7 +802,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         override fun onClickChoice(choiceId: Int) {
             DevicesUtils.tryPlayKeyDown()
             DevicesUtils.tryVibrate(KeyboardManager.instance.currentContainer)
-            chooseAndUpdate(choiceId)?.let(expressionQueryCoordinator::onCommitted)
+            chooseAndUpdate(choiceId)
         }
 
         override fun onClickMore(level: Int) {

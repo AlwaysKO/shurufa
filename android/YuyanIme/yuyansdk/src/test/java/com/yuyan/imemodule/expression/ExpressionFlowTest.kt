@@ -35,7 +35,11 @@ class ExpressionFlowTest {
             panel.applyResults(1, catalog.search(query))
         }
 
-        queryCoordinator.onFirstCandidate("放箭")
+        queryCoordinator.onComposingChanged("放箭")
+        delay(1)
+        assertTrue(panel.results.isEmpty())
+
+        queryCoordinator.onCommitted("放箭")
         delay(1)
         assertTrue(panel.isVisible)
         assertEquals("arrow-gif", panel.results.single().id)

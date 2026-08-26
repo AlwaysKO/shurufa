@@ -20,15 +20,17 @@ class ExpressionQueryCoordinator(
         require(debounceMillis >= 0) { "debounceMillis must not be negative" }
     }
 
-    fun onFirstCandidate(text: String?): Boolean {
+    fun onComposingChanged(text: String?): Boolean {
         if (closed) return false
-        val query = text?.trim()?.takeIf(String::isNotEmpty)
-        if (query == null && preserveCommittedQuery) {
+        val isComposing = !text.isNullOrBlank()
+        if (!isComposing && preserveCommittedQuery) {
             preserveCommittedQuery = false
             return false
         }
         preserveCommittedQuery = false
-        return updateQuery(query)
+        if (currentQuery == null && pendingQuery == null) return false
+        updateQuery(null)
+        return true
     }
 
     fun onCommitted(text: String) {
