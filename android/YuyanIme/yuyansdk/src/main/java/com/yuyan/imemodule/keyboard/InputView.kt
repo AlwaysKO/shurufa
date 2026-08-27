@@ -424,6 +424,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     }
 
     fun handleExpressionBack(): Boolean {
+        if (expressionSync == null) return false
         if (expressionPanelState.presentation != ExpressionPanelPresentation.EXPANDED) {
             return false
         }
