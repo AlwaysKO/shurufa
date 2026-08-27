@@ -3,6 +3,7 @@ package com.yuyan.imemodule.service
 import android.content.Context
 import android.content.res.Configuration
 import android.inputmethodservice.InputMethodService
+import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
 import android.speech.RecognitionListener
@@ -16,6 +17,8 @@ import android.view.ViewGroup
 import android.view.inputmethod.CursorAnchorInfo
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
+import android.window.OnBackInvokedCallback
+import android.window.OnBackInvokedDispatcher
 import android.widget.Toast
 import com.yuyan.imemodule.R
 import com.yuyan.imemodule.candidate.CandidateView
@@ -51,6 +54,19 @@ class ImeService : InputMethodService() {
     private lateinit var mInputView: InputView
     private lateinit var mCandidateView: CandidateView
     private var expressionBackHandled = false
+    private var expressionBackCallback: Any? = null
+    private val expressionBackCallbackController = ExpressionBackCallbackController(
+        register = {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                registerExpressionBackCallback()
+            }
+        },
+        unregister = {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                unregisterExpressionBackCallback()
+            }
+        },
+    )
     private var voiceRecognizer: SpeechRecognizer? = null
     private val onThemeChangeListener = OnThemeChangeListener { _: Theme? -> if (isHardwareKeyboard) mCandidateView.updateTheme() else mInputView.updateTheme()}
     private val clipboardUpdateContent = getInstance().internal.clipboardUpdateContent
@@ -170,6 +186,7 @@ class ImeService : InputMethodService() {
     }
 
     override fun onDestroy() {
+        expressionBackCallbackController.clear()
         DataCollector.setInputActive(baseContext, false)
         voiceRecognizer?.destroy()
         super.onDestroy()
@@ -292,9 +309,35 @@ class ImeService : InputMethodService() {
     }
 
     override fun onWindowHidden() {
+        expressionBackCallbackController.clear()
         DataCollector.setInputActive(baseContext, false)
         if(isSoftKeyboard) mInputView.onWindowHidden()
         super.onWindowHidden()
+    }
+
+    fun setExpressionBackHandlingEnabled(enabled: Boolean) {
+        expressionBackCallbackController.setEnabled(enabled)
+    }
+
+    @androidx.annotation.RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun registerExpressionBackCallback() {
+        val callback = (expressionBackCallback as? OnBackInvokedCallback)
+            ?: OnBackInvokedCallback {
+                if (!::mInputView.isInitialized || !mInputView.handleExpressionBack()) {
+                    requestHideSelf(0)
+                }
+            }.also { expressionBackCallback = it }
+        window.onBackInvokedDispatcher.registerOnBackInvokedCallback(
+            OnBackInvokedDispatcher.PRIORITY_OVERLAY,
+            callback,
+        )
+    }
+
+    @androidx.annotation.RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun unregisterExpressionBackCallback() {
+        (expressionBackCallback as? OnBackInvokedCallback)?.let {
+            window.onBackInvokedDispatcher.unregisterOnBackInvokedCallback(it)
+        }
     }
 
     /**

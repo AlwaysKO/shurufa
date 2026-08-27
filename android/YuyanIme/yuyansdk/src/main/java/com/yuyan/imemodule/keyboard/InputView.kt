@@ -432,6 +432,9 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             }
             expressionKeyboardVisibility = null
         }
+        service.setExpressionBackHandlingEnabled(
+            expressionPanelState.presentation == ExpressionPanelPresentation.EXPANDED,
+        )
         expressionPanel.render(expressionPanelState, sync.currentCatalog())
     }
 
@@ -926,6 +929,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     }
 
     override fun onDetachedFromWindow() {
+        service.setExpressionBackHandlingEnabled(false)
         expressionQueryCoordinator.close()
         expressionSearchJob?.cancel()
         expressionPreviewJob?.cancel()
