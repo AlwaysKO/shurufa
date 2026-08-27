@@ -8,6 +8,41 @@ import org.junit.Test
 
 class ExpressionPanelStateTest {
     @Test
+    fun `非聊天输入框只保留工具行且拒绝推荐结果`() {
+        val state = ExpressionPanelState(chatEditor = false)
+
+        state.beginQuery("你好", requestId = 1)
+
+        assertFalse(state.applyResults(1, listOf(asset("hello"))))
+        assertTrue(state.isToolRowVisible)
+        assertFalse(state.isRecommendationVisible)
+        assertTrue(state.results.isEmpty())
+    }
+
+    @Test
+    fun `切换输入目标清空瞬态推荐但保留用户开关`() {
+        val state = ExpressionPanelState(aiStickerEnabled = true, chatEditor = true)
+        state.beginQuery("你好", requestId = 1)
+        state.applyResults(1, listOf(asset("hello")))
+        state.expand()
+
+        state.setChatEditor(false)
+
+        assertTrue(state.aiStickerEnabled)
+        assertFalse(state.chatEditor)
+        assertEquals(null, state.query)
+        assertTrue(state.results.isEmpty())
+        assertFalse(state.isRecommendationVisible)
+        assertEquals(ExpressionPanelPresentation.COMPACT, state.presentation)
+        assertFalse(state.applyResults(1, listOf(asset("stale"))))
+
+        state.setChatEditor(true)
+        state.beginQuery("你好", requestId = 2)
+        assertTrue(state.applyResults(2, listOf(asset("fresh"))))
+        assertTrue(state.isRecommendationVisible)
+    }
+
+    @Test
     fun `工具行始终可见而有结果时打开推荐内容`() {
         val state = ExpressionPanelState()
 

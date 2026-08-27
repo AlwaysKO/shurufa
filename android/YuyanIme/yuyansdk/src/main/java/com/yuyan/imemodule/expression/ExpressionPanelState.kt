@@ -13,7 +13,10 @@ enum class ExpressionPanelPresentation {
     EXPANDED,
 }
 
-class ExpressionPanelState(aiStickerEnabled: Boolean = true) {
+class ExpressionPanelState(
+    aiStickerEnabled: Boolean = true,
+    chatEditor: Boolean = true,
+) {
     var query: String? = null
         private set
     var selectedTab: ExpressionPanelTab = ExpressionPanelTab.RECOMMENDED
@@ -22,9 +25,15 @@ class ExpressionPanelState(aiStickerEnabled: Boolean = true) {
         private set
     val isVisible: Boolean
         get() = true
+    val isToolRowVisible: Boolean
+        get() = true
+    val isRecommendationVisible: Boolean
+        get() = isContentVisible
     var isContentVisible: Boolean = false
         private set
     var aiStickerEnabled: Boolean = aiStickerEnabled
+        private set
+    var chatEditor: Boolean = chatEditor
         private set
     var presentation: ExpressionPanelPresentation = ExpressionPanelPresentation.COMPACT
         private set
@@ -33,6 +42,10 @@ class ExpressionPanelState(aiStickerEnabled: Boolean = true) {
 
     private var requestId = 0L
     fun beginQuery(query: String, requestId: Long) {
+        if (!chatEditor) {
+            clear()
+            return
+        }
         val normalized = query.trim()
         require(normalized.isNotEmpty()) { "query must not be blank" }
         if (normalized != this.query) {
@@ -48,6 +61,7 @@ class ExpressionPanelState(aiStickerEnabled: Boolean = true) {
     fun acceptResponse(requestId: Long): Boolean = requestId == this.requestId
 
     fun applyResults(requestId: Long, results: List<ExpressionAsset>): Boolean {
+        if (!chatEditor) return false
         if (!acceptResponse(requestId)) return false
         this.results = results
         isContentVisible = aiStickerEnabled && results.isNotEmpty()
@@ -60,7 +74,7 @@ class ExpressionPanelState(aiStickerEnabled: Boolean = true) {
     }
 
     fun expand() {
-        if (!aiStickerEnabled || !isContentVisible) return
+        if (!chatEditor || !aiStickerEnabled || !isContentVisible) return
         presentation = ExpressionPanelPresentation.EXPANDED
         keyboardVisible = false
     }
@@ -72,8 +86,14 @@ class ExpressionPanelState(aiStickerEnabled: Boolean = true) {
 
     fun setAiStickerEnabled(enabled: Boolean) {
         aiStickerEnabled = enabled
-        isContentVisible = enabled && results.isNotEmpty()
+        isContentVisible = chatEditor && enabled && results.isNotEmpty()
         if (!enabled) collapse()
+    }
+
+    fun setChatEditor(enabled: Boolean) {
+        if (chatEditor == enabled) return
+        chatEditor = enabled
+        clear()
     }
 
     fun dismiss() {

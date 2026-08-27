@@ -40,6 +40,7 @@ import com.yuyan.imemodule.entity.StringQueue
 import com.yuyan.imemodule.entity.keyboard.SoftKey
 import com.yuyan.imemodule.expression.ExpressionCache
 import com.yuyan.imemodule.expression.ExpressionCatalog
+import com.yuyan.imemodule.expression.ChatEditorGate
 import com.yuyan.imemodule.expression.ExpressionPanelState
 import com.yuyan.imemodule.expression.ExpressionPanelPresentation
 import com.yuyan.imemodule.expression.ExpressionQueryCoordinator
@@ -118,7 +119,8 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     private lateinit var mBottomPaddingKey: ManagedPreference.PInt
     private var mFullDisplayKeyboardBar: FullDisplayKeyboardBar? = null
     private val expressionScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private var expressionPanelState = ExpressionPanelState()
+    private val chatEditorGate = ChatEditorGate()
+    private var expressionPanelState = ExpressionPanelState(chatEditor = false)
     private lateinit var expressionPanel: ExpressionPanel
     private lateinit var expressionQueryCoordinator: ExpressionQueryCoordinator
     private lateinit var expressionFlow: ExpressionFlowController
@@ -379,6 +381,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
     private fun searchExpressions(query: String) {
         val sync = expressionSync ?: return
+        if (!expressionPanelState.chatEditor) return
         setExpressionExpanded(false)
         val requestId = ++expressionRequestId
         expressionPanelState.beginQuery(query, requestId)
@@ -1045,7 +1048,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     }
 
     fun onStartInputView(editorInfo: EditorInfo, restarting: Boolean) {
-        resetExpressionTarget()
+        resetExpressionTarget(editorInfo)
         InputModeSwitcher.requestInputWithSkb(editorInfo)
         if (!restarting) {
             resetToIdleState()
@@ -1064,7 +1067,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         }
     }
 
-    private fun resetExpressionTarget() {
+    private fun resetExpressionTarget(editorInfo: EditorInfo) {
         setExpressionExpanded(false)
         expressionQueryCoordinator.close()
         expressionQueryCoordinator = ExpressionQueryCoordinator(
@@ -1081,7 +1084,10 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         expressionPreparationJob?.cancel()
         expressionPreparationJob = null
         expressionPanel.resetEmojiSelection()
-        expressionPanelState = ExpressionPanelState(getInstance().internal.aiStickerEnabled.getValue())
+        expressionPanelState = ExpressionPanelState(
+            aiStickerEnabled = getInstance().internal.aiStickerEnabled.getValue(),
+            chatEditor = chatEditorGate.allows(editorInfo.packageName, editorInfo),
+        )
         expressionSync?.let { expressionPanel.render(expressionPanelState, it.currentCatalog()) }
     }
 
