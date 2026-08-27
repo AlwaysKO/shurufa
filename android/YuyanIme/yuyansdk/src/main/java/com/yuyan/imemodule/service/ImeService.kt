@@ -321,11 +321,16 @@ class ImeService : InputMethodService() {
 
     @androidx.annotation.RequiresApi(Build.VERSION_CODES.TIRAMISU)
     private fun registerExpressionBackCallback() {
+        setBackDisposition(BACK_DISPOSITION_ADJUST_NOTHING)
         val callback = (expressionBackCallback as? OnBackInvokedCallback)
             ?: OnBackInvokedCallback {
-                if (!::mInputView.isInitialized || !mInputView.handleExpressionBack()) {
-                    requestHideSelf(0)
-                }
+                expressionBackCallbackController.onBackInvoked(
+                    handleBack = {
+                        ::mInputView.isInitialized && mInputView.handleExpressionBack()
+                    },
+                    fallback = { requestHideSelf(0) },
+                    post = { action -> mInputView.post(action) },
+                )
             }.also { expressionBackCallback = it }
         window.onBackInvokedDispatcher.registerOnBackInvokedCallback(
             OnBackInvokedDispatcher.PRIORITY_OVERLAY,
@@ -338,6 +343,7 @@ class ImeService : InputMethodService() {
         (expressionBackCallback as? OnBackInvokedCallback)?.let {
             window.onBackInvokedDispatcher.unregisterOnBackInvokedCallback(it)
         }
+        setBackDisposition(BACK_DISPOSITION_DEFAULT)
     }
 
     /**
