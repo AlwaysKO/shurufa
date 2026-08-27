@@ -2,102 +2,132 @@
 <merge xmlns:android="http://schemas.android.com/apk/res/android">
 
     <LinearLayout
-        android:id="@+id/expression_tab_bar"
+        android:id="@+id/expression_recommendation_section"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
 
-        <TextView
-            android:id="@+id/expression_tab_recommended"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="@drawable/selector_expression_tab_background"
-            android:gravity="center"
-            android:text="推荐"
-            android:textColor="@color/selector_expression_tab_text"
-            android:textSize="14sp" />
+        <LinearLayout
+            android:id="@+id/expression_tab_bar"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp">
 
-        <TextView
-            android:id="@+id/expression_tab_templates"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="@drawable/selector_expression_tab_background"
-            android:gravity="center"
-            android:text="AI合成"
-            android:textColor="@color/selector_expression_tab_text"
-            android:textSize="14sp" />
+            <TextView
+                android:id="@+id/expression_tab_recommended"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/selector_expression_tab_background"
+                android:gravity="center"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:text="推荐"
+                android:textColor="@color/selector_expression_tab_text"
+                android:textSize="14sp" />
 
-        <TextView
-            android:id="@+id/expression_tab_emoji"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="@drawable/selector_expression_tab_background"
-            android:gravity="center"
-            android:text="Emoji合成"
-            android:textColor="@color/selector_expression_tab_text"
-            android:textSize="14sp" />
+            <TextView
+                android:id="@+id/expression_tab_templates"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/selector_expression_tab_background"
+                android:gravity="center"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:text="AI合成"
+                android:textColor="@color/selector_expression_tab_text"
+                android:textSize="14sp" />
 
-        <ImageButton
-            android:id="@+id/expression_more"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:contentDescription="AI斗图设置"
-            android:padding="10dp"
-            android:src="@drawable/ic_menu_more_horiz" />
+            <TextView
+                android:id="@+id/expression_tab_emoji"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/selector_expression_tab_background"
+                android:gravity="center"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:text="Emoji合成"
+                android:textColor="@color/selector_expression_tab_text"
+                android:textSize="14sp" />
 
-        <ImageButton
-            android:id="@+id/expression_close"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:contentDescription="关闭AI斗图"
-            android:padding="10dp"
-            android:src="@drawable/ic_menu_close_thin" />
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
 
-        <View
-            android:id="@+id/expression_disabled_spacer"
-            android:layout_width="0dp"
-            android:layout_height="1dp"
-            android:layout_weight="1"
-            android:visibility="gone" />
+            <LinearLayout
+                android:id="@+id/expression_actions"
+                android:layout_width="79dp"
+                android:layout_height="28dp"
+                android:background="@drawable/bg_expression_action_capsule"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/expression_more"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="AI斗图设置"
+                    android:padding="7dp"
+                    android:src="@drawable/ic_menu_more_horiz" />
+
+                <ImageButton
+                    android:id="@+id/expression_close"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="关闭AI斗图推荐"
+                    android:padding="5dp"
+                    android:src="@drawable/ic_ai_sticker_close_target" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/expression_content"
+            android:layout_width="match_parent"
+            android:layout_height="116dp">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/expression_asset_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp" />
+
+            <com.yuyan.imemodule.expression.ui.EmojiCombinationPicker
+                android:id="@+id/expression_emoji_picker"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/expression_tool_row"
+        android:layout_width="match_parent"
+        android:layout_height="34dp"
+        android:background="#F3F4F7"
+        android:gravity="center_vertical|end"
+        android:orientation="horizontal"
+        android:paddingEnd="10dp">
 
         <TextView
             android:id="@+id/expression_enable"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:background="?android:attr/selectableItemBackground"
-            android:drawableStart="@drawable/ic_ai_sticker_toggle"
-            android:drawablePadding="4dp"
+            android:layout_height="28dp"
+            android:background="@drawable/bg_expression_tool_badge"
             android:gravity="center"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
             android:text="AI斗图"
-            android:textSize="14sp"
-            android:visibility="gone" />
+            android:textColor="#637BFF"
+            android:textSize="14sp" />
     </LinearLayout>
-
-    <FrameLayout
-        android:id="@+id/expression_content"
-        android:layout_width="match_parent"
-        android:layout_height="116dp">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/expression_asset_list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp" />
-
-        <com.yuyan.imemodule.expression.ui.EmojiCombinationPicker
-            android:id="@+id/expression_emoji_picker"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="gone" />
-    </FrameLayout>
 </merge>

@@ -3,6 +3,7 @@ package com.yuyan.imemodule.expression.ui
 import android.content.Context
 import android.view.View
 import android.widget.TextView
+import android.widget.LinearLayout
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -81,27 +82,69 @@ class ExpressionPanelTest {
 
         panel.render(visibleState(), catalog)
 
+        assertEquals(View.VISIBLE, panel.findViewById<View>(R.id.expression_recommendation_section).visibility)
+        assertEquals(View.VISIBLE, panel.findViewById<View>(R.id.expression_tool_row).visibility)
         assertEquals("推荐", panel.findViewById<TextView>(R.id.expression_tab_recommended).text.toString())
         assertEquals("AI合成", panel.findViewById<TextView>(R.id.expression_tab_templates).text.toString())
         assertEquals("Emoji合成", panel.findViewById<TextView>(R.id.expression_tab_emoji).text.toString())
+        assertNotNull(panel.findViewById<View>(R.id.expression_actions).background)
         assertEquals(View.VISIBLE, panel.findViewById<View>(R.id.expression_more).visibility)
         assertEquals(View.VISIBLE, panel.findViewById<View>(R.id.expression_close).visibility)
-        assertEquals(View.GONE, panel.findViewById<View>(R.id.expression_enable).visibility)
+        assertEquals("关闭AI斗图推荐", panel.findViewById<View>(R.id.expression_close).contentDescription)
+        assertEquals(View.VISIBLE, panel.findViewById<View>(R.id.expression_enable).visibility)
     }
 
     @Test
-    fun `关闭时保留空工具行和右侧 AI斗图入口`() {
+    fun `关闭时隐藏推荐区并保留独立 AI斗图工具行`() {
         val panel = ExpressionPanel(context)
         val state = visibleState().apply { setAiStickerEnabled(false) }
 
         panel.render(state, catalog)
 
         assertEquals(View.VISIBLE, panel.visibility)
-        assertEquals(View.GONE, panel.findViewById<View>(R.id.expression_tab_recommended).visibility)
-        assertEquals(View.GONE, panel.findViewById<View>(R.id.expression_content).visibility)
+        assertEquals(View.GONE, panel.findViewById<View>(R.id.expression_recommendation_section).visibility)
+        assertEquals(View.VISIBLE, panel.findViewById<View>(R.id.expression_tool_row).visibility)
         val enable = panel.findViewById<TextView>(R.id.expression_enable)
         assertEquals(View.VISIBLE, enable.visibility)
         assertEquals("AI斗图", enable.text.toString())
+    }
+
+    @Test
+    fun `非聊天输入框也只显示独立工具行`() {
+        val panel = ExpressionPanel(context)
+        val state = visibleState().apply { setChatEditor(false) }
+
+        panel.render(state, catalog)
+
+        assertEquals(View.GONE, panel.findViewById<View>(R.id.expression_recommendation_section).visibility)
+        assertEquals(View.VISIBLE, panel.findViewById<View>(R.id.expression_tool_row).visibility)
+    }
+
+    @Test
+    fun `推荐区排列在独立工具行上方`() {
+        val panel = ExpressionPanel(context)
+        val recommendation = panel.findViewById<View>(R.id.expression_recommendation_section)
+        val toolRow = panel.findViewById<View>(R.id.expression_tool_row)
+
+        assertTrue(panel.indexOfChild(recommendation) < panel.indexOfChild(toolRow))
+        assertTrue(panel.findViewById<View>(R.id.expression_actions) is LinearLayout)
+    }
+
+    @Test
+    fun `圆环关闭后工具标签可以重新开启推荐`() {
+        val panel = ExpressionPanel(context)
+        val state = visibleState()
+        panel.onAiStickerEnabledChange = { enabled ->
+            state.setAiStickerEnabled(enabled)
+            panel.render(state, catalog)
+        }
+        panel.render(state, catalog)
+
+        panel.findViewById<View>(R.id.expression_close).performClick()
+        assertEquals(View.GONE, panel.findViewById<View>(R.id.expression_recommendation_section).visibility)
+
+        panel.findViewById<View>(R.id.expression_enable).performClick()
+        assertEquals(View.VISIBLE, panel.findViewById<View>(R.id.expression_recommendation_section).visibility)
     }
 
     @Test

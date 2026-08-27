@@ -29,7 +29,8 @@ class ExpressionPanel @JvmOverloads constructor(
     private val moreButton: ImageButton
     private val closeButton: ImageButton
     private val enableButton: TextView
-    private val disabledSpacer: View
+    private val recommendationSection: View
+    private val toolRow: View
     private val content: View
     private val assetList: RecyclerView
     private val emojiPicker: EmojiCombinationPicker
@@ -67,7 +68,8 @@ class ExpressionPanel @JvmOverloads constructor(
         moreButton = findViewById(R.id.expression_more)
         closeButton = findViewById(R.id.expression_close)
         enableButton = findViewById(R.id.expression_enable)
-        disabledSpacer = findViewById(R.id.expression_disabled_spacer)
+        recommendationSection = findViewById(R.id.expression_recommendation_section)
+        toolRow = findViewById(R.id.expression_tool_row)
         closeButton.setOnClickListener {
             onAiStickerEnabledChange?.invoke(false) ?: onDismiss?.invoke()
         }
@@ -88,15 +90,10 @@ class ExpressionPanel @JvmOverloads constructor(
     }
 
     fun render(state: ExpressionPanelState, catalog: ExpressionCatalog) {
-        visibility = if (state.isVisible) View.VISIBLE else View.GONE
-        val controlsVisibility = if (state.aiStickerEnabled) View.VISIBLE else View.GONE
-        recommendedTab.visibility = controlsVisibility
-        templatesTab.visibility = controlsVisibility
-        emojiTab.visibility = controlsVisibility
-        moreButton.visibility = controlsVisibility
-        closeButton.visibility = controlsVisibility
-        disabledSpacer.visibility = if (state.aiStickerEnabled) View.GONE else View.VISIBLE
-        enableButton.visibility = if (state.aiStickerEnabled) View.GONE else View.VISIBLE
+        visibility = View.VISIBLE
+        recommendationSection.visibility = if (state.isRecommendationVisible) View.VISIBLE else View.GONE
+        toolRow.visibility = View.VISIBLE
+        enableButton.visibility = View.VISIBLE
         recommendedTab.isSelected = state.selectedTab == ExpressionPanelTab.RECOMMENDED
         templatesTab.isSelected = state.selectedTab == ExpressionPanelTab.AI_SYNTHESIS
         emojiTab.isSelected = state.selectedTab == ExpressionPanelTab.EMOJI_SYNTHESIS
@@ -108,7 +105,7 @@ class ExpressionPanel @JvmOverloads constructor(
                 dp(if (expanded) EXPANDED_CONTENT_HEIGHT_DP else COMPACT_CONTENT_HEIGHT_DP)
             }
         }
-        content.visibility = if (state.isContentVisible) View.VISIBLE else View.GONE
+        content.visibility = View.VISIBLE
         assetList.layoutManager = if (expanded) {
             GridLayoutManager(context, EXPANDED_SPAN_COUNT)
         } else {
