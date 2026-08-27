@@ -18,22 +18,46 @@ const catalog: GeneratedExpressionCatalog = {
   version: 'api-v1',
   templates: [
     {
-      id: 'hot', type: 'template', format: 'webp', version: 'api-v1',
-      fileName: 'templates/hot.webp', thumbnailFileName: 'thumbnails/hot.webp',
+      id: 'hello-hot', type: 'prebuilt', format: 'webp', version: 'api-v1',
+      fileName: 'templates/hello-hot.webp', thumbnailFileName: 'thumbnails/hello-hot.webp',
       sha256: 'a'.repeat(64), width: 512, height: 512,
-      keywords: ['放箭'], emotions: [], textSafeArea: null, layout: null, heat: 100,
+      keywords: ['你好'], emotions: [], embeddedText: '你好',
+      textSafeArea: null, layout: null, heat: 100,
     },
     {
-      id: 'emotion', type: 'template', format: 'gif', version: 'api-v1',
-      fileName: 'templates/emotion.gif', thumbnailFileName: 'thumbnails/emotion.webp',
+      id: 'hello-2', type: 'prebuilt', format: 'gif', version: 'api-v1',
+      fileName: 'templates/hello-2.gif', thumbnailFileName: 'thumbnails/hello-2.webp',
       sha256: 'b'.repeat(64), width: 512, height: 512,
-      keywords: [], emotions: ['放箭'], textSafeArea: null, layout: null, heat: 1,
+      keywords: ['你好'], emotions: [], embeddedText: '你好',
+      textSafeArea: null, layout: null, heat: 20,
     },
     {
-      id: 'exact', type: 'template', format: 'webp', version: 'api-v1',
-      fileName: 'templates/exact.webp', thumbnailFileName: 'thumbnails/exact.webp',
+      id: 'hello-3', type: 'prebuilt', format: 'webp', version: 'api-v1',
+      fileName: 'templates/hello-3.webp', thumbnailFileName: 'thumbnails/hello-3.webp',
       sha256: 'c'.repeat(64), width: 512, height: 512,
-      keywords: ['放箭'], emotions: [], textSafeArea: null, layout: null, heat: 0,
+      keywords: ['你好'], emotions: [], embeddedText: '你好',
+      textSafeArea: null, layout: null, heat: 10,
+    },
+    {
+      id: 'hello-4', type: 'prebuilt', format: 'webp', version: 'api-v1',
+      fileName: 'templates/hello-4.webp', thumbnailFileName: 'thumbnails/hello-4.webp',
+      sha256: 'd'.repeat(64), width: 512, height: 512,
+      keywords: ['你好'], emotions: [], embeddedText: '你好',
+      textSafeArea: null, layout: null, heat: 1,
+    },
+    {
+      id: 'synthesis-hot', type: 'synthesis-template', format: 'webp', version: 'api-v1',
+      fileName: 'templates/synthesis-hot.webp', thumbnailFileName: 'thumbnails/synthesis-hot.webp',
+      sha256: 'e'.repeat(64), width: 512, height: 512,
+      keywords: [], emotions: [], embeddedText: null,
+      textSafeArea: null, layout: null, heat: 30,
+    },
+    {
+      id: 'synthesis-calm', type: 'synthesis-template', format: 'webp', version: 'api-v1',
+      fileName: 'templates/synthesis-calm.webp', thumbnailFileName: 'thumbnails/synthesis-calm.webp',
+      sha256: 'f'.repeat(64), width: 512, height: 512,
+      keywords: [], emotions: [], embeddedText: null,
+      textSafeArea: null, layout: null, heat: 10,
     },
   ],
   emojiBases: [
@@ -95,7 +119,7 @@ describe('mobile expression API', () => {
       .set('X-Device-Id', USER_A);
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({ version: 'api-v1' });
-    expect(response.body.templates).toHaveLength(3);
+    expect(response.body.templates).toHaveLength(6);
 
     const unchanged = await request(app)
       .get('/api/v1/mobile/expressions/catalog?version=api-v1')
@@ -103,29 +127,34 @@ describe('mobile expression API', () => {
     expect(unchanged.status).toBe(304);
   });
 
-  it('推荐最多返回 20 项且只包含精确关键词匹配的预制原图', async () => {
+  it('常用词返回 4 张含完整文字的预制原图', async () => {
     const response = await request(createApp(pool))
-      .get('/api/v1/mobile/expressions/recommend?q=放箭')
+      .get('/api/v1/mobile/expressions/recommend?q=你好')
       .set('X-Device-Id', USER_A);
 
     expect(response.status).toBe(200);
     expect(response.body.results.map((item: { id: string }) => item.id))
-      .toEqual(['hot', 'exact']);
+      .toEqual(['hello-hot', 'hello-2', 'hello-3', 'hello-4']);
     expect(response.body.results[0]).toMatchObject({
-      type: 'recommendation',
-      url: '/uploads/expression/templates/hot.webp',
-      thumbnail_url: '/uploads/expression/thumbnails/hot.webp',
+      type: 'prebuilt',
+      embeddedText: '你好',
+      url: '/uploads/expression/templates/hello-hot.webp',
+      thumbnail_url: '/uploads/expression/thumbnails/hello-hot.webp',
     });
     expect(response.body.results.length).toBeLessThanOrEqual(20);
   });
 
-  it('未知词不回退到热门模板', async () => {
+  it.each(['龘靐', '未知词'])('生僻或未知词 %s 返回静态合成模板', async (query) => {
     const response = await request(createApp(pool))
-      .get('/api/v1/mobile/expressions/recommend?q=未知词')
+      .get(`/api/v1/mobile/expressions/recommend?q=${query}`)
       .set('X-Device-Id', USER_A);
 
     expect(response.status).toBe(200);
-    expect(response.body.results).toEqual([]);
+    expect(response.body.results.map((item: { id: string }) => item.id))
+      .toEqual(['synthesis-hot', 'synthesis-calm']);
+    expect(response.body.results.every((item: { type: string; embeddedText: string | null }) => (
+      item.type === 'synthesis-template' && item.embeddedText === null
+    ))).toBe(true);
   });
 
   it('只按有序键返回 Emoji 组合且未知组合为 404', async () => {
@@ -151,7 +180,7 @@ describe('mobile expression API', () => {
     const app = createApp(pool);
     for (const userId of [USER_A, USER_A, USER_B]) {
       const response = await request(app)
-        .post('/api/v1/mobile/expressions/exact/use')
+        .post('/api/v1/mobile/expressions/hello-hot/use')
         .set('X-Device-Id', userId);
       expect(response.status).toBe(200);
     }
@@ -163,6 +192,11 @@ describe('mobile expression API', () => {
       expect.objectContaining({ user_id: USER_A, use_count: 2 }),
       expect.objectContaining({ user_id: USER_B, use_count: 1 }),
     ]);
+    const stored = await pool.query<{ type: string; embedded_text: string }>(
+      'SELECT type, embedded_text FROM expression_asset WHERE id = $1',
+      ['hello-hot'],
+    );
+    expect(stored.rows).toEqual([{ type: 'prebuilt', embedded_text: '你好' }]);
   });
 
   it('拒绝非法 ID、空查询、超长查询和缺失身份', async () => {

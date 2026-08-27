@@ -63,8 +63,8 @@ function publicCatalog(catalog: GeneratedExpressionCatalog): Record<string, unkn
 async function ensureAssetRow(pool: pg.Pool, asset: ExpressionAsset): Promise<void> {
   await pool.query(`INSERT INTO expression_asset
     (id, type, format, version, file_name, thumbnail_file_name, sha256,
-     width, height, keywords, emotions, text_safe_area, layout, heat)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+     width, height, keywords, emotions, embedded_text, text_safe_area, layout, heat)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
     ON CONFLICT (id) DO UPDATE SET
       type = EXCLUDED.type,
       format = EXCLUDED.format,
@@ -76,6 +76,7 @@ async function ensureAssetRow(pool: pg.Pool, asset: ExpressionAsset): Promise<vo
       height = EXCLUDED.height,
       keywords = EXCLUDED.keywords,
       emotions = EXCLUDED.emotions,
+      embedded_text = EXCLUDED.embedded_text,
       text_safe_area = EXCLUDED.text_safe_area,
       layout = EXCLUDED.layout,
       heat = EXCLUDED.heat,
@@ -91,6 +92,7 @@ async function ensureAssetRow(pool: pg.Pool, asset: ExpressionAsset): Promise<vo
     asset.height,
     asset.keywords,
     asset.emotions,
+    asset.embeddedText,
     asset.textSafeArea,
     asset.layout,
     asset.heat,
@@ -134,7 +136,7 @@ export function createMobileExpressionRouter(pool: pg.Pool): Router {
       const catalog = await loadCatalog();
       const results = rankExpressionAssets(catalog.templates, query)
         .slice(0, 20)
-        .map((asset) => publicAsset({ ...asset, type: 'recommendation' }));
+        .map(publicAsset);
       res.json({ query, results });
     } catch (error) {
       next(error);

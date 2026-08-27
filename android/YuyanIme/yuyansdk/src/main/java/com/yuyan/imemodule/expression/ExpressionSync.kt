@@ -92,7 +92,19 @@ class ExpressionSync(
             } catch (_: Exception) {
                 null
             }
-            remoteResults?.takeIf { acceptResponse(requestId) }?.let(onResult)
+            remoteResults
+                ?.takeIf { acceptResponse(requestId) }
+                ?.let { results ->
+                    ExpressionCatalog(
+                        ExpressionCatalogDocument(
+                            version = catalog.document.version,
+                            templates = results,
+                            emojiBases = emptyList(),
+                            emojiCombinations = emptyList(),
+                        ),
+                    ).recommend(query)
+                }
+                ?.let(onResult)
         }
     }
 

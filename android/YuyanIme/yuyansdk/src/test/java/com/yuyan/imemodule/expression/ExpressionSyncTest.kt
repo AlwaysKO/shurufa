@@ -43,7 +43,13 @@ class ExpressionSyncTest {
     @Test
     fun `服务端目录增量覆盖本地版本`() = runBlocking {
         val local = ExpressionCatalog(document("v1", listOf(asset("shared", heat = 1))))
-        val remote = document("v2", listOf(asset("shared", version = "v2", heat = 9), asset("new")))
+        val remote = document(
+            "v2",
+            listOf(
+                asset("shared", version = "v2", type = "prebuilt", embeddedText = "你好", heat = 9),
+                asset("new"),
+            ),
+        )
         server.enqueue(MockResponse().setBody(json.encodeToString(remote)))
         val sync = sync(local, this)
 
@@ -51,21 +57,29 @@ class ExpressionSyncTest {
 
         assertEquals("v2", refreshed.document.version)
         assertEquals(9, refreshed.document.templates.first { it.id == "shared" }.heat)
+        assertEquals("prebuilt", refreshed.document.templates.first { it.id == "shared" }.type)
+        assertEquals("你好", refreshed.document.templates.first { it.id == "shared" }.embeddedText)
         assertEquals("v1", server.takeRequest().requestUrl?.queryParameter("version"))
     }
 
     @Test
     fun `断网时安全回退本地目录`() = runBlocking {
         val local = ExpressionCatalog(
-            document("offline-v1", listOf(asset("local", keywords = listOf("你好")))),
+            document(
+                "offline-v1",
+                listOf(
+                    asset("hello", type = "prebuilt", embeddedText = "你好"),
+                    asset("fallback", type = "synthesis-template"),
+                ),
+            ),
         )
         server.shutdown()
 
         val refreshed = sync(local, this).refreshCatalog()
 
         assertEquals("offline-v1", refreshed.document.version)
-        assertEquals(listOf("local"), refreshed.search("你好").map { it.id })
-        assertTrue(refreshed.search("任意").isEmpty())
+        assertEquals(listOf("hello"), refreshed.search("你好").map { it.id })
+        assertEquals(listOf("fallback"), refreshed.search("任意").map { it.id })
     }
 
     @Test
@@ -91,7 +105,9 @@ class ExpressionSyncTest {
 
     @Test
     fun `先同步返回本地结果且过期响应不会发布`() = runBlocking {
-        val local = ExpressionCatalog(document("v1", listOf(asset("local", keywords = listOf("放箭")))))
+        val local = ExpressionCatalog(
+            document("v1", listOf(asset("local", type = "prebuilt", embeddedText = "放箭"))),
+        )
         server.enqueue(MockResponse().setBody("""{"results":[${json.encodeToString(asset("remote"))}]}"""))
         val seen = mutableListOf<List<String>>()
         val sync = sync(local, this)
@@ -102,6 +118,40 @@ class ExpressionSyncTest {
         job.join()
 
         assertEquals(listOf(listOf("local")), seen)
+    }
+
+    @Test
+    fun `远端结果与离线目录使用同一两级推荐策略`() = runBlocking {
+        val localAssets = listOf(
+            asset("local-hello", type = "prebuilt", embeddedText = "你好"),
+            asset("local-template", type = "synthesis-template"),
+        )
+        val remoteAssets = listOf(
+            asset("remote-template", type = "synthesis-template", heat = 100),
+            asset("remote-other", type = "prebuilt", embeddedText = "再见", heat = 90),
+            asset("remote-hello-low", type = "prebuilt", embeddedText = "你好", heat = 1),
+            asset("remote-hello-hot", type = "prebuilt", embeddedText = "你好", heat = 9),
+        )
+        server.enqueue(
+            MockResponse().setBody(
+                """{"results":${json.encodeToString(remoteAssets)}}""",
+            ),
+        )
+        val seen = mutableListOf<List<String>>()
+
+        val job = sync(ExpressionCatalog(document("v1", localAssets)), this)
+            .search("你好", requestId = 8, acceptResponse = { it == 8L }) { results ->
+                seen += results.map { it.id }
+            }
+        job.join()
+
+        assertEquals(
+            listOf(
+                listOf("local-hello"),
+                listOf("remote-hello-hot", "remote-hello-low"),
+            ),
+            seen,
+        )
     }
 
     @Test
@@ -137,11 +187,13 @@ class ExpressionSyncTest {
     private fun asset(
         id: String,
         version: String = "v1",
+        type: String = "synthesis-template",
+        embeddedText: String? = null,
         keywords: List<String> = emptyList(),
         heat: Long = 0,
     ) = ExpressionAsset(
         id = id,
-        type = "template",
+        type = type,
         format = "webp",
         version = version,
         fileName = "templates/$id.webp",
@@ -151,6 +203,7 @@ class ExpressionSyncTest {
         height = 512,
         keywords = keywords,
         emotions = emptyList(),
+        embeddedText = embeddedText,
         heat = heat,
     )
 

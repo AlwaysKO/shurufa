@@ -1,7 +1,7 @@
 -- 系统图片表达素材、基础 Emoji、有序组合和用户使用计数
 CREATE TABLE IF NOT EXISTS expression_asset (
     id                  TEXT PRIMARY KEY,
-    type                VARCHAR(20) NOT NULL CHECK (type IN ('recommendation', 'template')),
+    type                VARCHAR(30) NOT NULL CHECK (type IN ('prebuilt', 'synthesis-template')),
     format              VARCHAR(10) NOT NULL CHECK (format IN ('gif', 'png', 'jpg', 'jpeg', 'webp')),
     version             TEXT NOT NULL,
     file_name           TEXT NOT NULL UNIQUE,
@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS expression_asset (
     height              INT NOT NULL CHECK (height > 0),
     keywords            TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
     emotions            TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
+    embedded_text       TEXT,
     text_safe_area      JSONB,
     layout              JSONB,
     heat                BIGINT NOT NULL DEFAULT 0 CHECK (heat >= 0),
