@@ -2,6 +2,7 @@ package com.yuyan.imemodule.expression
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -44,7 +45,9 @@ class ExpressionQueryCoordinatorTest {
 
         coordinator.onCommitted("放箭")
         assertFalse(coordinator.onComposingChanged(null))
-        delay(40)
+        withTimeout(1_000) {
+            while (seen.isEmpty()) delay(1)
+        }
 
         assertEquals(listOf("放箭"), seen)
         assertTrue(coordinator.acceptResponse(1))
