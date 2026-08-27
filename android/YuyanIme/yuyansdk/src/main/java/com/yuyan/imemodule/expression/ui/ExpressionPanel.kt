@@ -44,6 +44,7 @@ class ExpressionPanel @JvmOverloads constructor(
     private var expandedContentHeightPx = 0
     private var layoutMetrics: ExpressionLayoutMetrics? = null
     private var isExpanded = false
+    private var aiStickerEnabled = true
 
     var onDismiss: (() -> Unit)? = null
     var onAiStickerEnabledChange: ((Boolean) -> Unit)? = null
@@ -80,7 +81,9 @@ class ExpressionPanel @JvmOverloads constructor(
         closeButton.setOnClickListener {
             onAiStickerEnabledChange?.invoke(false) ?: onDismiss?.invoke()
         }
-        enableButton.setOnClickListener { onAiStickerEnabledChange?.invoke(true) }
+        enableButton.setOnClickListener {
+            if (!aiStickerEnabled) onAiStickerEnabledChange?.invoke(true)
+        }
         moreButton.setOnClickListener { showSettingsMenu() }
         assetList = findViewById<RecyclerView>(R.id.expression_asset_list).apply {
             layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
@@ -97,6 +100,7 @@ class ExpressionPanel @JvmOverloads constructor(
     }
 
     fun render(state: ExpressionPanelState, catalog: ExpressionCatalog) {
+        aiStickerEnabled = state.aiStickerEnabled
         isExpanded = state.presentation == ExpressionPanelPresentation.EXPANDED
         applyLayoutMetrics()
         visibility = View.VISIBLE

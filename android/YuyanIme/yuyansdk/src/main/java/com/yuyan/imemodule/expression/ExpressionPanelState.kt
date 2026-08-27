@@ -86,8 +86,11 @@ class ExpressionPanelState(
 
     fun setAiStickerEnabled(enabled: Boolean) {
         aiStickerEnabled = enabled
-        isContentVisible = chatEditor && enabled && results.isNotEmpty()
-        if (!enabled) collapse()
+        if (!enabled) {
+            clear()
+        } else {
+            isContentVisible = chatEditor && results.isNotEmpty()
+        }
     }
 
     fun setChatEditor(enabled: Boolean) {

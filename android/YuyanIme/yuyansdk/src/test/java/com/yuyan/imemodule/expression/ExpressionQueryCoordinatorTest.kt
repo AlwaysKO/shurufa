@@ -93,4 +93,24 @@ class ExpressionQueryCoordinatorTest {
         assertTrue(seen.isEmpty())
         assertFalse(coordinator.acceptResponse(1))
     }
+
+    @Test
+    fun `重置后相同提交词可以作为新查询再次发布`() = runBlocking {
+        val seen = mutableListOf<String>()
+        val coordinator = ExpressionQueryCoordinator(this, 0) { seen += it }
+
+        coordinator.onCommitted("你好")
+        withTimeout(1_000) {
+            while (seen.size < 1) delay(1)
+        }
+
+        coordinator.reset()
+        coordinator.onCommitted("你好")
+        withTimeout(1_000) {
+            while (seen.size < 2) delay(1)
+        }
+
+        assertEquals(listOf("你好", "你好"), seen)
+        coordinator.close()
+    }
 }

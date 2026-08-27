@@ -213,10 +213,19 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 if (!enabled) setExpressionExpanded(false)
                 aiStickerPreference.setValue(enabled)
                 expressionPanelState.setAiStickerEnabled(enabled)
-                expressionPanel.render(expressionPanelState, sync.currentCatalog())
-                if (enabled && expressionPanelState.results.isEmpty()) {
-                    expressionPanelState.query?.let(::searchExpressions)
+                if (!enabled) {
+                    expressionQueryCoordinator.reset()
+                    expressionSearchJob?.cancel()
+                    expressionSearchJob = null
+                    expressionPreviewJob?.cancel()
+                    expressionPreviewJob = null
+                    expressionDownloadJob?.cancel()
+                    expressionDownloadJob = null
+                    expressionPreparationJob?.cancel()
+                    expressionPreparationJob = null
+                    expressionPanel.resetEmojiSelection()
                 }
+                expressionPanel.render(expressionPanelState, sync.currentCatalog())
             }
             expressionPanel.onAnimationPreviewChange = { enabled ->
                 Toast.makeText(

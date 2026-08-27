@@ -38,6 +38,11 @@ class ExpressionQueryCoordinator(
     fun acceptResponse(requestId: Long): Boolean =
         !closed && currentQuery != null && requestId == this.requestId
 
+    fun reset() {
+        if (closed) return
+        updateQuery(null)
+    }
+
     fun close() {
         if (closed) return
         closed = true

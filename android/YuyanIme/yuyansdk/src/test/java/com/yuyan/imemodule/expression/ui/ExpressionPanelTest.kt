@@ -131,7 +131,7 @@ class ExpressionPanelTest {
     }
 
     @Test
-    fun `圆环关闭后工具标签可以重新开启推荐`() {
+    fun `圆环关闭后工具标签重新开启并等待下一次推荐`() {
         val panel = ExpressionPanel(context)
         val state = visibleState()
         panel.onAiStickerEnabledChange = { enabled ->
@@ -144,7 +144,24 @@ class ExpressionPanelTest {
         assertEquals(View.GONE, panel.findViewById<View>(R.id.expression_recommendation_section).visibility)
 
         panel.findViewById<View>(R.id.expression_enable).performClick()
+        assertEquals(View.GONE, panel.findViewById<View>(R.id.expression_recommendation_section).visibility)
+
+        state.beginQuery("你好", 2)
+        state.applyResults(2, listOf(asset()))
+        panel.render(state, catalog)
         assertEquals(View.VISIBLE, panel.findViewById<View>(R.id.expression_recommendation_section).visibility)
+    }
+
+    @Test
+    fun `AI 已开启时工具标签不重复触发开启回调`() {
+        val panel = ExpressionPanel(context)
+        var callbackCount = 0
+        panel.onAiStickerEnabledChange = { callbackCount += 1 }
+        panel.render(visibleState(), catalog)
+
+        panel.findViewById<View>(R.id.expression_enable).performClick()
+
+        assertEquals(0, callbackCount)
     }
 
     @Test

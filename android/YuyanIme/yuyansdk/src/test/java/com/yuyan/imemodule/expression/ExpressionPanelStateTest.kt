@@ -58,17 +58,23 @@ class ExpressionPanelStateTest {
     }
 
     @Test
-    fun `用户收起后同一查询不自动重开而新查询可以重开`() {
+    fun `用户关闭后清空查询并拒绝旧结果直到下一次提交`() {
         val state = ExpressionPanelState()
         state.beginQuery("开心", requestId = 1)
         state.applyResults(1, listOf(asset("happy")))
 
         state.setAiStickerEnabled(false)
-        state.applyResults(1, listOf(asset("remote-happy")))
+        assertFalse(state.applyResults(1, listOf(asset("remote-happy"))))
         assertTrue(state.isVisible)
         assertFalse(state.isContentVisible)
+        assertEquals(null, state.query)
+        assertTrue(state.results.isEmpty())
 
         state.setAiStickerEnabled(true)
+        assertFalse(state.isContentVisible)
+
+        state.beginQuery("开心", requestId = 2)
+        state.applyResults(2, listOf(asset("fresh-happy")))
         assertTrue(state.isContentVisible)
     }
 
