@@ -100,9 +100,13 @@ describe('011_expression_assets.sql', () => {
       .toBe(2);
 
     await pool.query(`INSERT INTO expression_asset
-      (id, type, format, version, file_name, sha256, width, height, keywords, emotions)
-      VALUES ('exact', 'recommendation', 'webp', 'v1', 'exact.webp', $1, 256, 256,
-              ARRAY['放箭'], ARRAY['happy'])`, ['e'.repeat(64)]);
+      (id, type, format, version, file_name, sha256, width, height,
+       keywords, emotions, embedded_text)
+      VALUES ('exact', 'prebuilt', 'webp', 'v1', 'exact.webp', $1, 256, 256,
+              ARRAY['放箭'], ARRAY['happy'], '放箭')`, ['e'.repeat(64)]);
+    expect((await pool.query(
+      "SELECT type, embedded_text FROM expression_asset WHERE id = 'exact'",
+    )).rows).toEqual([{ type: 'prebuilt', embedded_text: '放箭' }]);
     const firstUser = crypto.randomUUID();
     const secondUser = crypto.randomUUID();
     await pool.query(`INSERT INTO expression_asset_usage (user_id, asset_id, use_count)
