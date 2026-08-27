@@ -10,18 +10,33 @@ import org.junit.Test
 
 class SogouQwertyLayoutTest {
     @Test
-    fun `三行字母键覆盖宽度并保持搜狗式错位`() {
-        assertEquals(0.99f, SogouQwertyLayout.LETTER_WIDTH * 10, 0.0001f)
-        assertEquals(0.055f, SogouQwertyLayout.SECOND_ROW_START_X, 0.0001f)
-        assertEquals(SogouQwertyLayout.SHIFT_WIDTH, SogouQwertyLayout.DELETE_WIDTH, 0.0001f)
-        assertEquals(
-            0.991f,
-            SogouQwertyLayout.SHIFT_WIDTH + SogouQwertyLayout.LETTER_WIDTH * 7 +
-                SogouQwertyLayout.DELETE_WIDTH,
-            0.0001f,
+    fun `26键使用 APK 的键盘高度与四行起点`() {
+        assertEquals(0.5944f, SogouQwertyLayout.KEYBOARD_HEIGHT_TO_WIDTH_RATIO, 0.000001f)
+        assertArrayEquals(
+            floatArrayOf(0.0093f, 0.2586f, 0.5078f, 0.7570f),
+            SogouQwertyLayout.rowTops,
+            0.000001f,
         )
-        assertEquals(0.24f, SogouQwertyLayout.ROW_HEIGHT, 0.0001f)
-        assertTrue(SogouQwertyLayout.X_MARGIN_SCALE < 1f)
+        assertArrayEquals(
+            floatArrayOf(0.0093f, 0.0593f, 0.0093f, 0.0093f),
+            SogouQwertyLayout.rowStartXs,
+            0.000001f,
+        )
+    }
+
+    @Test
+    fun `26键普通键使用 APK 的视觉宽高与水平间隔`() {
+        assertEquals(0.0907f, SogouQwertyLayout.LETTER_WIDTH, 0.000001f)
+        assertEquals(0.2212f, SogouQwertyLayout.ROW_HEIGHT, 0.000001f)
+        assertEquals(0.008333f, SogouQwertyLayout.HORIZONTAL_GAP, 0.000001f)
+        assertTrue(SogouQwertyLayout.HORIZONTAL_GAP < SogouQwertyLayout.LETTER_WIDTH)
+    }
+
+    @Test
+    fun `Shift 和删除键保留 APK 中不同的宽度`() {
+        assertEquals(0.1407f, SogouQwertyLayout.SHIFT_WIDTH, 0.000001f)
+        assertEquals(0.1398f, SogouQwertyLayout.DELETE_WIDTH, 0.000001f)
+        assertEquals(0.991364f, SogouQwertyLayout.rowRightEdge(2), 0.000001f)
     }
 
     @Test
@@ -38,7 +53,12 @@ class SogouQwertyLayoutTest {
             ),
             SogouQwertyLayout.bottomRowCodes,
         )
-        assertEquals(0.99f, SogouQwertyLayout.bottomRowWidths.sum(), 0.0001f)
+        assertArrayEquals(
+            floatArrayOf(0.1407f, 0.1130f, 0.0870f, 0.2519f, 0.0870f, 0.1130f, 0.1398f),
+            SogouQwertyLayout.bottomRowWidths,
+            0.000001f,
+        )
+        assertEquals(0.991698f, SogouQwertyLayout.rowRightEdge(3), 0.000001f)
     }
 
     @Test

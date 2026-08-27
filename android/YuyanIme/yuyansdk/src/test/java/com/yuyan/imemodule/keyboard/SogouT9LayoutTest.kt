@@ -12,15 +12,36 @@ import org.junit.Test
 
 class SogouT9LayoutTest {
     @Test
-    fun mainColumnsFillKeyboardWidth() {
-        assertEquals(0.005f, SogouT9Layout.columnLeftEdges.first(), 0.0001f)
-        assertEquals(0.995f, SogouT9Layout.columnRightEdges.last(), 0.0001f)
-        assertEquals(0.17f, SogouT9Layout.columnWidths.first(), 0.0001f)
-        assertEquals(0.17f, SogouT9Layout.columnWidths.last(), 0.0001f)
-        assertEquals(0.21666667f, SogouT9Layout.columnWidths[1], 0.0001f)
-        assertEquals(0.245f, SogouT9Layout.ROW_HEIGHT, 0.0001f)
-        assertEquals(0.735f, SogouT9Layout.SIDE_HEIGHT, 0.0001f)
-        assertEquals(0.8f, SogouT9Layout.Y_MARGIN_SCALE, 0.0001f)
+    fun `九宫格使用 APK 的键盘高度与四行起点`() {
+        assertEquals(0.5944f, SogouT9Layout.KEYBOARD_HEIGHT_TO_WIDTH_RATIO, 0.000001f)
+        assertArrayEquals(
+            floatArrayOf(0.0078f, 0.2570f, 0.5062f, 0.7555f),
+            SogouT9Layout.rowTops,
+            0.000001f,
+        )
+        assertArrayEquals(
+            floatArrayOf(0.1750f, 0.1750f, 0.1750f, 0.0056f),
+            SogouT9Layout.rowStartXs,
+            0.000001f,
+        )
+    }
+
+    @Test
+    fun `主键和右列使用 APK 规格并对齐至同一终点`() {
+        assertEquals(0.2167f, SogouT9Layout.MAIN_WIDTH, 0.000001f)
+        assertEquals(0.24922f, SogouT9Layout.ROW_HEIGHT, 0.000001f)
+        assertEquals(0.1694f, SogouT9Layout.RIGHT_COLUMN_WIDTH, 0.000001f)
+        assertEquals(0.9945f, SogouT9Layout.mainRowRightEdge, 0.000001f)
+        assertEquals(0.9945f, SogouT9Layout.columnRightEdges.last(), 0.000001f)
+    }
+
+    @Test
+    fun `候选码区使用 APK 的完整矩形`() {
+        assertEquals(0.0056f, SogouT9Layout.candidateCodeView.x, 0.000001f)
+        assertEquals(0.0078f, SogouT9Layout.candidateCodeView.y, 0.000001f)
+        assertEquals(0.1694f, SogouT9Layout.candidateCodeView.width, 0.000001f)
+        assertEquals(0.7477f, SogouT9Layout.candidateCodeView.height, 0.000001f)
+        assertEquals(0.1750f, SogouT9Layout.candidateCodeView.right, 0.000001f)
     }
 
     @Test
@@ -39,7 +60,13 @@ class SogouT9LayoutTest {
             ),
             SogouT9Layout.bottomRowCodes,
         )
-        assertEquals(0.99f, SogouT9Layout.bottomRowWidths.sum(), 0.0001f)
+        assertArrayEquals(
+            floatArrayOf(0.1694f, 0.1630f, 0.3241f, 0.1630f, 0.1694f),
+            SogouT9Layout.bottomRowWidths,
+            0.000001f,
+        )
+        assertEquals(0.2368f, SogouT9Layout.BOTTOM_ROW_HEIGHT, 0.000001f)
+        assertEquals(0.9945f, SogouT9Layout.bottomRowRightEdge, 0.000001f)
     }
 
     @Test
@@ -50,7 +77,7 @@ class SogouT9LayoutTest {
 
         keys.forEachIndexed { index, key ->
             assertEquals(SogouT9Layout.bottomRowWidths[index], key.widthF, 0.0001f)
-            assertEquals(SogouT9Layout.ROW_HEIGHT, key.heightF, 0.0001f)
+            assertEquals(SogouT9Layout.BOTTOM_ROW_HEIGHT, key.heightF, 0.0001f)
         }
     }
 
