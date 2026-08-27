@@ -2,6 +2,7 @@ package com.yuyan.imemodule.expression
 
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.net.Uri
 import com.yuyan.imemodule.expression.model.ExpressionAsset
 import com.yuyan.imemodule.expression.model.ExpressionTextLayout
 import com.yuyan.imemodule.expression.model.ExpressionTextSafeArea
@@ -59,6 +60,26 @@ class ExpressionRecommendationResolverTest {
             File(path).isFile && File(path).name == "${resolver.cacheKey(item, query)}.webp"
         })
         assertNotEquals(resolver.cacheKey(templates.first(), query), resolver.cacheKey(templates.first(), "生僻"))
+    }
+
+    @Test
+    fun `远端预制图先通过鉴权下载再使用本地文件预览`() = runBlocking {
+        val downloaded = temporaryFolder.newFile("downloaded.webp").apply { writeText("image") }
+        var resolvedAsset: ExpressionAsset? = null
+        val resolver = ExpressionRecommendationResolver(temporaryFolder.root) { asset ->
+            resolvedAsset = asset
+            downloaded
+        }
+        val remote = asset("remote", "prebuilt").copy(
+            url = "/uploads/expression/prebuilt/remote.webp",
+            thumbnailUrl = "/uploads/expression/thumbnails/remote.webp",
+        )
+
+        val resolved = resolver.resolve(listOf(remote), "你好").single()
+
+        assertEquals(remote, resolvedAsset)
+        assertEquals(Uri.fromFile(downloaded).toString(), resolved.thumbnailUrl)
+        assertEquals(Uri.fromFile(downloaded).toString(), previewSource(resolved))
     }
 
     private fun asset(id: String, type: String) = ExpressionAsset(

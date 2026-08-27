@@ -31,6 +31,10 @@ class ExpressionRecommendationResolver(
     ): List<ExpressionAsset> = withContext(Dispatchers.IO) {
         assets.mapNotNull { asset ->
             when {
+                asset.type == "prebuilt" && (asset.url != null || asset.thumbnailUrl != null) ->
+                    runCatching {
+                        asset.copy(thumbnailUrl = Uri.fromFile(resolveSource(asset)).toString())
+                    }.getOrNull()
                 asset.type == "prebuilt" -> asset
                 ExpressionRenderPolicy.shouldOverlayText(asset, query) -> runCatching {
                     asset.copy(thumbnailUrl = Uri.fromFile(renderPreview(asset, query)).toString())
