@@ -154,6 +154,8 @@ class ExpressionPanelTest {
             layoutManager = GridLayoutManager(context, 3)
         }
         val holder = adapter.onCreateViewHolder(parent, 0)
+        val metrics = ExpressionLayoutMetrics.calculate(1200, 3.25f, landscape = false)
+        adapter.setLayoutMetrics(metrics)
         adapter.setExpanded(true)
         adapter.submitList(listOf(asset()))
 
@@ -161,6 +163,25 @@ class ExpressionPanelTest {
 
         assertTrue(holder.itemView.layoutParams.width > 0)
         assertEquals(holder.itemView.layoutParams.width, holder.itemView.layoutParams.height)
+        assertEquals(metrics.expandedItemSizePx, holder.itemView.layoutParams.width)
+    }
+
+    @Test
+    fun `标签图片区胶囊和工具行应用参考图尺寸`() {
+        val panel = ExpressionPanel(context)
+        panel.render(visibleState(), catalog)
+        val density = context.resources.displayMetrics.density
+        val metrics = ExpressionLayoutMetrics.calculate(
+            context.resources.displayMetrics.widthPixels,
+            density,
+            landscape = false,
+        )
+
+        assertEquals(metrics.tabRowHeightPx, panel.findViewById<View>(R.id.expression_tab_bar).layoutParams.height)
+        assertEquals(metrics.contentHeightPx, panel.findViewById<View>(R.id.expression_content).layoutParams.height)
+        assertEquals(metrics.toolRowHeightPx, panel.findViewById<View>(R.id.expression_tool_row).layoutParams.height)
+        assertEquals(metrics.actionWidthPx, panel.findViewById<View>(R.id.expression_actions).layoutParams.width)
+        assertEquals(metrics.actionHeightPx, panel.findViewById<View>(R.id.expression_actions).layoutParams.height)
     }
 
     @Test

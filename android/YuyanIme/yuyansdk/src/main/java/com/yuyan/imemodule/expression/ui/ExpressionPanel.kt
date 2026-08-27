@@ -1,6 +1,7 @@
 package com.yuyan.imemodule.expression.ui
 
 import android.content.Context
+import android.content.res.Configuration
 import android.util.AttributeSet
 import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
@@ -31,6 +32,8 @@ class ExpressionPanel @JvmOverloads constructor(
     private val enableButton: TextView
     private val recommendationSection: View
     private val toolRow: View
+    private val tabBar: View
+    private val actions: View
     private val content: View
     private val assetList: RecyclerView
     private val emojiPicker: EmojiCombinationPicker
@@ -39,6 +42,8 @@ class ExpressionPanel @JvmOverloads constructor(
         onLongPress = { requestExpand() },
     )
     private var expandedContentHeightPx = 0
+    private var layoutMetrics: ExpressionLayoutMetrics? = null
+    private var isExpanded = false
 
     var onDismiss: (() -> Unit)? = null
     var onAiStickerEnabledChange: ((Boolean) -> Unit)? = null
@@ -70,6 +75,8 @@ class ExpressionPanel @JvmOverloads constructor(
         enableButton = findViewById(R.id.expression_enable)
         recommendationSection = findViewById(R.id.expression_recommendation_section)
         toolRow = findViewById(R.id.expression_tool_row)
+        tabBar = findViewById(R.id.expression_tab_bar)
+        actions = findViewById(R.id.expression_actions)
         closeButton.setOnClickListener {
             onAiStickerEnabledChange?.invoke(false) ?: onDismiss?.invoke()
         }
@@ -90,6 +97,8 @@ class ExpressionPanel @JvmOverloads constructor(
     }
 
     fun render(state: ExpressionPanelState, catalog: ExpressionCatalog) {
+        isExpanded = state.presentation == ExpressionPanelPresentation.EXPANDED
+        applyLayoutMetrics()
         visibility = View.VISIBLE
         recommendationSection.visibility = if (state.isRecommendationVisible) View.VISIBLE else View.GONE
         toolRow.visibility = View.VISIBLE
@@ -97,12 +106,12 @@ class ExpressionPanel @JvmOverloads constructor(
         recommendedTab.isSelected = state.selectedTab == ExpressionPanelTab.RECOMMENDED
         templatesTab.isSelected = state.selectedTab == ExpressionPanelTab.AI_SYNTHESIS
         emojiTab.isSelected = state.selectedTab == ExpressionPanelTab.EMOJI_SYNTHESIS
-        val expanded = state.presentation == ExpressionPanelPresentation.EXPANDED
+        val expanded = isExpanded
         content.layoutParams = content.layoutParams.apply {
             height = if (expanded && expandedContentHeightPx > 0) {
                 expandedContentHeightPx
             } else {
-                dp(if (expanded) EXPANDED_CONTENT_HEIGHT_DP else COMPACT_CONTENT_HEIGHT_DP)
+                if (expanded) dp(EXPANDED_CONTENT_HEIGHT_DP) else requireNotNull(layoutMetrics).contentHeightPx
             }
         }
         content.visibility = View.VISIBLE
@@ -131,6 +140,38 @@ class ExpressionPanel @JvmOverloads constructor(
 
     fun setExpandedContentHeight(heightPx: Int) {
         expandedContentHeightPx = heightPx.coerceAtLeast(0)
+    }
+
+    override fun onSizeChanged(width: Int, height: Int, oldWidth: Int, oldHeight: Int) {
+        super.onSizeChanged(width, height, oldWidth, oldHeight)
+        if (width > 0 && width != oldWidth) applyLayoutMetrics(width)
+    }
+
+    private fun applyLayoutMetrics(measuredWidth: Int = width) {
+        val availableWidth = measuredWidth.takeIf { it > 0 }
+            ?: resources.displayMetrics.widthPixels
+        val metrics = ExpressionLayoutMetrics.calculate(
+            widthPx = availableWidth,
+            density = resources.displayMetrics.density,
+            landscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE,
+        )
+        layoutMetrics = metrics
+        tabBar.layoutParams = tabBar.layoutParams.apply { height = metrics.tabRowHeightPx }
+        toolRow.layoutParams = toolRow.layoutParams.apply { height = metrics.toolRowHeightPx }
+        actions.layoutParams = actions.layoutParams.apply {
+            width = metrics.actionWidthPx
+            height = metrics.actionHeightPx
+        }
+        if (!isExpanded) {
+            content.layoutParams = content.layoutParams.apply { height = metrics.contentHeightPx }
+        }
+        assetList.setPadding(
+            metrics.horizontalPaddingPx,
+            assetList.paddingTop,
+            metrics.horizontalPaddingPx,
+            assetList.paddingBottom,
+        )
+        adapter.setLayoutMetrics(metrics)
     }
 
     private fun requestExpand() {
@@ -167,7 +208,6 @@ class ExpressionPanel @JvmOverloads constructor(
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
     private companion object {
-        const val COMPACT_CONTENT_HEIGHT_DP = 116
         const val EXPANDED_CONTENT_HEIGHT_DP = 300
         const val EXPANDED_SPAN_COUNT = 3
         const val MENU_AI_STICKER = 1

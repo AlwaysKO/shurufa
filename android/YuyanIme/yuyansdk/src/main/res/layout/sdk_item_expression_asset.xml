@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="104dp"
-    android:layout_height="104dp"
+    android:layout_width="79dp"
+    android:layout_height="79dp"
     android:foreground="?android:attr/selectableItemBackground"
-    android:padding="6dp">
+    android:padding="0dp">
 
     <ImageView
         android:id="@+id/expression_asset_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@drawable/bg_expression_card"
+        android:clipToOutline="true"
         android:contentDescription="图片表达预览"
         android:scaleType="centerCrop" />
 </FrameLayout>

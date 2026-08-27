@@ -21,6 +21,13 @@ class ExpressionAssetAdapter(
 ) : RecyclerView.Adapter<ExpressionAssetAdapter.AssetHolder>() {
     private var items: List<ExpressionAsset> = emptyList()
     private var expanded = false
+    private var layoutMetrics: ExpressionLayoutMetrics? = null
+
+    fun setLayoutMetrics(metrics: ExpressionLayoutMetrics) {
+        if (layoutMetrics == metrics) return
+        layoutMetrics = metrics
+        notifyDataSetChanged()
+    }
 
     fun setExpanded(expanded: Boolean) {
         if (this.expanded == expanded) return
@@ -42,7 +49,7 @@ class ExpressionAssetAdapter(
     )
 
     override fun onBindViewHolder(holder: AssetHolder, position: Int) {
-        holder.bind(items[position])
+        holder.bind(items[position], position)
     }
 
     override fun getItemCount(): Int = items.size
@@ -54,11 +61,24 @@ class ExpressionAssetAdapter(
     inner class AssetHolder(view: View) : RecyclerView.ViewHolder(view) {
         val image: ImageView = view.findViewById(R.id.expression_asset_image)
 
-        fun bind(asset: ExpressionAsset) {
+        fun bind(asset: ExpressionAsset, position: Int) {
             itemView.visibility = View.VISIBLE
+            val metrics = layoutMetrics
             itemView.layoutParams = itemView.layoutParams.apply {
-                width = itemSizePx(itemView)
-                height = itemSizePx(itemView)
+                val size = when {
+                    metrics == null -> itemSizePx(itemView)
+                    expanded -> metrics.expandedItemSizePx
+                    else -> metrics.itemSizePx
+                }
+                width = size
+                height = size
+                if (this is ViewGroup.MarginLayoutParams && metrics != null) {
+                    marginEnd = if (expanded && (position + 1) % EXPANDED_COLUMNS == 0) {
+                        0
+                    } else {
+                        metrics.itemGapPx
+                    }
+                }
             }
             Glide.with(image)
                 .load(previewSource(asset))
@@ -99,6 +119,7 @@ class ExpressionAssetAdapter(
 
     private companion object {
         const val ITEM_SIZE_DP = 104
+        const val EXPANDED_COLUMNS = 3
     }
 }
 
