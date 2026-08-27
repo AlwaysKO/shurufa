@@ -24,31 +24,53 @@ object SogouT9Layout {
     /** APK 9.ini 中相对于键盘宽度的高度。 */
     const val KEYBOARD_HEIGHT_TO_WIDTH_RATIO = 0.5944f
     const val CANDIDATE_TEXT_SIZE_PERCENT = 45
-    const val START_X = 0.0056f
+
+    const val VISUAL_START_X = 0.0056f
     const val MAIN_START_X = 0.175f
-    const val RIGHT_COLUMN_WIDTH = 0.1694f
-    const val SIDE_WIDTH = RIGHT_COLUMN_WIDTH
-    const val MAIN_WIDTH = 0.2167f
-    const val ROW_HEIGHT = 0.24922f
-    const val SIDE_HEIGHT = 0.7477f
-    const val BOTTOM_ROW_HEIGHT = 0.2368f
+    const val VISUAL_RIGHT_COLUMN_WIDTH = 0.1694f
+    const val VISUAL_MAIN_KEY_WIDTH = 0.2167f
+    const val VISUAL_MAIN_KEY_HEIGHT = 0.24922f
+    const val VISUAL_CANDIDATE_HEIGHT = 0.7477f
+    const val VISUAL_BOTTOM_ROW_HEIGHT = 0.2368f
+
+    /** KeyboardLoaderUtil 尚未逐键应用 APK 几何时的运行时兼容常量。 */
+    const val START_X = 0.005f
+    const val SIDE_WIDTH = 0.17f
+    const val MAIN_WIDTH = 0.21666667f
+    const val ROW_HEIGHT = 0.245f
+    const val SIDE_HEIGHT = 0.735f
+
+    /** 项目 SoftKey 背景内边距的渲染兼容值，不是 APK ini 几何。 */
     const val X_MARGIN_SCALE = 0.7f
     const val Y_MARGIN_SCALE = 0.8f
 
     val rowTops = floatArrayOf(0.0078f, 0.2570f, 0.5062f, 0.7555f)
-    val rowStartXs = floatArrayOf(MAIN_START_X, MAIN_START_X, MAIN_START_X, START_X)
+    val rowStartXs = floatArrayOf(MAIN_START_X, MAIN_START_X, MAIN_START_X, VISUAL_START_X)
     val candidateCodeView = NormalizedRect(
-        x = START_X,
+        x = VISUAL_START_X,
         y = rowTops[0],
-        width = SIDE_WIDTH,
-        height = SIDE_HEIGHT,
+        width = VISUAL_RIGHT_COLUMN_WIDTH,
+        height = VISUAL_CANDIDATE_HEIGHT,
     )
 
+    /** KeyboardLoaderUtil 当前使用的连续列宽。 */
     val columnWidths = floatArrayOf(SIDE_WIDTH, MAIN_WIDTH, MAIN_WIDTH, MAIN_WIDTH, SIDE_WIDTH)
     val columnLeftEdges = columnWidths.runningFold(START_X) { left, width -> left + width }
         .dropLast(1)
         .toFloatArray()
     val columnRightEdges = columnWidths.runningFold(START_X) { left, width -> left + width }
+        .drop(1)
+        .toFloatArray()
+
+    val officialColumnWidths = floatArrayOf(
+        VISUAL_RIGHT_COLUMN_WIDTH,
+        VISUAL_MAIN_KEY_WIDTH,
+        VISUAL_MAIN_KEY_WIDTH,
+        VISUAL_MAIN_KEY_WIDTH,
+        VISUAL_RIGHT_COLUMN_WIDTH,
+    )
+    val officialColumnRightEdges = officialColumnWidths
+        .runningFold(VISUAL_START_X) { left, width -> left + width }
         .drop(1)
         .toFloatArray()
 
@@ -72,27 +94,63 @@ object SogouT9Layout {
         InputModeSwitcher.USER_KEYCODE_LANG,
         KeyEvent.KEYCODE_ENTER,
     )
-    val bottomRowWidths = floatArrayOf(0.1694f, 0.1630f, 0.3241f, 0.1630f, 0.1694f)
+    val officialBottomRowWidths = floatArrayOf(0.1694f, 0.1630f, 0.3241f, 0.1630f, 0.1694f)
+
+    /** KeyboardLoaderUtil 当前连续排列所需的运行时宽度。 */
+    val bottomRowWidths = floatArrayOf(0.17f, 0.165f, 0.32f, 0.165f, 0.17f)
+
+    val rowGeometry: List<RowGeometry> = buildKeyboardGeometry(
+        listOf(
+            RowGeometrySpec(
+                top = rowTops[0],
+                startX = MAIN_START_X,
+                keyWidths = List(3) { VISUAL_MAIN_KEY_WIDTH } + VISUAL_RIGHT_COLUMN_WIDTH,
+                keyHeight = VISUAL_MAIN_KEY_HEIGHT,
+                touchLeft = MAIN_START_X,
+            ),
+            RowGeometrySpec(
+                top = rowTops[1],
+                startX = MAIN_START_X,
+                keyWidths = List(3) { VISUAL_MAIN_KEY_WIDTH } + VISUAL_RIGHT_COLUMN_WIDTH,
+                keyHeight = VISUAL_MAIN_KEY_HEIGHT,
+                touchLeft = MAIN_START_X,
+            ),
+            RowGeometrySpec(
+                top = rowTops[2],
+                startX = MAIN_START_X,
+                keyWidths = List(3) { VISUAL_MAIN_KEY_WIDTH } + VISUAL_RIGHT_COLUMN_WIDTH,
+                keyHeight = VISUAL_MAIN_KEY_HEIGHT,
+                touchLeft = MAIN_START_X,
+            ),
+            RowGeometrySpec(
+                top = rowTops[3],
+                startX = VISUAL_START_X,
+                keyWidths = officialBottomRowWidths.toList(),
+                keyHeight = VISUAL_BOTTOM_ROW_HEIGHT,
+            ),
+        )
+    )
+
     val mainRowRightEdge: Float
-        get() = MAIN_START_X + MAIN_WIDTH * 3 + RIGHT_COLUMN_WIDTH
+        get() = rowGeometry.first().keys.last().right
     val bottomRowRightEdge: Float
-        get() = START_X + bottomRowWidths.sum()
+        get() = rowGeometry.last().keys.last().right
 
     fun applyBottomRowGeometry(keys: List<SoftKey>) {
         require(keys.size == bottomRowWidths.size)
         keys.forEachIndexed { index, key ->
             key.widthF = bottomRowWidths[index]
-            key.heightF = BOTTOM_ROW_HEIGHT
+            key.heightF = ROW_HEIGHT
         }
     }
 
     fun createVoiceSpaceKey() = SoftKey(code = KeyEvent.KEYCODE_SPACE).apply {
-        heightF = BOTTOM_ROW_HEIGHT
+        heightF = ROW_HEIGHT
         longPressAction = LongPressAction.Voice
     }
 
     fun createEnterKey() = SoftKeyToggle(KeyEvent.KEYCODE_ENTER).apply {
-        heightF = BOTTOM_ROW_HEIGHT
+        heightF = ROW_HEIGHT
         stateId = 0
         preferTextLabel = true
         setToggleStates(

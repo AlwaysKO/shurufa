@@ -28,11 +28,25 @@ class SogouT9LayoutTest {
 
     @Test
     fun `主键和右列使用 APK 规格并对齐至同一终点`() {
-        assertEquals(0.2167f, SogouT9Layout.MAIN_WIDTH, 0.000001f)
-        assertEquals(0.24922f, SogouT9Layout.ROW_HEIGHT, 0.000001f)
-        assertEquals(0.1694f, SogouT9Layout.RIGHT_COLUMN_WIDTH, 0.000001f)
+        assertEquals(0.2167f, SogouT9Layout.VISUAL_MAIN_KEY_WIDTH, 0.000001f)
+        assertEquals(0.24922f, SogouT9Layout.VISUAL_MAIN_KEY_HEIGHT, 0.000001f)
+        assertEquals(0.1694f, SogouT9Layout.VISUAL_RIGHT_COLUMN_WIDTH, 0.000001f)
         assertEquals(0.9945f, SogouT9Layout.mainRowRightEdge, 0.000001f)
-        assertEquals(0.9945f, SogouT9Layout.columnRightEdges.last(), 0.000001f)
+        assertEquals(0.9945f, SogouT9Layout.officialColumnRightEdges.last(), 0.000001f)
+    }
+
+    @Test
+    fun `九宫格 APK 视觉规格与当前加载器兼容常量隔离`() {
+        assertEquals(0.005f, SogouT9Layout.START_X, 0.000001f)
+        assertEquals(0.17f, SogouT9Layout.SIDE_WIDTH, 0.000001f)
+        assertEquals(0.21666667f, SogouT9Layout.MAIN_WIDTH, 0.000001f)
+        assertEquals(0.245f, SogouT9Layout.ROW_HEIGHT, 0.000001f)
+        assertEquals(0.735f, SogouT9Layout.SIDE_HEIGHT, 0.000001f)
+        assertArrayEquals(
+            floatArrayOf(0.17f, 0.165f, 0.32f, 0.165f, 0.17f),
+            SogouT9Layout.bottomRowWidths,
+            0.000001f,
+        )
     }
 
     @Test
@@ -42,6 +56,59 @@ class SogouT9LayoutTest {
         assertEquals(0.1694f, SogouT9Layout.candidateCodeView.width, 0.000001f)
         assertEquals(0.7477f, SogouT9Layout.candidateCodeView.height, 0.000001f)
         assertEquals(0.1750f, SogouT9Layout.candidateCodeView.right, 0.000001f)
+        assertEquals(0.7555f, SogouT9Layout.candidateCodeView.bottom, 0.000001f)
+    }
+
+    @Test
+    fun `九宫格主区与底行逐键几何正确且不越界`() {
+        val expectedWidths = listOf(
+            List(3) { 0.2167f } + 0.1694f,
+            List(3) { 0.2167f } + 0.1694f,
+            List(3) { 0.2167f } + 0.1694f,
+            listOf(0.1694f, 0.1630f, 0.3241f, 0.1630f, 0.1694f),
+        )
+        assertArrayEquals(intArrayOf(4, 4, 4, 5), SogouT9Layout.rowGeometry.map { it.keys.size }.toIntArray())
+        SogouT9Layout.rowGeometry.forEachIndexed { rowIndex, row ->
+            assertEquals(SogouT9Layout.rowTops[rowIndex], row.top, 0.000001f)
+            row.keys.forEachIndexed { keyIndex, key ->
+                assertEquals(
+                    SogouT9Layout.rowStartXs[rowIndex] + expectedWidths[rowIndex].take(keyIndex).sum(),
+                    key.left,
+                    0.000001f,
+                )
+                assertEquals(expectedWidths[rowIndex][keyIndex], key.width, 0.000001f)
+                assertTrue(key.left >= 0f)
+                assertTrue(key.right <= 1f)
+            }
+        }
+        SogouT9Layout.rowGeometry.take(3).forEach { row ->
+            assertEquals(0.175f, row.keys.first().left, 0.000001f)
+            assertEquals(0.2167f, row.keys.first().width, 0.000001f)
+            assertEquals(0.1694f, row.keys.last().width, 0.000001f)
+            assertEquals(0.24922f, row.keys.first().height, 0.000001f)
+            assertEquals(0.9945f, row.keys.last().right, 0.000001f)
+        }
+        assertEquals(0.0056f, SogouT9Layout.rowGeometry.last().keys.first().left, 0.000001f)
+        assertEquals(0.2368f, SogouT9Layout.rowGeometry.last().keys.first().height, 0.000001f)
+        assertEquals(0.9945f, SogouT9Layout.rowGeometry.last().keys.last().right, 0.000001f)
+    }
+
+    @Test
+    fun `九宫格触摸跨度在键中线连续覆盖`() {
+        assertEquals(0f, SogouT9Layout.rowGeometry.first().touchTop, 0.000001f)
+        assertEquals(1f, SogouT9Layout.rowGeometry.last().touchBottom, 0.000001f)
+        SogouT9Layout.rowGeometry.forEachIndexed { rowIndex, row ->
+            val expectedLeft = if (rowIndex < 3) 0.175f else 0f
+            assertEquals(expectedLeft, row.keys.first().touchLeft, 0.000001f)
+            assertEquals(1f, row.keys.last().touchRight, 0.000001f)
+            row.keys.zipWithNext().forEach { (left, right) ->
+                assertEquals(left.touchRight, right.touchLeft, 0.000001f)
+                assertEquals((left.right + right.left) / 2f, left.touchRight, 0.000001f)
+            }
+        }
+        SogouT9Layout.rowGeometry.zipWithNext().forEach { (upper, lower) ->
+            assertEquals(upper.touchBottom, lower.touchTop, 0.000001f)
+        }
     }
 
     @Test
@@ -62,10 +129,10 @@ class SogouT9LayoutTest {
         )
         assertArrayEquals(
             floatArrayOf(0.1694f, 0.1630f, 0.3241f, 0.1630f, 0.1694f),
-            SogouT9Layout.bottomRowWidths,
+            SogouT9Layout.officialBottomRowWidths,
             0.000001f,
         )
-        assertEquals(0.2368f, SogouT9Layout.BOTTOM_ROW_HEIGHT, 0.000001f)
+        assertEquals(0.2368f, SogouT9Layout.VISUAL_BOTTOM_ROW_HEIGHT, 0.000001f)
         assertEquals(0.9945f, SogouT9Layout.bottomRowRightEdge, 0.000001f)
     }
 
@@ -77,7 +144,7 @@ class SogouT9LayoutTest {
 
         keys.forEachIndexed { index, key ->
             assertEquals(SogouT9Layout.bottomRowWidths[index], key.widthF, 0.0001f)
-            assertEquals(SogouT9Layout.BOTTOM_ROW_HEIGHT, key.heightF, 0.0001f)
+            assertEquals(SogouT9Layout.ROW_HEIGHT, key.heightF, 0.0001f)
         }
     }
 
