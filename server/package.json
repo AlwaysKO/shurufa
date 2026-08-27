@@ -13,8 +13,8 @@
     "analyze:once": "tsx src/jobs/analyze.ts --once",
     "expression:crop": "tsx scripts/crop-expression-contact-sheets.ts",
     "expression:generate": "tsx scripts/generate-expression-assets.ts",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "vitest run src",
+    "test:watch": "vitest src"
   },
   "dependencies": {
     "cors": "^2.8.5",
