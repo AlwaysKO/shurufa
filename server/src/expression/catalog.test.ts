@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { newDb } from 'pg-mem';
 import type pg from 'pg';
@@ -9,6 +9,9 @@ import { emojiCombinationKey, rankExpressionAssets } from './catalog.js';
 const migration = readFileSync(fileURLToPath(
   new URL('../../migrations/011_expression_assets.sql', import.meta.url),
 ), 'utf8');
+const upgradeMigrationPath = fileURLToPath(
+  new URL('../../migrations/012_expression_asset_two_tier.sql', import.meta.url),
+);
 const sourceManifest = JSON.parse(readFileSync(fileURLToPath(
   new URL('../../../assets/expression/manifest.source.json', import.meta.url),
 ), 'utf8')) as { templates: Array<{ keywords: string[] }> };
@@ -119,6 +122,52 @@ describe('011_expression_assets.sql', () => {
       expect.objectContaining({ user_id: firstUser, use_count: 3 }),
       expect.objectContaining({ user_id: secondUser, use_count: 7 }),
     ]);
+    await pool.end();
+  });
+});
+
+describe('012_expression_asset_two_tier.sql', () => {
+  it('从旧版素材表幂等升级并迁移旧类型', async () => {
+    expect(existsSync(upgradeMigrationPath)).toBe(true);
+    const upgradeMigration = readFileSync(upgradeMigrationPath, 'utf8');
+    const database = newDb();
+    const adapter = database.adapters.createPg();
+    const pool: pg.Pool = new adapter.Pool();
+    await pool.query(`CREATE TABLE expression_asset (
+      id TEXT PRIMARY KEY,
+      type VARCHAR(20) NOT NULL,
+      format VARCHAR(10) NOT NULL,
+      version TEXT NOT NULL,
+      file_name TEXT NOT NULL UNIQUE,
+      sha256 CHAR(64) NOT NULL,
+      width INT NOT NULL,
+      height INT NOT NULL,
+      keywords TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
+      emotions TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
+      CONSTRAINT expression_asset_type_check CHECK (type IN ('recommendation', 'template'))
+    )`);
+    await pool.query(`INSERT INTO expression_asset
+      (id, type, format, version, file_name, sha256, width, height)
+      VALUES
+      ('old-recommendation', 'recommendation', 'webp', 'v1', 'old-recommendation.webp', $1, 1, 1),
+      ('old-template', 'template', 'webp', 'v1', 'old-template.webp', $2, 1, 1)`, [
+      'a'.repeat(64), 'b'.repeat(64),
+    ]);
+
+    await pool.query(upgradeMigration);
+    await pool.query(upgradeMigration);
+
+    expect((await pool.query(
+      'SELECT id, type, embedded_text FROM expression_asset ORDER BY id',
+    )).rows).toEqual([
+      { id: 'old-recommendation', type: 'prebuilt', embedded_text: null },
+      { id: 'old-template', type: 'synthesis-template', embedded_text: null },
+    ]);
+    await expect(pool.query(`INSERT INTO expression_asset
+      (id, type, format, version, file_name, sha256, width, height)
+      VALUES ('legacy', 'template', 'webp', 'v2', 'legacy.webp', $1, 1, 1)`, [
+      'c'.repeat(64),
+    ])).rejects.toThrow();
     await pool.end();
   });
 });
