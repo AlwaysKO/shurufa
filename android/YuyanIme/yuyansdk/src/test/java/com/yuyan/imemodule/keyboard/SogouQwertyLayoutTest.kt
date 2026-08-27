@@ -14,12 +14,12 @@ class SogouQwertyLayoutTest {
         assertEquals(0.5944f, SogouQwertyLayout.KEYBOARD_HEIGHT_TO_WIDTH_RATIO, 0.000001f)
         assertArrayEquals(
             floatArrayOf(0.0093f, 0.2586f, 0.5078f, 0.7570f),
-            SogouQwertyLayout.rowTops,
+            SogouQwertyLayout.visualRowTops.toFloatArray(),
             0.000001f,
         )
         assertArrayEquals(
             floatArrayOf(0.0093f, 0.0593f, 0.0093f, 0.0093f),
-            SogouQwertyLayout.rowStartXs,
+            SogouQwertyLayout.visualRowStartXs.toFloatArray(),
             0.000001f,
         )
     }
@@ -33,6 +33,19 @@ class SogouQwertyLayoutTest {
         assertEquals(0.24f, SogouQwertyLayout.ROW_HEIGHT, 0.000001f)
         assertEquals(0.055f, SogouQwertyLayout.SECOND_ROW_START_X, 0.000001f)
         assertTrue(SogouQwertyLayout.VISUAL_HORIZONTAL_GAP < SogouQwertyLayout.VISUAL_KEY_WIDTH)
+    }
+
+    @Test
+    fun `26键对外宽度快照不能改写全局规格`() {
+        val runtimeSnapshot = SogouQwertyLayout.bottomRowWidths as MutableList<Float>
+        val visualSnapshot = SogouQwertyLayout.visualBottomRowWidths as MutableList<Float>
+
+        runtimeSnapshot[0] = 0f
+        visualSnapshot[0] = 0f
+
+        assertEquals(0.15f, SogouQwertyLayout.bottomRowWidths.first(), 0.000001f)
+        assertEquals(0.1407f, SogouQwertyLayout.visualBottomRowWidths.first(), 0.000001f)
+        assertEquals(0.1407f, SogouQwertyLayout.rowGeometry.last().keys.first().width, 0.000001f)
     }
 
     @Test
@@ -52,14 +65,17 @@ class SogouQwertyLayoutTest {
             listOf(0.1407f) + List(7) { 0.0907f } + 0.1398f,
             listOf(0.1407f, 0.1130f, 0.0870f, 0.2519f, 0.0870f, 0.1130f, 0.1398f),
         )
+        val expectedLefts = listOf(
+            listOf(0.009300f, 0.108333f, 0.207366f, 0.306399f, 0.405432f, 0.504465f, 0.603498f, 0.702531f, 0.801564f, 0.900597f),
+            listOf(0.059300f, 0.158333f, 0.257366f, 0.356399f, 0.455432f, 0.554465f, 0.653498f, 0.752531f, 0.851564f),
+            listOf(0.009300f, 0.158333f, 0.257366f, 0.356399f, 0.455432f, 0.554465f, 0.653498f, 0.752531f, 0.851564f),
+            listOf(0.009300f, 0.158333f, 0.279666f, 0.374999f, 0.635232f, 0.730565f, 0.851898f),
+        )
         assertArrayEquals(intArrayOf(10, 9, 9, 7), SogouQwertyLayout.rowGeometry.map { it.keys.size }.toIntArray())
         SogouQwertyLayout.rowGeometry.forEachIndexed { rowIndex, row ->
-            assertEquals(SogouQwertyLayout.rowTops[rowIndex], row.top, 0.000001f)
+            assertEquals(SogouQwertyLayout.visualRowTops[rowIndex], row.top, 0.000001f)
             row.keys.forEachIndexed { keyIndex, key ->
-                val expectedLeft = SogouQwertyLayout.rowStartXs[rowIndex] +
-                    expectedWidths[rowIndex].take(keyIndex).sum() +
-                    SogouQwertyLayout.VISUAL_HORIZONTAL_GAP * keyIndex
-                assertEquals(expectedLeft, key.left, 0.000001f)
+                assertEquals(expectedLefts[rowIndex][keyIndex], key.left, 0.000001f)
                 assertEquals(expectedWidths[rowIndex][keyIndex], key.width, 0.000001f)
                 assertEquals(SogouQwertyLayout.VISUAL_KEY_HEIGHT, key.height, 0.000001f)
                 assertTrue(key.left >= 0f)
@@ -109,12 +125,12 @@ class SogouQwertyLayoutTest {
         )
         assertArrayEquals(
             floatArrayOf(0.1407f, 0.1130f, 0.0870f, 0.2519f, 0.0870f, 0.1130f, 0.1398f),
-            SogouQwertyLayout.officialBottomRowWidths,
+            SogouQwertyLayout.visualBottomRowWidths.toFloatArray(),
             0.000001f,
         )
         assertArrayEquals(
             floatArrayOf(0.15f, 0.12f, 0.095f, 0.26f, 0.095f, 0.12f, 0.15f),
-            SogouQwertyLayout.bottomRowWidths,
+            SogouQwertyLayout.bottomRowWidths.toFloatArray(),
             0.000001f,
         )
         assertEquals(0.991698f, SogouQwertyLayout.rowRightEdge(3), 0.000001f)

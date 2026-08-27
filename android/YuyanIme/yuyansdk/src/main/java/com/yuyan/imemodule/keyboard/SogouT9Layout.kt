@@ -44,35 +44,42 @@ object SogouT9Layout {
     const val X_MARGIN_SCALE = 0.7f
     const val Y_MARGIN_SCALE = 0.8f
 
-    val rowTops = floatArrayOf(0.0078f, 0.2570f, 0.5062f, 0.7555f)
-    val rowStartXs = floatArrayOf(MAIN_START_X, MAIN_START_X, MAIN_START_X, VISUAL_START_X)
+    private val visualRowTopValues = floatArrayOf(0.0078f, 0.2570f, 0.5062f, 0.7555f)
+    val visualRowTops: List<Float> get() = visualRowTopValues.toList()
+    private val visualRowStartXValues = floatArrayOf(MAIN_START_X, MAIN_START_X, MAIN_START_X, VISUAL_START_X)
+    val visualRowStartXs: List<Float> get() = visualRowStartXValues.toList()
     val candidateCodeView = NormalizedRect(
         x = VISUAL_START_X,
-        y = rowTops[0],
+        y = visualRowTopValues[0],
         width = VISUAL_RIGHT_COLUMN_WIDTH,
         height = VISUAL_CANDIDATE_HEIGHT,
     )
 
     /** KeyboardLoaderUtil 当前使用的连续列宽。 */
-    val columnWidths = floatArrayOf(SIDE_WIDTH, MAIN_WIDTH, MAIN_WIDTH, MAIN_WIDTH, SIDE_WIDTH)
-    val columnLeftEdges = columnWidths.runningFold(START_X) { left, width -> left + width }
+    private val runtimeColumnWidthValues = floatArrayOf(SIDE_WIDTH, MAIN_WIDTH, MAIN_WIDTH, MAIN_WIDTH, SIDE_WIDTH)
+    val columnWidths: List<Float> get() = runtimeColumnWidthValues.toList()
+    private val runtimeColumnLeftEdgeValues = runtimeColumnWidthValues.runningFold(START_X) { left, width -> left + width }
         .dropLast(1)
         .toFloatArray()
-    val columnRightEdges = columnWidths.runningFold(START_X) { left, width -> left + width }
+    val columnLeftEdges: List<Float> get() = runtimeColumnLeftEdgeValues.toList()
+    private val runtimeColumnRightEdgeValues = runtimeColumnWidthValues.runningFold(START_X) { left, width -> left + width }
         .drop(1)
         .toFloatArray()
+    val columnRightEdges: List<Float> get() = runtimeColumnRightEdgeValues.toList()
 
-    val officialColumnWidths = floatArrayOf(
+    private val visualColumnWidthValues = floatArrayOf(
         VISUAL_RIGHT_COLUMN_WIDTH,
         VISUAL_MAIN_KEY_WIDTH,
         VISUAL_MAIN_KEY_WIDTH,
         VISUAL_MAIN_KEY_WIDTH,
         VISUAL_RIGHT_COLUMN_WIDTH,
     )
-    val officialColumnRightEdges = officialColumnWidths
+    val visualColumnWidths: List<Float> get() = visualColumnWidthValues.toList()
+    private val visualColumnRightEdgeValues = visualColumnWidthValues
         .runningFold(VISUAL_START_X) { left, width -> left + width }
         .drop(1)
         .toFloatArray()
+    val visualColumnRightEdges: List<Float> get() = visualColumnRightEdgeValues.toList()
 
     val rightColumnCodes = intArrayOf(KeyEvent.KEYCODE_DEL, KeyEvent.KEYCODE_CLEAR, KeyEvent.KEYCODE_0)
     val keyRows = arrayOf(
@@ -94,47 +101,50 @@ object SogouT9Layout {
         InputModeSwitcher.USER_KEYCODE_LANG,
         KeyEvent.KEYCODE_ENTER,
     )
-    val officialBottomRowWidths = floatArrayOf(0.1694f, 0.1630f, 0.3241f, 0.1630f, 0.1694f)
+    private val visualBottomRowWidthValues = floatArrayOf(0.1694f, 0.1630f, 0.3241f, 0.1630f, 0.1694f)
+    val visualBottomRowWidths: List<Float> get() = visualBottomRowWidthValues.toList()
 
     /** KeyboardLoaderUtil 当前连续排列所需的运行时宽度。 */
-    val bottomRowWidths = floatArrayOf(0.17f, 0.165f, 0.32f, 0.165f, 0.17f)
+    private val runtimeBottomRowWidthValues = floatArrayOf(0.17f, 0.165f, 0.32f, 0.165f, 0.17f)
+    val bottomRowWidths: List<Float> get() = runtimeBottomRowWidthValues.toList()
 
-    val rowGeometry: List<RowGeometry> = buildKeyboardGeometry(
+    private val visualRowGeometry = buildKeyboardGeometry(
         listOf(
             RowGeometrySpec(
-                top = rowTops[0],
+                top = visualRowTopValues[0],
                 startX = MAIN_START_X,
                 keyWidths = List(3) { VISUAL_MAIN_KEY_WIDTH } + VISUAL_RIGHT_COLUMN_WIDTH,
                 keyHeight = VISUAL_MAIN_KEY_HEIGHT,
                 touchLeft = MAIN_START_X,
             ),
             RowGeometrySpec(
-                top = rowTops[1],
+                top = visualRowTopValues[1],
                 startX = MAIN_START_X,
                 keyWidths = List(3) { VISUAL_MAIN_KEY_WIDTH } + VISUAL_RIGHT_COLUMN_WIDTH,
                 keyHeight = VISUAL_MAIN_KEY_HEIGHT,
                 touchLeft = MAIN_START_X,
             ),
             RowGeometrySpec(
-                top = rowTops[2],
+                top = visualRowTopValues[2],
                 startX = MAIN_START_X,
                 keyWidths = List(3) { VISUAL_MAIN_KEY_WIDTH } + VISUAL_RIGHT_COLUMN_WIDTH,
                 keyHeight = VISUAL_MAIN_KEY_HEIGHT,
                 touchLeft = MAIN_START_X,
             ),
             RowGeometrySpec(
-                top = rowTops[3],
+                top = visualRowTopValues[3],
                 startX = VISUAL_START_X,
-                keyWidths = officialBottomRowWidths.toList(),
+                keyWidths = visualBottomRowWidthValues.toList(),
                 keyHeight = VISUAL_BOTTOM_ROW_HEIGHT,
             ),
         )
     )
+    val rowGeometry: List<RowGeometry> get() = visualRowGeometry.toList()
 
     val mainRowRightEdge: Float
-        get() = rowGeometry.first().keys.last().right
+        get() = visualRowGeometry.first().keys.last().right
     val bottomRowRightEdge: Float
-        get() = rowGeometry.last().keys.last().right
+        get() = visualRowGeometry.last().keys.last().right
 
     fun applyBottomRowGeometry(keys: List<SoftKey>) {
         require(keys.size == bottomRowWidths.size)

@@ -27,8 +27,10 @@ object SogouQwertyLayout {
     const val X_MARGIN_SCALE = 0.7f
     const val Y_MARGIN_SCALE = 0.9f
 
-    val rowTops = floatArrayOf(0.0093f, 0.2586f, 0.5078f, 0.7570f)
-    val rowStartXs = floatArrayOf(0.0093f, VISUAL_SECOND_ROW_START_X, 0.0093f, 0.0093f)
+    private val visualRowTopValues = floatArrayOf(0.0093f, 0.2586f, 0.5078f, 0.7570f)
+    val visualRowTops: List<Float> get() = visualRowTopValues.toList()
+    private val visualRowStartXValues = floatArrayOf(0.0093f, VISUAL_SECOND_ROW_START_X, 0.0093f, 0.0093f)
+    val visualRowStartXs: List<Float> get() = visualRowStartXValues.toList()
 
     val bottomRowCodes = intArrayOf(
         InputModeSwitcher.USER_KEYCODE_SYMBOL,
@@ -39,7 +41,7 @@ object SogouQwertyLayout {
         InputModeSwitcher.USER_KEYCODE_LANG,
         KeyEvent.KEYCODE_ENTER,
     )
-    val officialBottomRowWidths = floatArrayOf(
+    private val visualBottomRowWidthValues = floatArrayOf(
         0.1407f,
         0.1130f,
         0.0870f,
@@ -48,47 +50,50 @@ object SogouQwertyLayout {
         0.1130f,
         0.1398f,
     )
+    val visualBottomRowWidths: List<Float> get() = visualBottomRowWidthValues.toList()
 
     /** KeyboardLoaderUtil 当前连续排列所需的运行时宽度。 */
-    val bottomRowWidths = floatArrayOf(0.15f, 0.12f, 0.095f, 0.26f, 0.095f, 0.12f, 0.15f)
+    private val runtimeBottomRowWidthValues = floatArrayOf(0.15f, 0.12f, 0.095f, 0.26f, 0.095f, 0.12f, 0.15f)
+    val bottomRowWidths: List<Float> get() = runtimeBottomRowWidthValues.toList()
 
-    val rowGeometry: List<RowGeometry> = buildKeyboardGeometry(
+    private val visualRowGeometry = buildKeyboardGeometry(
         listOf(
             RowGeometrySpec(
-                top = rowTops[0],
-                startX = rowStartXs[0],
+                top = visualRowTopValues[0],
+                startX = visualRowStartXValues[0],
                 keyWidths = List(10) { VISUAL_KEY_WIDTH },
                 keyHeight = VISUAL_KEY_HEIGHT,
                 horizontalGap = VISUAL_HORIZONTAL_GAP,
             ),
             RowGeometrySpec(
-                top = rowTops[1],
-                startX = rowStartXs[1],
+                top = visualRowTopValues[1],
+                startX = visualRowStartXValues[1],
                 keyWidths = List(9) { VISUAL_KEY_WIDTH },
                 keyHeight = VISUAL_KEY_HEIGHT,
                 horizontalGap = VISUAL_HORIZONTAL_GAP,
             ),
             RowGeometrySpec(
-                top = rowTops[2],
-                startX = rowStartXs[2],
+                top = visualRowTopValues[2],
+                startX = visualRowStartXValues[2],
                 keyWidths = listOf(VISUAL_SHIFT_WIDTH) + List(7) { VISUAL_KEY_WIDTH } + VISUAL_DELETE_WIDTH,
                 keyHeight = VISUAL_KEY_HEIGHT,
                 horizontalGap = VISUAL_HORIZONTAL_GAP,
             ),
             RowGeometrySpec(
-                top = rowTops[3],
-                startX = rowStartXs[3],
-                keyWidths = officialBottomRowWidths.toList(),
+                top = visualRowTopValues[3],
+                startX = visualRowStartXValues[3],
+                keyWidths = visualBottomRowWidthValues.toList(),
                 keyHeight = VISUAL_KEY_HEIGHT,
                 horizontalGap = VISUAL_HORIZONTAL_GAP,
             ),
         )
     )
+    val rowGeometry: List<RowGeometry> get() = visualRowGeometry.toList()
 
     /** 按 26.ini 的 H_OFFSET、键宽和 H_GAP_QWERTY 计算指定行的右边界。 */
     fun rowRightEdge(rowIndex: Int): Float {
-        require(rowIndex in rowGeometry.indices) { "rowIndex must be in ${rowGeometry.indices}" }
-        return rowGeometry[rowIndex].keys.last().right
+        require(rowIndex in visualRowGeometry.indices) { "rowIndex must be in ${visualRowGeometry.indices}" }
+        return visualRowGeometry[rowIndex].keys.last().right
     }
 
     fun createVoiceSpaceKey() = SoftKey(code = KeyEvent.KEYCODE_SPACE).apply {

@@ -16,12 +16,12 @@ class SogouT9LayoutTest {
         assertEquals(0.5944f, SogouT9Layout.KEYBOARD_HEIGHT_TO_WIDTH_RATIO, 0.000001f)
         assertArrayEquals(
             floatArrayOf(0.0078f, 0.2570f, 0.5062f, 0.7555f),
-            SogouT9Layout.rowTops,
+            SogouT9Layout.visualRowTops.toFloatArray(),
             0.000001f,
         )
         assertArrayEquals(
             floatArrayOf(0.1750f, 0.1750f, 0.1750f, 0.0056f),
-            SogouT9Layout.rowStartXs,
+            SogouT9Layout.visualRowStartXs.toFloatArray(),
             0.000001f,
         )
     }
@@ -32,7 +32,7 @@ class SogouT9LayoutTest {
         assertEquals(0.24922f, SogouT9Layout.VISUAL_MAIN_KEY_HEIGHT, 0.000001f)
         assertEquals(0.1694f, SogouT9Layout.VISUAL_RIGHT_COLUMN_WIDTH, 0.000001f)
         assertEquals(0.9945f, SogouT9Layout.mainRowRightEdge, 0.000001f)
-        assertEquals(0.9945f, SogouT9Layout.officialColumnRightEdges.last(), 0.000001f)
+        assertEquals(0.9945f, SogouT9Layout.visualColumnRightEdges.last(), 0.000001f)
     }
 
     @Test
@@ -44,9 +44,22 @@ class SogouT9LayoutTest {
         assertEquals(0.735f, SogouT9Layout.SIDE_HEIGHT, 0.000001f)
         assertArrayEquals(
             floatArrayOf(0.17f, 0.165f, 0.32f, 0.165f, 0.17f),
-            SogouT9Layout.bottomRowWidths,
+            SogouT9Layout.bottomRowWidths.toFloatArray(),
             0.000001f,
         )
+    }
+
+    @Test
+    fun `九宫格对外宽度快照不能改写全局规格`() {
+        val runtimeSnapshot = SogouT9Layout.bottomRowWidths as MutableList<Float>
+        val visualSnapshot = SogouT9Layout.visualBottomRowWidths as MutableList<Float>
+
+        runtimeSnapshot[0] = 0f
+        visualSnapshot[0] = 0f
+
+        assertEquals(0.17f, SogouT9Layout.bottomRowWidths.first(), 0.000001f)
+        assertEquals(0.1694f, SogouT9Layout.visualBottomRowWidths.first(), 0.000001f)
+        assertEquals(0.1694f, SogouT9Layout.rowGeometry.last().keys.first().width, 0.000001f)
     }
 
     @Test
@@ -67,15 +80,17 @@ class SogouT9LayoutTest {
             List(3) { 0.2167f } + 0.1694f,
             listOf(0.1694f, 0.1630f, 0.3241f, 0.1630f, 0.1694f),
         )
+        val expectedLefts = listOf(
+            listOf(0.1750f, 0.3917f, 0.6084f, 0.8251f),
+            listOf(0.1750f, 0.3917f, 0.6084f, 0.8251f),
+            listOf(0.1750f, 0.3917f, 0.6084f, 0.8251f),
+            listOf(0.0056f, 0.1750f, 0.3380f, 0.6621f, 0.8251f),
+        )
         assertArrayEquals(intArrayOf(4, 4, 4, 5), SogouT9Layout.rowGeometry.map { it.keys.size }.toIntArray())
         SogouT9Layout.rowGeometry.forEachIndexed { rowIndex, row ->
-            assertEquals(SogouT9Layout.rowTops[rowIndex], row.top, 0.000001f)
+            assertEquals(SogouT9Layout.visualRowTops[rowIndex], row.top, 0.000001f)
             row.keys.forEachIndexed { keyIndex, key ->
-                assertEquals(
-                    SogouT9Layout.rowStartXs[rowIndex] + expectedWidths[rowIndex].take(keyIndex).sum(),
-                    key.left,
-                    0.000001f,
-                )
+                assertEquals(expectedLefts[rowIndex][keyIndex], key.left, 0.000001f)
                 assertEquals(expectedWidths[rowIndex][keyIndex], key.width, 0.000001f)
                 assertTrue(key.left >= 0f)
                 assertTrue(key.right <= 1f)
@@ -129,7 +144,7 @@ class SogouT9LayoutTest {
         )
         assertArrayEquals(
             floatArrayOf(0.1694f, 0.1630f, 0.3241f, 0.1630f, 0.1694f),
-            SogouT9Layout.officialBottomRowWidths,
+            SogouT9Layout.visualBottomRowWidths.toFloatArray(),
             0.000001f,
         )
         assertEquals(0.2368f, SogouT9Layout.VISUAL_BOTTOM_ROW_HEIGHT, 0.000001f)
