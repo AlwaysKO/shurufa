@@ -6,6 +6,7 @@ import android.graphics.Rect
 import com.yuyan.imemodule.expression.model.ExpressionTextLayout
 import com.yuyan.imemodule.expression.model.ExpressionTextSafeArea
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -42,6 +43,24 @@ class TextLayoutCalculatorTest {
         val result = TextLayoutCalculator().calculate("长文本需要安全换行", safeArea, layout)
 
         assertTrue(result.lines.size in 1..layout.maxLines)
+        assertTrue(result.lines.all { line ->
+            line.left >= safeArea.left &&
+                line.right <= safeArea.right &&
+                line.top >= safeArea.top &&
+                line.bottom <= safeArea.bottom
+        })
+    }
+
+    @Test
+    fun `最长查询在最小字号放不下时继续缩放且不截字`() {
+        val query = "生".repeat(100)
+        val safeArea = Rect(0, 0, 80, 40)
+
+        val result = TextLayoutCalculator().calculate(query, safeArea, layout)
+
+        assertEquals(query, result.lines.joinToString("") { it.text })
+        assertTrue(result.fontSize < layout.minFontSize)
+        assertTrue(result.lines.size <= layout.maxLines)
         assertTrue(result.lines.all { line ->
             line.left >= safeArea.left &&
                 line.right <= safeArea.right &&

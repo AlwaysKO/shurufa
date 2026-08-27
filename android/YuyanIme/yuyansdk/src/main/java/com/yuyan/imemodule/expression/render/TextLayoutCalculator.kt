@@ -31,7 +31,7 @@ class TextLayoutCalculator {
         require(safeArea.width() > 0 && safeArea.height() > 0) { "safe area must not be empty" }
 
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-        for (size in layout.maxFontSize downTo layout.minFontSize) {
+        for (size in layout.maxFontSize downTo 1) {
             paint.textSize = size.toFloat()
             val lines = wrap(text, paint, safeArea.width().toFloat(), layout.maxLines)
             val metrics = paint.fontMetrics
@@ -41,8 +41,7 @@ class TextLayoutCalculator {
             }
         }
 
-        paint.textSize = layout.minFontSize.toFloat()
-        return position(wrap(text, paint, safeArea.width().toFloat(), layout.maxLines), paint, safeArea, layout.alignment)
+        error("text cannot fit inside safe area without truncation")
     }
 
     private fun wrap(text: String, paint: Paint, maxWidth: Float, maxLines: Int): List<String> {
