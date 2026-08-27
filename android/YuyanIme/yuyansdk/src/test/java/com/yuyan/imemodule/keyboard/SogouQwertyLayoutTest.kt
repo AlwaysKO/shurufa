@@ -5,6 +5,7 @@ import com.yuyan.imemodule.entity.keyboard.LongPressAction
 import com.yuyan.imemodule.manager.InputModeSwitcher
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -37,15 +38,24 @@ class SogouQwertyLayoutTest {
 
     @Test
     fun `26键对外宽度快照不能改写全局规格`() {
-        val runtimeSnapshot = SogouQwertyLayout.bottomRowWidths as MutableList<Float>
-        val visualSnapshot = SogouQwertyLayout.visualBottomRowWidths as MutableList<Float>
+        val runtimeSnapshot = SogouQwertyLayout.bottomRowWidths
+        val visualSnapshot = SogouQwertyLayout.visualBottomRowWidths
 
-        runtimeSnapshot[0] = 0f
-        visualSnapshot[0] = 0f
+        assertNotSame(runtimeSnapshot, SogouQwertyLayout.bottomRowWidths)
+        assertNotSame(visualSnapshot, SogouQwertyLayout.visualBottomRowWidths)
 
         assertEquals(0.15f, SogouQwertyLayout.bottomRowWidths.first(), 0.000001f)
         assertEquals(0.1407f, SogouQwertyLayout.visualBottomRowWidths.first(), 0.000001f)
         assertEquals(0.1407f, SogouQwertyLayout.rowGeometry.last().keys.first().width, 0.000001f)
+    }
+
+    @Test
+    fun `26键键码副本不能改写全局规格`() {
+        val codes = SogouQwertyLayout.bottomRowCodes
+
+        codes[0] = KeyEvent.KEYCODE_UNKNOWN
+
+        assertEquals(InputModeSwitcher.USER_KEYCODE_SYMBOL, SogouQwertyLayout.bottomRowCodes[0])
     }
 
     @Test

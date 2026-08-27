@@ -7,6 +7,7 @@ import com.yuyan.imemodule.entity.keyboard.SoftKey
 import com.yuyan.imemodule.manager.InputModeSwitcher
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -51,15 +52,32 @@ class SogouT9LayoutTest {
 
     @Test
     fun `九宫格对外宽度快照不能改写全局规格`() {
-        val runtimeSnapshot = SogouT9Layout.bottomRowWidths as MutableList<Float>
-        val visualSnapshot = SogouT9Layout.visualBottomRowWidths as MutableList<Float>
+        val runtimeSnapshot = SogouT9Layout.bottomRowWidths
+        val visualSnapshot = SogouT9Layout.visualBottomRowWidths
 
-        runtimeSnapshot[0] = 0f
-        visualSnapshot[0] = 0f
+        assertNotSame(runtimeSnapshot, SogouT9Layout.bottomRowWidths)
+        assertNotSame(visualSnapshot, SogouT9Layout.visualBottomRowWidths)
 
         assertEquals(0.17f, SogouT9Layout.bottomRowWidths.first(), 0.000001f)
         assertEquals(0.1694f, SogouT9Layout.visualBottomRowWidths.first(), 0.000001f)
         assertEquals(0.1694f, SogouT9Layout.rowGeometry.last().keys.first().width, 0.000001f)
+    }
+
+    @Test
+    fun `九宫格键码与行副本不能改写全局规格`() {
+        val rightCodes = SogouT9Layout.rightColumnCodes
+        val bottomCodes = SogouT9Layout.bottomRowCodes
+        val rows = SogouT9Layout.keyRows
+
+        rightCodes[0] = KeyEvent.KEYCODE_UNKNOWN
+        bottomCodes[0] = KeyEvent.KEYCODE_UNKNOWN
+        rows[0][0] = KeyEvent.KEYCODE_UNKNOWN
+        rows[1] = intArrayOf(KeyEvent.KEYCODE_UNKNOWN)
+
+        assertEquals(KeyEvent.KEYCODE_DEL, SogouT9Layout.rightColumnCodes[0])
+        assertEquals(InputModeSwitcher.USER_KEYCODE_SYMBOL, SogouT9Layout.bottomRowCodes[0])
+        assertEquals(InputModeSwitcher.USER_KEYCODE_LEFT_SYMBOL, SogouT9Layout.keyRows[0][0])
+        assertEquals(4, SogouT9Layout.keyRows[1].size)
     }
 
     @Test

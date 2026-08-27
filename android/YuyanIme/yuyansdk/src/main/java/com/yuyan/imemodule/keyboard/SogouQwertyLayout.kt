@@ -32,7 +32,8 @@ object SogouQwertyLayout {
     private val visualRowStartXValues = floatArrayOf(0.0093f, VISUAL_SECOND_ROW_START_X, 0.0093f, 0.0093f)
     val visualRowStartXs: List<Float> get() = visualRowStartXValues.toList()
 
-    val bottomRowCodes = intArrayOf(
+    /** 运行时键码保存在私有真值中，对外始终返回防御副本。 */
+    private val bottomRowCodeValues = intArrayOf(
         InputModeSwitcher.USER_KEYCODE_SYMBOL,
         InputModeSwitcher.USER_KEYCODE_NUMBER,
         InputModeSwitcher.USER_KEYCODE_LEFT_COMMA,
@@ -41,6 +42,7 @@ object SogouQwertyLayout {
         InputModeSwitcher.USER_KEYCODE_LANG,
         KeyEvent.KEYCODE_ENTER,
     )
+    val bottomRowCodes: IntArray get() = bottomRowCodeValues.copyOf()
     private val visualBottomRowWidthValues = floatArrayOf(
         0.1407f,
         0.1130f,

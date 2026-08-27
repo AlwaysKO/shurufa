@@ -81,26 +81,30 @@ object SogouT9Layout {
         .toFloatArray()
     val visualColumnRightEdges: List<Float> get() = visualColumnRightEdgeValues.toList()
 
-    val rightColumnCodes = intArrayOf(KeyEvent.KEYCODE_DEL, KeyEvent.KEYCODE_CLEAR, KeyEvent.KEYCODE_0)
-    val keyRows = arrayOf(
+    /** 运行时键码保存在私有真值中，对外始终返回防御副本。 */
+    private val rightColumnCodeValues = intArrayOf(KeyEvent.KEYCODE_DEL, KeyEvent.KEYCODE_CLEAR, KeyEvent.KEYCODE_0)
+    val rightColumnCodes: IntArray get() = rightColumnCodeValues.copyOf()
+    private val keyRowValues = arrayOf(
         intArrayOf(
             InputModeSwitcher.USER_KEYCODE_LEFT_SYMBOL,
             KeyEvent.KEYCODE_APOSTROPHE,
             KeyEvent.KEYCODE_A,
             KeyEvent.KEYCODE_D,
-            rightColumnCodes[0],
+            rightColumnCodeValues[0],
         ),
-        intArrayOf(KeyEvent.KEYCODE_G, KeyEvent.KEYCODE_J, KeyEvent.KEYCODE_M, rightColumnCodes[1]),
-        intArrayOf(KeyEvent.KEYCODE_P, KeyEvent.KEYCODE_T, KeyEvent.KEYCODE_W, rightColumnCodes[2]),
+        intArrayOf(KeyEvent.KEYCODE_G, KeyEvent.KEYCODE_J, KeyEvent.KEYCODE_M, rightColumnCodeValues[1]),
+        intArrayOf(KeyEvent.KEYCODE_P, KeyEvent.KEYCODE_T, KeyEvent.KEYCODE_W, rightColumnCodeValues[2]),
     )
+    val keyRows: Array<IntArray> get() = Array(keyRowValues.size) { index -> keyRowValues[index].copyOf() }
 
-    val bottomRowCodes = intArrayOf(
+    private val bottomRowCodeValues = intArrayOf(
         InputModeSwitcher.USER_KEYCODE_SYMBOL,
         InputModeSwitcher.USER_KEYCODE_NUMBER,
         KeyEvent.KEYCODE_SPACE,
         InputModeSwitcher.USER_KEYCODE_LANG,
         KeyEvent.KEYCODE_ENTER,
     )
+    val bottomRowCodes: IntArray get() = bottomRowCodeValues.copyOf()
     private val visualBottomRowWidthValues = floatArrayOf(0.1694f, 0.1630f, 0.3241f, 0.1630f, 0.1694f)
     val visualBottomRowWidths: List<Float> get() = visualBottomRowWidthValues.toList()
 
