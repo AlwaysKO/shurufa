@@ -34,7 +34,9 @@ data class ExpressionLayoutMetrics(
             val horizontalPaddingPx = px(paddingDp)
             val expandedItemSizePx = (
                 widthPx - horizontalPaddingPx * 2 - itemGapPx * (EXPANDED_COLUMNS - 1)
-            ).coerceAtLeast(EXPANDED_COLUMNS) / EXPANDED_COLUMNS
+            ).coerceAtLeast(EXPANDED_COLUMNS)
+                .div(EXPANDED_COLUMNS)
+                .coerceAtMost(px(if (landscape) 120f else 160f))
             val visibleItemCount =
                 (widthPx - horizontalPaddingPx + itemGapPx).toFloat() /
                     (itemSizePx + itemGapPx)

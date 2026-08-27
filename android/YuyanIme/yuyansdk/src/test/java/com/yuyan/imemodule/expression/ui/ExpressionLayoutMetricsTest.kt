@@ -38,6 +38,8 @@ class ExpressionLayoutMetricsTest {
         assertTrue(normal.itemSizePx > small.itemSizePx)
         assertTrue(tablet.itemSizePx / 2f <= 84f)
         assertTrue(landscape.itemSizePx / 3.25f <= 76f)
+        assertTrue(tablet.expandedItemSizePx / 2f <= 160f)
+        assertTrue(landscape.expandedItemSizePx / 3.25f <= 120f)
         assertTrue(listOf(small, normal, tablet, landscape).all {
             it.itemGapPx > 0 && it.horizontalPaddingPx > 0 && it.expandedItemSizePx > 0
         })
