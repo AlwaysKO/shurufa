@@ -42,11 +42,27 @@ class ChatEditorGateTest {
     fun `聊天应用排除搜索密码邮箱网址和普通单行框`() {
         val packageName = "com.tencent.mm"
         assertFalse(gate.allows(packageName, editor(imeOptions = EditorInfo.IME_ACTION_SEARCH)))
-        assertFalse(gate.allows(packageName, editor(InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD)))
-        assertFalse(gate.allows(packageName, editor(InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD)))
-        assertFalse(gate.allows(packageName, editor(InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD)))
-        assertFalse(gate.allows(packageName, editor(InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS)))
-        assertFalse(gate.allows(packageName, editor(InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI)))
+        val blockedVariations = listOf(
+            InputType.TYPE_TEXT_VARIATION_PASSWORD,
+            InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD,
+            InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD,
+            InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS,
+            InputType.TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS,
+            InputType.TYPE_TEXT_VARIATION_URI,
+        )
+        blockedVariations.forEach { variation ->
+            assertFalse(
+                "variation=$variation",
+                gate.allows(
+                    packageName,
+                    editor(
+                        inputType = InputType.TYPE_CLASS_TEXT or variation or
+                            InputType.TYPE_TEXT_FLAG_MULTI_LINE,
+                        imeOptions = EditorInfo.IME_ACTION_SEND,
+                    ),
+                ),
+            )
+        }
         assertFalse(gate.allows(packageName, editor()))
     }
 
