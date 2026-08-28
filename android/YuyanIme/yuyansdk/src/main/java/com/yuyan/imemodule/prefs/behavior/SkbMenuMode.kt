@@ -36,7 +36,10 @@ enum class SkbMenuMode {
     Emoticon,
     LockClipBoard,
     TextEdit,
-    Voice;
+    Voice,
+    // 菜单动作按 name 持久化；新值只追加，兼容可能仍读取 ordinal 的外部调用方。
+    QuickKeyboard,
+    AiDoutu;
 
     companion object : ManagedPreference.StringLikeCodec<SkbMenuMode> {
         override fun decode(raw: String): SkbMenuMode =

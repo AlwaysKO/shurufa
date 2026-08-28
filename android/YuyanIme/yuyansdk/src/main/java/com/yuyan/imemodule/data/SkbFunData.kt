@@ -3,7 +3,9 @@ package com.yuyan.imemodule.data
 import com.yuyan.imemodule.R
 import com.yuyan.imemodule.application.Launcher
 import com.yuyan.imemodule.entity.SkbFunItem
+import com.yuyan.imemodule.keyboard.KeyboardToolbarModel
 import com.yuyan.imemodule.prefs.behavior.SkbMenuMode
+import java.util.ArrayDeque
 
 val menuSkbFunsPreset: Map<SkbMenuMode, SkbFunItem> = hashMapOf(
     SkbMenuMode.Emojicon to SkbFunItem(Launcher.instance.context.getString(R.string.emoji_setting), R.drawable.ic_menu_emoji, SkbMenuMode.Emojicon),
@@ -28,4 +30,23 @@ val menuSkbFunsPreset: Map<SkbMenuMode, SkbFunItem> = hashMapOf(
     SkbMenuMode.LockClipBoard to SkbFunItem(Launcher.instance.context.getString(R.string.lock_view), R.drawable.icon_symbol_lock, SkbMenuMode.LockClipBoard),
     SkbMenuMode.TextEdit to SkbFunItem(Launcher.instance.context.getString(R.string.menu_text_edit), R.drawable.ic_menu_cursor_icon, SkbMenuMode.TextEdit),
     SkbMenuMode.Voice to SkbFunItem(Launcher.instance.context.getString(R.string.voice_input), R.drawable.ic_menu_voice, SkbMenuMode.Voice),
-    )
+    SkbMenuMode.Handwriting to SkbFunItem(Launcher.instance.context.getString(R.string.ime_settings_handwriting), R.drawable.ic_menu_handwriting, SkbMenuMode.Handwriting),
+    SkbMenuMode.PinyinHandWriting to SkbFunItem(Launcher.instance.context.getString(R.string.keyboard_name_hand), R.drawable.ic_menu_handwriting, SkbMenuMode.PinyinHandWriting),
+    SkbMenuMode.QuickKeyboard to SkbFunItem(Launcher.instance.context.getString(R.string.quick_keyboard_theme), R.drawable.ic_menu_quick_keyboard, SkbMenuMode.QuickKeyboard),
+    SkbMenuMode.AiDoutu to SkbFunItem(Launcher.instance.context.getString(R.string.ai_sticker_search), R.drawable.ic_menu_ai_sticker_search, SkbMenuMode.AiDoutu),
+)
+
+/**
+ * 将数据库工具项映射到纯 Kotlin 工具栏规格，同时保留非固定项的原对象和重复语义。
+ */
+fun mergeKeyboardToolbarItems(existing: List<SkbFunItem>): List<SkbFunItem> {
+    val itemsByMode = mutableMapOf<SkbMenuMode, ArrayDeque<SkbFunItem>>()
+    existing.forEach { item ->
+        itemsByMode.getOrPut(item.skbMenuMode, ::ArrayDeque).addLast(item)
+    }
+    return KeyboardToolbarModel.merge(existing.map(SkbFunItem::skbMenuMode)).map { mode ->
+        itemsByMode[mode]?.pollFirst() ?: requireNotNull(menuSkbFunsPreset[mode]) {
+            "Missing toolbar preset for ${mode.name}"
+        }
+    }
+}

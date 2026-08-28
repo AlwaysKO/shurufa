@@ -194,6 +194,8 @@
     <string name="voice_input_working">正在聆听…</string>
     <string name="voice_input_no_service">未检测到语音识别服务</string>
     <string name="voice_input_error">语音识别失败，请重试</string>
+    <string name="quick_keyboard_theme">键盘与主题</string>
+    <string name="ai_sticker_search">AI斗图</string>
 
     <string name="half_width_symbols_tips">区分半角符号提示</string>
     <string name="half_width_symbols_tips_all">全部</string>
