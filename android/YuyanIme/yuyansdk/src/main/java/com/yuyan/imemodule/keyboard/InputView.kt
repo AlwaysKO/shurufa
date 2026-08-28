@@ -6,6 +6,7 @@ import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
+import android.util.DisplayMetrics
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -13,6 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
 import android.view.WindowInsetsController
+import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -634,10 +636,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     internal fun refreshExpressionLayoutBudget() {
         if (!::expressionPanel.isInitialized) return
         val env = EnvironmentSingleton.instance
-        val hostHeight = rootView
-            .takeIf { it !== this && it.height > 0 }
-            ?.height
-            ?: maxOf(resources.displayMetrics.heightPixels, env.mScreenHeight)
+        val viewportHeight = stableExpressionViewportHeight(env)
         val candidates = mSkbRoot.findViewById<View>(R.id.candidates_bar)
         val keyboard = mSkbRoot.findViewById<View>(R.id.skb_input_keyboard_view)
         val measuredInputArea = if (candidates.measuredHeight > 0 && keyboard.measuredHeight > 0) {
@@ -655,7 +654,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         val reserved = (measuredInputArea.toLong() + holderHeight + ordinaryRootPadding +
             floatingOffsetPadding).coerceIn(0L, Int.MAX_VALUE.toLong()).toInt()
         expressionLayoutBudget = ExpressionLayoutBudget(
-            availableHeightPx = hostHeight.coerceAtLeast(0),
+            availableHeightPx = viewportHeight,
             reservedNonPanelHeightPx = reserved,
             navigationInsetBottomPx = env.systemNavbarWindowsBottom.coerceAtLeast(0),
         )
@@ -663,6 +662,30 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             availableHeightPx = expressionLayoutBudget.availableHeightPx,
             reservedKeyboardHeightPx = expressionLayoutBudget.reservedNonPanelHeightPx,
         )
+    }
+
+    /**
+     * 视口必须独立于 WRAP_CONTENT 的 IME 层级，否则上一次面板高度会反向成为下一轮上限。
+     * 底部导航区由 holder 在 reserved 中计数，因此这里只扣顶部状态栏和上下刘海，避免导航重复扣减。
+     */
+    private fun stableExpressionViewportHeight(env: EnvironmentSingleton): Int {
+        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as? WindowManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && windowManager != null) {
+            val viewport = runCatching {
+                val metrics = windowManager.currentWindowMetrics
+                val obstruction = metrics.windowInsets.getInsetsIgnoringVisibility(
+                    WindowInsets.Type.statusBars() or WindowInsets.Type.displayCutout(),
+                )
+                metrics.bounds.height() - obstruction.top - obstruction.bottom
+            }.getOrNull()
+            if (viewport != null && viewport > 0) return viewport
+        }
+        if (windowManager != null) {
+            @Suppress("DEPRECATION")
+            val realMetrics = DisplayMetrics().also(windowManager.defaultDisplay::getRealMetrics)
+            if (realMetrics.heightPixels > 0) return realMetrics.heightPixels
+        }
+        return maxOf(resources.displayMetrics.heightPixels, env.mScreenHeight).coerceAtLeast(0)
     }
 
     private fun scheduleExpressionLayoutBudgetRefresh() {

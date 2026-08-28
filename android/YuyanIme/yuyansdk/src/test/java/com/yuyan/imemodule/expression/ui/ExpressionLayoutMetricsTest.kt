@@ -22,7 +22,7 @@ class ExpressionLayoutMetricsTest {
         assertTrue(metrics.visibleItemCount in 4.1f..4.4f)
         assertEquals((36f * density).roundToInt(), metrics.tabRowHeightPx)
         assertEquals((96f * density).roundToInt(), metrics.contentHeightPx)
-        assertEquals((34f * density).roundToInt(), metrics.toolRowHeightPx)
+        assertEquals((44f * density).roundToInt(), metrics.toolRowHeightPx)
         assertEquals((79f * density).roundToInt(), metrics.actionWidthPx)
         assertEquals((28f * density).roundToInt(), metrics.actionHeightPx)
     }
@@ -41,8 +41,8 @@ class ExpressionLayoutMetricsTest {
             landscape.compactPanelHeightPx,
         )
         assertTrue(landscape.compactPanelHeightPx < portrait.compactPanelHeightPx)
-        assertTrue(portrait.compactPanelHeightPx <= (166f * 3f).roundToInt())
-        assertTrue(landscape.compactPanelHeightPx <= (146f * 3f).roundToInt())
+        assertTrue(portrait.compactPanelHeightPx <= (176f * 3f).roundToInt())
+        assertTrue(landscape.compactPanelHeightPx <= (160f * 3f).roundToInt())
     }
 
     @Test
@@ -73,10 +73,26 @@ class ExpressionLayoutMetricsTest {
             reservedKeyboardHeightPx = 600,
         )
 
-        assertTrue(metrics.compactPanelHeightPx <= 120)
+        assertEquals(132, metrics.compactPanelHeightPx)
         assertTrue(metrics.tabRowHeightPx >= 0)
         assertTrue(metrics.toolRowHeightPx >= 0)
         assertTrue(metrics.contentHeightPx >= 0)
+    }
+
+    @Test
+    fun `极端高度仍保护四十四dp工具入口且只允许这一可访问高度溢出`() {
+        val metrics = ExpressionLayoutMetrics.calculate(
+            widthPx = 1080,
+            density = 3f,
+            landscape = false,
+            availableHeightPx = 610,
+            reservedKeyboardHeightPx = 600,
+        )
+
+        assertEquals(132, metrics.toolRowHeightPx)
+        assertEquals(132, metrics.compactPanelHeightPx)
+        assertEquals(0, metrics.tabRowHeightPx)
+        assertEquals(0, metrics.contentHeightPx)
     }
 
     @Test
@@ -89,7 +105,7 @@ class ExpressionLayoutMetricsTest {
             reservedKeyboardHeightPx = 900,
         )
 
-        assertEquals((166f * 3f).roundToInt(), metrics.compactPanelHeightPx)
+        assertEquals((176f * 3f).roundToInt(), metrics.compactPanelHeightPx)
         assertTrue(metrics.compactPanelHeightPx <= metrics.maximumCompactPanelHeightPx)
         assertTrue(metrics.minimumCompactPanelHeightPx <= metrics.compactPanelHeightPx)
     }

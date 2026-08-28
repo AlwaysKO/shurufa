@@ -617,6 +617,58 @@ class ExpressionManualSearchInputViewTest {
     }
 
     @Test
+    fun `WRAP_CONTENT宿主连续十轮布局不会反馈压扁工具入口且结果面板可恢复`() {
+        AppPrefs.getInstance().internal.aiStickerEnabled.setValue(true)
+        EnvironmentSingleton.instance.initData(context)
+        val inputView = realChatInputView()
+        val host = FrameLayout(context).apply {
+            addView(
+                inputView,
+                FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.WRAP_CONTENT,
+                ),
+            )
+        }
+        val panel = inputView.findViewById<ExpressionPanel>(R.id.expression_panel)
+        val tool = inputView.findViewById<View>(R.id.expression_enable)
+        val minimumTouch = (44f * context.resources.displayMetrics.density).toInt()
+
+        val toolHeights = repeatWrapLayouts(host, inputView, panel)
+
+        assertEquals(1, toolHeights.toSet().size)
+        assertTrue(toolHeights.first() >= minimumTouch)
+        assertTrue(tool.minimumHeight >= minimumTouch)
+        val stableViewport = inputView.expressionLayoutBudget.availableHeightPx
+
+        inputView.expressionState().apply {
+            beginQuery("恢复", 902)
+            applyResults(
+                902,
+                listOf(
+                    ExpressionAsset(
+                        id = "wrap-result",
+                        type = "prebuilt",
+                        format = "webp",
+                        version = "v1",
+                        fileName = "wrap.webp",
+                        sha256 = "c".repeat(64),
+                        width = 128,
+                        height = 128,
+                    ),
+                ),
+            )
+        }
+        panel.render(inputView.expressionState(), ExpressionCatalog.fromAssets(context))
+        val resultHeights = repeatWrapLayouts(host, inputView, panel)
+
+        assertEquals(1, resultHeights.toSet().size)
+        assertTrue(resultHeights.first() > toolHeights.first())
+        assertEquals(stableViewport, inputView.expressionLayoutBudget.availableHeightPx)
+        assertTrue(resultHeights.first() + inputView.expressionLayoutBudget.reservedNonPanelHeightPx <= stableViewport)
+    }
+
+    @Test
     fun `生产面板关闭恢复保留查询结果且返回先折叠展开态`() {
         val inputView = realChatInputView()
         val state = inputView.expressionState()
@@ -691,6 +743,22 @@ class ExpressionManualSearchInputViewTest {
                 .build(),
         )
         Shadows.shadowOf(Looper.getMainLooper()).idle()
+    }
+
+    private fun repeatWrapLayouts(
+        host: FrameLayout,
+        inputView: InputView,
+        panel: ExpressionPanel,
+    ): List<Int> = buildList {
+        repeat(10) {
+            host.measure(
+                View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(2000, View.MeasureSpec.AT_MOST),
+            )
+            host.layout(0, 0, host.measuredWidth, host.measuredHeight)
+            inputView.refreshExpressionLayoutBudget()
+            add(panel.layoutParams.height)
+        }
     }
 
     private fun InputView.compactExpressionHeight(): Int =

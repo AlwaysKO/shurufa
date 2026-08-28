@@ -54,7 +54,8 @@ data class ExpressionLayoutMetrics(
 
             val desiredTabHeightPx = px(if (landscape) 32f else 36f)
             val desiredContentHeightPx = px(if (landscape) 84f else 96f)
-            val desiredToolHeightPx = px(if (landscape) 30f else 34f)
+            // 恢复入口是面板在无结果/关闭态的唯一入口，必须始终保留可访问触摸高度。
+            val desiredToolHeightPx = px(MINIMUM_TOOL_HEIGHT_DP)
             val designedMaximumHeightPx =
                 desiredTabHeightPx + desiredContentHeightPx + desiredToolHeightPx
             val designedMinimumHeightPx =
@@ -64,20 +65,19 @@ data class ExpressionLayoutMetrics(
             } else {
                 (availableHeightPx - reservedKeyboardHeightPx).coerceAtLeast(0)
             }
-            val maximumCompactHeightPx = minOf(designedMaximumHeightPx, heightBudgetPx)
+            // 当整个视口连 44dp 都放不下时，宁可仅让工具入口溢出，也不能把恢复入口压没。
+            val maximumCompactHeightPx = minOf(
+                designedMaximumHeightPx,
+                maxOf(heightBudgetPx, desiredToolHeightPx),
+            )
             val minimumCompactHeightPx = minOf(designedMinimumHeightPx, maximumCompactHeightPx)
             val compactHeightPx = maximumCompactHeightPx
 
-            val desiredFixedRowsHeight = desiredTabHeightPx + desiredToolHeightPx
-            val (tabRowHeightPx, toolRowHeightPx) = if (compactHeightPx >= desiredFixedRowsHeight) {
-                desiredTabHeightPx to desiredToolHeightPx
-            } else if (compactHeightPx == 0) {
-                0 to 0
-            } else {
-                val tab = (compactHeightPx.toLong() * desiredTabHeightPx / desiredFixedRowsHeight)
-                    .toInt()
-                tab to compactHeightPx - tab
-            }
+            val toolRowHeightPx = desiredToolHeightPx
+            val tabRowHeightPx = minOf(
+                desiredTabHeightPx,
+                (compactHeightPx - toolRowHeightPx).coerceAtLeast(0),
+            )
             val contentHeightPx =
                 (compactHeightPx - tabRowHeightPx - toolRowHeightPx).coerceAtLeast(0)
 
@@ -107,5 +107,6 @@ data class ExpressionLayoutMetrics(
         private const val REFERENCE_WIDTH_PX = 443f
         private const val EXPANDED_COLUMNS = 3
         private const val MINIMUM_CONTENT_HEIGHT_DP = 48f
+        private const val MINIMUM_TOOL_HEIGHT_DP = 44f
     }
 }

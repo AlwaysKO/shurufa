@@ -223,6 +223,8 @@ class ExpressionPanel @JvmOverloads constructor(
         layoutMetrics = metrics
         tabBar.layoutParams = tabBar.layoutParams.apply { height = metrics.tabRowHeightPx }
         toolRow.layoutParams = toolRow.layoutParams.apply { height = metrics.toolRowHeightPx }
+        enableButton.minimumHeight = metrics.toolRowHeightPx
+        enableButton.layoutParams = enableButton.layoutParams.apply { height = metrics.toolRowHeightPx }
         layoutParams?.let { params ->
             params.height = when {
                 isExpanded -> ViewGroup.LayoutParams.WRAP_CONTENT

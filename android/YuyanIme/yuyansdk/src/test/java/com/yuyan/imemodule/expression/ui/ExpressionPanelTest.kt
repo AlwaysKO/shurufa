@@ -265,7 +265,7 @@ class ExpressionPanelTest {
             View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
             View.MeasureSpec.makeMeasureSpec(720, View.MeasureSpec.AT_MOST),
         )
-        assertTrue(panel.measuredHeight <= 120)
+        assertEquals(132, panel.measuredHeight)
     }
 
     @Test
@@ -281,7 +281,7 @@ class ExpressionPanelTest {
             View.MeasureSpec.makeMeasureSpec(2400, View.MeasureSpec.AT_MOST),
         )
 
-        assertEquals(498, panel.measuredHeight)
+        assertEquals(528, panel.measuredHeight)
     }
 
     @Test
