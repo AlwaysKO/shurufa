@@ -36,7 +36,7 @@ class ExpressionFlowController(
                 prepare()
             } catch (error: Exception) {
                 sendController.cancel()
-                return ExpressionSendResult.Failed(error.message?.takeIf(String::isNotBlank) ?: "图片准备失败")
+                return ExpressionSendResult.Failed(error.message?.takeIf(String::isNotBlank).orEmpty())
             }
             sendController.prepare(expression)
             sendController.confirm().also { result ->

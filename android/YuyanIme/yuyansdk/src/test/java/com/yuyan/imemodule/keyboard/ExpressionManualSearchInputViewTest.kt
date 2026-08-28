@@ -32,6 +32,8 @@ import com.yuyan.imemodule.expression.model.ExpressionCatalogDocument
 import com.yuyan.imemodule.expression.ui.EmojiCombinationPicker
 import com.yuyan.imemodule.expression.ui.ExpressionPanel
 import com.yuyan.imemodule.keyboard.container.SymbolContainer
+import com.yuyan.imemodule.keyboard.container.SettingsContainer
+import com.yuyan.imemodule.entity.keyboard.SoftKey
 import com.yuyan.imemodule.manager.InputModeSwitcher
 import com.yuyan.imemodule.prefs.AppPrefs
 import com.yuyan.imemodule.prefs.behavior.SkbMenuMode
@@ -980,6 +982,80 @@ class ExpressionManualSearchInputViewTest {
         assertFalse(inputView.handleExpressionBack())
     }
 
+    @Test
+    fun `关闭推荐后普通输入零搜索而AI按钮恢复并只发起一次新请求`() {
+        val inputView = realChatInputView()
+        val state = inputView.expressionState()
+        val panel = inputView.findViewById<ExpressionPanel>(R.id.expression_panel)
+        state.beginQuery("旧隐藏结果", 70)
+        state.applyResults(70, listOf(ExpressionAsset(
+            id = "old-hidden",
+            type = "prebuilt",
+            format = "webp",
+            version = "v1",
+            fileName = "templates/old.webp",
+            sha256 = "e".repeat(64),
+            width = 128,
+            height = 128,
+        )))
+        panel.render(state, ExpressionCatalog.fromAssets(context))
+        panel.findViewById<View>(R.id.expression_close).performClick()
+        val requestIdBeforeTyping = inputView.expressionRequestId()
+
+        inputView.notifyExpressionTextCommitted("关闭后的新输入")
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
+
+        assertEquals(requestIdBeforeTyping, inputView.expressionRequestId())
+        assertEquals("旧隐藏结果", state.query)
+        assertEquals(listOf("old-hidden"), state.results.map { it.id })
+        assertFalse(state.isRecommendationVisible)
+
+        inputView.searchExpressionsManually()
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+        assertEquals(requestIdBeforeTyping + 1, inputView.expressionRequestId())
+        assertEquals("关闭后的新输入", state.query)
+        assertFalse(state.recommendationsPaused)
+    }
+
+    @Test
+    fun `空文字AI按钮不会恢复已关闭推荐或启动请求`() {
+        val inputView = realChatInputView()
+        val state = inputView.expressionState()
+        state.beginQuery("保留", 80)
+        state.hideRecommendations()
+        // 清除手动搜索 fallback，但保留面板旧 query；再清 state query 模拟无有效文字。
+        InputView::class.java.getDeclaredField("expressionManualSearch").run {
+            isAccessible = true
+            get(inputView) as com.yuyan.imemodule.expression.ExpressionManualSearch
+        }.resetSession()
+        state.clear()
+        state.hideRecommendations()
+        val before = inputView.expressionRequestId()
+
+        inputView.searchExpressionsManually()
+
+        assertEquals(before, inputView.expressionRequestId())
+        assertTrue(state.recommendationsPaused)
+        assertEquals(
+            context.getString(R.string.expression_manual_search_missing_text),
+            ShadowToast.getTextOfLatestToast(),
+        )
+    }
+
+    @Test
+    fun `手写底栏设置键在真实InputView打开键盘主题快捷面板`() {
+        val inputView = realChatInputView()
+
+        inputView.responseKeyEvent(
+            SoftKey(InputModeSwitcher.USER_KEYCODE_QUICK_SETTINGS, context.getString(R.string.quick_keyboard_theme)),
+        )
+
+        val settings = KeyboardManager.instance.currentContainer as SettingsContainer
+        assertTrue(settings.isQuickSettingsVisible)
+        assertNotNull(settings.findViewWithTag<View>("quick_theme_MaterialLight"))
+    }
+
     private fun realChatInputView(): InputView {
         val service = Robolectric.buildService(ImeService::class.java).create().get()
         services += service
@@ -1046,6 +1122,12 @@ class ExpressionManualSearchInputViewTest {
         InputView::class.java.getDeclaredField("expressionPanelState").let { field ->
             field.isAccessible = true
             field.get(this) as ExpressionPanelState
+        }
+
+    private fun InputView.expressionRequestId(): Long =
+        InputView::class.java.getDeclaredField("expressionRequestId").let { field ->
+            field.isAccessible = true
+            field.getLong(this)
         }
 
     @Suppress("UNCHECKED_CAST")

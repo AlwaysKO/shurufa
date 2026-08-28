@@ -67,11 +67,20 @@ class SogouAuxiliaryLayoutsTest {
         assertEquals(0.0046f, layout.drawingArea.top, EPSILON)
         assertEquals(0.8417f, layout.drawingArea.width, EPSILON)
         assertEquals(0.81585f, layout.drawingArea.height, EPSILON)
-        assertEquals(listOf(1, 1, 5), layout.codeRows.map { it.size })
+        assertEquals(listOf(1, 1, 6), layout.codeRows.map { it.size })
         assertEquals(0.1818f, layout.visualRows[1].single().top, EPSILON)
         assertEquals(0.634f, layout.visualRows[1].single().height, EPSILON)
         assertEquals(0.817f, layout.visualRows.last().first().top, EPSILON)
         assertEquals(0.9872f, layout.visualRows.last().last().bottom, EPSILON)
+        assertEquals(InputModeSwitcher.USER_KEYCODE_QUICK_SETTINGS, layout.codeRows.last().first())
+        assertEquals(
+            listOf(0.00555f, 0.14814f, 0.29628f, 0.42868f, 0.69812f, 0.84626f),
+            layout.visualRows.last().map { it.left },
+        )
+        assertEquals(
+            listOf(0.14259f, 0.14814f, 0.13240f, 0.26944f, 0.14814f, 0.14259f),
+            layout.visualRows.last().map { it.width },
+        )
     }
 
     @Test
@@ -127,6 +136,8 @@ class SogouAuxiliaryLayoutsTest {
         assertEquals(null, handwriting.keyAt(0.40f, 0.40f))
         assertEquals(KeyEvent.KEYCODE_DEL, handwriting.keyAt(0.90f, 0.08f)?.code)
         assertEquals(InputModeSwitcher.USER_KEYCODE_LEFT_SYMBOL, handwriting.keyAt(0.90f, 0.40f)?.code)
+        assertEquals(InputModeSwitcher.USER_KEYCODE_QUICK_SETTINGS, handwriting.keyAt(0.05f, 0.90f)?.code)
+        assertNull(handwriting.keyAt(0.40f, 0.40f))
     }
 
     @Test

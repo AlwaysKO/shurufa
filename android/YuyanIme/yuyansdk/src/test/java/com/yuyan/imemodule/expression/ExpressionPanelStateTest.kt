@@ -149,16 +149,33 @@ class ExpressionPanelStateTest {
         state.hideRecommendations()
 
         assertFalse(state.isRecommendationVisible)
+        assertTrue(state.recommendationsPaused)
+        assertFalse(state.acceptResponse(12))
         assertEquals("民营企业", state.query)
         assertEquals(original, state.results)
         assertEquals(ExpressionPanelTab.AI_SYNTHESIS, state.selectedTab)
 
         state.restoreRecommendations()
 
+        assertFalse(state.recommendationsPaused)
         assertTrue(state.isRecommendationVisible)
         assertEquals("民营企业", state.query)
         assertEquals(original, state.results)
         assertEquals(ExpressionPanelTab.AI_SYNTHESIS, state.selectedTab)
+    }
+
+    @Test
+    fun `无结果时手动入口也能先恢复推荐再开始新请求`() {
+        val state = ExpressionPanelState()
+        state.beginQuery("旧词", 20)
+        state.hideRecommendations()
+
+        state.restoreRecommendations()
+        state.beginQuery("新词", 21)
+
+        assertFalse(state.recommendationsPaused)
+        assertTrue(state.acceptResponse(21))
+        assertEquals("新词", state.query)
     }
 
     private fun asset(id: String) = ExpressionAsset(

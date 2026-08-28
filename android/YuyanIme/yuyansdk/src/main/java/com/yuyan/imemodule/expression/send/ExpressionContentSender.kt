@@ -11,6 +11,7 @@ import android.provider.MediaStore
 import android.view.inputmethod.InputConnection
 import android.view.inputmethod.InputContentInfo
 import androidx.core.content.FileProvider
+import com.yuyan.imemodule.R
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -40,10 +41,12 @@ class ExpressionContentSender(
                 if (connection.commitContent(content, INPUT_CONTENT_GRANT_READ_URI_PERMISSION, null)) {
                     ExpressionSendResult.Sent
                 } else {
-                    ExpressionSendResult.Failed("当前输入框拒绝接收图片")
+                    ExpressionSendResult.Failed(context.getString(R.string.expression_input_rejected_image))
                 }
             }.getOrElse { error ->
-                ExpressionSendResult.Failed(error.message ?: "图片发送失败")
+                ExpressionSendResult.Failed(
+                    error.message ?: context.getString(R.string.expression_image_send_failed),
+                )
             }
         }
 

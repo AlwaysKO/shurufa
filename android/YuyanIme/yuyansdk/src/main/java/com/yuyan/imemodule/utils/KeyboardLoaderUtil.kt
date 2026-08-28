@@ -451,6 +451,7 @@ class KeyboardLoaderUtil private constructor() {
                 InputModeSwitcher.USER_KEYCODE_SYMBOL,
                 InputModeSwitcher.USER_KEYCODE_NUMBER,
                 InputModeSwitcher.USER_KEYCODE_RETURN,
+                InputModeSwitcher.USER_KEYCODE_QUICK_SETTINGS,
                 InputModeSwitcher.USER_KEYCODE_LANG -> KeyType.Function
                 else -> KeyType.Normal
             }

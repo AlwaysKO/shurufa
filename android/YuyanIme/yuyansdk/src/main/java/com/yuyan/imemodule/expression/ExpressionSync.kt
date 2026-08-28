@@ -69,9 +69,11 @@ class ExpressionSync(
         acceptResponse: (Long) -> Boolean,
         onResult: (List<ExpressionAsset>) -> Unit,
     ): Job {
-        onResult(catalog.search(query))
-        return scope.launch(Dispatchers.IO) {
-            val remoteResults = try {
+        return scope.launch {
+            // UI 订阅方的本地结果、请求代次校验和远端结果都回到 scope 的调度器串行执行。
+            onResult(catalog.search(query))
+            val remoteResults = withContext(Dispatchers.IO) {
+                try {
                 val url = "$baseUrl/api/v1/mobile/expressions/recommend"
                     .toHttpUrl()
                     .newBuilder()
@@ -87,10 +89,11 @@ class ExpressionSync(
                         response.body?.string().orEmpty(),
                     ).results
                 }
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (_: Exception) {
-                null
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (_: Exception) {
+                    null
+                }
             }
             remoteResults
                 ?.takeIf { acceptResponse(requestId) }

@@ -12,9 +12,6 @@ class SoftKeyboard(
     var mKeyRows: List<List<SoftKey>>,
     keyXMarginScale: Float = 1f,
     keyYMarginScale: Float = 1f,
-    normalizedHitBounds: List<NormalizedHitBounds> = emptyList(),
-    keyboardWidth: Int = 0,
-    keyboardHeight: Int = 0,
 ) {
     data class NormalizedHitBounds(
         val key: SoftKey,
@@ -38,15 +35,30 @@ class SoftKeyboard(
     )
 
     /** 构造时一次性缓存为像素边界，触摸热路径不再读取或分配行几何。 */
-    private val hitBounds = normalizedHitBounds.map { bounds ->
-        require(keyboardWidth > 0 && keyboardHeight > 0)
-        PixelHitBounds(
-            key = bounds.key,
-            left = (bounds.left * keyboardWidth).toInt(),
-            top = (bounds.top * keyboardHeight).toInt(),
-            right = (bounds.right * keyboardWidth).toInt(),
-            bottom = (bounds.bottom * keyboardHeight).toInt(),
-        )
+    private var hitBounds: List<PixelHitBounds> = emptyList()
+
+    /** Java/Kotlin 调用方长期使用的单参数入口。 */
+    constructor(mKeyRows: List<List<SoftKey>>) : this(mKeyRows, 1f, 1f)
+
+    /** 精确几何的模块内扩展入口，不改变原三参数 JVM 构造器。 */
+    internal constructor(
+        mKeyRows: List<List<SoftKey>>,
+        keyXMarginScale: Float,
+        keyYMarginScale: Float,
+        normalizedHitBounds: List<NormalizedHitBounds>,
+        keyboardWidth: Int,
+        keyboardHeight: Int,
+    ) : this(mKeyRows, keyXMarginScale, keyYMarginScale) {
+        hitBounds = normalizedHitBounds.map { bounds ->
+            require(keyboardWidth > 0 && keyboardHeight > 0)
+            PixelHitBounds(
+                key = bounds.key,
+                left = (bounds.left * keyboardWidth).toInt(),
+                top = (bounds.top * keyboardHeight).toInt(),
+                right = (bounds.right * keyboardWidth).toInt(),
+                bottom = (bounds.bottom * keyboardHeight).toInt(),
+            )
+        }
     }
 
     // 按键左右间隔距离

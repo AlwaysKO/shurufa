@@ -1,6 +1,7 @@
 package com.yuyan.imemodule.expression.ui
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.yuyan.imemodule.R
 import com.yuyan.imemodule.data.collect.ServerConfig
+import com.yuyan.imemodule.data.theme.Theme
 import com.yuyan.imemodule.expression.EmojiSelectionState
 import com.yuyan.imemodule.expression.EmojiSelectionStep
 import com.yuyan.imemodule.expression.ExpressionCatalog
@@ -74,14 +76,23 @@ class EmojiCombinationPicker @JvmOverloads constructor(
         adapter.submitList(catalog.document.emojiBases.sortedBy(EmojiBase::sortOrder))
         updateBackPresentation()
         title.text = when (state.step) {
-            EmojiSelectionStep.FIRST -> "选择第一个表情"
-            EmojiSelectionStep.SECOND -> "再选择一个表情"
-            EmojiSelectionStep.PREVIEW -> "组合预览"
+            EmojiSelectionStep.FIRST -> context.getString(R.string.expression_emoji_choose_first)
+            EmojiSelectionStep.SECOND -> context.getString(R.string.expression_emoji_choose_second)
+            EmojiSelectionStep.PREVIEW -> context.getString(R.string.expression_emoji_preview_title)
         }
         val showingPreview = state.step == EmojiSelectionStep.PREVIEW
         list.visibility = if (showingPreview) View.GONE else View.VISIBLE
         preview.visibility = if (showingPreview) View.VISIBLE else View.GONE
         if (showingPreview) showCombination(catalog)
+    }
+
+    /** 面板与输入法主题同步，避免深色主题下标题或唯一退出入口不可见。 */
+    fun updateTheme(theme: Theme) {
+        setBackgroundColor(theme.keyboardColor)
+        header.setBackgroundColor(theme.keyboardColor)
+        body.setBackgroundColor(theme.keyboardColor)
+        title.setTextColor(theme.keyTextColor)
+        back.imageTintList = ColorStateList.valueOf(theme.keyTextColor)
     }
 
     fun reset() {

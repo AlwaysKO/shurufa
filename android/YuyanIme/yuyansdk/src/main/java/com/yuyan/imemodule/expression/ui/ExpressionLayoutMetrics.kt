@@ -12,12 +12,108 @@ data class ExpressionLayoutMetrics(
     val toolRowHeightPx: Int,
     val actionWidthPx: Int,
     val actionHeightPx: Int,
+    val visibleItemCount: Float,
     val compactPanelHeightPx: Int,
     val minimumCompactPanelHeightPx: Int,
     val maximumCompactPanelHeightPx: Int,
-    val visibleItemCount: Float,
 ) {
+    /** 保留初版十参数 JVM 构造入口，新高度字段取旧布局三行总高。 */
+    constructor(
+        itemSizePx: Int,
+        expandedItemSizePx: Int,
+        itemGapPx: Int,
+        horizontalPaddingPx: Int,
+        tabRowHeightPx: Int,
+        contentHeightPx: Int,
+        toolRowHeightPx: Int,
+        actionWidthPx: Int,
+        actionHeightPx: Int,
+        visibleItemCount: Float,
+    ) : this(
+        itemSizePx,
+        expandedItemSizePx,
+        itemGapPx,
+        horizontalPaddingPx,
+        tabRowHeightPx,
+        contentHeightPx,
+        toolRowHeightPx,
+        actionWidthPx,
+        actionHeightPx,
+        visibleItemCount,
+        tabRowHeightPx + contentHeightPx + toolRowHeightPx,
+        tabRowHeightPx + contentHeightPx + toolRowHeightPx,
+        tabRowHeightPx + contentHeightPx + toolRowHeightPx,
+    )
+
+    /** 初版 data class 的十参数 copy 描述符。 */
+    fun copy(
+        itemSizePx: Int,
+        expandedItemSizePx: Int,
+        itemGapPx: Int,
+        horizontalPaddingPx: Int,
+        tabRowHeightPx: Int,
+        contentHeightPx: Int,
+        toolRowHeightPx: Int,
+        actionWidthPx: Int,
+        actionHeightPx: Int,
+        visibleItemCount: Float,
+    ) = ExpressionLayoutMetrics(
+        itemSizePx,
+        expandedItemSizePx,
+        itemGapPx,
+        horizontalPaddingPx,
+        tabRowHeightPx,
+        contentHeightPx,
+        toolRowHeightPx,
+        actionWidthPx,
+        actionHeightPx,
+        visibleItemCount,
+    )
+
     companion object {
+        /** Kotlin 旧二进制调用默认 copy 参数时使用的静态桥。 */
+        @JvmStatic
+        @Suppress("UNUSED_PARAMETER")
+        fun `copy$default`(
+            self: ExpressionLayoutMetrics,
+            itemSizePx: Int,
+            expandedItemSizePx: Int,
+            itemGapPx: Int,
+            horizontalPaddingPx: Int,
+            tabRowHeightPx: Int,
+            contentHeightPx: Int,
+            toolRowHeightPx: Int,
+            actionWidthPx: Int,
+            actionHeightPx: Int,
+            visibleItemCount: Float,
+            mask: Int,
+            marker: Any?,
+        ): ExpressionLayoutMetrics = self.copy(
+            itemSizePx = if (mask and 0x001 != 0) self.itemSizePx else itemSizePx,
+            expandedItemSizePx = if (mask and 0x002 != 0) self.expandedItemSizePx else expandedItemSizePx,
+            itemGapPx = if (mask and 0x004 != 0) self.itemGapPx else itemGapPx,
+            horizontalPaddingPx = if (mask and 0x008 != 0) self.horizontalPaddingPx else horizontalPaddingPx,
+            tabRowHeightPx = if (mask and 0x010 != 0) self.tabRowHeightPx else tabRowHeightPx,
+            contentHeightPx = if (mask and 0x020 != 0) self.contentHeightPx else contentHeightPx,
+            toolRowHeightPx = if (mask and 0x040 != 0) self.toolRowHeightPx else toolRowHeightPx,
+            actionWidthPx = if (mask and 0x080 != 0) self.actionWidthPx else actionWidthPx,
+            actionHeightPx = if (mask and 0x100 != 0) self.actionHeightPx else actionHeightPx,
+            visibleItemCount = if (mask and 0x200 != 0) self.visibleItemCount else visibleItemCount,
+        )
+
+        fun calculate(
+            widthPx: Int,
+            density: Float,
+            landscape: Boolean,
+        ): ExpressionLayoutMetrics = calculate(
+            widthPx = widthPx,
+            density = density,
+            landscape = landscape,
+            emojiMode = false,
+            availableHeightPx = Int.MAX_VALUE,
+            reservedKeyboardHeightPx = 0,
+        )
+
         fun calculate(
             widthPx: Int,
             density: Float,
@@ -108,10 +204,10 @@ data class ExpressionLayoutMetrics(
                 toolRowHeightPx = toolRowHeightPx,
                 actionWidthPx = px(MINIMUM_TOUCH_TARGET_DP * 2),
                 actionHeightPx = minOf(px(MINIMUM_TOUCH_TARGET_DP), tabRowHeightPx),
+                visibleItemCount = visibleItemCount,
                 compactPanelHeightPx = compactHeightPx,
                 minimumCompactPanelHeightPx = minimumCompactHeightPx,
                 maximumCompactPanelHeightPx = maximumCompactHeightPx,
-                visibleItemCount = visibleItemCount,
             )
         }
 

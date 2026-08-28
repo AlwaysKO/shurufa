@@ -51,6 +51,7 @@ import com.yuyan.imemodule.expression.ExpressionCommitKind
 import com.yuyan.imemodule.expression.ExpressionInputTargetTracker
 import com.yuyan.imemodule.expression.ExpressionManualSearch
 import com.yuyan.imemodule.expression.ExpressionPanelState
+import com.yuyan.imemodule.expression.ExpressionPreviewJobSlot
 import com.yuyan.imemodule.expression.ExpressionPanelPresentation
 import com.yuyan.imemodule.expression.ExpressionQueryCoordinator
 import com.yuyan.imemodule.expression.ExpressionRecommendationResolver
@@ -171,7 +172,8 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     private lateinit var expressionRecommendationResolver: ExpressionRecommendationResolver
     private var expressionSync: ExpressionSync? = null
     private var expressionSearchJob: Job? = null
-    private var expressionPreviewJob: Job? = null
+    private var expressionCatalogJob: Job? = null
+    private val expressionPreviewJobs = ExpressionPreviewJobSlot()
     private var expressionDownloadJob: Job? = null
     private var expressionPreparationJob: Job? = null
     private var expressionKeyboardVisibility: Pair<Int, Int>? = null
@@ -269,13 +271,16 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                     expressionQueryCoordinator.reset()
                     expressionSearchJob?.cancel()
                     expressionSearchJob = null
-                    expressionPreviewJob?.cancel()
-                    expressionPreviewJob = null
+                    expressionPreviewJobs.cancel()
                     expressionDownloadJob?.cancel()
                     expressionDownloadJob = null
                     expressionPreparationJob?.cancel()
                     expressionPreparationJob = null
+                    expressionCatalogJob?.cancel()
+                    expressionCatalogJob = null
                     expressionPanel.resetEmojiSelection()
+                } else {
+                    expressionCatalogJob = expressionScope.launch(Dispatchers.IO) { sync.refreshCatalog() }
                 }
                 expressionPanel.render(expressionPanelState, sync.currentCatalog())
             }
@@ -285,13 +290,24 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 } else {
                     setExpressionExpanded(false)
                     expressionPanelState.hideRecommendations()
+                    expressionQueryCoordinator.reset()
+                    expressionSearchJob?.cancel()
+                    expressionSearchJob = null
+                    expressionPreviewJobs.cancel()
+                    expressionDownloadJob?.cancel()
+                    expressionDownloadJob = null
+                    expressionPreparationJob?.cancel()
+                    expressionPreparationJob = null
+                    expressionCatalogJob?.cancel()
+                    expressionCatalogJob = null
+                    expressionPanel.resetEmojiSelection()
                 }
                 expressionPanel.render(expressionPanelState, sync.currentCatalog())
             }
             expressionPanel.onAnimationPreviewChange = { enabled ->
                 Toast.makeText(
                     context,
-                    if (enabled) "已开启动画预览" else "已关闭动画预览",
+                    if (enabled) R.string.expression_animation_enabled else R.string.expression_animation_disabled,
                     Toast.LENGTH_SHORT,
                 ).show()
             }
@@ -299,7 +315,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 listOf("expression", "expression-previews", "expression-composed").forEach { name ->
                     java.io.File(context.cacheDir, name).deleteRecursively()
                 }
-                Toast.makeText(context, "AI斗图缓存已清理", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.expression_cache_cleared, Toast.LENGTH_SHORT).show()
             }
             expressionPanel.onTabSelected = { tab ->
                 expressionPanelState.selectTab(tab)
@@ -310,7 +326,11 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             expressionPanel.onEmojiCombinationClick = { combination, _ ->
                 sendDirectly(combination)
             }
-            expressionPanel.onEmojiCombinationMissing = { combination, deliver ->
+            expressionPanel.onEmojiCombinationMissing = missing@ { combination, deliver ->
+                if (expressionPanelState.recommendationsPaused || !expressionPanelState.aiStickerEnabled) {
+                    deliver(null)
+                    return@missing
+                }
                 val remoteUrl = combination.url
                 if (remoteUrl == null) {
                     deliver(null)
@@ -333,7 +353,9 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                     }
                 }
             }
-            expressionScope.launch(Dispatchers.IO) { sync.refreshCatalog() }
+            if (expressionPanelState.aiStickerEnabled) {
+                expressionCatalogJob = expressionScope.launch(Dispatchers.IO) { sync.refreshCatalog() }
+            }
             expressionPanel.render(expressionPanelState, sync.currentCatalog())
         }
         expressionQueryCoordinator = ExpressionQueryCoordinator(
@@ -412,14 +434,14 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             }
         }.getOrNull()
         if (builtIn != null) return@withContext builtIn
-        val url = remoteUrl ?: error("素材尚未下载")
+        val url = remoteUrl ?: error(context.getString(R.string.expression_asset_not_downloaded))
         val absoluteUrl = if (url.startsWith("http://") || url.startsWith("https://")) {
             url
         } else {
             ServerConfig.baseUrl + url
         }
         sync.download(version, relativePath, absoluteUrl, sha256)
-            ?: error("素材下载失败")
+            ?: error(context.getString(R.string.expression_asset_download_failed))
     }
 
     private fun sendDirectly(asset: ExpressionAsset) {
@@ -442,9 +464,9 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             ExpressionSendResult.Sent,
             ExpressionSendResult.AlreadySending,
             -> null
-            ExpressionSendResult.UnsupportedTarget -> "当前应用不支持图片发送"
-            is ExpressionSendResult.Failed -> result.reason.ifBlank { "图片发送失败" }
-            ExpressionSendResult.NotPrepared -> "图片发送失败"
+            ExpressionSendResult.UnsupportedTarget -> context.getString(R.string.expression_target_image_unsupported)
+            is ExpressionSendResult.Failed -> result.reason.ifBlank { context.getString(R.string.expression_image_send_failed) }
+            ExpressionSendResult.NotPrepared -> context.getString(R.string.expression_image_send_failed)
         }
         message?.let { Toast.makeText(context, it, Toast.LENGTH_SHORT).show() }
     }
@@ -453,8 +475,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         setExpressionExpanded(false)
         expressionSearchJob?.cancel()
         expressionSearchJob = null
-        expressionPreviewJob?.cancel()
-        expressionPreviewJob = null
+        expressionPreviewJobs.cancel()
         expressionPreparationJob?.cancel()
         expressionPreparationJob = null
         expressionPanelState.clear()
@@ -463,25 +484,27 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
     private fun searchExpressions(query: String) {
         val sync = expressionSync ?: return
-        if (!expressionPanelState.chatEditor) return
+        if (!expressionPanelState.chatEditor || !expressionPanelState.aiStickerEnabled ||
+            expressionPanelState.recommendationsPaused
+        ) return
         setExpressionExpanded(false)
         val requestId = ++expressionRequestId
+        expressionPreviewJobs.beginRequest(requestId)
         expressionPanelState.beginQuery(query, requestId)
         expressionPanel.render(expressionPanelState, sync.currentCatalog())
         expressionSearchJob?.cancel()
-        expressionPreviewJob?.cancel()
         expressionSearchJob = sync.search(
             query = query,
             requestId = requestId,
             acceptResponse = expressionPanelState::acceptResponse,
         ) { results ->
-            expressionPreviewJob?.cancel()
-            expressionPreviewJob = expressionScope.launch {
+            val preview = expressionScope.launch(start = kotlinx.coroutines.CoroutineStart.LAZY) {
                 val resolved = expressionRecommendationResolver.resolve(results, query)
                 if (expressionPanelState.applyResults(requestId, resolved)) {
                     expressionPanel.render(expressionPanelState, sync.currentCatalog())
                 }
             }
+            expressionPreviewJobs.installIfCurrent(requestId, preview)
         }
     }
 
@@ -489,6 +512,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         val aiStickerPreference = getInstance().internal.aiStickerEnabled
         aiStickerPreference.setValue(true)
         expressionPanelState.setAiStickerEnabled(true)
+        expressionPanelState.restoreRecommendations()
         expressionPanelState.collapse()
         expressionSync?.let { expressionPanel.render(expressionPanelState, it.currentCatalog()) }
     }
@@ -1040,6 +1064,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         }
 
         when (keyCode) {
+            InputModeSwitcher.USER_KEYCODE_QUICK_SETTINGS -> toggleQuickKeyboardSettings()
             InputModeSwitcher.USER_KEYCODE_SYMBOL -> {
                 KeyboardManager.instance.switchKeyboard(KeyboardManager.KeyboardType.SYMBOL)
                 (KeyboardManager.instance.currentContainer as? SymbolContainer)?.setSymbolsView()
@@ -1154,7 +1179,11 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         text: String,
         kind: ExpressionCommitKind = ExpressionCommitKind.COMPLETE,
     ) {
-        expressionManualSearch.onHostCommitted(text, kind)?.let(expressionQueryCoordinator::onCommitted)
+        expressionManualSearch.onHostCommitted(text, kind)?.let { query ->
+            if (!expressionPanelState.recommendationsPaused && expressionPanelState.aiStickerEnabled) {
+                expressionQueryCoordinator.onCommitted(query)
+            }
+        }
     }
 
     private fun notifyExpressionTextEdited() {
@@ -1303,8 +1332,9 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         expressionQueryCoordinator.close()
         expressionSearchJob?.cancel()
         expressionSearchJob = null
-        expressionPreviewJob?.cancel()
-        expressionPreviewJob = null
+        expressionCatalogJob?.cancel()
+        expressionCatalogJob = null
+        expressionPreviewJobs.cancel()
         expressionDownloadJob?.cancel()
         expressionDownloadJob = null
         expressionPreparationJob?.cancel()
@@ -1501,8 +1531,9 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         )
         expressionSearchJob?.cancel()
         expressionSearchJob = null
-        expressionPreviewJob?.cancel()
-        expressionPreviewJob = null
+        expressionCatalogJob?.cancel()
+        expressionCatalogJob = null
+        expressionPreviewJobs.cancel()
         expressionDownloadJob?.cancel()
         expressionDownloadJob = null
         expressionPreparationJob?.cancel()

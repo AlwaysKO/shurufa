@@ -54,6 +54,9 @@ class SettingsContainer(
     inputView: InputView,
     quickSettingsActions: QuickKeyboardSettingsActions? = null,
 ) : BaseContainer(context, inputView) {
+    /** 保留既有 AAR 的双参数 JVM 构造入口。 */
+    constructor(context: Context, inputView: InputView) : this(context, inputView, null)
+
     private var mRVMenuLayout: RecyclerView? = null
     private var mTheme: Theme? = null
     private var adapter:MenuAdapter? = null

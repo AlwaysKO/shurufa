@@ -29,6 +29,8 @@ class ExpressionPanelState(
         get() = true
     val isRecommendationVisible: Boolean
         get() = isContentVisible && !recommendationsHidden
+    val recommendationsPaused: Boolean
+        get() = recommendationsHidden
     var isContentVisible: Boolean = false
         private set
     var aiStickerEnabled: Boolean = aiStickerEnabled
@@ -59,13 +61,14 @@ class ExpressionPanelState(
         isContentVisible = false
     }
 
-    fun acceptResponse(requestId: Long): Boolean = requestId == this.requestId
+    fun acceptResponse(requestId: Long): Boolean =
+        chatEditor && aiStickerEnabled && !recommendationsHidden && requestId == this.requestId
 
     fun applyResults(requestId: Long, results: List<ExpressionAsset>): Boolean {
         if (!chatEditor) return false
         if (!acceptResponse(requestId)) return false
         this.results = results
-        isContentVisible = aiStickerEnabled && results.isNotEmpty()
+        isContentVisible = aiStickerEnabled && !recommendationsHidden && results.isNotEmpty()
         return true
     }
 
@@ -77,13 +80,15 @@ class ExpressionPanelState(
     /** 临时收起结果区；与总开关不同，保留查询、结果及当前标签。 */
     fun hideRecommendations() {
         recommendationsHidden = true
+        requestId += 1
         collapse()
     }
 
     /** 从工具行恢复同一查询的结果区。 */
     fun restoreRecommendations() {
-        if (chatEditor && aiStickerEnabled && results.isNotEmpty()) {
+        if (chatEditor && aiStickerEnabled) {
             recommendationsHidden = false
+            isContentVisible = results.isNotEmpty()
         }
     }
 

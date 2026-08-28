@@ -67,7 +67,7 @@ class ExpressionSendController(
             }
         }
         val result = runCatching { sender.send(expression) }
-            .getOrElse { ExpressionSendResult.Failed(it.message ?: "图片发送失败") }
+            .getOrElse { ExpressionSendResult.Failed(it.message.orEmpty()) }
         mutex.withLock {
             if (result == ExpressionSendResult.Sent) {
                 prepared = null

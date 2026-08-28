@@ -56,7 +56,7 @@ object SogouQwertyLayout {
 
     /** KeyboardLoaderUtil 当前连续排列所需的运行时宽度。 */
     private val runtimeBottomRowWidthValues = floatArrayOf(0.15f, 0.12f, 0.095f, 0.26f, 0.095f, 0.12f, 0.15f)
-    val bottomRowWidths: List<Float> get() = runtimeBottomRowWidthValues.toList()
+    val bottomRowWidths: FloatArray get() = runtimeBottomRowWidthValues.copyOf()
 
     private val visualRowGeometry = buildKeyboardGeometry(
         listOf(

@@ -58,15 +58,15 @@ object SogouT9Layout {
 
     /** KeyboardLoaderUtil 当前使用的连续列宽。 */
     private val runtimeColumnWidthValues = floatArrayOf(SIDE_WIDTH, MAIN_WIDTH, MAIN_WIDTH, MAIN_WIDTH, SIDE_WIDTH)
-    val columnWidths: List<Float> get() = runtimeColumnWidthValues.toList()
+    val columnWidths: FloatArray get() = runtimeColumnWidthValues.copyOf()
     private val runtimeColumnLeftEdgeValues = runtimeColumnWidthValues.runningFold(START_X) { left, width -> left + width }
         .dropLast(1)
         .toFloatArray()
-    val columnLeftEdges: List<Float> get() = runtimeColumnLeftEdgeValues.toList()
+    val columnLeftEdges: FloatArray get() = runtimeColumnLeftEdgeValues.copyOf()
     private val runtimeColumnRightEdgeValues = runtimeColumnWidthValues.runningFold(START_X) { left, width -> left + width }
         .drop(1)
         .toFloatArray()
-    val columnRightEdges: List<Float> get() = runtimeColumnRightEdgeValues.toList()
+    val columnRightEdges: FloatArray get() = runtimeColumnRightEdgeValues.copyOf()
 
     private val visualColumnWidthValues = floatArrayOf(
         VISUAL_RIGHT_COLUMN_WIDTH,
@@ -111,7 +111,7 @@ object SogouT9Layout {
 
     /** KeyboardLoaderUtil 当前连续排列所需的运行时宽度。 */
     private val runtimeBottomRowWidthValues = floatArrayOf(0.17f, 0.165f, 0.32f, 0.165f, 0.17f)
-    val bottomRowWidths: List<Float> get() = runtimeBottomRowWidthValues.toList()
+    val bottomRowWidths: FloatArray get() = runtimeBottomRowWidthValues.copyOf()
 
     private val visualRowGeometry = buildKeyboardGeometry(
         listOf(

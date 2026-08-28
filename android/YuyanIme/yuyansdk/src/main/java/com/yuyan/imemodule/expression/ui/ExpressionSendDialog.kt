@@ -69,7 +69,7 @@ class ExpressionSendDialog(
         error.visibility = View.GONE
         fallbacks.visibility = View.GONE
         resetExpressionSendButtons(confirmButton, cancelButton)
-        confirmButton.text = "发送"
+        confirmButton.setText(R.string.expression_send)
         Glide.with(preview).load(expression.file).fitCenter().into(preview)
         window?.apply {
             setType(WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG)
@@ -82,14 +82,16 @@ class ExpressionSendDialog(
     private fun confirm() {
         confirmButton.isEnabled = false
         cancelButton.isEnabled = false
-        confirmButton.text = "发送中…"
+        confirmButton.setText(R.string.expression_sending)
         scope.launch {
             when (val result = controller.confirm()) {
                 ExpressionSendResult.Sent -> dismiss()
-                ExpressionSendResult.UnsupportedTarget -> showFailure("当前聊天不支持图片输入")
-                is ExpressionSendResult.Failed -> showFailure(result.reason)
+                ExpressionSendResult.UnsupportedTarget -> showFailure(context.getString(R.string.expression_chat_image_unsupported))
+                is ExpressionSendResult.Failed -> showFailure(
+                    result.reason.ifBlank { context.getString(R.string.expression_image_send_failed) },
+                )
                 ExpressionSendResult.AlreadySending -> Unit
-                ExpressionSendResult.NotPrepared -> showFailure("待发送图片已失效")
+                ExpressionSendResult.NotPrepared -> showFailure(context.getString(R.string.expression_image_expired))
             }
         }
     }
@@ -97,7 +99,7 @@ class ExpressionSendDialog(
     private fun showFailure(reason: String) {
         confirmButton.isEnabled = true
         cancelButton.isEnabled = true
-        confirmButton.text = "重试发送"
+        confirmButton.setText(R.string.expression_retry_send)
         error.text = reason
         error.visibility = View.VISIBLE
         fallbacks.visibility = View.VISIBLE
@@ -111,14 +113,20 @@ class ExpressionSendDialog(
     private fun save() {
         val current = expression ?: return
         scope.launch {
-            error.text = if (contentSender.saveToGallery(current)) "已保存到相册" else "保存到相册失败"
+            error.text = context.getString(
+                if (contentSender.saveToGallery(current)) R.string.expression_saved_gallery
+                else R.string.expression_save_gallery_failed,
+            )
             error.visibility = View.VISIBLE
         }
     }
 
     private fun copy() {
         val current = expression ?: return
-        error.text = if (contentSender.copyToClipboard(current)) "已复制图片" else "复制图片失败"
+        error.text = context.getString(
+            if (contentSender.copyToClipboard(current)) R.string.expression_copied_image
+            else R.string.expression_copy_image_failed,
+        )
         error.visibility = View.VISIBLE
     }
 

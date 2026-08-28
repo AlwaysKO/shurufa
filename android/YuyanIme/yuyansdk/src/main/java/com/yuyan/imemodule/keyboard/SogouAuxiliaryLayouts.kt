@@ -104,6 +104,7 @@ object SogouAuxiliaryLayouts {
             listOf(KeyEvent.KEYCODE_DEL),
             listOf(InputModeSwitcher.USER_KEYCODE_LEFT_SYMBOL),
             listOf(
+                InputModeSwitcher.USER_KEYCODE_QUICK_SETTINGS,
                 InputModeSwitcher.USER_KEYCODE_SYMBOL,
                 InputModeSwitcher.USER_KEYCODE_NUMBER,
                 KeyEvent.KEYCODE_SPACE,
@@ -116,10 +117,10 @@ object SogouAuxiliaryLayouts {
             listOf(key(0.84726f, 0.1818f, 0.14259f, 0.634f, 0.8417f, 0.1818f, 1f, 0.817f)),
             bottomRow(
                 top = 0.817f,
-                starts = listOf(0.14814f, 0.29628f, 0.42868f, 0.69812f, 0.84626f),
-                widths = listOf(0.14814f, 0.13240f, 0.26944f, 0.14814f, 0.14259f),
+                starts = listOf(0.00555f, 0.14814f, 0.29628f, 0.42868f, 0.69812f, 0.84626f),
+                widths = listOf(0.14259f, 0.14814f, 0.13240f, 0.26944f, 0.14814f, 0.14259f),
                 height = 0.1702f,
-                touchLeft = 0.14259f,
+                touchLeft = 0f,
             ),
         ),
         drawingArea = NormalizedRect(0f, 0.0046f, 0.8417f, 0.81585f),

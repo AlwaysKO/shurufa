@@ -19,6 +19,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.core.widget.TextViewCompat
 import com.yuyan.imemodule.R
 import com.yuyan.imemodule.data.theme.ThemeManager
 import com.yuyan.imemodule.expression.ExpressionCatalog
@@ -243,6 +244,13 @@ class ExpressionPanel @JvmOverloads constructor(
         listOf(recommendedTab, templatesTab, emojiTab).forEach { tab ->
             tab.minimumWidth = dp(MINIMUM_TOUCH_TARGET_DP)
             tab.minimumHeight = dp(MINIMUM_TOUCH_TARGET_DP)
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                tab,
+                MIN_TAB_TEXT_SIZE_SP,
+                MAX_TAB_TEXT_SIZE_SP,
+                1,
+                android.util.TypedValue.COMPLEX_UNIT_SP,
+            )
         }
         toolRow.layoutParams = toolRow.layoutParams.apply { height = metrics.toolRowHeightPx }
         enableButton.minimumWidth = dp(MINIMUM_TOUCH_TARGET_DP)
@@ -350,6 +358,7 @@ class ExpressionPanel @JvmOverloads constructor(
             tab.setTextColor(if (selected) theme.accentKeyBackgroundColor else theme.keyTextColor)
             tab.background = tabBackground(selected, theme.accentKeyBackgroundColor)
         }
+        emojiPicker.updateTheme(theme)
     }
 
     /** 主题在面板显示期间切换时，立即刷新所有可见颜色与图标。 */
@@ -374,15 +383,15 @@ class ExpressionPanel @JvmOverloads constructor(
 
     private fun showSettingsMenu() {
         PopupMenu(context, moreButton).apply {
-            menu.add(0, MENU_AI_STICKER, 0, "AI斗图开关").apply {
+            menu.add(0, MENU_AI_STICKER, 0, context.getString(R.string.expression_ai_toggle)).apply {
                 isCheckable = true
                 isChecked = true
             }
-            menu.add(0, MENU_ANIMATION, 1, "动画预览").apply {
+            menu.add(0, MENU_ANIMATION, 1, context.getString(R.string.expression_animation_preview)).apply {
                 isCheckable = true
                 isChecked = animationPreviewEnabled
             }
-            menu.add(0, MENU_CLEAR_CACHE, 2, "清理缓存")
+            menu.add(0, MENU_CLEAR_CACHE, 2, context.getString(R.string.expression_clear_cache))
             setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     MENU_AI_STICKER -> onAiStickerEnabledChange?.invoke(false)
@@ -409,6 +418,8 @@ class ExpressionPanel @JvmOverloads constructor(
         const val SWIPE_EXPAND_THRESHOLD_DP = 48
         const val SWIPE_EXPAND_MIN_SPEED_PX_PER_SECOND = 180f
         const val MINIMUM_TOUCH_TARGET_DP = 44
+        const val MIN_TAB_TEXT_SIZE_SP = 8
+        const val MAX_TAB_TEXT_SIZE_SP = 14
         var animationPreviewEnabled = false
     }
 }

@@ -5,10 +5,13 @@ import com.yuyan.imemodule.expression.model.ExpressionCatalogDocument
 import java.io.File
 import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -31,7 +34,7 @@ class ExpressionSyncTest {
     @Before
     fun setUp() {
         server = MockWebServer().apply { start() }
-        root = createTempDir(prefix = "expression-sync-")
+        root = java.nio.file.Files.createTempDirectory("expression-sync-").toFile()
     }
 
     @After
@@ -168,6 +171,33 @@ class ExpressionSyncTest {
 
         assertEquals(0, client.dispatcher.runningCallsCount())
         scope.cancel()
+    }
+
+    @Test
+    fun `本地与远端结果都串行回到订阅scope调度器`() {
+        val executor = Executors.newSingleThreadExecutor { runnable -> Thread(runnable, "expression-ui") }
+        val dispatcher = executor.asCoroutineDispatcher()
+        val scope = CoroutineScope(SupervisorJob() + dispatcher)
+        val callbacks = CountDownLatch(2)
+        val callbackThreads = mutableListOf<String>()
+        server.enqueue(MockResponse().setBody("""{"results":[${json.encodeToString(asset("remote"))}]}"""))
+
+        val job = sync(
+            ExpressionCatalog(document("v1", listOf(asset("local", type = "prebuilt", embeddedText = "你好")))),
+            scope,
+        ).search("你好", 90, acceptResponse = { true }) {
+            synchronized(callbackThreads) { callbackThreads += Thread.currentThread().name }
+            callbacks.countDown()
+        }
+
+        assertTrue(callbacks.await(3, TimeUnit.SECONDS))
+        runBlocking { job.join() }
+        assertEquals(2, callbackThreads.size)
+        assertTrue(callbackThreads.all { it.startsWith("expression-ui") })
+        assertEquals(1, callbackThreads.distinct().size)
+        scope.cancel()
+        dispatcher.close()
+        executor.shutdownNow()
     }
 
     private fun sync(

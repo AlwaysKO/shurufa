@@ -87,6 +87,9 @@ object InputModeSwitcher {
     const val USER_KEYCODE_MOVE_START = -23
     const val USER_KEYCODE_MOVE_END = -24
 
+    /** 手写底栏的项目自绘键盘/主题快捷设置入口。 */
+    const val USER_KEYCODE_QUICK_SETTINGS = -25
+
 
     /**
      * Bits used to indicate soft keyboard layout. If none bit is set, the
@@ -243,9 +246,11 @@ object InputModeSwitcher {
     /**
      * 通过我们定义的软键盘的按键，切换输入法模式。
      */
-    fun switchModeForUserKey(
+    fun switchModeForUserKey(userKey: Int) = switchModeForUserKey(userKey, Kernel::initImeSchema)
+
+    internal fun switchModeForUserKey(
         userKey: Int,
-        initializeSchema: (String) -> Unit = Kernel::initImeSchema,
+        initializeSchema: (String) -> Unit,
     ) {
         var newInputMode = MODE_UNSET
         if (USER_KEYCODE_LANG == userKey) {
@@ -262,8 +267,10 @@ object InputModeSwitcher {
     }
 
     /** 快捷面板明确切换到英文 26 键，不依赖当前临时键盘或语言状态。 */
-    fun switchToEnglishForSetting(
-        initializeSchema: (String) -> Unit = Kernel::initImeSchema,
+    internal fun switchToEnglishForSetting() = switchToEnglishForSetting(Kernel::initImeSchema)
+
+    internal fun switchToEnglishForSetting(
+        initializeSchema: (String) -> Unit,
     ) {
         saveInputMode(MODE_SKB_ENGLISH_LOWER, initializeSchema)
         KeyboardManager.instance.switchKeyboard()
@@ -272,9 +279,11 @@ object InputModeSwitcher {
     /**
      * 通过应用内设置，切换输入法模式。
      */
-    fun switchModeForSetting(
+    fun switchModeForSetting(value: Pair<Int, String>) = switchModeForSetting(value, Kernel::initImeSchema)
+
+    internal fun switchModeForSetting(
         value: Pair<Int, String>,
-        initializeSchema: (String) -> Unit = Kernel::initImeSchema,
+        initializeSchema: (String) -> Unit,
     ) {
         val inputMode = value.first or MASK_LANGUAGE_CN
         getInstance().internal.inputMethodPinyinMode.setValue(inputMode)
@@ -343,9 +352,11 @@ object InputModeSwitcher {
     /**
      * 保存新的输入法模式
      */
-    fun saveInputMode(
+    fun saveInputMode(newInputMode: Int) = saveInputMode(newInputMode, Kernel::initImeSchema)
+
+    internal fun saveInputMode(
         newInputMode: Int,
-        initializeSchema: (String) -> Unit = Kernel::initImeSchema,
+        initializeSchema: (String) -> Unit,
     ) {
         mInputMode = newInputMode // 设置新的输入法模式为当前的输入法模式
         val schema = if (isEnglish) {

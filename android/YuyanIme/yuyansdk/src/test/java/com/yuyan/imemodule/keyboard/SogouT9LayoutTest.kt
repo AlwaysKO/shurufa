@@ -45,7 +45,7 @@ class SogouT9LayoutTest {
         assertEquals(0.735f, SogouT9Layout.SIDE_HEIGHT, 0.000001f)
         assertArrayEquals(
             floatArrayOf(0.17f, 0.165f, 0.32f, 0.165f, 0.17f),
-            SogouT9Layout.bottomRowWidths.toFloatArray(),
+            SogouT9Layout.bottomRowWidths,
             0.000001f,
         )
     }

@@ -17,7 +17,7 @@ class ExpressionCacheTest {
 
     @Before
     fun setUp() {
-        root = createTempDir(prefix = "expression-cache-")
+        root = java.nio.file.Files.createTempDirectory("expression-cache-").toFile()
     }
 
     @After
@@ -76,6 +76,39 @@ class ExpressionCacheTest {
 
         assertTrue(results.all { it?.isFile == true })
         assertEquals(sha, sha256(requireNotNull(results.first()).readBytes()))
+    }
+
+    @Test
+    fun `API23写读替换均不依赖java nio file`() {
+        val cache = ExpressionCache(root)
+        val old = "old-image".toByteArray()
+        val fresh = "fresh-image".toByteArray()
+        val target = requireNotNull(cache.writeVerified("v1", "templates/replace.webp", sha256(old), old.inputStream()))
+
+        val replaced = cache.writeVerified("v1", "templates/replace.webp", sha256(fresh), fresh.inputStream())
+
+        assertEquals(target, replaced)
+        assertEquals("fresh-image", target.readText())
+        assertTrue(requireNotNull(requireNotNull(target.parentFile).listFiles()).none {
+            it.name.endsWith(".part") || it.name.endsWith(".bak")
+        })
+        val source = java.io.File("src/main/java/com/yuyan/imemodule/expression/ExpressionCache.kt").readText()
+        assertTrue("不得直接引用 API26 java.nio.file", "java.nio.file" !in source)
+        assertTrue("不得调用 File.toPath", ".toPath(" !in source)
+    }
+
+    @Test
+    fun `校验失败保留旧缓存并清理临时文件`() {
+        val cache = ExpressionCache(root)
+        val old = "old-valid".toByteArray()
+        val target = requireNotNull(cache.writeVerified("v1", "templates/safe.webp", sha256(old), old.inputStream()))
+
+        assertNull(cache.writeVerified("v1", "templates/safe.webp", sha256("wanted".toByteArray()), "broken".byteInputStream()))
+
+        assertEquals("old-valid", target.readText())
+        assertTrue(requireNotNull(requireNotNull(target.parentFile).listFiles()).none {
+            it.name.endsWith(".part") || it.name.endsWith(".bak")
+        })
     }
 
     private fun sha256(bytes: ByteArray): String = MessageDigest.getInstance("SHA-256")

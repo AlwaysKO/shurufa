@@ -222,7 +222,9 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
     /**
      * 切换显示界面
      */
-    fun setSymbolsView(initialPage: Int = 0) {
+    fun setSymbolsView() = setSymbolsView(0)
+
+    fun setSymbolsView(initialPage: Int) {
         mShowType = SymbolMode.Symbol
         isLockSymbol = false   // 符号键默认未锁定，表情键盘默认锁定
         ivDelete.setImageResource(R.drawable.icon_symbol_lock)

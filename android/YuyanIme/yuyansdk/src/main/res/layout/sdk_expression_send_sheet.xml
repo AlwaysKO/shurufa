@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="发送到当前聊天"
+        android:text="@string/expression_send_to_chat"
         android:textColor="#FF202124"
         android:textSize="18sp"
         android:textStyle="bold" />
@@ -20,7 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="220dp"
         android:layout_marginTop="12dp"
-        android:contentDescription="待发送图片预览"
+        android:contentDescription="@string/expression_send_preview_description"
         android:scaleType="fitCenter" />
 
     <TextView
@@ -45,7 +45,7 @@
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_weight="1"
-            android:text="保存到相册" />
+            android:text="@string/expression_save_gallery" />
 
         <Button
             android:id="@+id/expression_send_copy"
@@ -53,7 +53,7 @@
             android:layout_height="48dp"
             android:layout_marginStart="8dp"
             android:layout_weight="1"
-            android:text="复制图片" />
+            android:text="@string/expression_copy_image" />
     </LinearLayout>
 
     <LinearLayout
@@ -67,7 +67,7 @@
             android:layout_width="0dp"
             android:layout_height="52dp"
             android:layout_weight="1"
-            android:text="取消" />
+            android:text="@string/expression_cancel" />
 
         <Button
             android:id="@+id/expression_send_confirm"
@@ -76,7 +76,7 @@
             android:layout_marginStart="12dp"
             android:layout_weight="1"
             android:backgroundTint="#FF19A15F"
-            android:text="发送"
+            android:text="@string/expression_send"
             android:textColor="#FFFFFFFF" />
     </LinearLayout>
 </LinearLayout>

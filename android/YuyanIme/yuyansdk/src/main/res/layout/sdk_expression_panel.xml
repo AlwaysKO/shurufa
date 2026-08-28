@@ -19,44 +19,42 @@
 
             <TextView
                 android:id="@+id/expression_tab_recommended"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
+                android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:gravity="center"
                 android:paddingStart="6dp"
                 android:paddingEnd="6dp"
-                android:text="推荐"
+                android:text="@string/expression_tab_recommended"
                 android:textColor="@android:color/black"
                 android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/expression_tab_templates"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
+                android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:gravity="center"
                 android:paddingStart="10dp"
                 android:paddingEnd="10dp"
-                android:text="AI合成"
+                android:text="@string/expression_tab_ai_synthesis"
                 android:textColor="@android:color/black"
                 android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/expression_tab_emoji"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
+                android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:gravity="center"
                 android:paddingStart="10dp"
                 android:paddingEnd="10dp"
-                android:text="Emoji合成"
+                android:text="@string/expression_tab_emoji_synthesis"
                 android:textColor="@android:color/black"
                 android:textSize="14sp" />
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1" />
 
             <LinearLayout
                 android:id="@+id/expression_actions"
@@ -72,7 +70,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:background="?android:attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="AI斗图设置"
+                    android:contentDescription="@string/expression_settings"
                     android:padding="7dp"
                     android:src="@drawable/ic_menu_more_horiz" />
 
@@ -82,7 +80,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:background="?android:attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="关闭AI斗图推荐"
+                    android:contentDescription="@string/expression_tool_hide_recommendations"
                     android:padding="5dp"
                     android:src="@drawable/ic_ai_sticker_close_target" />
             </LinearLayout>
@@ -126,7 +124,7 @@
             android:gravity="center"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
-            android:text="AI斗图"
+            android:text="@string/ai_sticker_search"
             android:textColor="@android:color/black"
             android:textSize="14sp" />
     </LinearLayout>

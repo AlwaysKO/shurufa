@@ -624,6 +624,66 @@ class ExpressionPanelTest {
         assertNotEquals(lightTextColor, darkTextColor)
     }
 
+    @Test
+    fun `Emoji合成标题返回图标和背景随浅深主题即时刷新`() {
+        val state = visibleState().apply { selectTab(ExpressionPanelTab.EMOJI_SYNTHESIS) }
+        val panel = ExpressionPanel(context)
+        ThemeManager.setNormalModeTheme(ThemePreset.MaterialLight)
+        panel.render(state, emojiCatalog())
+        val picker = panel.findViewById<EmojiCombinationPicker>(R.id.expression_emoji_picker)
+        val title = picker.findViewById<TextView>(R.id.expression_emoji_title)
+        val back = picker.findViewById<android.widget.ImageButton>(R.id.expression_emoji_back)
+        val light = ThemeManager.activeTheme
+        assertEquals(light.keyTextColor, title.currentTextColor)
+        assertEquals(light.keyTextColor, back.imageTintList?.defaultColor)
+        assertEquals(light.keyboardColor, (picker.background as android.graphics.drawable.ColorDrawable).color)
+
+        ThemeManager.setNormalModeTheme(ThemePreset.MaterialDark)
+        panel.updateTheme()
+        val dark = ThemeManager.activeTheme
+
+        assertEquals(dark.keyTextColor, title.currentTextColor)
+        assertEquals(dark.keyTextColor, back.imageTintList?.defaultColor)
+        assertEquals(dark.keyboardColor, (picker.background as android.graphics.drawable.ColorDrawable).color)
+        assertNotEquals(light.keyTextColor, dark.keyTextColor)
+    }
+
+    @Test
+    fun `一倍半和二倍字体单手窄屏三标签完整且操作键不裁切`() {
+        listOf(1.5f, 2f).forEach { fontScale ->
+            val scaled = context.createConfigurationContext(
+                android.content.res.Configuration(context.resources.configuration).apply { this.fontScale = fontScale },
+            )
+            val panel = ExpressionPanel(scaled)
+            panel.render(visibleState(), catalog)
+            val width = (288f * scaled.resources.displayMetrics.density).toInt()
+            panel.measure(
+                View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(dp(300), View.MeasureSpec.AT_MOST),
+            )
+            panel.layout(0, 0, panel.measuredWidth, panel.measuredHeight)
+
+            val expected = mapOf(
+                R.id.expression_tab_recommended to "推荐",
+                R.id.expression_tab_templates to "AI合成",
+                R.id.expression_tab_emoji to "Emoji合成",
+            )
+            expected.forEach { (id, label) ->
+                val tab = panel.findViewById<TextView>(id)
+                assertEquals(label, tab.text.toString())
+                assertTrue("scale=$fontScale tab=$label left=${tab.left} right=${tab.right} width=$width", tab.left >= 0 && tab.right <= width)
+                assertTrue(tab.width >= (44f * scaled.resources.displayMetrics.density).toInt())
+                assertTrue(tab.isClickable)
+            }
+            listOf(R.id.expression_more, R.id.expression_close).forEach { id ->
+                val action = panel.findViewById<View>(id)
+                assertTrue(action.left >= 0 && action.right <= width)
+                assertTrue(action.width >= (44f * scaled.resources.displayMetrics.density).toInt())
+                assertTrue(action.isClickable)
+            }
+        }
+    }
+
 
     @Test
     fun `重复挂载卸载不会叠加展开监听`() {

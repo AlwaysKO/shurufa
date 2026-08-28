@@ -140,7 +140,7 @@ class SogouQwertyLayoutTest {
         )
         assertArrayEquals(
             floatArrayOf(0.15f, 0.12f, 0.095f, 0.26f, 0.095f, 0.12f, 0.15f),
-            SogouQwertyLayout.bottomRowWidths.toFloatArray(),
+            SogouQwertyLayout.bottomRowWidths,
             0.000001f,
         )
         assertEquals(0.991698f, SogouQwertyLayout.rowRightEdge(3), 0.000001f)

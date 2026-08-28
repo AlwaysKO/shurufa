@@ -52,7 +52,7 @@ class CandidatesMenuAdapter(context: Context?) : RecyclerView.Adapter<Candidates
     }
 
     inner class SymbolHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val entranceIconImageView: ImageView = itemView.findViewById(R.id.candidates_menu_item)
+        var entranceIconImageView: ImageView = itemView.findViewById(R.id.candidates_menu_item)
     }
 
     override fun getItemViewType(position: Int): Int =
