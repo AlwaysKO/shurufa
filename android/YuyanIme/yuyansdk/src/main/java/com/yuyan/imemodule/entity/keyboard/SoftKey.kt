@@ -29,13 +29,14 @@ open class SoftKey(var code: Int = 0, var label: String = "", var labelSmall: St
     var longPressAction = LongPressAction.Default
     var preferTextLabel = false
 
-    /** 主副文字在键帽内的相对字号与垂直位置，渲染层可按键单独微调。 */
+    /** 仅明确适配的键位启用自定义文字层级，其他键保持项目原有渲染。 */
+    var useCustomLabelLayout = false
     var mainLabelScale = 1f
-    var secondaryLabelScale = 0.62f
-    var mainLabelVerticalBias = 0.62f
-    var secondaryLabelVerticalBias = 0.24f
+    var secondaryLabelScale = 1f
+    var mainLabelVerticalBias = 0.5f
+    var secondaryLabelVerticalBias = 0.5f
     var mainLabelHorizontalBias = 0.5f
-    var secondaryLabelHorizontalBias = 0.78f
+    var secondaryLabelHorizontalBias = 0.5f
 
     fun onPressed() {
         pressed = true

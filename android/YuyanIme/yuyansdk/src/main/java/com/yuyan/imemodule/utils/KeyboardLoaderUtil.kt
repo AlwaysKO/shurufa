@@ -428,6 +428,7 @@ class KeyboardLoaderUtil private constructor() {
             }
             key.apply {
                 if (voiceSpace && code == KeyEvent.KEYCODE_SPACE) longPressAction = LongPressAction.Voice
+                applySogouLabelHierarchy()
                 applyThemeRole()
             }
         }.also { applyVisualGeometry(it, geometry) }
@@ -456,11 +457,27 @@ class KeyboardLoaderUtil private constructor() {
         }
     }
 
+    private fun SoftKey.applySogouLabelHierarchy() {
+        useCustomLabelLayout = true
+        mainLabelScale = 1f
+        secondaryLabelScale = 0.62f
+        mainLabelVerticalBias = 0.62f
+        secondaryLabelVerticalBias = 0.24f
+        mainLabelHorizontalBias = 0.5f
+        secondaryLabelHorizontalBias = 0.78f
+    }
+
     /** 生成键盘布局，主要用于计算键盘边界 */
     private fun getSoftKeyboard(rows: List<List<SoftKey>>, isNumberRow: Boolean): SoftKeyboard {
         val isSogouT9 = mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN
         val isSogouQwerty = mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN ||
             mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_ABC
+        val hasExactNormalizedGeometry = isSogouT9 || isSogouQwerty || mSkbValue in setOf(
+            InputModeSwitcher.MASK_SKB_LAYOUT_HANDWRITING,
+            InputModeSwitcher.MASK_SKB_LAYOUT_NUMBER,
+            InputModeSwitcher.MASK_SKB_LAYOUT_STROKE,
+            InputModeSwitcher.MASK_SKB_LAYOUT_TEXTEDIT,
+        )
         var lastKeyBottom = 0f
         var lastKeyRight: Float
         var lastKeyTop: Float
@@ -476,7 +493,7 @@ class KeyboardLoaderUtil private constructor() {
                     if (keyXPos == -1f) keyXPos = lastKeyRight
                     if (keyYPos == -1f) keyYPos = lastKeyTop
                     if (isNumberRow) {
-                        val exactLayoutOffset = if ((isSogouT9 || isSogouQwerty) && rowIndex > 0) {
+                        val exactLayoutOffset = if (hasExactNormalizedGeometry && rowIndex > 0) {
                             NUMBER_ROW_HEIGHT
                         } else {
                             0f
@@ -603,6 +620,7 @@ class KeyboardLoaderUtil private constructor() {
             val labels = keyPreset[code]
             softKeys.add(SoftKey(code = code, label = labels?.getOrNull(0) ?: "", labelSmall = labels?.getOrNull(1)?: "").apply {
                 widthF = 0.21f
+                if (mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN) applySogouLabelHierarchy()
                 applyThemeRole()
                 if (code == KeyEvent.KEYCODE_0 && mSkbValue != InputModeSwitcher.MASK_SKB_LAYOUT_NUMBER) {
                     keyType = KeyType.Function

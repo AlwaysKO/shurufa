@@ -139,23 +139,23 @@ object SogouAuxiliaryLayouts {
         ),
         visualRows = listOf(
             listOf(
-                visualKey(0.005f, 0.005f, 0.245f, 0.74f),
-                visualKey(0.255f, 0.005f, 0.245f, 0.24f),
-                visualKey(0.505f, 0.005f, 0.245f, 0.74f),
-                visualKey(0.755f, 0.005f, 0.24f, 0.24f),
+                key(0.005f, 0.005f, 0.245f, 0.74f, 0f, 0f, 0.2525f, 0.75f),
+                key(0.255f, 0.005f, 0.245f, 0.24f, 0.2525f, 0f, 0.5025f, 0.25f),
+                key(0.505f, 0.005f, 0.245f, 0.74f, 0.5025f, 0f, 0.7525f, 0.75f),
+                key(0.755f, 0.005f, 0.24f, 0.24f, 0.7525f, 0f, 1f, 0.25f),
             ),
             listOf(
-                visualKey(0.255f, 0.255f, 0.245f, 0.24f),
-                visualKey(0.755f, 0.255f, 0.24f, 0.24f),
+                key(0.255f, 0.255f, 0.245f, 0.24f, 0.2525f, 0.25f, 0.5025f, 0.5f),
+                key(0.755f, 0.255f, 0.24f, 0.24f, 0.7525f, 0.25f, 1f, 0.5f),
             ),
             listOf(
-                visualKey(0.255f, 0.505f, 0.245f, 0.24f),
-                visualKey(0.755f, 0.505f, 0.24f, 0.24f),
+                key(0.255f, 0.505f, 0.245f, 0.24f, 0.2525f, 0.5f, 0.5025f, 0.75f),
+                key(0.755f, 0.505f, 0.24f, 0.24f, 0.7525f, 0.5f, 1f, 0.75f),
             ),
             listOf(
-                visualKey(0.005f, 0.755f, 0.3267f, 0.24f),
-                visualKey(0.3367f, 0.755f, 0.3266f, 0.24f),
-                visualKey(0.6683f, 0.755f, 0.3267f, 0.24f),
+                key(0.005f, 0.755f, 0.3267f, 0.24f, 0f, 0.75f, 0.3342f, 1f),
+                key(0.3367f, 0.755f, 0.3266f, 0.24f, 0.3342f, 0.75f, 0.6658f, 1f),
+                key(0.6683f, 0.755f, 0.3267f, 0.24f, 0.6658f, 0.75f, 1f, 1f),
             ),
         ),
     )
@@ -219,9 +219,6 @@ object SogouAuxiliaryLayouts {
             )
         }
     }
-
-    private fun visualKey(left: Float, top: Float, width: Float, height: Float) =
-        key(left, top, width, height, left, top, left + width, top + height)
 
     private fun key(
         left: Float,

@@ -5,12 +5,16 @@ import android.view.KeyEvent
 import com.yuyan.imemodule.application.Launcher
 import com.yuyan.imemodule.data.theme.ThemeManager
 import com.yuyan.imemodule.entity.keyboard.KeyType
+import com.yuyan.imemodule.entity.keyboard.SoftKey
 import com.yuyan.imemodule.manager.InputModeSwitcher
 import com.yuyan.imemodule.prefs.AppPrefs
 import com.yuyan.imemodule.singleton.EnvironmentSingleton
 import com.yuyan.imemodule.utils.KeyboardLoaderUtil
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -141,6 +145,25 @@ class SogouAuxiliaryLayoutsTest {
     }
 
     @Test
+    fun `自定义文字层级只作用于九键和辅助键而不改变全键盘默认渲染`() {
+        val defaultKey = SoftKey(label = "a", labelSmall = "1")
+        assertFalse(defaultKey.useCustomLabelLayout)
+        assertEquals(1f, defaultKey.secondaryLabelScale, EPSILON)
+        assertEquals(0.5f, defaultKey.secondaryLabelVerticalBias, EPSILON)
+
+        val qwertyKey = load(InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN).getKeyByCode(KeyEvent.KEYCODE_A)!!
+        assertFalse(qwertyKey.useCustomLabelLayout)
+        assertEquals(1f, qwertyKey.secondaryLabelScale, EPSILON)
+
+        val t9Key = load(InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN).getKeyByCode(KeyEvent.KEYCODE_A)!!
+        assertTrue(t9Key.useCustomLabelLayout)
+        assertEquals(0.62f, t9Key.secondaryLabelScale, EPSILON)
+
+        val strokeKey = load(InputModeSwitcher.MASK_SKB_LAYOUT_STROKE).getKeyByCode(KeyEvent.KEYCODE_H)!!
+        assertTrue(strokeKey.useCustomLabelLayout)
+    }
+
+    @Test
     fun `功能键和回车键使用主题角色而非伪装普通键`() {
         val keyboard = load(InputModeSwitcher.MASK_SKB_LAYOUT_NUMBER)
 
@@ -175,6 +198,54 @@ class SogouAuxiliaryLayoutsTest {
         assertTrue(actionRow[1].isUniStrKey)
         assertTrue(actionRow[2].isUniStrKey)
         assertTrue(actionRow[3].isKeyCodeKey)
+    }
+
+    @Test
+    fun `辅助布局开启顶部数字行后视觉与命中同步下移`() {
+        AppPrefs.getInstance().keyboardSetting.abcNumberLine.setValue(true)
+        listOf(
+            InputModeSwitcher.MASK_SKB_LAYOUT_HANDWRITING to SogouAuxiliaryLayouts.handwriting,
+            InputModeSwitcher.MASK_SKB_LAYOUT_STROKE to SogouAuxiliaryLayouts.stroke,
+            InputModeSwitcher.MASK_SKB_LAYOUT_NUMBER to SogouAuxiliaryLayouts.number,
+            InputModeSwitcher.MASK_SKB_LAYOUT_TEXTEDIT to SogouAuxiliaryLayouts.textEdit,
+        ).forEach { (layoutCode, spec) ->
+            val keyboard = load(layoutCode)
+            val numberRow = keyboard.mKeyRows.first()
+            val firstAuxiliaryKey = keyboard.mKeyRows[1].first()
+            val expected = spec.visualRows.first().first()
+
+            assertTrue(firstAuxiliaryKey.mTopF >= numberRow.first().mTopF + numberRow.first().heightF)
+            assertEquals((0.2f + expected.top) / 1.2f, firstAuxiliaryKey.mTopF, EPSILON)
+            assertEquals(expected.height / 1.2f, firstAuxiliaryKey.heightF, EPSILON)
+            assertSame(
+                firstAuxiliaryKey,
+                keyboard.keyAt(
+                    firstAuxiliaryKey.mLeftF + firstAuxiliaryKey.widthF / 2f,
+                    firstAuxiliaryKey.mTopF + firstAuxiliaryKey.heightF / 2f,
+                ),
+            )
+            val lastKey = keyboard.mKeyRows.last().last()
+            assertSame(
+                lastKey,
+                keyboard.keyAt(lastKey.mLeftF + lastKey.widthF / 2f, lastKey.mTopF + lastKey.heightF / 2f),
+            )
+        }
+    }
+
+    @Test
+    fun `文字编辑视觉间隙连续命中相邻键且不会跨行或吸附键盘外`() {
+        val keyboard = load(InputModeSwitcher.MASK_SKB_LAYOUT_TEXTEDIT)
+
+        assertEquals(KeyEvent.KEYCODE_DPAD_LEFT, keyboard.keyAt(0.252f, 0.12f)?.code)
+        assertEquals(KeyEvent.KEYCODE_DPAD_UP, keyboard.keyAt(0.253f, 0.12f)?.code)
+        assertEquals(KeyEvent.KEYCODE_DPAD_UP, keyboard.keyAt(0.30f, 0.2499f)?.code)
+        assertEquals(InputModeSwitcher.USER_KEYCODE_SELECT_MODE, keyboard.keyAt(0.30f, 0.2501f)?.code)
+        assertEquals(KeyEvent.KEYCODE_DPAD_RIGHT, keyboard.keyAt(0.52f, 0.2501f)?.code)
+        assertEquals(InputModeSwitcher.USER_KEYCODE_MOVE_START, keyboard.keyAt(0.30f, 0.7501f)?.code)
+        assertNull(keyboard.mapToKey(-1, TEST_HEIGHT / 2))
+        assertNull(keyboard.mapToKey(TEST_WIDTH, TEST_HEIGHT / 2))
+        assertNull(keyboard.mapToKey(TEST_WIDTH / 2, -1))
+        assertNull(keyboard.mapToKey(TEST_WIDTH / 2, TEST_HEIGHT))
     }
 
     companion object {
