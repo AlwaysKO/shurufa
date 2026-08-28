@@ -26,7 +26,17 @@ internal inline fun routeQuickKeyboardMenu(
     return true
 }
 
+internal inline fun routeAiDoutuMenu(
+    skbMenuMode: SkbMenuMode,
+    searchExpressionsManually: () -> Unit,
+): Boolean {
+    if (skbMenuMode != SkbMenuMode.AiDoutu) return false
+    searchExpressionsManually()
+    return true
+}
+
 fun onSettingsMenuClick(inputView: InputView, skbMenuMode: SkbMenuMode) {
+    if (routeAiDoutuMenu(skbMenuMode, inputView::searchExpressionsManually)) return
     if (routeQuickKeyboardMenu(skbMenuMode, inputView::toggleQuickKeyboardSettings)) return
     when (skbMenuMode) {
         SkbMenuMode.Emojicon, SkbMenuMode.Emoticon -> {

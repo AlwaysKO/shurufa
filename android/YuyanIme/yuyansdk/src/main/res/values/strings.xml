@@ -196,6 +196,7 @@
     <string name="voice_input_error">语音识别失败，请重试</string>
     <string name="quick_keyboard_theme">键盘与主题</string>
     <string name="ai_sticker_search">AI斗图</string>
+    <string name="expression_manual_search_missing_text">请先输入文字，再点击搜索按钮</string>
     <string name="quick_settings_layout_title">键盘布局</string>
     <string name="quick_settings_theme_title">主题</string>
     <string name="quick_theme_light">浅色</string>

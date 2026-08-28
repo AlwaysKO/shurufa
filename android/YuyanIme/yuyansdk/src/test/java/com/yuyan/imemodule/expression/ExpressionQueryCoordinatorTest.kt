@@ -113,4 +113,33 @@ class ExpressionQueryCoordinatorTest {
         assertEquals(listOf("你好", "你好"), seen)
         coordinator.close()
     }
+
+    @Test
+    fun `手动搜索取消防抖并立即发布最新查询`() = runBlocking {
+        val seen = mutableListOf<String>()
+        val coordinator = ExpressionQueryCoordinator(this, 10_000) { seen += it }
+
+        coordinator.onCommitted("旧查询")
+        assertTrue(coordinator.searchImmediately("新查询"))
+
+        assertEquals(listOf("新查询"), seen)
+        assertTrue(coordinator.acceptResponse(2))
+        assertFalse(coordinator.acceptResponse(1))
+        coordinator.close()
+    }
+
+    @Test
+    fun `连续手动搜索使旧响应失效且关闭后不再发布`() = runBlocking {
+        val seen = mutableListOf<String>()
+        val coordinator = ExpressionQueryCoordinator(this, 0) { seen += it }
+
+        assertTrue(coordinator.searchImmediately("第一次"))
+        assertTrue(coordinator.searchImmediately("第二次"))
+        assertFalse(coordinator.acceptResponse(1))
+        assertTrue(coordinator.acceptResponse(2))
+        coordinator.close()
+
+        assertFalse(coordinator.searchImmediately("关闭后"))
+        assertEquals(listOf("第一次", "第二次"), seen)
+    }
 }

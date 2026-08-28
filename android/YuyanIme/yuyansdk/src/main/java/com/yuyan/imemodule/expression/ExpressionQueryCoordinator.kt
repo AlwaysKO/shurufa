@@ -35,6 +35,18 @@ class ExpressionQueryCoordinator(
         text.trim().takeIf(String::isNotEmpty)?.let(::updateQuery)
     }
 
+    /** 工具栏手动搜索：取消自动查询的防抖任务并同步发布新查询。 */
+    fun searchImmediately(text: String): Boolean {
+        if (closed) return false
+        val query = text.trim().takeIf(String::isNotEmpty) ?: return false
+        currentQuery = query
+        requestId += 1
+        pendingQuery?.cancel()
+        pendingQuery = null
+        publishQuery(query)
+        return true
+    }
+
     fun acceptResponse(requestId: Long): Boolean =
         !closed && currentQuery != null && requestId == this.requestId
 

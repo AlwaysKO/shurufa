@@ -41,6 +41,7 @@ import com.yuyan.imemodule.entity.keyboard.SoftKey
 import com.yuyan.imemodule.expression.ExpressionCache
 import com.yuyan.imemodule.expression.ExpressionCatalog
 import com.yuyan.imemodule.expression.ChatEditorGate
+import com.yuyan.imemodule.expression.ExpressionManualSearch
 import com.yuyan.imemodule.expression.ExpressionPanelState
 import com.yuyan.imemodule.expression.ExpressionPanelPresentation
 import com.yuyan.imemodule.expression.ExpressionQueryCoordinator
@@ -124,6 +125,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     private var expressionPanelState = ExpressionPanelState(chatEditor = false)
     private lateinit var expressionPanel: ExpressionPanel
     private lateinit var expressionQueryCoordinator: ExpressionQueryCoordinator
+    private lateinit var expressionManualSearch: ExpressionManualSearch
     private lateinit var expressionFlow: ExpressionFlowController
     private lateinit var expressionRecommendationResolver: ExpressionRecommendationResolver
     private var expressionSync: ExpressionSync? = null
@@ -281,6 +283,17 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             debounceMillis = 180,
             publishQuery = ::searchExpressions,
         )
+        expressionManualSearch = ExpressionManualSearch(
+            showMissingText = {
+                Toast.makeText(
+                    context,
+                    R.string.expression_manual_search_missing_text,
+                    Toast.LENGTH_SHORT,
+                ).show()
+            },
+            preparePanel = ::prepareExpressionPanelForManualSearch,
+            searchImmediately = { query -> expressionQueryCoordinator.searchImmediately(query) },
+        )
     }
 
     private suspend fun prepareAsset(
@@ -411,6 +424,28 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 }
             }
         }
+    }
+
+    private fun prepareExpressionPanelForManualSearch() {
+        val aiStickerPreference = getInstance().internal.aiStickerEnabled
+        aiStickerPreference.setValue(true)
+        expressionPanelState.setAiStickerEnabled(true)
+        expressionPanelState.collapse()
+        expressionSync?.let { expressionPanel.render(expressionPanelState, it.currentCatalog()) }
+    }
+
+    /** 工具栏 AI 斗图手动搜索入口。 */
+    fun searchExpressionsManually() {
+        val activeComposingText = if (!DecodingInfo.isCandidatesEmpty && !DecodingInfo.isAssociate) {
+            val active = mSkbCandidatesBarView.getActiveCandNo()
+            DecodingInfo.getCandidate(active)?.text ?: DecodingInfo.getCandidate(0)?.text
+        } else {
+            null
+        }
+        expressionManualSearch.perform(
+            activeComposingText = activeComposingText,
+            panelLastQuery = expressionPanelState.query,
+        )
     }
 
     private fun setExpressionExpanded(expanded: Boolean) {
@@ -893,8 +928,13 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         ExpressionCommitDispatcher.dispatch(
             text = text,
             commitText = ::commitDecInfoText,
-            notifyExpression = expressionQueryCoordinator::onCommitted,
+            notifyExpression = ::onExpressionTextCommitted,
         )
+    }
+
+    private fun onExpressionTextCommitted(text: String) {
+        expressionManualSearch.onCommitted(text)
+        expressionQueryCoordinator.onCommitted(text)
     }
 
     private fun updateCandidate() {
@@ -1108,6 +1148,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
     private fun resetExpressionTarget(editorInfo: EditorInfo) {
         setExpressionExpanded(false)
+        expressionManualSearch.resetSession()
         expressionQueryCoordinator.close()
         expressionQueryCoordinator = ExpressionQueryCoordinator(
             scope = expressionScope,
@@ -1140,6 +1181,9 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             mAddPhrasesLayout.addPhrasesHandle()
             initView(context)
         }
+        expressionManualSearch.resetSession()
+        expressionQueryCoordinator.reset()
+        clearExpressionQuery()
         KeyboardManager.instance.switchKeyboard()
         resetToIdleState()
     }
