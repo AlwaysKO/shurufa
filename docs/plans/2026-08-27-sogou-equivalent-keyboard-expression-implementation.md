@@ -308,7 +308,7 @@ assertEquals(Query("民营企业"), ExpressionManualSearch.resolve(null, "民营
 assertEquals(Query("新文字"), ExpressionManualSearch.resolve("新文字", "旧文字"))
 ```
 
-Robolectric 测试验证 `MissingText` 不调用搜索回调，并显示项目字符串“请先输入文字，再点击按钮”。
+Robolectric 测试验证 `MissingText` 不调用搜索回调，并显示用户确认的项目字符串“请先输入文字，再点击搜索按钮”。
 
 **步骤 2：运行测试验证失败**
 
@@ -430,7 +430,7 @@ cd android/YuyanIme
 
 1. 九宫格、中文 26 键、英文 26 键、手写、笔画、数字、符号、文本编辑。
 2. 空候选工具栏，确认表情、快捷键盘、AI 搜索位置和既有功能仍在。
-3. 无文字点击 AI 搜索，确认只提示“请先输入文字，再点击按钮”。
+3. 无文字点击 AI 搜索，确认只提示“请先输入文字，再点击搜索按钮”。
 4. 有文字自动推荐和手动搜索、三标签、横滑、长按/上滑展开、返回折叠。
 5. 关闭 AI 斗图、恢复入口、浅色/深色主题即时切换。
 6. 连续快速输入、删除和切换聊天输入框，确认无旧图串入、无触摸死区。
@@ -442,4 +442,3 @@ git status --short
 git add <仅本任务直接相关文件>
 git commit -m "test: 验证搜狗等价输入体验"
 ```
-
