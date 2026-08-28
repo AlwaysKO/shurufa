@@ -81,4 +81,29 @@ class ExpressionManualSearchTest {
         assertEquals(listOf("当前面板文字"), queries)
         assertTrue(queries.none { it == "旧输入框文字" })
     }
+
+    @Test
+    fun `纯标点不是有效搜索文字但中文单字是有效意图`() {
+        val queries = mutableListOf<String>()
+        var missing = 0
+        val search = ExpressionManualSearch(
+            showMissingText = { missing += 1 },
+            preparePanel = {},
+            searchImmediately = { queries += it },
+        )
+
+        search.onCommitted("！？……")
+        assertSame(
+            ExpressionManualSearchDecision.MissingText,
+            search.perform(activeComposingText = null, panelLastQuery = null),
+        )
+
+        search.onCommitted("猫")
+        assertEquals(
+            ExpressionManualSearchDecision.Query("猫"),
+            search.perform(activeComposingText = null, panelLastQuery = null),
+        )
+        assertEquals(1, missing)
+        assertEquals(listOf("猫"), queries)
+    }
 }

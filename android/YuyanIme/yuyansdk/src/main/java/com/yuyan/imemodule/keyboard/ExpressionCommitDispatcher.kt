@@ -3,10 +3,12 @@ package com.yuyan.imemodule.keyboard
 internal object ExpressionCommitDispatcher {
     fun dispatch(
         text: String?,
-        commitText: (String?) -> Unit,
+        commitText: (String?) -> Boolean,
         notifyExpression: (String) -> Unit,
     ) {
-        commitText(text)
-        text?.takeIf(String::isNotEmpty)?.also(notifyExpression)
+        val committedToHost = commitText(text)
+        if (committedToHost) {
+            text?.takeIf(String::isNotEmpty)?.also(notifyExpression)
+        }
     }
 }

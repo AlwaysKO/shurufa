@@ -10,7 +10,7 @@ class ExpressionCommitDispatcherTest {
 
         ExpressionCommitDispatcher.dispatch(
             text = "你好",
-            commitText = { events += "commit:$it" },
+            commitText = { events += "commit:$it"; true },
             notifyExpression = { events += "expression:$it" },
         )
 
@@ -23,10 +23,23 @@ class ExpressionCommitDispatcherTest {
 
         ExpressionCommitDispatcher.dispatch(
             text = "",
-            commitText = { events += "commit:$it" },
+            commitText = { events += "commit:$it"; true },
             notifyExpression = { events += "expression:$it" },
         )
 
         assertEquals(listOf("commit:"), events)
+    }
+
+    @Test
+    fun `未提交到宿主输入连接时不记录斗图查询文字`() {
+        val events = mutableListOf<String>()
+
+        ExpressionCommitDispatcher.dispatch(
+            text = "内部短语编辑",
+            commitText = { events += "internal:$it"; false },
+            notifyExpression = { events += "expression:$it" },
+        )
+
+        assertEquals(listOf("internal:内部短语编辑"), events)
     }
 }

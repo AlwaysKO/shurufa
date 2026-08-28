@@ -411,7 +411,7 @@ class ImeService : InputMethodService() {
     /**
      * 发送字符串给编辑框
      */
-    fun commitText(text: String, recordEvent: Boolean = true) {
+    fun commitText(text: String, recordEvent: Boolean = true): Boolean {
         if (recordEvent) {
             DataCollector.recordEvent(
                 this, "commit", text = text,
@@ -419,7 +419,7 @@ class ImeService : InputMethodService() {
                 source = "candidate",
             )
         }
-        currentInputConnection.commitText(StringUtils.converted2FlowerTypeface(text), 1)
+        return currentInputConnection.commitText(StringUtils.converted2FlowerTypeface(text), 1)
     }
 
     /**

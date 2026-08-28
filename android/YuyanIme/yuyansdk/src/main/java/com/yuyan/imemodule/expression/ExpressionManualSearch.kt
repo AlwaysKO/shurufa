@@ -18,7 +18,7 @@ class ExpressionManualSearch(
     private var recentCommittedText: String? = null
 
     fun onCommitted(text: String?) {
-        recentCommittedText = text.normalizedText() ?: recentCommittedText
+        recentCommittedText = text.searchableTextOrNull() ?: recentCommittedText
     }
 
     fun resetSession() {
@@ -49,13 +49,15 @@ class ExpressionManualSearch(
             recentCommittedText: String?,
             panelLastQuery: String?,
         ): ExpressionManualSearchDecision {
-            val query = activeComposingText.normalizedText()
-                ?: recentCommittedText.normalizedText()
-                ?: panelLastQuery.normalizedText()
+            val query = activeComposingText.searchableTextOrNull()
+                ?: recentCommittedText.searchableTextOrNull()
+                ?: panelLastQuery.searchableTextOrNull()
             return query?.let(ExpressionManualSearchDecision::Query)
                 ?: ExpressionManualSearchDecision.MissingText
         }
     }
 }
 
-private fun String?.normalizedText(): String? = this?.trim()?.takeIf(String::isNotEmpty)
+private fun String?.searchableTextOrNull(): String? = this
+    ?.trim()
+    ?.takeIf { text -> text.any(Char::isLetterOrDigit) }

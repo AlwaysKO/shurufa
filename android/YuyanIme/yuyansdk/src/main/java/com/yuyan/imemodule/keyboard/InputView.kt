@@ -41,6 +41,7 @@ import com.yuyan.imemodule.entity.keyboard.SoftKey
 import com.yuyan.imemodule.expression.ExpressionCache
 import com.yuyan.imemodule.expression.ExpressionCatalog
 import com.yuyan.imemodule.expression.ChatEditorGate
+import com.yuyan.imemodule.expression.ExpressionComposingTextSource
 import com.yuyan.imemodule.expression.ExpressionManualSearch
 import com.yuyan.imemodule.expression.ExpressionPanelState
 import com.yuyan.imemodule.expression.ExpressionPanelPresentation
@@ -126,6 +127,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     private lateinit var expressionPanel: ExpressionPanel
     private lateinit var expressionQueryCoordinator: ExpressionQueryCoordinator
     private lateinit var expressionManualSearch: ExpressionManualSearch
+    internal var expressionComposingTextSource = ExpressionComposingTextSource.fromEngine()
     private lateinit var expressionFlow: ExpressionFlowController
     private lateinit var expressionRecommendationResolver: ExpressionRecommendationResolver
     private var expressionSync: ExpressionSync? = null
@@ -436,14 +438,10 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
     /** 工具栏 AI 斗图手动搜索入口。 */
     fun searchExpressionsManually() {
-        val activeComposingText = if (!DecodingInfo.isCandidatesEmpty && !DecodingInfo.isAssociate) {
-            val active = mSkbCandidatesBarView.getActiveCandNo()
-            DecodingInfo.getCandidate(active)?.text ?: DecodingInfo.getCandidate(0)?.text
-        } else {
-            null
-        }
         expressionManualSearch.perform(
-            activeComposingText = activeComposingText,
+            activeComposingText = expressionComposingTextSource.currentText(
+                mSkbCandidatesBarView.getActiveCandNo(),
+            ),
             panelLastQuery = expressionPanelState.query,
         )
     }
@@ -924,15 +922,15 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         }
     }
 
-    private fun commitCandidateAndNotify(text: String?) {
+    internal fun commitCandidateAndNotify(text: String?) {
         ExpressionCommitDispatcher.dispatch(
             text = text,
             commitText = ::commitDecInfoText,
-            notifyExpression = ::onExpressionTextCommitted,
+            notifyExpression = ::notifyExpressionTextCommitted,
         )
     }
 
-    private fun onExpressionTextCommitted(text: String) {
+    internal fun notifyExpressionTextCommitted(text: String) {
         expressionManualSearch.onCommitted(text)
         expressionQueryCoordinator.onCommitted(text)
     }
@@ -1084,17 +1082,19 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
     fun performEditorAction(editorAction: Int) = service.performEditorAction(editorAction)
 
-    private fun commitDecInfoText(resultText: String?) {
-        resultText ?: return
+    private fun commitDecInfoText(resultText: String?): Boolean {
+        resultText ?: return false
         if (isAddPhrases) {
             mAddPhrasesLayout.commitText(resultText)
+            return false
         } else {
-            service.commitText(StringUtils.converted2FlowerTypeface(resultText))
-            if (InputModeSwitcher.isEnglish){
+            val committedToHost = service.commitText(StringUtils.converted2FlowerTypeface(resultText))
+            if (committedToHost && InputModeSwitcher.isEnglish){
                 service.finishComposingText()
                 if(appPrefs.input.abcSpaceAuto.getValue()) service.commitText(" ")
                 resetToIdleState()
             }
+            return committedToHost
         }
     }
 
@@ -1127,7 +1127,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     }
 
     fun onStartInputView(editorInfo: EditorInfo, restarting: Boolean) {
-        resetExpressionTarget(editorInfo)
+        onExpressionInputTargetChanged(editorInfo)
         InputModeSwitcher.requestInputWithSkb(editorInfo)
         if (!restarting) {
             resetToIdleState()
@@ -1146,7 +1146,8 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         }
     }
 
-    private fun resetExpressionTarget(editorInfo: EditorInfo) {
+    /** 输入连接/编辑器切换时的斗图会话边界，由 [onStartInputView] 调用。 */
+    internal fun onExpressionInputTargetChanged(editorInfo: EditorInfo) {
         setExpressionExpanded(false)
         expressionManualSearch.resetSession()
         expressionQueryCoordinator.close()
