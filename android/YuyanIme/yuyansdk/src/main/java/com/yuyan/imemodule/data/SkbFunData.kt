@@ -39,14 +39,16 @@ val menuSkbFunsPreset: Map<SkbMenuMode, SkbFunItem> = hashMapOf(
 /**
  * 将数据库工具项映射到纯 Kotlin 工具栏规格，同时保留非固定项的原对象和重复语义。
  */
-fun mergeKeyboardToolbarItems(existing: List<SkbFunItem>): List<SkbFunItem> {
+fun mergeKeyboardToolbarItems(existing: List<SkbFunItem>): List<SkbFunItem?> {
     val itemsByMode = mutableMapOf<SkbMenuMode, ArrayDeque<SkbFunItem>>()
     existing.forEach { item ->
         itemsByMode.getOrPut(item.skbMenuMode, ::ArrayDeque).addLast(item)
     }
-    return KeyboardToolbarModel.merge(existing.map(SkbFunItem::skbMenuMode)).map { mode ->
-        itemsByMode[mode]?.pollFirst() ?: requireNotNull(menuSkbFunsPreset[mode]) {
-            "Missing toolbar preset for ${mode.name}"
+    return KeyboardToolbarModel.merge(existing.map(SkbFunItem::skbMenuMode)).map { slot ->
+        slot.skbMenuMode?.let { mode ->
+            itemsByMode[mode]?.pollFirst() ?: requireNotNull(menuSkbFunsPreset[mode]) {
+                "Missing toolbar preset for ${mode.name}"
+            }
         }
     }
 }
