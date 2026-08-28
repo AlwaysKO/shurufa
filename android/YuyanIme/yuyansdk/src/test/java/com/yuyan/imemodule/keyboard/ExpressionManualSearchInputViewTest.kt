@@ -1,6 +1,8 @@
 package com.yuyan.imemodule.keyboard
 
 import android.content.Context
+import android.os.Looper
+import android.text.InputType
 import android.view.inputmethod.EditorInfo
 import androidx.preference.PreferenceManager
 import androidx.test.core.app.ApplicationProvider
@@ -28,12 +30,15 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows
 import org.robolectric.shadows.ShadowToast
 
 @RunWith(RobolectricTestRunner::class)
 class ExpressionManualSearchInputViewTest {
     private lateinit var context: Context
     private val services = mutableListOf<ImeService>()
+    private val inputViews = mutableListOf<InputView>()
+    private var originalAiStickerEnabled = false
 
     @Before
     fun setUp() {
@@ -43,6 +48,7 @@ class ExpressionManualSearchInputViewTest {
             set(Launcher.instance, context)
         }
         AppPrefs.init(PreferenceManager.getDefaultSharedPreferences(context))
+        originalAiStickerEnabled = AppPrefs.getInstance().internal.aiStickerEnabled.getValue()
         ThemeManager.init(context.resources.configuration)
         YuyanEmojiCompat.init(context)
         EnvironmentSingleton.instance.initData(context)
@@ -54,8 +60,12 @@ class ExpressionManualSearchInputViewTest {
 
     @After
     fun tearDown() {
+        inputViews.forEach(InputView::disposeExpressionResources)
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+        inputViews.clear()
         services.forEach(ImeService::onDestroy)
         services.clear()
+        AppPrefs.getInstance().internal.aiStickerEnabled.setValue(originalAiStickerEnabled)
         DecodingInfo.candidatesLiveData.value = emptyList()
         DecodingInfo.isAssociate = false
     }
@@ -174,10 +184,52 @@ class ExpressionManualSearchInputViewTest {
         assertEquals("Hello", inputView.expressionState().query)
     }
 
+    @Test
+    fun `同一输入目标restarting保留组合和斗图会话`() {
+        val inputView = realChatInputView()
+        var compositionClearCount = 0
+        inputView.expressionComposingTextSource = ExpressionComposingTextSource(
+            isComposing = { false }, rawInput = { null }, isAssociate = { false },
+            candidateText = { null }, clearComposition = { compositionClearCount += 1 },
+        )
+        val editor = chatEditorInfo()
+        val connection = Any()
+        inputView.onExpressionInputViewStarted(editor, restarting = false, connectionIdentity = connection)
+        inputView.notifyExpressionTextCommitted("当前会话")
+        inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+        assertEquals("当前会话", inputView.expressionState().query)
+
+        inputView.onExpressionInputViewStarted(editor, restarting = true, connectionIdentity = connection)
+
+        assertEquals(1, compositionClearCount)
+        assertEquals("当前会话", inputView.expressionState().query)
+    }
+
+    @Test
+    fun `非re restarting即使编辑器相同也清理组合和斗图会话`() {
+        val inputView = realChatInputView()
+        var compositionClearCount = 0
+        inputView.expressionComposingTextSource = ExpressionComposingTextSource(
+            isComposing = { false }, rawInput = { null }, isAssociate = { false },
+            candidateText = { null }, clearComposition = { compositionClearCount += 1 },
+        )
+        val editor = chatEditorInfo()
+        val connection = Any()
+        inputView.onExpressionInputViewStarted(editor, restarting = false, connectionIdentity = connection)
+        inputView.notifyExpressionTextCommitted("上一会话")
+        inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+
+        inputView.onExpressionInputViewStarted(editor, restarting = false, connectionIdentity = connection)
+
+        assertEquals(2, compositionClearCount)
+        assertNull(inputView.expressionState().query)
+    }
+
     private fun realChatInputView(): InputView {
         val service = Robolectric.buildService(ImeService::class.java).create().get()
         services += service
         val inputView = service.onCreateInputView() as InputView
+        inputViews += inputView
         inputView.expressionState().setChatEditor(true)
         inputView.expressionComposingTextSource = ExpressionComposingTextSource(
             isComposing = { false },
@@ -193,4 +245,11 @@ class ExpressionManualSearchInputViewTest {
             field.isAccessible = true
             field.get(this) as ExpressionPanelState
         }
+
+    private fun chatEditorInfo() = EditorInfo().apply {
+        packageName = "com.tencent.mm"
+        fieldId = 9
+        inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
+        imeOptions = EditorInfo.IME_ACTION_SEND
+    }
 }

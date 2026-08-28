@@ -106,4 +106,69 @@ class ExpressionManualSearchTest {
         assertEquals(1, missing)
         assertEquals(listOf("猫"), queries)
     }
+
+    @Test
+    fun `英文直输的成功逐字提交累积为完整查询`() {
+        val search = newSearch()
+
+        "hello".forEach { character ->
+            search.onHostCommitted(character.toString(), ExpressionCommitKind.INCREMENTAL)
+        }
+
+        assertEquals(
+            ExpressionManualSearchDecision.Query("hello"),
+            search.perform(activeComposingText = null, panelLastQuery = null),
+        )
+    }
+
+    @Test
+    fun `英文直输空格分隔短语而纯标点不覆盖有效查询`() {
+        val search = newSearch()
+        "hello world".forEach { character ->
+            search.onHostCommitted(character.toString(), ExpressionCommitKind.INCREMENTAL)
+        }
+        search.onHostCommitted("!?", ExpressionCommitKind.COMPLETE)
+
+        assertEquals(
+            ExpressionManualSearchDecision.Query("hello world"),
+            search.perform(activeComposingText = null, panelLastQuery = null),
+        )
+
+        search.onHostCommitted("w", ExpressionCommitKind.INCREMENTAL)
+        assertEquals(
+            ExpressionManualSearchDecision.Query("w"),
+            search.perform(activeComposingText = null, panelLastQuery = null),
+        )
+    }
+
+    @Test
+    fun `候选或语音整段提交替换逐字累积文字`() {
+        val search = newSearch()
+        "hello".forEach { character ->
+            search.onHostCommitted(character.toString(), ExpressionCommitKind.INCREMENTAL)
+        }
+
+        search.onHostCommitted("语音输入整段", ExpressionCommitKind.COMPLETE)
+
+        assertEquals(
+            ExpressionManualSearchDecision.Query("语音输入整段"),
+            search.perform(activeComposingText = null, panelLastQuery = null),
+        )
+    }
+
+    @Test
+    fun `有效查询按Unicode code point识别补充平面字母`() {
+        val supplementaryLetter = "\uD801\uDC00" // U+10400 DESERET CAPITAL LETTER LONG I
+
+        assertEquals(
+            ExpressionManualSearchDecision.Query(supplementaryLetter),
+            ExpressionManualSearch.resolve(null, supplementaryLetter, null),
+        )
+    }
+
+    private fun newSearch() = ExpressionManualSearch(
+        showMissingText = {},
+        preparePanel = {},
+        searchImmediately = {},
+    )
 }

@@ -8,6 +8,7 @@ import com.yuyan.imemodule.application.Launcher
 import com.yuyan.imemodule.keyboard.InputView
 import com.yuyan.imemodule.prefs.AppPrefs
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
@@ -15,6 +16,17 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class ImeServiceKeyEventTest {
+    @Test
+    fun commitText公共ABI保持Unit返回() {
+        val method = ImeService::class.java.getDeclaredMethod(
+            "commitText",
+            String::class.java,
+            Boolean::class.javaPrimitiveType,
+        )
+
+        assertEquals(Void.TYPE, method.returnType)
+    }
+
     @Test
     fun backKeyBeforeInputViewCreationDoesNotCrash() {
         val context = ApplicationProvider.getApplicationContext<Context>()

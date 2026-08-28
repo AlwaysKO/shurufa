@@ -29,6 +29,8 @@ import com.yuyan.imemodule.data.theme.ThemeManager.OnThemeChangeListener
 import com.yuyan.imemodule.data.theme.ThemeManager.addOnChangedListener
 import com.yuyan.imemodule.data.theme.ThemeManager.onSystemDarkModeChange
 import com.yuyan.imemodule.data.theme.ThemeManager.removeOnChangedListener
+import com.yuyan.imemodule.expression.ExpressionCommitKind
+import com.yuyan.imemodule.expression.HostTextCommitDispatcher
 import com.yuyan.imemodule.keyboard.InputView
 import com.yuyan.imemodule.keyboard.KeyboardManager
 import com.yuyan.imemodule.keyboard.container.ClipBoardContainer
@@ -68,6 +70,8 @@ class ImeService : InputMethodService() {
         },
     )
     private var voiceRecognizer: SpeechRecognizer? = null
+    private var hostTextCommitListenerOwner: Any? = null
+    private var hostTextCommitListener: ((String, ExpressionCommitKind) -> Unit)? = null
     private val onThemeChangeListener = OnThemeChangeListener { _: Theme? -> if (isHardwareKeyboard) mCandidateView.updateTheme() else mInputView.updateTheme()}
     private val clipboardUpdateContent = getInstance().internal.clipboardUpdateContent
     private val clipboardUpdateContentListener = ManagedPreference.OnChangeListener<String> { _, value ->
@@ -411,7 +415,16 @@ class ImeService : InputMethodService() {
     /**
      * 发送字符串给编辑框
      */
-    fun commitText(text: String, recordEvent: Boolean = true): Boolean {
+    fun commitText(text: String, recordEvent: Boolean = true) {
+        commitTextAndReport(text, recordEvent, ExpressionCommitKind.COMPLETE)
+    }
+
+    /** 需要根据宿主提交结果决定后续动作的模块内入口。 */
+    internal fun commitTextAndReport(
+        text: String,
+        recordEvent: Boolean = true,
+        kind: ExpressionCommitKind = ExpressionCommitKind.COMPLETE,
+    ): Boolean {
         if (recordEvent) {
             DataCollector.recordEvent(
                 this, "commit", text = text,
@@ -419,7 +432,16 @@ class ImeService : InputMethodService() {
                 source = "candidate",
             )
         }
-        return currentInputConnection.commitText(StringUtils.converted2FlowerTypeface(text), 1)
+        return HostTextCommitDispatcher.dispatch(
+            text = text,
+            kind = kind,
+            commitToHost = {
+                currentInputConnection?.commitText(StringUtils.converted2FlowerTypeface(text), 1) == true
+            },
+            notifyCommitted = { committedText, commitKind ->
+                hostTextCommitListener?.invoke(committedText, commitKind)
+            },
+        )
     }
 
     /**
@@ -433,7 +455,34 @@ class ImeService : InputMethodService() {
                 source = "candidate",
             )
         }
-        currentInputConnection.commitText(StringUtils.converted2FlowerTypeface(text), newCursorPosition)
+        HostTextCommitDispatcher.dispatch(
+            text = text,
+            kind = ExpressionCommitKind.COMPLETE,
+            commitToHost = {
+                currentInputConnection?.commitText(
+                    StringUtils.converted2FlowerTypeface(text),
+                    newCursorPosition,
+                ) == true
+            },
+            notifyCommitted = { committedText, commitKind ->
+                hostTextCommitListener?.invoke(committedText, commitKind)
+            },
+        )
+    }
+
+    internal fun setHostTextCommitListener(
+        owner: Any,
+        listener: (String, ExpressionCommitKind) -> Unit,
+    ) {
+        hostTextCommitListenerOwner = owner
+        hostTextCommitListener = listener
+    }
+
+    internal fun clearHostTextCommitListener(owner: Any) {
+        if (hostTextCommitListenerOwner === owner) {
+            hostTextCommitListenerOwner = null
+            hostTextCommitListener = null
+        }
     }
 
     fun getTextBeforeCursor(length:Int) : String {

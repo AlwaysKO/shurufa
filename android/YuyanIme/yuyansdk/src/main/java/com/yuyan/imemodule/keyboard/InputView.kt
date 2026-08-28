@@ -42,6 +42,8 @@ import com.yuyan.imemodule.expression.ExpressionCache
 import com.yuyan.imemodule.expression.ExpressionCatalog
 import com.yuyan.imemodule.expression.ChatEditorGate
 import com.yuyan.imemodule.expression.ExpressionComposingTextSource
+import com.yuyan.imemodule.expression.ExpressionCommitKind
+import com.yuyan.imemodule.expression.ExpressionInputTargetTracker
 import com.yuyan.imemodule.expression.ExpressionManualSearch
 import com.yuyan.imemodule.expression.ExpressionPanelState
 import com.yuyan.imemodule.expression.ExpressionPanelPresentation
@@ -128,6 +130,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     private lateinit var expressionQueryCoordinator: ExpressionQueryCoordinator
     private lateinit var expressionManualSearch: ExpressionManualSearch
     internal var expressionComposingTextSource = ExpressionComposingTextSource.fromEngine()
+    private val expressionInputTargetTracker = ExpressionInputTargetTracker()
     private lateinit var expressionFlow: ExpressionFlowController
     private lateinit var expressionRecommendationResolver: ExpressionRecommendationResolver
     private var expressionSync: ExpressionSync? = null
@@ -296,6 +299,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             preparePanel = ::prepareExpressionPanelForManualSearch,
             searchImmediately = { query -> expressionQueryCoordinator.searchImmediately(query) },
         )
+        service.setHostTextCommitListener(this, ::notifyExpressionTextCommitted)
     }
 
     private suspend fun prepareAsset(
@@ -785,7 +789,13 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         when (val keyCode = event.keyCode) {
             KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_SPACE -> {
                 if (DecodingInfo.isCandidatesEmpty || DecodingInfo.isAssociate) {
-                    sendKeyEvent(keyCode)
+                    val directEnglish = InputModeSwitcher.isEnglish &&
+                        !appPrefs.input.abcSearchEnglishCell.getValue()
+                    if (keyCode == KeyEvent.KEYCODE_SPACE && directEnglish) {
+                        commitText(" ")
+                    } else {
+                        sendKeyEvent(keyCode)
+                    }
                     resetToIdleState()
                 }
                 else chooseAndUpdate()
@@ -923,16 +933,14 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     }
 
     internal fun commitCandidateAndNotify(text: String?) {
-        ExpressionCommitDispatcher.dispatch(
-            text = text,
-            commitText = ::commitDecInfoText,
-            notifyExpression = ::notifyExpressionTextCommitted,
-        )
+        commitDecInfoText(text)
     }
 
-    internal fun notifyExpressionTextCommitted(text: String) {
-        expressionManualSearch.onCommitted(text)
-        expressionQueryCoordinator.onCommitted(text)
+    internal fun notifyExpressionTextCommitted(
+        text: String,
+        kind: ExpressionCommitKind = ExpressionCommitKind.COMPLETE,
+    ) {
+        expressionManualSearch.onHostCommitted(text, kind)?.let(expressionQueryCoordinator::onCommitted)
     }
 
     private fun updateCandidate() {
@@ -993,14 +1001,19 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     }
 
     override fun onDetachedFromWindow() {
+        disposeExpressionResources()
+        super.onDetachedFromWindow()
+    }
+
+    internal fun disposeExpressionResources() {
         service.setExpressionBackHandlingEnabled(false)
+        service.clearHostTextCommitListener(this)
         expressionQueryCoordinator.close()
         expressionSearchJob?.cancel()
         expressionPreviewJob?.cancel()
         expressionDownloadJob?.cancel()
         expressionPreparationJob?.cancel()
         expressionScope.cancel()
-        super.onDetachedFromWindow()
     }
 
     fun onSettingsMenuClick(skbMenuMode: SkbMenuMode, extra: Phrase? = null) {
@@ -1060,7 +1073,10 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
     private fun commitText(text: String) {
         if (isAddPhrases) mAddPhrasesLayout.commitText(text)
-        else service.commitText(StringUtils.converted2FlowerTypeface(text))
+        else service.commitTextAndReport(
+            StringUtils.converted2FlowerTypeface(text),
+            kind = ExpressionCommitKind.INCREMENTAL,
+        )
     }
 
     private fun commitPairSymbol(text: String) {
@@ -1088,7 +1104,10 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             mAddPhrasesLayout.commitText(resultText)
             return false
         } else {
-            val committedToHost = service.commitText(StringUtils.converted2FlowerTypeface(resultText))
+            val committedToHost = service.commitTextAndReport(
+                StringUtils.converted2FlowerTypeface(resultText),
+                kind = ExpressionCommitKind.COMPLETE,
+            )
             if (committedToHost && InputModeSwitcher.isEnglish){
                 service.finishComposingText()
                 if(appPrefs.input.abcSpaceAuto.getValue()) service.commitText(" ")
@@ -1128,7 +1147,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
     fun onStartInputView(editorInfo: EditorInfo, restarting: Boolean) {
         InputModeSwitcher.requestInputWithSkb(editorInfo)
-        onExpressionInputTargetChanged(editorInfo)
+        onExpressionInputViewStarted(editorInfo, restarting, service.currentInputConnection)
         if (!restarting) {
             resetToIdleState()
             val clipboard = appPrefs.clipboard
@@ -1143,6 +1162,17 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                     }
                 }
             }
+        }
+    }
+
+    /** 可测的生产生命周期边界；同一目标 restart 不打断当前组合/斗图请求。 */
+    internal fun onExpressionInputViewStarted(
+        editorInfo: EditorInfo,
+        restarting: Boolean,
+        connectionIdentity: Any?,
+    ) {
+        if (expressionInputTargetTracker.shouldReset(editorInfo, restarting, connectionIdentity)) {
+            onExpressionInputTargetChanged(editorInfo)
         }
     }
 
