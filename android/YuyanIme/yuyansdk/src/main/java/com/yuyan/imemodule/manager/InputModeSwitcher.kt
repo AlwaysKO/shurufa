@@ -272,13 +272,16 @@ object InputModeSwitcher {
     /**
      * 通过应用内设置，切换输入法模式。
      */
-    fun switchModeForSetting(value: Pair<Int, String>) {
+    fun switchModeForSetting(
+        value: Pair<Int, String>,
+        initializeSchema: (String) -> Unit = Kernel::initImeSchema,
+    ) {
         val inputMode = value.first or MASK_LANGUAGE_CN
         getInstance().internal.inputMethodPinyinMode.setValue(inputMode)
         getInstance().internal.pinyinModeRime.setValue(value.second)
         KeyboardLoaderUtil.instance.clearKeyboardMap()
         KeyboardManager.instance.clearKeyboard()
-        saveInputMode(inputMode)
+        saveInputMode(inputMode, initializeSchema)
         KeyboardManager.instance.switchKeyboard(skbImeLayout)
     }
 

@@ -27,8 +27,9 @@ import com.yuyan.imemodule.prefs.behavior.DoublePinyinSchemaMode
 import com.yuyan.imemodule.prefs.behavior.SkbMenuMode
 import com.yuyan.imemodule.singleton.EnvironmentSingleton
 import com.yuyan.imemodule.keyboard.InputView
+import com.yuyan.imemodule.keyboard.AndroidImeQuickKeyboardSettingsRuntime
 import com.yuyan.imemodule.keyboard.ImeQuickKeyboardSettingsActions
-import com.yuyan.imemodule.keyboard.ImeQuickKeyboardSettingsRuntime
+import com.yuyan.imemodule.keyboard.QuickSymbolSurface
 import com.yuyan.imemodule.keyboard.KeyboardManager
 import com.yuyan.imemodule.keyboard.QuickKeyboardAction
 import com.yuyan.imemodule.keyboard.QuickKeyboardLayoutId
@@ -56,7 +57,6 @@ class SettingsContainer(
     private var mRVMenuLayout: RecyclerView? = null
     private var mTheme: Theme? = null
     private var adapter:MenuAdapter? = null
-    private var themeChangedInQuickSettings = false
     private var selectedSymbolPage: SymbolPage? = null
     private val quickSettingsActions = quickSettingsActions ?: createQuickSettingsActions()
     private val quickSettingsController = QuickKeyboardSettingsController(this.quickSettingsActions)
@@ -66,16 +66,8 @@ class SettingsContainer(
         get() = quickSettingsController.isVisible
 
     companion object {
-        private val QUICK_THEME_IDS = setOf("MaterialLight", "MaterialDark")
-
-        internal fun applyQuickTheme(themeId: String): Boolean {
-            if (themeId !in QUICK_THEME_IDS) return false
-            val theme = ThemeManager.getTheme(themeId) ?: return false
-            // 快捷选择是明确的用户决定，关闭跟随系统才能跨重启保持该选择。
-            ThemeManager.prefs.followSystemDayNightTheme.setValue(false)
-            ThemeManager.setNormalModeTheme(theme)
-            return true
-        }
+        internal fun applyQuickTheme(themeId: String): Boolean =
+            AndroidImeQuickKeyboardSettingsRuntime.applyThemePreference(themeId)
     }
 
     init {
@@ -389,53 +381,28 @@ class SettingsContainer(
     )
 
     private fun createQuickSettingsActions(): QuickKeyboardSettingsActions =
-        ImeQuickKeyboardSettingsActions(object : ImeQuickKeyboardSettingsRuntime {
-            override val availableThemeIds: Set<String>
-                get() = ThemeManager.getAllThemes().mapTo(linkedSetOf()) { it.name }
-            override val currentThemeId: String
-                get() = ThemeManager.activeTheme.name
-
-            override fun switchChinese(layout: Int, schema: String) {
-                selectedSymbolPage = null
-                InputModeSwitcher.switchModeForSetting(layout to schema)
-            }
-
-            override fun switchEnglish() {
-                selectedSymbolPage = null
-                InputModeSwitcher.switchToEnglishForSetting()
-            }
-
-            override fun switchUserKey(keyCode: Int) {
-                selectedSymbolPage = null
-                InputModeSwitcher.switchModeForUserKey(keyCode)
-            }
-
-            override fun showSymbol(page: SymbolPage) {
-                selectedSymbolPage = page
-                KeyboardManager.instance.switchKeyboard(KeyboardManager.KeyboardType.SYMBOL)
-                (KeyboardManager.instance.currentContainer as? SymbolContainer)?.setSymbolsView(
-                    initialPage = if (page == SymbolPage.CHINESE) 1 else 2,
-                )
-            }
-
-            override fun applyTheme(themeId: String): Boolean {
-                if (!applyQuickTheme(themeId)) return false
-                themeChangedInQuickSettings = true
-                inputView.updateTheme()
-                return true
-            }
-
-            override fun closeQuickSettings() {
-                inputView.onQuickKeyboardSettingsClosed()
-                if (themeChangedInQuickSettings) {
-                    themeChangedInQuickSettings = false
-                    KeyboardLoaderUtil.instance.clearKeyboardMap()
-                    KeyboardManager.instance.clearKeyboard()
-                }
-                KeyboardManager.instance.switchKeyboard()
-                inputView.updateCandidateBar()
-            }
-        })
+        ImeQuickKeyboardSettingsActions(
+            AndroidImeQuickKeyboardSettingsRuntime(
+                symbolSurface = QuickSymbolSurface { page ->
+                    selectedSymbolPage = page
+                    KeyboardManager.instance.switchKeyboard(KeyboardManager.KeyboardType.SYMBOL)
+                    (KeyboardManager.instance.currentContainer as? SymbolContainer)?.setSymbolsView(
+                        initialPage = if (page == SymbolPage.CHINESE) 1 else 2,
+                    )
+                },
+                onInputSurfaceSelected = { selectedSymbolPage = null },
+                onThemeChanged = { inputView.updateTheme() },
+                onClose = { themeChanged ->
+                    inputView.onQuickKeyboardSettingsClosed()
+                    if (themeChanged) {
+                        KeyboardLoaderUtil.instance.clearKeyboardMap()
+                        KeyboardManager.instance.clearKeyboard()
+                    }
+                    KeyboardManager.instance.switchKeyboard()
+                    inputView.updateCandidateBar()
+                },
+            ),
+        )
 
     private fun onKeyboardMenuClick(data: SkbFunItem) {
         val value = when (data.skbMenuMode) {
