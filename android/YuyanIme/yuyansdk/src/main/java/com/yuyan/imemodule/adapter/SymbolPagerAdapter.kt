@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexWrap
@@ -13,6 +14,7 @@ import com.yuyan.imemodule.data.emojicon.YuyanEmojiCompat
 import com.yuyan.imemodule.database.DataBaseKT
 import com.yuyan.imemodule.prefs.behavior.SymbolMode
 import com.yuyan.imemodule.manager.layout.CustomFlexboxLayoutManager
+import com.yuyan.imemodule.keyboard.SymbolGridSpec
 
 /**
  * 表情或符号界面适配器
@@ -45,11 +47,15 @@ class SymbolPagerAdapter(context: Context, private val mDatas: Map<Int, List<Str
             }
             else -> mDatas[key]
         }
-        val manager = CustomFlexboxLayoutManager(mContext)
-        manager.flexDirection = FlexDirection.ROW
-        manager.flexWrap = FlexWrap.WRAP
-        manager.justifyContent = JustifyContent.SPACE_AROUND
-        holder.emojiGroupRv.layoutManager = manager
+        holder.emojiGroupRv.layoutManager = if (viewType == SymbolMode.Symbol) {
+            GridLayoutManager(mContext, SymbolGridSpec.COLUMN_COUNT)
+        } else {
+            CustomFlexboxLayoutManager(mContext).apply {
+                flexDirection = FlexDirection.ROW
+                flexWrap = FlexWrap.WRAP
+                justifyContent = JustifyContent.SPACE_AROUND
+            }
+        }
         val mSymbolAdapter = SymbolAdapter(mContext, viewType, position, onClickSymbol)
         mSymbolAdapter.mDatas = item
         holder.emojiGroupRv.adapter = mSymbolAdapter

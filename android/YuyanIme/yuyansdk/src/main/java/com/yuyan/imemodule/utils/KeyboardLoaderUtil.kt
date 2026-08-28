@@ -433,16 +433,24 @@ class KeyboardLoaderUtil private constructor() {
     }
 
     private fun SoftKey.applyThemeRole() {
-        keyType = when (code) {
-            KeyEvent.KEYCODE_ENTER -> KeyType.AccentKey
-            KeyEvent.KEYCODE_DEL,
-            KeyEvent.KEYCODE_CLEAR,
-            KeyEvent.KEYCODE_SHIFT_LEFT,
-            InputModeSwitcher.USER_KEYCODE_SYMBOL,
-            InputModeSwitcher.USER_KEYCODE_NUMBER,
-            InputModeSwitcher.USER_KEYCODE_RETURN,
-            InputModeSwitcher.USER_KEYCODE_LANG -> KeyType.Function
-            else -> KeyType.Normal
+        keyType = when {
+            code == KeyEvent.KEYCODE_ENTER -> KeyType.AccentKey
+            mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_TEXTEDIT -> KeyType.Function
+            mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_NUMBER -> when {
+                code in KeyEvent.KEYCODE_0..KeyEvent.KEYCODE_9 -> KeyType.Normal
+                code == InputModeSwitcher.USER_KEYCODE_LEFT_SYMBOL -> KeyType.Normal
+                else -> KeyType.Function
+            }
+            else -> when (code) {
+                KeyEvent.KEYCODE_DEL,
+                KeyEvent.KEYCODE_CLEAR,
+                KeyEvent.KEYCODE_SHIFT_LEFT,
+                InputModeSwitcher.USER_KEYCODE_SYMBOL,
+                InputModeSwitcher.USER_KEYCODE_NUMBER,
+                InputModeSwitcher.USER_KEYCODE_RETURN,
+                InputModeSwitcher.USER_KEYCODE_LANG -> KeyType.Function
+                else -> KeyType.Normal
+            }
         }
     }
 

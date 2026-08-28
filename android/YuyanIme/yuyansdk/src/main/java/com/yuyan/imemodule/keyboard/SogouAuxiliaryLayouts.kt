@@ -64,7 +64,7 @@ object SogouAuxiliaryLayouts {
     )
 
     val number: LayoutSpec = t9StyleSpec(
-        listOf(
+        codeRows = listOf(
             listOf(
                 InputModeSwitcher.USER_KEYCODE_LEFT_SYMBOL,
                 KeyEvent.KEYCODE_1,
@@ -81,7 +81,8 @@ object SogouAuxiliaryLayouts {
                 KeyEvent.KEYCODE_SPACE,
                 KeyEvent.KEYCODE_ENTER,
             ),
-        )
+        ),
+        bottomWidths = listOf(0.1694f, 0.2167f, 0.2167f, 0.2167f, 0.1694f),
     )
 
     val handwriting = LayoutSpec(
@@ -145,7 +146,10 @@ object SogouAuxiliaryLayouts {
         ),
     )
 
-    private fun t9StyleSpec(codeRows: List<List<Int>>): LayoutSpec {
+    private fun t9StyleSpec(
+        codeRows: List<List<Int>>,
+        bottomWidths: List<Float>? = null,
+    ): LayoutSpec {
         val rows = SogouT9Layout.rowGeometry
         val holder = key(
             left = SogouT9Layout.candidateCodeView.x,
@@ -157,9 +161,21 @@ object SogouAuxiliaryLayouts {
             touchRight = SogouT9Layout.MAIN_START_X,
             touchBottom = rows[2].touchBottom,
         )
+        val bottomGeometry = bottomWidths?.let { widths ->
+            val starts = widths.runningFold(SogouT9Layout.VISUAL_START_X) { left, width -> left + width }
+                .dropLast(1)
+            bottomRow(
+                top = SogouT9Layout.visualRowTops.last(),
+                starts = starts,
+                widths = widths,
+                height = SogouT9Layout.VISUAL_BOTTOM_ROW_HEIGHT,
+                touchLeft = 0f,
+                touchTop = rows.last().touchTop,
+            )
+        } ?: rows[3].keys
         return LayoutSpec(
             codeRows = codeRows,
-            visualRows = listOf(listOf(holder) + rows[0].keys, rows[1].keys, rows[2].keys, rows[3].keys),
+            visualRows = listOf(listOf(holder) + rows[0].keys, rows[1].keys, rows[2].keys, bottomGeometry),
         )
     }
 
@@ -169,6 +185,7 @@ object SogouAuxiliaryLayouts {
         widths: List<Float>,
         height: Float,
         touchLeft: Float,
+        touchTop: Float = top,
     ): List<KeyGeometry> {
         val boundaries = starts.zip(widths).zipWithNext { left, right ->
             ((left.first + left.second) + right.first) / 2f
@@ -180,7 +197,7 @@ object SogouAuxiliaryLayouts {
                 width = widths[index],
                 height = height,
                 touchLeft = boundaries.getOrElse(index - 1) { touchLeft },
-                touchTop = top,
+                touchTop = touchTop,
                 touchRight = boundaries.getOrElse(index) { 1f },
                 touchBottom = 1f,
             )

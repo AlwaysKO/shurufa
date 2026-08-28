@@ -17,6 +17,7 @@ import com.yuyan.imemodule.data.theme.ThemeManager.activeTheme
 import com.yuyan.imemodule.prefs.AppPrefs
 import com.yuyan.imemodule.prefs.behavior.HalfWidthSymbolsMode
 import com.yuyan.imemodule.prefs.behavior.SymbolMode
+import com.yuyan.imemodule.keyboard.SymbolGridSpec
 import com.yuyan.imemodule.singleton.EnvironmentSingleton
 import com.yuyan.imemodule.singleton.EnvironmentSingleton.Companion.instance
 import com.yuyan.imemodule.utils.StringUtils
@@ -35,7 +36,16 @@ class SymbolAdapter(context: Context?, val viewType: SymbolMode, private val pag
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SymbolHolder {
-        return SymbolHolder(inflater.inflate(R.layout.sdk_item_recyclerview_symbols_emoji, parent, false))
+        val itemView = inflater.inflate(R.layout.sdk_item_recyclerview_symbols_emoji, parent, false)
+        if (this.viewType == SymbolMode.Symbol) {
+            val itemGap = itemView.dp(SymbolGridSpec.ITEM_GAP_DP) / 2
+            itemView.layoutParams = RecyclerView.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                itemView.dp(SymbolGridSpec.MIN_TOUCH_TARGET_DP),
+            ).apply { setMargins(itemGap) }
+            itemView.minimumHeight = itemView.dp(SymbolGridSpec.MIN_TOUCH_TARGET_DP)
+        }
+        return SymbolHolder(itemView)
     }
 
     override fun onBindViewHolder(holder: SymbolHolder, position: Int) {
@@ -48,8 +58,12 @@ class SymbolAdapter(context: Context?, val viewType: SymbolMode, private val pag
                 HalfWidthSymbolsMode.None -> View.GONE
             }
         }
-        holder.textView.setOnClickListener { _: View? ->
-            onClickSymbol(mDatas!![position], position)
+        if (viewType == SymbolMode.Symbol) {
+            holder.textView.setPadding(0, 0, 0, 0)
+            holder.textView.isClickable = false
+        }
+        holder.itemView.setOnClickListener {
+            onClickSymbol(data, position)
         }
     }
 

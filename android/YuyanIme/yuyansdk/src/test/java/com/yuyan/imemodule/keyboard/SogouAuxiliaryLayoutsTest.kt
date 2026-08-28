@@ -10,6 +10,7 @@ import com.yuyan.imemodule.prefs.AppPrefs
 import com.yuyan.imemodule.singleton.EnvironmentSingleton
 import com.yuyan.imemodule.utils.KeyboardLoaderUtil
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -47,6 +48,11 @@ class SogouAuxiliaryLayoutsTest {
         assertEquals(KeyEvent.KEYCODE_H, stroke.codeRows[0][1])
         assertEquals(KeyEvent.KEYCODE_1, number.codeRows[0][1])
         assertEquals(KeyEvent.KEYCODE_0, number.codeRows.last()[2])
+        assertEquals(
+            listOf(0.1694f, 0.2167f, 0.2167f, 0.2167f, 0.1694f),
+            number.visualRows.last().map { it.width },
+        )
+        assertNotEquals(stroke.visualRows.last().map { it.width }, number.visualRows.last().map { it.width })
     }
 
     @Test
@@ -108,6 +114,10 @@ class SogouAuxiliaryLayoutsTest {
         assertEquals(KeyEvent.KEYCODE_1, number.keyAt(0.18f, 0.12f)?.code)
         assertEquals(KeyEvent.KEYCODE_2, number.keyAt(0.40f, 0.12f)?.code)
         assertEquals(KeyEvent.KEYCODE_DEL, number.keyAt(0.999f, 0.12f)?.code)
+        assertEquals(InputModeSwitcher.USER_KEYCODE_RETURN, number.keyAt(0.36f, 0.88f)?.code)
+
+        val stroke = load(InputModeSwitcher.MASK_SKB_LAYOUT_STROKE)
+        assertEquals(KeyEvent.KEYCODE_SPACE, stroke.keyAt(0.36f, 0.88f)?.code)
 
         val handwriting = load(InputModeSwitcher.MASK_SKB_LAYOUT_HANDWRITING)
         assertEquals(null, handwriting.keyAt(0.40f, 0.40f))
@@ -136,7 +146,17 @@ class SogouAuxiliaryLayoutsTest {
 
         assertEquals(KeyType.Function, keyboard.getKeyByCode(KeyEvent.KEYCODE_DEL)?.keyType)
         assertEquals(KeyType.Function, keyboard.getKeyByCode(InputModeSwitcher.USER_KEYCODE_SYMBOL)?.keyType)
+        assertEquals(KeyType.Function, keyboard.getKeyByCode(InputModeSwitcher.USER_KEYCODE_LEFT_PERIOD)?.keyType)
+        assertEquals(KeyType.Function, keyboard.getKeyByCode(KeyEvent.KEYCODE_AT)?.keyType)
+        assertEquals(KeyType.Function, keyboard.getKeyByCode(KeyEvent.KEYCODE_SPACE)?.keyType)
+        assertEquals(KeyType.Normal, keyboard.getKeyByCode(KeyEvent.KEYCODE_0)?.keyType)
+        assertEquals(KeyType.Normal, keyboard.getKeyByCode(KeyEvent.KEYCODE_5)?.keyType)
         assertEquals(KeyType.AccentKey, keyboard.getKeyByCode(KeyEvent.KEYCODE_ENTER)?.keyType)
+
+        val textEdit = load(InputModeSwitcher.MASK_SKB_LAYOUT_TEXTEDIT)
+        textEdit.mKeyRows.flatten().forEach { key ->
+            assertEquals("文字编辑键 ${key.code}", KeyType.Function, key.keyType)
+        }
     }
 
     companion object {
