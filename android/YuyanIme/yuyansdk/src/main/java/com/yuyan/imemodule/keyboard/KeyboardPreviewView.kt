@@ -43,7 +43,7 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
     private fun applyPreviewSize() {
         layoutParams?.width = instance.skbWidth
         layoutParams?.height = instance.skbHeight +
-            instance.effectiveCandidatesAreaHeight(resources.displayMetrics.density)
+            instance.effectiveCandidateRowHeight(resources.displayMetrics.density)
     }
 
     init {

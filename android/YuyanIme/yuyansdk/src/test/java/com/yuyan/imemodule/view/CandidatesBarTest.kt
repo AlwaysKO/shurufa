@@ -5,6 +5,7 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.StateListDrawable
 import android.view.View
+import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.preference.PreferenceManager
@@ -224,10 +225,26 @@ class CandidatesBarTest {
             layoutParams = FrameLayout.LayoutParams(1, 1)
             setTheme(ThemeManager.activeTheme)
         }
-        assertEquals(EnvironmentSingleton.instance.skbHeight + dp(12) + minimum, preview.layoutParams.height)
+        assertEquals(EnvironmentSingleton.instance.skbHeight + minimum, preview.layoutParams.height)
         preview.layoutParams.height = 1
         preview.setTheme(ThemeManager.activeTheme, ColorDrawable(android.graphics.Color.TRANSPARENT))
-        assertEquals(EnvironmentSingleton.instance.skbHeight + dp(12) + minimum, preview.layoutParams.height)
+        assertEquals(EnvironmentSingleton.instance.skbHeight + minimum, preview.layoutParams.height)
+    }
+
+    @Test
+    @Config(qualifiers = "w800dp-h800dp-xxhdpi")
+    fun `真实键盘预览两种主题入口均紧接四十四dp工具栏且底部无空白`() {
+        configureShortCandidateRows()
+        val plain = KeyboardPreviewView(context).apply {
+            layoutParams = FrameLayout.LayoutParams(1, 1)
+            setTheme(ThemeManager.activeTheme)
+        }
+        val customBackground = KeyboardPreviewView(context).apply {
+            layoutParams = FrameLayout.LayoutParams(1, 1)
+            setTheme(ThemeManager.activeTheme, ColorDrawable(android.graphics.Color.TRANSPARENT))
+        }
+
+        listOf(plain, customBackground).forEach(::assertPreviewHierarchyHasNoBlank)
     }
 
     @Test
@@ -317,6 +334,24 @@ class CandidatesBarTest {
             View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY),
         )
         host.layout(0, 0, host.measuredWidth, host.measuredHeight)
+    }
+
+    private fun assertPreviewHierarchyHasNoBlank(preview: KeyboardPreviewView) {
+        val host = FrameLayout(context).apply { addView(preview) }
+        host.measure(
+            View.MeasureSpec.makeMeasureSpec(EnvironmentSingleton.instance.skbWidth, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(dp(800), View.MeasureSpec.AT_MOST),
+        )
+        host.layout(0, 0, host.measuredWidth, host.measuredHeight)
+        val sdkPreviewRoot = preview.getChildAt(0) as ViewGroup
+        val candidates = sdkPreviewRoot.findViewById<View>(R.id.candidates_bar)
+        val keyboard = sdkPreviewRoot.findViewById<View>(R.id.skb_input_keyboard_view)
+
+        assertEquals(dp(44), candidates.height)
+        assertEquals(candidates.bottom, keyboard.top)
+        assertEquals(candidates.bottom + keyboard.height, sdkPreviewRoot.height)
+        assertEquals(sdkPreviewRoot.height, preview.height)
+        assertEquals(EnvironmentSingleton.instance.skbHeight + dp(44), preview.height)
     }
 
     private class RecordingCandidateListener : CandidateViewListener {
