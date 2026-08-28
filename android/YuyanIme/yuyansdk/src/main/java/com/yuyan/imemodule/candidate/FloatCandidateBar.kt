@@ -87,7 +87,7 @@ class FloatCandidateBar(context: Context?, attrs: AttributeSet?) : RelativeLayou
         } else {
             (mRVCandidates.parent as ViewGroup).removeView(mRVCandidates)
         }
-        val candidatesHeight = instance.heightForCandidates
+        val candidatesHeight = instance.effectiveCandidateRowHeight(resources.displayMetrics.density)
         mComposingView.layoutParams = LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, instance.heightForcomposing)
         candidatesData.layoutParams = LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, candidatesHeight)
         candidatesData.addView(mRVCandidates, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, candidatesHeight, 1f))

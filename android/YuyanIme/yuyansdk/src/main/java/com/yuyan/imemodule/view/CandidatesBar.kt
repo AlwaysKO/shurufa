@@ -180,7 +180,7 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
                 mCandidatesDataContainer.removeView(candidatesData)
             }
         }
-        val candidatesHeight = instance.heightForCandidates
+        val candidatesHeight = instance.effectiveCandidateRowHeight(resources.displayMetrics.density)
         mComposingView.layoutParams = LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, instance.heightForcomposing)
         candidatesData = createCandidateOverlay(context, mRVCandidates, mRightArrowBtn)
         candidatesData.layoutParams = LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, candidatesHeight)
@@ -296,7 +296,7 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
                 LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
             )
         }
-        val menuHeight = instance.effectiveCandidatesAreaHeight(resources.displayMetrics.density)
+        val menuHeight = instance.effectiveCandidateRowHeight(resources.displayMetrics.density)
         mFlowerType.textSize = instance.candidateTextSize
         mIvMenuSetting.layoutParams = LinearLayout.LayoutParams(menuHeight, menuHeight, 0f).apply { marginStart = dp(10) }
         mMenuRightArrowBtn.layoutParams = LinearLayout.LayoutParams(menuHeight, menuHeight, 0f).apply { marginEnd = dp(10) }
@@ -443,8 +443,14 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val showingCandidates = ::mCandidatesDataContainer.isInitialized &&
+            mCandidatesDataContainer.visibility == VISIBLE
         val heightMeasure = MeasureSpec.makeMeasureSpec(
-            instance.effectiveCandidatesAreaHeight(resources.displayMetrics.density),
+            if (showingCandidates) {
+                instance.effectiveCandidatesAreaHeight(resources.displayMetrics.density)
+            } else {
+                instance.effectiveCandidateRowHeight(resources.displayMetrics.density)
+            },
             MeasureSpec.EXACTLY,
         )
         val widthMeasure = MeasureSpec.makeMeasureSpec(instance.skbWidth, MeasureSpec.EXACTLY)

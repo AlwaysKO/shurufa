@@ -4,16 +4,18 @@ import android.content.Context
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.StateListDrawable
-import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.preference.PreferenceManager
 import androidx.emoji2.text.EmojiCompat
+import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ApplicationProvider
 import com.yuyan.imemodule.R
 import com.yuyan.imemodule.adapter.CandidatesMenuAdapter
 import com.yuyan.imemodule.application.Launcher
+import com.yuyan.imemodule.callback.CandidateViewListener
+import com.yuyan.imemodule.candidate.FloatCandidateBar
 import com.yuyan.imemodule.data.emojicon.YuyanEmojiCompat
 import com.yuyan.imemodule.data.theme.ThemeManager
 import com.yuyan.imemodule.data.theme.Theme
@@ -27,6 +29,7 @@ import com.yuyan.imemodule.prefs.behavior.SkbMenuMode
 import com.yuyan.imemodule.service.DecodingInfo
 import com.yuyan.imemodule.service.ImeService
 import com.yuyan.imemodule.singleton.EnvironmentSingleton
+import com.yuyan.inputmethod.core.CandidateListItem
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -46,6 +49,8 @@ class CandidatesBarTest {
     private var databaseSnapshot: List<SkbFun> = emptyList()
     private lateinit var originalTheme: Theme
     private var originalCandidateHeight = 0
+    private var originalComposingHeight = 0
+    private var originalCandidateRowHeight = 0
     private var originalInputAreaHeight = 0
 
     @Before
@@ -63,6 +68,8 @@ class CandidatesBarTest {
         YuyanEmojiCompat.init(context)
         EnvironmentSingleton.instance.initData(context)
         originalCandidateHeight = EnvironmentSingleton.instance.heightForCandidatesArea
+        originalComposingHeight = EnvironmentSingleton.instance.heightForcomposing
+        originalCandidateRowHeight = EnvironmentSingleton.instance.heightForCandidates
         originalInputAreaHeight = EnvironmentSingleton.instance.inputAreaHeight
         val dao = DataBaseKT.instance.skbFunDao()
         databaseSnapshot = dao.getAllMenu() + dao.getALlBarMenu()
@@ -85,6 +92,8 @@ class CandidatesBarTest {
         }
         ThemeManager.setNormalModeTheme(originalTheme)
         EnvironmentSingleton.instance.heightForCandidatesArea = originalCandidateHeight
+        EnvironmentSingleton.instance.heightForcomposing = originalComposingHeight
+        EnvironmentSingleton.instance.heightForCandidates = originalCandidateRowHeight
         EnvironmentSingleton.instance.inputAreaHeight = originalInputAreaHeight
         DecodingInfo.candidatesLiveData.value = emptyList()
     }
@@ -178,7 +187,9 @@ class CandidatesBarTest {
 
     @Test
     @Config(qualifiers = "w800dp-h800dp-xxhdpi")
-    fun `三倍密度生产候选栏父级与固定按钮实际触摸不小于四十四dp且预算同步`() {
+    fun `三倍密度候选高度由展示行加四十四dp点击行组成且空工具栏不留展示行空白`() {
+        EnvironmentSingleton.instance.heightForcomposing = dp(12)
+        EnvironmentSingleton.instance.heightForCandidates = dp(24)
         EnvironmentSingleton.instance.heightForCandidatesArea = dp(36)
         EnvironmentSingleton.instance.inputAreaHeight =
             EnvironmentSingleton.instance.skbHeight + EnvironmentSingleton.instance.heightForCandidatesArea
@@ -192,15 +203,13 @@ class CandidatesBarTest {
         inputView.refreshExpressionLayoutBudget()
         val bar = inputView.mSkbCandidatesBarView
         val minimum = dp(44)
-        assertEquals(
-            minimum,
-            EnvironmentSingleton.instance.effectiveCandidatesAreaHeight(context.resources.displayMetrics.density),
-        )
+        assertEquals(dp(12) + minimum, EnvironmentSingleton.instance.effectiveCandidatesAreaHeight(context.resources.displayMetrics.density))
+        assertEquals(minimum, EnvironmentSingleton.instance.effectiveCandidateRowHeight(context.resources.displayMetrics.density))
         val left = bar.privateField<View>("mIvMenuSetting")
         val right = bar.privateField<View>("mMenuRightArrowBtn")
         val keyboard = inputView.findViewById<View>(R.id.skb_input_keyboard_view)
 
-        assertTrue(bar.measuredHeight >= minimum)
+        assertEquals(minimum, bar.measuredHeight)
         assertTrue(left.measuredWidth >= minimum && left.measuredHeight >= minimum)
         assertTrue(right.measuredWidth >= minimum && right.measuredHeight >= minimum)
         assertTrue(
@@ -208,27 +217,69 @@ class CandidatesBarTest {
                 bar.measuredHeight + keyboard.measuredHeight,
         )
 
-        val candidate = LayoutInflater.from(context).inflate(
-            R.layout.sdk_item_recyclerview_candidates_bar,
-            FrameLayout(context),
-            false,
-        )
-        candidate.measure(
-            View.MeasureSpec.makeMeasureSpec(dp(200), View.MeasureSpec.AT_MOST),
-            View.MeasureSpec.makeMeasureSpec(bar.measuredHeight, View.MeasureSpec.EXACTLY),
-        )
         val flower = bar.privateField<View>("mFlowerType")
-        assertTrue(candidate.measuredWidth >= minimum && candidate.measuredHeight >= minimum)
         assertTrue(flower.minimumWidth >= minimum && flower.minimumHeight >= minimum)
 
         val preview = KeyboardPreviewView(context).apply {
             layoutParams = FrameLayout.LayoutParams(1, 1)
             setTheme(ThemeManager.activeTheme)
         }
-        assertEquals(EnvironmentSingleton.instance.skbHeight + minimum, preview.layoutParams.height)
+        assertEquals(EnvironmentSingleton.instance.skbHeight + dp(12) + minimum, preview.layoutParams.height)
         preview.layoutParams.height = 1
         preview.setTheme(ThemeManager.activeTheme, ColorDrawable(android.graphics.Color.TRANSPARENT))
-        assertEquals(EnvironmentSingleton.instance.skbHeight + minimum, preview.layoutParams.height)
+        assertEquals(EnvironmentSingleton.instance.skbHeight + dp(12) + minimum, preview.layoutParams.height)
+    }
+
+    @Test
+    @Config(qualifiers = "w800dp-h800dp-xxhdpi")
+    fun `真实普通候选层级展示行与点击行不互相裁剪且点击命中监听`() {
+        configureShortCandidateRows()
+        DecodingInfo.cacheCandidates(arrayOf(CandidateListItem("", "短")))
+        val clicks = RecordingCandidateListener()
+        val bar = CandidatesBar(context, null).apply { initialize(clicks); showCandidates() }
+        measureInHost(bar, 2400, dp(56))
+        val composing = bar.privateField<View>("mComposingView")
+        val row = bar.privateField<View>("candidatesData")
+        val recycler = bar.privateField<RecyclerView>("mRVCandidates")
+        val right = bar.privateField<View>("mRightArrowBtn")
+        val item = requireNotNull(recycler.getChildAt(0))
+
+        assertEquals(dp(56), bar.height)
+        assertEquals(dp(12), composing.height)
+        assertFalse(composing.isClickable)
+        assertFalse(composing.hasOnClickListeners())
+        listOf(row, recycler, right, item).forEach { target ->
+            assertTrue("${target.javaClass.simpleName}=${target.width}x${target.height}", target.width >= dp(44) && target.height >= dp(44))
+            assertTrue(target.bottom <= bar.height)
+        }
+        item.performClick()
+        right.performClick()
+        assertEquals(listOf(0), clicks.choices)
+        assertEquals(listOf(0), clicks.moreLevels)
+    }
+
+    @Test
+    @Config(qualifiers = "w800dp-h800dp-xxhdpi")
+    fun `真实悬浮候选层级同样使用展示行加四十四dp点击行`() {
+        configureShortCandidateRows()
+        DecodingInfo.cacheCandidates(arrayOf(CandidateListItem("", "短")))
+        val clicks = RecordingCandidateListener()
+        val bar = FloatCandidateBar(context, null).apply { initialize(clicks); showCandidates() }
+        measureInHost(bar, 2400, dp(56))
+        val composing = bar.privateField<View>("mComposingView")
+        val row = bar.privateField<View>("candidatesData")
+        val recycler = bar.privateField<RecyclerView>("mRVCandidates")
+        val item = requireNotNull(recycler.getChildAt(0))
+
+        assertEquals(dp(56), bar.height)
+        assertEquals(dp(12), composing.height)
+        assertFalse(composing.isClickable)
+        listOf(row, recycler, item).forEach { target ->
+            assertTrue("${target.javaClass.simpleName}=${target.width}x${target.height}", target.width >= dp(44) && target.height >= dp(44))
+            assertTrue(target.bottom <= bar.height)
+        }
+        item.performClick()
+        assertEquals(listOf(0), clicks.choices)
     }
 
     private fun pressedColor(view: View): Int {
@@ -244,6 +295,39 @@ class CandidatesBarTest {
             it.isAccessible = true
             it.get(this) as T
         }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> FloatCandidateBar.privateField(name: String): T =
+        FloatCandidateBar::class.java.getDeclaredField(name).let {
+            it.isAccessible = true
+            it.get(this) as T
+        }
+
+    private fun configureShortCandidateRows() {
+        EnvironmentSingleton.instance.heightForcomposing = dp(12)
+        EnvironmentSingleton.instance.heightForCandidates = dp(24)
+        EnvironmentSingleton.instance.heightForCandidatesArea = dp(36)
+        EnvironmentSingleton.instance.inputAreaHeight = EnvironmentSingleton.instance.skbHeight + dp(36)
+    }
+
+    private fun measureInHost(view: View, width: Int, height: Int) {
+        val host = FrameLayout(context).apply { addView(view) }
+        host.measure(
+            View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY),
+        )
+        host.layout(0, 0, host.measuredWidth, host.measuredHeight)
+    }
+
+    private class RecordingCandidateListener : CandidateViewListener {
+        val choices = mutableListOf<Int>()
+        val moreLevels = mutableListOf<Int>()
+        override fun onClickChoice(choiceId: Int) { choices += choiceId }
+        override fun onClickMore(level: Int) { moreLevels += level }
+        override fun onClickMenu(skbMenuMode: SkbMenuMode) = Unit
+        override fun onClickClearCandidate() = Unit
+        override fun onClickClearClipBoard() = Unit
+    }
 
     private fun dp(value: Int): Int = (value * context.resources.displayMetrics.density).toInt()
 }

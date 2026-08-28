@@ -342,6 +342,57 @@ class ExpressionPanelTest {
     }
 
     @Test
+    @Config(qualifiers = "w360dp-h240dp-xxhdpi")
+    fun `单层Emoji初始态可从真实返回入口退出到推荐且保留查询结果`() {
+        val state = visibleState().apply { selectTab(ExpressionPanelTab.EMOJI_SYNTHESIS) }
+        val panel = createExtremeEmojiPanel(state)
+        val back = panel.findViewById<View>(R.id.expression_emoji_back)
+
+        assertEquals(View.GONE, panel.findViewById<View>(R.id.expression_tab_bar).visibility)
+        assertEquals(View.VISIBLE, back.visibility)
+        assertEquals("退出 Emoji 合成，返回推荐", back.contentDescription)
+        assertTrue(back.width >= dp(44) && back.height >= dp(44))
+
+        back.performClick()
+
+        assertEquals(ExpressionPanelTab.RECOMMENDED, state.selectedTab)
+        assertEquals("你好", state.query)
+        assertEquals(1, state.results.size)
+        assertEquals(View.VISIBLE, panel.findViewById<View>(R.id.expression_asset_list).visibility)
+    }
+
+    @Test
+    @Config(qualifiers = "w360dp-h240dp-xxhdpi")
+    fun `单层Emoji选择后返回第一步再返回推荐且隐藏恢复不丢状态`() {
+        val state = visibleState().apply {
+            hideRecommendations()
+            restoreRecommendations()
+            selectTab(ExpressionPanelTab.EMOJI_SYNTHESIS)
+        }
+        val panel = createExtremeEmojiPanel(state)
+        val picker = panel.findViewById<EmojiCombinationPicker>(R.id.expression_emoji_picker)
+        val item = requireNotNull(picker.findViewById<RecyclerView>(R.id.expression_emoji_list).getChildAt(0))
+        val back = picker.findViewById<View>(R.id.expression_emoji_back)
+
+        panel.findViewById<View>(R.id.expression_close).performClick()
+        assertEquals(View.GONE, panel.findViewById<View>(R.id.expression_recommendation_section).visibility)
+        panel.findViewById<View>(R.id.expression_enable).performClick()
+        assertEquals(View.VISIBLE, panel.findViewById<View>(R.id.expression_recommendation_section).visibility)
+
+        item.performClick()
+        assertEquals("返回选择第一个表情", back.contentDescription)
+        back.performClick()
+        assertEquals("退出 Emoji 合成，返回推荐", back.contentDescription)
+        assertEquals(ExpressionPanelTab.EMOJI_SYNTHESIS, state.selectedTab)
+
+        back.performClick()
+
+        assertEquals(ExpressionPanelTab.RECOMMENDED, state.selectedTab)
+        assertEquals("你好", state.query)
+        assertEquals(1, state.results.size)
+    }
+
+    @Test
     fun `相同展示模式重复render保留LayoutManager与滚动上下文`() {
         val panel = ExpressionPanel(context)
         val state = visibleState()
@@ -676,6 +727,30 @@ class ExpressionPanelTest {
         assertEquals(View.VISIBLE, back.visibility)
         assertTrue("emoji back ${back.width}x${back.height}", back.width >= minimum && back.height >= minimum)
         assertTrue("emoji item ${item.width}x${item.height}", item.width >= minimum && item.height >= minimum)
+    }
+
+    private fun createExtremeEmojiPanel(state: ExpressionPanelState): ExpressionPanel {
+        val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
+        val root = FrameLayout(activity)
+        activity.setContentView(root)
+        val panel = ExpressionPanel(activity)
+        root.addView(panel)
+        panel.onTabSelected = { tab ->
+            state.selectTab(tab)
+            panel.render(state, emojiCatalog())
+        }
+        panel.onRecommendationVisibilityChange = { visible ->
+            if (visible) state.restoreRecommendations() else state.hideRecommendations()
+            panel.render(state, emojiCatalog())
+        }
+        panel.setAvailableLayoutHeight(availableHeightPx = 720, reservedKeyboardHeightPx = 456)
+        panel.render(state, emojiCatalog())
+        root.measure(
+            View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(720, View.MeasureSpec.AT_MOST),
+        )
+        root.layout(0, 0, root.measuredWidth, root.measuredHeight)
+        return panel
     }
 
     private fun dp(value: Int): Int = (value * context.resources.displayMetrics.density).toInt()

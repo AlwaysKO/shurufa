@@ -38,9 +38,11 @@ class EmojiCombinationPicker @JvmOverloads constructor(
     private var pendingDownloadKey: String? = null
     private var readyCombination: EmojiCombination? = null
     private var readyFile: File? = null
+    private var singleLayerMode = false
 
     var onCombinationMissing: ((EmojiCombination, (File?) -> Unit) -> Unit)? = null
     var onCombinationClick: ((EmojiCombination, File?) -> Unit)? = null
+    var onExitRequested: (() -> Unit)? = null
 
     init {
         orientation = VERTICAL
@@ -58,15 +60,19 @@ class EmojiCombinationPicker @JvmOverloads constructor(
             readyCombination?.let { onCombinationClick?.invoke(it, readyFile) }
         }
         back.setOnClickListener {
-            state.backToFirst()
-            render(requireNotNull(catalog))
+            if (state.step == EmojiSelectionStep.FIRST) {
+                onExitRequested?.invoke()
+            } else {
+                state.backToFirst()
+                render(requireNotNull(catalog))
+            }
         }
     }
 
     fun render(catalog: ExpressionCatalog) {
         this.catalog = catalog
         adapter.submitList(catalog.document.emojiBases.sortedBy(EmojiBase::sortOrder))
-        back.visibility = if (state.step == EmojiSelectionStep.FIRST) View.INVISIBLE else View.VISIBLE
+        updateBackPresentation()
         title.text = when (state.step) {
             EmojiSelectionStep.FIRST -> "选择第一个表情"
             EmojiSelectionStep.SECOND -> "再选择一个表情"
@@ -91,6 +97,7 @@ class EmojiCombinationPicker @JvmOverloads constructor(
         val available = heightPx.coerceAtLeast(0)
         when {
             available >= minimum * 2 -> {
+                singleLayerMode = false
                 orientation = VERTICAL
                 title.visibility = View.VISIBLE
                 header.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, minimum)
@@ -98,6 +105,7 @@ class EmojiCombinationPicker @JvmOverloads constructor(
             }
 
             available >= minimum -> {
+                singleLayerMode = true
                 orientation = HORIZONTAL
                 title.visibility = View.VISIBLE
                 header.layoutParams = LayoutParams(0, minimum, 1f)
@@ -105,6 +113,7 @@ class EmojiCombinationPicker @JvmOverloads constructor(
             }
 
             else -> {
+                singleLayerMode = false
                 orientation = VERTICAL
                 title.visibility = View.GONE
                 header.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, 0)
@@ -119,6 +128,16 @@ class EmojiCombinationPicker @JvmOverloads constructor(
             width = previewSize
             height = previewSize
         }
+        updateBackPresentation()
+    }
+
+    private fun updateBackPresentation() {
+        val firstStep = state.step == EmojiSelectionStep.FIRST
+        back.visibility = if (firstStep && !singleLayerMode) View.INVISIBLE else View.VISIBLE
+        back.contentDescription = context.getString(
+            if (firstStep) R.string.expression_emoji_exit_recommended
+            else R.string.expression_emoji_back_first,
+        )
     }
 
     private fun select(base: EmojiBase) {

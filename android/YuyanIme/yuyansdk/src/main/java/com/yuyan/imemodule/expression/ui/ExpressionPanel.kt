@@ -126,6 +126,9 @@ class ExpressionPanel @JvmOverloads constructor(
             })
         }
         emojiPicker = findViewById(R.id.expression_emoji_picker)
+        emojiPicker.onExitRequested = {
+            onTabSelected?.invoke(ExpressionPanelTab.RECOMMENDED)
+        }
         recommendedTab.setOnClickListener { onTabSelected?.invoke(ExpressionPanelTab.RECOMMENDED) }
         templatesTab.setOnClickListener { onTabSelected?.invoke(ExpressionPanelTab.AI_SYNTHESIS) }
         emojiTab.setOnClickListener { onTabSelected?.invoke(ExpressionPanelTab.EMOJI_SYNTHESIS) }

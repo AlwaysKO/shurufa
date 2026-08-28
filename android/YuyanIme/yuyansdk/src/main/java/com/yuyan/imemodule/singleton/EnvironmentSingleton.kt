@@ -32,10 +32,16 @@ class EnvironmentSingleton private constructor() {
         private set
     var heightForCandidatesArea = 0 // 候选词区域的高度
 
-    /** 候选栏真实布局统一下限，避免主键盘、悬浮栏和主题预览各自计算后互相裁剪。 */
+    /** 候选词点击行统一下限；拼音组成行是独立的纯展示行，不占用这 44dp。 */
+    fun effectiveCandidateRowHeight(density: Float): Int {
+        require(density > 0f) { "density must be positive" }
+        return maxOf(heightForCandidates, (MINIMUM_CANDIDATE_TOUCH_DP * density).roundToInt())
+    }
+
+    /** 候选栏真实布局为组成展示行加可点击候选行。 */
     fun effectiveCandidatesAreaHeight(density: Float): Int {
         require(density > 0f) { "density must be positive" }
-        return maxOf(heightForCandidatesArea, (MINIMUM_CANDIDATE_TOUCH_DP * density).roundToInt())
+        return heightForcomposing.coerceAtLeast(0) + effectiveCandidateRowHeight(density)
     }
     var heightForcomposing = 0 // 候选词拼音区域的高度
     var heightForCandidates = 0 // 候选词区域的高度

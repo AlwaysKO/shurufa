@@ -38,7 +38,7 @@ class CandidatesMenuAdapter(context: Context?) : RecyclerView.Adapter<Candidates
     private val adapterContext: Context = requireNotNull(context)
     private val inflater: LayoutInflater = LayoutInflater.from(adapterContext)
     private var mOnItemClickListener: OnRecyclerItemClickListener? = null
-    private var itemHeight: Int = instance.effectiveCandidatesAreaHeight(adapterContext.resources.displayMetrics.density)
+    private var itemHeight: Int = instance.effectiveCandidateRowHeight(adapterContext.resources.displayMetrics.density)
     private var mMenuPadding: Int = (instance.heightForCandidatesArea * 0.05f).toInt()
     var items: List<KeyboardToolbarVisualItem> = emptyList()
         set(value) {
@@ -165,7 +165,7 @@ class CandidatesMenuAdapter(context: Context?) : RecyclerView.Adapter<Candidates
     }
 
     fun notifyChanged() {
-        itemHeight = instance.effectiveCandidatesAreaHeight(adapterContext.resources.displayMetrics.density)
+        itemHeight = instance.effectiveCandidateRowHeight(adapterContext.resources.displayMetrics.density)
         mMenuPadding = (instance.heightForCandidatesArea * 0.05f).toInt()
         notifyDataSetChanged()
     }

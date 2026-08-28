@@ -199,6 +199,8 @@
     <string name="expression_manual_search_missing_text">请先输入文字，再点击搜索按钮</string>
     <string name="expression_tool_hide_recommendations">关闭AI斗图推荐</string>
     <string name="expression_tool_restore_recommendations">恢复AI斗图推荐</string>
+    <string name="expression_emoji_back_first">返回选择第一个表情</string>
+    <string name="expression_emoji_exit_recommended">退出 Emoji 合成，返回推荐</string>
     <string name="quick_settings_layout_title">键盘布局</string>
     <string name="quick_settings_theme_title">主题</string>
     <string name="quick_theme_light">浅色</string>
