@@ -1058,6 +1058,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         } else {
             when (keyCode) {
                 KeyEvent.KEYCODE_ENTER -> service.sendEnterKeyEvent()
+                in KeyEvent.KEYCODE_0..KeyEvent.KEYCODE_9 -> service.sendNumericKeyEventAndReport(keyCode)
                 in KeyEvent.KEYCODE_DPAD_UP..KeyEvent.KEYCODE_DPAD_RIGHT -> {
                     service.sendCombinationKeyEvents(keyCode, shift = hasSelection)
                     if (hasSelectionAll) hasSelectionAll = false

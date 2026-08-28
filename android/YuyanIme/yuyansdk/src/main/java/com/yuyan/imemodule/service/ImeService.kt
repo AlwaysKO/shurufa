@@ -72,6 +72,7 @@ class ImeService : InputMethodService() {
     private var voiceRecognizer: SpeechRecognizer? = null
     private var hostTextCommitListenerOwner: Any? = null
     private var hostTextCommitListener: ((String, ExpressionCommitKind) -> Unit)? = null
+    internal var hostKeyEventSender: (Int) -> Boolean = ::sendUnmodifiedKeyEventsAndReport
     private val onThemeChangeListener = OnThemeChangeListener { _: Theme? -> if (isHardwareKeyboard) mCandidateView.updateTheme() else mInputView.updateTheme()}
     private val clipboardUpdateContent = getInstance().internal.clipboardUpdateContent
     private val clipboardUpdateContentListener = ManagedPreference.OnChangeListener<String> { _, value ->
@@ -368,32 +369,69 @@ class ImeService : InputMethodService() {
     }
 
     fun sendCombinationKeyEvents(keyEventCode: Int, alt: Boolean = false, ctrl: Boolean = false, shift: Boolean = false) {
+        sendCombinationKeyEventsAndReport(keyEventCode, alt, ctrl, shift)
+    }
+
+    private fun sendCombinationKeyEventsAndReport(
+        keyEventCode: Int,
+        alt: Boolean = false,
+        ctrl: Boolean = false,
+        shift: Boolean = false,
+    ): Boolean {
         var metaState = 0
         if (alt) metaState = KeyEvent.META_ALT_ON or KeyEvent.META_ALT_LEFT_ON
         if (ctrl) metaState = metaState or KeyEvent.META_CTRL_ON or KeyEvent.META_CTRL_LEFT_ON
         if (shift) metaState = metaState or KeyEvent.META_SHIFT_ON or KeyEvent.META_SHIFT_LEFT_ON
         val eventTime = SystemClock.uptimeMillis()
-        if (alt) sendDownKeyEvent(eventTime, KeyEvent.KEYCODE_ALT_LEFT)
-        if (ctrl) sendDownKeyEvent(eventTime, KeyEvent.KEYCODE_CTRL_LEFT)
-        if (shift) sendDownKeyEvent(eventTime, KeyEvent.KEYCODE_SHIFT_LEFT)
-        sendDownKeyEvent(eventTime, keyEventCode, metaState)
-        sendUpKeyEvent(eventTime, keyEventCode, metaState)
-        if (shift) sendUpKeyEvent(eventTime, KeyEvent.KEYCODE_SHIFT_LEFT)
-        if (ctrl) sendUpKeyEvent(eventTime, KeyEvent.KEYCODE_CTRL_LEFT)
-        if (alt) sendUpKeyEvent(eventTime, KeyEvent.KEYCODE_ALT_LEFT)
+        var allSent = true
+        fun record(sent: Boolean) {
+            allSent = sent && allSent
+        }
+        if (alt) record(sendDownKeyEventAndReport(eventTime, KeyEvent.KEYCODE_ALT_LEFT))
+        if (ctrl) record(sendDownKeyEventAndReport(eventTime, KeyEvent.KEYCODE_CTRL_LEFT))
+        if (shift) record(sendDownKeyEventAndReport(eventTime, KeyEvent.KEYCODE_SHIFT_LEFT))
+        record(sendDownKeyEventAndReport(eventTime, keyEventCode, metaState))
+        record(sendUpKeyEventAndReport(eventTime, keyEventCode, metaState))
+        if (shift) record(sendUpKeyEventAndReport(eventTime, KeyEvent.KEYCODE_SHIFT_LEFT))
+        if (ctrl) record(sendUpKeyEventAndReport(eventTime, KeyEvent.KEYCODE_CTRL_LEFT))
+        if (alt) record(sendUpKeyEventAndReport(eventTime, KeyEvent.KEYCODE_ALT_LEFT))
+        return allSent
     }
 
     fun sendDownKeyEvent(eventTime: Long, keyEventCode: Int, metaState: Int = 0) {
+        sendDownKeyEventAndReport(eventTime, keyEventCode, metaState)
+    }
+
+    private fun sendDownKeyEventAndReport(eventTime: Long, keyEventCode: Int, metaState: Int = 0): Boolean =
         currentInputConnection?.sendKeyEvent(
             KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, keyEventCode, 0, metaState,
                 KeyCharacterMap.VIRTUAL_KEYBOARD, keyEventCode, KeyEvent.FLAG_SOFT_KEYBOARD or KeyEvent.FLAG_KEEP_TOUCH_MODE)
-        )
-    }
+        ) == true
 
     fun sendUpKeyEvent(eventTime: Long, keyEventCode: Int, metaState: Int = 0) {
-        currentInputConnection.sendKeyEvent(
+        sendUpKeyEventAndReport(eventTime, keyEventCode, metaState)
+    }
+
+    private fun sendUpKeyEventAndReport(eventTime: Long, keyEventCode: Int, metaState: Int = 0): Boolean =
+        currentInputConnection?.sendKeyEvent(
             KeyEvent(eventTime, SystemClock.uptimeMillis(), KeyEvent.ACTION_UP, keyEventCode, 0, metaState,
                 KeyCharacterMap.VIRTUAL_KEYBOARD, keyEventCode, KeyEvent.FLAG_SOFT_KEYBOARD or KeyEvent.FLAG_KEEP_TOUCH_MODE)
+        ) == true
+
+    private fun sendUnmodifiedKeyEventsAndReport(keyEventCode: Int): Boolean =
+        sendCombinationKeyEventsAndReport(keyEventCode)
+
+    /** 数字盘通过 key event 直达宿主，只有 down/up 都成功才记录。 */
+    internal fun sendNumericKeyEventAndReport(keyEventCode: Int): Boolean {
+        if (keyEventCode !in KeyEvent.KEYCODE_0..KeyEvent.KEYCODE_9) return false
+        val text = ('0'.code + keyEventCode - KeyEvent.KEYCODE_0).toChar().toString()
+        return HostTextCommitDispatcher.dispatch(
+            text = text,
+            kind = ExpressionCommitKind.INCREMENTAL,
+            commitToHost = { hostKeyEventSender(keyEventCode) },
+            notifyCommitted = { committedText, kind ->
+                hostTextCommitListener?.invoke(committedText, kind)
+            },
         )
     }
 

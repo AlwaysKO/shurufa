@@ -3,6 +3,7 @@ package com.yuyan.imemodule.keyboard
 import android.content.Context
 import android.os.Looper
 import android.text.InputType
+import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
 import androidx.preference.PreferenceManager
 import androidx.test.core.app.ApplicationProvider
@@ -222,6 +223,49 @@ class ExpressionManualSearchInputViewTest {
         inputView.onExpressionInputViewStarted(editor, restarting = false, connectionIdentity = connection)
 
         assertEquals(2, compositionClearCount)
+        assertNull(inputView.expressionState().query)
+    }
+
+    @Test
+    fun `真实数字键盘成功发送的123累积为斗图查询`() {
+        val inputView = realChatInputView()
+        val sentKeyCodes = mutableListOf<Int>()
+        services.last().hostKeyEventSender = { keyCode ->
+            sentKeyCodes += keyCode
+            true
+        }
+        InputModeSwitcher.saveInputMode(InputModeSwitcher.MASK_SKB_LAYOUT_NUMBER) {}
+
+        listOf(KeyEvent.KEYCODE_1, KeyEvent.KEYCODE_2, KeyEvent.KEYCODE_3).forEach { keyCode ->
+            assertTrue(inputView.processKeyUp(KeyEvent(KeyEvent.ACTION_UP, keyCode)))
+        }
+        inputView.expressionState().setChatEditor(true)
+        inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+
+        assertEquals(listOf(KeyEvent.KEYCODE_1, KeyEvent.KEYCODE_2, KeyEvent.KEYCODE_3), sentKeyCodes)
+        assertEquals("123", inputView.expressionState().query)
+    }
+
+    @Test
+    fun `数字键发送失败不记录且非数字键不进入追踪`() {
+        val inputView = realChatInputView()
+        var numericSendCount = 0
+        val service = services.last()
+        service.hostKeyEventSender = {
+            numericSendCount += 1
+            false
+        }
+        InputModeSwitcher.saveInputMode(InputModeSwitcher.MASK_SKB_LAYOUT_NUMBER) {}
+
+        inputView.processKeyUp(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_1))
+        inputView.processKeyUp(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_LEFT))
+        assertFalse(service.sendNumericKeyEventAndReport(KeyEvent.KEYCODE_DEL))
+        assertFalse(service.sendNumericKeyEventAndReport(KeyEvent.KEYCODE_DPAD_LEFT))
+        assertFalse(service.sendNumericKeyEventAndReport(KeyEvent.KEYCODE_ENTER))
+        inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+
+        assertEquals(1, numericSendCount)
+        assertEquals("请先输入文字，再点击搜索按钮", ShadowToast.getTextOfLatestToast())
         assertNull(inputView.expressionState().query)
     }
 
