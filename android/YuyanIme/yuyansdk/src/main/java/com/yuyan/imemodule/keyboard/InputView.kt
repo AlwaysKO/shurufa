@@ -123,7 +123,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     private lateinit var mRightPaddingKey: ManagedPreference.PInt
     private lateinit var mBottomPaddingKey: ManagedPreference.PInt
     private var mFullDisplayKeyboardBar: FullDisplayKeyboardBar? = null
-    private val expressionScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private var expressionScope = newExpressionScope()
     private val chatEditorGate = ChatEditorGate()
     private var expressionPanelState = ExpressionPanelState(chatEditor = false)
     private lateinit var expressionPanel: ExpressionPanel
@@ -146,6 +146,9 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     var hasSelectionAll = false
     // 记录删除内容
     private val textBeforeCursors = StringQueue(50)
+
+    private fun newExpressionScope(): CoroutineScope =
+        CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     init {
         LogUtil.d("1111111111111", "InputView init")
@@ -183,6 +186,12 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
     private fun initExpressionPanel() {
         expressionPanel = mSkbRoot.findViewById(R.id.expression_panel)
+        val expressionEnvironment = EnvironmentSingleton.instance
+        expressionPanel.setAvailableLayoutHeight(
+            availableHeightPx = (expressionEnvironment.mScreenHeight - expressionEnvironment.systemNavbarWindowsBottom)
+                .coerceAtLeast(0),
+            reservedKeyboardHeightPx = expressionEnvironment.inputAreaHeight,
+        )
         val aiStickerPreference = getInstance().internal.aiStickerEnabled
         expressionPanelState.setAiStickerEnabled(aiStickerPreference.getValue())
         val localCatalog = runCatching { ExpressionCatalog.fromAssets(context) }.getOrNull()
@@ -669,6 +678,9 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         }
         mFullDisplayKeyboardBar?.updateTheme(keyTextColor)
         mAddPhrasesLayout.updateTheme(activeTheme)
+        if (::expressionPanel.isInitialized) {
+            expressionPanel.updateTheme()
+        }
     }
 
     private fun onClick(view: View) {
@@ -1049,6 +1061,15 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         }
     }
 
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        if (!expressionResourcesDisposed) return
+        expressionScope = newExpressionScope()
+        expressionResourcesDisposed = false
+        expressionInputSessionActive = true
+        initExpressionPanel()
+    }
+
     override fun onDetachedFromWindow() {
         disposeExpressionResources()
         super.onDetachedFromWindow()
@@ -1062,9 +1083,15 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         service.clearHostTextCommitListener(this)
         expressionQueryCoordinator.close()
         expressionSearchJob?.cancel()
+        expressionSearchJob = null
         expressionPreviewJob?.cancel()
+        expressionPreviewJob = null
         expressionDownloadJob?.cancel()
+        expressionDownloadJob = null
         expressionPreparationJob?.cancel()
+        expressionPreparationJob = null
+        expressionPanel.clearCallbacks()
+        expressionSync = null
         expressionScope.cancel()
     }
 

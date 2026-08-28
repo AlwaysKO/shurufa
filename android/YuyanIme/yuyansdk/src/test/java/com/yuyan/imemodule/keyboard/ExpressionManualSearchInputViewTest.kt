@@ -1,10 +1,12 @@
 package com.yuyan.imemodule.keyboard
 
+import android.app.Activity
 import android.content.Context
 import android.os.Looper
 import android.text.InputType
 import android.view.KeyEvent
 import android.view.View
+import android.widget.FrameLayout
 import android.view.inputmethod.EditorInfo
 import androidx.preference.PreferenceManager
 import androidx.test.core.app.ApplicationProvider
@@ -444,6 +446,27 @@ class ExpressionManualSearchInputViewTest {
         assertEquals("helloworld", inputView.expressionState().query)
     }
 
+
+
+    @Test
+    fun `同一真实InputView卸载重挂后手动和自动斗图搜索重新可用`() {
+        val inputView = realChatInputView()
+        val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
+        val root = FrameLayout(activity)
+        activity.setContentView(root)
+        root.addView(inputView)
+
+        root.removeView(inputView)
+        root.addView(inputView)
+        inputView.onExpressionInputViewStarted(chatEditorInfo(), restarting = false, connectionIdentity = Any())
+        inputView.notifyExpressionTextCommitted("重新连接")
+        inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+
+        assertEquals("重新连接", inputView.expressionState().query)
+        inputView.notifyExpressionTextCommitted("自动推荐")
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(250, TimeUnit.MILLISECONDS)
+        assertEquals("自动推荐", inputView.expressionState().query)
+    }
 
     @Test
     fun `生产面板关闭恢复保留查询结果且返回先折叠展开态`() {

@@ -2,6 +2,7 @@ package com.yuyan.imemodule.expression.ui
 
 import android.app.Activity
 import android.content.Context
+import android.view.InputDevice
 import android.view.MotionEvent
 import android.view.View
 import android.widget.TextView
@@ -33,6 +34,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 class ExpressionPanelTest {
@@ -105,7 +107,7 @@ class ExpressionPanelTest {
     }
 
     @Test
-    fun `开启时显示搜狗式标签和操作入口`() {
+    fun `开启时显示三标签和操作入口`() {
         val panel = ExpressionPanel(context)
 
         panel.render(visibleState(), catalog)
@@ -229,6 +231,59 @@ class ExpressionPanelTest {
         assertEquals(metrics.actionHeightPx, panel.findViewById<View>(R.id.expression_actions).layoutParams.height)
     }
 
+
+    @Test
+    @Config(qualifiers = "w640dp-h360dp-land-xxhdpi")
+    fun `一九二零乘一零八零三倍密度横屏生产面板不挤出保留键盘高度`() {
+        assertEquals(3f, context.resources.displayMetrics.density)
+        assertEquals(android.content.res.Configuration.ORIENTATION_LANDSCAPE, context.resources.configuration.orientation)
+        val panel = ExpressionPanel(context)
+        panel.setAvailableLayoutHeight(availableHeightPx = 1080, reservedKeyboardHeightPx = 720)
+        panel.render(visibleState(), catalog)
+        panel.measure(
+            View.MeasureSpec.makeMeasureSpec(1920, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.AT_MOST),
+        )
+
+        assertTrue(panel.measuredHeight <= 360)
+        assertEquals(
+            panel.measuredHeight,
+            panel.findViewById<View>(R.id.expression_tab_bar).layoutParams.height +
+                panel.findViewById<View>(R.id.expression_content).layoutParams.height +
+                panel.findViewById<View>(R.id.expression_tool_row).layoutParams.height,
+        )
+    }
+
+    @Test
+    @Config(qualifiers = "w360dp-h240dp-xxhdpi")
+    fun `矮屏生产面板继续压缩且不遮键盘`() {
+        assertEquals(3f, context.resources.displayMetrics.density)
+        val panel = ExpressionPanel(context)
+        panel.setAvailableLayoutHeight(availableHeightPx = 720, reservedKeyboardHeightPx = 600)
+        panel.render(visibleState(), catalog)
+        panel.measure(
+            View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(720, View.MeasureSpec.AT_MOST),
+        )
+        assertTrue(panel.measuredHeight <= 120)
+    }
+
+    @Test
+    @Config(qualifiers = "w360dp-h800dp-xxhdpi")
+    fun `竖屏生产面板受设计最大高度限制`() {
+        assertEquals(3f, context.resources.displayMetrics.density)
+        assertEquals(android.content.res.Configuration.ORIENTATION_PORTRAIT, context.resources.configuration.orientation)
+        val panel = ExpressionPanel(context)
+        panel.setAvailableLayoutHeight(availableHeightPx = 2400, reservedKeyboardHeightPx = 900)
+        panel.render(visibleState(), catalog)
+        panel.measure(
+            View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(2400, View.MeasureSpec.AT_MOST),
+        )
+
+        assertEquals(498, panel.measuredHeight)
+    }
+
     @Test
     fun `GIF 也优先使用缩略图预览`() {
         val gif = asset().copy(
@@ -282,6 +337,67 @@ class ExpressionPanelTest {
         assertEquals(0, expansions)
 
         swipe(list, fromX = 120f, fromY = 120f, toX = 118f, toY = 24f)
+        assertEquals(1, expansions)
+    }
+
+
+    @Test
+    fun `多指加入退出后即使主指上滑也不会展开`() {
+        val panel = ExpressionPanel(context)
+        var expansions = 0
+        panel.onExpandRequested = { expansions += 1 }
+        panel.render(visibleState(), catalog)
+        val list = panel.findViewById<RecyclerView>(R.id.expression_asset_list)
+        val downTime = 1L
+
+        list.dispatchTouchEvent(motion(downTime, 1L, MotionEvent.ACTION_DOWN, listOf(pointer(7, 120f, 120f))))
+        list.dispatchTouchEvent(
+            motion(
+                downTime,
+                40L,
+                MotionEvent.ACTION_POINTER_DOWN or (1 shl MotionEvent.ACTION_POINTER_INDEX_SHIFT),
+                listOf(pointer(7, 120f, 110f), pointer(9, 180f, 100f)),
+            ),
+        )
+        list.dispatchTouchEvent(
+            motion(
+                downTime,
+                80L,
+                MotionEvent.ACTION_POINTER_UP or (1 shl MotionEvent.ACTION_POINTER_INDEX_SHIFT),
+                listOf(pointer(7, 120f, 80f), pointer(9, 180f, 100f)),
+            ),
+        )
+        list.dispatchTouchEvent(motion(downTime, 160L, MotionEvent.ACTION_UP, listOf(pointer(7, 120f, 20f))))
+
+        assertEquals(0, expansions)
+    }
+
+    @Test
+    fun `取消手势后的迟到抬起不会展开`() {
+        val panel = ExpressionPanel(context)
+        var expansions = 0
+        panel.onExpandRequested = { expansions += 1 }
+        panel.render(visibleState(), catalog)
+        val list = panel.findViewById<RecyclerView>(R.id.expression_asset_list)
+
+        list.dispatchTouchEvent(motion(1L, 1L, MotionEvent.ACTION_DOWN, listOf(pointer(3, 120f, 120f))))
+        list.dispatchTouchEvent(motion(1L, 80L, MotionEvent.ACTION_CANCEL, listOf(pointer(3, 120f, 70f))))
+        list.dispatchTouchEvent(motion(1L, 160L, MotionEvent.ACTION_UP, listOf(pointer(3, 120f, 20f))))
+
+        assertEquals(0, expansions)
+    }
+
+    @Test
+    fun `非零主指ID的单指上滑仍可展开`() {
+        val panel = ExpressionPanel(context)
+        var expansions = 0
+        panel.onExpandRequested = { expansions += 1 }
+        panel.render(visibleState(), catalog)
+        val list = panel.findViewById<RecyclerView>(R.id.expression_asset_list)
+
+        list.dispatchTouchEvent(motion(1L, 1L, MotionEvent.ACTION_DOWN, listOf(pointer(5, 120f, 120f))))
+        list.dispatchTouchEvent(motion(1L, 160L, MotionEvent.ACTION_UP, listOf(pointer(5, 120f, 20f))))
+
         assertEquals(1, expansions)
     }
 
@@ -348,6 +464,48 @@ class ExpressionPanelTest {
         panel.findViewById<RecyclerView>(R.id.expression_asset_list).performLongClick()
 
         assertEquals(1, expansions)
+    }
+
+    private data class Pointer(val id: Int, val x: Float, val y: Float)
+
+    private fun pointer(id: Int, x: Float, y: Float) = Pointer(id, x, y)
+
+    private fun motion(
+        downTime: Long,
+        eventTime: Long,
+        action: Int,
+        pointers: List<Pointer>,
+    ): MotionEvent {
+        val properties = pointers.map { pointer ->
+            MotionEvent.PointerProperties().apply {
+                id = pointer.id
+                toolType = MotionEvent.TOOL_TYPE_FINGER
+            }
+        }.toTypedArray()
+        val coordinates = pointers.map { pointer ->
+            MotionEvent.PointerCoords().apply {
+                x = pointer.x
+                y = pointer.y
+                pressure = 1f
+                size = 1f
+            }
+        }.toTypedArray()
+        return MotionEvent.obtain(
+            downTime,
+            eventTime,
+            action,
+            pointers.size,
+            properties,
+            coordinates,
+            0,
+            0,
+            1f,
+            1f,
+            0,
+            0,
+            InputDevice.SOURCE_TOUCHSCREEN,
+            0,
+        )
     }
 
     private fun swipe(view: View, fromX: Float, fromY: Float, toX: Float, toY: Float) {

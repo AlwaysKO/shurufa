@@ -46,6 +46,55 @@ class ExpressionLayoutMetricsTest {
     }
 
     @Test
+    fun `横屏紧凑面板受真实可用高度和键盘保留高度约束`() {
+        val metrics = ExpressionLayoutMetrics.calculate(
+            widthPx = 1920,
+            density = 3f,
+            landscape = true,
+            availableHeightPx = 1080,
+            reservedKeyboardHeightPx = 720,
+        )
+
+        assertTrue(metrics.compactPanelHeightPx <= 360)
+        assertEquals(
+            metrics.compactPanelHeightPx,
+            metrics.tabRowHeightPx + metrics.contentHeightPx + metrics.toolRowHeightPx,
+        )
+        assertTrue(metrics.contentHeightPx >= 0)
+    }
+
+    @Test
+    fun `矮屏优先保留候选和键盘而继续压缩紧凑面板`() {
+        val metrics = ExpressionLayoutMetrics.calculate(
+            widthPx = 1080,
+            density = 3f,
+            landscape = false,
+            availableHeightPx = 720,
+            reservedKeyboardHeightPx = 600,
+        )
+
+        assertTrue(metrics.compactPanelHeightPx <= 120)
+        assertTrue(metrics.tabRowHeightPx >= 0)
+        assertTrue(metrics.toolRowHeightPx >= 0)
+        assertTrue(metrics.contentHeightPx >= 0)
+    }
+
+    @Test
+    fun `竖屏高度充足时使用参考紧凑高度但不超过最大值`() {
+        val metrics = ExpressionLayoutMetrics.calculate(
+            widthPx = 1080,
+            density = 3f,
+            landscape = false,
+            availableHeightPx = 2400,
+            reservedKeyboardHeightPx = 900,
+        )
+
+        assertEquals((166f * 3f).roundToInt(), metrics.compactPanelHeightPx)
+        assertTrue(metrics.compactPanelHeightPx <= metrics.maximumCompactPanelHeightPx)
+        assertTrue(metrics.minimumCompactPanelHeightPx <= metrics.compactPanelHeightPx)
+    }
+
+    @Test
     fun `不同宽度和横屏应用尺寸上下限`() {
         val small = ExpressionLayoutMetrics.calculate(720, 3f, landscape = false)
         val normal = ExpressionLayoutMetrics.calculate(1080, 3f, landscape = false)

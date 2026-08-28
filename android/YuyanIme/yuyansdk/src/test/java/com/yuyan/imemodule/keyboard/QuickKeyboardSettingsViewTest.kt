@@ -5,6 +5,7 @@ import android.view.View
 import androidx.preference.PreferenceManager
 import androidx.test.core.app.ApplicationProvider
 import androidx.viewpager2.widget.ViewPager2
+import com.yuyan.imemodule.R
 import com.yuyan.imemodule.application.Launcher
 import com.yuyan.imemodule.data.emojicon.YuyanEmojiCompat
 import com.yuyan.imemodule.data.theme.ThemeManager
@@ -46,6 +47,14 @@ class QuickKeyboardSettingsViewTest {
     fun tearDown() {
         ThemeManager.prefs.followSystemDayNightTheme.setValue(false)
         ThemeManager.setNormalModeTheme(ThemePreset.MaterialLight)
+    }
+
+    @Test
+    fun `用户可见的双拼方案名称不包含竞品品牌`() {
+        val label = context.getString(R.string.double_pinyin_sougou)
+
+        assertFalse(label.contains("\u641c\u72d7"))
+        assertFalse(label.contains("\u7075\u52a8\u8868\u8fbe"))
     }
 
     @Test

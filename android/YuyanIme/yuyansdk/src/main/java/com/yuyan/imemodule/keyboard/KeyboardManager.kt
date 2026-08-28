@@ -55,6 +55,9 @@ class KeyboardManager {
 
     fun switchKeyboard(keyboardName: KeyboardType) {
         if (!::mKeyboardRootView.isInitialized) return
+        (currentContainer as? SettingsContainer)
+            ?.takeIf { it.isQuickSettingsVisible }
+            ?.closeQuickSettingsForTool()
         var container = keyboards[keyboardName]
         if (container == null) {
             container = when (keyboardName) {

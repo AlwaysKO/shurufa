@@ -56,6 +56,10 @@ class ExpressionPanel @JvmOverloads constructor(
     private var gestureDownX = 0f
     private var gestureDownY = 0f
     private var gestureDownTime = 0L
+    private var gesturePointerId = MotionEvent.INVALID_POINTER_ID
+    private var gestureCancelled = false
+    private var availableLayoutHeightPx = Int.MAX_VALUE
+    private var reservedKeyboardHeightPx = 0
 
     var onDismiss: (() -> Unit)? = null
     var onAiStickerEnabledChange: ((Boolean) -> Unit)? = null
@@ -170,8 +174,31 @@ class ExpressionPanel @JvmOverloads constructor(
 
     fun resetEmojiSelection() = emojiPicker.reset()
 
+    fun clearCallbacks() {
+        onDismiss = null
+        onAiStickerEnabledChange = null
+        onRecommendationVisibilityChange = null
+        onAnimationPreviewChange = null
+        onClearCache = null
+        onExpandRequested = null
+        onTabSelected = null
+        onAssetClick = null
+        onEmojiCombinationMissing = null
+        onEmojiCombinationClick = null
+    }
+
     fun setExpandedContentHeight(heightPx: Int) {
         expandedContentHeightPx = heightPx.coerceAtLeast(0)
+    }
+
+    /** 约束紧凑面板，不占用候选栏和键盘已经保留的高度。 */
+    fun setAvailableLayoutHeight(availableHeightPx: Int, reservedKeyboardHeightPx: Int) {
+        require(availableHeightPx >= 0) { "available height must not be negative" }
+        require(reservedKeyboardHeightPx >= 0) { "reserved keyboard height must not be negative" }
+        availableLayoutHeightPx = availableHeightPx
+        this.reservedKeyboardHeightPx = reservedKeyboardHeightPx
+        applyLayoutMetrics()
+        requestLayout()
     }
 
     override fun onSizeChanged(width: Int, height: Int, oldWidth: Int, oldHeight: Int) {
@@ -186,6 +213,8 @@ class ExpressionPanel @JvmOverloads constructor(
             widthPx = availableWidth,
             density = resources.displayMetrics.density,
             landscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE,
+            availableHeightPx = availableLayoutHeightPx,
+            reservedKeyboardHeightPx = reservedKeyboardHeightPx,
         )
         layoutMetrics = metrics
         tabBar.layoutParams = tabBar.layoutParams.apply { height = metrics.tabRowHeightPx }
@@ -215,24 +244,39 @@ class ExpressionPanel @JvmOverloads constructor(
     private fun handleExpandGesture(event: MotionEvent) {
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
-                gestureDownX = event.x
-                gestureDownY = event.y
+                gesturePointerId = event.getPointerId(event.actionIndex)
+                gestureDownX = event.getX(event.actionIndex)
+                gestureDownY = event.getY(event.actionIndex)
                 gestureDownTime = event.eventTime
+                gestureCancelled = event.pointerCount != 1
+            }
+            MotionEvent.ACTION_POINTER_DOWN, MotionEvent.ACTION_POINTER_UP -> {
+                gestureCancelled = true
             }
             MotionEvent.ACTION_UP -> {
-                val dx = event.x - gestureDownX
-                val dy = event.y - gestureDownY
-                val elapsed = (event.eventTime - gestureDownTime).coerceAtLeast(1L)
-                val threshold = dp(SWIPE_EXPAND_THRESHOLD_DP).toFloat()
-                val upwardSpeed = -dy * 1000f / elapsed
-                if (dy <= -threshold && kotlin.math.abs(dy) > kotlin.math.abs(dx) * 1.25f &&
-                    upwardSpeed >= SWIPE_EXPAND_MIN_SPEED_PX_PER_SECOND
-                ) {
-                    requestExpand(withHaptic = false)
+                val pointerIndex = event.findPointerIndex(gesturePointerId)
+                if (!gestureCancelled && pointerIndex >= 0 && gestureDownTime > 0L) {
+                    val dx = event.getX(pointerIndex) - gestureDownX
+                    val dy = event.getY(pointerIndex) - gestureDownY
+                    val elapsed = (event.eventTime - gestureDownTime).coerceAtLeast(1L)
+                    val threshold = dp(SWIPE_EXPAND_THRESHOLD_DP).toFloat()
+                    val upwardSpeed = -dy * 1000f / elapsed
+                    if (dy <= -threshold && kotlin.math.abs(dy) > kotlin.math.abs(dx) * 1.25f &&
+                        upwardSpeed >= SWIPE_EXPAND_MIN_SPEED_PX_PER_SECOND
+                    ) {
+                        requestExpand(withHaptic = false)
+                    }
                 }
+                resetExpandGesture()
             }
-            MotionEvent.ACTION_CANCEL -> gestureDownTime = 0L
+            MotionEvent.ACTION_CANCEL -> resetExpandGesture()
         }
+    }
+
+    private fun resetExpandGesture() {
+        gesturePointerId = MotionEvent.INVALID_POINTER_ID
+        gestureDownTime = 0L
+        gestureCancelled = true
     }
 
     private fun applyTheme() {
@@ -255,6 +299,11 @@ class ExpressionPanel @JvmOverloads constructor(
             tab.setTextColor(if (selected) theme.accentKeyBackgroundColor else theme.keyTextColor)
             tab.background = tabBackground(selected, theme.accentKeyBackgroundColor)
         }
+    }
+
+    /** 主题在面板显示期间切换时，立即刷新所有可见颜色与图标。 */
+    fun updateTheme() {
+        applyTheme()
     }
 
     private fun roundedBackground(color: Int, radiusDp: Int) = GradientDrawable().apply {

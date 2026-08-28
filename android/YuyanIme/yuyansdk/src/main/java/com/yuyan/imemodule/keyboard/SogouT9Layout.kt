@@ -8,7 +8,7 @@ import com.yuyan.imemodule.entity.keyboard.SoftKeyToggle
 import com.yuyan.imemodule.entity.keyboard.ToggleState
 import com.yuyan.imemodule.manager.InputModeSwitcher
 
-/** 中文九宫格的搜狗式几何与键位规格。 */
+/** 中文九宫格的紧凑几何与键位规格。 */
 object SogouT9Layout {
     data class NormalizedRect(
         val x: Float,

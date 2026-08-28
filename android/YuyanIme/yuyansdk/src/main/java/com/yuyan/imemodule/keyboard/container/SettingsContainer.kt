@@ -160,7 +160,9 @@ class SettingsContainer(
                 override fun onOptionClick(parent: RecyclerView.Adapter<*>?, v: SkbFunItem, position: Int) {
                     val barMenu = DataBaseKT.instance.skbFunDao().getBarMenu(v.skbMenuMode.name)
                     if(barMenu == null){
-                        DataBaseKT.instance.skbFunDao().insert(SkbFun(name = v.skbMenuMode.name, isKeep = 1))
+                        DataBaseKT.instance.skbFunDao().insert(
+                            SkbFun(name = v.skbMenuMode.name, isKeep = 1, position = position),
+                        )
                     } else {
                         DataBaseKT.instance.skbFunDao().delete(SkbFun(name = v.skbMenuMode.name, isKeep = 1))
                     }

@@ -449,6 +449,8 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
     fun updateTheme(textColor: Int) {
         initMenuView()
         initCandidateView()
+        mIvMenuSetting.background = toolbarPressBackground()
+        mMenuRightArrowBtn.background = toolbarPressBackground()
         mIvMenuSetting.setImageResource(R.drawable.sdk_level_candidates_menu_left)
         mComposingView.setTextColor(textColor)
         applyCandidateActionBackground(mRightArrowBtn, ThemeManager.activeTheme.barColor)

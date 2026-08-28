@@ -5,7 +5,7 @@ import com.yuyan.imemodule.entity.keyboard.LongPressAction
 import com.yuyan.imemodule.entity.keyboard.SoftKey
 import com.yuyan.imemodule.manager.InputModeSwitcher
 
-/** 中文全键和英文全键共用的搜狗式几何规格。 */
+/** 中文全键和英文全键共用的紧凑几何规格。 */
 object SogouQwertyLayout {
     /** APK 26.ini 中相对于键盘宽度的高度。 */
     const val KEYBOARD_HEIGHT_TO_WIDTH_RATIO = 0.5944f

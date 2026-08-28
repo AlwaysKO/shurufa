@@ -120,7 +120,7 @@ class SogouQwertyLayoutTest {
     }
 
     @Test
-    fun `底栏为搜狗式七键且宽度铺满`() {
+    fun `底栏使用七键且宽度铺满`() {
         assertArrayEquals(
             intArrayOf(
                 InputModeSwitcher.USER_KEYCODE_SYMBOL,

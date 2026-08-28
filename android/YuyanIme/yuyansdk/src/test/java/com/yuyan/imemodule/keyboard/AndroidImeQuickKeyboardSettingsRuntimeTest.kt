@@ -186,6 +186,19 @@ class AndroidImeQuickKeyboardSettingsRuntimeTest {
         KeyboardManager.instance.switchKeyboard()
     }
 
+    @Test
+    fun `绕过菜单直接切换容器也会关闭快捷面板状态`() {
+        val inputView = realInputView()
+        inputView.onSettingsMenuClick(SkbMenuMode.QuickKeyboard)
+        val oldSettings = KeyboardManager.instance.currentContainer as SettingsContainer
+        assertTrue(oldSettings.isQuickSettingsVisible)
+
+        KeyboardManager.instance.switchKeyboard(KeyboardManager.KeyboardType.ClipBoard)
+
+        assertFalse(oldSettings.isQuickSettingsVisible)
+        assertTrue(KeyboardManager.instance.currentContainer is com.yuyan.imemodule.keyboard.container.ClipBoardContainer)
+    }
+
     private fun realInputView(): InputView {
         val service = Robolectric.buildService(ImeService::class.java).create().get()
         services += service

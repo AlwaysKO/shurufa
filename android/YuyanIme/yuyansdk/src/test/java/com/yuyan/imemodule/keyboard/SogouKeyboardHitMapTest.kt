@@ -206,7 +206,7 @@ class SogouKeyboardHitMapTest {
     }
 
     @Test
-    fun `未配置搜狗命中图的其他布局维持视觉核心命中`() {
+    fun `未配置连续命中图的其他布局维持视觉核心命中`() {
         val key = SoftKey(KeyEvent.KEYCODE_A).apply {
             setKeyDimensions(0.2f, 0.2f)
             widthF = 0.2f
