@@ -72,6 +72,7 @@ class ImeService : InputMethodService() {
     private var voiceRecognizer: SpeechRecognizer? = null
     private var hostTextCommitListenerOwner: Any? = null
     private var hostTextCommitListener: ((String, ExpressionCommitKind) -> Unit)? = null
+    private var hostTextEditListener: (() -> Unit)? = null
     internal var hostKeyEventSender: (Int) -> Boolean = ::sendUnmodifiedKeyEventsAndReport
     private val onThemeChangeListener = OnThemeChangeListener { _: Theme? -> if (isHardwareKeyboard) mCandidateView.updateTheme() else mInputView.updateTheme()}
     private val clipboardUpdateContent = getInstance().internal.clipboardUpdateContent
@@ -192,6 +193,7 @@ class ImeService : InputMethodService() {
 
     override fun onDestroy() {
         expressionBackCallbackController.clear()
+        clearAllHostTextListeners()
         DataCollector.setInputActive(baseContext, false)
         voiceRecognizer?.destroy()
         super.onDestroy()
@@ -369,7 +371,11 @@ class ImeService : InputMethodService() {
     }
 
     fun sendCombinationKeyEvents(keyEventCode: Int, alt: Boolean = false, ctrl: Boolean = false, shift: Boolean = false) {
-        sendCombinationKeyEventsAndReport(keyEventCode, alt, ctrl, shift)
+        if (keyEventCode.isTextEditingKey()) {
+            sendEditingKeyEventAndReport(keyEventCode, alt, ctrl, shift)
+        } else {
+            sendCombinationKeyEventsAndReport(keyEventCode, alt, ctrl, shift)
+        }
     }
 
     private fun sendCombinationKeyEventsAndReport(
@@ -433,6 +439,23 @@ class ImeService : InputMethodService() {
                 hostTextCommitListener?.invoke(committedText, kind)
             },
         )
+    }
+
+    /** 编辑键会改变光标/文本，只在宿主真实接收后使本地查询缓存失效。 */
+    internal fun sendEditingKeyEventAndReport(
+        keyEventCode: Int,
+        alt: Boolean = false,
+        ctrl: Boolean = false,
+        shift: Boolean = false,
+    ): Boolean {
+        if (!keyEventCode.isTextEditingKey()) return false
+        val sent = if (!alt && !ctrl && !shift) {
+            hostKeyEventSender(keyEventCode)
+        } else {
+            sendCombinationKeyEventsAndReport(keyEventCode, alt, ctrl, shift)
+        }
+        if (sent) hostTextEditListener?.invoke()
+        return sent
     }
 
     /**
@@ -511,24 +534,35 @@ class ImeService : InputMethodService() {
     internal fun setHostTextCommitListener(
         owner: Any,
         listener: (String, ExpressionCommitKind) -> Unit,
+        editListener: () -> Unit = {},
     ) {
         hostTextCommitListenerOwner = owner
         hostTextCommitListener = listener
+        hostTextEditListener = editListener
     }
 
     internal fun clearHostTextCommitListener(owner: Any) {
         if (hostTextCommitListenerOwner === owner) {
             hostTextCommitListenerOwner = null
             hostTextCommitListener = null
+            hostTextEditListener = null
         }
     }
 
+    private fun clearAllHostTextListeners() {
+        hostTextCommitListenerOwner = null
+        hostTextCommitListener = null
+        hostTextEditListener = null
+    }
+
     fun getTextBeforeCursor(length:Int) : String {
-        return currentInputConnection.getTextBeforeCursor(length, 0).toString()
+        return currentInputConnection?.getTextBeforeCursor(length, 0)?.toString().orEmpty()
     }
 
     fun commitTextEditMenu(id:Int) {
-        currentInputConnection.performContextMenuAction(id)
+        if (currentInputConnection?.performContextMenuAction(id) == true) {
+            hostTextEditListener?.invoke()
+        }
     }
 
     fun performEditorAction(editorAction:Int) {
@@ -544,11 +578,15 @@ class ImeService : InputMethodService() {
                 source = "key",
             )
         }
-        currentInputConnection.deleteSurroundingText(length, 0)
+        if (currentInputConnection?.deleteSurroundingText(length, 0) == true) {
+            hostTextEditListener?.invoke()
+        }
     }
 
     fun setSelection(start: Int, end: Int) {
-        currentInputConnection.setSelection(start, end)
+        if (currentInputConnection?.setSelection(start, end) == true) {
+            hostTextEditListener?.invoke()
+        }
     }
 
     fun handleHardwareKeyboard(newConfig: Configuration? = null) {
@@ -561,4 +599,20 @@ class ImeService : InputMethodService() {
         currentInputConnection.requestCursorUpdates(if(isHardwareKeyboard)InputConnection.CURSOR_UPDATE_MONITOR else 0)
     }
 
+}
+
+private fun Int.isTextEditingKey(): Boolean = when (this) {
+    KeyEvent.KEYCODE_DEL,
+    KeyEvent.KEYCODE_FORWARD_DEL,
+    KeyEvent.KEYCODE_DPAD_LEFT,
+    KeyEvent.KEYCODE_DPAD_RIGHT,
+    KeyEvent.KEYCODE_DPAD_UP,
+    KeyEvent.KEYCODE_DPAD_DOWN,
+    KeyEvent.KEYCODE_MOVE_HOME,
+    KeyEvent.KEYCODE_MOVE_END,
+    KeyEvent.KEYCODE_PAGE_UP,
+    KeyEvent.KEYCODE_PAGE_DOWN,
+    -> true
+
+    else -> false
 }

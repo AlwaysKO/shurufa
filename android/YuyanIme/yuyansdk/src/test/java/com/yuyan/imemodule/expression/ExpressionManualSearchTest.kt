@@ -166,6 +166,20 @@ class ExpressionManualSearchTest {
         )
     }
 
+    @Test
+    fun `无法确定光标末尾时编辑使逐字缓存失效而不拼旧串`() {
+        val search = newSearch()
+        "hellp".forEach { search.onHostCommitted(it.toString(), ExpressionCommitKind.INCREMENTAL) }
+
+        search.invalidateCommittedText()
+        search.onHostCommitted("o", ExpressionCommitKind.INCREMENTAL)
+
+        assertEquals(
+            ExpressionManualSearchDecision.Query("o"),
+            search.perform(activeComposingText = null, panelLastQuery = null),
+        )
+    }
+
     private fun newSearch() = ExpressionManualSearch(
         showMissingText = {},
         preparePanel = {},

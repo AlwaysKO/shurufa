@@ -13,6 +13,7 @@ import com.yuyan.imemodule.data.theme.ThemeManager
 import com.yuyan.imemodule.expression.ExpressionPanelPresentation
 import com.yuyan.imemodule.expression.ExpressionPanelState
 import com.yuyan.imemodule.expression.ExpressionComposingTextSource
+import com.yuyan.imemodule.expression.ExpressionCommitKind
 import com.yuyan.imemodule.keyboard.container.SymbolContainer
 import com.yuyan.imemodule.manager.InputModeSwitcher
 import com.yuyan.imemodule.prefs.AppPrefs
@@ -33,6 +34,7 @@ import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
 import org.robolectric.shadows.ShadowToast
+import java.util.concurrent.TimeUnit
 
 @RunWith(RobolectricTestRunner::class)
 class ExpressionManualSearchInputViewTest {
@@ -264,9 +266,109 @@ class ExpressionManualSearchInputViewTest {
         assertFalse(service.sendNumericKeyEventAndReport(KeyEvent.KEYCODE_ENTER))
         inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
 
-        assertEquals(1, numericSendCount)
+        assertEquals(2, numericSendCount)
         assertEquals("请先输入文字，再点击搜索按钮", ShadowToast.getTextOfLatestToast())
         assertNull(inputView.expressionState().query)
+    }
+
+    @Test
+    fun `英文和数字成功删除后不会继续拼接旧缓存`() {
+        val inputView = realChatInputView()
+        val service = services.last()
+        service.hostKeyEventSender = { true }
+        "hellp".forEach {
+            inputView.notifyExpressionTextCommitted(it.toString(), ExpressionCommitKind.INCREMENTAL)
+        }
+
+        assertTrue(service.sendEditingKeyEventAndReport(KeyEvent.KEYCODE_DEL))
+        inputView.notifyExpressionTextCommitted("o", ExpressionCommitKind.INCREMENTAL)
+        inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+        assertEquals("o", inputView.expressionState().query)
+
+        inputView.onExpressionInputTargetChanged(chatEditorInfo())
+        InputModeSwitcher.saveInputMode(InputModeSwitcher.MASK_SKB_LAYOUT_NUMBER) {}
+        listOf(KeyEvent.KEYCODE_1, KeyEvent.KEYCODE_2, KeyEvent.KEYCODE_3).forEach { keyCode ->
+            inputView.processKeyUp(KeyEvent(KeyEvent.ACTION_UP, keyCode))
+        }
+        inputView.processKeyUp(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL))
+        inputView.processKeyUp(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_4))
+        inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+        assertEquals("4", inputView.expressionState().query)
+    }
+
+    @Test
+    fun `方向移动后新数字不拼旧串且失败编辑不改缓存`() {
+        val inputView = realChatInputView()
+        val service = services.last()
+        var editSucceeds = true
+        service.hostKeyEventSender = { keyCode ->
+            if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT || keyCode == KeyEvent.KEYCODE_DEL) editSucceeds else true
+        }
+        InputModeSwitcher.saveInputMode(InputModeSwitcher.MASK_SKB_LAYOUT_NUMBER) {}
+        listOf(KeyEvent.KEYCODE_1, KeyEvent.KEYCODE_2).forEach { keyCode ->
+            inputView.processKeyUp(KeyEvent(KeyEvent.ACTION_UP, keyCode))
+        }
+
+        inputView.processKeyUp(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_LEFT))
+        inputView.processKeyUp(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_3))
+        inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+        assertEquals("3", inputView.expressionState().query)
+
+        inputView.onExpressionInputTargetChanged(chatEditorInfo())
+        inputView.expressionState().setChatEditor(true)
+        inputView.processKeyUp(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_1))
+        inputView.processKeyUp(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_2))
+        editSucceeds = false
+        inputView.processKeyUp(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL))
+        inputView.processKeyUp(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_3))
+        inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+        assertEquals("123", inputView.expressionState().query)
+    }
+
+    @Test
+    fun `窗口隐藏后晚到提交无查询且新会话重新生效`() {
+        val inputView = realChatInputView()
+        val service = services.last()
+        service.hostKeyEventSender = { true }
+
+        inputView.onExpressionWindowHidden()
+        assertTrue(service.sendNumericKeyEventAndReport(KeyEvent.KEYCODE_7))
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
+        inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+        assertEquals("请先输入文字，再点击搜索按钮", ShadowToast.getTextOfLatestToast())
+        assertNull(inputView.expressionState().query)
+
+        inputView.onExpressionInputViewStarted(chatEditorInfo(), restarting = false, connectionIdentity = Any())
+        assertTrue(service.sendNumericKeyEventAndReport(KeyEvent.KEYCODE_8))
+        inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+        assertEquals("8", inputView.expressionState().query)
+    }
+
+    @Test
+    fun `新InputView绑定后旧视图销毁不会抢走或收到提交通知`() {
+        val service = Robolectric.buildService(ImeService::class.java).create().get()
+        services += service
+        val oldInputView = service.onCreateInputView() as InputView
+        inputViews += oldInputView
+        oldInputView.expressionComposingTextSource = ExpressionComposingTextSource(
+            isComposing = { false }, rawInput = { null }, isAssociate = { false }, candidateText = { null },
+        )
+        oldInputView.onExpressionWindowHidden()
+        val newInputView = service.onCreateInputView() as InputView
+        inputViews += newInputView
+        newInputView.expressionComposingTextSource = ExpressionComposingTextSource(
+            isComposing = { false }, rawInput = { null }, isAssociate = { false }, candidateText = { null },
+        )
+        newInputView.onExpressionInputViewStarted(chatEditorInfo(), false, Any())
+        oldInputView.disposeExpressionResources()
+        service.hostKeyEventSender = { true }
+
+        service.sendNumericKeyEventAndReport(KeyEvent.KEYCODE_9)
+        newInputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+        assertEquals("9", newInputView.expressionState().query)
+        ShadowToast.reset()
+        oldInputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+        assertEquals("请先输入文字，再点击搜索按钮", ShadowToast.getTextOfLatestToast())
     }
 
     private fun realChatInputView(): InputView {

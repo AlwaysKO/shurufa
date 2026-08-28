@@ -53,6 +53,9 @@ class ExpressionManualSearch(
         incrementalText.clear()
     }
 
+    /** 光标/选区变动后无法再安全推断宿主文本，丢弃本地 fallback。 */
+    fun invalidateCommittedText() = resetSession()
+
     fun perform(
         activeComposingText: String?,
         panelLastQuery: String?,

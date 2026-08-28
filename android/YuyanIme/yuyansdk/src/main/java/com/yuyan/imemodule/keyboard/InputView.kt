@@ -131,6 +131,8 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     private lateinit var expressionManualSearch: ExpressionManualSearch
     internal var expressionComposingTextSource = ExpressionComposingTextSource.fromEngine()
     private val expressionInputTargetTracker = ExpressionInputTargetTracker()
+    private var expressionInputSessionActive = true
+    private var expressionResourcesDisposed = false
     private lateinit var expressionFlow: ExpressionFlowController
     private lateinit var expressionRecommendationResolver: ExpressionRecommendationResolver
     private var expressionSync: ExpressionSync? = null
@@ -299,7 +301,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             preparePanel = ::prepareExpressionPanelForManualSearch,
             searchImmediately = { query -> expressionQueryCoordinator.searchImmediately(query) },
         )
-        service.setHostTextCommitListener(this, ::notifyExpressionTextCommitted)
+        bindHostTextListeners()
     }
 
     private suspend fun prepareAsset(
@@ -943,6 +945,38 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         expressionManualSearch.onHostCommitted(text, kind)?.let(expressionQueryCoordinator::onCommitted)
     }
 
+    private fun notifyExpressionTextEdited() {
+        expressionManualSearch.invalidateCommittedText()
+        expressionQueryCoordinator.reset()
+        clearExpressionQuery()
+    }
+
+    private fun bindHostTextListeners() {
+        service.setHostTextCommitListener(
+            owner = this,
+            listener = ::notifyExpressionTextCommitted,
+            editListener = ::notifyExpressionTextEdited,
+        )
+    }
+
+    private fun activateExpressionInputSession() {
+        if (expressionResourcesDisposed || expressionInputSessionActive) return
+        expressionQueryCoordinator = ExpressionQueryCoordinator(
+            scope = expressionScope,
+            debounceMillis = 180,
+            publishQuery = ::searchExpressions,
+        )
+        expressionInputSessionActive = true
+        bindHostTextListeners()
+    }
+
+    private fun deactivateExpressionInputSession() {
+        if (!expressionInputSessionActive) return
+        expressionInputSessionActive = false
+        service.clearHostTextCommitListener(this)
+        expressionQueryCoordinator.close()
+    }
+
     private fun updateCandidate() {
         DecodingInfo.updateDecodingCandidate()
         if (!DecodingInfo.isCandidatesEmpty) {
@@ -1006,6 +1040,9 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     }
 
     internal fun disposeExpressionResources() {
+        if (expressionResourcesDisposed) return
+        expressionResourcesDisposed = true
+        expressionInputSessionActive = false
         service.setExpressionBackHandlingEnabled(false)
         service.clearHostTextCommitListener(this)
         expressionQueryCoordinator.close()
@@ -1172,6 +1209,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         restarting: Boolean,
         connectionIdentity: Any?,
     ) {
+        activateExpressionInputSession()
         if (expressionInputTargetTracker.shouldReset(editorInfo, restarting, connectionIdentity)) {
             onExpressionInputTargetChanged(editorInfo)
         }
@@ -1214,11 +1252,18 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             mAddPhrasesLayout.addPhrasesHandle()
             initView(context)
         }
-        expressionManualSearch.resetSession()
-        expressionQueryCoordinator.reset()
-        clearExpressionQuery()
+        onExpressionWindowHidden()
         KeyboardManager.instance.switchKeyboard()
         resetToIdleState()
+    }
+
+    /** 窗口隐藏时先封闭斗图通知/请求，防止晚到的语音或 commit 污染下次会话。 */
+    internal fun onExpressionWindowHidden() {
+        deactivateExpressionInputSession()
+        expressionManualSearch.resetSession()
+        expressionDownloadJob?.cancel()
+        expressionDownloadJob = null
+        clearExpressionQuery()
     }
 
     private var selStart = 0
