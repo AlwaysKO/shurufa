@@ -43,6 +43,7 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
+import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowToast
 import java.util.concurrent.TimeUnit
 
@@ -666,6 +667,79 @@ class ExpressionManualSearchInputViewTest {
         assertTrue(resultHeights.first() > toolHeights.first())
         assertEquals(stableViewport, inputView.expressionLayoutBudget.availableHeightPx)
         assertTrue(resultHeights.first() + inputView.expressionLayoutBudget.reservedNonPanelHeightPx <= stableViewport)
+    }
+
+    @Test
+    @Config(sdk = [29])
+    fun `SDK29动态系统栏Insets到达后刷新稳定视口`() {
+        val inputView = realChatInputView()
+        val before = inputView.expressionLayoutBudget
+        val insets = WindowInsetsCompat.Builder()
+            .setInsets(WindowInsetsCompat.Type.statusBars(), androidx.core.graphics.Insets.of(0, 20, 0, 0))
+            .setInsets(WindowInsetsCompat.Type.navigationBars(), androidx.core.graphics.Insets.of(0, 0, 0, 50))
+            .setInsets(WindowInsetsCompat.Type.displayCutout(), androidx.core.graphics.Insets.of(0, 30, 0, 70))
+            .build()
+
+        ViewCompat.dispatchApplyWindowInsets(inputView, insets)
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+        val after = inputView.expressionLayoutBudget
+        val realBounds = before.availableHeightPx + before.topObstructionPx + before.bottomExtraObstructionPx
+        // Robolectric 29 的 Compat Builder 不构造平台 DisplayCutout；刘海合并由纯函数测试覆盖。
+        assertEquals(20, after.topObstructionPx)
+        assertEquals(0, after.bottomExtraObstructionPx)
+        assertEquals(realBounds - 20, after.availableHeightPx)
+        assertEquals(50, after.navigationInsetBottomPx)
+    }
+
+    @Test
+    fun `极端高度有结果时AI工具行可关闭并恢复原查询结果标签且返回仍先折叠`() {
+        AppPrefs.getInstance().internal.aiStickerEnabled.setValue(true)
+        val inputView = realChatInputView()
+        val state = inputView.expressionState()
+        val result = ExpressionAsset(
+            id = "toggle-result",
+            type = "prebuilt",
+            format = "webp",
+            version = "v1",
+            fileName = "toggle.webp",
+            sha256 = "d".repeat(64),
+            width = 128,
+            height = 128,
+        )
+        state.beginQuery("保留文字", 903)
+        state.applyResults(903, listOf(result))
+        state.selectTab(com.yuyan.imemodule.expression.ExpressionPanelTab.AI_SYNTHESIS)
+        val panel = inputView.findViewById<ExpressionPanel>(R.id.expression_panel)
+        panel.setAvailableLayoutHeight(availableHeightPx = 610, reservedKeyboardHeightPx = 600)
+        panel.render(state, ExpressionCatalog.fromAssets(context))
+        val toggle = panel.findViewById<View>(R.id.expression_enable)
+        assertEquals(context.getString(R.string.expression_tool_hide_recommendations), toggle.contentDescription)
+
+        toggle.performClick()
+
+        assertFalse(state.isRecommendationVisible)
+        assertEquals("保留文字", state.query)
+        assertEquals(listOf(result), state.results)
+        assertEquals(com.yuyan.imemodule.expression.ExpressionPanelTab.AI_SYNTHESIS, state.selectedTab)
+        assertEquals(context.getString(R.string.expression_tool_restore_recommendations), toggle.contentDescription)
+
+        toggle.performClick()
+
+        assertTrue(state.isRecommendationVisible)
+        assertEquals("保留文字", state.query)
+        assertEquals(listOf(result), state.results)
+        assertEquals(com.yuyan.imemodule.expression.ExpressionPanelTab.AI_SYNTHESIS, state.selectedTab)
+        panel.findViewById<View>(R.id.expression_asset_list).performLongClick()
+        assertEquals(ExpressionPanelPresentation.EXPANDED, state.presentation)
+        assertTrue(inputView.handleImePanelBack())
+        assertEquals(ExpressionPanelPresentation.COMPACT, state.presentation)
+
+        state.beginQuery("暂无结果", 904)
+        panel.render(state, ExpressionCatalog.fromAssets(context))
+        toggle.performClick()
+        assertEquals("暂无结果", state.query)
+        assertTrue(state.results.isEmpty())
     }
 
     @Test

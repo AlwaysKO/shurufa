@@ -105,6 +105,7 @@ class ExpressionPanel @JvmOverloads constructor(
         enableButton.setOnClickListener {
             when {
                 !aiStickerEnabled -> onAiStickerEnabledChange?.invoke(true)
+                recommendationVisible -> onRecommendationVisibilityChange?.invoke(false)
                 !recommendationVisible -> onRecommendationVisibilityChange?.invoke(true)
             }
         }
@@ -139,6 +140,13 @@ class ExpressionPanel @JvmOverloads constructor(
         recommendationSection.visibility = if (state.isRecommendationVisible) View.VISIBLE else View.GONE
         toolRow.visibility = View.VISIBLE
         enableButton.visibility = View.VISIBLE
+        enableButton.contentDescription = context.getString(
+            when {
+                state.isRecommendationVisible -> R.string.expression_tool_hide_recommendations
+                state.results.isNotEmpty() -> R.string.expression_tool_restore_recommendations
+                else -> R.string.ai_sticker_search
+            },
+        )
         recommendedTab.isSelected = state.selectedTab == ExpressionPanelTab.RECOMMENDED
         templatesTab.isSelected = state.selectedTab == ExpressionPanelTab.AI_SYNTHESIS
         emojiTab.isSelected = state.selectedTab == ExpressionPanelTab.EMOJI_SYNTHESIS
