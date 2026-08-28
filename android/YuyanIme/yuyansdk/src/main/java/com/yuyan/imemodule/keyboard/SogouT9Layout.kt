@@ -2,6 +2,7 @@ package com.yuyan.imemodule.keyboard
 
 import android.view.KeyEvent
 import com.yuyan.imemodule.entity.keyboard.LongPressAction
+import com.yuyan.imemodule.entity.keyboard.KeyType
 import com.yuyan.imemodule.entity.keyboard.SoftKey
 import com.yuyan.imemodule.entity.keyboard.SoftKeyToggle
 import com.yuyan.imemodule.entity.keyboard.ToggleState
@@ -165,6 +166,7 @@ object SogouT9Layout {
 
     fun createEnterKey() = SoftKeyToggle(KeyEvent.KEYCODE_ENTER).apply {
         heightF = ROW_HEIGHT
+        keyType = KeyType.AccentKey
         stateId = 0
         preferTextLabel = true
         setToggleStates(

@@ -7,11 +7,14 @@ import com.yuyan.imemodule.entity.keyboard.SoftKey
 import com.yuyan.imemodule.entity.keyboard.SoftKeyToggle
 import com.yuyan.imemodule.entity.keyboard.SoftKeyboard
 import com.yuyan.imemodule.entity.keyboard.ToggleState
+import com.yuyan.imemodule.entity.keyboard.KeyType
+import com.yuyan.imemodule.entity.keyboard.LongPressAction
 import com.yuyan.imemodule.keyboard.KeyPreset
 import com.yuyan.imemodule.keyboard.KeyboardData
 import com.yuyan.imemodule.keyboard.KeyGeometry
 import com.yuyan.imemodule.keyboard.SogouT9Layout
 import com.yuyan.imemodule.keyboard.SogouQwertyLayout
+import com.yuyan.imemodule.keyboard.SogouAuxiliaryLayouts
 import com.yuyan.imemodule.manager.InputModeSwitcher
 import com.yuyan.imemodule.prefs.AppPrefs
 import com.yuyan.imemodule.prefs.behavior.DoublePinyinSchemaMode
@@ -126,20 +129,7 @@ class KeyboardLoaderUtil private constructor() {
 
             }
             InputModeSwitcher.MASK_SKB_LAYOUT_HANDWRITING -> {// 3000 手写键盘
-                var keyBeans: MutableList<SoftKey> = LinkedList()
-                val keys = KeyboardData.layoutHandwritingCn[skbStyleMode]!!
-                var handwritingKey = createHandwritingKey(keys[0][0]) // 符号站位
-                handwritingKey.mLeftF = 0.815f
-                handwritingKey.heightF = 0.50f
-                keyBeans.add(handwritingKey)
-                rows.add(keyBeans)
-                keyBeans = LinkedList()
-                handwritingKey = createHandwritingKey(keys[1][0])
-                handwritingKey.mLeftF = 0.815f
-                keyBeans.add(handwritingKey)
-                rows.add(keyBeans)
-                keyBeans = lastRows(skbValue)
-                rows.add(keyBeans)
+                rows.addAll(createAuxiliaryRows(SogouAuxiliaryLayouts.handwriting, KeyPreset.t9PYKeyPreset, voiceSpace = true))
             }
             InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_ABC -> {// 4000 英文全键
                 var keyBeans: MutableList<SoftKey> = LinkedList()
@@ -167,32 +157,7 @@ class KeyboardLoaderUtil private constructor() {
                 rows.add(keyBeans)
             }
             InputModeSwitcher.MASK_SKB_LAYOUT_NUMBER -> {  // 5000 数字键盘
-                var keyBeans: MutableList<SoftKey> = LinkedList()
-                val keys =  KeyboardData.layoutT9Number[skbStyleMode]!!
-                var t9Keys = createT9NumberKeys(keys[0])
-                t9Keys.first().apply {
-                    widthF = 0.18f
-                    heightF = 0.75f
-                }
-                t9Keys.last().widthF = 0.18f
-                keyBeans.addAll(t9Keys)
-                rows.add(keyBeans)
-
-                keyBeans = LinkedList()
-                t9Keys = createT9NumberKeys(keys[1])
-                t9Keys.first().mLeftF = 0.185f
-                t9Keys.last().widthF = 0.18f
-                keyBeans.addAll(t9Keys)
-                rows.add(keyBeans)
-
-                keyBeans = LinkedList()
-                t9Keys = createT9NumberKeys(keys[2])
-                t9Keys.first().mLeftF = 0.185f
-                t9Keys.last().widthF = 0.18f
-                keyBeans.addAll(t9Keys)
-                rows.add(keyBeans)
-                keyBeans = lastRows(skbValue)
-                rows.add(keyBeans)
+                rows.addAll(createAuxiliaryRows(SogouAuxiliaryLayouts.number, KeyPreset.t9NumberKeyPreset))
             }
             InputModeSwitcher.MASK_SKB_LAYOUT_LX17 -> {     // 6000 乱序17键盘
                 var keyBeans: MutableList<SoftKey> = LinkedList()
@@ -236,58 +201,10 @@ class KeyboardLoaderUtil private constructor() {
                 }
             }
             InputModeSwitcher.MASK_SKB_LAYOUT_STROKE -> {  // 7000  笔画键盘
-                var keyBeans: MutableList<SoftKey> = LinkedList()
-                val keys =  KeyboardData.layoutStrokeCn[skbStyleMode]!!
-                var t9Key = createT9Keys(keys[0])
-                t9Key.first().apply {
-                    widthF = 0.18f
-                    heightF = 0.75f
-                }
-                t9Key.last().widthF = 0.18f
-                keyBeans.addAll(t9Key)
-                rows.add(keyBeans)
-                keyBeans = LinkedList()
-                t9Key = createT9Keys(keys[1])
-                t9Key.first().mLeftF = 0.185f
-                t9Key.last().widthF = 0.18f
-                keyBeans.addAll(t9Key)
-                rows.add(keyBeans)
-                keyBeans = LinkedList()
-                t9Key = createT9Keys(keys[2])
-                t9Key.first().mLeftF = 0.185f
-                t9Key.last().widthF = 0.18f
-                keyBeans.addAll(t9Key)
-                rows.add(keyBeans)
-                keyBeans = lastRows(skbValue)
-                rows.add(keyBeans)
+                rows.addAll(createAuxiliaryRows(SogouAuxiliaryLayouts.stroke, KeyPreset.strokeKeyPreset, voiceSpace = true))
             }
             InputModeSwitcher.MASK_SKB_LAYOUT_TEXTEDIT -> {     // 8000 文本编辑键盘
-                var keyBeans: MutableList<SoftKey> = LinkedList()
-                val keys =  KeyboardData.layoutTextEdit[skbStyleMode]!!
-                var editKeys = createTextEditKeys(keys[0])
-                editKeys[0].heightF = 0.75f
-                editKeys[2].heightF = 0.75f
-                keyBeans.addAll(editKeys)
-                rows.add(keyBeans)
-                keyBeans = LinkedList()
-                editKeys = createTextEditKeys(keys[1])
-                editKeys[0].mLeftF = 0.25f
-                editKeys[1].mLeftF = 0.75f
-                keyBeans.addAll(editKeys)
-                rows.add(keyBeans)
-                keyBeans = LinkedList()
-                editKeys = createTextEditKeys(keys[2])
-                editKeys[0].mLeftF = 0.25f
-                editKeys[1].mLeftF = 0.75f
-                keyBeans.addAll(editKeys)
-                rows.add(keyBeans)
-                keyBeans = LinkedList()
-                editKeys = createTextEditKeys(keys[3])
-                editKeys[0].widthF = 0.33f
-                editKeys[1].widthF = 0.33f
-                editKeys[2].widthF = 0.33f
-                keyBeans.addAll(editKeys)
-                rows.add(keyBeans)
+                rows.addAll(createAuxiliaryRows(SogouAuxiliaryLayouts.textEdit, KeyPreset.textEditKeyPreset))
             }
         }
         val numberLineSkb = when(skbStyleMode){
@@ -335,9 +252,6 @@ class KeyboardLoaderUtil private constructor() {
                     createQwertyKeys(arrayOf(InputModeSwitcher.USER_KEYCODE_SYMBOL, InputModeSwitcher.USER_KEYCODE_NUMBER,
                             InputModeSwitcher.USER_KEYCODE_LEFT_PERIOD, KeyEvent.KEYCODE_SPACE, InputModeSwitcher.USER_KEYCODE_LANG))
                 }
-            }
-            InputModeSwitcher.MASK_SKB_LAYOUT_NUMBER -> {
-                createT9NumberKeys(arrayOf(InputModeSwitcher.USER_KEYCODE_SYMBOL, InputModeSwitcher.USER_KEYCODE_RETURN, 7, KeyEvent.KEYCODE_SPACE))
             }
             InputModeSwitcher.MASK_SKB_LAYOUT_LX17 -> {
                 if(skbStyleMode == SkbStyleMode.Google){
@@ -451,6 +365,7 @@ class KeyboardLoaderUtil private constructor() {
     }
 
     private fun createEnterToggle() = createKeyToggle(KeyEvent.KEYCODE_ENTER).apply {
+        keyType = KeyType.AccentKey
         stateId = 0
         setToggleStates(
             listOf(
@@ -492,6 +407,43 @@ class KeyboardLoaderUtil private constructor() {
         key.setKeyDimensions(bounds.x, bounds.y)
         key.widthF = bounds.width
         key.heightF = bounds.height
+    }
+
+    private fun createAuxiliaryRows(
+        spec: SogouAuxiliaryLayouts.LayoutSpec,
+        preset: Map<Int, Array<String>>,
+        voiceSpace: Boolean = false,
+    ): List<List<SoftKey>> = spec.codeRows.zip(spec.visualRows).map { (codes, geometry) ->
+        codes.map { code ->
+            val labels = preset[code]
+            val key = if (code == KeyEvent.KEYCODE_ENTER) {
+                createEnterToggle()
+            } else {
+                SoftKey(
+                    code = code,
+                    label = labels?.getOrNull(0).orEmpty(),
+                    labelSmall = labels?.getOrNull(1).orEmpty(),
+                )
+            }
+            key.apply {
+                if (voiceSpace && code == KeyEvent.KEYCODE_SPACE) longPressAction = LongPressAction.Voice
+                applyThemeRole()
+            }
+        }.also { applyVisualGeometry(it, geometry) }
+    }
+
+    private fun SoftKey.applyThemeRole() {
+        keyType = when (code) {
+            KeyEvent.KEYCODE_ENTER -> KeyType.AccentKey
+            KeyEvent.KEYCODE_DEL,
+            KeyEvent.KEYCODE_CLEAR,
+            KeyEvent.KEYCODE_SHIFT_LEFT,
+            InputModeSwitcher.USER_KEYCODE_SYMBOL,
+            InputModeSwitcher.USER_KEYCODE_NUMBER,
+            InputModeSwitcher.USER_KEYCODE_RETURN,
+            InputModeSwitcher.USER_KEYCODE_LANG -> KeyType.Function
+            else -> KeyType.Normal
+        }
     }
 
     /** 生成键盘布局，主要用于计算键盘边界 */
@@ -593,6 +545,9 @@ class KeyboardLoaderUtil private constructor() {
         } else {
             emptyList()
         }
+        fun auxiliaryBounds(spec: SogouAuxiliaryLayouts.LayoutSpec) = spec.visualRows.flatMapIndexed { rowIndex, geometryRow ->
+            rows[rowIndex + rowOffset].zip(geometryRow, ::bounds)
+        }
 
         return when (mSkbValue) {
             InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN,
@@ -623,6 +578,10 @@ class KeyboardLoaderUtil private constructor() {
                     }
                 }
             }
+            InputModeSwitcher.MASK_SKB_LAYOUT_STROKE -> numberRowBounds + auxiliaryBounds(SogouAuxiliaryLayouts.stroke)
+            InputModeSwitcher.MASK_SKB_LAYOUT_NUMBER -> numberRowBounds + auxiliaryBounds(SogouAuxiliaryLayouts.number)
+            InputModeSwitcher.MASK_SKB_LAYOUT_HANDWRITING -> numberRowBounds + auxiliaryBounds(SogouAuxiliaryLayouts.handwriting)
+            InputModeSwitcher.MASK_SKB_LAYOUT_TEXTEDIT -> numberRowBounds + auxiliaryBounds(SogouAuxiliaryLayouts.textEdit)
             else -> emptyList()
         }
     }
@@ -634,18 +593,10 @@ class KeyboardLoaderUtil private constructor() {
             val labels = keyPreset[code]
             softKeys.add(SoftKey(code = code, label = labels?.getOrNull(0) ?: "", labelSmall = labels?.getOrNull(1)?: "").apply {
                 widthF = 0.21f
-            })
-        }
-        return softKeys.toTypedArray()
-    }
-
-    private fun createT9NumberKeys(codes: Array<Int>): Array<SoftKey> {
-        val softKeys = mutableListOf<SoftKey>()
-        val keyPreset = KeyPreset.t9NumberKeyPreset
-        for(code in codes){
-            val labels = keyPreset[code]
-            softKeys.add(SoftKey(code = code, label = labels?.getOrNull(0) ?: "", labelSmall = labels?.getOrNull(1) ?: "").apply {
-                widthF = 0.21f
+                applyThemeRole()
+                if (code == KeyEvent.KEYCODE_0 && mSkbValue != InputModeSwitcher.MASK_SKB_LAYOUT_NUMBER) {
+                    keyType = KeyType.Function
+                }
             })
         }
         return softKeys.toTypedArray()
@@ -668,6 +619,7 @@ class KeyboardLoaderUtil private constructor() {
             softKeys.add(SoftKey(code = code, label = labels?.getOrNull(0) ?: "", labelSmall = labels?.getOrNull(1) ?: "", keyMnemonic = keyMnemonicPreset[code] ?: "").apply {
                 widthF = SogouQwertyLayout.LETTER_WIDTH
                 heightF = SogouQwertyLayout.ROW_HEIGHT
+                applyThemeRole()
             })
         }
         return softKeys.toTypedArray()
@@ -681,17 +633,10 @@ class KeyboardLoaderUtil private constructor() {
             softKeys.add(SoftKey(code = code, label = labels?.getOrNull(0) ?: "", labelSmall = labels?.getOrNull(1) ?: "", keyMnemonic = labels?.getOrNull(2) ?: "").apply {
                 widthF = SogouQwertyLayout.LETTER_WIDTH
                 heightF = SogouQwertyLayout.ROW_HEIGHT
+                applyThemeRole()
             })
         }
         return softKeys.toTypedArray()
-    }
-
-    private fun createHandwritingKey(code: Int): SoftKey {
-        val keyPreset = if(numberLine)KeyPreset.qwertyPYKeyPreset else KeyPreset.qwertyPYKeyNumberPreset
-        val labels = keyPreset[code]
-        return SoftKey(code = code, label = labels?.getOrNull(0) ?: "", labelSmall = labels?.getOrNull(1) ?: "").apply {
-            widthF = 0.18f
-        }
     }
 
     private fun createNumberLineKeys(codes: Array<Int>): Array<SoftKey> {
@@ -718,20 +663,8 @@ class KeyboardLoaderUtil private constructor() {
         return softKeys.toTypedArray()
     }
 
-    private fun createTextEditKeys(codes: Array<Int>): Array<SoftKey> {
-        val softKeys = mutableListOf<SoftKey>()
-        val keyPreset = KeyPreset.textEditKeyPreset
-        for(code in codes){
-            val labels = keyPreset[code]
-            softKeys.add(SoftKey(code = code, label = labels?.getOrNull(0) ?: "").apply {
-                widthF = 0.2475f
-            })
-        }
-        return softKeys.toTypedArray()
-    }
-
     private fun createKeyToggle(code: Int): SoftKeyToggle {
-        return SoftKeyToggle(code)
+        return SoftKeyToggle(code).apply { applyThemeRole() }
     }
 
     companion object {
