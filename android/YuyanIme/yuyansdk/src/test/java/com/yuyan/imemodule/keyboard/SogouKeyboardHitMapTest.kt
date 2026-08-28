@@ -188,6 +188,24 @@ class SogouKeyboardHitMapTest {
     }
 
     @Test
+    fun `中英文全键顶部数字行连续覆盖左右边缘但不越过键盘`() {
+        AppPrefs.getInstance().keyboardSetting.abcNumberLine.setValue(true)
+        listOf(
+            InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN,
+            InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_ABC,
+        ).forEach { layout ->
+            val keyboard = load(layout)
+            val numberRow = keyboard.mKeyRows.first()
+            val y = numberRow.first().mTop + numberRow.first().height() / 2
+
+            assertSame(numberRow.first(), keyboard.mapToKey(0, y))
+            assertSame(numberRow.last(), keyboard.mapToKey(TEST_WIDTH - 1, y))
+            assertNull(keyboard.mapToKey(-1, y))
+            assertNull(keyboard.mapToKey(TEST_WIDTH, y))
+        }
+    }
+
+    @Test
     fun `未配置搜狗命中图的其他布局维持视觉核心命中`() {
         val key = SoftKey(KeyEvent.KEYCODE_A).apply {
             setKeyDimensions(0.2f, 0.2f)

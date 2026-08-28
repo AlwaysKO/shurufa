@@ -570,12 +570,35 @@ class KeyboardLoaderUtil private constructor() {
             right = geometry.touchRight,
             bottom = transformY(geometry.touchBottom),
         )
+        fun continuousRowBounds(
+            keys: List<SoftKey>,
+            top: Float,
+            bottom: Float,
+        ): List<SoftKeyboard.NormalizedHitBounds> {
+            val boundaries = keys.zipWithNext { left, right ->
+                ((left.mLeftF + left.widthF) + right.mLeftF) / 2f
+            }
+            return keys.mapIndexed { index, key ->
+                SoftKeyboard.NormalizedHitBounds(
+                    key = key,
+                    left = boundaries.getOrElse(index - 1) { 0f },
+                    top = top,
+                    right = boundaries.getOrElse(index) { 1f },
+                    bottom = bottom,
+                )
+            }
+        }
+        val numberRowBounds = if (isNumberRow) {
+            continuousRowBounds(rows.first(), top = 0f, bottom = transformY(0f))
+        } else {
+            emptyList()
+        }
 
         return when (mSkbValue) {
             InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN,
             InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_ABC -> {
                 val geometryRows = SogouQwertyLayout.rowGeometry
-                geometryRows.flatMapIndexed { rowIndex, geometryRow ->
+                numberRowBounds + geometryRows.flatMapIndexed { rowIndex, geometryRow ->
                     rows[rowIndex + rowOffset].zip(geometryRow.keys, ::bounds)
                 }
             }
@@ -590,6 +613,7 @@ class KeyboardLoaderUtil private constructor() {
                     bottom = transformY(geometryRows[2].touchBottom),
                 )
                 buildList {
+                    addAll(numberRowBounds)
                     add(holderBounds)
                     geometryRows.forEachIndexed { rowIndex, geometryRow ->
                         val keys = rows[rowIndex + rowOffset].let { row ->
