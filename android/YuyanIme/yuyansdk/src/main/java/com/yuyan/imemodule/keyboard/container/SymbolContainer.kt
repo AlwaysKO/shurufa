@@ -37,6 +37,7 @@ import com.yuyan.imemodule.prefs.behavior.SymbolMode
 import com.yuyan.imemodule.utils.DevicesUtils
 import com.yuyan.imemodule.keyboard.InputView
 import com.yuyan.imemodule.keyboard.KeyboardManager
+import com.yuyan.imemodule.keyboard.SymbolPage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -67,6 +68,14 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
     private var tabLayout: TabLayout
     private val ivDelete: ImageView
     var isLockSymbol = false
+    val quickSymbolPage: SymbolPage?
+        get() = if (mShowType != SymbolMode.Symbol) {
+            null
+        } else when (mVPSymbolsView.currentItem) {
+            1 -> SymbolPage.CHINESE
+            2 -> SymbolPage.ENGLISH
+            else -> null
+        }
     private var mHandler: Handler? = null
     private val expressionContentSender = ExpressionContentSender(
         context = context,

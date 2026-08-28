@@ -462,8 +462,9 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             current.toggleQuickSettingsView()
             return
         }
+        val symbolPage = (KeyboardManager.instance.currentContainer as? SymbolContainer)?.quickSymbolPage
         KeyboardManager.instance.switchKeyboard(KeyboardManager.KeyboardType.SETTINGS)
-        (KeyboardManager.instance.currentContainer as? SettingsContainer)?.showQuickSettingsView()
+        (KeyboardManager.instance.currentContainer as? SettingsContainer)?.showQuickSettingsView(symbolPage)
         service.setExpressionBackHandlingEnabled(true)
         updateCandidateBar()
     }

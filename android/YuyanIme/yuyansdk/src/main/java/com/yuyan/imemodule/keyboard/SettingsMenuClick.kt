@@ -17,7 +17,17 @@ import com.yuyan.imemodule.keyboard.container.SettingsContainer
 import com.yuyan.imemodule.keyboard.container.SymbolContainer
 import com.yuyan.inputmethod.core.Kernel
 
+internal inline fun routeQuickKeyboardMenu(
+    skbMenuMode: SkbMenuMode,
+    showQuickKeyboard: () -> Unit,
+): Boolean {
+    if (skbMenuMode != SkbMenuMode.QuickKeyboard) return false
+    showQuickKeyboard()
+    return true
+}
+
 fun onSettingsMenuClick(inputView: InputView, skbMenuMode: SkbMenuMode) {
+    if (routeQuickKeyboardMenu(skbMenuMode, inputView::toggleQuickKeyboardSettings)) return
     when (skbMenuMode) {
         SkbMenuMode.Emojicon, SkbMenuMode.Emoticon -> {
             val symbolType = if(skbMenuMode == SkbMenuMode.Emoticon) SymbolMode.Emoticon else SymbolMode.Emojicon
@@ -33,7 +43,6 @@ fun onSettingsMenuClick(inputView: InputView, skbMenuMode: SkbMenuMode) {
             KeyboardManager.instance.switchKeyboard(KeyboardManager.KeyboardType.SETTINGS)
             (KeyboardManager.instance.currentContainer as? SettingsContainer)?.showSkbSelelctModeView()
         }
-        SkbMenuMode.QuickKeyboard -> inputView.toggleQuickKeyboardSettings()
         SkbMenuMode.KeyboardHeight -> {
             KeyboardManager.instance.switchKeyboard()
             KeyboardManager.instance.currentContainer!!.setKeyboardHeight()

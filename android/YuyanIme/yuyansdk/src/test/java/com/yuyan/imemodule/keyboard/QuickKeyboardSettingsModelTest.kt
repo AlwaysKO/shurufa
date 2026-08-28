@@ -73,6 +73,37 @@ class QuickKeyboardSettingsModelTest {
     }
 
     @Test
+    fun `主题选中态严格使用真实主题ID而不是明暗属性猜测`() {
+        val themes = QuickKeyboardSettingsModel.availableThemes(setOf("MaterialLight", "MaterialDark", "PixelLight"))
+
+        assertEquals("MaterialLight", QuickKeyboardSettingsModel.selectedThemeId("MaterialLight", themes))
+        assertEquals("MaterialDark", QuickKeyboardSettingsModel.selectedThemeId("MaterialDark", themes))
+        assertNull(QuickKeyboardSettingsModel.selectedThemeId("PixelLight", themes))
+        assertNull(QuickKeyboardSettingsModel.selectedThemeId("NordDark", themes))
+        assertNull(QuickKeyboardSettingsModel.selectedThemeId("CustomRed", themes))
+    }
+
+    @Test
+    fun `真实符号页优先于底层语言布局并可在重新打开快捷面板时保持选中`() {
+        assertEquals(
+            QuickKeyboardLayoutId.CHINESE_SYMBOL,
+            QuickKeyboardSettingsModel.selectedLayout(
+                InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN,
+                isEnglish = false,
+                symbolPage = SymbolPage.CHINESE,
+            ),
+        )
+        assertEquals(
+            QuickKeyboardLayoutId.ENGLISH_SYMBOL,
+            QuickKeyboardSettingsModel.selectedLayout(
+                InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_ABC,
+                isEnglish = true,
+                symbolPage = SymbolPage.ENGLISH,
+            ),
+        )
+    }
+
+    @Test
     fun `当前布局选中态区分中文英文和临时布局`() {
         assertEquals(
             QuickKeyboardLayoutId.ENGLISH_QWERTY,

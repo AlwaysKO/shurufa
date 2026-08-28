@@ -105,7 +105,25 @@ object QuickKeyboardSettingsModel {
     fun isThemeSelectable(themeId: String, themes: List<QuickThemeOption>): Boolean =
         themes.any { it.themeId == themeId }
 
-    fun selectedLayout(layout: Int, isEnglish: Boolean): QuickKeyboardLayoutId? = when (layout) {
+    fun selectedThemeId(activeThemeId: String, themes: List<QuickThemeOption>): String? =
+        themes.firstOrNull { it.themeId == activeThemeId }?.themeId
+
+    fun selectedLayout(
+        layout: Int,
+        isEnglish: Boolean,
+        symbolPage: SymbolPage? = null,
+    ): QuickKeyboardLayoutId? {
+        if (symbolPage != null) {
+            return if (symbolPage == SymbolPage.CHINESE) {
+                QuickKeyboardLayoutId.CHINESE_SYMBOL
+            } else {
+                QuickKeyboardLayoutId.ENGLISH_SYMBOL
+            }
+        }
+        return selectedInputLayout(layout, isEnglish)
+    }
+
+    private fun selectedInputLayout(layout: Int, isEnglish: Boolean): QuickKeyboardLayoutId? = when (layout) {
         InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_ABC -> QuickKeyboardLayoutId.ENGLISH_QWERTY
         InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN -> if (isEnglish) {
             QuickKeyboardLayoutId.ENGLISH_QWERTY

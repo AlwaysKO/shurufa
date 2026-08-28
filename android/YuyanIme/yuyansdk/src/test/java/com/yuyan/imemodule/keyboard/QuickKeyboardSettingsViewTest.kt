@@ -4,15 +4,21 @@ import android.content.Context
 import android.view.View
 import androidx.preference.PreferenceManager
 import androidx.test.core.app.ApplicationProvider
+import androidx.viewpager2.widget.ViewPager2
 import com.yuyan.imemodule.application.Launcher
+import com.yuyan.imemodule.data.emojicon.YuyanEmojiCompat
 import com.yuyan.imemodule.data.theme.ThemeManager
+import com.yuyan.imemodule.data.theme.ThemePreset
 import com.yuyan.imemodule.keyboard.container.SettingsContainer
+import com.yuyan.imemodule.keyboard.container.SymbolContainer
 import com.yuyan.imemodule.prefs.AppPrefs
+import com.yuyan.imemodule.prefs.behavior.SkbMenuMode
 import com.yuyan.imemodule.singleton.EnvironmentSingleton
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -31,8 +37,48 @@ class QuickKeyboardSettingsViewTest {
             set(Launcher.instance, context)
         }
         AppPrefs.init(PreferenceManager.getDefaultSharedPreferences(context))
+        YuyanEmojiCompat.init(context)
         ThemeManager.init(context.resources.configuration)
         EnvironmentSingleton.instance.initData(context)
+    }
+
+    @After
+    fun tearDown() {
+        ThemeManager.prefs.followSystemDayNightTheme.setValue(false)
+        ThemeManager.setNormalModeTheme(ThemePreset.MaterialLight)
+    }
+
+    @Test
+    fun `真实非Material主题不会伪装成浅色或深色快捷主题选中`() {
+        ThemeManager.prefs.followSystemDayNightTheme.setValue(false)
+        ThemeManager.setNormalModeTheme(ThemePreset.PixelLight)
+        val container = SettingsContainer(context, unsafeInputView())
+
+        container.showQuickSettingsView()
+
+        assertFalse(container.findViewWithTag<View>("quick_theme_MaterialLight").isSelected)
+        assertFalse(container.findViewWithTag<View>("quick_theme_MaterialDark").isSelected)
+    }
+
+    @Test
+    fun `从真实符号页重新打开面板时符号项覆盖底层布局成为唯一选中`() {
+        val container = SettingsContainer(context, unsafeInputView(), RecordingActions())
+
+        container.showQuickSettingsView(SymbolPage.CHINESE)
+
+        assertTrue(container.findViewWithTag<View>("quick_layout_CHINESE_SYMBOL").isSelected)
+        assertFalse(container.findViewWithTag<View>("quick_layout_CHINESE_T9").isSelected)
+        assertFalse(container.findViewWithTag<View>("quick_layout_ENGLISH_SYMBOL").isSelected)
+    }
+
+    @Test
+    fun `QuickKeyboard菜单真实路由只在IME内显示面板且不启动Activity`() {
+        val container = SettingsContainer(context, unsafeInputView(), RecordingActions())
+
+        assertTrue(routeQuickKeyboardMenu(SkbMenuMode.QuickKeyboard) { container.showQuickSettingsView() })
+        assertTrue(container.isQuickSettingsVisible)
+        assertFalse(routeQuickKeyboardMenu(SkbMenuMode.Settings) { container.showQuickSettingsView() })
+        assertNull(shadowOf(context as android.app.Application).nextStartedActivity)
     }
 
     @Test
@@ -76,6 +122,23 @@ class QuickKeyboardSettingsViewTest {
         assertEquals(1, actions.closeCount)
         assertFalse(container.isQuickSettingsVisible)
         assertNull(shadowOf(context as android.app.Application).nextStartedActivity)
+    }
+
+    @Test
+    fun `真实符号容器记录中文英文页供快捷面板重新打开时读取`() {
+        val symbol = SymbolContainer(context, unsafeInputView())
+
+        symbol.setSymbolsView(initialPage = 1)
+        assertEquals(SymbolPage.CHINESE, symbol.quickSymbolPage)
+        SymbolContainer::class.java.getDeclaredField("mVPSymbolsView").run {
+            isAccessible = true
+            (get(symbol) as ViewPager2).currentItem = 2
+        }
+        assertEquals(SymbolPage.ENGLISH, symbol.quickSymbolPage)
+        symbol.setSymbolsView(initialPage = 2)
+        assertEquals(SymbolPage.ENGLISH, symbol.quickSymbolPage)
+        symbol.setSymbolsView()
+        assertNull(symbol.quickSymbolPage)
     }
 
     @Test

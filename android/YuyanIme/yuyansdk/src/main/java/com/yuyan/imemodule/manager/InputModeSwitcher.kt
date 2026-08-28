@@ -243,7 +243,10 @@ object InputModeSwitcher {
     /**
      * 通过我们定义的软键盘的按键，切换输入法模式。
      */
-    fun switchModeForUserKey(userKey: Int) {
+    fun switchModeForUserKey(
+        userKey: Int,
+        initializeSchema: (String) -> Unit = Kernel::initImeSchema,
+    ) {
         var newInputMode = MODE_UNSET
         if (USER_KEYCODE_LANG == userKey) {
             newInputMode = if (isChinese) MODE_SKB_ENGLISH_LOWER else getInstance().internal.inputMethodPinyinMode.getValue()
@@ -254,13 +257,15 @@ object InputModeSwitcher {
         } else if (USER_KEYCODE_RETURN == userKey) {
             newInputMode = if (mRecentLauageInputMode != 0) mRecentLauageInputMode else getInstance().internal.inputMethodPinyinMode.getValue()
         }
-        saveInputMode(newInputMode)
+        saveInputMode(newInputMode, initializeSchema)
         KeyboardManager.instance.switchKeyboard()
     }
 
     /** 快捷面板明确切换到英文 26 键，不依赖当前临时键盘或语言状态。 */
-    fun switchToEnglishForSetting() {
-        saveInputMode(MODE_SKB_ENGLISH_LOWER)
+    fun switchToEnglishForSetting(
+        initializeSchema: (String) -> Unit = Kernel::initImeSchema,
+    ) {
+        saveInputMode(MODE_SKB_ENGLISH_LOWER, initializeSchema)
         KeyboardManager.instance.switchKeyboard()
     }
 
@@ -335,18 +340,22 @@ object InputModeSwitcher {
     /**
      * 保存新的输入法模式
      */
-    fun saveInputMode(newInputMode: Int) {
+    fun saveInputMode(
+        newInputMode: Int,
+        initializeSchema: (String) -> Unit = Kernel::initImeSchema,
+    ) {
         mInputMode = newInputMode // 设置新的输入法模式为当前的输入法模式
-        if (isEnglish) {
-            Kernel.initImeSchema(CustomConstant.SCHEMA_EN)
+        val schema = if (isEnglish) {
+            CustomConstant.SCHEMA_EN
         } else {
-            Kernel.initImeSchema(getInstance().internal.pinyinModeRime.getValue())
+            getInstance().internal.pinyinModeRime.getValue()
         }
+        initializeSchema(schema)
         if (isChinese || isEnglish) {
             mRecentLauageInputMode = mInputMode
             getInstance().internal.inputDefaultMode.setValue(mInputMode)
         }
-        mToggleStates.modifiers = when(Kernel.getCurrentRimeSchema()) {
+        mToggleStates.modifiers = when(schema) {
             CustomConstant.SCHEMA_ZH_T9, CustomConstant.SCHEMA_ZH_STROKE, CustomConstant.SCHEMA_ZH_DOUBLE_LX17 -> KeyEvent.META_CAPS_LOCK_ON
             else -> MASK_CASE_LOWER
         }
