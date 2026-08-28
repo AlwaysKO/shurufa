@@ -123,6 +123,22 @@ private data class ExpressionStableViewport(
     val obstructions: ExpressionSystemObstructions,
 )
 
+private data class ExpressionSystemInsetEdges(
+    val statusBarTopPx: Int,
+    val cutoutTopPx: Int,
+    val cutoutBottomPx: Int,
+    val nonNavigationBottomPx: Int = 0,
+) {
+    fun mergeWithVisibleNavigation(visibleNavigationBottomPx: Int): ExpressionSystemObstructions =
+        mergeExpressionSystemObstructions(
+            statusBarTopPx = statusBarTopPx,
+            cutoutTopPx = cutoutTopPx,
+            navigationBottomPx = visibleNavigationBottomPx,
+            cutoutBottomPx = cutoutBottomPx,
+            nonNavigationBottomPx = nonNavigationBottomPx,
+        )
+}
+
 @SuppressLint("ViewConstructor")
 class InputView(context: Context, private val service: ImeService) : LifecycleRelativeLayout(context), IResponseKeyEvent {
     private val appPrefs = getInstance()
@@ -162,7 +178,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     private var expressionRequestId = 0L
     internal var expressionLayoutBudget = ExpressionLayoutBudget(0, 0, 0)
         private set
-    private var latestExpressionObstructions: ExpressionSystemObstructions? = null
+    private var latestExpressionInsetEdges: ExpressionSystemInsetEdges? = null
     private val expressionLayoutRefresh = Runnable { refreshExpressionLayoutBudget() }
     var hasSelection = false
     var hasSelectionAll = false
@@ -683,20 +699,17 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     private fun stableExpressionViewport(env: EnvironmentSingleton): ExpressionStableViewport {
         val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as? WindowManager
         var realBoundsHeight = 0
-        var metricsObstructions: ExpressionSystemObstructions? = null
+        var metricsInsetEdges: ExpressionSystemInsetEdges? = null
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && windowManager != null) {
             runCatching {
                 val metrics = windowManager.currentWindowMetrics
                 realBoundsHeight = metrics.bounds.height()
                 val status = metrics.windowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.statusBars())
-                val navigation = metrics.windowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.navigationBars())
                 val cutout = metrics.windowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.displayCutout())
-                metricsObstructions = mergeExpressionSystemObstructions(
+                metricsInsetEdges = ExpressionSystemInsetEdges(
                     statusBarTopPx = status.top,
                     cutoutTopPx = cutout.top,
-                    navigationBottomPx = navigation.bottom,
                     cutoutBottomPx = cutout.bottom,
-                    nonNavigationBottomPx = 0,
                 )
             }
         }
@@ -708,46 +721,41 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         if (realBoundsHeight <= 0) {
             realBoundsHeight = maxOf(resources.displayMetrics.heightPixels, env.mScreenHeight)
         }
-        val obstructions = latestExpressionObstructions
-            ?: platformRootExpressionObstructions()
-            ?: metricsObstructions
-            ?: fallbackExpressionObstructions(env)
+        val insetEdges = latestExpressionInsetEdges
+            ?: platformRootExpressionInsetEdges()
+            ?: metricsInsetEdges
+            ?: fallbackExpressionInsetEdges()
+        // 必须与 bottom holder 使用同一份“当前可见导航栏”高度，避免隐藏导航栏时少扣刘海。
+        val obstructions = insetEdges.mergeWithVisibleNavigation(env.systemNavbarWindowsBottom)
         return ExpressionStableViewport(
             heightPx = obstructions.stableViewportHeight(realBoundsHeight.coerceAtLeast(0)),
             obstructions = obstructions,
         )
     }
 
-    private fun platformRootExpressionObstructions(): ExpressionSystemObstructions? {
+    private fun platformRootExpressionInsetEdges(): ExpressionSystemInsetEdges? {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return null
         val insets = rootWindowInsets ?: return null
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val status = insets.getInsetsIgnoringVisibility(WindowInsets.Type.statusBars())
-            val navigation = insets.getInsetsIgnoringVisibility(WindowInsets.Type.navigationBars())
             val cutout = insets.getInsetsIgnoringVisibility(WindowInsets.Type.displayCutout())
-            return mergeExpressionSystemObstructions(
-                status.top,
-                cutout.top,
-                navigation.bottom,
-                cutout.bottom,
-                0,
+            return ExpressionSystemInsetEdges(
+                statusBarTopPx = status.top,
+                cutoutTopPx = cutout.top,
+                cutoutBottomPx = cutout.bottom,
             )
         }
         @Suppress("DEPRECATION")
         val statusTop = insets.systemWindowInsetTop
-        @Suppress("DEPRECATION")
-        val navigationBottom = insets.systemWindowInsetBottom
         val cutoutInsets = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             displayCutoutSafeInsets(insets.displayCutout)
         } else {
             0 to 0
         }
-        return mergeExpressionSystemObstructions(
-            statusTop,
-            cutoutInsets.first,
-            navigationBottom,
-            cutoutInsets.second,
-            0,
+        return ExpressionSystemInsetEdges(
+            statusBarTopPx = statusTop,
+            cutoutTopPx = cutoutInsets.first,
+            cutoutBottomPx = cutoutInsets.second,
         )
     }
 
@@ -755,30 +763,25 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     private fun displayCutoutSafeInsets(cutout: DisplayCutout?): Pair<Int, Int> =
         (cutout?.safeInsetTop ?: 0) to (cutout?.safeInsetBottom ?: 0)
 
-    private fun compatExpressionObstructions(insets: WindowInsetsCompat): ExpressionSystemObstructions {
+    private fun compatExpressionInsetEdges(insets: WindowInsetsCompat): ExpressionSystemInsetEdges {
         fun stableInsets(typeMask: Int) = runCatching { insets.getInsetsIgnoringVisibility(typeMask) }
             .getOrElse { insets.getInsets(typeMask) }
         val status = stableInsets(WindowInsetsCompat.Type.statusBars())
-        val navigation = stableInsets(WindowInsetsCompat.Type.navigationBars())
         val cutout = stableInsets(WindowInsetsCompat.Type.displayCutout())
-        return mergeExpressionSystemObstructions(
-            status.top,
-            cutout.top,
-            navigation.bottom,
-            cutout.bottom,
-            0,
+        return ExpressionSystemInsetEdges(
+            statusBarTopPx = status.top,
+            cutoutTopPx = cutout.top,
+            cutoutBottomPx = cutout.bottom,
         )
     }
 
-    private fun fallbackExpressionObstructions(env: EnvironmentSingleton): ExpressionSystemObstructions {
+    private fun fallbackExpressionInsetEdges(): ExpressionSystemInsetEdges {
         val statusBarId = resources.getIdentifier("status_bar_height", "dimen", "android")
         val statusBarTop = if (statusBarId != 0) resources.getDimensionPixelSize(statusBarId) else 0
-        return mergeExpressionSystemObstructions(
-            statusBarTop,
-            0,
-            env.systemNavbarWindowsBottom,
-            0,
-            0,
+        return ExpressionSystemInsetEdges(
+            statusBarTopPx = statusBarTop,
+            cutoutTopPx = 0,
+            cutoutBottomPx = 0,
         )
     }
 
@@ -1262,7 +1265,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        latestExpressionObstructions = null
+        latestExpressionInsetEdges = null
         ViewCompat.requestApplyInsets(this)
         refreshExpressionLayoutBudget()
         scheduleExpressionLayoutBudgetRefresh()
@@ -1413,8 +1416,8 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
         ViewCompat.setOnApplyWindowInsetsListener(this) { _, insets ->
             val env = EnvironmentSingleton.instance
-            latestExpressionObstructions = compatExpressionObstructions(insets)
             env.systemNavbarWindowsBottom = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+            latestExpressionInsetEdges = compatExpressionInsetEdges(insets)
             mLlKeyboardBottomHolder.minimumHeight = bottomHolderMinimumHeight(env)
             refreshExpressionLayoutBudget()
             scheduleExpressionLayoutBudgetRefresh()

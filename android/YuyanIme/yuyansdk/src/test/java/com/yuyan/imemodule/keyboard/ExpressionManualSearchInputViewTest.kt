@@ -693,6 +693,89 @@ class ExpressionManualSearchInputViewTest {
     }
 
     @Test
+    fun `导航栏显隐时刘海与holder总遮挡恒定且面板不跳高`() {
+        AppPrefs.getInstance().internal.aiStickerEnabled.setValue(true)
+        val inputView = realChatInputView()
+        attachAndLayout(inputView, availableHeight = 2000)
+        val state = inputView.expressionState()
+        state.beginQuery("稳定面板", 905)
+        state.applyResults(
+            905,
+            listOf(
+                ExpressionAsset(
+                    id = "stable-cutout",
+                    type = "prebuilt",
+                    format = "webp",
+                    version = "v1",
+                    fileName = "stable.webp",
+                    sha256 = "e".repeat(64),
+                    width = 128,
+                    height = 128,
+                ),
+            ),
+        )
+        val panel = inputView.findViewById<ExpressionPanel>(R.id.expression_panel)
+        panel.render(state, ExpressionCatalog.fromAssets(context))
+
+        fun systemInsets(navigationVisible: Boolean): WindowInsetsCompat {
+            val navigation = WindowInsetsCompat.Type.navigationBars()
+            val cutout = WindowInsetsCompat.Type.displayCutout()
+            return WindowInsetsCompat.Builder()
+                .setInsets(
+                    navigation,
+                    androidx.core.graphics.Insets.of(0, 0, 0, if (navigationVisible) 50 else 0),
+                )
+                .setInsetsIgnoringVisibility(
+                    navigation,
+                    androidx.core.graphics.Insets.of(0, 0, 0, 50),
+                )
+                .setVisible(navigation, navigationVisible)
+                .setInsets(cutout, androidx.core.graphics.Insets.of(0, 0, 0, 70))
+                .setInsetsIgnoringVisibility(cutout, androidx.core.graphics.Insets.of(0, 0, 0, 70))
+                .build()
+        }
+
+        fun settleLayout() {
+            inputView.rootView.measure(
+                View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(2000, View.MeasureSpec.EXACTLY),
+            )
+            inputView.rootView.layout(0, 0, 1080, 2000)
+            inputView.refreshExpressionLayoutBudget()
+        }
+
+        ViewCompat.dispatchApplyWindowInsets(inputView, systemInsets(navigationVisible = true))
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+        settleLayout()
+        val visibleBudget = inputView.expressionLayoutBudget
+        val visiblePanelHeight = panel.layoutParams.height
+
+        ViewCompat.dispatchApplyWindowInsets(inputView, systemInsets(navigationVisible = false))
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+        settleLayout()
+        val hiddenBudget = inputView.expressionLayoutBudget
+
+        assertEquals(50, visibleBudget.navigationInsetBottomPx)
+        assertEquals(20, visibleBudget.bottomExtraObstructionPx)
+        assertEquals(0, hiddenBudget.navigationInsetBottomPx)
+        assertEquals(70, hiddenBudget.bottomExtraObstructionPx)
+        assertEquals(
+            visibleBudget.navigationInsetBottomPx + visibleBudget.bottomExtraObstructionPx,
+            hiddenBudget.navigationInsetBottomPx + hiddenBudget.bottomExtraObstructionPx,
+        )
+        assertEquals(
+            visibleBudget.reservedNonPanelHeightPx - visibleBudget.navigationInsetBottomPx,
+            hiddenBudget.reservedNonPanelHeightPx - hiddenBudget.navigationInsetBottomPx,
+        )
+        assertEquals(
+            visibleBudget.availableHeightPx - visibleBudget.reservedNonPanelHeightPx,
+            hiddenBudget.availableHeightPx - hiddenBudget.reservedNonPanelHeightPx,
+        )
+        assertEquals(visiblePanelHeight, panel.layoutParams.height)
+        assertTrue(visiblePanelHeight + hiddenBudget.reservedNonPanelHeightPx <= hiddenBudget.availableHeightPx)
+    }
+
+    @Test
     fun `极端高度有结果时AI工具行可关闭并恢复原查询结果标签且返回仍先折叠`() {
         AppPrefs.getInstance().internal.aiStickerEnabled.setValue(true)
         val inputView = realChatInputView()
