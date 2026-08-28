@@ -2,6 +2,7 @@ package com.yuyan.imemodule.keyboard
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
@@ -105,6 +106,12 @@ import kotlin.math.absoluteValue
  * 输入法主界面。
  * 包含拼音显示、候选词栏、键盘界面等。
  */
+internal data class ExpressionLayoutBudget(
+    val availableHeightPx: Int,
+    val reservedNonPanelHeightPx: Int,
+    val navigationInsetBottomPx: Int,
+)
+
 @SuppressLint("ViewConstructor")
 class InputView(context: Context, private val service: ImeService) : LifecycleRelativeLayout(context), IResponseKeyEvent {
     private val appPrefs = getInstance()
@@ -142,6 +149,9 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     private var expressionPreparationJob: Job? = null
     private var expressionKeyboardVisibility: Pair<Int, Int>? = null
     private var expressionRequestId = 0L
+    internal var expressionLayoutBudget = ExpressionLayoutBudget(0, 0, 0)
+        private set
+    private val expressionLayoutRefresh = Runnable { refreshExpressionLayoutBudget() }
     var hasSelection = false
     var hasSelectionAll = false
     // 记录删除内容
@@ -186,12 +196,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
     private fun initExpressionPanel() {
         expressionPanel = mSkbRoot.findViewById(R.id.expression_panel)
-        val expressionEnvironment = EnvironmentSingleton.instance
-        expressionPanel.setAvailableLayoutHeight(
-            availableHeightPx = (expressionEnvironment.mScreenHeight - expressionEnvironment.systemNavbarWindowsBottom)
-                .coerceAtLeast(0),
-            reservedKeyboardHeightPx = expressionEnvironment.inputAreaHeight,
-        )
+        refreshExpressionLayoutBudget()
         val aiStickerPreference = getInstance().internal.aiStickerEnabled
         expressionPanelState.setAiStickerEnabled(aiStickerPreference.getValue())
         val localCatalog = runCatching { ExpressionCatalog.fromAssets(context) }.getOrNull()
@@ -610,6 +615,59 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             mSkbRoot.rightPadding = mRightPaddingKey.getValue()
         }
         updateTheme()
+        mLlKeyboardBottomHolder.minimumHeight = bottomHolderMinimumHeight(env)
+        refreshExpressionLayoutBudget()
+        scheduleExpressionLayoutBudgetRefresh()
+    }
+
+    private fun bottomHolderMinimumHeight(env: EnvironmentSingleton): Int = when {
+        env.keyboardModeFloat -> env.heightForKeyboardMove
+        appPrefs.internal.fullDisplayKeyboardEnable.getValue() && !env.isLandscape ->
+            env.heightForFullDisplayBar + env.systemNavbarWindowsBottom
+        else -> env.systemNavbarWindowsBottom
+    }
+
+    /**
+     * 使用真实宿主高度和非面板子视图的测量值计算紧凑面板预算。
+     * 候选栏已包含在 inputAreaHeight 中，因此测量值与环境回退值二选一，避免重复计数。
+     */
+    internal fun refreshExpressionLayoutBudget() {
+        if (!::expressionPanel.isInitialized) return
+        val env = EnvironmentSingleton.instance
+        val hostHeight = rootView
+            .takeIf { it !== this && it.height > 0 }
+            ?.height
+            ?: maxOf(resources.displayMetrics.heightPixels, env.mScreenHeight)
+        val candidates = mSkbRoot.findViewById<View>(R.id.candidates_bar)
+        val keyboard = mSkbRoot.findViewById<View>(R.id.skb_input_keyboard_view)
+        val measuredInputArea = if (candidates.measuredHeight > 0 && keyboard.measuredHeight > 0) {
+            candidates.measuredHeight + keyboard.measuredHeight
+        } else {
+            env.inputAreaHeight
+        }
+        val holderHeight = maxOf(
+            mLlKeyboardBottomHolder.measuredHeight,
+            mLlKeyboardBottomHolder.minimumHeight,
+            bottomHolderMinimumHeight(env),
+        )
+        val ordinaryRootPadding = if (env.keyboardModeFloat) 0 else mSkbRoot.paddingBottom
+        val floatingOffsetPadding = if (env.keyboardModeFloat) paddingBottom else 0
+        val reserved = (measuredInputArea.toLong() + holderHeight + ordinaryRootPadding +
+            floatingOffsetPadding).coerceIn(0L, Int.MAX_VALUE.toLong()).toInt()
+        expressionLayoutBudget = ExpressionLayoutBudget(
+            availableHeightPx = hostHeight.coerceAtLeast(0),
+            reservedNonPanelHeightPx = reserved,
+            navigationInsetBottomPx = env.systemNavbarWindowsBottom.coerceAtLeast(0),
+        )
+        expressionPanel.setAvailableLayoutHeight(
+            availableHeightPx = expressionLayoutBudget.availableHeightPx,
+            reservedKeyboardHeightPx = expressionLayoutBudget.reservedNonPanelHeightPx,
+        )
+    }
+
+    private fun scheduleExpressionLayoutBudgetRefresh() {
+        removeCallbacks(expressionLayoutRefresh)
+        post(expressionLayoutRefresh)
     }
 
     private var initialTouchX = 0f
@@ -644,6 +702,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                     bottomPaddingValue = (bottomPaddingValue - dy.toInt()).coerceIn(0, this.height - mSkbRootHeight)
                     initialTouchY = event.rawY
                     if (env.keyboardModeFloat) bottomPadding = bottomPaddingValue else mSkbRoot.bottomPadding = bottomPaddingValue
+                    refreshExpressionLayoutBudget()
                 }
                 return true
             }
@@ -1063,11 +1122,31 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        if (!expressionResourcesDisposed) return
-        expressionScope = newExpressionScope()
-        expressionResourcesDisposed = false
-        expressionInputSessionActive = true
-        initExpressionPanel()
+        if (expressionResourcesDisposed) {
+            expressionScope = newExpressionScope()
+            expressionResourcesDisposed = false
+            expressionInputSessionActive = true
+            initExpressionPanel()
+        }
+        refreshExpressionLayoutBudget()
+        scheduleExpressionLayoutBudgetRefresh()
+    }
+
+    override fun onSizeChanged(width: Int, height: Int, oldWidth: Int, oldHeight: Int) {
+        super.onSizeChanged(width, height, oldWidth, oldHeight)
+        refreshExpressionLayoutBudget()
+        scheduleExpressionLayoutBudgetRefresh()
+    }
+
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        super.onLayout(changed, left, top, right, bottom)
+        refreshExpressionLayoutBudget()
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        refreshExpressionLayoutBudget()
+        scheduleExpressionLayoutBudgetRefresh()
     }
 
     override fun onDetachedFromWindow() {
@@ -1077,6 +1156,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
     internal fun disposeExpressionResources() {
         if (expressionResourcesDisposed) return
+        removeCallbacks(expressionLayoutRefresh)
         expressionResourcesDisposed = true
         expressionInputSessionActive = false
         service.setExpressionBackHandlingEnabled(false)
@@ -1215,12 +1295,9 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         ViewCompat.setOnApplyWindowInsetsListener(this) { _, insets ->
             val env = EnvironmentSingleton.instance
             env.systemNavbarWindowsBottom = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
-            val fullDisplayEnable = appPrefs.internal.fullDisplayKeyboardEnable.getValue()
-            mLlKeyboardBottomHolder.minimumHeight = when {
-                env.keyboardModeFloat -> 0
-                fullDisplayEnable -> env.heightForFullDisplayBar + env.systemNavbarWindowsBottom
-                else -> env.systemNavbarWindowsBottom
-            }
+            mLlKeyboardBottomHolder.minimumHeight = bottomHolderMinimumHeight(env)
+            refreshExpressionLayoutBudget()
+            scheduleExpressionLayoutBudgetRefresh()
             insets
         }
     }

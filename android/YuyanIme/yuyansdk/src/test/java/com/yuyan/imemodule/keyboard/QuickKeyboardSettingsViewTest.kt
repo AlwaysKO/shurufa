@@ -50,11 +50,12 @@ class QuickKeyboardSettingsViewTest {
     }
 
     @Test
-    fun `用户可见的双拼方案名称不包含竞品品牌`() {
+    fun `既有双拼方案名称和词典条目保持兼容`() {
         val label = context.getString(R.string.double_pinyin_sougou)
+        val phrases = context.assets.open("rime/opencc/STPhrases.txt").bufferedReader().use { it.readText() }
 
-        assertFalse(label.contains("\u641c\u72d7"))
-        assertFalse(label.contains("\u7075\u52a8\u8868\u8fbe"))
+        assertEquals("\u641c\u72d7\u53cc\u62fc", label)
+        assertTrue(phrases.lineSequence().any { it == "\u641c\u72d7\t\u641c\u72d7" })
     }
 
     @Test

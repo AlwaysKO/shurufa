@@ -156,7 +156,7 @@
     <string name="double_pinyin_natural">自然码双拼</string>
     <string name="double_pinyin_abc">智能ABC</string>
     <string name="double_pinyin_mspy">微软双拼</string>
-    <string name="double_pinyin_sougou">S方案双拼</string>
+    <string name="double_pinyin_sougou">搜狗双拼</string>
     <string name="double_pinyin_ziguang">紫光双拼</string>
 
     <string name="keyboard_name_pinyin_lx_17">乱序17</string>

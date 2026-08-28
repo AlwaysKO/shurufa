@@ -2,6 +2,7 @@ package com.yuyan.imemodule.keyboard
 
 import android.app.Activity
 import android.content.Context
+import android.content.res.Configuration
 import android.os.Looper
 import android.text.InputType
 import android.view.KeyEvent
@@ -10,6 +11,8 @@ import android.widget.FrameLayout
 import android.view.inputmethod.EditorInfo
 import androidx.preference.PreferenceManager
 import androidx.test.core.app.ApplicationProvider
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.yuyan.imemodule.R
 import com.yuyan.imemodule.application.Launcher
 import com.yuyan.imemodule.data.emojicon.YuyanEmojiCompat
@@ -49,16 +52,29 @@ class ExpressionManualSearchInputViewTest {
     private val services = mutableListOf<ImeService>()
     private val inputViews = mutableListOf<InputView>()
     private var originalAiStickerEnabled = false
+    private var originalFloatMode = false
+    private var originalFullDisplay = false
+    private var originalBottomPadding = 0
+    private var originalFloatBottomPadding = 0
+    private var originalKeyboardHeightRatio = 0f
+    private lateinit var originalConfiguration: Configuration
 
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
+        originalConfiguration = Configuration(context.resources.configuration)
         Launcher::class.java.getDeclaredField("context").apply {
             isAccessible = true
             set(Launcher.instance, context)
         }
         AppPrefs.init(PreferenceManager.getDefaultSharedPreferences(context))
         originalAiStickerEnabled = AppPrefs.getInstance().internal.aiStickerEnabled.getValue()
+        val internal = AppPrefs.getInstance().internal
+        originalFloatMode = internal.keyboardModeFloat.getValue()
+        originalFullDisplay = internal.fullDisplayKeyboardEnable.getValue()
+        originalBottomPadding = internal.keyboardBottomPadding.getValue()
+        originalFloatBottomPadding = internal.keyboardBottomPaddingFloat.getValue()
+        originalKeyboardHeightRatio = internal.keyboardHeightRatio.getValue()
         ThemeManager.init(context.resources.configuration)
         YuyanEmojiCompat.init(context)
         EnvironmentSingleton.instance.initData(context)
@@ -76,6 +92,16 @@ class ExpressionManualSearchInputViewTest {
         services.forEach(ImeService::onDestroy)
         services.clear()
         AppPrefs.getInstance().internal.aiStickerEnabled.setValue(originalAiStickerEnabled)
+        val internal = AppPrefs.getInstance().internal
+        internal.keyboardModeFloat.setValue(originalFloatMode)
+        internal.fullDisplayKeyboardEnable.setValue(originalFullDisplay)
+        internal.keyboardBottomPadding.setValue(originalBottomPadding)
+        internal.keyboardBottomPaddingFloat.setValue(originalFloatBottomPadding)
+        internal.keyboardHeightRatio.setValue(originalKeyboardHeightRatio)
+        @Suppress("DEPRECATION")
+        context.resources.updateConfiguration(originalConfiguration, context.resources.displayMetrics)
+        EnvironmentSingleton.instance.systemNavbarWindowsBottom = 0
+        EnvironmentSingleton.instance.initData(context)
         DecodingInfo.candidatesLiveData.value = emptyList()
         DecodingInfo.isAssociate = false
     }
@@ -469,6 +495,128 @@ class ExpressionManualSearchInputViewTest {
     }
 
     @Test
+    fun `首次零导航后注入非零Insets会立即收紧真实面板高度`() {
+        val prefs = AppPrefs.getInstance().internal
+        prefs.keyboardModeFloat.setValue(false)
+        prefs.fullDisplayKeyboardEnable.setValue(false)
+        prefs.keyboardBottomPadding.setValue(40)
+        prefs.aiStickerEnabled.setValue(true)
+        EnvironmentSingleton.instance.initData(context)
+        val inputView = realChatInputView()
+        inputView.expressionState().apply {
+            beginQuery("布局", 901)
+            applyResults(
+                901,
+                listOf(
+                    ExpressionAsset(
+                        id = "layout-budget",
+                        type = "prebuilt",
+                        format = "webp",
+                        version = "v1",
+                        fileName = "layout.webp",
+                        sha256 = "b".repeat(64),
+                        width = 128,
+                        height = 128,
+                    ),
+                ),
+            )
+        }
+        inputView.findViewById<ExpressionPanel>(R.id.expression_panel).render(
+            inputView.expressionState(),
+            ExpressionCatalog.fromAssets(context),
+        )
+        val available = EnvironmentSingleton.instance.inputAreaHeight + 40 + 130
+        attachAndLayout(inputView, available)
+        inputView.refreshExpressionLayoutBudget()
+        val before = inputView.expressionLayoutBudget
+        val beforePanel = inputView.compactExpressionHeight()
+        val panel = inputView.findViewById<ExpressionPanel>(R.id.expression_panel)
+        val beforePanelLayoutHeight = panel.layoutParams.height
+
+        val insets = WindowInsetsCompat.Builder()
+            .setInsets(WindowInsetsCompat.Type.navigationBars(), androidx.core.graphics.Insets.of(0, 0, 0, 160))
+            .build()
+        ViewCompat.dispatchApplyWindowInsets(inputView, insets)
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+        val after = inputView.expressionLayoutBudget
+        val afterPanel = inputView.compactExpressionHeight()
+        assertEquals(160, after.navigationInsetBottomPx)
+        assertTrue("before=$beforePanel/$before after=$afterPanel/$after", afterPanel < beforePanel)
+        assertTrue(panel.layoutParams.height < beforePanelLayoutHeight)
+        assertTrue(afterPanel >= 0)
+        assertTrue(afterPanel + after.reservedNonPanelHeightPx <= after.availableHeightPx)
+        assertTrue(after.reservedNonPanelHeightPx > before.reservedNonPanelHeightPx)
+    }
+
+    @Test
+    fun `底部留白全面屏栏悬浮拖动条和键盘高度变化全部计入生产预算`() {
+        val prefs = AppPrefs.getInstance().internal
+        prefs.keyboardModeFloat.setValue(false)
+        prefs.fullDisplayKeyboardEnable.setValue(true)
+        prefs.keyboardBottomPadding.setValue(36)
+        EnvironmentSingleton.instance.initData(context)
+        val inputView = realChatInputView()
+        attachAndLayout(inputView, EnvironmentSingleton.instance.inputAreaHeight + 500)
+        dispatchNavigationInset(inputView, 48)
+        inputView.initView(context)
+        inputView.refreshExpressionLayoutBudget()
+
+        val full = inputView.expressionLayoutBudget
+        assertTrue(full.reservedNonPanelHeightPx >= EnvironmentSingleton.instance.inputAreaHeight + 36 +
+            EnvironmentSingleton.instance.heightForFullDisplayBar + 48)
+        assertTrue(inputView.compactExpressionHeight() + full.reservedNonPanelHeightPx <= full.availableHeightPx)
+
+        prefs.keyboardModeFloat.setValue(true)
+        prefs.keyboardBottomPaddingFloat.setValue(24)
+        EnvironmentSingleton.instance.initData(context)
+        inputView.initView(context)
+        inputView.refreshExpressionLayoutBudget()
+        val floating = inputView.expressionLayoutBudget
+        assertTrue(floating.reservedNonPanelHeightPx >= EnvironmentSingleton.instance.inputAreaHeight +
+            EnvironmentSingleton.instance.heightForKeyboardMove + 24)
+        assertTrue(inputView.compactExpressionHeight() + floating.reservedNonPanelHeightPx <= floating.availableHeightPx)
+
+        val oldReserved = floating.reservedNonPanelHeightPx
+        EnvironmentSingleton.instance.keyBoardHeightRatio =
+            EnvironmentSingleton.instance.keyBoardHeightRatio + 0.08f
+        EnvironmentSingleton.instance.initData(context)
+        inputView.initView(context)
+        inputView.refreshExpressionLayoutBudget()
+        val resized = inputView.expressionLayoutBudget
+        assertTrue(resized.reservedNonPanelHeightPx > oldReserved)
+        assertTrue(inputView.compactExpressionHeight() >= 0)
+        assertTrue(inputView.compactExpressionHeight() + resized.reservedNonPanelHeightPx <= resized.availableHeightPx)
+    }
+
+    @Test
+    fun `同一生产InputView横竖配置变化后立即重算布局预算`() {
+        val inputView = realChatInputView()
+        attachAndLayout(inputView, 900)
+        inputView.refreshExpressionLayoutBudget()
+        val portraitTabHeight = inputView.findViewById<View>(R.id.expression_tab_bar).layoutParams.height
+        val oldReserved = inputView.expressionLayoutBudget.reservedNonPanelHeightPx
+
+        val landscape = Configuration(context.resources.configuration).apply {
+            orientation = Configuration.ORIENTATION_LANDSCAPE
+        }
+        @Suppress("DEPRECATION")
+        context.resources.updateConfiguration(landscape, context.resources.displayMetrics)
+        EnvironmentSingleton.instance.isLandscape = true
+        EnvironmentSingleton.instance.inputAreaHeight += 32
+        InputView::class.java.getDeclaredMethod("onConfigurationChanged", Configuration::class.java).apply {
+            isAccessible = true
+            invoke(inputView, landscape)
+        }
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+        assertTrue(inputView.findViewById<View>(R.id.expression_tab_bar).layoutParams.height < portraitTabHeight)
+        assertTrue(inputView.expressionLayoutBudget.reservedNonPanelHeightPx >= oldReserved + 32)
+        assertTrue(inputView.compactExpressionHeight() + inputView.expressionLayoutBudget.reservedNonPanelHeightPx <=
+            inputView.expressionLayoutBudget.availableHeightPx)
+    }
+
+    @Test
     fun `生产面板关闭恢复保留查询结果且返回先折叠展开态`() {
         val inputView = realChatInputView()
         val state = inputView.expressionState()
@@ -518,6 +666,37 @@ class ExpressionManualSearchInputViewTest {
         )
         return inputView
     }
+
+    private fun attachAndLayout(inputView: InputView, availableHeight: Int) {
+        val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
+        val root = FrameLayout(activity)
+        activity.setContentView(root)
+        root.addView(inputView)
+        activity.window.decorView.measure(
+            View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(availableHeight, View.MeasureSpec.EXACTLY),
+        )
+        activity.window.decorView.layout(0, 0, 1080, availableHeight)
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+    }
+
+    private fun dispatchNavigationInset(inputView: InputView, bottom: Int) {
+        ViewCompat.dispatchApplyWindowInsets(
+            inputView,
+            WindowInsetsCompat.Builder()
+                .setInsets(
+                    WindowInsetsCompat.Type.navigationBars(),
+                    androidx.core.graphics.Insets.of(0, 0, 0, bottom),
+                )
+                .build(),
+        )
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+    }
+
+    private fun InputView.compactExpressionHeight(): Int =
+        findViewById<View>(R.id.expression_tab_bar).layoutParams.height +
+            findViewById<View>(R.id.expression_content).layoutParams.height +
+            findViewById<View>(R.id.expression_tool_row).layoutParams.height
 
     private fun InputView.expressionState(): ExpressionPanelState =
         InputView::class.java.getDeclaredField("expressionPanelState").let { field ->

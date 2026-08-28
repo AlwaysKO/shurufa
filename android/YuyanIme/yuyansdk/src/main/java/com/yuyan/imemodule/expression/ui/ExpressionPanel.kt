@@ -11,6 +11,7 @@ import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.PopupMenu
@@ -195,6 +196,9 @@ class ExpressionPanel @JvmOverloads constructor(
     fun setAvailableLayoutHeight(availableHeightPx: Int, reservedKeyboardHeightPx: Int) {
         require(availableHeightPx >= 0) { "available height must not be negative" }
         require(reservedKeyboardHeightPx >= 0) { "reserved keyboard height must not be negative" }
+        if (availableLayoutHeightPx == availableHeightPx &&
+            this.reservedKeyboardHeightPx == reservedKeyboardHeightPx
+        ) return
         availableLayoutHeightPx = availableHeightPx
         this.reservedKeyboardHeightPx = reservedKeyboardHeightPx
         applyLayoutMetrics()
@@ -219,6 +223,14 @@ class ExpressionPanel @JvmOverloads constructor(
         layoutMetrics = metrics
         tabBar.layoutParams = tabBar.layoutParams.apply { height = metrics.tabRowHeightPx }
         toolRow.layoutParams = toolRow.layoutParams.apply { height = metrics.toolRowHeightPx }
+        layoutParams?.let { params ->
+            params.height = when {
+                isExpanded -> ViewGroup.LayoutParams.WRAP_CONTENT
+                recommendationVisible -> metrics.compactPanelHeightPx
+                else -> metrics.toolRowHeightPx
+            }
+            layoutParams = params
+        }
         actions.layoutParams = actions.layoutParams.apply {
             width = metrics.actionWidthPx
             height = metrics.actionHeightPx
