@@ -1,81 +1,87 @@
 package com.yuyan.imemodule.expression
 
-import com.yuyan.imemodule.service.DecodingInfo
-import com.yuyan.inputmethod.RimeEngine
-import com.yuyan.inputmethod.core.CandidateListItem
-import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 
-@RunWith(RobolectricTestRunner::class)
 class ExpressionComposingTextSourceTest {
-    @After
-    fun tearDown() {
-        RimeEngine.showComposition = ""
-        DecodingInfo.candidatesLiveData.value = emptyList()
-        DecodingInfo.isAssociate = false
-    }
-
     @Test
-    fun `只有引擎组合编码非空时才取当前候选文字`() {
-        var composition = ""
-        var candidate = "民营企业"
+    fun `英文schema使用native composing和raw preedit取当前候选`() {
+        var isComposing = true
+        var rawInput = "hello"
         val source = ExpressionComposingTextSource(
-            compositionText = { composition },
+            isComposing = { isComposing },
+            rawInput = { rawInput },
             isAssociate = { false },
-            candidateText = { candidate },
+            candidateText = { "Hello" },
         )
 
+        assertEquals("Hello", source.currentText(activeCandidateIndex = 0))
+
+        isComposing = false
         assertNull(source.currentText(activeCandidateIndex = 0))
 
-        composition = "min'ying'qi'ye"
-        assertEquals("民营企业", source.currentText(activeCandidateIndex = 0))
-
-        candidate = "  "
+        isComposing = true
+        rawInput = ""
         assertNull(source.currentText(activeCandidateIndex = 0))
     }
 
     @Test
-    fun `联想候选和过期候选不能冒充当前组合文字`() {
-        var associate = true
-        var composition: String? = "nihao"
+    fun `中文native composing非空时取当前候选且激活不存在回退首候选`() {
+        val candidates = mapOf(0 to "民营企业")
         val source = ExpressionComposingTextSource(
-            compositionText = { composition },
-            isAssociate = { associate },
-            candidateText = { "你好" },
-        )
-
-        assertNull(source.currentText(activeCandidateIndex = 0))
-
-        associate = false
-        composition = null
-        assertNull(source.currentText(activeCandidateIndex = 0))
-    }
-
-    @Test
-    fun `激活候选不存在时回退首候选但仍需组合态门控`() {
-        val candidates = mapOf(0 to "首候选")
-        val source = ExpressionComposingTextSource(
-            compositionText = { "shouhouxuan" },
+            isComposing = { true },
+            rawInput = { "min'ying'qi'ye" },
             isAssociate = { false },
             candidateText = candidates::get,
         )
 
-        assertEquals("首候选", source.currentText(activeCandidateIndex = -1))
+        assertEquals("民营企业", source.currentText(activeCandidateIndex = -1))
     }
 
     @Test
-    fun `生产引擎源使用Rime组合编码门控DecodingInfo当前候选`() {
-        val source = ExpressionComposingTextSource.fromEngine()
-        DecodingInfo.cacheCandidates(arrayOf(CandidateListItem("", "真实候选")))
+    fun `联想或schema切换后的残留候选不能冒充当前组合`() {
+        var isComposing = false
+        var rawInput = "old"
+        var associate = false
+        val source = ExpressionComposingTextSource(
+            isComposing = { isComposing },
+            rawInput = { rawInput },
+            isAssociate = { associate },
+            candidateText = { "旧schema候选" },
+        )
 
-        RimeEngine.showComposition = ""
         assertNull(source.currentText(activeCandidateIndex = 0))
 
-        RimeEngine.showComposition = "zhen'shi"
-        assertEquals("真实候选", source.currentText(activeCandidateIndex = 0))
+        isComposing = true
+        associate = true
+        assertNull(source.currentText(activeCandidateIndex = 0))
+    }
+
+    @Test
+    fun `clear同步清理native组合与raw input边界`() {
+        var isComposing = true
+        var rawInput = "active"
+        var cleared = false
+        val source = ExpressionComposingTextSource(
+            isComposing = { isComposing },
+            rawInput = { rawInput },
+            isAssociate = { false },
+            candidateText = { "正在输入" },
+            clearComposition = {
+                cleared = true
+                isComposing = false
+                rawInput = ""
+            },
+        )
+
+        assertEquals("正在输入", source.currentText(0))
+        source.clear()
+
+        assertTrue(cleared)
+        assertFalse(isComposing)
+        assertNull(source.currentText(0))
     }
 }

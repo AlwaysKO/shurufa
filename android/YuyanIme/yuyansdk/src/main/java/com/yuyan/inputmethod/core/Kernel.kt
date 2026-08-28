@@ -52,6 +52,14 @@ object Kernel {
     val wordsShowPinyin: String
         get() = RimeEngine.showComposition
 
+    /** librime 真实组合状态，不使用候选栏展示缓存推断。 */
+    val isComposing: Boolean
+        get() = Rime.isComposing
+
+    /** librime 当前 raw preedit，英文 schema 也可取得。 */
+    val rawComposition: String
+        get() = Rime.compositionText
+
     // 得到即将上屏的候选词
     val commitText: String
         get() = RimeEngine.preCommitText

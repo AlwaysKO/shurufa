@@ -83,7 +83,8 @@ class ExpressionManualSearchInputViewTest {
         AppPrefs.getInstance().internal.aiStickerEnabled.setValue(false)
         val inputView = realChatInputView()
         inputView.expressionComposingTextSource = ExpressionComposingTextSource(
-            compositionText = { "min'ying'qi'ye" },
+            isComposing = { true },
+            rawInput = { "min'ying'qi'ye" },
             isAssociate = { false },
             candidateText = { " 民营企业 " },
         )
@@ -99,16 +100,20 @@ class ExpressionManualSearchInputViewTest {
     @Test
     fun `切换输入框清除手动搜索会话和面板旧查询且表情入口仍用自有表情`() {
         val inputView = realChatInputView()
+        var activeCompositionCleared = false
         inputView.expressionComposingTextSource = ExpressionComposingTextSource(
-            compositionText = { null },
+            isComposing = { false },
+            rawInput = { null },
             isAssociate = { false },
             candidateText = { null },
+            clearComposition = { activeCompositionCleared = true },
         )
         inputView.notifyExpressionTextCommitted("旧输入框文字")
         inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
         assertEquals("旧输入框文字", inputView.expressionState().query)
 
         inputView.onExpressionInputTargetChanged(EditorInfo())
+        assertTrue(activeCompositionCleared)
         assertNull(inputView.expressionState().query)
         ShadowToast.reset()
         inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
@@ -124,7 +129,8 @@ class ExpressionManualSearchInputViewTest {
     fun `只有过期候选而无引擎组合态时仍按无文字处理`() {
         val inputView = realChatInputView()
         inputView.expressionComposingTextSource = ExpressionComposingTextSource(
-            compositionText = { "" },
+            isComposing = { false },
+            rawInput = { "old" },
             isAssociate = { false },
             candidateText = { "过期候选" },
         )
@@ -139,7 +145,8 @@ class ExpressionManualSearchInputViewTest {
     fun `短语内部编辑的候选提交不冒充宿主上屏文字`() {
         val inputView = realChatInputView()
         inputView.expressionComposingTextSource = ExpressionComposingTextSource(
-            compositionText = { null },
+            isComposing = { false },
+            rawInput = { null },
             isAssociate = { false },
             candidateText = { null },
         )
@@ -152,11 +159,32 @@ class ExpressionManualSearchInputViewTest {
         assertNull(inputView.expressionState().query)
     }
 
+    @Test
+    fun `英文26键native组合态可立即搜索当前英文候选`() {
+        val inputView = realChatInputView()
+        inputView.expressionComposingTextSource = ExpressionComposingTextSource(
+            isComposing = { true },
+            rawInput = { "hello" },
+            isAssociate = { false },
+            candidateText = { "Hello" },
+        )
+
+        inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+
+        assertEquals("Hello", inputView.expressionState().query)
+    }
+
     private fun realChatInputView(): InputView {
         val service = Robolectric.buildService(ImeService::class.java).create().get()
         services += service
         val inputView = service.onCreateInputView() as InputView
         inputView.expressionState().setChatEditor(true)
+        inputView.expressionComposingTextSource = ExpressionComposingTextSource(
+            isComposing = { false },
+            rawInput = { null },
+            isAssociate = { false },
+            candidateText = { null },
+        )
         return inputView
     }
 

@@ -36,7 +36,20 @@ object RimeEngine {
         keyRecordStack.clear()
         charCase = MASK_CASE_LOWER
         Rime.startup(Launcher.instance.context, false)
-        return Rime.selectSchema(mod)
+        Rime.clearComposition()
+        clearCachedCompositionForSchemaSwitch()
+        return Rime.selectSchema(mod).also {
+            clearCachedCompositionForSchemaSwitch()
+        }
+    }
+
+    internal fun clearCachedCompositionForSchemaSwitch() {
+        showCandidates = emptyList()
+        showComposition = ""
+        preCommitText = ""
+        pinyins = emptyArray()
+        associationRimeIndexes = emptyList()
+        customPhraseSize = 0
     }
 
     fun getCurrentRimeSchema(): String {

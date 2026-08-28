@@ -1127,8 +1127,8 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     }
 
     fun onStartInputView(editorInfo: EditorInfo, restarting: Boolean) {
-        onExpressionInputTargetChanged(editorInfo)
         InputModeSwitcher.requestInputWithSkb(editorInfo)
+        onExpressionInputTargetChanged(editorInfo)
         if (!restarting) {
             resetToIdleState()
             val clipboard = appPrefs.clipboard
@@ -1148,6 +1148,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
     /** 输入连接/编辑器切换时的斗图会话边界，由 [onStartInputView] 调用。 */
     internal fun onExpressionInputTargetChanged(editorInfo: EditorInfo) {
+        expressionComposingTextSource.clear()
         setExpressionExpanded(false)
         expressionManualSearch.resetSession()
         expressionQueryCoordinator.close()
