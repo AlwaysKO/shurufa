@@ -12,19 +12,60 @@ class SoftKeyboard(
     var mKeyRows: List<List<SoftKey>>,
     keyXMarginScale: Float = 1f,
     keyYMarginScale: Float = 1f,
+    normalizedHitBounds: List<NormalizedHitBounds> = emptyList(),
+    keyboardWidth: Int = 0,
+    keyboardHeight: Int = 0,
 ) {
+    data class NormalizedHitBounds(
+        val key: SoftKey,
+        val left: Float,
+        val top: Float,
+        val right: Float,
+        val bottom: Float,
+    ) {
+        init {
+            require(left in 0f..1f && right in 0f..1f && left < right)
+            require(top in 0f..1f && bottom in 0f..1f && top < bottom)
+        }
+    }
+
+    private data class PixelHitBounds(
+        val key: SoftKey,
+        val left: Int,
+        val top: Int,
+        val right: Int,
+        val bottom: Int,
+    )
+
+    /** 构造时一次性缓存为像素边界，触摸热路径不再读取或分配行几何。 */
+    private val hitBounds = normalizedHitBounds.map { bounds ->
+        require(keyboardWidth > 0 && keyboardHeight > 0)
+        PixelHitBounds(
+            key = bounds.key,
+            left = (bounds.left * keyboardWidth).toInt(),
+            top = (bounds.top * keyboardHeight).toInt(),
+            right = (bounds.right * keyboardWidth).toInt(),
+            bottom = (bounds.bottom * keyboardHeight).toInt(),
+        )
+    }
+
     // 按键左右间隔距离
     val keyXMargin = (EnvironmentSingleton.instance.keyXMargin * keyXMarginScale).toInt()
     // 按键上下间隔距离
     val keyYMargin = (EnvironmentSingleton.instance.keyYMargin * keyYMarginScale).toInt()
     /**
-     * 根据坐标查找按键，如果坐标在某个按键区域内，就返回这个按键，如果坐标不在所有的按键区域内，返回离它最近的按键。
-     * 可以在判断坐标在某个按键区域内的时候，并且加上判断离它最近的按键，这样就只需要一次遍历就行了。
+     * 优先命中视觉核心；配置连续命中区的布局再按同一行中线边界接管视觉间隙。
+     * 未配置连续命中区的布局维持原行为，键盘外或按键外返回 null。
      */
     fun mapToKey(x: Int, y: Int): SoftKey? {
         for (element in mKeyRows) {
             for (sKey in element) {
                 if (sKey.mLeft <= x && sKey.mTop <= y && sKey.mRight > x && sKey.mBottom > y) return sKey
+            }
+        }
+        for (bounds in hitBounds) {
+            if (bounds.left <= x && bounds.top <= y && bounds.right > x && bounds.bottom > y) {
+                return bounds.key
             }
         }
         return null

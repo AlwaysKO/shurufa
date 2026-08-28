@@ -9,6 +9,7 @@ import com.yuyan.imemodule.entity.keyboard.SoftKeyboard
 import com.yuyan.imemodule.entity.keyboard.ToggleState
 import com.yuyan.imemodule.keyboard.KeyPreset
 import com.yuyan.imemodule.keyboard.KeyboardData
+import com.yuyan.imemodule.keyboard.KeyGeometry
 import com.yuyan.imemodule.keyboard.SogouT9Layout
 import com.yuyan.imemodule.keyboard.SogouQwertyLayout
 import com.yuyan.imemodule.manager.InputModeSwitcher
@@ -73,69 +74,54 @@ class KeyboardLoaderUtil private constructor() {
                         KeyboardData.layoutQwertyCn[skbStyleMode]!!
                     }
                 }
+                val geometryRows = SogouQwertyLayout.rowGeometry
                 var qwertyKeys = createQwertyPYKeys(keys[0])
+                applyVisualGeometry(qwertyKeys.asList(), geometryRows[0].keys)
                 keyBeans.addAll(qwertyKeys)
                 rows.add(keyBeans)
                 keyBeans = LinkedList()
                 qwertyKeys = createQwertyPYKeys(keys[1])
-                qwertyKeys.first().apply {
-                    mLeftF = SogouQwertyLayout.SECOND_ROW_START_X
-                }
+                applyVisualGeometry(qwertyKeys.asList(), geometryRows[1].keys)
                 keyBeans.addAll(qwertyKeys)
                 rows.add(keyBeans)
                 keyBeans = LinkedList()
                 qwertyKeys = createQwertyPYKeys(keys[2])
-                qwertyKeys.first().apply {
-                    widthF = SogouQwertyLayout.SHIFT_WIDTH
-                }
-                qwertyKeys.last().apply {
-                    widthF = SogouQwertyLayout.DELETE_WIDTH
-                }
                 if(skbStyleMode == SkbStyleMode.Google) {
                     val softKeyToggle = createKeyToggle(KeyEvent.KEYCODE_SHIFT_LEFT)
-                    softKeyToggle.widthF = SogouQwertyLayout.SHIFT_WIDTH
-                    softKeyToggle.heightF = SogouQwertyLayout.ROW_HEIGHT
                     softKeyToggle.setToggleStates(shiftToggleStates)
                     qwertyKeys[0] = softKeyToggle
                 }
+                applyVisualGeometry(qwertyKeys.asList(), geometryRows[2].keys)
                 keyBeans.addAll(qwertyKeys)
                 rows.add(keyBeans)
                 keyBeans = lastRows(skbValue)
+                applyVisualGeometry(keyBeans, geometryRows[3].keys)
                 rows.add(keyBeans)
             }
             InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN -> {  // 2000  T9键键
                 var keyBeans: MutableList<SoftKey> = LinkedList()
                 val keys = SogouT9Layout.keyRows
+                val geometryRows = SogouT9Layout.rowGeometry
                 var t9Key = createT9Keys(keys[0].toTypedArray())
-                t9Key.first().apply {
-                    widthF = SogouT9Layout.SIDE_WIDTH
-                    heightF = SogouT9Layout.SIDE_HEIGHT
-                }
-                t9Key.sliceArray(1..4).forEach { it.heightF = SogouT9Layout.ROW_HEIGHT }
-                t9Key.sliceArray(1..3).forEach { it.widthF = SogouT9Layout.MAIN_WIDTH }
-                t9Key.last().widthF = SogouT9Layout.SIDE_WIDTH
+                applyCandidateHolderGeometry(t9Key.first())
+                applyVisualGeometry(t9Key.drop(1), geometryRows[0].keys)
                 keyBeans.addAll(t9Key)
                 rows.add(keyBeans)
                 keyBeans = LinkedList()
                 t9Key = createT9Keys(keys[1].toTypedArray())
-                t9Key.forEach { it.heightF = SogouT9Layout.ROW_HEIGHT }
-                t9Key.first().mLeftF = SogouT9Layout.START_X + SogouT9Layout.SIDE_WIDTH
-                t9Key.sliceArray(0..2).forEach { it.widthF = SogouT9Layout.MAIN_WIDTH }
-                t9Key.last().widthF = SogouT9Layout.SIDE_WIDTH
+                applyVisualGeometry(t9Key.asList(), geometryRows[1].keys)
                 keyBeans.addAll(t9Key)
                 rows.add(keyBeans)
                 keyBeans = LinkedList()
                 t9Key = createT9Keys(keys[2].toTypedArray())
-                t9Key.forEach { it.heightF = SogouT9Layout.ROW_HEIGHT }
-                t9Key.first().mLeftF = SogouT9Layout.START_X + SogouT9Layout.SIDE_WIDTH
-                t9Key.sliceArray(0..2).forEach { it.widthF = SogouT9Layout.MAIN_WIDTH }
                 t9Key.last().apply {
-                    widthF = SogouT9Layout.SIDE_WIDTH
                     stateId = 7
                 }
+                applyVisualGeometry(t9Key.asList(), geometryRows[2].keys)
                 keyBeans.addAll(t9Key)
                 rows.add(keyBeans)
                 keyBeans = sogouT9LastRow()
+                applyVisualGeometry(keyBeans, geometryRows[3].keys)
                 rows.add(keyBeans)
 
             }
@@ -158,29 +144,26 @@ class KeyboardLoaderUtil private constructor() {
             InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_ABC -> {// 4000 英文全键
                 var keyBeans: MutableList<SoftKey> = LinkedList()
                 val keys = KeyboardData.layoutQwertyEn[skbStyleMode]!!
+                val geometryRows = SogouQwertyLayout.rowGeometry
                 var qwertyKeys = createQwertyKeys(keys[0])
+                applyVisualGeometry(qwertyKeys.asList(), geometryRows[0].keys)
                 keyBeans.addAll(qwertyKeys)
                 rows.add(keyBeans)
                 keyBeans = LinkedList()
                 qwertyKeys = createQwertyKeys(keys[1])
-                qwertyKeys.first().apply {
-                    mLeftF = SogouQwertyLayout.SECOND_ROW_START_X
-                }
+                applyVisualGeometry(qwertyKeys.asList(), geometryRows[1].keys)
                 keyBeans.addAll(qwertyKeys)
                 rows.add(keyBeans)
                 keyBeans = LinkedList()
                 val softKeyToggle = createKeyToggle(KeyEvent.KEYCODE_SHIFT_LEFT)
-                softKeyToggle.widthF = SogouQwertyLayout.SHIFT_WIDTH
-                softKeyToggle.heightF = SogouQwertyLayout.ROW_HEIGHT
                 softKeyToggle.setToggleStates(shiftToggleStates)
                 keyBeans.add(softKeyToggle)
                 keyBeans.addAll(createQwertyKeys(keys[2]))
-                keyBeans.last().apply {
-                    widthF = SogouQwertyLayout.DELETE_WIDTH
-                }
+                applyVisualGeometry(keyBeans, geometryRows[2].keys)
                 rows.add(keyBeans)
                 keyBeans = lastRows(skbValue)
                 keyBeans[keyBeans.size -2].stateId = 1
+                applyVisualGeometry(keyBeans, geometryRows[3].keys)
                 rows.add(keyBeans)
             }
             InputModeSwitcher.MASK_SKB_LAYOUT_NUMBER -> {  // 5000 数字键盘
@@ -495,12 +478,31 @@ class KeyboardLoaderUtil private constructor() {
         return softKeyboard
     }
 
+    private fun applyVisualGeometry(keys: List<SoftKey>, geometry: List<KeyGeometry>) {
+        require(keys.size == geometry.size)
+        keys.zip(geometry).forEach { (key, bounds) ->
+            key.setKeyDimensions(bounds.left, bounds.top)
+            key.widthF = bounds.width
+            key.heightF = bounds.height
+        }
+    }
+
+    private fun applyCandidateHolderGeometry(key: SoftKey) {
+        val bounds = SogouT9Layout.candidateCodeView
+        key.setKeyDimensions(bounds.x, bounds.y)
+        key.widthF = bounds.width
+        key.heightF = bounds.height
+    }
+
     /** 生成键盘布局，主要用于计算键盘边界 */
     private fun getSoftKeyboard(rows: List<List<SoftKey>>, isNumberRow: Boolean): SoftKeyboard {
+        val isSogouT9 = mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN
+        val isSogouQwerty = mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN ||
+            mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_ABC
         var lastKeyBottom = 0f
         var lastKeyRight: Float
         var lastKeyTop: Float
-        for (rowBean in rows) {
+        rows.forEachIndexed { rowIndex, rowBean ->
             lastKeyTop = lastKeyBottom  // 新行top为上一行bottom
             lastKeyRight = 0.005f // 新行x从0.005开始
             for (keyBean in rowBean) {
@@ -512,7 +514,16 @@ class KeyboardLoaderUtil private constructor() {
                     if (keyXPos == -1f) keyXPos = lastKeyRight
                     if (keyYPos == -1f) keyYPos = lastKeyTop
                     if (isNumberRow) {
-                        keyBean.setKeyDimensions(keyXPos, keyYPos/1.2f, keyHeight/1.2f)
+                        val exactLayoutOffset = if ((isSogouT9 || isSogouQwerty) && rowIndex > 0) {
+                            NUMBER_ROW_HEIGHT
+                        } else {
+                            0f
+                        }
+                        keyBean.setKeyDimensions(
+                            keyXPos,
+                            (keyYPos + exactLayoutOffset) / NUMBER_ROW_SCALE,
+                            keyHeight / NUMBER_ROW_SCALE,
+                        )
                     } else {
                         keyBean.setKeyDimensions(keyXPos, keyYPos)
                     }
@@ -523,9 +534,7 @@ class KeyboardLoaderUtil private constructor() {
                 lastKeyBottom = keyYPos + keyHeight
             }
         }
-        val isSogouT9 = mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN
-        val isSogouQwerty = mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN ||
-            mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_ABC
+        val environment = EnvironmentSingleton.instance
         return SoftKeyboard(
             rows,
             keyXMarginScale = when {
@@ -538,7 +547,60 @@ class KeyboardLoaderUtil private constructor() {
                 isSogouQwerty -> SogouQwertyLayout.Y_MARGIN_SCALE
                 else -> 1f
             },
+            normalizedHitBounds = createSogouHitBounds(rows, isNumberRow),
+            keyboardWidth = environment.skbWidth,
+            keyboardHeight = environment.skbHeight,
         )
+    }
+
+    private fun createSogouHitBounds(
+        rows: List<List<SoftKey>>,
+        isNumberRow: Boolean,
+    ): List<SoftKeyboard.NormalizedHitBounds> {
+        val rowOffset = if (isNumberRow) 1 else 0
+        fun transformY(value: Float): Float = if (isNumberRow) {
+            (NUMBER_ROW_HEIGHT + value) / NUMBER_ROW_SCALE
+        } else {
+            value
+        }
+        fun bounds(key: SoftKey, geometry: KeyGeometry) = SoftKeyboard.NormalizedHitBounds(
+            key = key,
+            left = geometry.touchLeft,
+            top = transformY(geometry.touchTop),
+            right = geometry.touchRight,
+            bottom = transformY(geometry.touchBottom),
+        )
+
+        return when (mSkbValue) {
+            InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN,
+            InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_ABC -> {
+                val geometryRows = SogouQwertyLayout.rowGeometry
+                geometryRows.flatMapIndexed { rowIndex, geometryRow ->
+                    rows[rowIndex + rowOffset].zip(geometryRow.keys, ::bounds)
+                }
+            }
+            InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN -> {
+                val geometryRows = SogouT9Layout.rowGeometry
+                val holder = rows[rowOffset].first()
+                val holderBounds = SoftKeyboard.NormalizedHitBounds(
+                    key = holder,
+                    left = 0f,
+                    top = transformY(0f),
+                    right = SogouT9Layout.candidateCodeView.right,
+                    bottom = transformY(geometryRows[2].touchBottom),
+                )
+                buildList {
+                    add(holderBounds)
+                    geometryRows.forEachIndexed { rowIndex, geometryRow ->
+                        val keys = rows[rowIndex + rowOffset].let { row ->
+                            if (rowIndex == 0) row.drop(1) else row
+                        }
+                        addAll(keys.zip(geometryRow.keys, ::bounds))
+                    }
+                }
+            }
+            else -> emptyList()
+        }
     }
 
     private fun createT9Keys(codes: Array<Int>): Array<SoftKey> {
@@ -649,6 +711,8 @@ class KeyboardLoaderUtil private constructor() {
     }
 
     companion object {
+        private const val NUMBER_ROW_HEIGHT = 0.2f
+        private const val NUMBER_ROW_SCALE = 1.2f
         private var mInstance: KeyboardLoaderUtil? = null
         private val mSoftKeyboardMap = HashMap<Int, SoftKeyboard?>() //缓存所有可用键盘
         @JvmStatic
