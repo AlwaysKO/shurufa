@@ -280,7 +280,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                     expressionCatalogJob = null
                     expressionPanel.resetEmojiSelection()
                 } else {
-                    expressionCatalogJob = expressionScope.launch(Dispatchers.IO) { sync.refreshCatalog() }
+                    refreshExpressionCatalogIfRecommendationsActive(sync)
                 }
                 expressionPanel.render(expressionPanelState, sync.currentCatalog())
             }
@@ -353,9 +353,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                     }
                 }
             }
-            if (expressionPanelState.aiStickerEnabled) {
-                expressionCatalogJob = expressionScope.launch(Dispatchers.IO) { sync.refreshCatalog() }
-            }
+            refreshExpressionCatalogIfRecommendationsActive(sync)
             expressionPanel.render(expressionPanelState, sync.currentCatalog())
         }
         expressionQueryCoordinator = ExpressionQueryCoordinator(
@@ -375,6 +373,13 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             searchImmediately = { query -> expressionQueryCoordinator.searchImmediately(query) },
         )
         bindHostTextListeners()
+    }
+
+    /** 自动目录同步与推荐隐藏策略保持一致，重挂不能绕过用户的关闭选择。 */
+    private fun refreshExpressionCatalogIfRecommendationsActive(sync: ExpressionSync) {
+        if (!expressionPanelState.aiStickerEnabled || expressionPanelState.recommendationsPaused) return
+        expressionCatalogJob?.cancel()
+        expressionCatalogJob = expressionScope.launch { sync.refreshCatalog() }
     }
 
     private suspend fun prepareAsset(

@@ -18,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.yuyan.imemodule.R
 import com.yuyan.imemodule.application.Launcher
 import com.yuyan.imemodule.data.emojicon.YuyanEmojiCompat
+import com.yuyan.imemodule.data.collect.ServerConfig
 import com.yuyan.imemodule.data.theme.ThemeManager
 import com.yuyan.imemodule.expression.ExpressionCatalog
 import com.yuyan.imemodule.expression.ExpressionPanelPresentation
@@ -58,6 +59,10 @@ import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowToast
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
+import okhttp3.mockwebserver.Dispatcher
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
+import okhttp3.mockwebserver.RecordedRequest
 
 @RunWith(RobolectricTestRunner::class)
 class ExpressionManualSearchInputViewTest {
@@ -1016,6 +1021,84 @@ class ExpressionManualSearchInputViewTest {
         assertEquals(requestIdBeforeTyping + 1, inputView.expressionRequestId())
         assertEquals("关闭后的新输入", state.query)
         assertFalse(state.recommendationsPaused)
+    }
+
+    @Test
+    fun `关闭推荐后卸载重挂零自动网络且AI按钮只恢复一次搜索`() {
+        val preferences = PreferenceManager.getDefaultSharedPreferences(context)
+        val originalServerUrl = preferences.getString("server_url", null)
+        val server = MockWebServer().apply {
+            dispatcher = object : Dispatcher() {
+                override fun dispatch(request: RecordedRequest): MockResponse = when {
+                    request.path?.startsWith("/api/v1/mobile/expressions/catalog") == true ->
+                        MockResponse().setResponseCode(304)
+                    request.path?.startsWith("/api/v1/mobile/expressions/recommend") == true ->
+                        MockResponse().setBody("""{"results":[]}""")
+                    else -> MockResponse().setResponseCode(404)
+                }
+            }
+            start()
+        }
+        try {
+            preferences.edit().putString("server_url", server.url("/").toString()).commit()
+            ServerConfig.init(context)
+            AppPrefs.getInstance().internal.aiStickerEnabled.setValue(true)
+            val inputView = realChatInputView()
+            assertTrue(server.takeRequest(2, TimeUnit.SECONDS)?.path?.startsWith(
+                "/api/v1/mobile/expressions/catalog",
+            ) == true)
+
+            val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
+            val root = FrameLayout(activity)
+            activity.setContentView(root)
+            root.addView(inputView)
+            val state = inputView.expressionState()
+            val oldResult = ExpressionAsset(
+                id = "old-before-reattach",
+                type = "prebuilt",
+                format = "webp",
+                version = "v1",
+                fileName = "templates/old-before-reattach.webp",
+                sha256 = "c".repeat(64),
+                width = 128,
+                height = 128,
+            )
+            state.beginQuery("重挂前旧结果", 92)
+            state.applyResults(92, listOf(oldResult))
+            val panel = inputView.findViewById<ExpressionPanel>(R.id.expression_panel)
+            panel.render(state, ExpressionCatalog.fromAssets(context))
+            panel.findViewById<View>(R.id.expression_close).performClick()
+            assertTrue(state.recommendationsPaused)
+
+            panel.findViewById<View>(R.id.expression_enable).performClick()
+            assertEquals(listOf(oldResult), state.results)
+            assertNull("恢复已有结果不得强制刷新目录", server.takeRequest(300, TimeUnit.MILLISECONDS))
+            panel.findViewById<View>(R.id.expression_close).performClick()
+            assertTrue(state.recommendationsPaused)
+
+            root.removeView(inputView)
+            root.addView(inputView)
+
+            assertNull("重挂不得自动刷新目录", server.takeRequest(500, TimeUnit.MILLISECONDS))
+            val requestIdBeforeManualSearch = inputView.expressionRequestId()
+            inputView.notifyExpressionTextCommitted("重挂后手动搜索")
+            Shadows.shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
+            assertNull("关闭期间普通输入不得联网", server.takeRequest(300, TimeUnit.MILLISECONDS))
+
+            inputView.searchExpressionsManually()
+            val manualRequest = server.takeRequest(2, TimeUnit.SECONDS)
+            assertTrue(manualRequest?.path?.startsWith("/api/v1/mobile/expressions/recommend") == true)
+            assertEquals(requestIdBeforeManualSearch + 1, inputView.expressionRequestId())
+            assertFalse(inputView.expressionState().recommendationsPaused)
+            assertNull("一次手动操作不得重复刷新或搜索", server.takeRequest(500, TimeUnit.MILLISECONDS))
+        } finally {
+            if (originalServerUrl == null) {
+                preferences.edit().remove("server_url").commit()
+            } else {
+                preferences.edit().putString("server_url", originalServerUrl).commit()
+            }
+            server.shutdown()
+        }
     }
 
     @Test
