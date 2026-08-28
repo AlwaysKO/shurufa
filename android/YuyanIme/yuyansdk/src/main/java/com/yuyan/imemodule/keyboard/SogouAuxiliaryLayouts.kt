@@ -10,6 +10,9 @@ import com.yuyan.imemodule.manager.InputModeSwitcher
  * 文字编辑键盘没有对应的 APK 键盘配置，因此保留项目键位语义并使用项目自有几何。
  */
 object SogouAuxiliaryLayouts {
+    data class KeyPosition(val row: Int, val column: Int)
+    data class LabelOverride(val main: String, val secondary: String = "")
+
     data class NormalizedRect(
         val left: Float,
         val top: Float,
@@ -29,9 +32,11 @@ object SogouAuxiliaryLayouts {
         codeRows: List<List<Int>>,
         visualRows: List<List<KeyGeometry>>,
         val drawingArea: NormalizedRect = NormalizedRect(0f, 0f, 0f, 0f),
+        labelOverrides: Map<KeyPosition, LabelOverride> = emptyMap(),
     ) {
         private val codeRowValues = codeRows.map { it.toList() }
         private val visualRowValues = visualRows.map { it.toList() }
+        private val labelOverrideValues = labelOverrides.toMap()
         val codeRows: List<List<Int>> get() = codeRowValues.map { it.toList() }
         val visualRows: List<List<KeyGeometry>> get() = visualRowValues.map { it.toList() }
 
@@ -39,11 +44,16 @@ object SogouAuxiliaryLayouts {
             require(codeRowValues.isNotEmpty())
             require(codeRowValues.map { it.size } == visualRowValues.map { it.size })
             require(visualRowValues.flatten().all { it.right <= 1f && it.bottom <= 1f })
+            require(labelOverrideValues.keys.all { position ->
+                position.row in codeRowValues.indices && position.column in codeRowValues[position.row].indices
+            })
         }
+
+        fun labelOverride(row: Int, column: Int): LabelOverride? = labelOverrideValues[KeyPosition(row, column)]
     }
 
     val stroke: LayoutSpec = t9StyleSpec(
-        listOf(
+        codeRows = listOf(
             listOf(
                 InputModeSwitcher.USER_KEYCODE_LEFT_SYMBOL,
                 KeyEvent.KEYCODE_H,
@@ -52,7 +62,7 @@ object SogouAuxiliaryLayouts {
                 KeyEvent.KEYCODE_DEL,
             ),
             listOf(KeyEvent.KEYCODE_N, KeyEvent.KEYCODE_Z, KeyEvent.KEYCODE_X, KeyEvent.KEYCODE_CLEAR),
-            listOf(KeyEvent.KEYCODE_APOSTROPHE, KeyEvent.KEYCODE_MINUS, KeyEvent.KEYCODE_EQUALS, KeyEvent.KEYCODE_AT),
+            listOf(KeyEvent.KEYCODE_APOSTROPHE, 0, 0, KeyEvent.KEYCODE_0),
             listOf(
                 InputModeSwitcher.USER_KEYCODE_SYMBOL,
                 InputModeSwitcher.USER_KEYCODE_NUMBER,
@@ -60,7 +70,11 @@ object SogouAuxiliaryLayouts {
                 InputModeSwitcher.USER_KEYCODE_LANG,
                 KeyEvent.KEYCODE_ENTER,
             ),
-        )
+        ),
+        labelOverrides = mapOf(
+            KeyPosition(row = 2, column = 1) to LabelOverride(main = ":", secondary = "8"),
+            KeyPosition(row = 2, column = 2) to LabelOverride(main = ";", secondary = "9"),
+        ),
     )
 
     val number: LayoutSpec = t9StyleSpec(
@@ -149,6 +163,7 @@ object SogouAuxiliaryLayouts {
     private fun t9StyleSpec(
         codeRows: List<List<Int>>,
         bottomWidths: List<Float>? = null,
+        labelOverrides: Map<KeyPosition, LabelOverride> = emptyMap(),
     ): LayoutSpec {
         val rows = SogouT9Layout.rowGeometry
         val holder = key(
@@ -176,6 +191,7 @@ object SogouAuxiliaryLayouts {
         return LayoutSpec(
             codeRows = codeRows,
             visualRows = listOf(listOf(holder) + rows[0].keys, rows[1].keys, rows[2].keys, bottomGeometry),
+            labelOverrides = labelOverrides,
         )
     }
 

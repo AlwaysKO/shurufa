@@ -413,16 +413,17 @@ class KeyboardLoaderUtil private constructor() {
         spec: SogouAuxiliaryLayouts.LayoutSpec,
         preset: Map<Int, Array<String>>,
         voiceSpace: Boolean = false,
-    ): List<List<SoftKey>> = spec.codeRows.zip(spec.visualRows).map { (codes, geometry) ->
-        codes.map { code ->
+    ): List<List<SoftKey>> = spec.codeRows.zip(spec.visualRows).mapIndexed { rowIndex, (codes, geometry) ->
+        codes.mapIndexed { keyIndex, code ->
             val labels = preset[code]
+            val labelOverride = spec.labelOverride(rowIndex, keyIndex)
             val key = if (code == KeyEvent.KEYCODE_ENTER) {
                 createEnterToggle()
             } else {
                 SoftKey(
                     code = code,
-                    label = labels?.getOrNull(0).orEmpty(),
-                    labelSmall = labels?.getOrNull(1).orEmpty(),
+                    label = labelOverride?.main ?: labels?.getOrNull(0).orEmpty(),
+                    labelSmall = labelOverride?.secondary ?: labels?.getOrNull(1).orEmpty(),
                 )
             }
             key.apply {
@@ -441,6 +442,7 @@ class KeyboardLoaderUtil private constructor() {
                 code == InputModeSwitcher.USER_KEYCODE_LEFT_SYMBOL -> KeyType.Normal
                 else -> KeyType.Function
             }
+            mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_STROKE && code == KeyEvent.KEYCODE_0 -> KeyType.Function
             else -> when (code) {
                 KeyEvent.KEYCODE_DEL,
                 KeyEvent.KEYCODE_CLEAR,

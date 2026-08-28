@@ -159,6 +159,24 @@ class SogouAuxiliaryLayoutsTest {
         }
     }
 
+    @Test
+    fun `笔画 Loader 使用可提交标点动作并让末键执行数字零`() {
+        val keyboard = load(InputModeSwitcher.MASK_SKB_LAYOUT_STROKE)
+        val fifthStroke = keyboard.getKeyByCode(KeyEvent.KEYCODE_Z)!!
+        val actionRow = keyboard.mKeyRows[2]
+
+        assertEquals("ㄥ", fifthStroke.keyLabel)
+        assertEquals(
+            listOf(KeyEvent.KEYCODE_APOSTROPHE, 0, 0, KeyEvent.KEYCODE_0),
+            actionRow.map { it.code },
+        )
+        assertEquals(listOf("分词", ":", ";", "0"), actionRow.map { it.keyLabel })
+        assertEquals(listOf("7", "8", "9", ""), actionRow.map { it.getmKeyLabelSmall() })
+        assertTrue(actionRow[1].isUniStrKey)
+        assertTrue(actionRow[2].isUniStrKey)
+        assertTrue(actionRow[3].isKeyCodeKey)
+    }
+
     companion object {
         private const val EPSILON = 0.00001f
         private const val TEST_WIDTH = 10_000
