@@ -296,7 +296,7 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
                 LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
             )
         }
-        val menuHeight = maxOf((instance.heightForCandidatesArea * 0.8).toInt(), dp(44))
+        val menuHeight = instance.effectiveCandidatesAreaHeight(resources.displayMetrics.density)
         mFlowerType.textSize = instance.candidateTextSize
         mIvMenuSetting.layoutParams = LinearLayout.LayoutParams(menuHeight, menuHeight, 0f).apply { marginStart = dp(10) }
         mMenuRightArrowBtn.layoutParams = LinearLayout.LayoutParams(menuHeight, menuHeight, 0f).apply { marginEnd = dp(10) }
@@ -444,7 +444,7 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val heightMeasure = MeasureSpec.makeMeasureSpec(
-            maxOf(instance.heightForCandidatesArea, dp(44)),
+            instance.effectiveCandidatesAreaHeight(resources.displayMetrics.density),
             MeasureSpec.EXACTLY,
         )
         val widthMeasure = MeasureSpec.makeMeasureSpec(instance.skbWidth, MeasureSpec.EXACTLY)

@@ -20,6 +20,7 @@ import com.yuyan.imemodule.expression.ExpressionCatalog
 import com.yuyan.imemodule.expression.model.EmojiBase
 import com.yuyan.imemodule.expression.model.EmojiCombination
 import java.io.File
+import kotlin.math.roundToInt
 
 class EmojiCombinationPicker @JvmOverloads constructor(
     context: Context,
@@ -28,6 +29,8 @@ class EmojiCombinationPicker @JvmOverloads constructor(
     private val state = EmojiSelectionState()
     private val title: TextView
     private val back: ImageButton
+    private val header: LinearLayout
+    private val body: ViewGroup
     private val list: RecyclerView
     private val preview: ImageView
     private val adapter = EmojiAdapter(::select)
@@ -42,6 +45,8 @@ class EmojiCombinationPicker @JvmOverloads constructor(
     init {
         orientation = VERTICAL
         LayoutInflater.from(context).inflate(R.layout.sdk_expression_emoji_picker, this, true)
+        header = findViewById(R.id.expression_emoji_header)
+        body = findViewById(R.id.expression_emoji_body)
         title = findViewById(R.id.expression_emoji_title)
         back = findViewById(R.id.expression_emoji_back)
         list = findViewById(R.id.expression_emoji_list)
@@ -78,6 +83,42 @@ class EmojiCombinationPicker @JvmOverloads constructor(
         pendingDownloadKey = null
         clearReadyCombination()
         catalog?.let(::render)
+    }
+
+    /** 根据面板真实内容高度在双层与单层横滑之间切换，避免父容器裁掉44dp触摸目标。 */
+    fun setAvailableHeight(heightPx: Int) {
+        val minimum = (MINIMUM_TOUCH_TARGET_DP * resources.displayMetrics.density).roundToInt()
+        val available = heightPx.coerceAtLeast(0)
+        when {
+            available >= minimum * 2 -> {
+                orientation = VERTICAL
+                title.visibility = View.VISIBLE
+                header.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, minimum)
+                body.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, available - minimum)
+            }
+
+            available >= minimum -> {
+                orientation = HORIZONTAL
+                title.visibility = View.VISIBLE
+                header.layoutParams = LayoutParams(0, minimum, 1f)
+                body.layoutParams = LayoutParams(0, minimum, 1f)
+            }
+
+            else -> {
+                orientation = VERTICAL
+                title.visibility = View.GONE
+                header.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, 0)
+                body.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, 0)
+            }
+        }
+        val previewSize = minOf(
+            (PREVIEW_SIZE_DP * resources.displayMetrics.density).roundToInt(),
+            (available - if (orientation == VERTICAL) minimum else 0).coerceAtLeast(minimum),
+        )
+        preview.layoutParams = preview.layoutParams.apply {
+            width = previewSize
+            height = previewSize
+        }
     }
 
     private fun select(base: EmojiBase) {
@@ -133,6 +174,11 @@ class EmojiCombinationPicker @JvmOverloads constructor(
 
     private fun load(source: Any) {
         Glide.with(preview).load(source).fitCenter().into(preview)
+    }
+
+    private companion object {
+        const val MINIMUM_TOUCH_TARGET_DP = 44f
+        const val PREVIEW_SIZE_DP = 52f
     }
 
     private fun assetSource(fileName: String, url: String?): String {

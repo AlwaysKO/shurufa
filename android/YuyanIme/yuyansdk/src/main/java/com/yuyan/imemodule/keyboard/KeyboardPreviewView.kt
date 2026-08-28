@@ -30,14 +30,20 @@ class KeyboardPreviewView(context: Context) : RelativeLayout(context) {
         initView()
         qwerTextContainer?.setTheme(theme)
         setBackground(background)
+        applyPreviewSize()
     }
 
     fun setTheme(theme: Theme) {
         initView()
         qwerTextContainer?.setTheme(theme)
         background = theme.backgroundDrawable(ThemeManager.prefs.keyBorder.getValue())
+        applyPreviewSize()
+    }
+
+    private fun applyPreviewSize() {
         layoutParams?.width = instance.skbWidth
-        layoutParams?.height = instance.skbHeight + instance.heightForCandidatesArea
+        layoutParams?.height = instance.skbHeight +
+            instance.effectiveCandidatesAreaHeight(resources.displayMetrics.density)
     }
 
     init {

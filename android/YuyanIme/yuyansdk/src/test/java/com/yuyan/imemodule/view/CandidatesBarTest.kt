@@ -21,6 +21,7 @@ import com.yuyan.imemodule.data.theme.ThemePreset
 import com.yuyan.imemodule.database.DataBaseKT
 import com.yuyan.imemodule.database.entry.SkbFun
 import com.yuyan.imemodule.keyboard.InputView
+import com.yuyan.imemodule.keyboard.KeyboardPreviewView
 import com.yuyan.imemodule.prefs.AppPrefs
 import com.yuyan.imemodule.prefs.behavior.SkbMenuMode
 import com.yuyan.imemodule.service.DecodingInfo
@@ -191,6 +192,10 @@ class CandidatesBarTest {
         inputView.refreshExpressionLayoutBudget()
         val bar = inputView.mSkbCandidatesBarView
         val minimum = dp(44)
+        assertEquals(
+            minimum,
+            EnvironmentSingleton.instance.effectiveCandidatesAreaHeight(context.resources.displayMetrics.density),
+        )
         val left = bar.privateField<View>("mIvMenuSetting")
         val right = bar.privateField<View>("mMenuRightArrowBtn")
         val keyboard = inputView.findViewById<View>(R.id.skb_input_keyboard_view)
@@ -215,6 +220,15 @@ class CandidatesBarTest {
         val flower = bar.privateField<View>("mFlowerType")
         assertTrue(candidate.measuredWidth >= minimum && candidate.measuredHeight >= minimum)
         assertTrue(flower.minimumWidth >= minimum && flower.minimumHeight >= minimum)
+
+        val preview = KeyboardPreviewView(context).apply {
+            layoutParams = FrameLayout.LayoutParams(1, 1)
+            setTheme(ThemeManager.activeTheme)
+        }
+        assertEquals(EnvironmentSingleton.instance.skbHeight + minimum, preview.layoutParams.height)
+        preview.layoutParams.height = 1
+        preview.setTheme(ThemeManager.activeTheme, ColorDrawable(android.graphics.Color.TRANSPARENT))
+        assertEquals(EnvironmentSingleton.instance.skbHeight + minimum, preview.layoutParams.height)
     }
 
     private fun pressedColor(view: View): Int {

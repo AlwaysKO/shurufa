@@ -656,7 +656,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     }
 
     private fun effectiveInputAreaHeight(env: EnvironmentSingleton): Int {
-        val minimumCandidateHeight = (44f * resources.displayMetrics.density).toInt()
+        val minimumCandidateHeight = env.effectiveCandidatesAreaHeight(resources.displayMetrics.density)
         return env.inputAreaHeight +
             (minimumCandidateHeight - env.heightForCandidatesArea).coerceAtLeast(0)
     }

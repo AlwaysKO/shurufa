@@ -46,6 +46,40 @@ class ExpressionLayoutMetricsTest {
     }
 
     @Test
+    fun `横屏Emoji模式完整预算优先提供两个四十四dp可访问层`() {
+        val metrics = ExpressionLayoutMetrics.calculate(
+            widthPx = 1920,
+            density = 3f,
+            landscape = true,
+            emojiMode = true,
+        )
+
+        assertEquals(264, metrics.contentHeightPx)
+        assertEquals(528, metrics.compactPanelHeightPx)
+        assertEquals(
+            metrics.compactPanelHeightPx,
+            metrics.tabRowHeightPx + metrics.contentHeightPx + metrics.toolRowHeightPx,
+        )
+    }
+
+    @Test
+    fun `矮屏Emoji模式在工具行外仅余四十四dp时切为单层可访问内容`() {
+        val metrics = ExpressionLayoutMetrics.calculate(
+            widthPx = 1080,
+            density = 3f,
+            landscape = false,
+            emojiMode = true,
+            availableHeightPx = 720,
+            reservedKeyboardHeightPx = 456,
+        )
+
+        assertEquals(132, metrics.contentHeightPx)
+        assertEquals(0, metrics.tabRowHeightPx)
+        assertEquals(132, metrics.toolRowHeightPx)
+        assertEquals(264, metrics.compactPanelHeightPx)
+    }
+
+    @Test
     fun `横屏紧凑面板受真实可用高度和键盘保留高度约束`() {
         val metrics = ExpressionLayoutMetrics.calculate(
             widthPx = 1920,

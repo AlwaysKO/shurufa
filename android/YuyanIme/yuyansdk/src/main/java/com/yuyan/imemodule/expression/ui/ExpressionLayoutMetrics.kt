@@ -22,6 +22,7 @@ data class ExpressionLayoutMetrics(
             widthPx: Int,
             density: Float,
             landscape: Boolean,
+            emojiMode: Boolean = false,
             availableHeightPx: Int = Int.MAX_VALUE,
             reservedKeyboardHeightPx: Int = 0,
         ): ExpressionLayoutMetrics {
@@ -53,7 +54,9 @@ data class ExpressionLayoutMetrics(
                     (itemSizePx + itemGapPx)
 
             val desiredTabHeightPx = px(MINIMUM_TOUCH_TARGET_DP)
-            val desiredContentHeightPx = px(if (landscape) 84f else 96f)
+            val desiredContentHeightPx = px(
+                if (emojiMode) MINIMUM_EMOJI_TWO_LAYER_DP else if (landscape) 84f else 96f,
+            )
             // 恢复入口是面板在无结果/关闭态的唯一入口，必须始终保留可访问触摸高度。
             val desiredToolHeightPx = px(MINIMUM_TOUCH_TARGET_DP)
             val designedMaximumHeightPx =
@@ -74,12 +77,26 @@ data class ExpressionLayoutMetrics(
             val compactHeightPx = maximumCompactHeightPx
 
             val toolRowHeightPx = desiredToolHeightPx
-            val tabRowHeightPx = minOf(
-                desiredTabHeightPx,
-                (compactHeightPx - toolRowHeightPx).coerceAtLeast(0),
-            )
-            val contentHeightPx =
+            val heightAfterToolPx = (compactHeightPx - toolRowHeightPx).coerceAtLeast(0)
+            val minimumEmojiContentPx = px(MINIMUM_TOUCH_TARGET_DP)
+            val contentHeightPx = if (emojiMode && heightAfterToolPx >= minimumEmojiContentPx) {
+                minOf(
+                    desiredContentHeightPx,
+                    maxOf(minimumEmojiContentPx, heightAfterToolPx - desiredTabHeightPx),
+                )
+            } else {
+                0
+            }
+            val tabRowHeightPx = if (emojiMode) {
+                minOf(desiredTabHeightPx, (heightAfterToolPx - contentHeightPx).coerceAtLeast(0))
+            } else {
+                minOf(desiredTabHeightPx, heightAfterToolPx)
+            }
+            val resolvedContentHeightPx = if (emojiMode) {
+                contentHeightPx
+            } else {
                 (compactHeightPx - tabRowHeightPx - toolRowHeightPx).coerceAtLeast(0)
+            }
 
             return ExpressionLayoutMetrics(
                 itemSizePx = itemSizePx,
@@ -87,7 +104,7 @@ data class ExpressionLayoutMetrics(
                 itemGapPx = itemGapPx,
                 horizontalPaddingPx = horizontalPaddingPx,
                 tabRowHeightPx = tabRowHeightPx,
-                contentHeightPx = contentHeightPx,
+                contentHeightPx = resolvedContentHeightPx,
                 toolRowHeightPx = toolRowHeightPx,
                 actionWidthPx = px(MINIMUM_TOUCH_TARGET_DP * 2),
                 actionHeightPx = minOf(px(MINIMUM_TOUCH_TARGET_DP), tabRowHeightPx),
@@ -102,5 +119,6 @@ data class ExpressionLayoutMetrics(
         private const val EXPANDED_COLUMNS = 3
         private const val MINIMUM_CONTENT_HEIGHT_DP = 48f
         private const val MINIMUM_TOUCH_TARGET_DP = 44f
+        private const val MINIMUM_EMOJI_TWO_LAYER_DP = MINIMUM_TOUCH_TARGET_DP * 2
     }
 }

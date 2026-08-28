@@ -262,25 +262,7 @@ class ExpressionPanelTest {
     @Test
     @Config(qualifiers = "w360dp-h640dp-xxhdpi")
     fun `小屏Emoji选择页返回与表情项实际边界至少四十四dp且内容不裁切`() {
-        val emojiCatalog = ExpressionCatalog(
-            ExpressionCatalogDocument(
-                version = "v1",
-                templates = emptyList(),
-                emojiBases = listOf(
-                    EmojiBase(
-                        id = "smile",
-                        name = "微笑",
-                        fileName = "missing.webp",
-                        sha256 = "a".repeat(64),
-                        version = "v1",
-                        width = 128,
-                        height = 128,
-                        sortOrder = 0,
-                    ),
-                ),
-                emojiCombinations = emptyList(),
-            ),
-        )
+        val emojiCatalog = emojiCatalog()
         val state = visibleState().apply { selectTab(ExpressionPanelTab.EMOJI_SYNTHESIS) }
         val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
         val root = FrameLayout(activity)
@@ -307,6 +289,56 @@ class ExpressionPanelTest {
             item.width >= minimum && item.height >= minimum,
         )
         assertTrue(picker.height <= panel.findViewById<View>(R.id.expression_content).height)
+    }
+
+    @Test
+    @Config(qualifiers = "w640dp-h360dp-land-xxhdpi")
+    fun `横屏Emoji选择页为标题返回与表情项保留两个四十四dp层`() {
+        val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
+        val root = FrameLayout(activity)
+        activity.setContentView(root)
+        val panel = ExpressionPanel(activity)
+        root.addView(panel)
+        panel.setAvailableLayoutHeight(availableHeightPx = 1080, reservedKeyboardHeightPx = 480)
+        panel.render(
+            visibleState().apply { selectTab(ExpressionPanelTab.EMOJI_SYNTHESIS) },
+            emojiCatalog(),
+        )
+        root.measure(
+            View.MeasureSpec.makeMeasureSpec(1920, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.AT_MOST),
+        )
+        root.layout(0, 0, root.measuredWidth, root.measuredHeight)
+
+        assertTrue(panel.findViewById<View>(R.id.expression_content).height >= dp(88))
+        assertEmojiTargetsAccessible(panel, dp(44))
+    }
+
+    @Test
+    @Config(qualifiers = "w360dp-h240dp-xxhdpi")
+    fun `极端Emoji预算改为四十四dp单层横滑且工具入口仍可访问`() {
+        val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
+        val root = FrameLayout(activity)
+        activity.setContentView(root)
+        val panel = ExpressionPanel(activity)
+        root.addView(panel)
+        panel.setAvailableLayoutHeight(availableHeightPx = 720, reservedKeyboardHeightPx = 456)
+        panel.render(
+            visibleState().apply { selectTab(ExpressionPanelTab.EMOJI_SYNTHESIS) },
+            emojiCatalog(),
+        )
+        root.measure(
+            View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(720, View.MeasureSpec.AT_MOST),
+        )
+        root.layout(0, 0, root.measuredWidth, root.measuredHeight)
+        val picker = panel.findViewById<EmojiCombinationPicker>(R.id.expression_emoji_picker)
+
+        assertEquals(dp(88), panel.measuredHeight)
+        assertEquals(dp(44), panel.findViewById<View>(R.id.expression_content).height)
+        assertEquals(LinearLayout.HORIZONTAL, picker.orientation)
+        assertEmojiTargetsAccessible(panel, dp(44))
+        assertTrue(panel.measuredHeight + 456 <= 720)
     }
 
     @Test
@@ -614,6 +646,39 @@ class ExpressionPanelTest {
         beginQuery("你好", requestId = 1)
         applyResults(1, listOf(asset()))
     }
+
+    private fun emojiCatalog() = ExpressionCatalog(
+        ExpressionCatalogDocument(
+            version = "v1",
+            templates = emptyList(),
+            emojiBases = listOf(
+                EmojiBase(
+                    id = "smile",
+                    name = "微笑",
+                    fileName = "missing.webp",
+                    sha256 = "a".repeat(64),
+                    version = "v1",
+                    width = 128,
+                    height = 128,
+                    sortOrder = 0,
+                ),
+            ),
+            emojiCombinations = emptyList(),
+        ),
+    )
+
+    private fun assertEmojiTargetsAccessible(panel: ExpressionPanel, minimum: Int) {
+        val picker = panel.findViewById<EmojiCombinationPicker>(R.id.expression_emoji_picker)
+        val list = picker.findViewById<RecyclerView>(R.id.expression_emoji_list)
+        val item = requireNotNull(list.getChildAt(0))
+        item.performClick()
+        val back = picker.findViewById<View>(R.id.expression_emoji_back)
+        assertEquals(View.VISIBLE, back.visibility)
+        assertTrue("emoji back ${back.width}x${back.height}", back.width >= minimum && back.height >= minimum)
+        assertTrue("emoji item ${item.width}x${item.height}", item.width >= minimum && item.height >= minimum)
+    }
+
+    private fun dp(value: Int): Int = (value * context.resources.displayMetrics.density).toInt()
 
     private fun asset() = ExpressionAsset(
         id = "hello",

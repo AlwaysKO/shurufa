@@ -61,6 +61,7 @@ class ExpressionPanel @JvmOverloads constructor(
     private var gestureCancelled = false
     private var availableLayoutHeightPx = Int.MAX_VALUE
     private var reservedKeyboardHeightPx = 0
+    private var emojiMode = false
 
     var onDismiss: (() -> Unit)? = null
     var onAiStickerEnabledChange: ((Boolean) -> Unit)? = null
@@ -135,6 +136,7 @@ class ExpressionPanel @JvmOverloads constructor(
         recommendationVisible = state.isRecommendationVisible
         canExpand = state.results.isNotEmpty() && recommendationVisible
         isExpanded = state.presentation == ExpressionPanelPresentation.EXPANDED
+        emojiMode = state.selectedTab == ExpressionPanelTab.EMOJI_SYNTHESIS
         applyLayoutMetrics()
         visibility = View.VISIBLE
         recommendationSection.visibility = if (state.isRecommendationVisible) View.VISIBLE else View.GONE
@@ -159,12 +161,15 @@ class ExpressionPanel @JvmOverloads constructor(
                 if (expanded) dp(EXPANDED_CONTENT_HEIGHT_DP) else requireNotNull(layoutMetrics).contentHeightPx
             }
         }
+        emojiPicker.setAvailableHeight(content.layoutParams.height)
         content.visibility = View.VISIBLE
         ensureAssetLayoutManager(expanded)
         adapter.setExpanded(expanded)
         val showingEmoji = state.selectedTab == ExpressionPanelTab.EMOJI_SYNTHESIS
         assetList.visibility = if (showingEmoji) View.GONE else View.VISIBLE
-        emojiPicker.visibility = if (showingEmoji) View.VISIBLE else View.GONE
+        val emojiContentAccessible = expanded ||
+            requireNotNull(layoutMetrics).contentHeightPx >= dp(MINIMUM_TOUCH_TARGET_DP)
+        emojiPicker.visibility = if (showingEmoji && emojiContentAccessible) View.VISIBLE else View.GONE
         if (showingEmoji) emojiPicker.render(catalog)
         adapter.submitList(
             when (state.selectedTab) {
@@ -221,6 +226,7 @@ class ExpressionPanel @JvmOverloads constructor(
             widthPx = availableWidth,
             density = resources.displayMetrics.density,
             landscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE,
+            emojiMode = emojiMode,
             availableHeightPx = availableLayoutHeightPx,
             reservedKeyboardHeightPx = reservedKeyboardHeightPx,
         )
@@ -253,6 +259,7 @@ class ExpressionPanel @JvmOverloads constructor(
         }
         if (!isExpanded) {
             content.layoutParams = content.layoutParams.apply { height = metrics.contentHeightPx }
+            emojiPicker.setAvailableHeight(metrics.contentHeightPx)
         }
         assetList.setPadding(
             metrics.horizontalPaddingPx,

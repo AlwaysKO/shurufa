@@ -145,7 +145,10 @@ class FloatCandidateBar(context: Context?, attrs: AttributeSet?) : RelativeLayou
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val heightMeasure = MeasureSpec.makeMeasureSpec(instance.heightForCandidatesArea, MeasureSpec.EXACTLY)
+        val heightMeasure = MeasureSpec.makeMeasureSpec(
+            instance.effectiveCandidatesAreaHeight(resources.displayMetrics.density),
+            MeasureSpec.EXACTLY,
+        )
         val widthMeasure = MeasureSpec.makeMeasureSpec(mFloatCandidateBarWidth, MeasureSpec.EXACTLY)
         super.onMeasure(widthMeasure, heightMeasure)
     }
