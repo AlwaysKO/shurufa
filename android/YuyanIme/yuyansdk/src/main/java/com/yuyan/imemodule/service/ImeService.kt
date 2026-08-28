@@ -74,6 +74,15 @@ class ImeService : InputMethodService() {
     private var hostTextCommitListener: ((String, ExpressionCommitKind) -> Unit)? = null
     private var hostTextEditListener: (() -> Unit)? = null
     internal var hostKeyEventSender: (Int) -> Boolean = ::sendUnmodifiedKeyEventsAndReport
+    internal var hostTextCommitter: (String, Int) -> Boolean = { text, newCursorPosition ->
+        currentInputConnection?.commitText(
+            StringUtils.converted2FlowerTypeface(text),
+            newCursorPosition,
+        ) == true
+    }
+    internal var hostEditorActionSender: (Int) -> Boolean = { action ->
+        currentInputConnection?.performEditorAction(action) == true
+    }
     private val onThemeChangeListener = OnThemeChangeListener { _: Theme? -> if (isHardwareKeyboard) mCandidateView.updateTheme() else mInputView.updateTheme()}
     private val clipboardUpdateContent = getInstance().internal.clipboardUpdateContent
     private val clipboardUpdateContentListener = ManagedPreference.OnChangeListener<String> { _, value ->
@@ -357,17 +366,22 @@ class ImeService : InputMethodService() {
      * 模拟Enter按键点击
      */
     fun sendEnterKeyEvent() {
-        val inputConnection = getCurrentInputConnection()
         YuyanEmojiCompat.mEditorInfo?.run {
             if (inputType and InputType.TYPE_MASK_CLASS == InputType.TYPE_NULL || imeOptions.hasFlag(EditorInfo.IME_FLAG_NO_ENTER_ACTION)) {
-                sendDownUpKeyEvents(KeyEvent.KEYCODE_ENTER)
+                sendMessageBoundaryKeyEventAndReport()
             } else if (!actionLabel.isNullOrEmpty() && actionId != EditorInfo.IME_ACTION_UNSPECIFIED) {
-                inputConnection.performEditorAction(actionId)
+                performEditorActionAndReport(actionId)
             } else when (val action = imeOptions and EditorInfo.IME_MASK_ACTION) {
-                EditorInfo.IME_ACTION_UNSPECIFIED, EditorInfo.IME_ACTION_NONE -> sendDownUpKeyEvents(KeyEvent.KEYCODE_ENTER)
-                else -> inputConnection.performEditorAction(action)
+                EditorInfo.IME_ACTION_UNSPECIFIED, EditorInfo.IME_ACTION_NONE -> sendMessageBoundaryKeyEventAndReport()
+                else -> performEditorActionAndReport(action)
             }
         }
+    }
+
+    private fun sendMessageBoundaryKeyEventAndReport(): Boolean {
+        val sent = hostKeyEventSender(KeyEvent.KEYCODE_ENTER)
+        if (sent) hostTextEditListener?.invoke()
+        return sent
     }
 
     fun sendCombinationKeyEvents(keyEventCode: Int, alt: Boolean = false, ctrl: Boolean = false, shift: Boolean = false) {
@@ -493,16 +507,16 @@ class ImeService : InputMethodService() {
                 source = "candidate",
             )
         }
-        return HostTextCommitDispatcher.dispatch(
+        val committed = HostTextCommitDispatcher.dispatch(
             text = text,
             kind = kind,
-            commitToHost = {
-                currentInputConnection?.commitText(StringUtils.converted2FlowerTypeface(text), 1) == true
-            },
+            commitToHost = { hostTextCommitter(text, 1) },
             notifyCommitted = { committedText, commitKind ->
                 hostTextCommitListener?.invoke(committedText, commitKind)
             },
         )
+        if (committed && text.hasLineBreak()) hostTextEditListener?.invoke()
+        return committed
     }
 
     /**
@@ -516,19 +530,15 @@ class ImeService : InputMethodService() {
                 source = "candidate",
             )
         }
-        HostTextCommitDispatcher.dispatch(
+        val committed = HostTextCommitDispatcher.dispatch(
             text = text,
             kind = ExpressionCommitKind.COMPLETE,
-            commitToHost = {
-                currentInputConnection?.commitText(
-                    StringUtils.converted2FlowerTypeface(text),
-                    newCursorPosition,
-                ) == true
-            },
+            commitToHost = { hostTextCommitter(text, newCursorPosition) },
             notifyCommitted = { committedText, commitKind ->
                 hostTextCommitListener?.invoke(committedText, commitKind)
             },
         )
+        if (committed && text.hasLineBreak()) hostTextEditListener?.invoke()
     }
 
     internal fun setHostTextCommitListener(
@@ -566,7 +576,13 @@ class ImeService : InputMethodService() {
     }
 
     fun performEditorAction(editorAction:Int) {
-        currentInputConnection.performEditorAction(editorAction)
+        performEditorActionAndReport(editorAction)
+    }
+
+    internal fun performEditorActionAndReport(editorAction: Int): Boolean {
+        val performed = hostEditorActionSender(editorAction)
+        if (performed) hostTextEditListener?.invoke()
+        return performed
     }
 
     fun deleteSurroundingText(length:Int) {
@@ -616,3 +632,5 @@ private fun Int.isTextEditingKey(): Boolean = when (this) {
 
     else -> false
 }
+
+private fun String.hasLineBreak(): Boolean = any { it == '\n' || it == '\r' }

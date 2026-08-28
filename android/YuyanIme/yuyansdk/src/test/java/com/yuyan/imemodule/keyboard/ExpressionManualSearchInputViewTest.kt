@@ -371,6 +371,74 @@ class ExpressionManualSearchInputViewTest {
         assertEquals("请先输入文字，再点击搜索按钮", ShadowToast.getTextOfLatestToast())
     }
 
+    @Test
+    fun `发送动作和Enter键成功后英文数字不拼上一条消息`() {
+        val inputView = realChatInputView()
+        val service = services.last()
+        service.hostTextCommitter = { _, _ -> true }
+        service.hostEditorActionSender = { true }
+        service.hostKeyEventSender = { true }
+        service.commitTextAndReport("hello", kind = ExpressionCommitKind.INCREMENTAL)
+        YuyanEmojiCompat.setEditorInfo(EditorInfo().apply { imeOptions = EditorInfo.IME_ACTION_SEND })
+
+        service.sendEnterKeyEvent()
+        service.commitTextAndReport("world", kind = ExpressionCommitKind.INCREMENTAL)
+        inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+        assertEquals("world", inputView.expressionState().query)
+
+        inputView.onExpressionInputTargetChanged(chatEditorInfo())
+        service.sendNumericKeyEventAndReport(KeyEvent.KEYCODE_1)
+        service.sendNumericKeyEventAndReport(KeyEvent.KEYCODE_2)
+        YuyanEmojiCompat.setEditorInfo(EditorInfo().apply { imeOptions = EditorInfo.IME_ACTION_NONE })
+        service.sendEnterKeyEvent()
+        service.sendNumericKeyEventAndReport(KeyEvent.KEYCODE_3)
+        inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+        assertEquals("3", inputView.expressionState().query)
+    }
+
+    @Test
+    fun `换行commit只在成功时切断逐字缓存`() {
+        val inputView = realChatInputView()
+        val service = services.last()
+        service.hostTextCommitter = { _, _ -> true }
+        service.commitTextAndReport("hello", kind = ExpressionCommitKind.INCREMENTAL)
+
+        assertTrue(service.commitTextAndReport("\n", kind = ExpressionCommitKind.INCREMENTAL))
+        service.commitTextAndReport("world", kind = ExpressionCommitKind.INCREMENTAL)
+        inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+        assertEquals("world", inputView.expressionState().query)
+
+        inputView.onExpressionInputTargetChanged(chatEditorInfo())
+        service.commitTextAndReport("hello", kind = ExpressionCommitKind.INCREMENTAL)
+        service.hostTextCommitter = { text, _ -> text != "\n" }
+        assertFalse(service.commitTextAndReport("\n", kind = ExpressionCommitKind.INCREMENTAL))
+        service.commitTextAndReport("world", kind = ExpressionCommitKind.INCREMENTAL)
+        inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+        assertEquals("helloworld", inputView.expressionState().query)
+    }
+
+    @Test
+    fun `显式performEditorAction成功清缓存失败则保留`() {
+        val inputView = realChatInputView()
+        val service = services.last()
+        service.hostTextCommitter = { _, _ -> true }
+        service.hostEditorActionSender = { true }
+        service.commitTextAndReport("hello", kind = ExpressionCommitKind.INCREMENTAL)
+
+        service.performEditorAction(EditorInfo.IME_ACTION_SEND)
+        service.commitTextAndReport("world", kind = ExpressionCommitKind.INCREMENTAL)
+        inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+        assertEquals("world", inputView.expressionState().query)
+
+        inputView.onExpressionInputTargetChanged(chatEditorInfo())
+        service.commitTextAndReport("hello", kind = ExpressionCommitKind.INCREMENTAL)
+        service.hostEditorActionSender = { false }
+        service.performEditorAction(EditorInfo.IME_ACTION_SEND)
+        service.commitTextAndReport("world", kind = ExpressionCommitKind.INCREMENTAL)
+        inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+        assertEquals("helloworld", inputView.expressionState().query)
+    }
+
     private fun realChatInputView(): InputView {
         val service = Robolectric.buildService(ImeService::class.java).create().get()
         services += service
