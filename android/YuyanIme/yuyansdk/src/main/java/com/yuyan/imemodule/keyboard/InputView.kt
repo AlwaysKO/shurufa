@@ -59,6 +59,7 @@ import com.yuyan.imemodule.expression.ui.ExpressionPanel
 import com.yuyan.imemodule.keyboard.container.CandidatesContainer
 import com.yuyan.imemodule.keyboard.container.ClipBoardContainer
 import com.yuyan.imemodule.keyboard.container.SymbolContainer
+import com.yuyan.imemodule.keyboard.container.SettingsContainer
 import com.yuyan.imemodule.keyboard.container.T9TextContainer
 import com.yuyan.imemodule.manager.InputModeSwitcher
 import com.yuyan.imemodule.prefs.AppPrefs.Companion.getInstance
@@ -445,6 +446,30 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         }
         setExpressionExpanded(false)
         return true
+    }
+
+    /** 系统返回优先关闭 IME 内部临时面板，再交还系统隐藏键盘。 */
+    fun handleImePanelBack(): Boolean {
+        if (handleExpressionBack()) return true
+        return (KeyboardManager.instance.currentContainer as? SettingsContainer)
+            ?.handleQuickSettingsBack() == true
+    }
+
+    /** 工具栏快捷入口再次点击时切换面板显示状态。 */
+    fun toggleQuickKeyboardSettings() {
+        val current = KeyboardManager.instance.currentContainer as? SettingsContainer
+        if (current?.isQuickSettingsVisible == true) {
+            current.toggleQuickSettingsView()
+            return
+        }
+        KeyboardManager.instance.switchKeyboard(KeyboardManager.KeyboardType.SETTINGS)
+        (KeyboardManager.instance.currentContainer as? SettingsContainer)?.showQuickSettingsView()
+        service.setExpressionBackHandlingEnabled(true)
+        updateCandidateBar()
+    }
+
+    internal fun onQuickKeyboardSettingsClosed() {
+        service.setExpressionBackHandlingEnabled(false)
     }
 
     @SuppressLint("ClickableViewAccessibility")

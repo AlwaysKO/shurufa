@@ -2,7 +2,13 @@ package com.yuyan.imemodule.keyboard.container
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
+import android.view.Gravity
 import android.view.View
+import android.widget.LinearLayout
+import android.widget.ScrollView
+import android.widget.TextView
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.yuyan.imemodule.R
@@ -10,6 +16,7 @@ import com.yuyan.imemodule.adapter.MenuAdapter
 import com.yuyan.imemodule.application.CustomConstant
 import com.yuyan.imemodule.data.menuSkbFunsPreset
 import com.yuyan.imemodule.data.theme.Theme
+import com.yuyan.imemodule.data.theme.ThemeManager
 import com.yuyan.imemodule.data.theme.ThemeManager.activeTheme
 import com.yuyan.imemodule.database.DataBaseKT
 import com.yuyan.imemodule.database.entry.SkbFun
@@ -20,6 +27,14 @@ import com.yuyan.imemodule.prefs.behavior.DoublePinyinSchemaMode
 import com.yuyan.imemodule.prefs.behavior.SkbMenuMode
 import com.yuyan.imemodule.singleton.EnvironmentSingleton
 import com.yuyan.imemodule.keyboard.InputView
+import com.yuyan.imemodule.keyboard.KeyboardManager
+import com.yuyan.imemodule.keyboard.QuickKeyboardAction
+import com.yuyan.imemodule.keyboard.QuickKeyboardLayoutId
+import com.yuyan.imemodule.keyboard.QuickKeyboardSettingsActions
+import com.yuyan.imemodule.keyboard.QuickKeyboardSettingsController
+import com.yuyan.imemodule.keyboard.QuickKeyboardSettingsModel
+import com.yuyan.imemodule.keyboard.SymbolPage
+import com.yuyan.imemodule.utils.KeyboardLoaderUtil
 import com.yuyan.imemodule.manager.layout.CustomGridLayoutManager
 import splitties.dimensions.dp
 import java.util.Collections
@@ -31,11 +46,35 @@ import java.util.LinkedList
  * 设置键盘、切换键盘界面容器。使用RecyclerView + GridLayoutManager。
  */
 @SuppressLint("ViewConstructor")
-class SettingsContainer(context: Context, inputView: InputView) : BaseContainer(context, inputView) {
+class SettingsContainer(
+    context: Context,
+    inputView: InputView,
+    quickSettingsActions: QuickKeyboardSettingsActions? = null,
+) : BaseContainer(context, inputView) {
     private var mRVMenuLayout: RecyclerView? = null
     private var mTheme: Theme? = null
     private var adapter:MenuAdapter? = null
+    private var themeChangedInQuickSettings = false
+    private val quickSettingsActions = quickSettingsActions ?: createQuickSettingsActions()
+    private val quickSettingsController = QuickKeyboardSettingsController(this.quickSettingsActions)
     val funItems: MutableList<SkbFunItem> = LinkedList()   //键盘菜单对象
+
+    val isQuickSettingsVisible: Boolean
+        get() = quickSettingsController.isVisible
+
+    companion object {
+        private val QUICK_THEME_IDS = setOf("MaterialLight", "MaterialDark")
+
+        internal fun applyQuickTheme(themeId: String): Boolean {
+            if (themeId !in QUICK_THEME_IDS) return false
+            val theme = ThemeManager.getTheme(themeId) ?: return false
+            // 快捷选择是明确的用户决定，关闭跟随系统才能跨重启保持该选择。
+            ThemeManager.prefs.followSystemDayNightTheme.setValue(false)
+            ThemeManager.setNormalModeTheme(theme)
+            return true
+        }
+    }
+
     init {
         initView(context)
     }
@@ -53,10 +92,20 @@ class SettingsContainer(context: Context, inputView: InputView) : BaseContainer(
         this.addView(mRVMenuLayout)
     }
 
+    private fun showMenuRecycler() {
+        if (quickSettingsController.isVisible) {
+            quickSettingsController.dismiss()
+            inputView.onQuickKeyboardSettingsClosed()
+        }
+        removeAllViews()
+        addView(mRVMenuLayout)
+    }
+
     /**
      * 弹出键盘设置界面
      */
     fun showSettingsView() {
+        showMenuRecycler()
         funItems.clear()
         for(item in DataBaseKT.instance.skbFunDao().getAllMenu()){
             val skbMenuMode = menuSkbFunsPreset[SkbMenuMode.decode(item.name)]
@@ -135,6 +184,7 @@ class SettingsContainer(context: Context, inputView: InputView) : BaseContainer(
      * 弹出键盘界面
      */
     fun showSkbSelelctModeView() {
+        showMenuRecycler()
         val funItems: MutableList<SkbFunItem> = LinkedList()
         funItems.add(
             SkbFunItem(
@@ -192,6 +242,186 @@ class SettingsContainer(context: Context, inputView: InputView) : BaseContainer(
             onKeyboardMenuClick(funItems[position])
         }
         mRVMenuLayout!!.setAdapter(adapter)
+    }
+
+    /** 在 IME 窗口内显示键盘和主题快捷面板。 */
+    fun showQuickSettingsView() {
+        quickSettingsController.show()
+        renderQuickSettingsView()
+    }
+
+    /** 再次点击同一入口时关闭；返回值表示切换后是否仍显示。 */
+    fun toggleQuickSettingsView(): Boolean {
+        val visible = quickSettingsController.toggle()
+        if (visible) renderQuickSettingsView()
+        return visible
+    }
+
+    /** 系统返回优先收起快捷面板。 */
+    fun handleQuickSettingsBack(): Boolean = quickSettingsController.handleBack()
+
+    private fun renderQuickSettingsView() {
+        if (!quickSettingsController.isVisible) return
+        removeAllViews()
+        val theme = ThemeManager.activeTheme
+        val content = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(12), dp(8), dp(12), dp(12))
+        }
+        content.addView(sectionTitle(context.getString(R.string.quick_settings_layout_title), theme.keyTextColor))
+
+        val selectedLayout = QuickKeyboardSettingsModel.selectedLayout(
+            InputModeSwitcher.skbLayout,
+            InputModeSwitcher.isEnglish,
+        )
+        QuickKeyboardSettingsModel.layouts.chunked(2).forEach { rowItems ->
+            content.addView(LinearLayout(context).apply {
+                orientation = LinearLayout.HORIZONTAL
+                rowItems.forEach { option ->
+                    addView(
+                        quickButton(
+                            text = layoutLabel(option.id),
+                            selected = option.id == selectedLayout,
+                            tagValue = "quick_layout_${option.id.name}",
+                        ) {
+                            quickSettingsController.selectLayout(option.id)
+                        },
+                        LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                            setMargins(dp(4), dp(4), dp(4), dp(4))
+                        },
+                    )
+                }
+                if (rowItems.size == 1) {
+                    addView(View(context), LinearLayout.LayoutParams(0, 1, 1f))
+                }
+            })
+        }
+
+        content.addView(sectionTitle(context.getString(R.string.quick_settings_theme_title), theme.keyTextColor))
+        content.addView(LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            quickSettingsController.themes.forEach { option ->
+                addView(
+                    quickButton(
+                        text = if (option.isDark) {
+                            context.getString(R.string.quick_theme_dark)
+                        } else {
+                            context.getString(R.string.quick_theme_light)
+                        },
+                        selected = option.themeId == quickSettingsController.selectedThemeId,
+                        tagValue = "quick_theme_${option.themeId}",
+                    ) {
+                        if (quickSettingsController.selectTheme(option.themeId)) {
+                            renderQuickSettingsView()
+                        }
+                    },
+                    LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                        setMargins(dp(4), dp(4), dp(4), dp(4))
+                    },
+                )
+            }
+        })
+        content.addView(
+            quickButton(
+                text = context.getString(R.string.quick_settings_back_keyboard),
+                selected = false,
+                tagValue = "quick_settings_back",
+            ) { quickSettingsController.handleBack() },
+            LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+                setMargins(dp(4), dp(8), dp(4), 0)
+            },
+        )
+        addView(
+            ScrollView(context).apply { addView(content) },
+            LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT),
+        )
+    }
+
+    private fun sectionTitle(text: String, color: Int) = TextView(context).apply {
+        this.text = text
+        textSize = 15f
+        setTextColor(color)
+        setPadding(dp(6), dp(8), dp(6), dp(2))
+    }
+
+    private fun quickButton(
+        text: String,
+        selected: Boolean,
+        tagValue: String,
+        onClick: () -> Unit,
+    ) = TextView(context).apply {
+        this.text = if (selected) "✓ $text" else text
+        tag = tagValue
+        isSelected = selected
+        gravity = Gravity.CENTER
+        textSize = 14f
+        minimumHeight = dp(48)
+        setPadding(dp(8), dp(8), dp(8), dp(8))
+        val theme = ThemeManager.activeTheme
+        setTextColor(if (selected) theme.accentKeyTextColor else theme.keyTextColor)
+        background = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = dp(12).toFloat()
+            setColor(if (selected) theme.accentKeyBackgroundColor else theme.keyBackgroundColor)
+            setStroke(dp(if (selected) 2 else 1), if (selected) theme.accentKeyTextColor else Color.TRANSPARENT)
+        }
+        setOnClickListener { onClick() }
+    }
+
+    private fun layoutLabel(id: QuickKeyboardLayoutId): String = context.getString(
+        when (id) {
+            QuickKeyboardLayoutId.CHINESE_T9 -> R.string.keyboard_name_t9
+            QuickKeyboardLayoutId.CHINESE_QWERTY -> R.string.quick_layout_chinese_qwerty
+            QuickKeyboardLayoutId.ENGLISH_QWERTY -> R.string.quick_layout_english_qwerty
+            QuickKeyboardLayoutId.HANDWRITING -> R.string.keyboard_name_hand
+            QuickKeyboardLayoutId.STROKE -> R.string.keyboard_name_stroke
+            QuickKeyboardLayoutId.NUMBER -> R.string.quick_layout_number
+            QuickKeyboardLayoutId.CHINESE_SYMBOL -> R.string.quick_layout_chinese_symbol
+            QuickKeyboardLayoutId.ENGLISH_SYMBOL -> R.string.quick_layout_english_symbol
+            QuickKeyboardLayoutId.TEXT_EDIT -> R.string.quick_layout_text_edit
+            QuickKeyboardLayoutId.LX17 -> R.string.keyboard_name_pinyin_lx_17
+        },
+    )
+
+    private fun createQuickSettingsActions() = object : QuickKeyboardSettingsActions {
+        override val availableThemeIds: Set<String>
+            get() = ThemeManager.getAllThemes().mapTo(linkedSetOf()) { it.name }
+        override val currentThemeId: String
+            get() = if (ThemeManager.activeTheme.isDark) "MaterialDark" else "MaterialLight"
+
+        override fun applyLayout(action: QuickKeyboardAction) {
+            when (action) {
+                is QuickKeyboardAction.ChineseMode -> InputModeSwitcher.switchModeForSetting(
+                    action.layout to action.schema,
+                )
+                QuickKeyboardAction.EnglishQwerty -> InputModeSwitcher.switchToEnglishForSetting()
+                is QuickKeyboardAction.UserKey -> InputModeSwitcher.switchModeForUserKey(action.keyCode)
+                is QuickKeyboardAction.Symbol -> {
+                    KeyboardManager.instance.switchKeyboard(KeyboardManager.KeyboardType.SYMBOL)
+                    (KeyboardManager.instance.currentContainer as? SymbolContainer)?.setSymbolsView(
+                        initialPage = if (action.page == SymbolPage.CHINESE) 1 else 2,
+                    )
+                }
+            }
+        }
+
+        override fun applyTheme(themeId: String): Boolean {
+            if (!applyQuickTheme(themeId)) return false
+            themeChangedInQuickSettings = true
+            inputView.updateTheme()
+            return true
+        }
+
+        override fun closeQuickSettings() {
+            inputView.onQuickKeyboardSettingsClosed()
+            if (themeChangedInQuickSettings) {
+                themeChangedInQuickSettings = false
+                KeyboardLoaderUtil.instance.clearKeyboardMap()
+                KeyboardManager.instance.clearKeyboard()
+            }
+            KeyboardManager.instance.switchKeyboard()
+            inputView.updateCandidateBar()
+        }
     }
 
     private fun onKeyboardMenuClick(data: SkbFunItem) {

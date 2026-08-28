@@ -258,6 +258,12 @@ object InputModeSwitcher {
         KeyboardManager.instance.switchKeyboard()
     }
 
+    /** 快捷面板明确切换到英文 26 键，不依赖当前临时键盘或语言状态。 */
+    fun switchToEnglishForSetting() {
+        saveInputMode(MODE_SKB_ENGLISH_LOWER)
+        KeyboardManager.instance.switchKeyboard()
+    }
+
     /**
      * 通过应用内设置，切换输入法模式。
      */

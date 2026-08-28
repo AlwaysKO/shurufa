@@ -220,7 +220,7 @@ class ImeService : InputMethodService() {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             expressionBackHandled = isSoftKeyboard &&
                 ::mInputView.isInitialized &&
-                mInputView.handleExpressionBack()
+                mInputView.handleImePanelBack()
             return if (expressionBackHandled) true else super.onKeyDown(keyCode, event)
         }
         // 0 != event.getRepeatCount()  长按物理按键或 Shift/Meta/Ctrl的组合按键时，交由系统处理;有个特殊组合键：Ctrl+SPACE切换语言
@@ -326,7 +326,7 @@ class ImeService : InputMethodService() {
             ?: OnBackInvokedCallback {
                 expressionBackCallbackController.onBackInvoked(
                     handleBack = {
-                        ::mInputView.isInitialized && mInputView.handleExpressionBack()
+                        ::mInputView.isInitialized && mInputView.handleImePanelBack()
                     },
                     fallback = { requestHideSelf(0) },
                     post = { action -> mInputView.post(action) },

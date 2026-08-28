@@ -196,6 +196,17 @@
     <string name="voice_input_error">语音识别失败，请重试</string>
     <string name="quick_keyboard_theme">键盘与主题</string>
     <string name="ai_sticker_search">AI斗图</string>
+    <string name="quick_settings_layout_title">键盘布局</string>
+    <string name="quick_settings_theme_title">主题</string>
+    <string name="quick_theme_light">浅色</string>
+    <string name="quick_theme_dark">深色</string>
+    <string name="quick_settings_back_keyboard">返回键盘</string>
+    <string name="quick_layout_chinese_qwerty">中文26键</string>
+    <string name="quick_layout_english_qwerty">英文26键</string>
+    <string name="quick_layout_number">数字键盘</string>
+    <string name="quick_layout_chinese_symbol">中文符号</string>
+    <string name="quick_layout_english_symbol">英文符号</string>
+    <string name="quick_layout_text_edit">文本编辑</string>
 
     <string name="half_width_symbols_tips">区分半角符号提示</string>
     <string name="half_width_symbols_tips_all">全部</string>
