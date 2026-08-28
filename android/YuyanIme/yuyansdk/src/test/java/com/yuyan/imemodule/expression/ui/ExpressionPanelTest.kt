@@ -1,14 +1,22 @@
 package com.yuyan.imemodule.expression.ui
 
+import android.app.Activity
 import android.content.Context
+import android.view.MotionEvent
 import android.view.View
 import android.widget.TextView
+import android.widget.FrameLayout
 import android.widget.LinearLayout
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ApplicationProvider
 import com.yuyan.imemodule.R
+import com.yuyan.imemodule.application.Launcher
+import com.yuyan.imemodule.data.theme.ThemeManager
+import com.yuyan.imemodule.data.theme.ThemePreset
+import com.yuyan.imemodule.prefs.AppPrefs
 import com.yuyan.imemodule.expression.ExpressionCatalog
 import com.yuyan.imemodule.expression.ExpressionPanelState
 import com.yuyan.imemodule.expression.ExpressionPanelTab
@@ -17,14 +25,34 @@ import com.yuyan.imemodule.expression.model.ExpressionCatalogDocument
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class ExpressionPanelTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
+    @Before
+    fun setUp() {
+        Launcher::class.java.getDeclaredField("context").apply {
+            isAccessible = true
+            set(Launcher.instance, context)
+        }
+        AppPrefs.init(PreferenceManager.getDefaultSharedPreferences(context))
+        ThemeManager.init(context.resources.configuration)
+        ThemeManager.setNormalModeTheme(ThemePreset.MaterialLight)
+    }
+
+    @After
+    fun tearDown() {
+        ThemeManager.setNormalModeTheme(ThemePreset.MaterialLight)
+    }
+
     private val catalog = ExpressionCatalog(
         ExpressionCatalogDocument(
             version = "v1",
@@ -220,10 +248,112 @@ class ExpressionPanelTest {
         val panel = ExpressionPanel(context)
         var expansions = 0
         panel.onExpandRequested = { expansions += 1 }
+        panel.render(visibleState(), catalog)
 
         panel.findViewById<RecyclerView>(R.id.expression_asset_list).performLongClick()
 
         assertEquals(1, expansions)
+    }
+
+
+    @Test
+    fun `无结果时长按和上滑都不会请求展开`() {
+        val panel = ExpressionPanel(context)
+        var expansions = 0
+        panel.onExpandRequested = { expansions += 1 }
+        panel.render(ExpressionPanelState(), catalog)
+        val list = panel.findViewById<RecyclerView>(R.id.expression_asset_list)
+
+        list.performLongClick()
+        swipe(list, fromX = 120f, fromY = 120f, toX = 118f, toY = 24f)
+
+        assertEquals(0, expansions)
+    }
+
+    @Test
+    fun `有结果时上滑展开而横滑结果不会误触展开`() {
+        val panel = ExpressionPanel(context)
+        var expansions = 0
+        panel.onExpandRequested = { expansions += 1 }
+        panel.render(visibleState(), catalog)
+        val list = panel.findViewById<RecyclerView>(R.id.expression_asset_list)
+
+        swipe(list, fromX = 180f, fromY = 100f, toX = 42f, toY = 88f)
+        assertEquals(0, expansions)
+
+        swipe(list, fromX = 120f, fromY = 120f, toX = 118f, toY = 24f)
+        assertEquals(1, expansions)
+    }
+
+    @Test
+    fun `关闭与恢复入口保留当前查询结果和标签`() {
+        val panel = ExpressionPanel(context)
+        val state = visibleState().apply { selectTab(ExpressionPanelTab.AI_SYNTHESIS) }
+        panel.onRecommendationVisibilityChange = { visible ->
+            if (visible) state.restoreRecommendations() else state.hideRecommendations()
+            panel.render(state, catalog)
+        }
+        panel.render(state, catalog)
+
+        panel.findViewById<View>(R.id.expression_close).performClick()
+        assertEquals(View.GONE, panel.findViewById<View>(R.id.expression_recommendation_section).visibility)
+        assertEquals("你好", state.query)
+        assertEquals(1, state.results.size)
+        assertEquals(ExpressionPanelTab.AI_SYNTHESIS, state.selectedTab)
+
+        panel.findViewById<View>(R.id.expression_enable).performClick()
+        assertEquals(View.VISIBLE, panel.findViewById<View>(R.id.expression_recommendation_section).visibility)
+        assertEquals("你好", state.query)
+        assertEquals(1, state.results.size)
+        assertEquals(ExpressionPanelTab.AI_SYNTHESIS, state.selectedTab)
+    }
+
+    @Test
+    fun `浅深主题渲染都使用当前主题颜色而非固定浅色`() {
+        com.yuyan.imemodule.data.theme.ThemeManager.setNormalModeTheme(
+            com.yuyan.imemodule.data.theme.ThemePreset.MaterialLight,
+        )
+        val panel = ExpressionPanel(context)
+        panel.render(visibleState(), catalog)
+        val lightToolColor = (panel.findViewById<View>(R.id.expression_tool_row).background as android.graphics.drawable.ColorDrawable).color
+        val lightTextColor = panel.findViewById<TextView>(R.id.expression_enable).currentTextColor
+
+        com.yuyan.imemodule.data.theme.ThemeManager.setNormalModeTheme(
+            com.yuyan.imemodule.data.theme.ThemePreset.MaterialDark,
+        )
+        panel.render(visibleState(), catalog)
+        val darkToolColor = (panel.findViewById<View>(R.id.expression_tool_row).background as android.graphics.drawable.ColorDrawable).color
+        val darkTextColor = panel.findViewById<TextView>(R.id.expression_enable).currentTextColor
+
+        assertNotEquals(lightToolColor, darkToolColor)
+        assertNotEquals(lightTextColor, darkTextColor)
+    }
+
+
+    @Test
+    fun `重复挂载卸载不会叠加展开监听`() {
+        val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
+        val root = FrameLayout(activity)
+        activity.setContentView(root)
+        val panel = ExpressionPanel(activity)
+        var expansions = 0
+        panel.onExpandRequested = { expansions += 1 }
+        panel.render(visibleState(), catalog)
+
+        repeat(3) {
+            root.addView(panel)
+            root.removeView(panel)
+        }
+        root.addView(panel)
+        panel.findViewById<RecyclerView>(R.id.expression_asset_list).performLongClick()
+
+        assertEquals(1, expansions)
+    }
+
+    private fun swipe(view: View, fromX: Float, fromY: Float, toX: Float, toY: Float) {
+        val downTime = 1_000L
+        view.dispatchTouchEvent(MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, fromX, fromY, 0))
+        view.dispatchTouchEvent(MotionEvent.obtain(downTime, downTime + 180L, MotionEvent.ACTION_UP, toX, toY, 0))
     }
 
     private fun visibleState() = ExpressionPanelState().apply {

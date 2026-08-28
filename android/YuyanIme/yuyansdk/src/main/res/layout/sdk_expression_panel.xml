@@ -21,36 +21,36 @@
                 android:id="@+id/expression_tab_recommended"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:background="@drawable/selector_expression_tab_background"
+                android:background="@android:color/transparent"
                 android:gravity="center"
                 android:paddingStart="6dp"
                 android:paddingEnd="6dp"
                 android:text="推荐"
-                android:textColor="@color/selector_expression_tab_text"
+                android:textColor="@android:color/black"
                 android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/expression_tab_templates"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:background="@drawable/selector_expression_tab_background"
+                android:background="@android:color/transparent"
                 android:gravity="center"
                 android:paddingStart="10dp"
                 android:paddingEnd="10dp"
                 android:text="AI合成"
-                android:textColor="@color/selector_expression_tab_text"
+                android:textColor="@android:color/black"
                 android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/expression_tab_emoji"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:background="@drawable/selector_expression_tab_background"
+                android:background="@android:color/transparent"
                 android:gravity="center"
                 android:paddingStart="10dp"
                 android:paddingEnd="10dp"
                 android:text="Emoji合成"
-                android:textColor="@color/selector_expression_tab_text"
+                android:textColor="@android:color/black"
                 android:textSize="14sp" />
 
             <View
@@ -62,7 +62,7 @@
                 android:id="@+id/expression_actions"
                 android:layout_width="79dp"
                 android:layout_height="28dp"
-                android:background="@drawable/bg_expression_action_capsule"
+                android:background="@android:color/transparent"
                 android:gravity="center"
                 android:orientation="horizontal">
 
@@ -113,7 +113,7 @@
         android:id="@+id/expression_tool_row"
         android:layout_width="match_parent"
         android:layout_height="34dp"
-        android:background="#F3F4F7"
+        android:background="@android:color/transparent"
         android:gravity="center_vertical|end"
         android:orientation="horizontal"
         android:paddingEnd="10dp">
@@ -122,12 +122,12 @@
             android:id="@+id/expression_enable"
             android:layout_width="wrap_content"
             android:layout_height="28dp"
-            android:background="@drawable/bg_expression_tool_badge"
+            android:background="@android:color/transparent"
             android:gravity="center"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
             android:text="AI斗图"
-            android:textColor="#637BFF"
+            android:textColor="@android:color/black"
             android:textSize="14sp" />
     </LinearLayout>
 </merge>

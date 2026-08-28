@@ -2,9 +2,14 @@ package com.yuyan.imemodule.expression.ui
 
 import android.content.Context
 import android.content.res.Configuration
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.LayerDrawable
 import android.util.AttributeSet
 import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.widget.ImageButton
 import android.widget.LinearLayout
@@ -14,6 +19,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.yuyan.imemodule.R
+import com.yuyan.imemodule.data.theme.ThemeManager
 import com.yuyan.imemodule.expression.ExpressionCatalog
 import com.yuyan.imemodule.expression.ExpressionPanelState
 import com.yuyan.imemodule.expression.ExpressionPanelTab
@@ -39,15 +45,21 @@ class ExpressionPanel @JvmOverloads constructor(
     private val emojiPicker: EmojiCombinationPicker
     private val adapter = ExpressionAssetAdapter(
         onClick = { onAssetClick?.invoke(it) },
-        onLongPress = { requestExpand() },
+        onLongPress = { requestExpand(withHaptic = true) },
     )
     private var expandedContentHeightPx = 0
     private var layoutMetrics: ExpressionLayoutMetrics? = null
     private var isExpanded = false
     private var aiStickerEnabled = true
+    private var recommendationVisible = false
+    private var canExpand = false
+    private var gestureDownX = 0f
+    private var gestureDownY = 0f
+    private var gestureDownTime = 0L
 
     var onDismiss: (() -> Unit)? = null
     var onAiStickerEnabledChange: ((Boolean) -> Unit)? = null
+    var onRecommendationVisibilityChange: ((Boolean) -> Unit)? = null
     var onAnimationPreviewChange: ((Boolean) -> Unit)? = null
     var onClearCache: (() -> Unit)? = null
     var onExpandRequested: (() -> Unit)? = null
@@ -79,19 +91,32 @@ class ExpressionPanel @JvmOverloads constructor(
         tabBar = findViewById(R.id.expression_tab_bar)
         actions = findViewById(R.id.expression_actions)
         closeButton.setOnClickListener {
-            onAiStickerEnabledChange?.invoke(false) ?: onDismiss?.invoke()
+            when {
+                onRecommendationVisibilityChange != null -> onRecommendationVisibilityChange?.invoke(false)
+                onAiStickerEnabledChange != null -> onAiStickerEnabledChange?.invoke(false)
+                else -> onDismiss?.invoke()
+            }
         }
         enableButton.setOnClickListener {
-            if (!aiStickerEnabled) onAiStickerEnabledChange?.invoke(true)
+            when {
+                !aiStickerEnabled -> onAiStickerEnabledChange?.invoke(true)
+                !recommendationVisible -> onRecommendationVisibilityChange?.invoke(true)
+            }
         }
         moreButton.setOnClickListener { showSettingsMenu() }
         assetList = findViewById<RecyclerView>(R.id.expression_asset_list).apply {
             layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
             adapter = this@ExpressionPanel.adapter
             setOnLongClickListener {
-                requestExpand()
-                true
+                if (canExpand) requestExpand(withHaptic = true)
+                canExpand
             }
+            addOnItemTouchListener(object : RecyclerView.SimpleOnItemTouchListener() {
+                override fun onInterceptTouchEvent(rv: RecyclerView, event: MotionEvent): Boolean {
+                    handleExpandGesture(event)
+                    return false
+                }
+            })
         }
         emojiPicker = findViewById(R.id.expression_emoji_picker)
         recommendedTab.setOnClickListener { onTabSelected?.invoke(ExpressionPanelTab.RECOMMENDED) }
@@ -101,6 +126,8 @@ class ExpressionPanel @JvmOverloads constructor(
 
     fun render(state: ExpressionPanelState, catalog: ExpressionCatalog) {
         aiStickerEnabled = state.aiStickerEnabled
+        recommendationVisible = state.isRecommendationVisible
+        canExpand = state.results.isNotEmpty() && recommendationVisible
         isExpanded = state.presentation == ExpressionPanelPresentation.EXPANDED
         applyLayoutMetrics()
         visibility = View.VISIBLE
@@ -110,6 +137,7 @@ class ExpressionPanel @JvmOverloads constructor(
         recommendedTab.isSelected = state.selectedTab == ExpressionPanelTab.RECOMMENDED
         templatesTab.isSelected = state.selectedTab == ExpressionPanelTab.AI_SYNTHESIS
         emojiTab.isSelected = state.selectedTab == ExpressionPanelTab.EMOJI_SYNTHESIS
+        applyTheme()
         val expanded = isExpanded
         content.layoutParams = content.layoutParams.apply {
             height = if (expanded && expandedContentHeightPx > 0) {
@@ -178,9 +206,70 @@ class ExpressionPanel @JvmOverloads constructor(
         adapter.setLayoutMetrics(metrics)
     }
 
-    private fun requestExpand() {
-        performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+    private fun requestExpand(withHaptic: Boolean) {
+        if (!canExpand || isExpanded) return
+        if (withHaptic) performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
         onExpandRequested?.invoke()
+    }
+
+    private fun handleExpandGesture(event: MotionEvent) {
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                gestureDownX = event.x
+                gestureDownY = event.y
+                gestureDownTime = event.eventTime
+            }
+            MotionEvent.ACTION_UP -> {
+                val dx = event.x - gestureDownX
+                val dy = event.y - gestureDownY
+                val elapsed = (event.eventTime - gestureDownTime).coerceAtLeast(1L)
+                val threshold = dp(SWIPE_EXPAND_THRESHOLD_DP).toFloat()
+                val upwardSpeed = -dy * 1000f / elapsed
+                if (dy <= -threshold && kotlin.math.abs(dy) > kotlin.math.abs(dx) * 1.25f &&
+                    upwardSpeed >= SWIPE_EXPAND_MIN_SPEED_PX_PER_SECOND
+                ) {
+                    requestExpand(withHaptic = false)
+                }
+            }
+            MotionEvent.ACTION_CANCEL -> gestureDownTime = 0L
+        }
+    }
+
+    private fun applyTheme() {
+        val theme = ThemeManager.activeTheme
+        setBackgroundColor(theme.keyboardColor)
+        recommendationSection.setBackgroundColor(theme.keyboardColor)
+        content.setBackgroundColor(theme.keyboardColor)
+        toolRow.background = ColorDrawable(theme.barColor)
+        enableButton.setTextColor(theme.accentKeyBackgroundColor)
+        enableButton.background = roundedBackground(theme.keyBackgroundColor, 8)
+        actions.background = roundedBackground(theme.keyBackgroundColor, 16)
+        listOf(moreButton, closeButton).forEach { button ->
+            button.drawable?.mutate()?.setTint(theme.keyTextColor)
+        }
+        listOf(
+            recommendedTab to recommendedTab.isSelected,
+            templatesTab to templatesTab.isSelected,
+            emojiTab to emojiTab.isSelected,
+        ).forEach { (tab, selected) ->
+            tab.setTextColor(if (selected) theme.accentKeyBackgroundColor else theme.keyTextColor)
+            tab.background = tabBackground(selected, theme.accentKeyBackgroundColor)
+        }
+    }
+
+    private fun roundedBackground(color: Int, radiusDp: Int) = GradientDrawable().apply {
+        shape = GradientDrawable.RECTANGLE
+        cornerRadius = dp(radiusDp).toFloat()
+        setColor(color)
+    }
+
+    private fun tabBackground(selected: Boolean, accent: Int): android.graphics.drawable.Drawable {
+        if (!selected) return ColorDrawable(Color.TRANSPARENT)
+        val metrics = layoutMetrics
+        val height = metrics?.tabRowHeightPx ?: dp(36)
+        return LayerDrawable(arrayOf(ColorDrawable(Color.TRANSPARENT), ColorDrawable(accent))).apply {
+            setLayerInset(1, 0, (height - dp(2)).coerceAtLeast(0), 0, 0)
+        }
     }
 
     private fun showSettingsMenu() {
@@ -217,6 +306,8 @@ class ExpressionPanel @JvmOverloads constructor(
         const val MENU_AI_STICKER = 1
         const val MENU_ANIMATION = 2
         const val MENU_CLEAR_CACHE = 3
+        const val SWIPE_EXPAND_THRESHOLD_DP = 48
+        const val SWIPE_EXPAND_MIN_SPEED_PX_PER_SECOND = 180f
         var animationPreviewEnabled = false
     }
 }

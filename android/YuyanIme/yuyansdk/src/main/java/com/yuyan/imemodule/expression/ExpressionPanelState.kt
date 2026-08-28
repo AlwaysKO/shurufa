@@ -28,7 +28,7 @@ class ExpressionPanelState(
     val isToolRowVisible: Boolean
         get() = true
     val isRecommendationVisible: Boolean
-        get() = isContentVisible
+        get() = isContentVisible && !recommendationsHidden
     var isContentVisible: Boolean = false
         private set
     var aiStickerEnabled: Boolean = aiStickerEnabled
@@ -40,6 +40,7 @@ class ExpressionPanelState(
     var keyboardVisible: Boolean = true
         private set
 
+    private var recommendationsHidden = false
     private var requestId = 0L
     fun beginQuery(query: String, requestId: Long) {
         if (!chatEditor) {
@@ -71,6 +72,19 @@ class ExpressionPanelState(
     fun selectTab(tab: ExpressionPanelTab) {
         if (!aiStickerEnabled) return
         selectedTab = tab
+    }
+
+    /** 临时收起结果区；与总开关不同，保留查询、结果及当前标签。 */
+    fun hideRecommendations() {
+        recommendationsHidden = true
+        collapse()
+    }
+
+    /** 从工具行恢复同一查询的结果区。 */
+    fun restoreRecommendations() {
+        if (chatEditor && aiStickerEnabled && results.isNotEmpty()) {
+            recommendationsHidden = false
+        }
     }
 
     fun expand() {
@@ -108,6 +122,7 @@ class ExpressionPanelState(
         selectedTab = ExpressionPanelTab.RECOMMENDED
         results = emptyList()
         isContentVisible = false
+        recommendationsHidden = false
         collapse()
         requestId += 1
     }

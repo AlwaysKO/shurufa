@@ -137,6 +137,30 @@ class ExpressionPanelStateTest {
         assertTrue(state.keyboardVisible)
     }
 
+
+    @Test
+    fun `临时关闭推荐保留查询结果并可原样恢复`() {
+        val state = ExpressionPanelState()
+        state.beginQuery("民营企业", requestId = 12)
+        val original = listOf(asset("enterprise"))
+        state.applyResults(12, original)
+        state.selectTab(ExpressionPanelTab.AI_SYNTHESIS)
+
+        state.hideRecommendations()
+
+        assertFalse(state.isRecommendationVisible)
+        assertEquals("民营企业", state.query)
+        assertEquals(original, state.results)
+        assertEquals(ExpressionPanelTab.AI_SYNTHESIS, state.selectedTab)
+
+        state.restoreRecommendations()
+
+        assertTrue(state.isRecommendationVisible)
+        assertEquals("民营企业", state.query)
+        assertEquals(original, state.results)
+        assertEquals(ExpressionPanelTab.AI_SYNTHESIS, state.selectedTab)
+    }
+
     private fun asset(id: String) = ExpressionAsset(
         id = id,
         type = "synthesis-template",

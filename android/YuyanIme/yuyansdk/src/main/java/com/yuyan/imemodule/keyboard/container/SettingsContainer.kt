@@ -256,6 +256,9 @@ class SettingsContainer(
     /** 系统返回优先收起快捷面板。 */
     fun handleQuickSettingsBack(): Boolean = quickSettingsController.handleBack()
 
+    /** 切到另一个工具前关闭快捷面板及其返回回调。 */
+    fun closeQuickSettingsForTool(): Boolean = quickSettingsController.handleBack()
+
     private fun renderQuickSettingsView() {
         if (!quickSettingsController.isVisible) return
         removeAllViews()

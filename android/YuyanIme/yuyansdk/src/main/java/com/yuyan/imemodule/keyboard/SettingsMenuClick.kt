@@ -36,6 +36,10 @@ internal inline fun routeAiDoutuMenu(
 }
 
 fun onSettingsMenuClick(inputView: InputView, skbMenuMode: SkbMenuMode) {
+    inputView.collapseExpressionForToolSwitch()
+    if (skbMenuMode != SkbMenuMode.QuickKeyboard) {
+        (KeyboardManager.instance.currentContainer as? SettingsContainer)?.closeQuickSettingsForTool()
+    }
     if (routeAiDoutuMenu(skbMenuMode, inputView::searchExpressionsManually)) return
     if (routeQuickKeyboardMenu(skbMenuMode, inputView::toggleQuickKeyboardSettings)) return
     when (skbMenuMode) {

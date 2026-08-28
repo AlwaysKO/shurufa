@@ -15,6 +15,7 @@ import com.yuyan.imemodule.keyboard.container.SymbolContainer
 import com.yuyan.imemodule.manager.InputModeSwitcher
 import com.yuyan.imemodule.prefs.AppPrefs
 import com.yuyan.imemodule.prefs.behavior.SkbMenuMode
+import com.yuyan.imemodule.prefs.behavior.SymbolMode
 import com.yuyan.imemodule.service.ImeService
 import com.yuyan.imemodule.singleton.EnvironmentSingleton
 import org.junit.After
@@ -167,6 +168,22 @@ class AndroidImeQuickKeyboardSettingsRuntimeTest {
         assertTrue(inputView.handleImePanelBack())
         assertFalse((KeyboardManager.instance.currentContainer as? SettingsContainer)?.isQuickSettingsVisible == true)
         assertNull(shadowOf(context as Application).nextStartedActivity)
+    }
+
+
+    @Test
+    fun `从快捷面板切换表情会先关闭旧控制器再进入自有表情容器`() {
+        val inputView = realInputView()
+        inputView.onSettingsMenuClick(SkbMenuMode.QuickKeyboard)
+        val oldSettings = KeyboardManager.instance.currentContainer as SettingsContainer
+        assertTrue(oldSettings.isQuickSettingsVisible)
+
+        inputView.onSettingsMenuClick(SkbMenuMode.Emojicon)
+
+        assertFalse(oldSettings.isQuickSettingsVisible)
+        val symbol = KeyboardManager.instance.currentContainer as SymbolContainer
+        assertEquals(SymbolMode.Emojicon, symbol.getMenuMode())
+        KeyboardManager.instance.switchKeyboard()
     }
 
     private fun realInputView(): InputView {

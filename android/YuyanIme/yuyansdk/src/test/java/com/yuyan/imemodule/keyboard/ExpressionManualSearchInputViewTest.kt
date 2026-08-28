@@ -4,16 +4,21 @@ import android.content.Context
 import android.os.Looper
 import android.text.InputType
 import android.view.KeyEvent
+import android.view.View
 import android.view.inputmethod.EditorInfo
 import androidx.preference.PreferenceManager
 import androidx.test.core.app.ApplicationProvider
+import com.yuyan.imemodule.R
 import com.yuyan.imemodule.application.Launcher
 import com.yuyan.imemodule.data.emojicon.YuyanEmojiCompat
 import com.yuyan.imemodule.data.theme.ThemeManager
+import com.yuyan.imemodule.expression.ExpressionCatalog
 import com.yuyan.imemodule.expression.ExpressionPanelPresentation
 import com.yuyan.imemodule.expression.ExpressionPanelState
 import com.yuyan.imemodule.expression.ExpressionComposingTextSource
 import com.yuyan.imemodule.expression.ExpressionCommitKind
+import com.yuyan.imemodule.expression.model.ExpressionAsset
+import com.yuyan.imemodule.expression.ui.ExpressionPanel
 import com.yuyan.imemodule.keyboard.container.SymbolContainer
 import com.yuyan.imemodule.manager.InputModeSwitcher
 import com.yuyan.imemodule.prefs.AppPrefs
@@ -437,6 +442,43 @@ class ExpressionManualSearchInputViewTest {
         service.commitTextAndReport("world", kind = ExpressionCommitKind.INCREMENTAL)
         inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
         assertEquals("helloworld", inputView.expressionState().query)
+    }
+
+
+    @Test
+    fun `生产面板关闭恢复保留查询结果且返回先折叠展开态`() {
+        val inputView = realChatInputView()
+        val state = inputView.expressionState()
+        val asset = ExpressionAsset(
+            id = "enterprise",
+            type = "prebuilt",
+            format = "webp",
+            version = "v1",
+            fileName = "templates/hello.webp",
+            sha256 = "a".repeat(64),
+            width = 512,
+            height = 512,
+        )
+        state.beginQuery("民营企业", 77)
+        state.applyResults(77, listOf(asset))
+        val panel = inputView.findViewById<ExpressionPanel>(R.id.expression_panel)
+        panel.render(state, ExpressionCatalog.fromAssets(context))
+
+        panel.findViewById<View>(R.id.expression_close).performClick()
+        assertFalse(state.isRecommendationVisible)
+        assertEquals("民营企业", state.query)
+        assertEquals(listOf(asset), state.results)
+
+        panel.findViewById<View>(R.id.expression_enable).performClick()
+        assertTrue(state.isRecommendationVisible)
+        panel.findViewById<View>(R.id.expression_asset_list).performLongClick()
+        assertEquals(ExpressionPanelPresentation.EXPANDED, state.presentation)
+
+        assertTrue(inputView.handleImePanelBack())
+        assertEquals(ExpressionPanelPresentation.COMPACT, state.presentation)
+        assertEquals("民营企业", state.query)
+        assertEquals(listOf(asset), state.results)
+        assertFalse(inputView.handleExpressionBack())
     }
 
     private fun realChatInputView(): InputView {

@@ -12,6 +12,7 @@ data class ExpressionLayoutMetrics(
     val toolRowHeightPx: Int,
     val actionWidthPx: Int,
     val actionHeightPx: Int,
+    val compactPanelHeightPx: Int,
     val visibleItemCount: Float,
 ) {
     companion object {
@@ -41,16 +42,20 @@ data class ExpressionLayoutMetrics(
                 (widthPx - horizontalPaddingPx + itemGapPx).toFloat() /
                     (itemSizePx + itemGapPx)
 
+            val tabRowHeightPx = px(if (landscape) 32f else 36f)
+            val contentHeightPx = px(if (landscape) 84f else 96f)
+            val toolRowHeightPx = px(if (landscape) 30f else 34f)
             return ExpressionLayoutMetrics(
                 itemSizePx = itemSizePx,
                 expandedItemSizePx = expandedItemSizePx,
                 itemGapPx = itemGapPx,
                 horizontalPaddingPx = horizontalPaddingPx,
-                tabRowHeightPx = px(if (landscape) 32f else 36f),
-                contentHeightPx = px(if (landscape) 84f else 96f),
-                toolRowHeightPx = px(if (landscape) 30f else 34f),
+                tabRowHeightPx = tabRowHeightPx,
+                contentHeightPx = contentHeightPx,
+                toolRowHeightPx = toolRowHeightPx,
                 actionWidthPx = px(if (landscape) 74f else 79f),
                 actionHeightPx = px(if (landscape) 26f else 28f),
+                compactPanelHeightPx = tabRowHeightPx + contentHeightPx + toolRowHeightPx,
                 visibleItemCount = visibleItemCount,
             )
         }

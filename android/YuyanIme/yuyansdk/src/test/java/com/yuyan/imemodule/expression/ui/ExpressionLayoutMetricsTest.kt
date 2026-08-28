@@ -28,6 +28,24 @@ class ExpressionLayoutMetricsTest {
     }
 
     @Test
+    fun `紧凑面板总高度等于三层之和且横屏主动压缩`() {
+        val portrait = ExpressionLayoutMetrics.calculate(1080, 3f, landscape = false)
+        val landscape = ExpressionLayoutMetrics.calculate(1920, 3f, landscape = true)
+
+        assertEquals(
+            portrait.tabRowHeightPx + portrait.contentHeightPx + portrait.toolRowHeightPx,
+            portrait.compactPanelHeightPx,
+        )
+        assertEquals(
+            landscape.tabRowHeightPx + landscape.contentHeightPx + landscape.toolRowHeightPx,
+            landscape.compactPanelHeightPx,
+        )
+        assertTrue(landscape.compactPanelHeightPx < portrait.compactPanelHeightPx)
+        assertTrue(portrait.compactPanelHeightPx <= (166f * 3f).roundToInt())
+        assertTrue(landscape.compactPanelHeightPx <= (146f * 3f).roundToInt())
+    }
+
+    @Test
     fun `不同宽度和横屏应用尺寸上下限`() {
         val small = ExpressionLayoutMetrics.calculate(720, 3f, landscape = false)
         val normal = ExpressionLayoutMetrics.calculate(1080, 3f, landscape = false)

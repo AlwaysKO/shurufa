@@ -1,11 +1,15 @@
 package com.yuyan.imemodule.view
 
 import android.content.Context
+import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.StateListDrawable
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.ContextThemeWrapper
 import android.view.Gravity
+import android.view.HapticFeedbackConstants
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
@@ -25,6 +29,7 @@ import com.yuyan.imemodule.callback.CandidateViewListener
 import com.yuyan.imemodule.application.CustomConstant
 import com.yuyan.imemodule.data.flower.FlowerTypefaceMode
 import com.yuyan.imemodule.data.menuSkbFunsPreset
+import com.yuyan.imemodule.data.mergeKeyboardToolbarItems
 import com.yuyan.imemodule.data.theme.ThemeManager
 import com.yuyan.imemodule.database.DataBaseKT
 import com.yuyan.imemodule.entity.SkbFunItem
@@ -77,6 +82,24 @@ internal fun createCandidateActionBackground(color: Number): ColorDrawable =
 
 internal fun applyCandidateActionBackground(view: View, color: Number) {
     view.background = createCandidateActionBackground(color)
+}
+
+
+internal fun toolbarPressBackground(): StateListDrawable = StateListDrawable().apply {
+    addState(
+        intArrayOf(android.R.attr.state_pressed),
+        GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            setColor(ThemeManager.activeTheme.keyPressHighlightColor)
+        },
+    )
+    addState(
+        intArrayOf(),
+        GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            setColor(Color.TRANSPARENT)
+        },
+    )
 }
 
 /**
@@ -185,7 +208,14 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
                 setImageResource(R.drawable.sdk_level_candidates_menu_left)
                 isClickable = true
                 isEnabled = true
-                setOnClickListener { mCvListener.onClickMenu(SkbMenuMode.SettingsMenu) }
+                minimumWidth = dp(44)
+                minimumHeight = dp(44)
+                contentDescription = context.getString(R.string.skb_item_settings)
+                background = toolbarPressBackground()
+                setOnClickListener {
+                    performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                    mCvListener.onClickMenu(SkbMenuMode.SettingsMenu)
+                }
             }
             mLlContainer = LinearLayout(context).apply {
                 gravity = Gravity.CENTER_VERTICAL
@@ -226,7 +256,7 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
             mLlContainer.addView(mFlowerType, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT))
             mRVContainerMenu = RecyclerView(context).apply {
                 setItemAnimator(null)
-                layoutManager = CustomLinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, true)
+                layoutManager = CustomLinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
             }
             mCandidatesMenuAdapter = CandidatesMenuAdapter(context)
             mCandidatesMenuAdapter.setOnItemClickLitener { _: RecyclerView.Adapter<*>?, view: View?, position: Int ->
@@ -237,9 +267,14 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
             mMenuRightArrowBtn = ImageView(context).apply {
                 isClickable = true
                 isEnabled = true
+                minimumWidth = dp(44)
+                minimumHeight = dp(44)
+                contentDescription = context.getString(R.string.keyboard_iv_menu_close)
+                background = toolbarPressBackground()
                 setImageResource(R.drawable.ic_menu_arrow_down)
             }
-            mMenuRightArrowBtn.setOnClickListener { _: View ->
+            mMenuRightArrowBtn.setOnClickListener {
+                it.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
                 mCvListener.onClickMenu(SkbMenuMode.CloseSKB)
             }
             mCandidatesMenuContainer.addView(mIvMenuSetting)
@@ -251,7 +286,7 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
                 LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
             )
         }
-        var menuHeight = (instance.heightForCandidatesArea * 0.8).toInt()
+        val menuHeight = maxOf((instance.heightForCandidatesArea * 0.8).toInt(), dp(44))
         mFlowerType.textSize = instance.candidateTextSize
         mIvMenuSetting.layoutParams = LinearLayout.LayoutParams(menuHeight, menuHeight, 0f).apply { marginStart = dp(10) }
         mMenuRightArrowBtn.layoutParams = LinearLayout.LayoutParams(menuHeight, menuHeight, 0f).apply { marginEnd = dp(10) }
@@ -324,7 +359,7 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
                     mFunItems.add(skbFunItem)
                 }
             }
-            mCandidatesMenuAdapter.items = mFunItems
+            mCandidatesMenuAdapter.items = mergeKeyboardToolbarItems(mFunItems)
         } else {
             if (DecodingInfo.candidateSize > DecodingInfo.activeCandidateBar) mRVCandidates.layoutManager?.scrollToPosition(DecodingInfo.activeCandidateBar)
             showViewVisibility(mCandidatesDataContainer)

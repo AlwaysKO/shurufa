@@ -237,6 +237,15 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 }
                 expressionPanel.render(expressionPanelState, sync.currentCatalog())
             }
+            expressionPanel.onRecommendationVisibilityChange = { visible ->
+                if (visible) {
+                    expressionPanelState.restoreRecommendations()
+                } else {
+                    setExpressionExpanded(false)
+                    expressionPanelState.hideRecommendations()
+                }
+                expressionPanel.render(expressionPanelState, sync.currentCatalog())
+            }
             expressionPanel.onAnimationPreviewChange = { enabled ->
                 Toast.makeText(
                     context,
@@ -476,6 +485,12 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             expressionPanelState.presentation == ExpressionPanelPresentation.EXPANDED,
         )
         expressionPanel.render(expressionPanelState, sync.currentCatalog())
+    }
+
+    internal fun collapseExpressionForToolSwitch() {
+        if (expressionPanelState.presentation == ExpressionPanelPresentation.EXPANDED) {
+            setExpressionExpanded(false)
+        }
     }
 
     fun handleExpressionBack(): Boolean {

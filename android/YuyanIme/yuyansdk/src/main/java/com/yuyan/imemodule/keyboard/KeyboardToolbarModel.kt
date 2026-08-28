@@ -20,6 +20,8 @@ data class KeyboardToolbarSlot private constructor(val skbMenuMode: SkbMenuMode?
  * 稳定地合并固定入口。下标从截图中的第二个按钮开始计算。
  */
 object KeyboardToolbarModel {
+    const val PLACEHOLDER_VIEW_TYPE = 1
+
     private val pinnedModes = setOf(
         SkbMenuMode.Emojicon,
         SkbMenuMode.QuickKeyboard,
