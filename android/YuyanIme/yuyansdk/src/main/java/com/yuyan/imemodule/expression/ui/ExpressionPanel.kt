@@ -160,11 +160,7 @@ class ExpressionPanel @JvmOverloads constructor(
             }
         }
         content.visibility = View.VISIBLE
-        assetList.layoutManager = if (expanded) {
-            GridLayoutManager(context, EXPANDED_SPAN_COUNT)
-        } else {
-            LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
-        }
+        ensureAssetLayoutManager(expanded)
         adapter.setExpanded(expanded)
         val showingEmoji = state.selectedTab == ExpressionPanelTab.EMOJI_SYNTHESIS
         assetList.visibility = if (showingEmoji) View.GONE else View.VISIBLE
@@ -230,7 +226,17 @@ class ExpressionPanel @JvmOverloads constructor(
         )
         layoutMetrics = metrics
         tabBar.layoutParams = tabBar.layoutParams.apply { height = metrics.tabRowHeightPx }
+        tabBar.visibility = if (metrics.tabRowHeightPx >= dp(MINIMUM_TOUCH_TARGET_DP)) {
+            View.VISIBLE
+        } else {
+            View.GONE
+        }
+        listOf(recommendedTab, templatesTab, emojiTab).forEach { tab ->
+            tab.minimumWidth = dp(MINIMUM_TOUCH_TARGET_DP)
+            tab.minimumHeight = dp(MINIMUM_TOUCH_TARGET_DP)
+        }
         toolRow.layoutParams = toolRow.layoutParams.apply { height = metrics.toolRowHeightPx }
+        enableButton.minimumWidth = dp(MINIMUM_TOUCH_TARGET_DP)
         enableButton.minimumHeight = metrics.toolRowHeightPx
         enableButton.layoutParams = enableButton.layoutParams.apply { height = metrics.toolRowHeightPx }
         layoutParams?.let { params ->
@@ -255,6 +261,19 @@ class ExpressionPanel @JvmOverloads constructor(
             assetList.paddingBottom,
         )
         adapter.setLayoutMetrics(metrics)
+    }
+
+    private fun ensureAssetLayoutManager(expanded: Boolean) {
+        val current = assetList.layoutManager
+        if (expanded) {
+            if (current !is GridLayoutManager || current.spanCount != EXPANDED_SPAN_COUNT) {
+                assetList.layoutManager = GridLayoutManager(context, EXPANDED_SPAN_COUNT)
+            }
+        } else if (current !is LinearLayoutManager || current is GridLayoutManager ||
+            current.orientation != RecyclerView.HORIZONTAL
+        ) {
+            assetList.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+        }
     }
 
     private fun requestExpand(withHaptic: Boolean) {
@@ -379,6 +398,7 @@ class ExpressionPanel @JvmOverloads constructor(
         const val MENU_CLEAR_CACHE = 3
         const val SWIPE_EXPAND_THRESHOLD_DP = 48
         const val SWIPE_EXPAND_MIN_SPEED_PX_PER_SECOND = 180f
+        const val MINIMUM_TOUCH_TARGET_DP = 44
         var animationPreviewEnabled = false
     }
 }

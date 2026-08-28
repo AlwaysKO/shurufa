@@ -9,6 +9,6 @@
     android:textSize="20sp"
     android:singleLine="true"
     android:gravity="center"
-    android:minWidth="20dp"
+    android:minWidth="44dp"
     android:paddingStart="10dp"
     android:paddingEnd="10dp"/>

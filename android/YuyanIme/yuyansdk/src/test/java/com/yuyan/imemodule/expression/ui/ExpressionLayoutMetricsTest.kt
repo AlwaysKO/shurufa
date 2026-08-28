@@ -20,11 +20,11 @@ class ExpressionLayoutMetricsTest {
         assertEquals(7f, metrics.itemGapPx / density, 1f)
         assertEquals(17f, metrics.horizontalPaddingPx / density, 1f)
         assertTrue(metrics.visibleItemCount in 4.1f..4.4f)
-        assertEquals((36f * density).roundToInt(), metrics.tabRowHeightPx)
+        assertEquals((44f * density).roundToInt(), metrics.tabRowHeightPx)
         assertEquals((96f * density).roundToInt(), metrics.contentHeightPx)
         assertEquals((44f * density).roundToInt(), metrics.toolRowHeightPx)
-        assertEquals((79f * density).roundToInt(), metrics.actionWidthPx)
-        assertEquals((28f * density).roundToInt(), metrics.actionHeightPx)
+        assertEquals((88f * density).roundToInt(), metrics.actionWidthPx)
+        assertEquals((44f * density).roundToInt(), metrics.actionHeightPx)
     }
 
     @Test
@@ -41,8 +41,8 @@ class ExpressionLayoutMetricsTest {
             landscape.compactPanelHeightPx,
         )
         assertTrue(landscape.compactPanelHeightPx < portrait.compactPanelHeightPx)
-        assertTrue(portrait.compactPanelHeightPx <= (176f * 3f).roundToInt())
-        assertTrue(landscape.compactPanelHeightPx <= (160f * 3f).roundToInt())
+        assertTrue(portrait.compactPanelHeightPx <= (184f * 3f).roundToInt())
+        assertTrue(landscape.compactPanelHeightPx <= (172f * 3f).roundToInt())
     }
 
     @Test
@@ -105,7 +105,7 @@ class ExpressionLayoutMetricsTest {
             reservedKeyboardHeightPx = 900,
         )
 
-        assertEquals((176f * 3f).roundToInt(), metrics.compactPanelHeightPx)
+        assertEquals((184f * 3f).roundToInt(), metrics.compactPanelHeightPx)
         assertTrue(metrics.compactPanelHeightPx <= metrics.maximumCompactPanelHeightPx)
         assertTrue(metrics.minimumCompactPanelHeightPx <= metrics.compactPanelHeightPx)
     }

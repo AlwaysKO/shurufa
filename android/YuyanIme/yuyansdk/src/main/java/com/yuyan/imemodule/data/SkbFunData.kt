@@ -52,3 +52,53 @@ fun mergeKeyboardToolbarItems(existing: List<SkbFunItem>): List<SkbFunItem?> {
         }
     }
 }
+
+/** RecyclerView 直接消费的视觉槽；slotId 在 Diff 期间唯一且稳定。 */
+data class KeyboardToolbarVisualItem(
+    val slotId: String,
+    val item: SkbFunItem?,
+)
+
+/**
+ * 在不改变纯 [KeyboardToolbarModel] 与既有持久化模型的前提下，为每个视觉槽补稳定身份。
+ * 数据库动作以持久化 mode 名称为主身份，并用 occurrence 保留重复动作语义。
+ */
+fun mergeKeyboardToolbarVisualItems(existing: List<SkbFunItem>): List<KeyboardToolbarVisualItem> {
+    val itemsByMode = mutableMapOf<SkbMenuMode, ArrayDeque<SkbFunItem>>()
+    existing.forEach { item ->
+        itemsByMode.getOrPut(item.skbMenuMode, ::ArrayDeque).addLast(item)
+    }
+    val occurrences = mutableMapOf<SkbMenuMode, Int>()
+    return KeyboardToolbarModel.merge(existing.map(SkbFunItem::skbMenuMode)).mapIndexed { index, slot ->
+        val mode = slot.skbMenuMode
+        if (mode == null) {
+            KeyboardToolbarVisualItem("placeholder:$index", null)
+        } else {
+            val item = itemsByMode[mode]?.pollFirst() ?: requireNotNull(menuSkbFunsPreset[mode]) {
+                "Missing toolbar preset for ${mode.name}"
+            }
+            val fixedId = when (mode) {
+                SkbMenuMode.Emojicon -> "fixed:emojicon"
+                SkbMenuMode.QuickKeyboard -> "fixed:quick_keyboard"
+                SkbMenuMode.AiDoutu -> "fixed:ai_doutu"
+                else -> null
+            }
+            val occurrence = occurrences[mode] ?: 0
+            occurrences[mode] = occurrence + 1
+            KeyboardToolbarVisualItem(fixedId ?: "database:${mode.name}:$occurrence", item)
+        }
+    }
+}
+
+/** 临时工具列表也使用显式槽身份，避免 nullable item 参与 Diff 身份判断。 */
+fun keyboardToolbarVisualItems(
+    namespace: String,
+    items: List<SkbFunItem>,
+): List<KeyboardToolbarVisualItem> {
+    val occurrences = mutableMapOf<SkbMenuMode, Int>()
+    return items.map { item ->
+        val occurrence = occurrences[item.skbMenuMode] ?: 0
+        occurrences[item.skbMenuMode] = occurrence + 1
+        KeyboardToolbarVisualItem("$namespace:${item.skbMenuMode.name}:$occurrence", item)
+    }
+}

@@ -649,10 +649,16 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     }
 
     private fun bottomHolderMinimumHeight(env: EnvironmentSingleton): Int = when {
-        env.keyboardModeFloat -> env.heightForKeyboardMove
+        env.keyboardModeFloat -> env.heightForKeyboardMove + env.systemNavbarWindowsBottom
         appPrefs.internal.fullDisplayKeyboardEnable.getValue() && !env.isLandscape ->
             env.heightForFullDisplayBar + env.systemNavbarWindowsBottom
         else -> env.systemNavbarWindowsBottom
+    }
+
+    private fun effectiveInputAreaHeight(env: EnvironmentSingleton): Int {
+        val minimumCandidateHeight = (44f * resources.displayMetrics.density).toInt()
+        return env.inputAreaHeight +
+            (minimumCandidateHeight - env.heightForCandidatesArea).coerceAtLeast(0)
     }
 
     /**
@@ -668,7 +674,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         val measuredInputArea = if (candidates.measuredHeight > 0 && keyboard.measuredHeight > 0) {
             candidates.measuredHeight + keyboard.measuredHeight
         } else {
-            env.inputAreaHeight
+            effectiveInputAreaHeight(env)
         }
         val holderHeight = maxOf(
             mLlKeyboardBottomHolder.measuredHeight,
@@ -843,7 +849,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
         val background = activeTheme.backgroundDrawable(ThemeManager.prefs.keyBorder.getValue())
         if (background is BitmapDrawable) {
-            val scaledBitmap = background.bitmap.scale(env.skbWidth, env.inputAreaHeight)
+            val scaledBitmap = background.bitmap.scale(env.skbWidth, effectiveInputAreaHeight(env))
             mSkbRoot.background = scaledBitmap.toDrawable(context.resources).apply {
                 colorFilter = background.colorFilter
             }
@@ -1166,7 +1172,12 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     }
 
     private fun activateExpressionInputSession() {
-        if (expressionResourcesDisposed || expressionInputSessionActive) return
+        if (expressionResourcesDisposed) return
+        if (expressionInputSessionActive) {
+            // View 重挂期间 service 会先清监听；重新开始输入时幂等抢回当前 InputView 的宿主回调。
+            bindHostTextListeners()
+            return
+        }
         expressionQueryCoordinator = ExpressionQueryCoordinator(
             scope = expressionScope,
             debounceMillis = 180,
@@ -1248,6 +1259,11 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             expressionInputSessionActive = true
             initExpressionPanel()
         }
+        service.setExpressionBackHandlingEnabled(
+            expressionPanelState.presentation == ExpressionPanelPresentation.EXPANDED ||
+                (KeyboardManager.instance.currentContainer as? SettingsContainer)
+                    ?.isQuickSettingsVisible == true,
+        )
         refreshExpressionLayoutBudget()
         scheduleExpressionLayoutBudgetRefresh()
     }
@@ -1279,6 +1295,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     internal fun disposeExpressionResources() {
         if (expressionResourcesDisposed) return
         removeCallbacks(expressionLayoutRefresh)
+        normalizeExpressionTransientUiForDetach()
         expressionResourcesDisposed = true
         expressionInputSessionActive = false
         service.setExpressionBackHandlingEnabled(false)
@@ -1295,6 +1312,20 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         expressionPanel.clearCallbacks()
         expressionSync = null
         expressionScope.cancel()
+    }
+
+    /** 卸载只清瞬态展示/下载选择，保留同一输入目标的查询、结果与标签。 */
+    private fun normalizeExpressionTransientUiForDetach() {
+        val candidates = mSkbRoot.findViewById<View>(R.id.candidates_bar)
+        val keyboard = mSkbRoot.findViewById<View>(R.id.skb_input_keyboard_view)
+        expressionPanelState.collapse()
+        expressionKeyboardVisibility?.let { (candidatesVisibility, keyboardVisibility) ->
+            candidates.visibility = candidatesVisibility
+            keyboard.visibility = keyboardVisibility
+        }
+        expressionKeyboardVisibility = null
+        expressionPanel.resetEmojiSelection()
+        expressionSync?.let { expressionPanel.render(expressionPanelState, it.currentCatalog()) }
     }
 
     fun onSettingsMenuClick(skbMenuMode: SkbMenuMode, extra: Phrase? = null) {

@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.yuyan.imemodule.R
 import com.yuyan.imemodule.application.CustomConstant
 import com.yuyan.imemodule.callback.OnRecyclerItemClickListener
+import com.yuyan.imemodule.data.KeyboardToolbarVisualItem
 import com.yuyan.imemodule.data.flower.FlowerTypefaceMode
 import com.yuyan.imemodule.data.theme.ThemeManager
 import com.yuyan.imemodule.data.theme.ThemeManager.activeTheme
@@ -32,14 +33,14 @@ import com.yuyan.imemodule.singleton.EnvironmentSingleton
 import com.yuyan.imemodule.singleton.EnvironmentSingleton.Companion.instance
 import splitties.dimensions.dp
 
-/** 候选栏横向工具适配器；null 表示固定宽度、不可点击的视觉占位槽。 */
+/** 候选栏横向工具适配器；视觉槽用稳定 slotId 区分固定、占位和重复动作。 */
 class CandidatesMenuAdapter(context: Context?) : RecyclerView.Adapter<CandidatesMenuAdapter.SymbolHolder>() {
     private val adapterContext: Context = requireNotNull(context)
     private val inflater: LayoutInflater = LayoutInflater.from(adapterContext)
     private var mOnItemClickListener: OnRecyclerItemClickListener? = null
     private var itemHeight: Int = maxOf((instance.heightForCandidatesArea * 0.8f).toInt(), adapterContext.dp(44))
     private var mMenuPadding: Int = (instance.heightForCandidatesArea * 0.05f).toInt()
-    var items: List<SkbFunItem?> = emptyList()
+    var items: List<KeyboardToolbarVisualItem> = emptyList()
         set(value) {
             val diffResult = DiffUtil.calculateDiff(MyDiffCallback(field, value))
             field = value
@@ -55,7 +56,7 @@ class CandidatesMenuAdapter(context: Context?) : RecyclerView.Adapter<Candidates
     }
 
     override fun getItemViewType(position: Int): Int =
-        if (items[position] == null) KeyboardToolbarModel.PLACEHOLDER_VIEW_TYPE else ACTION_VIEW_TYPE
+        if (items[position].item == null) KeyboardToolbarModel.PLACEHOLDER_VIEW_TYPE else ACTION_VIEW_TYPE
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SymbolHolder =
         SymbolHolder(inflater.inflate(R.layout.sdk_item_recyclerview_candidates_menu, parent, false))
@@ -63,7 +64,7 @@ class CandidatesMenuAdapter(context: Context?) : RecyclerView.Adapter<Candidates
     override fun getItemCount(): Int = items.size
 
     override fun onBindViewHolder(holder: SymbolHolder, position: Int) {
-        val item = items[position]
+        val item = items[position].item
         holder.itemView.minimumWidth = adapterContext.dp(44)
         holder.itemView.minimumHeight = adapterContext.dp(44)
         holder.itemView.layoutParams = holder.itemView.layoutParams.apply {
@@ -91,14 +92,14 @@ class CandidatesMenuAdapter(context: Context?) : RecyclerView.Adapter<Candidates
         holder.itemView.isClickable = true
         holder.itemView.isFocusable = true
         holder.itemView.setOnClickListener { view ->
-            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
             val clickPosition = holder.bindingAdapterPosition
-                .takeIf { it != RecyclerView.NO_POSITION } ?: position
+            if (clickPosition == RecyclerView.NO_POSITION) return@setOnClickListener
+            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
             mOnItemClickListener?.onItemClick(this, view, clickPosition)
         }
     }
 
-    fun getMenuMode(position: Int): SkbMenuMode? = items.getOrNull(position)?.skbMenuMode
+    fun getMenuMode(position: Int): SkbMenuMode? = items.getOrNull(position)?.item?.skbMenuMode
 
     private fun toolbarPressBackground(): StateListDrawable = StateListDrawable().apply {
         addState(
@@ -147,15 +148,20 @@ class CandidatesMenuAdapter(context: Context?) : RecyclerView.Adapter<Candidates
     }
 
     class MyDiffCallback(
-        private val oldList: List<SkbFunItem?>,
-        private val newList: List<SkbFunItem?>,
+        private val oldList: List<KeyboardToolbarVisualItem>,
+        private val newList: List<KeyboardToolbarVisualItem>,
     ) : DiffUtil.Callback() {
         override fun getOldListSize(): Int = oldList.size
         override fun getNewListSize(): Int = newList.size
         override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
-            oldList[oldItemPosition]?.skbMenuMode == newList[newItemPosition]?.skbMenuMode
-        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
-            oldList[oldItemPosition]?.funName == newList[newItemPosition]?.funName
+            oldList[oldItemPosition].slotId == newList[newItemPosition].slotId
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            val oldItem = oldList[oldItemPosition].item
+            val newItem = newList[newItemPosition].item
+            return oldItem?.funName == newItem?.funName &&
+                oldItem?.funImgResource == newItem?.funImgResource &&
+                oldItem?.skbMenuMode == newItem?.skbMenuMode
+        }
     }
 
     fun notifyChanged() {

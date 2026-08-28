@@ -46,7 +46,8 @@ class EmojiCombinationPicker @JvmOverloads constructor(
         back = findViewById(R.id.expression_emoji_back)
         list = findViewById(R.id.expression_emoji_list)
         preview = findViewById(R.id.expression_emoji_preview)
-        list.layoutManager = GridLayoutManager(context, 2, RecyclerView.HORIZONTAL, false)
+        // 紧凑页使用单行横滑，保证每个表情仍有 44dp 触摸高度且不被内容区裁切。
+        list.layoutManager = GridLayoutManager(context, 1, RecyclerView.HORIZONTAL, false)
         list.adapter = adapter
         preview.setOnClickListener {
             readyCombination?.let { onCombinationClick?.invoke(it, readyFile) }

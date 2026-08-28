@@ -11,7 +11,7 @@
         <LinearLayout
             android:id="@+id/expression_tab_bar"
             android:layout_width="match_parent"
-            android:layout_height="36dp"
+            android:layout_height="44dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingStart="12dp"
@@ -60,8 +60,8 @@
 
             <LinearLayout
                 android:id="@+id/expression_actions"
-                android:layout_width="79dp"
-                android:layout_height="28dp"
+                android:layout_width="88dp"
+                android:layout_height="44dp"
                 android:background="@android:color/transparent"
                 android:gravity="center"
                 android:orientation="horizontal">
@@ -112,7 +112,7 @@
     <LinearLayout
         android:id="@+id/expression_tool_row"
         android:layout_width="match_parent"
-        android:layout_height="34dp"
+        android:layout_height="44dp"
         android:background="@android:color/transparent"
         android:gravity="center_vertical|end"
         android:orientation="horizontal"
@@ -121,7 +121,7 @@
         <TextView
             android:id="@+id/expression_enable"
             android:layout_width="wrap_content"
-            android:layout_height="28dp"
+            android:layout_height="44dp"
             android:background="@android:color/transparent"
             android:gravity="center"
             android:paddingStart="12dp"

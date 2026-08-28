@@ -3,6 +3,7 @@ package com.yuyan.imemodule.keyboard
 import android.app.Activity
 import android.content.Context
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Looper
 import android.text.InputType
 import android.view.KeyEvent
@@ -10,6 +11,7 @@ import android.view.View
 import android.widget.FrameLayout
 import android.view.inputmethod.EditorInfo
 import androidx.preference.PreferenceManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ApplicationProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -22,7 +24,12 @@ import com.yuyan.imemodule.expression.ExpressionPanelPresentation
 import com.yuyan.imemodule.expression.ExpressionPanelState
 import com.yuyan.imemodule.expression.ExpressionComposingTextSource
 import com.yuyan.imemodule.expression.ExpressionCommitKind
+import com.yuyan.imemodule.expression.ExpressionPanelTab
+import com.yuyan.imemodule.expression.model.EmojiBase
+import com.yuyan.imemodule.expression.model.EmojiCombination
 import com.yuyan.imemodule.expression.model.ExpressionAsset
+import com.yuyan.imemodule.expression.model.ExpressionCatalogDocument
+import com.yuyan.imemodule.expression.ui.EmojiCombinationPicker
 import com.yuyan.imemodule.expression.ui.ExpressionPanel
 import com.yuyan.imemodule.keyboard.container.SymbolContainer
 import com.yuyan.imemodule.manager.InputModeSwitcher
@@ -35,7 +42,9 @@ import com.yuyan.imemodule.singleton.EnvironmentSingleton
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -46,6 +55,7 @@ import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowToast
 import java.util.concurrent.TimeUnit
+import kotlin.math.roundToInt
 
 @RunWith(RobolectricTestRunner::class)
 class ExpressionManualSearchInputViewTest {
@@ -496,6 +506,107 @@ class ExpressionManualSearchInputViewTest {
     }
 
     @Test
+    @Config(minSdk = 33)
+    fun `API33及以上展开中的InputView卸载重挂后归一瞬态并可再次展开返回`() {
+        assertTrue(Build.VERSION.SDK_INT >= 33)
+        AppPrefs.getInstance().internal.aiStickerEnabled.setValue(true)
+        val inputView = realChatInputView()
+        val connectionIdentity = Any()
+        inputView.onExpressionInputViewStarted(chatEditorInfo(), restarting = false, connectionIdentity)
+        val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
+        val root = FrameLayout(activity)
+        activity.setContentView(root)
+        root.addView(inputView)
+        val state = inputView.expressionState()
+        val result = ExpressionAsset(
+            id = "reattach-result",
+            type = "prebuilt",
+            format = "webp",
+            version = "v1",
+            fileName = "reattach.webp",
+            sha256 = "f".repeat(64),
+            width = 128,
+            height = 128,
+        )
+        state.beginQuery("保留重挂状态", 906)
+        state.applyResults(906, listOf(result))
+        state.selectTab(ExpressionPanelTab.AI_SYNTHESIS)
+        val panel = inputView.findViewById<ExpressionPanel>(R.id.expression_panel)
+        panel.render(state, ExpressionCatalog.fromAssets(context))
+        val candidates = inputView.findViewById<View>(R.id.candidates_bar)
+        val keyboard = inputView.findViewById<View>(R.id.skb_input_keyboard_view)
+        val originalVisibility = candidates.visibility to keyboard.visibility
+        panel.findViewById<View>(R.id.expression_asset_list).performLongClick()
+        assertEquals(ExpressionPanelPresentation.EXPANDED, state.presentation)
+
+        val retryCatalog = missingEmojiCatalog()
+        val picker = panel.findViewById<EmojiCombinationPicker>(R.id.expression_emoji_picker)
+        var missingRequests = 0
+        panel.onEmojiCombinationMissing = { _, _ -> missingRequests += 1 }
+        picker.render(retryCatalog)
+        selectFirstEmojiTwice(picker)
+        assertEquals(1, missingRequests)
+
+        root.removeView(inputView)
+
+        assertEquals(ExpressionPanelPresentation.COMPACT, state.presentation)
+        assertEquals(originalVisibility.first, candidates.visibility)
+        assertEquals(originalVisibility.second, keyboard.visibility)
+        assertEquals("保留重挂状态", state.query)
+        assertEquals(listOf(result), state.results)
+        assertEquals(ExpressionPanelTab.AI_SYNTHESIS, state.selectedTab)
+
+        root.addView(inputView)
+        panel.onEmojiCombinationMissing = { _, _ -> missingRequests += 1 }
+        picker.render(retryCatalog)
+        selectFirstEmojiTwice(picker)
+        assertEquals(2, missingRequests)
+
+        panel.render(state, ExpressionCatalog.fromAssets(context))
+        panel.findViewById<View>(R.id.expression_asset_list).performLongClick()
+        assertEquals(ExpressionPanelPresentation.EXPANDED, state.presentation)
+        assertTrue(inputView.handleImePanelBack())
+        assertEquals(ExpressionPanelPresentation.COMPACT, state.presentation)
+        assertEquals(originalVisibility.first, candidates.visibility)
+        assertEquals(originalVisibility.second, keyboard.visibility)
+
+        val service = services.last()
+        service.hostKeyEventSender = { true }
+        service.hostTextCommitter = { _, _ -> true }
+        inputView.onExpressionInputViewStarted(chatEditorInfo(), restarting = true, connectionIdentity)
+        assertSame(
+            inputView,
+            ImeService::class.java.getDeclaredField("hostTextCommitListenerOwner").run {
+                isAccessible = true
+                get(service)
+            },
+        )
+        val editListener = ImeService::class.java.getDeclaredField("hostTextEditListener").run {
+            isAccessible = true
+            get(service)
+        }
+        assertNotNull(editListener)
+        assertTrue(service.sendEditingKeyEventAndReport(KeyEvent.KEYCODE_DEL))
+        assertNull(state.query)
+        assertTrue(service.commitTextAndReport("重挂后文字", kind = ExpressionCommitKind.INCREMENTAL))
+        val manualSearch = InputView::class.java.getDeclaredField("expressionManualSearch").run {
+            isAccessible = true
+            get(inputView)
+        }
+        assertEquals(
+            "重挂后文字",
+            manualSearch.javaClass.getDeclaredField("recentCommittedText").run {
+                isAccessible = true
+                get(manualSearch)
+            },
+        )
+        assertTrue(state.chatEditor)
+        assertNull(inputView.expressionComposingTextSource.currentText(inputView.mSkbCandidatesBarView.getActiveCandNo()))
+        inputView.searchExpressionsManually()
+        assertEquals("重挂后文字", state.query)
+    }
+
+    @Test
     fun `首次零导航后注入非零Insets会立即收紧真实面板高度`() {
         val prefs = AppPrefs.getInstance().internal
         prefs.keyboardModeFloat.setValue(false)
@@ -574,8 +685,13 @@ class ExpressionManualSearchInputViewTest {
         inputView.initView(context)
         inputView.refreshExpressionLayoutBudget()
         val floating = inputView.expressionLayoutBudget
+        assertEquals(
+            EnvironmentSingleton.instance.heightForKeyboardMove + 48,
+            inputView.findViewById<View>(R.id.iv_keyboard_holder).minimumHeight,
+        )
         assertTrue(floating.reservedNonPanelHeightPx >= EnvironmentSingleton.instance.inputAreaHeight +
-            EnvironmentSingleton.instance.heightForKeyboardMove + 24)
+            EnvironmentSingleton.instance.heightForKeyboardMove + 48 + 24)
+        assertEquals(48, floating.navigationInsetBottomPx)
         assertTrue(inputView.compactExpressionHeight() + floating.reservedNonPanelHeightPx <= floating.availableHeightPx)
 
         val oldReserved = floating.reservedNonPanelHeightPx
@@ -596,6 +712,7 @@ class ExpressionManualSearchInputViewTest {
         attachAndLayout(inputView, 900)
         inputView.refreshExpressionLayoutBudget()
         val portraitTabHeight = inputView.findViewById<View>(R.id.expression_tab_bar).layoutParams.height
+        val portraitContentHeight = inputView.findViewById<View>(R.id.expression_content).layoutParams.height
         val oldReserved = inputView.expressionLayoutBudget.reservedNonPanelHeightPx
 
         val landscape = Configuration(context.resources.configuration).apply {
@@ -611,7 +728,9 @@ class ExpressionManualSearchInputViewTest {
         }
         Shadows.shadowOf(Looper.getMainLooper()).idle()
 
-        assertTrue(inputView.findViewById<View>(R.id.expression_tab_bar).layoutParams.height < portraitTabHeight)
+        assertEquals(portraitTabHeight, inputView.findViewById<View>(R.id.expression_tab_bar).layoutParams.height)
+        assertTrue(portraitTabHeight >= (44 * context.resources.displayMetrics.density).roundToInt())
+        assertTrue(inputView.findViewById<View>(R.id.expression_content).layoutParams.height < portraitContentHeight)
         assertTrue(inputView.expressionLayoutBudget.reservedNonPanelHeightPx >= oldReserved + 32)
         assertTrue(inputView.compactExpressionHeight() + inputView.expressionLayoutBudget.reservedNonPanelHeightPx <=
             inputView.expressionLayoutBudget.availableHeightPx)
@@ -928,6 +1047,50 @@ class ExpressionManualSearchInputViewTest {
             field.isAccessible = true
             field.get(this) as ExpressionPanelState
         }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun selectFirstEmojiTwice(picker: EmojiCombinationPicker) {
+        val list = picker.findViewById<RecyclerView>(R.id.expression_emoji_list)
+        val adapter = list.adapter as RecyclerView.Adapter<RecyclerView.ViewHolder>
+        repeat(2) {
+            val holder = adapter.createViewHolder(list, adapter.getItemViewType(0))
+            adapter.bindViewHolder(holder, 0)
+            holder.itemView.performClick()
+        }
+    }
+
+    private fun missingEmojiCatalog(): ExpressionCatalog {
+        val base = EmojiBase(
+            id = "retry",
+            name = "重试",
+            fileName = "missing/retry-base.webp",
+            sha256 = "1".repeat(64),
+            version = "v1",
+            width = 128,
+            height = 128,
+            sortOrder = 0,
+        )
+        return ExpressionCatalog(
+            ExpressionCatalogDocument(
+                version = "v1",
+                templates = emptyList(),
+                emojiBases = listOf(base),
+                emojiCombinations = listOf(
+                    EmojiCombination(
+                        key = "retry__retry",
+                        firstId = "retry",
+                        secondId = "retry",
+                        fileName = "missing/retry.webp",
+                        sha256 = "2".repeat(64),
+                        version = "v1",
+                        width = 128,
+                        height = 128,
+                        url = "/missing/retry.webp",
+                    ),
+                ),
+            ),
+        )
+    }
 
     private fun chatEditorInfo() = EditorInfo().apply {
         packageName = "com.tencent.mm"

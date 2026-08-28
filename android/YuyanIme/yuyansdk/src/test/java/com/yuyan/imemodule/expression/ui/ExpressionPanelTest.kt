@@ -21,12 +21,14 @@ import com.yuyan.imemodule.prefs.AppPrefs
 import com.yuyan.imemodule.expression.ExpressionCatalog
 import com.yuyan.imemodule.expression.ExpressionPanelState
 import com.yuyan.imemodule.expression.ExpressionPanelTab
+import com.yuyan.imemodule.expression.model.EmojiBase
 import com.yuyan.imemodule.expression.model.ExpressionAsset
 import com.yuyan.imemodule.expression.model.ExpressionCatalogDocument
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.After
 import org.junit.Before
@@ -231,6 +233,100 @@ class ExpressionPanelTest {
         assertEquals(metrics.actionHeightPx, panel.findViewById<View>(R.id.expression_actions).layoutParams.height)
     }
 
+    @Test
+    @Config(qualifiers = "w360dp-h640dp-xxhdpi")
+    fun `小屏生产面板所有可见操作实际边界至少四十四dp`() {
+        val panel = ExpressionPanel(context)
+        panel.render(visibleState(), catalog)
+        panel.measure(
+            View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(1920, View.MeasureSpec.AT_MOST),
+        )
+        panel.layout(0, 0, panel.measuredWidth, panel.measuredHeight)
+        val minimum = (44f * context.resources.displayMetrics.density).toInt()
+
+        listOf(
+            R.id.expression_tab_recommended,
+            R.id.expression_tab_templates,
+            R.id.expression_tab_emoji,
+            R.id.expression_more,
+            R.id.expression_close,
+            R.id.expression_enable,
+        ).forEach { id ->
+            val target = panel.findViewById<View>(id)
+            assertTrue("id=$id width=${target.width}", target.width >= minimum)
+            assertTrue("id=$id height=${target.height}", target.height >= minimum)
+        }
+    }
+
+    @Test
+    @Config(qualifiers = "w360dp-h640dp-xxhdpi")
+    fun `小屏Emoji选择页返回与表情项实际边界至少四十四dp且内容不裁切`() {
+        val emojiCatalog = ExpressionCatalog(
+            ExpressionCatalogDocument(
+                version = "v1",
+                templates = emptyList(),
+                emojiBases = listOf(
+                    EmojiBase(
+                        id = "smile",
+                        name = "微笑",
+                        fileName = "missing.webp",
+                        sha256 = "a".repeat(64),
+                        version = "v1",
+                        width = 128,
+                        height = 128,
+                        sortOrder = 0,
+                    ),
+                ),
+                emojiCombinations = emptyList(),
+            ),
+        )
+        val state = visibleState().apply { selectTab(ExpressionPanelTab.EMOJI_SYNTHESIS) }
+        val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
+        val root = FrameLayout(activity)
+        activity.setContentView(root)
+        val panel = ExpressionPanel(activity)
+        root.addView(panel)
+        panel.render(state, emojiCatalog)
+        root.measure(
+            View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(1920, View.MeasureSpec.AT_MOST),
+        )
+        root.layout(0, 0, root.measuredWidth, root.measuredHeight)
+        val picker = panel.findViewById<EmojiCombinationPicker>(R.id.expression_emoji_picker)
+        val list = picker.findViewById<RecyclerView>(R.id.expression_emoji_list)
+        val item = requireNotNull(list.getChildAt(0))
+        item.performClick()
+        val back = picker.findViewById<View>(R.id.expression_emoji_back)
+        val minimum = (44f * context.resources.displayMetrics.density).toInt()
+
+        assertEquals(View.VISIBLE, back.visibility)
+        assertTrue("emoji back ${back.width}x${back.height}", back.width >= minimum && back.height >= minimum)
+        assertTrue(
+            "emoji item ${item.width}x${item.height}",
+            item.width >= minimum && item.height >= minimum,
+        )
+        assertTrue(picker.height <= panel.findViewById<View>(R.id.expression_content).height)
+    }
+
+    @Test
+    fun `相同展示模式重复render保留LayoutManager与滚动上下文`() {
+        val panel = ExpressionPanel(context)
+        val state = visibleState()
+        val list = panel.findViewById<RecyclerView>(R.id.expression_asset_list)
+
+        panel.render(state, catalog)
+        val compactManager = list.layoutManager
+        panel.render(state, catalog)
+        assertSame(compactManager, list.layoutManager)
+
+        state.expand()
+        panel.render(state, catalog)
+        val expandedManager = list.layoutManager
+        panel.render(state, catalog)
+        assertSame(expandedManager, list.layoutManager)
+    }
+
 
     @Test
     @Config(qualifiers = "w640dp-h360dp-land-xxhdpi")
@@ -281,7 +377,7 @@ class ExpressionPanelTest {
             View.MeasureSpec.makeMeasureSpec(2400, View.MeasureSpec.AT_MOST),
         )
 
-        assertEquals(528, panel.measuredHeight)
+        assertEquals(552, panel.measuredHeight)
     }
 
     @Test

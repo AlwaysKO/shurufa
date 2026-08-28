@@ -4,16 +4,19 @@ import android.content.Context
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.StateListDrawable
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.preference.PreferenceManager
+import androidx.emoji2.text.EmojiCompat
 import androidx.test.core.app.ApplicationProvider
 import com.yuyan.imemodule.R
 import com.yuyan.imemodule.adapter.CandidatesMenuAdapter
 import com.yuyan.imemodule.application.Launcher
 import com.yuyan.imemodule.data.emojicon.YuyanEmojiCompat
 import com.yuyan.imemodule.data.theme.ThemeManager
+import com.yuyan.imemodule.data.theme.Theme
 import com.yuyan.imemodule.data.theme.ThemePreset
 import com.yuyan.imemodule.database.DataBaseKT
 import com.yuyan.imemodule.database.entry.SkbFun
@@ -33,12 +36,16 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 class CandidatesBarTest {
     private lateinit var context: Context
     private lateinit var service: ImeService
     private var databaseSnapshot: List<SkbFun> = emptyList()
+    private lateinit var originalTheme: Theme
+    private var originalCandidateHeight = 0
+    private var originalInputAreaHeight = 0
 
     @Before
     fun setUp() {
@@ -49,9 +56,13 @@ class CandidatesBarTest {
         }
         AppPrefs.init(PreferenceManager.getDefaultSharedPreferences(context))
         ThemeManager.init(context.resources.configuration)
+        originalTheme = ThemeManager.prefs.normalModeTheme.getValue()
         ThemeManager.setNormalModeTheme(ThemePreset.MaterialLight)
+        EmojiCompat.init(object : EmojiCompat.Config(EmojiCompat.MetadataRepoLoader { }) {})
         YuyanEmojiCompat.init(context)
         EnvironmentSingleton.instance.initData(context)
+        originalCandidateHeight = EnvironmentSingleton.instance.heightForCandidatesArea
+        originalInputAreaHeight = EnvironmentSingleton.instance.inputAreaHeight
         val dao = DataBaseKT.instance.skbFunDao()
         databaseSnapshot = dao.getAllMenu() + dao.getALlBarMenu()
         dao.deleteAll()
@@ -71,6 +82,9 @@ class CandidatesBarTest {
             deleteAll()
             insertAll(databaseSnapshot)
         }
+        ThemeManager.setNormalModeTheme(originalTheme)
+        EnvironmentSingleton.instance.heightForCandidatesArea = originalCandidateHeight
+        EnvironmentSingleton.instance.inputAreaHeight = originalInputAreaHeight
         DecodingInfo.candidatesLiveData.value = emptyList()
     }
 
@@ -106,7 +120,7 @@ class CandidatesBarTest {
         val bar = inputView.mSkbCandidatesBarView
         bar.showCandidates()
         val adapter = bar.privateField<CandidatesMenuAdapter>("mCandidatesMenuAdapter")
-        val aiPosition = adapter.items.indexOfFirst { it?.skbMenuMode == SkbMenuMode.AiDoutu }
+        val aiPosition = adapter.items.indexOfFirst { it.item?.skbMenuMode == SkbMenuMode.AiDoutu }
         val holder = adapter.onCreateViewHolder(FrameLayout(context), adapter.getItemViewType(aiPosition))
         adapter.onBindViewHolder(holder, aiPosition)
         val left = bar.privateField<View>("mIvMenuSetting")
@@ -147,7 +161,7 @@ class CandidatesBarTest {
                 null,
                 SkbMenuMode.AiDoutu,
             ),
-            adapter.items.map { it?.skbMenuMode },
+            adapter.items.map { it.item?.skbMenuMode },
         )
         val left = bar.privateField<View>("mIvMenuSetting")
         val right = bar.privateField<View>("mMenuRightArrowBtn")
@@ -159,6 +173,48 @@ class CandidatesBarTest {
         assertFalse(right.contentDescription.isNullOrBlank())
         assertNotNull(left.background)
         assertNotNull(right.background)
+    }
+
+    @Test
+    @Config(qualifiers = "w800dp-h800dp-xxhdpi")
+    fun `三倍密度生产候选栏父级与固定按钮实际触摸不小于四十四dp且预算同步`() {
+        EnvironmentSingleton.instance.heightForCandidatesArea = dp(36)
+        EnvironmentSingleton.instance.inputAreaHeight =
+            EnvironmentSingleton.instance.skbHeight + EnvironmentSingleton.instance.heightForCandidatesArea
+        val inputView = service.onCreateInputView() as InputView
+        val host = FrameLayout(context).apply { addView(inputView) }
+        host.measure(
+            View.MeasureSpec.makeMeasureSpec(2400, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(2400, View.MeasureSpec.AT_MOST),
+        )
+        host.layout(0, 0, host.measuredWidth, host.measuredHeight)
+        inputView.refreshExpressionLayoutBudget()
+        val bar = inputView.mSkbCandidatesBarView
+        val minimum = dp(44)
+        val left = bar.privateField<View>("mIvMenuSetting")
+        val right = bar.privateField<View>("mMenuRightArrowBtn")
+        val keyboard = inputView.findViewById<View>(R.id.skb_input_keyboard_view)
+
+        assertTrue(bar.measuredHeight >= minimum)
+        assertTrue(left.measuredWidth >= minimum && left.measuredHeight >= minimum)
+        assertTrue(right.measuredWidth >= minimum && right.measuredHeight >= minimum)
+        assertTrue(
+            inputView.expressionLayoutBudget.reservedNonPanelHeightPx >=
+                bar.measuredHeight + keyboard.measuredHeight,
+        )
+
+        val candidate = LayoutInflater.from(context).inflate(
+            R.layout.sdk_item_recyclerview_candidates_bar,
+            FrameLayout(context),
+            false,
+        )
+        candidate.measure(
+            View.MeasureSpec.makeMeasureSpec(dp(200), View.MeasureSpec.AT_MOST),
+            View.MeasureSpec.makeMeasureSpec(bar.measuredHeight, View.MeasureSpec.EXACTLY),
+        )
+        val flower = bar.privateField<View>("mFlowerType")
+        assertTrue(candidate.measuredWidth >= minimum && candidate.measuredHeight >= minimum)
+        assertTrue(flower.minimumWidth >= minimum && flower.minimumHeight >= minimum)
     }
 
     private fun pressedColor(view: View): Int {

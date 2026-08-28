@@ -52,10 +52,10 @@ data class ExpressionLayoutMetrics(
                 (widthPx - horizontalPaddingPx + itemGapPx).toFloat() /
                     (itemSizePx + itemGapPx)
 
-            val desiredTabHeightPx = px(if (landscape) 32f else 36f)
+            val desiredTabHeightPx = px(MINIMUM_TOUCH_TARGET_DP)
             val desiredContentHeightPx = px(if (landscape) 84f else 96f)
             // 恢复入口是面板在无结果/关闭态的唯一入口，必须始终保留可访问触摸高度。
-            val desiredToolHeightPx = px(MINIMUM_TOOL_HEIGHT_DP)
+            val desiredToolHeightPx = px(MINIMUM_TOUCH_TARGET_DP)
             val designedMaximumHeightPx =
                 desiredTabHeightPx + desiredContentHeightPx + desiredToolHeightPx
             val designedMinimumHeightPx =
@@ -89,14 +89,8 @@ data class ExpressionLayoutMetrics(
                 tabRowHeightPx = tabRowHeightPx,
                 contentHeightPx = contentHeightPx,
                 toolRowHeightPx = toolRowHeightPx,
-                actionWidthPx = minOf(
-                    px(if (landscape) 74f else 79f),
-                    (widthPx - horizontalPaddingPx * 2).coerceAtLeast(0),
-                ),
-                actionHeightPx = minOf(
-                    px(if (landscape) 26f else 28f),
-                    tabRowHeightPx,
-                ),
+                actionWidthPx = px(MINIMUM_TOUCH_TARGET_DP * 2),
+                actionHeightPx = minOf(px(MINIMUM_TOUCH_TARGET_DP), tabRowHeightPx),
                 compactPanelHeightPx = compactHeightPx,
                 minimumCompactPanelHeightPx = minimumCompactHeightPx,
                 maximumCompactPanelHeightPx = maximumCompactHeightPx,
@@ -107,6 +101,6 @@ data class ExpressionLayoutMetrics(
         private const val REFERENCE_WIDTH_PX = 443f
         private const val EXPANDED_COLUMNS = 3
         private const val MINIMUM_CONTENT_HEIGHT_DP = 48f
-        private const val MINIMUM_TOOL_HEIGHT_DP = 44f
+        private const val MINIMUM_TOUCH_TARGET_DP = 44f
     }
 }

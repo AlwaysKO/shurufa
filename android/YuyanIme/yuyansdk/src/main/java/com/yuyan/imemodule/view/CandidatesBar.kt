@@ -28,8 +28,9 @@ import com.yuyan.imemodule.adapter.CandidatesMenuAdapter
 import com.yuyan.imemodule.callback.CandidateViewListener
 import com.yuyan.imemodule.application.CustomConstant
 import com.yuyan.imemodule.data.flower.FlowerTypefaceMode
+import com.yuyan.imemodule.data.keyboardToolbarVisualItems
 import com.yuyan.imemodule.data.menuSkbFunsPreset
-import com.yuyan.imemodule.data.mergeKeyboardToolbarItems
+import com.yuyan.imemodule.data.mergeKeyboardToolbarVisualItems
 import com.yuyan.imemodule.data.theme.ThemeManager
 import com.yuyan.imemodule.database.DataBaseKT
 import com.yuyan.imemodule.entity.SkbFunItem
@@ -223,6 +224,9 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
             mFlowerType = TextView(context).apply {
                 setTextColor(ThemeManager.activeTheme.keyTextColor)
                 setPadding(dp(10), 0, 0, 0)
+                minimumWidth = dp(44)
+                minimumHeight = dp(44)
+                gravity = Gravity.CENTER_VERTICAL
             }
             val flowerTypefaces = arrayOf(FlowerTypefaceMode.Mars, FlowerTypefaceMode.FlowerVine, FlowerTypefaceMode.Messy, FlowerTypefaceMode.Germinate,
                 FlowerTypefaceMode.Fog,FlowerTypefaceMode.ProhibitAccess, FlowerTypefaceMode.Grass, FlowerTypefaceMode.Wind, FlowerTypefaceMode.Disabled)
@@ -253,7 +257,13 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
                 }
                 popupMenu.show()
             }
-            mLlContainer.addView(mFlowerType, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT))
+            mLlContainer.addView(
+                mFlowerType,
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                ),
+            )
             mRVContainerMenu = RecyclerView(context).apply {
                 setItemAnimator(null)
                 layoutManager = CustomLinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
@@ -343,9 +353,9 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
         if (container is ClipBoardContainer) {
             showViewVisibility(mCandidatesMenuContainer)
             mCandidatesMenuAdapter.items = if(container.getMenuMode() == SkbMenuMode.ClipBoard) {
-                listOf(menuSkbFunsPreset[SkbMenuMode.ClearClipBoard]!!, menuSkbFunsPreset[SkbMenuMode.ClipBoard]!!, menuSkbFunsPreset[SkbMenuMode.Phrases]!!, menuSkbFunsPreset[SkbMenuMode.LockClipBoard]!!)
+                keyboardToolbarVisualItems("clipboard", listOf(menuSkbFunsPreset[SkbMenuMode.ClearClipBoard]!!, menuSkbFunsPreset[SkbMenuMode.ClipBoard]!!, menuSkbFunsPreset[SkbMenuMode.Phrases]!!, menuSkbFunsPreset[SkbMenuMode.LockClipBoard]!!))
             } else {
-                listOf(menuSkbFunsPreset[SkbMenuMode.AddPhrases]!!, menuSkbFunsPreset[SkbMenuMode.ClipBoard]!!, menuSkbFunsPreset[SkbMenuMode.Phrases]!!, menuSkbFunsPreset[SkbMenuMode.LockClipBoard]!!)
+                keyboardToolbarVisualItems("phrases", listOf(menuSkbFunsPreset[SkbMenuMode.AddPhrases]!!, menuSkbFunsPreset[SkbMenuMode.ClipBoard]!!, menuSkbFunsPreset[SkbMenuMode.Phrases]!!, menuSkbFunsPreset[SkbMenuMode.LockClipBoard]!!))
             }
         } else if (DecodingInfo.isCandidatesEmpty) {
             mRightArrowBtn.drawable.setLevel(0)
@@ -359,7 +369,7 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
                     mFunItems.add(skbFunItem)
                 }
             }
-            mCandidatesMenuAdapter.items = mergeKeyboardToolbarItems(mFunItems)
+            mCandidatesMenuAdapter.items = mergeKeyboardToolbarVisualItems(mFunItems)
         } else {
             if (DecodingInfo.candidateSize > DecodingInfo.activeCandidateBar) mRVCandidates.layoutManager?.scrollToPosition(DecodingInfo.activeCandidateBar)
             showViewVisibility(mCandidatesDataContainer)
@@ -376,7 +386,10 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
      */
     fun showEmoji() {
         showViewVisibility(mCandidatesMenuContainer)
-        mCandidatesMenuAdapter.items = listOf(menuSkbFunsPreset[SkbMenuMode.Emoticon]!!,menuSkbFunsPreset[SkbMenuMode.Emojicon]!!)
+        mCandidatesMenuAdapter.items = keyboardToolbarVisualItems(
+            "emoji",
+            listOf(menuSkbFunsPreset[SkbMenuMode.Emoticon]!!, menuSkbFunsPreset[SkbMenuMode.Emojicon]!!),
+        )
         activeCandNo = 0
         mCandidatesAdapter.activeCandidates(activeCandNo)
         mCandidatesAdapter.notifyChanged()
@@ -430,7 +443,10 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val heightMeasure = MeasureSpec.makeMeasureSpec(instance.heightForCandidatesArea, MeasureSpec.EXACTLY)
+        val heightMeasure = MeasureSpec.makeMeasureSpec(
+            maxOf(instance.heightForCandidatesArea, dp(44)),
+            MeasureSpec.EXACTLY,
+        )
         val widthMeasure = MeasureSpec.makeMeasureSpec(instance.skbWidth, MeasureSpec.EXACTLY)
         super.onMeasure(widthMeasure, heightMeasure)
     }
