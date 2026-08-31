@@ -95,8 +95,10 @@ object QuickKeyboardSettingsModel {
     )
 
     private val quickThemes = listOf(
-        QuickThemeOption("MaterialLight", isDark = false),
-        QuickThemeOption("MaterialDark", isDark = true),
+        QuickThemeOption("SogouDefault", isDark = false),
+        QuickThemeOption("SogouBlue", isDark = false),
+        QuickThemeOption("WechatLayout", isDark = false),
+        QuickThemeOption("SogouHuawei", isDark = false),
     )
 
     fun availableThemes(existingThemeIds: Set<String>): List<QuickThemeOption> =

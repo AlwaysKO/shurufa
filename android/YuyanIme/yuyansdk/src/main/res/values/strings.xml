@@ -236,6 +236,9 @@
     <string name="expression_asset_download_failed">素材下载失败</string>
     <string name="quick_settings_layout_title">键盘布局</string>
     <string name="quick_settings_theme_title">主题</string>
+    <string name="quick_settings_input_method">输入方式</string>
+    <string name="quick_settings_theme_layout">主题布局</string>
+    <string name="quick_settings_more">更多设置</string>
     <string name="quick_theme_light">浅色</string>
     <string name="quick_theme_dark">深色</string>
     <string name="quick_settings_back_keyboard">返回键盘</string>

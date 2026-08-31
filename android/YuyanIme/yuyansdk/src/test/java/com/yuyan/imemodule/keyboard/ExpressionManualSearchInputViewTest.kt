@@ -1136,7 +1136,8 @@ class ExpressionManualSearchInputViewTest {
 
         val settings = KeyboardManager.instance.currentContainer as SettingsContainer
         assertTrue(settings.isQuickSettingsVisible)
-        assertNotNull(settings.findViewWithTag<View>("quick_theme_MaterialLight"))
+        settings.findViewWithTag<View>("quick_tab_theme").performClick()
+        assertNotNull(settings.findViewWithTag<View>("quick_theme_SogouDefault"))
     }
 
     private fun realChatInputView(): InputView {

@@ -39,6 +39,7 @@ import com.yuyan.imemodule.prefs.behavior.SkbMenuMode
 import com.yuyan.imemodule.service.DecodingInfo
 import com.yuyan.imemodule.singleton.EnvironmentSingleton.Companion.instance
 import com.yuyan.imemodule.keyboard.KeyboardManager
+import com.yuyan.imemodule.keyboard.KeyboardToolbarMetrics
 import com.yuyan.imemodule.keyboard.container.CandidatesContainer
 import com.yuyan.imemodule.keyboard.container.ClipBoardContainer
 import com.yuyan.imemodule.keyboard.container.InputBaseContainer
@@ -204,6 +205,7 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
             this.removeAllViews()
             mCandidatesMenuContainer = LinearLayout(context).apply {
                 gravity = Gravity.CENTER_VERTICAL
+                setBackgroundColor(ThemeManager.activeTheme.keyboardColor)
             }
             mIvMenuSetting = ImageView(context).apply {
                 setImageResource(R.drawable.sdk_level_candidates_menu_left)
@@ -282,6 +284,7 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
                 contentDescription = context.getString(R.string.keyboard_iv_menu_close)
                 background = toolbarPressBackground()
                 setImageResource(R.drawable.ic_menu_arrow_down)
+                scaleType = ImageView.ScaleType.FIT_CENTER
             }
             mMenuRightArrowBtn.setOnClickListener {
                 it.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
@@ -297,9 +300,28 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
             )
         }
         val menuHeight = instance.effectiveCandidateRowHeight(resources.displayMetrics.density)
+        val slotWidth = KeyboardToolbarMetrics.slotWidth(instance.skbWidth)
+        val functionIconSize = KeyboardToolbarMetrics.functionIconSize(instance.skbWidth, menuHeight)
+        val functionHorizontalPadding = ((slotWidth - functionIconSize) / 2).coerceAtLeast(0)
+        val functionVerticalPadding = ((menuHeight - functionIconSize) / 2).coerceAtLeast(0)
+        mIvMenuSetting.scaleType = ImageView.ScaleType.FIT_CENTER
+        mIvMenuSetting.setPadding(
+            functionHorizontalPadding,
+            functionVerticalPadding,
+            functionHorizontalPadding,
+            functionVerticalPadding,
+        )
+        val collapseWidth = (instance.skbWidth * KeyboardToolbarMetrics.COLLAPSE_ICON_WIDTH_BASE / 1080).coerceAtLeast(dp(16))
+        val collapseHeight = (instance.skbWidth * KeyboardToolbarMetrics.COLLAPSE_ICON_HEIGHT_BASE / 1080).coerceAtLeast(dp(11))
+        mMenuRightArrowBtn.setPadding(
+            ((slotWidth - collapseWidth) / 2).coerceAtLeast(0),
+            ((menuHeight - collapseHeight) / 2).coerceAtLeast(0),
+            ((slotWidth - collapseWidth) / 2).coerceAtLeast(0),
+            ((menuHeight - collapseHeight) / 2).coerceAtLeast(0),
+        )
         mFlowerType.textSize = instance.candidateTextSize
-        mIvMenuSetting.layoutParams = LinearLayout.LayoutParams(menuHeight, menuHeight, 0f).apply { marginStart = dp(10) }
-        mMenuRightArrowBtn.layoutParams = LinearLayout.LayoutParams(menuHeight, menuHeight, 0f).apply { marginEnd = dp(10) }
+        mIvMenuSetting.layoutParams = LinearLayout.LayoutParams(slotWidth, menuHeight, 0f)
+        mMenuRightArrowBtn.layoutParams = LinearLayout.LayoutParams(slotWidth, menuHeight, 0f)
         mLlContainer.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, menuHeight,0f)
         mRVContainerMenu.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, menuHeight, 1f)
         mCandidatesMenuAdapter.notifyChanged()  // 点击下拉菜单后，需要刷新菜单栏
@@ -473,6 +495,7 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
         initCandidateView()
         mIvMenuSetting.background = toolbarPressBackground()
         mMenuRightArrowBtn.background = toolbarPressBackground()
+        mCandidatesMenuContainer.setBackgroundColor(ThemeManager.activeTheme.keyboardColor)
         mIvMenuSetting.setImageResource(R.drawable.sdk_level_candidates_menu_left)
         mComposingView.setTextColor(textColor)
         applyCandidateActionBackground(mRightArrowBtn, ThemeManager.activeTheme.barColor)

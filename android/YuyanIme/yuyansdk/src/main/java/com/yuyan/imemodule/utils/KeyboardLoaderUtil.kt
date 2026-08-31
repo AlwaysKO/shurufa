@@ -15,6 +15,7 @@ import com.yuyan.imemodule.keyboard.KeyGeometry
 import com.yuyan.imemodule.keyboard.SogouT9Layout
 import com.yuyan.imemodule.keyboard.SogouQwertyLayout
 import com.yuyan.imemodule.keyboard.SogouAuxiliaryLayouts
+import com.yuyan.imemodule.keyboard.KeyboardSurfaceLayoutOverrides
 import com.yuyan.imemodule.manager.InputModeSwitcher
 import com.yuyan.imemodule.prefs.AppPrefs
 import com.yuyan.imemodule.prefs.behavior.DoublePinyinSchemaMode
@@ -44,6 +45,7 @@ class KeyboardLoaderUtil private constructor() {
     private fun loadBaseSkb(skbValue: Int): SoftKeyboard {
         skbStyleMode = ThemeManager.prefs.skbStyleMode.getValue()
         mSkbValue = skbValue
+        val surfaceThemeId = ThemeManager.activeTheme.name
         // shift键状态
         // 直输状态
         val shiftToggleStates = LinkedList<ToggleState>()
@@ -98,7 +100,7 @@ class KeyboardLoaderUtil private constructor() {
                 keyBeans.addAll(qwertyKeys)
                 rows.add(keyBeans)
                 keyBeans = lastRows(skbValue)
-                applyVisualGeometry(keyBeans, geometryRows[3].keys)
+                applyVisualGeometry(keyBeans, KeyboardSurfaceLayoutOverrides.qwertyBottomGeometry(surfaceThemeId).keys)
                 rows.add(keyBeans)
             }
             InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN -> {  // 2000  T9键键
@@ -116,15 +118,19 @@ class KeyboardLoaderUtil private constructor() {
                 keyBeans.addAll(t9Key)
                 rows.add(keyBeans)
                 keyBeans = LinkedList()
+                val t9Theme = KeyboardSurfaceLayoutOverrides.t9(surfaceThemeId)
                 t9Key = createT9Keys(keys[2].toTypedArray())
-                t9Key.last().apply {
-                    stateId = 7
+                if (t9Theme.bigEnter) {
+                    t9Key[t9Key.lastIndex] = SogouT9Layout.createEnterKey()
+                } else {
+                    t9Key.last().stateId = 7
                 }
                 applyVisualGeometry(t9Key.asList(), geometryRows[2].keys)
+                if (t9Theme.bigEnter) t9Key.last().heightF = t9Theme.bigEnterHeight
                 keyBeans.addAll(t9Key)
                 rows.add(keyBeans)
-                keyBeans = sogouT9LastRow()
-                applyVisualGeometry(keyBeans, geometryRows[3].keys)
+                keyBeans = sogouT9LastRow(surfaceThemeId)
+                applyVisualGeometry(keyBeans, KeyboardSurfaceLayoutOverrides.t9BottomGeometry(surfaceThemeId).keys)
                 rows.add(keyBeans)
 
             }
@@ -153,7 +159,7 @@ class KeyboardLoaderUtil private constructor() {
                 rows.add(keyBeans)
                 keyBeans = lastRows(skbValue)
                 keyBeans[keyBeans.size -2].stateId = 1
-                applyVisualGeometry(keyBeans, geometryRows[3].keys)
+                applyVisualGeometry(keyBeans, KeyboardSurfaceLayoutOverrides.qwertyBottomGeometry(surfaceThemeId).keys)
                 rows.add(keyBeans)
             }
             InputModeSwitcher.MASK_SKB_LAYOUT_NUMBER -> {  // 5000 数字键盘
@@ -334,33 +340,30 @@ class KeyboardLoaderUtil private constructor() {
         return keyBeans
     }
 
-    private fun sogouT9LastRow(): MutableList<SoftKey> {
-        val keys = createT9Keys(SogouT9Layout.bottomRowCodes.dropLast(1).toTypedArray())
-        keys[2] = SogouT9Layout.createVoiceSpaceKey()
+    private fun sogouT9LastRow(themeId: String): MutableList<SoftKey> {
+        val spec = KeyboardSurfaceLayoutOverrides.t9(themeId)
+        val codesWithoutEnter = spec.bottomCodes.filterNot { it == KeyEvent.KEYCODE_ENTER }
+        val keys = createT9Keys(codesWithoutEnter.toTypedArray())
+        val spaceIndex = codesWithoutEnter.indexOf(KeyEvent.KEYCODE_SPACE)
+        if (spaceIndex >= 0) keys[spaceIndex] = SogouT9Layout.createVoiceSpaceKey()
         keys.first().label = "符"
         return keys.toMutableList().apply {
-            add(SogouT9Layout.createEnterKey())
-            SogouT9Layout.applyBottomRowGeometry(this)
+            if (!spec.bigEnter) add(SogouT9Layout.createEnterKey())
         }
     }
 
     private fun sogouQwertyLastRow(skbValue: Int): MutableList<SoftKey> {
-        val codes = SogouQwertyLayout.bottomRowCodes.dropLast(1).toTypedArray()
+        val spec = KeyboardSurfaceLayoutOverrides.qwertyBottomRow(ThemeManager.activeTheme.name)
+        val codes = spec.codes.dropLast(1).toTypedArray()
         val keys = if (skbValue == InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN) {
             createQwertyPYKeys(codes)
         } else {
             createQwertyKeys(codes)
         }
-        keys[3] = SogouQwertyLayout.createVoiceSpaceKey()
-        keys.forEachIndexed { index, key ->
-            key.widthF = SogouQwertyLayout.bottomRowWidths[index]
-            key.heightF = SogouQwertyLayout.ROW_HEIGHT
-        }
+        val spaceIndex = codes.indexOf(KeyEvent.KEYCODE_SPACE)
+        if (spaceIndex >= 0) keys[spaceIndex] = SogouQwertyLayout.createVoiceSpaceKey()
         return keys.toMutableList().apply {
-            add(createEnterToggle().apply {
-                widthF = SogouQwertyLayout.bottomRowWidths.last()
-                heightF = SogouQwertyLayout.ROW_HEIGHT
-            })
+            add(createEnterToggle())
         }
     }
 

@@ -80,6 +80,8 @@ fun mergeKeyboardToolbarVisualItems(existing: List<SkbFunItem>): List<KeyboardTo
             val fixedId = when (mode) {
                 SkbMenuMode.Emojicon -> "fixed:emojicon"
                 SkbMenuMode.QuickKeyboard -> "fixed:quick_keyboard"
+                SkbMenuMode.ClipBoard -> "fixed:clipboard"
+                SkbMenuMode.TextEdit -> "fixed:text_edit"
                 SkbMenuMode.AiDoutu -> "fixed:ai_doutu"
                 else -> null
             }

@@ -15,6 +15,10 @@ object ThemeManager {
     }
 
     val BuiltinThemes = listOf(
+        ThemePreset.SogouDefault,
+        ThemePreset.SogouBlue,
+        ThemePreset.WechatLayout,
+        ThemePreset.SogouHuawei,
         ThemePreset.MaterialLight,
         ThemePreset.MaterialDark,
         ThemePreset.PixelLight,

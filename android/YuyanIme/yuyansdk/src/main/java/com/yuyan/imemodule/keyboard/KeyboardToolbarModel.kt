@@ -22,48 +22,38 @@ data class KeyboardToolbarSlot private constructor(val skbMenuMode: SkbMenuMode?
 object KeyboardToolbarModel {
     const val PLACEHOLDER_VIEW_TYPE = 1
 
-    private val pinnedModes = setOf(
+    private val fixedModes = listOf(
         SkbMenuMode.Emojicon,
         SkbMenuMode.QuickKeyboard,
+        SkbMenuMode.ClipBoard,
+        SkbMenuMode.TextEdit,
         SkbMenuMode.AiDoutu,
     )
 
-    private val preferredModes = listOf(
-        SkbMenuMode.Voice,
-        SkbMenuMode.PinyinHandWriting,
-        SkbMenuMode.Handwriting,
-    )
-
     /**
-     * 固定表情、快捷键盘和 AI 斗图，并保留所有非固定数据库动作（包括重复项）。
+     * 固定截图中的五个中间按钮，并保留所有非固定数据库动作（包括重复项）。
      * 传入列表只读取，不会被原地排序或删除。
      */
     fun merge(existing: List<SkbMenuMode>): List<KeyboardToolbarSlot> {
-        val remaining = existing.filterNotTo(mutableListOf()) { it in pinnedModes }
-        val featured = ArrayList<SkbMenuMode>(FEATURED_SLOT_COUNT)
-
-        preferredModes.forEach { preferred ->
-            if (featured.size == FEATURED_SLOT_COUNT) return@forEach
-            val index = remaining.indexOf(preferred)
-            if (index >= 0) featured += remaining.removeAt(index)
-        }
-
-        while (featured.size < FEATURED_SLOT_COUNT && remaining.isNotEmpty()) {
-            featured += remaining.removeAt(0)
-        }
-
-        return buildList(existing.size + PINNED_SLOT_COUNT) {
-            add(KeyboardToolbarSlot.action(SkbMenuMode.Emojicon))
-            add(KeyboardToolbarSlot.action(SkbMenuMode.QuickKeyboard))
-            addAll(featured.map(KeyboardToolbarSlot::action))
-            repeat(FEATURED_SLOT_COUNT - featured.size) {
-                add(KeyboardToolbarSlot.Placeholder)
-            }
-            add(KeyboardToolbarSlot.action(SkbMenuMode.AiDoutu))
+        val remaining = existing.filterNot { it in fixedModes }
+        return buildList(fixedModes.size + remaining.size) {
+            addAll(fixedModes.map(KeyboardToolbarSlot::action))
             addAll(remaining.map(KeyboardToolbarSlot::action))
         }
     }
+}
 
-    private const val FEATURED_SLOT_COUNT = 2
-    private const val PINNED_SLOT_COUNT = 3
+object KeyboardToolbarMetrics {
+    const val TOTAL_VISIBLE_SLOT_COUNT = 7
+    const val FUNCTION_ICON_BASE = 78
+    const val COLLAPSE_ICON_WIDTH_BASE = 26
+    const val COLLAPSE_ICON_HEIGHT_BASE = 18
+    const val HEIGHT_TO_WIDTH_RATIO = 0.09f
+
+    fun slotWidth(keyboardWidth: Int): Int = keyboardWidth / TOTAL_VISIBLE_SLOT_COUNT
+
+    fun functionIconSize(keyboardWidth: Int, rowHeight: Int): Int = minOf(
+        keyboardWidth * FUNCTION_ICON_BASE / 1080,
+        (rowHeight * 0.72f).toInt(),
+    ).coerceAtLeast(1)
 }

@@ -94,13 +94,15 @@ class AndroidImeQuickKeyboardSettingsRuntime(
     }
 
     companion object {
-        private val QUICK_THEME_IDS = setOf("MaterialLight", "MaterialDark")
+        private val QUICK_THEME_IDS = KeyboardSurfaceThemes.options.mapTo(linkedSetOf()) { it.themeId }
 
         internal fun applyThemePreference(themeId: String): Boolean {
             if (themeId !in QUICK_THEME_IDS) return false
             val manager = com.yuyan.imemodule.data.theme.ThemeManager
             val theme = manager.getTheme(themeId) ?: return false
             manager.prefs.followSystemDayNightTheme.setValue(false)
+            // 这四个选项是完整的键盘布局方案，不应继续叠加 Google/Samsung 的键帽与标签规则。
+            manager.prefs.skbStyleMode.setValue(com.yuyan.imemodule.prefs.behavior.SkbStyleMode.Yuyan)
             manager.setNormalModeTheme(theme)
             return true
         }

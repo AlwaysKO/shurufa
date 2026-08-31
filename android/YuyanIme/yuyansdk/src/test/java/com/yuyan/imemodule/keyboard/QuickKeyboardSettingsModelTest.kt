@@ -59,25 +59,30 @@ class QuickKeyboardSettingsModelTest {
     }
 
     @Test
-    fun `主题只接受项目现有的浅色和深色主题`() {
+    fun `主题只接受四套键盘布局主题并保持规定顺序`() {
         val themes = QuickKeyboardSettingsModel.availableThemes(
-            setOf("MaterialDark", "Missing", "MaterialLight", "PixelLight"),
+            setOf("WechatLayout", "Missing", "SogouHuawei", "SogouDefault", "SogouBlue"),
         )
 
-        assertEquals(listOf("MaterialLight", "MaterialDark"), themes.map { it.themeId })
-        assertTrue(QuickKeyboardSettingsModel.isThemeSelectable("MaterialLight", themes))
-        assertTrue(QuickKeyboardSettingsModel.isThemeSelectable("MaterialDark", themes))
-        assertFalse(QuickKeyboardSettingsModel.isThemeSelectable("PixelLight", themes))
+        assertEquals(
+            listOf("SogouDefault", "SogouBlue", "WechatLayout", "SogouHuawei"),
+            themes.map { it.themeId },
+        )
+        assertTrue(QuickKeyboardSettingsModel.isThemeSelectable("SogouDefault", themes))
+        assertTrue(QuickKeyboardSettingsModel.isThemeSelectable("SogouHuawei", themes))
+        assertFalse(QuickKeyboardSettingsModel.isThemeSelectable("MaterialLight", themes))
         assertFalse(QuickKeyboardSettingsModel.isThemeSelectable("Missing", themes))
         assertFalse(QuickKeyboardSettingsModel.isThemeSelectable("", themes))
     }
 
     @Test
     fun `主题选中态严格使用真实主题ID而不是明暗属性猜测`() {
-        val themes = QuickKeyboardSettingsModel.availableThemes(setOf("MaterialLight", "MaterialDark", "PixelLight"))
+        val themes = QuickKeyboardSettingsModel.availableThemes(
+            setOf("SogouDefault", "SogouBlue", "WechatLayout", "SogouHuawei", "PixelLight"),
+        )
 
-        assertEquals("MaterialLight", QuickKeyboardSettingsModel.selectedThemeId("MaterialLight", themes))
-        assertEquals("MaterialDark", QuickKeyboardSettingsModel.selectedThemeId("MaterialDark", themes))
+        assertEquals("SogouDefault", QuickKeyboardSettingsModel.selectedThemeId("SogouDefault", themes))
+        assertEquals("WechatLayout", QuickKeyboardSettingsModel.selectedThemeId("WechatLayout", themes))
         assertNull(QuickKeyboardSettingsModel.selectedThemeId("PixelLight", themes))
         assertNull(QuickKeyboardSettingsModel.selectedThemeId("NordDark", themes))
         assertNull(QuickKeyboardSettingsModel.selectedThemeId("CustomRed", themes))
@@ -150,9 +155,9 @@ class QuickKeyboardSettingsModelTest {
 
         assertFalse(controller.selectTheme("PixelLight"))
         assertNull(actions.themeId)
-        assertTrue(controller.selectTheme("MaterialDark"))
-        assertEquals("MaterialDark", actions.themeId)
-        assertEquals("MaterialDark", controller.selectedThemeId)
+        assertTrue(controller.selectTheme("SogouBlue"))
+        assertEquals("SogouBlue", actions.themeId)
+        assertEquals("SogouBlue", controller.selectedThemeId)
         assertTrue(controller.isVisible)
         assertEquals(0, actions.closeCount)
     }
@@ -193,8 +198,8 @@ class QuickKeyboardSettingsModelTest {
         QuickKeyboardSettingsModel.layouts.single { it.id == id }.action
 
     private class RecordingQuickSettingsActions : QuickKeyboardSettingsActions {
-        override val availableThemeIds = setOf("MaterialLight", "MaterialDark", "PixelLight")
-        override var currentThemeId: String = "MaterialLight"
+        override val availableThemeIds = setOf("SogouDefault", "SogouBlue", "WechatLayout", "SogouHuawei")
+        override var currentThemeId: String = "SogouDefault"
         var layoutAction: QuickKeyboardAction? = null
         var themeId: String? = null
         var closeCount = 0

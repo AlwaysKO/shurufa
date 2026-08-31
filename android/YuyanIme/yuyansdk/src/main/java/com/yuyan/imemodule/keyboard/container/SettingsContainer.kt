@@ -4,11 +4,16 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.graphics.Typeface
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
+import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import androidx.core.widget.ImageViewCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.yuyan.imemodule.R
@@ -36,7 +41,10 @@ import com.yuyan.imemodule.keyboard.QuickKeyboardLayoutId
 import com.yuyan.imemodule.keyboard.QuickKeyboardSettingsActions
 import com.yuyan.imemodule.keyboard.QuickKeyboardSettingsController
 import com.yuyan.imemodule.keyboard.QuickKeyboardSettingsModel
+import com.yuyan.imemodule.keyboard.QuickKeyboardPanelMetrics
+import com.yuyan.imemodule.keyboard.KeyboardSurfaceThemes
 import com.yuyan.imemodule.keyboard.SymbolPage
+import com.yuyan.imemodule.keyboard.view.KeyboardThemePreviewView
 import com.yuyan.imemodule.utils.KeyboardLoaderUtil
 import com.yuyan.imemodule.manager.layout.CustomGridLayoutManager
 import splitties.dimensions.dp
@@ -61,6 +69,7 @@ class SettingsContainer(
     private var mTheme: Theme? = null
     private var adapter:MenuAdapter? = null
     private var selectedSymbolPage: SymbolPage? = null
+    private var selectedQuickPage = QuickPanelPage.INPUT
     private val quickSettingsActions = quickSettingsActions ?: createQuickSettingsActions()
     private val quickSettingsController = QuickKeyboardSettingsController(this.quickSettingsActions)
     val funItems: MutableList<SkbFunItem> = LinkedList()   //键盘菜单对象
@@ -72,6 +81,8 @@ class SettingsContainer(
         internal fun applyQuickTheme(themeId: String): Boolean =
             AndroidImeQuickKeyboardSettingsRuntime.applyThemePreference(themeId)
     }
+
+    private enum class QuickPanelPage { INPUT, THEME }
 
     init {
         initView(context)
@@ -267,110 +278,237 @@ class SettingsContainer(
     private fun renderQuickSettingsView() {
         if (!quickSettingsController.isVisible) return
         removeAllViews()
-        val theme = ThemeManager.activeTheme
-        val content = LinearLayout(context).apply {
+        val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(12), dp(8), dp(12), dp(12))
+            setBackgroundColor(0xfff5f6fa.toInt())
         }
-        content.addView(sectionTitle(context.getString(R.string.quick_settings_layout_title), theme.keyTextColor))
+        root.addView(createQuickNavigation(), LinearLayout.LayoutParams(
+            LayoutParams.MATCH_PARENT,
+            dp(QuickKeyboardPanelMetrics.NAVIGATION_HEIGHT_DP),
+        ))
+        val content = when (selectedQuickPage) {
+            QuickPanelPage.INPUT -> createInputMethodContent()
+            QuickPanelPage.THEME -> createThemeContent()
+        }
+        root.addView(ScrollView(context).apply { addView(content) }, LinearLayout.LayoutParams(
+            LayoutParams.MATCH_PARENT,
+            0,
+            1f,
+        ))
+        addView(root, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+    }
 
+    private fun createQuickNavigation() = LinearLayout(context).apply {
+        orientation = LinearLayout.HORIZONTAL
+        gravity = Gravity.CENTER_VERTICAL
+        setPadding(dp(4), 0, dp(4), 0)
+        addView(navigationIcon(R.drawable.ic_arrow_back_24, "quick_settings_back") {
+            quickSettingsController.handleBack()
+        }, LinearLayout.LayoutParams(dp(48), LayoutParams.MATCH_PARENT))
+        addView(navigationTab(
+            R.string.quick_settings_input_method,
+            QuickPanelPage.INPUT,
+            "quick_tab_input",
+        ), LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT, 1f))
+        addView(navigationTab(
+            R.string.quick_settings_theme_layout,
+            QuickPanelPage.THEME,
+            "quick_tab_theme",
+        ), LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT, 1f))
+        addView(navigationIcon(R.drawable.ic_menu_setting, "quick_nav_more") {
+            selectedQuickPage = QuickPanelPage.INPUT
+            showSettingsView()
+        }, LinearLayout.LayoutParams(dp(48), LayoutParams.MATCH_PARENT))
+    }
+
+    private fun navigationIcon(drawableRes: Int, tagValue: String, click: () -> Unit) = ImageView(context).apply {
+        tag = tagValue
+        contentDescription = context.getString(
+            if (tagValue == "quick_settings_back") R.string.quick_settings_back_keyboard else R.string.quick_settings_more,
+        )
+        setImageResource(drawableRes)
+        setPadding(dp(12), dp(12), dp(12), dp(12))
+        ImageViewCompat.setImageTintList(this, android.content.res.ColorStateList.valueOf(0xff1f252b.toInt()))
+        setOnClickListener { click() }
+    }
+
+    private fun navigationTab(textRes: Int, page: QuickPanelPage, tagValue: String) = LinearLayout(context).apply {
+        orientation = LinearLayout.VERTICAL
+        gravity = Gravity.CENTER
+        val selected = selectedQuickPage == page
+        addView(TextView(context).apply {
+            text = context.getString(textRes)
+            tag = tagValue
+            isSelected = selected
+            gravity = Gravity.CENTER
+            setTextColor(0xff20242a.toInt())
+            textSize = 16f
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            minimumHeight = dp(QuickKeyboardPanelMetrics.MIN_TOUCH_TARGET_DP)
+            setOnClickListener {
+                if (selectedQuickPage != page) {
+                    selectedQuickPage = page
+                    renderQuickSettingsView()
+                }
+            }
+        }, LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0, 1f))
+        addView(View(context).apply {
+            setBackgroundColor(if (selected) KeyboardSurfaceThemes.require(
+                quickSettingsController.selectedThemeId.takeIf { KeyboardSurfaceThemes.fromThemeId(it) != null }
+                    ?: "SogouDefault",
+            ).accentColor else Color.TRANSPARENT)
+        }, LinearLayout.LayoutParams(dp(32), dp(3)))
+    }
+
+    private fun createInputMethodContent() = LinearLayout(context).apply {
+        orientation = LinearLayout.VERTICAL
+        setPadding(dp(QuickKeyboardPanelMetrics.PANEL_SIDE_PADDING_DP), dp(8), dp(QuickKeyboardPanelMetrics.PANEL_SIDE_PADDING_DP), dp(12))
         val selectedLayout = QuickKeyboardSettingsModel.selectedLayout(
             InputModeSwitcher.skbLayout,
             InputModeSwitcher.isEnglish,
             selectedSymbolPage,
         )
-        QuickKeyboardSettingsModel.layouts.chunked(2).forEach { rowItems ->
-            content.addView(LinearLayout(context).apply {
+        QuickKeyboardSettingsModel.layouts.chunked(QuickKeyboardPanelMetrics.INPUT_COLUMN_COUNT).forEach { rowItems ->
+            addView(LinearLayout(context).apply {
                 orientation = LinearLayout.HORIZONTAL
                 rowItems.forEach { option ->
-                    addView(
-                        quickButton(
-                            text = layoutLabel(option.id),
-                            selected = option.id == selectedLayout,
-                            tagValue = "quick_layout_${option.id.name}",
-                        ) {
-                            quickSettingsController.selectLayout(option.id)
-                        },
-                        LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
-                            setMargins(dp(4), dp(4), dp(4), dp(4))
-                        },
-                    )
+                    addView(inputMethodButton(option.id, option.id == selectedLayout), LinearLayout.LayoutParams(
+                        0,
+                        dp(86),
+                        1f,
+                    ).apply { setMargins(dp(3), dp(5), dp(3), dp(5)) })
                 }
-                if (rowItems.size == 1) {
+                repeat(QuickKeyboardPanelMetrics.INPUT_COLUMN_COUNT - rowItems.size) {
                     addView(View(context), LinearLayout.LayoutParams(0, 1, 1f))
                 }
             })
         }
-
-        content.addView(sectionTitle(context.getString(R.string.quick_settings_theme_title), theme.keyTextColor))
-        content.addView(LinearLayout(context).apply {
-            orientation = LinearLayout.HORIZONTAL
-            quickSettingsController.themes.forEach { option ->
-                addView(
-                    quickButton(
-                        text = if (option.isDark) {
-                            context.getString(R.string.quick_theme_dark)
-                        } else {
-                            context.getString(R.string.quick_theme_light)
-                        },
-                        selected = option.themeId == quickSettingsController.selectedThemeId,
-                        tagValue = "quick_theme_${option.themeId}",
-                    ) {
-                        if (quickSettingsController.selectTheme(option.themeId)) {
-                            renderQuickSettingsView()
-                        }
-                    },
-                    LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
-                        setMargins(dp(4), dp(4), dp(4), dp(4))
-                    },
-                )
-            }
-        })
-        content.addView(
-            quickButton(
-                text = context.getString(R.string.quick_settings_back_keyboard),
-                selected = false,
-                tagValue = "quick_settings_back",
-            ) { quickSettingsController.handleBack() },
-            LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
-                setMargins(dp(4), dp(8), dp(4), 0)
-            },
-        )
-        addView(
-            ScrollView(context).apply { addView(content) },
-            LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT),
-        )
     }
 
-    private fun sectionTitle(text: String, color: Int) = TextView(context).apply {
-        this.text = text
-        textSize = 15f
-        setTextColor(color)
-        setPadding(dp(6), dp(8), dp(6), dp(2))
-    }
-
-    private fun quickButton(
-        text: String,
-        selected: Boolean,
-        tagValue: String,
-        onClick: () -> Unit,
-    ) = TextView(context).apply {
-        this.text = if (selected) "✓ $text" else text
-        tag = tagValue
-        isSelected = selected
+    private fun inputMethodButton(id: QuickKeyboardLayoutId, selected: Boolean) = LinearLayout(context).apply {
+        orientation = LinearLayout.VERTICAL
         gravity = Gravity.CENTER
-        textSize = 14f
-        minimumHeight = dp(48)
-        setPadding(dp(8), dp(8), dp(8), dp(8))
-        val theme = ThemeManager.activeTheme
-        setTextColor(if (selected) theme.accentKeyTextColor else theme.keyTextColor)
-        background = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadius = dp(12).toFloat()
-            setColor(if (selected) theme.accentKeyBackgroundColor else theme.keyBackgroundColor)
-            setStroke(dp(if (selected) 2 else 1), if (selected) theme.accentKeyTextColor else Color.TRANSPARENT)
+        tag = "quick_layout_${id.name}"
+        isSelected = selected
+        minimumHeight = dp(QuickKeyboardPanelMetrics.MIN_TOUCH_TARGET_DP)
+        background = panelCardBackground(selected, dp(10).toFloat())
+        addView(ImageView(context).apply {
+            setImageResource(layoutIcon(id))
+            ImageViewCompat.setImageTintList(this, android.content.res.ColorStateList.valueOf(
+                if (selected) currentSurfaceTheme().accentColor else 0xff303840.toInt(),
+            ))
+            setPadding(dp(4), dp(4), dp(4), dp(4))
+        }, LinearLayout.LayoutParams(dp(34), dp(34)))
+        addView(TextView(context).apply {
+            text = layoutLabel(id)
+            gravity = Gravity.CENTER
+            setTextColor(0xff20242a.toInt())
+            textSize = 11f
+            maxLines = 1
+            typeface = Typeface.create(Typeface.DEFAULT, if (selected) Typeface.BOLD else Typeface.NORMAL)
+        }, LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, dp(30)))
+        setOnClickListener { quickSettingsController.selectLayout(id) }
+    }
+
+    private fun createThemeContent() = LinearLayout(context).apply {
+        orientation = LinearLayout.VERTICAL
+        gravity = Gravity.CENTER_HORIZONTAL
+        val visible = quickSettingsController.themes.mapNotNull { KeyboardSurfaceThemes.fromThemeId(it.themeId) }
+        val keyboardWidth = EnvironmentSingleton.instance.skbWidth
+        val sidePadding = QuickKeyboardPanelMetrics.themeSidePadding(keyboardWidth)
+        val gap = QuickKeyboardPanelMetrics.themeCardGap(keyboardWidth)
+        val cardWidth = QuickKeyboardPanelMetrics.themeCardWidth(keyboardWidth)
+        val cardHeight = QuickKeyboardPanelMetrics.themeCardHeight(keyboardWidth)
+        setPadding(sidePadding, gap / 2, sidePadding, gap / 2)
+        visible.chunked(QuickKeyboardPanelMetrics.THEME_COLUMN_COUNT).forEach { rowItems ->
+            addView(LinearLayout(context).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_HORIZONTAL
+                rowItems.forEachIndexed { index, option ->
+                    if (index > 0) addView(View(context), LinearLayout.LayoutParams(gap, 1))
+                    addView(themeCard(option, cardHeight, keyboardWidth), LinearLayout.LayoutParams(cardWidth, cardHeight))
+                }
+            }, LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, cardHeight).apply {
+                bottomMargin = gap
+            })
         }
-        setOnClickListener { onClick() }
+    }
+
+    private fun themeCard(
+        option: com.yuyan.imemodule.keyboard.KeyboardSurfaceTheme,
+        cardHeight: Int,
+        keyboardWidth: Int,
+    ) = LinearLayout(context).apply {
+        orientation = LinearLayout.VERTICAL
+        tag = "quick_theme_${option.themeId}"
+        val selected = option.themeId == quickSettingsController.selectedThemeId
+        isSelected = selected
+        minimumHeight = dp(QuickKeyboardPanelMetrics.MIN_TOUCH_TARGET_DP)
+        val scale = keyboardWidth / QuickKeyboardPanelMetrics.REFERENCE_WIDTH.toFloat()
+        setPadding((15 * scale).toInt(), (6 * scale).toInt(), (15 * scale).toInt(), (15 * scale).toInt())
+        background = panelCardBackground(
+            selected = selected,
+            radius = QuickKeyboardPanelMetrics.themeCardRadius(keyboardWidth).toFloat(),
+            selectedStrokeWidth = QuickKeyboardPanelMetrics.themeSelectedStroke(keyboardWidth),
+        )
+        addView(FrameLayout(context).apply {
+            addView(TextView(context).apply {
+                text = option.displayName
+                setTextColor(0xff20242a.toInt())
+                setTextSize(TypedValue.COMPLEX_UNIT_PX, QuickKeyboardPanelMetrics.themeTitleTextSize(keyboardWidth))
+                typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                gravity = Gravity.CENTER_VERTICAL
+            }, FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT).apply {
+                marginStart = dp(4)
+                marginEnd = dp(26)
+            })
+            addView(TextView(context).apply {
+                text = if (selected) "✓" else ""
+                gravity = Gravity.CENTER
+                setTextColor(Color.WHITE)
+                textSize = 10f
+                background = GradientDrawable().apply {
+                    shape = GradientDrawable.OVAL
+                    setColor(if (selected) option.accentColor else 0xffe2e4e9.toInt())
+                }
+            }, FrameLayout.LayoutParams(dp(18), dp(18), Gravity.END or Gravity.CENTER_VERTICAL).apply {
+                marginEnd = dp(3)
+            })
+        }, LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, (96 * scale).toInt()))
+        addView(KeyboardThemePreviewView(context).apply {
+            bind(option, InputModeSwitcher.isQwert)
+        }, LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0, 1f))
+        setOnClickListener {
+            if (quickSettingsController.selectTheme(option.themeId)) renderQuickSettingsView()
+        }
+    }
+
+    private fun panelCardBackground(
+        selected: Boolean,
+        radius: Float,
+        selectedStrokeWidth: Int = dp(2),
+    ) = GradientDrawable().apply {
+        shape = GradientDrawable.RECTANGLE
+        cornerRadius = radius
+        setColor(Color.WHITE)
+        setStroke(
+            if (selected) selectedStrokeWidth else dp(1),
+            if (selected) currentSurfaceTheme().accentColor else 0xffedf0f4.toInt(),
+        )
+    }
+
+    private fun currentSurfaceTheme() = KeyboardSurfaceThemes.fromThemeId(quickSettingsController.selectedThemeId)
+        ?: KeyboardSurfaceThemes.require("SogouDefault")
+
+    private fun layoutIcon(id: QuickKeyboardLayoutId): Int = when (id) {
+        QuickKeyboardLayoutId.CHINESE_T9 -> R.drawable.selece_input_mode_py9
+        QuickKeyboardLayoutId.CHINESE_QWERTY, QuickKeyboardLayoutId.ENGLISH_QWERTY -> R.drawable.selece_input_mode_py26
+        QuickKeyboardLayoutId.HANDWRITING -> R.drawable.selece_input_mode_handwriting
+        QuickKeyboardLayoutId.STROKE -> R.drawable.selece_input_mode_stroke
+        QuickKeyboardLayoutId.LX17 -> R.drawable.selece_input_mode_lx17
+        QuickKeyboardLayoutId.NUMBER -> R.drawable.ic_menu_shuzihang
+        QuickKeyboardLayoutId.CHINESE_SYMBOL, QuickKeyboardLayoutId.ENGLISH_SYMBOL -> R.drawable.ic_menu_flower
+        QuickKeyboardLayoutId.TEXT_EDIT -> R.drawable.ic_menu_cursor_icon
     }
 
     private fun layoutLabel(id: QuickKeyboardLayoutId): String = context.getString(

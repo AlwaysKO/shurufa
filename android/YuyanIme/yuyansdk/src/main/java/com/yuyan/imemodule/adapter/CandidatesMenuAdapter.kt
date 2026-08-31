@@ -23,6 +23,7 @@ import com.yuyan.imemodule.data.theme.ThemeManager.activeTheme
 import com.yuyan.imemodule.entity.SkbFunItem
 import com.yuyan.imemodule.keyboard.KeyboardManager
 import com.yuyan.imemodule.keyboard.KeyboardToolbarModel
+import com.yuyan.imemodule.keyboard.KeyboardToolbarMetrics
 import com.yuyan.imemodule.keyboard.container.ClipBoardContainer
 import com.yuyan.imemodule.keyboard.container.SymbolContainer
 import com.yuyan.imemodule.manager.InputModeSwitcher
@@ -39,7 +40,8 @@ class CandidatesMenuAdapter(context: Context?) : RecyclerView.Adapter<Candidates
     private val inflater: LayoutInflater = LayoutInflater.from(adapterContext)
     private var mOnItemClickListener: OnRecyclerItemClickListener? = null
     private var itemHeight: Int = instance.effectiveCandidateRowHeight(adapterContext.resources.displayMetrics.density)
-    private var mMenuPadding: Int = (instance.heightForCandidatesArea * 0.05f).toInt()
+    private var itemWidth: Int = KeyboardToolbarMetrics.slotWidth(instance.skbWidth)
+    private var iconSize: Int = KeyboardToolbarMetrics.functionIconSize(instance.skbWidth, itemHeight)
     var items: List<KeyboardToolbarVisualItem> = emptyList()
         set(value) {
             val diffResult = DiffUtil.calculateDiff(MyDiffCallback(field, value))
@@ -68,11 +70,13 @@ class CandidatesMenuAdapter(context: Context?) : RecyclerView.Adapter<Candidates
         holder.itemView.minimumWidth = adapterContext.dp(44)
         holder.itemView.minimumHeight = adapterContext.dp(44)
         holder.itemView.layoutParams = holder.itemView.layoutParams.apply {
-            width = itemHeight
+            width = itemWidth
             height = itemHeight
         }
         val icon = holder.entranceIconImageView
-        icon.setPadding(mMenuPadding, mMenuPadding, mMenuPadding, mMenuPadding)
+        val horizontalPadding = ((itemWidth - iconSize) / 2).coerceAtLeast(0)
+        val verticalPadding = ((itemHeight - iconSize) / 2).coerceAtLeast(0)
+        icon.setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding)
         icon.contentDescription = item?.funName
         if (item == null) {
             icon.visibility = View.INVISIBLE
@@ -166,7 +170,8 @@ class CandidatesMenuAdapter(context: Context?) : RecyclerView.Adapter<Candidates
 
     fun notifyChanged() {
         itemHeight = instance.effectiveCandidateRowHeight(adapterContext.resources.displayMetrics.density)
-        mMenuPadding = (instance.heightForCandidatesArea * 0.05f).toInt()
+        itemWidth = KeyboardToolbarMetrics.slotWidth(instance.skbWidth)
+        iconSize = KeyboardToolbarMetrics.functionIconSize(instance.skbWidth, itemHeight)
         notifyDataSetChanged()
     }
 

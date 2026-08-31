@@ -152,12 +152,12 @@ class CandidatesBarTest {
         assertTrue(lightRightPress != pressedColor(right))
         assertTrue(lightItemPress != pressedColor(holder.itemView))
         assertTrue(lightPanel != (panelTool.background as ColorDrawable).color)
-        assertTrue(lightPanelText != panelEnable.currentTextColor)
+        assertEquals(lightPanelText, panelEnable.currentTextColor)
         assertEquals(ThemeManager.activeTheme.keyTextColor, holder.entranceIconImageView.imageTintList?.defaultColor)
     }
 
     @Test
-    fun `空候选生产栏固定左右并完整消费含占位的工具模型`() {
+    fun `空候选生产栏固定左右并完整消费五个参考按钮`() {
         val inputView = service.onCreateInputView() as InputView
         val bar = inputView.mSkbCandidatesBarView
 
@@ -169,7 +169,7 @@ class CandidatesBarTest {
                 SkbMenuMode.Emojicon,
                 SkbMenuMode.QuickKeyboard,
                 SkbMenuMode.ClipBoard,
-                null,
+                SkbMenuMode.TextEdit,
                 SkbMenuMode.AiDoutu,
             ),
             adapter.items.map { it.item?.skbMenuMode },

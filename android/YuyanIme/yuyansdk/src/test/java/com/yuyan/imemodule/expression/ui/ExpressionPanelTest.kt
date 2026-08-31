@@ -8,6 +8,8 @@ import android.view.View
 import android.widget.TextView
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -139,6 +141,20 @@ class ExpressionPanelTest {
         val enable = panel.findViewById<TextView>(R.id.expression_enable)
         assertEquals(View.VISIBLE, enable.visibility)
         assertEquals("AI斗图", enable.text.toString())
+    }
+
+    @Test
+    fun `AI斗图入口使用自绘圆角气泡尾角和双色文字`() {
+        val panel = ExpressionPanel(context)
+        panel.render(visibleState(), catalog)
+
+        val enable = panel.findViewById<TextView>(R.id.expression_enable)
+        assertTrue(enable.background is AiDoutuBadgeDrawable)
+        val drawable = enable.background as AiDoutuBadgeDrawable
+        assertEquals(8, drawable.cornerRadiusDp)
+        assertEquals(5, drawable.tailHeightDp)
+        val spans = (enable.text as Spanned).getSpans(0, enable.text.length, ForegroundColorSpan::class.java)
+        assertEquals(2, spans.size)
     }
 
     @Test
@@ -621,7 +637,8 @@ class ExpressionPanelTest {
         val darkTextColor = panel.findViewById<TextView>(R.id.expression_enable).currentTextColor
 
         assertNotEquals(lightToolColor, darkToolColor)
-        assertNotEquals(lightTextColor, darkTextColor)
+        assertEquals(lightTextColor, darkTextColor)
+        assertTrue(panel.findViewById<View>(R.id.expression_enable).background is AiDoutuBadgeDrawable)
     }
 
     @Test

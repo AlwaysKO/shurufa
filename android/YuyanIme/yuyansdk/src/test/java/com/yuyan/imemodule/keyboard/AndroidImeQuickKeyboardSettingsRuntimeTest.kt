@@ -15,6 +15,7 @@ import com.yuyan.imemodule.keyboard.container.SymbolContainer
 import com.yuyan.imemodule.manager.InputModeSwitcher
 import com.yuyan.imemodule.prefs.AppPrefs
 import com.yuyan.imemodule.prefs.behavior.SkbMenuMode
+import com.yuyan.imemodule.prefs.behavior.SkbStyleMode
 import com.yuyan.imemodule.prefs.behavior.SymbolMode
 import com.yuyan.imemodule.service.ImeService
 import com.yuyan.imemodule.singleton.EnvironmentSingleton
@@ -113,10 +114,12 @@ class AndroidImeQuickKeyboardSettingsRuntimeTest {
         assertEquals(SymbolPage.ENGLISH, symbolContainer.quickSymbolPage)
 
         ThemeManager.prefs.followSystemDayNightTheme.setValue(true)
-        assertTrue(runtime.applyTheme("MaterialDark"))
+        ThemeManager.prefs.skbStyleMode.setValue(SkbStyleMode.Google)
+        assertTrue(runtime.applyTheme("SogouBlue"))
         assertFalse(ThemeManager.prefs.followSystemDayNightTheme.getValue())
-        assertEquals("MaterialDark", ThemeManager.activeTheme.name)
-        assertEquals("MaterialDark", ThemeManager.prefs.normalModeTheme.getValue().name)
+        assertEquals(SkbStyleMode.Yuyan, ThemeManager.prefs.skbStyleMode.getValue())
+        assertEquals("SogouBlue", ThemeManager.activeTheme.name)
+        assertEquals("SogouBlue", ThemeManager.prefs.normalModeTheme.getValue().name)
         assertEquals(1, themeRefreshes)
         runtime.closeQuickSettings()
         runtime.closeQuickSettings()
@@ -149,9 +152,12 @@ class AndroidImeQuickKeyboardSettingsRuntimeTest {
         onSettingsMenuClick(inputView, SkbMenuMode.QuickKeyboard)
         val settings = KeyboardManager.instance.currentContainer as SettingsContainer
 
-        assertFalse(settings.findViewWithTag<View>("quick_theme_MaterialLight").isSelected)
-        assertFalse(settings.findViewWithTag<View>("quick_theme_MaterialDark").isSelected)
+        settings.findViewWithTag<View>("quick_tab_theme").performClick()
+        KeyboardSurfaceThemes.options.forEach { option ->
+            assertFalse(settings.findViewWithTag<View>("quick_theme_${option.themeId}").isSelected)
+        }
 
+        settings.findViewWithTag<View>("quick_tab_input").performClick()
         settings.findViewWithTag<View>("quick_layout_CHINESE_SYMBOL").performClick()
         val symbol = KeyboardManager.instance.currentContainer as SymbolContainer
         assertEquals(SymbolPage.CHINESE, symbol.quickSymbolPage)
@@ -160,11 +166,12 @@ class AndroidImeQuickKeyboardSettingsRuntimeTest {
         assertTrue(reopened.findViewWithTag<View>("quick_layout_CHINESE_SYMBOL").isSelected)
 
         ThemeManager.prefs.followSystemDayNightTheme.setValue(true)
-        reopened.findViewWithTag<View>("quick_theme_MaterialDark").performClick()
+        reopened.findViewWithTag<View>("quick_tab_theme").performClick()
+        reopened.findViewWithTag<View>("quick_theme_WechatLayout").performClick()
         assertFalse(ThemeManager.prefs.followSystemDayNightTheme.getValue())
-        assertEquals("MaterialDark", ThemeManager.activeTheme.name)
-        assertEquals("MaterialDark", ThemeManager.prefs.normalModeTheme.getValue().name)
-        assertTrue(reopened.findViewWithTag<View>("quick_theme_MaterialDark").isSelected)
+        assertEquals("WechatLayout", ThemeManager.activeTheme.name)
+        assertEquals("WechatLayout", ThemeManager.prefs.normalModeTheme.getValue().name)
+        assertTrue(reopened.findViewWithTag<View>("quick_theme_WechatLayout").isSelected)
         assertTrue(inputView.handleImePanelBack())
         assertFalse((KeyboardManager.instance.currentContainer as? SettingsContainer)?.isQuickSettingsVisible == true)
         assertNull(shadowOf(context as Application).nextStartedActivity)

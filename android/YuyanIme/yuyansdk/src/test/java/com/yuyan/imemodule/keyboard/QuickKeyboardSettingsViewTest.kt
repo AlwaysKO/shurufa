@@ -41,12 +41,14 @@ class QuickKeyboardSettingsViewTest {
         YuyanEmojiCompat.init(context)
         ThemeManager.init(context.resources.configuration)
         EnvironmentSingleton.instance.initData(context)
+        ThemeManager.prefs.followSystemDayNightTheme.setValue(false)
+        ThemeManager.setNormalModeTheme(ThemePreset.SogouDefault)
     }
 
     @After
     fun tearDown() {
         ThemeManager.prefs.followSystemDayNightTheme.setValue(false)
-        ThemeManager.setNormalModeTheme(ThemePreset.MaterialLight)
+        ThemeManager.setNormalModeTheme(ThemePreset.SogouDefault)
     }
 
     @Test
@@ -66,8 +68,10 @@ class QuickKeyboardSettingsViewTest {
 
         container.showQuickSettingsView()
 
-        assertFalse(container.findViewWithTag<View>("quick_theme_MaterialLight").isSelected)
-        assertFalse(container.findViewWithTag<View>("quick_theme_MaterialDark").isSelected)
+        container.findViewWithTag<View>("quick_tab_theme").performClick()
+        KeyboardSurfaceThemes.options.forEach { option ->
+            assertFalse(container.findViewWithTag<View>("quick_theme_${option.themeId}").isSelected)
+        }
     }
 
     @Test
@@ -92,7 +96,7 @@ class QuickKeyboardSettingsViewTest {
     }
 
     @Test
-    fun `快捷面板在IME内显示十种布局和两个主题且触摸目标不小于44dp`() {
+    fun `快捷面板以五列输入方式和双列四主题展示且触摸目标不小于44dp`() {
         val actions = RecordingActions()
         val container = SettingsContainer(context, unsafeInputView(), actions)
 
@@ -103,13 +107,15 @@ class QuickKeyboardSettingsViewTest {
             assertTrue("缺少 ${option.id}", button != null)
             assertTrue(button.minimumHeight >= dp(44))
         }
-        listOf("MaterialLight", "MaterialDark").forEach { id ->
-            val button = container.findViewWithTag<View>("quick_theme_$id")
-            assertTrue("缺少 $id", button != null)
+        assertTrue(container.findViewWithTag<View>("quick_tab_input").isSelected)
+        container.findViewWithTag<View>("quick_tab_theme").performClick()
+        KeyboardSurfaceThemes.options.forEach { option ->
+            val button = container.findViewWithTag<View>("quick_theme_${option.themeId}")
+            assertTrue("缺少 ${option.themeId}", button != null)
             assertTrue(button.minimumHeight >= dp(44))
         }
-        assertTrue(container.findViewWithTag<View>("quick_theme_MaterialLight").isSelected)
-        assertFalse(container.findViewWithTag<View>("quick_theme_MaterialDark").isSelected)
+        assertTrue(container.findViewWithTag<View>("quick_theme_SogouDefault").isSelected)
+        assertFalse(container.findViewWithTag<View>("quick_theme_SogouBlue").isSelected)
         assertNull(shadowOf(context as android.app.Application).nextStartedActivity)
     }
 
@@ -119,11 +125,13 @@ class QuickKeyboardSettingsViewTest {
         val container = SettingsContainer(context, unsafeInputView(), actions)
         container.showQuickSettingsView()
 
-        container.findViewWithTag<View>("quick_theme_MaterialDark").performClick()
-        assertEquals("MaterialDark", actions.themeId)
-        assertTrue(container.findViewWithTag<View>("quick_theme_MaterialDark").isSelected)
+        container.findViewWithTag<View>("quick_tab_theme").performClick()
+        container.findViewWithTag<View>("quick_theme_SogouBlue").performClick()
+        assertEquals("SogouBlue", actions.themeId)
+        assertTrue(container.findViewWithTag<View>("quick_theme_SogouBlue").isSelected)
         assertNull(shadowOf(context as android.app.Application).nextStartedActivity)
 
+        container.findViewWithTag<View>("quick_tab_input").performClick()
         container.findViewWithTag<View>("quick_layout_STROKE").performClick()
         assertEquals(
             QuickKeyboardSettingsModel.layouts.single { it.id == QuickKeyboardLayoutId.STROKE }.action,
@@ -155,13 +163,13 @@ class QuickKeyboardSettingsViewTest {
     fun `真实主题动作即时生效并关闭跟随系统后持久化且拒绝未知主题`() {
         ThemeManager.prefs.followSystemDayNightTheme.setValue(true)
 
-        assertTrue(SettingsContainer.applyQuickTheme("MaterialDark"))
+        assertTrue(SettingsContainer.applyQuickTheme("SogouBlue"))
         assertFalse(ThemeManager.prefs.followSystemDayNightTheme.getValue())
-        assertEquals("MaterialDark", ThemeManager.prefs.normalModeTheme.getValue().name)
-        assertEquals("MaterialDark", ThemeManager.activeTheme.name)
+        assertEquals("SogouBlue", ThemeManager.prefs.normalModeTheme.getValue().name)
+        assertEquals("SogouBlue", ThemeManager.activeTheme.name)
 
         assertFalse(SettingsContainer.applyQuickTheme("NotInstalled"))
-        assertEquals("MaterialDark", ThemeManager.activeTheme.name)
+        assertEquals("SogouBlue", ThemeManager.activeTheme.name)
     }
 
     @Test
@@ -193,8 +201,8 @@ class QuickKeyboardSettingsViewTest {
     private fun dp(value: Int): Int = (value * context.resources.displayMetrics.density).toInt()
 
     private class RecordingActions : QuickKeyboardSettingsActions {
-        override val availableThemeIds = setOf("MaterialLight", "MaterialDark", "PixelLight")
-        override var currentThemeId = "MaterialLight"
+        override val availableThemeIds = setOf("SogouDefault", "SogouBlue", "WechatLayout", "SogouHuawei")
+        override var currentThemeId = "SogouDefault"
         var themeId: String? = null
         var layoutAction: QuickKeyboardAction? = null
         var closeCount = 0

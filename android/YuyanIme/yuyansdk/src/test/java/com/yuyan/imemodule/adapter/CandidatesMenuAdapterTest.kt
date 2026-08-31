@@ -133,7 +133,7 @@ class CandidatesMenuAdapterTest {
     }
 
     @Test
-    fun `固定槽两个占位和重复动作都有稳定唯一identity`() {
+    fun `五个固定按钮和重复动作都有稳定唯一identity`() {
         val voice = requireNotNull(menuSkbFunsPreset[SkbMenuMode.Voice])
         val empty = mergeKeyboardToolbarVisualItems(emptyList())
         val first = mergeKeyboardToolbarVisualItems(listOf(voice, voice))
@@ -141,8 +141,10 @@ class CandidatesMenuAdapterTest {
 
         assertEquals("fixed:emojicon", empty.first().slotId)
         assertEquals("fixed:quick_keyboard", empty[1].slotId)
+        assertEquals("fixed:clipboard", empty[2].slotId)
+        assertEquals("fixed:text_edit", empty[3].slotId)
         assertEquals("fixed:ai_doutu", empty.first { it.item?.skbMenuMode == SkbMenuMode.AiDoutu }.slotId)
-        assertEquals(2, empty.count { it.item == null })
+        assertEquals(0, empty.count { it.item == null })
         assertEquals(empty.size, empty.map(KeyboardToolbarVisualItem::slotId).distinct().size)
         assertEquals(first.size, first.map(KeyboardToolbarVisualItem::slotId).distinct().size)
         assertEquals(2, first.count { it.item?.skbMenuMode == SkbMenuMode.Voice })

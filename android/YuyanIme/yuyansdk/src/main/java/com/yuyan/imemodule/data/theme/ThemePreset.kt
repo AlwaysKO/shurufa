@@ -5,6 +5,70 @@ import com.yuyan.imemodule.R
 
 object ThemePreset {
 
+    val SogouDefault = Theme.Builtin(
+        name = "SogouDefault",
+        isDark = false,
+        keyboardResources = 0x0,
+        barColor = 0xfff4f4f8,
+        keyboardColor = 0xfff4f4f8,
+        keyBackgroundColor = 0xffffffff,
+        keyTextColor = 0xff000000,
+        accentKeyBackgroundColor = 0xfffb6d0e,
+        accentKeyTextColor = 0xffffffff,
+        keyPressHighlightColor = 0x1f000000,
+        popupBackgroundColor = 0xffffffff,
+        functionKeyBackgroundColor = 0xffcacbd7,
+        functionKeyPressHighlightColor = 0x22000000,
+    )
+
+    val SogouBlue = Theme.Builtin(
+        name = "SogouBlue",
+        isDark = false,
+        keyboardResources = 0x0,
+        barColor = 0xfff1f3f7,
+        keyboardColor = 0xfff1f3f7,
+        keyBackgroundColor = 0xffffffff,
+        keyTextColor = 0xff000000,
+        accentKeyBackgroundColor = 0xff007aff,
+        accentKeyTextColor = 0xffffffff,
+        keyPressHighlightColor = 0x1f000000,
+        popupBackgroundColor = 0xffffffff,
+        functionKeyBackgroundColor = 0xffcacbd9,
+        functionKeyPressHighlightColor = 0x22000000,
+    )
+
+    val WechatLayout = Theme.Builtin(
+        name = "WechatLayout",
+        isDark = false,
+        keyboardResources = 0x0,
+        barColor = 0xffdddfe4,
+        keyboardColor = 0xffdddfe4,
+        keyBackgroundColor = 0xffffffff,
+        keyTextColor = 0xff000000,
+        accentKeyBackgroundColor = 0xff23c891,
+        accentKeyTextColor = 0xffffffff,
+        keyPressHighlightColor = 0x1f000000,
+        popupBackgroundColor = 0xffffffff,
+        functionKeyBackgroundColor = 0xffb6bbc4,
+        functionKeyPressHighlightColor = 0x22000000,
+    )
+
+    val SogouHuawei = Theme.Builtin(
+        name = "SogouHuawei",
+        isDark = false,
+        keyboardResources = 0x0,
+        barColor = 0xffdadbe0,
+        keyboardColor = 0xffdadbe0,
+        keyBackgroundColor = 0xffffffff,
+        keyTextColor = 0xff000000,
+        accentKeyBackgroundColor = 0xff0864f7,
+        accentKeyTextColor = 0xffffffff,
+        keyPressHighlightColor = 0x1f000000,
+        popupBackgroundColor = 0xffffffff,
+        functionKeyBackgroundColor = 0xffb6bbc4,
+        functionKeyPressHighlightColor = 0x22000000,
+    )
+
     val MaterialLight = Theme.Builtin(
         name = "MaterialLight",
         isDark = false,

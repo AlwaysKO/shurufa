@@ -6,6 +6,9 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.LayerDrawable
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import android.util.AttributeSet
 import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
@@ -343,9 +346,12 @@ class ExpressionPanel @JvmOverloads constructor(
         setBackgroundColor(theme.keyboardColor)
         recommendationSection.setBackgroundColor(theme.keyboardColor)
         content.setBackgroundColor(theme.keyboardColor)
-        toolRow.background = ColorDrawable(theme.barColor)
-        enableButton.setTextColor(theme.accentKeyBackgroundColor)
-        enableButton.background = roundedBackground(theme.keyBackgroundColor, 8)
+        toolRow.background = ColorDrawable(theme.keyboardColor)
+        enableButton.text = SpannableString(context.getString(R.string.ai_sticker_search)).apply {
+            setSpan(ForegroundColorSpan(0xff7468f5.toInt()), 0, 2, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            setSpan(ForegroundColorSpan(0xff58b8ad.toInt()), 2, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        enableButton.background = AiDoutuBadgeDrawable(context, theme.keyBackgroundColor)
         actions.background = roundedBackground(theme.keyBackgroundColor, 16)
         listOf(moreButton, closeButton).forEach { button ->
             button.drawable?.mutate()?.setTint(theme.keyTextColor)
