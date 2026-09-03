@@ -1,0 +1,149 @@
+{
+  "version": "2026.09.03.1",
+  "items": [
+    {
+      "id": "thanks-nuotuan-bow",
+      "keyword": "谢谢",
+      "text": "谢谢",
+      "style": "original-character",
+      "sourceType": "ai-original",
+      "prompt": "完全原创的软糯团子角色双手捧心认真鞠躬，奶油白与暖橙配色，夸张而真诚的感谢表情，透明感简洁背景，主体居中并预留动作空间，原创，无文字，无水印，无品牌，无现有角色",
+      "motionPreset": "bow",
+      "frameCount": 16,
+      "durationMs": 1400,
+      "masterFile": "masters/thanks-nuotuan-bow.png"
+    },
+    {
+      "id": "thanks-puppy-flower",
+      "keyword": "谢谢",
+      "text": "谢谢",
+      "style": "ai-original-pet",
+      "sourceType": "ai-original",
+      "prompt": "完全原创的圆脸小狗叼着一朵小花抬爪致谢，真实毛发与卡通比例结合，暖黄色调，动作清楚可爱，干净背景，主体居中并预留动作空间，原创，无文字，无水印，无品牌，无现有角色",
+      "motionPreset": "shake",
+      "frameCount": 14,
+      "durationMs": 1200,
+      "masterFile": "masters/thanks-puppy-flower.png"
+    },
+    {
+      "id": "thanks-office-helper",
+      "keyword": "谢谢",
+      "text": "谢谢",
+      "style": "original-life-scene",
+      "sourceType": "ai-original",
+      "prompt": "完全原创的年轻办公室人物接过文件后双手合十致谢，简洁现代生活场景，表情自然有感染力，人物与道具轮廓鲜明，主体居中并预留动作空间，原创，无文字，无水印，无品牌，无现有角色",
+      "motionPreset": "bow",
+      "frameCount": 12,
+      "durationMs": 1000,
+      "masterFile": "masters/thanks-office-helper.png"
+    },
+    {
+      "id": "thanks-plush-toast",
+      "keyword": "谢谢",
+      "text": "谢谢",
+      "style": "3d-plush",
+      "sourceType": "ai-original",
+      "prompt": "完全原创的毛绒小熊举起果汁杯庆祝感谢，精致三维毛绒质感，柔和棚拍光线，圆润可爱且轮廓清晰，主体居中并预留动作空间，原创，无文字，无水印，无品牌，无现有角色",
+      "motionPreset": "impact",
+      "frameCount": 18,
+      "durationMs": 1600,
+      "masterFile": "masters/thanks-plush-toast.png"
+    },
+    {
+      "id": "speechless-ink-facepalm",
+      "keyword": "无语",
+      "text": "无语",
+      "style": "hand-drawn",
+      "sourceType": "ai-original",
+      "prompt": "完全原创的黑白粗线条人物扶额并缓慢侧目，极简手绘涂鸦风，留白充足，眼神死的情绪一眼可懂，主体居中并预留动作空间，原创，无文字，无水印，无品牌，无现有角色",
+      "motionPreset": "shake",
+      "frameCount": 12,
+      "durationMs": 1300,
+      "masterFile": "masters/speechless-ink-facepalm.png"
+    },
+    {
+      "id": "speechless-cat-stare",
+      "keyword": "无语",
+      "text": "无语",
+      "style": "ai-original-pet",
+      "sourceType": "ai-original",
+      "prompt": "完全原创的灰白猫咪坐姿僵硬并用半眯眼直视镜头，写实毛发搭配夸张冷漠表情，背景纯净，主体居中并预留动作空间，原创，无文字，无水印，无品牌，无现有角色",
+      "motionPreset": "bow",
+      "frameCount": 10,
+      "durationMs": 1100,
+      "masterFile": "masters/speechless-cat-stare.png"
+    },
+    {
+      "id": "speechless-roommate-freeze",
+      "keyword": "无语",
+      "text": "无语",
+      "style": "fictional-live-action",
+      "sourceType": "ai-original",
+      "prompt": "完全虚构且原创的成年人物在客厅听到离谱消息后表情凝固并后退，生活短剧镜头，身份不可对应任何真人，构图简洁，主体居中并预留动作空间，原创，无文字，无水印，无品牌，无现有角色",
+      "motionPreset": "impact",
+      "frameCount": 16,
+      "durationMs": 1500,
+      "masterFile": "masters/speechless-roommate-freeze.png"
+    },
+    {
+      "id": "speechless-loading-dots",
+      "keyword": "无语",
+      "text": "无语",
+      "style": "internet-meme-grammar",
+      "sourceType": "ai-original",
+      "prompt": "完全原创的抽象人物大脑停止响应场景，使用加载圆点和冻结姿势表达网络梗式沉默，重新设计构图与视觉符号，主体居中并预留动作空间，原创，无文字，无水印，无品牌，无现有角色",
+      "motionPreset": "shake",
+      "frameCount": 14,
+      "durationMs": 1800,
+      "masterFile": "masters/speechless-loading-dots.png"
+    },
+    {
+      "id": "laugh-huohua-table",
+      "keyword": "笑死",
+      "text": "笑死",
+      "style": "original-character",
+      "sourceType": "ai-original",
+      "prompt": "完全原创的火花形角色趴桌爆笑并迸出彩色小火星，强烈漫画表演与清晰剪影，明亮红黄配色，主体居中并预留动作空间，原创，无文字，无水印，无品牌，无现有角色",
+      "motionPreset": "laugh",
+      "frameCount": 20,
+      "durationMs": 1500,
+      "masterFile": "masters/laugh-huohua-table.png"
+    },
+    {
+      "id": "laugh-parrot-tumble",
+      "keyword": "笑死",
+      "text": "笑死",
+      "style": "ai-original-pet",
+      "sourceType": "ai-original",
+      "prompt": "完全原创的彩色小鹦鹉笑到站不稳向后翻倒，羽毛细节精致，动作夸张但结构自然，干净明亮背景，主体居中并预留动作空间，原创，无文字，无水印，无品牌，无现有角色",
+      "motionPreset": "shake",
+      "frameCount": 18,
+      "durationMs": 1300,
+      "masterFile": "masters/laugh-parrot-tumble.png"
+    },
+    {
+      "id": "laugh-friend-collapse",
+      "keyword": "笑死",
+      "text": "笑死",
+      "style": "original-life-scene",
+      "sourceType": "ai-original",
+      "prompt": "完全原创的卡通朋友听完笑话后扶着沙发笑到滑落，日常客厅场景，人物和家具造型均为原创，表演层次清楚，主体居中并预留动作空间，原创，无文字，无水印，无品牌，无现有角色",
+      "motionPreset": "bow",
+      "frameCount": 16,
+      "durationMs": 1700,
+      "masterFile": "masters/laugh-friend-collapse.png"
+    },
+    {
+      "id": "laugh-type-explosion",
+      "keyword": "笑死",
+      "text": "笑死",
+      "style": "kinetic-typography",
+      "sourceType": "ai-original",
+      "prompt": "完全原创的彩色爆炸形与弹簧笑脸组成动态排版底图，强节奏冲击构图，中央为后续中文排版保留干净区域，画面本身无任何字形，原创，无文字，无水印，无品牌，无现有角色",
+      "motionPreset": "impact",
+      "frameCount": 12,
+      "durationMs": 900,
+      "masterFile": "masters/laugh-type-explosion.png"
+    }
+  ]
+}
