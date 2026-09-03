@@ -16,17 +16,25 @@ export const PROTOTYPE_STYLES = [
   'internet-meme-grammar',
 ] as const;
 export const PROTOTYPE_MOTION_PRESETS = ['bow', 'shake', 'laugh', 'impact'] as const;
+export const PROTOTYPE_DIRECTIONS = [
+  'core-performance',
+  'pet-or-person',
+  'kinetic-type',
+  'contrast-remix',
+] as const;
 
 export type PrototypeKeyword = typeof PROTOTYPE_KEYWORDS[number];
 export type PrototypeSourceType = typeof PROTOTYPE_SOURCE_TYPES[number];
 export type PrototypeStyle = typeof PROTOTYPE_STYLES[number];
 export type PrototypeMotionPreset = typeof PROTOTYPE_MOTION_PRESETS[number];
+export type PrototypeDirection = typeof PROTOTYPE_DIRECTIONS[number];
 
 export interface PrototypeManifestItem {
   id: string;
   keyword: PrototypeKeyword;
   text: string;
   style: PrototypeStyle;
+  direction: PrototypeDirection;
   sourceType: PrototypeSourceType;
   sourceUrl?: string;
   license?: string;
@@ -103,6 +111,11 @@ export function validatePrototypeManifest(value: unknown): PrototypeManifest {
       throw new Error(`第 ${index + 1} 项使用了未知视觉风格`);
     }
 
+    const direction = requiredString(rawItem, 'direction', index);
+    if (!PROTOTYPE_DIRECTIONS.includes(direction as PrototypeDirection)) {
+      throw new Error(`第 ${index + 1} 项使用了非法内容方向`);
+    }
+
     const sourceType = requiredString(rawItem, 'sourceType', index);
     if (!PROTOTYPE_SOURCE_TYPES.includes(sourceType as PrototypeSourceType)) {
       throw new Error(`第 ${index + 1} 项使用了非法来源类型`);
@@ -141,6 +154,9 @@ export function validatePrototypeManifest(value: unknown): PrototypeManifest {
   }
   for (const keyword of PROTOTYPE_KEYWORDS) {
     const group = normalizedItems.filter((item) => item.keyword === keyword);
+    if (new Set(group.map(({ direction }) => direction)).size !== PROTOTYPE_DIRECTIONS.length) {
+      throw new Error(`${keyword}必须覆盖四种内容方向各一项`);
+    }
     const oneStyle = new Set(group.map(({ style }) => style)).size === 1;
     const oneMotion = new Set(group.map(({ motionPreset }) => motionPreset)).size === 1;
     if (oneStyle && oneMotion) {

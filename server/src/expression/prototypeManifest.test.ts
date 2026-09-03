@@ -18,6 +18,12 @@ const styles = [
   'internet-meme-grammar',
 ] as const;
 const motions = ['bow', 'shake', 'laugh', 'impact'] as const;
+const directions = [
+  'core-performance',
+  'pet-or-person',
+  'kinetic-type',
+  'contrast-remix',
+] as const;
 
 function validManifest(): PrototypeManifest {
   const keywords = ['谢谢', '无语', '笑死'] as const;
@@ -28,6 +34,7 @@ function validManifest(): PrototypeManifest {
       keyword,
       text: keyword,
       style: styles[(keywordIndex * 4 + index) % styles.length],
+      direction: directions[index],
       sourceType: 'ai-original' as const,
       prompt,
       motionPreset: motions[(keywordIndex * 4 + index) % motions.length],
@@ -146,6 +153,15 @@ describe('validatePrototypeManifest', () => {
     expect(() => validatePrototypeManifest(manifest)).toThrow(/风格或动作不能全相同/);
   });
 
+  it('拒绝同一关键词没有分别覆盖四种内容方向', () => {
+    const manifest = cloneManifest();
+    manifest.items.slice(0, 4).forEach((item) => {
+      item.direction = 'core-performance';
+    });
+
+    expect(() => validatePrototypeManifest(manifest)).toThrow(/四种内容方向各一项/);
+  });
+
   it('真实样板清单通过校验并包含三个目标关键词', () => {
     const path = fileURLToPath(new URL('../../../assets/expression/prototypes/manifest.json', import.meta.url));
     const manifest = JSON.parse(readFileSync(path, 'utf8')) as unknown;
@@ -154,5 +170,10 @@ describe('validatePrototypeManifest', () => {
     expect(validated.items).toHaveLength(12);
     expect(new Set(validated.items.map(({ keyword }) => keyword)))
       .toEqual(new Set(['谢谢', '无语', '笑死']));
+    for (const keyword of ['谢谢', '无语', '笑死']) {
+      expect(new Set(validated.items
+        .filter((item) => item.keyword === keyword)
+        .map(({ direction }) => direction))).toEqual(new Set(directions));
+    }
   });
 });
