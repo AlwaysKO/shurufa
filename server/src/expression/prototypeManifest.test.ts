@@ -91,6 +91,29 @@ describe('validatePrototypeManifest', () => {
     expect(validatePrototypeManifest(manifest)).toEqual(manifest);
   });
 
+  it('拒绝类型错误的可选来源字段', () => {
+    const numericUrl = cloneManifest();
+    numericUrl.items[0].sourceUrl = 123 as never;
+    expect(() => validatePrototypeManifest(numericUrl)).toThrow(/sourceUrl.*字符串/);
+
+    const objectLicense = cloneManifest();
+    objectLicense.items[0].license = { name: 'CC0' } as never;
+    expect(() => validatePrototypeManifest(objectLicense)).toThrow(/license.*字符串/);
+  });
+
+  it('返回由已验证字段重建且不含未知字段的清单', () => {
+    const manifest = cloneManifest() as PrototypeManifest & { ignored?: string };
+    manifest.ignored = '不应透传';
+    (manifest.items[0] as PrototypeManifest['items'][number] & { ignored?: number }).ignored = 1;
+
+    const validated = validatePrototypeManifest(manifest);
+
+    expect(validated).not.toBe(manifest);
+    expect(validated.items[0]).not.toBe(manifest.items[0]);
+    expect(validated).not.toHaveProperty('ignored');
+    expect(validated.items[0]).not.toHaveProperty('ignored');
+  });
+
   it('拒绝空 prompt', () => {
     const manifest = cloneManifest();
     manifest.items[0].prompt = '   ';
@@ -134,6 +157,28 @@ describe('validatePrototypeManifest', () => {
     const manifest = cloneManifest();
     manifest.items[0].text = '多谢';
     expect(() => validatePrototypeManifest(manifest)).toThrow(/text.*keyword/);
+  });
+
+  it('拒绝空版本号', () => {
+    const manifest = cloneManifest();
+    manifest.version = '   ';
+    expect(() => validatePrototypeManifest(manifest)).toThrow(/version.*非空/);
+  });
+
+  it('拒绝重复的 masterFile', () => {
+    const manifest = cloneManifest();
+    manifest.items[1].masterFile = manifest.items[0].masterFile;
+    expect(() => validatePrototypeManifest(manifest)).toThrow(/masterFile.*唯一/);
+  });
+
+  it.each([
+    '../outside.png',
+    '/tmp/outside.png',
+    'masters/not-png.jpg',
+  ])('拒绝不受控的主视觉路径 %s', (masterFile) => {
+    const manifest = cloneManifest();
+    manifest.items[0].masterFile = masterFile;
+    expect(() => validatePrototypeManifest(manifest)).toThrow(/masterFile.*相对路径.*\.png/);
   });
 
   it('拒绝少于六类视觉风格的清单', () => {

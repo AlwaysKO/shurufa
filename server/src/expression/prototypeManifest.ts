@@ -64,6 +64,19 @@ function requiredString(item: Record<string, unknown>, field: string, index: num
   return value;
 }
 
+function optionalString(
+  item: Record<string, unknown>,
+  field: 'sourceUrl' | 'license',
+  index: number,
+): string | undefined {
+  if (!Object.hasOwn(item, field)) return undefined;
+  const value = item[field];
+  if (typeof value !== 'string' || value.trim() === '') {
+    throw new Error(`第 ${index + 1} 项的 ${field} 声明后必须是非空字符串`);
+  }
+  return value;
+}
+
 function assertIntegerInRange(
   value: unknown,
   field: string,
@@ -78,14 +91,18 @@ function assertIntegerInRange(
 
 /** 校验评审区样板清单；失败时抛出包含具体字段的错误。 */
 export function validatePrototypeManifest(value: unknown): PrototypeManifest {
-  if (!isRecord(value) || typeof value.version !== 'string' || !Array.isArray(value.items)) {
+  if (!isRecord(value) || !Array.isArray(value.items)) {
     throw new Error('样板清单必须包含 version 和 items');
+  }
+  if (typeof value.version !== 'string' || value.version.trim() === '') {
+    throw new Error('version 必须是非空字符串');
   }
   if (value.items.length !== 12) {
     throw new Error('样板清单必须恰好 12 项');
   }
 
   const ids = new Set<string>();
+  const masterFiles = new Set<string>();
   const keywordCounts = new Map<PrototypeKeyword, number>(
     PROTOTYPE_KEYWORDS.map((keyword) => [keyword, 0]),
   );
@@ -120,11 +137,10 @@ export function validatePrototypeManifest(value: unknown): PrototypeManifest {
     if (!PROTOTYPE_SOURCE_TYPES.includes(sourceType as PrototypeSourceType)) {
       throw new Error(`第 ${index + 1} 项使用了非法来源类型`);
     }
+    const sourceUrl = optionalString(rawItem, 'sourceUrl', index);
+    const license = optionalString(rawItem, 'license', index);
     if (sourceType !== 'ai-original') {
-      const sourceUrl = rawItem.sourceUrl;
-      const license = rawItem.license;
-      if (typeof sourceUrl !== 'string' || sourceUrl.trim() === ''
-        || typeof license !== 'string' || license.trim() === '') {
+      if (sourceUrl === undefined || license === undefined) {
         throw new Error('非 ai-original 来源必须同时记录 sourceUrl 和 license');
       }
     }
@@ -141,9 +157,28 @@ export function validatePrototypeManifest(value: unknown): PrototypeManifest {
 
     assertIntegerInRange(rawItem.frameCount, 'frameCount', 10, 20, index);
     assertIntegerInRange(rawItem.durationMs, 'durationMs', 800, 2_000, index);
-    requiredString(rawItem, 'masterFile', index);
+    const masterFile = requiredString(rawItem, 'masterFile', index);
+    if (!/^masters\/[A-Za-z0-9][A-Za-z0-9._-]*\.png$/.test(masterFile)) {
+      throw new Error(`第 ${index + 1} 项的 masterFile 必须是 masters/ 下的受控相对路径且以 .png 结尾`);
+    }
+    if (masterFiles.has(masterFile)) throw new Error('masterFile 必须唯一');
+    masterFiles.add(masterFile);
 
-    return rawItem as unknown as PrototypeManifestItem;
+    return {
+      id,
+      keyword: typedKeyword,
+      text,
+      style: style as PrototypeStyle,
+      direction: direction as PrototypeDirection,
+      sourceType: sourceType as PrototypeSourceType,
+      ...(sourceUrl === undefined ? {} : { sourceUrl }),
+      ...(license === undefined ? {} : { license }),
+      prompt,
+      motionPreset: motionPreset as PrototypeMotionPreset,
+      frameCount: rawItem.frameCount,
+      durationMs: rawItem.durationMs,
+      masterFile,
+    };
   });
 
   if (Array.from(keywordCounts.values()).some((count) => count !== 4)) {
@@ -164,5 +199,8 @@ export function validatePrototypeManifest(value: unknown): PrototypeManifest {
     }
   }
 
-  return value as unknown as PrototypeManifest;
+  return {
+    version: value.version,
+    items: normalizedItems,
+  };
 }
