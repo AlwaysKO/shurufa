@@ -4,12 +4,17 @@ import { fileURLToPath } from 'node:url';
 
 import sharp, { type OverlayOptions } from 'sharp';
 
-import type { PrototypeManifestItem } from './prototypeManifest.js';
-import type { PrototypeMotionPreset } from './prototypeManifest.js';
+import type {
+  PrototypeManifestItem,
+  PrototypeMotionPreset,
+  PrototypeTextPlacement,
+} from './prototypeManifest.js';
 
 const OUTPUT_SIZE = 240;
-const SUBJECT_WIDTH = 164;
-const SUBJECT_HEIGHT = 140;
+const BOTTOM_POSE_WIDTH = 184;
+const BOTTOM_POSE_HEIGHT = 142;
+const CENTER_POSE_SIZE = 216;
+const MAX_TRANSFORMED_POSE_SIZE = 228;
 const TEXT_CENTER_Y = 183;
 const TRANSPARENT = { r: 0, g: 0, b: 0, alpha: 0 } as const;
 
@@ -20,6 +25,7 @@ export const PROTOTYPE_FONT_PATH = fileURLToPath(new URL(
 
 export interface PrototypeFramePlan {
   delayMs: number;
+  poseIndex: number;
   translateX: number;
   translateY: number;
   rotationDeg: number;
@@ -31,13 +37,18 @@ export interface PrototypeFramePlan {
 
 export interface TextOverlayOptions {
   kinetic?: boolean;
+  placement?: PrototypeTextPlacement;
   progress?: number;
 }
 
 export type RenderPrototypeGifOptions = {
   item: PrototypeManifestItem;
-  master?: Buffer;
-  masterPath?: string;
+  masters: Buffer[];
+  masterPaths?: never;
+} | {
+  item: PrototypeManifestItem;
+  masters?: never;
+  masterPaths: string[];
 };
 
 /** 在开始渲染前确认受控字体可读，避免静默退回到机器上的其他字体。 */
@@ -73,6 +84,7 @@ export function buildTextOverlaySvg(
   const scale = frame.textScale * (1 + 0.13 * kineticEnvelope);
   const rotation = frame.textRotationDeg
     + (options.kinetic ? 4 * kineticEnvelope * Math.sin(4 * Math.PI * progress) : 0);
+  const textCenterY = options.placement === 'center' ? OUTPUT_SIZE / 2 : TEXT_CENTER_Y;
   const characterCount = Math.max(1, Array.from(text).length);
   const fontSize = characterCount <= 2 ? 54
     : characterCount <= 4 ? 44
@@ -87,15 +99,15 @@ export function buildTextOverlaySvg(
           <feDropShadow dx="0" dy="4" stdDeviation="2.5" flood-color="#000000" flood-opacity="0.68"/>
         </filter>
       </defs>
-      <g transform="translate(120 ${TEXT_CENTER_Y}) rotate(${rotation.toFixed(3)}) scale(${scale.toFixed(4)}) translate(-120 -${TEXT_CENTER_Y})"
+      <g transform="translate(120 ${textCenterY}) rotate(${rotation.toFixed(3)}) scale(${scale.toFixed(4)}) translate(-120 -${textCenterY})"
          filter="url(#textShadow)">
-        <text x="120" y="198" text-anchor="middle"
+        <text x="120" y="${textCenterY + 15}" text-anchor="middle"
           font-family="Droid Sans Fallback, Source Han Serif SC, sans-serif"
           font-size="${fontSize}" font-weight="900"
           fill="#FFF7D6" stroke="#211711" stroke-width="8"
           stroke-linejoin="round" stroke-linecap="round"
           paint-order="stroke fill">${safeText}</text>
-        <text x="120" y="195" text-anchor="middle"
+        <text x="120" y="${textCenterY + 12}" text-anchor="middle"
           font-family="Droid Sans Fallback, Source Han Serif SC, sans-serif"
           font-size="${fontSize}" font-weight="900"
           fill="#FFFFFF" stroke="#FF4D4F" stroke-width="3"
@@ -123,6 +135,7 @@ export async function rasterizeTextOverlay(
   const scale = frame.textScale * (1 + 0.13 * kineticEnvelope);
   const rotation = frame.textRotationDeg
     + (options.kinetic ? 4 * kineticEnvelope * Math.sin(4 * Math.PI * progress) : 0);
+  const textCenterY = options.placement === 'center' ? OUTPUT_SIZE / 2 : TEXT_CENTER_Y;
   const renderedGlyph = await sharp({
     text: {
       text: escapeXml(text),
@@ -141,7 +154,7 @@ export async function rasterizeTextOverlay(
     },
   }).joinChannel(glyphAlpha).png().toBuffer();
   const x = OUTPUT_SIZE / 2 - renderedGlyph.info.width / 2;
-  const y = TEXT_CENTER_Y - renderedGlyph.info.height / 2;
+  const y = textCenterY - renderedGlyph.info.height / 2;
   const glyphUrl = `data:image/png;base64,${glyph.toString('base64')}`;
   const svg = Buffer.from(`
     <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -167,7 +180,7 @@ export async function rasterizeTextOverlay(
           </feMerge>
         </filter>
       </defs>
-      <g transform="translate(120 ${TEXT_CENTER_Y}) rotate(${rotation.toFixed(3)}) scale(${scale.toFixed(4)}) translate(-120 -${TEXT_CENTER_Y})">
+      <g transform="translate(120 ${textCenterY}) rotate(${rotation.toFixed(3)}) scale(${scale.toFixed(4)}) translate(-120 -${textCenterY})">
         <image x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${renderedGlyph.info.width}" height="${renderedGlyph.info.height}"
           href="${glyphUrl}" xlink:href="${glyphUrl}" filter="url(#outlinedText)"/>
       </g>
@@ -221,60 +234,126 @@ function buildEffectsSvg(
   `);
 }
 
-async function readAndNormalizeMaster(
+/** 校验并规范化单个透明姿势图；bottom 去透明边，center 保留画布内构图。 */
+export async function preparePrototypePose(
   source: Buffer | string,
   item: PrototypeManifestItem,
+  poseIndex: number,
 ): Promise<Buffer> {
+  const poseNumber = poseIndex + 1;
   let metadata;
   try {
     metadata = await sharp(source).metadata();
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
-    throw new Error(`无法读取主视觉（样板 ${item.id}）：${detail}`, { cause: error });
+    throw new Error(`无法读取姿势（样板 ${item.id}，姿势 ${poseNumber}）：${detail}`, { cause: error });
   }
 
   if (metadata.format !== 'png') {
-    throw new Error(`主视觉必须是 PNG（样板 ${item.id}，实际为 ${metadata.format ?? '未知格式'}）`);
+    throw new Error(`姿势必须是 PNG（样板 ${item.id}，姿势 ${poseNumber}，实际为 ${metadata.format ?? '未知格式'}）`);
   }
   if (!metadata.width || !metadata.height) {
-    throw new Error(`主视觉缺少有效尺寸（样板 ${item.id}）`);
+    throw new Error(`姿势缺少有效尺寸（样板 ${item.id}，姿势 ${poseNumber}）`);
+  }
+  if (!metadata.hasAlpha) {
+    throw new Error(`姿势背景完全不透明（样板 ${item.id}，姿势 ${poseNumber}）`);
   }
 
   try {
-    return await sharp(source)
+    const oriented = await sharp(source)
       .rotate()
       .ensureAlpha()
-      .resize(SUBJECT_WIDTH, SUBJECT_HEIGHT, {
+      .png()
+      .toBuffer();
+    const { data, info } = await sharp(oriented).raw().toBuffer({ resolveWithObject: true });
+    let minX = info.width;
+    let minY = info.height;
+    let maxX = -1;
+    let maxY = -1;
+    let nonTransparentPixels = 0;
+    let allOpaque = true;
+    for (let y = 0; y < info.height; y += 1) {
+      for (let x = 0; x < info.width; x += 1) {
+        const alpha = data[(y * info.width + x) * info.channels + 3];
+        if (alpha !== 255) allOpaque = false;
+        if (alpha === 0) continue;
+        nonTransparentPixels += 1;
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
+      }
+    }
+    if (allOpaque) {
+      throw new Error(`姿势背景完全不透明（样板 ${item.id}，姿势 ${poseNumber}）`);
+    }
+    if (nonTransparentPixels === 0) {
+      throw new Error(`姿势为全透明空图（样板 ${item.id}，姿势 ${poseNumber}）`);
+    }
+    const alphaRatio = nonTransparentPixels / (info.width * info.height);
+    if (alphaRatio < 0.005 || alphaRatio > 0.9) {
+      throw new Error(`姿势 alpha 占比异常（样板 ${item.id}，姿势 ${poseNumber}，占比 ${alphaRatio.toFixed(4)}）`);
+    }
+
+    if (item.textPlacement === 'center') {
+      return await sharp(oriented)
+        .resize(CENTER_POSE_SIZE, CENTER_POSE_SIZE, {
+          fit: 'contain',
+          background: TRANSPARENT,
+        })
+        .png()
+        .toBuffer();
+    }
+    return await sharp(oriented)
+      .extract({
+        left: minX,
+        top: minY,
+        width: maxX - minX + 1,
+        height: maxY - minY + 1,
+      })
+      .resize(BOTTOM_POSE_WIDTH, BOTTOM_POSE_HEIGHT, {
         fit: 'contain',
         background: TRANSPARENT,
       })
       .png()
       .toBuffer();
   } catch (error) {
+    if (error instanceof Error && error.message.includes(`样板 ${item.id}`)) throw error;
     const detail = error instanceof Error ? error.message : String(error);
-    throw new Error(`无法处理主视觉（样板 ${item.id}）：${detail}`, { cause: error });
+    throw new Error(`无法处理姿势（样板 ${item.id}，姿势 ${poseNumber}）：${detail}`, { cause: error });
   }
 }
 
 async function renderFrame(
-  normalizedMaster: Buffer,
+  preparedPoses: Buffer[],
   item: PrototypeManifestItem,
   plan: PrototypeFramePlan,
   frameIndex: number,
 ): Promise<Buffer> {
-  const width = Math.max(1, Math.round(SUBJECT_WIDTH * plan.scaleX));
-  const height = Math.max(1, Math.round(SUBJECT_HEIGHT * plan.scaleY));
-  const transformed = await sharp(normalizedMaster)
+  const pose = preparedPoses[plan.poseIndex];
+  const poseMetadata = await sharp(pose).metadata();
+  const width = Math.max(1, Math.round(poseMetadata.width! * plan.scaleX));
+  const height = Math.max(1, Math.round(poseMetadata.height! * plan.scaleY));
+  const rotated = await sharp(pose)
     .resize(width, height, { fit: 'fill' })
     .rotate(plan.rotationDeg, { background: TRANSPARENT })
     .png()
+    .toBuffer();
+  const transformed = await sharp(rotated)
+    .resize(MAX_TRANSFORMED_POSE_SIZE, MAX_TRANSFORMED_POSE_SIZE, {
+      fit: 'inside',
+      withoutEnlargement: true,
+    })
+    .png()
     .toBuffer({ resolveWithObject: true });
   const left = Math.round(OUTPUT_SIZE / 2 + plan.translateX - transformed.info.width / 2);
-  const top = Math.round(88 + plan.translateY - transformed.info.height / 2);
+  const poseCenterY = item.textPlacement === 'center' ? OUTPUT_SIZE / 2 : 72;
+  const top = Math.round(poseCenterY + plan.translateY - transformed.info.height / 2);
   const progress = frameIndex / (item.frameCount - 1);
   const effects = buildEffectsSvg(item.motionPreset, frameIndex, item.frameCount);
   const text = await rasterizeTextOverlay(item.text, plan, {
     kinetic: item.direction === 'kinetic-type',
+    placement: item.textPlacement,
     progress,
   });
   const layers: OverlayOptions[] = [
@@ -304,14 +383,28 @@ export async function renderPrototypeGif(options: RenderPrototypeGifOptions): Pr
   }
   await assertPrototypeFontAvailable(PROTOTYPE_FONT_PATH, item.id);
 
-  const hasBuffer = Buffer.isBuffer(options.master);
-  const hasPath = typeof options.masterPath === 'string' && options.masterPath.trim() !== '';
-  if (hasBuffer === hasPath) {
-    throw new Error(`必须且只能提供 masterPath 或 master Buffer（样板 ${item.id}）`);
+  if (!Array.isArray(item.poseFiles) || item.poseFiles.length !== 4) {
+    throw new Error(`poseFiles 必须恰好 4 个（样板 ${item.id}）`);
   }
-
-  const source = hasBuffer ? options.master! : options.masterPath!;
-  const normalizedMaster = await readAndNormalizeMaster(source, item);
+  const hasBuffers = Array.isArray(options.masters);
+  const hasPaths = Array.isArray(options.masterPaths);
+  if (hasBuffers === hasPaths) {
+    throw new Error(`masters 与 masterPaths 必须二选一（样板 ${item.id}）`);
+  }
+  const sources: Array<Buffer | string> = hasBuffers ? options.masters! : options.masterPaths!;
+  const sourceLabel = hasBuffers ? 'masters' : 'masterPaths';
+  if (sources.length !== 4) {
+    throw new Error(`${sourceLabel} 必须恰好 4 个并与 poseFiles 对齐（样板 ${item.id}）`);
+  }
+  if (hasBuffers && !sources.every((source) => Buffer.isBuffer(source))) {
+    throw new Error(`masters 必须全部为 Buffer（样板 ${item.id}）`);
+  }
+  if (hasPaths && !sources.every((source) => typeof source === 'string' && source.trim() !== '')) {
+    throw new Error(`masterPaths 必须全部为非空路径（样板 ${item.id}）`);
+  }
+  const preparedPoses = await Promise.all(sources.map((source, poseIndex) => (
+    preparePrototypePose(source, item, poseIndex)
+  )));
   const plan = buildFramePlan(
     item.motionPreset,
     item.frameCount,
@@ -319,7 +412,7 @@ export async function renderPrototypeGif(options: RenderPrototypeGifOptions): Pr
   );
   const frames = await Promise.all(plan.map(async (frame, index) => {
     try {
-      return await renderFrame(normalizedMaster, item, frame, index);
+      return await renderFrame(preparedPoses, item, frame, index);
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
       throw new Error(`渲染样板 ${item.id} 第 ${index + 1} 帧失败：${detail}`, { cause: error });
@@ -356,6 +449,19 @@ export async function renderPrototypeGif(options: RenderPrototypeGifOptions): Pr
   }
 }
 
+const POSE_CYCLE = [0, 1, 2, 3, 2, 1, 0] as const;
+
+/** 将任意合法帧数映射到完整、首尾闭合的四姿势往返序列。 */
+export function buildPoseSequence(frameCount: number): number[] {
+  if (!Number.isInteger(frameCount) || frameCount < POSE_CYCLE.length) {
+    throw new Error(`frameCount 必须是至少为 ${POSE_CYCLE.length} 的整数`);
+  }
+  return Array.from({ length: frameCount }, (_, index) => {
+    const cycleIndex = Math.round(index * (POSE_CYCLE.length - 1) / (frameCount - 1));
+    return POSE_CYCLE[cycleIndex];
+  });
+}
+
 export function buildFramePlan(
   motionPreset: PrototypeMotionPreset,
   frameCount: number,
@@ -371,6 +477,7 @@ export function buildFramePlan(
   const durationUnits = Math.round(durationMs / 10);
   const baseUnits = Math.floor(durationUnits / frameCount);
   const remainder = durationUnits % frameCount;
+  const poseSequence = buildPoseSequence(frameCount);
   const round = (value: number) => Math.abs(value) < 0.00005 ? 0 : Number(value.toFixed(4));
 
   return Array.from({ length: frameCount }, (_, index) => {
@@ -426,6 +533,7 @@ export function buildFramePlan(
 
     return {
       delayMs: (baseUnits + (index < remainder ? 1 : 0)) * 10,
+      poseIndex: poseSequence[index],
       translateX: round(translateX),
       translateY: round(translateY),
       rotationDeg: round(rotationDeg),
