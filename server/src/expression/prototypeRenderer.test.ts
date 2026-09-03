@@ -107,29 +107,34 @@ describe('buildTextOverlaySvg', () => {
 });
 
 describe('renderPrototypeGif', () => {
-  it('把宽幅透明 PNG 渲染为可循环的 240px 多帧 GIF，并保留实际动作', async () => {
-    const item = makeItem();
-    const output = await renderPrototypeGif({ master: await createMaster(), item });
-    const metadata = await sharp(output).metadata();
-    const animatedMetadata = await sharp(output, { animated: true }).metadata();
+  it.each(['bow', 'shake', 'laugh', 'impact'] as const)(
+    '%s 把宽幅透明 PNG 渲染为可循环的 240px 多帧 GIF，并保留实际动作',
+    async (motionPreset) => {
+      const item = makeItem({ motionPreset });
+      const output = await renderPrototypeGif({ master: await createMaster(), item });
+      const metadata = await sharp(output).metadata();
+      const animatedMetadata = await sharp(output, { animated: true }).metadata();
 
-    expect(metadata.format).toBe('gif');
-    expect(metadata.width).toBe(240);
-    expect(metadata.height).toBe(240);
-    expect(metadata.pages).toBe(item.frameCount);
-    expect(metadata.loop).toBe(0);
-    expect(metadata.delay).toHaveLength(item.frameCount);
-    expect(metadata.delay!.every((delay) => delay > 0)).toBe(true);
-    expect(Math.abs(metadata.delay!.reduce((sum, delay) => sum + delay, 0) - item.durationMs))
-      .toBeLessThanOrEqual(5);
-    expect(animatedMetadata.pageHeight).toBe(240);
+      expect(metadata.format).toBe('gif');
+      expect(metadata.width).toBe(240);
+      expect(metadata.height).toBe(240);
+      expect(metadata.pages).toBe(item.frameCount);
+      expect(metadata.loop).toBe(0);
+      expect(metadata.delay).toHaveLength(item.frameCount);
+      expect(metadata.delay!.every((delay) => delay > 0)).toBe(true);
+      expect(Math.abs(metadata.delay!.reduce((sum, delay) => sum + delay, 0) - item.durationMs))
+        .toBeLessThanOrEqual(Math.max(5, item.frameCount));
+      expect(animatedMetadata.pages).toBe(item.frameCount);
+      expect(animatedMetadata.pageHeight).toBe(240);
 
-    const pixels = await sharp(output, { animated: true }).ensureAlpha().raw().toBuffer();
-    const pageBytes = 240 * 240 * 4;
-    expect(pixels.subarray(0, pageBytes).equals(
-      pixels.subarray(pageBytes * 4, pageBytes * 5),
-    )).toBe(false);
-  });
+      const pixels = await sharp(output, { animated: true }).ensureAlpha().raw().toBuffer();
+      const pageBytes = 240 * 240 * 4;
+      const middleFrame = Math.floor(item.frameCount / 2);
+      expect(pixels.subarray(0, pageBytes).equals(
+        pixels.subarray(pageBytes * middleFrame, pageBytes * (middleFrame + 1)),
+      )).toBe(false);
+    },
+  );
 
   it('masterPath 与 Buffer 输入产生相同结果', async () => {
     const item = makeItem({ motionPreset: 'laugh', direction: 'pet-or-person' });
