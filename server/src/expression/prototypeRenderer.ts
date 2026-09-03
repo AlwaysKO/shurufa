@@ -11,10 +11,12 @@ import type {
 } from './prototypeManifest.js';
 
 const OUTPUT_SIZE = 240;
-const BOTTOM_POSE_WIDTH = 184;
-const BOTTOM_POSE_HEIGHT = 142;
+const BOTTOM_POSE_WIDTH = 170;
+const BOTTOM_POSE_HEIGHT = 120;
 const CENTER_POSE_SIZE = 216;
 const MAX_TRANSFORMED_POSE_SIZE = 228;
+const EFFECTIVE_ALPHA_THRESHOLD = 8;
+const ALPHA_BBOX_PADDING = 4;
 const TEXT_CENTER_Y = 183;
 const TRANSPARENT = { r: 0, g: 0, b: 0, alpha: 0 } as const;
 
@@ -271,13 +273,15 @@ export async function preparePrototypePose(
     let maxX = -1;
     let maxY = -1;
     let nonTransparentPixels = 0;
+    let effectivePixels = 0;
     let allOpaque = true;
     for (let y = 0; y < info.height; y += 1) {
       for (let x = 0; x < info.width; x += 1) {
         const alpha = data[(y * info.width + x) * info.channels + 3];
         if (alpha !== 255) allOpaque = false;
-        if (alpha === 0) continue;
-        nonTransparentPixels += 1;
+        if (alpha > 0) nonTransparentPixels += 1;
+        if (alpha < EFFECTIVE_ALPHA_THRESHOLD) continue;
+        effectivePixels += 1;
         minX = Math.min(minX, x);
         minY = Math.min(minY, y);
         maxX = Math.max(maxX, x);
@@ -290,7 +294,7 @@ export async function preparePrototypePose(
     if (nonTransparentPixels === 0) {
       throw new Error(`姿势为全透明空图（样板 ${item.id}，姿势 ${poseNumber}）`);
     }
-    const alphaRatio = nonTransparentPixels / (info.width * info.height);
+    const alphaRatio = effectivePixels / (info.width * info.height);
     if (alphaRatio < 0.005 || alphaRatio > 0.9) {
       throw new Error(`姿势 alpha 占比异常（样板 ${item.id}，姿势 ${poseNumber}，占比 ${alphaRatio.toFixed(4)}）`);
     }
@@ -304,12 +308,16 @@ export async function preparePrototypePose(
         .png()
         .toBuffer();
     }
+    const cropLeft = Math.max(0, minX - ALPHA_BBOX_PADDING);
+    const cropTop = Math.max(0, minY - ALPHA_BBOX_PADDING);
+    const cropRight = Math.min(info.width - 1, maxX + ALPHA_BBOX_PADDING);
+    const cropBottom = Math.min(info.height - 1, maxY + ALPHA_BBOX_PADDING);
     return await sharp(oriented)
       .extract({
-        left: minX,
-        top: minY,
-        width: maxX - minX + 1,
-        height: maxY - minY + 1,
+        left: cropLeft,
+        top: cropTop,
+        width: cropRight - cropLeft + 1,
+        height: cropBottom - cropTop + 1,
       })
       .resize(BOTTOM_POSE_WIDTH, BOTTOM_POSE_HEIGHT, {
         fit: 'contain',
@@ -347,7 +355,7 @@ async function renderFrame(
     .png()
     .toBuffer({ resolveWithObject: true });
   const left = Math.round(OUTPUT_SIZE / 2 + plan.translateX - transformed.info.width / 2);
-  const poseCenterY = item.textPlacement === 'center' ? OUTPUT_SIZE / 2 : 72;
+  const poseCenterY = item.textPlacement === 'center' ? OUTPUT_SIZE / 2 : 80;
   const top = Math.round(poseCenterY + plan.translateY - transformed.info.height / 2);
   const progress = frameIndex / (item.frameCount - 1);
   const effects = buildEffectsSvg(item.motionPreset, frameIndex, item.frameCount);

@@ -46,7 +46,7 @@ const POSE_COLOURS = [
   { r: 0, g: 200, b: 255 },
   { r: 0, g: 240, b: 106 },
   { r: 130, g: 55, b: 245 },
-  { r: 255, g: 210, b: 0 },
+  { r: 230, g: 100, b: 20 },
 ] as const;
 
 async function createPose(index: number): Promise<Buffer> {
@@ -73,7 +73,27 @@ async function createPoses(): Promise<Buffer[]> {
   return Promise.all([0, 1, 2, 3].map(createPose));
 }
 
-async function alphaBounds(image: Buffer): Promise<{
+async function createSolidPoses(): Promise<Buffer[]> {
+  return Promise.all(POSE_COLOURS.map((colour, index) => sharp({
+    create: {
+      width: 360,
+      height: 260,
+      channels: 4,
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    },
+  }).composite([{
+    input: Buffer.from(`
+      <svg xmlns="http://www.w3.org/2000/svg" width="150" height="110">
+        <rect width="150" height="110" rx="${12 + index * 4}"
+          fill="rgb(${colour.r},${colour.g},${colour.b})"/>
+      </svg>
+    `),
+    left: 80,
+    top: 65,
+  }]).png().toBuffer()));
+}
+
+async function alphaBounds(image: Buffer, minimumAlpha = 1): Promise<{
   left: number;
   top: number;
   right: number;
@@ -90,7 +110,7 @@ async function alphaBounds(image: Buffer): Promise<{
   let pixels = 0;
   for (let y = 0; y < info.height; y += 1) {
     for (let x = 0; x < info.width; x += 1) {
-      if (data[(y * info.width + x) * info.channels + 3] === 0) continue;
+      if (data[(y * info.width + x) * info.channels + 3] < minimumAlpha) continue;
       minX = Math.min(minX, x);
       minY = Math.min(minY, y);
       maxX = Math.max(maxX, x);
@@ -307,6 +327,63 @@ describe('preparePrototypePose', () => {
     expect(rightCenter).toBeGreaterThan(right.width * 0.62);
   });
 
+  it('忽略 alpha=1 的角落噪点并按中央有效主体放大', async () => {
+    const source = await sharp({
+      create: {
+        width: 400,
+        height: 400,
+        channels: 4,
+        background: { r: 0, g: 0, b: 0, alpha: 0 },
+      },
+    }).composite([
+      {
+        input: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="60" height="100"><rect width="60" height="100" fill="#00ff00"/></svg>'),
+        left: 170,
+        top: 150,
+      },
+      {
+        input: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="1" height="1" fill="#fff" fill-opacity="0.0039"/><rect x="399" y="399" width="1" height="1" fill="#fff" fill-opacity="0.0039"/></svg>'),
+        left: 0,
+        top: 0,
+      },
+    ]).png().toBuffer();
+
+    const prepared = await preparePrototypePose(source, makeItem(), 0);
+    const effective = await alphaBounds(prepared, 8);
+    expect(Math.max(
+      effective.width - effective.left - effective.right,
+      effective.height - effective.top - effective.bottom,
+    )).toBeGreaterThanOrEqual(100);
+  });
+
+  it('有效 alpha bbox 外扩 padding，保留主体周围的低透明软边', async () => {
+    const source = await sharp({
+      create: {
+        width: 200,
+        height: 200,
+        channels: 4,
+        background: { r: 0, g: 0, b: 0, alpha: 0 },
+      },
+    }).composite([{
+      input: Buffer.from(`
+        <svg xmlns="http://www.w3.org/2000/svg" width="60" height="100">
+          <rect x="2" y="2" width="56" height="96" fill="#00ff00" fill-opacity="0.02"/>
+          <rect x="6" y="6" width="48" height="88" fill="#00ff00"/>
+        </svg>
+      `),
+      left: 70,
+      top: 50,
+    }]).png().toBuffer();
+
+    const prepared = await preparePrototypePose(source, makeItem(), 0);
+    const soft = await alphaBounds(prepared, 1);
+    const effective = await alphaBounds(prepared, 8);
+    expect(soft.left).toBeLessThan(effective.left);
+    expect(soft.top).toBeLessThan(effective.top);
+    expect(soft.right).toBeLessThan(effective.right);
+    expect(soft.bottom).toBeLessThan(effective.bottom);
+  });
+
   it('拒绝完全不透明、全透明和 alpha 占比异常的姿势并定位序号', async () => {
     const opaque = await sharp({
       create: { width: 100, height: 100, channels: 4, background: { r: 20, g: 30, b: 40, alpha: 1 } },
@@ -363,6 +440,45 @@ describe('renderPrototypeGif', () => {
       expect(pixels.subarray(0, pageBytes).equals(
         pixels.subarray(pageBytes * middleFrame, pageBytes * (middleFrame + 1)),
       )).toBe(false);
+    },
+  );
+
+  it.each(['bow', 'shake', 'laugh', 'impact'] as const)(
+    '%s 的最终 GIF 每一页主体四边都有至少 4px 安全余量',
+    async (motionPreset) => {
+      const item = makeItem({ motionPreset });
+      const output = await renderPrototypeGif({ masters: await createSolidPoses(), item });
+      const { data, info } = await sharp(output, { animated: true }).ensureAlpha().raw()
+        .toBuffer({ resolveWithObject: true });
+      const pageBytes = 240 * 240 * info.channels;
+      const sequence = buildPoseSequence(item.frameCount);
+
+      for (const [frameIndex, poseIndex] of sequence.entries()) {
+        const target = POSE_COLOURS[poseIndex];
+        let minX = 240;
+        let minY = 240;
+        let maxX = -1;
+        let maxY = -1;
+        let pixels = 0;
+        const start = frameIndex * pageBytes;
+        for (let offset = start; offset < start + pageBytes; offset += info.channels) {
+          const distance = (data[offset] - target.r) ** 2
+            + (data[offset + 1] - target.g) ** 2
+            + (data[offset + 2] - target.b) ** 2;
+          if (data[offset + 3] < 128 || distance > 400) continue;
+          const pixelIndex = (offset - start) / info.channels;
+          const x = pixelIndex % 240;
+          const y = Math.floor(pixelIndex / 240);
+          minX = Math.min(minX, x);
+          minY = Math.min(minY, y);
+          maxX = Math.max(maxX, x);
+          maxY = Math.max(maxY, y);
+          pixels += 1;
+        }
+        expect(pixels, `${motionPreset} 第 ${frameIndex} 帧未找到主体`).toBeGreaterThan(100);
+        expect(Math.min(minX, minY, 239 - maxX, 239 - maxY),
+          `${motionPreset} 第 ${frameIndex} 帧主体触边`).toBeGreaterThanOrEqual(4);
+      }
     },
   );
 
