@@ -22,12 +22,14 @@ export const PROTOTYPE_DIRECTIONS = [
   'kinetic-type',
   'contrast-remix',
 ] as const;
+export const PROTOTYPE_TEXT_PLACEMENTS = ['bottom', 'center'] as const;
 
 export type PrototypeKeyword = typeof PROTOTYPE_KEYWORDS[number];
 export type PrototypeSourceType = typeof PROTOTYPE_SOURCE_TYPES[number];
 export type PrototypeStyle = typeof PROTOTYPE_STYLES[number];
 export type PrototypeMotionPreset = typeof PROTOTYPE_MOTION_PRESETS[number];
 export type PrototypeDirection = typeof PROTOTYPE_DIRECTIONS[number];
+export type PrototypeTextPlacement = typeof PROTOTYPE_TEXT_PLACEMENTS[number];
 
 export interface PrototypeManifestItem {
   id: string;
@@ -43,6 +45,8 @@ export interface PrototypeManifestItem {
   frameCount: number;
   durationMs: number;
   masterFile: string;
+  poseFiles: string[];
+  textPlacement: PrototypeTextPlacement;
 }
 
 export interface PrototypeManifest {
@@ -103,6 +107,7 @@ export function validatePrototypeManifest(value: unknown): PrototypeManifest {
 
   const ids = new Set<string>();
   const masterFiles = new Set<string>();
+  const poseFiles = new Set<string>();
   const keywordCounts = new Map<PrototypeKeyword, number>(
     PROTOTYPE_KEYWORDS.map((keyword) => [keyword, 0]),
   );
@@ -164,6 +169,35 @@ export function validatePrototypeManifest(value: unknown): PrototypeManifest {
     if (masterFiles.has(masterFile)) throw new Error('masterFile 必须唯一');
     masterFiles.add(masterFile);
 
+    if (!Array.isArray(rawItem.poseFiles) || rawItem.poseFiles.length !== 4) {
+      throw new Error(`第 ${index + 1} 项的 poseFiles 必须恰好 4 个`);
+    }
+    const validatedPoseFiles = rawItem.poseFiles.map((poseFile, poseIndex) => {
+      if (typeof poseFile !== 'string') {
+        throw new Error(`第 ${index + 1} 项的 poseFiles 必须是字符串路径`);
+      }
+      if (poseFiles.has(poseFile)) throw new Error('poseFiles 必须全清单唯一');
+      poseFiles.add(poseFile);
+      const expected = `poses/${id}/pose-${String(poseIndex + 1).padStart(2, '0')}.png`;
+      const isControlledPath = /^poses\/[A-Za-z0-9][A-Za-z0-9_-]*\/pose-0[1-4]\.png$/
+        .test(poseFile);
+      if (!isControlledPath || poseFile !== expected) {
+        throw new Error('poseFiles 必须依次匹配 poses/<item-id>/pose-01.png 到 pose-04.png');
+      }
+      return poseFile;
+    });
+
+    const textPlacement = requiredString(rawItem, 'textPlacement', index);
+    if (!PROTOTYPE_TEXT_PLACEMENTS.includes(textPlacement as PrototypeTextPlacement)) {
+      throw new Error('textPlacement 必须来自 bottom|center 白名单');
+    }
+    if (direction === 'kinetic-type' && textPlacement !== 'center') {
+      throw new Error('kinetic-type 的 textPlacement 必须是 center');
+    }
+    if (direction !== 'kinetic-type' && textPlacement !== 'bottom') {
+      throw new Error('非 kinetic-type 的 textPlacement 必须是 bottom');
+    }
+
     return {
       id,
       keyword: typedKeyword,
@@ -178,6 +212,8 @@ export function validatePrototypeManifest(value: unknown): PrototypeManifest {
       frameCount: rawItem.frameCount,
       durationMs: rawItem.durationMs,
       masterFile,
+      poseFiles: validatedPoseFiles,
+      textPlacement: textPlacement as PrototypeTextPlacement,
     };
   });
 

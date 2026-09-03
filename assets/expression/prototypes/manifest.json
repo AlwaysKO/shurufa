@@ -12,7 +12,14 @@
       "motionPreset": "bow",
       "frameCount": 16,
       "durationMs": 1400,
-      "masterFile": "masters/thanks-nuotuan-bow.png"
+      "masterFile": "masters/thanks-nuotuan-bow.png",
+      "poseFiles": [
+        "poses/thanks-nuotuan-bow/pose-01.png",
+        "poses/thanks-nuotuan-bow/pose-02.png",
+        "poses/thanks-nuotuan-bow/pose-03.png",
+        "poses/thanks-nuotuan-bow/pose-04.png"
+      ],
+      "textPlacement": "bottom"
     },
     {
       "id": "thanks-puppy-flower",
@@ -25,7 +32,14 @@
       "motionPreset": "shake",
       "frameCount": 14,
       "durationMs": 1200,
-      "masterFile": "masters/thanks-puppy-flower.png"
+      "masterFile": "masters/thanks-puppy-flower.png",
+      "poseFiles": [
+        "poses/thanks-puppy-flower/pose-01.png",
+        "poses/thanks-puppy-flower/pose-02.png",
+        "poses/thanks-puppy-flower/pose-03.png",
+        "poses/thanks-puppy-flower/pose-04.png"
+      ],
+      "textPlacement": "bottom"
     },
     {
       "id": "thanks-office-helper",
@@ -38,7 +52,14 @@
       "motionPreset": "bow",
       "frameCount": 12,
       "durationMs": 1000,
-      "masterFile": "masters/thanks-office-helper.png"
+      "masterFile": "masters/thanks-office-helper.png",
+      "poseFiles": [
+        "poses/thanks-office-helper/pose-01.png",
+        "poses/thanks-office-helper/pose-02.png",
+        "poses/thanks-office-helper/pose-03.png",
+        "poses/thanks-office-helper/pose-04.png"
+      ],
+      "textPlacement": "bottom"
     },
     {
       "id": "thanks-plush-toast",
@@ -51,7 +72,14 @@
       "motionPreset": "impact",
       "frameCount": 18,
       "durationMs": 1600,
-      "masterFile": "masters/thanks-plush-toast.png"
+      "masterFile": "masters/thanks-plush-toast.png",
+      "poseFiles": [
+        "poses/thanks-plush-toast/pose-01.png",
+        "poses/thanks-plush-toast/pose-02.png",
+        "poses/thanks-plush-toast/pose-03.png",
+        "poses/thanks-plush-toast/pose-04.png"
+      ],
+      "textPlacement": "center"
     },
     {
       "id": "speechless-ink-facepalm",
@@ -64,7 +92,14 @@
       "motionPreset": "shake",
       "frameCount": 12,
       "durationMs": 1300,
-      "masterFile": "masters/speechless-ink-facepalm.png"
+      "masterFile": "masters/speechless-ink-facepalm.png",
+      "poseFiles": [
+        "poses/speechless-ink-facepalm/pose-01.png",
+        "poses/speechless-ink-facepalm/pose-02.png",
+        "poses/speechless-ink-facepalm/pose-03.png",
+        "poses/speechless-ink-facepalm/pose-04.png"
+      ],
+      "textPlacement": "bottom"
     },
     {
       "id": "speechless-cat-stare",
@@ -77,7 +112,14 @@
       "motionPreset": "bow",
       "frameCount": 10,
       "durationMs": 1100,
-      "masterFile": "masters/speechless-cat-stare.png"
+      "masterFile": "masters/speechless-cat-stare.png",
+      "poseFiles": [
+        "poses/speechless-cat-stare/pose-01.png",
+        "poses/speechless-cat-stare/pose-02.png",
+        "poses/speechless-cat-stare/pose-03.png",
+        "poses/speechless-cat-stare/pose-04.png"
+      ],
+      "textPlacement": "bottom"
     },
     {
       "id": "speechless-roommate-freeze",
@@ -90,7 +132,14 @@
       "motionPreset": "impact",
       "frameCount": 16,
       "durationMs": 1500,
-      "masterFile": "masters/speechless-roommate-freeze.png"
+      "masterFile": "masters/speechless-roommate-freeze.png",
+      "poseFiles": [
+        "poses/speechless-roommate-freeze/pose-01.png",
+        "poses/speechless-roommate-freeze/pose-02.png",
+        "poses/speechless-roommate-freeze/pose-03.png",
+        "poses/speechless-roommate-freeze/pose-04.png"
+      ],
+      "textPlacement": "bottom"
     },
     {
       "id": "speechless-loading-dots",
@@ -103,7 +152,14 @@
       "motionPreset": "shake",
       "frameCount": 14,
       "durationMs": 1800,
-      "masterFile": "masters/speechless-loading-dots.png"
+      "masterFile": "masters/speechless-loading-dots.png",
+      "poseFiles": [
+        "poses/speechless-loading-dots/pose-01.png",
+        "poses/speechless-loading-dots/pose-02.png",
+        "poses/speechless-loading-dots/pose-03.png",
+        "poses/speechless-loading-dots/pose-04.png"
+      ],
+      "textPlacement": "center"
     },
     {
       "id": "laugh-huohua-table",
@@ -116,7 +172,14 @@
       "motionPreset": "laugh",
       "frameCount": 20,
       "durationMs": 1500,
-      "masterFile": "masters/laugh-huohua-table.png"
+      "masterFile": "masters/laugh-huohua-table.png",
+      "poseFiles": [
+        "poses/laugh-huohua-table/pose-01.png",
+        "poses/laugh-huohua-table/pose-02.png",
+        "poses/laugh-huohua-table/pose-03.png",
+        "poses/laugh-huohua-table/pose-04.png"
+      ],
+      "textPlacement": "bottom"
     },
     {
       "id": "laugh-parrot-tumble",
@@ -129,7 +192,14 @@
       "motionPreset": "shake",
       "frameCount": 18,
       "durationMs": 1300,
-      "masterFile": "masters/laugh-parrot-tumble.png"
+      "masterFile": "masters/laugh-parrot-tumble.png",
+      "poseFiles": [
+        "poses/laugh-parrot-tumble/pose-01.png",
+        "poses/laugh-parrot-tumble/pose-02.png",
+        "poses/laugh-parrot-tumble/pose-03.png",
+        "poses/laugh-parrot-tumble/pose-04.png"
+      ],
+      "textPlacement": "bottom"
     },
     {
       "id": "laugh-friend-collapse",
@@ -142,7 +212,14 @@
       "motionPreset": "bow",
       "frameCount": 16,
       "durationMs": 1700,
-      "masterFile": "masters/laugh-friend-collapse.png"
+      "masterFile": "masters/laugh-friend-collapse.png",
+      "poseFiles": [
+        "poses/laugh-friend-collapse/pose-01.png",
+        "poses/laugh-friend-collapse/pose-02.png",
+        "poses/laugh-friend-collapse/pose-03.png",
+        "poses/laugh-friend-collapse/pose-04.png"
+      ],
+      "textPlacement": "bottom"
     },
     {
       "id": "laugh-type-explosion",
@@ -155,7 +232,14 @@
       "motionPreset": "impact",
       "frameCount": 12,
       "durationMs": 900,
-      "masterFile": "masters/laugh-type-explosion.png"
+      "masterFile": "masters/laugh-type-explosion.png",
+      "poseFiles": [
+        "poses/laugh-type-explosion/pose-01.png",
+        "poses/laugh-type-explosion/pose-02.png",
+        "poses/laugh-type-explosion/pose-03.png",
+        "poses/laugh-type-explosion/pose-04.png"
+      ],
+      "textPlacement": "center"
     }
   ]
 }

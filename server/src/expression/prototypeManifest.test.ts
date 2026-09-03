@@ -29,19 +29,27 @@ function validManifest(): PrototypeManifest {
   const keywords = ['谢谢', '无语', '笑死'] as const;
   return {
     version: '2026.09.03.1',
-    items: keywords.flatMap((keyword, keywordIndex) => Array.from({ length: 4 }, (_, index) => ({
-      id: `prototype-${keywordIndex + 1}-${index + 1}`,
-      keyword,
-      text: keyword,
-      style: styles[(keywordIndex * 4 + index) % styles.length],
-      direction: directions[index],
-      sourceType: 'ai-original' as const,
-      prompt,
-      motionPreset: motions[(keywordIndex * 4 + index) % motions.length],
-      frameCount: 10 + index * 2,
-      durationMs: 900 + index * 200,
-      masterFile: `masters/prototype-${keywordIndex + 1}-${index + 1}.png`,
-    }))),
+    items: keywords.flatMap((keyword, keywordIndex) => Array.from({ length: 4 }, (_, index) => {
+      const id = `prototype-${keywordIndex + 1}-${index + 1}`;
+      return {
+        id,
+        keyword,
+        text: keyword,
+        style: styles[(keywordIndex * 4 + index) % styles.length],
+        direction: directions[index],
+        sourceType: 'ai-original' as const,
+        prompt,
+        motionPreset: motions[(keywordIndex * 4 + index) % motions.length],
+        frameCount: 10 + index * 2,
+        durationMs: 900 + index * 200,
+        masterFile: `masters/${id}.png`,
+        poseFiles: Array.from(
+          { length: 4 },
+          (_, poseIndex) => `poses/${id}/pose-${String(poseIndex + 1).padStart(2, '0')}.png`,
+        ),
+        textPlacement: index === 2 ? 'center' as const : 'bottom' as const,
+      };
+    })),
   };
 }
 
@@ -181,6 +189,57 @@ describe('validatePrototypeManifest', () => {
     expect(() => validatePrototypeManifest(manifest)).toThrow(/masterFile.*相对路径.*\.png/);
   });
 
+  it('拒绝缺少、少于或多于四张的 poseFiles', () => {
+    const missing = cloneManifest();
+    delete (missing.items[0] as Partial<PrototypeManifest['items'][number]>).poseFiles;
+    expect(() => validatePrototypeManifest(missing)).toThrow(/poseFiles.*恰好 4 个/);
+
+    const tooFew = cloneManifest();
+    tooFew.items[0].poseFiles.pop();
+    expect(() => validatePrototypeManifest(tooFew)).toThrow(/poseFiles.*恰好 4 个/);
+
+    const tooMany = cloneManifest();
+    tooMany.items[0].poseFiles.push('poses/prototype-1-1/pose-05.png');
+    expect(() => validatePrototypeManifest(tooMany)).toThrow(/poseFiles.*恰好 4 个/);
+  });
+
+  it('拒绝全清单重复的姿势文件', () => {
+    const manifest = cloneManifest();
+    manifest.items[1].poseFiles[0] = manifest.items[0].poseFiles[0];
+    expect(() => validatePrototypeManifest(manifest)).toThrow(/poseFiles.*全清单唯一/);
+  });
+
+  it.each([
+    ['poses/prototype-1-1/../pose-01.png', '路径穿越'],
+    ['poses/another-id/pose-01.png', 'ID 不匹配'],
+    ['poses/prototype-1-1/pose-04.png', '序号错误'],
+  ])('拒绝 poseFiles 的%s', (poseFile) => {
+    const manifest = cloneManifest();
+    manifest.items[0].poseFiles[0] = poseFile;
+    expect(() => validatePrototypeManifest(manifest))
+      .toThrow(/poseFiles.*poses\/<item-id>\/pose-01\.png/);
+  });
+
+  it('拒绝白名单之外的 textPlacement', () => {
+    const manifest = cloneManifest();
+    manifest.items[0].textPlacement = 'top' as never;
+    expect(() => validatePrototypeManifest(manifest)).toThrow(/textPlacement.*白名单/);
+  });
+
+  it('要求 kinetic-type 使用 center 文字位置', () => {
+    const manifest = cloneManifest();
+    const kinetic = manifest.items.find(({ direction }) => direction === 'kinetic-type')!;
+    kinetic.textPlacement = 'bottom';
+    expect(() => validatePrototypeManifest(manifest)).toThrow(/kinetic-type.*center/);
+  });
+
+  it('要求非 kinetic-type 使用 bottom 文字位置', () => {
+    const manifest = cloneManifest();
+    const nonKinetic = manifest.items.find(({ direction }) => direction !== 'kinetic-type')!;
+    nonKinetic.textPlacement = 'center';
+    expect(() => validatePrototypeManifest(manifest)).toThrow(/非 kinetic-type.*bottom/);
+  });
+
   it('拒绝少于六类视觉风格的清单', () => {
     const manifest = cloneManifest();
     manifest.items.forEach((item, index) => {
@@ -202,6 +261,7 @@ describe('validatePrototypeManifest', () => {
     const manifest = cloneManifest();
     manifest.items.slice(0, 4).forEach((item) => {
       item.direction = 'core-performance';
+      item.textPlacement = 'bottom';
     });
 
     expect(() => validatePrototypeManifest(manifest)).toThrow(/四种内容方向各一项/);
@@ -213,6 +273,7 @@ describe('validatePrototypeManifest', () => {
     const validated = validatePrototypeManifest(manifest);
 
     expect(validated.items).toHaveLength(12);
+    expect(validated.items.every(({ poseFiles }) => poseFiles.length === 4)).toBe(true);
     expect(new Set(validated.items.map(({ keyword }) => keyword)))
       .toEqual(new Set(['谢谢', '无语', '笑死']));
     for (const keyword of ['谢谢', '无语', '笑死']) {
