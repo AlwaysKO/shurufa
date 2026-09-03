@@ -1,3 +1,7 @@
+import { access } from 'node:fs/promises';
+import { constants as fsConstants } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
 import sharp, { type OverlayOptions } from 'sharp';
 
 import type { PrototypeManifestItem } from './prototypeManifest.js';
@@ -6,7 +10,13 @@ import type { PrototypeMotionPreset } from './prototypeManifest.js';
 const OUTPUT_SIZE = 240;
 const SUBJECT_WIDTH = 164;
 const SUBJECT_HEIGHT = 140;
+const TEXT_CENTER_Y = 183;
 const TRANSPARENT = { r: 0, g: 0, b: 0, alpha: 0 } as const;
+
+export const PROTOTYPE_FONT_PATH = fileURLToPath(new URL(
+  '../../../assets/expression/fonts/DroidSansFallbackFull.ttf',
+  import.meta.url,
+));
 
 export interface PrototypeFramePlan {
   delayMs: number;
@@ -29,6 +39,18 @@ export type RenderPrototypeGifOptions = {
   master?: Buffer;
   masterPath?: string;
 };
+
+/** 在开始渲染前确认受控字体可读，避免静默退回到机器上的其他字体。 */
+export async function assertPrototypeFontAvailable(
+  fontPath = PROTOTYPE_FONT_PATH,
+  itemId = '未知样板',
+): Promise<void> {
+  try {
+    await access(fontPath, fsConstants.R_OK);
+  } catch (error) {
+    throw new Error(`固定字体缺失（样板 ${itemId}）：${fontPath}`, { cause: error });
+  }
+}
 
 function escapeXml(value: string): string {
   return value
@@ -65,15 +87,15 @@ export function buildTextOverlaySvg(
           <feDropShadow dx="0" dy="4" stdDeviation="2.5" flood-color="#000000" flood-opacity="0.68"/>
         </filter>
       </defs>
-      <g transform="translate(120 207) rotate(${rotation.toFixed(3)}) scale(${scale.toFixed(4)}) translate(-120 -207)"
+      <g transform="translate(120 ${TEXT_CENTER_Y}) rotate(${rotation.toFixed(3)}) scale(${scale.toFixed(4)}) translate(-120 -${TEXT_CENTER_Y})"
          filter="url(#textShadow)">
-        <text x="120" y="222" text-anchor="middle"
+        <text x="120" y="198" text-anchor="middle"
           font-family="Droid Sans Fallback, Source Han Serif SC, sans-serif"
           font-size="${fontSize}" font-weight="900"
           fill="#FFF7D6" stroke="#211711" stroke-width="8"
           stroke-linejoin="round" stroke-linecap="round"
           paint-order="stroke fill">${safeText}</text>
-        <text x="120" y="219" text-anchor="middle"
+        <text x="120" y="195" text-anchor="middle"
           font-family="Droid Sans Fallback, Source Han Serif SC, sans-serif"
           font-size="${fontSize}" font-weight="900"
           fill="#FFFFFF" stroke="#FF4D4F" stroke-width="3"
@@ -82,6 +104,76 @@ export function buildTextOverlaySvg(
       </g>
     </svg>
   `);
+}
+
+/** 使用仓库内固定字体栅格化文字，再施加描边、阴影和逐帧动效。 */
+export async function rasterizeTextOverlay(
+  text: string,
+  frame: PrototypeFramePlan,
+  options: TextOverlayOptions = {},
+): Promise<Buffer> {
+  await assertPrototypeFontAvailable();
+  const characterCount = Math.max(1, Array.from(text).length);
+  const fontSize = characterCount <= 2 ? 54
+    : characterCount <= 4 ? 44
+      : characterCount <= 6 ? 35
+        : 28;
+  const progress = Math.min(1, Math.max(0, options.progress ?? 0));
+  const kineticEnvelope = options.kinetic ? Math.sin(Math.PI * progress) : 0;
+  const scale = frame.textScale * (1 + 0.13 * kineticEnvelope);
+  const rotation = frame.textRotationDeg
+    + (options.kinetic ? 4 * kineticEnvelope * Math.sin(4 * Math.PI * progress) : 0);
+  const renderedGlyph = await sharp({
+    text: {
+      text: escapeXml(text),
+      font: `Droid Sans Fallback ${fontSize}`,
+      fontfile: PROTOTYPE_FONT_PATH,
+      rgba: true,
+    },
+  }).png().toBuffer({ resolveWithObject: true });
+  const glyphAlpha = await sharp(renderedGlyph.data).extractChannel('alpha').png().toBuffer();
+  const glyph = await sharp({
+    create: {
+      width: renderedGlyph.info.width,
+      height: renderedGlyph.info.height,
+      channels: 3,
+      background: '#ffffff',
+    },
+  }).joinChannel(glyphAlpha).png().toBuffer();
+  const x = OUTPUT_SIZE / 2 - renderedGlyph.info.width / 2;
+  const y = TEXT_CENTER_Y - renderedGlyph.info.height / 2;
+  const glyphUrl = `data:image/png;base64,${glyph.toString('base64')}`;
+  const svg = Buffer.from(`
+    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+      width="240" height="240" viewBox="0 0 240 240">
+      <defs>
+        <filter id="outlinedText" x="-45%" y="-70%" width="190%" height="240%"
+          color-interpolation-filters="sRGB">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="2.5" result="shadowBlur"/>
+          <feOffset in="shadowBlur" dx="0" dy="4" result="shadowOffset"/>
+          <feFlood flood-color="#000000" flood-opacity="0.68" result="shadowColour"/>
+          <feComposite in="shadowColour" in2="shadowOffset" operator="in" result="shadow"/>
+          <feMorphology in="SourceAlpha" operator="dilate" radius="7" result="outerMask"/>
+          <feFlood flood-color="#211711" result="outerColour"/>
+          <feComposite in="outerColour" in2="outerMask" operator="in" result="outer"/>
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="innerMask"/>
+          <feFlood flood-color="#FF4D4F" result="innerColour"/>
+          <feComposite in="innerColour" in2="innerMask" operator="in" result="inner"/>
+          <feMerge>
+            <feMergeNode in="shadow"/>
+            <feMergeNode in="outer"/>
+            <feMergeNode in="inner"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+      <g transform="translate(120 ${TEXT_CENTER_Y}) rotate(${rotation.toFixed(3)}) scale(${scale.toFixed(4)}) translate(-120 -${TEXT_CENTER_Y})">
+        <image x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${renderedGlyph.info.width}" height="${renderedGlyph.info.height}"
+          href="${glyphUrl}" xlink:href="${glyphUrl}" filter="url(#outlinedText)"/>
+      </g>
+    </svg>
+  `);
+  return sharp(svg).png().toBuffer();
 }
 
 function buildEffectsSvg(
@@ -181,7 +273,7 @@ async function renderFrame(
   const top = Math.round(88 + plan.translateY - transformed.info.height / 2);
   const progress = frameIndex / (item.frameCount - 1);
   const effects = buildEffectsSvg(item.motionPreset, frameIndex, item.frameCount);
-  const text = buildTextOverlaySvg(item.text, plan, {
+  const text = await rasterizeTextOverlay(item.text, plan, {
     kinetic: item.direction === 'kinetic-type',
     progress,
   });
@@ -203,47 +295,65 @@ async function renderFrame(
 
 /** 将无文字 PNG 主视觉渲染为 240×240、无限循环的确定性动态 GIF。 */
 export async function renderPrototypeGif(options: RenderPrototypeGifOptions): Promise<Buffer> {
+  const { item } = options;
+  if (!Number.isInteger(item.frameCount) || item.frameCount < 10 || item.frameCount > 20) {
+    throw new Error(`frameCount 必须在 10–20 之间（样板 ${item.id}）`);
+  }
+  if (!Number.isInteger(item.durationMs) || item.durationMs < 800 || item.durationMs > 2_000) {
+    throw new Error(`durationMs 必须在 800–2000 之间（样板 ${item.id}）`);
+  }
+  await assertPrototypeFontAvailable(PROTOTYPE_FONT_PATH, item.id);
+
   const hasBuffer = Buffer.isBuffer(options.master);
   const hasPath = typeof options.masterPath === 'string' && options.masterPath.trim() !== '';
   if (hasBuffer === hasPath) {
-    throw new Error(`必须且只能提供 masterPath 或 master Buffer（样板 ${options.item.id}）`);
+    throw new Error(`必须且只能提供 masterPath 或 master Buffer（样板 ${item.id}）`);
   }
 
   const source = hasBuffer ? options.master! : options.masterPath!;
-  const normalizedMaster = await readAndNormalizeMaster(source, options.item);
+  const normalizedMaster = await readAndNormalizeMaster(source, item);
   const plan = buildFramePlan(
-    options.item.motionPreset,
-    options.item.frameCount,
-    options.item.durationMs,
+    item.motionPreset,
+    item.frameCount,
+    item.durationMs,
   );
-  const frames = await Promise.all(plan.map((frame, index) => (
-    renderFrame(normalizedMaster, options.item, frame, index)
-  )));
-  const frameStrip = sharp({
-    create: {
-      width: OUTPUT_SIZE,
-      height: OUTPUT_SIZE * frames.length,
-      pageHeight: OUTPUT_SIZE,
-      channels: 4,
-      background: TRANSPARENT,
-    },
-  });
-
-  return frameStrip
-    .composite(frames.map((input, index) => ({
-      input,
-      left: 0,
-      top: index * OUTPUT_SIZE,
-    })))
-    .gif({
-      loop: 0,
-      delay: plan.map(({ delayMs }) => delayMs),
-      colours: 192,
-      dither: 0.7,
-      effort: 6,
-      keepDuplicateFrames: true,
-    })
-    .toBuffer();
+  const frames = await Promise.all(plan.map(async (frame, index) => {
+    try {
+      return await renderFrame(normalizedMaster, item, frame, index);
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      throw new Error(`渲染样板 ${item.id} 第 ${index + 1} 帧失败：${detail}`, { cause: error });
+    }
+  }));
+  try {
+    const frameStrip = sharp({
+      create: {
+        width: OUTPUT_SIZE,
+        height: OUTPUT_SIZE * frames.length,
+        pageHeight: OUTPUT_SIZE,
+        channels: 4,
+        background: TRANSPARENT,
+      },
+    });
+    return await frameStrip
+      .composite(frames.map((input, index) => ({
+        input,
+        left: 0,
+        top: index * OUTPUT_SIZE,
+      })))
+      .gif({
+        loop: 0,
+        delay: plan.map(({ delayMs }) => delayMs),
+        colours: 192,
+        dither: 0.7,
+        effort: 6,
+        keepDuplicateFrames: true,
+      })
+      .toBuffer();
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(`编码样板 ${item.id} GIF 失败：${detail}`, { cause: error });
+  }
 }
 
 export function buildFramePlan(
