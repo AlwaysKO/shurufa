@@ -8,6 +8,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.util.DisplayMetrics
 import android.view.DisplayCutout
+import android.view.HapticFeedbackConstants
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -55,6 +56,7 @@ import com.yuyan.imemodule.expression.ExpressionPreviewJobSlot
 import com.yuyan.imemodule.expression.ExpressionPanelPresentation
 import com.yuyan.imemodule.expression.ExpressionQueryCoordinator
 import com.yuyan.imemodule.expression.ExpressionRecommendationResolver
+import com.yuyan.imemodule.expression.ExpressionSelectionInputClearer
 import com.yuyan.imemodule.expression.ExpressionSync
 import com.yuyan.imemodule.expression.model.EmojiCombination
 import com.yuyan.imemodule.expression.model.ExpressionAsset
@@ -245,6 +247,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 context = context,
                 inputConnection = ::currentInputConnection,
                 editorMimeTypes = ::currentEditorMimeTypes,
+                editorInfo = ::currentEditorInfo,
             )
             val sendController = ExpressionSendController(contentSender)
             val renderer = ExpressionRenderer(context.cacheDir)
@@ -262,6 +265,15 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 sendController = sendController,
                 prepareAsset = { asset, query -> prepareAsset(sync, cache, renderer, asset, query) },
                 prepareCombination = { combination -> prepareCombination(sync, cache, combination) },
+                fallback = { expression, failure ->
+                    if (failure == ExpressionSendResult.AlreadySending) {
+                        failure
+                    } else if (contentSender.saveToGallery(expression)) {
+                        ExpressionSendResult.SavedToGallery
+                    } else {
+                        failure
+                    }
+                },
             )
             expressionPanel.onAiStickerEnabledChange = { enabled ->
                 if (!enabled) setExpressionExpanded(false)
@@ -442,6 +454,9 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     private fun sendDirectly(asset: ExpressionAsset) {
         val query = expressionPanelState.query ?: return
         if (expressionPreparationJob?.isActive == true) return
+        performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+        if (!clearInputForExpressionSelection()) return
+        Toast.makeText(context, R.string.expression_preparing_image, Toast.LENGTH_SHORT).show()
         expressionPreparationJob = expressionScope.launch {
             showExpressionSendResult(expressionFlow.prepareAndSend(asset, query))
         }
@@ -449,9 +464,37 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
     private fun sendDirectly(combination: EmojiCombination) {
         if (expressionPreparationJob?.isActive == true) return
+        performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+        if (!clearInputForExpressionSelection()) return
+        Toast.makeText(context, R.string.expression_preparing_image, Toast.LENGTH_SHORT).show()
         expressionPreparationJob = expressionScope.launch {
             showExpressionSendResult(expressionFlow.prepareAndSend(combination))
         }
+    }
+
+    private fun clearInputForExpressionSelection(): Boolean {
+        val connection = currentInputConnection()
+        val cleared = ExpressionSelectionInputClearer.clear(
+            clearComposition = {
+                expressionComposingTextSource.clear()
+                connection?.setComposingText("", 1)
+            },
+            selectAllText = {
+                connection?.performContextMenuAction(android.R.id.selectAll) == true
+            },
+            replaceSelectedText = { connection?.commitText("", 1) == true },
+            textBeforeCursor = { limit -> connection?.getTextBeforeCursor(limit, 0) },
+            textAfterCursor = { limit -> connection?.getTextAfterCursor(limit, 0) },
+            deleteSurroundingText = { before, after ->
+                connection?.deleteSurroundingText(before, after) == true
+            },
+        )
+        expressionManualSearch.invalidateCommittedText()
+        clearExpressionQuery()
+        if (!cleared) {
+            Toast.makeText(context, R.string.expression_clear_input_failed, Toast.LENGTH_SHORT).show()
+        }
+        return cleared
     }
 
     private fun showExpressionSendResult(result: ExpressionSendResult) {
@@ -459,6 +502,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             ExpressionSendResult.Sent,
             ExpressionSendResult.AlreadySending,
             -> null
+            ExpressionSendResult.SavedToGallery -> context.getString(R.string.expression_saved_to_gallery)
             ExpressionSendResult.UnsupportedTarget -> context.getString(R.string.expression_target_image_unsupported)
             is ExpressionSendResult.Failed -> result.reason.ifBlank { context.getString(R.string.expression_image_send_failed) }
             ExpressionSendResult.NotPrepared -> context.getString(R.string.expression_image_send_failed)
@@ -1239,7 +1283,15 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     fun currentInputConnection(): android.view.inputmethod.InputConnection? = service.currentInputConnection
 
     /** 当前编辑器声明的 MIME 类型（判断是否支持图片输入） */
-    fun currentEditorMimeTypes(): Array<String>? = service.currentInputEditorInfo?.contentMimeTypes
+    fun currentEditorMimeTypes(): Array<String>? =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+            service.currentInputEditorInfo?.contentMimeTypes
+        } else {
+            null
+        }
+
+    /** AndroidX 富内容兼容提交需要完整 EditorInfo（含旧版 support extras）。 */
+    fun currentEditorInfo(): EditorInfo? = service.currentInputEditorInfo
 
     private fun resetCandidateWindow() {
         DecodingInfo.reset()

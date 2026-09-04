@@ -37,6 +37,13 @@ open class SoftKey(var code: Int = 0, var label: String = "", var labelSmall: St
     var secondaryLabelVerticalBias = 0.5f
     var mainLabelHorizontalBias = 0.5f
     var secondaryLabelHorizontalBias = 0.5f
+    /** 搜狗 1080 设计稿中的绝对字号；0 表示继续使用项目原字号。 */
+    var mainLabelReferenceSize = 0f
+    var secondaryLabelReferenceSize = 0f
+    var forceRegularMainLabel = false
+    /** 指定键位可覆盖主题前景色，以还原源布局的文字层级。 */
+    var mainLabelColorOverride: Int? = null
+    var secondaryLabelColorOverride: Int? = null
 
     fun onPressed() {
         pressed = true

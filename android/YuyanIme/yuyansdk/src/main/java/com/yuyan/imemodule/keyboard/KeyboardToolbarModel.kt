@@ -45,15 +45,21 @@ object KeyboardToolbarModel {
 
 object KeyboardToolbarMetrics {
     const val TOTAL_VISIBLE_SLOT_COUNT = 7
-    const val FUNCTION_ICON_BASE = 78
-    const val COLLAPSE_ICON_WIDTH_BASE = 26
-    const val COLLAPSE_ICON_HEIGHT_BASE = 18
+    const val FUNCTION_ICON_BASE = 92
+    const val COLLAPSE_ICON_WIDTH_BASE = 92
+    const val COLLAPSE_ICON_HEIGHT_BASE = 92
     const val HEIGHT_TO_WIDTH_RATIO = 0.09f
 
     fun slotWidth(keyboardWidth: Int): Int = keyboardWidth / TOTAL_VISIBLE_SLOT_COUNT
 
     fun functionIconSize(keyboardWidth: Int, rowHeight: Int): Int = minOf(
         keyboardWidth * FUNCTION_ICON_BASE / 1080,
-        (rowHeight * 0.72f).toInt(),
+        (rowHeight * 0.82f).toInt(),
+    ).coerceAtLeast(1)
+
+    fun collapseIconSize(keyboardWidth: Int, rowHeight: Int): Int = minOf(
+        keyboardWidth * COLLAPSE_ICON_WIDTH_BASE / 1080,
+        keyboardWidth * COLLAPSE_ICON_HEIGHT_BASE / 1080,
+        (rowHeight * 0.82f).toInt(),
     ).coerceAtLeast(1)
 }

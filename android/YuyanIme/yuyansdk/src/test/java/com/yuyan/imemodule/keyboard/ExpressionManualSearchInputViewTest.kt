@@ -162,6 +162,45 @@ class ExpressionManualSearchInputViewTest {
     }
 
     @Test
+    fun `选中斗图候选时在发送结果之前立即清空输入和查询`() {
+        val inputView = realChatInputView()
+        var compositionCleared = false
+        inputView.expressionComposingTextSource = ExpressionComposingTextSource(
+            isComposing = { true },
+            rawInput = { "bo'li'xin" },
+            isAssociate = { false },
+            candidateText = { "玻璃心" },
+            clearComposition = { compositionCleared = true },
+        )
+        val asset = ExpressionAsset(
+            id = "glass-heart",
+            type = "prebuilt",
+            format = "webp",
+            version = "v1",
+            fileName = "missing/glass-heart.webp",
+            sha256 = "a".repeat(64),
+            width = 128,
+            height = 128,
+        )
+        val state = inputView.expressionState().apply {
+            beginQuery("玻璃心", 10)
+            applyResults(10, listOf(asset))
+        }
+        val panel = inputView.findViewById<ExpressionPanel>(R.id.expression_panel)
+        panel.render(state, ExpressionCatalog.fromAssets(context))
+
+        panel.onAssetClick?.invoke(asset)
+
+        assertTrue(compositionCleared)
+        assertNull(state.query)
+        assertTrue(state.results.isEmpty())
+        assertEquals(
+            context.getString(R.string.expression_clear_input_failed),
+            ShadowToast.getTextOfLatestToast(),
+        )
+    }
+
+    @Test
     fun `切换输入框清除手动搜索会话和面板旧查询且表情入口仍用自有表情`() {
         val inputView = realChatInputView()
         var activeCompositionCleared = false

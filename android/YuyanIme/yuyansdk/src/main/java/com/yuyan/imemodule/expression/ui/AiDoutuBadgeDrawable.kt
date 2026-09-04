@@ -16,6 +16,7 @@ class AiDoutuBadgeDrawable(
     private val fillColor: Int,
     val cornerRadiusDp: Int = 8,
     val tailHeightDp: Int = 5,
+    val verticalInsetDp: Int = 6,
 ) : Drawable() {
     private val density = context.resources.displayMetrics.density
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = fillColor }
@@ -24,9 +25,12 @@ class AiDoutuBadgeDrawable(
     override fun draw(canvas: Canvas) {
         val tail = tailHeightDp * density
         val radius = cornerRadiusDp * density
-        val bodyBottom = bounds.bottom - tail
+        val verticalInset = verticalInsetDp * density
+        val visualTop = bounds.top + verticalInset
+        val visualBottom = bounds.bottom - verticalInset
+        val bodyBottom = visualBottom - tail
         canvas.drawRoundRect(
-            RectF(bounds.left.toFloat(), bounds.top.toFloat(), bounds.right.toFloat(), bodyBottom),
+            RectF(bounds.left.toFloat(), visualTop, bounds.right.toFloat(), bodyBottom),
             radius,
             radius,
             paint,
@@ -35,13 +39,18 @@ class AiDoutuBadgeDrawable(
         path.reset()
         path.moveTo(anchor - 6f * density, bodyBottom)
         path.lineTo(anchor + 6f * density, bodyBottom)
-        path.lineTo(anchor + 3f * density, bounds.bottom.toFloat())
+        path.lineTo(anchor + 3f * density, visualBottom)
         path.close()
         canvas.drawPath(path, paint)
     }
 
     override fun getPadding(padding: Rect): Boolean {
-        padding.set(0, 0, 0, (tailHeightDp * density).toInt())
+        padding.set(
+            0,
+            (verticalInsetDp * density).toInt(),
+            0,
+            ((verticalInsetDp + tailHeightDp) * density).toInt(),
+        )
         return true
     }
 

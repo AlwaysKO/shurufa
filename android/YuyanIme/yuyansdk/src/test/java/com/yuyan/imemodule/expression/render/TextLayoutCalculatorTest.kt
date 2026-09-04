@@ -3,6 +3,7 @@ package com.yuyan.imemodule.expression.render
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Rect
+import android.graphics.Paint
 import com.yuyan.imemodule.expression.model.ExpressionTextLayout
 import com.yuyan.imemodule.expression.model.ExpressionTextSafeArea
 import org.junit.Assert.assertTrue
@@ -85,5 +86,15 @@ class TextLayoutCalculatorTest {
 
         assertTrue(pixels.any { Color.alpha(it) > 0 && Color.red(it) > 220 && Color.green(it) > 220 })
         assertTrue(pixels.any { Color.alpha(it) > 0 && Color.red(it) < 30 && Color.green(it) < 30 })
+    }
+
+    @Test
+    fun `候选叠字使用粗体且描边随大字号增强`() {
+        val fill = expressionTextPaint(layout, fontSize = 84f, style = Paint.Style.FILL)
+        val stroke = expressionTextPaint(layout, fontSize = 84f, style = Paint.Style.STROKE)
+
+        assertTrue(fill.isFakeBoldText)
+        assertTrue(stroke.isFakeBoldText)
+        assertTrue(stroke.strokeWidth >= 6f)
     }
 }

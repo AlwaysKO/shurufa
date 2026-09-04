@@ -5,6 +5,10 @@ import type { NextFunction, Request, Response } from 'express';
 import type pg from 'pg';
 import type { GeneratedExpressionCatalog } from '../expression/assetGenerator.js';
 import { emojiCombinationKey, rankExpressionAssets } from '../expression/catalog.js';
+import {
+  CachedRemoteExpressionSearch,
+  type RemoteExpressionSearch,
+} from '../expression/remoteSearch.js';
 import type { ExpressionAsset } from '../types/expression.js';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -99,7 +103,21 @@ async function ensureAssetRow(pool: pg.Pool, asset: ExpressionAsset): Promise<vo
   ]);
 }
 
-export function createMobileExpressionRouter(pool: pg.Pool): Router {
+function defaultRemoteSearch(): RemoteExpressionSearch | null {
+  if (process.env.NODE_ENV === 'test') return null;
+  const providerUrl = process.env.EXPRESSION_SEARCH_PROVIDER_URL
+    ?? 'https://api.xcvts.cn/api/img/qqbqbss';
+  if (!providerUrl.trim()) return null;
+  return new CachedRemoteExpressionSearch({
+    assetRoot: expressionAssetRoot(),
+    providerUrl,
+  });
+}
+
+export function createMobileExpressionRouter(
+  pool: pg.Pool,
+  remoteSearch: RemoteExpressionSearch | null = defaultRemoteSearch(),
+): Router {
   const router = Router();
 
   router.use((req, res, next) => {
@@ -134,9 +152,14 @@ export function createMobileExpressionRouter(pool: pg.Pool): Router {
         return;
       }
       const catalog = await loadCatalog();
-      const results = rankExpressionAssets(catalog.templates, query)
-        .slice(0, 20)
-        .map(publicAsset);
+      const localResults = rankExpressionAssets(catalog.templates, query).slice(0, 20);
+      const exactPrebuilt = localResults.length > 0
+        // rankExpressionAssets 只会在归一化后的 embeddedText 精确命中时返回 prebuilt。
+        && localResults.every((asset) => asset.type === 'prebuilt');
+      const searched = !exactPrebuilt && remoteSearch
+        ? await remoteSearch.search(query, 12).catch(() => [])
+        : [];
+      const results = (searched.length > 0 ? searched : localResults).map(publicAsset);
       res.json({ query, results });
     } catch (error) {
       next(error);

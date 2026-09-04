@@ -22,7 +22,16 @@ buildscript {
     }
 }
 
+// 该 Android 子项目同时会从 Windows 的 E:\ 路径和 WSL 的 /home 路径构建。
+// KSP 会把生成文件与 projectDir 做相对路径运算；若两套 Gradle 复用同一个 build
+// 目录，Windows 可能读到 WSL 生成的绝对路径并报 “different roots”。按宿主系统
+// 隔离构建产物，从源头避免跨系统缓存互相污染。
+def buildHost = System.getProperty('os.name')
+        .toLowerCase(java.util.Locale.ROOT)
+        .contains('windows') ? 'windows' : 'unix'
+
 allprojects {
+    layout.buildDirectory.set(layout.projectDirectory.dir("build/${buildHost}"))
     repositories {
         // 国内镜像优先（dl.google.com 在本网络不可达），官方源保留作兜底
         maven { url 'https://maven.aliyun.com/repository/google' }
@@ -36,5 +45,6 @@ allprojects {
 }
 
 tasks.register('clean', Delete) {
-    delete project.layout.buildDirectory
+    // 同时清理旧版共享 build 目录及当前系统的隔离目录。
+    delete allprojects.collect { new File(it.projectDir, 'build') }
 }

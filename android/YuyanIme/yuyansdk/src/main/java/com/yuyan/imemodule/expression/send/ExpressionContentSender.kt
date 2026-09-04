@@ -8,9 +8,13 @@ import android.content.Context
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
+import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import android.view.inputmethod.InputContentInfo
 import androidx.core.content.FileProvider
+import androidx.core.view.inputmethod.EditorInfoCompat
+import androidx.core.view.inputmethod.InputConnectionCompat
+import androidx.core.view.inputmethod.InputContentInfoCompat
 import com.yuyan.imemodule.R
 import java.io.File
 import kotlinx.coroutines.Dispatchers
@@ -20,25 +24,40 @@ class ExpressionContentSender(
     private val context: Context,
     private val inputConnection: () -> InputConnection?,
     private val editorMimeTypes: () -> Array<String>?,
+    private val editorInfo: () -> EditorInfo? = { null },
 ) : ExpressionSender {
     override suspend fun send(expression: PreparedExpression): ExpressionSendResult =
         withContext(Dispatchers.Main.immediate) {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) {
-                return@withContext ExpressionSendResult.UnsupportedTarget
-            }
             val connection = inputConnection() ?: return@withContext ExpressionSendResult.UnsupportedTarget
-            val supported = editorMimeTypes().orEmpty().any { accepted ->
-                accepted == "image/*" || accepted.equals(expression.mimeType, ignoreCase = true)
-            }
-            if (!supported) return@withContext ExpressionSendResult.UnsupportedTarget
+            val currentEditorInfo = editorInfo()
+            if (!supportsExpressionMimeType(
+                    expressionMimeType = expression.mimeType,
+                    editorInfo = currentEditorInfo,
+                    fallbackMimeTypes = editorMimeTypes,
+                )
+            ) return@withContext ExpressionSendResult.UnsupportedTarget
             runCatching {
                 val uri = contentUri(expression.file)
-                val content = InputContentInfo(
-                    uri,
-                    ClipDescription(expression.displayName, arrayOf(expression.mimeType)),
-                    null,
-                )
-                if (connection.commitContent(content, INPUT_CONTENT_GRANT_READ_URI_PERMISSION, null)) {
+                val description = ClipDescription(expression.displayName, arrayOf(expression.mimeType))
+                val committed = if (currentEditorInfo != null) {
+                    InputConnectionCompat.commitContent(
+                        connection,
+                        currentEditorInfo,
+                        InputContentInfoCompat(uri, description, null),
+                        InputConnectionCompat.INPUT_CONTENT_GRANT_READ_URI_PERMISSION,
+                        null,
+                    )
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+                    val content = InputContentInfo(
+                        uri,
+                        description,
+                        null,
+                    )
+                    connection.commitContent(content, INPUT_CONTENT_GRANT_READ_URI_PERMISSION, null)
+                } else {
+                    false
+                }
+                if (committed) {
                     ExpressionSendResult.Sent
                 } else {
                     ExpressionSendResult.Failed(context.getString(R.string.expression_input_rejected_image))
@@ -94,4 +113,19 @@ class ExpressionContentSender(
             else -> "image/png"
         }
     }
+}
+
+internal fun supportsExpressionMimeType(
+    expressionMimeType: String,
+    editorInfo: EditorInfo?,
+    sdkInt: Int = Build.VERSION.SDK_INT,
+    fallbackMimeTypes: () -> Array<out String>?,
+): Boolean = buildList {
+    if (editorInfo != null) {
+        addAll(EditorInfoCompat.getContentMimeTypes(editorInfo).asList())
+    } else if (sdkInt >= Build.VERSION_CODES.N_MR1) {
+        addAll(fallbackMimeTypes().orEmpty().asList())
+    }
+}.distinct().any { accepted ->
+    ClipDescription.compareMimeTypes(expressionMimeType, accepted)
 }

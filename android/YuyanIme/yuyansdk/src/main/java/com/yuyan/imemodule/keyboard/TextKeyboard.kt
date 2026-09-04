@@ -69,6 +69,7 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
      */
     override fun setSoftKeyboard(softSkb: SoftKeyboard) {
         super.setSoftKeyboard(softSkb)
+        refreshTypographyPreferences()
         isKeyBorder = prefs.keyBorder.getValue()
         keyRadius = prefs.keyRadius.getValue()
         mActiveTheme = activeTheme
@@ -93,6 +94,7 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
      * 重置主题
      */
     open fun setTheme(theme: Theme) {
+        refreshTypographyPreferences()
         isKeyBorder = prefs.keyBorder.getValue()
         keyRadius = prefs.keyRadius.getValue()
         mActiveTheme = theme
@@ -148,6 +150,7 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
             val env = instance
             mNormalKeyTextSize = env.keyTextSize
             mNormalKeyTextSizeSmall = env.keyTextSmallSize
+            refreshTypographyPreferences()
             val keyXMargin = mSoftKeyboard!!.keyXMargin
             val keyYMargin = if(skbStyleMode == SkbStyleMode.Google && InputModeSwitcher.isQwert) mSoftKeyboard!!.keyYMargin * 1.5
                 else mSoftKeyboard!!.keyYMargin
@@ -223,12 +226,19 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
             keyLabel = "分词"
             keyIcon = null
         }
-        if ((keyboardSymbol || !InputModeSwitcher.isQwert) && !TextUtils.isEmpty(keyLabelSmall)) {
-            mPaint.color = textColor
+        if ((keyboardSymbol || !InputModeSwitcher.isQwert || softKey.useCustomLabelLayout) && !TextUtils.isEmpty(keyLabelSmall)) {
+            mPaint.alpha = 255
+            mPaint.color = softKey.secondaryLabelColorOverride ?: textColor
             mPaint.setTypeface(Typeface.DEFAULT)
             if(skbStyleMode == SkbStyleMode.Samsung)mPaint.alpha = 128
             mPaint.textSize = if (softKey.useCustomLabelLayout) {
-                mNormalKeyTextSizeSmall * softKey.secondaryLabelScale
+                SogouKeyboardTypography.mainTextSize(
+                    themeId = mActiveTheme.name,
+                    keyboardWidth = instance.skbWidth,
+                    fontScale = prefs.keyboardFontSize.getValue() / 100f,
+                    referenceSize = softKey.secondaryLabelReferenceSize,
+                    fallbackSize = mNormalKeyTextSizeSmall * softKey.secondaryLabelScale,
+                )
             } else {
                 mNormalKeyTextSizeSmall.toFloat()
             }
@@ -242,7 +252,11 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
                 }
             }
             val y = if (softKey.useCustomLabelLayout) {
-                labelBaseline(softKey, softKey.secondaryLabelVerticalBias)
+                labelBaseline(
+                    softKey = softKey,
+                    bias = softKey.secondaryLabelVerticalBias,
+                    referenceSize = softKey.secondaryLabelReferenceSize,
+                )
             } else {
                 softKey.mTop + softKey.height() / 4f * 1.1f
             }
@@ -259,24 +273,39 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
             val marginRight = softKey.width() - intrinsicWidth - marginLeft
             val marginTop = (softKey.height() - intrinsicHeight) / 2
             val marginBottom = softKey.height() - intrinsicHeight - marginTop
-            keyIcon.setTint(textColor)
+            keyIcon.setTint(softKey.mainLabelColorOverride ?: textColor)
             keyIcon.setBounds(softKey.mLeft + marginLeft, softKey.mTop + marginTop, softKey.mRight - marginRight, softKey.mBottom - marginBottom)
             keyIcon.draw(canvas)
         } else if (!TextUtils.isEmpty(keyLabel)) { //Label位于中间
-            mPaint.color = textColor
             mPaint.alpha = 255
-            mPaint.typeface = if (keyboardFontBold) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
+            mPaint.color = softKey.mainLabelColorOverride ?: textColor
+            mPaint.typeface = if (SogouKeyboardTypography.useBold(
+                    themeId = mActiveTheme.name,
+                    userBold = keyboardFontBold,
+                    forceRegular = softKey.forceRegularMainLabel,
+                )
+            ) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
             mPaint.textSize = if (softKey.useCustomLabelLayout) {
-                mNormalKeyTextSize * softKey.mainLabelScale
+                SogouKeyboardTypography.mainTextSize(
+                    themeId = mActiveTheme.name,
+                    keyboardWidth = instance.skbWidth,
+                    fontScale = prefs.keyboardFontSize.getValue() / 100f,
+                    referenceSize = softKey.mainLabelReferenceSize,
+                    fallbackSize = mNormalKeyTextSize * softKey.mainLabelScale,
+                )
             } else {
                 mNormalKeyTextSize.toFloat()
             }
             val x: Float
             val y: Float
             if (softKey.useCustomLabelLayout) {
-                val bias = if (keyLabelSmall.isEmpty()) 0.5f else softKey.mainLabelVerticalBias
+                val bias = if (keyLabelSmall.isEmpty() && softKey.mainLabelReferenceSize <= 0f) {
+                    0.5f
+                } else {
+                    softKey.mainLabelVerticalBias
+                }
                 x = labelStartX(softKey, keyLabel, softKey.mainLabelHorizontalBias, keyXMargin)
-                y = labelBaseline(softKey, bias)
+                y = labelBaseline(softKey, bias, softKey.mainLabelReferenceSize)
             } else {
                 x = softKey.mLeft + (softKey.width() - mPaint.measureText(keyLabel)) / 2f
                 val fontHeight = mLegacyFontMetrics.bottom - mLegacyFontMetrics.top
@@ -294,7 +323,7 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
             mPaint.textSize = mNormalKeyTextSizeSmall.toFloat() * 0.7f
             val x = softKey.mLeft + (softKey.width() - mPaint.measureText(keyMnemonic)) / 2.0f
             val y = if (softKey.useCustomLabelLayout) {
-                labelBaseline(softKey, 0.86f)
+                labelBaseline(softKey, 0.86f, referenceSize = 0f)
             } else {
                 val quarterHeight = softKey.height() / 4f
                 softKey.mTop + quarterHeight * 3.5f
@@ -310,9 +339,23 @@ open class TextKeyboard(context: Context?) : BaseKeyboardView(context){
         return if (minimum <= maximum) centered.coerceIn(minimum.toFloat(), maximum.toFloat()) else centered
     }
 
-    private fun labelBaseline(softKey: SoftKey, bias: Float): Float {
+    private fun labelBaseline(softKey: SoftKey, bias: Float, referenceSize: Float): Float {
         val metrics = mPaint.fontMetrics
-        return softKey.mTop + softKey.height() * bias - (metrics.ascent + metrics.descent) / 2f
+        return SogouKeyboardTypography.labelBaseline(
+            themeId = mActiveTheme.name,
+            referenceSize = referenceSize,
+            keyTop = softKey.mTop.toFloat(),
+            keyHeight = softKey.height().toFloat(),
+            bias = bias,
+            ascent = metrics.ascent,
+            descent = metrics.descent,
+        )
+    }
+
+    private fun refreshTypographyPreferences() {
+        skbStyleMode = prefs.skbStyleMode.getValue()
+        keyboardFontBold = prefs.keyboardFontBold.getValue()
+        keyboardSymbol = prefs.keyboardSymbol.getValue()
     }
 
     override fun onDetachedFromWindow() {

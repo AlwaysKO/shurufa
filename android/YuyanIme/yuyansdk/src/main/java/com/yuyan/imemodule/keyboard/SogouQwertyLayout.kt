@@ -101,5 +101,6 @@ object SogouQwertyLayout {
     fun createVoiceSpaceKey() = SoftKey(code = KeyEvent.KEYCODE_SPACE).apply {
         heightF = ROW_HEIGHT
         longPressAction = LongPressAction.Voice
+        mainLabelColorOverride = SogouKeyboardTypography.MAIN_LABEL_COLOR
     }
 }

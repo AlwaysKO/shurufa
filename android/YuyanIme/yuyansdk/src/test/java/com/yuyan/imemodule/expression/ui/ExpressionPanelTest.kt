@@ -153,6 +153,8 @@ class ExpressionPanelTest {
         val drawable = enable.background as AiDoutuBadgeDrawable
         assertEquals(8, drawable.cornerRadiusDp)
         assertEquals(5, drawable.tailHeightDp)
+        assertEquals(6, drawable.verticalInsetDp)
+        assertEquals(12f, enable.textSize / context.resources.displayMetrics.scaledDensity, 0.01f)
         val spans = (enable.text as Spanned).getSpans(0, enable.text.length, ForegroundColorSpan::class.java)
         assertEquals(2, spans.size)
     }

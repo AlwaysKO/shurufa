@@ -87,6 +87,109 @@ class SogouKeyboardHitMapTest {
     }
 
     @Test
+    fun `搜狗九宫格字母保持大写并使用源码中的51与24基准字号`() {
+        val keyboard = load(InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN)
+        val abc = keyboard.mKeyRows.flatten().single { it.code == KeyEvent.KEYCODE_A }
+
+        assertEquals("ABC", abc.keyLabel)
+        assertEquals(51f, abc.mainLabelReferenceSize, EPSILON)
+        assertEquals(24f, abc.secondaryLabelReferenceSize, EPSILON)
+        assertEquals(0.58125f, abc.mainLabelVerticalBias, EPSILON)
+        assertEquals(0.2375f, abc.secondaryLabelVerticalBias, EPSILON)
+        assertEquals(true, abc.forceRegularMainLabel)
+
+        val enter = keyboard.mKeyRows.flatten().single { it.code == KeyEvent.KEYCODE_ENTER }
+        assertEquals(44f, enter.mainLabelReferenceSize, EPSILON)
+        assertEquals(0.57236f, enter.mainLabelVerticalBias, EPSILON)
+        assertEquals(true, enter.forceRegularMainLabel)
+    }
+
+    @Test
+    fun `九宫格功能标签和中英切换分别使用源码中的独立规格`() {
+        val keyboard = load(InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN)
+        fun key(code: Int) = keyboard.mKeyRows.flatten().single { it.code == code }
+
+        key(KeyEvent.KEYCODE_0).let {
+            assertEquals(55f, it.mainLabelReferenceSize, EPSILON)
+            assertEquals(0.601f, it.mainLabelVerticalBias, EPSILON)
+        }
+        key(InputModeSwitcher.USER_KEYCODE_SYMBOL).let {
+            assertEquals(44f, it.mainLabelReferenceSize, EPSILON)
+            assertEquals(0.57236f, it.mainLabelVerticalBias, EPSILON)
+        }
+        key(InputModeSwitcher.USER_KEYCODE_NUMBER).let {
+            assertEquals(46f, it.mainLabelReferenceSize, EPSILON)
+            assertEquals(0.4886f, it.mainLabelHorizontalBias, EPSILON)
+            assertEquals(0.5658f, it.mainLabelVerticalBias, EPSILON)
+        }
+        key(InputModeSwitcher.USER_KEYCODE_LANG).let {
+            assertEquals("中", it.keyLabel)
+            assertEquals("/英", it.getmKeyLabelSmall())
+            assertEquals(42f, it.mainLabelReferenceSize, EPSILON)
+            assertEquals(31f, it.secondaryLabelReferenceSize, EPSILON)
+            assertEquals(0.4205f, it.mainLabelHorizontalBias, EPSILON)
+            assertEquals(0.4671f, it.mainLabelVerticalBias, EPSILON)
+            assertEquals(0.5966f, it.secondaryLabelHorizontalBias, EPSILON)
+            assertEquals(0.6447f, it.secondaryLabelVerticalBias, EPSILON)
+            assertEquals(0xff000000.toInt(), it.mainLabelColorOverride)
+            assertEquals(0xff81818e.toInt(), it.secondaryLabelColorOverride)
+        }
+    }
+
+    @Test
+    fun `搜狗全键字母使用源码中的57与24基准字号和常规字重`() {
+        listOf(
+            InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN,
+            InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_ABC,
+        ).forEach { layout ->
+            val keyboard = load(layout)
+            val q = keyboard.mKeyRows.flatten().single { it.code == KeyEvent.KEYCODE_Q }
+
+            assertEquals("Q", q.keyLabel)
+            assertEquals(57f, q.mainLabelReferenceSize, EPSILON)
+            assertEquals(24f, q.secondaryLabelReferenceSize, EPSILON)
+            assertEquals(0.66901f, q.mainLabelVerticalBias, EPSILON)
+            assertEquals(0.23943f, q.secondaryLabelVerticalBias, EPSILON)
+            assertEquals(true, q.forceRegularMainLabel)
+        }
+    }
+
+    @Test
+    fun `全键底行标点功能键和中英切换不再复用小号默认字体`() {
+        val keyboard = load(InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN)
+        fun key(code: Int) = keyboard.mKeyRows.flatten().single { it.code == code }
+
+        key(InputModeSwitcher.USER_KEYCODE_SYMBOL).let {
+            assertEquals(44f, it.mainLabelReferenceSize, EPSILON)
+            assertEquals(0.61267f, it.mainLabelVerticalBias, EPSILON)
+        }
+        key(InputModeSwitcher.USER_KEYCODE_NUMBER).let {
+            assertEquals(46f, it.mainLabelReferenceSize, EPSILON)
+            assertEquals(0.6056f, it.mainLabelVerticalBias, EPSILON)
+        }
+        key(InputModeSwitcher.USER_KEYCODE_LEFT_COMMA).let {
+            assertEquals(54f, it.mainLabelReferenceSize, EPSILON)
+        }
+        key(InputModeSwitcher.USER_KEYCODE_LEFT_PERIOD).let {
+            assertEquals(54f, it.mainLabelReferenceSize, EPSILON)
+        }
+        key(InputModeSwitcher.USER_KEYCODE_LANG).let {
+            assertEquals("中", it.keyLabel)
+            assertEquals("/英", it.getmKeyLabelSmall())
+            assertEquals(42f, it.mainLabelReferenceSize, EPSILON)
+            assertEquals(31f, it.secondaryLabelReferenceSize, EPSILON)
+            assertEquals(0.401f, it.mainLabelHorizontalBias, EPSILON)
+            assertEquals(0.5086f, it.mainLabelVerticalBias, EPSILON)
+            assertEquals(0.6598f, it.secondaryLabelHorizontalBias, EPSILON)
+            assertEquals(0.6773f, it.secondaryLabelVerticalBias, EPSILON)
+        }
+        key(KeyEvent.KEYCODE_ENTER).let {
+            assertEquals(44f, it.mainLabelReferenceSize, EPSILON)
+            assertEquals(0.61267f, it.mainLabelVerticalBias, EPSILON)
+        }
+    }
+
+    @Test
     fun `Q 与 W 的视觉间隙按中线连续映射`() {
         val keyboard = load(InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN)
         val q = SogouQwertyLayout.rowGeometry[0].keys[0]

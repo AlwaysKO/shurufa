@@ -311,13 +311,12 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
             functionHorizontalPadding,
             functionVerticalPadding,
         )
-        val collapseWidth = (instance.skbWidth * KeyboardToolbarMetrics.COLLAPSE_ICON_WIDTH_BASE / 1080).coerceAtLeast(dp(16))
-        val collapseHeight = (instance.skbWidth * KeyboardToolbarMetrics.COLLAPSE_ICON_HEIGHT_BASE / 1080).coerceAtLeast(dp(11))
+        val collapseIconSize = KeyboardToolbarMetrics.collapseIconSize(instance.skbWidth, menuHeight)
         mMenuRightArrowBtn.setPadding(
-            ((slotWidth - collapseWidth) / 2).coerceAtLeast(0),
-            ((menuHeight - collapseHeight) / 2).coerceAtLeast(0),
-            ((slotWidth - collapseWidth) / 2).coerceAtLeast(0),
-            ((menuHeight - collapseHeight) / 2).coerceAtLeast(0),
+            ((slotWidth - collapseIconSize) / 2).coerceAtLeast(0),
+            ((menuHeight - collapseIconSize) / 2).coerceAtLeast(0),
+            ((slotWidth - collapseIconSize) / 2).coerceAtLeast(0),
+            ((menuHeight - collapseIconSize) / 2).coerceAtLeast(0),
         )
         mFlowerType.textSize = instance.candidateTextSize
         mIvMenuSetting.layoutParams = LinearLayout.LayoutParams(slotWidth, menuHeight, 0f)

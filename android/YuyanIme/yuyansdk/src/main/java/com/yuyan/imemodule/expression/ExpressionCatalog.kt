@@ -19,9 +19,24 @@ class ExpressionCatalog(
             ranked.asset.type == "prebuilt" &&
                 ranked.asset.embeddedText?.let(::normalize) == normalizedQuery
         }
-        return rank(if (prebuilt.isNotEmpty()) prebuilt else indexed.filter {
-            it.asset.type == "synthesis-template"
-        }, limit)
+        if (prebuilt.isNotEmpty()) return rank(prebuilt, limit)
+        return indexed
+            .filter { it.asset.type == "synthesis-template" }
+            .map { ranked ->
+                ScoredAsset(
+                    ranked = ranked,
+                    relevance = relevance(ranked.asset, normalizedQuery),
+                    queryOrder = stableQueryOrder(normalizedQuery, ranked.asset.id),
+                )
+            }
+            .sortedWith(
+                compareByDescending<ScoredAsset> { it.relevance }
+                    .thenByDescending { it.ranked.asset.heat }
+                    .thenBy { it.queryOrder }
+                    .thenBy { it.ranked.index },
+            )
+            .take(limit)
+            .map { it.ranked.asset }
     }
 
     fun search(query: String): List<ExpressionAsset> = recommend(query)
@@ -55,6 +70,12 @@ class ExpressionCatalog(
         val index: Int,
     )
 
+    private data class ScoredAsset(
+        val ranked: RankedAsset,
+        val relevance: Double,
+        val queryOrder: Long,
+    )
+
     companion object {
         private val json = Json { ignoreUnknownKeys = true }
 
@@ -67,7 +88,47 @@ class ExpressionCatalog(
         fun fromAssets(context: Context): ExpressionCatalog =
             context.assets.open("expression/catalog.json").use(::fromInputStream)
 
-        private fun normalize(value: String): String = value.trim().lowercase()
+        private fun normalize(value: String): String = value
+            .trim()
+            .lowercase()
+            .filterNot { it.isWhitespace() || isPunctuationOrSymbol(it) }
+
+        private fun isPunctuationOrSymbol(value: Char): Boolean = when (Character.getType(value)) {
+            Character.CONNECTOR_PUNCTUATION.toInt(),
+            Character.DASH_PUNCTUATION.toInt(),
+            Character.START_PUNCTUATION.toInt(),
+            Character.END_PUNCTUATION.toInt(),
+            Character.INITIAL_QUOTE_PUNCTUATION.toInt(),
+            Character.FINAL_QUOTE_PUNCTUATION.toInt(),
+            Character.OTHER_PUNCTUATION.toInt(),
+            Character.MATH_SYMBOL.toInt(),
+            Character.CURRENCY_SYMBOL.toInt(),
+            Character.MODIFIER_SYMBOL.toInt(),
+            Character.OTHER_SYMBOL.toInt(),
+            -> true
+            else -> false
+        }
+
+        private fun relevance(asset: ExpressionAsset, query: String): Double =
+            asset.keywords.maxOfOrNull { keywordValue ->
+                val keyword = normalize(keywordValue)
+                when {
+                    keyword.isEmpty() -> 0.0
+                    keyword == query -> 1_000.0
+                    keyword.contains(query) || query.contains(keyword) ->
+                        700.0 + minOf(keyword.length, query.length)
+                    else -> {
+                        val queryChars = query.toSet()
+                        val boundaryBonus = if (query.lastOrNull()?.let(keyword::endsWith) == true) 10.0 else 0.0
+                        keyword.toSet().count(queryChars::contains) * 100.0 /
+                            queryChars.size.coerceAtLeast(1) + boundaryBonus
+                    }
+                }
+            } ?: 0.0
+
+        /** 与服务端 31 倍哈希一致，并转成无符号排序值。 */
+        private fun stableQueryOrder(query: String, id: String): Long =
+            ((query.hashCode() xor id.hashCode()) * 0x45d9f3b).toLong() and 0xffffffffL
 
         private fun <T> mergeBy(
             local: List<T>,

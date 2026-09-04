@@ -81,6 +81,7 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
         context = context,
         inputConnection = inputView::currentInputConnection,
         editorMimeTypes = inputView::currentEditorMimeTypes,
+        editorInfo = inputView::currentEditorInfo,
     )
 
     companion object {

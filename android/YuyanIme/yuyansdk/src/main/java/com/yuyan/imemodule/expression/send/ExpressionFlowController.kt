@@ -2,12 +2,15 @@ package com.yuyan.imemodule.expression.send
 
 import com.yuyan.imemodule.expression.model.EmojiCombination
 import com.yuyan.imemodule.expression.model.ExpressionAsset
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.sync.Mutex
 
 class ExpressionFlowController(
     private val sendController: ExpressionSendController,
     private val prepareAsset: suspend (ExpressionAsset, String) -> PreparedExpression,
     private val prepareCombination: suspend (EmojiCombination) -> PreparedExpression,
+    private val fallback: suspend (PreparedExpression, ExpressionSendResult) -> ExpressionSendResult =
+        { _, failure -> failure },
 ) {
     private val directSendMutex = Mutex()
 
@@ -34,14 +37,30 @@ class ExpressionFlowController(
         return try {
             val expression = try {
                 prepare()
+            } catch (cancelled: CancellationException) {
+                throw cancelled
             } catch (error: Exception) {
                 sendController.cancel()
                 return ExpressionSendResult.Failed(error.message?.takeIf(String::isNotBlank).orEmpty())
             }
             sendController.prepare(expression)
-            sendController.confirm().also { result ->
-                if (result != ExpressionSendResult.Sent) sendController.cancel()
+            val directResult = sendController.confirm()
+            val result = if (directResult == ExpressionSendResult.Sent) {
+                directResult
+            } else {
+                try {
+                    fallback(expression, directResult)
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (_: Exception) {
+                    directResult
+                }
             }
+            if (result != ExpressionSendResult.Sent) sendController.cancel()
+            result
+        } catch (cancelled: CancellationException) {
+            sendController.cancel()
+            throw cancelled
         } finally {
             directSendMutex.unlock()
         }

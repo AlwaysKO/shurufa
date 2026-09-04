@@ -10,14 +10,19 @@ import com.yuyan.imemodule.expression.send.ExpressionSender
 import com.yuyan.imemodule.expression.send.PreparedExpression
 import java.io.File
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Test
 
 class ExpressionFlowTest {
@@ -57,6 +62,117 @@ class ExpressionFlowTest {
             failedFlow.prepareAndSend(asset("broken", "webp", emptyList()), "你好"),
         )
         assertNull(failedController.prepared)
+    }
+
+    @Test
+    fun `目标拒绝候选图片时执行一次相册降级并返回可见结果`() = runBlocking {
+        val controller = ExpressionSendController(
+            RecordingSender(ExpressionSendResult.UnsupportedTarget),
+        )
+        var fallbackCalls = 0
+        var fallbackFile: File? = null
+        val flow = ExpressionFlowController(
+            sendController = controller,
+            prepareAsset = { asset, _ ->
+                PreparedExpression(File("/tmp/${asset.id}.webp"), "image/webp")
+            },
+            prepareCombination = { error("本用例不选择 Emoji") },
+            fallback = { expression, failure ->
+                fallbackCalls += 1
+                fallbackFile = expression.file
+                assertSame(ExpressionSendResult.UnsupportedTarget, failure)
+                ExpressionSendResult.SavedToGallery
+            },
+        )
+
+        val result = flow.prepareAndSend(asset("glass-heart", "webp", emptyList()), "玻璃心")
+
+        assertSame(ExpressionSendResult.SavedToGallery, result)
+        assertEquals(1, fallbackCalls)
+        assertEquals("glass-heart.webp", fallbackFile?.name)
+        assertNull(controller.prepared)
+    }
+
+    @Test
+    fun `准备阶段取消时向上传播且不执行降级`() = runBlocking {
+        val controller = ExpressionSendController(RecordingSender())
+        var fallbackCalls = 0
+        val flow = ExpressionFlowController(
+            sendController = controller,
+            prepareAsset = { _, _ -> throw CancellationException("用户已切换输入") },
+            prepareCombination = { error("本用例不选择 Emoji") },
+            fallback = { _, failure -> fallbackCalls += 1; failure },
+        )
+
+        try {
+            flow.prepareAndSend(asset("cancelled", "webp", emptyList()), "你好")
+            fail("应向上传播 CancellationException")
+        } catch (_: CancellationException) {
+            // expected
+        }
+        assertEquals(0, fallbackCalls)
+        assertNull(controller.prepared)
+    }
+
+    @Test
+    fun `降级阶段取消时向上传播且清理待发内容`() = runBlocking {
+        val controller = ExpressionSendController(
+            RecordingSender(ExpressionSendResult.UnsupportedTarget),
+        )
+        val flow = ExpressionFlowController(
+            sendController = controller,
+            prepareAsset = { asset, _ ->
+                PreparedExpression(File("/tmp/${asset.id}.webp"), "image/webp")
+            },
+            prepareCombination = { error("本用例不选择 Emoji") },
+            fallback = { _, _ -> throw CancellationException("界面已关闭") },
+        )
+
+        try {
+            flow.prepareAndSend(asset("cancelled-fallback", "webp", emptyList()), "你好")
+            fail("应向上传播 CancellationException")
+        } catch (_: CancellationException) {
+            // expected
+        }
+        assertNull(controller.prepared)
+    }
+
+    @Test
+    fun `发送阶段取消时向上传播且清理发送状态`() = runBlocking {
+        val controller = ExpressionSendController(
+            ExpressionSender { throw CancellationException("输入目标已切换") },
+        )
+        val flow = flow(controller)
+
+        try {
+            flow.prepareAndSend(asset("cancelled-send", "webp", emptyList()), "你好")
+            fail("应向上传播 CancellationException")
+        } catch (_: CancellationException) {
+            // expected
+        }
+        assertNull(controller.prepared)
+        assertSame(ExpressionSendResult.NotPrepared, controller.confirm())
+    }
+
+    @Test
+    fun `外部取消正在挂起的发送仍会清理状态`() = runBlocking {
+        val started = CompletableDeferred<Unit>()
+        val controller = ExpressionSendController(
+            ExpressionSender {
+                started.complete(Unit)
+                awaitCancellation()
+            },
+        )
+        val flow = flow(controller)
+        val job = launch {
+            flow.prepareAndSend(asset("externally-cancelled", "webp", emptyList()), "你好")
+        }
+
+        started.await()
+        job.cancelAndJoin()
+
+        assertNull(controller.prepared)
+        assertSame(ExpressionSendResult.NotPrepared, controller.confirm())
     }
 
     @Test

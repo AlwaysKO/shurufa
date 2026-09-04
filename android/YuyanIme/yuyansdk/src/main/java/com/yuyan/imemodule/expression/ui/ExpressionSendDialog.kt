@@ -85,7 +85,9 @@ class ExpressionSendDialog(
         confirmButton.setText(R.string.expression_sending)
         scope.launch {
             when (val result = controller.confirm()) {
-                ExpressionSendResult.Sent -> dismiss()
+                ExpressionSendResult.Sent,
+                ExpressionSendResult.SavedToGallery,
+                -> dismiss()
                 ExpressionSendResult.UnsupportedTarget -> showFailure(context.getString(R.string.expression_chat_image_unsupported))
                 is ExpressionSendResult.Failed -> showFailure(
                     result.reason.ifBlank { context.getString(R.string.expression_image_send_failed) },

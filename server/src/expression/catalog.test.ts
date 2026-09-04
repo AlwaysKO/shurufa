@@ -14,7 +14,14 @@ const upgradeMigrationPath = fileURLToPath(
 );
 const sourceManifest = JSON.parse(readFileSync(fileURLToPath(
   new URL('../../../assets/expression/manifest.source.json', import.meta.url),
-), 'utf8')) as { templates: Array<{ keywords: string[] }> };
+), 'utf8')) as {
+  version: string;
+  templates: Array<{
+    keywords: string[];
+    sourceCrop?: { y: number; height: number };
+    layout: { minFontSize: number; maxFontSize: number; strokeWidth: number };
+  }>;
+};
 
 function asset(overrides: Partial<ExpressionAsset>): ExpressionAsset {
   return {
@@ -66,10 +73,43 @@ describe('expression catalog', () => {
     expect(rows.map((item) => item.id)).toEqual(['cold', 'hot', 'unrelated']);
   });
 
+  it('普通词优先返回关键词语义相关的合成模板而不是纯热度模板', () => {
+    const rows = [
+      asset({ id: 'hot-unrelated', heat: 999, keywords: ['开心庆祝'] }),
+      asset({ id: 'glass-heart', heat: 1, keywords: ['伤心哭泣', '玻璃心'] }),
+      asset({ id: 'heart', heat: 2, keywords: ['喜欢爱心'] }),
+    ];
+
+    expect(rankExpressionAssets(rows, '玻璃心').map((item) => item.id))
+      .toEqual(['glass-heart', 'heart', 'hot-unrelated']);
+  });
+
+  it('完全未知词的兜底顺序按查询稳定变化避免总是同一批图', () => {
+    const rows = Array.from({ length: 8 }, (_, index) => asset({ id: `tpl-${index}` }));
+
+    const first = rankExpressionAssets(rows, '甲词').map((item) => item.id);
+    const repeated = rankExpressionAssets(rows, '甲词').map((item) => item.id);
+    const second = rankExpressionAssets(rows, '乙词').map((item) => item.id);
+
+    expect(repeated).toEqual(first);
+    expect(second).not.toEqual(first);
+  });
+
   it('常用词在源清单中各自关联多张预制图片', () => {
     for (const phrase of ['你好', '谢谢', '加油', '晚安', '早安', '再见', '抱歉', '喜欢', '不要', '快点']) {
       const matches = sourceManifest.templates.filter(({ keywords }) => keywords.includes(phrase));
       expect(matches.length, phrase).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('内置候选裁掉顶部空白并使用大号粗体友好的描边规格', () => {
+    expect(sourceManifest.version).toBe('2026.09.02.1');
+    for (const template of sourceManifest.templates) {
+      expect(template.sourceCrop?.y).toBeGreaterThanOrEqual(150);
+      expect(template.sourceCrop?.height).toBeLessThanOrEqual(234);
+      expect(template.layout.minFontSize).toBeGreaterThanOrEqual(32);
+      expect(template.layout.maxFontSize).toBeGreaterThanOrEqual(80);
+      expect(template.layout.strokeWidth).toBeGreaterThanOrEqual(5);
     }
   });
 });

@@ -157,6 +157,33 @@ describe('mobile expression API', () => {
     ))).toBe(true);
   });
 
+  it('普通词优先返回服务端搜索并缓存后的相关图片', async () => {
+    const remote = {
+      search: vi.fn(async (query: string) => [{
+        id: 'search-glass-heart', type: 'prebuilt' as const, format: 'png' as const,
+        version: 'search-v1', fileName: 'search-cache/glass-heart.png',
+        thumbnailFileName: 'search-cache/glass-heart-thumb.webp', sha256: '9'.repeat(64),
+        width: 320, height: 320, keywords: [query], emotions: [], embeddedText: query,
+        textSafeArea: null, layout: null, heat: 0,
+      }]),
+    };
+
+    const response = await request(createApp(pool, { remoteExpressionSearch: remote }))
+      .get('/api/v1/mobile/expressions/recommend?q=玻璃心')
+      .set('X-Device-Id', USER_A);
+
+    expect(response.status).toBe(200);
+    expect(remote.search).toHaveBeenCalledWith('玻璃心', 12);
+    expect(response.body.results).toEqual([
+      expect.objectContaining({
+        id: 'search-glass-heart',
+        embeddedText: '玻璃心',
+        url: '/uploads/expression/search-cache/glass-heart.png',
+        thumbnail_url: '/uploads/expression/search-cache/glass-heart-thumb.webp',
+      }),
+    ]);
+  });
+
   it('只按有序键返回 Emoji 组合且未知组合为 404', async () => {
     const app = createApp(pool);
     const forward = await request(app)

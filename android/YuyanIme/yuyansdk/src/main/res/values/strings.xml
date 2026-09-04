@@ -217,6 +217,8 @@
     <string name="expression_emoji_preview_description">Emoji 组合预览</string>
     <string name="expression_send">发送</string>
     <string name="expression_sending">发送中…</string>
+    <string name="expression_preparing_image">正在准备图片…</string>
+    <string name="expression_clear_input_failed">无法清空当前输入，请重试</string>
     <string name="expression_retry_send">重试发送</string>
     <string name="expression_send_to_chat">发送到当前聊天</string>
     <string name="expression_send_preview_description">待发送图片预览</string>
@@ -227,6 +229,7 @@
     <string name="expression_target_image_unsupported">当前应用不支持图片发送</string>
     <string name="expression_image_expired">待发送图片已失效</string>
     <string name="expression_image_send_failed">图片发送失败</string>
+    <string name="expression_saved_to_gallery">当前聊天不支持直发，图片已保存到相册（YuyanExpressions）</string>
     <string name="expression_input_rejected_image">当前输入框拒绝接收图片</string>
     <string name="expression_saved_gallery">已保存到相册</string>
     <string name="expression_save_gallery_failed">保存到相册失败</string>

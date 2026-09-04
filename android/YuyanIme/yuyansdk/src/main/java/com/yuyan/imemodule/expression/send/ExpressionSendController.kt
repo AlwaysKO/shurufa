@@ -1,8 +1,11 @@
 package com.yuyan.imemodule.expression.send
 
 import java.io.File
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 data class PreparedExpression(
     val file: File,
@@ -16,6 +19,7 @@ fun interface ExpressionSender {
 
 sealed interface ExpressionSendResult {
     data object Sent : ExpressionSendResult
+    data object SavedToGallery : ExpressionSendResult
     data object UnsupportedTarget : ExpressionSendResult
     data class Failed(val reason: String) : ExpressionSendResult
     data object NotPrepared : ExpressionSendResult
@@ -66,8 +70,19 @@ class ExpressionSendController(
                 -> requireNotNull(prepared).also { state = ExpressionSendState.Sending(it) }
             }
         }
-        val result = runCatching { sender.send(expression) }
-            .getOrElse { ExpressionSendResult.Failed(it.message.orEmpty()) }
+        val result = try {
+            sender.send(expression)
+        } catch (cancelled: CancellationException) {
+            withContext(NonCancellable) {
+                mutex.withLock {
+                    prepared = null
+                    state = ExpressionSendState.Idle
+                }
+            }
+            throw cancelled
+        } catch (error: Exception) {
+            ExpressionSendResult.Failed(error.message.orEmpty())
+        }
         mutex.withLock {
             if (result == ExpressionSendResult.Sent) {
                 prepared = null

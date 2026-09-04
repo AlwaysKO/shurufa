@@ -51,9 +51,11 @@ class KeyboardToolbarModelTest {
     @Test
     fun `工具栏使用1080参考图的图标画布和七个总槽位`() {
         assertEquals(7, KeyboardToolbarMetrics.TOTAL_VISIBLE_SLOT_COUNT)
-        assertEquals(78, KeyboardToolbarMetrics.FUNCTION_ICON_BASE)
-        assertEquals(26, KeyboardToolbarMetrics.COLLAPSE_ICON_WIDTH_BASE)
-        assertEquals(18, KeyboardToolbarMetrics.COLLAPSE_ICON_HEIGHT_BASE)
+        assertEquals(92, KeyboardToolbarMetrics.FUNCTION_ICON_BASE)
+        assertEquals(92, KeyboardToolbarMetrics.COLLAPSE_ICON_WIDTH_BASE)
+        assertEquals(92, KeyboardToolbarMetrics.COLLAPSE_ICON_HEIGHT_BASE)
         assertEquals(0.09f, KeyboardToolbarMetrics.HEIGHT_TO_WIDTH_RATIO, 0.0001f)
+        assertEquals(92, KeyboardToolbarMetrics.functionIconSize(1080, 200))
+        assertEquals(92, KeyboardToolbarMetrics.collapseIconSize(1080, 200))
     }
 }

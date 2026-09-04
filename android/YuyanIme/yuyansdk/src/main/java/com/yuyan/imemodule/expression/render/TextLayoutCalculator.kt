@@ -3,6 +3,7 @@ package com.yuyan.imemodule.expression.render
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.RectF
+import android.graphics.Typeface
 import com.yuyan.imemodule.expression.model.ExpressionTextLayout
 
 data class TextLineLayout(
@@ -30,7 +31,10 @@ class TextLayoutCalculator {
         require(text.isNotEmpty()) { "text must not be empty" }
         require(safeArea.width() > 0 && safeArea.height() > 0) { "safe area must not be empty" }
 
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            typeface = Typeface.DEFAULT_BOLD
+            isFakeBoldText = true
+        }
         for (size in layout.maxFontSize downTo 1) {
             paint.textSize = size.toFloat()
             val lines = wrap(text, paint, safeArea.width().toFloat(), layout.maxLines)

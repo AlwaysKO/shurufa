@@ -1,5 +1,5 @@
 {
-  "version": "2026.08.26.2",
+  "version": "2026.09.02.1",
   "expectedCounts": {
     "templates": 60,
     "animatedTemplates": 20,
@@ -66,22 +66,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -99,22 +99,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -132,22 +132,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -165,22 +165,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -197,22 +197,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -231,22 +231,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -264,22 +264,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -297,22 +297,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -331,22 +331,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -364,22 +364,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -396,22 +396,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -429,22 +429,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -462,22 +462,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -496,22 +496,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -529,22 +529,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -563,22 +563,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -596,22 +596,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -628,22 +628,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -660,22 +660,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -693,22 +693,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -725,22 +725,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -757,22 +757,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -789,22 +789,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -821,22 +821,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -853,22 +853,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -885,22 +885,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -917,22 +917,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -950,22 +950,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -982,22 +982,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1014,22 +1014,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1047,22 +1047,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1079,22 +1079,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1112,22 +1112,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1145,22 +1145,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1178,22 +1178,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1210,22 +1210,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1243,22 +1243,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1276,22 +1276,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1309,22 +1309,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1341,22 +1341,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1373,22 +1373,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1405,22 +1405,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1439,22 +1439,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1473,22 +1473,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1505,22 +1505,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1537,22 +1537,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1569,22 +1569,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1602,22 +1602,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1636,22 +1636,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1668,22 +1668,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1700,22 +1700,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1734,22 +1734,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1768,22 +1768,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1801,22 +1801,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1834,22 +1834,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1867,22 +1867,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1899,22 +1899,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1934,22 +1934,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -1968,22 +1968,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }
@@ -2001,22 +2001,22 @@
       ],
       "sourceCrop": {
         "x": 0,
-        "y": 112,
+        "y": 152,
         "width": 384,
-        "height": 272
+        "height": 232
       },
       "textSafeArea": {
-        "x": 32,
-        "y": 32,
-        "width": 448,
-        "height": 160
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
       },
       "layout": {
-        "minFontSize": 24,
-        "maxFontSize": 52,
+        "minFontSize": 36,
+        "maxFontSize": 88,
         "textColor": "#ffffff",
         "strokeColor": "#000000",
-        "strokeWidth": 3,
+        "strokeWidth": 6,
         "alignment": "center",
         "maxLines": 2
       }

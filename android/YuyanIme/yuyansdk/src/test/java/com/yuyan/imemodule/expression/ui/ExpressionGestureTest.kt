@@ -35,6 +35,20 @@ class ExpressionGestureTest {
     }
 
     @Test
+    fun `轻点候选图片只触发一次发送回调`() {
+        var selected: ExpressionAsset? = null
+        val adapter = ExpressionAssetAdapter(onClick = { selected = it })
+        val parent = RecyclerView(context).apply { layoutManager = LinearLayoutManager(context) }
+        val holder = adapter.onCreateViewHolder(parent, 0)
+        val asset = asset()
+        adapter.submitList(listOf(asset))
+        adapter.onBindViewHolder(holder, 0)
+
+        assertEquals(true, holder.itemView.performClick())
+        assertEquals(asset, selected)
+    }
+
+    @Test
     fun `普通横向滑动不触发展开`() {
         var longPresses = 0
         val adapter = ExpressionAssetAdapter(

@@ -162,6 +162,7 @@ object SogouT9Layout {
     fun createVoiceSpaceKey() = SoftKey(code = KeyEvent.KEYCODE_SPACE).apply {
         heightF = ROW_HEIGHT
         longPressAction = LongPressAction.Voice
+        mainLabelColorOverride = SogouKeyboardTypography.MAIN_LABEL_COLOR
     }
 
     fun createEnterKey() = SoftKeyToggle(KeyEvent.KEYCODE_ENTER).apply {
@@ -169,6 +170,11 @@ object SogouT9Layout {
         keyType = KeyType.AccentKey
         stateId = 0
         preferTextLabel = true
+        useCustomLabelLayout = true
+        mainLabelReferenceSize = 44f
+        mainLabelVerticalBias = 0.57236f
+        mainLabelHorizontalBias = 0.5f
+        forceRegularMainLabel = true
         setToggleStates(
             listOf(
                 ToggleState("换行", 0),

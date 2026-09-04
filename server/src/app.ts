@@ -17,10 +17,15 @@ import {
   expressionAssetRoot,
   requireExpressionAssetIdentity,
 } from './api/expressions.js';
+import type { RemoteExpressionSearch } from './expression/remoteSearch.js';
 import { requireDashboardIdentity, requireMobileIdentity } from './lib/requestIdentity.js';
 import { authorizeUpload } from './lib/uploadAuthorization.js';
 
-export function createApp(pool: pg.Pool): express.Express {
+export interface CreateAppOptions {
+  remoteExpressionSearch?: RemoteExpressionSearch | null;
+}
+
+export function createApp(pool: pg.Pool, options: CreateAppOptions = {}): express.Express {
   const app = express();
   app.set('trust proxy', true); // 反代后 X-Forwarded-For 生效（事件记录客户端 IP）
   app.use(cors());
@@ -47,7 +52,12 @@ export function createApp(pool: pg.Pool): express.Express {
   app.use('/api/v1/mobile', createMobilePhraseRouter(pool));
   app.use('/api/v1/mobile/chat', createMobileChatCaptureRouter(pool));
   app.use('/api/v1/mobile/relationships', createMobileRelationshipsRouter(pool));
-  app.use('/api/v1/mobile/expressions', createMobileExpressionRouter(pool));
+  app.use(
+    '/api/v1/mobile/expressions',
+    options.remoteExpressionSearch === undefined
+      ? createMobileExpressionRouter(pool)
+      : createMobileExpressionRouter(pool, options.remoteExpressionSearch),
+  );
 
   // Dashboard API
   app.use('/api/v1/dashboard', requireDashboardIdentity);

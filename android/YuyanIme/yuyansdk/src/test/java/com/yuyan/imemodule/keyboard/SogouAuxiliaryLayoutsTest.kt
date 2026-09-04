@@ -156,15 +156,15 @@ class SogouAuxiliaryLayoutsTest {
     }
 
     @Test
-    fun `自定义文字层级只作用于九键和辅助键而不改变全键盘默认渲染`() {
+    fun `自定义文字层级作用于搜狗全键九键和辅助键而普通键保持默认渲染`() {
         val defaultKey = SoftKey(label = "a", labelSmall = "1")
         assertFalse(defaultKey.useCustomLabelLayout)
         assertEquals(1f, defaultKey.secondaryLabelScale, EPSILON)
         assertEquals(0.5f, defaultKey.secondaryLabelVerticalBias, EPSILON)
 
         val qwertyKey = load(InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN).getKeyByCode(KeyEvent.KEYCODE_A)!!
-        assertFalse(qwertyKey.useCustomLabelLayout)
-        assertEquals(1f, qwertyKey.secondaryLabelScale, EPSILON)
+        assertTrue(qwertyKey.useCustomLabelLayout)
+        assertEquals(0.62f, qwertyKey.secondaryLabelScale, EPSILON)
 
         val t9Key = load(InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN).getKeyByCode(KeyEvent.KEYCODE_A)!!
         assertTrue(t9Key.useCustomLabelLayout)

@@ -14,6 +14,7 @@ import com.yuyan.imemodule.keyboard.KeyboardData
 import com.yuyan.imemodule.keyboard.KeyGeometry
 import com.yuyan.imemodule.keyboard.SogouT9Layout
 import com.yuyan.imemodule.keyboard.SogouQwertyLayout
+import com.yuyan.imemodule.keyboard.SogouKeyboardTypography
 import com.yuyan.imemodule.keyboard.SogouAuxiliaryLayouts
 import com.yuyan.imemodule.keyboard.KeyboardSurfaceLayoutOverrides
 import com.yuyan.imemodule.manager.InputModeSwitcher
@@ -152,6 +153,7 @@ class KeyboardLoaderUtil private constructor() {
                 rows.add(keyBeans)
                 keyBeans = LinkedList()
                 val softKeyToggle = createKeyToggle(KeyEvent.KEYCODE_SHIFT_LEFT)
+                softKeyToggle.mainLabelColorOverride = SogouKeyboardTypography.MAIN_LABEL_COLOR
                 softKeyToggle.setToggleStates(shiftToggleStates)
                 keyBeans.add(softKeyToggle)
                 keyBeans.addAll(createQwertyKeys(keys[2]))
@@ -363,7 +365,13 @@ class KeyboardLoaderUtil private constructor() {
         val spaceIndex = codes.indexOf(KeyEvent.KEYCODE_SPACE)
         if (spaceIndex >= 0) keys[spaceIndex] = SogouQwertyLayout.createVoiceSpaceKey()
         return keys.toMutableList().apply {
-            add(createEnterToggle())
+            add(createEnterToggle().apply {
+                preferTextLabel = true
+                useCustomLabelLayout = true
+                mainLabelReferenceSize = 44f
+                mainLabelVerticalBias = 0.61267f
+                forceRegularMainLabel = true
+            })
         }
     }
 
@@ -372,6 +380,8 @@ class KeyboardLoaderUtil private constructor() {
         stateId = 0
         setToggleStates(
             listOf(
+                ToggleState("换行", 0),
+                ToggleState("换行", 1),
                 ToggleState("去往", 2),
                 ToggleState("搜索", 3),
                 ToggleState("发送", 4),
@@ -469,6 +479,118 @@ class KeyboardLoaderUtil private constructor() {
         secondaryLabelVerticalBias = 0.24f
         mainLabelHorizontalBias = 0.5f
         secondaryLabelHorizontalBias = 0.78f
+    }
+
+    private fun SoftKey.applySogouT9LabelHierarchy() {
+        applySogouLabelHierarchy()
+        if (code in listOf(
+                KeyEvent.KEYCODE_A,
+                KeyEvent.KEYCODE_D,
+                KeyEvent.KEYCODE_G,
+                KeyEvent.KEYCODE_J,
+                KeyEvent.KEYCODE_M,
+                KeyEvent.KEYCODE_P,
+                KeyEvent.KEYCODE_T,
+                KeyEvent.KEYCODE_W,
+            )
+        ) {
+            label = label.uppercase()
+        }
+        mainLabelReferenceSize = SogouKeyboardTypography.T9_MAIN_LABEL_SIZE
+        secondaryLabelReferenceSize = SogouKeyboardTypography.T9_SECONDARY_LABEL_SIZE
+        mainLabelVerticalBias = 0.58125f
+        secondaryLabelVerticalBias = 0.2375f
+        secondaryLabelHorizontalBias = 0.5f
+        mainLabelColorOverride = SogouKeyboardTypography.MAIN_LABEL_COLOR
+        secondaryLabelColorOverride = SogouKeyboardTypography.MINOR_LABEL_COLOR
+        when (code) {
+            KeyEvent.KEYCODE_CLEAR -> {
+                mainLabelReferenceSize = 44f
+                mainLabelVerticalBias = 0.575f
+                secondaryLabelReferenceSize = 0f
+            }
+            KeyEvent.KEYCODE_0 -> {
+                mainLabelReferenceSize = 55f
+                mainLabelVerticalBias = 0.601f
+                secondaryLabelReferenceSize = 0f
+            }
+            InputModeSwitcher.USER_KEYCODE_SYMBOL -> {
+                mainLabelReferenceSize = 44f
+                mainLabelVerticalBias = 0.57236f
+                secondaryLabelReferenceSize = 0f
+            }
+            InputModeSwitcher.USER_KEYCODE_NUMBER -> {
+                mainLabelReferenceSize = 46f
+                mainLabelHorizontalBias = 0.4886f
+                mainLabelVerticalBias = 0.5658f
+                secondaryLabelReferenceSize = 0f
+            }
+            InputModeSwitcher.USER_KEYCODE_LANG -> {
+                label = "中"
+                labelSmall = "/英"
+                preferTextLabel = true
+                mainLabelReferenceSize = 42f
+                secondaryLabelReferenceSize = 31f
+                mainLabelHorizontalBias = 0.4205f
+                mainLabelVerticalBias = 0.4671f
+                secondaryLabelHorizontalBias = 0.5966f
+                secondaryLabelVerticalBias = 0.6447f
+                secondaryLabelColorOverride = SogouKeyboardTypography.SWITCH_MINOR_LABEL_COLOR
+            }
+        }
+        forceRegularMainLabel = true
+    }
+
+    private fun SoftKey.applySogouQwertyLabelHierarchy() {
+        applySogouLabelHierarchy()
+        mainLabelColorOverride = SogouKeyboardTypography.MAIN_LABEL_COLOR
+        secondaryLabelColorOverride = SogouKeyboardTypography.MINOR_LABEL_COLOR
+        when (code) {
+            in KeyEvent.KEYCODE_A..KeyEvent.KEYCODE_Z -> {
+                mainLabelReferenceSize = SogouKeyboardTypography.QWERTY_MAIN_LABEL_SIZE
+                secondaryLabelReferenceSize = SogouKeyboardTypography.QWERTY_SECONDARY_LABEL_SIZE
+                mainLabelVerticalBias = 0.66901f
+                secondaryLabelVerticalBias = 0.23943f
+                secondaryLabelHorizontalBias = 0.5f
+            }
+            KeyEvent.KEYCODE_APOSTROPHE -> {
+                mainLabelReferenceSize = 51f
+                mainLabelVerticalBias = 0.6197f
+                secondaryLabelReferenceSize = 0f
+            }
+            InputModeSwitcher.USER_KEYCODE_SYMBOL -> {
+                mainLabelReferenceSize = 44f
+                mainLabelVerticalBias = 0.61267f
+                secondaryLabelReferenceSize = 0f
+            }
+            InputModeSwitcher.USER_KEYCODE_NUMBER -> {
+                mainLabelReferenceSize = 46f
+                mainLabelHorizontalBias = 0.4836f
+                mainLabelVerticalBias = 0.6056f
+                secondaryLabelReferenceSize = 0f
+            }
+            InputModeSwitcher.USER_KEYCODE_LEFT_COMMA,
+            InputModeSwitcher.USER_KEYCODE_LEFT_PERIOD -> {
+                mainLabelReferenceSize = 54f
+                mainLabelVerticalBias = 0.64f
+                secondaryLabelReferenceSize = 0f
+            }
+            InputModeSwitcher.USER_KEYCODE_LANG -> {
+                val chinese = mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_QWERTY_PINYIN
+                label = if (chinese) "中" else "英"
+                labelSmall = if (chinese) "/英" else "/中"
+                preferTextLabel = true
+                mainLabelReferenceSize = 42f
+                secondaryLabelReferenceSize = 31f
+                mainLabelHorizontalBias = 0.401f
+                mainLabelVerticalBias = 0.5086f
+                secondaryLabelHorizontalBias = 0.6598f
+                secondaryLabelVerticalBias = 0.6773f
+                secondaryLabelColorOverride = SogouKeyboardTypography.SWITCH_MINOR_LABEL_COLOR
+            }
+            else -> return
+        }
+        forceRegularMainLabel = true
     }
 
     /** 生成键盘布局，主要用于计算键盘边界 */
@@ -624,7 +746,7 @@ class KeyboardLoaderUtil private constructor() {
             val labels = keyPreset[code]
             softKeys.add(SoftKey(code = code, label = labels?.getOrNull(0) ?: "", labelSmall = labels?.getOrNull(1)?: "").apply {
                 widthF = 0.21f
-                if (mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN) applySogouLabelHierarchy()
+                if (mSkbValue == InputModeSwitcher.MASK_SKB_LAYOUT_T9_PINYIN) applySogouT9LabelHierarchy()
                 applyThemeRole()
                 if (code == KeyEvent.KEYCODE_0 && mSkbValue != InputModeSwitcher.MASK_SKB_LAYOUT_NUMBER) {
                     keyType = KeyType.Function
@@ -651,6 +773,7 @@ class KeyboardLoaderUtil private constructor() {
             softKeys.add(SoftKey(code = code, label = labels?.getOrNull(0) ?: "", labelSmall = labels?.getOrNull(1) ?: "", keyMnemonic = keyMnemonicPreset[code] ?: "").apply {
                 widthF = SogouQwertyLayout.LETTER_WIDTH
                 heightF = SogouQwertyLayout.ROW_HEIGHT
+                applySogouQwertyLabelHierarchy()
                 applyThemeRole()
             })
         }
@@ -665,6 +788,7 @@ class KeyboardLoaderUtil private constructor() {
             softKeys.add(SoftKey(code = code, label = labels?.getOrNull(0) ?: "", labelSmall = labels?.getOrNull(1) ?: "", keyMnemonic = labels?.getOrNull(2) ?: "").apply {
                 widthF = SogouQwertyLayout.LETTER_WIDTH
                 heightF = SogouQwertyLayout.ROW_HEIGHT
+                applySogouQwertyLabelHierarchy()
                 applyThemeRole()
             })
         }

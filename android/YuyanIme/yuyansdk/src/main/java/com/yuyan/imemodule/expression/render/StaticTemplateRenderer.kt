@@ -5,6 +5,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
+import android.graphics.Typeface
 import com.yuyan.imemodule.expression.model.ExpressionTextLayout
 import com.yuyan.imemodule.expression.model.ExpressionTextSafeArea
 
@@ -23,21 +24,35 @@ class StaticTemplateRenderer(
             Rect(safeArea.x, safeArea.y, safeArea.x + safeArea.width, safeArea.y + safeArea.height),
             layout,
         )
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            textSize = calculated.fontSize
-            textAlign = Paint.Align.LEFT
-        }
+        val strokePaint = expressionTextPaint(layout, calculated.fontSize, Paint.Style.STROKE)
+        val fillPaint = expressionTextPaint(layout, calculated.fontSize, Paint.Style.FILL)
         val canvas = Canvas(output)
         calculated.lines.forEach { line ->
-            paint.style = Paint.Style.STROKE
-            paint.strokeWidth = layout.strokeWidth.toFloat()
-            paint.color = Color.parseColor(layout.strokeColor)
-            canvas.drawText(line.text, line.left, line.baseline, paint)
-
-            paint.style = Paint.Style.FILL
-            paint.color = Color.parseColor(layout.textColor)
-            canvas.drawText(line.text, line.left, line.baseline, paint)
+            canvas.drawText(line.text, line.left, line.baseline, strokePaint)
+            canvas.drawText(line.text, line.left, line.baseline, fillPaint)
         }
         return output
     }
+}
+
+internal fun expressionTextPaint(
+    layout: ExpressionTextLayout,
+    fontSize: Float,
+    style: Paint.Style,
+): Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+    textSize = fontSize
+    textAlign = Paint.Align.LEFT
+    typeface = Typeface.DEFAULT_BOLD
+    isFakeBoldText = true
+    this.style = style
+    strokeJoin = Paint.Join.ROUND
+    strokeCap = Paint.Cap.ROUND
+    strokeWidth = if (style == Paint.Style.STROKE) {
+        maxOf(layout.strokeWidth.toFloat(), fontSize * 0.075f)
+    } else {
+        0f
+    }
+    color = Color.parseColor(
+        if (style == Paint.Style.STROKE) layout.strokeColor else layout.textColor,
+    )
 }

@@ -49,6 +49,35 @@ class ExpressionCatalogTest {
     }
 
     @Test
+    fun `普通词优先返回关键词语义相关模板而不是纯热度模板`() {
+        val catalog = ExpressionCatalog(
+            document(
+                assets = listOf(
+                    asset("hot-unrelated", keywords = listOf("开心庆祝"), heat = 999),
+                    asset("glass-heart", keywords = listOf("伤心哭泣", "玻璃心"), heat = 1),
+                    asset("heart", keywords = listOf("喜欢爱心"), heat = 2),
+                ),
+            ),
+        )
+
+        assertEquals(
+            listOf("glass-heart", "heart", "hot-unrelated"),
+            catalog.recommend("玻璃心").map { it.id },
+        )
+    }
+
+    @Test
+    fun `未知词兜底顺序按查询稳定变化`() {
+        val catalog = ExpressionCatalog(
+            document(assets = (0..7).map { asset("tpl-$it") }),
+        )
+
+        val first = catalog.recommend("甲词").map { it.id }
+        assertEquals(first, catalog.recommend("甲词").map { it.id })
+        assertNotEquals(first, catalog.recommend("乙词").map { it.id })
+    }
+
+    @Test
     fun `远端增量按 ID 覆盖并保留本地素材`() {
         val local = ExpressionCatalog(document(assets = listOf(asset("local"), asset("shared", heat = 1))))
         val remote = document(
