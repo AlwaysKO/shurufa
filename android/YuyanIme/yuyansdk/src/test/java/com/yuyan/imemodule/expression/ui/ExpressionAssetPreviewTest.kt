@@ -36,10 +36,35 @@ class ExpressionAssetPreviewTest {
     fun `已下载 GIF 优先播放本地动态文件`() {
         val asset = asset(format = "gif").copy(
             url = "https://example.test/reaction.gif",
-            thumbnailUrl = "file:///cache/expression/downloaded.GIF",
+            thumbnailUrl = "FILE://server/C%3A/cache/downloaded.GIF?token=one#preview",
         )
 
-        assertEquals("file:///cache/expression/downloaded.GIF", previewSource(asset))
+        assertEquals(
+            "FILE://server/C%3A/cache/downloaded.GIF?token=one#preview",
+            previewSource(asset),
+        )
+    }
+
+    @Test
+    fun `content URI GIF 保留查询和片段并作为本地动态源`() {
+        val asset = asset(format = "gif").copy(
+            url = "https://example.test/reaction.gif",
+            thumbnailUrl = "CONTENT://media/external/reaction.GiF?download=1#preview",
+        )
+
+        assertEquals(
+            "CONTENT://media/external/reaction.GiF?download=1#preview",
+            previewSource(asset),
+        )
+    }
+
+    @Test
+    fun `HTTP 和 HTTPS 大写 scheme 保持原样`() {
+        val gif = asset(format = "gif").copy(url = "HTTP://example.test/reaction.gif")
+        val static = asset(format = "webp").copy(thumbnailUrl = "HTTPS://example.test/thumb.webp")
+
+        assertEquals("HTTP://example.test/reaction.gif", previewSource(gif))
+        assertEquals("HTTPS://example.test/thumb.webp", previewSource(static))
     }
 
     @Test
@@ -66,6 +91,59 @@ class ExpressionAssetPreviewTest {
         )
 
         assertEquals("https://example.test/reaction-thumb.webp", previewSource(asset))
+    }
+
+    @Test
+    fun `无前导斜杠的远端字段仍相对服务端解析`() {
+        val gif = asset(format = "gif").copy(
+            url = "uploads/expression/reaction.gif",
+            thumbnailUrl = "uploads/expression/thumbnails/reaction.webp",
+        )
+        val static = asset(format = "webp").copy(
+            thumbnailUrl = "uploads/expression/thumbnails/reaction.webp",
+        )
+
+        assertEquals(
+            "${ServerConfig.baseUrl}/uploads/expression/reaction.gif",
+            previewSource(gif),
+        )
+        assertEquals(
+            "${ServerConfig.baseUrl}/uploads/expression/thumbnails/reaction.webp",
+            previewSource(static),
+        )
+    }
+
+    @Test
+    fun `远端 GIF 提供远端静态缩略图作为失败回退`() {
+        val asset = asset(format = "gif").copy(
+            url = "/uploads/expression/reaction.gif",
+            thumbnailUrl = "/uploads/expression/thumbnails/reaction.webp",
+            thumbnailFileName = "thumbnails/reaction.webp",
+        )
+
+        assertEquals(
+            ExpressionPreviewSources(
+                primary = "${ServerConfig.baseUrl}/uploads/expression/reaction.gif",
+                fallback = "${ServerConfig.baseUrl}/uploads/expression/thumbnails/reaction.webp",
+            ),
+            previewSources(asset),
+        )
+    }
+
+    @Test
+    fun `本地 GIF 主源不重复并回退到内置静态缩略图`() {
+        val asset = asset(format = "gif").copy(
+            thumbnailUrl = "content://cache/rendered/reaction.gif",
+            thumbnailFileName = "thumbnails/reaction.webp",
+        )
+
+        assertEquals(
+            ExpressionPreviewSources(
+                primary = "content://cache/rendered/reaction.gif",
+                fallback = "file:///android_asset/expression/thumbnails/reaction.webp",
+            ),
+            previewSources(asset),
+        )
     }
 
     private fun asset(format: String) = ExpressionAsset(

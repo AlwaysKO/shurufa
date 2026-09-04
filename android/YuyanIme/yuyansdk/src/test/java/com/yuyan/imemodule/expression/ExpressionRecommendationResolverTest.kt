@@ -3,11 +3,13 @@ package com.yuyan.imemodule.expression
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
+import com.bumptech.glide.gifdecoder.GifHeaderParser
 import com.yuyan.imemodule.expression.model.ExpressionAsset
 import com.yuyan.imemodule.expression.model.ExpressionTextLayout
 import com.yuyan.imemodule.expression.model.ExpressionTextSafeArea
 import com.yuyan.imemodule.expression.ui.previewSource
 import java.io.File
+import java.util.Base64
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -54,12 +56,41 @@ class ExpressionRecommendationResolverTest {
         )
         assertEquals(2, sourceCalls)
         val rendered = resolved.drop(1)
-        assertTrue(rendered.all { it.thumbnailUrl?.startsWith("file://") == true })
-        assertTrue(rendered.all { item ->
-            val path = requireNotNull(item.thumbnailUrl).removePrefix("file://")
-            File(path).isFile && File(path).name == "${resolver.cacheKey(item, query)}.webp"
-        })
+        rendered.forEach { item ->
+            val expected = File(
+                temporaryFolder.root,
+                "expression-previews/${resolver.cacheKey(item, query)}.webp",
+            )
+            assertTrue(expected.isFile)
+            assertEquals(Uri.fromFile(expected).toString(), item.thumbnailUrl)
+        }
         assertNotEquals(resolver.cacheKey(templates.first(), query), resolver.cacheKey(templates.first(), "生僻"))
+    }
+
+    @Test
+    fun `动态合成模板生成带文字的本地多帧 GIF 预览`() = runBlocking {
+        val source = temporaryFolder.newFile("source.gif").apply { writeBytes(TWO_FRAME_GIF) }
+        val resolver = ExpressionRecommendationResolver(temporaryFolder.root) { source }
+        val gif = asset("animated", "synthesis-template").copy(
+            format = "gif",
+            fileName = "templates/animated.gif",
+            width = 32,
+            height = 32,
+            textSafeArea = ExpressionTextSafeArea(2, 2, 28, 28),
+        )
+        val query = "谢谢"
+
+        val resolved = resolver.resolve(listOf(gif), query).single()
+        val expected = File(
+            temporaryFolder.root,
+            "expression-previews/${resolver.cacheKey(gif, query)}.gif",
+        )
+
+        assertTrue(expected.isFile)
+        assertEquals(Uri.fromFile(expected).toString(), resolved.thumbnailUrl)
+        assertEquals(Uri.fromFile(expected).toString(), previewSource(resolved))
+        assertEquals(2, GifHeaderParser().setData(expected.readBytes()).parseHeader().numFrames)
+        assertNotEquals(resolver.cacheKey(gif, query), resolver.cacheKey(gif, "再见"))
     }
 
     @Test
@@ -105,4 +136,10 @@ class ExpressionRecommendationResolverTest {
             maxLines = 2,
         ),
     )
+
+    companion object {
+        private val TWO_FRAME_GIF = Base64.getDecoder().decode(
+            "R0lGODlhIAAgAIEAAAAAAP8AAAAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQJCAAAACwAAAAAIAAgAAAIUQABCBxIsKDBgwgTKlzIsKHDhxAjSpxIsaLFggEyatwYoCLHjx4/bgwpMiPJkidFpgRJsaTGlRxhjmzpsiNNlzJfXtzJs6fPn0CDCh1KtOjPgAAh+QQJDAAAACwQAAgACwANAIEAAAAAAP8AAAAAAAAIFgADCBxIsKDBgwgTKlzIsKHDhxAPBgQAOw==",
+        )
+    }
 }

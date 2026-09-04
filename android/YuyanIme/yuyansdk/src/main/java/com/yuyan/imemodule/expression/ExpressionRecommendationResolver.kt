@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import com.yuyan.imemodule.expression.model.ExpressionAsset
 import com.yuyan.imemodule.expression.render.ExpressionRenderPolicy
+import com.yuyan.imemodule.expression.render.GifTemplateRenderer
 import com.yuyan.imemodule.expression.render.StaticTemplateRenderer
 import java.io.File
 import java.security.MessageDigest
@@ -14,6 +15,7 @@ import kotlinx.coroutines.withContext
 class ExpressionRecommendationResolver(
     cacheDir: File,
     private val renderer: StaticTemplateRenderer = StaticTemplateRenderer(),
+    private val gifRenderer: GifTemplateRenderer = GifTemplateRenderer(renderer),
     private val resolveSource: suspend (ExpressionAsset) -> File,
 ) {
     private val previewCache = File(cacheDir, "expression-previews")
@@ -46,11 +48,13 @@ class ExpressionRecommendationResolver(
 
     private suspend fun renderPreview(asset: ExpressionAsset, query: String): File {
         previewCache.mkdirs()
-        val target = File(previewCache, "${cacheKey(asset, query)}.webp")
+        val isGif = asset.format.equals("gif", ignoreCase = true)
+        val target = File(previewCache, "${cacheKey(asset, query)}.${if (isGif) "gif" else "webp"}")
         if (target.isFile) return target
         val source = resolveSource(asset)
         val safeArea = requireNotNull(asset.textSafeArea)
         val layout = requireNotNull(asset.layout)
+        if (isGif) return gifRenderer.render(source, target, query, safeArea, layout)
         val bitmap = requireNotNull(BitmapFactory.decodeFile(source.path)) {
             "failed to decode expression preview"
         }

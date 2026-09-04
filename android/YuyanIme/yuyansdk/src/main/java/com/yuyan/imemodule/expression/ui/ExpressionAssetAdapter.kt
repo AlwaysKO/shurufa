@@ -80,36 +80,52 @@ class ExpressionAssetAdapter(
                     }
                 }
             }
-            Glide.with(image)
-                .load(previewSource(asset))
+            val sources = previewSources(asset)
+            val requestManager = Glide.with(image)
+            val fallbackRequest = sources.fallback?.let { fallback ->
+                requestManager
+                    .load(fallback)
+                    .centerCrop()
+                    .listener(visibilityListener(hideOnFailure = true))
+            }
+            val primaryRequest = requestManager
+                .load(sources.primary)
                 .centerCrop()
-                .listener(object : RequestListener<Drawable> {
-                    override fun onLoadFailed(
-                        error: GlideException?,
-                        model: Any?,
-                        target: Target<Drawable>,
-                        isFirstResource: Boolean,
-                    ): Boolean {
-                        itemView.visibility = View.GONE
-                        return false
-                    }
-
-                    override fun onResourceReady(
-                        resource: Drawable,
-                        model: Any,
-                        target: Target<Drawable>?,
-                        dataSource: DataSource,
-                        isFirstResource: Boolean,
-                    ): Boolean {
-                        itemView.visibility = View.VISIBLE
-                        return false
-                    }
-                })
-                .into(image)
+                .listener(visibilityListener(hideOnFailure = fallbackRequest == null))
+            if (fallbackRequest == null) {
+                primaryRequest.into(image)
+            } else {
+                primaryRequest.error(fallbackRequest).into(image)
+            }
             itemView.setOnClickListener { onClick(asset) }
             itemView.setOnLongClickListener {
                 onLongPress(asset)
                 true
+            }
+        }
+
+        private fun visibilityListener(hideOnFailure: Boolean) = object : RequestListener<Drawable> {
+            override fun onLoadFailed(
+                error: GlideException?,
+                model: Any?,
+                target: Target<Drawable>,
+                isFirstResource: Boolean,
+            ): Boolean {
+                if (hideOnFailure) {
+                    itemView.visibility = View.GONE
+                }
+                return false
+            }
+
+            override fun onResourceReady(
+                resource: Drawable,
+                model: Any,
+                target: Target<Drawable>?,
+                dataSource: DataSource,
+                isFirstResource: Boolean,
+            ): Boolean {
+                itemView.visibility = View.VISIBLE
+                return false
             }
         }
     }
@@ -123,25 +139,63 @@ class ExpressionAssetAdapter(
     }
 }
 
-internal fun previewSource(asset: ExpressionAsset): String {
-    val path = if (asset.format.equals("gif", ignoreCase = true)) {
-        asset.thumbnailUrl?.takeIf { it.isLocalGifUri() }
-            ?: asset.url
-            ?: asset.fileName.takeIf { it.isNotBlank() }
-            ?: asset.thumbnailUrl
-            ?: asset.thumbnailFileName
-            ?: asset.fileName
+internal data class ExpressionPreviewSources(
+    val primary: String,
+    val fallback: String? = null,
+)
+
+internal fun previewSources(asset: ExpressionAsset): ExpressionPreviewSources {
+    val primary = if (asset.format.equals("gif", ignoreCase = true)) {
+        remoteCandidate(asset.thumbnailUrl)?.takeIf { it.path.isLocalGifUri() }
+            ?: remoteCandidate(asset.url)
+            ?: assetCandidate(asset.fileName)
+            ?: remoteCandidate(asset.thumbnailUrl)
+            ?: assetCandidate(asset.thumbnailFileName)
     } else {
-        asset.thumbnailUrl ?: asset.thumbnailFileName ?: asset.url ?: asset.fileName
+        remoteCandidate(asset.thumbnailUrl)
+            ?: assetCandidate(asset.thumbnailFileName)
+            ?: remoteCandidate(asset.url)
+            ?: assetCandidate(asset.fileName)
     }
-    return when {
-        path.startsWith("http://") || path.startsWith("https://") || path.startsWith("file://") -> path
-        path.startsWith("/") -> ServerConfig.baseUrl + path
-        else -> "file:///android_asset/expression/$path"
+    val resolvedPrimary = requireNotNull(primary).resolve()
+    val fallback = if (asset.format.equals("gif", ignoreCase = true)) {
+        listOfNotNull(
+            remoteCandidate(asset.thumbnailUrl),
+            assetCandidate(asset.thumbnailFileName),
+        ).map(PreviewCandidate::resolve).firstOrNull { it != resolvedPrimary }
+    } else {
+        null
+    }
+    return ExpressionPreviewSources(primary = resolvedPrimary, fallback = fallback)
+}
+
+internal fun previewSource(asset: ExpressionAsset): String = previewSources(asset).primary
+
+private enum class PreviewPathKind { REMOTE, ASSET }
+
+private data class PreviewCandidate(val path: String, val kind: PreviewPathKind) {
+    fun resolve(): String = when (kind) {
+        PreviewPathKind.ASSET -> "file:///android_asset/expression/${path.trimStart('/')}"
+        PreviewPathKind.REMOTE -> if (path.hasSupportedScheme()) {
+            path
+        } else {
+            "${ServerConfig.baseUrl}/${path.trimStart('/')}"
+        }
     }
 }
 
+private fun remoteCandidate(path: String?): PreviewCandidate? =
+    path?.takeIf { it.isNotBlank() }?.let { PreviewCandidate(it, PreviewPathKind.REMOTE) }
+
+private fun assetCandidate(path: String?): PreviewCandidate? =
+    path?.takeIf { it.isNotBlank() }?.let { PreviewCandidate(it, PreviewPathKind.ASSET) }
+
 private fun String.isLocalGifUri(): Boolean =
-    startsWith("file://") && runCatching {
-        java.net.URI(this).path?.endsWith(".gif", ignoreCase = true) == true
-    }.getOrDefault(false)
+    scheme() in LOCAL_SCHEMES && substringBefore('#').substringBefore('?').endsWith(".gif", ignoreCase = true)
+
+private fun String.hasSupportedScheme(): Boolean = scheme() in SUPPORTED_SCHEMES
+
+private fun String.scheme(): String = substringBefore("://", missingDelimiterValue = "").lowercase()
+
+private val LOCAL_SCHEMES = setOf("file", "content")
+private val SUPPORTED_SCHEMES = setOf("http", "https", "file", "content")
