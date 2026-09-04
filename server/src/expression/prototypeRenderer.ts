@@ -17,7 +17,6 @@ const CENTER_POSE_SIZE = 216;
 const MAX_TRANSFORMED_POSE_SIZE = 228;
 const EFFECTIVE_ALPHA_THRESHOLD = 8;
 const ALPHA_BBOX_PADDING = 4;
-const TEXT_CENTER_Y = 183;
 const TRANSPARENT = { r: 0, g: 0, b: 0, alpha: 0 } as const;
 
 export const PROTOTYPE_FONT_PATH = fileURLToPath(new URL(
@@ -38,10 +37,94 @@ export interface PrototypeFramePlan {
 }
 
 export interface TextOverlayOptions {
+  item?: Pick<
+    PrototypeManifestItem,
+    'style' | 'keyword' | 'direction' | 'textPlacement'
+  >;
   kinetic?: boolean;
   placement?: PrototypeTextPlacement;
   progress?: number;
 }
+
+interface TypographyStyle {
+  fill: string;
+  innerStroke: string;
+  outerStroke: string;
+  innerRadius: number;
+  outerRadius: number;
+  shadowX: number;
+  shadowY: number;
+  shadowBlur: number;
+  baseScale: number;
+  fontScale: number;
+  baseRotation: number;
+  centerOffsetY: number;
+  rhythmScale: number;
+  rhythmRotation: number;
+  rhythmX: number;
+  rhythmY: number;
+  rhythmFrequency: number;
+  rhythmPhase: number;
+}
+
+const TYPOGRAPHY_STYLES: Record<PrototypeManifestItem['style'], TypographyStyle> = {
+  'original-character': {
+    fill: '#FFFFFF', innerStroke: '#FF6B3D', outerStroke: '#2B1B13',
+    innerRadius: 3, outerRadius: 7, shadowX: 1, shadowY: 4, shadowBlur: 2.5,
+    baseScale: 1, fontScale: 1, baseRotation: -1, centerOffsetY: 0,
+    rhythmScale: 0.025, rhythmRotation: 1.2, rhythmX: 1, rhythmY: -1,
+    rhythmFrequency: 2, rhythmPhase: 0,
+  },
+  'ai-original-pet': {
+    fill: '#FFF3D6', innerStroke: '#C9895A', outerStroke: '#3A281E',
+    innerRadius: 2.5, outerRadius: 8, shadowX: -2, shadowY: 3, shadowBlur: 2,
+    baseScale: 0.97, fontScale: 0.98, baseRotation: 1.2, centerOffsetY: 1,
+    rhythmScale: 0.018, rhythmRotation: -1.5, rhythmX: -1.5, rhythmY: 0.5,
+    rhythmFrequency: 1, rhythmPhase: 0.7,
+  },
+  'original-life-scene': {
+    fill: '#FFE66D', innerStroke: '#E94235', outerStroke: '#171717',
+    innerRadius: 2, outerRadius: 7, shadowX: 3, shadowY: 3, shadowBlur: 1.4,
+    baseScale: 1.03, fontScale: 1.02, baseRotation: -2.2, centerOffsetY: -2,
+    rhythmScale: 0.035, rhythmRotation: 1.8, rhythmX: 2, rhythmY: -1.5,
+    rhythmFrequency: 2, rhythmPhase: 1.1,
+  },
+  '3d-plush': {
+    fill: '#FFFDF8', innerStroke: '#FF8DB8', outerStroke: '#583874',
+    innerRadius: 4, outerRadius: 8, shadowX: 2, shadowY: 5, shadowBlur: 3.8,
+    baseScale: 0.98, fontScale: 0.97, baseRotation: 1.7, centerOffsetY: -1,
+    rhythmScale: 0.022, rhythmRotation: -1, rhythmX: 1.2, rhythmY: 1,
+    rhythmFrequency: 1, rhythmPhase: 2.2,
+  },
+  'hand-drawn': {
+    fill: '#FFFFFF', innerStroke: '#2D8CFF', outerStroke: '#0E1B2A',
+    innerRadius: 2, outerRadius: 5, shadowX: -3, shadowY: 3, shadowBlur: 0.8,
+    baseScale: 0.94, fontScale: 0.95, baseRotation: -3, centerOffsetY: -3,
+    rhythmScale: 0.015, rhythmRotation: 2.2, rhythmX: -2, rhythmY: -0.5,
+    rhythmFrequency: 3, rhythmPhase: 0.4,
+  },
+  'fictional-live-action': {
+    fill: '#FFFFFF', innerStroke: '#D9D9D9', outerStroke: '#050505',
+    innerRadius: 1, outerRadius: 6, shadowX: 2, shadowY: 2, shadowBlur: 3,
+    baseScale: 0.91, fontScale: 0.92, baseRotation: 0, centerOffsetY: 2,
+    rhythmScale: 0.008, rhythmRotation: 0.5, rhythmX: 0.5, rhythmY: 0.4,
+    rhythmFrequency: 1, rhythmPhase: 1.8,
+  },
+  'kinetic-typography': {
+    fill: '#FFF15A', innerStroke: '#FF3E9D', outerStroke: '#4B1C86',
+    innerRadius: 3.5, outerRadius: 8, shadowX: 3, shadowY: 5, shadowBlur: 2,
+    baseScale: 1.04, fontScale: 1.04, baseRotation: -4, centerOffsetY: -4,
+    rhythmScale: 0.06, rhythmRotation: 3.5, rhythmX: 3, rhythmY: -2,
+    rhythmFrequency: 2, rhythmPhase: 0.2,
+  },
+  'internet-meme-grammar': {
+    fill: '#E2FBFF', innerStroke: '#00B8D4', outerStroke: '#102A43',
+    innerRadius: 2.5, outerRadius: 6, shadowX: -4, shadowY: 2, shadowBlur: 1.2,
+    baseScale: 0.97, fontScale: 0.99, baseRotation: 2.6, centerOffsetY: -2,
+    rhythmScale: 0.03, rhythmRotation: -2.8, rhythmX: -3, rhythmY: 1.5,
+    rhythmFrequency: 3, rhythmPhase: 2.7,
+  },
+};
 
 export type RenderPrototypeGifOptions = {
   item: PrototypeManifestItem;
@@ -75,44 +158,102 @@ function escapeXml(value: string): string {
     .replace(/'/g, '&apos;');
 }
 
+function resolveTypographyStyle(options: TextOverlayOptions): TypographyStyle {
+  const item = options.item;
+  const base = TYPOGRAPHY_STYLES[item?.style ?? 'original-character'];
+  const resolved = { ...base };
+  if (item?.keyword === '无语') {
+    resolved.baseRotation -= 1.3;
+    resolved.rhythmFrequency += 1;
+    resolved.centerOffsetY += 1;
+  } else if (item?.keyword === '笑死') {
+    resolved.baseScale *= 1.035;
+    resolved.rhythmScale += 0.012;
+    resolved.rhythmRotation += 0.8;
+  }
+  if (item?.direction === 'kinetic-type') {
+    resolved.rhythmScale *= 1.35;
+    resolved.rhythmRotation *= 1.3;
+    resolved.rhythmX *= 1.25;
+  } else if (item?.direction === 'contrast-remix') {
+    resolved.baseRotation *= -1;
+    resolved.shadowX *= -1;
+    resolved.rhythmY *= -1;
+  } else if (item?.direction === 'pet-or-person') {
+    resolved.rhythmY *= 1.25;
+  }
+  return resolved;
+}
+
+function calculateTypographyLayout(
+  frame: PrototypeFramePlan,
+  options: TextOverlayOptions,
+  typography: TypographyStyle,
+): {
+  centerX: number;
+  centerY: number;
+  rotation: number;
+  scale: number;
+} {
+  const progress = Math.min(1, Math.max(0, options.progress ?? 0));
+  const envelope = Math.sin(Math.PI * progress);
+  const phase = typography.rhythmPhase;
+  const wave = Math.sin(2 * Math.PI * typography.rhythmFrequency * progress + phase);
+  const crossWave = Math.sin(2 * Math.PI * (typography.rhythmFrequency + 0.5) * progress + phase);
+  const kinetic = options.kinetic ?? options.item?.direction === 'kinetic-type';
+  const kineticPulse = kinetic ? 0.07 * envelope * Math.abs(Math.sin(2 * Math.PI * progress)) : 0;
+  const placement = options.placement ?? options.item?.textPlacement ?? 'bottom';
+  const baseCenterY = placement === 'center' ? OUTPUT_SIZE / 2 : 178;
+  return {
+    centerX: OUTPUT_SIZE / 2 + envelope * typography.rhythmX * wave,
+    centerY: baseCenterY + typography.centerOffsetY
+      + envelope * typography.rhythmY * crossWave,
+    rotation: frame.textRotationDeg + typography.baseRotation
+      + envelope * typography.rhythmRotation * wave
+      + (kinetic ? 2.5 * envelope * crossWave : 0),
+    scale: frame.textScale * typography.baseScale
+      * (1 + envelope * typography.rhythmScale * wave + kineticPulse),
+  };
+}
+
 /** 构建逐帧文字层；文字永远由确定性 SVG 排版而不是由主视觉提供。 */
 export function buildTextOverlaySvg(
   text: string,
   frame: PrototypeFramePlan,
   options: TextOverlayOptions = {},
 ): Buffer {
-  const progress = Math.min(1, Math.max(0, options.progress ?? 0));
-  const kineticEnvelope = options.kinetic ? Math.sin(Math.PI * progress) : 0;
-  const scale = frame.textScale * (1 + 0.13 * kineticEnvelope);
-  const rotation = frame.textRotationDeg
-    + (options.kinetic ? 4 * kineticEnvelope * Math.sin(4 * Math.PI * progress) : 0);
-  const textCenterY = options.placement === 'center' ? OUTPUT_SIZE / 2 : TEXT_CENTER_Y;
+  const typography = resolveTypographyStyle(options);
+  const layout = calculateTypographyLayout(frame, options, typography);
   const characterCount = Math.max(1, Array.from(text).length);
-  const fontSize = characterCount <= 2 ? 54
+  const baseFontSize = characterCount <= 2 ? 54
     : characterCount <= 4 ? 44
       : characterCount <= 6 ? 35
         : 28;
+  const fontSize = Math.round(baseFontSize * typography.fontScale);
   const safeText = escapeXml(text);
 
   return Buffer.from(`
     <svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">
       <defs>
         <filter id="textShadow" x="-30%" y="-40%" width="160%" height="190%">
-          <feDropShadow dx="0" dy="4" stdDeviation="2.5" flood-color="#000000" flood-opacity="0.68"/>
+          <feDropShadow dx="${typography.shadowX}" dy="${typography.shadowY}"
+            stdDeviation="${typography.shadowBlur}" flood-color="#000000" flood-opacity="0.68"/>
         </filter>
       </defs>
-      <g transform="translate(120 ${textCenterY}) rotate(${rotation.toFixed(3)}) scale(${scale.toFixed(4)}) translate(-120 -${textCenterY})"
+      <g transform="translate(${layout.centerX.toFixed(3)} ${layout.centerY.toFixed(3)}) rotate(${layout.rotation.toFixed(3)}) scale(${layout.scale.toFixed(4)}) translate(-120 -${layout.centerY.toFixed(3)})"
          filter="url(#textShadow)">
-        <text x="120" y="${textCenterY + 15}" text-anchor="middle"
+        <text x="120" y="${(layout.centerY + 15).toFixed(3)}" text-anchor="middle"
           font-family="Droid Sans Fallback, Source Han Serif SC, sans-serif"
           font-size="${fontSize}" font-weight="900"
-          fill="#FFF7D6" stroke="#211711" stroke-width="8"
+          fill="${typography.fill}" stroke="${typography.outerStroke}"
+          stroke-width="${typography.outerRadius * 2}"
           stroke-linejoin="round" stroke-linecap="round"
           paint-order="stroke fill">${safeText}</text>
-        <text x="120" y="${textCenterY + 12}" text-anchor="middle"
+        <text x="120" y="${(layout.centerY + 12).toFixed(3)}" text-anchor="middle"
           font-family="Droid Sans Fallback, Source Han Serif SC, sans-serif"
           font-size="${fontSize}" font-weight="900"
-          fill="#FFFFFF" stroke="#FF4D4F" stroke-width="3"
+          fill="${typography.fill}" stroke="${typography.innerStroke}"
+          stroke-width="${typography.innerRadius * 2}"
           stroke-linejoin="round" stroke-linecap="round"
           paint-order="stroke fill">${safeText}</text>
       </g>
@@ -127,17 +268,14 @@ export async function rasterizeTextOverlay(
   options: TextOverlayOptions = {},
 ): Promise<Buffer> {
   await assertPrototypeFontAvailable();
+  const typography = resolveTypographyStyle(options);
+  const layout = calculateTypographyLayout(frame, options, typography);
   const characterCount = Math.max(1, Array.from(text).length);
-  const fontSize = characterCount <= 2 ? 54
+  const baseFontSize = characterCount <= 2 ? 54
     : characterCount <= 4 ? 44
       : characterCount <= 6 ? 35
         : 28;
-  const progress = Math.min(1, Math.max(0, options.progress ?? 0));
-  const kineticEnvelope = options.kinetic ? Math.sin(Math.PI * progress) : 0;
-  const scale = frame.textScale * (1 + 0.13 * kineticEnvelope);
-  const rotation = frame.textRotationDeg
-    + (options.kinetic ? 4 * kineticEnvelope * Math.sin(4 * Math.PI * progress) : 0);
-  const textCenterY = options.placement === 'center' ? OUTPUT_SIZE / 2 : TEXT_CENTER_Y;
+  const fontSize = Math.round(baseFontSize * typography.fontScale);
   const renderedGlyph = await sharp({
     text: {
       text: escapeXml(text),
@@ -152,11 +290,11 @@ export async function rasterizeTextOverlay(
       width: renderedGlyph.info.width,
       height: renderedGlyph.info.height,
       channels: 3,
-      background: '#ffffff',
+      background: typography.fill,
     },
   }).joinChannel(glyphAlpha).png().toBuffer();
   const x = OUTPUT_SIZE / 2 - renderedGlyph.info.width / 2;
-  const y = textCenterY - renderedGlyph.info.height / 2;
+  const y = layout.centerY - renderedGlyph.info.height / 2;
   const glyphUrl = `data:image/png;base64,${glyph.toString('base64')}`;
   const svg = Buffer.from(`
     <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -164,15 +302,15 @@ export async function rasterizeTextOverlay(
       <defs>
         <filter id="outlinedText" x="-45%" y="-70%" width="190%" height="240%"
           color-interpolation-filters="sRGB">
-          <feGaussianBlur in="SourceAlpha" stdDeviation="2.5" result="shadowBlur"/>
-          <feOffset in="shadowBlur" dx="0" dy="4" result="shadowOffset"/>
+          <feGaussianBlur in="SourceAlpha" stdDeviation="${typography.shadowBlur}" result="shadowBlur"/>
+          <feOffset in="shadowBlur" dx="${typography.shadowX}" dy="${typography.shadowY}" result="shadowOffset"/>
           <feFlood flood-color="#000000" flood-opacity="0.68" result="shadowColour"/>
           <feComposite in="shadowColour" in2="shadowOffset" operator="in" result="shadow"/>
-          <feMorphology in="SourceAlpha" operator="dilate" radius="7" result="outerMask"/>
-          <feFlood flood-color="#211711" result="outerColour"/>
+          <feMorphology in="SourceAlpha" operator="dilate" radius="${typography.outerRadius}" result="outerMask"/>
+          <feFlood flood-color="${typography.outerStroke}" result="outerColour"/>
           <feComposite in="outerColour" in2="outerMask" operator="in" result="outer"/>
-          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="innerMask"/>
-          <feFlood flood-color="#FF4D4F" result="innerColour"/>
+          <feMorphology in="SourceAlpha" operator="dilate" radius="${typography.innerRadius}" result="innerMask"/>
+          <feFlood flood-color="${typography.innerStroke}" result="innerColour"/>
           <feComposite in="innerColour" in2="innerMask" operator="in" result="inner"/>
           <feMerge>
             <feMergeNode in="shadow"/>
@@ -182,7 +320,7 @@ export async function rasterizeTextOverlay(
           </feMerge>
         </filter>
       </defs>
-      <g transform="translate(120 ${textCenterY}) rotate(${rotation.toFixed(3)}) scale(${scale.toFixed(4)}) translate(-120 -${textCenterY})">
+      <g transform="translate(${layout.centerX.toFixed(3)} ${layout.centerY.toFixed(3)}) rotate(${layout.rotation.toFixed(3)}) scale(${layout.scale.toFixed(4)}) translate(-120 -${layout.centerY.toFixed(3)})">
         <image x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${renderedGlyph.info.width}" height="${renderedGlyph.info.height}"
           href="${glyphUrl}" xlink:href="${glyphUrl}" filter="url(#outlinedText)"/>
       </g>
@@ -236,12 +374,16 @@ function buildEffectsSvg(
   `);
 }
 
-/** 校验并规范化单个透明姿势图；bottom 去透明边，center 保留画布内构图。 */
-export async function preparePrototypePose(
+interface AnalysedPose {
+  oriented: Buffer;
+  crop: { left: number; top: number; width: number; height: number };
+}
+
+async function analysePrototypePose(
   source: Buffer | string,
   item: PrototypeManifestItem,
   poseIndex: number,
-): Promise<Buffer> {
+): Promise<AnalysedPose> {
   const poseNumber = poseIndex + 1;
   let metadata;
   try {
@@ -299,37 +441,74 @@ export async function preparePrototypePose(
       throw new Error(`姿势 alpha 占比异常（样板 ${item.id}，姿势 ${poseNumber}，占比 ${alphaRatio.toFixed(4)}）`);
     }
 
-    if (item.textPlacement === 'center') {
-      return await sharp(oriented)
-        .resize(CENTER_POSE_SIZE, CENTER_POSE_SIZE, {
-          fit: 'contain',
-          background: TRANSPARENT,
-        })
-        .png()
-        .toBuffer();
-    }
     const cropLeft = Math.max(0, minX - ALPHA_BBOX_PADDING);
     const cropTop = Math.max(0, minY - ALPHA_BBOX_PADDING);
     const cropRight = Math.min(info.width - 1, maxX + ALPHA_BBOX_PADDING);
     const cropBottom = Math.min(info.height - 1, maxY + ALPHA_BBOX_PADDING);
-    return await sharp(oriented)
-      .extract({
+    return {
+      oriented,
+      crop: {
         left: cropLeft,
         top: cropTop,
         width: cropRight - cropLeft + 1,
         height: cropBottom - cropTop + 1,
-      })
-      .resize(BOTTOM_POSE_WIDTH, BOTTOM_POSE_HEIGHT, {
-        fit: 'contain',
-        background: TRANSPARENT,
-      })
-      .png()
-      .toBuffer();
+      },
+    };
   } catch (error) {
     if (error instanceof Error && error.message.includes(`样板 ${item.id}`)) throw error;
     const detail = error instanceof Error ? error.message : String(error);
     throw new Error(`无法处理姿势（样板 ${item.id}，姿势 ${poseNumber}）：${detail}`, { cause: error });
   }
+}
+
+/** 组级规范化四个姿势：bottom 共用源像素尺度和底部锚点，center 保留完整构图。 */
+export async function preparePrototypePoses(
+  sources: Array<Buffer | string>,
+  item: PrototypeManifestItem,
+): Promise<Buffer[]> {
+  if (sources.length !== 4) {
+    throw new Error(`姿势源必须恰好 4 个（样板 ${item.id}）`);
+  }
+  const analysed = await Promise.all(sources.map((source, poseIndex) => (
+    analysePrototypePose(source, item, poseIndex)
+  )));
+  if (item.textPlacement === 'center') {
+    return Promise.all(analysed.map(({ oriented }) => sharp(oriented)
+      .resize(CENTER_POSE_SIZE, CENTER_POSE_SIZE, {
+        fit: 'contain',
+        background: TRANSPARENT,
+      })
+      .png()
+      .toBuffer()));
+  }
+
+  const maximumWidth = Math.max(...analysed.map(({ crop }) => crop.width));
+  const maximumHeight = Math.max(...analysed.map(({ crop }) => crop.height));
+  const groupScale = Math.min(
+    BOTTOM_POSE_WIDTH / maximumWidth,
+    BOTTOM_POSE_HEIGHT / maximumHeight,
+  );
+  return Promise.all(analysed.map(async ({ oriented, crop }) => {
+    const width = Math.max(1, Math.round(crop.width * groupScale));
+    const height = Math.max(1, Math.round(crop.height * groupScale));
+    const scaled = await sharp(oriented)
+      .extract(crop)
+      .resize(width, height, { fit: 'fill' })
+      .png()
+      .toBuffer();
+    return sharp({
+      create: {
+        width: BOTTOM_POSE_WIDTH,
+        height: BOTTOM_POSE_HEIGHT,
+        channels: 4,
+        background: TRANSPARENT,
+      },
+    }).composite([{
+      input: scaled,
+      left: Math.round((BOTTOM_POSE_WIDTH - width) / 2),
+      top: BOTTOM_POSE_HEIGHT - height,
+    }]).png().toBuffer();
+  }));
 }
 
 async function renderFrame(
@@ -360,6 +539,7 @@ async function renderFrame(
   const progress = frameIndex / (item.frameCount - 1);
   const effects = buildEffectsSvg(item.motionPreset, frameIndex, item.frameCount);
   const text = await rasterizeTextOverlay(item.text, plan, {
+    item,
     kinetic: item.direction === 'kinetic-type',
     placement: item.textPlacement,
     progress,
@@ -410,9 +590,7 @@ export async function renderPrototypeGif(options: RenderPrototypeGifOptions): Pr
   if (hasPaths && !sources.every((source) => typeof source === 'string' && source.trim() !== '')) {
     throw new Error(`masterPaths 必须全部为非空路径（样板 ${item.id}）`);
   }
-  const preparedPoses = await Promise.all(sources.map((source, poseIndex) => (
-    preparePrototypePose(source, item, poseIndex)
-  )));
+  const preparedPoses = await preparePrototypePoses(sources, item);
   const plan = buildFramePlan(
     item.motionPreset,
     item.frameCount,

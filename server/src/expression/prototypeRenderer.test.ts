@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -5,13 +6,17 @@ import { join, resolve } from 'node:path';
 import sharp from 'sharp';
 import { describe, expect, it } from 'vitest';
 
-import type { PrototypeManifestItem } from './prototypeManifest.js';
+import {
+  PROTOTYPE_STYLES,
+  type PrototypeKeyword,
+  type PrototypeManifestItem,
+} from './prototypeManifest.js';
 import {
   assertPrototypeFontAvailable,
   buildFramePlan,
   buildPoseSequence,
   buildTextOverlaySvg,
-  preparePrototypePose,
+  preparePrototypePoses,
   PROTOTYPE_FONT_PATH,
   rasterizeTextOverlay,
   renderPrototypeGif,
@@ -90,6 +95,32 @@ async function createSolidPoses(): Promise<Buffer[]> {
     `),
     left: 80,
     top: 65,
+  }]).png().toBuffer()));
+}
+
+async function createAnchoredGroupPoses(): Promise<Buffer[]> {
+  const bodies = [
+    '<rect x="170" y="130" width="60" height="100" fill="#f04438"/>',
+    '<rect x="150" y="110" width="100" height="120" fill="#f04438"/>',
+    '<rect x="120" y="150" width="160" height="80" fill="#f04438"/>',
+    '<rect x="160" y="90" width="80" height="140" fill="#f04438"/>',
+  ];
+  return Promise.all(bodies.map((body) => sharp({
+    create: {
+      width: 400,
+      height: 300,
+      channels: 4,
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    },
+  }).composite([{
+    input: Buffer.from(`
+      <svg xmlns="http://www.w3.org/2000/svg" width="400" height="300">
+        ${body}
+        <rect x="170" y="230" width="60" height="20" fill="#00d4ff"/>
+      </svg>
+    `),
+    left: 0,
+    top: 0,
   }]).png().toBuffer()));
 }
 
@@ -242,6 +273,68 @@ describe('rasterizeTextOverlay', () => {
     expect(center.bottom).toBeGreaterThan(bottom.bottom + 40);
   });
 
+  it('至少六套文字系统产生真实不同的字形范围、配色和节奏，并保持缩略图高对比', async () => {
+    const plan = buildFramePlan('impact', 20, 2_000);
+    const frameIndex = 9;
+    const outputs = await Promise.all(PROTOTYPE_STYLES.map((style) => rasterizeTextOverlay(
+      '谢谢',
+      plan[frameIndex],
+      {
+        item: makeItem({ style }),
+        kinetic: true,
+        placement: 'bottom',
+        progress: frameIndex / (plan.length - 1),
+      },
+    )));
+    const hashes = outputs.map((output) => createHash('sha256').update(output).digest('hex'));
+    const geometrySignatures: string[] = [];
+    const colourSignatures: string[] = [];
+
+    for (const [index, output] of outputs.entries()) {
+      const bounds = await alphaBounds(output, 8);
+      expect(Math.min(bounds.left, bounds.top, bounds.right, bounds.bottom),
+        `${PROTOTYPE_STYLES[index]} 文字触边`).toBeGreaterThanOrEqual(4);
+      const thumbnail = await sharp(output).resize(120, 120).ensureAlpha().raw()
+        .toBuffer({ resolveWithObject: true });
+      let dark = 0;
+      let light = 0;
+      let red = 0;
+      let green = 0;
+      let blue = 0;
+      let colouredPixels = 0;
+      for (let offset = 0; offset < thumbnail.data.length; offset += thumbnail.info.channels) {
+        if (thumbnail.data[offset + 3] < 64) continue;
+        const r = thumbnail.data[offset];
+        const g = thumbnail.data[offset + 1];
+        const b = thumbnail.data[offset + 2];
+        const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        if (luminance < 70) dark += 1;
+        if (luminance > 210) light += 1;
+        red += r;
+        green += g;
+        blue += b;
+        colouredPixels += 1;
+      }
+      expect(dark, `${PROTOTYPE_STYLES[index]} 缺少深色高对比描边`).toBeGreaterThan(20);
+      expect(light, `${PROTOTYPE_STYLES[index]} 缺少亮色字面`).toBeGreaterThan(20);
+      geometrySignatures.push([
+        bounds.left,
+        bounds.top,
+        bounds.right,
+        bounds.bottom,
+      ].join(':'));
+      colourSignatures.push([
+        Math.round(red / colouredPixels / 8),
+        Math.round(green / colouredPixels / 8),
+        Math.round(blue / colouredPixels / 8),
+      ].join(':'));
+    }
+
+    expect(new Set(hashes).size).toBeGreaterThanOrEqual(6);
+    expect(new Set(geometrySignatures).size).toBeGreaterThanOrEqual(6);
+    expect(new Set(colourSignatures).size).toBeGreaterThanOrEqual(6);
+  });
+
   it('从仓库固定字体栅格化中文，而不是依赖系统回退方框', async () => {
     expect(PROTOTYPE_FONT_PATH).toBe(resolve(
       process.cwd(),
@@ -276,7 +369,52 @@ describe('rasterizeTextOverlay', () => {
   });
 });
 
-describe('preparePrototypePose', () => {
+describe('preparePrototypePoses', () => {
+  it('bottom 同组姿势保持统一源像素尺度和稳定底部锚点', async () => {
+    const prepared = await preparePrototypePoses(await createAnchoredGroupPoses(), makeItem());
+    const measurements = await Promise.all(prepared.map(async (pose) => {
+      const { data, info } = await sharp(pose).ensureAlpha().raw()
+        .toBuffer({ resolveWithObject: true });
+      let minX = info.width;
+      let maxX = -1;
+      let maxY = -1;
+      for (let offset = 0; offset < data.length; offset += info.channels) {
+        const distance = (data[offset] - 0) ** 2
+          + (data[offset + 1] - 212) ** 2
+          + (data[offset + 2] - 255) ** 2;
+        if (data[offset + 3] < 128 || distance > 625) continue;
+        const pixelIndex = offset / info.channels;
+        minX = Math.min(minX, pixelIndex % info.width);
+        maxX = Math.max(maxX, pixelIndex % info.width);
+        maxY = Math.max(maxY, Math.floor(pixelIndex / info.width));
+      }
+      const subject = await alphaBounds(pose, 8);
+      return {
+        furnitureWidth: maxX - minX + 1,
+        furnitureBottom: maxY,
+        subjectCenterX: subject.left
+          + (subject.width - subject.left - subject.right) / 2,
+        subjectSize: Math.max(
+          subject.width - subject.left - subject.right,
+          subject.height - subject.top - subject.bottom,
+        ),
+      };
+    }));
+
+    expect(Math.max(...measurements.map(({ furnitureWidth }) => furnitureWidth))
+      - Math.min(...measurements.map(({ furnitureWidth }) => furnitureWidth))).toBeLessThanOrEqual(2);
+    expect(Math.max(...measurements.map(({ furnitureBottom }) => furnitureBottom))
+      - Math.min(...measurements.map(({ furnitureBottom }) => furnitureBottom))).toBeLessThanOrEqual(2);
+    expect(measurements.every(({ subjectCenterX }) => Math.abs(subjectCenterX - 85) <= 1))
+      .toBe(true);
+    expect(Math.max(...measurements.map(({ furnitureWidth }) => furnitureWidth)))
+      .toBeGreaterThanOrEqual(35);
+    expect(Math.min(...measurements.map(({ subjectSize }) => subjectSize)))
+      .toBeGreaterThanOrEqual(70);
+    expect(Math.max(...measurements.map(({ subjectSize }) => subjectSize)))
+      .toBeGreaterThanOrEqual(100);
+  });
+
   it('bottom 布局按 alpha bbox 去除透明留白并放大主体', async () => {
     const source = await sharp({
       create: {
@@ -291,7 +429,7 @@ describe('preparePrototypePose', () => {
       top: 11,
     }]).png().toBuffer();
 
-    const prepared = await preparePrototypePose(source, makeItem(), 0);
+    const prepared = (await preparePrototypePoses([source, source, source, source], makeItem()))[0];
     const bounds = await alphaBounds(prepared);
     expect(Math.max(
       bounds.width - bounds.left - bounds.right,
@@ -317,8 +455,14 @@ describe('preparePrototypePose', () => {
       direction: 'kinetic-type',
       textPlacement: 'center',
     });
-    const left = await alphaBounds(await preparePrototypePose(await makeSidePose(20), item, 0));
-    const right = await alphaBounds(await preparePrototypePose(await makeSidePose(220), item, 1));
+    const leftSource = await makeSidePose(20);
+    const rightSource = await makeSidePose(220);
+    const prepared = await preparePrototypePoses(
+      [leftSource, rightSource, leftSource, rightSource],
+      item,
+    );
+    const left = await alphaBounds(prepared[0]);
+    const right = await alphaBounds(prepared[1]);
     const leftCenter = left.left + (left.width - left.left - left.right) / 2;
     const rightCenter = right.left + (right.width - right.left - right.right) / 2;
 
@@ -348,7 +492,7 @@ describe('preparePrototypePose', () => {
       },
     ]).png().toBuffer();
 
-    const prepared = await preparePrototypePose(source, makeItem(), 0);
+    const prepared = (await preparePrototypePoses([source, source, source, source], makeItem()))[0];
     const effective = await alphaBounds(prepared, 8);
     expect(Math.max(
       effective.width - effective.left - effective.right,
@@ -375,7 +519,7 @@ describe('preparePrototypePose', () => {
       top: 50,
     }]).png().toBuffer();
 
-    const prepared = await preparePrototypePose(source, makeItem(), 0);
+    const prepared = (await preparePrototypePoses([source, source, source, source], makeItem()))[0];
     const soft = await alphaBounds(prepared, 1);
     const effective = await alphaBounds(prepared, 8);
     expect(soft.left).toBeLessThan(effective.left);
@@ -399,11 +543,12 @@ describe('preparePrototypePose', () => {
       top: 10,
     }]).png().toBuffer();
 
-    await expect(preparePrototypePose(opaque, makeItem(), 0))
+    const valid = await createPoses();
+    await expect(preparePrototypePoses([opaque, valid[1], valid[2], valid[3]], makeItem()))
       .rejects.toThrow(/完全不透明.*thanks-render-01.*姿势 1/);
-    await expect(preparePrototypePose(empty, makeItem(), 1))
+    await expect(preparePrototypePoses([valid[0], empty, valid[2], valid[3]], makeItem()))
       .rejects.toThrow(/全透明.*thanks-render-01.*姿势 2/);
-    await expect(preparePrototypePose(tiny, makeItem(), 2))
+    await expect(preparePrototypePoses([valid[0], valid[1], tiny, valid[3]], makeItem()))
       .rejects.toThrow(/alpha 占比异常.*thanks-render-01.*姿势 3/);
   });
 });
@@ -505,6 +650,28 @@ describe('renderPrototypeGif', () => {
 
     expect(observed).toEqual(buildPoseSequence(item.frameCount));
     expect(new Set(observed)).toEqual(new Set([0, 1, 2, 3]));
+  });
+
+  it('三个关键词与八种 style 的最终 GIF 文字布局不完全相同', async () => {
+    const keywords: PrototypeKeyword[] = ['谢谢', '无语', '笑死'];
+    const masters = await createPoses();
+    const outputs = await Promise.all(PROTOTYPE_STYLES.map((style, index) => {
+      const keyword = keywords[index % keywords.length];
+      const isCenter = style === 'kinetic-typography';
+      return renderPrototypeGif({
+        masters,
+        item: makeItem({
+          keyword,
+          text: keyword,
+          style,
+          direction: isCenter ? 'kinetic-type' : 'core-performance',
+          textPlacement: isCenter ? 'center' : 'bottom',
+        }),
+      });
+    }));
+    const hashes = outputs.map((output) => createHash('sha256').update(output).digest('hex'));
+
+    expect(new Set(hashes).size).toBe(PROTOTYPE_STYLES.length);
   });
 
   it('masterPaths 与 masters 输入产生相同结果', async () => {
