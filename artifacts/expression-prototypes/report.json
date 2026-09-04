@@ -1,0 +1,141 @@
+{
+  "version": "2026.09.03.1",
+  "generatedAt": "2026-09-03T00:00:00.000Z",
+  "total": 12,
+  "pass": 12,
+  "fail": 0,
+  "items": [
+    {
+      "id": "thanks-nuotuan-bow",
+      "keyword": "谢谢",
+      "style": "original-character",
+      "direction": "core-performance",
+      "bytes": 187931,
+      "frames": 16,
+      "durationMs": 1400,
+      "sha256": "c5a931212a3207645d50dedc047bb3dedf4453f53ce3d8abe20274ffe2adf829",
+      "issues": []
+    },
+    {
+      "id": "thanks-puppy-flower",
+      "keyword": "谢谢",
+      "style": "ai-original-pet",
+      "direction": "pet-or-person",
+      "bytes": 156740,
+      "frames": 14,
+      "durationMs": 1200,
+      "sha256": "096abc93a00f2125fadab9857fcb08b71355f6a46135800ca32846dc0037e76f",
+      "issues": []
+    },
+    {
+      "id": "thanks-office-helper",
+      "keyword": "谢谢",
+      "style": "original-life-scene",
+      "direction": "contrast-remix",
+      "bytes": 145563,
+      "frames": 12,
+      "durationMs": 1000,
+      "sha256": "2712ea9e1890d9df5327fbdb67d932163c58e9541f1087ac18a2a92d1d8476b0",
+      "issues": []
+    },
+    {
+      "id": "thanks-plush-toast",
+      "keyword": "谢谢",
+      "style": "3d-plush",
+      "direction": "kinetic-type",
+      "bytes": 219616,
+      "frames": 18,
+      "durationMs": 1600,
+      "sha256": "4398e3e24e201c2d98edaf590a5f6933560c82ee7fa24574019a0794f7fa35b6",
+      "issues": []
+    },
+    {
+      "id": "speechless-ink-facepalm",
+      "keyword": "无语",
+      "style": "hand-drawn",
+      "direction": "core-performance",
+      "bytes": 129079,
+      "frames": 12,
+      "durationMs": 1300,
+      "sha256": "b2aaecd3a26c909b048de0f8535b353f5bd1a22a043d2714f3d98e2c90156b1c",
+      "issues": []
+    },
+    {
+      "id": "speechless-cat-stare",
+      "keyword": "无语",
+      "style": "ai-original-pet",
+      "direction": "pet-or-person",
+      "bytes": 89588,
+      "frames": 10,
+      "durationMs": 1100,
+      "sha256": "35f1b212a46eed72f05ebd4b47086646c99677919caf7f1891592d34ddd0e555",
+      "issues": []
+    },
+    {
+      "id": "speechless-roommate-freeze",
+      "keyword": "无语",
+      "style": "fictional-live-action",
+      "direction": "contrast-remix",
+      "bytes": 179019,
+      "frames": 16,
+      "durationMs": 1500,
+      "sha256": "427138b17770f0fc9cbf0d60ac5966773a9f71ae72e365cbcae228d57efc0f5f",
+      "issues": []
+    },
+    {
+      "id": "speechless-loading-dots",
+      "keyword": "无语",
+      "style": "internet-meme-grammar",
+      "direction": "kinetic-type",
+      "bytes": 94078,
+      "frames": 14,
+      "durationMs": 1800,
+      "sha256": "6dc6096a251b656321a2f325b76451159348b1737b2c6e1ba1f20733d0647281",
+      "issues": []
+    },
+    {
+      "id": "laugh-huohua-table",
+      "keyword": "笑死",
+      "style": "original-character",
+      "direction": "core-performance",
+      "bytes": 195987,
+      "frames": 20,
+      "durationMs": 1500,
+      "sha256": "43195541be8a6001c325182c5a0d6eaf68ccda01c526945977ecc4ef8468e8bc",
+      "issues": []
+    },
+    {
+      "id": "laugh-parrot-tumble",
+      "keyword": "笑死",
+      "style": "ai-original-pet",
+      "direction": "pet-or-person",
+      "bytes": 195705,
+      "frames": 18,
+      "durationMs": 1300,
+      "sha256": "cc42f4b678d64bf3e7b9838827ca5b58f631cf8e3ca84ae7c82845ce5766d97a",
+      "issues": []
+    },
+    {
+      "id": "laugh-friend-collapse",
+      "keyword": "笑死",
+      "style": "original-life-scene",
+      "direction": "contrast-remix",
+      "bytes": 172592,
+      "frames": 16,
+      "durationMs": 1700,
+      "sha256": "5c5162ac27da1e0bff8abfd0be49e3ddd9cd31abfbf5b5b0491e9d65c371043a",
+      "issues": []
+    },
+    {
+      "id": "laugh-type-explosion",
+      "keyword": "笑死",
+      "style": "kinetic-typography",
+      "direction": "kinetic-type",
+      "bytes": 140379,
+      "frames": 12,
+      "durationMs": 900,
+      "sha256": "020d74bf26a649bf7d2f971829ec1b37db4924194cea9624a70e45bc4bb5b912",
+      "issues": []
+    }
+  ]
+}

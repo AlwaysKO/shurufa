@@ -13,6 +13,7 @@
     "analyze:once": "tsx src/jobs/analyze.ts --once",
     "expression:crop": "tsx scripts/crop-expression-contact-sheets.ts",
     "expression:generate": "tsx scripts/generate-expression-assets.ts",
+    "expression:prototype": "tsx scripts/render-expression-prototypes.ts",
     "test": "vitest run src",
     "test:watch": "vitest src"
   },
