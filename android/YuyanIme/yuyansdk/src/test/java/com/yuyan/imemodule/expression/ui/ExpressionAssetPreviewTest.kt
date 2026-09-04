@@ -36,10 +36,24 @@ class ExpressionAssetPreviewTest {
     fun `已下载 GIF 优先播放本地动态文件`() {
         val asset = asset(format = "gif").copy(
             url = "https://example.test/reaction.gif",
-            thumbnailUrl = "file:///cache/expression/reaction.gif",
+            thumbnailUrl = "file:///cache/expression/downloaded.GIF",
         )
 
-        assertEquals("file:///cache/expression/reaction.gif", previewSource(asset))
+        assertEquals("file:///cache/expression/downloaded.GIF", previewSource(asset))
+    }
+
+    @Test
+    fun `合成 GIF 跳过本地静态预览并播放内置原动画`() {
+        val asset = asset(format = "gif").copy(
+            type = "synthesis-template",
+            fileName = "templates/reaction.gif",
+            thumbnailUrl = "file:///cache/expression-previews/reaction.webp",
+        )
+
+        assertEquals(
+            "file:///android_asset/expression/templates/reaction.gif",
+            previewSource(asset),
+        )
     }
 
     @Test

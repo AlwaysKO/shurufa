@@ -125,7 +125,7 @@ class ExpressionAssetAdapter(
 
 internal fun previewSource(asset: ExpressionAsset): String {
     val path = if (asset.format.equals("gif", ignoreCase = true)) {
-        asset.thumbnailUrl?.takeIf { it.startsWith("file://") }
+        asset.thumbnailUrl?.takeIf { it.isLocalGifUri() }
             ?: asset.url
             ?: asset.fileName.takeIf { it.isNotBlank() }
             ?: asset.thumbnailUrl
@@ -140,3 +140,8 @@ internal fun previewSource(asset: ExpressionAsset): String {
         else -> "file:///android_asset/expression/$path"
     }
 }
+
+private fun String.isLocalGifUri(): Boolean =
+    startsWith("file://") && runCatching {
+        java.net.URI(this).path?.endsWith(".gif", ignoreCase = true) == true
+    }.getOrDefault(false)
