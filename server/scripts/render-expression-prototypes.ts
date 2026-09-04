@@ -1,4 +1,4 @@
-import { readFile, rm, mkdir, writeFile } from 'node:fs/promises';
+import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 
@@ -13,6 +13,14 @@ import {
   validatePrototypeManifest,
 } from '../src/expression/prototypeManifest.js';
 import {
+  preflightPrototypePoses,
+  publishDirectoryAtomically,
+} from '../src/expression/prototypePublication.js';
+import {
+  buildPrototypeReport,
+  verifyPrototypeReport,
+} from '../src/expression/prototypeReport.js';
+import {
   PROTOTYPE_FONT_PATH,
   renderPrototypeGif,
 } from '../src/expression/prototypeRenderer.js';
@@ -20,7 +28,6 @@ import {
 const PROJECT_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const PROTOTYPES_ROOT = join(PROJECT_ROOT, 'assets/expression/prototypes');
 const OUTPUT_ROOT = join(PROJECT_ROOT, 'artifacts/expression-prototypes');
-const GIFS_ROOT = join(OUTPUT_ROOT, 'gifs');
 const TRANSPARENT = { r: 0, g: 0, b: 0, alpha: 0 } as const;
 
 interface RenderedPrototype {
@@ -37,13 +44,6 @@ function escapeHtml(value: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
-}
-
-function generatedAtFromVersion(version: string): string {
-  const match = /^(\d{4})\.(\d{2})\.(\d{2})/.exec(version);
-  return match === null
-    ? '1970-01-01T00:00:00.000Z'
-    : `${match[1]}-${match[2]}-${match[3]}T00:00:00.000Z`;
 }
 
 async function makeLabel(
@@ -155,75 +155,55 @@ function renderPreviewHtml(rendered: RenderedPrototype[]): string {
 async function main(): Promise<void> {
   const manifestPath = join(PROTOTYPES_ROOT, 'manifest.json');
   const manifest = validatePrototypeManifest(JSON.parse(await readFile(manifestPath, 'utf8')));
-  await rm(OUTPUT_ROOT, { recursive: true, force: true });
-  await mkdir(GIFS_ROOT, { recursive: true });
+  const posePathsById = await preflightPrototypePoses(manifest, PROTOTYPES_ROOT);
 
-  const rendered: RenderedPrototype[] = [];
-  for (const item of manifest.items) {
-    const masterPaths = item.poseFiles.map((poseFile) => join(PROTOTYPES_ROOT, poseFile));
-    await Promise.all(masterPaths.map((path) => readFile(path)));
-    const gif = await renderPrototypeGif({ masterPaths, item });
-    const outputPath = join(GIFS_ROOT, `${item.id}.gif`);
-    await writeFile(outputPath, gif);
-    const audit = await auditPrototypeGif(gif, item);
-    const firstFrame = await sharp(gif, { page: 0 }).png().toBuffer();
-    rendered.push({ item, gif, firstFrame, audit });
-    console.log(`${audit.issues.length === 0 ? '✓' : '✗'} ${item.id} ${(gif.length / 1024).toFixed(1)}KB`);
-  }
+  await publishDirectoryAtomically(OUTPUT_ROOT, async (temporaryRoot) => {
+    const gifsRoot = join(temporaryRoot, 'gifs');
+    await mkdir(gifsRoot, { recursive: true });
+    const rendered: RenderedPrototype[] = [];
+    for (const item of manifest.items) {
+      const masterPaths = posePathsById.get(item.id);
+      if (masterPaths === undefined) throw new Error(`预检结果缺少样板 ${item.id}`);
+      const gif = await renderPrototypeGif({ masterPaths, item });
+      await writeFile(join(gifsRoot, `${item.id}.gif`), gif);
+      const audit = await auditPrototypeGif(gif, item);
+      const firstFrame = await sharp(gif, { page: 0 }).png().toBuffer();
+      rendered.push({ item, gif, firstFrame, audit });
+      console.log(`${audit.issues.length === 0 ? '✓' : '✗'} ${item.id} ${(gif.length / 1024).toFixed(1)}KB`);
+    }
 
-  const failed = rendered.filter(({ audit }) => audit.issues.length > 0).length;
-  const report = {
-    version: manifest.version,
-    generatedAt: generatedAtFromVersion(manifest.version),
-    total: rendered.length,
-    pass: rendered.length - failed,
-    fail: failed,
-    items: rendered.map(({ item, audit }) => ({
-      id: item.id,
-      keyword: item.keyword,
-      style: item.style,
-      direction: item.direction,
-      format: audit.metadata.format,
-      width: audit.metadata.width,
-      height: audit.metadata.height,
-      pageHeight: audit.metadata.pageHeight,
-      loop: audit.metadata.loop,
-      bytes: audit.metadata.bytes,
-      frames: audit.metadata.pages,
-      durationMs: audit.metadata.durationMs,
-      sha256: audit.metadata.sha256,
-      issues: audit.issues,
-    })),
-  };
-  await writeFile(join(OUTPUT_ROOT, 'report.json'), `${JSON.stringify(report, null, 2)}\n`);
-  await Promise.all([
-    renderContactSheet(rendered, {
-      imageSize: 240,
-      background: '#e4e4e7',
-      dark: false,
-      outputFile: join(OUTPUT_ROOT, 'contact-sheet.webp'),
-    }),
-    renderContactSheet(rendered, {
-      imageSize: 120,
-      background: '#fafafa',
-      dark: false,
-      outputFile: join(OUTPUT_ROOT, 'contact-sheet-120-light.webp'),
-    }),
-    renderContactSheet(rendered, {
-      imageSize: 120,
-      background: '#111318',
-      dark: true,
-      outputFile: join(OUTPUT_ROOT, 'contact-sheet-120-dark.webp'),
-    }),
-    writeFile(join(OUTPUT_ROOT, 'preview.html'), renderPreviewHtml(rendered)),
-  ]);
-
-  if (failed > 0) {
-    console.error(`审计失败：${failed}/${rendered.length} 个样板存在问题`);
-    process.exitCode = 1;
-  } else {
-    console.log(`审计通过：${rendered.length}/${rendered.length}`);
-  }
+    const report = buildPrototypeReport(manifest, rendered.map(({ audit }) => audit));
+    await writeFile(join(temporaryRoot, 'report.json'), `${JSON.stringify(report, null, 2)}\n`);
+    await Promise.all([
+      renderContactSheet(rendered, {
+        imageSize: 240,
+        background: '#e4e4e7',
+        dark: false,
+        outputFile: join(temporaryRoot, 'contact-sheet.webp'),
+      }),
+      renderContactSheet(rendered, {
+        imageSize: 120,
+        background: '#fafafa',
+        dark: false,
+        outputFile: join(temporaryRoot, 'contact-sheet-120-light.webp'),
+      }),
+      renderContactSheet(rendered, {
+        imageSize: 120,
+        background: '#111318',
+        dark: true,
+        outputFile: join(temporaryRoot, 'contact-sheet-120-dark.webp'),
+      }),
+      writeFile(join(temporaryRoot, 'preview.html'), renderPreviewHtml(rendered)),
+    ]);
+    const verification = await verifyPrototypeReport({ report, manifest, gifsRoot });
+    if (!verification.valid) {
+      throw new Error(`报告与 GIF 不一致：${JSON.stringify(verification.issues)}`);
+    }
+    if (report.fail > 0) {
+      throw new Error(`审计失败：${report.fail}/${report.total} 个样板存在问题`);
+    }
+  });
+  console.log(`审计通过：${manifest.items.length}/${manifest.items.length}`);
 }
 
 main().catch((error: unknown) => {

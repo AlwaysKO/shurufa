@@ -19,6 +19,37 @@
       "frames": 16,
       "durationMs": 1400,
       "sha256": "c5a931212a3207645d50dedc047bb3dedf4453f53ce3d8abe20274ffe2adf829",
+      "motion": {
+        "channelDeltaThreshold": 16,
+        "meaningfulChangedPixelRatio": 0.0015,
+        "uniqueFrameCount": 15,
+        "transitionDifferenceRatios": [
+          0.12362847222222222,
+          0.17006944444444444,
+          0.10623263888888888,
+          0.16671875,
+          0.11918402777777778,
+          0.06390625,
+          0.18878472222222223,
+          0.10631944444444444,
+          0.19102430555555555,
+          0.06737847222222222,
+          0.12793402777777776,
+          0.1634548611111111,
+          0.0940625,
+          0.15864583333333335,
+          0.1171875
+        ],
+        "meaningfulTransitionCount": 15,
+        "meanInternalDifferenceRatio": 0.13096875,
+        "maxInternalDifferenceRatio": 0.19102430555555555
+      },
+      "loopClosure": {
+        "boundaryDifferenceRatio": 0,
+        "internalMedianDifferenceRatio": 0.12362847222222222,
+        "allowedBoundaryDifferenceRatio": 0.30907118055555555,
+        "passed": true
+      },
       "issues": []
     },
     {
@@ -35,6 +66,35 @@
       "frames": 14,
       "durationMs": 1200,
       "sha256": "096abc93a00f2125fadab9857fcb08b71355f6a46135800ca32846dc0037e76f",
+      "motion": {
+        "channelDeltaThreshold": 16,
+        "meaningfulChangedPixelRatio": 0.0015,
+        "uniqueFrameCount": 13,
+        "transitionDifferenceRatios": [
+          0.09607638888888889,
+          0.11442708333333333,
+          0.10800347222222222,
+          0.11385416666666667,
+          0.15355902777777777,
+          0.12980902777777778,
+          0.16038194444444445,
+          0.11592013888888889,
+          0.13671875,
+          0.09887152777777777,
+          0.13046875,
+          0.10628472222222222,
+          0.07274305555555556
+        ],
+        "meaningfulTransitionCount": 13,
+        "meanInternalDifferenceRatio": 0.11823985042735043,
+        "maxInternalDifferenceRatio": 0.16038194444444445
+      },
+      "loopClosure": {
+        "boundaryDifferenceRatio": 0,
+        "internalMedianDifferenceRatio": 0.11442708333333333,
+        "allowedBoundaryDifferenceRatio": 0.28606770833333334,
+        "passed": true
+      },
       "issues": []
     },
     {
@@ -51,6 +111,33 @@
       "frames": 12,
       "durationMs": 1000,
       "sha256": "2712ea9e1890d9df5327fbdb67d932163c58e9541f1087ac18a2a92d1d8476b0",
+      "motion": {
+        "channelDeltaThreshold": 16,
+        "meaningfulChangedPixelRatio": 0.0015,
+        "uniqueFrameCount": 11,
+        "transitionDifferenceRatios": [
+          0.129375,
+          0.13977430555555556,
+          0.1607465277777778,
+          0.1429513888888889,
+          0.18378472222222222,
+          0.14368055555555556,
+          0.1776736111111111,
+          0.16244791666666666,
+          0.1359548611111111,
+          0.14326388888888889,
+          0.09045138888888889
+        ],
+        "meaningfulTransitionCount": 11,
+        "meanInternalDifferenceRatio": 0.14637310606060605,
+        "maxInternalDifferenceRatio": 0.18378472222222222
+      },
+      "loopClosure": {
+        "boundaryDifferenceRatio": 0,
+        "internalMedianDifferenceRatio": 0.14326388888888889,
+        "allowedBoundaryDifferenceRatio": 0.3581597222222222,
+        "passed": true
+      },
       "issues": []
     },
     {
@@ -67,6 +154,39 @@
       "frames": 18,
       "durationMs": 1600,
       "sha256": "4398e3e24e201c2d98edaf590a5f6933560c82ee7fa24574019a0794f7fa35b6",
+      "motion": {
+        "channelDeltaThreshold": 16,
+        "meaningfulChangedPixelRatio": 0.0015,
+        "uniqueFrameCount": 17,
+        "transitionDifferenceRatios": [
+          0.14286458333333332,
+          0.15303819444444444,
+          0.05876736111111111,
+          0.1531597222222222,
+          0.17397569444444444,
+          0.20586805555555557,
+          0.13100694444444444,
+          0.10027777777777777,
+          0.13038194444444445,
+          0.1222048611111111,
+          0.12026041666666666,
+          0.19755208333333332,
+          0.16475694444444444,
+          0.1425173611111111,
+          0.06112847222222222,
+          0.15303819444444444,
+          0.14092013888888888
+        ],
+        "meaningfulTransitionCount": 17,
+        "meanInternalDifferenceRatio": 0.13833639705882353,
+        "maxInternalDifferenceRatio": 0.20586805555555557
+      },
+      "loopClosure": {
+        "boundaryDifferenceRatio": 0,
+        "internalMedianDifferenceRatio": 0.1425173611111111,
+        "allowedBoundaryDifferenceRatio": 0.35629340277777777,
+        "passed": true
+      },
       "issues": []
     },
     {
@@ -83,6 +203,33 @@
       "frames": 12,
       "durationMs": 1300,
       "sha256": "b2aaecd3a26c909b048de0f8535b353f5bd1a22a043d2714f3d98e2c90156b1c",
+      "motion": {
+        "channelDeltaThreshold": 16,
+        "meaningfulChangedPixelRatio": 0.0015,
+        "uniqueFrameCount": 11,
+        "transitionDifferenceRatios": [
+          0.09835069444444444,
+          0.1309201388888889,
+          0.17980902777777777,
+          0.15944444444444444,
+          0.1559375,
+          0.18387152777777777,
+          0.16286458333333334,
+          0.14821180555555555,
+          0.14663194444444444,
+          0.13769097222222224,
+          0.11060763888888889
+        ],
+        "meaningfulTransitionCount": 11,
+        "meanInternalDifferenceRatio": 0.14675820707070705,
+        "maxInternalDifferenceRatio": 0.18387152777777777
+      },
+      "loopClosure": {
+        "boundaryDifferenceRatio": 0,
+        "internalMedianDifferenceRatio": 0.14821180555555555,
+        "allowedBoundaryDifferenceRatio": 0.3705295138888889,
+        "passed": true
+      },
       "issues": []
     },
     {
@@ -99,6 +246,31 @@
       "frames": 10,
       "durationMs": 1100,
       "sha256": "35f1b212a46eed72f05ebd4b47086646c99677919caf7f1891592d34ddd0e555",
+      "motion": {
+        "channelDeltaThreshold": 16,
+        "meaningfulChangedPixelRatio": 0.0015,
+        "uniqueFrameCount": 9,
+        "transitionDifferenceRatios": [
+          0.10878472222222223,
+          0.09140625,
+          0.10696180555555555,
+          0.12522569444444445,
+          0.09713541666666667,
+          0.1148263888888889,
+          0.11913194444444444,
+          0.07368055555555555,
+          0.10659722222222222
+        ],
+        "meaningfulTransitionCount": 9,
+        "meanInternalDifferenceRatio": 0.10486111111111111,
+        "maxInternalDifferenceRatio": 0.12522569444444445
+      },
+      "loopClosure": {
+        "boundaryDifferenceRatio": 0,
+        "internalMedianDifferenceRatio": 0.10696180555555555,
+        "allowedBoundaryDifferenceRatio": 0.26740451388888886,
+        "passed": true
+      },
       "issues": []
     },
     {
@@ -115,6 +287,37 @@
       "frames": 16,
       "durationMs": 1500,
       "sha256": "427138b17770f0fc9cbf0d60ac5966773a9f71ae72e365cbcae228d57efc0f5f",
+      "motion": {
+        "channelDeltaThreshold": 16,
+        "meaningfulChangedPixelRatio": 0.0015,
+        "uniqueFrameCount": 15,
+        "transitionDifferenceRatios": [
+          0.08050347222222222,
+          0.10815972222222223,
+          0.07352430555555556,
+          0.15822916666666667,
+          0.15078125,
+          0.1465625,
+          0.18,
+          0.12215277777777778,
+          0.1848263888888889,
+          0.14928819444444444,
+          0.13991319444444444,
+          0.1503298611111111,
+          0.07276041666666666,
+          0.11953125,
+          0.07536458333333333
+        ],
+        "meaningfulTransitionCount": 15,
+        "meanInternalDifferenceRatio": 0.12746180555555556,
+        "maxInternalDifferenceRatio": 0.1848263888888889
+      },
+      "loopClosure": {
+        "boundaryDifferenceRatio": 0,
+        "internalMedianDifferenceRatio": 0.13991319444444444,
+        "allowedBoundaryDifferenceRatio": 0.34978298611111114,
+        "passed": true
+      },
       "issues": []
     },
     {
@@ -131,6 +334,35 @@
       "frames": 14,
       "durationMs": 1800,
       "sha256": "6dc6096a251b656321a2f325b76451159348b1737b2c6e1ba1f20733d0647281",
+      "motion": {
+        "channelDeltaThreshold": 16,
+        "meaningfulChangedPixelRatio": 0.0015,
+        "uniqueFrameCount": 13,
+        "transitionDifferenceRatios": [
+          0.06253472222222223,
+          0.09295138888888889,
+          0.10458333333333333,
+          0.12618055555555555,
+          0.12817708333333333,
+          0.12901041666666666,
+          0.13333333333333333,
+          0.11588541666666667,
+          0.13803819444444446,
+          0.11550347222222222,
+          0.11105902777777778,
+          0.10887152777777778,
+          0.06152777777777778
+        ],
+        "meaningfulTransitionCount": 13,
+        "meanInternalDifferenceRatio": 0.10981971153846154,
+        "maxInternalDifferenceRatio": 0.13803819444444446
+      },
+      "loopClosure": {
+        "boundaryDifferenceRatio": 0,
+        "internalMedianDifferenceRatio": 0.11550347222222222,
+        "allowedBoundaryDifferenceRatio": 0.28875868055555554,
+        "passed": true
+      },
       "issues": []
     },
     {
@@ -147,6 +379,41 @@
       "frames": 20,
       "durationMs": 1500,
       "sha256": "43195541be8a6001c325182c5a0d6eaf68ccda01c526945977ecc4ef8468e8bc",
+      "motion": {
+        "channelDeltaThreshold": 16,
+        "meaningfulChangedPixelRatio": 0.0015,
+        "uniqueFrameCount": 19,
+        "transitionDifferenceRatios": [
+          0.06409722222222222,
+          0.11005208333333333,
+          0.059270833333333335,
+          0.08965277777777778,
+          0.1479513888888889,
+          0.14171875,
+          0.12175347222222223,
+          0.14119791666666667,
+          0.12206597222222222,
+          0.11510416666666666,
+          0.1240625,
+          0.14864583333333334,
+          0.1240798611111111,
+          0.13678819444444446,
+          0.15098958333333334,
+          0.09604166666666666,
+          0.07302083333333333,
+          0.12060763888888888,
+          0.045711805555555554
+        ],
+        "meaningfulTransitionCount": 19,
+        "meanInternalDifferenceRatio": 0.11225328947368421,
+        "maxInternalDifferenceRatio": 0.15098958333333334
+      },
+      "loopClosure": {
+        "boundaryDifferenceRatio": 0,
+        "internalMedianDifferenceRatio": 0.12175347222222223,
+        "allowedBoundaryDifferenceRatio": 0.3043836805555556,
+        "passed": true
+      },
       "issues": []
     },
     {
@@ -163,6 +430,39 @@
       "frames": 18,
       "durationMs": 1300,
       "sha256": "cc42f4b678d64bf3e7b9838827ca5b58f631cf8e3ca84ae7c82845ce5766d97a",
+      "motion": {
+        "channelDeltaThreshold": 16,
+        "meaningfulChangedPixelRatio": 0.0015,
+        "uniqueFrameCount": 17,
+        "transitionDifferenceRatios": [
+          0.08519097222222222,
+          0.15470486111111112,
+          0.11348958333333334,
+          0.10376736111111111,
+          0.18286458333333333,
+          0.15494791666666666,
+          0.15135416666666668,
+          0.16802083333333334,
+          0.14260416666666667,
+          0.1753125,
+          0.14692708333333335,
+          0.14043402777777778,
+          0.184375,
+          0.12192708333333334,
+          0.11836805555555556,
+          0.1463715277777778,
+          0.06171875
+        ],
+        "meaningfulTransitionCount": 17,
+        "meanInternalDifferenceRatio": 0.138375204248366,
+        "maxInternalDifferenceRatio": 0.184375
+      },
+      "loopClosure": {
+        "boundaryDifferenceRatio": 0,
+        "internalMedianDifferenceRatio": 0.1463715277777778,
+        "allowedBoundaryDifferenceRatio": 0.36592881944444444,
+        "passed": true
+      },
       "issues": []
     },
     {
@@ -179,6 +479,37 @@
       "frames": 16,
       "durationMs": 1700,
       "sha256": "5c5162ac27da1e0bff8abfd0be49e3ddd9cd31abfbf5b5b0491e9d65c371043a",
+      "motion": {
+        "channelDeltaThreshold": 16,
+        "meaningfulChangedPixelRatio": 0.0015,
+        "uniqueFrameCount": 15,
+        "transitionDifferenceRatios": [
+          0.11210069444444444,
+          0.13019097222222223,
+          0.11894097222222222,
+          0.15743055555555555,
+          0.10692708333333334,
+          0.09364583333333333,
+          0.18329861111111112,
+          0.10815972222222223,
+          0.17505208333333333,
+          0.10463541666666666,
+          0.1327951388888889,
+          0.1439236111111111,
+          0.11336805555555556,
+          0.15335069444444444,
+          0.08286458333333334
+        ],
+        "meaningfulTransitionCount": 15,
+        "meanInternalDifferenceRatio": 0.12777893518518518,
+        "maxInternalDifferenceRatio": 0.18329861111111112
+      },
+      "loopClosure": {
+        "boundaryDifferenceRatio": 0,
+        "internalMedianDifferenceRatio": 0.11894097222222222,
+        "allowedBoundaryDifferenceRatio": 0.29735243055555555,
+        "passed": true
+      },
       "issues": []
     },
     {
@@ -195,6 +526,33 @@
       "frames": 12,
       "durationMs": 900,
       "sha256": "020d74bf26a649bf7d2f971829ec1b37db4924194cea9624a70e45bc4bb5b912",
+      "motion": {
+        "channelDeltaThreshold": 16,
+        "meaningfulChangedPixelRatio": 0.0015,
+        "uniqueFrameCount": 11,
+        "transitionDifferenceRatios": [
+          0.20918402777777778,
+          0.14652777777777778,
+          0.24993055555555554,
+          0.23036458333333334,
+          0.23246527777777778,
+          0.2087673611111111,
+          0.21491319444444446,
+          0.2923090277777778,
+          0.23532986111111112,
+          0.13006944444444443,
+          0.16782986111111112
+        ],
+        "meaningfulTransitionCount": 11,
+        "meanInternalDifferenceRatio": 0.21069917929292933,
+        "maxInternalDifferenceRatio": 0.2923090277777778
+      },
+      "loopClosure": {
+        "boundaryDifferenceRatio": 0,
+        "internalMedianDifferenceRatio": 0.21491319444444446,
+        "allowedBoundaryDifferenceRatio": 0.5372829861111111,
+        "passed": true
+      },
       "issues": []
     }
   ]

@@ -41,6 +41,9 @@ interface GifFixtureOptions {
   touchingEdge?: boolean;
   emptyFrame?: number;
   openLoop?: boolean;
+  staticFrames?: boolean;
+  microFlash?: boolean;
+  finalOffset?: number;
 }
 
 async function makeGif({
@@ -52,16 +55,26 @@ async function makeGif({
   touchingEdge = false,
   emptyFrame,
   openLoop = false,
+  staticFrames = false,
+  microFlash = false,
+  finalOffset,
 }: GifFixtureOptions = {}): Promise<Buffer> {
+  const motionOffsets = [0, 2, 4, 6, 8, 10, 8, 6, 2, 0];
   const frames = await Promise.all(Array.from({ length: frameCount }, async (_, index) => {
     const isEmpty = index === emptyFrame;
-    const closesLoop = index === 0 || (!openLoop && index === frameCount - 1);
-    const x = touchingEdge ? 0 : 20 + (closesLoop ? 0 : index % 3);
-    const hue = closesLoop ? '#ff6038' : index % 2 === 0 ? '#ffbf32' : '#36a9ff';
+    const isLast = index === frameCount - 1;
+    const offset = staticFrames ? 0
+      : isLast && finalOffset !== undefined ? finalOffset
+        : isLast && openLoop ? 24
+          : motionOffsets[index % motionOffsets.length];
+    const x = touchingEdge ? 0 : 20 + offset;
     const overlays = isEmpty ? [] : [{
       input: Buffer.from(
         `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">`
-        + `<rect x="${x}" y="20" width="72" height="72" rx="18" fill="${hue}"/>`
+        + `<rect x="${x}" y="20" width="72" height="72" rx="18" fill="#ff6038"/>`
+        + (microFlash && index % 2 === 1
+          ? '<rect x="150" y="150" width="1" height="1" fill="#36a9ff"/>'
+          : '')
         + '</svg>',
       ),
       left: 0,
@@ -111,6 +124,9 @@ describe('auditPrototypeGif', () => {
       bytes: gif.length,
       sha256: createHash('sha256').update(gif).digest('hex'),
     });
+    expect(result.metadata.motion.uniqueFrameCount).toBeGreaterThanOrEqual(4);
+    expect(result.metadata.motion.meaningfulTransitionCount).toBeGreaterThanOrEqual(3);
+    expect(result.metadata.loopClosure.passed).toBe(true);
     expect(result.metadata.frames).toHaveLength(10);
     expect(result.metadata.frames.every(({ effectiveAlphaPixels }) => effectiveAlphaPixels > 0))
       .toBe(true);
@@ -184,6 +200,35 @@ describe('auditPrototypeGif', () => {
 
     expectIssue(result, 'loopClosure');
   });
+
+  it('拒绝伪装成多帧动画的静态 GIF', async () => {
+    const result = await auditPrototypeGif(await makeGif({ staticFrames: true }), makeItem());
+
+    expectIssue(result, 'motion.uniqueFrameCount');
+    expectIssue(result, 'motion.meaningfulTransitions');
+  });
+
+  it('拒绝仅靠一像素闪点制造的虚假运动', async () => {
+    const result = await auditPrototypeGif(
+      await makeGif({ staticFrames: true, microFlash: true }),
+      makeItem(),
+    );
+
+    expectIssue(result, 'motion.uniqueFrameCount');
+    expectIssue(result, 'motion.meaningfulTransitions');
+  });
+
+  it('使用相对感知差异容许轻微首尾差异但拒绝明显突跳', async () => {
+    const gentle = await auditPrototypeGif(await makeGif({ finalOffset: 1 }), makeItem());
+    expect(gentle.metadata.firstFrameSha256).not.toBe(gentle.metadata.lastFrameSha256);
+    expect(gentle.metadata.loopClosure.boundaryDifferenceRatio).toBeGreaterThan(0);
+    expect(gentle.metadata.loopClosure.passed).toBe(true);
+    expect(gentle.issues.some(({ field }) => field === 'loopClosure')).toBe(false);
+
+    const abrupt = await auditPrototypeGif(await makeGif({ openLoop: true }), makeItem());
+    expect(abrupt.metadata.loopClosure.passed).toBe(false);
+    expectIssue(abrupt, 'loopClosure');
+  });
 });
 
 describe('动态样板审计报告', () => {
@@ -204,6 +249,16 @@ describe('动态样板审计报告', () => {
         height: 240,
         pageHeight: 240,
         loop: 0,
+        motion: {
+          uniqueFrameCount: expect.any(Number),
+          meaningfulTransitionCount: expect.any(Number),
+        },
+        loopClosure: {
+          boundaryDifferenceRatio: expect.any(Number),
+          internalMedianDifferenceRatio: expect.any(Number),
+          allowedBoundaryDifferenceRatio: expect.any(Number),
+          passed: true,
+        },
       });
     }
   });
