@@ -2,6 +2,7 @@ package com.yuyan.imemodule.expression.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 data class ExpressionTextSafeArea(
@@ -41,6 +42,7 @@ data class ExpressionAsset(
     val heat: Long = 0,
     val url: String? = null,
     @SerialName("thumbnail_url") val thumbnailUrl: String? = null,
+    @Transient val resolvedPreviewUrl: String? = null,
 )
 
 @Serializable

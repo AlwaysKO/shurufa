@@ -107,6 +107,41 @@ class ExpressionSyncTest {
     }
 
     @Test
+    fun `下载会将无前导斜杠的远端相对地址拼到服务端`() = runBlocking {
+        val bytes = "remote-image".toByteArray()
+        server.enqueue(MockResponse().setBody(bytes.toString(Charsets.UTF_8)))
+        val sync = sync(ExpressionCatalog(document()), this)
+
+        val result = sync.download(
+            version = "v1",
+            relativePath = "search-cache/remote.webp",
+            url = "uploads/expression/search-cache/remote.webp",
+            sha256 = sha256(bytes),
+        )
+
+        assertEquals("remote-image", result?.readText())
+        assertEquals("/uploads/expression/search-cache/remote.webp", server.takeRequest().path)
+    }
+
+    @Test
+    fun `下载保留大写 HTTP scheme 的绝对地址`() = runBlocking {
+        val bytes = "uppercase-image".toByteArray()
+        server.enqueue(MockResponse().setBody(bytes.toString(Charsets.UTF_8)))
+        val sync = sync(ExpressionCatalog(document()), this)
+        val absolute = server.url("/uploads/uppercase.webp").toString().replaceFirst("http://", "HTTP://")
+
+        val result = sync.download(
+            version = "v1",
+            relativePath = "search-cache/uppercase.webp",
+            url = absolute,
+            sha256 = sha256(bytes),
+        )
+
+        assertEquals("uppercase-image", result?.readText())
+        assertEquals("/uploads/uppercase.webp", server.takeRequest().path)
+    }
+
+    @Test
     fun `先同步返回本地结果且过期响应不会发布`() = runBlocking {
         val local = ExpressionCatalog(
             document("v1", listOf(asset("local", type = "prebuilt", embeddedText = "放箭"))),

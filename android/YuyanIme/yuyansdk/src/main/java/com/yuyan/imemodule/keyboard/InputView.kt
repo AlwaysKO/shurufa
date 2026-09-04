@@ -337,16 +337,11 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 } else {
                     expressionDownloadJob?.cancel()
                     expressionDownloadJob = expressionScope.launch {
-                        val url = if (remoteUrl.startsWith("http://") || remoteUrl.startsWith("https://")) {
-                            remoteUrl
-                        } else {
-                            ServerConfig.baseUrl + remoteUrl
-                        }
                         deliver(
                             sync.download(
                                 version = combination.version,
                                 relativePath = combination.fileName,
-                                url = url,
+                                url = remoteUrl,
                                 sha256 = combination.sha256,
                             ),
                         )
@@ -440,12 +435,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         }.getOrNull()
         if (builtIn != null) return@withContext builtIn
         val url = remoteUrl ?: error(context.getString(R.string.expression_asset_not_downloaded))
-        val absoluteUrl = if (url.startsWith("http://") || url.startsWith("https://")) {
-            url
-        } else {
-            ServerConfig.baseUrl + url
-        }
-        sync.download(version, relativePath, absoluteUrl, sha256)
+        sync.download(version, relativePath, url, sha256)
             ?: error(context.getString(R.string.expression_asset_download_failed))
     }
 

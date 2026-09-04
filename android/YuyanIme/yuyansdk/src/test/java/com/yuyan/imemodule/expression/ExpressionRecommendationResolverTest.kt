@@ -4,10 +4,12 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
 import com.bumptech.glide.gifdecoder.GifHeaderParser
+import com.yuyan.imemodule.data.collect.ServerConfig
 import com.yuyan.imemodule.expression.model.ExpressionAsset
 import com.yuyan.imemodule.expression.model.ExpressionTextLayout
 import com.yuyan.imemodule.expression.model.ExpressionTextSafeArea
 import com.yuyan.imemodule.expression.ui.previewSource
+import com.yuyan.imemodule.expression.ui.previewSources
 import java.io.File
 import java.util.Base64
 import kotlinx.coroutines.runBlocking
@@ -87,7 +89,7 @@ class ExpressionRecommendationResolverTest {
         )
 
         assertTrue(expected.isFile)
-        assertEquals(Uri.fromFile(expected).toString(), resolved.thumbnailUrl)
+        assertEquals(Uri.fromFile(expected).toString(), resolved.resolvedPreviewUrl)
         assertEquals(Uri.fromFile(expected).toString(), previewSource(resolved))
         assertEquals(2, GifHeaderParser().setData(expected.readBytes()).parseHeader().numFrames)
         assertNotEquals(resolver.cacheKey(gif, query), resolver.cacheKey(gif, "再见"))
@@ -103,16 +105,23 @@ class ExpressionRecommendationResolverTest {
         }
         val remote = asset("remote", "prebuilt").copy(
             format = "gif",
-            fileName = "prebuilt/remote.gif",
-            url = "/uploads/expression/prebuilt/remote.gif",
-            thumbnailUrl = "/uploads/expression/thumbnails/remote.webp",
+            fileName = "search-cache/remote.gif",
+            thumbnailFileName = "search-cache/remote-thumb.webp",
+            url = "uploads/expression/search-cache/remote.gif",
+            thumbnailUrl = "uploads/expression/search-cache/remote-thumb.webp",
         )
 
         val resolved = resolver.resolve(listOf(remote), "你好").single()
+        val sources = previewSources(resolved)
 
         assertEquals(remote, resolvedAsset)
-        assertEquals(Uri.fromFile(downloaded).toString(), resolved.thumbnailUrl)
-        assertEquals(Uri.fromFile(downloaded).toString(), previewSource(resolved))
+        assertEquals(remote.thumbnailUrl, resolved.thumbnailUrl)
+        assertEquals(Uri.fromFile(downloaded).toString(), sources.primary)
+        assertEquals(
+            "${ServerConfig.baseUrl}/uploads/expression/search-cache/remote-thumb.webp",
+            sources.fallback,
+        )
+        assertEquals(sources.primary, previewSource(resolved))
     }
 
     private fun asset(id: String, type: String) = ExpressionAsset(

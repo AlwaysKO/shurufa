@@ -13,7 +13,9 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.yuyan.imemodule.R
 import com.yuyan.imemodule.data.collect.ServerConfig
+import com.yuyan.imemodule.expression.isLocalGifExpressionSource
 import com.yuyan.imemodule.expression.model.ExpressionAsset
+import com.yuyan.imemodule.expression.resolveExpressionRemoteSource
 
 class ExpressionAssetAdapter(
     private val onLongPress: (ExpressionAsset) -> Unit = {},
@@ -146,14 +148,15 @@ internal data class ExpressionPreviewSources(
 
 internal fun previewSources(asset: ExpressionAsset): ExpressionPreviewSources {
     val primary = if (asset.format.equals("gif", ignoreCase = true)) {
-        remoteCandidate(asset.thumbnailUrl)?.takeIf { it.path.isLocalGifUri() }
+        remoteCandidate(asset.resolvedPreviewUrl)?.takeIf { isLocalGifExpressionSource(it.path) }
+            ?: remoteCandidate(asset.thumbnailUrl)?.takeIf { isLocalGifExpressionSource(it.path) }
             ?: remoteCandidate(asset.url)
             ?: assetCandidate(asset.fileName)
             ?: remoteCandidate(asset.thumbnailUrl)
-            ?: assetCandidate(asset.thumbnailFileName)
+            ?: thumbnailFileCandidate(asset)
     } else {
         remoteCandidate(asset.thumbnailUrl)
-            ?: assetCandidate(asset.thumbnailFileName)
+            ?: thumbnailFileCandidate(asset)
             ?: remoteCandidate(asset.url)
             ?: assetCandidate(asset.fileName)
     }
@@ -161,7 +164,7 @@ internal fun previewSources(asset: ExpressionAsset): ExpressionPreviewSources {
     val fallback = if (asset.format.equals("gif", ignoreCase = true)) {
         listOfNotNull(
             remoteCandidate(asset.thumbnailUrl),
-            assetCandidate(asset.thumbnailFileName),
+            thumbnailFileCandidate(asset),
         ).map(PreviewCandidate::resolve).firstOrNull { it != resolvedPrimary }
     } else {
         null
@@ -176,11 +179,7 @@ private enum class PreviewPathKind { REMOTE, ASSET }
 private data class PreviewCandidate(val path: String, val kind: PreviewPathKind) {
     fun resolve(): String = when (kind) {
         PreviewPathKind.ASSET -> "file:///android_asset/expression/${path.trimStart('/')}"
-        PreviewPathKind.REMOTE -> if (path.hasSupportedScheme()) {
-            path
-        } else {
-            "${ServerConfig.baseUrl}/${path.trimStart('/')}"
-        }
+        PreviewPathKind.REMOTE -> resolveExpressionRemoteSource(ServerConfig.baseUrl, path)
     }
 }
 
@@ -190,12 +189,9 @@ private fun remoteCandidate(path: String?): PreviewCandidate? =
 private fun assetCandidate(path: String?): PreviewCandidate? =
     path?.takeIf { it.isNotBlank() }?.let { PreviewCandidate(it, PreviewPathKind.ASSET) }
 
-private fun String.isLocalGifUri(): Boolean =
-    scheme() in LOCAL_SCHEMES && substringBefore('#').substringBefore('?').endsWith(".gif", ignoreCase = true)
-
-private fun String.hasSupportedScheme(): Boolean = scheme() in SUPPORTED_SCHEMES
-
-private fun String.scheme(): String = substringBefore("://", missingDelimiterValue = "").lowercase()
-
-private val LOCAL_SCHEMES = setOf("file", "content")
-private val SUPPORTED_SCHEMES = setOf("http", "https", "file", "content")
+private fun thumbnailFileCandidate(asset: ExpressionAsset): PreviewCandidate? =
+    if (asset.url != null) {
+        remoteCandidate(asset.thumbnailFileName)
+    } else {
+        assetCandidate(asset.thumbnailFileName)
+    }

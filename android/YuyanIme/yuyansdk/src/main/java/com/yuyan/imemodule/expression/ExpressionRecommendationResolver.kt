@@ -35,14 +35,23 @@ class ExpressionRecommendationResolver(
             when {
                 asset.type == "prebuilt" && (asset.url != null || asset.thumbnailUrl != null) ->
                     runCatching {
-                        asset.copy(thumbnailUrl = Uri.fromFile(resolveSource(asset)).toString())
+                        asset.withResolvedPreview(resolveSource(asset))
                     }.getOrNull()
                 asset.type == "prebuilt" -> asset
                 ExpressionRenderPolicy.shouldOverlayText(asset, query) -> runCatching {
-                    asset.copy(thumbnailUrl = Uri.fromFile(renderPreview(asset, query)).toString())
+                    asset.withResolvedPreview(renderPreview(asset, query))
                 }.getOrNull()
                 else -> null
             }
+        }
+    }
+
+    private fun ExpressionAsset.withResolvedPreview(file: File): ExpressionAsset {
+        val uri = Uri.fromFile(file).toString()
+        return if (format.equals("gif", ignoreCase = true)) {
+            copy(resolvedPreviewUrl = uri)
+        } else {
+            copy(thumbnailUrl = uri)
         }
     }
 

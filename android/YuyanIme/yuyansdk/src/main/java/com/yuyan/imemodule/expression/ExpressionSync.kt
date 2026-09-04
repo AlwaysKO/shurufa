@@ -119,7 +119,7 @@ class ExpressionSync(
     ): File? = withContext(Dispatchers.IO) {
         try {
             val request = Request.Builder()
-                .url(url)
+                .url(resolveExpressionRemoteSource(baseUrl, url))
                 .header("X-Device-Id", deviceId)
                 .build()
             client.newCall(request).awaitResponse().use { response ->
