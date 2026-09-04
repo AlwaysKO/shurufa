@@ -1,4 +1,6 @@
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 import sharp from 'sharp';
 import { describe, expect, it } from 'vitest';
@@ -181,5 +183,28 @@ describe('auditPrototypeGif', () => {
     const result = await auditPrototypeGif(gif, makeItem());
 
     expectIssue(result, 'loopClosure');
+  });
+});
+
+describe('动态样板审计报告', () => {
+  it('逐项保留最终 GIF 的格式、尺寸和循环元数据', () => {
+    const reportPath = fileURLToPath(new URL(
+      '../../../artifacts/expression-prototypes/report.json',
+      import.meta.url,
+    ));
+    const report = JSON.parse(readFileSync(reportPath, 'utf8')) as {
+      items: Array<Record<string, unknown>>;
+    };
+
+    expect(report.items).toHaveLength(12);
+    for (const item of report.items) {
+      expect(item).toMatchObject({
+        format: 'gif',
+        width: 240,
+        height: 240,
+        pageHeight: 240,
+        loop: 0,
+      });
+    }
   });
 });
