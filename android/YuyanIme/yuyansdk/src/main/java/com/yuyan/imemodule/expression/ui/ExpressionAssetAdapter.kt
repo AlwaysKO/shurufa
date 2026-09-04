@@ -124,7 +124,16 @@ class ExpressionAssetAdapter(
 }
 
 internal fun previewSource(asset: ExpressionAsset): String {
-    val path = asset.thumbnailUrl ?: asset.thumbnailFileName ?: asset.url ?: asset.fileName
+    val path = if (asset.format.equals("gif", ignoreCase = true)) {
+        asset.thumbnailUrl?.takeIf { it.startsWith("file://") }
+            ?: asset.url
+            ?: asset.fileName.takeIf { it.isNotBlank() }
+            ?: asset.thumbnailUrl
+            ?: asset.thumbnailFileName
+            ?: asset.fileName
+    } else {
+        asset.thumbnailUrl ?: asset.thumbnailFileName ?: asset.url ?: asset.fileName
+    }
     return when {
         path.startsWith("http://") || path.startsWith("https://") || path.startsWith("file://") -> path
         path.startsWith("/") -> ServerConfig.baseUrl + path

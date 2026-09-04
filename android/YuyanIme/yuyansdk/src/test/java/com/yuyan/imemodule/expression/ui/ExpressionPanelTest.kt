@@ -480,7 +480,7 @@ class ExpressionPanelTest {
     }
 
     @Test
-    fun `GIF 也优先使用缩略图预览`() {
+    fun `GIF 优先使用原动画预览`() {
         val gif = asset().copy(
             format = "gif",
             fileName = "templates/a.gif",
@@ -488,7 +488,7 @@ class ExpressionPanelTest {
         )
 
         assertEquals(
-            "file:///android_asset/expression/thumbnails/a.webp",
+            "file:///android_asset/expression/templates/a.gif",
             previewSource(gif),
         )
     }

@@ -49,7 +49,7 @@ class ExpressionRecommendationResolverTest {
         val resolved = resolver.resolve(listOf(prebuilt, *templates.toTypedArray()), query)
 
         assertEquals(
-            "file:///android_asset/expression/thumbnails/prebuilt.webp",
+            "file:///android_asset/expression/prebuilt/prebuilt.gif",
             previewSource(resolved.first()),
         )
         assertEquals(2, sourceCalls)
@@ -63,15 +63,17 @@ class ExpressionRecommendationResolverTest {
     }
 
     @Test
-    fun `远端预制图先通过鉴权下载再使用本地文件预览`() = runBlocking {
-        val downloaded = temporaryFolder.newFile("downloaded.webp").apply { writeText("image") }
+    fun `远端 GIF 先通过鉴权下载再使用本地动态文件预览`() = runBlocking {
+        val downloaded = temporaryFolder.newFile("downloaded.gif").apply { writeText("image") }
         var resolvedAsset: ExpressionAsset? = null
         val resolver = ExpressionRecommendationResolver(temporaryFolder.root) { asset ->
             resolvedAsset = asset
             downloaded
         }
         val remote = asset("remote", "prebuilt").copy(
-            url = "/uploads/expression/prebuilt/remote.webp",
+            format = "gif",
+            fileName = "prebuilt/remote.gif",
+            url = "/uploads/expression/prebuilt/remote.gif",
             thumbnailUrl = "/uploads/expression/thumbnails/remote.webp",
         )
 
