@@ -1,0 +1,46 @@
+
+ RUN  v4.1.11 /home/ko/project/shurufa/server
+
+ ❯ src/expression/queryMatching.test.ts (35 tests | 6 failed) 18ms
+     × {"query":"我没有打你","first":null,"forbidden":["打闹"]} 3ms
+     × {"query":"我没有要抓你","first":null,"forbidden":["追赶"]} 1ms
+     × {"query":"我不打算打你","first":null,"forbidden":["打闹"]} 0ms
+     × {"query":"我打你电话","first":null,"forbidden":["打闹"]} 0ms
+     × {"query":"我打你的电话","first":null,"forbidden":["打闹"]} 0ms
+     × {"query":"打我手机","first":null,"forbidden":["打闹"]} 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/expression/queryMatching.test.ts > 两端共享查询语义矩阵 > {"query":"我没有打你","first":null,"forbidden":["打闹"]}
+ FAIL  src/expression/queryMatching.test.ts > 两端共享查询语义矩阵 > {"query":"我不打算打你","first":null,"forbidden":["打闹"]}
+ FAIL  src/expression/queryMatching.test.ts > 两端共享查询语义矩阵 > {"query":"我打你电话","first":null,"forbidden":["打闹"]}
+ FAIL  src/expression/queryMatching.test.ts > 两端共享查询语义矩阵 > {"query":"我打你的电话","first":null,"forbidden":["打闹"]}
+ FAIL  src/expression/queryMatching.test.ts > 两端共享查询语义矩阵 > {"query":"打我手机","first":null,"forbidden":["打闹"]}
+AssertionError: expected [ '打闹' ] to not include '打闹'
+ ❯ src/expression/queryMatching.test.ts:24:47
+     22|     if (item.first) expect(results[0]?.id).toBe(item.first);
+     23|     for (const forbidden of item.forbidden) {
+     24|       expect(results.map(({ id }) => id)).not.toContain(forbidden);
+       |                                               ^
+     25|     }
+     26|     for (const result of results) expect(result.embeddedText).toBe(res…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/expression/queryMatching.test.ts > 两端共享查询语义矩阵 > {"query":"我没有要抓你","first":null,"forbidden":["追赶"]}
+AssertionError: expected [ '追赶' ] to not include '追赶'
+ ❯ src/expression/queryMatching.test.ts:24:47
+     22|     if (item.first) expect(results[0]?.id).toBe(item.first);
+     23|     for (const forbidden of item.forbidden) {
+     24|       expect(results.map(({ id }) => id)).not.toContain(forbidden);
+       |                                               ^
+     25|     }
+     26|     for (const result of results) expect(result.embeddedText).toBe(res…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 29 passed (35)
+   Start at  11:22:02
+   Duration  186ms (transform 33ms, setup 0ms, import 46ms, tests 18ms, environment 0ms)

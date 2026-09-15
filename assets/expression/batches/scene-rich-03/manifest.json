@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "batchId": "scene-rich-03",
+  "status": "review-only",
+  "items": [
+    {
+      "id": "scene-rich-03-run",
+      "keyword": "你先跑",
+      "caption": "你先跑",
+      "captionPlacement": "top-left",
+      "masterFile": "masters/scene-rich-03-run.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Create a square 2x2 animation keyframe sheet with FOUR equal square cells, no gutters/borders. Each cell pure white background, intentionally SUPER MINIMAL black ink stick-figure internet-chat doodle with only tiny pink cheeks, no shading, no texture, no color fills, no polished illustration. Absolutely original characters, no meme face collage, no real human face, no existing IP. Intent 'go on, you run first' friendly teasing pursuit. Visual joke: a tiny calm bean-shaped stick figure holds an absurdly HUGE soft butterfly-catching net on a bendy handle behind its back, while a smaller triangle-bodied stick figure is confidently jogging away then notices the net. No weapons or harm. Same two characters and exact composition throughout; large net hoop occupies upper right, figures occupy lower center-right, empty lower left space for later Chinese caption. Four real chronological poses reading order: 1 pursuer casually stands with hidden folded net, runner faces away one foot ready to step, smug tiny smile; 2 runner trots two steps left with arms swinging, pursuer raises enormous floppy net slowly, neutral half-lidded eyes; 3 runner looks back with wide dot eyes and bent knees, pursuer leans forward and net stretches overhead but never touches anyone; 4 runner takes a comically high-knee sprint step, pursuer calmly rests net handle on shoulder and gives a small sideways smirk. Exactly two characters, coherent stick limbs, each character face simple dot eyes and one-line mouth, no photoreal features. Sparse bold funny gestures readable at 240 pixels. No letters/numbers/text/watermark, no imitating any famous meme. FOUR truly different character poses, LOCKED camera and scale.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-2569bd7e-e116-46f2-b4dc-5c4eb1823690.png",
+        "correctionPrompt": "Edit ONLY the background of this original 2x2 stick-figure net-chase animation sheet. Make ALL background opaque pure white, not transparent and not black. Preserve exactly all four poses, black ink lines, original character faces, net, proportions and equal quadrant boundaries. No gutters or borders. Make the net mesh interior also white behind its sparse black outline. No changes to character acting, no added text/numbers/logos/watermark. Final must look like minimal black marker doodles on a clean white page.",
+        "intermediateSource": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-77227f56-27b1-4788-b584-df71d7adcd0f.png",
+        "masterSha256": "3c99d6428944c7cb264ce3750eea924a348be1225f794df1435b183aa431ef36"
+      }
+    },
+    {
+      "id": "scene-rich-03-annoyed",
+      "keyword": "不高兴了",
+      "caption": "不高兴了",
+      "captionPlacement": "top-left",
+      "masterFile": "masters/scene-rich-03-annoyed.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "One square 2x2 animation keyframe sheet, FOUR equal square cells without gutter or border. Plain OPAQUE WHITE background, sparse thick BLACK hand-drawn outlines, no shadows, no rendered textures, no full color, no photorealistic faces, absolutely no celebrity face collage or existing meme characters. ORIGINAL tiny two-character reaction cartoon for 'I'm not happy about that', playful annoyance. Main character is a short squishy rectangular marshmallow with two unequal little hair tufts, simple big oval eyes, tiny stick arms and feet. Friend is a tiny triangular pebble with dot eyes. Draw main character large middle-right and friend on its left, keep lower-left space clear for later caption. Four clearly different poses reading order: 1 main character stands neutral, friend reaches one thin finger toward its cheek, innocently smiling. 2 friend gently pokes cheek, main character cheek squashes dramatically inward, eyebrows slope down, mouth becomes tight flat line. 3 main character puffs both cheeks enormously, crosses little arms, turns head away with offended side-eye, friend pulls its hand back with surprise. 4 main character turns body slightly away but steals a sideways glance, cheeks still puffed, one foot stomps lightly with two short impact strokes, friend gives awkward sheepish smile. Comic mock indignation, no real aggression/injury. SAME characters/scale/location/camera, real expression and limb changes not scaled duplicates. Simple funny black-line shapes, high readability small, allow only two tiny pale pink cheek dots. NO text, numbers, labels, watermark or known IP. Entire four-cell background must be solid pure white, not transparent.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-0b52703e-cbc4-44e4-bace-e19505fcfee2.png",
+        "masterSha256": "7eb93b18ba57e502fdee704bde542ffff2c83c7cd75abdc271df8810fe088d69"
+      }
+    },
+    {
+      "id": "scene-rich-03-serious",
+      "keyword": "你认真的",
+      "caption": "你认真的",
+      "captionPlacement": "bottom-left",
+      "masterFile": "masters/scene-rich-03-serious.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Create ONE square 2x2 animation keyframe sheet, four equal full-bleed square photographs touching without gutters/borders, no words. ORIGINAL highly photorealistic candid dog reaction GIF, NOT illustration, NOT plush, NO cartoon eyeballs. Meaning 'are you serious?', extremely funny cutting side-eye. Subject: an original slightly scruffy tan-and-black mixed terrier dog with a dark muzzle, asymmetrical naturally floppy ears, pale cream chin, short wiry fur, sitting in an ordinary narrow apartment hallway on worn beige tile. Camera close slightly above nose, dog face fills 70% of each frame, eye whites visible naturally during sideways glance, subtle absurdity through realistic facial acting. SAME dog identity, face proportions, hallway background, lighting and locked camera in all cells. Four distinct poses reading order: 1 looks at viewer with ears relaxed, closed mouth, wary attention; 2 head barely turns left while eyes look strongly sideways right, one ear angles up, mouth taut; 3 head tilts sharply sideways, both eyes open wide with natural visible sclera, corners of mouth pulled back into restrained bewilderment, no bared teeth or snarl; 4 eyes narrow into piercing skeptical side-eye and head pulls back slightly, one ear droops, unimpressed closed mouth. Avoid overcute puppy sweetness, no happy tongue-out pose, no human face, no distorted eyeballs, no violence, no copying reference dog's identity or composition. Ordinary unglamorous phone snapshot feel, slight natural grain but sharp eyes, small neutral lower left floor patch for later Chinese caption. Four REAL expression/ear/head changes, not four zooms. No collars with writing, brands, logos or watermark.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-e9afd397-aaf5-4c3f-8ef9-db1951344ebe.png",
+        "masterSha256": "49005077e7e6bae08c5975bde0a4aee0b6237eaff009a8fc02ea02df4a5963d8"
+      }
+    },
+    {
+      "id": "scene-rich-03-caught",
+      "keyword": "被你发现了",
+      "caption": "被你发现了",
+      "captionPlacement": "bottom-left",
+      "masterFile": "masters/scene-rich-03-caught.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "One square 2x2 FOUR KEYFRAME animation sheet, four equal square full-bleed photorealistic candid frames with NO gutters/borders. Original real-looking shorthaired silver tabby cat with white chin, one tiny dark dot beside nose, sharp amber-green eyes, sitting on a kitchen chair beside a toppled plain paper snack bag and two harmless crumbs. Intent 'you caught me', guilty evasive eyes becoming deadpan shamelessness, not innocent cute kitten. Tight slightly low close-up face with paws at bottom, simple grey kitchen cabinet background, mundane soft daylight, unpolished smartphone snapshot, no brands or writing on bag. SAME original cat facial identity, fur markings, camera, chair and bag position in every frame. Four true expressions/poses reading order: 1 cat freezes with one paw touching bag, eyes wide directly toward viewer, mouth closed; 2 eyes dart strongly sideways while head remains facing front, one ear turns backwards, paw begins withdrawing; 3 cat turns head away slightly with half-lidded 'nothing happened' look, tongue tip quickly licks one corner of lips, paw tucked back; 4 cat faces viewer again with narrowed shamelessly calm stare, ears relaxed, both paws neatly together like a perfect innocent loaf. Natural feline anatomy, believable sclera/iris, no human eyebrows or hands, no cartoon eyes, no distorted face. Funny lies told with eye direction and mouth, sharp gaze more important than cuteness. Leave quiet small bottom-left chair area for later Chinese caption '被你发现了'. No watermark, text, existing IP or known animal identity. Real pose changes, not zoom/scaling.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-b4dda798-a669-4ce3-9b5f-d85a16e1678c.png",
+        "masterSha256": "d8442580b11a8a3aced8560b5ff5535408874f6f453bc429c316995333eb566c"
+      }
+    }
+  ]
+}

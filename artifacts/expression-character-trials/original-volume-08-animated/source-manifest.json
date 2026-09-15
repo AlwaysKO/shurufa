@@ -1,0 +1,156 @@
+{
+  "created": "2026-09-14",
+  "sourceType": "ai-original",
+  "status": "trial-only",
+  "publicationAllowed": false,
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "items": [
+    {
+      "id": "shiba-defiant",
+      "caption": "不服",
+      "prompt": "Create an ORIGINAL animation sprite sheet: exactly FOUR COLUMNS x THREE ROWS, 12 equal SQUARE cells, 4:3 landscape image, preferably 1448x1086. Pure OPAQUE WHITE background, no text/grid/borders, no transparency. Each row starts at y=0,362,724: do NOT pack rows closer together. Character head top relative to EACH cell around y45, body bottom at y280, x80..282. Generous white margin below EACH character, at least bottom80px EMPTY WHITE. Entire ears, chin, visible paws/hands inside upper78% of each cell. Same character, same scale/lighting/body anchor in all12. First and last pose must match EXACT geometry and expression. No famous IP/celebrity imitation. Actual eyebrow/eyelid/mouth/limb articulation, not static copies or zoom. Chronological left-to-right/top-to-bottom. Photoreal tan and cream shiba inu dog, authentic short fur, pointed ears, expressive animal gaze. Meaning stubborn defiance, 'I won't accept that', not ordinary anger. Chest-up, NO hands or paws in frame. Pose1 neutral closed mouth;2 eyes glance sideways;3 one brow lifts;4 other brow lowers and mouth corners tighten;5 chin lifts only slightly;6 lips purse and eyes narrow sideways;7 intensified confident defiant look;8 THE PEAK: narrowed sideways eyes, asymmetric brow and defiant pursed mouth, KEEP this stubborn pose, DO NOT return yet.9 only partly release brow;10 eyes move front;11 almost neutral;12 exactly pose1. Keep head outline and shoulders anchored, facial expression changes dominate.",
+      "masterFile": "masters/shiba-defiant.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-a0c30e79-e096-4da8-9be8-c2f37469382f.png",
+      "sha256": "b5d0481334b977b1dc7b9c4d557e7d26d50c4f41334997374a48fa25c6174146"
+    },
+    {
+      "id": "duck-defiant",
+      "caption": "不服",
+      "prompt": "Create an ORIGINAL animation sprite sheet: exactly FOUR COLUMNS x THREE ROWS, 12 equal SQUARE cells, 4:3 landscape image, preferably 1448x1086. Pure OPAQUE WHITE background, no text/grid/borders, no transparency. Each row starts at y=0,362,724: do NOT pack rows closer together. Character head top relative to EACH cell around y45, body bottom at y280, x80..282. Generous white margin below EACH character, at least bottom80px EMPTY WHITE. Entire ears, chin, visible paws/hands inside upper78% of each cell. Same character, same scale/lighting/body anchor in all12. First and last pose must match EXACT geometry and expression. No famous IP/celebrity imitation. Actual eyebrow/eyelid/mouth/limb articulation, not static copies or zoom. Chronological left-to-right/top-to-bottom. Minimal black ink cartoon duck, strictly black-and-white, simple clean bill and expressive eyebrows, original animal not a known character. Meaning stubborn defiance, 'I won't accept that', not ordinary anger. Chest-up, NO hands or paws in frame. Pose1 neutral closed mouth;2 eyes glance sideways;3 one brow lifts;4 other brow lowers and mouth corners tighten;5 chin lifts only slightly;6 lips purse and eyes narrow sideways;7 intensified confident defiant look;8 THE PEAK: narrowed sideways eyes, asymmetric brow and defiant pursed mouth, KEEP this stubborn pose, DO NOT return yet.9 only partly release brow;10 eyes move front;11 almost neutral;12 exactly pose1. Keep head outline and shoulders anchored, facial expression changes dominate.",
+      "masterFile": "masters/duck-defiant.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-f351515d-ee20-4dba-bf61-38fa52b41d99.png",
+      "sha256": "4d1c601beaa2f0461da05769f69c4c2ffb5ddb7d5d5f92a8ea1ba186f2e3e8b8"
+    },
+    {
+      "id": "calf-defiant",
+      "caption": "不服",
+      "prompt": "Create an ORIGINAL animation sprite sheet: exactly FOUR COLUMNS x THREE ROWS, 12 equal SQUARE cells, 4:3 landscape image, preferably 1448x1086. Pure OPAQUE WHITE background, no text/grid/borders, no transparency. Each row starts at y=0,362,724: do NOT pack rows closer together. Character head top relative to EACH cell around y45, body bottom at y280, x80..282. Generous white margin below EACH character, at least bottom80px EMPTY WHITE. Entire ears, chin, visible paws/hands inside upper78% of each cell. Same character, same scale/lighting/body anchor in all12. First and last pose must match EXACT geometry and expression. No famous IP/celebrity imitation. Actual eyebrow/eyelid/mouth/limb articulation, not static copies or zoom. Chronological left-to-right/top-to-bottom. Matte clay sculpture of a small brown calf with tiny horns and rounded ears, smooth sculpted clay not hairy/fuzzy. Meaning stubborn defiance, 'I won't accept that', not ordinary anger. Chest-up, NO hands or paws in frame. Pose1 neutral closed mouth;2 eyes glance sideways;3 one brow lifts;4 other brow lowers and mouth corners tighten;5 chin lifts only slightly;6 lips purse and eyes narrow sideways;7 intensified confident defiant look;8 THE PEAK: narrowed sideways eyes, asymmetric brow and defiant pursed mouth, KEEP this stubborn pose, DO NOT return yet.9 only partly release brow;10 eyes move front;11 almost neutral;12 exactly pose1. Keep head outline and shoulders anchored, facial expression changes dominate.",
+      "masterFile": "masters/calf-defiant.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-0e993fb8-3f94-4ae7-b80d-8dcc65086256.png",
+      "sha256": "4498de3e7050323d6a3771d86a90ba2a4d1b67914c8835fbcf795062506d2b55"
+    },
+    {
+      "id": "man-defiant",
+      "caption": "不服",
+      "prompt": "Create an ORIGINAL animation sprite sheet: exactly FOUR COLUMNS x THREE ROWS, 12 equal SQUARE cells, 4:3 landscape image, preferably 1448x1086. Pure OPAQUE WHITE background, no text/grid/borders, no transparency. Each row starts at y=0,362,724: do NOT pack rows closer together. Character head top relative to EACH cell around y45, body bottom at y280, x80..282. Generous white margin below EACH character, at least bottom80px EMPTY WHITE. Entire ears, chin, visible paws/hands inside upper78% of each cell. Same character, same scale/lighting/body anchor in all12. First and last pose must match EXACT geometry and expression. No famous IP/celebrity imitation. Actual eyebrow/eyelid/mouth/limb articulation, not static copies or zoom. Chronological left-to-right/top-to-bottom. Photoreal fictional original handsome CHINESE ADULT MAN age28, short textured black hair, plain navy crewneck T-shirt, defined cheekbones, not based on real person. Meaning stubborn defiance, 'I won't accept that', not ordinary anger. Chest-up, NO hands or paws in frame. Pose1 neutral closed mouth;2 eyes glance sideways;3 one brow lifts;4 other brow lowers and mouth corners tighten;5 chin lifts only slightly;6 lips purse and eyes narrow sideways;7 intensified confident defiant look;8 THE PEAK: narrowed sideways eyes, asymmetric brow and defiant pursed mouth, KEEP this stubborn pose, DO NOT return yet.9 only partly release brow;10 eyes move front;11 almost neutral;12 exactly pose1. Keep head outline and shoulders anchored, facial expression changes dominate.",
+      "masterFile": "masters/man-defiant.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-88af8c21-5eff-49b2-8e60-afa237206b6e.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "697a3bdfd9f9e64b0cc94d16cac74d4a2d85ae778f4c63fc283ade3aa372adc0"
+    },
+    {
+      "id": "gingercat-overwhelmed",
+      "caption": "崩溃",
+      "prompt": "Create an ORIGINAL animation sprite sheet: exactly FOUR COLUMNS x THREE ROWS, 12 equal SQUARE cells, 4:3 landscape image, preferably 1448x1086. Pure OPAQUE WHITE background, no text/grid/borders, no transparency. Each row starts at y=0,362,724: do NOT pack rows closer together. Character head top relative to EACH cell around y45, body bottom at y280, x80..282. Generous white margin below EACH character, at least bottom80px EMPTY WHITE. Entire ears, chin, visible paws/hands inside upper78% of each cell. Same character, same scale/lighting/body anchor in all12. First and last pose must match EXACT geometry and expression. No famous IP/celebrity imitation. Actual eyebrow/eyelid/mouth/limb articulation, not static copies or zoom. Chronological left-to-right/top-to-bottom. Photoreal ginger tabby cat, soft real fur, clear feline ears and muzzle, expressive animal brows and eyelids. Meaning emotionally overwhelmed, 'I can't take it anymore', NOT laughing, not happy. Chest-up NO hands/paws. Pose1 mildly worried neutral;2 inner eyebrows rise;3 brows pinch and lower lip trembles;4 eyes squint distressed;5 mouth opens in a downturned anguished oval;6 stronger anguish;7 eyes tightly distressed and mouth downturned open;8 THE PEAK: strongest clearly miserable overwhelmed face, retain anguish, NO SMILE.9 mouth closes a little but still miserable;10 eyes reopen worried;11 almost opening expression;12 exact opening. No flying tears or particles. Keep same body/head geometry, no giant head tilts.",
+      "masterFile": "masters/gingercat-overwhelmed.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-ef60d692-a86a-4089-8f92-1d4924ead4b1.png",
+      "sha256": "81f32502ba8456117356b622339455e0992dd8eb51a8d6310b160f5791865a82"
+    },
+    {
+      "id": "penguin-overwhelmed",
+      "caption": "崩溃",
+      "prompt": "Create an ORIGINAL animation sprite sheet: exactly FOUR COLUMNS x THREE ROWS, 12 equal SQUARE cells, 4:3 landscape image, preferably 1448x1086. Pure OPAQUE WHITE background, no text/grid/borders, no transparency. Each row starts at y=0,362,724: do NOT pack rows closer together. Character head top relative to EACH cell around y45, body bottom at y280, x80..282. Generous white margin below EACH character, at least bottom80px EMPTY WHITE. Entire ears, chin, visible paws/hands inside upper78% of each cell. Same character, same scale/lighting/body anchor in all12. First and last pose must match EXACT geometry and expression. No famous IP/celebrity imitation. Actual eyebrow/eyelid/mouth/limb articulation, not static copies or zoom. Chronological left-to-right/top-to-bottom. Minimal bold black ink cartoon penguin, white chest, simple short beak, strong expressive eyebrows, original animal. Meaning emotionally overwhelmed, 'I can't take it anymore', NOT laughing, not happy. Chest-up NO hands/paws. Pose1 mildly worried neutral;2 inner eyebrows rise;3 brows pinch and lower lip trembles;4 eyes squint distressed;5 mouth opens in a downturned anguished oval;6 stronger anguish;7 eyes tightly distressed and mouth downturned open;8 THE PEAK: strongest clearly miserable overwhelmed face, retain anguish, NO SMILE.9 mouth closes a little but still miserable;10 eyes reopen worried;11 almost opening expression;12 exact opening. No flying tears or particles. Keep same body/head geometry, no giant head tilts.",
+      "masterFile": "masters/penguin-overwhelmed.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-fbf5be7b-e5fa-4e47-924d-707726f5c78c.png",
+      "sha256": "dbfd0f4bc83e52d7b927512b8be021ecea84c960887c5ac2dcedc2a9bfd2066a"
+    },
+    {
+      "id": "sloth-overwhelmed",
+      "caption": "崩溃",
+      "prompt": "Create an ORIGINAL animation sprite sheet: exactly FOUR COLUMNS x THREE ROWS, 12 equal SQUARE cells, 4:3 landscape image, preferably 1448x1086. Pure OPAQUE WHITE background, no text/grid/borders, no transparency. Each row starts at y=0,362,724: do NOT pack rows closer together. Character head top relative to EACH cell around y45, body bottom at y280, x80..282. Generous white margin below EACH character, at least bottom80px EMPTY WHITE. Entire ears, chin, visible paws/hands inside upper78% of each cell. Same character, same scale/lighting/body anchor in all12. First and last pose must match EXACT geometry and expression. No famous IP/celebrity imitation. Actual eyebrow/eyelid/mouth/limb articulation, not static copies or zoom. Chronological left-to-right/top-to-bottom. Matte sculpted clay sloth, smooth beige and brown clay, dark eye patches, rounded head, not fuzzy. Meaning emotionally overwhelmed, 'I can't take it anymore', NOT laughing, not happy. Chest-up NO hands/paws. Pose1 mildly worried neutral;2 inner eyebrows rise;3 brows pinch and lower lip trembles;4 eyes squint distressed;5 mouth opens in a downturned anguished oval;6 stronger anguish;7 eyes tightly distressed and mouth downturned open;8 THE PEAK: strongest clearly miserable overwhelmed face, retain anguish, NO SMILE.9 mouth closes a little but still miserable;10 eyes reopen worried;11 almost opening expression;12 exact opening. No flying tears or particles. Keep same body/head geometry, no giant head tilts.",
+      "masterFile": "masters/sloth-overwhelmed.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-9fbe3392-1beb-4e44-b57b-b89399087396.png",
+      "sha256": "f48f1afd1c7248f03187bffcaca8ce6fa8bbe512b21e631c9412e271e0b3361d"
+    },
+    {
+      "id": "man-overwhelmed",
+      "caption": "崩溃",
+      "prompt": "Create an ORIGINAL animation sprite sheet: exactly FOUR COLUMNS x THREE ROWS, 12 equal SQUARE cells, 4:3 landscape image, preferably 1448x1086. Pure OPAQUE WHITE background, no text/grid/borders, no transparency. Each row starts at y=0,362,724: do NOT pack rows closer together. Character head top relative to EACH cell around y45, body bottom at y280, x80..282. Generous white margin below EACH character, at least bottom80px EMPTY WHITE. Entire ears, chin, visible paws/hands inside upper78% of each cell. Same character, same scale/lighting/body anchor in all12. First and last pose must match EXACT geometry and expression. No famous IP/celebrity imitation. Actual eyebrow/eyelid/mouth/limb articulation, not static copies or zoom. Chronological left-to-right/top-to-bottom. Photoreal fictional original handsome CHINESE ADULT MAN age27, soft side-parted black hair, plain muted-purple crewneck, no resemblance to celebrity. Meaning emotionally overwhelmed, 'I can't take it anymore', NOT laughing, not happy. Chest-up NO hands/paws. Pose1 mildly worried neutral;2 inner eyebrows rise;3 brows pinch and lower lip trembles;4 eyes squint distressed;5 mouth opens in a downturned anguished oval;6 stronger anguish;7 eyes tightly distressed and mouth downturned open;8 THE PEAK: strongest clearly miserable overwhelmed face, retain anguish, NO SMILE.9 mouth closes a little but still miserable;10 eyes reopen worried;11 almost opening expression;12 exact opening. No flying tears or particles. Keep same body/head geometry, no giant head tilts.",
+      "masterFile": "masters/man-overwhelmed.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-ddb80cd6-f511-4f7b-8ea9-34f0c719004a.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "8eeadbe5efa8193a0f71bc5a0f43cdf6b6aff8c5a822fac276198cabbf0bca08"
+    },
+    {
+      "id": "raccoon-admire",
+      "caption": "佩服",
+      "prompt": "Create an ORIGINAL animation sprite sheet: exactly FOUR COLUMNS x THREE ROWS, 12 equal SQUARE cells, 4:3 landscape image, preferably 1448x1086. Pure OPAQUE WHITE background, no text/grid/borders, no transparency. Each row starts at y=0,362,724: do NOT pack rows closer together. Character head top relative to EACH cell around y45, body bottom at y280, x80..282. Generous white margin below EACH character, at least bottom80px EMPTY WHITE. Entire ears, chin, visible paws/hands inside upper78% of each cell. Same character, same scale/lighting/body anchor in all12. First and last pose must match EXACT geometry and expression. No famous IP/celebrity imitation. Actual eyebrow/eyelid/mouth/limb articulation, not static copies or zoom. Chronological left-to-right/top-to-bottom. Photoreal gray raccoon with natural dark mask and exactly two short furry forepaws kept high at chest. Authentic animal not known IP. Meaning genuine admiration 'respect, impressive', not self-pride. Exactly two arms/paws, BOTH fully visible at mid chest, never at bottom border. Pose1 attentive neutral hands near chest;2 eyes widen slightly in recognition;3 eyebrows rise;4 VIEWER-LEFT paw/hand begins small approving raise at chest while other stays at chest;5 tiny nod and approving smile;6 raised paw/hand clearer;7 firm approving gesture and warm respectful gaze;8 THE PEAK: still hold raised viewer-LEFT approving gesture, warm closed mouth smile and admiring eyebrows, DO NOT lower.9 lower only halfway;10 nod resolves;11 almost neutral;12 exactly opening. One approving gesture stays same side throughout. Human hand uses anatomically clear thumbs-up; animal uses a simple friendly raised paw, never five human fingers on animals. No props, no extreme head shifts.",
+      "masterFile": "masters/raccoon-admire.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-18a4771a-ee70-4916-a3a0-e8e71ed959fc.png",
+      "sha256": "b40dd19d9a66055f06741d6a48efe0117da62f21b33dcbd663d4ac7d25f81121"
+    },
+    {
+      "id": "rabbit-admire",
+      "caption": "佩服",
+      "prompt": "Create an ORIGINAL animation sprite sheet: exactly FOUR COLUMNS x THREE ROWS, 12 equal SQUARE cells, 4:3 landscape image, preferably 1448x1086. Pure OPAQUE WHITE background, no text/grid/borders, no transparency. Each row starts at y=0,362,724: do NOT pack rows closer together. Character head top relative to EACH cell around y45, body bottom at y280, x80..282. Generous white margin below EACH character, at least bottom80px EMPTY WHITE. Entire ears, chin, visible paws/hands inside upper78% of each cell. Same character, same scale/lighting/body anchor in all12. First and last pose must match EXACT geometry and expression. No famous IP/celebrity imitation. Actual eyebrow/eyelid/mouth/limb articulation, not static copies or zoom. Chronological left-to-right/top-to-bottom. Minimal black ink cartoon rabbit with SHORT rounded upright ears and hoodie, clean simple original animal face and two small rounded paws, no human face. Meaning genuine admiration 'respect, impressive', not self-pride. Exactly two arms/paws, BOTH fully visible at mid chest, never at bottom border. Pose1 attentive neutral hands near chest;2 eyes widen slightly in recognition;3 eyebrows rise;4 VIEWER-LEFT paw/hand begins small approving raise at chest while other stays at chest;5 tiny nod and approving smile;6 raised paw/hand clearer;7 firm approving gesture and warm respectful gaze;8 THE PEAK: still hold raised viewer-LEFT approving gesture, warm closed mouth smile and admiring eyebrows, DO NOT lower.9 lower only halfway;10 nod resolves;11 almost neutral;12 exactly opening. One approving gesture stays same side throughout. Human hand uses anatomically clear thumbs-up; animal uses a simple friendly raised paw, never five human fingers on animals. No props, no extreme head shifts.",
+      "masterFile": "masters/rabbit-admire.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-dee9fda3-0938-43bc-8f76-06a4b157a7e9.png",
+      "sha256": "96f3253134e1667af4c5b49a39e6a6cc141ac30d2c1ff21be012b1d402fbaca6",
+      "originalSha256": "c38252a31e5e1b2f18373429a38f439673dc27558e6a80d4f1d0cba81cee3d21",
+      "selectedVersion": 2,
+      "revisions": [
+        {
+          "id": "rabbit-admire",
+          "prompt": "Edit this exact original 4 columns x3 rows admiration animation sprite sheet. Preserve face, ears/hair, head and body positions, scale, white background and ALL facial expressions. FIX ONLY HAND/PAW HEIGHT: in EVERY one of the 12 square cells raise BOTH hands/paws and their wrists UP by about 45 pixels so both complete hands are held at UPPER CHEST just below the chin, never at lower chest/bottom edge. The lowest finger and wrist must be entirely ABOVE local y270 within each 362x362 cell. Keep exactly two anatomically consistent arms, bend elbows naturally. Keep the viewer-left approving raised thumb/paw on the same side, and the other resting fist now at upper chest, fully visible. Pose8 must retain the approving gesture at the peak. First and last poses identical. DO NOT shift rows, scale characters or move heads. For rabbit keep hoodie cuffs and all paws complete. For man keep original fictional Chinese adult male likeness and plain dark-teal T-shirt, no celebrity reference. No text or borders.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-8c357ede-ac86-4973-821f-88a3a4c3829e.png",
+          "version": 2,
+          "sha256": "96f3253134e1667af4c5b49a39e6a6cc141ac30d2c1ff21be012b1d402fbaca6",
+          "reason": "raise hands/paws while preserving character scale and peak pose"
+        }
+      ]
+    },
+    {
+      "id": "otter-admire",
+      "caption": "佩服",
+      "prompt": "Create an ORIGINAL animation sprite sheet: exactly FOUR COLUMNS x THREE ROWS, 12 equal SQUARE cells, 4:3 landscape image, preferably 1448x1086. Pure OPAQUE WHITE background, no text/grid/borders, no transparency. Each row starts at y=0,362,724: do NOT pack rows closer together. Character head top relative to EACH cell around y45, body bottom at y280, x80..282. Generous white margin below EACH character, at least bottom80px EMPTY WHITE. Entire ears, chin, visible paws/hands inside upper78% of each cell. Same character, same scale/lighting/body anchor in all12. First and last pose must match EXACT geometry and expression. No famous IP/celebrity imitation. Actual eyebrow/eyelid/mouth/limb articulation, not static copies or zoom. Chronological left-to-right/top-to-bottom. Matte clay otter sculpture with smooth cocoa-brown body and cream cheeks, rounded small ears, two short rounded paws, not furry. Meaning genuine admiration 'respect, impressive', not self-pride. Exactly two arms/paws, BOTH fully visible at mid chest, never at bottom border. Pose1 attentive neutral hands near chest;2 eyes widen slightly in recognition;3 eyebrows rise;4 VIEWER-LEFT paw/hand begins small approving raise at chest while other stays at chest;5 tiny nod and approving smile;6 raised paw/hand clearer;7 firm approving gesture and warm respectful gaze;8 THE PEAK: still hold raised viewer-LEFT approving gesture, warm closed mouth smile and admiring eyebrows, DO NOT lower.9 lower only halfway;10 nod resolves;11 almost neutral;12 exactly opening. One approving gesture stays same side throughout. Human hand uses anatomically clear thumbs-up; animal uses a simple friendly raised paw, never five human fingers on animals. No props, no extreme head shifts.",
+      "masterFile": "masters/otter-admire.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-1c77ef72-7bcf-496b-88da-5a0b15c8971d.png",
+      "sha256": "40ed0487739d99352b0a455917dd4b053dc01179891ebe6f230144ede1413ffe"
+    },
+    {
+      "id": "man-admire",
+      "caption": "佩服",
+      "prompt": "Create an ORIGINAL animation sprite sheet: exactly FOUR COLUMNS x THREE ROWS, 12 equal SQUARE cells, 4:3 landscape image, preferably 1448x1086. Pure OPAQUE WHITE background, no text/grid/borders, no transparency. Each row starts at y=0,362,724: do NOT pack rows closer together. Character head top relative to EACH cell around y45, body bottom at y280, x80..282. Generous white margin below EACH character, at least bottom80px EMPTY WHITE. Entire ears, chin, visible paws/hands inside upper78% of each cell. Same character, same scale/lighting/body anchor in all12. First and last pose must match EXACT geometry and expression. No famous IP/celebrity imitation. Actual eyebrow/eyelid/mouth/limb articulation, not static copies or zoom. Chronological left-to-right/top-to-bottom. Photoreal fictional original handsome CHINESE ADULT MAN age30, short slightly wavy black hair, plain dark-teal T-shirt. No celebrity likeness. Hands anatomically correct with five digits, approving hand THUMB UP and four fingers curled. Both hands fully visible above lower chest. Meaning genuine admiration 'respect, impressive', not self-pride. Exactly two arms/paws, BOTH fully visible at mid chest, never at bottom border. Pose1 attentive neutral hands near chest;2 eyes widen slightly in recognition;3 eyebrows rise;4 VIEWER-LEFT paw/hand begins small approving raise at chest while other stays at chest;5 tiny nod and approving smile;6 raised paw/hand clearer;7 firm approving gesture and warm respectful gaze;8 THE PEAK: still hold raised viewer-LEFT approving gesture, warm closed mouth smile and admiring eyebrows, DO NOT lower.9 lower only halfway;10 nod resolves;11 almost neutral;12 exactly opening. One approving gesture stays same side throughout. Human hand uses anatomically clear thumbs-up; animal uses a simple friendly raised paw, never five human fingers on animals. No props, no extreme head shifts.",
+      "masterFile": "masters/man-admire.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-49e6ff15-ffee-4d3a-bf8d-cbc97f46ebeb.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "886105ea47645f5732353dcc41155fe614a3347efe45166b1290f3042b617409",
+      "originalSha256": "098fa1113a634fac6f7d67b0a9baa004cbbd26a7c7eed4baea354efbca927f90",
+      "selectedVersion": 2,
+      "revisions": [
+        {
+          "id": "man-admire",
+          "prompt": "Edit this exact original 4 columns x3 rows admiration animation sprite sheet. Preserve face, ears/hair, head and body positions, scale, white background and ALL facial expressions. FIX ONLY HAND/PAW HEIGHT: in EVERY one of the 12 square cells raise BOTH hands/paws and their wrists UP by about 45 pixels so both complete hands are held at UPPER CHEST just below the chin, never at lower chest/bottom edge. The lowest finger and wrist must be entirely ABOVE local y270 within each 362x362 cell. Keep exactly two anatomically consistent arms, bend elbows naturally. Keep the viewer-left approving raised thumb/paw on the same side, and the other resting fist now at upper chest, fully visible. Pose8 must retain the approving gesture at the peak. First and last poses identical. DO NOT shift rows, scale characters or move heads. For rabbit keep hoodie cuffs and all paws complete. For man keep original fictional Chinese adult male likeness and plain dark-teal T-shirt, no celebrity reference. No text or borders.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-233a3ca3-cfbc-47a7-a53b-f98ec9663af0.png",
+          "version": 2,
+          "sha256": "886105ea47645f5732353dcc41155fe614a3347efe45166b1290f3042b617409",
+          "reason": "raise hands/paws while preserving character scale and peak pose"
+        }
+      ]
+    }
+  ],
+  "rejectedFiles": [
+    {
+      "file": "rejected/rabbit-admire-v1.png",
+      "sha256": "c38252a31e5e1b2f18373429a38f439673dc27558e6a80d4f1d0cba81cee3d21",
+      "reason": "hands/paws hidden by caption safe area"
+    },
+    {
+      "file": "rejected/man-admire-v1.png",
+      "sha256": "098fa1113a634fac6f7d67b0a9baa004cbbd26a7c7eed4baea354efbca927f90",
+      "reason": "hands/paws hidden by caption safe area"
+    },
+    {
+      "file": "rejected/admire-v1-evidence.png",
+      "sha256": "6b11f1d0c09156b16e56b1e9a99f1ad537b7760a42876257f6a0d61eecf01856",
+      "reason": "initial GIF decoded frame evidence of caption occlusion"
+    }
+  ]
+}

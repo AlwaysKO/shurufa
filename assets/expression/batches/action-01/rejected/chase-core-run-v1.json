@@ -1,0 +1,33 @@
+{
+  "id": "chase-core-run",
+  "keyword": "追赶",
+  "text": "追赶",
+  "style": "original-core",
+  "direction": "pet-or-person",
+  "distribution": "bundled",
+  "sourceType": "ai-original",
+  "prompt": "Create one genuine transparent RGBA PNG 2x2 sprite sheet, FOUR DISTINCT key poses of identical original subject, reading order. Wide fully transparent gutters at middle axes. Each complete pose inside its own quadrant with generous margins. Consistent identity, scale and material, real changes in limbs/expression not mere translations. No text, letters, watermark, logos, existing IP, checkerboard, background or ground. Exactly correct limbs, no duplicates. SUBJECT: A unique cream rice-dumpling creature, tiny orange knotted topknot, two tiny orange tipped tufts and orange scarf, two arms and two feet. Soft painted sticker. FOUR POSES: 1. leans forward ready to dash; 2. runs with left foot forward and right arm forward; 3. runs with right foot forward and left arm forward; 4. reaches both hands forward with playful grin. No injury, weapons or aggression. ",
+  "motionScript": [
+    "leans forward ready to dash",
+    "runs with left foot forward and right arm forward",
+    "runs with right foot forward and left arm forward",
+    "reaches both hands forward with playful grin"
+  ],
+  "motionPreset": "impact",
+  "frameCount": 16,
+  "durationMs": 1600,
+  "masterFile": "masters/chase-core-run.png",
+  "poseFiles": [
+    "poses/chase-core-run/pose-01.png",
+    "poses/chase-core-run/pose-02.png",
+    "poses/chase-core-run/pose-03.png",
+    "poses/chase-core-run/pose-04.png"
+  ],
+  "textPlacement": "bottom",
+  "generation": {
+    "tool": "image_gen.imagegen",
+    "generatedAt": "2026-09-09",
+    "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-d5bf76e6-69ba-4043-b357-85e98dcfb381.png",
+    "masterSha256": "deaa4a5cda9db35bf7c6849df59ad694125bc1fac28432da4bd43a6000f73eea"
+  }
+}

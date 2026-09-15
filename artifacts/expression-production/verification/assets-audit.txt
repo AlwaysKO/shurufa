@@ -1,0 +1,1 @@
+素材审计通过：92 prebuilt / 60 synthesis / 32 GIF / 40 static / 48 bases / 2304 ordered WebP，Android 内置 335 个素材文件

@@ -1,0 +1,31 @@
+{
+  "keyword": "害羞",
+  "items": [
+    {
+      "id": "scene-rich-07-shy",
+      "keyword": "害羞",
+      "file": "害羞/scene-rich-07-shy.gif",
+      "thumbnail": "害羞/scene-rich-07-shy.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-07/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-07/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-07/gifs/scene-rich-07-shy.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-07/thumbnails/scene-rich-07-shy.webp",
+      "batch": "scene-rich-07",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "5ca71439ab6b6ece3eb9f658de8b9d5d02ebd2a1bd3492cd52e2e73824c7e33c",
+      "thumbnailSha256": "71bec6f04de976a129da4ad44783e4509c66cd5e61f545da134b60f973f9ce7b",
+      "bytes": 158062,
+      "width": 240,
+      "height": 240,
+      "frames": 20,
+      "durationMs": 4000,
+      "style": "ai-original-pet",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

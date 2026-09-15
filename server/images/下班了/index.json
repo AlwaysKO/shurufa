@@ -1,0 +1,31 @@
+{
+  "keyword": "下班了",
+  "items": [
+    {
+      "id": "scene-rich-10-offwork",
+      "keyword": "下班了",
+      "file": "下班了/scene-rich-10-offwork.gif",
+      "thumbnail": "下班了/scene-rich-10-offwork.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-10/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-10/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-10/gifs/scene-rich-10-offwork.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-10/thumbnails/scene-rich-10-offwork.webp",
+      "batch": "scene-rich-10",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "c147e381833c2f8beea0aa42c59edfdceb672ebda8b7ec1c9d6fb07084f9f3fd",
+      "thumbnailSha256": "7677b3785317210975b61c0c97342614ad5c2d61e58b4346d0eb7b3a344c1f38",
+      "bytes": 63230,
+      "width": 240,
+      "height": 240,
+      "frames": 20,
+      "durationMs": 4000,
+      "style": "hand-drawn",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

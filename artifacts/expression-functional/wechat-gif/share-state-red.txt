@@ -1,0 +1,99 @@
+WARNING: We recommend using a newer Android Gradle plugin to use compileSdk = 36
+
+This Android Gradle plugin (8.7.2) was tested up to compileSdk = 35.
+
+You are strongly encouraged to update your project to use a newer
+Android Gradle plugin that has been tested with compileSdk = 36.
+
+If you are already using the latest version of the Android Gradle plugin,
+you may need to wait until a newer version with support for compileSdk = 36 is available.
+
+For more information refer to the compatibility table:
+https://d.android.com/r/tools/api-level-support
+
+To suppress this warning, add/update
+    android.suppressUnsupportedCompileSdk=36
+to this project's gradle.properties.
+> Task :yuyansdk:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :yuyansdk:preBuild UP-TO-DATE
+> Task :yuyansdk:preOfflineDebugBuild UP-TO-DATE
+> Task :yuyansdk:dataBindingMergeDependencyArtifactsOfflineDebug UP-TO-DATE
+> Task :yuyansdk:generateOfflineDebugResValues UP-TO-DATE
+> Task :yuyansdk:generateOfflineDebugResources UP-TO-DATE
+> Task :yuyansdk:packageOfflineDebugResources UP-TO-DATE
+> Task :yuyansdk:parseOfflineDebugLocalResources UP-TO-DATE
+> Task :yuyansdk:dataBindingGenBaseClassesOfflineDebug UP-TO-DATE
+> Task :yuyansdk:generateOfflineDebugBuildConfig UP-TO-DATE
+> Task :yuyansdk:generateOfflineDebugRFile UP-TO-DATE
+> Task :yuyansdk:javaPreCompileOfflineDebug UP-TO-DATE
+> Task :yuyansdk:preOfflineDebugUnitTestBuild UP-TO-DATE
+> Task :yuyansdk:writeOfflineDebugAarMetadata UP-TO-DATE
+> Task :yuyansdk:checkOfflineDebugUnitTestAarMetadata UP-TO-DATE
+> Task :yuyansdk:compileOfflineDebugLibraryResources UP-TO-DATE
+> Task :yuyansdk:generateOfflineDebugUnitTestResValues UP-TO-DATE
+> Task :yuyansdk:mapOfflineDebugUnitTestSourceSetPaths UP-TO-DATE
+> Task :yuyansdk:generateOfflineDebugUnitTestResources UP-TO-DATE
+> Task :yuyansdk:mergeOfflineDebugUnitTestResources UP-TO-DATE
+> Task :yuyansdk:extractDeepLinksOfflineDebug UP-TO-DATE
+> Task :yuyansdk:processOfflineDebugManifest UP-TO-DATE
+> Task :yuyansdk:processOfflineDebugUnitTestManifest UP-TO-DATE
+> Task :yuyansdk:processOfflineDebugUnitTestResources UP-TO-DATE
+> Task :yuyansdk:javaPreCompileOfflineDebugUnitTest UP-TO-DATE
+> Task :yuyansdk:mergeOfflineDebugShaders UP-TO-DATE
+> Task :yuyansdk:compileOfflineDebugShaders NO-SOURCE
+> Task :yuyansdk:generateOfflineDebugAssets UP-TO-DATE
+> Task :yuyansdk:mergeOfflineDebugAssets UP-TO-DATE
+> Task :yuyansdk:generateOfflineDebugUnitTestAssets UP-TO-DATE
+> Task :yuyansdk:packageOfflineDebugAssets UP-TO-DATE
+> Task :yuyansdk:mergeOfflineDebugUnitTestAssets UP-TO-DATE
+> Task :yuyansdk:packageOfflineDebugUnitTestForUnitTest UP-TO-DATE
+> Task :yuyansdk:generateOfflineDebugUnitTestConfig UP-TO-DATE
+> Task :yuyansdk:kspOfflineDebugKotlin
+> Task :yuyansdk:compileOfflineDebugKotlin
+> Task :yuyansdk:compileOfflineDebugJavaWithJavac UP-TO-DATE
+> Task :yuyansdk:processOfflineDebugJavaRes UP-TO-DATE
+> Task :yuyansdk:bundleLibRuntimeToJarOfflineDebug
+> Task :yuyansdk:bundleLibCompileToJarOfflineDebug
+> Task :yuyansdk:kspOfflineDebugUnitTestKotlin
+
+> Task :yuyansdk:compileOfflineDebugUnitTestKotlin
+w: file:///home/ko/project/shurufa/android/YuyanIme/yuyansdk/src/test/java/com/yuyan/imemodule/expression/send/ExpressionContentSenderTest.kt:44:26 'fun <T : Parcelable!> getParcelableExtra(p0: String!): T?' is deprecated. Deprecated in Java.
+
+> Task :yuyansdk:compileOfflineDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :yuyansdk:processOfflineDebugUnitTestJavaRes UP-TO-DATE
+
+> Task :yuyansdk:testOfflineDebugUnitTest
+
+ExpressionContentSenderTest > 微信 GIF 通过标准分享交付原文件而不 commit FAILED
+    java.lang.IllegalArgumentException at ExpressionContentSenderTest.kt:33
+
+ExpressionContentSenderTest > 微信 GIF 分享启动失败不退回静态化的 commit FAILED
+    java.lang.AssertionError at ExpressionContentSenderTest.kt:52
+
+ExpressionFlowTest > 打开分享后不再保存相册且保留明确交接结果 FAILED
+    java.lang.AssertionError at ExpressionFlowTest.kt:30
+
+ExpressionSendControllerTest > 分享页面打开后清空控制状态但不报告发送成功 FAILED
+    java.lang.AssertionError at ExpressionSendControllerTest.kt:20
+
+ExpressionManualSearchInputViewTest > 微信分享交接后同词再次提交启动新查询 FAILED
+    java.lang.AssertionError at ExpressionManualSearchInputViewTest.kt:1378
+
+ExpressionManualSearchInputViewTest > 微信分享交接清除忙状态并提示仍需选聊天确认 FAILED
+    java.lang.AssertionError at ExpressionManualSearchInputViewTest.kt:1378
+
+75 tests completed, 6 failed
+
+> Task :yuyansdk:testOfflineDebugUnitTest FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':yuyansdk:testOfflineDebugUnitTest'.
+> There were failing tests. See the report at: file:///home/ko/project/shurufa/android/YuyanIme/yuyansdk/build/unix/reports/tests/testOfflineDebugUnitTest/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 2m 32s
+37 actionable tasks: 7 executed, 30 up-to-date

@@ -1,0 +1,31 @@
+{
+  "keyword": "困了",
+  "items": [
+    {
+      "id": "scene-rich-05-sleepy",
+      "keyword": "困了",
+      "file": "困了/scene-rich-05-sleepy.gif",
+      "thumbnail": "困了/scene-rich-05-sleepy.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-05/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-05/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-05/gifs/scene-rich-05-sleepy.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-05/thumbnails/scene-rich-05-sleepy.webp",
+      "batch": "scene-rich-05",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "a4eb2dbf47329422a39bdccd40384331078f3f7a721211d88303140f4d923f94",
+      "thumbnailSha256": "b78d1426aeeb4b6805f17f0387080f70c37646fdc618951aeb8230c97ae68294",
+      "bytes": 126975,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "durationMs": 3000,
+      "style": "ai-original-pet",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

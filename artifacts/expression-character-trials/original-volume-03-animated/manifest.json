@@ -1,0 +1,172 @@
+{
+  "created": "2026-09-13",
+  "sourceType": "ai-original",
+  "status": "trial-only",
+  "publicationAllowed": false,
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "items": [
+    {
+      "id": "graycat-awkward",
+      "caption": "尴尬",
+      "prompt": "Animation sprite atlas exactly FOUR columns THREE rows,12 equal SQUARE tiles, overall4:3. OPAQUE pure WHITE #ffffff background, no transparency, no grid/text/numbers. Same original character in twelve genuine sequential facial poses, no zoom or copied-only animation. Stable camera/scale/body, no objects/hands. IMPORTANT: keep complete head including ear tips INSIDE each square with WHITE MARGIN above15% and below25%. Bust bottom at75% tile height, tops at15% tile height. Precisely SAME within-cell neutral placement all rows/columns; centers x12.5,37.5,62.5,87.5% canvas. Row2 and3 are exact square-cell offsets, do not drift up. Frame12 neutral expression/scale/head/bust positions must match1 exactly for loop;9-12 gradual real recovery. Photoreal original gray British shorthair cat head-and-shoulder bust, stable ears, no paws, natural cat mouth not human lips. 12 real acting poses:1 neutral;2 eyes glance to side;3 inner brows lift;4 mouth begins small uneasy asymmetric smile;5 lips/muzzle press closed;6 smile tightens awkwardly;7 chin dips slightly while eyes look up;8 key embarrassed awkward forced little smile, asymmetric brows;9 chin starts rising;10 mouth relaxes;11 near neutral;12 same neutral as1. No blush symbols/tears/sweat drops. Not broad happy smile.",
+      "masterFile": "masters/graycat-awkward.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-6cf57e19-3b14-4fd6-b294-53107116595d.png",
+      "sha256": "af89da362cb7505e36e57ad455a45cb94d586fdc0ccd5cf1f3dc385e54f76b0c",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "turtle-awkward",
+      "caption": "尴尬",
+      "prompt": "Animation sprite atlas exactly FOUR columns THREE rows,12 equal SQUARE tiles, overall4:3. OPAQUE pure WHITE #ffffff background, no transparency, no grid/text/numbers. Same original character in twelve genuine sequential facial poses, no zoom or copied-only animation. Stable camera/scale/body, no objects/hands. IMPORTANT: keep complete head including ear tips INSIDE each square with WHITE MARGIN above15% and below25%. Bust bottom at75% tile height, tops at15% tile height. Precisely SAME within-cell neutral placement all rows/columns; centers x12.5,37.5,62.5,87.5% canvas. Row2 and3 are exact square-cell offsets, do not drift up. Frame12 neutral expression/scale/head/bust positions must match1 exactly for loop;9-12 gradual real recovery. Original minimal BLACK INK cartoon turtle bust, round bald head, short neck, tiny hint shell behind shoulders, expressive small eyes and mouth, no limbs, no famous character likeness. 12 real acting poses:1 neutral;2 eyes glance to side;3 inner brows lift;4 mouth begins small uneasy asymmetric smile;5 lips/muzzle press closed;6 smile tightens awkwardly;7 chin dips slightly while eyes look up;8 key embarrassed awkward forced little smile, asymmetric brows;9 chin starts rising;10 mouth relaxes;11 near neutral;12 same neutral as1. No blush symbols/tears/sweat drops. Not broad happy smile.",
+      "masterFile": "masters/turtle-awkward.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-e70f1df0-3c8b-425f-84a2-7579aef08540.png",
+      "sha256": "88b7a7b015c20cbc86a934b3150415022c2f06a3738f69b0530afb25a22c43a1",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "needs-rework"
+    },
+    {
+      "id": "penguin-awkward",
+      "caption": "尴尬",
+      "prompt": "Animation sprite atlas exactly FOUR columns THREE rows,12 equal SQUARE tiles, overall4:3. OPAQUE pure WHITE #ffffff background, no transparency, no grid/text/numbers. Same original character in twelve genuine sequential facial poses, no zoom or copied-only animation. Stable camera/scale/body, no objects/hands. IMPORTANT: keep complete head including ear tips INSIDE each square with WHITE MARGIN above15% and below25%. Bust bottom at75% tile height, tops at15% tile height. Precisely SAME within-cell neutral placement all rows/columns; centers x12.5,37.5,62.5,87.5% canvas. Row2 and3 are exact square-cell offsets, do not drift up. Frame12 neutral expression/scale/head/bust positions must match1 exactly for loop;9-12 gradual real recovery. Original tactile clay black/white penguin chest-up bust, small beak, no feet/flippers visible. 12 real acting poses:1 neutral;2 eyes glance to side;3 inner brows lift;4 mouth begins small uneasy asymmetric smile;5 lips/muzzle press closed;6 smile tightens awkwardly;7 chin dips slightly while eyes look up;8 key embarrassed awkward forced little smile, asymmetric brows;9 chin starts rising;10 mouth relaxes;11 near neutral;12 same neutral as1. No blush symbols/tears/sweat drops. Not broad happy smile.",
+      "masterFile": "masters/penguin-awkward.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-44d883b4-d602-485a-9aef-e1fcfba5dd55.png",
+      "sha256": "b25974c309b30fbef955b4f3e948c4953c7b3f79e570a9c916454299d5277ffb",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "man-awkward",
+      "caption": "尴尬",
+      "prompt": "Animation sprite atlas exactly FOUR columns THREE rows,12 equal SQUARE tiles, overall4:3. OPAQUE pure WHITE #ffffff background, no transparency, no grid/text/numbers. Same original character in twelve genuine sequential facial poses, no zoom or copied-only animation. Stable camera/scale/body, no objects/hands. IMPORTANT: keep complete head including ear tips INSIDE each square with WHITE MARGIN above15% and below25%. Bust bottom at75% tile height, tops at15% tile height. Precisely SAME within-cell neutral placement all rows/columns; centers x12.5,37.5,62.5,87.5% canvas. Row2 and3 are exact square-cell offsets, do not drift up. Frame12 neutral expression/scale/head/bust positions must match1 exactly for loop;9-12 gradual real recovery. Photoreal ORIGINAL fictional handsome Chinese adult male age31, short textured black hair, olive crewneck, distinct fictional face not celebrity, hands out of frame. 12 real acting poses:1 neutral;2 eyes glance to side;3 inner brows lift;4 mouth begins small uneasy asymmetric smile;5 lips/muzzle press closed;6 smile tightens awkwardly;7 chin dips slightly while eyes look up;8 key embarrassed awkward forced little smile, asymmetric brows;9 chin starts rising;10 mouth relaxes;11 near neutral;12 same neutral as1. No blush symbols/tears/sweat drops. Not broad happy smile.",
+      "masterFile": "masters/man-awkward.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-45514997-7799-47dc-a582-a14516b2f396.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "632cc6ca39036f20ba0944f10b63b435ab53d12c424c61fac4f25d0d1ef37c40",
+      "originalSha256": "f411e8ebfba44d6aa556db87ce50b616bc5288fb043f5daa592f3cf51405f076",
+      "revisions": [
+        {
+          "id": "v2-loop-registration",
+          "sha256": "632cc6ca39036f20ba0944f10b63b435ab53d12c424c61fac4f25d0d1ef37c40",
+          "prompt": "Repair LOOP REGISTRATION in this exact 4-column3-row original fictional Chinese adult man animation sheet. Bottom-row figures sit15pixels too HIGH relative to their own square cells. Move ALL FOUR bottom-row busts DOWN15pixels. Bottom-right frame12 must exactly match top-left frame1 neutral face, eye positions, mouth, hair silhouette, head size and shoulder baseline within equal square cells. Preserve genuine awkward smile/mouth tightening/eye glances in frames2-9. Panels10-11 gradually approach neutral. Same original fictional man, olive shirt, white opaque background, no text/no grid. Exactly4columns3rows overall4:3, no identity changes, no hands. Do not shift top2rows or change scale.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-f84e5ff4-3c39-4d30-a12c-2a75a8c5c463.png"
+        }
+      ],
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "corgi-eager",
+      "caption": "期待",
+      "prompt": "Animation sprite atlas exactly FOUR columns THREE rows,12 equal SQUARE tiles, overall4:3. OPAQUE pure WHITE #ffffff background, no transparency, no grid/text/numbers. Same original character in twelve genuine sequential facial poses, no zoom or copied-only animation. Stable camera/scale/body, no objects/hands. IMPORTANT: keep complete head including ear tips INSIDE each square with WHITE MARGIN above15% and below25%. Bust bottom at75% tile height, tops at15% tile height. Precisely SAME within-cell neutral placement all rows/columns; centers x12.5,37.5,62.5,87.5% canvas. Row2 and3 are exact square-cell offsets, do not drift up. Frame12 neutral expression/scale/head/bust positions must match1 exactly for loop;9-12 gradual real recovery. Photoreal original tan-white corgi head-and-shoulder bust, two upright ears with full white margin, no paws, no human lips. 12 real poses:1 neutral;2 eyes look slightly upward;3 brows lift a little;4 eyes brighten/open;5 mouth corners begin lifting;6 gentle anticipatory closed smile;7 chin raises slightly;8 key hopeful eager gaze and small smile, not surprise;9 chin begins settling;10 smile softens;11 eyes/brows neutral;12 same neutral as1. No tongue/lolling/no huge mouth/props.",
+      "masterFile": "masters/corgi-eager.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-c62c6d06-155b-4af7-ba49-f8d09a2f6b29.png",
+      "sha256": "d28365d3651635b6001ba0596a178465e87e98587d4ed0364f37c163dd72a8de",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "seal-eager",
+      "caption": "期待",
+      "prompt": "Animation sprite atlas exactly FOUR columns THREE rows,12 equal SQUARE tiles, overall4:3. OPAQUE pure WHITE #ffffff background, no transparency, no grid/text/numbers. Same original character in twelve genuine sequential facial poses, no zoom or copied-only animation. Stable camera/scale/body, no objects/hands. IMPORTANT: keep complete head including ear tips INSIDE each square with WHITE MARGIN above15% and below25%. Bust bottom at75% tile height, tops at15% tile height. Precisely SAME within-cell neutral placement all rows/columns; centers x12.5,37.5,62.5,87.5% canvas. Row2 and3 are exact square-cell offsets, do not drift up. Frame12 neutral expression/scale/head/bust positions must match1 exactly for loop;9-12 gradual real recovery. Original minimal BLACK INK cartoon seal bust, white fill, whisker dots, expressive eyelids/brows/mouth, no flippers. 12 real poses:1 neutral;2 eyes look slightly upward;3 brows lift a little;4 eyes brighten/open;5 mouth corners begin lifting;6 gentle anticipatory closed smile;7 chin raises slightly;8 key hopeful eager gaze and small smile, not surprise;9 chin begins settling;10 smile softens;11 eyes/brows neutral;12 same neutral as1. No tongue/lolling/no huge mouth/props.",
+      "masterFile": "masters/seal-eager.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-b0ff12ab-539e-4b3e-9eaa-bc5661f0a834.png",
+      "sha256": "7092eb14163cdafdebd06ef60061e9e46ed704f53f11908061fefa3749b6b718",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "fawn-eager",
+      "caption": "期待",
+      "prompt": "Animation sprite atlas exactly FOUR columns THREE rows,12 equal SQUARE tiles, overall4:3. OPAQUE pure WHITE #ffffff background, no transparency, no grid/text/numbers. Same original character in twelve genuine sequential facial poses, no zoom or copied-only animation. Stable camera/scale/body, no objects/hands. IMPORTANT: keep complete head including ear tips INSIDE each square with WHITE MARGIN above15% and below25%. Bust bottom at75% tile height, tops at15% tile height. Precisely SAME within-cell neutral placement all rows/columns; centers x12.5,37.5,62.5,87.5% canvas. Row2 and3 are exact square-cell offsets, do not drift up. Frame12 neutral expression/scale/head/bust positions must match1 exactly for loop;9-12 gradual real recovery. Original tactile clay small fawn bust, two ears, NO ANTLERS, chestnut fur and fixed small cheek spots, no limbs. 12 real poses:1 neutral;2 eyes look slightly upward;3 brows lift a little;4 eyes brighten/open;5 mouth corners begin lifting;6 gentle anticipatory closed smile;7 chin raises slightly;8 key hopeful eager gaze and small smile, not surprise;9 chin begins settling;10 smile softens;11 eyes/brows neutral;12 same neutral as1. No tongue/lolling/no huge mouth/props.",
+      "masterFile": "masters/fawn-eager.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-216a7f0e-9db5-46ed-ab1a-827190a4d5fe.png",
+      "sha256": "5b3949b2fe74bd74fa2f1c1b05c0d272e97ab23d5802c0febafb7954fca953f5",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "man-eager",
+      "caption": "期待",
+      "prompt": "Animation sprite atlas exactly FOUR columns THREE rows,12 equal SQUARE tiles, overall4:3. OPAQUE pure WHITE #ffffff background, no transparency, no grid/text/numbers. Same original character in twelve genuine sequential facial poses, no zoom or copied-only animation. Stable camera/scale/body, no objects/hands. IMPORTANT: keep complete head including ear tips INSIDE each square with WHITE MARGIN above15% and below25%. Bust bottom at75% tile height, tops at15% tile height. Precisely SAME within-cell neutral placement all rows/columns; centers x12.5,37.5,62.5,87.5% canvas. Row2 and3 are exact square-cell offsets, do not drift up. Frame12 neutral expression/scale/head/bust positions must match1 exactly for loop;9-12 gradual real recovery. Photoreal ORIGINAL fictional handsome Chinese adult male age27, neat sidepart black hair, teal crewneck, distinctive fictional face not real celebrity, hands out of frame. 12 real poses:1 neutral;2 eyes look slightly upward;3 brows lift a little;4 eyes brighten/open;5 mouth corners begin lifting;6 gentle anticipatory closed smile;7 chin raises slightly;8 key hopeful eager gaze and small smile, not surprise;9 chin begins settling;10 smile softens;11 eyes/brows neutral;12 same neutral as1. No tongue/lolling/no huge mouth/props.",
+      "masterFile": "masters/man-eager.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-6308576e-6a7d-443a-8b70-cf021dd2099b.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "f741cbab65c43e171921c2fee0288bc5d70b23ac45de9a09a02fea81c73c89e2",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "beagle-puzzled",
+      "caption": "疑惑",
+      "prompt": "Animation sprite atlas exactly FOUR columns THREE rows,12 equal SQUARE tiles, overall4:3. OPAQUE pure WHITE #ffffff background, no transparency, no grid/text/numbers. Same original character in twelve genuine sequential facial poses, no zoom or copied-only animation. Stable camera/scale/body, no objects/hands. IMPORTANT: keep complete head including ear tips INSIDE each square with WHITE MARGIN above15% and below25%. Bust bottom at75% tile height, tops at15% tile height. Precisely SAME within-cell neutral placement all rows/columns; centers x12.5,37.5,62.5,87.5% canvas. Row2 and3 are exact square-cell offsets, do not drift up. Frame12 neutral expression/scale/head/bust positions must match1 exactly for loop;9-12 gradual real recovery. Photoreal original tricolor beagle head-and-shoulder bust, stable floppy ears, no paws, canine plausible expressions. 12 real poses:1 neutral;2 eyes briefly glance to side;3 one brow lifts while other lowers;4 mouth parts a little;5 lips/muzzle close in uncertain curve;6 head tilts2degrees;7 head tilts5degrees while gaze focused;8 key puzzled asymmetric brows and uncertain mouth;9 tilt decreases;10 nearly upright;11 brows relax;12 same neutral as1. Not angry/shocked, no question marks or symbols.",
+      "masterFile": "masters/beagle-puzzled.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-d36312d8-f9e3-43e7-aeb3-d679c965c9fb.png",
+      "sha256": "8e13ae341f2135c14d0208f5f6f33ffd0cb9c093a8ccbe8607f3baacdfd8fab1",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "owl-puzzled",
+      "caption": "疑惑",
+      "prompt": "Animation sprite atlas exactly FOUR columns THREE rows,12 equal SQUARE tiles, overall4:3. OPAQUE pure WHITE #ffffff background, no transparency, no grid/text/numbers. Same original character in twelve genuine sequential facial poses, no zoom or copied-only animation. Stable camera/scale/body, no objects/hands. IMPORTANT: keep complete head including ear tips INSIDE each square with WHITE MARGIN above15% and below25%. Bust bottom at75% tile height, tops at15% tile height. Precisely SAME within-cell neutral placement all rows/columns; centers x12.5,37.5,62.5,87.5% canvas. Row2 and3 are exact square-cell offsets, do not drift up. Frame12 neutral expression/scale/head/bust positions must match1 exactly for loop;9-12 gradual real recovery. Original minimal BLACK INK round owl bust, big eyes with expressive lids/brows, tiny triangle beak, no props, no wings in view. 12 real poses:1 neutral;2 eyes briefly glance to side;3 one brow lifts while other lowers;4 mouth parts a little;5 lips/muzzle close in uncertain curve;6 head tilts2degrees;7 head tilts5degrees while gaze focused;8 key puzzled asymmetric brows and uncertain mouth;9 tilt decreases;10 nearly upright;11 brows relax;12 same neutral as1. Not angry/shocked, no question marks or symbols.",
+      "masterFile": "masters/owl-puzzled.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-03aeedcf-6e92-4e86-935b-a5b3b15092a2.png",
+      "sha256": "e55fe09b112ece0cfe039e208c2e04f72c0ef2990256b739bf1c50ba1f798101",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "panda-puzzled",
+      "caption": "疑惑",
+      "prompt": "Animation sprite atlas exactly FOUR columns THREE rows,12 equal SQUARE tiles, overall4:3. OPAQUE pure WHITE #ffffff background, no transparency, no grid/text/numbers. Same original character in twelve genuine sequential facial poses, no zoom or copied-only animation. Stable camera/scale/body, no objects/hands. IMPORTANT: keep complete head including ear tips INSIDE each square with WHITE MARGIN above15% and below25%. Bust bottom at75% tile height, tops at15% tile height. Precisely SAME within-cell neutral placement all rows/columns; centers x12.5,37.5,62.5,87.5% canvas. Row2 and3 are exact square-cell offsets, do not drift up. Frame12 neutral expression/scale/head/bust positions must match1 exactly for loop;9-12 gradual real recovery. Original tactile clay REAL ANIMAL panda head-and-shoulder bust, round ears and fixed black eye patches, no human face or meme panda head resemblance, no paws. 12 real poses:1 neutral;2 eyes briefly glance to side;3 one brow lifts while other lowers;4 mouth parts a little;5 lips/muzzle close in uncertain curve;6 head tilts2degrees;7 head tilts5degrees while gaze focused;8 key puzzled asymmetric brows and uncertain mouth;9 tilt decreases;10 nearly upright;11 brows relax;12 same neutral as1. Not angry/shocked, no question marks or symbols.",
+      "masterFile": "masters/panda-puzzled.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-55296c1f-7c5f-4317-be29-8f7a7ab2e2e9.png",
+      "sha256": "7c42e4bdde58549f222967b5033d5f30e08db7ee5b17da0235cae68a1f999edb",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "man-puzzled",
+      "caption": "疑惑",
+      "prompt": "Animation sprite atlas exactly FOUR columns THREE rows,12 equal SQUARE tiles, overall4:3. OPAQUE pure WHITE #ffffff background, no transparency, no grid/text/numbers. Same original character in twelve genuine sequential facial poses, no zoom or copied-only animation. Stable camera/scale/body, no objects/hands. IMPORTANT: keep complete head including ear tips INSIDE each square with WHITE MARGIN above15% and below25%. Bust bottom at75% tile height, tops at15% tile height. Precisely SAME within-cell neutral placement all rows/columns; centers x12.5,37.5,62.5,87.5% canvas. Row2 and3 are exact square-cell offsets, do not drift up. Frame12 neutral expression/scale/head/bust positions must match1 exactly for loop;9-12 gradual real recovery. Photoreal ORIGINAL fictional handsome Chinese adult male age34, short brushed-up black hair, brown crewneck, distinctive fictional face not celebrity, no hands. 12 real poses:1 neutral;2 eyes briefly glance to side;3 one brow lifts while other lowers;4 mouth parts a little;5 lips/muzzle close in uncertain curve;6 head tilts2degrees;7 head tilts5degrees while gaze focused;8 key puzzled asymmetric brows and uncertain mouth;9 tilt decreases;10 nearly upright;11 brows relax;12 same neutral as1. Not angry/shocked, no question marks or symbols.",
+      "masterFile": "masters/man-puzzled.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-1b238bfa-64e2-4e41-9306-6dae4a31a518.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "332fb370598aa52499bf70e99fecf57e8587081b6fc7d4f5daec5ebb55cfaabd",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    }
+  ],
+  "rejectedFiles": [
+    {
+      "file": "rejected/man-awkward-v1-loop.png",
+      "sha256": "f411e8ebfba44d6aa556db87ce50b616bc5288fb043f5daa592f3cf51405f076",
+      "reason": "loopClosure 0.20147569444444444 > 0.13350694444444444"
+    }
+  ],
+  "visualCaveats": {
+    "turtle-awkward": "解码抽帧显示恢复段整体上移，待返工；机器通过不等于视觉通过。",
+    "seal-eager": "恢复段有轻微位置变化，待实际播放确认。",
+    "corgi-eager": "首尾耳顶高度变化，待实际循环播放复核。"
+  }
+}

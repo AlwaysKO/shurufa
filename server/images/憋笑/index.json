@@ -1,0 +1,31 @@
+{
+  "keyword": "憋笑",
+  "items": [
+    {
+      "id": "scene-rich-04-laugh",
+      "keyword": "憋笑",
+      "file": "憋笑/scene-rich-04-laugh.gif",
+      "thumbnail": "憋笑/scene-rich-04-laugh.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-04/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-04/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-04/gifs/scene-rich-04-laugh.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-04/thumbnails/scene-rich-04-laugh.webp",
+      "batch": "scene-rich-04",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "58b7186e80a82e1f3034845ac6f4c8b8aee597753a1ce3712714200d9d4ce582",
+      "thumbnailSha256": "4d0fc3ced16f1aac72ee78554720ca883ce7c2a1defea83466d8266e7c7d4f97",
+      "bytes": 125779,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "durationMs": 3000,
+      "style": "ai-original-pet",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

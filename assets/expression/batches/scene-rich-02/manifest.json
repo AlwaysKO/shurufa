@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "batchId": "scene-rich-02",
+  "status": "review-only",
+  "items": [
+    {
+      "id": "scene-rich-02-wink",
+      "keyword": "你懂的",
+      "caption": "你懂的",
+      "captionPlacement": "bottom-right",
+      "masterFile": "masters/scene-rich-02-wink.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "referenceFile": "server/images/_drafts/reaction-rich-02/nide-wink.png",
+        "prompt": "Edit this original schnauzer photo into a precise square 2x2 FOUR KEYFRAME animation sheet, four equal full-bleed square cells with NO gutters, borders or labels. Same salt-and-pepper dog, mustard sofa edge left, apartment lighting, lens and camera locked in every cell. Meaning 'you know what I mean': conspiracy and tacit agreement, not just cute peeking. Four genuinely different facial/limb poses in reading order: 1 top-left head slightly behind sofa, BOTH eyes open looking directly toward viewer, mouth closed, front paw resting low on sofa edge. 2 top-right head leans forward, one eyebrow lifted and head tilted slightly, paw rises along edge inviting attention. 3 bottom-left clear pronounced ONE-EYE WINK, other eye open, head angled knowingly, mouth corner subtly raised and paw hooked on edge. 4 bottom-right wink opens into an amused narrowed side glance, head draws back a little, paw relaxed lower. Keep consistent identity and scene geometry, distinct eye expression mandatory, no generic smile duplicates and no zoom-only poses. Real dog anatomy, no human hands, no text/lettering/watermarks. Keep lower-right floor area clear for later typeset Chinese caption. Preserve original candid photographic texture. All four images completely contained within equal quadrants.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-3c371a0c-3a8a-4f90-a0f8-891ee9f7ee9d.png",
+        "masterSha256": "e065e02950dde42724643af5c18a91256fc50dec729e67d7138210d71e06a38d"
+      }
+    },
+    {
+      "id": "scene-rich-02-details",
+      "keyword": "细说",
+      "caption": "细说",
+      "captionPlacement": "top-left",
+      "masterFile": "masters/scene-rich-02-details.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "referenceFile": "server/images/_drafts/reaction-rich-02/xishuo-pigeon.png",
+        "prompt": "Create a square exact 2x2 animation keyframe sheet from this ORIGINAL felt pigeon scene. Four equal full-bleed square cells, no gutters or borders or writing. Locked camera, same original dusty-purple pigeon, turquoise folding stool, bowl of sunflower seeds, apartment doorway and warm light throughout. 'Tell me more' eager gossip-listening sequence with four true poses: 1 top-left bird sits upright on stool, bowl held close with left wing, right wing low, curious eyes watching viewer. 2 top-right bird bends forward a little, right wing lifted to cup side of head, eyes widen, beak slightly open. 3 bottom-left bird leans head far to the side toward viewer's imaginary speaker, cups ear eagerly, eyes HUGE with fascinated focus, bowl tipped only slightly and still full, feet fixed on stool. 4 bottom-right bird straightens a little with a conspiratorial delighted closed-beak smile, right wing lowers toward bowl as if reaching for a seed, eyes narrow knowingly. Real wing and head articulation not four resized copies. Exactly two wings and two feet, no human fingers. Original funny tactile craft texture, not generic mascot. Keep a clear dark top-left wall patch in each cell for later Chinese caption '细说'. Don't insert generated words, watermark, brand or extra characters.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-8c9af4cf-d040-41de-b062-6bc16a6e7c4f.png",
+        "correctionPrompt": "Make ONE anatomical correction to this original 2x2 felt pigeon animation sheet. Preserve all four scenes, character identity, camera, textures, lighting, backgrounds and composition. In the BOTTOM-RIGHT CELL ONLY, bird appears to have an extra wing near the bowl. Fix it to EXACTLY TWO WINGS: one continuous wing on viewer LEFT holds the sunflower seed bowl securely at chest level with its tip underneath the bowl; the other wing on viewer RIGHT hangs relaxed at its side. Remove the extra upper wing/hand reaching into bowl. Keep bird's knowing sideways narrowed eyes and head tilt in bottom-right cell; do not change other three cells. No text, labels, borders or gutters. Every bird must have exactly two wings and two feet.",
+        "intermediateSource": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-39105f24-71d8-49fc-879d-6064c326a6f0.png",
+        "masterSha256": "9bc0e40c24d0fc504c832849bf838427d14ae0344a8fe6e4212f6ae2e922081a"
+      }
+    },
+    {
+      "id": "scene-rich-02-what",
+      "keyword": "什么事",
+      "caption": "什么事",
+      "captionPlacement": "top-left",
+      "masterFile": "masters/scene-rich-02-what.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "referenceFile": "server/images/_drafts/reaction-rich-02/shenmeshi-door.png",
+        "prompt": "Edit this ORIGINAL beet doorway doodle into one exact square 2x2 four-keyframe sheet, four equal square full-bleed cream-paper scenes touching without gutters/borders. Keep same plum beet character, turquoise door on right, door handle, tiny slipper, sleeping dust creature, sketch style and LOCKED scene scale/framing. Reading order four distinct poses for lazy 'what is it?': 1 top-left door opened only a crack, just a narrow half-lidded eye and part of beet cheek peeking, hand on door edge. 2 top-right door pushed further open, half the face visible with one eyebrow raised, head tilted a little forward, hand higher on door edge, slipper peeking out. 3 bottom-left head leans outward further, BOTH eyes visible but still heavy-lidded, mouth forms a tiny questioning oval, leafy sprout droops sideways, free hand turned palm up as if asking what. 4 bottom-right returns to half-face peeking, one eye slowly nearly closed in a sleepy blink, mouth flat, hand on door again. Exact same original body and clear coherent limbs, no extra arms. Small changes in eyes, head, door and hands matter, not four scaled copies. Left half of every scene remains cream negative space for later short Chinese caption. No letters/numbers/words/watermarks, no existing character.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-00374d62-120d-437c-835a-bd7651c55ef5.png",
+        "masterSha256": "c0632cde7adb5ed1955653a12e156ee75941de2747a5274d53dd224a16ed6351"
+      }
+    },
+    {
+      "id": "scene-rich-02-realize",
+      "keyword": "原来如此",
+      "caption": "原来如此",
+      "captionPlacement": "top-left",
+      "masterFile": "masters/scene-rich-02-realize.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "referenceFile": "server/images/_drafts/reaction-rich-02/yuanlairuci-glasses.png",
+        "prompt": "Edit this original Chinese man illustration into exact square 2x2 FOUR KEYFRAME animation sheet. Four equal full-bleed square scenes touching NO gutters/borders/text. Same fictional ordinary Chinese man age45, facial identity, short black-gray hair, navy cardigan, glasses, orange fruit and breakfast table, loose watercolor/ink style, camera framing and background locked. Four real poses reading order expressing 'ohhh now I understand' with knowing wit, not shock: 1 top-left man looks down at half-peeled mandarin in left hand, right hand near the peel, brows slightly puzzled, glasses worn normally. 2 top-right he pauses peeling, raises gaze toward offscreen speaker and lifts right hand to glasses, eyebrows begin lifting, mouth gently open. 3 bottom-left right hand pulls glasses down a little to look knowingly over the lenses, one eyebrow arched, lips curl into a subtle amused half-smile, orange still held left hand. 4 bottom-right he nods head slightly with eyes narrowed in understanding, right hand lowers to table, warm sly smile, orange in left hand. Exactly two arms/hands, plausible fingers, no celebrity or meme face, ordinary Chinese adult. Keep upper-left muted wall patch clear for later Chinese caption. Real expression/hand/head changes not duplicated scaled still. Preserve visible scene and props and identity. No letters, words, watermark, logos.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-8b3da6d7-46f3-4f59-b0a6-65c139c80bfc.png",
+        "correctionPrompt": "Correct ONLY the bottom-right cell of this original four-cell animation sheet. Keep all other cells unchanged, retain exact fictional man's identity, smile, glasses, cardigan, camera and breakfast scene. There is a continuity error: the orange has switched hands. In bottom-right, the hand on VIEWER LEFT must hold the half-peeled mandarin at lower chest height, with the SAME long orange peel curl hanging down as in the preceding three cells. The hand on VIEWER RIGHT, which previously touched the glasses, now rests relaxed on tabletop. Exactly two anatomically correct hands, no extra limbs or fruit. Keep the knowing narrowed-eye smile and slight nod, no other changes. No text, no borders or gutters.",
+        "intermediateSource": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-0d0007a1-38b3-4ff8-8c44-40de6ca8c244.png",
+        "masterSha256": "3396e4f5f0e10103e40982a689e72b740796dae717a42d4cbae50ce9cd9aa495"
+      }
+    }
+  ]
+}

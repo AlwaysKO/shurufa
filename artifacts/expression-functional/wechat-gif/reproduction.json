@@ -1,0 +1,48 @@
+{
+  "date": "2026-09-07",
+  "appVersion": "20260907.17",
+  "target": "com.tencent.mm",
+  "testChat": "文件传输助手",
+  "asset": "thanks-nuotuan-bow",
+  "inputCache": {
+    "format": "GIF",
+    "width": 240,
+    "height": 240,
+    "frames": 16,
+    "bytes": 187931,
+    "sha256": "c5a931212a3207645d50dedc047bb3dedf4453f53ce3d8abe20274ffe2adf829"
+  },
+  "wechatSaved": {
+    "format": "PNG",
+    "width": 240,
+    "height": 240,
+    "frames": 1,
+    "bytes": 38088,
+    "sha256": "869dc8c5da7e169c36e7f41ad2acc42db15cbcb942bd5c779db58739c9912b61"
+  },
+  "savedOriginalExtension": ".jpg",
+  "observedGrantedUri": "content://com.yuyan.pinyin.offline.debug.expression.fileprovider/expression_asset_cache/2026.09.07.1/prebuilt/thanks-nuotuan-bow.gif",
+  "permissionOwner": "InputContentUriTokenHandler",
+  "targetMimeTypes": [
+    "image/*",
+    "video/*",
+    "application/*"
+  ],
+  "fixed": false,
+  "remaining": "实际发送时的ClipDescription MIME及Provider getType/URI读取证据待补",
+  "restoredDefaultIme": "com.sohu.inputmethod.sogou/.SogouIME",
+  "stayOn": 0,
+  "nativeAlbumControl": {
+    "inputSha256": "c5a931212a3207645d50dedc047bb3dedf4453f53ce3d8abe20274ffe2adf829",
+    "mediaMimeType": "image/gif",
+    "route": "微信文件传输助手 + → 相册 → 选择同一原GIF → 发送",
+    "observedAnimated": true,
+    "video": "album-route-motion.mp4",
+    "videoSha256": "1c3694d1641bcd224139867b65395eb4d62be932285138a82832a208c2110ffd",
+    "privacy": "视频仅保留测试素材区域，未包含头像或历史聊天"
+  },
+  "shellShareProbe": {
+    "outcome": "预览显示轻触重试，取消且未发送",
+    "conclusion": "不是应用内ACTION_SEND验证，不能据此判断系统分享路径是否可用"
+  }
+}

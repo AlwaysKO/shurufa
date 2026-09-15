@@ -1,0 +1,31 @@
+{
+  "keyword": "吃瓜",
+  "items": [
+    {
+      "id": "scene-rich-04-gossip",
+      "keyword": "吃瓜",
+      "file": "吃瓜/scene-rich-04-gossip.gif",
+      "thumbnail": "吃瓜/scene-rich-04-gossip.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-04/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-04/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-04/gifs/scene-rich-04-gossip.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-04/thumbnails/scene-rich-04-gossip.webp",
+      "batch": "scene-rich-04",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "157fc468c1ea1e7a3f895fec00a1a2aa790ce847f0271c5df56575b6a47d7f68",
+      "thumbnailSha256": "94cd67d072ae05ddb8acaf7af8a4bc2c3ce44551d2c16ed0fcb8475b2f8d08ae",
+      "bytes": 126131,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "durationMs": 3000,
+      "style": "ai-original-pet",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

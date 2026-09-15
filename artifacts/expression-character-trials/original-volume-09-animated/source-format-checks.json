@@ -1,0 +1,98 @@
+[
+  {
+    "id": "beagle-restrain",
+    "width": 1447,
+    "height": 1087,
+    "hasAlpha": false,
+    "alphaMin": 255,
+    "alphaMax": 255
+  },
+  {
+    "id": "frog-restrain",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": false,
+    "alphaMin": 255,
+    "alphaMax": 255
+  },
+  {
+    "id": "hamster-restrain",
+    "width": 1447,
+    "height": 1087,
+    "hasAlpha": false,
+    "alphaMin": 255,
+    "alphaMax": 255
+  },
+  {
+    "id": "man-restrain",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": false,
+    "alphaMin": 255,
+    "alphaMax": 255
+  },
+  {
+    "id": "tabby-lost",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": false,
+    "alphaMin": 255,
+    "alphaMax": 255
+  },
+  {
+    "id": "duck-lost",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": false,
+    "alphaMin": 255,
+    "alphaMax": 255
+  },
+  {
+    "id": "capybara-lost",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": false,
+    "alphaMin": 255,
+    "alphaMax": 255
+  },
+  {
+    "id": "man-lost",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": false,
+    "alphaMin": 255,
+    "alphaMax": 255
+  },
+  {
+    "id": "retriever-facepalm",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": false,
+    "alphaMin": 255,
+    "alphaMax": 255
+  },
+  {
+    "id": "penguin-facepalm",
+    "width": 1447,
+    "height": 1087,
+    "hasAlpha": false,
+    "alphaMin": 255,
+    "alphaMax": 255
+  },
+  {
+    "id": "bear-facepalm",
+    "width": 1447,
+    "height": 1087,
+    "hasAlpha": false,
+    "alphaMin": 255,
+    "alphaMax": 255
+  },
+  {
+    "id": "man-facepalm",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": false,
+    "alphaMin": 255,
+    "alphaMax": 255
+  }
+]

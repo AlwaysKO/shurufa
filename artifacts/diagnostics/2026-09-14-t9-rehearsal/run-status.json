@@ -1,0 +1,17 @@
+{
+  "status": "complete_finite_corpus",
+  "plannedCodes": 90820,
+  "lastLoggedProgress": 72400,
+  "verifiedLocalRecords": 90820,
+  "fullExit": 255,
+  "fullCorpusComplete": true,
+  "remainingRelativeToLocalCheckpoint": 0,
+  "apkSha256": "6a4f062b6250846a05bccc3b00c386405636fa236cee865fc138824e2f8f0731",
+  "recoveredRecords": 72800,
+  "deviceInstalledVersionChangedTo": "20260914.09",
+  "testVersion": "20260914.08",
+  "resumedRecords": 18020,
+  "resumeExit": 0,
+  "finalRecords": "lexicon-results.jsonl.gz",
+  "recordSha256": "135b4758c690e2b43ec585a97d4eae447288e81e546ffabdcf0a4af201731af0"
+}

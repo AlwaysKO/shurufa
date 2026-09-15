@@ -1,0 +1,62 @@
+[
+  {
+    "id": "graycat-awkward",
+    "pass": true,
+    "bytes": 128933
+  },
+  {
+    "id": "turtle-awkward",
+    "pass": true,
+    "bytes": 128002
+  },
+  {
+    "id": "penguin-awkward",
+    "pass": true,
+    "bytes": 79774
+  },
+  {
+    "id": "man-awkward",
+    "pass": false,
+    "error": "Error: GIF审计失败：[{\"id\":\"man-awkward\",\"field\":\"loopClosure\",\"expected\":0.13350694444444444,\"actual\":0.20147569444444444,\"message\":\"样板 man-awkward 跨循环边界的感知差异显著高于内部相邻帧\"}]"
+  },
+  {
+    "id": "corgi-eager",
+    "pass": true,
+    "bytes": 103092
+  },
+  {
+    "id": "seal-eager",
+    "pass": true,
+    "bytes": 123649
+  },
+  {
+    "id": "fawn-eager",
+    "pass": true,
+    "bytes": 85120
+  },
+  {
+    "id": "man-eager",
+    "pass": true,
+    "bytes": 70872
+  },
+  {
+    "id": "beagle-puzzled",
+    "pass": true,
+    "bytes": 110453
+  },
+  {
+    "id": "owl-puzzled",
+    "pass": true,
+    "bytes": 135653
+  },
+  {
+    "id": "panda-puzzled",
+    "pass": true,
+    "bytes": 88732
+  },
+  {
+    "id": "man-puzzled",
+    "pass": true,
+    "bytes": 78893
+  }
+]

@@ -1,0 +1,19 @@
+{
+  "method": "decoded-frame-inspection-only",
+  "actualDynamicPlayback": "not-performed",
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "publicationAllowed": false,
+  "pending": 11,
+  "needsRework": [
+    "bear-encourage"
+  ],
+  "caveats": {
+    "bear-encourage": "v1手爪贴字幕区；v2/v3 loopClosure均失败，无输出GIF，加油暂缺第4风格。",
+    "retriever-encourage": "抬爪换边已修订，首尾体态及位置仍有小幅变化，循环待动态复核。",
+    "frog-encourage": "抬拳侧别已修订；鼓励感而非单纯举拳待去字幕审核。",
+    "man-encourage": "v3将静止拳抬到胸前，抽帧已不再截拳；动态仍待审。",
+    "please-group": "合掌恳求较明确，恢复段松手节奏及祈祷/感谢语义混淆仍待动态审核。",
+    "calm-group": "下压动作在中段出现但关键停顿附近已回收，可能弱化安抚语义；需实际动态和去字幕审核，不能当作已达成表演设计。"
+  }
+}

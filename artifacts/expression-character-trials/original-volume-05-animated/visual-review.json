@@ -1,0 +1,18 @@
+{
+  "method": "decoded-frame-inspection-only",
+  "actualDynamicPlayback": "not-performed",
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "publicationAllowed": false,
+  "pending": 11,
+  "needsRework": [
+    "dachshund-guilty"
+  ],
+  "caveats": {
+    "dachshund-guilty": "恢复段整体上移，修订退化后恢复v1并隔离needs-rework。",
+    "man-proud": "轻微定位/轮廓差异，循环待复核。",
+    "bear-downcast": "轻微定位/轮廓差异，循环待复核。",
+    "proud-group": "可能读成得意或高冷，傲娇的情绪转折需去字幕动态审核。",
+    "downcast-group": "恢复段表情切换需实际播放检查。"
+  }
+}

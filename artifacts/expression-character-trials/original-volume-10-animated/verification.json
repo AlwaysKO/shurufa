@@ -1,0 +1,20 @@
+{
+  "created": "2026-09-15",
+  "sourceChainsVerified": 12,
+  "revisionsVerified": 8,
+  "rejectedHashesVerified": 13,
+  "actualGifMetadataAndShaVerified": 12,
+  "fallbackPixelEqual": 12,
+  "previousGifHashesUnchanged": 129,
+  "machinePass": 12,
+  "machineFail": 0,
+  "visualNeedsRework": [
+    "seal-weary",
+    "gingercat-shush"
+  ],
+  "reviewCandidates": 10,
+  "maxGifBytes": 133047,
+  "peakPose8Ms": 900,
+  "actualDynamicPlayback": "not-performed",
+  "publicationAllowed": false
+}

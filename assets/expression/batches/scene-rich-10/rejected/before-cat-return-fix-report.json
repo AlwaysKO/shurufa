@@ -1,0 +1,1583 @@
+{
+  "batchId": "scene-rich-10",
+  "status": "review-only",
+  "total": 4,
+  "pass": 4,
+  "fail": 0,
+  "expectedTotal": 4,
+  "humanReview": "pending",
+  "items": [
+    {
+      "id": "scene-rich-10-offwork",
+      "keyword": "下班了",
+      "caption": "下班了",
+      "captionPlacement": "top-left",
+      "masterFile": "masters/scene-rich-10-offwork.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Create an ORIGINAL animation sprite sheet, exactly4columns by3rows,12 equal square cells chronological reading order, landscape4:3 aspect. Thin grey straight dividers,no gutters,no labels. Each cell same fixed camera/background/character size and anchor points. Twelve small incremental true drawing poses; finalpose12 matches firstpose1. No text, lettering, symbols, logos, watermarks, known characters, brands or celebrity face. Caption will be added deterministically later so reserve top-left clear. Minimalist black-line chat cartoon, flat uniform pale mint background absolutely no noise/grain/gradient/blotches. Original squat cream oval bean with short flat eyebrows and tiny pointy ears, not a known mascot, seated behind plain tan desk. Laptop on desk at viewer-right with blank darkblue lid, original no logo, front3/4 camera, entire upper body visible and ample top space. Meaning 'work is over': sleepy employee slowly closes laptop and gives a tiny smug satisfied eye glance. Exactly2 arms. Viewer-left arm rests on tabletop always; viewer-right palm stays on TOP edge of screen and slowly moves with lid, never disappears. Cell1 lid open70degrees, eyes on laptop.2 lid60degrees.3 lid50degrees.4 lid40degrees.5 lid25degrees.6 lid12degrees.7 lidclosedflat, eyes glance toward viewer.8 lidflat, dry proud smile half-liddedeyes 'finally free'.9 lidopens15degrees.10 lidopens35degrees.11 lidopens55degrees.12 lid70degrees and initialface. Screen stays one rigid rectangle hinged to keyboard, no floating keyboard, no extra hands. No text. Small limited palette, clean flat shapes, fixed desk/torso and head size throughout. Slow legible work-ending gesture, not frantic.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-e97e7b1e-bd11-4cea-b4c6-0a4ca4222530.png",
+        "editPrompt": "Edit this original12cell cartoon animation sheet. Only replace black/white/red/yellow corrupted noisy background behind the character in ALL12cells with uniform FLAT pastel mint #e1f1e7, clean black outlines. No grain, gradients, transparency, texture, noise, patterns. Preserve laptop poses and character EXACTLY, all cells and table/body dimensions fixed. Original12cells4columns3rows landscape4:3 no text. Final bottomright laptop must match top-left screen angle, preserve closing/reopening progression.",
+        "originalSourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-c6d0cd9d-a4fc-4ad6-ba5e-f43a8486be21.png",
+        "masterSha256": "9cca68c8f3702e983a22ac7b2dfe42d70e8591706b450630c17babb14b08f224",
+        "originalSha256": "c96edc99e5e1b131b3f588fc87a55af320dfe7cda07229ae801ae063462bc1e2",
+        "rejectedMasterFile": "rejected/scene-rich-10-offwork-before-fix.png"
+      },
+      "metadata": {
+        "format": "gif",
+        "width": 240,
+        "height": 240,
+        "pageHeight": 240,
+        "pages": 20,
+        "loop": 0,
+        "delays": [
+          200,
+          200,
+          220,
+          220,
+          220,
+          220,
+          220,
+          110,
+          110,
+          230,
+          230,
+          220,
+          220,
+          180,
+          170,
+          180,
+          170,
+          170,
+          170,
+          340
+        ],
+        "durationMs": 4000,
+        "bytes": 63230,
+        "sha256": "c147e381833c2f8beea0aa42c59edfdceb672ebda8b7ec1c9d6fb07084f9f3fd",
+        "frames": [
+          {
+            "index": 0,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "5d7c1bdbfb44f7db42e6e4b14d7f41bc0bb1dbeba8e65af125691a338172abd9"
+          },
+          {
+            "index": 1,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "5d7c1bdbfb44f7db42e6e4b14d7f41bc0bb1dbeba8e65af125691a338172abd9"
+          },
+          {
+            "index": 2,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "6cf7562c2c77460b287cad91ebfb49257fcd94af3f0334f382e04a75bf051c2b"
+          },
+          {
+            "index": 3,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "c6dcc34ad7d4c90c029fd201ff998392cd81c6caac3177346b2c2c593b11f23d"
+          },
+          {
+            "index": 4,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "2c32359f5b3ae4f7bc413b0c276703a93b47d947456d88e3bc1cae23f2fa8913"
+          },
+          {
+            "index": 5,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "aed9ca3d28d9e27dfe9dc8411e7e4b88e548014fb08aa80317f31929eaad5b2d"
+          },
+          {
+            "index": 6,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "4971ae713b208f5892f9c1a34d13bfae38476288238cd470fc1da647fdb44d6e"
+          },
+          {
+            "index": 7,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "bf4964fbd0053058553678df019fec313cff44be81508856efadb3f42ceff7a5"
+          },
+          {
+            "index": 8,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "bf4964fbd0053058553678df019fec313cff44be81508856efadb3f42ceff7a5"
+          },
+          {
+            "index": 9,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "ef1af593b72b93cbe6451b1fa4dd22e5f7d1a83f413062875ba82f6b9c618d7e"
+          },
+          {
+            "index": 10,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "ef1af593b72b93cbe6451b1fa4dd22e5f7d1a83f413062875ba82f6b9c618d7e"
+          },
+          {
+            "index": 11,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "ef1af593b72b93cbe6451b1fa4dd22e5f7d1a83f413062875ba82f6b9c618d7e"
+          },
+          {
+            "index": 12,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "ef1af593b72b93cbe6451b1fa4dd22e5f7d1a83f413062875ba82f6b9c618d7e"
+          },
+          {
+            "index": 13,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "86d56eb34f0fe8617e5198927733cbb00f043805005d38275d1e78b1b5a0b6a8"
+          },
+          {
+            "index": 14,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "86d56eb34f0fe8617e5198927733cbb00f043805005d38275d1e78b1b5a0b6a8"
+          },
+          {
+            "index": 15,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "54086ae6678f5dbf93d0acba250a36b4cdad106f4e98303f0530f480da1552f2"
+          },
+          {
+            "index": 16,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "54086ae6678f5dbf93d0acba250a36b4cdad106f4e98303f0530f480da1552f2"
+          },
+          {
+            "index": 17,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "ff35a587dcf7f9f54814076bce05eb6ecb515d3e2c993b8e15363d60464aaa8d"
+          },
+          {
+            "index": 18,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "ff35a587dcf7f9f54814076bce05eb6ecb515d3e2c993b8e15363d60464aaa8d"
+          },
+          {
+            "index": 19,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "6f692b323927cb4b14131cba81d19b6763a0dc9227bec2456c448f01806d552f"
+          }
+        ],
+        "firstFrameSha256": "5d7c1bdbfb44f7db42e6e4b14d7f41bc0bb1dbeba8e65af125691a338172abd9",
+        "lastFrameSha256": "6f692b323927cb4b14131cba81d19b6763a0dc9227bec2456c448f01806d552f",
+        "loopClosed": true,
+        "motion": {
+          "channelDeltaThreshold": 16,
+          "meaningfulChangedPixelRatio": 0.0015,
+          "uniqueFrameCount": 12,
+          "transitionDifferenceRatios": [
+            0,
+            0.08425347222222222,
+            0.061197916666666664,
+            0.04953125,
+            0.10394097222222222,
+            0.08336805555555556,
+            0.08581597222222222,
+            0,
+            0.04555555555555556,
+            0,
+            0,
+            0,
+            0.11465277777777778,
+            0,
+            0.09907986111111111,
+            0,
+            0.06871527777777778,
+            0,
+            0.05420138888888889
+          ],
+          "meaningfulTransitionCount": 11,
+          "meanInternalDifferenceRatio": 0.04475328947368421,
+          "maxInternalDifferenceRatio": 0.11465277777777778
+        },
+        "loopClosure": {
+          "boundaryDifferenceRatio": 0.09190972222222223,
+          "internalMedianDifferenceRatio": 0.04953125,
+          "allowedBoundaryDifferenceRatio": 0.123828125,
+          "passed": true
+        }
+      },
+      "issues": [],
+      "timeline": [
+        {
+          "pose": 0,
+          "delay": 200
+        },
+        {
+          "pose": 0,
+          "delay": 200
+        },
+        {
+          "pose": 1,
+          "delay": 220
+        },
+        {
+          "pose": 2,
+          "delay": 220
+        },
+        {
+          "pose": 3,
+          "delay": 220
+        },
+        {
+          "pose": 4,
+          "delay": 220
+        },
+        {
+          "pose": 5,
+          "delay": 220
+        },
+        {
+          "pose": 6,
+          "delay": 110
+        },
+        {
+          "pose": 6,
+          "delay": 110
+        },
+        {
+          "pose": 7,
+          "delay": 230
+        },
+        {
+          "pose": 7,
+          "delay": 230
+        },
+        {
+          "pose": 7,
+          "delay": 220
+        },
+        {
+          "pose": 7,
+          "delay": 220
+        },
+        {
+          "pose": 8,
+          "delay": 180
+        },
+        {
+          "pose": 8,
+          "delay": 170
+        },
+        {
+          "pose": 9,
+          "delay": 180
+        },
+        {
+          "pose": 9,
+          "delay": 170
+        },
+        {
+          "pose": 10,
+          "delay": 170
+        },
+        {
+          "pose": 10,
+          "delay": 170
+        },
+        {
+          "pose": 11,
+          "delay": 340
+        }
+      ]
+    },
+    {
+      "id": "scene-rich-10-busy",
+      "keyword": "忙着呢",
+      "caption": "忙着呢",
+      "captionPlacement": "top-left",
+      "masterFile": "masters/scene-rich-10-busy.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Create an ORIGINAL animation sprite sheet, exactly4columns by3rows,12 equal square cells chronological reading order, landscape4:3 aspect. Thin grey straight dividers,no gutters,no labels. Each cell same fixed camera/background/character size and anchor points. Twelve small incremental true drawing poses; finalpose12 matches firstpose1. No text, lettering, symbols, logos, watermarks, known characters, brands or celebrity face. Caption will be added deterministically later so reserve top-left clear. Original minimalist thick black-line cartoon with completely flat uniform pale butter yellow background, no gradient/noise or texture. Small ivory rounded rectangle bean character with triangular black hair tuft, dark under-eye bags and funny tired angry eyebrows seated behind warm brown desk. Stack of blank paperwork viewer-left, one sheet centered, held pencil in viewer-left hand, viewer-right hand free. Exactly2arms no brand. Meaning 'busy right now': scribbles then raises free open palm like wait, stares camera deadpan then resumes. Cell1 head eyesdown pencil touching blankpaper, freehandlow;2 eyesstartup freehandliftsslightly;3 freehandatbelly;4 freehandhalfwaychest;5 freepalmnearshoulder facingviewer;6 palmfullyraisedshoulderlevel eyes on viewer;7 palmsteady eyebrows squeeze;8 deadpan exhausted irritated look, raisedpalm 'give me a minute';9 palmstartsdown tochestheight;10 halfwaylower;11 almostdesk eyeslookdown;12 initialpose penciltouchespaper. Pencil remains same hand and paper same spot all12cells. Keep all body positions, tableheight, papers precisely locked. Tiny original dry humor expression, not generic smiley mascot. Textless no writing on sheets, no wordbubbles. Head and palm must not cover top-left caption safe area.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-6e2c259a-e25d-42f0-8620-973e72e7b491.png",
+        "editPrompt": "Edit this original12cell cartoon animation sheet. ONLY replace ALL black/red/yellow/grey corrupted noisy background behind character in everycell with completely FLAT uniform buttercream #fff1c9. Same smooth single color everypanel, no texture, gradients, noise, transparency or graphic patches. Preserve every pose and expression, character, hands/pencil/paper/desk, all12cells4columns3rows, same landscape4:3 size. Clean outlines, no text. Do not change busy palm gesture or staging.",
+        "originalSourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-575aa6d6-14bc-49b0-aeae-59532b80e768.png",
+        "masterSha256": "8a5043bbd42ef7765ae4d6b46740123ac41b0c4f3a64524a06c6599d71bfb540",
+        "originalSha256": "69f58c3b61c4be16a038766a0b8a98f9edcd8241dc0ba64ff376057bdadaf63d",
+        "rejectedMasterFile": "rejected/scene-rich-10-busy-before-fix.png"
+      },
+      "metadata": {
+        "format": "gif",
+        "width": 240,
+        "height": 240,
+        "pageHeight": 240,
+        "pages": 20,
+        "loop": 0,
+        "delays": [
+          200,
+          200,
+          220,
+          220,
+          220,
+          220,
+          220,
+          110,
+          110,
+          230,
+          230,
+          220,
+          220,
+          180,
+          170,
+          180,
+          170,
+          170,
+          170,
+          340
+        ],
+        "durationMs": 4000,
+        "bytes": 77260,
+        "sha256": "278b87f506e3791757e9799848c9c21c40ca59cc4f69be7faed0441883346633",
+        "frames": [
+          {
+            "index": 0,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "32e0993cb534f97f5fd198d2477b895116e0377396e7046230d3cd94bda6c1da"
+          },
+          {
+            "index": 1,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "32e0993cb534f97f5fd198d2477b895116e0377396e7046230d3cd94bda6c1da"
+          },
+          {
+            "index": 2,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "1c7a356bee8d59155bf5927fc15e753424c35aca9698c40976ca2051f0f329bf"
+          },
+          {
+            "index": 3,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "5a8be2d4365a522e4ff9e38f88c6f8d05a0d48f675b9c97b3ee4aed0c86ffe3c"
+          },
+          {
+            "index": 4,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "53156c1db811cdb08c841f9165ca0897154ccbd4ddfbcf718fd1fbc45ced698f"
+          },
+          {
+            "index": 5,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "71557239ad2abc425ce6c3c9bb0595156e87a3bf1de21c392d041162342950bb"
+          },
+          {
+            "index": 6,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "82d644e571e697f283c766b02e407a5d0e42f24835b9c9237ef486f7170b8af3"
+          },
+          {
+            "index": 7,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "1b0b8120c8fcd0bf2b3e72c62fc1b4d468575f35e329f1ca749d67c1f5e3e52a"
+          },
+          {
+            "index": 8,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "1b0b8120c8fcd0bf2b3e72c62fc1b4d468575f35e329f1ca749d67c1f5e3e52a"
+          },
+          {
+            "index": 9,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "dad1b6adf3fcc0c11b0a9ad281a30181f64fc148ec07b67b2c6d02d46d1dbc3c"
+          },
+          {
+            "index": 10,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "dad1b6adf3fcc0c11b0a9ad281a30181f64fc148ec07b67b2c6d02d46d1dbc3c"
+          },
+          {
+            "index": 11,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "dad1b6adf3fcc0c11b0a9ad281a30181f64fc148ec07b67b2c6d02d46d1dbc3c"
+          },
+          {
+            "index": 12,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "dad1b6adf3fcc0c11b0a9ad281a30181f64fc148ec07b67b2c6d02d46d1dbc3c"
+          },
+          {
+            "index": 13,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "3b751c534bc64057b00f05412f09b184c032a931d086efce0afb2813d9433472"
+          },
+          {
+            "index": 14,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "3b751c534bc64057b00f05412f09b184c032a931d086efce0afb2813d9433472"
+          },
+          {
+            "index": 15,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "ee0593115e13948addb5e6bb00d5df3b88ea462fad1982f84dcd9e12837f68a9"
+          },
+          {
+            "index": 16,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "ee0593115e13948addb5e6bb00d5df3b88ea462fad1982f84dcd9e12837f68a9"
+          },
+          {
+            "index": 17,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "08cd3f17433ba7c3287e2c0c9b233303635b03d9894c4c2e23b064c0b7e523d8"
+          },
+          {
+            "index": 18,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "08cd3f17433ba7c3287e2c0c9b233303635b03d9894c4c2e23b064c0b7e523d8"
+          },
+          {
+            "index": 19,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "41e8e4cadda46793c21a1f56968fa0c57cc73fc53cfb03b59948dc5f792edc32"
+          }
+        ],
+        "firstFrameSha256": "32e0993cb534f97f5fd198d2477b895116e0377396e7046230d3cd94bda6c1da",
+        "lastFrameSha256": "41e8e4cadda46793c21a1f56968fa0c57cc73fc53cfb03b59948dc5f792edc32",
+        "loopClosed": true,
+        "motion": {
+          "channelDeltaThreshold": 16,
+          "meaningfulChangedPixelRatio": 0.0015,
+          "uniqueFrameCount": 12,
+          "transitionDifferenceRatios": [
+            0,
+            0.08934027777777778,
+            0.07762152777777778,
+            0.06991319444444444,
+            0.1121875,
+            0.07078125,
+            0.06508680555555556,
+            0,
+            0.08689236111111111,
+            0,
+            0,
+            0,
+            0.12145833333333333,
+            0,
+            0.07717013888888889,
+            0,
+            0.0856423611111111,
+            0,
+            0.06123263888888889
+          ],
+          "meaningfulTransitionCount": 11,
+          "meanInternalDifferenceRatio": 0.048280336257309944,
+          "maxInternalDifferenceRatio": 0.12145833333333333
+        },
+        "loopClosure": {
+          "boundaryDifferenceRatio": 0.08645833333333333,
+          "internalMedianDifferenceRatio": 0.06508680555555556,
+          "allowedBoundaryDifferenceRatio": 0.1627170138888889,
+          "passed": true
+        }
+      },
+      "issues": [],
+      "timeline": [
+        {
+          "pose": 0,
+          "delay": 200
+        },
+        {
+          "pose": 0,
+          "delay": 200
+        },
+        {
+          "pose": 1,
+          "delay": 220
+        },
+        {
+          "pose": 2,
+          "delay": 220
+        },
+        {
+          "pose": 3,
+          "delay": 220
+        },
+        {
+          "pose": 4,
+          "delay": 220
+        },
+        {
+          "pose": 5,
+          "delay": 220
+        },
+        {
+          "pose": 6,
+          "delay": 110
+        },
+        {
+          "pose": 6,
+          "delay": 110
+        },
+        {
+          "pose": 7,
+          "delay": 230
+        },
+        {
+          "pose": 7,
+          "delay": 230
+        },
+        {
+          "pose": 7,
+          "delay": 220
+        },
+        {
+          "pose": 7,
+          "delay": 220
+        },
+        {
+          "pose": 8,
+          "delay": 180
+        },
+        {
+          "pose": 8,
+          "delay": 170
+        },
+        {
+          "pose": 9,
+          "delay": 180
+        },
+        {
+          "pose": 9,
+          "delay": 170
+        },
+        {
+          "pose": 10,
+          "delay": 170
+        },
+        {
+          "pose": 10,
+          "delay": 170
+        },
+        {
+          "pose": 11,
+          "delay": 340
+        }
+      ]
+    },
+    {
+      "id": "scene-rich-10-satisfied",
+      "keyword": "满足",
+      "caption": "满足",
+      "captionPlacement": "bottom-left",
+      "masterFile": "masters/scene-rich-10-satisfied.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Create an ORIGINAL animation sprite sheet, exactly4columns by3rows,12 equal square cells chronological reading order, landscape4:3 aspect. Thin grey straight dividers,no gutters,no labels. Each cell same fixed camera/background/character size and anchor points. Twelve small incremental true drawing poses; finalpose12 matches firstpose1. No text, lettering, symbols, logos, watermarks, known characters, brands or celebrity face. Caption will be added deterministically later so reserve bottom-left clear. Photorealistic natural original pet animation, plump orange tabby cat sitting comfortably reclining against beige sofa cushion, upperbody paws and roundbellyvisible. Funny blissful satisfied 'life is good' attitude, slowblink that almost looks smug. Soft natural warmdaylight, smooth unclutteredbackground, actual fine fur but avoid busy patterns. Originalcat not copied internetimage, no human or accessories. Keep camera and sofa/paws/body scale completely identical all12cells; only eyelids, cheek expression and tiny chin motion. 1 relaxed eyesopen towardviewer, mouthclosed.2 lidslower10%.3 lidslower20%.4 lidslower35%.5 lidslower50%.6 lidslower65% chinlift1degree.7 eyesnarrow80% cheektensionrelaxes.8 eyesgentlyclosed, chinraised2degrees comicallypleased.9 eyesreopen20%,chin1.5degrees.10 eyesreopen45%chin1degree.11 eyesreopen75%chin0.5degrees.12 originaleyesopen andchin. Twelve gradualslowblink stages, tiny truefaceperformance, no headturn or zoom, limbsfixed and correct cat anatomy. Bottomleft of eachcell unclutteredforcaption. No hearts or graphic effects or lettering.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-926fb6d9-06dc-4f1b-b5e8-50165b7c216c.png",
+        "masterSha256": "7deec9a7235a9fe62cd4b26f917ff28422b7c09a8eaf63a74db8f664a1a2910a"
+      },
+      "metadata": {
+        "format": "gif",
+        "width": 240,
+        "height": 240,
+        "pageHeight": 240,
+        "pages": 20,
+        "loop": 0,
+        "delays": [
+          200,
+          200,
+          220,
+          220,
+          220,
+          220,
+          220,
+          110,
+          110,
+          230,
+          230,
+          220,
+          220,
+          180,
+          170,
+          180,
+          170,
+          170,
+          170,
+          340
+        ],
+        "durationMs": 4000,
+        "bytes": 176155,
+        "sha256": "e2f8ca89dc34e14f6f40eb2e833653e0ed98593964760787b62caa0fa0039e1b",
+        "frames": [
+          {
+            "index": 0,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "62b24e5471daed5f39645006b238474dbc48b69519ec7d3676bce72199d63657"
+          },
+          {
+            "index": 1,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "62b24e5471daed5f39645006b238474dbc48b69519ec7d3676bce72199d63657"
+          },
+          {
+            "index": 2,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "d3dab060ef1c019334873d0fbe85238e90c164c247892ff8661893f1d625979a"
+          },
+          {
+            "index": 3,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "0c1a636a1c8cc655b67ce0b72ef5bdffce2f01b95d414ccc314e39f9eb4f1e2f"
+          },
+          {
+            "index": 4,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "de5ed10649e645d428b760fe0ea4bb57d96bb85b096d514b89e9c600973d8bd4"
+          },
+          {
+            "index": 5,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "922b74f156007f7b7a312afb5f0aa8fe1649e6c54e090aac18cd8794c44f3b3f"
+          },
+          {
+            "index": 6,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "2f45920567903f631161c5ef5b63d5ada6af5c32164ca278d9df9306b80f1e64"
+          },
+          {
+            "index": 7,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "e311bdbceba7f2602b0651c270d31ed733711bc25cdea80448c8017fe635dd6c"
+          },
+          {
+            "index": 8,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "e311bdbceba7f2602b0651c270d31ed733711bc25cdea80448c8017fe635dd6c"
+          },
+          {
+            "index": 9,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "ab62a1e123d77b975c6e65106225dad68011e3288714dd035f79e5431d2c56d3"
+          },
+          {
+            "index": 10,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "ab62a1e123d77b975c6e65106225dad68011e3288714dd035f79e5431d2c56d3"
+          },
+          {
+            "index": 11,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "ab62a1e123d77b975c6e65106225dad68011e3288714dd035f79e5431d2c56d3"
+          },
+          {
+            "index": 12,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "ab62a1e123d77b975c6e65106225dad68011e3288714dd035f79e5431d2c56d3"
+          },
+          {
+            "index": 13,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "74c2874d6992f485f73f872174a6fa742252b9cd56c9177cac94be1f58fcd6ee"
+          },
+          {
+            "index": 14,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "74c2874d6992f485f73f872174a6fa742252b9cd56c9177cac94be1f58fcd6ee"
+          },
+          {
+            "index": 15,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "f2e9d922b2368afb383f50c6733acf70c57ce3e524816805e03f4e2167d911b8"
+          },
+          {
+            "index": 16,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "f2e9d922b2368afb383f50c6733acf70c57ce3e524816805e03f4e2167d911b8"
+          },
+          {
+            "index": 17,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "bd3ff6bbe080a0448220c6f3269963cab5ed4d2c66fd633e0755fdd177517b4b"
+          },
+          {
+            "index": 18,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "bd3ff6bbe080a0448220c6f3269963cab5ed4d2c66fd633e0755fdd177517b4b"
+          },
+          {
+            "index": 19,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "d8d9326e1a2e6a6a75326a6c23bf500b6675ff783863035cf863ef9e09a2e607"
+          }
+        ],
+        "firstFrameSha256": "62b24e5471daed5f39645006b238474dbc48b69519ec7d3676bce72199d63657",
+        "lastFrameSha256": "d8d9326e1a2e6a6a75326a6c23bf500b6675ff783863035cf863ef9e09a2e607",
+        "loopClosed": true,
+        "motion": {
+          "channelDeltaThreshold": 16,
+          "meaningfulChangedPixelRatio": 0.0015,
+          "uniqueFrameCount": 12,
+          "transitionDifferenceRatios": [
+            0,
+            0.31696180555555553,
+            0.24446180555555555,
+            0.24119791666666668,
+            0.32869791666666665,
+            0.3097743055555556,
+            0.2379513888888889,
+            0,
+            0.3153298611111111,
+            0,
+            0,
+            0,
+            0.2878819444444444,
+            0,
+            0.2125173611111111,
+            0,
+            0.2309548611111111,
+            0,
+            0.17510416666666667
+          ],
+          "meaningfulTransitionCount": 11,
+          "meanInternalDifferenceRatio": 0.15267543859649124,
+          "maxInternalDifferenceRatio": 0.32869791666666665
+        },
+        "loopClosure": {
+          "boundaryDifferenceRatio": 0.2479513888888889,
+          "internalMedianDifferenceRatio": 0.2125173611111111,
+          "allowedBoundaryDifferenceRatio": 0.5312934027777778,
+          "passed": true
+        }
+      },
+      "issues": [],
+      "timeline": [
+        {
+          "pose": 0,
+          "delay": 200
+        },
+        {
+          "pose": 0,
+          "delay": 200
+        },
+        {
+          "pose": 1,
+          "delay": 220
+        },
+        {
+          "pose": 2,
+          "delay": 220
+        },
+        {
+          "pose": 3,
+          "delay": 220
+        },
+        {
+          "pose": 4,
+          "delay": 220
+        },
+        {
+          "pose": 5,
+          "delay": 220
+        },
+        {
+          "pose": 6,
+          "delay": 110
+        },
+        {
+          "pose": 6,
+          "delay": 110
+        },
+        {
+          "pose": 7,
+          "delay": 230
+        },
+        {
+          "pose": 7,
+          "delay": 230
+        },
+        {
+          "pose": 7,
+          "delay": 220
+        },
+        {
+          "pose": 7,
+          "delay": 220
+        },
+        {
+          "pose": 8,
+          "delay": 180
+        },
+        {
+          "pose": 8,
+          "delay": 170
+        },
+        {
+          "pose": 9,
+          "delay": 180
+        },
+        {
+          "pose": 9,
+          "delay": 170
+        },
+        {
+          "pose": 10,
+          "delay": 170
+        },
+        {
+          "pose": 10,
+          "delay": 170
+        },
+        {
+          "pose": 11,
+          "delay": 340
+        }
+      ]
+    },
+    {
+      "id": "scene-rich-10-puzzled",
+      "keyword": "疑惑",
+      "caption": "疑惑",
+      "captionPlacement": "bottom-left",
+      "masterFile": "masters/scene-rich-10-puzzled.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Create an ORIGINAL animation sprite sheet, exactly4columns by3rows,12 equal square cells chronological reading order, landscape4:3 aspect. Thin grey straight dividers,no gutters,no labels. Each cell same fixed camera/background/character size and anchor points. Twelve small incremental true drawing poses; finalpose12 matches firstpose1. No text, lettering, symbols, logos, watermarks, known characters, brands or celebrity face. Caption will be added deterministically later so reserve bottom-left clear. Photorealistic original brown-and-white small terrier dog on plain muted blue sofa, textured soft short scruffy fur, white muzzle and white chest, folded ears, dark piercing intelligent skeptical eyes and naturally expressive brow fur. Meaning puzzled 'what are you talking about?' Funny restrained confusion, not frightened, not puppy cute bigeyes. Sittingfront paws stationary together. Natural even windowlight, blank lightgrey wall, no props/humans/brands. Fixed camera and body/paws/sofa identical everycell. 12 small-angle neck/eyeacting poses:1 headupright eyesfront mildlyskeptical;2 eyes slightly viewerleft;3 one brow slightlyraised;4 headtilts viewerleft3degrees;5 tilt6degrees;6 tilt9degrees eyesnarrow slightly;7 tilt12degrees;8 tilt15degrees with questioning one-eyesquint;9 tilt11degrees;10 tilt7degrees;11 tilt3degrees;12 exactuprightinitialhead andgaze. Important bottomrow must show 11,7,3,0 degree progressive return not3tiltedframesandsnap. Do not change body size/position or camera crop, no extralimbs, dogface stable samebreed. Cleanlowdetailbackground bottomleftcaptionsafe, no text/symbol/questionmarks.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-d9665d60-7ed6-4273-a722-cdef296a86c5.png",
+        "editPrompt": "Edit this original12cell dog animation sheet. First2rows remain unchanged. Fix ONLY bottomrow progressive return: bottomleftcell9 head tilt15degrees, cell10 tilt10degrees, cell11 almostupright tilt4degrees, cell12 upright0degrees EXACTLY matching cell1 head size/position. All paws and body and sofa stationary same coordinates. Do not have three similarly tilted heads then sudden upright; four noticeably diminishing angles with natural intermediate poses. Preserve identity, scruffyfur, lighting, eyeexpression mildlyconfused no wink bottomrow. Same4:3sheet4columns3rows, no text.",
+        "originalSourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-83656985-46ea-42a0-95df-f8e209281fc7.png",
+        "masterSha256": "19bac0ca0fc76bdd7e687aa57148c311bfdc6a82dc0490b5bda95d9d0b59e458",
+        "originalSha256": "7c582a31e675b18f32947bbd8e13e5360caafb213f740c71cd48974de61207ba",
+        "rejectedMasterFile": "rejected/scene-rich-10-puzzled-before-fix.png"
+      },
+      "metadata": {
+        "format": "gif",
+        "width": 240,
+        "height": 240,
+        "pageHeight": 240,
+        "pages": 20,
+        "loop": 0,
+        "delays": [
+          200,
+          200,
+          220,
+          220,
+          220,
+          220,
+          220,
+          110,
+          110,
+          230,
+          230,
+          220,
+          220,
+          180,
+          170,
+          180,
+          170,
+          170,
+          170,
+          340
+        ],
+        "durationMs": 4000,
+        "bytes": 138229,
+        "sha256": "96d89a5aaa4ce5794374b6e4764b2f39f156e733689aa20064b4a4b44f3086de",
+        "frames": [
+          {
+            "index": 0,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "759143b9909c8b06b0725fecd86c2f4880b9421f3c4c9179f19de085eef1f4c4"
+          },
+          {
+            "index": 1,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "759143b9909c8b06b0725fecd86c2f4880b9421f3c4c9179f19de085eef1f4c4"
+          },
+          {
+            "index": 2,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "855fd6d3067f23ba9ef8b395b092a070a705571ce91f1f672e775dce2af71bb7"
+          },
+          {
+            "index": 3,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "4169e3481b00721f0fab9ca0201c67be473f082029aa5afea84d7486904e7898"
+          },
+          {
+            "index": 4,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "f118adab047bb62a189d34fbf133f457b4aa3146a926e01db4c5fd3eec300a92"
+          },
+          {
+            "index": 5,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "2062467c3dca08ed55d48acfd6cb8e155742e133e4f0850f16f550355569c351"
+          },
+          {
+            "index": 6,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "209db2dba26456a74cedf471b2dedde48ef73f5959cf4ce1aec31695423065c9"
+          },
+          {
+            "index": 7,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "be08693b15d0bc75624e1c733e4cf5ba2ee3ca4dad87ef4d1045121b4bd44609"
+          },
+          {
+            "index": 8,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "be08693b15d0bc75624e1c733e4cf5ba2ee3ca4dad87ef4d1045121b4bd44609"
+          },
+          {
+            "index": 9,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "798afc3d4447d3a360457e23a094b5c33d233691175b214221323f4b983c1cdb"
+          },
+          {
+            "index": 10,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "798afc3d4447d3a360457e23a094b5c33d233691175b214221323f4b983c1cdb"
+          },
+          {
+            "index": 11,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "798afc3d4447d3a360457e23a094b5c33d233691175b214221323f4b983c1cdb"
+          },
+          {
+            "index": 12,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "798afc3d4447d3a360457e23a094b5c33d233691175b214221323f4b983c1cdb"
+          },
+          {
+            "index": 13,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "479591eaf2675f0f6e15b804c2e4ab8cbfbf5669db3e2e1b6a15cd15184b372c"
+          },
+          {
+            "index": 14,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "479591eaf2675f0f6e15b804c2e4ab8cbfbf5669db3e2e1b6a15cd15184b372c"
+          },
+          {
+            "index": 15,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "67c6b7855888c37e74c94b261af185d429ec09499688590d911b2a4cf192566e"
+          },
+          {
+            "index": 16,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "67c6b7855888c37e74c94b261af185d429ec09499688590d911b2a4cf192566e"
+          },
+          {
+            "index": 17,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "d275cba8d5fd4447a185884e89f9d8e28dac369fd710dc0a416ad75600b5beec"
+          },
+          {
+            "index": 18,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "d275cba8d5fd4447a185884e89f9d8e28dac369fd710dc0a416ad75600b5beec"
+          },
+          {
+            "index": 19,
+            "effectiveAlphaPixels": 55696,
+            "alphaBounds": {
+              "left": 2,
+              "top": 2,
+              "right": 2,
+              "bottom": 2
+            },
+            "sha256": "84ce7b9f5b2cd5277a9f6753b81ecfdabdb2c47cc55f90d9704a687c76a8386e"
+          }
+        ],
+        "firstFrameSha256": "759143b9909c8b06b0725fecd86c2f4880b9421f3c4c9179f19de085eef1f4c4",
+        "lastFrameSha256": "84ce7b9f5b2cd5277a9f6753b81ecfdabdb2c47cc55f90d9704a687c76a8386e",
+        "loopClosed": true,
+        "motion": {
+          "channelDeltaThreshold": 16,
+          "meaningfulChangedPixelRatio": 0.0015,
+          "uniqueFrameCount": 12,
+          "transitionDifferenceRatios": [
+            0,
+            0.23979166666666665,
+            0.22670138888888888,
+            0.2937326388888889,
+            0.2733333333333333,
+            0.22831597222222222,
+            0.24303819444444444,
+            0,
+            0.1717013888888889,
+            0,
+            0,
+            0,
+            0.22869791666666667,
+            0,
+            0.2298784722222222,
+            0,
+            0.26815972222222223,
+            0,
+            0.28348958333333335
+          ],
+          "meaningfulTransitionCount": 11,
+          "meanInternalDifferenceRatio": 0.1414126461988304,
+          "maxInternalDifferenceRatio": 0.2937326388888889
+        },
+        "loopClosure": {
+          "boundaryDifferenceRatio": 0.26506944444444447,
+          "internalMedianDifferenceRatio": 0.22670138888888888,
+          "allowedBoundaryDifferenceRatio": 0.5667534722222222,
+          "passed": true
+        }
+      },
+      "issues": [],
+      "timeline": [
+        {
+          "pose": 0,
+          "delay": 200
+        },
+        {
+          "pose": 0,
+          "delay": 200
+        },
+        {
+          "pose": 1,
+          "delay": 220
+        },
+        {
+          "pose": 2,
+          "delay": 220
+        },
+        {
+          "pose": 3,
+          "delay": 220
+        },
+        {
+          "pose": 4,
+          "delay": 220
+        },
+        {
+          "pose": 5,
+          "delay": 220
+        },
+        {
+          "pose": 6,
+          "delay": 110
+        },
+        {
+          "pose": 6,
+          "delay": 110
+        },
+        {
+          "pose": 7,
+          "delay": 230
+        },
+        {
+          "pose": 7,
+          "delay": 230
+        },
+        {
+          "pose": 7,
+          "delay": 220
+        },
+        {
+          "pose": 7,
+          "delay": 220
+        },
+        {
+          "pose": 8,
+          "delay": 180
+        },
+        {
+          "pose": 8,
+          "delay": 170
+        },
+        {
+          "pose": 9,
+          "delay": 180
+        },
+        {
+          "pose": 9,
+          "delay": 170
+        },
+        {
+          "pose": 10,
+          "delay": 170
+        },
+        {
+          "pose": 10,
+          "delay": 170
+        },
+        {
+          "pose": 11,
+          "delay": 340
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "keyword": "不行",
+  "items": [
+    {
+      "id": "scene-rich-06-no",
+      "keyword": "不行",
+      "file": "不行/scene-rich-06-no.gif",
+      "thumbnail": "不行/scene-rich-06-no.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-06/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-06/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-06/gifs/scene-rich-06-no.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-06/thumbnails/scene-rich-06-no.webp",
+      "batch": "scene-rich-06",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "fdfeac53973c4f5d6d3997f41699aed0aafeaf238b3be18094c7b1fe7f433926",
+      "thumbnailSha256": "73c2377443ccb6de9372986730bb83af9bb1f3e1b872ce512f25e1f4a4ae3723",
+      "bytes": 82341,
+      "width": 240,
+      "height": 240,
+      "frames": 20,
+      "durationMs": 4000,
+      "style": "hand-drawn",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

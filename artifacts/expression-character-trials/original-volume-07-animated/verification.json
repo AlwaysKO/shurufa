@@ -1,0 +1,19 @@
+{
+  "created": "2026-09-14",
+  "sourceChainsVerified": 12,
+  "gifMetadataAndShaVerified": 11,
+  "fallbackPixelEqual": 11,
+  "previousGifHashesUnchanged": 95,
+  "machinePass": 11,
+  "machineFail": 1,
+  "failed": [
+    "bear-encourage"
+  ],
+  "maxGifBytes": 138635,
+  "actualDynamicPlayback": "not-performed",
+  "tests": {
+    "files": 2,
+    "passed": 37
+  },
+  "build": "passed"
+}

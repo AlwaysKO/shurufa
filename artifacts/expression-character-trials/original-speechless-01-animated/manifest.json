@@ -1,0 +1,41 @@
+{
+  "created": "2026-09-12",
+  "sourceType": "ai-original",
+  "status": "trial-only",
+  "publicationAllowed": false,
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "items": [
+    {
+      "id": "husky-speechless",
+      "prompt": "Production ANIMATION CONTACT SHEET: exactly 4 columns by 3 rows, 12 equal SQUARE cells, overall 4:3 ratio, ideally1536x1152. No cell borders, gutters, text, numbers or symbols. SOLID WHITE background (#ffffff), never transparent or black. One original character, SAME face/anatomy/size/camera/lighting across all panels. All subject details must be within top75% of EACH square, lower25% completely blank white for captions; no toes or hands entering that zone. 12 genuine sequential drawn acting poses, NOT copies or zooms. Theme 'speechless / I have no words' with a suppressed response and exasperation, NOT tiredness/sleepiness and NOT fear. Panels1-4 setup,5-7 escalating restrained reaction, panel8 strongest silent response held900ms,9-12 gentle return. Small head angles and continuous true in-betweens, stable body/shoulders; last pose near-identical to first for smooth loop. No famous IP or real celebrity. Photorealistic gray-and-white husky chest-up with blue eyes and real canine anatomy, ears FIXED upright throughout, no paws. 1 neutral frontal stare mouth closed;2 eyes widen very slightly;3 mouth barely parts as if about to react;4 closes mouth firmly;5 pupils glance slightly upward;6 eyes roll upward a little more with an incredulous look;7 eyelids narrow but stay clearly OPEN;8 strongest sideways-upward dry skeptical stare, closed mouth, slight head tilt (not yawning);9 pupils start returning;10 head straightens;11 eyes soften;12 initial neutral. NO tongue, NO howl, no sleeping, keep mask markings/ears consistent.",
+      "masterFile": "masters/husky-speechless.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-eb633bff-6c73-474f-b3bf-1730579fc0fc.png",
+      "sha256": "04783abe1e8cd63cfe41542eeba953a31df5a56232b2d5d98f0bfc0b42a810ce"
+    },
+    {
+      "id": "frog-speechless",
+      "prompt": "Production ANIMATION CONTACT SHEET: exactly 4 columns by 3 rows, 12 equal SQUARE cells, overall 4:3 ratio, ideally1536x1152. No cell borders, gutters, text, numbers or symbols. SOLID WHITE background (#ffffff), never transparent or black. One original character, SAME face/anatomy/size/camera/lighting across all panels. All subject details must be within top75% of EACH square, lower25% completely blank white for captions; no toes or hands entering that zone. 12 genuine sequential drawn acting poses, NOT copies or zooms. Theme 'speechless / I have no words' with a suppressed response and exasperation, NOT tiredness/sleepiness and NOT fear. Panels1-4 setup,5-7 escalating restrained reaction, panel8 strongest silent response held900ms,9-12 gentle return. Small head angles and continuous true in-betweens, stable body/shoulders; last pose near-identical to first for smooth loop. No famous IP or real celebrity. Minimal expressive BLACK INK original small round frog, plain white fill, two small elevated round eyes, tiny simple straight mouth, NOT any internet frog meme, no human lips. Front-facing compact seated full body with feet well above75% and hands permanently resting on knees. 1 neutral eyes;2 eyebrows lift;3 tiny mouth opens to answer;4 mouth almost closes;5 lips become short flat line;6 eyebrows asymmetric and pupils angle upward;7 flattened unimpressed eyelids, tiny cheek puff;8 cheeks slightly puffed, flat pursed mouth and very pointed raised brow, unmistakable holding back a comment;9 cheeks deflate gradually;10 brow relaxes;11 pupils return front;12 initial neutral. Never move hands or feet, minimal head motion. Expression through eyebrows, pupils, lids, cheeks and mouth.",
+      "masterFile": "masters/frog-speechless.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-e1a69baa-2897-4376-b977-4c37a44a8e9b.png",
+      "sha256": "237a02dbf4864a3cef4a46253455ba18d1803854c89a3f3af40725113f36d548"
+    },
+    {
+      "id": "capybara-speechless",
+      "prompt": "Production ANIMATION CONTACT SHEET: exactly 4 columns by 3 rows, 12 equal SQUARE cells, overall 4:3 ratio, ideally1536x1152. No cell borders, gutters, text, numbers or symbols. SOLID WHITE background (#ffffff), never transparent or black. One original character, SAME face/anatomy/size/camera/lighting across all panels. All subject details must be within top75% of EACH square, lower25% completely blank white for captions; no toes or hands entering that zone. 12 genuine sequential drawn acting poses, NOT copies or zooms. Theme 'speechless / I have no words' with a suppressed response and exasperation, NOT tiredness/sleepiness and NOT fear. Panels1-4 setup,5-7 escalating restrained reaction, panel8 strongest silent response held900ms,9-12 gentle return. Small head angles and continuous true in-betweens, stable body/shoulders; last pose near-identical to first for smooth loop. No famous IP or real celebrity. Original tactile clay stop-motion caramel CAPYBARA character, unmistakable capybara broad rectangular muzzle, small round ears, dark eyes, seated compact full body, no costume, all feet/limbs above75%. Paws stay low touching belly throughout, no hand gestures. 1 calm open eyes;2 raises one eyebrow;3 mouth tiny open as if about to speak;4 closes mouth;5 muzzle tightens with a small resigned look;6 takes small breath cheeks rise;7 slow tiny exhale lips pursed;8 resigned eyes aimed slightly upward, flat compressed mouth, very slight shoulders slump (not sleeping);9 cheeks relax;10 shoulders gradually return;11 eyes forward;12 initial neutral. Limited stable body shape, no props, no zoom.",
+      "masterFile": "masters/capybara-speechless.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-5f73869d-ecf8-4267-a6aa-09595f499745.png",
+      "sha256": "f08d0df52bec4a158d4a335a37bd65ba562b6ea63055968918b6717bc4865c8b"
+    },
+    {
+      "id": "man-speechless",
+      "prompt": "Production ANIMATION CONTACT SHEET: exactly 4 columns by 3 rows, 12 equal SQUARE cells, overall 4:3 ratio, ideally1536x1152. No cell borders, gutters, text, numbers or symbols. SOLID WHITE background (#ffffff), never transparent or black. One original character, SAME face/anatomy/size/camera/lighting across all panels. All subject details must be within top75% of EACH square, lower25% completely blank white for captions; no toes or hands entering that zone. 12 genuine sequential drawn acting poses, NOT copies or zooms. Theme 'speechless / I have no words' with a suppressed response and exasperation, NOT tiredness/sleepiness and NOT fear. Panels1-4 setup,5-7 escalating restrained reaction, panel8 strongest silent response held900ms,9-12 gentle return. Small head angles and continuous true in-betweens, stable body/shoulders; last pose near-identical to first for smooth loop. No famous IP or real celebrity. Photographic realistic fictional ORIGINAL handsome Chinese ADULT MALE age31, short neatly cut black hair, olive crewneck shirt, distinct original face NOT celebrity resemblance. Chest-up with stable shoulders; BOTH HANDS entirely outside frame in all12 panels. 1 listening neutral;2 eyebrows rise mildly;3 lips open just a little preparing to reply;4 stops himself, lips begin closing;5 presses lips firmly;6 one eyebrow lifts, eye gaze goes slightly up;7 lips compress further, slight breath through nose;8 strongest 'I have no words' expression: asymmetric brow, restrained exasperated eyes, tight thin lip line, NO smile, NO yawn;9 lips release gradually;10 brow softens;11 eyes return front;12 initial neutral. Keep head position stable, realistic subtle facial anatomy.",
+      "masterFile": "masters/man-speechless.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-6d07598a-3364-4b33-b699-59e988e02863.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "bde90b502c0b28bd8e38b164e51b522be770e714617b653e2a9e37b7bf80e833"
+    }
+  ]
+}

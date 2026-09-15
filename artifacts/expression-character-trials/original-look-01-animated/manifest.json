@@ -1,0 +1,41 @@
+{
+  "created": "2026-09-11",
+  "sourceType": "ai-original",
+  "status": "trial-only",
+  "publicationAllowed": false,
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "items": [
+    {
+      "id": "cat-look",
+      "prompt": "Create a production animation contact sheet, exactly 4 columns by 3 rows, 12 equal SQUARE panels in strict row-major temporal order, overall 4:3 aspect ratio (1536x1152 ideal). No gutters, no borders, no text, no numbers, no watermark. Each panel same locked camera, subject scale, position, lighting and plain white background. Entire character stays in upper 80% of each square, bottom 20% empty white for later caption. Twelve genuinely drawn successive acting poses, NOT copies or zooms. Gentle smooth loop: panels 1 neutral, 2 eyes begin noticing to viewer right, 3 eyelids react, 4 tiny curious turn, 5 increased curiosity, 6 peak sideways look, 7 peak expression variation, 8 disguise curiosity, 9 return begins, 10 eyes soften, 11 almost neutral, 12 returns to panel1 pose with tiny transition difference. Expression conveys 'just looking, pretending not to care'. Keep body stable, only small deliberate head/eye/gesture motion, no limbs changing sides. Original design, no famous character/IP. Photorealistic plump gray tabby cat chest-up, real animal not cartoon, vivid green eyes. Dry hilarious side-eye: pupils lead small head turn, one eyelid narrows, ears subtly angle toward the interesting thing, then composed neutral. No human hands.",
+      "masterFile": "masters/cat-look.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-b1ae3635-9139-4e11-8a40-d256d0dcae50.png",
+      "sha256": "302aee508ed35c274f44a46ad8fb438cb8efafe04a46765c3ccb890beba21e95"
+    },
+    {
+      "id": "bird-look",
+      "prompt": "Create a production animation contact sheet, exactly 4 columns by 3 rows, 12 equal SQUARE panels in strict row-major temporal order, overall 4:3 aspect ratio (1536x1152 ideal). No gutters, no borders, no text, no numbers, no watermark. Each panel same locked camera, subject scale, position, lighting and plain white background. Entire character stays in upper 80% of each square, bottom 20% empty white for later caption. Twelve genuinely drawn successive acting poses, NOT copies or zooms. Gentle smooth loop: panels 1 neutral, 2 eyes begin noticing to viewer right, 3 eyelids react, 4 tiny curious turn, 5 increased curiosity, 6 peak sideways look, 7 peak expression variation, 8 disguise curiosity, 9 return begins, 10 eyes soften, 11 almost neutral, 12 returns to panel1 pose with tiny transition difference. Expression conveys 'just looking, pretending not to care'. Keep body stable, only small deliberate head/eye/gesture motion, no limbs changing sides. Original design, no famous character/IP. Minimal black ink line drawing of an original long-neck little bird, NOT duck meme or known character. Sparse confident lines but extremely expressive eyelids, eyebrows and gaze, slim curved neck. Both feet fixed, beak changes angle subtly, neck bends slightly toward right as eyes furtively glance, pretends innocence on return. White interior, no shading.",
+      "masterFile": "masters/bird-look.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-6a6f431f-cba8-41b1-8346-02a11302d718.png",
+      "sha256": "a4d23b5fd95982fef6dfa07361e524bb38e9e1303cf5fc8be0b6896dd1bf5a6f"
+    },
+    {
+      "id": "seal-look",
+      "prompt": "Create a production animation contact sheet, exactly 4 columns by 3 rows, 12 equal SQUARE panels in strict row-major temporal order, overall 4:3 aspect ratio (1536x1152 ideal). No gutters, no borders, no text, no numbers, no watermark. Each panel same locked camera, subject scale, position, lighting and plain white background. Entire character stays in upper 80% of each square, bottom 20% empty white for later caption. Twelve genuinely drawn successive acting poses, NOT copies or zooms. Gentle smooth loop: panels 1 neutral, 2 eyes begin noticing to viewer right, 3 eyelids react, 4 tiny curious turn, 5 increased curiosity, 6 peak sideways look, 7 peak expression variation, 8 disguise curiosity, 9 return begins, 10 eyes soften, 11 almost neutral, 12 returns to panel1 pose with tiny transition difference. Expression conveys 'just looking, pretending not to care'. Keep body stable, only small deliberate head/eye/gesture motion, no limbs changing sides. Original design, no famous character/IP. Tactile stop-motion clay style ORIGINAL tiny round pale blue seal, expressive dark eyes and brows, little whiskers. Flippers remain anchored, leans only a little, curious widened eyes become mock-innocent eyelids, subtle cheek/muzzle changes, little head tilt then returns. No costume or props.",
+      "masterFile": "masters/seal-look.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-e8916968-7800-4663-9d02-4999bb0bb614.png",
+      "sha256": "28cc01ca14c74b3755f62ea058952f6028169c997f0c6211ae13932b9983af03"
+    },
+    {
+      "id": "man-look",
+      "prompt": "Create a production animation contact sheet, exactly 4 columns by 3 rows, 12 equal SQUARE panels in strict row-major temporal order, overall 4:3 aspect ratio (1536x1152 ideal). No gutters, no borders, no text, no numbers, no watermark. Each panel same locked camera, subject scale, position, lighting and plain white background. Entire character stays in upper 80% of each square, bottom 20% empty white for later caption. Twelve genuinely drawn successive acting poses, NOT copies or zooms. Gentle smooth loop: panels 1 neutral, 2 eyes begin noticing to viewer right, 3 eyelids react, 4 tiny curious turn, 5 increased curiosity, 6 peak sideways look, 7 peak expression variation, 8 disguise curiosity, 9 return begins, 10 eyes soften, 11 almost neutral, 12 returns to panel1 pose with tiny transition difference. Expression conveys 'just looking, pretending not to care'. Keep body stable, only small deliberate head/eye/gesture motion, no limbs changing sides. Original design, no famous character/IP. Cinematic realistic portrait of a fictional ORIGINAL handsome Chinese ADULT MALE age 28, distinctive short dark hair, charcoal crewneck. Not a celebrity resemblance. Chest-up with shoulders stable and hands OUT OF FRAME throughout. Subtle asymmetrical brow lift, eyes slide right, head turns slightly, closed-mouth knowing smirk then relaxed innocent expression, gradually returns. No exaggerated grin.",
+      "masterFile": "masters/man-look.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-f15e35d2-df5d-4f4c-88d9-7106f83643a4.png",
+      "sha256": "36d4285ea0d6d4eec6c4944a8d77047403c8dcfb1407d4681183585fbcc5dc1a"
+    }
+  ]
+}

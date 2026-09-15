@@ -1,0 +1,6 @@
+com.yuyan.imemodule.expression.ExpressionAssetResolverTest: tests=8, failures=0, errors=0
+com.yuyan.imemodule.expression.ExpressionCacheTest: tests=4, failures=0, errors=0
+com.yuyan.imemodule.expression.ExpressionQueryCacheSyncTest: tests=10, failures=0, errors=0
+com.yuyan.imemodule.expression.ExpressionQueryCacheTest: tests=7, failures=0, errors=0
+com.yuyan.imemodule.expression.ExpressionSyncTest: tests=14, failures=0, errors=0
+total=43

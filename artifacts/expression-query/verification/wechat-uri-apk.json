@@ -1,0 +1,9 @@
+{
+  "apk": "android/YuyanIme/app/build/unix/outputs/apk/offline/debug/yuyanIme_2026090913_debug.apk",
+  "size": 84489007,
+  "sha256": "c397d4734c9cfc7d01f49244d78629ed7a25f7c8ffe187d04d51f5488146a02d",
+  "tests": 265,
+  "failures": 0,
+  "deviceValidated": false,
+  "limitation": "未证明微信实际直发成功；不支持时保存原GIF相册并提示"
+}

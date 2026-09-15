@@ -1,0 +1,245 @@
+{
+  "version": "2026.09.03.1",
+  "items": [
+    {
+      "id": "thanks-nuotuan-bow",
+      "keyword": "谢谢",
+      "text": "谢谢",
+      "style": "original-character",
+      "direction": "core-performance",
+      "sourceType": "ai-original",
+      "prompt": "Use case: stylized-concept\nAsset type: production-ready transparent 2x2 sprite sheet for an animated chat sticker, designed for exact equal-quadrant machine cropping.\nCreate one completely original mascot consistently across four action poses: a round cream-white glutinous-rice-dumpling creature, oversized soft bun-shaped head, a distinctive cluster of glossy orange mochi knots as a topknot, two floppy cream ear-like side tufts tipped warm orange, tiny rounded arms and feet with orange tips, warm orange scarf tied in a large bow behind the right shoulder, amber eyes, tiny mouth, peach blush, thin warm-orange outline, luminous coral heart held in both hands. Premium soft gouache sticker rendering, gentle cream/tangerine palette. Same exact character identity, proportions, costume, materials, view and lighting in all four.\nArrange four true bowing key poses in an invisible equal 2x2 layout, reading:\nTOP-LEFT: upright neutral preparation, heart at chest, open attentive eyes.\nTOP-RIGHT: beginning to bow, waist/head/shoulders lowered about 25 degrees, heart follows naturally.\nBOTTOM-LEFT: deepest bow, torso strongly compressed and nearly horizontal, eyes closed, heart low, feet planted.\nBOTTOM-RIGHT: rises upright and extends heart forward with biggest grateful closed-eye smile and a small sparkle burst.\nReal anatomy/posture/face changes, not shifted/scaled duplicates. Each complete pose centered within its own quadrant, large transparent gutters at both center axes, no overlap/crossing.\nCRITICAL OUTPUT: genuine transparent PNG alpha outside artwork. Do NOT draw or visualize a checkerboard, white/gray field, backdrop, floor, panel, shadow plane, divider, cell outline, frame or border.\nNO text, letters, numbers, labels, signs, writing-like marks, watermark, logo, brand, existing IP, crops, extra limbs or malformed hands.\n安全约束：完全原创，原创，无文字，无水印，无品牌，无现有角色。",
+      "motionPreset": "bow",
+      "frameCount": 16,
+      "durationMs": 1400,
+      "masterFile": "masters/thanks-nuotuan-bow.png",
+      "poseFiles": [
+        "poses/thanks-nuotuan-bow/pose-01.png",
+        "poses/thanks-nuotuan-bow/pose-02.png",
+        "poses/thanks-nuotuan-bow/pose-03.png",
+        "poses/thanks-nuotuan-bow/pose-04.png"
+      ],
+      "textPlacement": "bottom"
+    },
+    {
+      "id": "thanks-puppy-flower",
+      "keyword": "谢谢",
+      "text": "谢谢",
+      "style": "ai-original-pet",
+      "direction": "pet-or-person",
+      "sourceType": "ai-original",
+      "prompt": "透明2x2动作表：同一只原创蜂蜜金与奶油白幼犬叼白色雏菊，依次端坐、抬爪、挥爪、开心挥爪；写实柔软毛发、全身完整、宽透明格间距、主体四边安全留白，不含文字、商标、名犬或网络梗犬。安全约束：完全原创，原创，无文字，无水印，无品牌，无现有角色。",
+      "motionPreset": "shake",
+      "frameCount": 14,
+      "durationMs": 1200,
+      "masterFile": "masters/thanks-puppy-flower.png",
+      "poseFiles": [
+        "poses/thanks-puppy-flower/pose-01.png",
+        "poses/thanks-puppy-flower/pose-02.png",
+        "poses/thanks-puppy-flower/pose-03.png",
+        "poses/thanks-puppy-flower/pose-04.png"
+      ],
+      "textPlacement": "bottom"
+    },
+    {
+      "id": "thanks-office-helper",
+      "keyword": "谢谢",
+      "text": "谢谢",
+      "style": "original-life-scene",
+      "direction": "contrast-remix",
+      "sourceType": "ai-original",
+      "prompt": "透明2x2近景动作表：同一完全虚构原创成年办公室角色，棕色波浪短发、珊瑚衬衫、深蓝领带，现代编辑式水粉插画；宽肩胸部以上构图，脸和手为主体。依次双手稳持一张完全无字白纸、握纸惊喜、把纸贴在胸前明显俯身感谢、纸张稳妥夹在前臂下并合十深鞠躬。禁止跪姿、细小全身、悬浮或重复纸片；宽透明格间距，原创，无文字，无水印，无品牌，无现有角色。",
+      "motionPreset": "bow",
+      "frameCount": 12,
+      "durationMs": 1000,
+      "masterFile": "masters/thanks-office-helper.png",
+      "poseFiles": [
+        "poses/thanks-office-helper/pose-01.png",
+        "poses/thanks-office-helper/pose-02.png",
+        "poses/thanks-office-helper/pose-03.png",
+        "poses/thanks-office-helper/pose-04.png"
+      ],
+      "textPlacement": "bottom"
+    },
+    {
+      "id": "thanks-plush-toast",
+      "keyword": "谢谢",
+      "text": "谢谢",
+      "style": "3d-plush",
+      "direction": "kinetic-type",
+      "sourceType": "ai-original",
+      "prompt": "原创代码原生矢量视觉：627×627 透明 RGBA 毛绒毛毡贴布动态排版环，奶油白、暖橙与蜂蜜棕的立体渐变环配双层缝线、细绒颗粒和柔和阴影；环外布置原创小熊耳朵、爪印、举杯与少量彩带，中央保留大面积透明圆孔。四姿势通过耳朵弹起、杯子倾斜、爪印回弹、彩带与缝线节奏变化形成真实局部动作，不是整环旋转。安全约束：完全原创，原创，无文字，无水印，无品牌，无现有角色。",
+      "motionPreset": "impact",
+      "frameCount": 18,
+      "durationMs": 1600,
+      "masterFile": "masters/thanks-plush-toast.png",
+      "poseFiles": [
+        "poses/thanks-plush-toast/pose-01.png",
+        "poses/thanks-plush-toast/pose-02.png",
+        "poses/thanks-plush-toast/pose-03.png",
+        "poses/thanks-plush-toast/pose-04.png"
+      ],
+      "textPlacement": "center"
+    },
+    {
+      "id": "speechless-ink-facepalm",
+      "keyword": "无语",
+      "text": "无语",
+      "style": "hand-drawn",
+      "direction": "core-performance",
+      "sourceType": "ai-original",
+      "prompt": "透明2x2动作表：同一原创卷发中性成年人，米白毛衣配钴蓝领口，精致黑墨编辑插画；依次抱臂平视、冷淡侧目、耸肩抬手、完整五指扶额，真实动作递进、紧凑半身、宽透明格间距。安全约束：完全原创，原创，无文字，无水印，无品牌，无现有角色。",
+      "motionPreset": "shake",
+      "frameCount": 12,
+      "durationMs": 1300,
+      "masterFile": "masters/speechless-ink-facepalm.png",
+      "poseFiles": [
+        "poses/speechless-ink-facepalm/pose-01.png",
+        "poses/speechless-ink-facepalm/pose-02.png",
+        "poses/speechless-ink-facepalm/pose-03.png",
+        "poses/speechless-ink-facepalm/pose-04.png"
+      ],
+      "textPlacement": "bottom"
+    },
+    {
+      "id": "speechless-cat-stare",
+      "keyword": "无语",
+      "text": "无语",
+      "style": "ai-original-pet",
+      "direction": "pet-or-person",
+      "sourceType": "ai-original",
+      "prompt": "透明2x2动作表：同一只原创灰白短毛猫，依次端坐、低头半眯眼、深低头、竖直冷眼凝视；花纹与镜头一致，写实绒毛、完整轮廓、宽透明格间距，不使用知名或网络猫。安全约束：完全原创，原创，无文字，无水印，无品牌，无现有角色。",
+      "motionPreset": "bow",
+      "frameCount": 10,
+      "durationMs": 1100,
+      "masterFile": "masters/speechless-cat-stare.png",
+      "poseFiles": [
+        "poses/speechless-cat-stare/pose-01.png",
+        "poses/speechless-cat-stare/pose-02.png",
+        "poses/speechless-cat-stare/pose-03.png",
+        "poses/speechless-cat-stare/pose-04.png"
+      ],
+      "textPlacement": "bottom"
+    },
+    {
+      "id": "speechless-roommate-freeze",
+      "keyword": "无语",
+      "text": "无语",
+      "style": "fictional-live-action",
+      "direction": "contrast-remix",
+      "sourceType": "ai-original",
+      "prompt": "透明2x2近景真人感动作表：同一完全虚构且不对应真人的成年男子，凌乱黑发、玉绿色外衬衫与米色T恤，胸腰部以上，脸和手为主体。依次中立冷脸、侧目眼神死、闭嘴无语后仰并克制抬手、垂头扶额且另一臂抱胸；无语而非恐惧。无房间地面或道具，宽透明格间距，原创，无文字，无水印，无品牌，无现有角色。",
+      "motionPreset": "impact",
+      "frameCount": 16,
+      "durationMs": 1500,
+      "masterFile": "masters/speechless-roommate-freeze.png",
+      "poseFiles": [
+        "poses/speechless-roommate-freeze/pose-01.png",
+        "poses/speechless-roommate-freeze/pose-02.png",
+        "poses/speechless-roommate-freeze/pose-03.png",
+        "poses/speechless-roommate-freeze/pose-04.png"
+      ],
+      "textPlacement": "bottom"
+    },
+    {
+      "id": "speechless-loading-dots",
+      "keyword": "无语",
+      "text": "无语",
+      "style": "internet-meme-grammar",
+      "direction": "kinetic-type",
+      "sourceType": "ai-original",
+      "prompt": "透明2x2动作表：同一原创青绿色豆形角色与恰好三个彩色圆球，依次留意、侧目、僵住、无语瘫坐；角色和圆球分居外围，中央留给后续排字，宽透明格间距，不把圆球画成标点。安全约束：完全原创，原创，无文字，无水印，无品牌，无现有角色。",
+      "motionPreset": "shake",
+      "frameCount": 14,
+      "durationMs": 1800,
+      "masterFile": "masters/speechless-loading-dots.png",
+      "poseFiles": [
+        "poses/speechless-loading-dots/pose-01.png",
+        "poses/speechless-loading-dots/pose-02.png",
+        "poses/speechless-loading-dots/pose-03.png",
+        "poses/speechless-loading-dots/pose-04.png"
+      ],
+      "textPlacement": "center"
+    },
+    {
+      "id": "laugh-huohua-table",
+      "keyword": "笑死",
+      "text": "笑死",
+      "style": "original-character",
+      "direction": "core-performance",
+      "sourceType": "ai-original",
+      "prompt": "透明2x2动作表：同一原创金红火花角色与同一深青小圆桌，依次憋笑、颤动、拍桌仰笑、趴桌笑倒；完整角色桌子、真实姿势递进、紧凑构图与宽透明格间距。安全约束：完全原创，原创，无文字，无水印，无品牌，无现有角色。",
+      "motionPreset": "laugh",
+      "frameCount": 20,
+      "durationMs": 1500,
+      "masterFile": "masters/laugh-huohua-table.png",
+      "poseFiles": [
+        "poses/laugh-huohua-table/pose-01.png",
+        "poses/laugh-huohua-table/pose-02.png",
+        "poses/laugh-huohua-table/pose-03.png",
+        "poses/laugh-huohua-table/pose-04.png"
+      ],
+      "textPlacement": "bottom"
+    },
+    {
+      "id": "laugh-parrot-tumble",
+      "keyword": "笑死",
+      "text": "笑死",
+      "style": "ai-original-pet",
+      "direction": "pet-or-person",
+      "sourceType": "ai-original",
+      "prompt": "透明2x2动作表：同一原创蓝绿小鹦鹉，橙色脸颊，依次站立轻笑、张翼失衡、向后翻倒、仰躺闭眼大笑；每格恰好两条腿两只脚、自然羽毛与解剖、全身完整、宽透明格间距，不使用知名鸟类形象。安全约束：完全原创，原创，无文字，无水印，无品牌，无现有角色。",
+      "motionPreset": "shake",
+      "frameCount": 18,
+      "durationMs": 1300,
+      "masterFile": "masters/laugh-parrot-tumble.png",
+      "poseFiles": [
+        "poses/laugh-parrot-tumble/pose-01.png",
+        "poses/laugh-parrot-tumble/pose-02.png",
+        "poses/laugh-parrot-tumble/pose-03.png",
+        "poses/laugh-parrot-tumble/pose-04.png"
+      ],
+      "textPlacement": "bottom"
+    },
+    {
+      "id": "laugh-friend-collapse",
+      "keyword": "笑死",
+      "text": "笑死",
+      "style": "original-life-scene",
+      "direction": "contrast-remix",
+      "sourceType": "ai-original",
+      "prompt": "透明2x2动作表：同一完全虚构卷发成年女子与同一蓝色小沙发，芥黄上衣、森林绿裤；依次听笑话、捂嘴笑、弯腰捂肚、滑坐地面，编辑式水粉、人物家具完整、宽透明格间距。安全约束：完全原创，原创，无文字，无水印，无品牌，无现有角色。",
+      "motionPreset": "bow",
+      "frameCount": 16,
+      "durationMs": 1700,
+      "masterFile": "masters/laugh-friend-collapse.png",
+      "poseFiles": [
+        "poses/laugh-friend-collapse/pose-01.png",
+        "poses/laugh-friend-collapse/pose-02.png",
+        "poses/laugh-friend-collapse/pose-03.png",
+        "poses/laugh-friend-collapse/pose-04.png"
+      ],
+      "textPlacement": "bottom"
+    },
+    {
+      "id": "laugh-type-explosion",
+      "keyword": "笑死",
+      "text": "笑死",
+      "style": "kinetic-typography",
+      "direction": "kinetic-type",
+      "sourceType": "ai-original",
+      "prompt": "原创代码原生矢量视觉：627×627 透明 RGBA 高饱和漫画动态排版环，以珊瑚橙、亮黄、青蓝与紫色组成爆炸尖角、弹簧、抽象笑脸、星芒和彩屑，深海军蓝轮廓与柔和投影增强贴纸质感，中央保留大面积透明圆孔。四姿势的爆炸尖角密度、弹簧振幅、笑脸角度、星芒尺寸和彩屑位置明显递进，不是整环旋转。安全约束：完全原创，原创，无文字，无水印，无品牌，无现有角色。",
+      "motionPreset": "impact",
+      "frameCount": 12,
+      "durationMs": 900,
+      "masterFile": "masters/laugh-type-explosion.png",
+      "poseFiles": [
+        "poses/laugh-type-explosion/pose-01.png",
+        "poses/laugh-type-explosion/pose-02.png",
+        "poses/laugh-type-explosion/pose-03.png",
+        "poses/laugh-type-explosion/pose-04.png"
+      ],
+      "textPlacement": "center"
+    }
+  ]
+}

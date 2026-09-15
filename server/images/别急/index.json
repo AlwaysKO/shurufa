@@ -1,0 +1,31 @@
+{
+  "keyword": "别急",
+  "items": [
+    {
+      "id": "scene-rich-08-calm",
+      "keyword": "别急",
+      "file": "别急/scene-rich-08-calm.gif",
+      "thumbnail": "别急/scene-rich-08-calm.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-08/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-08/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-08/gifs/scene-rich-08-calm.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-08/thumbnails/scene-rich-08-calm.webp",
+      "batch": "scene-rich-08",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "688596b986286407443d136efba38a88b6f824475b4f1c5fb8f2327f25ed447c",
+      "thumbnailSha256": "3737c1c0ddc5f96bb1a09869431ba41cbc4627130e29822855fb40f6bc898aa8",
+      "bytes": 117023,
+      "width": 240,
+      "height": 240,
+      "frames": 20,
+      "durationMs": 4000,
+      "style": "hand-drawn",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

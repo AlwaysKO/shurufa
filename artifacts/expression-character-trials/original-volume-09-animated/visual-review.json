@@ -1,0 +1,98 @@
+{
+  "created": "2026-09-15",
+  "status": "trial-only",
+  "publicationAllowed": false,
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "actualDynamicPlayback": "not-performed",
+  "method": "查看源图以及最终实际GIF解码帧0/5/10/13/19；不代表动态播放或用户语义认可",
+  "needsRework": [
+    "duck-lost"
+  ],
+  "items": [
+    {
+      "id": "beagle-restrain",
+      "caption": "忍住",
+      "status": "pending",
+      "machine": "pass",
+      "note": "抿嘴眯眼可能更像满足微笑；需无字幕语义复核，首尾耳朵/毛发有差异。"
+    },
+    {
+      "id": "frog-restrain",
+      "caption": "忍住",
+      "status": "pending",
+      "machine": "pass",
+      "note": "鼓腮压嘴较明确，但可能被读成憋气；首尾眉形与轮廓略变。"
+    },
+    {
+      "id": "hamster-restrain",
+      "caption": "忍住",
+      "status": "pending",
+      "machine": "pass",
+      "note": "v1/v2循环失败，v3行对齐后通过；仍需播放检查颊部变化，可能被读成憋气。"
+    },
+    {
+      "id": "man-restrain",
+      "caption": "忍住",
+      "status": "pending",
+      "machine": "pass",
+      "note": "脸颊绷紧、闭眼克制较明确；可能有憋气/用力歧义。"
+    },
+    {
+      "id": "tabby-lost",
+      "caption": "迷茫",
+      "status": "pending",
+      "machine": "pass",
+      "note": "左右寻找后眉心上扬，可能被读成担心/惊讶；猫耳细节需循环复核。"
+    },
+    {
+      "id": "duck-lost",
+      "caption": "迷茫",
+      "status": "needs-rework",
+      "machine": "fail",
+      "note": "三次修订后v4仍失败loopClosure：0.05579861111111111 > 0.03732638888888889；无成品GIF。v1造型联想风险，v3误变情绪拼盘且机器通过，不能用机器替代语义。"
+    },
+    {
+      "id": "capybara-lost",
+      "caption": "迷茫",
+      "status": "pending",
+      "machine": "pass",
+      "note": "v1/v2循环失败，v3行对齐后通过；忧虑表情可能不如迷茫明确。"
+    },
+    {
+      "id": "man-lost",
+      "caption": "迷茫",
+      "status": "pending",
+      "machine": "pass",
+      "note": "张嘴抬内眉可读为不知所措，也可能是惊讶；须实际播放。"
+    },
+    {
+      "id": "retriever-facepalm",
+      "caption": "没眼看",
+      "status": "pending",
+      "machine": "pass",
+      "note": "同侧爪遮眼路径可见，可能读成懊恼/头疼；爪形与毛发连续性待播放。"
+    },
+    {
+      "id": "penguin-facepalm",
+      "caption": "没眼看",
+      "status": "pending",
+      "machine": "pass",
+      "note": "同侧鳍遮眼，鳍在峰值明显变宽弯折；需播放审查是否像橡皮伸缩。"
+    },
+    {
+      "id": "bear-facepalm",
+      "caption": "没眼看",
+      "status": "pending",
+      "machine": "pass",
+      "note": "同侧爪从胸前遮眼再退回，可能读成头疼；首尾轮廓需播放。"
+    },
+    {
+      "id": "man-facepalm",
+      "caption": "没眼看",
+      "status": "pending",
+      "machine": "pass",
+      "note": "v2抬高起始手部，最终手指和掌部可见；腕部仍接近裁切边缘，低头变化与遮脸手部细节待播放。"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "keyword": "听我解释",
+  "items": [
+    {
+      "id": "scene-rich-05-explain",
+      "keyword": "听我解释",
+      "file": "听我解释/scene-rich-05-explain.gif",
+      "thumbnail": "听我解释/scene-rich-05-explain.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-05/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-05/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-05/gifs/scene-rich-05-explain.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-05/thumbnails/scene-rich-05-explain.webp",
+      "batch": "scene-rich-05",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "8233e9c14d3465265d75620f5f9ffb2ba9654009d5a4b7c367a85b3d5e007eb0",
+      "thumbnailSha256": "0ccd9a1773d63e6eac4577cf2dfbd551235f1aab941566a9d4233579521ed029",
+      "bytes": 75875,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "durationMs": 3000,
+      "style": "hand-drawn",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "batchId": "scene-rich-09",
+  "status": "review-only",
+  "items": [
+    {
+      "id": "scene-rich-09-comfort",
+      "keyword": "辛苦了",
+      "caption": "辛苦了",
+      "captionPlacement": "top-left",
+      "masterFile": "masters/scene-rich-09-comfort.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Original animation sprite sheet, exactly 4 columns by 3 rows, 12 equal SQUARE panels in chronological reading order, total landscape 4:3 (1536x1152). Fine straight grey separators only at cell boundaries, no gutters. Fixed camera, identical background, character size and anchor positions in EVERY cell. Twelve genuine consecutive drawing poses with small incremental motions, not resizing or fades; pose12 should closely match pose1 for loop. NO text, numbers, lettering, brands, watermarks, existing mascots, recognizable IP or celebrity faces. Reserve top-left space in each cell for later caption. Use case illustration-story. Minimal confident black-line comic on warm ivory background, TWO original abstract bean creatures, not existing characters or human-face collage. Bigger slim pale blue bean on left, smaller cream bean on right seated at simple desk, exhausted half-lidded eyes and slumped shoulders, head above folded arms. Left bean gently pats smaller bean's upper shoulder, a caring 'thanks for your hard work' interaction. Both whole upper bodies always visible, readable at240px, spare thick smooth contour, tiny dry-humor eyebrows. Keep desk at y75% and bodies stationary. Pose1 taller bean hand hovering just off friend's shoulder;2 wrist advances slightly;3 palm nearly contact;4 palm gently contacts shoulder;5 palm compresses slightly;6 smaller bean eyes glance up;7 shoulders relax slightly and corners mouth lift;8 sweet tired smile eyes halfclosed palm resting;9 palm starts lifting;10 palm lifts a little;11 smaller bean face returns tired calm;12 same pose1 palm hovering. Do not add extra limbs. Each bean exactly2arms. Gentle tiny pat, not striking. Head sizes and desk stay absolutely fixed.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-d82cd659-dcc4-4e7b-933c-c2121c24628b.png",
+        "editPrompt": "Edit this original12cell animation sheet. Preserve ALL characters, each pose, eyes, arms, tabletop, props, panel layout and dimensions EXACTLY. ONLY replace the ugly mottled grey/rainbow/grainy background behind the characters in EVERY cell with completely flat uniform warm ivory #fff4de, same color all12cells. No texture, shading, gradients, patterns, blotches or grain in background. Clean black outlines. Keep grey grid thin. Preserve two-character comforting action. No text. Output same4:3 sheet4columns3rows.",
+        "originalSourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-c1d96d90-53fa-4695-a703-bb09b2a0da8d.png",
+        "masterSha256": "01b851c8748171eedad802c8b1ec96124c9b5b482cd93369ad65acee6e052678",
+        "rejectedMasterFile": "rejected/scene-rich-09-comfort-noisy-background.png",
+        "originalSha256": "1731e59aa59ddd16208bc74ad4519fb1e0ec2cff45f03de1dca8150d57d182f6"
+      }
+    },
+    {
+      "id": "scene-rich-09-welcome",
+      "keyword": "不客气",
+      "caption": "不客气",
+      "captionPlacement": "top-left",
+      "masterFile": "masters/scene-rich-09-welcome.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Original animation sprite sheet, exactly 4 columns by 3 rows, 12 equal SQUARE panels in chronological reading order, total landscape 4:3 (1536x1152). Fine straight grey separators only at cell boundaries, no gutters. Fixed camera, identical background, character size and anchor positions in EVERY cell. Twelve genuine consecutive drawing poses with small incremental motions, not resizing or fades; pose12 should closely match pose1 for loop. NO text, numbers, lettering, brands, watermarks, existing mascots, recognizable IP or celebrity faces. Reserve top-left space in each cell for later caption. Use case illustration-story. Entire background completely FLAT solid pastel peach, no grain, no mottled textures. Original little white asymmetric bean with a single curled tuft and dark expressive brows, seated at a simple blue tabletop, casual amused 'you're welcome, no big deal'. Minimal black-line cartoon, mostly white body, bold spare drawing not famous mascot. Exactly2arms, viewer-left arm resting on desk, viewer-right hand gestures. All panels top-left empty. 1 open hand resting low near tabletop and relaxed smile;2 hand starts rising;3 halfway rise;4 palm at shoulder facing viewer;5 hand tilts slightly out;6 hand tilts inward softly dismissing thanks;7 hand moves to chest;8 palm on chest, tiny proud smile eyes gently closed and head slight nod;9 head slowly straightens;10 hand leaves chest moving down;11 hand nearly tabletop;12 same as pose1. Smooth modest acting with warm deadpan wit, no huge jumps. Fixed tabletop/body scale and head position except slight nod; 12 connected frames not unrelated poses.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-cd879052-64f1-4f69-8b01-bf7e0cbe810b.png",
+        "editPrompt": "Edit this original12cell animation sheet. Preserve the white bean character, ALL its twelve different poses/expressions/hands, blue tabletop, panel layout and same dimensions EXACTLY. ONLY replace ALL ugly rainbow/grey/white posterized blotches and grain in background with a flat solid pastel peach #f8dfcd across every single cell, identical clean color all12panels. No gradient, texture, grain, noisy patches or grey/white marks. Clean spare black line drawing. Keep original waving then palm-on-chest action. Keep4columns3rows, total4:3. No text.",
+        "originalSourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-09e16b26-f488-4d63-b63f-6308f00059b3.png",
+        "masterSha256": "d3df383af5fa1b9936607f7c208f280b019d8b8ea39005aa9e4114fdebb0bea8",
+        "rejectedMasterFile": "rejected/scene-rich-09-welcome-noisy-background.png",
+        "originalSha256": "684889f05accb4273b1ef4aa998c6e60a8ce58d1ef6de0907f375f4575603d93"
+      }
+    },
+    {
+      "id": "scene-rich-09-nervous",
+      "keyword": "紧张",
+      "caption": "紧张",
+      "captionPlacement": "bottom-left",
+      "masterFile": "masters/scene-rich-09-nervous.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Original animation sprite sheet, exactly 4 columns by 3 rows, 12 equal SQUARE panels in chronological reading order, total landscape 4:3 (1536x1152). Fine straight grey separators only at cell boundaries, no gutters. Fixed camera, identical background, character size and anchor positions in EVERY cell. Twelve genuine consecutive drawing poses with small incremental motions, not resizing or fades; pose12 should closely match pose1 for loop. NO text, numbers, lettering, brands, watermarks, existing mascots, recognizable IP or celebrity faces. Reserve bottom-left space in each cell for later caption. Use case photorealistic-natural. Original candid pet reaction photograph contact sheet: small smooth-coated fawn miniature pinscher-like dog with large triangular ears, seated stiffly on plain sage green sofa, front paws together visible bottom center. Comical nervous social anxiety: huge expressive brown eyes dart while mouth stays mostly shut, ears slowly lower. NOT fear of abuse, no danger visible, no human, no accessories. Soft even daylight, muted uncluttered background, sharp face, natural realistic fur and proportions, not cartoon. Fixed sofa seams, paws, shoulder size and camera in all12cells. Crop upper torso/head centrally, eyes at42% height, caption safe bottom-left. 1 gaze front, ears half alert and rigid seated pose;2 eyes slightly viewer-left;3 eyes farther left, tiny eyebrow concern;4 eyes move back center;5 eyes slightly right;6 ears begin tilting outward, lips tighten;7 ears lowered more, tiny side-eye, restrained tense grin closedmouth;8 ears held low, comically wideeyes looking front and sealed lips;9 eyes soften, ears start rise;10 ears halfway rise;11 eyes almost initial;12 same frame1. Eye/ear acting only with tiny head motion less than3degrees. Genuine gradual12poses. Do not change coat markings, light, paws, sofa or body size. No posterized or distressed effect.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-93dff07a-8549-41d3-a0da-be92f6fe1de1.png",
+        "masterSha256": "473ad9c1fcd27bca6e13a225b7545b7a618b56c03066b085afa7d5185717e9de",
+        "originalSourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-9aa4ab53-a205-4796-8797-48f2ca7a610f.png",
+        "originalSha256": "d941a52fd787c745fe2ea1c267ae95f0079b830824ea8dc622fa69c681eecf1f",
+        "rejectedMasterFile": "rejected/scene-rich-09-nervous-before-return-fix.png",
+        "editPrompt": "Edit this original 4columns3rows12cell dog animation sheet. Preserve first TWO ROWS (cells1-8) exactly. Repair only BOTTOM ROW cells9-12 for smooth ear recovery from cell8 flattened lateral ears: cell9 both ears still mostly sideways/down but raised only15degrees from cell8, cell10 both ears halfway diagonally raised about40degrees, cell11 ears nearly upright about65degrees, cell12 upright ears matching cell1. Maintain EXACT same dog face, body and paws position, sofa seams, light and camera scale as cell8, except ears and softening expression. Do NOT jump straight from flat ears to upright in cell9. Four gradual distinct inbetween ear poses. Allother content and full4:3 sheet size unchanged, no text."
+      }
+    },
+    {
+      "id": "scene-rich-09-curious",
+      "keyword": "好奇",
+      "caption": "好奇",
+      "captionPlacement": "bottom-left",
+      "masterFile": "masters/scene-rich-09-curious.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Original animation sprite sheet, exactly 4 columns by 3 rows, 12 equal SQUARE panels in chronological reading order, total landscape 4:3 (1536x1152). Fine straight grey separators only at cell boundaries, no gutters. Fixed camera, identical background, character size and anchor positions in EVERY cell. Twelve genuine consecutive drawing poses with small incremental motions, not resizing or fades; pose12 should closely match pose1 for loop. NO text, numbers, lettering, brands, watermarks, existing mascots, recognizable IP or celebrity faces. Reserve bottom-left space in each cell for later caption. Use case photorealistic-natural. Original realistic black-and-white tuxedo kitten, distinctive small black dot on white chin, pink nose, alert round amber eyes, seated upright behind a plain warm wooden table. Soft blur cream room wall with no objects. Natural pet photography, funny intense curiosity as if listening to juicy gossip just outside camera, not scared. Front paws both firmly fixed on tabletop throughout. Whole face centered with generous ear clearance and bottom-left clear for caption. Fixed daylight and body and table. 12 sequential poses:1 head upright eyes front ears attentive;2 eyes move slightly to viewer-right;3 eyes further right, ears angle forward;4 head begins tilt toward viewer-right2degrees;5 tilt4degrees;6 tilt7degrees, eyes focus;7 tilt10degrees tiny inquisitive squint;8 tilt12degrees wide interested eyes, head slightlyforward but do not change scale;9 tilt decreases to9degrees;10 tilt6degrees;11 tilt3degrees;12 exact initial uprighthead. Real smooth small-angle neck rotation, don't change torso/paws/table position or camera zoom. Same identity and face markings everycell. No captions or graphic decorations, no human, no copied internet cat photograph. Calm background low detail.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-29c3e3e9-3ba0-4272-ab1a-054c921bbdf8.png",
+        "masterSha256": "8bfaa46230082e84cc8c0e3a2bd510a816217082bdbcd9021f9cb3b8b256bbe1",
+        "originalSourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-1b4dd06e-ab19-4146-9788-62d86b5f09e2.png",
+        "originalSha256": "2ee0ca459ad40066011126586a763fc45b6ea5d129aa384d3415391f5d37bda2",
+        "rejectedMasterFile": "rejected/scene-rich-09-curious-before-return-fix.png",
+        "editPrompt": "Edit this original 4columns3rows12cell kitten animation sheet. Preserve FIRST TWO ROWS cells1-8 exactly. ONLY change bottom row cells9-12 to smoothly return the tilted head to upright. Bottom-left cell9: head tilted about18degrees (slightly less than cell8). Bottom row second cell10: tilt12degrees. Bottom row third cell11: head almost upright tilt5degrees, gaze nearly front. Bottom-right cell12: perfectly upright matching cell1. Small progressive equal neck rotation each cell, NOT three similarly tilted heads then snap upright. Keep body, white frontpaws, table edge and wall pixel-aligned stationary, same chin dot/eyes/fur identity/camera crop/light, absolutely no zoom. Same4:3sheet4columns3rows, no text."
+      }
+    }
+  ]
+}

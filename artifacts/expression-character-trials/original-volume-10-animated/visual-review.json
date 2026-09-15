@@ -1,0 +1,113 @@
+{
+  "created": "2026-09-15",
+  "status": "trial-only",
+  "publicationAllowed": false,
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "actualDynamicPlayback": "not-performed",
+  "method": "源图及最终实际GIF帧0/5/10/13/19抽帧；辅助顶界测量不替代动态/语义/用户验收",
+  "machinePass": 12,
+  "reviewCandidates": 10,
+  "needsRework": [
+    "seal-weary",
+    "gingercat-shush"
+  ],
+  "items": [
+    {
+      "id": "corgi-hungry",
+      "caption": "饿了",
+      "status": "pending",
+      "machine": "pass",
+      "publicationAllowed": false,
+      "note": "v3已消除截耳，首尾主体顶界约y27→y19，仍有约8px差异；饿了可能读成期待/求关注，待动态复核。"
+    },
+    {
+      "id": "rabbit-hungry",
+      "caption": "饿了",
+      "status": "pending",
+      "machine": "pass",
+      "publicationAllowed": false,
+      "note": "舔嘴后抬眉，可能读成期待或卖萌；少量灰色阴影不完全是纯线条。"
+    },
+    {
+      "id": "pig-hungry",
+      "caption": "饿了",
+      "status": "pending",
+      "machine": "pass",
+      "publicationAllowed": false,
+      "note": "舔唇及渴望眼神可见，可能偏可爱/期待；动物拟人嘴形与材质待审。"
+    },
+    {
+      "id": "man-hungry",
+      "caption": "饿了",
+      "status": "pending",
+      "machine": "pass",
+      "publicationAllowed": false,
+      "note": "寻找、舔唇后抬眉，仍需去字幕判断是否饥饿；不是用户语义认可。"
+    },
+    {
+      "id": "bulldog-weary",
+      "caption": "心累",
+      "status": "pending",
+      "machine": "pass",
+      "publicationAllowed": false,
+      "note": "闭眼叹气后沉重眼睑，可能读成困倦；毛发和头形变化待循环复核。"
+    },
+    {
+      "id": "seal-weary",
+      "caption": "心累",
+      "status": "needs-rework",
+      "machine": "pass",
+      "publicationAllowed": false,
+      "note": "待返工：v2行注册修订后顶界仍约y32→y20，约12px漂移，不能用机器通过关闭原问题。"
+    },
+    {
+      "id": "sloth-weary",
+      "caption": "心累",
+      "status": "pending",
+      "machine": "pass",
+      "publicationAllowed": false,
+      "note": "叹气及下垂嘴角可见，可能读成困倦/难过；材质与轮廓变化待审。"
+    },
+    {
+      "id": "man-weary",
+      "caption": "心累",
+      "status": "pending",
+      "machine": "pass",
+      "publicationAllowed": false,
+      "note": "叹气和疲惫眼睑较清楚，可能读成困倦；待实际播放。"
+    },
+    {
+      "id": "gingercat-shush",
+      "caption": "嘘",
+      "status": "needs-rework",
+      "machine": "pass",
+      "publicationAllowed": false,
+      "note": "待返工：v4解决触顶截耳，但恢复段仍整体上移，顶界约y42→y24，约18px。三次修订后本轮停止，不作为待审候选。"
+    },
+    {
+      "id": "owl-shush",
+      "caption": "嘘",
+      "status": "pending",
+      "machine": "pass",
+      "publicationAllowed": false,
+      "note": "同侧翼尖到喙前，可能读成思考；翼尖拟手指形态、底部羽毛与循环连续性待审。"
+    },
+    {
+      "id": "fox-shush",
+      "caption": "嘘",
+      "status": "pending",
+      "machine": "pass",
+      "publicationAllowed": false,
+      "note": "v2改为平滑黏土并抬高起始爪；峰值仍是拟人手指状爪，不符合普通无手指爪的原提示，语义/造型待审。"
+    },
+    {
+      "id": "man-shush",
+      "caption": "嘘",
+      "status": "pending",
+      "machine": "pass",
+      "publicationAllowed": false,
+      "note": "v2抬高起始手，完整食指及掌部可见；手势路径与侧眼可读，未动态播放。"
+    }
+  ]
+}

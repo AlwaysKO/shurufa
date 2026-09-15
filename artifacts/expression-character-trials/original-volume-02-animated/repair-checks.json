@@ -1,0 +1,17 @@
+[
+  {
+    "id": "raccoon-curious",
+    "pass": true,
+    "bytes": 101081
+  },
+  {
+    "id": "bird-giggle",
+    "pass": false,
+    "error": "Error: GIF审计失败：[{\"id\":\"bird-giggle\",\"field\":\"loopClosure\",\"expected\":0.09001736111111111,\"actual\":0.09588541666666667,\"message\":\"样板 bird-giggle 跨循环边界的感知差异显著高于内部相邻帧\"}]"
+  },
+  {
+    "id": "man-giggle",
+    "pass": true,
+    "bytes": 102095
+  }
+]

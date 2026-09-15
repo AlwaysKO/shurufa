@@ -1,0 +1,31 @@
+{
+  "keyword": "忙着呢",
+  "items": [
+    {
+      "id": "scene-rich-10-busy",
+      "keyword": "忙着呢",
+      "file": "忙着呢/scene-rich-10-busy.gif",
+      "thumbnail": "忙着呢/scene-rich-10-busy.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-10/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-10/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-10/gifs/scene-rich-10-busy.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-10/thumbnails/scene-rich-10-busy.webp",
+      "batch": "scene-rich-10",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "278b87f506e3791757e9799848c9c21c40ca59cc4f69be7faed0441883346633",
+      "thumbnailSha256": "3794c4bb3990d951bf60ddbd55e49dceac48e26f4ef9c72cfaadf28a4b5a967b",
+      "bytes": 77260,
+      "width": 240,
+      "height": 240,
+      "frames": 20,
+      "durationMs": 4000,
+      "style": "hand-drawn",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

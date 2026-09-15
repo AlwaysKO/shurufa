@@ -1,0 +1,141 @@
+{
+  "version": "2026.09.09.semantic-01",
+  "status": "pending-visual-review",
+  "keywords": [
+    "懂了"
+  ],
+  "items": [
+    {
+      "id": "understand-core-knot",
+      "keyword": "懂了",
+      "text": "懂了",
+      "style": "original-character",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create one transparent RGBA 2x2 animation sprite sheet, FOUR clearly DISTINCT key poses in reading order, identical character design and scale. Wide empty transparent gutters across center axes, each entire subject contained within its own quadrant with generous margins. No panels or borders, no text, letters, symbols, logos, watermark, existing characters, checkerboard or ground. Original chat sticker about finally understanding an explanation, friendly and sincere, not agreeing to a command. Real arm, head and expression changes, not scaled duplicates. Unique cream rice dumpling creature with asymmetrical tiny orange topknot and orange scarf, small stubby arms. Painterly sticker. FOUR POSES: 1. tilts head with puzzled eyes and arms low; 2. raises one finger next to face with dawning insight; 3. nods head forward with closed smiling eyes, one hand to chest; 4. opens eyes smiling confidently, both palms open 原创，无文字，无水印，无品牌，无现有角色；人物为原创中国成年人。",
+      "motionScript": [
+        "tilts head with puzzled eyes and arms low",
+        "raises one finger next to face with dawning insight",
+        "nods head forward with closed smiling eyes, one hand to chest",
+        "opens eyes smiling confidently, both palms open"
+      ],
+      "motionPreset": "bow",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/understand-core-knot.png",
+      "poseFiles": [
+        "poses/understand-core-knot/pose-01.png",
+        "poses/understand-core-knot/pose-02.png",
+        "poses/understand-core-knot/pose-03.png",
+        "poses/understand-core-knot/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "generatedAt": "2026-09-09",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-02da6882-955d-4d6b-86c8-b9bc49c6f2f7.png",
+        "masterSha256": "6e8d66fe3830e87fa1b13718c37a8276ca6c869c66b98644a3040337f52b6a55"
+      }
+    },
+    {
+      "id": "understand-bird-notebook",
+      "keyword": "懂了",
+      "text": "懂了",
+      "style": "ai-original-pet",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create one transparent RGBA 2x2 animation sprite sheet, FOUR clearly DISTINCT key poses in reading order, identical character design and scale. Wide empty transparent gutters across center axes, each entire subject contained within its own quadrant with generous margins. No panels or borders, no text, letters, symbols, logos, watermark, existing characters, checkerboard or ground. Original chat sticker about finally understanding an explanation, friendly and sincere, not agreeing to a command. Real arm, head and expression changes, not scaled duplicates. Original plump teal little sparrow with cream cheeks and small orange beak, holding a tiny blank tan notebook, delicate hand-drawn thick outline. FOUR POSES: 1. looks down at open blank notebook, head tilted; 2. lifts head wide-eyed, one wing lifted; 3. nods with eyes closed, notebook held to chest; 4. smiles with both wings holding closed notebook proudly 原创，无文字，无水印，无品牌，无现有角色；人物为原创中国成年人。",
+      "motionScript": [
+        "looks down at open blank notebook, head tilted",
+        "lifts head wide-eyed, one wing lifted",
+        "nods with eyes closed, notebook held to chest",
+        "smiles with both wings holding closed notebook proudly"
+      ],
+      "motionPreset": "bow",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/understand-bird-notebook.png",
+      "poseFiles": [
+        "poses/understand-bird-notebook/pose-01.png",
+        "poses/understand-bird-notebook/pose-02.png",
+        "poses/understand-bird-notebook/pose-03.png",
+        "poses/understand-bird-notebook/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "generatedAt": "2026-09-09",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-b3c011d9-d3d3-4385-a1bf-c0e66f42bcd7.png",
+        "masterSha256": "96176e5786dd4d0e42ae9af0ffe0c080f7bc09d0d98e66fd3d875466a849dfe9"
+      }
+    },
+    {
+      "id": "understand-person-nod",
+      "keyword": "懂了",
+      "text": "懂了",
+      "style": "original-life-scene",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create one transparent RGBA 2x2 animation sprite sheet, FOUR clearly DISTINCT key poses in reading order, identical character design and scale. Wide empty transparent gutters across center axes, each entire subject contained within its own quadrant with generous margins. No panels or borders, no text, letters, symbols, logos, watermark, existing characters, checkerboard or ground. Original chat sticker about finally understanding an explanation, friendly and sincere, not agreeing to a command. Real arm, head and expression changes, not scaled duplicates. Entirely fictional Chinese adult man, natural East Asian facial features, black short hair, thin round glasses, plain muted green sweater, waist-up soft painterly realistic illustration. Not a celebrity. FOUR POSES: 1. leans head slightly sideways with questioning eyebrows, hands low; 2. raises right index finger gently with dawning recognition; 3. nods head down, smiling eyes closed, right hand to chest; 4. head upright, warm confident smile, both hands open conversationally 原创，无文字，无水印，无品牌，无现有角色；人物为原创中国成年人。",
+      "motionScript": [
+        "leans head slightly sideways with questioning eyebrows, hands low",
+        "raises right index finger gently with dawning recognition",
+        "nods head down, smiling eyes closed, right hand to chest",
+        "head upright, warm confident smile, both hands open conversationally"
+      ],
+      "motionPreset": "bow",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/understand-person-nod.png",
+      "poseFiles": [
+        "poses/understand-person-nod/pose-01.png",
+        "poses/understand-person-nod/pose-02.png",
+        "poses/understand-person-nod/pose-03.png",
+        "poses/understand-person-nod/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "generatedAt": "2026-09-09",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-25d623a6-4172-4dd6-a566-ade92370b58b.png",
+        "masterSha256": "9be4da9de5424179460d06b6cc7eb23a4a4ba78cc52dde2599732348f1a4e4e0"
+      }
+    },
+    {
+      "id": "understand-clay-pebble",
+      "keyword": "懂了",
+      "text": "懂了",
+      "style": "3d-plush",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create one transparent RGBA 2x2 animation sprite sheet, FOUR clearly DISTINCT key poses in reading order, identical character design and scale. Wide empty transparent gutters across center axes, each entire subject contained within its own quadrant with generous margins. No panels or borders, no text, letters, symbols, logos, watermark, existing characters, checkerboard or ground. Original chat sticker about finally understanding an explanation, friendly and sincere, not agreeing to a command. Real arm, head and expression changes, not scaled duplicates. Unique handmade terracotta-orange clay pebble creature with two tiny arms and legs and a little pale mint cap, tactile matte clay, original abstract shape, charming stopmotion. FOUR POSES: 1. tilts head and spreads hands uncertainly; 2. raises one little index finger beside face, eyes opening wide; 3. bows head in a clear nod, hands to chest; 4. stands upright smiling with one palm lifted in understanding 原创，无文字，无水印，无品牌，无现有角色；人物为原创中国成年人。",
+      "motionScript": [
+        "tilts head and spreads hands uncertainly",
+        "raises one little index finger beside face, eyes opening wide",
+        "bows head in a clear nod, hands to chest",
+        "stands upright smiling with one palm lifted in understanding"
+      ],
+      "motionPreset": "bow",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/understand-clay-pebble.png",
+      "poseFiles": [
+        "poses/understand-clay-pebble/pose-01.png",
+        "poses/understand-clay-pebble/pose-02.png",
+        "poses/understand-clay-pebble/pose-03.png",
+        "poses/understand-clay-pebble/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "generatedAt": "2026-09-09",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-53e00e2e-f6ae-4a11-8504-5d2e792f765e.png",
+        "masterSha256": "1637c13c1204670d174b74ce433afc3da65b60d42bebc8e431b968d9ce932058"
+      }
+    }
+  ]
+}

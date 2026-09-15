@@ -1,0 +1,98 @@
+[
+  {
+    "id": "corgi-hungry",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": false,
+    "alphaMin": 255,
+    "alphaMax": 255
+  },
+  {
+    "id": "rabbit-hungry",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": true,
+    "alphaMin": 0,
+    "alphaMax": 255
+  },
+  {
+    "id": "pig-hungry",
+    "width": 1447,
+    "height": 1087,
+    "hasAlpha": true,
+    "alphaMin": 0,
+    "alphaMax": 255
+  },
+  {
+    "id": "man-hungry",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": true,
+    "alphaMin": 0,
+    "alphaMax": 255
+  },
+  {
+    "id": "bulldog-weary",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": true,
+    "alphaMin": 0,
+    "alphaMax": 255
+  },
+  {
+    "id": "seal-weary",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": false,
+    "alphaMin": 255,
+    "alphaMax": 255
+  },
+  {
+    "id": "sloth-weary",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": true,
+    "alphaMin": 0,
+    "alphaMax": 255
+  },
+  {
+    "id": "man-weary",
+    "width": 1447,
+    "height": 1087,
+    "hasAlpha": true,
+    "alphaMin": 0,
+    "alphaMax": 255
+  },
+  {
+    "id": "gingercat-shush",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": false,
+    "alphaMin": 255,
+    "alphaMax": 255
+  },
+  {
+    "id": "owl-shush",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": true,
+    "alphaMin": 0,
+    "alphaMax": 255
+  },
+  {
+    "id": "fox-shush",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": false,
+    "alphaMin": 255,
+    "alphaMax": 255
+  },
+  {
+    "id": "man-shush",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": false,
+    "alphaMin": 255,
+    "alphaMax": 255
+  }
+]

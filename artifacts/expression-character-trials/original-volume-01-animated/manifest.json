@@ -1,0 +1,188 @@
+{
+  "created": "2026-09-12",
+  "sourceType": "ai-original",
+  "status": "trial-only",
+  "publicationAllowed": false,
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "items": [
+    {
+      "id": "cat-shock",
+      "caption": "震惊",
+      "prompt": "Production ANIMATION SPRITE SHEET, exactly FOUR columns THREE rows of EQUAL SQUARE tiles, overall4:3. Pure opaque WHITE background, no transparency no text no numbers no grid lines. Twelve real sequential facial acting poses of the SAME ORIGINAL character, not zooms. Character HEAD AND SHOULDERS occupies only upper75% each tile, lower25% pure white blank for caption. Precisely aligned equal camera/scale and within-tile position: row1 head top global5%, bust bottom25%; row2 top38.33% bottom58.33%; row3 top71.67% bottom91.67%. Same head center and bust baseline relative to every cell, do not drift between rows! Head x centers12.5%,37.5%,62.5%,87.5%. Frame12 matches frame1 neutral pose/size/position to close loop. At least4 distinct facial poses, gradual motion, fixed torso. No IP, no celebrity. Photorealistic tabby cat head-and-shoulders, ears stable, no paws. Acting:1 neutral attention;2 eyes shift forward;3 inner brows lift;4 eyelids widen;5 mouth starts opening;6 jaw lowers slightly;7 eyes fully alert;8 key shocked open-eyed open-mouth expression;9 mouth begins closing;10 brows lower gently;11 almost neutral;12 same neutral as1. No yelling, no tears, no floating symbols.",
+      "masterFile": "masters/cat-shock.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-30339d97-0f52-48c2-8420-4f735b51b903.png",
+      "sha256": "b46525217a2bb21a21e2d83b37e50ca5ce9864812cbf9b5a47c232c3b8c55919",
+      "originalSha256": "7f2e936ef234cc9053d73f9138e955b4c9c8e302f077a4a532b1ab2b8593edb5",
+      "revisions": [
+        {
+          "id": "cat-shock",
+          "reference": true,
+          "prompt": "Repair exact first/last frame matching in this 4-column3-row cat animation sheet. Frame12 bottom-right MUST MATCH FRAME1 top-left in neutral eyes/mouth and exact size and relative tile location. Current bottom row sits slightly too high within its square cell; shift bottom row cats DOWN about15pixels. Retain genuine distinct mouth opening/closing poses in middle panels. Preserve all12 poses, same tabby cat, pure white background. Exact4x3 square cells overall4:3. No text. Match head top, eyes/nose and bust bottom first-last when square tiles overlaid.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-40cd1b7f-44ba-4cce-b1bb-7c3098a5c19f.png",
+          "sha256": "a8f16c5f09632464c1c5f4116d3af2d09504523157308d9f4c6cab004e4308a7"
+        },
+        {
+          "id": "cat-shock",
+          "prompt": "Create photorealistic ORIGINAL small tabby cat head bust animation atlas, FOUR columns THREE rows, overall4:3. Twelve equally spaced SQUARE tiles on solid opaque PURE WHITE, no lines/no text. Cat bust in each tile only60% tile height, ample white padding. EXACT global Y alignment: first row ear tips5% and bust bottom25%; second row tips38.33% bottom58.33%; third row tips71.67% bottom91.67%. Identical size across rows. SAME original cat, fixed camera/torso, no paws. Motion 'shock':1 neutral closed mouth moderately open eyes;2 glance forward;3 eyes a bit wider;4 eyelids lift;5 mouth just parts;6 mouth opens a little more;7 wide alert eyes open mouth;8 key surprised jaw drop eyes wide;9 mouth HALF closes;10 mouth nearly closed eyes relax;11 neutral;12 EXACT same neutral as1 with same ears/eyes/nose/bust size and within-tile position. At least4 genuine distinct expressions, not head zoom animation. Stable fur markings. Ensure upper left and lower right tiles would overlay perfectly. No clothing tears props or extra limbs.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-d4ada132-e44c-4ceb-8b45-503c243e1658.png",
+          "sha256": "b46525217a2bb21a21e2d83b37e50ca5ce9864812cbf9b5a47c232c3b8c55919"
+        }
+      ]
+    },
+    {
+      "id": "frog-shock",
+      "caption": "震惊",
+      "prompt": "Production ANIMATION SPRITE SHEET, exactly FOUR columns THREE rows of EQUAL SQUARE tiles, overall4:3. Pure opaque WHITE background, no transparency no text no numbers no grid lines. Twelve real sequential facial acting poses of the SAME ORIGINAL character, not zooms. Character HEAD AND SHOULDERS occupies only upper75% each tile, lower25% pure white blank for caption. Precisely aligned equal camera/scale and within-tile position: row1 head top global5%, bust bottom25%; row2 top38.33% bottom58.33%; row3 top71.67% bottom91.67%. Same head center and bust baseline relative to every cell, do not drift between rows! Head x centers12.5%,37.5%,62.5%,87.5%. Frame12 matches frame1 neutral pose/size/position to close loop. At least4 distinct facial poses, gradual motion, fixed torso. No IP, no celebrity. Minimal expressive black ink cartoon frog bust, white body, round eyes, no hands. Acting:1 neutral attention;2 eyes shift forward;3 inner brows lift;4 eyelids widen;5 mouth starts opening;6 jaw lowers slightly;7 eyes fully alert;8 key shocked open-eyed open-mouth expression;9 mouth begins closing;10 brows lower gently;11 almost neutral;12 same neutral as1. No yelling, no tears, no floating symbols.",
+      "masterFile": "masters/frog-shock.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-61da1a5e-e552-47ec-98ab-8c220ce160d7.png",
+      "sha256": "b4dc53f8156aca7b29705491a685b67feda3b5b3ce7cb922929cc6c7fdda5183",
+      "originalSha256": "b745e7146bac99353e76f157da8b087aeaae07f597d869b96afcb81070b33858",
+      "revisions": [
+        {
+          "id": "frog-shock",
+          "prompt": "Precise registration correction on this4x3 frog animation sheet. Bottom row frogs currently about25 pixels too HIGH relative to their own equal square cells. MOVE ALL FOUR BOTTOM ROW FROGS DOWN25pixels, retaining scale and expressions. Match bottom-right frog EXACTLY to top-left: head outline including eye bumps, eye positions, shoulders, same neutral mouth and same within-cell location. Middle row shoulders also should match top row within-cell shoulder baseline. Preserve genuine mouth opening in frames5-8 and closing9-12, not duplicates. Same original black ink frog white fill, opaque pure WHITE background, no text/no grid. Exact4columns3rows overall4:3 square cells. Do not change style or fill blank lower25% of each cell.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-bfdd0d09-b1ec-4f53-8f74-9564739051ee.png",
+          "sha256": "b4dc53f8156aca7b29705491a685b67feda3b5b3ce7cb922929cc6c7fdda5183"
+        }
+      ]
+    },
+    {
+      "id": "owl-shock",
+      "caption": "震惊",
+      "prompt": "Production ANIMATION SPRITE SHEET, exactly FOUR columns THREE rows of EQUAL SQUARE tiles, overall4:3. Pure opaque WHITE background, no transparency no text no numbers no grid lines. Twelve real sequential facial acting poses of the SAME ORIGINAL character, not zooms. Character HEAD AND SHOULDERS occupies only upper75% each tile, lower25% pure white blank for caption. Precisely aligned equal camera/scale and within-tile position: row1 head top global5%, bust bottom25%; row2 top38.33% bottom58.33%; row3 top71.67% bottom91.67%. Same head center and bust baseline relative to every cell, do not drift between rows! Head x centers12.5%,37.5%,62.5%,87.5%. Frame12 matches frame1 neutral pose/size/position to close loop. At least4 distinct facial poses, gradual motion, fixed torso. No IP, no celebrity. Tactile clay orange-brown owl bust, two eyes and short beak, wings at sides no wing movement. Acting:1 neutral attention;2 eyes shift forward;3 inner brows lift;4 eyelids widen;5 mouth starts opening;6 jaw lowers slightly;7 eyes fully alert;8 key shocked open-eyed open-mouth expression;9 mouth begins closing;10 brows lower gently;11 almost neutral;12 same neutral as1. No yelling, no tears, no floating symbols.",
+      "masterFile": "masters/owl-shock.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-643ca1f0-ed9a-44b5-a0c3-601615b19a73.png",
+      "sha256": "866d0c63ca6710be02d95028b951758c30a9ca72d8f5d5686ac9afc9d27e1ce9"
+    },
+    {
+      "id": "man-shock",
+      "caption": "震惊",
+      "prompt": "Production ANIMATION SPRITE SHEET, exactly FOUR columns THREE rows of EQUAL SQUARE tiles, overall4:3. Pure opaque WHITE background, no transparency no text no numbers no grid lines. Twelve real sequential facial acting poses of the SAME ORIGINAL character, not zooms. Character HEAD AND SHOULDERS occupies only upper75% each tile, lower25% pure white blank for caption. Precisely aligned equal camera/scale and within-tile position: row1 head top global5%, bust bottom25%; row2 top38.33% bottom58.33%; row3 top71.67% bottom91.67%. Same head center and bust baseline relative to every cell, do not drift between rows! Head x centers12.5%,37.5%,62.5%,87.5%. Frame12 matches frame1 neutral pose/size/position to close loop. At least4 distinct facial poses, gradual motion, fixed torso. No IP, no celebrity. Photographic fictional original handsome Chinese adult man age28, cropped short black hair, gray crewneck, distinctive square jaw, no celebrity likeness, no hands. Acting:1 neutral attention;2 eyes shift forward;3 inner brows lift;4 eyelids widen;5 mouth starts opening;6 jaw lowers slightly;7 eyes fully alert;8 key shocked open-eyed open-mouth expression;9 mouth begins closing;10 brows lower gently;11 almost neutral;12 same neutral as1. No yelling, no tears, no floating symbols.",
+      "masterFile": "masters/man-shock.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-1ce92377-7d34-46a2-b0b7-71b138c0c11d.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "8de700116d768602e69e9977ca40e0467f8c40ae4a34da151e4972e6fc48b12c"
+    },
+    {
+      "id": "husky-disdain",
+      "caption": "嫌弃",
+      "prompt": "Production ANIMATION SPRITE SHEET, exactly FOUR columns THREE rows of EQUAL SQUARE tiles, overall4:3. Pure opaque WHITE background, no transparency no text no numbers no grid lines. Twelve real sequential facial acting poses of the SAME ORIGINAL character, not zooms. Character HEAD AND SHOULDERS occupies only upper75% each tile, lower25% pure white blank for caption. Precisely aligned equal camera/scale and within-tile position: row1 head top global5%, bust bottom25%; row2 top38.33% bottom58.33%; row3 top71.67% bottom91.67%. Same head center and bust baseline relative to every cell, do not drift between rows! Head x centers12.5%,37.5%,62.5%,87.5%. Frame12 matches frame1 neutral pose/size/position to close loop. At least4 distinct facial poses, gradual motion, fixed torso. No IP, no celebrity. Photorealistic gray white husky bust, stable two ears, no paws. Acting:1 neutral;2 inspect with glance slightly down;3 brows lower;4 eyelids narrow;5 tiny nose wrinkle or bill tightening;6 mouth corners tighten;7 head turns ONLY5degrees away while eyes glance toward viewer;8 key disgusted skeptical side-eye, mouth tight;9 head starts return;10 eyelids relax;11 near neutral;12 same neutral as1. Not angry yelling, no tears.",
+      "masterFile": "masters/husky-disdain.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-3c1c8429-e77e-47cf-a39e-d7c5df1e00e4.png",
+      "sha256": "1b51f66696887a88cba657f5216f9ee41ae44b2844ec6e0b02d1fe64e5eb7909"
+    },
+    {
+      "id": "duck-disdain",
+      "caption": "嫌弃",
+      "prompt": "Production ANIMATION SPRITE SHEET, exactly FOUR columns THREE rows of EQUAL SQUARE tiles, overall4:3. Pure opaque WHITE background, no transparency no text no numbers no grid lines. Twelve real sequential facial acting poses of the SAME ORIGINAL character, not zooms. Character HEAD AND SHOULDERS occupies only upper75% each tile, lower25% pure white blank for caption. Precisely aligned equal camera/scale and within-tile position: row1 head top global5%, bust bottom25%; row2 top38.33% bottom58.33%; row3 top71.67% bottom91.67%. Same head center and bust baseline relative to every cell, do not drift between rows! Head x centers12.5%,37.5%,62.5%,87.5%. Frame12 matches frame1 neutral pose/size/position to close loop. At least4 distinct facial poses, gradual motion, fixed torso. No IP, no celebrity. Minimal black ink cartoon duck bust with broad bill, white fill, expressive eyebrows and eyelids, no wings visible. Acting:1 neutral;2 inspect with glance slightly down;3 brows lower;4 eyelids narrow;5 tiny nose wrinkle or bill tightening;6 mouth corners tighten;7 head turns ONLY5degrees away while eyes glance toward viewer;8 key disgusted skeptical side-eye, mouth tight;9 head starts return;10 eyelids relax;11 near neutral;12 same neutral as1. Not angry yelling, no tears.",
+      "masterFile": "masters/duck-disdain.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-29f9c388-a9a0-49e9-9ebd-e49d263ca88a.png",
+      "sha256": "4025ec15c305b45a7bcf73a4f244ac8a23deec249a539e4a5b9cfcad713b3f06",
+      "originalSha256": "481ae4358bb9afa495d11f2a2bd4cda2ac3f9769cab4595afc63ad89e50711e6",
+      "revisions": [
+        {
+          "id": "duck-disdain",
+          "reference": false,
+          "prompt": "ORIGINAL minimalist Japanese-style BLACK INK doodle DUCK animation sprite sheet, exactly4 columns3 rows equal square tiles overall4:3 on opaque PURE WHITE. Do NOT resemble any famous cartoon duck. New design: nearly circular bald head with NO HAIR TUFT, very small close-set dot eyes with fine expressive upper eyelids, tiny horizontal oval FLAT BILL like a rounded pebble not protruding cheek smile, short thick neck, small chest-up bust. No feathers sticking out, no cheek lobes, no bow, no costume, no giant oval eyes. Same original character12 real poses:1 neutral;2 looks down;3 brows lower;4 eyes narrow;5 bill tightens;6 one eyelid lowers more;7 head turns5degrees away;8 strong disgusted side-eye, asymmetric brows, bill pressed tight;9 starts returning;10 eyelids relax;11 nearly neutral;12 exact same neutral as1. Character anchored in central upper75% each square, head top15% chest bottom75%, lower25% white. Uniform rows registration, head/bust same position and size relative every tile. No text numbers or lines.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-017b160c-477d-44d3-9e61-cc01e0eefe91.png",
+          "sha256": "e12cab11d8c1944ef86c5db2b708b48115b7be6742695d918a6a055f9861a945"
+        },
+        {
+          "id": "duck-disdain",
+          "prompt": "Edit this exact original rounded bald duck 4-column3-row animation sheet. Render on SOLID OPAQUE WHITE not transparent. Make the last (bottom right) pose exactly same as first (top left): matching pupil direction, raised brows, oval bill and HEAD CENTER/size and shoulder baseline relative to its own square cell. Last pose currently head higher/eyes differ. All three rows should have consistent within-cell placement. Keep all middle12 pose sequence, particularly narrowing eyelids and asymmetrical side-eye in frames5-8; genuine expressions, no duplicates except neutral loop endpoints. Keep bald circular head, small dot eyes, tiny oval bill, no tuft/no famous character resemblance. Overall4:3 exact4x3 equal square cells; lower25% blank white per tile; no text or grid.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-b7058482-dc40-4cf6-b7b4-68bf0a0a13c8.png",
+          "sha256": "ad9cc073aec14bbaaf38517f13e04850329ff469c1a36d24dd35eff42fda319e"
+        },
+        {
+          "id": "duck-disdain",
+          "prompt": "Precise layout correction to THIS EXACT4x3 white-background sprite sheet. Move all FOUR characters in BOTTOM ROW DOWN by20 pixels, without changing their scale or shapes. Top and middle rows unchanged. In bottom-right cell copy the top-left cell's neutral eyebrows, eyes and oval bill expression exactly. This is loop closure correction: equal square cell1 and cell12 must overlay with head outline and eye centers in same location. Preserve all genuine middle facial expressions, no text, no new characters, no borders,4columns3rows overall4:3. Do not resize entire sheet.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-63162f3e-4212-4d6e-9433-d5a07119f8b6.png",
+          "sha256": "4025ec15c305b45a7bcf73a4f244ac8a23deec249a539e4a5b9cfcad713b3f06"
+        }
+      ]
+    },
+    {
+      "id": "alpaca-disdain",
+      "caption": "嫌弃",
+      "prompt": "Production ANIMATION SPRITE SHEET, exactly FOUR columns THREE rows of EQUAL SQUARE tiles, overall4:3. Pure opaque WHITE background, no transparency no text no numbers no grid lines. Twelve real sequential facial acting poses of the SAME ORIGINAL character, not zooms. Character HEAD AND SHOULDERS occupies only upper75% each tile, lower25% pure white blank for caption. Precisely aligned equal camera/scale and within-tile position: row1 head top global5%, bust bottom25%; row2 top38.33% bottom58.33%; row3 top71.67% bottom91.67%. Same head center and bust baseline relative to every cell, do not drift between rows! Head x centers12.5%,37.5%,62.5%,87.5%. Frame12 matches frame1 neutral pose/size/position to close loop. At least4 distinct facial poses, gradual motion, fixed torso. No IP, no celebrity. Tactile clay cream alpaca bust, soft wool, short rounded ears, no limbs. Acting:1 neutral;2 inspect with glance slightly down;3 brows lower;4 eyelids narrow;5 tiny nose wrinkle or bill tightening;6 mouth corners tighten;7 head turns ONLY5degrees away while eyes glance toward viewer;8 key disgusted skeptical side-eye, mouth tight;9 head starts return;10 eyelids relax;11 near neutral;12 same neutral as1. Not angry yelling, no tears.",
+      "masterFile": "masters/alpaca-disdain.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-66176060-65bc-4b67-b973-ad03fc2d31ac.png",
+      "sha256": "bf425df53d2519c095b2858a2bd57781a8a1a6ce231255f1768b21012430652a"
+    },
+    {
+      "id": "man-disdain",
+      "caption": "嫌弃",
+      "prompt": "Production ANIMATION SPRITE SHEET, exactly FOUR columns THREE rows of EQUAL SQUARE tiles, overall4:3. Pure opaque WHITE background, no transparency no text no numbers no grid lines. Twelve real sequential facial acting poses of the SAME ORIGINAL character, not zooms. Character HEAD AND SHOULDERS occupies only upper75% each tile, lower25% pure white blank for caption. Precisely aligned equal camera/scale and within-tile position: row1 head top global5%, bust bottom25%; row2 top38.33% bottom58.33%; row3 top71.67% bottom91.67%. Same head center and bust baseline relative to every cell, do not drift between rows! Head x centers12.5%,37.5%,62.5%,87.5%. Frame12 matches frame1 neutral pose/size/position to close loop. At least4 distinct facial poses, gradual motion, fixed torso. No IP, no celebrity. Photographic fictional original handsome Chinese adult man age32, textured black hair, dark green crewneck, distinctive slim face, no celebrity likeness, no hands. Acting:1 neutral;2 inspect with glance slightly down;3 brows lower;4 eyelids narrow;5 tiny nose wrinkle or bill tightening;6 mouth corners tighten;7 head turns ONLY5degrees away while eyes glance toward viewer;8 key disgusted skeptical side-eye, mouth tight;9 head starts return;10 eyelids relax;11 near neutral;12 same neutral as1. Not angry yelling, no tears.",
+      "masterFile": "masters/man-disdain.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-53594cbd-af87-4143-97ef-7f3a4cf0d68e.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "4aad84827a6884f5f4cf3a196f624c216249693c2198ff3baf625ed3d47528fd"
+    },
+    {
+      "id": "fox-smug",
+      "caption": "得意",
+      "prompt": "Production ANIMATION SPRITE SHEET, exactly FOUR columns THREE rows of EQUAL SQUARE tiles, overall4:3. Pure opaque WHITE background, no transparency no text no numbers no grid lines. Twelve real sequential facial acting poses of the SAME ORIGINAL character, not zooms. Character HEAD AND SHOULDERS occupies only upper75% each tile, lower25% pure white blank for caption. Precisely aligned equal camera/scale and within-tile position: row1 head top global5%, bust bottom25%; row2 top38.33% bottom58.33%; row3 top71.67% bottom91.67%. Same head center and bust baseline relative to every cell, do not drift between rows! Head x centers12.5%,37.5%,62.5%,87.5%. Frame12 matches frame1 neutral pose/size/position to close loop. At least4 distinct facial poses, gradual motion, fixed torso. No IP, no celebrity. Photorealistic red fox bust, two upright ears stable, no paws, subtle believable canine facial acting not human lips. Acting:1 neutral;2 eyes glance toward viewer;3 one brow lifts slightly;4 tiny asymmetric smile begins;5 eyelids relax into confident half-lids;6 smile more distinct;7 chin lifts ONLY a little;8 key smug proud satisfied look not broad laughter;9 chin begins lowering;10 smile eases;11 near neutral;12 same neutral as1. No hands, no thumbs up, no props.",
+      "masterFile": "masters/fox-smug.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-f962822d-1f14-405c-9260-dc0028530892.png",
+      "sha256": "fffca5c5bcafd58e9e0868ed9071586024bece54bd00451792b26190dc5f4a16"
+    },
+    {
+      "id": "gecko-smug",
+      "caption": "得意",
+      "prompt": "Production ANIMATION SPRITE SHEET, exactly FOUR columns THREE rows of EQUAL SQUARE tiles, overall4:3. Pure opaque WHITE background, no transparency no text no numbers no grid lines. Twelve real sequential facial acting poses of the SAME ORIGINAL character, not zooms. Character HEAD AND SHOULDERS occupies only upper75% each tile, lower25% pure white blank for caption. Precisely aligned equal camera/scale and within-tile position: row1 head top global5%, bust bottom25%; row2 top38.33% bottom58.33%; row3 top71.67% bottom91.67%. Same head center and bust baseline relative to every cell, do not drift between rows! Head x centers12.5%,37.5%,62.5%,87.5%. Frame12 matches frame1 neutral pose/size/position to close loop. At least4 distinct facial poses, gradual motion, fixed torso. No IP, no celebrity. Minimal BLACK INK cartoon gecko head-and-shoulder bust, white fill, expressive eyelids and mouth, no limbs or tail visible. Acting:1 neutral;2 eyes glance toward viewer;3 one brow lifts slightly;4 tiny asymmetric smile begins;5 eyelids relax into confident half-lids;6 smile more distinct;7 chin lifts ONLY a little;8 key smug proud satisfied look not broad laughter;9 chin begins lowering;10 smile eases;11 near neutral;12 same neutral as1. No hands, no thumbs up, no props.",
+      "masterFile": "masters/gecko-smug.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-291a25cf-633d-46dc-afde-e82b6172c9e1.png",
+      "sha256": "85af8ea67b694621973829cfc753abd45d2ab88e7bd9996b77c78294f40b0a9c"
+    },
+    {
+      "id": "seal-smug",
+      "caption": "得意",
+      "prompt": "Production ANIMATION SPRITE SHEET, exactly FOUR columns THREE rows of EQUAL SQUARE tiles, overall4:3. Pure opaque WHITE background, no transparency no text no numbers no grid lines. Twelve real sequential facial acting poses of the SAME ORIGINAL character, not zooms. Character HEAD AND SHOULDERS occupies only upper75% each tile, lower25% pure white blank for caption. Precisely aligned equal camera/scale and within-tile position: row1 head top global5%, bust bottom25%; row2 top38.33% bottom58.33%; row3 top71.67% bottom91.67%. Same head center and bust baseline relative to every cell, do not drift between rows! Head x centers12.5%,37.5%,62.5%,87.5%. Frame12 matches frame1 neutral pose/size/position to close loop. At least4 distinct facial poses, gradual motion, fixed torso. No IP, no celebrity. Tactile clay light-gray seal bust, two eyes and small muzzle, no flippers in view. Acting:1 neutral;2 eyes glance toward viewer;3 one brow lifts slightly;4 tiny asymmetric smile begins;5 eyelids relax into confident half-lids;6 smile more distinct;7 chin lifts ONLY a little;8 key smug proud satisfied look not broad laughter;9 chin begins lowering;10 smile eases;11 near neutral;12 same neutral as1. No hands, no thumbs up, no props.",
+      "masterFile": "masters/seal-smug.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-763f1ac8-c35f-473a-a9bf-b7aa4e072653.png",
+      "sha256": "22580b819e3add9c36bbad3e76ca2ee5e74b1e22909cca53a4dabeefd0da3b5a"
+    },
+    {
+      "id": "man-smug",
+      "caption": "得意",
+      "prompt": "Production ANIMATION SPRITE SHEET, exactly FOUR columns THREE rows of EQUAL SQUARE tiles, overall4:3. Pure opaque WHITE background, no transparency no text no numbers no grid lines. Twelve real sequential facial acting poses of the SAME ORIGINAL character, not zooms. Character HEAD AND SHOULDERS occupies only upper75% each tile, lower25% pure white blank for caption. Precisely aligned equal camera/scale and within-tile position: row1 head top global5%, bust bottom25%; row2 top38.33% bottom58.33%; row3 top71.67% bottom91.67%. Same head center and bust baseline relative to every cell, do not drift between rows! Head x centers12.5%,37.5%,62.5%,87.5%. Frame12 matches frame1 neutral pose/size/position to close loop. At least4 distinct facial poses, gradual motion, fixed torso. No IP, no celebrity. Photographic fictional original handsome Chinese adult man age30, short sidepart black hair, burgundy crewneck, distinctive fictional face, no celebrity likeness, no hands. Acting:1 neutral;2 eyes glance toward viewer;3 one brow lifts slightly;4 tiny asymmetric smile begins;5 eyelids relax into confident half-lids;6 smile more distinct;7 chin lifts ONLY a little;8 key smug proud satisfied look not broad laughter;9 chin begins lowering;10 smile eases;11 near neutral;12 same neutral as1. No hands, no thumbs up, no props.",
+      "masterFile": "masters/man-smug.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-0931e5c2-42fe-4704-88a9-11c76287ad5f.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "1d1cebd936df71c865dc74ef00bc27873e4d06a92a34b8006fca4b4f577a8619"
+    }
+  ],
+  "rejectedFiles": [
+    {
+      "file": "rejected/cat-shock-v1-loop.png",
+      "sha256": "7f2e936ef234cc9053d73f9138e955b4c9c8e302f077a4a532b1ab2b8593edb5"
+    },
+    {
+      "file": "rejected/cat-shock-v2-loop.png",
+      "sha256": "a8f16c5f09632464c1c5f4116d3af2d09504523157308d9f4c6cab004e4308a7"
+    },
+    {
+      "file": "rejected/duck-disdain-v1-design-risk.png",
+      "sha256": "481ae4358bb9afa495d11f2a2bd4cda2ac3f9769cab4595afc63ad89e50711e6"
+    },
+    {
+      "file": "rejected/duck-disdain-v2-loop.png",
+      "sha256": "e12cab11d8c1944ef86c5db2b708b48115b7be6742695d918a6a055f9861a945"
+    },
+    {
+      "file": "rejected/duck-disdain-v3-loop.png",
+      "sha256": "ad9cc073aec14bbaaf38517f13e04850329ff469c1a36d24dd35eff42fda319e"
+    },
+    {
+      "file": "rejected/frog-shock-v1-visible-drift.png",
+      "sha256": "b745e7146bac99353e76f157da8b087aeaae07f597d869b96afcb81070b33858"
+    }
+  ]
+}

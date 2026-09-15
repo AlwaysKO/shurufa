@@ -1,0 +1,22 @@
+[
+  {
+    "id": "retriever-encourage",
+    "pass": true,
+    "bytes": 104028
+  },
+  {
+    "id": "frog-encourage",
+    "pass": true,
+    "bytes": 70026
+  },
+  {
+    "id": "bear-encourage",
+    "pass": true,
+    "bytes": 89480
+  },
+  {
+    "id": "man-encourage",
+    "pass": true,
+    "bytes": 74338
+  }
+]

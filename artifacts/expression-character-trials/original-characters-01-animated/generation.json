@@ -1,0 +1,47 @@
+{
+  "tool": "built-in-imagegen",
+  "sourceType": "ai-original",
+  "status": "trial-only",
+  "publicationAllowed": false,
+  "items": [
+    {
+      "id": "worker-tired",
+      "caption": "心累",
+      "reference": "long-face-worker.png",
+      "action": "Use CENTER blue-shirt adult Chinese office worker from reference. Same angular long face, sidepart hair, blue shirt and loose dark tie. Hand already supports cheek (VIEWER LEFT) throughout, other forearm rests low. Start mildly tired half-lidded eyes; gradually eyelids droop, inner eyebrows rise, cheek sinks subtly into palm, mouth opens a small sigh; peak8 resigned exhausted sideward stare with slack mouth.9-12 recover from sigh to initial. Tiny coordinated brow/eye/mouth/hand pressure movement, not funny grimace, not sleep. Head anchored, no body scale change.",
+      "prompt": "Create an animation sprite sheet EXACTLY 4 COLUMNS by 3 ROWS, 12 equal square cells, landscape 1440x1080. Attached image is an ORIGINAL character audition reference. Use ONLY the specified character/expression as identity target, REMOVE all captions and other poses. Same character in all12 cells, consistent face/body/clothing, fixed camera, scale, head anchor and baseline. Solid OPAQUE WHITE background, no transparency or colored artifacts. Bottom 18% of each cell must stay BLANK WHITE for caption overlay. Character all within top80%, thin lightgray grid dividers only, no text, symbols or watermarks. Reading order left-right top-bottom gives sequential gradual motion: 1-7 build with unique facial and gesture changes,8 peak,9-12 gradually return to initial. Panel12 matches1 in precise alignment/expression for seamless loop. Gentle coherent acting, not whole-image translation, no arm swaps. Preserve hand-drawn pencil/ink style but reduce fine noisy texture for small GIF.Use CENTER blue-shirt adult Chinese office worker from reference. Same angular long face, sidepart hair, blue shirt and loose dark tie. Hand already supports cheek (VIEWER LEFT) throughout, other forearm rests low. Start mildly tired half-lidded eyes; gradually eyelids droop, inner eyebrows rise, cheek sinks subtly into palm, mouth opens a small sigh; peak8 resigned exhausted sideward stare with slack mouth.9-12 recover from sigh to initial. Tiny coordinated brow/eye/mouth/hand pressure movement, not funny grimace, not sleep. Head anchored, no body scale change.",
+      "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-42c4b621-e1ba-4333-a905-640f4201a601.png",
+      "masterFile": "masters/worker-tired.png",
+      "sha256": "b49abaeda329ba62342d58668e5cce6536b07960d3efd82403ab4388856a0ab1",
+      "referenceSha256": "cd4e270613be2f0f5e803117a7afb1ff1a8843e073b46d2a1c9761faf0bac142"
+    },
+    {
+      "id": "young-man-cheer",
+      "caption": "加油",
+      "reference": "round-face-young-man.png",
+      "action": "Use RIGHT warm terracotta-hoodie adult Chinese young man. Handsome rounded face, short crew hair, lively brows and dimple. Encouraging not aggressive. Viewer-right fist starts by lowerchest, slowly lifts beside shoulder as eyebrows rise and friendly mouth opens cheering; peak8 joyful determined smile and small fistpump, eyes looking toward viewer.9-12 fist gradually lowers and mouth relaxes to initial gentle smile. Other arm stays low. Keep face anatomy consistent, no teeth jitter or fingers multiplying.",
+      "prompt": "Create an animation sprite sheet EXACTLY 4 COLUMNS by 3 ROWS, 12 equal square cells, landscape 1440x1080. Attached image is an ORIGINAL character audition reference. Use ONLY the specified character/expression as identity target, REMOVE all captions and other poses. Same character in all12 cells, consistent face/body/clothing, fixed camera, scale, head anchor and baseline. Solid OPAQUE WHITE background, no transparency or colored artifacts. Bottom 18% of each cell must stay BLANK WHITE for caption overlay. Character all within top80%, thin lightgray grid dividers only, no text, symbols or watermarks. Reading order left-right top-bottom gives sequential gradual motion: 1-7 build with unique facial and gesture changes,8 peak,9-12 gradually return to initial. Panel12 matches1 in precise alignment/expression for seamless loop. Gentle coherent acting, not whole-image translation, no arm swaps. Preserve hand-drawn pencil/ink style but reduce fine noisy texture for small GIF.Use RIGHT warm terracotta-hoodie adult Chinese young man. Handsome rounded face, short crew hair, lively brows and dimple. Encouraging not aggressive. Viewer-right fist starts by lowerchest, slowly lifts beside shoulder as eyebrows rise and friendly mouth opens cheering; peak8 joyful determined smile and small fistpump, eyes looking toward viewer.9-12 fist gradually lowers and mouth relaxes to initial gentle smile. Other arm stays low. Keep face anatomy consistent, no teeth jitter or fingers multiplying.",
+      "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-865fb102-405a-415a-be8f-c2a16979d0d7.png",
+      "masterFile": "masters/young-man-cheer.png",
+      "sha256": "f2bbb6d2e5b26a909f83694a602fbd2f46727c538a57c8d0081e4b698464b30e",
+      "referenceSha256": "0bd694fd6c987d39a4dee38fc882fe0f0354df41a00cd9b8d5165175b76aa76d",
+      "edits": [
+        {
+          "prompt": "Correct ONLY panels1 and12 (top-left and bottom-right) in this 4x3 animation sprite sheet. Those two mistakenly have fist on VIEWER LEFT, while other10panels use VIEWER RIGHT. In both1and12 remove viewer-left fist and instead put ONE fist on VIEWER RIGHT at lowchest position, slightly lower than panel2. Keep other arm down, match panel2 anatomy. First and last must match exactly in headposition, face and low fist. All other10panels untouched, including head shape and grid. Preserve warm hoodie/face identity and canvas1448x1086. No whole panel mirror, no new text.",
+          "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-fce04780-88df-4ec6-b8a7-e77d803861b7.png"
+        }
+      ]
+    },
+    {
+      "id": "dog-hopeful",
+      "caption": "期待",
+      "reference": "droopy-eye-dog-v2.png",
+      "action": "Use RIGHT cream dog with cocoa floppy ear. Same soft pear muzzle, tuft, expressive drooping eyes, paws held under chin throughout. Start hopeful gentle smile and gaze slightlyup; progressively eyes widen and eyebrows lift, ears perk just slightly, paws press together and rise a little, muzzle smiles more; peak8 warm eager anticipatory gaze.9-12 smoothly relax eyes/ears/paws to firstpose. No tail or new props, do not cry or pant, avoid random cartoon bounce. Head scale and noseposition fixed, expressive eyes and small paws motion are focus.",
+      "prompt": "Create an animation sprite sheet EXACTLY 4 COLUMNS by 3 ROWS, 12 equal square cells, landscape 1440x1080. Attached image is an ORIGINAL character audition reference. Use ONLY the specified character/expression as identity target, REMOVE all captions and other poses. Same character in all12 cells, consistent face/body/clothing, fixed camera, scale, head anchor and baseline. Solid OPAQUE WHITE background, no transparency or colored artifacts. Bottom 18% of each cell must stay BLANK WHITE for caption overlay. Character all within top80%, thin lightgray grid dividers only, no text, symbols or watermarks. Reading order left-right top-bottom gives sequential gradual motion: 1-7 build with unique facial and gesture changes,8 peak,9-12 gradually return to initial. Panel12 matches1 in precise alignment/expression for seamless loop. Gentle coherent acting, not whole-image translation, no arm swaps. Preserve hand-drawn pencil/ink style but reduce fine noisy texture for small GIF.Use RIGHT cream dog with cocoa floppy ear. Same soft pear muzzle, tuft, expressive drooping eyes, paws held under chin throughout. Start hopeful gentle smile and gaze slightlyup; progressively eyes widen and eyebrows lift, ears perk just slightly, paws press together and rise a little, muzzle smiles more; peak8 warm eager anticipatory gaze.9-12 smoothly relax eyes/ears/paws to firstpose. No tail or new props, do not cry or pant, avoid random cartoon bounce. Head scale and noseposition fixed, expressive eyes and small paws motion are focus.",
+      "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-f172b490-0e71-4b67-bb8b-6e4cdfa4581d.png",
+      "masterFile": "masters/dog-hopeful.png",
+      "sha256": "8e8e9946e1b2499beaad2165b8d88252753bf53dee26f2c7d821703384645c84",
+      "referenceSha256": "362fc80869f3e9185eec6bc3382723009ddb47617732b7933c654ea97ebe3d90"
+    }
+  ]
+}

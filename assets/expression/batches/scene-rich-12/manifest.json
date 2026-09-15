@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "batchId": "scene-rich-12",
+  "status": "review-only",
+  "items": [
+    {
+      "id": "scene-rich-12-really-man",
+      "keyword": "真的假的",
+      "style": "original-realistic-person",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "captionPlacement": "bottom-left",
+      "caption": "真的假的",
+      "masterFile": "masters/scene-rich-12-really-man.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Create ONE original animation sprite sheet, exactly 4 columns by 3 rows, 12 equal square panels in chronological reading order. Landscape 4:3 ratio, about 1440x1080. Fine straight light grey cell dividers only, no gutters. All 12 panels use IDENTICAL camera, character identity, scale, background, lighting, body baseline. 12 true subtly different poses in a single acting sequence, not random expressions. Panels 1 and 12 should visually match, last four panels progressively return. Leave BOTTOM 20% of every panel clear for Chinese caption added later by software; draw NO text, letters, numbers, punctuation, watermarks, logos, speech bubbles or labels anywhere. No copied celebrity, recognizable meme face, copyrighted character or brand. Natural anatomy, no extra limbs. Photorealistic natural cinematic upper-body portrait of a FICTIONAL ORIGINAL handsome Chinese adult man age about 27. Strong attractive jawline, dark expressive eyes, thick tidy eyebrows, short textured black hair, clean shaven, plain dark navy crewneck shirt, pale warm grey studio background. Not a celebrity or resemblance to one. Convey the Chinese reaction '真的假的' meaning skeptical 'Really? Are you serious?', using eyebrows, eyes, lips and a SMALL questioning open hand; do NOT just pose handsomely. Neck and body fixed, only tiny lean allowed. Sequence: 1 neutral looking at viewer, right hand relaxed low; 2 brows begin knit pupils shift toward viewerleft;3 left brow rises;4 one eye narrows, other brow higher, lips slightly part;5 head draws back slightly, questioning hand lifts toward chest;6 open palm reaches midchest fingers relaxed;7 one eyebrow clearly raised, skeptical sideways eyes, mouth small crooked incredulous halfsmile;8 peak skeptical 'you cannot be serious' face, small open palm and tiny backward head angle;9 palm lowers quarterway and brow relaxes a little;10 palm halfway down face halfneutral;11 hand almostlow face almostneutral;12 initial handlow neutral head gaze. Keep expressive eyes attractive and natural, not horror or fake surprised emoji face. Same hands and body in each panel, no finger deformation.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-859a2d85-1535-4116-9a36-1499187dd30c.png",
+        "masterSha256": "0dfe0b8795a1695180da1e42064441371623ee8c637523ba660bf9fbd89d1b8e"
+      }
+    },
+    {
+      "id": "scene-rich-12-really-line",
+      "keyword": "真的假的",
+      "style": "expressive-monochrome-cartoon",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "captionPlacement": "bottom-left",
+      "caption": "真的假的",
+      "masterFile": "masters/scene-rich-12-really-line.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Create ONE original animation sprite sheet, exactly 4 columns by 3 rows, 12 equal square panels in chronological reading order. Landscape 4:3 ratio, about 1440x1080. Fine straight light grey cell dividers only, no gutters. All 12 panels use IDENTICAL camera, character identity, scale, background, lighting, body baseline. 12 true subtly different poses in a single acting sequence, not random expressions. Panels 1 and 12 should visually match, last four panels progressively return. Leave BOTTOM 20% of every panel clear for Chinese caption added later by software; draw NO text, letters, numbers, punctuation, watermarks, logos, speech bubbles or labels anywhere. No copied celebrity, recognizable meme face, copyrighted character or brand. Natural anatomy, no extra limbs. Use the attached user examples ONLY as references for expressive acting and how simple black-and-white line drawings convey a precise phrase. Do not reproduce their panda ears, panda bodies, mushroom haircut, actual human photographic faces or exact compositions. Invent an ORIGINAL cartoon Chinese adult male: narrow rectangular head with slightly angular jaw, tiny swept-back wedge of hair, thick asymmetric eyebrows, expressive eyelids and pupils, large flexible mouth, simple white shirt and slender simplified torso/arms. Confident clean bold black ink on COMPLETELY FLAT OFF-WHITE background; no grain, gradients, shadows or texture, no black background. Face is LARGE and takes 40% of panel, not a featureless cute bean. Meaning '真的假的' skeptical disbelief, not fear or anger. Sequence:1 reserved neutral face armslow;2 pupils slide to viewerleft, one eyebrow rises;3 opposing eyebrow drops, one eyelid narrows;4 head tilts a little back, mouth corner pulls skeptical;5 one hand starts rising palmup, lips part like 'huh';6 palm up at chest height, facial asymmetry intensifies;7 eyes narrow in scrutiny, one brow dramatically arches, crooked questioning mouth;8 peak 'are you kidding me?' incredulous eyebrow/side-eye/mouth and open-palm body language, subtle comedic backwards lean;9 hand starts down and eyebrows partlyrelax;10 head halfreturns palmhalflow;11 almostneutral;12 same firstpose. Eyelids, eyebrows, pupil direction and mouth shape must all change meaningfully together with hand gesture, no generic grin, no stiff head translation, no decorative marks or symbols. Smooth real transitions and humorous adult expression.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-fa6748bd-c049-4393-b75f-43c0a6b8bfde.png",
+        "masterSha256": "f3bf46984cd88156b916737ac0f735eb268a1a49291342ce91012b3bf2a53b62",
+        "edits": [
+          {
+            "prompt": "Edit ONLY hand/arm continuity in this original twelve-panel black and white cartoon sprite sheet. Keep all face expressions, hairstyles, textless background, grid and character identity. 4 columns 3 rows. The questioning hand MUST ALWAYS be the character's LEFT HAND on VIEWER'S RIGHT, emerging from viewer-right shoulder. Viewer-left arm stays relaxed DOWN in EVERY panel. NEVER switch hands. Panel5 viewer-right hand begins lift low nearbelly;6 viewer-right palm midway chestheight;7 viewer-right openpalm chestheight;8 same viewer-right openpalm chestheight (replace incorrect viewer-left gesture), retain skeptical expressive face;9 viewer-right hand lowering justbelowchest, viewer-left arm down;10 viewer-right hand lowernearbelly, viewer-left arm down;11 botharmslow;12 matches firstpanel. Preserve true gradual transitions, original black ink style, no extra arms or text.",
+            "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-da781322-3531-4e1e-bfa4-abaf3a08d502.png",
+            "resultPath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-0e0cba82-8f04-4d0e-b8e7-c9ed86c3303a.png",
+            "rejectedMasterFile": "rejected/scene-rich-12-really-line-before-edit-1.png",
+            "sourceSha256": "2421a4aaaf2c2a744072a9ab54fea9fad9fe15ac87f8a6eaa3aa4baed91f8f14"
+          },
+          {
+            "prompt": "Edit ONLY panel10 = BOTTOM ROW, SECOND COLUMN of this original 4x3 twelve-panel black-white cartoon sheet. ALL OTHER 11 PANELS MUST REMAIN UNCHANGED. Panel10 currently has the WRONG ARM bent on VIEWER LEFT. Erase that bent left-side arm/hand and make viewer-left arm hang straight down as in panel11. Instead put the lowering bent hand on VIEWER RIGHT, anatomically connected to the right side of this drawing, palm at BELLY height lower than panel9 and higher than resting panel11. This is the SAME raised hand shown on viewer-right in panels5-9, now lowering, NOT switching sides. Preserve panel10 face, head, shirt, scale, all grid lines and full sheet dimensions. No text.",
+            "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-0e0cba82-8f04-4d0e-b8e7-c9ed86c3303a.png",
+            "resultPath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-fa6748bd-c049-4393-b75f-43c0a6b8bfde.png",
+            "rejectedMasterFile": "rejected/scene-rich-12-really-line-before-edit-3.png",
+            "sourceSha256": "e278be7518c14bdece8fd927d7770fa4e7bb8527060f9dcca44c2f2dafc41c52"
+          }
+        ]
+      }
+    },
+    {
+      "id": "scene-rich-12-think-man",
+      "keyword": "让我想想",
+      "style": "original-realistic-person",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "captionPlacement": "bottom-left",
+      "caption": "让我想想",
+      "masterFile": "masters/scene-rich-12-think-man.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Create ONE original animation sprite sheet, exactly 4 columns by 3 rows, 12 equal square panels in chronological reading order. Landscape 4:3 ratio, about 1440x1080. Fine straight light grey cell dividers only, no gutters. All 12 panels use IDENTICAL camera, character identity, scale, background, lighting, body baseline. 12 true subtly different poses in a single acting sequence, not random expressions. Panels 1 and 12 should visually match, last four panels progressively return. Leave BOTTOM 20% of every panel clear for Chinese caption added later by software; draw NO text, letters, numbers, punctuation, watermarks, logos, speech bubbles or labels anywhere. No copied celebrity, recognizable meme face, copyrighted character or brand. Natural anatomy, no extra limbs. Photorealistic lifestyle reaction portrait of an ORIGINAL FICTIONAL handsome Chinese adult man age about30, distinct from stock celebrities: healthy warm skin, appealing angular face, neat side-parted short black hair, dark thoughtful eyes, well-defined brows, clean shaven, plain light slate-blue linen shirt, soft natural daylight and smooth beige backdrop. Upper body centered, eyes and chin clearly readable. Meaning Chinese '让我想想': 'let me think for a moment'. Not a smiley fashion pose; express mentally searching and considering. Camera/shoulders fixed. Sequence1 neutral forward gaze right hand restinglow;2 pupils move slightly upward to viewerleft, brow gentlydraws;3 pupils look up left, lips press lightly;4 right hand rises a little toward chin;5 hand halfwaychin;6 thumb underchin and bent index finger along jaw, no finger coveringmouth;7 brow furrows a bit more eyes searchupperleft, lips subtlypurse;8 clear concentrated thinking pause in handonchin pose, calm and attractive not angry;9 hand leaveschin a little, gaze lowersquarterway;10 handhalfwaydown eyeshalfreturn;11 handalmostlow gazealmostforward;12 exact initial lowhand neutral gaze. True gradual finger/hand/head/eye changes; all12 frames same character, natural five fingers, no eyeglasses or new props.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-c3d30bbf-93bd-4f39-a9f1-a8459a978e64.png",
+        "masterSha256": "4159cee99dd92b37c55768d9ddb75d4c262dd58a4383f029cecbffc717b019fa",
+        "edits": [
+          {
+            "prompt": "Edit this ORIGINAL fictional Chinese adult man's 12-panel animation sheet ONLY to repair gradual hand transitions and return. Same 4 columns3rows squarecells landscape4:3 size. Preserve handsome original face, body size, hairstyle, shirt/background/lighting. Never copy celebrity. Hand rises on VIEWERLEFT only, otherhandalwayslow. Change panel4 (topright) so hand is LOW at midchest, not already at chin. Panel5 (middlerow first) hand is halfway between chest and chin. Panel6 hand reaches original underchin pose. Panels7/8 unchanged peak thoughtful pose. Panel9 hand has just left chin and sits belowjaw, eyesstillup-left but slightlylower; panel10 hand at midchest, eyeshalfwaybacktofront; panel11 hand lownearbottomframe gazealmostfront; panel12 sameFIRST neutral lowhandpose. Every hand position must be incremental with correct anatomy, no abrupt pop from zero to chin or disappearance. No text, logos, new objects, changes to camera or panelbounds.",
+            "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-9b4132eb-f880-4bc5-87d1-9ed4f9a97d72.png",
+            "resultPath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-c3d30bbf-93bd-4f39-a9f1-a8459a978e64.png",
+            "rejectedMasterFile": "rejected/scene-rich-12-think-man-before-edit-2.png",
+            "sourceSha256": "318327c76c39e443ce3ad77e116bd2dcb7ea6f13c6b2d8568f38453f2eb9fe54"
+          }
+        ]
+      }
+    },
+    {
+      "id": "scene-rich-12-think-line",
+      "keyword": "让我想想",
+      "style": "expressive-monochrome-cartoon",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "captionPlacement": "bottom-left",
+      "caption": "让我想想",
+      "masterFile": "masters/scene-rich-12-think-line.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Create ONE original animation sprite sheet, exactly 4 columns by 3 rows, 12 equal square panels in chronological reading order. Landscape 4:3 ratio, about 1440x1080. Fine straight light grey cell dividers only, no gutters. All 12 panels use IDENTICAL camera, character identity, scale, background, lighting, body baseline. 12 true subtly different poses in a single acting sequence, not random expressions. Panels 1 and 12 should visually match, last four panels progressively return. Leave BOTTOM 20% of every panel clear for Chinese caption added later by software; draw NO text, letters, numbers, punctuation, watermarks, logos, speech bubbles or labels anywhere. No copied celebrity, recognizable meme face, copyrighted character or brand. Natural anatomy, no extra limbs. Use attached examples ONLY for their expressive black-and-white cartoon acting language, NOT their recognizable characters, faces, panda ears, mushroom haircut or copied scene. Create a different ORIGINAL Chinese adult male cartoon, tall oval head, tiny short spiky hair tuft, bushy articulated eyebrows, visible expressive eyes with eyelids/pupils, flexible lips, thin neck and small plain dark sleeveless vest over white shirt, simplified arms. Large adult face on a slender funny body, bold clean black ink, COMPLETELY FLAT pure white background with NO texture, gradients, noise or photographic face collage. Meaning '让我想想': deliberate 'let me think'. Expression thoughtful and slightly comical, not alarmed or angry. 12 poses:1 neutral front with handlow;2 pupils begin up-left and brow gentlyknits;3 pupils fartherup-left, lips startpursing;4 one hand rises frombelly;5 handhalfwaychesttochin;6 thumb restsunderchin indexfingeralongjaw, otherhandlow;7 eyes narrow thoughtfully lookingup-left, brows squeeze, lips puckerslightly sideward;8 exaggerated concentrated ponder with chinheld, upward sideways eye movement and asymmetrical pursed lips, shoulders tinyhunch;9 thoughtfulbrows relaxquarterway, hand beginslowering;10 handhalfdown gazehalfreturns lipsrelax;11 almost firstpose;12 exactly initial. Require visible nuanced eyelid, gaze, brow, mouth AND hand changes that communicate thinking even with no caption; NO question marks/lightbulb/ellipsis or floatingsymbol shortcuts, NO static repeated heads or mechanical scaling.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-4780dbda-9df8-455b-ae62-99bf48828534.png",
+        "masterSha256": "1b0462f1fa75ce5eafbee662064f3a51aaeca8364e3ad0b60597784e6435c704"
+      }
+    }
+  ]
+}

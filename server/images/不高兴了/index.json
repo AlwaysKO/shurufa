@@ -1,0 +1,31 @@
+{
+  "keyword": "不高兴了",
+  "items": [
+    {
+      "id": "scene-rich-03-annoyed",
+      "keyword": "不高兴了",
+      "file": "不高兴了/scene-rich-03-annoyed.gif",
+      "thumbnail": "不高兴了/scene-rich-03-annoyed.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-03/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-03/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-03/gifs/scene-rich-03-annoyed.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-03/thumbnails/scene-rich-03-annoyed.webp",
+      "batch": "scene-rich-03",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "be7c2b3481781a5bf4cfda910d61bfc7ac1c6931edd19097d8a8555ad49a3560",
+      "thumbnailSha256": "1e406a2c38bd3c2141f113705f11b494ad83d85735c633ebc3b461e3049d2aa6",
+      "bytes": 68746,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "durationMs": 1600,
+      "style": "hand-drawn",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

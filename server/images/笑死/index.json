@@ -1,0 +1,105 @@
+{
+  "keyword": "笑死",
+  "items": [
+    {
+      "id": "laugh-huohua-table",
+      "keyword": "笑死",
+      "file": "笑死/laugh-huohua-table.gif",
+      "thumbnail": "笑死/laugh-huohua-table.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/prototypes/manifest.json",
+      "sourceReport": "artifacts/expression-prototypes/report.json",
+      "sourceGif": "artifacts/expression-prototypes/gifs/laugh-huohua-table.gif",
+      "sourceThumbnail": "server/.runtime/expression-assets/thumbnails/laugh-huohua-table.webp",
+      "batch": "prototypes",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "43195541be8a6001c325182c5a0d6eaf68ccda01c526945977ecc4ef8468e8bc",
+      "thumbnailSha256": "16d632a19b6c5439496ac63a73e70febe5d63e8063cadad42a1fd6d5eab1a0d4",
+      "bytes": 195987,
+      "width": 240,
+      "height": 240,
+      "frames": 20,
+      "style": "original-character",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    },
+    {
+      "id": "laugh-parrot-tumble",
+      "keyword": "笑死",
+      "file": "笑死/laugh-parrot-tumble.gif",
+      "thumbnail": "笑死/laugh-parrot-tumble.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/prototypes/manifest.json",
+      "sourceReport": "artifacts/expression-prototypes/report.json",
+      "sourceGif": "artifacts/expression-prototypes/gifs/laugh-parrot-tumble.gif",
+      "sourceThumbnail": "server/.runtime/expression-assets/thumbnails/laugh-parrot-tumble.webp",
+      "batch": "prototypes",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "cc42f4b678d64bf3e7b9838827ca5b58f631cf8e3ca84ae7c82845ce5766d97a",
+      "thumbnailSha256": "64a58e39d885d1d28dc730b427098cacfde6802dcc891079fb413af744c840c4",
+      "bytes": 195705,
+      "width": 240,
+      "height": 240,
+      "frames": 18,
+      "style": "ai-original-pet",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    },
+    {
+      "id": "laugh-friend-collapse",
+      "keyword": "笑死",
+      "file": "笑死/laugh-friend-collapse.gif",
+      "thumbnail": "笑死/laugh-friend-collapse.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/prototypes/manifest.json",
+      "sourceReport": "artifacts/expression-prototypes/report.json",
+      "sourceGif": "artifacts/expression-prototypes/gifs/laugh-friend-collapse.gif",
+      "sourceThumbnail": "server/.runtime/expression-assets/thumbnails/laugh-friend-collapse.webp",
+      "batch": "prototypes",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "5c5162ac27da1e0bff8abfd0be49e3ddd9cd31abfbf5b5b0491e9d65c371043a",
+      "thumbnailSha256": "f42d4c121b2f97dd4813f51063f3b48d79f34be28ffae0c1122eafaa4ff2b20c",
+      "bytes": 172592,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "style": "original-life-scene",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    },
+    {
+      "id": "laugh-type-explosion",
+      "keyword": "笑死",
+      "file": "笑死/laugh-type-explosion.gif",
+      "thumbnail": "笑死/laugh-type-explosion.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/prototypes/manifest.json",
+      "sourceReport": "artifacts/expression-prototypes/report.json",
+      "sourceGif": "artifacts/expression-prototypes/gifs/laugh-type-explosion.gif",
+      "sourceThumbnail": "server/.runtime/expression-assets/thumbnails/laugh-type-explosion.webp",
+      "batch": "prototypes",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "020d74bf26a649bf7d2f971829ec1b37db4924194cea9624a70e45bc4bb5b912",
+      "thumbnailSha256": "e9308358259e588f0779b617b7591a4c745b887f82910a12175a95b7a28c75d5",
+      "bytes": 140379,
+      "width": 240,
+      "height": 240,
+      "frames": 12,
+      "style": "kinetic-typography",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

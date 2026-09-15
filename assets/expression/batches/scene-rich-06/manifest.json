@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "batchId": "scene-rich-06",
+  "status": "review-only",
+  "items": [
+    {
+      "id": "scene-rich-06-no",
+      "keyword": "不行",
+      "caption": "不行",
+      "captionPlacement": "top-left",
+      "masterFile": "masters/scene-rich-06-no.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Original minimal black ink chat cartoon ANIMATION SPRITE SHEET, exactly FOUR columns and THREE rows, TWELVE equal square panels, whole image landscape4:3, opaque ivory full-bleed background, no gutters no grid lines no text. Meaning \"no way\": an original small geometric bean character sits behind a desk and slowly raises crossed forearms into a gentle X while giving an unimpressed side-eye, then slowly lowers them. Character asymmetrical rounded triangular body, tiny dot eyes, crooked small mouth, no existing mascot or realistic human face. Sparse black lines, tiny muted coral cheeks only. Desk line at80% cellheight and body scale/location IDENTICAL in EVERY square cell, top-left quarter blank for later caption. Twelve consecutive gradual poses reading order:1 neutral eyes arms resting low;2 eyes shift sideways;3 elbows lift a little;4 forearms rise halfway;5 wrists approach each other;6 forearms cross at lower chest;7 crossed arms rise slightly, eyebrows lower;8 peak firm X at chest and deadpan sideways glance, funny polite-but-final refusal;9 X lowers slightly;10 arms uncross halfway;11 hands almost resting eyes ease;12 exact original relaxed arm position and same face as1. Small truly different intermediate gestures, no sudden size change, no body jump, exactly two arms, no fingers required. These are12 source poses for4second loop, NOT twelve random portraits. No letters numbers brands watermarks or speech balloons.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-2e990039-5dd0-4794-9d15-02bb382180ee.png",
+        "correctionPrompt": "Edit ONLY background of original4columns3rows12pose sheet. Replace transparent/black background with solid opaque pure WHITE everywhere behind character, chair, desk. Preserve all twelve poses, linework, table position, exact4:3 aspect and grid alignment. No lettering, no borders. White paper and black marker style, not transparent.",
+        "intermediateSource": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-9e5a8635-fe0b-4ef7-be1f-cb2f468a3a95.png",
+        "masterSha256": "587ab9aee7254a2b0ce4239884b9f5e1eaebd91361e217d40ad067dfd2d63723",
+        "gridCorrectionPrompt": "Re-layout this ORIGINAL12pose sheet into an EXACT4column3row GRID of SQUARE CELLS. ADD hairline pale grey dividing lines at x25%,50%,75% and y33.333%,66.667% so all cell edges clear. Preserve each pose but POSITION all desks at EXACT same relative height80% in their cell, all character heads at same relative height25% and same scale. Current rows drift upward; fix by moving first-row drawings UP slightly, bottom-row drawings DOWN slightly until identical alignment relative to grid. First and twelfth should match pose/position/size precisely. Background opaque white, no labels. Preserve refusal crossed-arms sequence, no changes to expressions or character design. Landscape4:3, twelve square cells with no margins outside grid.",
+        "beforeGridCorrection": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-d138cf51-90a6-427c-85ac-3611f90c8cd0.png"
+      }
+    },
+    {
+      "id": "scene-rich-06-slack",
+      "keyword": "摸鱼",
+      "caption": "摸鱼",
+      "captionPlacement": "top-left",
+      "masterFile": "masters/scene-rich-06-slack.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Create an ORIGINAL ultra-simple black line animated chat comic sprite sheet: FOUR columns THREE rows TWELVE equal square panels, whole sheet landscape4:3, all panels have SOLID opaque very pale blue background. No transparency, no empty black background, no gutters, no lettering. Joke \"slacking at work\": a long oval original bird behind a plain open laptop slowly peeks over laptop at viewer then settles cheek onto one wing, sleepy sly eyes, other wing stays near keyboard pretending to work. Tiny mug remains on desk at right. Very sparse sketch, angular beak, three scruffy head feathers, not any famous character, no real human face. Camera perfectly fixed, desk horizontal80% each cellheight, laptop same size lower center throughout. Twelve consecutive small movements:1 upright eyes toward laptop screen;2 pupils glance right;3 pupils glance toward viewer;4 upper eyelids lower knowingly;5 one wing moves from keyboard toward cheek halfway;6 wing touches cheek, head leans2degrees;7 head rests a little more, sly eyes;8 peak lazy cheek-rest half-smile, pretending busy;9 cheek lifts a little from wing;10 wing lowers halfway;11 wing near keyboard and head almost straight;12 exact original working pose. No laptop logos or screen writing, mug stationary, exactly two wings. Body barely moves, genuine tiny head/eye/wing inbetweens, no resizing, no motion blur, no fade. Top-left clear for caption later. Crisp thick black contour, muted ochre beak only.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-3a4faabe-30c3-42a0-8569-6249e4df5d08.png",
+        "correctionPrompt": "Correct wing continuity in this original4x3 twelve-frame bird laptop animation. ONLY change panels5(row2col1) and10(row3col2): the wing on VIEWER LEFT must stay resting on keyboard/desk exactly like frames1-4,6-9,11-12. The moving cheek-rest wing must ALWAYS be on VIEWER RIGHT. In panel5 draw that right wing rising halfway toward right cheek. In panel10 draw that right wing lowering halfway from right cheek toward desk. Remove the wrongly raised LEFT wing in those two panels; exactly2wings. Preserve all other panels, colors, expressions, camera, cup and laptop. No text, no new details.",
+        "intermediateSource": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-dd9d0c5d-0a38-49b9-afba-634097a7a06d.png",
+        "secondCorrectionPrompt": "Correct ONLY BOTTOM ROW SECOND COLUMN of this4column3row sheet (panel10). Its raised wing on VIEWER LEFT is WRONG. REMOVE that raised wing and replace with same resting left wing beside laptop used in bottom-left panel9. Draw the moving wing on VIEWER RIGHT at lower cheek level, on the CUP SIDE of the bird, lowering from right cheek toward keyboard. Keep exactly2wings. All other11panels untouched. Same laptop, face, background, mug, size and composition. The correction must happen ONLY in bottom row second column. No text.",
+        "secondIntermediateSource": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-54fd918e-a0b8-4ba1-8be6-24d29b6d10a8.png",
+        "masterSha256": "226f207a83038124dad41e32f9238107f36541cf3cf4f900b22678e93909a78a"
+      }
+    },
+    {
+      "id": "scene-rich-06-wronged",
+      "keyword": "委屈",
+      "caption": "委屈",
+      "captionPlacement": "bottom-left",
+      "masterFile": "masters/scene-rich-06-wronged.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Original PHOTOREALISTIC small white-and-tan terrier feeling wronged, animation sprite sheet exactly FOUR columns THREE rows TWELVE equal square photos no gutters no labels, landscape4:3. Ordinary unique dog on beige cushion with chin resting on paws, soft apartment background. Meaning 'I feel wronged': looks up with slightly watery pleading eyes, brows naturally soften and ears droop a little, chin sinks subtly then returns. Not actual tears streaming, no animal distress or injury, just comic pout. Fixed tripod and identical fur/sofa geometry, head position and body scale unchanged, small pupil eyelid ear and chin changes ONLY. Twelve gradual poses reading order:1 neutral soft upward look, chin rests;2 pupils lift slightly;3 inner eyelids soften a bit;4 ears lower a few degrees;5 eyes round slightly in pleading;6 chin sinks3mm into paws;7 eyes look up from lowered chin;8 strongest innocent wounded pout, glistening eyes, ears relaxed down, mouth closed;9 ears ease a little;10 chin rises halfway slowly;11 eyelids almost original;12 exact starting head and eye pose. Natural anatomy no human eyebrows no giant cartoon whites no clothes no text. Lower-left cushion empty for deterministic caption. Gentle amusing innocent expression not generic smiling dog,12 authentic inbetween poses for4second loop, no motion blur crossfade zoom or big movement.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-52638655-89bd-4862-afd4-b33ec00b7369.png",
+        "masterSha256": "de292e53cf5beabf28228bbb7915286dd0c751358237e4c83348a3ad76761163"
+      }
+    },
+    {
+      "id": "scene-rich-06-expect",
+      "keyword": "期待",
+      "caption": "期待",
+      "captionPlacement": "bottom-left",
+      "masterFile": "masters/scene-rich-06-expect.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "An ORIGINAL photorealistic curious grey-and-white kitten anticipation animation sheet, EXACT FOUR columns THREE rows TWELVE equal square photos, whole image4:3 landscape, no borders gaps text or labels. Small young adult cat sitting neatly behind a low wooden table, front paws side by side. Looks up toward unseen exciting reveal with increasingly bright alert eyes, tiny ear perk and barely forward-leaning head, then calmly settles back. Meaning 'looking forward to it', keen hopeful expectation, not shock or fear. Same ordinary unique cat identity, no famous internet cat. Locked tripod, fixed table at80%cellheight, identical softly blurred apartment wall and lamp background, fur/scale stable. Twelve very small consecutive inbetweens:1 calm attentive eyes slightly upward;2 pupils lift a little;3 ears perk a few degrees;4 eyelids open a little wider;5 head inclines forward1degree;6 forward2degrees eyes bright;7 forward3degrees pupils focused;8 peak eager expectant stare, whiskers forward, tiny nose lift but closed natural mouth;9 head eases back a little;10 ears relax halfway;11 eyes almost initial openness;12 same first calm hopeful pose. No giant cartoon eye whites or human grin, natural anatomy, both paws always visible and fixed, lower LEFT clear for caption later. Minimal movement with expressive eyes and ears,12 truly gradual source poses for4second loop, no zoom, fade, blur, clothes, brands or watermark.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-6ed7d431-e70f-41ab-aa5f-f35bd93988a0.png",
+        "masterSha256": "0a70a29a280df4a173233a6eb218c9f309935b507640455e5334e0b97a107203"
+      }
+    }
+  ]
+}

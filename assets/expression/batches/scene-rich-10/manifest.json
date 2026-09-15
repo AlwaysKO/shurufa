@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "batchId": "scene-rich-10",
+  "status": "review-only",
+  "items": [
+    {
+      "id": "scene-rich-10-offwork",
+      "keyword": "下班了",
+      "caption": "下班了",
+      "captionPlacement": "top-left",
+      "masterFile": "masters/scene-rich-10-offwork.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Create an ORIGINAL animation sprite sheet, exactly4columns by3rows,12 equal square cells chronological reading order, landscape4:3 aspect. Thin grey straight dividers,no gutters,no labels. Each cell same fixed camera/background/character size and anchor points. Twelve small incremental true drawing poses; finalpose12 matches firstpose1. No text, lettering, symbols, logos, watermarks, known characters, brands or celebrity face. Caption will be added deterministically later so reserve top-left clear. Minimalist black-line chat cartoon, flat uniform pale mint background absolutely no noise/grain/gradient/blotches. Original squat cream oval bean with short flat eyebrows and tiny pointy ears, not a known mascot, seated behind plain tan desk. Laptop on desk at viewer-right with blank darkblue lid, original no logo, front3/4 camera, entire upper body visible and ample top space. Meaning 'work is over': sleepy employee slowly closes laptop and gives a tiny smug satisfied eye glance. Exactly2 arms. Viewer-left arm rests on tabletop always; viewer-right palm stays on TOP edge of screen and slowly moves with lid, never disappears. Cell1 lid open70degrees, eyes on laptop.2 lid60degrees.3 lid50degrees.4 lid40degrees.5 lid25degrees.6 lid12degrees.7 lidclosedflat, eyes glance toward viewer.8 lidflat, dry proud smile half-liddedeyes 'finally free'.9 lidopens15degrees.10 lidopens35degrees.11 lidopens55degrees.12 lid70degrees and initialface. Screen stays one rigid rectangle hinged to keyboard, no floating keyboard, no extra hands. No text. Small limited palette, clean flat shapes, fixed desk/torso and head size throughout. Slow legible work-ending gesture, not frantic.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-e97e7b1e-bd11-4cea-b4c6-0a4ca4222530.png",
+        "editPrompt": "Edit this original12cell cartoon animation sheet. Only replace black/white/red/yellow corrupted noisy background behind the character in ALL12cells with uniform FLAT pastel mint #e1f1e7, clean black outlines. No grain, gradients, transparency, texture, noise, patterns. Preserve laptop poses and character EXACTLY, all cells and table/body dimensions fixed. Original12cells4columns3rows landscape4:3 no text. Final bottomright laptop must match top-left screen angle, preserve closing/reopening progression.",
+        "originalSourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-c6d0cd9d-a4fc-4ad6-ba5e-f43a8486be21.png",
+        "masterSha256": "9cca68c8f3702e983a22ac7b2dfe42d70e8591706b450630c17babb14b08f224",
+        "originalSha256": "c96edc99e5e1b131b3f588fc87a55af320dfe7cda07229ae801ae063462bc1e2",
+        "rejectedMasterFile": "rejected/scene-rich-10-offwork-before-fix.png"
+      }
+    },
+    {
+      "id": "scene-rich-10-busy",
+      "keyword": "忙着呢",
+      "caption": "忙着呢",
+      "captionPlacement": "top-left",
+      "masterFile": "masters/scene-rich-10-busy.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Create an ORIGINAL animation sprite sheet, exactly4columns by3rows,12 equal square cells chronological reading order, landscape4:3 aspect. Thin grey straight dividers,no gutters,no labels. Each cell same fixed camera/background/character size and anchor points. Twelve small incremental true drawing poses; finalpose12 matches firstpose1. No text, lettering, symbols, logos, watermarks, known characters, brands or celebrity face. Caption will be added deterministically later so reserve top-left clear. Original minimalist thick black-line cartoon with completely flat uniform pale butter yellow background, no gradient/noise or texture. Small ivory rounded rectangle bean character with triangular black hair tuft, dark under-eye bags and funny tired angry eyebrows seated behind warm brown desk. Stack of blank paperwork viewer-left, one sheet centered, held pencil in viewer-left hand, viewer-right hand free. Exactly2arms no brand. Meaning 'busy right now': scribbles then raises free open palm like wait, stares camera deadpan then resumes. Cell1 head eyesdown pencil touching blankpaper, freehandlow;2 eyesstartup freehandliftsslightly;3 freehandatbelly;4 freehandhalfwaychest;5 freepalmnearshoulder facingviewer;6 palmfullyraisedshoulderlevel eyes on viewer;7 palmsteady eyebrows squeeze;8 deadpan exhausted irritated look, raisedpalm 'give me a minute';9 palmstartsdown tochestheight;10 halfwaylower;11 almostdesk eyeslookdown;12 initialpose penciltouchespaper. Pencil remains same hand and paper same spot all12cells. Keep all body positions, tableheight, papers precisely locked. Tiny original dry humor expression, not generic smiley mascot. Textless no writing on sheets, no wordbubbles. Head and palm must not cover top-left caption safe area.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-6e2c259a-e25d-42f0-8620-973e72e7b491.png",
+        "editPrompt": "Edit this original12cell cartoon animation sheet. ONLY replace ALL black/red/yellow/grey corrupted noisy background behind character in everycell with completely FLAT uniform buttercream #fff1c9. Same smooth single color everypanel, no texture, gradients, noise, transparency or graphic patches. Preserve every pose and expression, character, hands/pencil/paper/desk, all12cells4columns3rows, same landscape4:3 size. Clean outlines, no text. Do not change busy palm gesture or staging.",
+        "originalSourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-575aa6d6-14bc-49b0-aeae-59532b80e768.png",
+        "masterSha256": "8a5043bbd42ef7765ae4d6b46740123ac41b0c4f3a64524a06c6599d71bfb540",
+        "originalSha256": "69f58c3b61c4be16a038766a0b8a98f9edcd8241dc0ba64ff376057bdadaf63d",
+        "rejectedMasterFile": "rejected/scene-rich-10-busy-before-fix.png"
+      }
+    },
+    {
+      "id": "scene-rich-10-satisfied",
+      "keyword": "满足",
+      "caption": "满足",
+      "captionPlacement": "bottom-left",
+      "masterFile": "masters/scene-rich-10-satisfied.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Create an ORIGINAL animation sprite sheet, exactly4columns by3rows,12 equal square cells chronological reading order, landscape4:3 aspect. Thin grey straight dividers,no gutters,no labels. Each cell same fixed camera/background/character size and anchor points. Twelve small incremental true drawing poses; finalpose12 matches firstpose1. No text, lettering, symbols, logos, watermarks, known characters, brands or celebrity face. Caption will be added deterministically later so reserve bottom-left clear. Photorealistic natural original pet animation, plump orange tabby cat sitting comfortably reclining against beige sofa cushion, upperbody paws and roundbellyvisible. Funny blissful satisfied 'life is good' attitude, slowblink that almost looks smug. Soft natural warmdaylight, smooth unclutteredbackground, actual fine fur but avoid busy patterns. Originalcat not copied internetimage, no human or accessories. Keep camera and sofa/paws/body scale completely identical all12cells; only eyelids, cheek expression and tiny chin motion. 1 relaxed eyesopen towardviewer, mouthclosed.2 lidslower10%.3 lidslower20%.4 lidslower35%.5 lidslower50%.6 lidslower65% chinlift1degree.7 eyesnarrow80% cheektensionrelaxes.8 eyesgentlyclosed, chinraised2degrees comicallypleased.9 eyesreopen20%,chin1.5degrees.10 eyesreopen45%chin1degree.11 eyesreopen75%chin0.5degrees.12 originaleyesopen andchin. Twelve gradualslowblink stages, tiny truefaceperformance, no headturn or zoom, limbsfixed and correct cat anatomy. Bottomleft of eachcell unclutteredforcaption. No hearts or graphic effects or lettering.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-85c075d3-2860-4976-abfa-5e7d1b084b51.png",
+        "masterSha256": "c41bd44d09ce944b1ee6306b1859185db189cfb5c64d7c6622adec8299a01ab4",
+        "originalSourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-926fb6d9-06dc-4f1b-b5e8-50165b7c216c.png",
+        "originalSha256": "7deec9a7235a9fe62cd4b26f917ff28422b7c09a8eaf63a74db8f664a1a2910a",
+        "rejectedMasterFile": "rejected/scene-rich-10-satisfied-before-fix.png",
+        "editPrompt": "Edit original12cell orange cat sprite sheet. Preserve firsttwo rows exactly. ONLY bottomrow fourcells smoothreturn from cell8 raisedchin closedeyes: cell9 chin stillnearlyasraised as8 with eyes onlytinycracksopen, cell10 chinhalfwaylowered eyes35percentopen, cell11 chinnearlyneutral eyes65percentopen, cell12 sameinitial pose1 eyesopen. Need obvious incremental chin lowering over4cells, not immediately dropchinandopeneyes atcell9. Keep reclinedbody/paws/sofa exactly still, scale and catidentity/lightingunchanged. Same4columns3rows4:3, no text."
+      }
+    },
+    {
+      "id": "scene-rich-10-puzzled",
+      "keyword": "疑惑",
+      "caption": "疑惑",
+      "captionPlacement": "bottom-left",
+      "masterFile": "masters/scene-rich-10-puzzled.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Create an ORIGINAL animation sprite sheet, exactly4columns by3rows,12 equal square cells chronological reading order, landscape4:3 aspect. Thin grey straight dividers,no gutters,no labels. Each cell same fixed camera/background/character size and anchor points. Twelve small incremental true drawing poses; finalpose12 matches firstpose1. No text, lettering, symbols, logos, watermarks, known characters, brands or celebrity face. Caption will be added deterministically later so reserve bottom-left clear. Photorealistic original brown-and-white small terrier dog on plain muted blue sofa, textured soft short scruffy fur, white muzzle and white chest, folded ears, dark piercing intelligent skeptical eyes and naturally expressive brow fur. Meaning puzzled 'what are you talking about?' Funny restrained confusion, not frightened, not puppy cute bigeyes. Sittingfront paws stationary together. Natural even windowlight, blank lightgrey wall, no props/humans/brands. Fixed camera and body/paws/sofa identical everycell. 12 small-angle neck/eyeacting poses:1 headupright eyesfront mildlyskeptical;2 eyes slightly viewerleft;3 one brow slightlyraised;4 headtilts viewerleft3degrees;5 tilt6degrees;6 tilt9degrees eyesnarrow slightly;7 tilt12degrees;8 tilt15degrees with questioning one-eyesquint;9 tilt11degrees;10 tilt7degrees;11 tilt3degrees;12 exactuprightinitialhead andgaze. Important bottomrow must show 11,7,3,0 degree progressive return not3tiltedframesandsnap. Do not change body size/position or camera crop, no extralimbs, dogface stable samebreed. Cleanlowdetailbackground bottomleftcaptionsafe, no text/symbol/questionmarks.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-d9665d60-7ed6-4273-a722-cdef296a86c5.png",
+        "editPrompt": "Edit this original12cell dog animation sheet. First2rows remain unchanged. Fix ONLY bottomrow progressive return: bottomleftcell9 head tilt15degrees, cell10 tilt10degrees, cell11 almostupright tilt4degrees, cell12 upright0degrees EXACTLY matching cell1 head size/position. All paws and body and sofa stationary same coordinates. Do not have three similarly tilted heads then sudden upright; four noticeably diminishing angles with natural intermediate poses. Preserve identity, scruffyfur, lighting, eyeexpression mildlyconfused no wink bottomrow. Same4:3sheet4columns3rows, no text.",
+        "originalSourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-83656985-46ea-42a0-95df-f8e209281fc7.png",
+        "masterSha256": "19bac0ca0fc76bdd7e687aa57148c311bfdc6a82dc0490b5bda95d9d0b59e458",
+        "originalSha256": "7c582a31e675b18f32947bbd8e13e5360caafb213f740c71cd48974de61207ba",
+        "rejectedMasterFile": "rejected/scene-rich-10-puzzled-before-fix.png"
+      }
+    }
+  ]
+}

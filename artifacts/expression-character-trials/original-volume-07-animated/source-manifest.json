@@ -1,0 +1,261 @@
+{
+  "created": "2026-09-14",
+  "sourceType": "ai-original",
+  "status": "trial-only",
+  "publicationAllowed": false,
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "items": [
+    {
+      "id": "retriever-encourage",
+      "caption": "加油",
+      "prompt": "Create one original animation sprite sheet, EXACTLY 4 columns by 3 rows of equal SQUARE cells, 12 chronological poses left-to-right then top-to-bottom. Landscape 4:3 image. No grid lines, no text, no symbols, no borders. Pure white background. Each cell is an independent frame of EXACTLY the same character with identical lighting, clothing, body size and camera. Waist-up character with entire head, hands/paws/flippers and elbows fully visible INSIDE a centered safe rectangle from x=55 to307 and y=35 to295 in each 362x362 cell; leave bottom 67px pure white for later caption. Never cut fingers/ears. Fixed head location, fixed body base. No row-to-row vertical drift. FIRST AND LAST POSES MATCH EXACTLY in geometry and facial state. Make at least 4 genuinely distinct expressive poses with actual limb/eyebrow/eyelid/mouth articulation, not camera zoom/translation or copied static frames. Smooth small transitions, no suddenly appearing limbs. All cells maintain two arms/paws only. No props, no famous characters, no celebrity likeness. Photoreal charming golden retriever dog, authentic golden fur, original animal anatomy stylized only enough for a small forepaw encouragement gesture. Meaning: cheering someone on, 'you can do it', not anger. Poses1-2 attentive friendly neutral,3-4 determined eyebrows and one closed fist/paw rising close beside chest,5-7 fist at chest with confident encouraging warm grin,8 fist lowers slightly,9-10 smile softens and fist lowers,11-12 back to exact starting neutral. Keep other hand/paw visible and still. No exaggerated open mouth. Head stays anchored.",
+      "masterFile": "masters/retriever-encourage.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-09732aa7-0972-40e3-bf1c-257b1551c7d4.png",
+      "sha256": "eab07e238a2c44d191e32f156ffc8158c5e4b3d9edc3e6b78de178fe76975df1",
+      "originalSha256": "7c20aa2026de7bad3d1007f4d0317ee71492ea3ff841e9bd22848ee0bbacab39",
+      "selectedVersion": 3,
+      "revisions": [
+        {
+          "id": "retriever-encourage",
+          "prompt": "Edit this 4x3 animation sprite sheet, same original character and 12 expression poses. Keep total 4:3 layout. MAKE EVERY CHARACTER 25% SMALLER inside its own square cell, anchored in upper-center, so entire torso and BOTH WHOLE HANDS/PAWS are fully visible, with a LARGE EMPTY WHITE BAND BELOW: at least bottom 25% of EACH cell must be empty white. Uniform head scale and y-position across all rows, identical first/last geometry. Replace transparent background with OPAQUE PURE WHITE. No black, no outline halos. Do not crop either hand or wrist. The raised fist/paw MUST ALWAYS BE ON VIEWER'S LEFT in ALL frames3-10, NEVER switch to right. The viewer-right hand/paw stays visible resting at lower chest in all twelve frames. Fix pose3 to raise viewer-left paw instead of viewer-right. Maintain genuine changing facial expression and gradual raise/lower action. Hands and torso must NOT touch bottom caption band; keep all body parts comfortably inside upper 75% of cell. No text.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-0522e667-8248-4fd2-8dc6-d4f238f4a24b.png",
+          "version": 2,
+          "sha256": "e282a3a105b66d406eebb0b92c740a5ac53dbe7f70a4574af6bbed739a9dcf47",
+          "reason": "reduce subject to protect hands and retain viewer-left gesture"
+        },
+        {
+          "id": "retriever-encourage",
+          "prompt": "Fix registration ONLY of this exact 1448x1086 4x3 sprite sheet. Keep first row completely unchanged. Move all four characters of the MIDDLE ROW downward by 17 pixels. Move all four characters of BOTTOM ROW downward by 27 pixels. No changes to scale, horizontal positions, faces, hand poses or white background. The row height MUST be 362 pixels, NOT 345. Every character needs identical top-of-head position relative to its own square cell. This fixes a loop where the last character is too high. Do not redistribute into evenly spaced character gaps: respect fixed cell boundaries y0,362,724,1086. Make the last pose geometrically match first pose exactly. Keep bottom white caption margin and all paws complete. No text/gridlines. Preserve genuine hand and expression animation.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-e9bf0f9b-54b9-4033-9f3e-767659b58caf.png",
+          "version": 3,
+          "sha256": "eab07e238a2c44d191e32f156ffc8158c5e4b3d9edc3e6b78de178fe76975df1",
+          "reason": "correct source row registration without changing renderer"
+        }
+      ],
+      "machineReview": "passed",
+      "visualDisposition": "pending"
+    },
+    {
+      "id": "frog-encourage",
+      "caption": "加油",
+      "prompt": "Create one original animation sprite sheet, EXACTLY 4 columns by 3 rows of equal SQUARE cells, 12 chronological poses left-to-right then top-to-bottom. Landscape 4:3 image. No grid lines, no text, no symbols, no borders. Pure white background. Each cell is an independent frame of EXACTLY the same character with identical lighting, clothing, body size and camera. Waist-up character with entire head, hands/paws/flippers and elbows fully visible INSIDE a centered safe rectangle from x=55 to307 and y=35 to295 in each 362x362 cell; leave bottom 67px pure white for later caption. Never cut fingers/ears. Fixed head location, fixed body base. No row-to-row vertical drift. FIRST AND LAST POSES MATCH EXACTLY in geometry and facial state. Make at least 4 genuinely distinct expressive poses with actual limb/eyebrow/eyelid/mouth articulation, not camera zoom/translation or copied static frames. Smooth small transitions, no suddenly appearing limbs. All cells maintain two arms/paws only. No props, no famous characters, no celebrity likeness. Minimal bold black ink cartoon green-free frog (strictly black and white), white body, expressive asymmetric eyebrows, clean few lines, original animal design, three rounded digits per hand consistently. Meaning: cheering someone on, 'you can do it', not anger. Poses1-2 attentive friendly neutral,3-4 determined eyebrows and one closed fist/paw rising close beside chest,5-7 fist at chest with confident encouraging warm grin,8 fist lowers slightly,9-10 smile softens and fist lowers,11-12 back to exact starting neutral. Keep other hand/paw visible and still. No exaggerated open mouth. Head stays anchored.",
+      "masterFile": "masters/frog-encourage.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-bbaae23d-01fd-4fae-88c9-7712b2841ad1.png",
+      "sha256": "db40b3b980a7de762dcbef1c3a886842b9dfa01c50e77ad01bfdcf31e4e30dc8",
+      "originalSha256": "b161d7ba85bbbab77f50c5c69a262424b139cd25901052541409804b58e9abda",
+      "selectedVersion": 3,
+      "revisions": [
+        {
+          "id": "frog-encourage",
+          "prompt": "Edit this 4x3 animation sprite sheet, same original character and 12 expression poses. Keep total 4:3 layout. MAKE EVERY CHARACTER 25% SMALLER inside its own square cell, anchored in upper-center, so entire torso and BOTH WHOLE HANDS/PAWS are fully visible, with a LARGE EMPTY WHITE BAND BELOW: at least bottom 25% of EACH cell must be empty white. Uniform head scale and y-position across all rows, identical first/last geometry. Replace transparent background with OPAQUE PURE WHITE. No black, no outline halos. Do not crop either hand or wrist. The raised fist/paw MUST ALWAYS BE ON VIEWER'S LEFT in ALL frames3-10, NEVER switch to right. The viewer-right hand/paw stays visible resting at lower chest in all twelve frames. Fix pose3 to raise viewer-left paw instead of viewer-right. Maintain genuine changing facial expression and gradual raise/lower action. Hands and torso must NOT touch bottom caption band; keep all body parts comfortably inside upper 75% of cell. No text.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-d946fb6c-d502-4b89-8e46-6bd93bca9c6d.png",
+          "version": 2,
+          "sha256": "f32a7c8f2c8da9aa8b5919da8cca5e834b1974999999262959d75272294208c9",
+          "reason": "reduce subject to protect hands and retain viewer-left gesture"
+        },
+        {
+          "id": "frog-encourage",
+          "prompt": "Fix registration ONLY of this exact 1448x1086 4x3 sprite sheet. Keep first row completely unchanged. Move all four characters of the MIDDLE ROW downward by 17 pixels. Move all four characters of BOTTOM ROW downward by 21 pixels. No changes to scale, horizontal positions, faces, hand poses or white background. The row height MUST be 362 pixels, NOT 345. Every character needs identical top-of-head position relative to its own square cell. This fixes a loop where the last character is too high. Do not redistribute into evenly spaced character gaps: respect fixed cell boundaries y0,362,724,1086. Make the last pose geometrically match first pose exactly. Keep bottom white caption margin and all paws complete. No text/gridlines. Preserve genuine hand and expression animation.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-7e8aa8d1-023e-4879-9722-8dbd5aa6dabd.png",
+          "version": 3,
+          "sha256": "db40b3b980a7de762dcbef1c3a886842b9dfa01c50e77ad01bfdcf31e4e30dc8",
+          "reason": "correct source row registration without changing renderer"
+        }
+      ],
+      "machineReview": "passed",
+      "visualDisposition": "pending"
+    },
+    {
+      "id": "bear-encourage",
+      "caption": "加油",
+      "prompt": "Create one original animation sprite sheet, EXACTLY 4 columns by 3 rows of equal SQUARE cells, 12 chronological poses left-to-right then top-to-bottom. Landscape 4:3 image. No grid lines, no text, no symbols, no borders. Pure white background. Each cell is an independent frame of EXACTLY the same character with identical lighting, clothing, body size and camera. Waist-up character with entire head, hands/paws/flippers and elbows fully visible INSIDE a centered safe rectangle from x=55 to307 and y=35 to295 in each 362x362 cell; leave bottom 67px pure white for later caption. Never cut fingers/ears. Fixed head location, fixed body base. No row-to-row vertical drift. FIRST AND LAST POSES MATCH EXACTLY in geometry and facial state. Make at least 4 genuinely distinct expressive poses with actual limb/eyebrow/eyelid/mouth articulation, not camera zoom/translation or copied static frames. Smooth small transitions, no suddenly appearing limbs. All cells maintain two arms/paws only. No props, no famous characters, no celebrity likeness. Handmade matte CLAY brown bear cub sculpture, smooth clay without fur fibers, small round ears, short simple rounded paws, visible subtle sculpted texture. Meaning: cheering someone on, 'you can do it', not anger. Poses1-2 attentive friendly neutral,3-4 determined eyebrows and one closed fist/paw rising close beside chest,5-7 fist at chest with confident encouraging warm grin,8 fist lowers slightly,9-10 smile softens and fist lowers,11-12 back to exact starting neutral. Keep other hand/paw visible and still. No exaggerated open mouth. Head stays anchored.",
+      "masterFile": "masters/bear-encourage.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-415d2832-94a0-4674-b96e-43ad5e9ace6e.png",
+      "sha256": "753e048fc892151c4c846c657cdb11fd15ed50d3869ee69f1c126322736e6d50",
+      "originalSha256": "09b210b6d9297487fec46fdb20320a756b53baf6981dfd51dd72300bdc7ced7a",
+      "selectedVersion": 3,
+      "revisions": [
+        {
+          "id": "bear-encourage",
+          "prompt": "Edit this 4x3 animation sprite sheet, same original character and 12 expression poses. Keep total 4:3 layout. MAKE EVERY CHARACTER 25% SMALLER inside its own square cell, anchored in upper-center, so entire torso and BOTH WHOLE HANDS/PAWS are fully visible, with a LARGE EMPTY WHITE BAND BELOW: at least bottom 25% of EACH cell must be empty white. Uniform head scale and y-position across all rows, identical first/last geometry. Replace transparent background with OPAQUE PURE WHITE. No black, no outline halos. Do not crop either hand or wrist. The raised fist/paw MUST ALWAYS BE ON VIEWER'S LEFT in ALL frames3-10, NEVER switch to right. The viewer-right hand/paw stays visible resting at lower chest in all twelve frames. Fix pose3 to raise viewer-left paw instead of viewer-right. Maintain genuine changing facial expression and gradual raise/lower action. Hands and torso must NOT touch bottom caption band; keep all body parts comfortably inside upper 75% of cell. No text.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-a9ec6ac1-179c-47df-9bd5-0d6da5bd5888.png",
+          "version": 2,
+          "sha256": "5d4c8d08e42abfcac263312438fbf3c76289da748b179fbe2552508fdd65c79b",
+          "reason": "reduce subject to protect hands and retain viewer-left gesture"
+        },
+        {
+          "id": "bear-encourage",
+          "prompt": "Fix registration ONLY of this exact 1448x1086 4x3 sprite sheet. Keep first row completely unchanged. Move all four characters of the MIDDLE ROW downward by 23 pixels. Move all four characters of BOTTOM ROW downward by 41 pixels. No changes to scale, horizontal positions, faces, hand poses or white background. The row height MUST be 362 pixels, NOT 345. Every character needs identical top-of-head position relative to its own square cell. This fixes a loop where the last character is too high. Do not redistribute into evenly spaced character gaps: respect fixed cell boundaries y0,362,724,1086. Make the last pose geometrically match first pose exactly. Keep bottom white caption margin and all paws complete. No text/gridlines. Preserve genuine hand and expression animation.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-b67300b5-b3d0-43e3-afd7-38caa5010f7f.png",
+          "version": 3,
+          "sha256": "753e048fc892151c4c846c657cdb11fd15ed50d3869ee69f1c126322736e6d50",
+          "reason": "correct source row registration without changing renderer"
+        }
+      ],
+      "machineReview": "failed",
+      "visualDisposition": "needs-rework",
+      "outputGif": null
+    },
+    {
+      "id": "man-encourage",
+      "caption": "加油",
+      "prompt": "Create one original animation sprite sheet, EXACTLY 4 columns by 3 rows of equal SQUARE cells, 12 chronological poses left-to-right then top-to-bottom. Landscape 4:3 image. No grid lines, no text, no symbols, no borders. Pure white background. Each cell is an independent frame of EXACTLY the same character with identical lighting, clothing, body size and camera. Waist-up character with entire head, hands/paws/flippers and elbows fully visible INSIDE a centered safe rectangle from x=55 to307 and y=35 to295 in each 362x362 cell; leave bottom 67px pure white for later caption. Never cut fingers/ears. Fixed head location, fixed body base. No row-to-row vertical drift. FIRST AND LAST POSES MATCH EXACTLY in geometry and facial state. Make at least 4 genuinely distinct expressive poses with actual limb/eyebrow/eyelid/mouth articulation, not camera zoom/translation or copied static frames. Smooth small transitions, no suddenly appearing limbs. All cells maintain two arms/paws only. No props, no famous characters, no celebrity likeness. Photoreal fictional original handsome CHINESE ADULT MAN age28, short brushed-up black hair, athletic face, plain forest-green T-shirt. Not based on any real person or celebrity. Consistently five digits per hand, one hand gently closed in a fist. Meaning: cheering someone on, 'you can do it', not anger. Poses1-2 attentive friendly neutral,3-4 determined eyebrows and one closed fist/paw rising close beside chest,5-7 fist at chest with confident encouraging warm grin,8 fist lowers slightly,9-10 smile softens and fist lowers,11-12 back to exact starting neutral. Keep other hand/paw visible and still. No exaggerated open mouth. Head stays anchored.",
+      "masterFile": "masters/man-encourage.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-8de562d2-e522-4bf9-aef5-b03b99647a37.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "d093b87c17169b97e52f847c734aec58bc5b8b92e8cc67969106ff68f5881a49",
+      "originalSha256": "8d95f3b072335769e304696dbbedc342a7d91ad5ce6d6f6939721eab67f652ea",
+      "selectedVersion": 3,
+      "revisions": [
+        {
+          "id": "man-encourage",
+          "prompt": "Edit this 4x3 animation sprite sheet, same original character and 12 expression poses. Keep total 4:3 layout. MAKE EVERY CHARACTER 25% SMALLER inside its own square cell, anchored in upper-center, so entire torso and BOTH WHOLE HANDS/PAWS are fully visible, with a LARGE EMPTY WHITE BAND BELOW: at least bottom 25% of EACH cell must be empty white. Uniform head scale and y-position across all rows, identical first/last geometry. Replace transparent background with OPAQUE PURE WHITE. No black, no outline halos. Do not crop either hand or wrist. The raised fist/paw MUST ALWAYS BE ON VIEWER'S LEFT in ALL frames3-10, NEVER switch to right. The viewer-right hand/paw stays visible resting at lower chest in all twelve frames. Fix pose3 to raise viewer-left paw instead of viewer-right. Maintain genuine changing facial expression and gradual raise/lower action. Hands and torso must NOT touch bottom caption band; keep all body parts comfortably inside upper 75% of cell. No text.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-9a6eb43a-776d-4892-a583-f617df1f1f8e.png",
+          "version": 2,
+          "sha256": "7a5c8ff64ac01e79c4b36f6f82670f6c8df0d19a9fa2ebc1c0dc8f2758f8a575",
+          "reason": "reduce subject to protect hands and retain viewer-left gesture"
+        },
+        {
+          "version": 3,
+          "prompt": "Edit this original fictional Chinese adult male encouragement animation sprite sheet. Preserve face, forest green T-shirt, 4x3 equal square cells and exact head registration, all facial poses and viewer-LEFT raising fist action. FIX ONLY THE OTHER HAND: the viewer-RIGHT resting fist is currently cut off at the bottom in every cell. Move that entire resting fist UP so it is fully visible at mid-chest height beside the sternum, with complete fingers, thumb and wrist in ALL TWELVE CELLS. It stays stationary at mid-chest across animation. Do not add a third hand. Exactly two hands. Keep all hands well above torso lower crop edge and preserve blank white lower margin. Same face and body size, head position, white background, no text. First and last pose should match; no global rescaling and no row movement. The hand to move is on the RIGHT SIDE OF THE IMAGE in each cell. It should NOT rest at the waist or touch the lower edge.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-d937a783-022e-4eac-8191-cdaacd6a2d8e.png",
+          "sha256": "d093b87c17169b97e52f847c734aec58bc5b8b92e8cc67969106ff68f5881a49",
+          "reason": "raise resting fist to chest so whole hand remains visible"
+        }
+      ],
+      "machineReview": "passed",
+      "visualDisposition": "pending"
+    },
+    {
+      "id": "tabby-please",
+      "caption": "拜托",
+      "prompt": "Create one original animation sprite sheet, EXACTLY 4 columns by 3 rows of equal SQUARE cells, 12 chronological poses left-to-right then top-to-bottom. Landscape 4:3 image. No grid lines, no text, no symbols, no borders. Pure white background. Each cell is an independent frame of EXACTLY the same character with identical lighting, clothing, body size and camera. Waist-up character with entire head, hands/paws/flippers and elbows fully visible INSIDE a centered safe rectangle from x=55 to307 and y=35 to295 in each 362x362 cell; leave bottom 67px pure white for later caption. Never cut fingers/ears. Fixed head location, fixed body base. No row-to-row vertical drift. FIRST AND LAST POSES MATCH EXACTLY in geometry and facial state. Make at least 4 genuinely distinct expressive poses with actual limb/eyebrow/eyelid/mouth articulation, not camera zoom/translation or copied static frames. Smooth small transitions, no suddenly appearing limbs. All cells maintain two arms/paws only. No props, no famous characters, no celebrity likeness. Photoreal small brown tabby cat with white muzzle, expressive real animal eyes, short forepaws, original feline not a known IP. Meaning: sincerely pleading 'please', not greeting or praying. Poses1-2 hopeful gaze and hands/paws held separately low at chest,3-4 eyebrows raised at inner corners as both hands/paws approach,5-7 both palms/paws together just under chin with an earnest small pout and subtle head dip,8-10 hands gradually separate and eyebrows relax,11-12 exact opening neutral. Hands anatomically consistent, never merged into unrecognizable blobs. Keep head movement tiny. IMPORTANT OUTPUT FORMAT: opaque pure WHITE background, NOT transparent, NOT black. Render character smaller than typical sticker: top of head at 50/362 and bottom of lowest paw at 280/362 in EVERY cell; bottom fifth of each square totally empty white. Keep image equal square grid. Avoid filling each cell edge to edge.",
+      "masterFile": "masters/tabby-please.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-4e2f65c3-c172-4b3f-ba61-d0694e7fb7a4.png",
+      "sha256": "2ca3db53c1a0cac9237195e279f0d7afb19d71d438944dab86962399c1bfd3fb",
+      "machineReview": "passed",
+      "visualDisposition": "pending"
+    },
+    {
+      "id": "seal-please",
+      "caption": "拜托",
+      "prompt": "Create one original animation sprite sheet, EXACTLY 4 columns by 3 rows of equal SQUARE cells, 12 chronological poses left-to-right then top-to-bottom. Landscape 4:3 image. No grid lines, no text, no symbols, no borders. Pure white background. Each cell is an independent frame of EXACTLY the same character with identical lighting, clothing, body size and camera. Waist-up character with entire head, hands/paws/flippers and elbows fully visible INSIDE a centered safe rectangle from x=55 to307 and y=35 to295 in each 362x362 cell; leave bottom 67px pure white for later caption. Never cut fingers/ears. Fixed head location, fixed body base. No row-to-row vertical drift. FIRST AND LAST POSES MATCH EXACTLY in geometry and facial state. Make at least 4 genuinely distinct expressive poses with actual limb/eyebrow/eyelid/mouth articulation, not camera zoom/translation or copied static frames. Smooth small transitions, no suddenly appearing limbs. All cells maintain two arms/paws only. No props, no famous characters, no celebrity likeness. Minimal bold black and white ink cartoon baby seal, round whiskered face, exactly two small flippers coming together, no human fingers, original simple expressive animal. Meaning: sincerely pleading 'please', not greeting or praying. Poses1-2 hopeful gaze and hands/paws held separately low at chest,3-4 eyebrows raised at inner corners as both hands/paws approach,5-7 both palms/paws together just under chin with an earnest small pout and subtle head dip,8-10 hands gradually separate and eyebrows relax,11-12 exact opening neutral. Hands anatomically consistent, never merged into unrecognizable blobs. Keep head movement tiny. IMPORTANT OUTPUT FORMAT: opaque pure WHITE background, NOT transparent, NOT black. Render character smaller than typical sticker: top of head at 50/362 and bottom of lowest paw at 280/362 in EVERY cell; bottom fifth of each square totally empty white. Keep image equal square grid. Avoid filling each cell edge to edge.",
+      "masterFile": "masters/seal-please.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-b6f82bb5-06f3-4ff9-a8a0-ec56dabb2138.png",
+      "sha256": "451a0f8b1ac648a161302e18b2890e1edb4f0018f0c297bad013504433480d4f",
+      "machineReview": "passed",
+      "visualDisposition": "pending"
+    },
+    {
+      "id": "hamster-please",
+      "caption": "拜托",
+      "prompt": "Create one original animation sprite sheet, EXACTLY 4 columns by 3 rows of equal SQUARE cells, 12 chronological poses left-to-right then top-to-bottom. Landscape 4:3 image. No grid lines, no text, no symbols, no borders. Pure white background. Each cell is an independent frame of EXACTLY the same character with identical lighting, clothing, body size and camera. Waist-up character with entire head, hands/paws/flippers and elbows fully visible INSIDE a centered safe rectangle from x=55 to307 and y=35 to295 in each 362x362 cell; leave bottom 67px pure white for later caption. Never cut fingers/ears. Fixed head location, fixed body base. No row-to-row vertical drift. FIRST AND LAST POSES MATCH EXACTLY in geometry and facial state. Make at least 4 genuinely distinct expressive poses with actual limb/eyebrow/eyelid/mouth articulation, not camera zoom/translation or copied static frames. Smooth small transitions, no suddenly appearing limbs. All cells maintain two arms/paws only. No props, no famous characters, no celebrity likeness. Handmade matte CLAY golden hamster sculpture with ivory cheeks, smooth clay not furry, tiny rounded ears, exactly two little rounded paws with simple consistent digits. Meaning: sincerely pleading 'please', not greeting or praying. Poses1-2 hopeful gaze and hands/paws held separately low at chest,3-4 eyebrows raised at inner corners as both hands/paws approach,5-7 both palms/paws together just under chin with an earnest small pout and subtle head dip,8-10 hands gradually separate and eyebrows relax,11-12 exact opening neutral. Hands anatomically consistent, never merged into unrecognizable blobs. Keep head movement tiny. IMPORTANT OUTPUT FORMAT: opaque pure WHITE background, NOT transparent, NOT black. Render character smaller than typical sticker: top of head at 50/362 and bottom of lowest paw at 280/362 in EVERY cell; bottom fifth of each square totally empty white. Keep image equal square grid. Avoid filling each cell edge to edge.",
+      "masterFile": "masters/hamster-please.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-ad359bfb-6f9b-44aa-9944-93da227dd13c.png",
+      "sha256": "6e9ea848c6372e1eb40bcd8af2129edfc7c63d76e44a21539bbd741a4f962c5f",
+      "machineReview": "passed",
+      "visualDisposition": "pending"
+    },
+    {
+      "id": "man-please",
+      "caption": "拜托",
+      "prompt": "Create one original animation sprite sheet, EXACTLY 4 columns by 3 rows of equal SQUARE cells, 12 chronological poses left-to-right then top-to-bottom. Landscape 4:3 image. No grid lines, no text, no symbols, no borders. Pure white background. Each cell is an independent frame of EXACTLY the same character with identical lighting, clothing, body size and camera. Waist-up character with entire head, hands/paws/flippers and elbows fully visible INSIDE a centered safe rectangle from x=55 to307 and y=35 to295 in each 362x362 cell; leave bottom 67px pure white for later caption. Never cut fingers/ears. Fixed head location, fixed body base. No row-to-row vertical drift. FIRST AND LAST POSES MATCH EXACTLY in geometry and facial state. Make at least 4 genuinely distinct expressive poses with actual limb/eyebrow/eyelid/mouth articulation, not camera zoom/translation or copied static frames. Smooth small transitions, no suddenly appearing limbs. All cells maintain two arms/paws only. No props, no famous characters, no celebrity likeness. Photoreal fictional original handsome CHINESE ADULT MAN age26, neatly side-parted black hair, expressive long eyebrows, plain slate-blue T-shirt. No real celebrity likeness. Two anatomically correct hands with five digits each. Meaning: sincerely pleading 'please', not greeting or praying. Poses1-2 hopeful gaze and hands/paws held separately low at chest,3-4 eyebrows raised at inner corners as both hands/paws approach,5-7 both palms/paws together just under chin with an earnest small pout and subtle head dip,8-10 hands gradually separate and eyebrows relax,11-12 exact opening neutral. Hands anatomically consistent, never merged into unrecognizable blobs. Keep head movement tiny. IMPORTANT OUTPUT FORMAT: opaque pure WHITE background, NOT transparent, NOT black. Render character smaller than typical sticker: top of head at 50/362 and bottom of lowest paw at 280/362 in EVERY cell; bottom fifth of each square totally empty white. Keep image equal square grid. Avoid filling each cell edge to edge.",
+      "masterFile": "masters/man-please.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-265247aa-a1ac-4ea4-b6cd-2bc84a1699e9.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "988f8a8ecc2835dfd3a7194c2e83aea03be44a1c18d6bc994db0cd88f76bf083",
+      "machineReview": "passed",
+      "visualDisposition": "pending"
+    },
+    {
+      "id": "husky-calm",
+      "caption": "冷静",
+      "prompt": "Create one original animation sprite sheet, EXACTLY 4 columns by 3 rows of equal SQUARE cells, 12 chronological poses left-to-right then top-to-bottom. Landscape 4:3 image. No grid lines, no text, no symbols, no borders. Pure white background. Each cell is an independent frame of EXACTLY the same character with identical lighting, clothing, body size and camera. Waist-up character with entire head, hands/paws/flippers and elbows fully visible INSIDE a centered safe rectangle from x=55 to307 and y=35 to295 in each 362x362 cell; leave bottom 67px pure white for later caption. Never cut fingers/ears. Fixed head location, fixed body base. No row-to-row vertical drift. FIRST AND LAST POSES MATCH EXACTLY in geometry and facial state. Make at least 4 genuinely distinct expressive poses with actual limb/eyebrow/eyelid/mouth articulation, not camera zoom/translation or copied static frames. Smooth small transitions, no suddenly appearing limbs. All cells maintain two arms/paws only. No props, no famous characters, no celebrity likeness. Photoreal husky dog with gray-white coat and pale blue eyes, original animal, exactly two clearly visible short forepaws, neutral funny mildly serious expression. Meaning: 'calm down', intentionally settling nerves, not asleep. Poses1-2 slightly tense eyebrows, both hands/paws visibly resting near chest,3-4 bring hands forward palms down a little,5-7 gently pressing both palms downward while lips exhale softly and eyes relax but remain partly open,8-10 hands return gradually,11-12 exact opening slightly tense face and starting hands. Small controlled gesture, no bounce, no giant smile. IMPORTANT OUTPUT FORMAT: opaque pure WHITE background, NOT transparent, NOT black. Render character smaller than typical sticker: top of head at 50/362 and bottom of lowest paw at 280/362 in EVERY cell; bottom fifth of each square totally empty white. Keep image equal square grid. Avoid filling each cell edge to edge.",
+      "masterFile": "masters/husky-calm.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-6838c9ef-e07a-4157-b92a-3c19f9fea195.png",
+      "sha256": "784234c53efaf4e73dd8f68182aa221e365c9b19ef1d29f5e6fe71fc7ef41f47",
+      "machineReview": "passed",
+      "visualDisposition": "pending"
+    },
+    {
+      "id": "penguin-calm",
+      "caption": "冷静",
+      "prompt": "Create one original animation sprite sheet, EXACTLY 4 columns by 3 rows of equal SQUARE cells, 12 chronological poses left-to-right then top-to-bottom. Landscape 4:3 image. No grid lines, no text, no symbols, no borders. Pure white background. Each cell is an independent frame of EXACTLY the same character with identical lighting, clothing, body size and camera. Waist-up character with entire head, hands/paws/flippers and elbows fully visible INSIDE a centered safe rectangle from x=55 to307 and y=35 to295 in each 362x362 cell; leave bottom 67px pure white for later caption. Never cut fingers/ears. Fixed head location, fixed body base. No row-to-row vertical drift. FIRST AND LAST POSES MATCH EXACTLY in geometry and facial state. Make at least 4 genuinely distinct expressive poses with actual limb/eyebrow/eyelid/mouth articulation, not camera zoom/translation or copied static frames. Smooth small transitions, no suddenly appearing limbs. All cells maintain two arms/paws only. No props, no famous characters, no celebrity likeness. Minimal bold black and white ink cartoon penguin, small beak, expressive brows, exactly two small flippers pressing downward, no human hands, original simple animal drawing. Meaning: 'calm down', intentionally settling nerves, not asleep. Poses1-2 slightly tense eyebrows, both hands/paws visibly resting near chest,3-4 bring hands forward palms down a little,5-7 gently pressing both palms downward while lips exhale softly and eyes relax but remain partly open,8-10 hands return gradually,11-12 exact opening slightly tense face and starting hands. Small controlled gesture, no bounce, no giant smile. IMPORTANT OUTPUT FORMAT: opaque pure WHITE background, NOT transparent, NOT black. Render character smaller than typical sticker: top of head at 50/362 and bottom of lowest paw at 280/362 in EVERY cell; bottom fifth of each square totally empty white. Keep image equal square grid. Avoid filling each cell edge to edge.",
+      "masterFile": "masters/penguin-calm.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-dec5efbd-d045-454b-ba4b-0f8d36fb3648.png",
+      "sha256": "f8dafcf849efede7ca578a60101d58a7247319b43113316b22221bd6452bdd7e",
+      "machineReview": "passed",
+      "visualDisposition": "pending"
+    },
+    {
+      "id": "capybara-calm",
+      "caption": "冷静",
+      "prompt": "Create one original animation sprite sheet, EXACTLY 4 columns by 3 rows of equal SQUARE cells, 12 chronological poses left-to-right then top-to-bottom. Landscape 4:3 image. No grid lines, no text, no symbols, no borders. Pure white background. Each cell is an independent frame of EXACTLY the same character with identical lighting, clothing, body size and camera. Waist-up character with entire head, hands/paws/flippers and elbows fully visible INSIDE a centered safe rectangle from x=55 to307 and y=35 to295 in each 362x362 cell; leave bottom 67px pure white for later caption. Never cut fingers/ears. Fixed head location, fixed body base. No row-to-row vertical drift. FIRST AND LAST POSES MATCH EXACTLY in geometry and facial state. Make at least 4 genuinely distinct expressive poses with actual limb/eyebrow/eyelid/mouth articulation, not camera zoom/translation or copied static frames. Smooth small transitions, no suddenly appearing limbs. All cells maintain two arms/paws only. No props, no famous characters, no celebrity likeness. Handmade matte CLAY capybara sculpture, smooth warm brown clay without fur, rounded long muzzle and tiny ears, exactly two small rounded forepaws. Meaning: 'calm down', intentionally settling nerves, not asleep. Poses1-2 slightly tense eyebrows, both hands/paws visibly resting near chest,3-4 bring hands forward palms down a little,5-7 gently pressing both palms downward while lips exhale softly and eyes relax but remain partly open,8-10 hands return gradually,11-12 exact opening slightly tense face and starting hands. Small controlled gesture, no bounce, no giant smile. IMPORTANT OUTPUT FORMAT: opaque pure WHITE background, NOT transparent, NOT black. Render character smaller than typical sticker: top of head at 50/362 and bottom of lowest paw at 280/362 in EVERY cell; bottom fifth of each square totally empty white. Keep image equal square grid. Avoid filling each cell edge to edge.",
+      "masterFile": "masters/capybara-calm.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-8512682f-2df1-4735-85b3-59db2307bc97.png",
+      "sha256": "d886bba9b2f10716d494426731306e89001f8d41c49945f688c2a35c8247c864",
+      "machineReview": "passed",
+      "visualDisposition": "pending"
+    },
+    {
+      "id": "man-calm",
+      "caption": "冷静",
+      "prompt": "Create one original animation sprite sheet, EXACTLY 4 columns by 3 rows of equal SQUARE cells, 12 chronological poses left-to-right then top-to-bottom. Landscape 4:3 image. No grid lines, no text, no symbols, no borders. Pure white background. Each cell is an independent frame of EXACTLY the same character with identical lighting, clothing, body size and camera. Waist-up character with entire head, hands/paws/flippers and elbows fully visible INSIDE a centered safe rectangle from x=55 to307 and y=35 to295 in each 362x362 cell; leave bottom 67px pure white for later caption. Never cut fingers/ears. Fixed head location, fixed body base. No row-to-row vertical drift. FIRST AND LAST POSES MATCH EXACTLY in geometry and facial state. Make at least 4 genuinely distinct expressive poses with actual limb/eyebrow/eyelid/mouth articulation, not camera zoom/translation or copied static frames. Smooth small transitions, no suddenly appearing limbs. All cells maintain two arms/paws only. No props, no famous characters, no celebrity likeness. Photoreal fictional original handsome CHINESE ADULT MAN age30, medium short textured black hair, distinct angular face, plain charcoal-gray T-shirt. Not any real person/celebrity. Two anatomically correct hands with five digits each, fingers together for palms-down calming motion. Meaning: 'calm down', intentionally settling nerves, not asleep. Poses1-2 slightly tense eyebrows, both hands/paws visibly resting near chest,3-4 bring hands forward palms down a little,5-7 gently pressing both palms downward while lips exhale softly and eyes relax but remain partly open,8-10 hands return gradually,11-12 exact opening slightly tense face and starting hands. Small controlled gesture, no bounce, no giant smile. IMPORTANT OUTPUT FORMAT: opaque pure WHITE background, NOT transparent, NOT black. Render character smaller than typical sticker: top of head at 50/362 and bottom of lowest paw at 280/362 in EVERY cell; bottom fifth of each square totally empty white. Keep image equal square grid. Avoid filling each cell edge to edge.",
+      "masterFile": "masters/man-calm.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-48162780-de47-412d-85be-b054f9f79482.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "168f572bd2d786fa6c459c937936eac1f23a905d145521c4b56013c778c04697",
+      "machineReview": "passed",
+      "visualDisposition": "pending"
+    }
+  ],
+  "rejectedFiles": [
+    {
+      "file": "rejected/retriever-encourage-v1.png",
+      "sha256": "7c20aa2026de7bad3d1007f4d0317ee71492ea3ff841e9bd22848ee0bbacab39",
+      "reason": "hands/paws touch caption safe area; first two characters also swap gesture side"
+    },
+    {
+      "file": "rejected/frog-encourage-v1.png",
+      "sha256": "b161d7ba85bbbab77f50c5c69a262424b139cd25901052541409804b58e9abda",
+      "reason": "hands/paws touch caption safe area; first two characters also swap gesture side"
+    },
+    {
+      "file": "rejected/bear-encourage-v1.png",
+      "sha256": "09b210b6d9297487fec46fdb20320a756b53baf6981dfd51dd72300bdc7ced7a",
+      "reason": "hands/paws touch caption safe area; first two characters also swap gesture side"
+    },
+    {
+      "file": "rejected/man-encourage-v1.png",
+      "sha256": "8d95f3b072335769e304696dbbedc342a7d91ad5ce6d6f6939721eab67f652ea",
+      "reason": "hands/paws touch caption safe area; first two characters also swap gesture side"
+    },
+    {
+      "file": "rejected/retriever-encourage-v2.png",
+      "sha256": "e282a3a105b66d406eebb0b92c740a5ac53dbe7f70a4574af6bbed739a9dcf47",
+      "reason": "row registration drift; dog/bear also loopClosure audit failure"
+    },
+    {
+      "file": "rejected/frog-encourage-v2.png",
+      "sha256": "f32a7c8f2c8da9aa8b5919da8cca5e834b1974999999262959d75272294208c9",
+      "reason": "row registration drift; dog/bear also loopClosure audit failure"
+    },
+    {
+      "file": "rejected/bear-encourage-v2.png",
+      "sha256": "5d4c8d08e42abfcac263312438fbf3c76289da748b179fbe2552508fdd65c79b",
+      "reason": "row registration drift; dog/bear also loopClosure audit failure"
+    },
+    {
+      "file": "rejected/man-encourage-v2.png",
+      "sha256": "7a5c8ff64ac01e79c4b36f6f82670f6c8df0d19a9fa2ebc1c0dc8f2758f8a575",
+      "reason": "resting fist still cropped"
+    }
+  ]
+}

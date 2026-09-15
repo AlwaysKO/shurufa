@@ -1,0 +1,15 @@
+{
+  "apk": "android/YuyanIme/app/build/windows/outputs/apk/offline/debug/yuyanIme_2026090810_debug.apk",
+  "sha256": "fd6a7b101d25810e5bcc25fa49ed11fee4d5ff1f1d70af6b8bfde4969fa021c6",
+  "version": "20260908.10",
+  "testClasses": 10,
+  "tests": 121,
+  "failures": 0,
+  "errors": 0,
+  "installed": false,
+  "installationBlocker": "Windows adb devices 列表为空",
+  "gifAnimationConfirmed": false,
+  "visualScreenshotConfirmed": false,
+  "userSideSymbolSize": 60,
+  "review": "两项只读审查均未发现阻塞问题；交接副本过期清理待后续处理"
+}

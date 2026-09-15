@@ -1,0 +1,143 @@
+{
+  "created": "2026-09-12",
+  "sourceType": "ai-original",
+  "status": "trial-only",
+  "publicationAllowed": false,
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "items": [
+    {
+      "id": "spaniel-hurt",
+      "prompt": "Production 12-pose ANIMATION SHEET: EXACTLY4 columns by3 rows, equal SQUARE cells, overall4:3 ratio ideally1536x1152. No lines separating cells, no gutters, no text, symbols or numbers. SOLID WHITE background #ffffff, not transparent or black. Identical original character/camera/scale/lighting across all12 cells. ENTIRE character including feet and ears must fit in upper75% of EVERY cell; lower25% completely blank WHITE for later caption. Draw genuine sequential acting poses, not duplicates/zooms. Emotion 'feeling unfairly treated, hurt, holding back emotion', not sleepy, angry or terrified. Pose8 key vulnerable expression held900ms;9-12 progressively return;12 silhouette/location matches1 for smooth loop. Very small natural head motion, stable torso/feet, careful anatomy. No existing IP, no celebrities. Photorealistic small brown-and-white spaniel chest-up with long soft floppy ears held same shape/position, glossy brown eyes, white blaze consistent. No paws. 1 neutral attentive mouth closed;2 inner eyebrow areas rise slightly;3 mouth barely opens as if wanting to explain;4 lips close again;5 eyes look down a little;6 chin lowers gently;7 eyes turn back toward viewer without fully lifting chin;8 vulnerable pleading upward gaze, inner brows lifted and slight natural lower-lip tension, no human lips, NO falling tears, not exaggerated crying;9 chin begins rising;10 eyes relax;11 almost initial face;12 neutral attentive. Subtle ear tension only, no species changes.",
+      "masterFile": "masters/spaniel-hurt.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-c4ee33fa-0a09-4274-bd67-b65e81a3d5c5.png",
+      "sha256": "d270b80b57d1c5795092e974d49a33ffb14ee1c78bd71f36a3b6419154dd5ab7",
+      "originalSha256": "1f7663c51af94e7fdbc65f9b8fa977e915728373eee6af24e0e02a82f02d7663",
+      "revisions": [
+        {
+          "key": "spanielHurtRepair",
+          "id": "spaniel-hurt",
+          "prompt": "Repair loop closure on this exact4x3 twelve-panel spaniel animation sheet. LAST PANEL12 (bottom right) must return to the EXACT first-panel neutral pose: match panel1 face size, nose/eye position, ear silhouette, chest outline, white forehead blaze, fur and lighting. Panel11 (bottom row third) should transition gently toward that initial pose and panel10 halfway toward it; keep panels1-9 unchanged. Do not replace all frames by one image; preserve actual head lowering and pleading eyes in middle panels. Keep original dog, 4columns3rows equal square cells, overall4:3 and white background. Keep equal within-cell positions: no vertical jump between last and first. No text.",
+          "source": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-eac07212-7b98-45d2-8376-fa8ecf89a9f8.png",
+          "sha256": "b3fecf6919a8515f2e20202e8da10c928e0aa3e0e0c81a16f65ff0531161ea83"
+        },
+        {
+          "id": "spaniel-hurt",
+          "prompt": "Correct the REGISTRATION of this twelve-frame 4-column 3-row animation sheet. Every row currently drifts upward relative to its mathematical square cells. Keep EXACTLY 4x3 EQUAL SQUARE CELLS, overall4:3. For each cell the dog's head top should be 8% down from THAT CELL'S own top, chest bottom at75% down from THAT CELL'S own top, face centered horizontally at50%. In particular move ALL FOUR DOGS IN THE BOTTOM ROW DOWN relative to their current position, so last dog precisely matches first dog in both position AND shape when cells are overlaid. Match first and last dog's eyes/nose/chest/ears and expression exactly. Do not treat white gaps as gutters. Each cell must have IDENTICAL RELATIVE placement, white bottom25% blank. Retain all distinct middle facial acting poses: opening mouth, closing, looking downward, hurt upward gaze. Keep same dog and photorealism, no text or grid lines. Do not just return unchanged sheet. Fix measurable row-to-row vertical drift.",
+          "source": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-9708dc83-7e1c-4d0e-8e3d-286197185579.png",
+          "sha256": "ba79e7b876c5f694292ac4e9e8af924507645fceac1949d2be3da25c1eeed58f"
+        },
+        {
+          "id": "spaniel-hurt",
+          "prompt": "A professional sprite sheet of an ORIGINAL photorealistic brown and white spaniel puppy showing restrained hurt feelings, 'I want to explain but hold back'. 12 distinct sequential facial poses arranged precisely in FOUR COLUMNS and THREE ROWS. Overall image aspect4:3, every tile mathematically square. This is NOT a photograph collage: precise sprite alignment is critical. Small isolated head-and-shoulder bust occupies ONLY CENTRAL 60% of each tile with lots of pure white padding on ALL sides. Head top at20% tile height, chest bottom at70%, center x50%, identical for all rows and columns. All twelve heads same size and anchored position. No lines no numbers no text. Dog has soft floppy ears, white blaze, expressive eyes. Frame1 neutral;2 eyebrows rise;3 small mouth parting;4 closes mouth;5 gaze lowers;6 chin lowers slightly;7 eyes look up with tucked chin;8 key hurt pleading face;9 chin starts return;10 eyes relax;11 near neutral;12 same neutral as1. No tears, no human lips, no paws. Front view stable camera, no tilt. Ensure bottom-right character EXACT same position within its own tile as top-left within its tile. Blank white margin bottom30% of every tile, ample white margin top20%. True different expressions, not duplicates. Twelve busts, not full body.",
+          "source": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-1fd012f2-2880-422d-9cfd-cf6c7d7f1a80.png",
+          "method": "fresh-regeneration",
+          "sha256": "302278583c5b10f7bb8abf9fda96beee9aad1286e64ad1770aea149cd4b18b34"
+        },
+        {
+          "id": "spaniel-hurt",
+          "prompt": "Create a perfectly regular 4 columns x3 rows animation sprite sheet on solid opaque pure WHITE (#ffffff) background. No transparency, no black, no text, no numbers or border. Original realistic brown-and-white floppy-eared spaniel bust. 12 different acting frames of 'feeling unfairly treated / hurt', front view: neutral, eyebrows lift, mouth parts, mouth closes, gaze lowers, chin lowers, eyes look upward, pleading hurt key pose, relax chin, relax eyes, neutral recovery, neutral matching first. Make each dog SMALL: head/bust only HALF of each square cell HEIGHT, with EQUAL WHITE PADDING OF25% ABOVE and25% BELOW each bust. This requires row1 dogs' heads near global y=8.3% and bottoms y=25%; row2 heads y=41.7% bottoms58.3%; row3 heads75% bottoms91.7%. Exact centers x=12.5%,37.5%,62.5%,87.5% and y=16.67%,50%,83.33%. Keep scale and anchoring exact, especially first versus last. All twelve characters same original dog. Restrained eye and mouth acting not head twisting, no paws, no tears. Entire image4:3. Consistent neutral first/last face and identical location within cells. Professional evenly aligned sprite atlas. Plain WHITE BACKGROUND with clean edges.",
+          "source": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-07eb72c6-ebcd-4d4a-a597-ed21a2b6abea.png",
+          "method": "fresh-regeneration",
+          "sha256": "d270b80b57d1c5795092e974d49a33ffb14ee1c78bd71f36a3b6419154dd5ab7"
+        }
+      ]
+    },
+    {
+      "id": "rabbit-hurt",
+      "prompt": "Production 12-pose ANIMATION SHEET: EXACTLY4 columns by3 rows, equal SQUARE cells, overall4:3 ratio ideally1536x1152. No lines separating cells, no gutters, no text, symbols or numbers. SOLID WHITE background #ffffff, not transparent or black. Identical original character/camera/scale/lighting across all12 cells. ENTIRE character including feet and ears must fit in upper75% of EVERY cell; lower25% completely blank WHITE for later caption. Draw genuine sequential acting poses, not duplicates/zooms. Emotion 'feeling unfairly treated, hurt, holding back emotion', not sleepy, angry or terrified. Pose8 key vulnerable expression held900ms;9-12 progressively return;12 silhouette/location matches1 for smooth loop. Very small natural head motion, stable torso/feet, careful anatomy. No existing IP, no celebrities. Minimal BLACK INK original compact white rabbit, long soft ears, tiny triangular nose, expressive brows and small mouth. Seated full body, two paws resting at belly throughout, feet fixed above75%. 1 ears relaxed upward, neutral eyes;2 inner brows lift;3 small mouth opens;4 closes to a wavering small curve;5 ears lower a little through hinges (length stays constant);6 ears droop further;7 chin slightly lowered and mouth tight;8 hurt expression with pleading eyes, drooping ears and small pursed lip, NO tears or comic symbols;9 ears begin recovering;10 brows soften;11 near original;12 initial. Ears remain two identical shapes throughout, do not turn into horns or vanish, no hand movement.",
+      "masterFile": "masters/rabbit-hurt.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-b828f3e3-9974-4718-8839-185e9dd8e944.png",
+      "sha256": "cc9ef0e05dd267b376cbf9780d26158b093651ef79be2252324c6e0e47ac2040",
+      "originalSha256": "34a2e9906456966159974912609cb1079f23ad79535bcaa73f243c5dbbb399ae",
+      "revisions": [
+        {
+          "key": "rabbitHurtRepair",
+          "id": "rabbit-hurt",
+          "prompt": "Edit this original rabbit 4x3 animation sheet while keeping all12 distinct facial poses and identity. Make ear bending continuous: panel4 ears tilt outward partway, panel5 bend halfway downward,6-8 droop; panel9 begins lifting,10 halfway lifted,11 nearly upright,12 same as1. Never switch to different ear length or shape. Also uniformly reduce entire character about15% in every cell so BOTH FEET end at73% of each square height and bottom25% remains blank white; head and ears comfortably inside cell, feet anchor identical across poses. This is uniform layout correction across all12 real poses, not animation by scaling; retain facial/head transitions. Exactly4columns3rows equal square cells, overall4:3, plain solid WHITE, no words or grid lines. Paws remain on belly.",
+          "source": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-93861a5d-abe2-45e6-82d2-9c683a7ddddb.png",
+          "sha256": "535d3fda9974dac6b0662e32f85017427d8a19aa998e45147117db43bc9f99fb"
+        },
+        {
+          "id": "rabbit-hurt",
+          "prompt": "Create an original MINIMAL BLACK INK white rabbit animation sprite sheet on solid opaque pure WHITE background. EXACTLY4 columns and3 rows, overall4:3. Full seated rabbit including TWO feet and TWO ears is small, occupying only CENTRAL50% of EACH SQUARE TILE, white padding25% top and25% bottom. Identical feet baseline within every cell! Tops of upright ears at global y8.3%,41.7%,75%; feet baseline at global y25%,58.3%,91.7% for rows1,2,3 respectively. Centers x12.5%,37.5%,62.5%,87.5%. No grid or text. Maintain SAME HEAD CENTER/size and SAME BODY/feet for all12 poses. Only brows/mouth/ears animate. Emotion hurt/feeling unfairly treated '委屈', not cheerful. Sequence:1 ears upright relaxed neutral;2 inner brows rise;3 small mouth parts;4 mouth closes and ears bend 20degrees outward;5 ears bend40degrees outward;6 ears bend60degrees outward;7 ears droop80degrees;8 key hurt pleading eyes ears droop downward;9 ears lift to60degrees;10 lift to40degrees;11 lift to20degrees;12 same neutral upright ears as1. Two soft ears same length/shape, bend smoothly no sudden ear length change. Paws rest belly throughout. Small wavering mouth, NO tears. Frame1 and12 EXACT same anchored rabbit location. Do NOT fill cell, keep all anatomy inside central50% and rest white.",
+          "source": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-3b61d647-ac67-4957-89de-d449052fa991.png",
+          "method": "fresh-regeneration",
+          "sha256": "d4facf15d02b23c19bf9330a2fb2a6d746e1a943dbc703af58055c3861bb66cf"
+        },
+        {
+          "id": "rabbit-hurt",
+          "prompt": "Edit this 4x3 rabbit sprite sheet. Shrink EACH rabbit to HALF ITS CURRENT SIZE. Keep 12 different poses arranged 4 columns3 rows, each rabbit tiny and surrounded by huge pure white space. Every character centered in its own equal square cell. Feet all at70% of that cell's height. Ear tips no higher than25% of cell height. Preserve black line style and face/pose differences. On bottom row, make first rabbit's ears droop like previous row last rabbit, then gradually lift ears across remaining3 rabbits to upright. Do not keep current large sizes. Output4:3, opaque pure white, no text.",
+          "source": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-11410733-480b-4f64-b713-80b0fbe5fdfc.png",
+          "method": "layout-edit",
+          "sha256": "cc9ef0e05dd267b376cbf9780d26158b093651ef79be2252324c6e0e47ac2040"
+        }
+      ],
+      "knownVisualIssues": [
+        "首行脚部被字幕遮挡",
+        "首尾及跨行角色位置明显上下漂移",
+        "耳朵回升过渡不足，需返修"
+      ],
+      "visualAssessment": "needs-rework"
+    },
+    {
+      "id": "hedgehog-hurt",
+      "prompt": "Production 12-pose ANIMATION SHEET: EXACTLY4 columns by3 rows, equal SQUARE cells, overall4:3 ratio ideally1536x1152. No lines separating cells, no gutters, no text, symbols or numbers. SOLID WHITE background #ffffff, not transparent or black. Identical original character/camera/scale/lighting across all12 cells. ENTIRE character including feet and ears must fit in upper75% of EVERY cell; lower25% completely blank WHITE for later caption. Draw genuine sequential acting poses, not duplicates/zooms. Emotion 'feeling unfairly treated, hurt, holding back emotion', not sleepy, angry or terrified. Pose8 key vulnerable expression held900ms;9-12 progressively return;12 silhouette/location matches1 for smooth loop. Very small natural head motion, stable torso/feet, careful anatomy. No existing IP, no celebrities. Original tactile clay stop-motion tiny hedgehog, warm beige face/belly, rounded chocolate spines on BACK only, stubby limbs, expressive brown eyes. Seated full body feet planted, character fits upper75%. 1 both small paws rest at belly;2 eyes soften and inner brows rise;3 mouth opens a little;4 closes sadly;5 paws start moving inward toward own chest;6 both paws reach chest sides;7 arms gently wrap own belly, paws stay visible and SEPARATE, each on its original side;8 tiny self-hug, chin tucked, vulnerable upward gaze, not asleep;9 arms loosen a little;10 paws lower;11 almost initial position;12 original neutral. No crossed/switching hands, no additional limbs, no rolling into ball, no floating tears.",
+      "masterFile": "masters/hedgehog-hurt.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-6edb8c5c-52d1-4c7c-b19b-696ab7b9b7a5.png",
+      "sha256": "a0a01d96c9d995089d7fa35fa48e006c4d742cfd6433cfc4025cdc4ae6596011",
+      "originalSha256": "a0a01d96c9d995089d7fa35fa48e006c4d742cfd6433cfc4025cdc4ae6596011",
+      "revisions": []
+    },
+    {
+      "id": "man-hurt",
+      "prompt": "Production 12-pose ANIMATION SHEET: EXACTLY4 columns by3 rows, equal SQUARE cells, overall4:3 ratio ideally1536x1152. No lines separating cells, no gutters, no text, symbols or numbers. SOLID WHITE background #ffffff, not transparent or black. Identical original character/camera/scale/lighting across all12 cells. ENTIRE character including feet and ears must fit in upper75% of EVERY cell; lower25% completely blank WHITE for later caption. Draw genuine sequential acting poses, not duplicates/zooms. Emotion 'feeling unfairly treated, hurt, holding back emotion', not sleepy, angry or terrified. Pose8 key vulnerable expression held900ms;9-12 progressively return;12 silhouette/location matches1 for smooth loop. Very small natural head motion, stable torso/feet, careful anatomy. No existing IP, no celebrities. Realistic photographic ORIGINAL fictional handsome Chinese ADULT MALE age30, short slightly side-parted black hair, navy crewneck tee, distinctive fictional face not real celebrity likeness. Chest-up with BOTH HANDS OUT OF FRAME at all times, stable shoulders. 1 listening neutrally;2 inner brows lift mildly;3 lips part as if to explain;4 lips close without speaking;5 gaze drops slightly;6 lower lip presses inward, chin lowers a little;7 eyes lift back to viewer with chin still tucked;8 quiet hurt/feeling unfairly treated, subtle raised inner brows, moist-looking eyes but NO falling tears, tight slightly downturned lips, no smile;9 lips relax;10 chin rises gradually;11 brows soften;12 initial neutral listening face. Restrained natural acting, not theatrical crying.",
+      "masterFile": "masters/man-hurt.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-e95497be-efbf-42f5-8d2f-3f02a0fe927f.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "d65ff69407fbf56ab065909dca422a5054f7c41f015eaa77bc04db76aa55dffa",
+      "originalSha256": "d65ff69407fbf56ab065909dca422a5054f7c41f015eaa77bc04db76aa55dffa",
+      "revisions": []
+    }
+  ],
+  "rejectedFiles": [
+    {
+      "file": "rejected/initial-render-failure.txt",
+      "sha256": "e2c67fedcc44e9bb5411cceaa9ca100447c5dccbbf7b41fe5f5ef471042edf4d"
+    },
+    {
+      "file": "rejected/rabbit-hurt-v1-ear-transition.png",
+      "sha256": "34a2e9906456966159974912609cb1079f23ad79535bcaa73f243c5dbbb399ae"
+    },
+    {
+      "file": "rejected/rabbit-hurt-v2-caption-clipping.png",
+      "sha256": "535d3fda9974dac6b0662e32f85017427d8a19aa998e45147117db43bc9f99fb"
+    },
+    {
+      "file": "rejected/rabbit-hurt-v3-layout.png",
+      "sha256": "d4facf15d02b23c19bf9330a2fb2a6d746e1a943dbc703af58055c3861bb66cf"
+    },
+    {
+      "file": "rejected/rabbit-hurt-v4-drift-clipping.png",
+      "sha256": "cc9ef0e05dd267b376cbf9780d26158b093651ef79be2252324c6e0e47ac2040"
+    },
+    {
+      "file": "rejected/spaniel-hurt-v1-loop-mismatch.png",
+      "sha256": "1f7663c51af94e7fdbc65f9b8fa977e915728373eee6af24e0e02a82f02d7663"
+    },
+    {
+      "file": "rejected/spaniel-hurt-v2-loop-mismatch.png",
+      "sha256": "b3fecf6919a8515f2e20202e8da10c928e0aa3e0e0c81a16f65ff0531161ea83"
+    },
+    {
+      "file": "rejected/spaniel-hurt-v3-loop-mismatch.png",
+      "sha256": "ba79e7b876c5f694292ac4e9e8af924507645fceac1949d2be3da25c1eeed58f"
+    },
+    {
+      "file": "rejected/spaniel-hurt-v4-loop-mismatch.png",
+      "sha256": "302278583c5b10f7bb8abf9fda96beee9aad1286e64ad1770aea149cd4b18b34"
+    }
+  ]
+}

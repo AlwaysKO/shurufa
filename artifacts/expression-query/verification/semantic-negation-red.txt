@@ -1,0 +1,25 @@
+
+ RUN  v4.1.11 /home/ko/project/shurufa/server
+
+ ❯ src/expression/queryMatching.test.ts (25 tests | 1 failed) 12ms
+   × 否定查询的模板兜底也不返回被否定的动作与正向情绪 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/expression/queryMatching.test.ts > 否定查询的模板兜底也不返回被否定的动作与正向情绪
+AssertionError: expected [ 'tpl-可以', 'tpl-难过', 'tpl-打闹', …(5) ] to not include 'tpl-喜欢'
+ ❯ src/expression/queryMatching.test.ts:24:66
+     22|  const templates = assets.map(x => ({...x,id:'tpl-'+x.id,type:'synthes…
+     23|  for(const [query,blocked] of [['不喜欢','喜欢'],['不会打你','打闹'],['不开心','开心']…
+     24|   expect(rankExpressionAssets(templates,query).map(x=>x.id)).not.toCon…
+       |                                                                  ^
+     25|  }
+     26| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 24 passed (25)
+   Start at  11:06:13
+   Duration  160ms (transform 30ms, setup 0ms, import 44ms, tests 12ms, environment 0ms)

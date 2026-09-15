@@ -1,0 +1,22 @@
+[
+  {
+    "id": "gingercat-content",
+    "pass": true,
+    "bytes": 102494
+  },
+  {
+    "id": "otter-content",
+    "pass": true,
+    "bytes": 140182
+  },
+  {
+    "id": "pig-content",
+    "pass": false,
+    "error": "Error: GIF审计失败：[{\"id\":\"pig-content\",\"field\":\"loopClosure\",\"expected\":0.15151909722222223,\"actual\":0.17487847222222222,\"message\":\"样板 pig-content 跨循环边界的感知差异显著高于内部相邻帧\"}]"
+  },
+  {
+    "id": "man-content",
+    "pass": true,
+    "bytes": 71953
+  }
+]

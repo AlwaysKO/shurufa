@@ -1,0 +1,31 @@
+{
+  "keyword": "饿了",
+  "items": [
+    {
+      "id": "scene-rich-08-hungry",
+      "keyword": "饿了",
+      "file": "饿了/scene-rich-08-hungry.gif",
+      "thumbnail": "饿了/scene-rich-08-hungry.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-08/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-08/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-08/gifs/scene-rich-08-hungry.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-08/thumbnails/scene-rich-08-hungry.webp",
+      "batch": "scene-rich-08",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "d8fd33bf442210efc3ac6fdd8526bc4392505e6eada9ddf0d9bf415cc5570954",
+      "thumbnailSha256": "2093f161b36813e8e32feeff8114fb6c6d8383461ed91f6238fa96efee3ff83c",
+      "bytes": 202409,
+      "width": 240,
+      "height": 240,
+      "frames": 20,
+      "durationMs": 4000,
+      "style": "ai-original-pet",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

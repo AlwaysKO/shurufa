@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "batchId": "scene-rich-08",
+  "status": "review-only",
+  "items": [
+    {
+      "id": "scene-rich-08-arrange",
+      "keyword": "安排",
+      "caption": "安排",
+      "captionPlacement": "top-left",
+      "masterFile": "masters/scene-rich-08-arrange.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-f3e951a3-b476-4aca-88c3-563cf0903a04.png",
+        "prompt": "NEW original minimalist chat cartoon sprite sheet,4columns3rows12 square cells landscape4:3, solid pale mint background, thin grey grid lines, no text. Meaning 'I'll arrange it': original pear-shaped little creature with tiny side-part black hair tuft, behind plain desk, slowly raises one hand into confident thumbs-up while other hand holds a tiny blank checklist board against chest. Funny deadpan efficient attitude. No glasses, no tray or sliding paper. Camera and desk fixed exact same relative coordinates, only hand/eye movement.12 chronological poses:1 hand low on desk, calm half-lidded eyes looking front;2 pupils glance toward viewer left;3 hand rises slightly;4 hand halfway chest;5 fingers curl into mitten;6 thumb extends;7 thumbs-up slightly higher, one eyebrow raises;8 proud 'done' smirk with thumbs-up;9 hand lowers a little;10 thumb curls in and hand halfway down;11 hand almost initial;12 identical first pose and desk/face scale. Broad readable simple gestures but adjacent poses gradual, TWO arms only, checklist board stays motionless same hand everyframe no writing or icons. Exactly aligned12cells, identical body shape and scale, original no famous mascot/no human face collage/no brand/watermark. Twelve genuine source poses for4second loop, no resizing or fading. Top-left clear for later Chinese caption.",
+        "masterSha256": "f3cc7cd588f804246a8c66fd48b4fb19a9e1006ca3497c5ae7af45b71ca65b95"
+      }
+    },
+    {
+      "id": "scene-rich-08-calm",
+      "keyword": "别急",
+      "caption": "别急",
+      "captionPlacement": "top-left",
+      "masterFile": "masters/scene-rich-08-calm.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Original minimal black line animated reaction sheet FOUR columns THREE rows,12 equal square cells in4:3 landscape. Solid opaque pale warm mint background, hairline grey aligned grid, no text/gutters. Meaning 'don't rush': original round bean creature calmly holds a small plain tea mug behind desk, gives impatient offscreen friend a relaxed palm-down 'easy' gesture, then takes a tiny serene sip. Very sparse thick black lines, tiny sleepy eyes, no existing mascot or real human face. Fixed silhouette and camera, desk80%cellheight, top-left free for caption.12 gradual poses:1 half-lidded calm face mug low in viewer-right hand, viewer-left hand resting;2 eyes look toward viewer;3 free left hand lifts a little palm down;4 palm gently extends forward;5 palm lowers slightly calming gesture;6 left hand rests again and mug starts lifting;7 mug halfway toward mouth;8 peak serene sip mug just below mouth with knowing relaxed eyes;9 mug lowers a little;10 mug halfway down;11 mug almost initial;12 same initial calm mug-low pose. Exactly2hands, mug ALWAYS viewer-right hand, no switching, no liquid spilling or text on mug. Gradual small hand/eye actions, no sudden body shifts, no fade/zoom. Gentle ironic calm vs impatience,12source inbetweens for4second loop.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-6c69ad02-fd73-446b-89ba-4241e4114800.png",
+        "masterSha256": "f545b9e05d3e370890e7f5c64fc8f9da17e1401c9c90ff8b3aa9d65bfb8345ea"
+      }
+    },
+    {
+      "id": "scene-rich-08-hungry",
+      "keyword": "饿了",
+      "caption": "饿了",
+      "captionPlacement": "bottom-left",
+      "masterFile": "masters/scene-rich-08-hungry.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "ORIGINAL photorealistic hungry beagle reaction animation sheet FOURcolumns THREErows TWELVE equal square panels landscape4:3 no gutters text labels. A unique ordinary adult beagle waits politely behind an empty plain ceramic food bowl on kitchen mat, front paws fixed beside bowl. Funny 'I'm starving' gaze: eyes follow imagined food above camera, nose twitches, tiny tongue briefly licks upper lip then mouth closes, patient pleading eyes. Fixed camera and background, bowl/paws immobile, dog head same scale/location. Twelve gradual small inbetweens:1 hopeful eyes look up bowl empty;2 eyes track slightly viewer-left;3 nose lifts2mm;4 mouth parts tiny bit;5 tongue tip appears just under nose;6 tongue extends a little onto upper lip;7 tongue reaches peak little lip lick;8 hungry intense hopeful stare tongue now tiny tip almost retracting;9 tongue retracts fully and mouth closes;10 head lowers a little;11 eyes return initial;12 same hopeful original pose. No huge drool, no teeth baring, no distress, no human face or cartoon eyes. Natural anatomy, soft candid warm kitchen light, fine fur, no brand or watermark or lettering. Lower left mat/bowl area free for later caption. Twelve genuinely incremental expressions for slow4second loop, no zoom/fade/pose teleport.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-3ab8f64f-1c1e-4ccc-a2ea-65c01375f6bd.png",
+        "masterSha256": "de60a84ad5a12b2922a88e615c579bd14c191b446154596882b4f8f65f171902"
+      }
+    },
+    {
+      "id": "scene-rich-08-awkward",
+      "keyword": "尴尬",
+      "caption": "尴尬",
+      "captionPlacement": "bottom-left",
+      "masterFile": "masters/scene-rich-08-awkward.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "ORIGINAL photorealistic awkward cat reaction animation sheet FOUR columns THREE rows TWELVE equal square photos landscape4:3 no gutters labels text. Unique ordinary silver tabby cat sitting upright on plain beige armchair, front paws neatly together, stiff polite posture. Meaning 'awkward silence': pupils slowly look left then right without moving body, ears angle sideways slightly, briefly freezes with wide alert eyes and tightly closed mouth, then tiny blink and looks forward. Comical trying-to-act-normal energy, not fear or illness. Locked camera, consistent fur/chair/background and head scale, face centered, no big head turns.12 chronological subtle inbetweens:1 neutral stiff eyes forward;2 pupils shift slightly left;3 pupils further left;4 pupils return halfway;5 eyes center with ears slightly sideways;6 pupils shift a little right;7 eyes widen a little;8 peak frozen awkward straight-ahead stare with ears sideways and closed mouth;9 upper eyelids begin tiny blink;10 eyelids half closed;11 eyes reopen gradually;12 original neutral eye/ear position. Real cat anatomy, no human facial features, no sweat symbols or caption, no brands/watermark. Lower-left chair clear for later deterministic Chinese caption. Soft daylight,12 genuinely small eye/ear poses for4second loop, no zoom/fade/jump cuts.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-ce8c3719-1d45-4168-b3c8-bfeac02058db.png",
+        "masterSha256": "12dc8a812652b0856681f800926b15098583673eb9456d55b4178e889a7066c3"
+      }
+    }
+  ]
+}

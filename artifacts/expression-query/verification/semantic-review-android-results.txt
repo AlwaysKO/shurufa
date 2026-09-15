@@ -1,0 +1,3 @@
+com.yuyan.imemodule.expression.ExpressionCatalogTest: tests=7 failures=0 errors=0
+com.yuyan.imemodule.expression.ExpressionQueryMatchingTest: tests=2 failures=0 errors=0
+com.yuyan.imemodule.expression.ExpressionSyncTest: tests=14 failures=0 errors=0

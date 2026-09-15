@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "batchId": "scene-rich-07",
+  "status": "review-only",
+  "items": [
+    {
+      "id": "scene-rich-07-ok",
+      "keyword": "没问题",
+      "caption": "没问题",
+      "captionPlacement": "top-left",
+      "masterFile": "masters/scene-rich-07-ok.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "ORIGINAL minimal black marker doodle animated sticker sheet, FOUR columns THREE rows,12 exactly square equal cells, whole4:3 landscape, solid opaque ivory background. Use very thin light grey grid lines at exact quarters and thirds to keep cells aligned, no gutters, no words. Meaning 'no problem': original squat rectangular rice-cake creature behind plain horizontal desk holds a tiny rubber stamp, slowly raises it and gently stamps a paper with a simple green CHECKMARK, then gives a sly confident nod and lifts stamp back. This is comic over-serious approval of a tiny request. No text on stamp/paper, only checkmark allowed. Thick sparse black lines and one green accent, no famous characters or human meme faces. Character body/head SAME position and scale every cell, desk at80%height, clear top-left for later caption.12 consecutive tiny movements:1 confident half-lidded gaze stamp slightly above paper;2 eyes focus paper;3 stamp lowers a little;4 stamp halfway down;5 stamp nearly touching paper;6 stamp touches paper with little compression;7 stamp starts lifting revealing checkmark;8 peak smug satisfied glance at viewer with checkmark visible and stamp lifted slightly;9 stamp moves upward small amount;10 head nod relaxes;11 eyes settle into initial expression;12 same initial pose stamp hovering, checkmark remains on paper ALL12frames including first so loop stable. Exactly2arms, other hand rests on paper. Avoid sudden motion, no body bounce, physical gradual contact action12poses for4second loop. No brand/watermark/letters/numbers.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-e8e02fca-5de6-4ca8-8d19-054c6cb57047.png",
+        "masterSha256": "9cbcba3a48fa5f1b4c32aaffd1cf90d21d4a7176b1cca7c9a55646c2e52243ce"
+      }
+    },
+    {
+      "id": "scene-rich-07-tired",
+      "keyword": "心累",
+      "caption": "心累",
+      "captionPlacement": "top-left",
+      "masterFile": "masters/scene-rich-07-tired.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Original minimal black marker emotional reaction animation sheet FOUR columns THREE rows,12 equal SQUARE cells, whole4:3 landscape, opaque pale blue-grey background. Hairline grey grid lines exactly at quarters/thirds, no gutters no text. Meaning 'emotionally exhausted': an original skinny oval bean creature behind a desk looks at one tiny potted drooping sprout, slowly rests cheek on mitten palm and sighs, sprout droops in sympathy. Funny shared exhaustion, not generic sadness. Fixed thin black character outline and simple dot eyes, no famous character or human meme face. Desk at80%height everycell, character center same position/scale; plant right side stationary pot, top-left empty for caption.12 chronological gradual poses:1 slumped shoulders half-lidded eyes, one hand resting desk;2 eyelids lower a bit;3 hand rises slightly;4 hand halfway to cheek;5 fingertips near cheek;6 cheek touches hand gently;7 head leans2degrees, mouth begins small sigh oval;8 peak exhausted cheek-squish, tiny sigh mark beside mouth, sprout leaf tilts slightly down;9 mouth closes, head lifts a little;10 hand descends halfway;11 almost initial position;12 original slumped pose and plant initial leaf position. Exactly2arms, same hand viewer-left supports cheek throughout, other hand motionless. Small inbetweens, no body repositioning or objects appearing except tiny sigh curve, no crossfades or zoom. Only muted green leaf accent, no writing numbers watermark brand.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-a4c2039c-df2a-4d08-9446-d699dc3ada61.png",
+        "masterSha256": "67c17f9469423a4c7caa5e6411793fd26f2e5c44bd0ffb9d36d010c38ea982e1"
+      }
+    },
+    {
+      "id": "scene-rich-07-proud",
+      "keyword": "得意",
+      "caption": "得意",
+      "captionPlacement": "bottom-left",
+      "masterFile": "masters/scene-rich-07-proud.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "ORIGINAL photorealistic smug cat reaction animation sheet FOUR columns THREE rows,12 equal square photographs, whole4:3 landscape no gutters labels words. An ordinary unique orange-and-white adult cat sits like a little boss on faded teal armchair with one paw elegantly draped over armrest. Emotion 'feeling pleased with myself': slowly lifts chin by a tiny amount, eyes narrow into quietly smug knowing expression, ears relaxed. Not a famous meme animal, not human smile or teeth. Fixed camera and identical living-room background, warm neutral light, chair and paws stay absolutely fixed, body/head scale constant.12 gradual chronological microposes reading order:1 calm eyes forward chin neutral;2 eyes glance toward viewer-left;3 eyelids lower a little;4 chin raises1degree;5 chin raises2degrees;6 tiny mouth-corner softening natural cat muzzle;7 upper eyelids narrow smugly;8 peak proud chin lifted3degrees with one-sided knowing side-eye, dignified slightly ridiculous self-satisfaction;9 chin lowers a tiny amount;10 eyelids relax halfway;11 gaze moves back;12 exact initial calm face/position. Eyes and small head/ear movements only, no full-body repositioning, no outfits/medals/props, no blur/zoom/fade. Natural cat anatomy and fine fur, LOWER LEFT chair surface empty for caption later. Twelve closely spaced inbetweens for4second loop, funny attitude not generic cute portrait.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-d398bc99-eedf-4a02-81cd-4a3174272cfe.png",
+        "masterSha256": "d03627df0266542df43cacc735c3ffaaf43d2751cc2bf2ae98d3d38ce5d51c37"
+      }
+    },
+    {
+      "id": "scene-rich-07-shy",
+      "keyword": "害羞",
+      "caption": "害羞",
+      "captionPlacement": "bottom-left",
+      "masterFile": "masters/scene-rich-07-shy.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "ORIGINAL photorealistic small tan floppy-eared mixed-breed dog bashful reaction ANIMATION SHEET FOUR columns THREE rows,12 equal square photographs touching without gutters words or borders. Whole4:3 landscape. Dog peeks from beside a soft lavender cushion on a grey sofa, front paws resting still near cushion edge. 'Feeling shy after a compliment': looks at viewer then glances down, ears relax, head slowly tucks a LITTLE behind cushion while eyes shyly peek up, then eases back. Not fearful hiding or sad dog, gentle sheepish warm glance, natural closed mouth no human smile, ordinary unique animal not celebrity pet. Locked camera/background/fur identity, cushion perfectly stationary and head same scale, only pupil direction eyelids and1-2cm head movement.12 chronological small inbetweens:1 relaxed visible face next to cushion looking viewer;2 eyes glance down;3 eyelids soften;4 head moves downward3mm;5 head moves another3mm toward cushion;6 cheek edges behind cushion slightly;7 eyes glance up while head stays low;8 peak bashful peek, one eye partially framed by cushion, soft eyes and ears, tiny closed-mouth amused look;9 head emerges3mm;10 head returns halfway;11 gaze centers gently;12 matches initial visible-face pose. Gradual transitions, don't fully hide eyes or shift camera, exactly2front paws, no clothes or accessories, no logos/watermarks/text. Lower-left plain cushion area free for later short caption. Fine photographic texture and expressive eyes readable at240px.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-c19ac869-15e8-483e-8203-874c3dae1c20.png",
+        "masterSha256": "048a2692cc2eea7db4e1ac368ab86904e5c1c8ccadd5876966aaca985a79df45",
+        "correctionPrompt": "Edit only the BOTTOM ROW (panels9,10,11,12) of this original4column3row shy-dog animation. Make a smooth gradual return from panel8 (middle row far right), where half face is hidden by lavender cushion, to initial fully visible face. Panel9 should show only slightly more face than8, nose still partly hidden, eyes remain looking UP, NOT fully out. Panel10 slightly more visible nose, eyes still up, no dipping downward. Panel11 almost fully visible face at same height. Panel12 exactly original panel1 head pose and eye direction. Across these4frames head moves only gradually sideways OUT from cushion, NO dip down, NO large jump, paws and cushion fixed. Preserve top two rows, dog identity, fur, camera, scale and background. Twelve equal square cells in4:3 image, no text or labels. This is continuity correction, not redesign.",
+        "intermediateSource": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-4e81efc2-aa5b-45f2-96da-853a67b7057e.png"
+      }
+    }
+  ]
+}

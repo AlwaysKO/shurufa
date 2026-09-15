@@ -1,0 +1,105 @@
+{
+  "keyword": "谢谢",
+  "items": [
+    {
+      "id": "thanks-nuotuan-bow",
+      "keyword": "谢谢",
+      "file": "谢谢/thanks-nuotuan-bow.gif",
+      "thumbnail": "谢谢/thanks-nuotuan-bow.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/prototypes/manifest.json",
+      "sourceReport": "artifacts/expression-prototypes/report.json",
+      "sourceGif": "artifacts/expression-prototypes/gifs/thanks-nuotuan-bow.gif",
+      "sourceThumbnail": "server/.runtime/expression-assets/thumbnails/thanks-nuotuan-bow.webp",
+      "batch": "prototypes",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "c5a931212a3207645d50dedc047bb3dedf4453f53ce3d8abe20274ffe2adf829",
+      "thumbnailSha256": "06a3a72eba54ca2725dad70c67cf9bf81efb671cef36ba8a8951cec9c4e38838",
+      "bytes": 187931,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "style": "original-character",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    },
+    {
+      "id": "thanks-puppy-flower",
+      "keyword": "谢谢",
+      "file": "谢谢/thanks-puppy-flower.gif",
+      "thumbnail": "谢谢/thanks-puppy-flower.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/prototypes/manifest.json",
+      "sourceReport": "artifacts/expression-prototypes/report.json",
+      "sourceGif": "artifacts/expression-prototypes/gifs/thanks-puppy-flower.gif",
+      "sourceThumbnail": "server/.runtime/expression-assets/thumbnails/thanks-puppy-flower.webp",
+      "batch": "prototypes",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "096abc93a00f2125fadab9857fcb08b71355f6a46135800ca32846dc0037e76f",
+      "thumbnailSha256": "d0cc921229fbc70abd33d80db81886a238352fb829cc0f49c505afa7caf1bf47",
+      "bytes": 156740,
+      "width": 240,
+      "height": 240,
+      "frames": 14,
+      "style": "ai-original-pet",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    },
+    {
+      "id": "thanks-office-helper",
+      "keyword": "谢谢",
+      "file": "谢谢/thanks-office-helper.gif",
+      "thumbnail": "谢谢/thanks-office-helper.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/prototypes/manifest.json",
+      "sourceReport": "artifacts/expression-prototypes/report.json",
+      "sourceGif": "artifacts/expression-prototypes/gifs/thanks-office-helper.gif",
+      "sourceThumbnail": "server/.runtime/expression-assets/thumbnails/thanks-office-helper.webp",
+      "batch": "prototypes",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "2712ea9e1890d9df5327fbdb67d932163c58e9541f1087ac18a2a92d1d8476b0",
+      "thumbnailSha256": "26534e14a87eb077f8c9580a2363bef0067268f5a78acade0d7dc5dadb8a5617",
+      "bytes": 145563,
+      "width": 240,
+      "height": 240,
+      "frames": 12,
+      "style": "original-life-scene",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    },
+    {
+      "id": "thanks-plush-toast",
+      "keyword": "谢谢",
+      "file": "谢谢/thanks-plush-toast.gif",
+      "thumbnail": "谢谢/thanks-plush-toast.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/prototypes/manifest.json",
+      "sourceReport": "artifacts/expression-prototypes/report.json",
+      "sourceGif": "artifacts/expression-prototypes/gifs/thanks-plush-toast.gif",
+      "sourceThumbnail": "server/.runtime/expression-assets/thumbnails/thanks-plush-toast.webp",
+      "batch": "prototypes",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "4398e3e24e201c2d98edaf590a5f6933560c82ee7fa24574019a0794f7fa35b6",
+      "thumbnailSha256": "6f741b451e102ef6ffbcd88462d0a0ca587044604b900ecfd32f7001c2b47266",
+      "bytes": 219616,
+      "width": 240,
+      "height": 240,
+      "frames": 18,
+      "style": "3d-plush",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

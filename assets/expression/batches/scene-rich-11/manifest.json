@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "batchId": "scene-rich-11",
+  "status": "review-only",
+  "items": [
+    {
+      "id": "scene-rich-11-watch-line",
+      "keyword": "我就看看",
+      "style": "minimal-line-cartoon",
+      "captionPlacement": "top-left",
+      "caption": "我就看看",
+      "masterFile": "masters/scene-rich-11-watch-line.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Create an ORIGINAL animation sprite sheet, exactly 4 columns by 3 rows: twelve equal square cells in chronological reading order, landscape 4:3 aspect ratio at least 1200x900. Thin straight neutral dividers, no gutters, labels or text anywhere. Fixed camera, identical character identity, scale, anchor points, lighting and flat uncluttered background across all 12 cells. 12 genuine incremental drawn poses, NOT repeated static panels. Last cell nearly exactly matches first for a seamless slow loop. Chinese caption will be added by software, do not generate any lettering, logos, watermarks, brands or recognizable copyrighted characters. Each cell must work as a complete square sticker. Style: minimalist witty black thick-line cartoon on uniform flat pale mint background, no noise or texture. Original small cream triangular potato-bean creature with two thin arms hides behind a fixed vertical peach wall on the RIGHT. Wide deadpan eyes, no generic grin. Meaning: 'just watching, not getting involved'. Reserve TOP LEFT of each cell entirely empty. Wall remains rightmost third; creature leans head left out of wall to curiously peek, tiny hands grip edge at fixed height. Pose1 just half the face visible, eyes sideways left;2 head slightly further left;3 further;4 further;5 fully peeking showing both eyes;6 eyebrows rise a little;7 eyes very wide;8 humorous frozen nosy stare, mouth tiny flat line;9 head retreats quarterway;10 halfway;11 nearly first;12 exactly initial half-face pose. Head moves only a small distance, body/wall/camera remain stable. Incremental return over final four cells, no jump cuts, no new props.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-4c14b868-2331-426d-9c0d-64bf5772da2f.png",
+        "masterSha256": "82dc8c502ab8f7c0308fd9687266d202822558173ade98fe1da6658851502f17",
+        "originalSourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-0330997f-71b3-4e3d-b60b-7a4f7303f8c3.png",
+        "originalSha256": "dbd76619efdb977565cdcccb7fdf8c2737a2c3bcc78a3900db7d95c5c7c8c080",
+        "editPrompt": "Edit this original 12-cell sprite sheet. Replace ONLY the corrupted black/red/yellow noisy background in ALL cells with a clean completely flat pale mint #e1f1e7 background. No texture, transparency, patterns, noise, gradients. Preserve the cream triangular peeking character and peach wall and 12 poses exactly, black outlines intact. Same 4 columns 3 rows landscape 4:3, same dimensions. No words or logos.",
+        "rejectedMasterFile": "rejected/scene-rich-11-watch-line-before-fix.png"
+      }
+    },
+    {
+      "id": "scene-rich-11-watch-person",
+      "keyword": "我就看看",
+      "style": "original-life-scene",
+      "captionPlacement": "top-left",
+      "caption": "我就看看",
+      "masterFile": "masters/scene-rich-11-watch-person.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Create an ORIGINAL animation sprite sheet, exactly 4 columns by 3 rows: twelve equal square cells in chronological reading order, landscape 4:3 aspect ratio at least 1200x900. Thin straight neutral dividers, no gutters, labels or text anywhere. Fixed camera, identical character identity, scale, anchor points, lighting and flat uncluttered background across all 12 cells. 12 genuine incremental drawn poses, NOT repeated static panels. Last cell nearly exactly matches first for a seamless slow loop. Chinese caption will be added by software, do not generate any lettering, logos, watermarks, brands or recognizable copyrighted characters. Each cell must work as a complete square sticker. Style: hand-painted editorial gouache illustration of an ORIGINAL fictional Chinese young adult woman, short black bob, simple ochre shirt, no celebrity likeness. Waist-up seated viewer-right at cafe table, gentle dry humor, hands rest around a stationary plain white teacup bottom-right. Meaning 'I am just watching, not joining'. Uniform pale warm cream background and reserve TOP LEFT of each cell clear for caption. She slowly looks sideways viewer-left with curious amused eyes then returns; BODY/CUP/TABLE/SHOULDERS COMPLETELY STILL. Pose1 gaze forward chin neutral;2 pupils shift left a little;3 further eyes left;4 head turns 2 degrees left;5 head 4degrees;6 eyebrow starts rising;7 one eyebrow raised subtle suppressed smile;8 knowing nosy side-eye, lips closed not laughing;9 eyebrow relaxes halfway head3degrees;10 head2degrees gaze halfreturn;11 head1degree eyes nearlyfront;12 same neutral initial pose. True subtle face and pupil motion, same facial identity all cells, natural hands five fingers, no text or patterned clothing.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-e5fced66-e767-4385-927c-a326f47ddb4b.png",
+        "masterSha256": "a1d17b1a876077790cff6e7e7aeee2022b647389f7fb999a4b9ab4067430501e",
+        "originalSourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-d908cefb-9823-4498-9bc4-0e084bf7fa88.png",
+        "originalSha256": "608174e2abe10c01dfc3d04d9c2b821020dd9abba0a04ee46aabd204afd8b1d7",
+        "editPrompt": "Edit this original fictional Chinese woman 12-cell animation sheet. Fix temporal consistency ONLY. In EVERY cell lock table height, BOTH hands and white cup to the EXACT same location/size as FIRST TOP LEFT panel. Do not move cup or hands. First and LAST panel need identical head upright, neutral lips and pupils looking forward. Preserve first three rows overall look and original gouache style identity, background and clothing. Bottom row return: cell9 head still 3degrees left eyes partlyreturn; cell10 head2degrees left eyeshalfreturn; cell11 head1degree left eyesnearlyfront; cell12 identical FIRST panel forward head/gaze/lips/cup. Top-left space clear for later caption. 4columns3rows same size, NO text, no extra objects. Only subtle eyes and tiny headturn should animate, no torso/cup drift.",
+        "rejectedMasterFile": "rejected/scene-rich-11-watch-person-before-fix.png"
+      },
+      "personOrigin": "China"
+    },
+    {
+      "id": "scene-rich-11-watch-clay",
+      "keyword": "我就看看",
+      "style": "3d-clay",
+      "captionPlacement": "bottom-left",
+      "caption": "我就看看",
+      "masterFile": "masters/scene-rich-11-watch-clay.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Create an ORIGINAL animation sprite sheet, exactly 4 columns by 3 rows: twelve equal square cells in chronological reading order, landscape 4:3 aspect ratio at least 1200x900. Thin straight neutral dividers, no gutters, labels or text anywhere. Fixed camera, identical character identity, scale, anchor points, lighting and flat uncluttered background across all 12 cells. 12 genuine incremental drawn poses, NOT repeated static panels. Last cell nearly exactly matches first for a seamless slow loop. Chinese caption will be added by software, do not generate any lettering, logos, watermarks, brands or recognizable copyrighted characters. Each cell must work as a complete square sticker. Style: charming original tactile clay stop-motion scene. Small round lavender clay pigeon with large bead eyes and tiny coral beak, two short wings resting against body, seated behind a fixed ochre balcony ledge at lower-middle, against entirely smooth sky-blue studio background. Original design, no known character. Meaning 'just having a look, staying out of it'. Reserve BOTTOM LEFT clear: solid ledge face where caption will go. Pigeon BODY, WINGS, LEDGE AND CAMERA absolutely fixed; only neck/head gradually lifts slightly from behind ledge and eyes widen curiously. Pose1 head low with beak just above ledge;2 rise a tiny bit;3 rise more;4 rise more;5 chin comfortably above ledge;6 pupils glance sideways left;7 one eyelid narrows;8 hilariously nosy raised head and sideways stare;9 head lowers quarterway;10 halfway;11 nearly initial;12 initial low peek and same gaze. Soft clean modeling-clay surface with very restrained texture, identical lighting and features everycell. No speed lines, icons, speech bubbles or typography.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-52379cad-1a69-4a1f-80a3-c9ddb401d1c3.png",
+        "masterSha256": "492232140ed3452f42b3437f67c675cfff5911ef06775256e4fa127f543263a2"
+      }
+    },
+    {
+      "id": "scene-rich-11-really-dog",
+      "keyword": "真的假的",
+      "style": "ai-original-pet",
+      "captionPlacement": "bottom-left",
+      "caption": "真的假的",
+      "masterFile": "masters/scene-rich-11-really-dog.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Create an ORIGINAL animation sprite sheet, exactly 4 columns by 3 rows: twelve equal square cells in chronological reading order, landscape 4:3 aspect ratio at least 1200x900. Thin straight neutral dividers, no gutters, labels or text anywhere. Fixed camera, identical character identity, scale, anchor points, lighting and flat uncluttered background across all 12 cells. 12 genuine incremental drawn poses, NOT repeated static panels. Last cell nearly exactly matches first for a seamless slow loop. Chinese caption will be added by software, do not generate any lettering, logos, watermarks, brands or recognizable copyrighted characters. Each cell must work as a complete square sticker. Style: photorealistic natural pet reaction, ORIGINAL scruffy small sandy terrier dog sitting upright, upperbody and both front paws visible, fixed camera portrait, solid warm grey studio background. Natural dog anatomy and fine fur, not a famous internet dog or copied photo. Meaning 'really? are you serious?' expressed through gradual skeptical side-eye and tiny head tilt, never horror/bulging eyes. Reserve BOTTOM LEFT clear background for caption. Dog body paws shoulders NEVER move or resize. Pose1 head upright both eyes calmly facing camera mouthclosed;2 pupils glance slightly viewerleft;3 gaze leftmore;4 head tilt right 2degrees;5 headtilt4degrees;6 headtilt6degrees;7 one brow rises subtly;8 maximum skeptical quizzical side-eye headtilt8degrees, mouth stays closed;9 tilt6degrees eyes partlyreturn;10 tilt4degrees eyeshalfreturn;11 tilt2degrees eyesnearfront;12 original upright head/eyes. Final four poses must show real incremental return, avoid abrupt reset. Same dog face, ears shape, fur markings and lighting everycell, no collars/accessories/text.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-8126af02-f2cd-45d2-b123-c35d7d8782ae.png",
+        "masterSha256": "36080fe23ccc2a7076b4d73f96904c969baf45af12d2b62e70ca300258a17f81"
+      }
+    }
+  ]
+}

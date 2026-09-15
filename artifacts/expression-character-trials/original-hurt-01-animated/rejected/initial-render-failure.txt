@@ -1,0 +1,5 @@
+spaniel-hurt loopClosure expected<=0.28936631944444446 actual=0.41303819444444445; original audit rejected, no output directory published.
+
+Second render rejected: loopClosure expected<=0.19973958333333333 actual=0.43442708333333335.
+Third render rejected: loopClosure expected<=0.2572482638888889 actual=0.39803819444444444.
+Fourth render rejected: loopClosure expected<=0.247265625 actual=0.30015625.

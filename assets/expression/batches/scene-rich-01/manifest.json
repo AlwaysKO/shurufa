@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "batchId": "scene-rich-01",
+  "status": "review-only",
+  "items": [
+    {
+      "id": "scene-rich-01-look",
+      "keyword": "我就看看",
+      "caption": "我就看看",
+      "captionPlacement": "bottom-right",
+      "masterFile": "masters/scene-rich-01-look.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Transform this original image into a precise 2x2 FOUR KEYFRAME animation sheet. Canvas square divided into four equal square cells with NO gutters, NO borders, each cell a full-bleed scene. Reading order chronological. Keep identical brown poodle identity, curtain/apartment setting, light and LOCKED camera in all cells. Preserve original candid photographic style, never crop off face. True differing character poses, not four scaled copies: 1 top-left: dog mostly hidden, only one curious eye, nose edge and paw peek around curtain. 2 top-right: dog pulls curtain with paw, full face leaning out, both wide curious eyes watching viewer. 3 bottom-left: dog leans further into room, head tilted strongly sideways with alert ear and an innocent closed-mouth look, paw lower down the curtain. 4 bottom-right: dog withdraws behind curtain with a little guilty sideways glance, one eye half closing, paw drawing fabric back. Curtain changes naturally but room background stays aligned. Exactly four complete square images, no words, numbers, labels or watermark. Keep lower right floor area clear in every cell for later Chinese caption. This is for a real chat GIF meaning 'I'm just watching', nosy but pretending innocent.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-b0c49b85-90cb-48d7-8f4a-873d07abe57f.png",
+        "masterSha256": "76b8381b420e9b74ac682066193c2cc8032621d555a8218b1fa6830df38216f8"
+      }
+    },
+    {
+      "id": "scene-rich-01-really",
+      "keyword": "真的假的",
+      "caption": "真的假的",
+      "captionPlacement": "top-right",
+      "masterFile": "masters/scene-rich-01-really.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Edit this original felt frog scene into one precise square 2x2 four-keyframe sheet, four equal square full-bleed scenes touching with NO gutters or borders, no text. Keep identical frog identity, clothing, desk props, lighting and LOCKED framing in all four cells. Reading order sequence for skeptical 'really?': 1 top-left frog holds magnifying glass down at chest, both eyes narrowed doubtfully, head upright. 2 top-right raises glass to one eye, enormous eye seen through lens, other eye squints, eyebrow lifts. 3 bottom-left frog leans face a little closer and tilts head sideways, lens toward viewer, other eye opens wider in suspicious scrutiny, mouth pulled sideways. 4 bottom-right lowers glass halfway away from eye, leans back, eyebrows knitted and both eyes half closed with unconvinced expression. Real arm and face articulation, NO four merely resized copies; exactly two hands throughout, one holding lens and one on desk. Background desk/corkboard/lamp aligned so it can animate without camera jitter. Keep top-right corner reasonably quiet for later Chinese caption. Strong felt texture, original physical comedy, no logos or letters or watermark.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-6e0125f8-4a53-47e7-a3a7-e1cca19fc59f.png",
+        "masterSha256": "93a4acd9737a1ead5dd7a5ee3baa735882ef7748d8c63eb569a64103ac2ff22b"
+      }
+    },
+    {
+      "id": "scene-rich-01-think",
+      "keyword": "让我想想",
+      "caption": "让我想想",
+      "captionPlacement": "top-left",
+      "masterFile": "masters/scene-rich-01-think.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Turn this original drawing into a precise square 2x2 animation keyframe sheet: four equal square cells full-bleed cream paper background, NO gutters or borders. Keep identical blue turnip character, proportions, sketch style, hamster wheel, cap hinge, fixed camera and composition in every cell. Exactly four DISTINCT poses, reading order: 1 top-left character finger at temple, brows knitted, head upright; hamster curled asleep in wheel. 2 top-right character taps temple with finger, eyes glance up toward wheel, mouth slightly open; hamster stretches one paw while still lying down. 3 bottom-left character scratches back of head with raised hand and looks baffled sideways, one sweat drop; hamster rolls onto its back and yawns inside stationary wheel. 4 bottom-right character places finger back near temple, eyes half closed trying to look serious; hamster curls up asleep again. The wheel never spins; joke is pretending to think while brain hamster naps. Real arm articulation and facial changes, not moving/scaling same drawing. No text at all, REMOVE the Z letters from every frame, no new symbols except small sweat drop, no watermark. Keep broad cream space LEFT side of each cell for later '让我想想' Chinese caption. Maintain same scene boundaries and exact scale.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-d6c10222-842b-4557-92bc-4b39f099dbcd.png",
+        "masterSha256": "edfc40802ba23a7e54f4fa63872760f1fdb1f20df2d4490df0f4ca47cd9d10d3"
+      }
+    },
+    {
+      "id": "scene-rich-01-leave",
+      "keyword": "溜了",
+      "caption": "溜了",
+      "captionPlacement": "top-left",
+      "masterFile": "masters/scene-rich-01-leave.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Convert this ORIGINAL clay snail scene into an exact square 2x2 FOUR KEYFRAME animation sheet, four equal full-bleed square cells directly touching, NO gutters, NO borders. Keep same terracotta snail, turquoise shell, little roller skates, miniature lavender room, open right door, empty chair, light and camera LOCKED across all cells. Reading order: 1 top-left snail crouches slightly on skates center foreground, looks back toward viewer with cheeky smile, arm low. 2 top-right snail pushes off with body stretched diagonally toward right doorway, arm lifting into wave, eye stalks leaning with motion, one small dust puff behind. 3 bottom-left snail closer to doorway, leans forward, arm clearly waving bye, looks back mischievously, changed skate wheel orientation and two dust puffs. 4 bottom-right snail has almost exited to right, rear shell still inside room and face peeks back round doorway edge with one last casual glance, arm tucked. Keep same original character shape and coherent limbs in every frame, no new eyes or duplicate heads, real body/arm/eye changes not just scaled image. Full background intact and still; small motion trails okay but no camera zoom. NO text or logos or watermark. Keep upper left lavender wall clear for later caption '溜了'. Friendly witty exit, not fear.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-7851aa39-0dd2-4ab0-a980-e11969743d5b.png",
+        "masterSha256": "d9ef404947d6ef97be7c23881ab462a3eeaf533307b0e86d4ce2d4d3f56fd3a4"
+      }
+    }
+  ]
+}

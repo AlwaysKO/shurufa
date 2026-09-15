@@ -1,0 +1,5 @@
+{
+  "reason": "编辑产物为RGB棋盘伪透明且手部触边，拒收",
+  "path": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-6c96d09e-a057-4985-bdf4-63fa780f1838.png",
+  "prompt": "Edit the supplied original transparent 2x2 four-pose sprite sheet. Preserve the same original woman identity, teal blouse, style, and truly transparent alpha background. Fix ONLY the bottom-left third pose: she must have EXACTLY TWO ARMS and TWO HANDS. Keep her right hand raised with an open stop palm on the image left. Her other LEFT ARM must hang naturally down her side with its single hand visible low near waist on image right. Remove BOTH remnants of the previous crossed-arm pose: no horizontal forearm across belly, no hand at belly image left, no extra fingers at image right chest. Maintain realistic shoulder-elbow-wrist connections. Leave other three poses visually unchanged. Keep all poses inside their separate quadrants and all margins/gutters transparent. No text, logos or brands. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。"
+}

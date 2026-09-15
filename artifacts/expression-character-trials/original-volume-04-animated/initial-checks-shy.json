@@ -1,0 +1,22 @@
+[
+  {
+    "id": "siamese-shy",
+    "pass": true,
+    "bytes": 90163
+  },
+  {
+    "id": "mouse-shy",
+    "pass": true,
+    "bytes": 127992
+  },
+  {
+    "id": "rabbit-shy",
+    "pass": true,
+    "bytes": 84177
+  },
+  {
+    "id": "man-shy",
+    "pass": true,
+    "bytes": 66848
+  }
+]

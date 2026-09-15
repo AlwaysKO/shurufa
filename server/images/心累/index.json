@@ -1,0 +1,31 @@
+{
+  "keyword": "心累",
+  "items": [
+    {
+      "id": "scene-rich-07-tired",
+      "keyword": "心累",
+      "file": "心累/scene-rich-07-tired.gif",
+      "thumbnail": "心累/scene-rich-07-tired.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-07/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-07/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-07/gifs/scene-rich-07-tired.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-07/thumbnails/scene-rich-07-tired.webp",
+      "batch": "scene-rich-07",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "1c7ffb28323cdef3229716952cd667c4fd6bdc1b1f0fd5f76e0c9dfa82e11fd2",
+      "thumbnailSha256": "4013027eb66d21ed4ddb885b98d676e0233d5249037b25386822a26ebdb7d6b1",
+      "bytes": 112456,
+      "width": 240,
+      "height": 240,
+      "frames": 20,
+      "durationMs": 4000,
+      "style": "hand-drawn",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

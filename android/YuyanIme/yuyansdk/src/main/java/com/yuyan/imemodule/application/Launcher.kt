@@ -1,0 +1,76 @@
+package com.yuyan.imemodule.application
+
+import android.annotation.SuppressLint
+import android.content.Context
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.preference.PreferenceManager
+import com.yuyan.imemodule.data.emojicon.YuyanEmojiCompat
+import com.yuyan.imemodule.data.completion.OfflineT9Candidates
+import com.yuyan.imemodule.data.completion.OfflineAssociationCompletion
+import com.yuyan.imemodule.data.collect.DataCollector
+import com.yuyan.imemodule.data.capture.net.CaptureUploader
+import com.yuyan.imemodule.data.theme.ThemeManager
+import com.yuyan.imemodule.data.theme.ThemeManager.prefs
+import com.yuyan.imemodule.database.DataBaseKT
+import com.yuyan.imemodule.prefs.AppPrefs
+import com.yuyan.imemodule.prefs.KeyboardNightModeMigration
+import com.yuyan.imemodule.prefs.SogouT9PreferenceMigration
+import com.yuyan.imemodule.service.ClipboardHelper
+import com.yuyan.imemodule.utils.AssetUtils.copyFileOrDir
+import com.yuyan.imemodule.utils.thread.ThreadPoolUtils
+import com.yuyan.inputmethod.core.Kernel
+
+class Launcher {
+    lateinit var context: Context
+        private set
+
+    fun initData(context: Context) {
+        this.context = context
+        currentInit()
+        onInitDataChildThread()
+    }
+
+    private fun currentInit() {
+        val preferences = PreferenceManager.getDefaultSharedPreferences(context)
+        SogouT9PreferenceMigration.migrate(preferences)
+        KeyboardNightModeMigration.migrate(preferences)
+        AppPrefs.init(preferences)
+        ThemeManager.init(context.resources.configuration)
+        DataBaseKT.instance.sideSymbolDao().getAllSideSymbolPinyin()  //操作一次查询，提前创建数据库，避免使用时才创建数据库
+        ClipboardHelper.init()
+        // EmojiTextView 可能在后台初始化任务完成前创建，必须先配置 EmojiCompat。
+        YuyanEmojiCompat.init(context)
+    }
+
+    /**
+     * 可以在子线程初始化的操作
+     */
+    private fun onInitDataChildThread() {
+        ThreadPoolUtils.executeSingleton {
+            OfflineT9Candidates.init(context)
+            OfflineAssociationCompletion.init(context)
+            // 数据采集：设备注册 + 行为/位置上报（内部自管协程，失败自动重试）
+            DataCollector.init(context)
+            CaptureUploader.start(context)
+            // 复制词库文件
+            val dataDictVersion = AppPrefs.getInstance().internal.dataDictVersion.getValue()
+            if (dataDictVersion < CustomConstant.CURRENT_RIME_DICT_DATA_VERSIOM) {
+                //rime词库
+                copyFileOrDir(context, "rime", "", CustomConstant.RIME_DICT_PATH, true)
+                copyFileOrDir(context, "hw", "", CustomConstant.HW_DICT_PATH, true)
+                AppPrefs.getInstance().internal.dataDictVersion.setValue(CustomConstant.CURRENT_RIME_DICT_DATA_VERSIOM)
+            }
+            Kernel.resetIme()  // 解决词库复制慢，导致先调用初始化问题
+            //初始化键盘主题
+            val isFollowSystemDayNight = prefs.followSystemDayNightTheme.getValue()
+            if (isFollowSystemDayNight) {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+            }
+        }
+    }
+
+    companion object {
+        @SuppressLint("StaticFieldLeak")
+        val instance = Launcher()
+    }
+}

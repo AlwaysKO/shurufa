@@ -1,0 +1,33 @@
+{
+  "id": "sad-person-sad",
+  "keyword": "难过",
+  "text": "难过",
+  "style": "fictional-live-action",
+  "direction": "pet-or-person",
+  "distribution": "remote",
+  "sourceType": "ai-original",
+  "prompt": "Create ONE genuinely transparent RGBA PNG 2x2 sprite sheet with exactly FOUR clearly DIFFERENT key poses of the SAME subject. Reading order top-left, top-right, bottom-left, bottom-right. Every pose must fit COMPLETELY inside its quadrant, occupying at most 75 percent of its quadrant width and height. Leave WIDE EMPTY TRANSPARENT gutters at the exact horizontal and vertical midpoint. No limb or prop crosses the midpoint. Same identity, scale, material, lighting across poses; genuine limb, face and posture changes, not shifted/scaled copies. Crisp appealing sticker silhouette readable at 120px. All limbs anatomically consistent, no duplicates. NO text, letters, numbers, punctuation, watermarks, logos, famous characters, celebrity resemblance, borders, grids, checkerboard, background, ground plane or rectangular halo. Actual alpha transparency, NOT painted checkerboard. SUBJECT: A completely fictional adult Black man with close-cropped hair in a plain muted blue shirt, photographic waist-up. FOUR POSES: 1. eyes lowered mouth subdued hands together; 2. one hand touches forehead shoulders slump; 3. wipes corner of eye with fingertips; 4. looks up with hand resting over heart seeking comfort. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+  "motionScript": [
+    "eyes lowered mouth subdued hands together",
+    "one hand touches forehead shoulders slump",
+    "wipes corner of eye with fingertips",
+    "looks up with hand resting over heart seeking comfort"
+  ],
+  "motionPreset": "shake",
+  "frameCount": 16,
+  "durationMs": 1600,
+  "masterFile": "masters/sad-person-sad.png",
+  "poseFiles": [
+    "poses/sad-person-sad/pose-01.png",
+    "poses/sad-person-sad/pose-02.png",
+    "poses/sad-person-sad/pose-03.png",
+    "poses/sad-person-sad/pose-04.png"
+  ],
+  "textPlacement": "bottom",
+  "generation": {
+    "tool": "built-in-imagegen",
+    "date": "2026-09-08",
+    "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-5780ec74-ceb4-4d7c-bc87-55e3498830f4.png",
+    "masterSha256": "8fa4b9577e09e8a0fd8c2d91e432b57cf897b27bf3d3b9915d90534489f60619"
+  }
+}

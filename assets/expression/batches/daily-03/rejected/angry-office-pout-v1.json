@@ -1,0 +1,33 @@
+{
+  "id": "angry-office-pout",
+  "keyword": "生气",
+  "text": "生气",
+  "style": "original-life-scene",
+  "direction": "pet-or-person",
+  "distribution": "bundled",
+  "sourceType": "ai-original",
+  "prompt": "Create ONE genuinely transparent RGBA PNG 2x2 sprite sheet with exactly FOUR clearly DIFFERENT key poses of the SAME subject. Reading order top-left, top-right, bottom-left, bottom-right. Every pose must fit COMPLETELY inside its quadrant, occupying at most 75 percent of its quadrant width and height. Leave WIDE EMPTY TRANSPARENT gutters at the exact horizontal and vertical midpoint. No limb or prop crosses the midpoint. Same identity, scale, material, lighting across poses; genuine limb, face and posture changes, not shifted/scaled copies. Crisp appealing sticker silhouette readable at 120px. All limbs anatomically consistent, no duplicates. NO text, letters, numbers, punctuation, watermarks, logos, famous characters, celebrity resemblance, borders, grids, checkerboard, background, ground plane or rectangular halo. Actual alpha transparency, NOT painted checkerboard. SUBJECT: An original adult woman with dark bob and plain teal blouse, painterly waist-up. FOUR POSES: 1. arms folded with one raised eyebrow; 2. puffs cheeks and leans forward; 3. raises one open hand as if saying stop, other arm folded; 4. turns away with lips pursed and arms crossed. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+  "motionScript": [
+    "arms folded with one raised eyebrow",
+    "puffs cheeks and leans forward",
+    "raises one open hand as if saying stop, other arm folded",
+    "turns away with lips pursed and arms crossed"
+  ],
+  "motionPreset": "impact",
+  "frameCount": 16,
+  "durationMs": 1600,
+  "masterFile": "masters/angry-office-pout.png",
+  "poseFiles": [
+    "poses/angry-office-pout/pose-01.png",
+    "poses/angry-office-pout/pose-02.png",
+    "poses/angry-office-pout/pose-03.png",
+    "poses/angry-office-pout/pose-04.png"
+  ],
+  "textPlacement": "bottom",
+  "generation": {
+    "tool": "built-in-imagegen",
+    "date": "2026-09-08",
+    "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-0cee7cbf-0bfe-4b05-a5f1-a7eb2cc3eea4.png",
+    "masterSha256": "3e61d05b8199863d83910bbb8b98555dc7753ec864a5e93e09ae5ee1b516f17f"
+  }
+}

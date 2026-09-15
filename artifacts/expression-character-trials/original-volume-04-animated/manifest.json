@@ -1,0 +1,227 @@
+{
+  "created": "2026-09-14",
+  "sourceType": "ai-original",
+  "status": "trial-only",
+  "publicationAllowed": false,
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "items": [
+    {
+      "id": "siamese-shy",
+      "caption": "害羞",
+      "prompt": "Create an animation sprite atlas EXACTLY FOUR COLUMNS THREE ROWS (12 equal SQUARE tiles), overall4:3 aspect ratio. OPAQUE pure WHITE background #ffffff, NO text/no grid/no labels/no decorations. A single original character, 12 genuine sequential facial poses. LOCK camera, SIZE and position: same neutral head center within each square, all three rows precisely equally spaced, NO upward drift in bottom row. Bust fully within each tile: topmost ear/hair at18% height, bottom of bust at77%, big empty margin below for later caption. Same scale all12. Final panel12 must match panel1 in exact within-tile coordinates, head shape/scale, neutral eyes/mouth AND shoulder baseline. No artificial zoom, copied-only motion or camera moves. Photoreal original Siamese CAT bust, dark ears and face mask, natural feline muzzle, no human lips, no paws. Keep triangular ear tips well inside tile. SHY gentle bashfulness, not awkward grimace: pose1 neutral,2 eyes lower,3 eyelids lower slightly,4 soft small closed smile starts,5 head dips slightly,6 eyes glance up under lowered brows,7 small tender smile,8 key shy smile looking up with chin gently down,9 chin begins returning,10 eyes return center,11 smile softens,12 exact pose1 neutral.",
+      "masterFile": "masters/siamese-shy.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-5b7aef0b-f88c-4d73-b632-b16c462c873c.png",
+      "sha256": "f093759fff1e5a835b46a3e2da6968303b0c788ba98cf30194cd0cccdc8e1b7d",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "mouse-shy",
+      "caption": "害羞",
+      "prompt": "Create an animation sprite atlas EXACTLY FOUR COLUMNS THREE ROWS (12 equal SQUARE tiles), overall4:3 aspect ratio. OPAQUE pure WHITE background #ffffff, NO text/no grid/no labels/no decorations. A single original character, 12 genuine sequential facial poses. LOCK camera, SIZE and position: same neutral head center within each square, all three rows precisely equally spaced, NO upward drift in bottom row. Bust fully within each tile: topmost ear/hair at18% height, bottom of bust at77%, big empty margin below for later caption. Same scale all12. Final panel12 must match panel1 in exact within-tile coordinates, head shape/scale, neutral eyes/mouth AND shoulder baseline. No artificial zoom, copied-only motion or camera moves. Original minimal black ink cartoon MOUSE bust, two compact ROUND ears, expressive eyelids and tiny mouth, no hands, no known IP. SHY gentle bashfulness, not awkward grimace: pose1 neutral,2 eyes lower,3 eyelids lower slightly,4 soft small closed smile starts,5 head dips slightly,6 eyes glance up under lowered brows,7 small tender smile,8 key shy smile looking up with chin gently down,9 chin begins returning,10 eyes return center,11 smile softens,12 exact pose1 neutral.",
+      "masterFile": "masters/mouse-shy.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-8a97762b-2e22-40fd-bf7e-0a988f609550.png",
+      "sha256": "854ead1dfcc1b55da7a96d937b6df9d86dab62e16ac4271be85854111db6516f",
+      "originalSha256": "4444819fb4a4e3d96726780b995cdd763ded5f2b64e38048e084f0c10101b623",
+      "revisions": [
+        {
+          "id": "v2-row-registration",
+          "prompt": "Repair the within-tile vertical registration of this exact4columns3rows sprite atlas. The top row stays completely unchanged. ALL FOUR figures in MIDDLE row need move DOWN15pixels; ALL FOUR figures in BOTTOM row need move DOWN30pixels. Keep exact head scale, no resizing, no facial changes, no new poses. Final panel12 must be at same LOCAL height as panel1, including top of head/ears and shoulders. Preserve all12 facial expression poses. Background pure opaque white, exactly4columns3rows square tiles overall4:3. No text or borders, no global canvas crop. Keep original style and identity.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-5815cb32-0a7d-4c18-8b05-98ceeea40d9f.png",
+          "sha256": "854ead1dfcc1b55da7a96d937b6df9d86dab62e16ac4271be85854111db6516f"
+        }
+      ],
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "rabbit-shy",
+      "caption": "害羞",
+      "prompt": "Create an animation sprite atlas EXACTLY FOUR COLUMNS THREE ROWS (12 equal SQUARE tiles), overall4:3 aspect ratio. OPAQUE pure WHITE background #ffffff, NO text/no grid/no labels/no decorations. A single original character, 12 genuine sequential facial poses. LOCK camera, SIZE and position: same neutral head center within each square, all three rows precisely equally spaced, NO upward drift in bottom row. Bust fully within each tile: topmost ear/hair at18% height, bottom of bust at77%, big empty margin below for later caption. Same scale all12. Final panel12 must match panel1 in exact within-tile coordinates, head shape/scale, neutral eyes/mouth AND shoulder baseline. No artificial zoom, copied-only motion or camera moves. Original tactile clay RABBIT bust, SHORT rounded upright ears fully inside tile, no paws. SHY gentle bashfulness, not awkward grimace: pose1 neutral,2 eyes lower,3 eyelids lower slightly,4 soft small closed smile starts,5 head dips slightly,6 eyes glance up under lowered brows,7 small tender smile,8 key shy smile looking up with chin gently down,9 chin begins returning,10 eyes return center,11 smile softens,12 exact pose1 neutral.",
+      "masterFile": "masters/rabbit-shy.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-4bc7fecf-0f92-477f-bace-703e9610ae7a.png",
+      "sha256": "3783955b974a5c5c94f881a653486fc713de9301c1f1a58ba31c6fa613017429",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "man-shy",
+      "caption": "害羞",
+      "prompt": "Create an animation sprite atlas EXACTLY FOUR COLUMNS THREE ROWS (12 equal SQUARE tiles), overall4:3 aspect ratio. OPAQUE pure WHITE background #ffffff, NO text/no grid/no labels/no decorations. A single original character, 12 genuine sequential facial poses. LOCK camera, SIZE and position: same neutral head center within each square, all three rows precisely equally spaced, NO upward drift in bottom row. Bust fully within each tile: topmost ear/hair at18% height, bottom of bust at77%, big empty margin below for later caption. Same scale all12. Final panel12 must match panel1 in exact within-tile coordinates, head shape/scale, neutral eyes/mouth AND shoulder baseline. No artificial zoom, copied-only motion or camera moves. Original fictional handsome Chinese ADULT MALE, distinct short parted black hair, rust-red crewneck shirt, realistic photography bust. NOT any celebrity, no hands. SHY gentle bashfulness, not awkward grimace: pose1 neutral,2 eyes lower,3 eyelids lower slightly,4 soft small closed smile starts,5 head dips slightly,6 eyes glance up under lowered brows,7 small tender smile,8 key shy smile looking up with chin gently down,9 chin begins returning,10 eyes return center,11 smile softens,12 exact pose1 neutral.",
+      "masterFile": "masters/man-shy.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-3da43e86-0cf5-4350-9e91-9151cf14713a.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "469efef0c874c14a9222d8aad45dd207e21e4b5c291f194fc9776aaf32400b93",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "retriever-relieved",
+      "caption": "放心",
+      "prompt": "Create an animation sprite atlas EXACTLY FOUR COLUMNS THREE ROWS (12 equal SQUARE tiles), overall4:3 aspect ratio. OPAQUE pure WHITE background #ffffff, NO text/no grid/no labels/no decorations. A single original character, 12 genuine sequential facial poses. LOCK camera, SIZE and position: same neutral head center within each square, all three rows precisely equally spaced, NO upward drift in bottom row. Bust fully within each tile: topmost ear/hair at18% height, bottom of bust at77%, big empty margin below for later caption. Same scale all12. Final panel12 must match panel1 in exact within-tile coordinates, head shape/scale, neutral eyes/mouth AND shoulder baseline. No artificial zoom, copied-only motion or camera moves. Photoreal original golden RETRIEVER DOG bust, floppy ears, natural dog mouth, NO tongue or paws. RELIEF feeling reassured:1 neutral slightly tense eyes,2 inner brows gently knit,3 lower eyelids tense,4 brows relax,5 eyelids halfway close,6 eyes gently shut with mouth small soft exhale,7 relaxed face,8 key relieved closed eyes and very slight peaceful smile,9 eyes start opening,10 open calm eyes,11 return neutral,12 EXACT pose1. No huge open mouth or laughing.",
+      "masterFile": "masters/retriever-relieved.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-4f3d2514-328b-4b8e-999b-b76f2f12902e.png",
+      "sha256": "c9f313dcb045e7c9078cae459a71f62b40a869e4e0a24b2063ad7930e2945be7",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "capybara-relieved",
+      "caption": "放心",
+      "prompt": "Create an animation sprite atlas EXACTLY FOUR COLUMNS THREE ROWS (12 equal SQUARE tiles), overall4:3 aspect ratio. OPAQUE pure WHITE background #ffffff, NO text/no grid/no labels/no decorations. A single original character, 12 genuine sequential facial poses. LOCK camera, SIZE and position: same neutral head center within each square, all three rows precisely equally spaced, NO upward drift in bottom row. Bust fully within each tile: topmost ear/hair at18% height, bottom of bust at77%, big empty margin below for later caption. Same scale all12. Final panel12 must match panel1 in exact within-tile coordinates, head shape/scale, neutral eyes/mouth AND shoulder baseline. No artificial zoom, copied-only motion or camera moves. Original minimal black ink cartoon CAPYBARA bust, short round ears, long squared muzzle, expressive eyelids, no arms. RELIEF feeling reassured:1 neutral slightly tense eyes,2 inner brows gently knit,3 lower eyelids tense,4 brows relax,5 eyelids halfway close,6 eyes gently shut with mouth small soft exhale,7 relaxed face,8 key relieved closed eyes and very slight peaceful smile,9 eyes start opening,10 open calm eyes,11 return neutral,12 EXACT pose1. No huge open mouth or laughing.",
+      "masterFile": "masters/capybara-relieved.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-d1926e12-fbc8-4fc7-88a2-be629b35714c.png",
+      "sha256": "182962e4c9fe6b552b53c2cc385b460695d6ea9eaed13ef6f715dbfe169e5344",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "sealion-relieved",
+      "caption": "放心",
+      "prompt": "Create an animation sprite atlas EXACTLY FOUR COLUMNS THREE ROWS (12 equal SQUARE tiles), overall4:3 aspect ratio. OPAQUE pure WHITE background #ffffff, NO text/no grid/no labels/no decorations. A single original character, 12 genuine sequential facial poses. LOCK camera, SIZE and position: same neutral head center within each square, all three rows precisely equally spaced, NO upward drift in bottom row. Bust fully within each tile: topmost ear/hair at18% height, bottom of bust at77%, big empty margin below for later caption. Same scale all12. Final panel12 must match panel1 in exact within-tile coordinates, head shape/scale, neutral eyes/mouth AND shoulder baseline. No artificial zoom, copied-only motion or camera moves. Original tactile clay SEA LION bust, slate gray fur, compact small ears, short whiskers, no limbs. RELIEF feeling reassured:1 neutral slightly tense eyes,2 inner brows gently knit,3 lower eyelids tense,4 brows relax,5 eyelids halfway close,6 eyes gently shut with mouth small soft exhale,7 relaxed face,8 key relieved closed eyes and very slight peaceful smile,9 eyes start opening,10 open calm eyes,11 return neutral,12 EXACT pose1. No huge open mouth or laughing.",
+      "masterFile": "masters/sealion-relieved.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-8c7d69c6-354a-46b1-bc60-c09f8c67f958.png",
+      "sha256": "3a020458ba796f1af2e6f96a0e765da41958d19ee5b6bcf6266ed3e19c94a77a",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "man-relieved",
+      "caption": "放心",
+      "prompt": "Create an animation sprite atlas EXACTLY FOUR COLUMNS THREE ROWS (12 equal SQUARE tiles), overall4:3 aspect ratio. OPAQUE pure WHITE background #ffffff, NO text/no grid/no labels/no decorations. A single original character, 12 genuine sequential facial poses. LOCK camera, SIZE and position: same neutral head center within each square, all three rows precisely equally spaced, NO upward drift in bottom row. Bust fully within each tile: topmost ear/hair at18% height, bottom of bust at77%, big empty margin below for later caption. Same scale all12. Final panel12 must match panel1 in exact within-tile coordinates, head shape/scale, neutral eyes/mouth AND shoulder baseline. No artificial zoom, copied-only motion or camera moves. Original fictional handsome Chinese ADULT MALE, distinct neat short black hair, navy crewneck shirt, realistic photography bust. NOT any celebrity, no hands. RELIEF feeling reassured:1 neutral slightly tense eyes,2 inner brows gently knit,3 lower eyelids tense,4 brows relax,5 eyelids halfway close,6 eyes gently shut with mouth small soft exhale,7 relaxed face,8 key relieved closed eyes and very slight peaceful smile,9 eyes start opening,10 open calm eyes,11 return neutral,12 EXACT pose1. No huge open mouth or laughing.",
+      "masterFile": "masters/man-relieved.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-21a57e6d-499b-478f-941a-fee412a51333.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "ab779502a1c7fc45acec475ffff97cf2b758d820f3f4275896ae40d35a0d254e",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "husky-helpless",
+      "caption": "无奈",
+      "prompt": "Create an animation sprite atlas EXACTLY FOUR COLUMNS THREE ROWS (12 equal SQUARE tiles), overall4:3 aspect ratio. OPAQUE pure WHITE background #ffffff, NO text/no grid/no labels/no decorations. A single original character, 12 genuine sequential facial poses. LOCK camera, SIZE and position: same neutral head center within each square, all three rows precisely equally spaced, NO upward drift in bottom row. Bust fully within each tile: topmost ear/hair at18% height, bottom of bust at77%, big empty margin below for later caption. Same scale all12. Final panel12 must match panel1 in exact within-tile coordinates, head shape/scale, neutral eyes/mouth AND shoulder baseline. No artificial zoom, copied-only motion or camera moves. Photoreal original gray and white HUSKY DOG bust, blue eyes and complete short triangular ears with big top margin, no tongue/paws. RESIGNED HELPLESS reaction, not anger:1 neutral,2 brows rise in middle,3 eyelids lower,4 small asymmetric mouth corners pull down,5 eyes glance sideways,6 chin tilts just5degrees,7 slow tired half-lidded look,8 key resigned look with tiny pressed crooked mouth,9 chin returns partway,10 gaze centers,11 brows relax,12 EXACT pose1 neutral. No tears/symbols/props, no huge grin.",
+      "masterFile": "masters/husky-helpless.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-d5b73d39-74c2-4bda-a1a6-1098bcd5e42e.png",
+      "sha256": "b5e9abf0b86a1a1426ae6784a887ac9703830658a60652b6dc86d33173056917",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "duck-helpless",
+      "caption": "无奈",
+      "prompt": "Create an animation sprite atlas EXACTLY FOUR COLUMNS THREE ROWS (12 equal SQUARE tiles), overall4:3 aspect ratio. OPAQUE pure WHITE background #ffffff, NO text/no grid/no labels/no decorations. A single original character, 12 genuine sequential facial poses. LOCK camera, SIZE and position: same neutral head center within each square, all three rows precisely equally spaced, NO upward drift in bottom row. Bust fully within each tile: topmost ear/hair at18% height, bottom of bust at77%, big empty margin below for later caption. Same scale all12. Final panel12 must match panel1 in exact within-tile coordinates, head shape/scale, neutral eyes/mouth AND shoulder baseline. No artificial zoom, copied-only motion or camera moves. Original minimal black ink cartoon DUCK bust, rounded head, small expressive beak and eyebrows, no wings/hands, not a famous cartoon. RESIGNED HELPLESS reaction, not anger:1 neutral,2 brows rise in middle,3 eyelids lower,4 small asymmetric mouth corners pull down,5 eyes glance sideways,6 chin tilts just5degrees,7 slow tired half-lidded look,8 key resigned look with tiny pressed crooked mouth,9 chin returns partway,10 gaze centers,11 brows relax,12 EXACT pose1 neutral. No tears/symbols/props, no huge grin.",
+      "masterFile": "masters/duck-helpless.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-7e399800-5c02-482f-bc55-727a1663a7e1.png",
+      "sha256": "1dae6ec3ab81d276a3e32eb98233bbfb24906c9a6cbc889361263ae460f061e0",
+      "originalSha256": "1f4d2613eecf8aa4ff596cf4adcde2000156d4faae49954143a4ebbffc2532dc",
+      "revisions": [
+        {
+          "id": "v2-row-registration",
+          "prompt": "Repair the within-tile vertical registration of this exact4columns3rows sprite atlas. The top row stays completely unchanged. ALL FOUR figures in MIDDLE row need move DOWN15pixels; ALL FOUR figures in BOTTOM row need move DOWN30pixels. Keep exact head scale, no resizing, no facial changes, no new poses. Final panel12 must be at same LOCAL height as panel1, including top of head/ears and shoulders. Preserve all12 facial expression poses. Background pure opaque white, exactly4columns3rows square tiles overall4:3. No text or borders, no global canvas crop. Keep original style and identity.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-0ac16382-83a2-4c5e-a7fe-7f7d00142c1f.png",
+          "sha256": "c1a64d9183a6147943c29129688d341206c72df228336e2942d91e6dd754974e"
+        },
+        {
+          "id": "v3-row-registration",
+          "prompt": "Fix uneven row placement in this exact duck12pose sheet, not facial animation. 1448x1086 canvas divided into4x3 SQUARE tiles each362x362. In every tile TOPMOST BLACK head tuft must be at local y=52 and shoulders at local y=326, same scale. Top row already correct. Middle row currently top y434 local72: move all4 middle figures UP20pixels. Bottom row first3 heads currently top y790 local66: move these3 UP14pixels. Bottom-right head top y765 local41: move ONLY bottom-right DOWN11pixels. End result: tops y52,414,776 for row1,2,3; shoulders y326,688,1050. Keep genuine facial poses and expressions, exactly same size. Do not change canvas, style, white background. No text/grid. First and last neutral should line up exactly when cut into equal squares.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-ed037896-d7d1-4c52-8d93-beca774109d8.png",
+          "sha256": "1dae6ec3ab81d276a3e32eb98233bbfb24906c9a6cbc889361263ae460f061e0"
+        }
+      ],
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "needs-rework"
+    },
+    {
+      "id": "koala-helpless",
+      "caption": "无奈",
+      "prompt": "Create an animation sprite atlas EXACTLY FOUR COLUMNS THREE ROWS (12 equal SQUARE tiles), overall4:3 aspect ratio. OPAQUE pure WHITE background #ffffff, NO text/no grid/no labels/no decorations. A single original character, 12 genuine sequential facial poses. LOCK camera, SIZE and position: same neutral head center within each square, all three rows precisely equally spaced, NO upward drift in bottom row. Bust fully within each tile: topmost ear/hair at18% height, bottom of bust at77%, big empty margin below for later caption. Same scale all12. Final panel12 must match panel1 in exact within-tile coordinates, head shape/scale, neutral eyes/mouth AND shoulder baseline. No artificial zoom, copied-only motion or camera moves. Original tactile clay KOALA bust, compact rounded fluffy ears, broad black nose, no limbs. RESIGNED HELPLESS reaction, not anger:1 neutral,2 brows rise in middle,3 eyelids lower,4 small asymmetric mouth corners pull down,5 eyes glance sideways,6 chin tilts just5degrees,7 slow tired half-lidded look,8 key resigned look with tiny pressed crooked mouth,9 chin returns partway,10 gaze centers,11 brows relax,12 EXACT pose1 neutral. No tears/symbols/props, no huge grin.",
+      "masterFile": "masters/koala-helpless.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-3facd3cf-a561-42fe-aae8-22f9cb5cc6f5.png",
+      "sha256": "99d2acb6b730d459f1fa58b5690a96e12bda65a27991c12dd4650d8f12cfe462",
+      "originalSha256": "599e5267c590660f6c34400ec5cc5c164ceccca96dc7e345aa2c54bf81a98b34",
+      "revisions": [
+        {
+          "id": "v2-loop-registration",
+          "prompt": "Edit this exact 4column3row koala sprite sheet to fix LOOP ALIGNMENT ONLY. Row3 figures are about18 pixels too HIGH. Shift all FOUR figures in bottom row DOWN18px, keep pure white background. Frame12 bottom-right must have exactly the SAME within-square position, shape, scale, neutral eyes/mouth, ear tips and bust bottom as frame1 top-left. Keep all twelve actual facial acting poses: resigned asymmetric brows, half-lidded eyes, small frown and mild head tilt in middle row, gradually recovering in frames9-11. No new character, no resizing of heads, no zoom. Keep top two rows unchanged. Still exactly4columns3rows equal square tiles overall4:3, no text or grid.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-2fe9b0b0-3d73-4768-bc4c-b24b9f39d960.png",
+          "sha256": "fc5c6bf349e479d9e4662613d3f79f7d5c2824fc6f2392e005b539a1941587ba"
+        },
+        {
+          "id": "v3-neutral-loop-pose",
+          "prompt": "Precisely correct ONLY the final neutral LOOP POSE of this exact 4x3 sprite atlas. Panel12 (bottom-right square) must be identical to panel1 (top-left square): reproduce the top-left koala neutral face and bust at EXACT same local coordinates in bottom-right cell, including ear silhouette, eyes/pupils, nose, mouth, chest. Final face currently subtly different in muzzle shape/scale; remove that change. Keep all original other11 panels and their true facial poses, no global changes. 1448x1086 or equivalent4:3 canvas, FOUR columns THREE rows square tiles, white opaque, no text/grid. No camera resize or row movement. Seamless loop pose is vital.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-73bcfba6-59e9-459a-80a8-1cd06fa6c8cd.png",
+          "sha256": "99d2acb6b730d459f1fa58b5690a96e12bda65a27991c12dd4650d8f12cfe462"
+        }
+      ],
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "man-helpless",
+      "caption": "无奈",
+      "prompt": "Create an animation sprite atlas EXACTLY FOUR COLUMNS THREE ROWS (12 equal SQUARE tiles), overall4:3 aspect ratio. OPAQUE pure WHITE background #ffffff, NO text/no grid/no labels/no decorations. A single original character, 12 genuine sequential facial poses. LOCK camera, SIZE and position: same neutral head center within each square, all three rows precisely equally spaced, NO upward drift in bottom row. Bust fully within each tile: topmost ear/hair at18% height, bottom of bust at77%, big empty margin below for later caption. Same scale all12. Final panel12 must match panel1 in exact within-tile coordinates, head shape/scale, neutral eyes/mouth AND shoulder baseline. No artificial zoom, copied-only motion or camera moves. Original fictional handsome Chinese ADULT MALE, distinct short textured black hair, dark plum crewneck shirt, realistic photography bust. NOT any celebrity, no hands. RESIGNED HELPLESS reaction, not anger:1 neutral,2 brows rise in middle,3 eyelids lower,4 small asymmetric mouth corners pull down,5 eyes glance sideways,6 chin tilts just5degrees,7 slow tired half-lidded look,8 key resigned look with tiny pressed crooked mouth,9 chin returns partway,10 gaze centers,11 brows relax,12 EXACT pose1 neutral. No tears/symbols/props, no huge grin.",
+      "masterFile": "masters/man-helpless.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-e8687e00-a8bb-4a1c-b49a-c2a6fc26bbb5.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "473b2c541c96d923e150fdb6b868da63b9796d6679523b0df33f0d18a229423d",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    }
+  ],
+  "rejectedFiles": [
+    {
+      "file": "rejected/koala-helpless-v1-loop.png",
+      "sha256": "599e5267c590660f6c34400ec5cc5c164ceccca96dc7e345aa2c54bf81a98b34",
+      "reason": "首尾对齐失败，见 initial-cli-failure.json"
+    },
+    {
+      "file": "rejected/koala-helpless-v2-loop.png",
+      "sha256": "fc5c6bf349e479d9e4662613d3f79f7d5c2824fc6f2392e005b539a1941587ba",
+      "reason": "loopClosure 0.1859375 > 0.17161458333333335"
+    },
+    {
+      "file": "rejected/mouse-shy-v1-drift.png",
+      "sha256": "4444819fb4a4e3d96726780b995cdd763ded5f2b64e38048e084f0c10101b623",
+      "reason": "解码抽帧发现恢复段整体上移"
+    },
+    {
+      "file": "rejected/duck-helpless-v1-drift.png",
+      "sha256": "1f4d2613eecf8aa4ff596cf4adcde2000156d4faae49954143a4ebbffc2532dc",
+      "reason": "解码抽帧发现恢复段整体上移"
+    },
+    {
+      "file": "rejected/duck-helpless-v2-drift.png",
+      "sha256": "c1a64d9183a6147943c29129688d341206c72df228336e2942d91e6dd754974e",
+      "reason": "首次对齐修订后末格高度仍与前格不一致"
+    },
+    {
+      "file": "rejected/duck-helpless-v3-drift.png",
+      "sha256": "1dae6ec3ab81d276a3e32eb98233bbfb24906c9a6cbc889361263ae460f061e0",
+      "reason": "第二次修订后仍有恢复段整体上移，最终隔离待返工"
+    }
+  ],
+  "visualCaveats": {
+    "duck-helpless": "恢复段整体上移仍明显，needs-rework隔离，不纳入候选。",
+    "mouse-shy": "上移减轻，仍有轻微位置与轮廓差异，待动态复核。",
+    "retriever-relieved": "放心表演主要依赖合眼，去字幕可能读作困倦，待动态语义复核。"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "created": "2026-09-12",
+  "sourceType": "ai-original",
+  "status": "trial-only",
+  "publicationAllowed": false,
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "items": [
+    {
+      "id": "dog-great",
+      "prompt": "Create a professional 12-pose ANIMATION SPRITE SHEET, exactly4 columns x3 rows of equal SQUARE panels, overall4:3 ratio ideally1536x1152. No grid lines, gutters, text, symbols or watermark. SOLID WHITE background, never transparency or black. SAME original character, camera, lighting, scale and fixed body anchor throughout. Entire character incl top of ears/raised arms and feet must fit inside upper75% of each cell; lower25% stays EMPTY WHITE for captions. Draw 12 genuine temporal poses, not identical repeats, not zooms/translations. Emotion 'That's wonderful! Great news!' clear joyful relief from surprised attention to delighted response. Panel8 strongest celebratory pose will hold900ms,9-12 smooth gradual return, last pose matches first silhouette. Stable anatomy, careful intermediate facial/body poses. Original designs, no famous IP, no celebrity. Photorealistic small fluffy golden mixed-breed dog CHEST-UP, warm brown eyes, semi-floppy ears stay SAME structure, no paws in frame. Pose1 neutral interested closed mouth;2 eyes brighten;3 eyebrows rise subtly;4 mouth corners begin lifting;5 mouth gently opens into happy pant;6 tongue tip begins showing;7 eyes happy squint and delighted canine grin;8 biggest friendly happy pant with small tongue, ears slightly attentive (no species change);9 mouth begins relaxing;10 tongue retracts naturally;11 mouth mostly closed;12 initial neutral. Not scary teeth, not barking/screaming/yawning. Body stable, natural small head uplift.",
+      "masterFile": "masters/dog-great.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-21d216d2-ef1b-4017-a2db-cfda91475bf7.png",
+      "sha256": "f4db489e05cf1ece082e7b30fd4cd40b1785250c0dbc588dc011a13243f7ed6c"
+    },
+    {
+      "id": "crab-great",
+      "prompt": "Create a professional 12-pose ANIMATION SPRITE SHEET, exactly4 columns x3 rows of equal SQUARE panels, overall4:3 ratio ideally1536x1152. No grid lines, gutters, text, symbols or watermark. SOLID WHITE background, never transparency or black. SAME original character, camera, lighting, scale and fixed body anchor throughout. Entire character incl top of ears/raised arms and feet must fit inside upper75% of each cell; lower25% stays EMPTY WHITE for captions. Draw 12 genuine temporal poses, not identical repeats, not zooms/translations. Emotion 'That's wonderful! Great news!' clear joyful relief from surprised attention to delighted response. Panel8 strongest celebratory pose will hold900ms,9-12 smooth gradual return, last pose matches first silhouette. Stable anatomy, careful intermediate facial/body poses. Original designs, no famous IP, no celebrity. Minimal BLACK INK cartoon ORIGINAL little round crab, white fill, eyes on short stalks, tiny expressive brows, smiling mouth. Symmetric TWO claws and SIX short legs (three each side), no other limbs. All legs remain planted exactly same position throughout. 1 claws low and neutral face;2 bright surprised eyes;3 small delighted open mouth;4 both claws start raising;5 both half raised;6 both near head;7 both raised triumphantly;8 both fully raised with tips still below75% cell height, huge joyful curved eyes and happy mouth;9 both lower halfway;10 both almost down with smile softening;11 neutral relaxed;12 initial. Never add claw, keep each claw on its own side, do NOT jump or translate body. Bold few lines but rich brows/eye/mouth expression.",
+      "masterFile": "masters/crab-great.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-cbf61c42-8a12-4dd1-906f-f24b4644108e.png",
+      "sha256": "34fffe8062e0364a73167045bf5056f5e2e8a00d5f405af9ffa6c803a5765146",
+      "repairs": [
+        {
+          "prompt": "Repair ONLY PANEL8, row2 column4 (the rightmost middle-row crab) in this exact4x3 animation sheet. In that one panel the EYE STALKS have incorrectly vanished and eyes became part of the body. Restore TWO SHORT EYE STALKS and TWO OVAL EYE BULBS at the SAME HEIGHT, POSITION AND SIZE as panel7 directly left. Inside those oval eye bulbs draw curved CLOSED JOYFUL eyelids. Draw a complete normal OVAL BODY SHELL outline below the stalks, with delighted open smiling mouth inside that oval (same shell size as panel7). Keep both raised claws and all six legs exactly as panel7, do not add/remove limbs. Preserve overall joyful expression. Leave ALL OTHER11 PANELS unchanged. Keep4columns3rows equal square cells, overall4:3, SOLID WHITE background, no added text or borders.",
+          "source": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-77edfa74-49bb-4a44-a269-7915b10988f9.png",
+          "reason": "panel8 eyestalks disappeared in source",
+          "preserved": "rejected/crab-great-v1-missing-eyestalks.png",
+          "sha256": "34fffe8062e0364a73167045bf5056f5e2e8a00d5f405af9ffa6c803a5765146"
+        }
+      ]
+    },
+    {
+      "id": "pig-great",
+      "prompt": "Create a professional 12-pose ANIMATION SPRITE SHEET, exactly4 columns x3 rows of equal SQUARE panels, overall4:3 ratio ideally1536x1152. No grid lines, gutters, text, symbols or watermark. SOLID WHITE background, never transparency or black. SAME original character, camera, lighting, scale and fixed body anchor throughout. Entire character incl top of ears/raised arms and feet must fit inside upper75% of each cell; lower25% stays EMPTY WHITE for captions. Draw 12 genuine temporal poses, not identical repeats, not zooms/translations. Emotion 'That's wonderful! Great news!' clear joyful relief from surprised attention to delighted response. Panel8 strongest celebratory pose will hold900ms,9-12 smooth gradual return, last pose matches first silhouette. Stable anatomy, careful intermediate facial/body poses. Original designs, no famous IP, no celebrity. Original tiny tactile clay stop-motion pink piglet seated with compact round body, two SMALL front hooves and two fixed feet, expressive eyes and brows, little snout, no accessories. 1 front hooves rest separately on belly neutral;2 eyes brighten;3 brows lift delightedly;4 both front hooves lift in front of chest;5 hooves move toward one another;6 almost touch;7 touch lightly for a single clap;8 hooves together clearly visible at chest, wide happy smile and bright squinting eyes;9 hooves separate gradually;10 lower halfway;11 almost resting with smaller smile;12 original rest. NEVER fuse hooves into one hand, never add limbs; all feet fixed above75% cell height, body scale constant. No body bounce or zoom.",
+      "masterFile": "masters/pig-great.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-1d4d273f-2952-40e5-a415-4c892ee12044.png",
+      "sha256": "38ab4ba0ae46fea53c71daf892e6c7bf8a70e5bdb21243d30591c813a607bfac"
+    },
+    {
+      "id": "man-great",
+      "prompt": "Create a professional 12-pose ANIMATION SPRITE SHEET, exactly4 columns x3 rows of equal SQUARE panels, overall4:3 ratio ideally1536x1152. No grid lines, gutters, text, symbols or watermark. SOLID WHITE background, never transparency or black. SAME original character, camera, lighting, scale and fixed body anchor throughout. Entire character incl top of ears/raised arms and feet must fit inside upper75% of each cell; lower25% stays EMPTY WHITE for captions. Draw 12 genuine temporal poses, not identical repeats, not zooms/translations. Emotion 'That's wonderful! Great news!' clear joyful relief from surprised attention to delighted response. Panel8 strongest celebratory pose will hold900ms,9-12 smooth gradual return, last pose matches first silhouette. Stable anatomy, careful intermediate facial/body poses. Original designs, no famous IP, no celebrity. Realistic photographic original fictional handsome Chinese ADULT MALE age28, distinctive lightly wavy short black hair, burgundy crewneck tee, not any real celebrity likeness. Chest-up, BOTH HANDS OUT OF FRAME in all poses, stable shoulders. 1 listening neutrally;2 eyes widen slightly with positive surprise;3 brows lift;4 mouth begins a genuine smile;5 smile broadens;6 teeth begin showing naturally;7 cheeks rise and eyes smile;8 delighted open genuine laugh with happy crinkled eyes (moderate jaw opening, not screaming);9 laugh softens to broad closed-mouth smile;10 smile eases;11 nearly neutral;12 original listening face. Chin lifts only a little, never large head displacement, same face/hair/shirt each cell.",
+      "masterFile": "masters/man-great.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-cc0eed5a-d8fe-41d5-9cc5-8ef014ab07e5.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "f7f37390fefb5edc57192e1a4e13799a223f27a8535dc4d4d9425d625dc4e79c"
+    }
+  ],
+  "rejectedFiles": [
+    {
+      "path": "rejected/crab-great-v1-missing-eyestalks.gif",
+      "sha256": "f6c91b978ab06145e57b61f9bdb0bdaa640e17317a8061c1d4fc211ab7fa2cb9"
+    },
+    {
+      "path": "rejected/crab-great-v1-missing-eyestalks.png",
+      "sha256": "7692f384d7a3cf48b942add0f1c0de7692058cc4915cae33645a55ce0014ed36"
+    },
+    {
+      "path": "rejected/report-before-crab-fix.json",
+      "sha256": "23a29aec15dafefb82e892107dfb01055af36eeca2b3d1ddaad3e85ccad08cc7"
+    }
+  ]
+}

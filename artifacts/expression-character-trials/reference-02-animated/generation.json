@@ -1,0 +1,79 @@
+{
+  "tool": "built-in-imagegen",
+  "sourceType": "user-provided-reference",
+  "licenseStatus": "unverified",
+  "publicationAllowed": false,
+  "status": "trial-only",
+  "items": [
+    {
+      "id": "panda-talented",
+      "caption": "真有你的",
+      "ref": "panda-really",
+      "action": "Same pandahead man. Sarcastic admiration: narrow suspicious side-eye, one eyebrow arched, absurd crooked smirk. Viewer-right hand starts near chest loosely curled, slowly uncurls into a THUMBS UP while mouth curls and eyes narrow, peak8 smug exaggerated thumbs-up at shoulder. Other hand stays down. 9-12 lower thumb, relax smirk to initial. Head outline fixed. Thumb recognizable, no extra fingers.",
+      "prompt": "Use case: identity-preserve. Generate a 4 COLUMN x 3 ROW animation sprite sheet, 12 equal SQUARE panels, canvas EXACTLY 1440x1080 (4:3). Attached image is CHARACTER IDENTITY REFERENCE, not expression to copy. Preserve same recognizable grayscale human face collage, black simple body / haircut silhouette, absurd Chinese meme humor. Not cute, not handsome makeover, not clean cartoon face. White background. No text, captions, symbols, watermarks or outer frame. Bottom 18% of EVERY panel blank white for later caption. Character entirely in upper 80%, fixed scale, head anchor and bodybaseline. Thin gray grid dividers. Sequential animation reading left-right then down: poses1-7 gradual distinct changes, pose8 emotional peak, poses9-12 gently return. Panel12 MUST match panel1 in exact alignment and expression for seamless loop, avoid camera motion and noise. Real facial/hand performance, not whole-picture sliding. Same pandahead man. Sarcastic admiration: narrow suspicious side-eye, one eyebrow arched, absurd crooked smirk. Viewer-right hand starts near chest loosely curled, slowly uncurls into a THUMBS UP while mouth curls and eyes narrow, peak8 smug exaggerated thumbs-up at shoulder. Other hand stays down. 9-12 lower thumb, relax smirk to initial. Head outline fixed. Thumb recognizable, no extra fingers.",
+      "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-72fbcfd9-b2c8-4419-ad00-cdc2f6e023b6.png",
+      "masterFile": "masters/panda-talented.png",
+      "sha256": "7bba009644a162fc80605536bcf4fecfac29b6e6a53b2f4215233a756b78335c",
+      "referenceFile": "../reference-01/panda-really.png",
+      "referenceSha256": "6648d1262c9fa5e76e3e38cc8f746ad54e6e6615ad3bcaaa309320da49b78d38"
+    },
+    {
+      "id": "mushroom-learned",
+      "caption": "学到了",
+      "ref": "mushroom-think",
+      "action": "Same mushroom bowlcut man with tiny grey shirt body. Comical sudden understanding: start pursed lips and mildly raised brows, viewer-left index finger already upright near chest. Eyes gradually widen and eyebrows lift, mouth becomes rounded small O then knowingly crooked smile while index finger rises beside face, peak8 hilariously self-important enlightened gaze and pointing index. Other arm stays folded.9-12 finger lowers and face returns smoothly to initial. No lightbulbs.",
+      "prompt": "Use case: identity-preserve. Generate a 4 COLUMN x 3 ROW animation sprite sheet, 12 equal SQUARE panels, canvas EXACTLY 1440x1080 (4:3). Attached image is CHARACTER IDENTITY REFERENCE, not expression to copy. Preserve same recognizable grayscale human face collage, black simple body / haircut silhouette, absurd Chinese meme humor. Not cute, not handsome makeover, not clean cartoon face. White background. No text, captions, symbols, watermarks or outer frame. Bottom 18% of EVERY panel blank white for later caption. Character entirely in upper 80%, fixed scale, head anchor and bodybaseline. Thin gray grid dividers. Sequential animation reading left-right then down: poses1-7 gradual distinct changes, pose8 emotional peak, poses9-12 gently return. Panel12 MUST match panel1 in exact alignment and expression for seamless loop, avoid camera motion and noise. Real facial/hand performance, not whole-picture sliding. Same mushroom bowlcut man with tiny grey shirt body. Comical sudden understanding: start pursed lips and mildly raised brows, viewer-left index finger already upright near chest. Eyes gradually widen and eyebrows lift, mouth becomes rounded small O then knowingly crooked smile while index finger rises beside face, peak8 hilariously self-important enlightened gaze and pointing index. Other arm stays folded.9-12 finger lowers and face returns smoothly to initial. No lightbulbs.",
+      "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-2ee16974-db8b-404d-91a4-46fae19f608a.png",
+      "edits": [
+        {
+          "prompt": "Precise correction of this 4x3 sprite sheet. Keep all panels unchanged EXCEPT panel8 (middle row RIGHTMOST). That panel has accidentally switched the pointing hand to the opposite side. Correct panel8: pointing hand on VIEWER LEFT just like panels6 and7, finger slightly higher by cheek, OTHER arm folded across torso. Same face and head anchor as panel7, but a small knowing crooked SMILE for the enlightened peak. No large movement, no mirrored wholebody, no new limbs. Entire sheet keeps EXACT original dimensions and grid alignment, all other11panels unaltered. Textless.",
+          "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-ef9ff10f-0b09-460c-9b07-d10b0333cb86.png"
+        }
+      ],
+      "masterFile": "masters/mushroom-learned.png",
+      "sha256": "4b3bbf47e81ae42a1ce77e4a9db5bb2fc4cbb77689ab90accc2af8c951d1335f",
+      "referenceFile": "../reference-01/mushroom-think.png",
+      "referenceSha256": "be723d338101e99c831e4a87be973bb3d04e8ac0d628c074263be70c474a5359"
+    },
+    {
+      "id": "panda-refuse",
+      "caption": "拒绝",
+      "ref": "panda-really",
+      "action": "Same pandahead man. Firm funny rejection, not violence: unimpressed half-lidded sideways glare and pursed jutting lips. Viewer-right hand starts at lowerchest with open palm, gradually rises and turns outward STOP gesture, fingers together simple mitten shape, peak8 stop palm near shoulder and even more dismissive scrunched mouth/raised eyebrow. Opposite hand stays down.9-12 return smoothly palm low and initial glare. No large head shake or translation.",
+      "prompt": "Use case: identity-preserve. Generate a 4 COLUMN x 3 ROW animation sprite sheet, 12 equal SQUARE panels, canvas EXACTLY 1440x1080 (4:3). Attached image is CHARACTER IDENTITY REFERENCE, not expression to copy. Preserve same recognizable grayscale human face collage, black simple body / haircut silhouette, absurd Chinese meme humor. Not cute, not handsome makeover, not clean cartoon face. White background. No text, captions, symbols, watermarks or outer frame. Bottom 18% of EVERY panel blank white for later caption. Character entirely in upper 80%, fixed scale, head anchor and bodybaseline. Thin gray grid dividers. Sequential animation reading left-right then down: poses1-7 gradual distinct changes, pose8 emotional peak, poses9-12 gently return. Panel12 MUST match panel1 in exact alignment and expression for seamless loop, avoid camera motion and noise. Real facial/hand performance, not whole-picture sliding. Same pandahead man. Firm funny rejection, not violence: unimpressed half-lidded sideways glare and pursed jutting lips. Viewer-right hand starts at lowerchest with open palm, gradually rises and turns outward STOP gesture, fingers together simple mitten shape, peak8 stop palm near shoulder and even more dismissive scrunched mouth/raised eyebrow. Opposite hand stays down.9-12 return smoothly palm low and initial glare. No large head shake or translation.",
+      "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-5a8e944c-2a77-4b46-8f6c-a5e3173b42af.png",
+      "edits": [
+        {
+          "prompt": "Repair loop alignment in this 4-column 3-row sprite sheet. Keep first EIGHT panels unchanged. Last bottom-right panel12 must EXACTLY match TOP-LEFT panel1 character position, head size, ears, face, low open palm and body baseline. Currently bottom row panda sits too low, causing loop jump. Align bottom row head top/ears and bodybaseline to corresponding firstrow relative panel coordinates. Panels9,10,11 ease downraised palm toward starting low palm,12 identical first pose. No resizing or shifting canvas/grid, no changes to white caption area, no text. Preserve approved recognizable face and original canvas dimensions. Only bottomrow alignment/return changes.",
+          "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-f9496c39-0e56-4dd0-af91-024c442557f1.png"
+        },
+        {
+          "prompt": "Edit ONLY bottom-right panel12 of attached 4x3 sheet. Replace its character with an EXACT matching rendition of TOP-LEFT panel1. Preserve same relative coordinates: hair ears head face body palm all same shape SIZE and POSITION as top-left within its square. Current lastpanel bodybaseline is several pixels wrong and face/outline differs. Need near pixel-perfect matching first/last for GIF loop, NOT merely similar pose. All other11panels and grid canvas dimensions MUST stay unchanged. No text. Firstpanel is source of truth including white bottommargin.",
+          "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-bf791982-1fae-431c-a88a-f36ed95eddac.png"
+        },
+        {
+          "prompt": "Use case: identity-preserve. Generate a 4 COLUMN x 3 ROW animation sprite sheet, 12 equal SQUARE panels, canvas EXACTLY 1440x1080 (4:3). Attached image is CHARACTER IDENTITY REFERENCE, not expression to copy. Preserve same recognizable grayscale human face collage, black simple body / haircut silhouette, absurd Chinese meme humor. Not cute, not handsome makeover, not clean cartoon face. White background. No text, captions, symbols, watermarks or outer frame. Bottom 18% of EVERY panel blank white for later caption. Character entirely in upper 80%, fixed scale, head anchor and bodybaseline. Thin gray grid dividers. Sequential animation reading left-right then down: poses1-7 gradual distinct changes, pose8 emotional peak, poses9-12 gently return. Panel12 MUST match panel1 in exact alignment and expression for seamless loop, avoid camera motion and noise. Real facial/hand performance, not whole-picture sliding. Same pandahead man, REJECTION performance. Create a NEW clean animation, NOT a mostly frozen face. Face begins unimpressed lips CLOSED and eyes half-lidded. Gradually compress lips into strong exaggerated pout, arch one brow higher while opposite eye closes into a squint. Viewer-right forearm begins at chest with palm outward, slowly raises STOP palm next to cheek by panel8; body and head outline/ears stay perfectly ANCHORED. Each next pose1-8 has visibly distinct gradual brow, eyelid, lips and forearm movement. Peak strongly dismissive. 9,10,11 slowly relax brows, eyelids and mouth and lower hand back to chest; 12 match first CLOSED lips/half-lidded eyes/low palm exactly. Do NOT keep reference mouth open or reuse unchanged reference face in every panel. Maintain SAME facial identity but expression changes substantially, funny disapproval. 1440x1080 exact.",
+          "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-e3d71c0c-4a1e-43b7-86bb-08931f6a05e3.png",
+          "reference": "../reference-01/panda-really.png",
+          "type": "regenerate"
+        }
+      ],
+      "masterFile": "masters/panda-refuse.png",
+      "sha256": "cbaa7d30abf3e8bf336fe4f91cb5337a8e82c31b5d97eafc8f798eec918a6d46",
+      "referenceFile": "../reference-01/panda-really.png",
+      "referenceSha256": "6648d1262c9fa5e76e3e38cc8f746ad54e6e6615ad3bcaaa309320da49b78d38"
+    },
+    {
+      "id": "mushroom-confused",
+      "caption": "搞不懂",
+      "ref": "mushroom-think",
+      "action": "Same mushroom bowlcut man. Ridiculously baffled puzzled expression. Viewer-left hand already near side of head at temple throughout, other arm folded. Start one eyebrow raised and lips loosely pursed, gradually brows become unevenly knotted, eyes look further sideways/up, index finger rubs temple small arc, peak8 absurd confused squint and crooked twisted mouth. 9-12 finger and expression smoothly return to first. Head silhouette fixed, no questionmarks or symbols, no big waving.",
+      "prompt": "Use case: identity-preserve. Generate a 4 COLUMN x 3 ROW animation sprite sheet, 12 equal SQUARE panels, canvas EXACTLY 1440x1080 (4:3). Attached image is CHARACTER IDENTITY REFERENCE, not expression to copy. Preserve same recognizable grayscale human face collage, black simple body / haircut silhouette, absurd Chinese meme humor. Not cute, not handsome makeover, not clean cartoon face. White background. No text, captions, symbols, watermarks or outer frame. Bottom 18% of EVERY panel blank white for later caption. Character entirely in upper 80%, fixed scale, head anchor and bodybaseline. Thin gray grid dividers. Sequential animation reading left-right then down: poses1-7 gradual distinct changes, pose8 emotional peak, poses9-12 gently return. Panel12 MUST match panel1 in exact alignment and expression for seamless loop, avoid camera motion and noise. Real facial/hand performance, not whole-picture sliding. Same mushroom bowlcut man. Ridiculously baffled puzzled expression. Viewer-left hand already near side of head at temple throughout, other arm folded. Start one eyebrow raised and lips loosely pursed, gradually brows become unevenly knotted, eyes look further sideways/up, index finger rubs temple small arc, peak8 absurd confused squint and crooked twisted mouth. 9-12 finger and expression smoothly return to first. Head silhouette fixed, no questionmarks or symbols, no big waving.",
+      "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-ae2338a9-4889-443f-b5ec-6015388f03e8.png",
+      "masterFile": "masters/mushroom-confused.png",
+      "sha256": "5972b6d4e3b102297c9a862dd04fc14e199b4d5886dead6d7cb9166f8b98310a",
+      "referenceFile": "../reference-01/mushroom-think.png",
+      "referenceSha256": "be723d338101e99c831e4a87be973bb3d04e8ac0d628c074263be70c474a5359"
+    }
+  ]
+}

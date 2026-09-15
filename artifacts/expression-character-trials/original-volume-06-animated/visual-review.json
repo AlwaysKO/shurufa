@@ -1,0 +1,21 @@
+{
+  "method": "decoded-frame-inspection-only",
+  "actualDynamicPlayback": "not-performed",
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "publicationAllowed": false,
+  "pending": 11,
+  "needsRework": [
+    "pig-content"
+  ],
+  "caveats": {
+    "pig-content": "v1/v2/v3均未通过loopClosure原审计；无输出GIF。满足仅3种风格，尚未满足每词4风格目标。",
+    "tabby-alert": "转头回正与头顶轻微位置变化须实际播放复核。",
+    "owl-alert": "压眉可能更像生气而非警惕。",
+    "meerkat-alert": "实际为毛绒3D外观，不是预期黏土。",
+    "gingercat-content": "情绪较弱，可能读成平静，需去字幕审核。",
+    "content-group": "微笑是否足以表达满足而非普通开心待审。",
+    "collie-torn": "歪头可能读成疑惑而非纠结。",
+    "panda-torn": "实际为毛绒3D外观；语义可能更像疑惑。"
+  }
+}

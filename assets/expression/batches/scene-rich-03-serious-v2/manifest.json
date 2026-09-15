@@ -1,0 +1,14 @@
+{
+  "id": "scene-rich-03-serious-v2",
+  "keyword": "你认真的",
+  "status": "review-only",
+  "sourceType": "ai-original",
+  "masterFile": "master.png",
+  "generation": {
+    "tool": "image_gen.imagegen",
+    "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-2b027562-7a84-4e49-8a12-4c23e29189b6.png",
+    "prompt": "Edit this ORIGINAL fictional terrier into a 3 columns by 3 rows animation sprite sheet, exactly NINE equal square cells with NO gutters borders or lettering. Fixed tripod camera, identical beige hallway tiles and door edges perfectly aligned in every cell. Dog shoulders and muzzle position nearly fixed, same dog identity and fur. This is a SUBTLE realistic skeptical reaction, not nine unrelated expressions. Never big head tilt, no wild white eyeballs. Nine chronological small increments reading order: 1 normal forward-facing attentive dog looking at camera. 2 pupils begin shifting toward viewer RIGHT while head remains still. 3 pupils further to viewer RIGHT, mild skeptical upper eyelids. 4 nose rotates only 3 degrees toward viewer RIGHT, eyes keep looking sideways. 5 nose rotates 6 degrees, upper eyelids begin narrowing in suspicion. 6 strongest witty skeptical side-eye, head turned only 8 degrees, one upper eyelid subtly lower, mouth closed, expression says 'are you serious?' 7 head gently returns toward camera at 5 degrees and eyelids ease slightly. 8 head almost forward at 2 degrees, eyes almost centered. 9 exact same pose and expression as cell 1 to close loop. Same ear droop, body silhouette, camera scale, light, color, fur and background throughout; ONLY pupils eyelids and tiny head turn change. Photorealistic fur, natural anatomy, no human eyebrows, no cartoon eye whites. Reserve lower chest for later deterministic Chinese caption; do not draw text. Each panel complete square cropped chest-up like reference. We need finely spaced true animation inbetweens, NOT motion blur, NOT cross-fade, NOT a collage of drastically different photos. Pure opaque photographic panels.",
+    "referenceFile": "assets/expression/batches/scene-rich-03/poses/scene-rich-03-serious/pose-1.png",
+    "masterSha256": "6cf29fd4e78ed691c66af2afab1d14fc099c2cae81aaf54af9279b499ab3d2c1"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "keyword": "嫌弃",
+  "items": [
+    {
+      "id": "scene-rich-05-disgust",
+      "keyword": "嫌弃",
+      "file": "嫌弃/scene-rich-05-disgust.gif",
+      "thumbnail": "嫌弃/scene-rich-05-disgust.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-05/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-05/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-05/gifs/scene-rich-05-disgust.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-05/thumbnails/scene-rich-05-disgust.webp",
+      "batch": "scene-rich-05",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "7e9fb4bd188890e600eca9418a6e72a56cd12e628f4058f5e7564703be5f9a69",
+      "thumbnailSha256": "f6c2933863bd8b305ef879fb1bf5c1351379a4d651f349c765b14ce4b671d897",
+      "bytes": 140659,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "durationMs": 3000,
+      "style": "ai-original-pet",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

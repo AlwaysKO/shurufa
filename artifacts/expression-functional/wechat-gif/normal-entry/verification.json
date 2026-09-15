@@ -1,0 +1,24 @@
+{
+  "apkSha256": "11879f1f34bb13caa1f5c270b5924093be03aed1396e43fc6baf7a8f8562c68c",
+  "version": "20260908.11",
+  "installResult": "Performing Streamed Install\nSuccess",
+  "before": "com.yuyan.pinyin.offline.debug/com.yuyan.imemodule.service.ImeService",
+  "after": "com.yuyan.pinyin.offline.debug/com.yuyan.imemodule.compat.com.sohu.inputmethod.sogou.DebugGifImeService",
+  "registeredAppInputMethods": [
+    "com.yuyan.pinyin.offline.debug/com.yuyan.imemodule.compat.com.sohu.inputmethod.sogou.DebugGifImeService"
+  ],
+  "sourceTests": 4,
+  "settingsTests": 2,
+  "debugBuildPassed": true,
+  "releaseCompilePassed": true,
+  "releaseFullBuildPassed": false,
+  "releaseFullBuildBlocker": "offline lint-gradle:31.7.2 missing",
+  "sentChatMessages": false,
+  "sdkReleaseServiceNamePreserved": true,
+  "appReleaseServiceNamePreserved": true,
+  "appReleaseR8TaskCompleted": true,
+  "appReleaseR8Warnings": [
+    "Missing Launcher/CrashHandler classes; release runtime not verified"
+  ],
+  "installedDisplayName": "妙言输入法"
+}

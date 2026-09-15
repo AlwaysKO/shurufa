@@ -1,0 +1,31 @@
+{
+  "keyword": "细说",
+  "items": [
+    {
+      "id": "scene-rich-02-details",
+      "keyword": "细说",
+      "file": "细说/scene-rich-02-details.gif",
+      "thumbnail": "细说/scene-rich-02-details.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-02/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-02/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-02/gifs/scene-rich-02-details.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-02/thumbnails/scene-rich-02-details.webp",
+      "batch": "scene-rich-02",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "7310e3f11e6c39be29cc75abc944af61a116ef071e67abd0856525925e5a17e5",
+      "thumbnailSha256": "2f400580c0883af0cd1a21b0b7311e2e6a5ec7b77bcaf522f32980be93057fbb",
+      "bytes": 119356,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "durationMs": 1600,
+      "style": "3d-plush",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

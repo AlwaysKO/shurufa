@@ -1,0 +1,105 @@
+{
+  "keyword": "打闹",
+  "items": [
+    {
+      "id": "play-core-pillow",
+      "keyword": "打闹",
+      "file": "打闹/play-core-pillow.gif",
+      "thumbnail": "打闹/play-core-pillow.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/action-01/manifest.json",
+      "sourceReport": "artifacts/expression-batches/action-01/report.json",
+      "sourceGif": "artifacts/expression-batches/action-01/gifs/play-core-pillow.gif",
+      "sourceThumbnail": "artifacts/expression-batches/action-01/thumbnails/play-core-pillow.webp",
+      "batch": "action-01",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "c3792c48b79c5db05eb2520766849842a4fa7529bf0e67dcacf3945e580aac6b",
+      "thumbnailSha256": "94e0606dfc84fbf50e7d36da3a98a60cbdbf51bf16597be3a3b9aa9692536ee8",
+      "bytes": 169937,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "style": "original-character",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    },
+    {
+      "id": "play-cat-paw",
+      "keyword": "打闹",
+      "file": "打闹/play-cat-paw.gif",
+      "thumbnail": "打闹/play-cat-paw.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/action-01/manifest.json",
+      "sourceReport": "artifacts/expression-batches/action-01/report.json",
+      "sourceGif": "artifacts/expression-batches/action-01/gifs/play-cat-paw.gif",
+      "sourceThumbnail": "artifacts/expression-batches/action-01/thumbnails/play-cat-paw.webp",
+      "batch": "action-01",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "abd07e6d3cf535fcfdaf71d9d37245f12c83c37a03789e23865fb3fc723592d4",
+      "thumbnailSha256": "8c906353599f1424b9a19ffc5af4c84329b93e0eb5e4878c4f2244018722d25c",
+      "bytes": 213755,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "style": "ai-original-pet",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    },
+    {
+      "id": "play-person-pillow",
+      "keyword": "打闹",
+      "file": "打闹/play-person-pillow.gif",
+      "thumbnail": "打闹/play-person-pillow.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/action-01/manifest.json",
+      "sourceReport": "artifacts/expression-batches/action-01/report.json",
+      "sourceGif": "artifacts/expression-batches/action-01/gifs/play-person-pillow.gif",
+      "sourceThumbnail": "artifacts/expression-batches/action-01/thumbnails/play-person-pillow.webp",
+      "batch": "action-01",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "e5085112baa7e734bdc8fb7bbc3630de6815246a2a485bcf9de54890c74bda43",
+      "thumbnailSha256": "9a6ee2e4052d8761c68a395f752ea757becb73e6a73a1c4f01bd4f3cad9487fb",
+      "bytes": 205457,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "style": "original-life-scene",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    },
+    {
+      "id": "play-clay-mitten",
+      "keyword": "打闹",
+      "file": "打闹/play-clay-mitten.gif",
+      "thumbnail": "打闹/play-clay-mitten.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/action-01/manifest.json",
+      "sourceReport": "artifacts/expression-batches/action-01/report.json",
+      "sourceGif": "artifacts/expression-batches/action-01/gifs/play-clay-mitten.gif",
+      "sourceThumbnail": "artifacts/expression-batches/action-01/thumbnails/play-clay-mitten.webp",
+      "batch": "action-01",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "99b395fb5e84a11572a83c106f4b311e52f684657a76cc56c0255707458758c3",
+      "thumbnailSha256": "f56530b55116e38e32fcc1f5b067254f3df895a1854ebb0f069dcd5ebd4efb5e",
+      "bytes": 191940,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "style": "3d-plush",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

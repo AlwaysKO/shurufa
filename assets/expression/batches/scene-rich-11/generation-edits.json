@@ -1,0 +1,14 @@
+[
+  {
+    "id": "scene-rich-11-watch-line",
+    "path": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-0330997f-71b3-4e3d-b60b-7a4f7303f8c3.png",
+    "prompt": "Edit this original 12-cell sprite sheet. Replace ONLY the corrupted black/red/yellow noisy background in ALL cells with a clean completely flat pale mint #e1f1e7 background. No texture, transparency, patterns, noise, gradients. Preserve the cream triangular peeking character and peach wall and 12 poses exactly, black outlines intact. Same 4 columns 3 rows landscape 4:3, same dimensions. No words or logos.",
+    "resultPath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-4c14b868-2331-426d-9c0d-64bf5772da2f.png"
+  },
+  {
+    "id": "scene-rich-11-watch-person",
+    "path": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-d908cefb-9823-4498-9bc4-0e084bf7fa88.png",
+    "prompt": "Edit this original fictional Chinese woman 12-cell animation sheet. Fix temporal consistency ONLY. In EVERY cell lock table height, BOTH hands and white cup to the EXACT same location/size as FIRST TOP LEFT panel. Do not move cup or hands. First and LAST panel need identical head upright, neutral lips and pupils looking forward. Preserve first three rows overall look and original gouache style identity, background and clothing. Bottom row return: cell9 head still 3degrees left eyes partlyreturn; cell10 head2degrees left eyeshalfreturn; cell11 head1degree left eyesnearlyfront; cell12 identical FIRST panel forward head/gaze/lips/cup. Top-left space clear for later caption. 4columns3rows same size, NO text, no extra objects. Only subtle eyes and tiny headturn should animate, no torso/cup drift.",
+    "resultPath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-e5fced66-e767-4385-927c-a326f47ddb4b.png"
+  }
+]

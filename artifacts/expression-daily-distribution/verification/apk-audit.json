@@ -1,0 +1,38 @@
+{
+  "apk": "/home/ko/project/shurufa/android/YuyanIme/app/build/unix/outputs/apk/offline/debug/yuyanIme_2026090814_debug.apk",
+  "bytes": 84449915,
+  "sha256": "213ecaa336b99fc6d3b6a97a2e45dd02e71441e024457c23016dcae14d98b580",
+  "words": [
+    {
+      "keyword": "你好",
+      "bundled": 4,
+      "remoteOmitted": 4,
+      "thumbnails": 8
+    },
+    {
+      "keyword": "早安",
+      "bundled": 4,
+      "remoteOmitted": 4,
+      "thumbnails": 8
+    },
+    {
+      "keyword": "晚安",
+      "bundled": 4,
+      "remoteOmitted": 4,
+      "thumbnails": 8
+    },
+    {
+      "keyword": "好的",
+      "bundled": 4,
+      "remoteOmitted": 4,
+      "thumbnails": 8
+    },
+    {
+      "keyword": "对不起",
+      "bundled": 4,
+      "remoteOmitted": 4,
+      "thumbnails": 8
+    }
+  ],
+  "catalogVersion": "2026.09.08.daily-01"
+}

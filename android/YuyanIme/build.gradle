@@ -1,0 +1,50 @@
+buildscript {
+    repositories {
+        // 国内镜像优先（dl.google.com 在本网络不可达），官方源保留作兜底
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/central' }
+        maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        gradlePluginPortal()
+        mavenCentral()
+        google()
+    }
+    dependencies {
+        // Kotlin 2.1 metadata requires the newer D8/R8 bundled with AGP 8.7.
+        // Gradle 8.9 (see gradle-wrapper.properties) is the matching wrapper line.
+        classpath 'com.android.tools.build:gradle:8.7.2'
+        // Keep the Kotlin plugins on one version. The serialization plugin already
+        // resolves the build to the same Kotlin line, so declaring 1.9.22 here made IDE builds
+        // depend on Gradle's conflict-resolution order.
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.20'
+        classpath 'org.jetbrains.kotlin:kotlin-serialization:2.1.20'
+        classpath 'com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:2.1.20-2.0.0'
+    }
+}
+
+// 该 Android 子项目同时会从 Windows 的 E:\ 路径和 WSL 的 /home 路径构建。
+// KSP 会把生成文件与 projectDir 做相对路径运算；若两套 Gradle 复用同一个 build
+// 目录，Windows 可能读到 WSL 生成的绝对路径并报 “different roots”。按宿主系统
+// 隔离构建产物，从源头避免跨系统缓存互相污染。
+def buildHost = System.getProperty('os.name')
+        .toLowerCase(java.util.Locale.ROOT)
+        .contains('windows') ? 'windows' : 'unix'
+
+allprojects {
+    layout.buildDirectory.set(layout.projectDirectory.dir("build/${buildHost}"))
+    repositories {
+        // 国内镜像优先（dl.google.com 在本网络不可达），官方源保留作兜底
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/central' }
+        maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        gradlePluginPortal()
+        mavenCentral()
+        google()
+    }
+}
+
+tasks.register('clean', Delete) {
+    // 同时清理旧版共享 build 目录及当前系统的隔离目录。
+    delete allprojects.collect { new File(it.projectDir, 'build') }
+}

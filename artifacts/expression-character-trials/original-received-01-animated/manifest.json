@@ -1,0 +1,86 @@
+{
+  "created": "2026-09-11",
+  "sourceType": "ai-original",
+  "status": "trial-only",
+  "publicationAllowed": false,
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "items": [
+    {
+      "id": "dog-received",
+      "prompt": "Generate a 4-column by 3-row ANIMATION SPRITE SHEET, overall aspect ratio exactly 4:3. Twelve perfectly equal square panels, row-major temporal order. No grid lines, no gutters, no margins between cells, no text or numbers anywhere. Pure white identical background. Camera, scale, body anchor position and lighting locked across every frame. The ENTIRE subject including ears, feet or gesture stays inside upper 78 percent of each square; bottom 22 percent BLANK WHITE for deterministic captions later. Leave safe margins around head and limbs. 12 genuinely redrawn sequential poses forming a subtle continuous loop, not copies, not zooms or translations. Original character, no existing IP or celebrity. Emotion: 'Received! Got it!' clearly attentive acknowledgment, not surprise, suspicion, side-eye or laughing. Small controlled motion with intermediate poses. The KEY acknowledging pose is panel 8, to hold 900ms; panels 9-12 gradual return. Panel12 near-identical silhouette/position to panel1, so no pop at loop. Photorealistic warm tan-and-white small mixed-breed dog, white chest and muzzle, both natural triangular ears visible, chest-up, no props, no human limbs. Frontal eye contact throughout. Sequence 1 calm with relaxed ears; 2 ears begin attending; 3 ears more upright and pupils focus; 4 alert ears; 5 chin dips slightly beginning a nod; 6 chin dips further; 7 clear small firm nod, eyelids partly closed; 8 deepest but SMALL nod, attentive confident expression, not bowed dramatically; 9 head halfway back up; 10 almost upright; 11 ears relax slightly; 12 calm initial stance. Body and fur silhouette consistent.",
+      "masterFile": "masters/dog-received.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-61f5cc42-63dd-4aa0-8bdf-883e968fccb7.png",
+      "sha256": "0f7d3c1f71bafb66c3083eee1be79c6390751fee77946f9eabe39431adfa5a9f"
+    },
+    {
+      "id": "bird-received",
+      "prompt": "Generate a 4-column by 3-row ANIMATION SPRITE SHEET, overall aspect ratio exactly 4:3. Twelve perfectly equal square panels, row-major temporal order. No grid lines, no gutters, no margins between cells, no text or numbers anywhere. Pure white identical background. Camera, scale, body anchor position and lighting locked across every frame. The ENTIRE subject including ears, feet or gesture stays inside upper 78 percent of each square; bottom 22 percent BLANK WHITE for deterministic captions later. Leave safe margins around head and limbs. 12 genuinely redrawn sequential poses forming a subtle continuous loop, not copies, not zooms or translations. Original character, no existing IP or celebrity. Emotion: 'Received! Got it!' clearly attentive acknowledgment, not surprise, suspicion, side-eye or laughing. Small controlled motion with intermediate poses. The KEY acknowledging pose is panel 8, to hold 900ms; panels 9-12 gradual return. Panel12 near-identical silhouette/position to panel1, so no pop at loop. Original minimalist black ink cartoon small round sparrow with tiny three-feather tuft, clean sparse bold line work, white fill, very expressive eyes/brows, no costume. Full body centered with feet FIXED above blank caption zone. ONE wing on viewer RIGHT performs a cute salute, viewer LEFT wing remains down through ALL panels. 1 both wings down neutral; 2 eyes focus, eyebrow perks; 3 viewer-right wing starts raising; 4 raised to mid chest; 5 approaches cheek; 6 approaches brow; 7 reaches temple; 8 clear salute at brow, confident tiny closed smile, keen eyes; 9 same wing lowers to cheek; 10 to chest; 11 almost down; 12 both wings down initial pose. Wings not human hands; NEVER swap gesture side or add wing.",
+      "masterFile": "masters/bird-received.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-a302d4c9-7867-491c-8a02-b61f9ed4a8c3.png",
+      "repairs": [
+        {
+          "prompt": "Precisely repair this 4-column 3-row twelve-panel bird animation sheet. There is a left/right wing continuity error ONLY in panel8 (row2 col4) and panel9 (row3 col1): their raised wing is wrongly on VIEWER LEFT. Redraw these two panels so the wing on VIEWER RIGHT salutes at temple in panel8, and lowers to cheek in panel9, matching the SAME wing in panels5,6,7,10. Viewer-LEFT wing must hang down against body in ALL twelve panels. Do NOT mirror entire bird because facial/tuft identity must stay stable. Keep all other panels, art style, size, grid, timing order, feet anchor positions unchanged. Twelve panels exactly, 4:3 overall ratio. White or transparent background, no text. Strong confident brows at panel8. Critical: raised wing remains on the RIGHT SIDE OF EACH IMAGE, not the character's right.",
+          "source": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-5038d524-bb65-4968-bf50-8016e895e564.png",
+          "result": "panel8 fixed; panel9 still wrong",
+          "preserved": "rejected/bird-received-v2-panel9-swap.png",
+          "sha256": "df73a41f43e88203a6409663cd36f2c1e94fd89ffe583bfa765837af7ceba689"
+        },
+        {
+          "prompt": "Edit ONLY THE BOTTOM-LEFT CELL (third row, first column) of this 4-column 3-row animation sheet. That bird currently has its raised wing on the LEFT EDGE of the cell. REMOVE that raised wing and replace with a lowered wing hanging on the LEFT side. Draw its OTHER wing on the RIGHT EDGE of that bottom-left cell raised to its RIGHT CHEEK, intermediate lowering pose between the salute above (row2col4) and chest pose next to it (row3col2). The bottom-left cell must have RAISED wing to the RIGHT OF ITS FACE, LOW wing to the LEFT OF ITS BODY. All other 11 cells MUST stay unchanged, especially row2col4 already correct. Keep 4x3 equal square grid, overall4:3, no captions.",
+          "source": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-1e5e04d0-9802-42a6-8169-5be7c555f947.png",
+          "result": "panel9 fixed, same-side wing throughout",
+          "preserved": "rejected/bird-received-v3-black-background.png",
+          "sha256": "9e58308f0045d1d208ea8d3e4441a3774438ed1b69499c57b0e83b3d49c3ab8a"
+        },
+        {
+          "prompt": "Change ONLY the BLACK BACKGROUND into solid PURE WHITE (#FFFFFF) in this twelve-panel bird animation sheet. Preserve black ink outline, black pupils, brows and beak lines, keep white bird body white. No black backdrop, no transparency. Exact same bird poses, positions, size, 4 columns 3 rows equal square panel geometry, overall 4:3 canvas. Do not change any wing side: the ONLY raised wing stays on VIEWER RIGHT in all panels3-10. Keep all 12 cells and face/feet identical to source. Do not add grid lines, captions, shadows, margins or borders. This is a background replacement only.",
+          "source": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-e1218252-aaad-4de6-9849-2d0e3054c9f8.png",
+          "result": "white background restored, same-side gesture retained",
+          "sha256": "38abc9ecae42dfdf654558ad328ac4d0d0c15a39ef7f647f571439d7680ecd38"
+        }
+      ],
+      "rejectedOriginal": "rejected/bird-received-v1-wing-swap.png",
+      "sha256": "38abc9ecae42dfdf654558ad328ac4d0d0c15a39ef7f647f571439d7680ecd38"
+    },
+    {
+      "id": "otter-received",
+      "prompt": "Generate a 4-column by 3-row ANIMATION SPRITE SHEET, overall aspect ratio exactly 4:3. Twelve perfectly equal square panels, row-major temporal order. No grid lines, no gutters, no margins between cells, no text or numbers anywhere. Pure white identical background. Camera, scale, body anchor position and lighting locked across every frame. The ENTIRE subject including ears, feet or gesture stays inside upper 78 percent of each square; bottom 22 percent BLANK WHITE for deterministic captions later. Leave safe margins around head and limbs. 12 genuinely redrawn sequential poses forming a subtle continuous loop, not copies, not zooms or translations. Original character, no existing IP or celebrity. Emotion: 'Received! Got it!' clearly attentive acknowledgment, not surprise, suspicion, side-eye or laughing. Small controlled motion with intermediate poses. The KEY acknowledging pose is panel 8, to hold 900ms; panels 9-12 gradual return. Panel12 near-identical silhouette/position to panel1, so no pop at loop. Original tactile clay stop-motion cute caramel otter with cream muzzle/belly, tiny rounded ears, short paws, seated compact full body and feet visible. No human anatomy, no accessories. The paw on VIEWER LEFT gradually raises in acknowledgment, the other paw stays on belly the ENTIRE time. 1 paws down relaxed; 2 eyes focus; 3 viewer-left paw starts rising; 4 halfway; 5 reaches shoulder; 6 at cheek height; 7 palm faces viewer; 8 tiny raised-paw 'got it' pledge pose, assured eyebrows and small smile; 9 paw returns to shoulder; 10 halfway down; 11 almost rest; 12 initial rest. Body doesn't stretch or sway. Keep all paws and feet above 78% cell height.",
+      "masterFile": "masters/otter-received.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-2096bb4e-d6a9-4c48-8b49-d94dd2ef095e.png",
+      "sha256": "cdeeead6b56ea4e96eabf2ebdf0961d3858dae64a6c3d2b7b8a159bbb37ac308"
+    },
+    {
+      "id": "man-received",
+      "prompt": "Generate a 4-column by 3-row ANIMATION SPRITE SHEET, overall aspect ratio exactly 4:3. Twelve perfectly equal square panels, row-major temporal order. No grid lines, no gutters, no margins between cells, no text or numbers anywhere. Pure white identical background. Camera, scale, body anchor position and lighting locked across every frame. The ENTIRE subject including ears, feet or gesture stays inside upper 78 percent of each square; bottom 22 percent BLANK WHITE for deterministic captions later. Leave safe margins around head and limbs. 12 genuinely redrawn sequential poses forming a subtle continuous loop, not copies, not zooms or translations. Original character, no existing IP or celebrity. Emotion: 'Received! Got it!' clearly attentive acknowledgment, not surprise, suspicion, side-eye or laughing. Small controlled motion with intermediate poses. The KEY acknowledging pose is panel 8, to hold 900ms; panels 9-12 gradual return. Panel12 near-identical silhouette/position to panel1, so no pop at loop. Realistic cinematic ORIGINAL fictional handsome Chinese ADULT MALE age 30, distinctive neat short black hair with slight side part, blue work shirt, no tie or logos, not resembling a real celebrity. Chest-up, both hands OUT OF FRAME at all times, stable shoulders. Direct eye contact, no sideways glance. 1 neutral listening; 2 eyebrows slightly lift to show attention; 3 attentive eye focus; 4 lips press gently 'understood'; 5 chin begins small nod; 6 chin lowers a few degrees; 7 clear small affirmative nod; 8 firm confident nod, subtle closed-mouth smile, eyelids slightly narrow; 9 chin partly rises; 10 more upright; 11 mouth relaxes; 12 returns initial neutral. Hair/face/shirt shape and camera fixed.",
+      "masterFile": "masters/man-received.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-ac93f65a-410e-4d51-81b6-9e773d08d89b.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "f2e7ecff0e6acfed4b7ad62d896f2a561b2631a26139d189c911145d5c2016cd"
+    }
+  ],
+  "rejectedFiles": [
+    {
+      "path": "rejected/bird-received-v1-wing-swap.png",
+      "sha256": "5e143b6b0bea91cb0e03b4d1cfce9cd6aac744244078f7b4757bcb4573e6d723"
+    },
+    {
+      "path": "rejected/bird-received-v2-panel9-swap.png",
+      "sha256": "df73a41f43e88203a6409663cd36f2c1e94fd89ffe583bfa765837af7ceba689"
+    },
+    {
+      "path": "rejected/bird-received-v3-black-background.gif",
+      "sha256": "5744daf216e92fe1d0a0b716fd6e171f852f3a8b346dd403d7e5c74c4e4e1bf7"
+    },
+    {
+      "path": "rejected/bird-received-v3-black-background.png",
+      "sha256": "9e58308f0045d1d208ea8d3e4441a3774438ed1b69499c57b0e83b3d49c3ab8a"
+    },
+    {
+      "path": "rejected/report-before-background-fix.json",
+      "sha256": "3d88cd58d66334ab9362189055119f5df61ce7744fb49918b7930e8ca7f3714c"
+    }
+  ]
+}

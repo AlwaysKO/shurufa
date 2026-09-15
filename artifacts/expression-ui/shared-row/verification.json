@@ -1,0 +1,509 @@
+{
+  "codeCommit": "13d8373",
+  "workingTreeUserSettings": {
+    "CANDIDATE_TEXT_SCALE": 1.1,
+    "COMPOSING_TEXT_SCALE": 1.5
+  },
+  "totals": {
+    "tests": 406,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "suites": [
+    {
+      "name": "com.yuyan.imemodule.PublicAbiCompatibilityTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.adapter.CandidatesMenuAdapterTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.application.RimeAssetsTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.data.capture.CaptureCoordinatorTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.data.capture.FingerprintTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.data.capture.db.CaptureDatabaseTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.data.capture.media.ImageHashTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.data.capture.media.MediaCropperTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.data.capture.net.CaptureUploaderTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.data.capture.notification.NotificationParserTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.data.capture.ui.ViewportDebouncerTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.data.collect.DataCollectorNetworkTypeTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.data.collect.LocationRegistrationGateTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.data.collect.LocationUploadPolicyTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.data.collect.ServerConfigTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.data.completion.OfflineAssociationAssetTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.data.completion.OfflineAssociationIndexTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.ChatEditorGateTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.EmojiSelectionStateTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.ExpressionCacheTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.ExpressionCatalogTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.ExpressionComposingTextSourceTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.ExpressionFlowTest",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.ExpressionInputTargetTrackerTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.ExpressionManualSearchTest",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.ExpressionPanelStateTest",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.ExpressionPrebuiltAssetsTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.ExpressionPreviewJobSlotTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.ExpressionQueryCoordinatorTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.ExpressionRecommendationResolverTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.ExpressionSelectionInputClearerTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.ExpressionSendDialogStateTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.ExpressionSyncTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.HostTextCommitDispatcherTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.render.ExpressionRenderPolicyTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.render.ExpressionRendererTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.render.TextLayoutCalculatorTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.send.ExpressionContentSenderTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.send.ExpressionSendControllerTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.ui.ExpressionAssetLifecycleTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.ui.ExpressionAssetPreviewTest",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.ui.ExpressionGestureTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.ui.ExpressionLayoutMetricsTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.expression.ui.ExpressionPanelTest",
+      "tests": 38,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.keyboard.AndroidImeQuickKeyboardSettingsRuntimeTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.keyboard.ExpressionManualSearchInputViewTest",
+      "tests": 35,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.keyboard.ExpressionViewportObstructionTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.keyboard.ImeQuickKeyboardSettingsActionsTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.keyboard.KeyForegroundColorTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.keyboard.KeyboardGeometryTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.keyboard.KeyboardSurfaceThemeTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.keyboard.KeyboardToolbarModelTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.keyboard.QuickKeyboardPanelMetricsTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.keyboard.QuickKeyboardSettingsModelTest",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.keyboard.QuickKeyboardSettingsViewTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.keyboard.SogouAuxiliaryLayoutsTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.keyboard.SogouKeyboardHitMapTest",
+      "tests": 15,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.keyboard.SogouKeyboardTypographyTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.keyboard.SogouQwertyLayoutTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.keyboard.SogouT9LayoutTest",
+      "tests": 13,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.keyboard.SymbolGridInteractionTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.prefs.AppPrefsDefaultsTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.prefs.SogouT9PreferenceMigrationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.service.ExpressionBackCallbackControllerTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.service.ImeServiceKeyEventTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.view.CandidateOverlaySpecTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.imemodule.view.CandidatesBarTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.inputmethod.AssociationCandidateMergerTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.yuyan.inputmethod.RimeEngineCompositionStateTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "apk": {
+    "path": "android/YuyanIme/app/build/unix/outputs/apk/offline/debug/yuyanIme_2026090715_debug.apk",
+    "bytes": 79427466,
+    "sha256": "a9858755a2fc6594df50e4ea57b80adb3f9bf00206cd2f107cf061b9dde691a0"
+  },
+  "deviceVerified": false,
+  "notes": [
+    "APK与测试包含用户工作区字号1.1/1.5；用户这两行未纳入提交。",
+    "本轮未操作手机或安装APK，尚待用户真机视觉验收。",
+    "本轮不修改GIF发送问题。"
+  ]
+}

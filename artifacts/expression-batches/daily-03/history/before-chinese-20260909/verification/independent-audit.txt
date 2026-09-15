@@ -1,0 +1,11 @@
+{
+  "total": 40,
+  "pass": 40,
+  "fail": 0,
+  "maxBytes": 228396,
+  "bundledBytes": 3611029,
+  "remoteBytes": 3510295,
+  "thumbnails": 40,
+  "poses": 160,
+  "humanReview": "pending"
+}

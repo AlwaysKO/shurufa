@@ -1,0 +1,44 @@
+{
+  "status": "pending-visual-review",
+  "kind": "static-textless-concepts",
+  "tool": "image_gen.imagegen",
+  "notes": "四个不同词各一张无字静态样板，不是每词四张成品，不是GIF，不发布到catalog/API/APK。第三方参考没有作为生成输入。",
+  "items": [
+    {
+      "id": "nide-wink",
+      "keyword": "你懂的",
+      "sourceType": "ai-original",
+      "file": "nide-wink.png",
+      "prompt": "Create a single square ORIGINAL Chinese internet chat reaction image, no text yet. Intent: 'you know what I mean', a cheeky unspoken agreement, NOT generic happiness. Photorealistic candid close-up of a scruffy miniature salt-and-pepper schnauzer in a lived-in apartment, comically giving one unmistakable conspiratorial wink, other eyebrow raised, closed mouth with slightly upturned corner. It peeks sideways around the mustard sofa arm; one front paw hooks around the edge as if secretly inviting the viewer closer. Dog face fills 65 percent of picture, dramatic low wide-angle camera, whiskers and messy eyebrow fur expressive, warm lamplight, shallow focus ordinary slippers in background. Subtle witty character acting, not a glossy pet advertisement, not evil, no human hands, no clothing, no existing IP, no logos or watermarks. Clear readable silhouette and eyes at 240px thumbnail. Keep small quiet darker region near lower right for later Chinese caption, without blank banner or card. Fully original composition and animal, authentic funny candid energy. Full-bleed background.",
+      "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-b9410a70-0cf8-46aa-94ae-d8d7731e6a29.png",
+      "sha256": "d3cd68cbdbf5ae7e45f5674a381f638407d28636d27677ec481af7c6f2a311f3"
+    },
+    {
+      "id": "xishuo-pigeon",
+      "keyword": "细说",
+      "sourceType": "ai-original",
+      "file": "xishuo-pigeon.png",
+      "prompt": "Single square original chat reaction meme illustration. Meaning: 'tell me more, I'm listening to the gossip', witty and nosy but friendly. A tactile handmade stop-motion felt scene: an original round dusty-purple pigeon has dragged an absurdly tiny turquoise folding stool right up to the camera and is perched on it, body leaning dramatically forward, head tilted, two enormous curious eyes wide open, one tiny wing cupped behind its ear, the other holding a miniature bowl of sunflower seeds. Stubby orange feet planted firmly, little beak slightly open in anticipation. The bird is about 80 percent of frame, comically earnest posture like a reporter at a press conference, rustic miniature apartment doorway in background and warm side light. Real felt fibres, irregular handmade geometry, a little scruffy, NOT glossy 3D mascot, not generic cute smiling pose. Strong silhouette, clear face and listening gesture, practical miniature photography. No words, lettering, brands, watermarks or known characters. Empty dark muted wall region upper left for later typeset short caption, no blank bottom strip. One coherent original scene with tangible small props and exaggerated physical acting.",
+      "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-7c415b70-b61e-466c-afcf-b6e7921ccf35.png",
+      "sha256": "7c2b5a68826bad92f76cfcf00605beb2865d1b091fc5a3b2c76c302f60b8a2bd"
+    },
+    {
+      "id": "shenmeshi-door",
+      "keyword": "什么事",
+      "sourceType": "ai-original",
+      "file": "shenmeshi-door.png",
+      "prompt": "One square original minimalist absurd Chinese chat reaction doodle, intent 'what do you want?', lazy deadpan reply to being called, not anger. Draw with deliberately wobbly thick black ink and a few rough colored pencil fills on warm off-white paper. A newly invented dark plum-colored beet creature with small crooked leafy sprout, huge heavy-lidded eyes and one raised eyebrow, no human meme face. It has cracked open a narrow turquoise door on the RIGHT side of the image and squeezes ONLY HALF of its squashed cheek and one eye through the gap; its little hand grips the door edge, one mismatched slipper pokes out at floor level. A small fluffy sleeping dust-bunny rests behind the door, hint that its nap has been interrupted. Extreme asymmetry: half-face on right occupies most of right half, broad off-white negative space left reserved for later short typeset Chinese reply. Tiny mouth a flat line, world-weary but mildly curious, funny 'you summoned me for this?' energy. Very simple cartoon geometry, a few expressive lines, not polished children's book art, not cute centered mascot, no existing IP, no letters, text, logos, watermark or panel borders. Readable at small thumbnail scale. Make the interruption and reluctant sideways peek immediately understandable without caption.",
+      "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-ab40474c-b641-4e30-8560-75ecfd5d6b81.png",
+      "sha256": "87b9824f9937a57ed88cbfa6ac6a004180d9fac2b8b0b6309edacc444c74de10"
+    },
+    {
+      "id": "yuanlairuci-glasses",
+      "keyword": "原来如此",
+      "sourceType": "ai-original",
+      "file": "yuanlairuci-glasses.png",
+      "prompt": "Create one square original internet chat reaction illustration conveying 'ohhh, now I see', a sly moment of understanding, NOT shock or agreement. A fictional Chinese adult man about 45, warm ordinary face, short untidy black hair with a little gray, no celebrity resemblance, thin reading glasses halfway down nose, simple navy home cardigan. Loose lively ink and watercolor editorial caricature with believable human anatomy, visibly drawn not beauty photography. Tight chest-up crop at a cluttered breakfast table. He has paused peeling a small mandarin: left hand holds fruit with one long curl of peel hanging, right hand lifts glasses slightly as he leans forward, one eyebrow arches, eyes narrow knowingly, one corner of mouth rises with an 'aha, that explains everything' half smile. Glasses, eyes and smirk are the focal point. The paused everyday task makes the sudden realization witty. Little teacup and newspaper with NO legible markings at lower edge, muted blue-grey apartment background, face warm and expressive, tiny two understated ochre emphasis strokes beside eyebrow. Leave a modest quiet patch near upper left for later Chinese caption, no uniform bottom banner. Not a posing portrait, no goofy grimace, no existing meme face, no famous characters, no words, logos or watermark. The actor must look like an original ordinary Chinese grown-up, subtle knowing reaction, thumbnail readable.",
+      "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-7c37d219-64eb-455f-bc88-597d04d4ccfe.png",
+      "sha256": "9bc2a8d644676967f8320c3ba6f67f995d80e8e2aa9fb5267f53aff13e12dfb1"
+    }
+  ]
+}

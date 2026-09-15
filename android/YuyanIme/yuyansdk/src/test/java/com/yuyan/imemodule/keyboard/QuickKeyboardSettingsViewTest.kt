@@ -1,0 +1,224 @@
+package com.yuyan.imemodule.keyboard
+
+import android.content.Context
+import android.view.View
+import androidx.preference.PreferenceManager
+import androidx.test.core.app.ApplicationProvider
+import androidx.viewpager2.widget.ViewPager2
+import com.yuyan.imemodule.R
+import com.yuyan.imemodule.application.Launcher
+import com.yuyan.imemodule.data.emojicon.YuyanEmojiCompat
+import com.yuyan.imemodule.data.theme.ThemeManager
+import com.yuyan.imemodule.data.theme.ThemePreset
+import com.yuyan.imemodule.keyboard.container.SettingsContainer
+import com.yuyan.imemodule.keyboard.container.SymbolContainer
+import com.yuyan.imemodule.prefs.AppPrefs
+import com.yuyan.imemodule.prefs.behavior.SkbMenuMode
+import com.yuyan.imemodule.singleton.EnvironmentSingleton
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
+
+@RunWith(RobolectricTestRunner::class)
+class QuickKeyboardSettingsViewTest {
+    private lateinit var context: Context
+
+    @Before
+    fun setUp() {
+        context = ApplicationProvider.getApplicationContext()
+        Launcher::class.java.getDeclaredField("context").apply {
+            isAccessible = true
+            set(Launcher.instance, context)
+        }
+        AppPrefs.init(PreferenceManager.getDefaultSharedPreferences(context))
+        YuyanEmojiCompat.init(context)
+        ThemeManager.init(context.resources.configuration)
+        EnvironmentSingleton.instance.initData(context)
+        ThemeManager.prefs.followSystemDayNightTheme.setValue(false)
+        ThemeManager.setNormalModeTheme(ThemePreset.SogouDefault)
+    }
+
+    @After
+    fun tearDown() {
+        ThemeManager.prefs.followSystemDayNightTheme.setValue(false)
+        ThemeManager.setNormalModeTheme(ThemePreset.SogouDefault)
+    }
+
+    @Test
+    fun `既有双拼方案名称和词典条目保持兼容`() {
+        val label = context.getString(R.string.double_pinyin_sougou)
+        val phrases = context.assets.open("rime/opencc/STPhrases.txt").bufferedReader().use { it.readText() }
+
+        assertEquals("\u641c\u72d7\u53cc\u62fc", label)
+        assertTrue(phrases.lineSequence().any { it == "\u641c\u72d7\t\u641c\u72d7" })
+    }
+
+    @Test
+    fun `真实非Material主题不会伪装成浅色或深色快捷主题选中`() {
+        ThemeManager.prefs.followSystemDayNightTheme.setValue(false)
+        ThemeManager.setNormalModeTheme(ThemePreset.PixelLight)
+        val container = SettingsContainer(context, unsafeInputView())
+
+        container.showQuickSettingsView()
+
+        container.findViewWithTag<View>("quick_tab_theme").performClick()
+        KeyboardSurfaceThemes.options.forEach { option ->
+            assertFalse(container.findViewWithTag<View>("quick_theme_${option.themeId}").isSelected)
+        }
+    }
+
+    @Test
+    fun `从真实符号页重新打开面板时符号项覆盖底层布局成为唯一选中`() {
+        val container = SettingsContainer(context, unsafeInputView(), RecordingActions())
+
+        container.showQuickSettingsView(SymbolPage.CHINESE)
+
+        assertTrue(container.findViewWithTag<View>("quick_layout_CHINESE_SYMBOL").isSelected)
+        assertFalse(container.findViewWithTag<View>("quick_layout_CHINESE_T9").isSelected)
+        assertFalse(container.findViewWithTag<View>("quick_layout_ENGLISH_SYMBOL").isSelected)
+    }
+
+    @Test
+    fun `QuickKeyboard菜单真实路由只在IME内显示面板且不启动Activity`() {
+        val container = SettingsContainer(context, unsafeInputView(), RecordingActions())
+
+        assertTrue(routeQuickKeyboardMenu(SkbMenuMode.QuickKeyboard) { container.showQuickSettingsView() })
+        assertTrue(container.isQuickSettingsVisible)
+        assertFalse(routeQuickKeyboardMenu(SkbMenuMode.Settings) { container.showQuickSettingsView() })
+        assertNull(shadowOf(context as android.app.Application).nextStartedActivity)
+    }
+
+    @Test
+    fun `快捷面板以五列输入方式和双列四主题展示且触摸目标不小于44dp`() {
+        val actions = RecordingActions()
+        val container = SettingsContainer(context, unsafeInputView(), actions)
+
+        container.showQuickSettingsView()
+
+        QuickKeyboardSettingsModel.layouts.forEach { option ->
+            val button = container.findViewWithTag<View>("quick_layout_${option.id.name}")
+            assertTrue("缺少 ${option.id}", button != null)
+            assertTrue(button.minimumHeight >= dp(44))
+        }
+        assertTrue(container.findViewWithTag<View>("quick_tab_input").isSelected)
+        container.findViewWithTag<View>("quick_tab_theme").performClick()
+        KeyboardSurfaceThemes.options.forEach { option ->
+            val button = container.findViewWithTag<View>("quick_theme_${option.themeId}")
+            assertTrue("缺少 ${option.themeId}", button != null)
+            assertTrue(button.minimumHeight >= dp(44))
+        }
+        assertTrue(container.findViewWithTag<View>("quick_theme_SogouDefault").isSelected)
+        assertFalse(container.findViewWithTag<View>("quick_theme_SogouBlue").isSelected)
+        assertNull(shadowOf(context as android.app.Application).nextStartedActivity)
+    }
+
+    @Test
+    fun `面板布局和主题点击走可注入真实控制路径且不启动Activity`() {
+        val actions = RecordingActions()
+        val container = SettingsContainer(context, unsafeInputView(), actions)
+        container.showQuickSettingsView()
+
+        container.findViewWithTag<View>("quick_tab_theme").performClick()
+        container.findViewWithTag<View>("quick_theme_SogouBlue").performClick()
+        assertEquals("SogouBlue", actions.themeId)
+        assertTrue(container.findViewWithTag<View>("quick_theme_SogouBlue").isSelected)
+        assertNull(shadowOf(context as android.app.Application).nextStartedActivity)
+
+        container.findViewWithTag<View>("quick_tab_input").performClick()
+        container.findViewWithTag<View>("quick_layout_STROKE").performClick()
+        assertEquals(
+            QuickKeyboardSettingsModel.layouts.single { it.id == QuickKeyboardLayoutId.STROKE }.action,
+            actions.layoutAction,
+        )
+        assertEquals(1, actions.closeCount)
+        assertFalse(container.isQuickSettingsVisible)
+        assertNull(shadowOf(context as android.app.Application).nextStartedActivity)
+    }
+
+    @Test
+    fun `真实符号容器记录中文英文页供快捷面板重新打开时读取`() {
+        val symbol = SymbolContainer(context, unsafeInputView())
+
+        symbol.setSymbolsView(initialPage = 1)
+        assertEquals(SymbolPage.CHINESE, symbol.quickSymbolPage)
+        SymbolContainer::class.java.getDeclaredField("mVPSymbolsView").run {
+            isAccessible = true
+            (get(symbol) as ViewPager2).currentItem = 2
+        }
+        assertEquals(SymbolPage.ENGLISH, symbol.quickSymbolPage)
+        symbol.setSymbolsView(initialPage = 2)
+        assertEquals(SymbolPage.ENGLISH, symbol.quickSymbolPage)
+        symbol.setSymbolsView()
+        assertNull(symbol.quickSymbolPage)
+    }
+
+    @Test
+    fun `真实主题动作即时生效并关闭跟随系统后持久化且拒绝未知主题`() {
+        ThemeManager.prefs.followSystemDayNightTheme.setValue(true)
+
+        assertTrue(SettingsContainer.applyQuickTheme("SogouBlue"))
+        assertFalse(ThemeManager.prefs.followSystemDayNightTheme.getValue())
+        assertEquals("SogouBlue", ThemeManager.prefs.normalModeTheme.getValue().name)
+        assertEquals("SogouBlue", ThemeManager.activeTheme.name)
+
+        assertFalse(SettingsContainer.applyQuickTheme("NotInstalled"))
+        assertEquals("SogouBlue", ThemeManager.activeTheme.name)
+    }
+
+    @Test
+    fun `面板返回和再次切换恢复输入键盘`() {
+        val actions = RecordingActions()
+        val container = SettingsContainer(context, unsafeInputView(), actions)
+        container.showQuickSettingsView()
+
+        assertTrue(container.handleQuickSettingsBack())
+        assertEquals(1, actions.closeCount)
+        assertFalse(container.isQuickSettingsVisible)
+        assertFalse(container.handleQuickSettingsBack())
+
+        assertTrue(container.toggleQuickSettingsView())
+        assertFalse(container.toggleQuickSettingsView())
+        assertEquals(2, actions.closeCount)
+    }
+
+    private fun unsafeInputView(): InputView {
+        val unsafe = Class.forName("sun.misc.Unsafe").getDeclaredField("theUnsafe").run {
+            isAccessible = true
+            get(null)
+        }
+        return unsafe.javaClass
+            .getMethod("allocateInstance", Class::class.java)
+            .invoke(unsafe, InputView::class.java) as InputView
+    }
+
+    private fun dp(value: Int): Int = (value * context.resources.displayMetrics.density).toInt()
+
+    private class RecordingActions : QuickKeyboardSettingsActions {
+        override val availableThemeIds = setOf("SogouDefault", "SogouBlue", "WechatLayout", "SogouHuawei")
+        override var currentThemeId = "SogouDefault"
+        var themeId: String? = null
+        var layoutAction: QuickKeyboardAction? = null
+        var closeCount = 0
+
+        override fun applyLayout(action: QuickKeyboardAction) {
+            layoutAction = action
+        }
+
+        override fun applyTheme(themeId: String): Boolean {
+            this.themeId = themeId
+            currentThemeId = themeId
+            return true
+        }
+
+        override fun closeQuickSettings() {
+            closeCount++
+        }
+    }
+}

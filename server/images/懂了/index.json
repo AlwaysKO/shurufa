@@ -1,0 +1,109 @@
+{
+  "keyword": "懂了",
+  "items": [
+    {
+      "id": "understand-core-knot",
+      "keyword": "懂了",
+      "file": "懂了/understand-core-knot.gif",
+      "thumbnail": "懂了/understand-core-knot.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/semantic-01/manifest.json",
+      "sourceReport": "artifacts/expression-batches/semantic-01/report.json",
+      "sourceGif": "artifacts/expression-batches/semantic-01/gifs/understand-core-knot.gif",
+      "sourceThumbnail": "artifacts/expression-batches/semantic-01/thumbnails/understand-core-knot.webp",
+      "batch": "semantic-01",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "5947061ca33262a5960a0ae4141766d76a51715865e4dce98012aa1302320012",
+      "thumbnailSha256": "156e0b7cbe6f4c039d03e83f4029449d740506ac587a6f0a45818219ef8fd58b",
+      "bytes": 165642,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "durationMs": 1600,
+      "style": "original-character",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    },
+    {
+      "id": "understand-bird-notebook",
+      "keyword": "懂了",
+      "file": "懂了/understand-bird-notebook.gif",
+      "thumbnail": "懂了/understand-bird-notebook.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/semantic-01/manifest.json",
+      "sourceReport": "artifacts/expression-batches/semantic-01/report.json",
+      "sourceGif": "artifacts/expression-batches/semantic-01/gifs/understand-bird-notebook.gif",
+      "sourceThumbnail": "artifacts/expression-batches/semantic-01/thumbnails/understand-bird-notebook.webp",
+      "batch": "semantic-01",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "95a4cc916dee5d25bcbd29686866ad5d8826038d8ddd94aad05845e61d8bbb3f",
+      "thumbnailSha256": "ef8c1eb57b392c31a3f2b52e1ed197115e6e0686723dc92f5f20e5a021378aea",
+      "bytes": 169256,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "durationMs": 1600,
+      "style": "ai-original-pet",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    },
+    {
+      "id": "understand-person-nod",
+      "keyword": "懂了",
+      "file": "懂了/understand-person-nod.gif",
+      "thumbnail": "懂了/understand-person-nod.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/semantic-01/manifest.json",
+      "sourceReport": "artifacts/expression-batches/semantic-01/report.json",
+      "sourceGif": "artifacts/expression-batches/semantic-01/gifs/understand-person-nod.gif",
+      "sourceThumbnail": "artifacts/expression-batches/semantic-01/thumbnails/understand-person-nod.webp",
+      "batch": "semantic-01",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "a020ab426de8f6df0a4f513f50ec40ce8f4c8c551bac19b9f1466b33f786c8b4",
+      "thumbnailSha256": "1849e5ae6db1bbd3dbb2a4c80ced29d227f79b6926efd833cecd1b0ec4dc6f06",
+      "bytes": 188997,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "durationMs": 1600,
+      "style": "original-life-scene",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    },
+    {
+      "id": "understand-clay-pebble",
+      "keyword": "懂了",
+      "file": "懂了/understand-clay-pebble.gif",
+      "thumbnail": "懂了/understand-clay-pebble.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/semantic-01/manifest.json",
+      "sourceReport": "artifacts/expression-batches/semantic-01/report.json",
+      "sourceGif": "artifacts/expression-batches/semantic-01/gifs/understand-clay-pebble.gif",
+      "sourceThumbnail": "artifacts/expression-batches/semantic-01/thumbnails/understand-clay-pebble.webp",
+      "batch": "semantic-01",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "2628ac5cb3f2a4de13bc72f13b70877dbbbdcbe1ff0c54b94763769ce3e911be",
+      "thumbnailSha256": "1d88a5cb127189efb2985a340bd126de95b14dbbe86d9af29fef1c24dc66e5be",
+      "bytes": 143973,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "durationMs": 1600,
+      "style": "3d-plush",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

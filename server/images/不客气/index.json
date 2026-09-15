@@ -1,0 +1,31 @@
+{
+  "keyword": "不客气",
+  "items": [
+    {
+      "id": "scene-rich-09-welcome",
+      "keyword": "不客气",
+      "file": "不客气/scene-rich-09-welcome.gif",
+      "thumbnail": "不客气/scene-rich-09-welcome.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-09/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-09/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-09/gifs/scene-rich-09-welcome.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-09/thumbnails/scene-rich-09-welcome.webp",
+      "batch": "scene-rich-09",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "6dc9ad82a2151ff06cc7a2a84c96eb4722baad96526e02826cec93f6dc170a87",
+      "thumbnailSha256": "a3cd5981ac6518908db519a145ecbe34fd5f04a6774973219856bc13d34c2e59",
+      "bytes": 81438,
+      "width": 240,
+      "height": 240,
+      "frames": 20,
+      "durationMs": 4000,
+      "style": "hand-drawn",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

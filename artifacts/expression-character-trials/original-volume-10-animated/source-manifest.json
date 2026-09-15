@@ -1,0 +1,274 @@
+{
+  "created": "2026-09-15",
+  "sourceType": "ai-original",
+  "status": "trial-only",
+  "publicationAllowed": false,
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "items": [
+    {
+      "id": "corgi-hungry",
+      "caption": "饿了",
+      "prompt": "Original animation sprite sheet: FOUR columns THREE rows of12 equal SQUARE cells, landscape4:3, 1448x1086. OPAQUE WHITE background, no text/borders/grid. IMPORTANT EXACT ROW REGISTRATION: cell size362; row1 head top y50 body bottom y280, row2 head top y412 body bottom y642, row3 head top y774 body bottom y1004. Do NOT compress row spacing. Each cell same head/body size and anchor, x70..292, minimum80px white bottom margin. Entire ears/fingers/paws within upper78% of EACH cell. Fixed camera, lighting, shoulders. Last cell EXACT first pose geometry/expression. All12 are consecutive articulated poses of ONE reaction, not12different emojis, no hearts/particles. Peak expression in cells7 AND8, return begins9. No famous IP, logo or real celebrity likeness. Photoreal tan and white corgi dog, real short fur, big natural ears, expressive eyelids. Chest-up NO hands/paws. Meaning hungry and wishing for food, NOT laughing or sexy.1 neutral shut mouth;2 eyes seek food to viewer left;3 nostrils sniff slightly and eyebrows lift with hopeful anticipation;4 mouth parts a little;5 a tiny tongue tip begins licking corner of lip;6 tongue sweeps just across upper lip;7 tongue retracted, lips moist and slightly pursed, eyes pleading for food;8 retain hungry pleading eyes and pursed mouth, no tongue out;9 swallow and mouth closes;10 eyes return front;11 almost neutral;12 EXACT pose1. Subtle head stable, no broad smile, no food objects or drool.",
+      "masterFile": "masters/corgi-hungry.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-4fd8f2ac-8e46-4626-908a-7304da0b8e49.png",
+      "sha256": "90078654448c5f4d8f13d10973a1af2c4a2c65e9a3f13121c23367902fe028e4",
+      "originalSha256": "236a52f728157744bcb4f2517550b7f1c6d346640e0a7d9c9656e83f96331155",
+      "revisions": [
+        {
+          "id": "corgi-hungry",
+          "version": 2,
+          "prompt": "Fix clipping/safe margins ONLY in this12pose4column3row corgi sprite sheet. Preserve this same dog and exactly same12consecutive hungry expressions including licking lips. In EACH equal square362pxcell shrink ENTIRE character uniformly by18percent around its own center, then place ear tips no higher than y45 and body bottom aroundy285. Make EXACT same scale and anchor in all12cells, NOT varying scale as animation. All ears entirely visible with at least40pxWHITE above them in EVERYcell, especially finalrow. Row1/2/3are exactly362pxeach, no packing. Lastpose matches first geometry. WHITE OPAQUE canvas, remove transparent background but do not change fur/face. No added text/borders.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-87df4599-e443-482c-9f45-25508efd4844.png",
+          "referencedMasterAtGeneration": "rejected/corgi-hungry-v1.png",
+          "sha256": "38747c4fa11631a6b400a51738118e56c323e96563ee25aafe21ab5795d75f70"
+        },
+        {
+          "id": "corgi-hungry",
+          "version": 3,
+          "prompt": "Correct only vertical registration of this4x3 animation sheet. First row UNCHANGED. Move EVERY character in row2 DOWN15pixels. Move EVERY character in row3 DOWN30pixels. No resizing, no re-layout, no redraw of faces; lastcell must match firstcell neutral position and silhouette within equal362pxsquare. All ears retain white space above. Keep12hungry poses including licking, fixed scale and fur. Canvas1448x1086 OPAQUEWHITE, no text/grid. Equal square rows start0,362,724; NEVER pack by equal whitespace.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-a18434bb-b924-4332-995d-f52f8989c2b8.png",
+          "referencedMasterAtGeneration": "rejected/corgi-hungry-v2.png",
+          "sha256": "90078654448c5f4d8f13d10973a1af2c4a2c65e9a3f13121c23367902fe028e4"
+        }
+      ],
+      "selectedVersion": 3
+    },
+    {
+      "id": "rabbit-hungry",
+      "caption": "饿了",
+      "prompt": "Original animation sprite sheet: FOUR columns THREE rows of12 equal SQUARE cells, landscape4:3, 1448x1086. OPAQUE WHITE background, no text/borders/grid. IMPORTANT EXACT ROW REGISTRATION: cell size362; row1 head top y50 body bottom y280, row2 head top y412 body bottom y642, row3 head top y774 body bottom y1004. Do NOT compress row spacing. Each cell same head/body size and anchor, x70..292, minimum80px white bottom margin. Entire ears/fingers/paws within upper78% of EACH cell. Fixed camera, lighting, shoulders. Last cell EXACT first pose geometry/expression. All12 are consecutive articulated poses of ONE reaction, not12different emojis, no hearts/particles. Peak expression in cells7 AND8, return begins9. No famous IP, logo or real celebrity likeness. Minimal BLACK AND WHITE clean ink cartoon rabbit, short round ears, small broad oval eyes, simple chunky silhouette, no familiar cartoon costume or hair tuft. Chest-up NO hands/paws. Meaning hungry and wishing for food, NOT laughing or sexy.1 neutral shut mouth;2 eyes seek food to viewer left;3 nostrils sniff slightly and eyebrows lift with hopeful anticipation;4 mouth parts a little;5 a tiny tongue tip begins licking corner of lip;6 tongue sweeps just across upper lip;7 tongue retracted, lips moist and slightly pursed, eyes pleading for food;8 retain hungry pleading eyes and pursed mouth, no tongue out;9 swallow and mouth closes;10 eyes return front;11 almost neutral;12 EXACT pose1. Subtle head stable, no broad smile, no food objects or drool.",
+      "masterFile": "masters/rabbit-hungry.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-b8802957-1b25-462a-a132-289c9641dcf7.png",
+      "sha256": "1385bdee3ef3ef1ba24475b4a515d3f9b6a2571f741c37f51fe5e14b251fa006",
+      "originalSha256": "1385bdee3ef3ef1ba24475b4a515d3f9b6a2571f741c37f51fe5e14b251fa006",
+      "revisions": [],
+      "selectedVersion": 1
+    },
+    {
+      "id": "pig-hungry",
+      "caption": "饿了",
+      "prompt": "Original animation sprite sheet: FOUR columns THREE rows of12 equal SQUARE cells, landscape4:3, 1448x1086. OPAQUE WHITE background, no text/borders/grid. IMPORTANT EXACT ROW REGISTRATION: cell size362; row1 head top y50 body bottom y280, row2 head top y412 body bottom y642, row3 head top y774 body bottom y1004. Do NOT compress row spacing. Each cell same head/body size and anchor, x70..292, minimum80px white bottom margin. Entire ears/fingers/paws within upper78% of EACH cell. Fixed camera, lighting, shoulders. Last cell EXACT first pose geometry/expression. All12 are consecutive articulated poses of ONE reaction, not12different emojis, no hearts/particles. Peak expression in cells7 AND8, return begins9. No famous IP, logo or real celebrity likeness. Matte smooth sculpted pink CLAY pig with clear round snout, tiny ears, absolutely NO fur/hair. Chest-up NO hands/paws. Meaning hungry and wishing for food, NOT laughing or sexy.1 neutral shut mouth;2 eyes seek food to viewer left;3 nostrils sniff slightly and eyebrows lift with hopeful anticipation;4 mouth parts a little;5 a tiny tongue tip begins licking corner of lip;6 tongue sweeps just across upper lip;7 tongue retracted, lips moist and slightly pursed, eyes pleading for food;8 retain hungry pleading eyes and pursed mouth, no tongue out;9 swallow and mouth closes;10 eyes return front;11 almost neutral;12 EXACT pose1. Subtle head stable, no broad smile, no food objects or drool.",
+      "masterFile": "masters/pig-hungry.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-32a591ac-0657-42a8-a236-c20245f85733.png",
+      "sha256": "77265ff8a26230e3c887fcd2a005e122af206b3d40c500e248e7dac372440e5a",
+      "originalSha256": "77265ff8a26230e3c887fcd2a005e122af206b3d40c500e248e7dac372440e5a",
+      "revisions": [],
+      "selectedVersion": 1
+    },
+    {
+      "id": "man-hungry",
+      "caption": "饿了",
+      "prompt": "Original animation sprite sheet: FOUR columns THREE rows of12 equal SQUARE cells, landscape4:3, 1448x1086. OPAQUE WHITE background, no text/borders/grid. IMPORTANT EXACT ROW REGISTRATION: cell size362; row1 head top y50 body bottom y280, row2 head top y412 body bottom y642, row3 head top y774 body bottom y1004. Do NOT compress row spacing. Each cell same head/body size and anchor, x70..292, minimum80px white bottom margin. Entire ears/fingers/paws within upper78% of EACH cell. Fixed camera, lighting, shoulders. Last cell EXACT first pose geometry/expression. All12 are consecutive articulated poses of ONE reaction, not12different emojis, no hearts/particles. Peak expression in cells7 AND8, return begins9. No famous IP, logo or real celebrity likeness. Photoreal fictional original handsome CHINESE ADULT MAN age28, neatly textured black hair, plain muted blue crewneck T-shirt, distinct original face. Chest-up NO hands/paws. Meaning hungry and wishing for food, NOT laughing or sexy.1 neutral shut mouth;2 eyes seek food to viewer left;3 nostrils sniff slightly and eyebrows lift with hopeful anticipation;4 mouth parts a little;5 a tiny tongue tip begins licking corner of lip;6 tongue sweeps just across upper lip;7 tongue retracted, lips moist and slightly pursed, eyes pleading for food;8 retain hungry pleading eyes and pursed mouth, no tongue out;9 swallow and mouth closes;10 eyes return front;11 almost neutral;12 EXACT pose1. Subtle head stable, no broad smile, no food objects or drool.",
+      "masterFile": "masters/man-hungry.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-5e9525c2-3805-48fd-9f49-3880ad275cfe.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "76550d4d76c434d65917552c917192c837939a77004882ae164b141443bc14cd",
+      "originalSha256": "76550d4d76c434d65917552c917192c837939a77004882ae164b141443bc14cd",
+      "revisions": [],
+      "selectedVersion": 1
+    },
+    {
+      "id": "bulldog-weary",
+      "caption": "心累",
+      "prompt": "Original animation sprite sheet: FOUR columns THREE rows of12 equal SQUARE cells, landscape4:3, 1448x1086. OPAQUE WHITE background, no text/borders/grid. IMPORTANT EXACT ROW REGISTRATION: cell size362; row1 head top y50 body bottom y280, row2 head top y412 body bottom y642, row3 head top y774 body bottom y1004. Do NOT compress row spacing. Each cell same head/body size and anchor, x70..292, minimum80px white bottom margin. Entire ears/fingers/paws within upper78% of EACH cell. Fixed camera, lighting, shoulders. Last cell EXACT first pose geometry/expression. All12 are consecutive articulated poses of ONE reaction, not12different emojis, no hearts/particles. Peak expression in cells7 AND8, return begins9. No famous IP, logo or real celebrity likeness. Photoreal English bulldog, brown and white short fur, droopy jowls and natural expressive eyes. Chest-up NO hands/paws. Meaning emotionally exhausted, 'I'm so tired of this', not sleeping, not cute happy.1 neutral slightly troubled;2 gaze drops;3 eyelids droop;4 inner brows lift with resignation;5 eyes close and mouth opens a small exhale;6 lips purse as sigh ends;7 half-open tired eyes, downturned mouth and heavy brows;8 KEEP the weary half-open eyes and deeply resigned downturned mouth;9 eyes lift slightly;10 mouth relaxes;11 almost start;12 EXACT pose1. Keep head scale and shoulder anchor, no large nod, no flying tears.",
+      "masterFile": "masters/bulldog-weary.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-22a252ba-a888-4eed-8b04-fd7a64782a58.png",
+      "sha256": "2c9df18311f8607587fc16dfeaab9300252eec8c02e5ddd6ca5e66bb7cc0f19b",
+      "originalSha256": "2c9df18311f8607587fc16dfeaab9300252eec8c02e5ddd6ca5e66bb7cc0f19b",
+      "revisions": [],
+      "selectedVersion": 1
+    },
+    {
+      "id": "seal-weary",
+      "caption": "心累",
+      "prompt": "Original animation sprite sheet: FOUR columns THREE rows of12 equal SQUARE cells, landscape4:3, 1448x1086. OPAQUE WHITE background, no text/borders/grid. IMPORTANT EXACT ROW REGISTRATION: cell size362; row1 head top y50 body bottom y280, row2 head top y412 body bottom y642, row3 head top y774 body bottom y1004. Do NOT compress row spacing. Each cell same head/body size and anchor, x70..292, minimum80px white bottom margin. Entire ears/fingers/paws within upper78% of EACH cell. Fixed camera, lighting, shoulders. Last cell EXACT first pose geometry/expression. All12 are consecutive articulated poses of ONE reaction, not12different emojis, no hearts/particles. Peak expression in cells7 AND8, return begins9. No famous IP, logo or real celebrity likeness. Minimal BLACK AND WHITE clean ink cartoon seal, round head, small eyes with expressive eyelids, whiskers, no clothes or human hair. Chest-up NO hands/paws. Meaning emotionally exhausted, 'I'm so tired of this', not sleeping, not cute happy.1 neutral slightly troubled;2 gaze drops;3 eyelids droop;4 inner brows lift with resignation;5 eyes close and mouth opens a small exhale;6 lips purse as sigh ends;7 half-open tired eyes, downturned mouth and heavy brows;8 KEEP the weary half-open eyes and deeply resigned downturned mouth;9 eyes lift slightly;10 mouth relaxes;11 almost start;12 EXACT pose1. Keep head scale and shoulder anchor, no large nod, no flying tears.",
+      "masterFile": "masters/seal-weary.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-1b04df51-d935-4026-a748-e058a475c557.png",
+      "sha256": "305f0c86bc60c47258ac5b900abb4f21d98bef148164135be628fdb2220a7e2f",
+      "originalSha256": "5273ea4ad98de8c6bb511d2966999708eb57c10e60919dbb2dd872552a1d5943",
+      "revisions": [
+        {
+          "id": "seal-weary",
+          "version": 2,
+          "prompt": "Fix only row registration in this exact4columns3rows sprite sheet; keep original ink seal and all12weary expressions. The third row is wrongly too high within its square cells. Canvas1448x1086 each362square. Leave first row positions unchanged. Move second row subjects DOWN18px, third row DOWN35px relative to current image. No scaling, all head/body geometry unchanged; preserve eyes/mouth. Every neutral head top must share cell-relative y50; lastcell EXACT matches firstcell position and silhouette. Blank white bottom area may become smaller but don't repack rows! OPAQUE WHITE background no text/grid, same blackink character.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-da4ca785-fb35-4385-99b9-dbc368749fca.png",
+          "referencedMasterAtGeneration": "rejected/seal-weary-v1.png",
+          "sha256": "305f0c86bc60c47258ac5b900abb4f21d98bef148164135be628fdb2220a7e2f"
+        }
+      ],
+      "selectedVersion": 2
+    },
+    {
+      "id": "sloth-weary",
+      "caption": "心累",
+      "prompt": "Original animation sprite sheet: FOUR columns THREE rows of12 equal SQUARE cells, landscape4:3, 1448x1086. OPAQUE WHITE background, no text/borders/grid. IMPORTANT EXACT ROW REGISTRATION: cell size362; row1 head top y50 body bottom y280, row2 head top y412 body bottom y642, row3 head top y774 body bottom y1004. Do NOT compress row spacing. Each cell same head/body size and anchor, x70..292, minimum80px white bottom margin. Entire ears/fingers/paws within upper78% of EACH cell. Fixed camera, lighting, shoulders. Last cell EXACT first pose geometry/expression. All12 are consecutive articulated poses of ONE reaction, not12different emojis, no hearts/particles. Peak expression in cells7 AND8, return begins9. No famous IP, logo or real celebrity likeness. Matte smooth sculpted beige/brown CLAY sloth, round face with dark eye patches, no fur. Chest-up NO hands/paws. Meaning emotionally exhausted, 'I'm so tired of this', not sleeping, not cute happy.1 neutral slightly troubled;2 gaze drops;3 eyelids droop;4 inner brows lift with resignation;5 eyes close and mouth opens a small exhale;6 lips purse as sigh ends;7 half-open tired eyes, downturned mouth and heavy brows;8 KEEP the weary half-open eyes and deeply resigned downturned mouth;9 eyes lift slightly;10 mouth relaxes;11 almost start;12 EXACT pose1. Keep head scale and shoulder anchor, no large nod, no flying tears.",
+      "masterFile": "masters/sloth-weary.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-822b0b0d-9a00-4c9f-ab15-7123cc41b030.png",
+      "sha256": "35c8b3651a5e9ead6203e6fce3085233a5264608ae6893c5105115df2980d80d",
+      "originalSha256": "35c8b3651a5e9ead6203e6fce3085233a5264608ae6893c5105115df2980d80d",
+      "revisions": [],
+      "selectedVersion": 1
+    },
+    {
+      "id": "man-weary",
+      "caption": "心累",
+      "prompt": "Original animation sprite sheet: FOUR columns THREE rows of12 equal SQUARE cells, landscape4:3, 1448x1086. OPAQUE WHITE background, no text/borders/grid. IMPORTANT EXACT ROW REGISTRATION: cell size362; row1 head top y50 body bottom y280, row2 head top y412 body bottom y642, row3 head top y774 body bottom y1004. Do NOT compress row spacing. Each cell same head/body size and anchor, x70..292, minimum80px white bottom margin. Entire ears/fingers/paws within upper78% of EACH cell. Fixed camera, lighting, shoulders. Last cell EXACT first pose geometry/expression. All12 are consecutive articulated poses of ONE reaction, not12different emojis, no hearts/particles. Peak expression in cells7 AND8, return begins9. No famous IP, logo or real celebrity likeness. Photoreal fictional original handsome CHINESE ADULT MAN age31, short combed black hair, dark olive plain crewneck T-shirt, original distinct face. Chest-up NO hands/paws. Meaning emotionally exhausted, 'I'm so tired of this', not sleeping, not cute happy.1 neutral slightly troubled;2 gaze drops;3 eyelids droop;4 inner brows lift with resignation;5 eyes close and mouth opens a small exhale;6 lips purse as sigh ends;7 half-open tired eyes, downturned mouth and heavy brows;8 KEEP the weary half-open eyes and deeply resigned downturned mouth;9 eyes lift slightly;10 mouth relaxes;11 almost start;12 EXACT pose1. Keep head scale and shoulder anchor, no large nod, no flying tears.",
+      "masterFile": "masters/man-weary.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-f6fb58cc-3615-4226-b336-14b1b5561e61.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "9dcd0e610ee9598621bc2858da2b9c62b8ee52cd0c822b1d575b7ff78945c30a",
+      "originalSha256": "9dcd0e610ee9598621bc2858da2b9c62b8ee52cd0c822b1d575b7ff78945c30a",
+      "revisions": [],
+      "selectedVersion": 1
+    },
+    {
+      "id": "gingercat-shush",
+      "caption": "嘘",
+      "prompt": "Original animation sprite sheet: FOUR columns THREE rows of12 equal SQUARE cells, landscape4:3, 1448x1086. OPAQUE WHITE background, no text/borders/grid. IMPORTANT EXACT ROW REGISTRATION: cell size362; row1 head top y50 body bottom y280, row2 head top y412 body bottom y642, row3 head top y774 body bottom y1004. Do NOT compress row spacing. Each cell same head/body size and anchor, x70..292, minimum80px white bottom margin. Entire ears/fingers/paws within upper78% of EACH cell. Fixed camera, lighting, shoulders. Last cell EXACT first pose geometry/expression. All12 are consecutive articulated poses of ONE reaction, not12different emojis, no hearts/particles. Peak expression in cells7 AND8, return begins9. No famous IP, logo or real celebrity likeness. Photoreal ginger tabby cat with real fur. ONE normal furry paw raised to muzzle, no human fingers. Chest-up, hush/be quiet gesture with serious quiet attentive expression. SAME right hand/paw/wing on VIEWER LEFT never swaps.1 hand/paw already visible HIGH at collarbone, full outline above y255 in cell;2 eyes look cautiously sideways;3 lips begin pursing;4 SAME hand/paw rises toward chin;5 rises toward mouth;6 tip vertical in front of center lips/beak;7/8 PEAK SAME hand/paw/wing tip held vertical touching front of lips/beak, quiet narrowed eyes, mouth visibly pursed not smiling.9 tip moves slightly away;10 lowers to chin;11 returns almost collarbone;12 EXACT first geometry and hand. Only ONE moving limb, no duplication/disappearing, no fingers through face. Entire resting hand/paw above y255 for caption safety.",
+      "masterFile": "masters/gingercat-shush.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-ad3bdbdf-0f9d-4962-881f-20652abf58c3.png",
+      "sha256": "d5e4ce0f725f34570ae24a5eefb8383e87493d7124480e0fafdc1b6f5579fab5",
+      "originalSha256": "50e486c4b36bb8e40a85fcc8fd8a3cec8b96f1aa946f283b59529cf69d178183",
+      "revisions": [
+        {
+          "id": "gingercat-shush",
+          "version": 2,
+          "prompt": "Edit only resting paw height of this12cell4x3 animation sheet, same original ginger cat. In cells1,2,11,12 move the SAME furry right paw on viewerLEFT UP50pixels within each362cell: paw tip should be immediately under chin, full paw and wrist visible above y250. In cells3/4 and9/10 blend transition between this higher initial location and peak. Keep cells5/6/7/8 paw vertically in front of mouth unchanged. No human fingers, keep ordinary furry paw. Same face/body size and registration, no new limbs. Last pose exact first. White OPAQUE canvas, no text or borders.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-0b98b26f-90b1-488a-8553-e79d106929c4.png",
+          "referencedMasterAtGeneration": "rejected/gingercat-shush-v1.png",
+          "sha256": "2f1326a7910709034db060c36a7bd8b376d848b4fb45a8347ea06af4d4104147"
+        },
+        {
+          "id": "gingercat-shush",
+          "version": 3,
+          "prompt": "Fix clipping/safe margins ONLY in this12pose4column3row original ginger cat sprite sheet. Preserve same cat and same12consecutive hush gestures, including HIGH resting paw near chin and same right paw viewerLEFT. In EACH362squarecell shrink entire character (including paw) uniformly18percent around its own center, then place ear tips no higher than y45, body bottom abouty285. SAME scale/anchor all12cells; no animated zoom. At least40pxWHITE above tips in EVERYcell incl row2/3. Last matches first geometry. Keep full paw visible well above caption at bottom. Rows exactly362px, don't repack whitespace. OpaqueWHITE,no text/grid.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-79e041c4-6f19-4ab0-bfef-efbab48b3c1f.png",
+          "referencedMasterAtGeneration": "rejected/gingercat-shush-v2.png",
+          "sha256": "9470d01ad9c2790f15da486053102b172a806c7b926d776df620d3701a20631f"
+        },
+        {
+          "id": "gingercat-shush",
+          "version": 4,
+          "prompt": "Correct only vertical registration of this4x3 animation sheet. First row UNCHANGED. Move EVERY character in row2 DOWN22pixels. Move EVERY character in row3 DOWN42pixels. No resizing, no redesign, preserve raised paw and12hushposes. Last cell's head/body/paw geometry and cell-relative location MUST match first cell. Headtop should be y60 in every362pxsquare cell (absolute y60,422,784). Same character scale in all frames. Canvas1448x1086 OPAQUEWHITE, no text/grid. Don't repack equal whitespace; rows are exact362pxheight.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-9be1893b-979b-4492-a0e3-2771b5f44eef.png",
+          "referencedMasterAtGeneration": "rejected/gingercat-shush-v3.png",
+          "sha256": "d5e4ce0f725f34570ae24a5eefb8383e87493d7124480e0fafdc1b6f5579fab5"
+        }
+      ],
+      "selectedVersion": 4
+    },
+    {
+      "id": "owl-shush",
+      "caption": "嘘",
+      "prompt": "Original animation sprite sheet: FOUR columns THREE rows of12 equal SQUARE cells, landscape4:3, 1448x1086. OPAQUE WHITE background, no text/borders/grid. IMPORTANT EXACT ROW REGISTRATION: cell size362; row1 head top y50 body bottom y280, row2 head top y412 body bottom y642, row3 head top y774 body bottom y1004. Do NOT compress row spacing. Each cell same head/body size and anchor, x70..292, minimum80px white bottom margin. Entire ears/fingers/paws within upper78% of EACH cell. Fixed camera, lighting, shoulders. Last cell EXACT first pose geometry/expression. All12 are consecutive articulated poses of ONE reaction, not12different emojis, no hearts/particles. Peak expression in cells7 AND8, return begins9. No famous IP, logo or real celebrity likeness. Minimal BLACK AND WHITE clean ink cartoon small owl, broad head small curved beak, expressive eyelids. ONE narrow wing tip to beak, not human fingers. Chest-up, hush/be quiet gesture with serious quiet attentive expression. SAME right hand/paw/wing on VIEWER LEFT never swaps.1 hand/paw already visible HIGH at collarbone, full outline above y255 in cell;2 eyes look cautiously sideways;3 lips begin pursing;4 SAME hand/paw rises toward chin;5 rises toward mouth;6 tip vertical in front of center lips/beak;7/8 PEAK SAME hand/paw/wing tip held vertical touching front of lips/beak, quiet narrowed eyes, mouth visibly pursed not smiling.9 tip moves slightly away;10 lowers to chin;11 returns almost collarbone;12 EXACT first geometry and hand. Only ONE moving limb, no duplication/disappearing, no fingers through face. Entire resting hand/paw above y255 for caption safety.",
+      "masterFile": "masters/owl-shush.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-fb53b7e4-cf7a-4562-8c81-8b18d650c362.png",
+      "sha256": "58315b31ad82024699e040aa91062b59e424ab597fd5baa8c257eee6fc7a7625",
+      "originalSha256": "58315b31ad82024699e040aa91062b59e424ab597fd5baa8c257eee6fc7a7625",
+      "revisions": [],
+      "selectedVersion": 1
+    },
+    {
+      "id": "fox-shush",
+      "caption": "嘘",
+      "prompt": "Original animation sprite sheet: FOUR columns THREE rows of12 equal SQUARE cells, landscape4:3, 1448x1086. OPAQUE WHITE background, no text/borders/grid. IMPORTANT EXACT ROW REGISTRATION: cell size362; row1 head top y50 body bottom y280, row2 head top y412 body bottom y642, row3 head top y774 body bottom y1004. Do NOT compress row spacing. Each cell same head/body size and anchor, x70..292, minimum80px white bottom margin. Entire ears/fingers/paws within upper78% of EACH cell. Fixed camera, lighting, shoulders. Last cell EXACT first pose geometry/expression. All12 are consecutive articulated poses of ONE reaction, not12different emojis, no hearts/particles. Peak expression in cells7 AND8, return begins9. No famous IP, logo or real celebrity likeness. Matte smooth sculpted russet/orange CLAY fox, cream muzzle, pointed ears. ONE ordinary small tapered paw to muzzle, no human fingers. Chest-up, hush/be quiet gesture with serious quiet attentive expression. SAME right hand/paw/wing on VIEWER LEFT never swaps.1 hand/paw already visible HIGH at collarbone, full outline above y255 in cell;2 eyes look cautiously sideways;3 lips begin pursing;4 SAME hand/paw rises toward chin;5 rises toward mouth;6 tip vertical in front of center lips/beak;7/8 PEAK SAME hand/paw/wing tip held vertical touching front of lips/beak, quiet narrowed eyes, mouth visibly pursed not smiling.9 tip moves slightly away;10 lowers to chin;11 returns almost collarbone;12 EXACT first geometry and hand. Only ONE moving limb, no duplication/disappearing, no fingers through face. Entire resting hand/paw above y255 for caption safety.",
+      "masterFile": "masters/fox-shush.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-dbb326ab-a6dd-4b1e-8fec-9815d0b6ee80.png",
+      "sha256": "639327dedcc9deb8f0eef62c2a0dbfb178cf7e4eb79aef02d31892b8d44e1155",
+      "originalSha256": "669c61a5484fd298676c684f6cecb6860c04f7536d3428d2b8228716f37f7848",
+      "revisions": [
+        {
+          "id": "fox-shush",
+          "version": 2,
+          "prompt": "Edit this12cell4x3 sheet to true smooth MATTE CLAY fox, remove all fur/hair fibers, preserve orange/cream colors and same original character and12consecutive hush poses. Also raise resting paw in cells1,2,3,11,12 UP45pixels to directly BELOW CHIN, full paw outline and wrist above y250 of each362cell, not near bottom. Transition4/5/9/10 toward mouth with same side; peak6/7/8 stays hush. ONE same right paw viewerLEFT. Rounded single tapered clay paw, not human finger digits. Head/body size and registration fixed, cell12 matches1. OPAQUE WHITE background4columns3rows, no text/grid.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-d145def5-d804-4f50-bb13-d66aa43c0226.png",
+          "referencedMasterAtGeneration": "rejected/fox-shush-v1.png",
+          "sha256": "639327dedcc9deb8f0eef62c2a0dbfb178cf7e4eb79aef02d31892b8d44e1155"
+        }
+      ],
+      "selectedVersion": 2
+    },
+    {
+      "id": "man-shush",
+      "caption": "嘘",
+      "prompt": "Original animation sprite sheet: FOUR columns THREE rows of12 equal SQUARE cells, landscape4:3, 1448x1086. OPAQUE WHITE background, no text/borders/grid. IMPORTANT EXACT ROW REGISTRATION: cell size362; row1 head top y50 body bottom y280, row2 head top y412 body bottom y642, row3 head top y774 body bottom y1004. Do NOT compress row spacing. Each cell same head/body size and anchor, x70..292, minimum80px white bottom margin. Entire ears/fingers/paws within upper78% of EACH cell. Fixed camera, lighting, shoulders. Last cell EXACT first pose geometry/expression. All12 are consecutive articulated poses of ONE reaction, not12different emojis, no hearts/particles. Peak expression in cells7 AND8, return begins9. No famous IP, logo or real celebrity likeness. Photoreal fictional original handsome CHINESE ADULT MAN age29, short side-parted black hair, plain charcoal T-shirt, distinct original face. ONE right hand, only index finger extended, remaining fingers naturally curled, exactly five fingers. Chest-up, hush/be quiet gesture with serious quiet attentive expression. SAME right hand/paw/wing on VIEWER LEFT never swaps.1 hand/paw already visible HIGH at collarbone, full outline above y255 in cell;2 eyes look cautiously sideways;3 lips begin pursing;4 SAME hand/paw rises toward chin;5 rises toward mouth;6 tip vertical in front of center lips/beak;7/8 PEAK SAME hand/paw/wing tip held vertical touching front of lips/beak, quiet narrowed eyes, mouth visibly pursed not smiling.9 tip moves slightly away;10 lowers to chin;11 returns almost collarbone;12 EXACT first geometry and hand. Only ONE moving limb, no duplication/disappearing, no fingers through face. Entire resting hand/paw above y255 for caption safety.",
+      "masterFile": "masters/man-shush.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-54a604ad-e201-4178-be41-9ff7ea2613fb.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "704cb70cc7e6b17a1f0e231496cfda1c1f6d4c869483335f58e2b50cf98f82ab",
+      "originalSha256": "bac3e454e86829b32b08ab31c3661ee4d6ec669dc76fa3ca0a65cb634e305ae0",
+      "revisions": [
+        {
+          "id": "man-shush",
+          "version": 2,
+          "prompt": "Edit only resting hand height in this4column3row12pose sprite sheet. Same fictional original Chinese adult man, charcoal T-shirt, same face hair lighting and scale. In cells1,2,11,12 raise SAME right hand on viewerLEFT by55px within each362cell, index fingertip at lower cheek height, curled fingers and entire palm/wrist clearly visible ABOVE y250. Hand must not be cropped by eventual bottom caption. Preserve ONE index extended and other four fingers naturally curled, no extra fingers. Transitional cells3/4/9/10 connect naturally to high resting hand. Peak5/6/7/8 at lips unchanged. Last12 same1position and expression. OPAQUE WHITE canvas,no text/grid, maintain4x3equal square cells.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-30f38d04-5646-4d4c-8333-79f54b619cce.png",
+          "referencedMasterAtGeneration": "rejected/man-shush-v1.png",
+          "sha256": "704cb70cc7e6b17a1f0e231496cfda1c1f6d4c869483335f58e2b50cf98f82ab"
+        }
+      ],
+      "selectedVersion": 2
+    }
+  ],
+  "rejected": [
+    {
+      "file": "rejected/corgi-hungry-v1.png",
+      "sha256": "236a52f728157744bcb4f2517550b7f1c6d346640e0a7d9c9656e83f96331155"
+    },
+    {
+      "file": "rejected/corgi-hungry-v2.png",
+      "sha256": "38747c4fa11631a6b400a51738118e56c323e96563ee25aafe21ab5795d75f70"
+    },
+    {
+      "file": "rejected/fox-shush-v1.png",
+      "sha256": "669c61a5484fd298676c684f6cecb6860c04f7536d3428d2b8228716f37f7848"
+    },
+    {
+      "file": "rejected/gingercat-shush-v1.png",
+      "sha256": "50e486c4b36bb8e40a85fcc8fd8a3cec8b96f1aa946f283b59529cf69d178183"
+    },
+    {
+      "file": "rejected/gingercat-shush-v2.png",
+      "sha256": "2f1326a7910709034db060c36a7bd8b376d848b4fb45a8347ea06af4d4104147"
+    },
+    {
+      "file": "rejected/gingercat-shush-v3.png",
+      "sha256": "9470d01ad9c2790f15da486053102b172a806c7b926d776df620d3701a20631f"
+    },
+    {
+      "file": "rejected/hungry-v1-evidence.png",
+      "sha256": "9afc6eb1c0788e7f3466ab9235199bf4b60a3ad3477406129850f247fb8cd0ff"
+    },
+    {
+      "file": "rejected/man-shush-v1.png",
+      "sha256": "bac3e454e86829b32b08ab31c3661ee4d6ec669dc76fa3ca0a65cb634e305ae0"
+    },
+    {
+      "file": "rejected/seal-weary-v1.png",
+      "sha256": "5273ea4ad98de8c6bb511d2966999708eb57c10e60919dbb2dd872552a1d5943"
+    },
+    {
+      "file": "rejected/shush-v1-evidence.png",
+      "sha256": "cbd00243bc42b8f06ff41d890471d034f5e41796d0e253ff6386e85aa8966556"
+    },
+    {
+      "file": "rejected/shush-v2-evidence.png",
+      "sha256": "aced9c2d5bd17c565f421aea1f618d0b1e7d408ce0efa89e5db1b7fefda683a0"
+    },
+    {
+      "file": "rejected/shush-v3-evidence.png",
+      "sha256": "97c42c5bec6da6925e97671194506fa92d8c2ebd985efa16ba437316d286dd2b"
+    },
+    {
+      "file": "rejected/weary-v1-evidence.png",
+      "sha256": "5ce2975137dc1e96abed45ee528c11b7e065f05acf2f2ea34aab52f46eac783f"
+    }
+  ]
+}

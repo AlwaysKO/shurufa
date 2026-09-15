@@ -1,0 +1,31 @@
+{
+  "keyword": "摸鱼",
+  "items": [
+    {
+      "id": "scene-rich-06-slack",
+      "keyword": "摸鱼",
+      "file": "摸鱼/scene-rich-06-slack.gif",
+      "thumbnail": "摸鱼/scene-rich-06-slack.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-06/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-06/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-06/gifs/scene-rich-06-slack.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-06/thumbnails/scene-rich-06-slack.webp",
+      "batch": "scene-rich-06",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "c9aa1206874bf5d98b7e870cd3fae21ec64e299cd887685605442a75c5a512c6",
+      "thumbnailSha256": "50d4155049460abfcf8650dad6553bf6f0fe99cf9a456a8b6f13cb5a9f53438b",
+      "bytes": 63219,
+      "width": 240,
+      "height": 240,
+      "frames": 20,
+      "durationMs": 4000,
+      "style": "hand-drawn",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

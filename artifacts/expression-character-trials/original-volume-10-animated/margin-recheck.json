@@ -1,0 +1,80 @@
+{
+  "method": "真实GIF，x3..236 y2..199，alpha>128且最小RGB<150的首个像素y；仅局部诊断，不替代视觉审查",
+  "results": [
+    {
+      "id": "seal-weary",
+      "frames": [
+        {
+          "page": 0,
+          "top": 32
+        },
+        {
+          "page": 5,
+          "top": 23
+        },
+        {
+          "page": 10,
+          "top": 23
+        },
+        {
+          "page": 13,
+          "top": 20
+        },
+        {
+          "page": 19,
+          "top": 20
+        }
+      ]
+    },
+    {
+      "id": "corgi-hungry",
+      "frames": [
+        {
+          "page": 0,
+          "top": 27
+        },
+        {
+          "page": 5,
+          "top": 25
+        },
+        {
+          "page": 10,
+          "top": 26
+        },
+        {
+          "page": 13,
+          "top": 19
+        },
+        {
+          "page": 19,
+          "top": 19
+        }
+      ]
+    },
+    {
+      "id": "gingercat-shush",
+      "frames": [
+        {
+          "page": 0,
+          "top": 42
+        },
+        {
+          "page": 5,
+          "top": 43
+        },
+        {
+          "page": 10,
+          "top": 41
+        },
+        {
+          "page": 13,
+          "top": 25
+        },
+        {
+          "page": 19,
+          "top": 23
+        }
+      ]
+    }
+  ]
+}

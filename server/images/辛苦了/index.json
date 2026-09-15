@@ -1,0 +1,31 @@
+{
+  "keyword": "辛苦了",
+  "items": [
+    {
+      "id": "scene-rich-09-comfort",
+      "keyword": "辛苦了",
+      "file": "辛苦了/scene-rich-09-comfort.gif",
+      "thumbnail": "辛苦了/scene-rich-09-comfort.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-09/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-09/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-09/gifs/scene-rich-09-comfort.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-09/thumbnails/scene-rich-09-comfort.webp",
+      "batch": "scene-rich-09",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "5d18b365466228d924bd6e58856cf49af82af5ccbfbb742003f28e391bdd68e0",
+      "thumbnailSha256": "d6936d7e1ee1ceb0436b690cf6e5bec50c32492b9b201941dfae2a6ab3b24033",
+      "bytes": 88564,
+      "width": 240,
+      "height": 240,
+      "frames": 20,
+      "durationMs": 4000,
+      "style": "hand-drawn",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

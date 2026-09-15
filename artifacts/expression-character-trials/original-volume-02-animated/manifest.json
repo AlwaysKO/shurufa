@@ -1,0 +1,199 @@
+{
+  "created": "2026-09-12",
+  "sourceType": "ai-original",
+  "status": "trial-only",
+  "publicationAllowed": false,
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "items": [
+    {
+      "id": "siamese-curious",
+      "caption": "好奇",
+      "prompt": "Professional 12-frame animation sprite atlas. EXACTLY4 columns3 rows equal SQUARE cells, total4:3. White OPAQUE background #ffffff, no transparency no lines no numbers no words. Stable original character, identical camera/scale/torso in all12 cells. HEAD AND SHOULDERS only, leave lower25% each cell totally white for caption. Critical grid registration: each row occupies exactly1/3 canvas height. Tops relative global y=5%,38.333%,71.667%; bust bottoms=25%,58.333%,91.667%. Centers x12.5%,37.5%,62.5%,87.5%. SAME relative head/bust placement in every cell, no row drift. Pose12 MUST match pose1 size/position/silhouette/expression for loop. Genuine facial acting changes at least4 real distinct poses, not zooms or copies. Subtle progressive motion, return9-12. Photorealistic original Siamese cat small head-and-shoulder bust, stable ears, no paws. Acting in order1-12: neutral attention; eyes glance sideways; inner brow rises; eyes turn back as if noticing something; mouth parts a little; head tilts2degrees; head tilts5degrees with curious concentrated gaze; KEY curiosity with one raised brow and slight head tilt; mouth begins closing and tilt decreases; head near upright; brows relax; exact neutral as1. Do NOT turn into surprise or wide open mouth.",
+      "masterFile": "masters/siamese-curious.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-07d6bed1-d34e-4c77-81e2-5557f6cb1389.png",
+      "sha256": "8e150423b2e12178bf9804adb417df21f1943d559eb02436605055717d55e115"
+    },
+    {
+      "id": "giraffe-curious",
+      "caption": "好奇",
+      "prompt": "Professional 12-frame animation sprite atlas. EXACTLY4 columns3 rows equal SQUARE cells, total4:3. White OPAQUE background #ffffff, no transparency no lines no numbers no words. Stable original character, identical camera/scale/torso in all12 cells. HEAD AND SHOULDERS only, leave lower25% each cell totally white for caption. Critical grid registration: each row occupies exactly1/3 canvas height. Tops relative global y=5%,38.333%,71.667%; bust bottoms=25%,58.333%,91.667%. Centers x12.5%,37.5%,62.5%,87.5%. SAME relative head/bust placement in every cell, no row drift. Pose12 MUST match pose1 size/position/silhouette/expression for loop. Genuine facial acting changes at least4 real distinct poses, not zooms or copies. Subtle progressive motion, return9-12. Original minimalist BLACK INK giraffe short-neck bust, two small ossicones, compact round muzzle, tiny expressive eyes, no limbs; no existing cartoon resemblance. Acting in order1-12: neutral attention; eyes glance sideways; inner brow rises; eyes turn back as if noticing something; mouth parts a little; head tilts2degrees; head tilts5degrees with curious concentrated gaze; KEY curiosity with one raised brow and slight head tilt; mouth begins closing and tilt decreases; head near upright; brows relax; exact neutral as1. Do NOT turn into surprise or wide open mouth.",
+      "masterFile": "masters/giraffe-curious.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-e82ffe1d-6ec5-4bac-b1eb-0916a291013d.png",
+      "sha256": "143ae0a6788aab4d2adc8aa554a0063813fdc6aacb976f18601ddd0702db5c8d"
+    },
+    {
+      "id": "raccoon-curious",
+      "caption": "好奇",
+      "prompt": "Professional 12-frame animation sprite atlas. EXACTLY4 columns3 rows equal SQUARE cells, total4:3. White OPAQUE background #ffffff, no transparency no lines no numbers no words. Stable original character, identical camera/scale/torso in all12 cells. HEAD AND SHOULDERS only, leave lower25% each cell totally white for caption. Critical grid registration: each row occupies exactly1/3 canvas height. Tops relative global y=5%,38.333%,71.667%; bust bottoms=25%,58.333%,91.667%. Centers x12.5%,37.5%,62.5%,87.5%. SAME relative head/bust placement in every cell, no row drift. Pose12 MUST match pose1 size/position/silhouette/expression for loop. Genuine facial acting changes at least4 real distinct poses, not zooms or copies. Subtle progressive motion, return9-12. Original tactile clay raccoon bust, gray fur, dark eye mask fixed pattern, no paws. Acting in order1-12: neutral attention; eyes glance sideways; inner brow rises; eyes turn back as if noticing something; mouth parts a little; head tilts2degrees; head tilts5degrees with curious concentrated gaze; KEY curiosity with one raised brow and slight head tilt; mouth begins closing and tilt decreases; head near upright; brows relax; exact neutral as1. Do NOT turn into surprise or wide open mouth.",
+      "masterFile": "masters/raccoon-curious.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-22b6d4c3-8eee-435e-9434-c89e9d0282c0.png",
+      "sha256": "822cee70a5bd942c586a79bd9fc46ba1caa1aaa265ad0dc04deff647236bf94f",
+      "originalSha256": "be7dca711a437d0d1a948aa157ad04ef84a31a6e74b4ba3b60359e14ff5c315c",
+      "revisions": [
+        {
+          "id": "raccoon-curious",
+          "prompt": "Edit exact4x3 raccoon animation sprite sheet. Fix loop: bottom-right FRAME12 must exactly match top-left FRAME1 in head size, face proportions, eye mask, pupil positions, neutral mouth and relative tile position. Bottom row currently sits about15pixels too high in its square cells: move ALL FOUR bottom row raccoons DOWN15pixels. Keep top/middle rows unchanged and all genuine curious tilted-head middle poses. Same clay raccoon, opaque white background, no text or grid. Equal square cells overall4:3. Head/bust positions should overlay first/last. Do not change camera or scale.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-4a4d9d8c-a1c6-4fe5-85fe-2ddaae8214b1.png",
+          "sha256": "822cee70a5bd942c586a79bd9fc46ba1caa1aaa265ad0dc04deff647236bf94f"
+        }
+      ]
+    },
+    {
+      "id": "man-curious",
+      "caption": "好奇",
+      "prompt": "Professional 12-frame animation sprite atlas. EXACTLY4 columns3 rows equal SQUARE cells, total4:3. White OPAQUE background #ffffff, no transparency no lines no numbers no words. Stable original character, identical camera/scale/torso in all12 cells. HEAD AND SHOULDERS only, leave lower25% each cell totally white for caption. Critical grid registration: each row occupies exactly1/3 canvas height. Tops relative global y=5%,38.333%,71.667%; bust bottoms=25%,58.333%,91.667%. Centers x12.5%,37.5%,62.5%,87.5%. SAME relative head/bust placement in every cell, no row drift. Pose12 MUST match pose1 size/position/silhouette/expression for loop. Genuine facial acting changes at least4 real distinct poses, not zooms or copies. Subtle progressive motion, return9-12. Photoreal fictional ORIGINAL handsome Chinese adult male age29, short cropped black hair, beige crewneck, distinctive fictional face, not a celebrity, hands out of frame. Acting in order1-12: neutral attention; eyes glance sideways; inner brow rises; eyes turn back as if noticing something; mouth parts a little; head tilts2degrees; head tilts5degrees with curious concentrated gaze; KEY curiosity with one raised brow and slight head tilt; mouth begins closing and tilt decreases; head near upright; brows relax; exact neutral as1. Do NOT turn into surprise or wide open mouth.",
+      "masterFile": "masters/man-curious.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-52d6d6a4-1978-439c-8908-d7d2e5217a73.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "3a03b459d1c5ed727b47032daf6c0b32a4480acf3fd0eba5a086f7c5d1eefe21"
+    },
+    {
+      "id": "tuxedo-angry",
+      "caption": "生气",
+      "prompt": "Professional 12-frame animation sprite atlas. EXACTLY4 columns3 rows equal SQUARE cells, total4:3. White OPAQUE background #ffffff, no transparency no lines no numbers no words. Stable original character, identical camera/scale/torso in all12 cells. HEAD AND SHOULDERS only, leave lower25% each cell totally white for caption. Critical grid registration: each row occupies exactly1/3 canvas height. Tops relative global y=5%,38.333%,71.667%; bust bottoms=25%,58.333%,91.667%. Centers x12.5%,37.5%,62.5%,87.5%. SAME relative head/bust placement in every cell, no row drift. Pose12 MUST match pose1 size/position/silhouette/expression for loop. Genuine facial acting changes at least4 real distinct poses, not zooms or copies. Subtle progressive motion, return9-12. Photorealistic original black-and-white tuxedo cat bust, fixed white chin markings, stable ears, no paws; natural cat expression not human lips. Acting order1-12: neutral; gaze fixes straight ahead; brows lower; eyelids narrow; mouth tightens; nose/muzzle wrinkles a little; chin leans VERY slightly forward; KEY annoyed angry glare with compressed mouth not shouting; tension eases slightly; brows begin release; near neutral; exact neutral as1. No steam/tears/props, no violent actions, no single image swelling.",
+      "masterFile": "masters/tuxedo-angry.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-b83ca9ec-abd6-46a0-a311-6d1650ade699.png",
+      "sha256": "d5a6696cdaef89befbb1921c95b5bc22a909c97c3c022548beef0412523a4f1a"
+    },
+    {
+      "id": "puffer-angry",
+      "caption": "生气",
+      "prompt": "Professional 12-frame animation sprite atlas. EXACTLY4 columns3 rows equal SQUARE cells, total4:3. White OPAQUE background #ffffff, no transparency no lines no numbers no words. Stable original character, identical camera/scale/torso in all12 cells. HEAD AND SHOULDERS only, leave lower25% each cell totally white for caption. Critical grid registration: each row occupies exactly1/3 canvas height. Tops relative global y=5%,38.333%,71.667%; bust bottoms=25%,58.333%,91.667%. Centers x12.5%,37.5%,62.5%,87.5%. SAME relative head/bust placement in every cell, no row drift. Pose12 MUST match pose1 size/position/silhouette/expression for loop. Genuine facial acting changes at least4 real distinct poses, not zooms or copies. Subtle progressive motion, return9-12. Original minimalist BLACK INK pufferfish round bust, small fixed spikes all around, expressive brows/eyelids/tiny mouth, no giant swelling or size changes; no famous IP. Acting order1-12: neutral; gaze fixes straight ahead; brows lower; eyelids narrow; mouth tightens; nose/muzzle wrinkles a little; chin leans VERY slightly forward; KEY annoyed angry glare with compressed mouth not shouting; tension eases slightly; brows begin release; near neutral; exact neutral as1. No steam/tears/props, no violent actions, no single image swelling.",
+      "masterFile": "masters/puffer-angry.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-cacef07f-d7df-4859-b52a-1da0cd6880eb.png",
+      "sha256": "974a93cea1508c2328585f70a308609fd80eca4fed0544eb003853f46cc9737a"
+    },
+    {
+      "id": "calf-angry",
+      "caption": "生气",
+      "prompt": "Professional 12-frame animation sprite atlas. EXACTLY4 columns3 rows equal SQUARE cells, total4:3. White OPAQUE background #ffffff, no transparency no lines no numbers no words. Stable original character, identical camera/scale/torso in all12 cells. HEAD AND SHOULDERS only, leave lower25% each cell totally white for caption. Critical grid registration: each row occupies exactly1/3 canvas height. Tops relative global y=5%,38.333%,71.667%; bust bottoms=25%,58.333%,91.667%. Centers x12.5%,37.5%,62.5%,87.5%. SAME relative head/bust placement in every cell, no row drift. Pose12 MUST match pose1 size/position/silhouette/expression for loop. Genuine facial acting changes at least4 real distinct poses, not zooms or copies. Subtle progressive motion, return9-12. Original tactile clay chestnut calf bust, two short rounded horns and two ears fixed, beige muzzle, no limbs. Acting order1-12: neutral; gaze fixes straight ahead; brows lower; eyelids narrow; mouth tightens; nose/muzzle wrinkles a little; chin leans VERY slightly forward; KEY annoyed angry glare with compressed mouth not shouting; tension eases slightly; brows begin release; near neutral; exact neutral as1. No steam/tears/props, no violent actions, no single image swelling.",
+      "masterFile": "masters/calf-angry.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-66f938b8-6367-4c59-81c5-593d69c7e3aa.png",
+      "sha256": "d95c6b012eac46b96fb34be8b441bbe75e529da247133c82dd9f99212ab2340d"
+    },
+    {
+      "id": "man-angry",
+      "caption": "生气",
+      "prompt": "Professional 12-frame animation sprite atlas. EXACTLY4 columns3 rows equal SQUARE cells, total4:3. White OPAQUE background #ffffff, no transparency no lines no numbers no words. Stable original character, identical camera/scale/torso in all12 cells. HEAD AND SHOULDERS only, leave lower25% each cell totally white for caption. Critical grid registration: each row occupies exactly1/3 canvas height. Tops relative global y=5%,38.333%,71.667%; bust bottoms=25%,58.333%,91.667%. Centers x12.5%,37.5%,62.5%,87.5%. SAME relative head/bust placement in every cell, no row drift. Pose12 MUST match pose1 size/position/silhouette/expression for loop. Genuine facial acting changes at least4 real distinct poses, not zooms or copies. Subtle progressive motion, return9-12. Photoreal fictional ORIGINAL handsome Chinese adult male age33, short tidy black hair, blue crewneck, distinct broad jaw, not a celebrity, hands out of frame. Acting order1-12: neutral; gaze fixes straight ahead; brows lower; eyelids narrow; mouth tightens; nose/muzzle wrinkles a little; chin leans VERY slightly forward; KEY annoyed angry glare with compressed mouth not shouting; tension eases slightly; brows begin release; near neutral; exact neutral as1. No steam/tears/props, no violent actions, no single image swelling.",
+      "masterFile": "masters/man-angry.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-3f968147-09bf-4ed4-bf71-4fb631e180bd.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "840de2a7c256bbc8d2d79ee27d8db97f3eba420e5f489affd87a1867683c94ca"
+    },
+    {
+      "id": "shiba-giggle",
+      "caption": "偷笑",
+      "prompt": "Professional 12-frame animation sprite atlas. EXACTLY4 columns3 rows equal SQUARE cells, total4:3. White OPAQUE background #ffffff, no transparency no lines no numbers no words. Stable original character, identical camera/scale/torso in all12 cells. HEAD AND SHOULDERS only, leave lower25% each cell totally white for caption. Critical grid registration: each row occupies exactly1/3 canvas height. Tops relative global y=5%,38.333%,71.667%; bust bottoms=25%,58.333%,91.667%. Centers x12.5%,37.5%,62.5%,87.5%. SAME relative head/bust placement in every cell, no row drift. Pose12 MUST match pose1 size/position/silhouette/expression for loop. Genuine facial acting changes at least4 real distinct poses, not zooms or copies. Subtle progressive motion, return9-12. Photorealistic original tan Shiba dog bust, cream cheeks, ears stable, no paws; canine believable mischievous facial acting. Acting order1-12: neutral; glance briefly sideways; one mouth corner starts lifting; lips press as if suppressing laughter; eyes narrow warmly; tiny closed smile leaks out; head lowers2degrees with cheek rise; KEY sly stifled amused grin eyes squinting but open; grin begins softening; head returns; mouth relaxes; exact neutral as1. Not full laugh/shock or broad open mouth, no hands or props.",
+      "masterFile": "masters/shiba-giggle.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-5959e84f-5063-4b7d-99b9-790dfe169c57.png",
+      "sha256": "7e7b809df214f61501041f768ac8e6147f943d3d9a73185eb325d4e20593a89c",
+      "originalSha256": "e162ce646cd06f428fe8ec1ad36eb14f062fffceea121db01453ff9516272f67",
+      "revisions": [
+        {
+          "id": "shiba-giggle",
+          "prompt": "Fix clipping/registration in this precise4columns3rows Shiba animation sheet. Bottom row dog's ear tips sit ABOVE their square cell top. Move ALL FOUR DOGS IN BOTTOM ROW DOWN20pixels. Match dog12 to dog1 neutral, exact same ear-tip height, head size, bust baseline RELATIVE to own square cell. Keep ears comfortably inside every cell, no cropped tips. Top and middle rows unchanged; preserve real eye-squint and suppressed grin in frames5-8. Same original dog,4x3 equal square cells total4:3, white opaque background, no text/no lines. This is positional correction only, do not enlarge or invent new facial features.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-ceecc10b-3b4c-4681-afe2-4d5144f7f202.png",
+          "sha256": "855d70d1bdec37823671a731c401e0d6a91fc2ce1edde00c388ee68a2af63733"
+        },
+        {
+          "id": "shiba-giggle",
+          "prompt": "Original photorealistic Shiba Inu dog showing secret suppressed giggle, 12 genuine facial acting frames arranged EXACTLY4columns3rows equal square tiles, full image4:3 WHITE background. Each dog is a SMALL head-and-shoulder bust surrounded by LOTS OF WHITE SPACE. Ear tips at20% from top of EACH square tile, chest bottom at70% each square, so head/bust occupies only50% tile height. DO NOT fill cells. Entire dog ears must not touch any tile edge. Stable camera and bust position same in all tiles. 1 neutral closed mouth eyes relaxed;2 eyes glance sideways;3 one mouth corner starts lifting;4 suppressing smile;5 eyes half-lidded cheeks rise;6 small mischievous grin;7 head dips gently;8 KEY sly closed-mouth stifled chuckle eyes squint but open;9 grin starts release;10 eyes relax;11 near neutral;12 exact same neutral as1. No paws no props no text no grid no IP. Ears fixed length/shape, both clearly surrounded by white margin in all12 tiles including bottom row. Strict centered tile registration and equal size, not zoom animation. No huge open mouth.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-23dd96ac-2f43-4a62-8627-3112589681e9.png",
+          "sha256": "929db06a3124de7a7b874034870aef73ee2ef20a612515bd3ba76989c5ec12ee"
+        },
+        {
+          "id": "shiba-giggle",
+          "prompt": "Make ONE precise edit to this 4-column3-row white sprite sheet: move the ENTIRE BOTTOM ROW of FOUR DOG BUSTS DOWN by30 pixels relative to the canvas. Keep their scale and shapes unchanged, and all top two rows absolutely unchanged. The bottom-row ears currently start at y760 but need y790 on this1086px high canvas; chest bottom currently y1018 should become1048. Do not crop ears or change expressions, add white space above bottom row by this shift. White canvas same4:3 dimensions, no text or grid. This makes equal362px square crops align with first row. Do NOT shift whole canvas or alter spacing of top2rows.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-33564c73-873b-46b6-ae26-7fbcc5c8b246.png",
+          "sha256": "7e7b809df214f61501041f768ac8e6147f943d3d9a73185eb325d4e20593a89c"
+        }
+      ]
+    },
+    {
+      "id": "bird-giggle",
+      "caption": "偷笑",
+      "prompt": "Professional 12-frame animation sprite atlas. EXACTLY4 columns3 rows equal SQUARE cells, total4:3. White OPAQUE background #ffffff, no transparency no lines no numbers no words. Stable original character, identical camera/scale/torso in all12 cells. HEAD AND SHOULDERS only, leave lower25% each cell totally white for caption. Critical grid registration: each row occupies exactly1/3 canvas height. Tops relative global y=5%,38.333%,71.667%; bust bottoms=25%,58.333%,91.667%. Centers x12.5%,37.5%,62.5%,87.5%. SAME relative head/bust placement in every cell, no row drift. Pose12 MUST match pose1 size/position/silhouette/expression for loop. Genuine facial acting changes at least4 real distinct poses, not zooms or copies. Subtle progressive motion, return9-12. Original minimalist BLACK INK round sparrow bust, tiny triangular beak, small oval eyes with expressive lids and brows, no tuft, no hands/wings in view; no famous cartoon resemblance. Acting order1-12: neutral; glance briefly sideways; one mouth corner starts lifting; lips press as if suppressing laughter; eyes narrow warmly; tiny closed smile leaks out; head lowers2degrees with cheek rise; KEY sly stifled amused grin eyes squinting but open; grin begins softening; head returns; mouth relaxes; exact neutral as1. Not full laugh/shock or broad open mouth, no hands or props.",
+      "masterFile": "masters/bird-giggle.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-34701299-06a8-4d5c-bd63-cd74c959f3f2.png",
+      "sha256": "41c0df8e4cd029c23b15b82125290e9b3cfbdb6c4a2731e1be3a75e02f898e73",
+      "originalSha256": "ecd6132757d01bbf203501de359ff99191252865751fed3f78e2e3c63fc8cf8b",
+      "revisions": [
+        {
+          "id": "bird-giggle",
+          "prompt": "Edit this exact4x3 black ink bird animation sheet for loop closure. Make LAST bottom-right pose EXACT SAME as FIRST top-left neutral bird, copying face outline, eye positions, tiny beak, eyebrows, shoulder silhouette and scale at same relative position within its own square cell. Current last bird cheeks/eyes differ. Panels10-11 should gently return toward that neutral; keep middle genuine suppressed-giggle expressions5-8. White background, no text/no grid,4columns3rows square cells overall4:3. No new wings, no props, no resizing or row drift.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-19561562-959c-46d6-8f65-3dbcd01ccfe0.png",
+          "sha256": "8ced0250123ba450eacdb282defec4607a80ef793c56e006ad7f063f6cb28df0"
+        },
+        {
+          "id": "bird-giggle",
+          "prompt": "Precise final loop repair of THIS 4x3 animation bird sheet. Make bottom-right cell12 an exact copy of TOP-LEFT cell1 character: eye shapes, pupil size, eyebrows, beak closed neutral, cheeks, head tufts, shoulders. Do not alter cell1. Put copied neutral character at identical relative position inside square cell12 as cell1. Move bottom row down8pixels if needed to match shoulder baselines. Preserve distinct middle expressions2-10. Cell11 should nearly match initial with tiny remaining smile. Same black ink bird style, pure opaque white background, no text no grid, exactly4columns3rows equal square tiles overall4:3.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-0c6855ea-e70d-404a-993a-2fb5da907973.png",
+          "sha256": "41c0df8e4cd029c23b15b82125290e9b3cfbdb6c4a2731e1be3a75e02f898e73"
+        }
+      ]
+    },
+    {
+      "id": "otter-giggle",
+      "caption": "偷笑",
+      "prompt": "Professional 12-frame animation sprite atlas. EXACTLY4 columns3 rows equal SQUARE cells, total4:3. White OPAQUE background #ffffff, no transparency no lines no numbers no words. Stable original character, identical camera/scale/torso in all12 cells. HEAD AND SHOULDERS only, leave lower25% each cell totally white for caption. Critical grid registration: each row occupies exactly1/3 canvas height. Tops relative global y=5%,38.333%,71.667%; bust bottoms=25%,58.333%,91.667%. Centers x12.5%,37.5%,62.5%,87.5%. SAME relative head/bust placement in every cell, no row drift. Pose12 MUST match pose1 size/position/silhouette/expression for loop. Genuine facial acting changes at least4 real distinct poses, not zooms or copies. Subtle progressive motion, return9-12. Original tactile clay tan otter bust, small round ears, whisker dots, cream muzzle, no paws. Acting order1-12: neutral; glance briefly sideways; one mouth corner starts lifting; lips press as if suppressing laughter; eyes narrow warmly; tiny closed smile leaks out; head lowers2degrees with cheek rise; KEY sly stifled amused grin eyes squinting but open; grin begins softening; head returns; mouth relaxes; exact neutral as1. Not full laugh/shock or broad open mouth, no hands or props.",
+      "masterFile": "masters/otter-giggle.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-7ef312fe-c74f-4ded-9bd4-1052c284e7d9.png",
+      "sha256": "9df7b79a85b7b7d2c8e2f3a56339ef46ed618e65a33968faad03fe983f9de60b"
+    },
+    {
+      "id": "man-giggle",
+      "caption": "偷笑",
+      "prompt": "Professional 12-frame animation sprite atlas. EXACTLY4 columns3 rows equal SQUARE cells, total4:3. White OPAQUE background #ffffff, no transparency no lines no numbers no words. Stable original character, identical camera/scale/torso in all12 cells. HEAD AND SHOULDERS only, leave lower25% each cell totally white for caption. Critical grid registration: each row occupies exactly1/3 canvas height. Tops relative global y=5%,38.333%,71.667%; bust bottoms=25%,58.333%,91.667%. Centers x12.5%,37.5%,62.5%,87.5%. SAME relative head/bust placement in every cell, no row drift. Pose12 MUST match pose1 size/position/silhouette/expression for loop. Genuine facial acting changes at least4 real distinct poses, not zooms or copies. Subtle progressive motion, return9-12. Photoreal fictional ORIGINAL handsome Chinese adult male age30, short wavy black hair, charcoal crewneck, distinct fictional face, not celebrity, hands out of frame. Acting order1-12: neutral; glance briefly sideways; one mouth corner starts lifting; lips press as if suppressing laughter; eyes narrow warmly; tiny closed smile leaks out; head lowers2degrees with cheek rise; KEY sly stifled amused grin eyes squinting but open; grin begins softening; head returns; mouth relaxes; exact neutral as1. Not full laugh/shock or broad open mouth, no hands or props.",
+      "masterFile": "masters/man-giggle.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-e1308e57-3920-4974-a1f7-a5da46f638ee.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "38bb639b633aac4edb88d0879abdc9f35f26c4ed3832f191a1a076f320e67e71",
+      "originalSha256": "77d19b893ebc3eb2b413558bee0e64ac75eebf45be2b90ed0617d45c003a1b5f",
+      "revisions": [
+        {
+          "id": "man-giggle",
+          "prompt": "Fix loop closure in this EXACT4x3 twelve-pose original fictional adult Chinese male sprite sheet. Bottom-right panel12 MUST match top-left panel1 exactly: same neutral lips, eyes, face size/proportions, hair silhouette and within-square-cell position/shoulder line. Panel11 almost that neutral, panel10 slight remaining smile, panel9 more smile, progressive recovery. Keep panels1-8 unchanged genuine stifled laugh acting. Same fictional original man not real celebrity, gray shirt, white background, no text or grid. Exactly4columns3rows equal square cells total4:3. Do not enlarge/reframe or change identity.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-58ffe1fa-4e08-4d86-97f6-75dddd769e97.png",
+          "sha256": "38bb639b633aac4edb88d0879abdc9f35f26c4ed3832f191a1a076f320e67e71"
+        }
+      ]
+    }
+  ],
+  "rejectedFiles": [
+    {
+      "file": "rejected/bird-giggle-v1-loop.png",
+      "sha256": "ecd6132757d01bbf203501de359ff99191252865751fed3f78e2e3c63fc8cf8b"
+    },
+    {
+      "file": "rejected/bird-giggle-v2-loop.png",
+      "sha256": "8ced0250123ba450eacdb282defec4607a80ef793c56e006ad7f063f6cb28df0"
+    },
+    {
+      "file": "rejected/man-giggle-v1-loop.png",
+      "sha256": "77d19b893ebc3eb2b413558bee0e64ac75eebf45be2b90ed0617d45c003a1b5f"
+    },
+    {
+      "file": "rejected/raccoon-curious-v1-loop.png",
+      "sha256": "be7dca711a437d0d1a948aa157ad04ef84a31a6e74b4ba3b60359e14ff5c315c"
+    },
+    {
+      "file": "rejected/shiba-giggle-v1-ear-clipping.png",
+      "sha256": "e162ce646cd06f428fe8ec1ad36eb14f062fffceea121db01453ff9516272f67"
+    },
+    {
+      "file": "rejected/shiba-giggle-v2-ear-clipping.png",
+      "sha256": "855d70d1bdec37823671a731c401e0d6a91fc2ce1edde00c388ee68a2af63733"
+    },
+    {
+      "file": "rejected/shiba-giggle-v3-vertical-drift.png",
+      "sha256": "929db06a3124de7a7b874034870aef73ee2ef20a612515bd3ba76989c5ec12ee"
+    }
+  ]
+}

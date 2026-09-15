@@ -1,0 +1,31 @@
+{
+  "keyword": "什么事",
+  "items": [
+    {
+      "id": "scene-rich-02-what",
+      "keyword": "什么事",
+      "file": "什么事/scene-rich-02-what.gif",
+      "thumbnail": "什么事/scene-rich-02-what.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-02/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-02/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-02/gifs/scene-rich-02-what.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-02/thumbnails/scene-rich-02-what.webp",
+      "batch": "scene-rich-02",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "e54a7fa2980214ab1b915c0298407d428b59cd05803cac66586bc3c7b21aefc3",
+      "thumbnailSha256": "6a5ef5632255cc82476bd751660b11e62fbfb948cb5f18779c37679f8a56c613",
+      "bytes": 89116,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "durationMs": 1600,
+      "style": "hand-drawn",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

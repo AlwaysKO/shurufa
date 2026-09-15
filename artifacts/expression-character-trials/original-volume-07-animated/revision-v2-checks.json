@@ -1,0 +1,22 @@
+[
+  {
+    "id": "retriever-encourage",
+    "pass": false,
+    "error": "Error: GIF审计失败：[{\"id\":\"retriever-encourage\",\"field\":\"loopClosure\",\"expected\":0.2505208333333333,\"actual\":0.27765625,\"message\":\"样板 retriever-encourage 跨循环边界的感知差异显著高于内部相邻帧\"}]"
+  },
+  {
+    "id": "frog-encourage",
+    "pass": true,
+    "bytes": 133532
+  },
+  {
+    "id": "bear-encourage",
+    "pass": false,
+    "error": "Error: GIF审计失败：[{\"id\":\"bear-encourage\",\"field\":\"loopClosure\",\"expected\":0.2930989583333333,\"actual\":0.3273611111111111,\"message\":\"样板 bear-encourage 跨循环边界的感知差异显著高于内部相邻帧\"}]"
+  },
+  {
+    "id": "man-encourage",
+    "pass": true,
+    "bytes": 85072
+  }
+]

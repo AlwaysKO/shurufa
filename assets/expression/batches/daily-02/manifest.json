@@ -1,0 +1,1541 @@
+{
+  "version": "2026.09.08.daily-02",
+  "status": "pending-visual-review",
+  "keywords": [
+    "哈哈",
+    "加油",
+    "收到",
+    "可以",
+    "再见"
+  ],
+  "items": [
+    {
+      "id": "haha-dumpling-giggle",
+      "keyword": "哈哈",
+      "text": "哈哈",
+      "style": "original-character",
+      "direction": "core-performance",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: A completely original cream rice-dumpling creature with orange knotted topknot, floppy orange-tipped side tufts and small orange scarf, warm gouache sticker. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. holds one paw near mouth suppressing a smile; 2. eyes squeeze shut and mouth opens laughing; 3. leans back with both paws holding belly; 4. bends forward laughing with a single happy tear. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "holds one paw near mouth suppressing a smile",
+        "eyes squeeze shut and mouth opens laughing",
+        "leans back with both paws holding belly",
+        "bends forward laughing with a single happy tear"
+      ],
+      "motionPreset": "laugh",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/haha-dumpling-giggle.png",
+      "poseFiles": [
+        "poses/haha-dumpling-giggle/pose-01.png",
+        "poses/haha-dumpling-giggle/pose-02.png",
+        "poses/haha-dumpling-giggle/pose-03.png",
+        "poses/haha-dumpling-giggle/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-db2c3be2-379b-4ded-98ba-d378fabcb2ef.png",
+        "masterSha256": "4c6e255b9b8a6e3db5f701f1b30d5d9a6f1b139d938562c3a7149c76b916d19e"
+      }
+    },
+    {
+      "id": "haha-redpanda-laugh",
+      "keyword": "哈哈",
+      "text": "哈哈",
+      "style": "ai-original-pet",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original fluffy rust red panda with cream cheeks and striped tail, warm detailed animal sticker. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. smirks behind one paw; 2. tilts head back mouth open laughing; 3. holds round tummy with both paws; 4. crouches and slaps one paw on its own knee laughing. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "smirks behind one paw",
+        "tilts head back mouth open laughing",
+        "holds round tummy with both paws",
+        "crouches and slaps one paw on its own knee laughing"
+      ],
+      "motionPreset": "laugh",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/haha-redpanda-laugh.png",
+      "poseFiles": [
+        "poses/haha-redpanda-laugh/pose-01.png",
+        "poses/haha-redpanda-laugh/pose-02.png",
+        "poses/haha-redpanda-laugh/pose-03.png",
+        "poses/haha-redpanda-laugh/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-a5a3b680-e7b6-4fd9-9dda-b4cadb4f59a5.png",
+        "masterSha256": "9ee36b63bd289eca86d1dd2e55c84a18fbd1b48a0494df0b1f3d2122854a8761"
+      }
+    },
+    {
+      "id": "haha-office-friend",
+      "keyword": "哈哈",
+      "text": "哈哈",
+      "style": "original-life-scene",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original adult woman with short wavy black hair and mustard cardigan, waist-up painterly everyday person. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. presses lips to suppress laughter; 2. covers mouth with one hand eyes smiling; 3. leans back laughing with hands on belly; 4. leans forward pointing playfully and wipes one happy tear. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "presses lips to suppress laughter",
+        "covers mouth with one hand eyes smiling",
+        "leans back laughing with hands on belly",
+        "leans forward pointing playfully and wipes one happy tear"
+      ],
+      "motionPreset": "laugh",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/haha-office-friend.png",
+      "poseFiles": [
+        "poses/haha-office-friend/pose-01.png",
+        "poses/haha-office-friend/pose-02.png",
+        "poses/haha-office-friend/pose-03.png",
+        "poses/haha-office-friend/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-16b22eca-2715-4d9d-8e85-f60eff9d9f3f.png",
+        "masterSha256": "5dd9243024ef0f7d4eb70b49b3ccc2cd3657cec0f478d51c4bd1aa9fbd9d7c6f"
+      }
+    },
+    {
+      "id": "haha-bubble-burst",
+      "keyword": "哈哈",
+      "text": "哈哈",
+      "style": "kinetic-typography",
+      "direction": "kinetic-type",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: Original bright coral and turquoise rounded abstract laughter bubbles surrounding a large EMPTY center for later text, glossy dimensional paper and jelly forms. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. bubbles gathered into a compact asymmetric oval ring; 2. one side swells as bubbles squash on opposite side; 3. ring bursts outward into a few big rounded ribbons; 4. ribbons bend back into a lively open ring. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "bubbles gathered into a compact asymmetric oval ring",
+        "one side swells as bubbles squash on opposite side",
+        "ring bursts outward into a few big rounded ribbons",
+        "ribbons bend back into a lively open ring"
+      ],
+      "motionPreset": "laugh",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/haha-bubble-burst.png",
+      "poseFiles": [
+        "poses/haha-bubble-burst/pose-01.png",
+        "poses/haha-bubble-burst/pose-02.png",
+        "poses/haha-bubble-burst/pose-03.png",
+        "poses/haha-bubble-burst/pose-04.png"
+      ],
+      "textPlacement": "center",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-42b5b25f-6587-414a-9442-902ff1e685c9.png",
+        "masterSha256": "a7e3faa31f088ec758f8f96a48e82ca6881b7c40df35bad00371a63040e1336f"
+      }
+    },
+    {
+      "id": "haha-plush-llama",
+      "keyword": "哈哈",
+      "text": "哈哈",
+      "style": "3d-plush",
+      "direction": "pet-or-person",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original oatmeal plush llama with teal knitted neckerchief and soft stitched features. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. tilts long neck with a sly grin; 2. closes eyes and opens mouth in delight; 3. folds forelegs over belly leaning back; 4. bows neck down with forelegs wide giggling. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "tilts long neck with a sly grin",
+        "closes eyes and opens mouth in delight",
+        "folds forelegs over belly leaning back",
+        "bows neck down with forelegs wide giggling"
+      ],
+      "motionPreset": "laugh",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/haha-plush-llama.png",
+      "poseFiles": [
+        "poses/haha-plush-llama/pose-01.png",
+        "poses/haha-plush-llama/pose-02.png",
+        "poses/haha-plush-llama/pose-03.png",
+        "poses/haha-plush-llama/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-520fdc84-d85d-4bba-af19-e79923210409.png",
+        "masterSha256": "e2f503d551a2abfdfeb305b8fb33d3d530e9f216ba7341c046c7dd3132dee1b2"
+      }
+    },
+    {
+      "id": "haha-ink-frog",
+      "keyword": "哈哈",
+      "text": "哈哈",
+      "style": "hand-drawn",
+      "direction": "pet-or-person",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original green frog in bold black ink and flat watercolor with long skinny limbs, no clothes. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. grins with cheeks puffed; 2. opens huge smiling mouth holding knees; 3. leans backward belly up with elbows bent; 4. sits forward wiping a laughing tear with webbed hand. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "grins with cheeks puffed",
+        "opens huge smiling mouth holding knees",
+        "leans backward belly up with elbows bent",
+        "sits forward wiping a laughing tear with webbed hand"
+      ],
+      "motionPreset": "laugh",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/haha-ink-frog.png",
+      "poseFiles": [
+        "poses/haha-ink-frog/pose-01.png",
+        "poses/haha-ink-frog/pose-02.png",
+        "poses/haha-ink-frog/pose-03.png",
+        "poses/haha-ink-frog/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "poseRects": [
+        {
+          "left": 0,
+          "top": 0,
+          "width": 825,
+          "height": 610
+        },
+        {
+          "left": 825,
+          "top": 0,
+          "width": 549,
+          "height": 610
+        },
+        {
+          "left": 0,
+          "top": 610,
+          "width": 825,
+          "height": 535
+        },
+        {
+          "left": 825,
+          "top": 610,
+          "width": 549,
+          "height": 535
+        }
+      ],
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-1501fab9-d0e8-4837-bea5-7e10505d52e6.png",
+        "masterSha256": "666c73d44b9841b72a82b746f1c6790f95ffc9e9ede9ea003e391b1eba71bf55"
+      }
+    },
+    {
+      "id": "haha-person-laugh",
+      "keyword": "哈哈",
+      "text": "哈哈",
+      "style": "fictional-live-action",
+      "direction": "pet-or-person",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: A fictional adult East Asian man with a broad round face, close-cropped hair and plain burgundy shirt, natural photo-real reaction waist-up, no celebrity resemblance. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. smiles with lips closed; 2. covers mouth trying not to laugh; 3. head tilts back in full joyful laughter; 4. leans forward one hand on chest chuckling. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "smiles with lips closed",
+        "covers mouth trying not to laugh",
+        "head tilts back in full joyful laughter",
+        "leans forward one hand on chest chuckling"
+      ],
+      "motionPreset": "laugh",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/haha-person-laugh.png",
+      "poseFiles": [
+        "poses/haha-person-laugh/pose-01.png",
+        "poses/haha-person-laugh/pose-02.png",
+        "poses/haha-person-laugh/pose-03.png",
+        "poses/haha-person-laugh/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "poseRects": [
+        {
+          "left": 0,
+          "top": 0,
+          "width": 715,
+          "height": 600
+        },
+        {
+          "left": 715,
+          "top": 0,
+          "width": 607,
+          "height": 600
+        },
+        {
+          "left": 0,
+          "top": 600,
+          "width": 715,
+          "height": 590
+        },
+        {
+          "left": 715,
+          "top": 600,
+          "width": 607,
+          "height": 590
+        }
+      ],
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-5e35d372-87e3-4f96-bfb6-facf584ca00e.png",
+        "masterSha256": "47579fbea0c6b3f2f0a2032c061f4e698cf8d9251f3c4a2cb3d2a2f78923e250"
+      }
+    },
+    {
+      "id": "haha-toaster-pop",
+      "keyword": "哈哈",
+      "text": "哈哈",
+      "style": "internet-meme-grammar",
+      "direction": "pet-or-person",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original anthropomorphic small peach toaster with little feet and expressive face, blank unbranded toast slices. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. toaster grins with toast barely peeking; 2. eyes close laughing and toast jumps halfway up; 3. toast springs high and toaster bends legs with laughter; 4. toast settles at an angle as toaster wipes a happy tear with little arm. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "toaster grins with toast barely peeking",
+        "eyes close laughing and toast jumps halfway up",
+        "toast springs high and toaster bends legs with laughter",
+        "toast settles at an angle as toaster wipes a happy tear with little arm"
+      ],
+      "motionPreset": "laugh",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/haha-toaster-pop.png",
+      "poseFiles": [
+        "poses/haha-toaster-pop/pose-01.png",
+        "poses/haha-toaster-pop/pose-02.png",
+        "poses/haha-toaster-pop/pose-03.png",
+        "poses/haha-toaster-pop/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-3a4da500-f3ad-4572-a461-7b2af7d218f3.png",
+        "masterSha256": "b89b0acfac98cda7e733d7c6969f04b59265a6113e45d82b3a426675ab341fb0"
+      }
+    },
+    {
+      "id": "cheer-dumpling-pump",
+      "keyword": "加油",
+      "text": "加油",
+      "style": "original-character",
+      "direction": "core-performance",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: A completely original cream rice-dumpling creature with orange knotted topknot, floppy orange-tipped side tufts and small orange scarf, warm gouache sticker. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. holds both little fists near chest with determined eyes; 2. raises one fist above head smiling; 3. steps forward pumping both fists enthusiastically; 4. plants feet wide and gives confident thumbs up. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "holds both little fists near chest with determined eyes",
+        "raises one fist above head smiling",
+        "steps forward pumping both fists enthusiastically",
+        "plants feet wide and gives confident thumbs up"
+      ],
+      "motionPreset": "impact",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/cheer-dumpling-pump.png",
+      "poseFiles": [
+        "poses/cheer-dumpling-pump/pose-01.png",
+        "poses/cheer-dumpling-pump/pose-02.png",
+        "poses/cheer-dumpling-pump/pose-03.png",
+        "poses/cheer-dumpling-pump/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "poseRects": [
+        {
+          "left": 0,
+          "top": 0,
+          "width": 652,
+          "height": 578
+        },
+        {
+          "left": 652,
+          "top": 0,
+          "width": 660,
+          "height": 578
+        },
+        {
+          "left": 0,
+          "top": 578,
+          "width": 652,
+          "height": 621
+        },
+        {
+          "left": 652,
+          "top": 578,
+          "width": 660,
+          "height": 621
+        }
+      ],
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-590726b3-de0e-4150-a42f-8d17a87a2b13.png",
+        "masterSha256": "dd235fd1a8c59e094445c8ff26917760e48639079d29ea0f2ec203268c867d58"
+      }
+    },
+    {
+      "id": "cheer-shiba-paws",
+      "keyword": "加油",
+      "text": "加油",
+      "style": "ai-original-pet",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original cinnamon shiba dog with cream muzzle and belly, detailed fluffy fur, no clothing. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. stands alert with forepaws tucked; 2. lifts one forepaw confidently; 3. both paws punch upward with joyful open mouth; 4. lands in a steady stance tail curled and eyes bright. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "stands alert with forepaws tucked",
+        "lifts one forepaw confidently",
+        "both paws punch upward with joyful open mouth",
+        "lands in a steady stance tail curled and eyes bright"
+      ],
+      "motionPreset": "impact",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/cheer-shiba-paws.png",
+      "poseFiles": [
+        "poses/cheer-shiba-paws/pose-01.png",
+        "poses/cheer-shiba-paws/pose-02.png",
+        "poses/cheer-shiba-paws/pose-03.png",
+        "poses/cheer-shiba-paws/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "poseRects": [
+        {
+          "left": 0,
+          "top": 0,
+          "width": 637,
+          "height": 580
+        },
+        {
+          "left": 637,
+          "top": 0,
+          "width": 637,
+          "height": 580
+        },
+        {
+          "left": 0,
+          "top": 580,
+          "width": 637,
+          "height": 654
+        },
+        {
+          "left": 637,
+          "top": 580,
+          "width": 637,
+          "height": 654
+        }
+      ],
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-b62deeeb-790b-4b56-853d-61529232b800.png",
+        "masterSha256": "986ce6ca5ae08d9a796168e575cfdabf688e0efddb0741e7978f5ce68dcfadda"
+      }
+    },
+    {
+      "id": "cheer-runner-friend",
+      "keyword": "加油",
+      "text": "加油",
+      "style": "original-life-scene",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original adult woman runner with dark braided hair in plain teal athletic top, painterly waist-up and hands, no brands. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. leans forward listening with focused face; 2. makes one encouraging fist near shoulder; 3. raises both fists cheering mouth open; 4. extends one thumb forward with supportive smile. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "leans forward listening with focused face",
+        "makes one encouraging fist near shoulder",
+        "raises both fists cheering mouth open",
+        "extends one thumb forward with supportive smile"
+      ],
+      "motionPreset": "impact",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/cheer-runner-friend.png",
+      "poseFiles": [
+        "poses/cheer-runner-friend/pose-01.png",
+        "poses/cheer-runner-friend/pose-02.png",
+        "poses/cheer-runner-friend/pose-03.png",
+        "poses/cheer-runner-friend/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "poseRects": [
+        {
+          "left": 0,
+          "top": 0,
+          "width": 681,
+          "height": 615
+        },
+        {
+          "left": 681,
+          "top": 0,
+          "width": 604,
+          "height": 615
+        },
+        {
+          "left": 0,
+          "top": 615,
+          "width": 681,
+          "height": 609
+        },
+        {
+          "left": 681,
+          "top": 615,
+          "width": 604,
+          "height": 609
+        }
+      ],
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-2047edd0-091f-4039-ac92-9cdf50f8edb3.png",
+        "masterSha256": "980a3a325652857e17b1dfd2a92550ea3525b1b20c81a33dd112589a0d8a2283"
+      }
+    },
+    {
+      "id": "cheer-arrow-rise",
+      "keyword": "加油",
+      "text": "加油",
+      "style": "kinetic-typography",
+      "direction": "kinetic-type",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original dimensional orange upward arrow and bold blue rounded ribbons surrounding large EMPTY center for text, no letters or numerals. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. arrow folded low beside compact open ring; 2. arrow bends upward as ring opens; 3. arrow rises tall and ribbons sweep outward; 4. arrow curves into confident upward flourish with open center. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "arrow folded low beside compact open ring",
+        "arrow bends upward as ring opens",
+        "arrow rises tall and ribbons sweep outward",
+        "arrow curves into confident upward flourish with open center"
+      ],
+      "motionPreset": "impact",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/cheer-arrow-rise.png",
+      "poseFiles": [
+        "poses/cheer-arrow-rise/pose-01.png",
+        "poses/cheer-arrow-rise/pose-02.png",
+        "poses/cheer-arrow-rise/pose-03.png",
+        "poses/cheer-arrow-rise/pose-04.png"
+      ],
+      "textPlacement": "center",
+      "poseRects": [
+        {
+          "left": 0,
+          "top": 0,
+          "width": 610,
+          "height": 530
+        },
+        {
+          "left": 610,
+          "top": 0,
+          "width": 693,
+          "height": 530
+        },
+        {
+          "left": 0,
+          "top": 530,
+          "width": 610,
+          "height": 677
+        },
+        {
+          "left": 610,
+          "top": 530,
+          "width": 693,
+          "height": 677
+        }
+      ],
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-1428715e-587d-4044-82e0-4273fa0dd0a7.png",
+        "masterSha256": "7d3a184557bedde52833cc17fd6561fcb5f4334f6c10fb9849a15806c9d1942c"
+      }
+    },
+    {
+      "id": "cheer-clay-tiger",
+      "keyword": "加油",
+      "text": "加油",
+      "style": "3d-plush",
+      "direction": "pet-or-person",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original small clay tiger cub with irregular handmade orange stripes and turquoise wrist wraps, clearly original toy. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. squats a little with paws clenched; 2. straightens one paw up in encouragement; 3. both paws up and ears perked; 4. one paw makes thumbs up while other rests on hip. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "squats a little with paws clenched",
+        "straightens one paw up in encouragement",
+        "both paws up and ears perked",
+        "one paw makes thumbs up while other rests on hip"
+      ],
+      "motionPreset": "impact",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/cheer-clay-tiger.png",
+      "poseFiles": [
+        "poses/cheer-clay-tiger/pose-01.png",
+        "poses/cheer-clay-tiger/pose-02.png",
+        "poses/cheer-clay-tiger/pose-03.png",
+        "poses/cheer-clay-tiger/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-0de82fe2-9fb2-4147-9531-4f6b5e4773de.png",
+        "masterSha256": "17ac63572f5c014169a3fd61b46bc80c47a2b0e2fc83fc2d579e0fb064842841"
+      }
+    },
+    {
+      "id": "cheer-ink-bird",
+      "keyword": "加油",
+      "text": "加油",
+      "style": "hand-drawn",
+      "direction": "pet-or-person",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original tiny yellow songbird with long thin legs, coarse black ink lines and watercolor, no accessories. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. leans forward with wings near chest; 2. one wing pumps upward; 3. both wings spread high in cheering pose; 4. stands proudly chest out with one wing folded. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "leans forward with wings near chest",
+        "one wing pumps upward",
+        "both wings spread high in cheering pose",
+        "stands proudly chest out with one wing folded"
+      ],
+      "motionPreset": "impact",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/cheer-ink-bird.png",
+      "poseFiles": [
+        "poses/cheer-ink-bird/pose-01.png",
+        "poses/cheer-ink-bird/pose-02.png",
+        "poses/cheer-ink-bird/pose-03.png",
+        "poses/cheer-ink-bird/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-4a60c5da-73ad-453a-84e8-b8e4ecfce809.png",
+        "masterSha256": "8bc5d9b2c7985b9f6b21afb29a6b60698cfdbd0f887baa2829cb2acb012c51ef"
+      }
+    },
+    {
+      "id": "cheer-person-support",
+      "keyword": "加油",
+      "text": "加油",
+      "style": "fictional-live-action",
+      "direction": "pet-or-person",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: A fictional adult Black woman with short natural curls and plain cobalt shirt, natural photo-real supportive waist-up reaction, no celebrity resemblance. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. looks attentive with a gentle smile; 2. raises a clenched hand encouragingly; 3. both hands lift in enthusiastic cheer; 4. gives a warm forward thumbs up. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "looks attentive with a gentle smile",
+        "raises a clenched hand encouragingly",
+        "both hands lift in enthusiastic cheer",
+        "gives a warm forward thumbs up"
+      ],
+      "motionPreset": "impact",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/cheer-person-support.png",
+      "poseFiles": [
+        "poses/cheer-person-support/pose-01.png",
+        "poses/cheer-person-support/pose-02.png",
+        "poses/cheer-person-support/pose-03.png",
+        "poses/cheer-person-support/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-d6fe4221-df14-4683-a071-3757d9da970e.png",
+        "masterSha256": "36011e75eba2bf13806a6dcaf66aecaee53981defc8895151e27670196c9c1d3"
+      }
+    },
+    {
+      "id": "cheer-pencil-rocket",
+      "keyword": "加油",
+      "text": "加油",
+      "style": "internet-meme-grammar",
+      "direction": "pet-or-person",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original chunky anthropomorphic orange pencil character with rubber tip and small feet, claylike meme prop, no writing or labels. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. leans forward determined and bends knees; 2. lifts tiny arms and straightens; 3. jumps with both fists up and only a few simple motion marks; 4. lands in a confident heroic stance. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "leans forward determined and bends knees",
+        "lifts tiny arms and straightens",
+        "jumps with both fists up and only a few simple motion marks",
+        "lands in a confident heroic stance"
+      ],
+      "motionPreset": "impact",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/cheer-pencil-rocket.png",
+      "poseFiles": [
+        "poses/cheer-pencil-rocket/pose-01.png",
+        "poses/cheer-pencil-rocket/pose-02.png",
+        "poses/cheer-pencil-rocket/pose-03.png",
+        "poses/cheer-pencil-rocket/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "poseRects": [
+        {
+          "left": 0,
+          "top": 0,
+          "width": 631,
+          "height": 580
+        },
+        {
+          "left": 631,
+          "top": 0,
+          "width": 643,
+          "height": 580
+        },
+        {
+          "left": 0,
+          "top": 580,
+          "width": 631,
+          "height": 654
+        },
+        {
+          "left": 631,
+          "top": 580,
+          "width": 643,
+          "height": 654
+        }
+      ],
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-bfe30480-369a-4867-894e-2fc63c16c4d3.png",
+        "masterSha256": "e50a44aecdf01f0f56cb347f84a731c884b1cbd639d782789887310c5aafe353"
+      }
+    },
+    {
+      "id": "roger-dumpling-salute",
+      "keyword": "收到",
+      "text": "收到",
+      "style": "original-character",
+      "direction": "core-performance",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: A completely original cream rice-dumpling creature with orange knotted topknot, floppy orange-tipped side tufts and small orange scarf, warm gouache sticker. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. stands listening with paws lowered; 2. raises one paw toward forehead; 3. holds a crisp cute salute with bright eyes; 4. drops salute into a confident thumbs up. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "stands listening with paws lowered",
+        "raises one paw toward forehead",
+        "holds a crisp cute salute with bright eyes",
+        "drops salute into a confident thumbs up"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/roger-dumpling-salute.png",
+      "poseFiles": [
+        "poses/roger-dumpling-salute/pose-01.png",
+        "poses/roger-dumpling-salute/pose-02.png",
+        "poses/roger-dumpling-salute/pose-03.png",
+        "poses/roger-dumpling-salute/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-191e46b0-79e9-4caa-a9f8-74e56fe0a255.png",
+        "masterSha256": "b6ce2a1f30c85bed5354e43bed2dafd7b785d25b2b16804c2f99c84b8522c42a"
+      }
+    },
+    {
+      "id": "roger-meerkat-alert",
+      "keyword": "收到",
+      "text": "收到",
+      "style": "ai-original-pet",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original sandy meerkat with dark eye patches and tiny forepaws, realistic-soft fluffy animal sticker. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. stands upright attentive; 2. one forepaw touches forehead; 3. nods with both paws held at chest; 4. points one forepaw up with an alert friendly grin. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "stands upright attentive",
+        "one forepaw touches forehead",
+        "nods with both paws held at chest",
+        "points one forepaw up with an alert friendly grin"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/roger-meerkat-alert.png",
+      "poseFiles": [
+        "poses/roger-meerkat-alert/pose-01.png",
+        "poses/roger-meerkat-alert/pose-02.png",
+        "poses/roger-meerkat-alert/pose-03.png",
+        "poses/roger-meerkat-alert/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-de580005-e637-49fe-83bf-53809fbaf3f5.png",
+        "masterSha256": "9e4d246cac9c52529b28fd6c990ba0372e506a9df01a38f8f406facc601f9e41"
+      }
+    },
+    {
+      "id": "roger-workshop-maker",
+      "keyword": "收到",
+      "text": "收到",
+      "style": "original-life-scene",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original adult man with round glasses and plain rust work apron, painterly waist-up holding blank clipboard. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. looks at blank clipboard listening; 2. looks up and nods once; 3. raises one hand in a small acknowledgment salute; 4. tucks clipboard and shows thumb up. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "looks at blank clipboard listening",
+        "looks up and nods once",
+        "raises one hand in a small acknowledgment salute",
+        "tucks clipboard and shows thumb up"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/roger-workshop-maker.png",
+      "poseFiles": [
+        "poses/roger-workshop-maker/pose-01.png",
+        "poses/roger-workshop-maker/pose-02.png",
+        "poses/roger-workshop-maker/pose-03.png",
+        "poses/roger-workshop-maker/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-3e1bb146-af3e-4737-9e3f-f311b89b4d1d.png",
+        "masterSha256": "301cb511fa7d0f9aca97c1ae81dbddf0380a70d9d22706344d1016f5ce8b5c7b"
+      }
+    },
+    {
+      "id": "roger-envelope-click",
+      "keyword": "收到",
+      "text": "收到",
+      "style": "kinetic-typography",
+      "direction": "kinetic-type",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original glossy blue envelope and mint check shape with rounded yellow ribbon arcs around a large EMPTY center for later text. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. envelope closed at top of open circular ribbon; 2. envelope flap unfolds upward; 3. mint check rises from envelope while ribbon expands; 4. envelope closes with check hovering and open text center. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "envelope closed at top of open circular ribbon",
+        "envelope flap unfolds upward",
+        "mint check rises from envelope while ribbon expands",
+        "envelope closes with check hovering and open text center"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/roger-envelope-click.png",
+      "poseFiles": [
+        "poses/roger-envelope-click/pose-01.png",
+        "poses/roger-envelope-click/pose-02.png",
+        "poses/roger-envelope-click/pose-03.png",
+        "poses/roger-envelope-click/pose-04.png"
+      ],
+      "textPlacement": "center",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-6f1fb927-3406-4be2-9ee0-6516da7a446d.png",
+        "masterSha256": "63c924d01bde82cec3515859ff5c73919a972adf24ca8b127221d10c2978c44c"
+      }
+    },
+    {
+      "id": "roger-plush-raccoon",
+      "keyword": "收到",
+      "text": "收到",
+      "style": "3d-plush",
+      "direction": "pet-or-person",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original gray plush raccoon with stitched cream muzzle and tiny plain orange satchel. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. holds satchel strap with alert eyes; 2. lifts one paw in acknowledgment; 3. nods firmly with paw near forehead; 4. holds satchel close and offers a thumbs-up paw. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "holds satchel strap with alert eyes",
+        "lifts one paw in acknowledgment",
+        "nods firmly with paw near forehead",
+        "holds satchel close and offers a thumbs-up paw"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/roger-plush-raccoon.png",
+      "poseFiles": [
+        "poses/roger-plush-raccoon/pose-01.png",
+        "poses/roger-plush-raccoon/pose-02.png",
+        "poses/roger-plush-raccoon/pose-03.png",
+        "poses/roger-plush-raccoon/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-b7052e11-fe04-4393-b306-2855664652ad.png",
+        "masterSha256": "3bd551c04d0312d9cda67bcc39ec065a301edcfabea763f395d13c51fffdcd6b"
+      }
+    },
+    {
+      "id": "roger-ink-ant",
+      "keyword": "收到",
+      "text": "收到",
+      "style": "hand-drawn",
+      "direction": "pet-or-person",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original friendly black ink ant with round blue abdomen and thin limbs, clean hand drawn humorous sticker. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. stands straight antennae raised; 2. one upper hand touches forehead; 3. two middle hands fold while head nods; 4. one hand gives a confident upward finger with proud smile. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "stands straight antennae raised",
+        "one upper hand touches forehead",
+        "two middle hands fold while head nods",
+        "one hand gives a confident upward finger with proud smile"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/roger-ink-ant.png",
+      "poseFiles": [
+        "poses/roger-ink-ant/pose-01.png",
+        "poses/roger-ink-ant/pose-02.png",
+        "poses/roger-ink-ant/pose-03.png",
+        "poses/roger-ink-ant/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-733fed82-54e3-481f-b3d3-bf59fc0e333a.png",
+        "masterSha256": "84d869dded1b5f1c314ace032384f1908d17425f2ec36cf2983a779962febfc6"
+      }
+    },
+    {
+      "id": "roger-person-nod",
+      "keyword": "收到",
+      "text": "收到",
+      "style": "fictional-live-action",
+      "direction": "pet-or-person",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: A fictional adult East Asian woman with short straight hair and plain forest green blouse, natural photo-real waist-up reaction, no celebrity likeness. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. listens looking straight ahead; 2. nods with eyes briefly closed; 3. lifts hand in a small acknowledgment gesture; 4. smiles and gives a thumbs up. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "listens looking straight ahead",
+        "nods with eyes briefly closed",
+        "lifts hand in a small acknowledgment gesture",
+        "smiles and gives a thumbs up"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/roger-person-nod.png",
+      "poseFiles": [
+        "poses/roger-person-nod/pose-01.png",
+        "poses/roger-person-nod/pose-02.png",
+        "poses/roger-person-nod/pose-03.png",
+        "poses/roger-person-nod/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-1e061886-7053-411f-8b7b-baf559ffe2e1.png",
+        "masterSha256": "657d05f9d4dac6d918a2f9ac1264f481f4a0f8ba31d20840281f8533db8ef78a"
+      }
+    },
+    {
+      "id": "roger-radar-bot",
+      "keyword": "收到",
+      "text": "收到",
+      "style": "internet-meme-grammar",
+      "direction": "pet-or-person",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original tiny rounded lavender tabletop robot with one circular antenna and simple expressive eyes, no known robot design, no text. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. antenna droops and eyes look attentive; 2. antenna straightens with one large curved signal arc; 3. robot raises a small arm in salute; 4. eyes turn happy and both arms settle confidently. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "antenna droops and eyes look attentive",
+        "antenna straightens with one large curved signal arc",
+        "robot raises a small arm in salute",
+        "eyes turn happy and both arms settle confidently"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/roger-radar-bot.png",
+      "poseFiles": [
+        "poses/roger-radar-bot/pose-01.png",
+        "poses/roger-radar-bot/pose-02.png",
+        "poses/roger-radar-bot/pose-03.png",
+        "poses/roger-radar-bot/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-caaf1b4a-2c3d-4b03-9ebe-b8c6841d4573.png",
+        "masterSha256": "b75bb77e88f9daffc3e2777882ce078d2ca79ef9d823951522a90b51d053acad"
+      }
+    },
+    {
+      "id": "allow-dumpling-yes",
+      "keyword": "可以",
+      "text": "可以",
+      "style": "original-character",
+      "direction": "core-performance",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: A completely original cream rice-dumpling creature with orange knotted topknot, floppy orange-tipped side tufts and small orange scarf, warm gouache sticker. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. tilts head considering with paws together; 2. nods with eyes closed smiling; 3. extends one paw palm up invitingly; 4. gives a big cheerful thumbs up. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "tilts head considering with paws together",
+        "nods with eyes closed smiling",
+        "extends one paw palm up invitingly",
+        "gives a big cheerful thumbs up"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/allow-dumpling-yes.png",
+      "poseFiles": [
+        "poses/allow-dumpling-yes/pose-01.png",
+        "poses/allow-dumpling-yes/pose-02.png",
+        "poses/allow-dumpling-yes/pose-03.png",
+        "poses/allow-dumpling-yes/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-eedaa320-7875-4c40-888a-6cdc5e5963a4.png",
+        "masterSha256": "466f462da2a15caaba2bf06ddf216026276236baca1ab3768b96a61ce3224bb0"
+      }
+    },
+    {
+      "id": "allow-quokka-smile",
+      "keyword": "可以",
+      "text": "可以",
+      "style": "ai-original-pet",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original warm brown quokka with round ears and cream belly, detailed soft fur and expressive little paws. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. looks curious with head tilted; 2. nods with eyes softly closed; 3. extends both paws welcomingly; 4. raises one paw in a cheerful affirmative gesture. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "looks curious with head tilted",
+        "nods with eyes softly closed",
+        "extends both paws welcomingly",
+        "raises one paw in a cheerful affirmative gesture"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/allow-quokka-smile.png",
+      "poseFiles": [
+        "poses/allow-quokka-smile/pose-01.png",
+        "poses/allow-quokka-smile/pose-02.png",
+        "poses/allow-quokka-smile/pose-03.png",
+        "poses/allow-quokka-smile/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-a7371e18-c1ea-4b4a-aa96-9a39b6813a76.png",
+        "masterSha256": "b508a41e5e08633da69150069fb21144f152cfa885084a442d505e8090ff5834"
+      }
+    },
+    {
+      "id": "allow-cafe-friend",
+      "keyword": "可以",
+      "text": "可以",
+      "style": "original-life-scene",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original adult woman with loose dark bun and plain coral sweater, painterly waist-up everyday friend. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. rests one hand under chin considering; 2. nods with friendly smile; 3. opens one hand palm upward in invitation; 4. gives clear thumbs up with relaxed shoulders. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "rests one hand under chin considering",
+        "nods with friendly smile",
+        "opens one hand palm upward in invitation",
+        "gives clear thumbs up with relaxed shoulders"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/allow-cafe-friend.png",
+      "poseFiles": [
+        "poses/allow-cafe-friend/pose-01.png",
+        "poses/allow-cafe-friend/pose-02.png",
+        "poses/allow-cafe-friend/pose-03.png",
+        "poses/allow-cafe-friend/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-d3173a5c-b139-4cc6-baba-9e32b75c2eeb.png",
+        "masterSha256": "f98797e3cdc6fdcd1b91298b3c2c23ca91f6bd3bea087bbc80b62ca4dd6810cf"
+      }
+    },
+    {
+      "id": "allow-green-gate",
+      "keyword": "可以",
+      "text": "可以",
+      "style": "kinetic-typography",
+      "direction": "kinetic-type",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original mint green rounded check mark and flexible golden arch surrounding a large EMPTY center for text, dimensional soft rubber and paper shapes. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. arch mostly closed with small check folded to side; 2. arch swings open and check begins rising; 3. check unfurls boldly above open arch; 4. arch relaxes into a welcoming open oval with check at top. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "arch mostly closed with small check folded to side",
+        "arch swings open and check begins rising",
+        "check unfurls boldly above open arch",
+        "arch relaxes into a welcoming open oval with check at top"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/allow-green-gate.png",
+      "poseFiles": [
+        "poses/allow-green-gate/pose-01.png",
+        "poses/allow-green-gate/pose-02.png",
+        "poses/allow-green-gate/pose-03.png",
+        "poses/allow-green-gate/pose-04.png"
+      ],
+      "textPlacement": "center",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-59fc95b4-b85d-4661-9253-558cf5549da0.png",
+        "masterSha256": "48c2589eb84947cd482a8987b4ab3ef7550356e8589318292f6ed34384a23c14"
+      }
+    },
+    {
+      "id": "allow-clay-capybara",
+      "keyword": "可以",
+      "text": "可以",
+      "style": "3d-plush",
+      "direction": "pet-or-person",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original caramel clay capybara with tiny lilac scarf and handmade matte texture. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. sits calmly head slightly tilted; 2. bows head in a small nod; 3. raises one rounded forepaw reassuringly; 4. spreads forepaws invitingly with peaceful smile. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "sits calmly head slightly tilted",
+        "bows head in a small nod",
+        "raises one rounded forepaw reassuringly",
+        "spreads forepaws invitingly with peaceful smile"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/allow-clay-capybara.png",
+      "poseFiles": [
+        "poses/allow-clay-capybara/pose-01.png",
+        "poses/allow-clay-capybara/pose-02.png",
+        "poses/allow-clay-capybara/pose-03.png",
+        "poses/allow-clay-capybara/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-2b5b2c31-424e-447c-866d-3807d659e595.png",
+        "masterSha256": "862a7e44dd14b1c5aff8bd21a5745991d650d9ef96ea8bbb6647af8c7347abb0"
+      }
+    },
+    {
+      "id": "allow-ink-crab",
+      "keyword": "可以",
+      "text": "可以",
+      "style": "hand-drawn",
+      "direction": "pet-or-person",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original orange crab with large simple eyes, bold black brush outlines and flat watercolor, no clothes. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. holds claws low considering; 2. one claw lifts and head dips in a nod; 3. both claws open high in friendly welcome; 4. one claw points upward with cheerful grin. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "holds claws low considering",
+        "one claw lifts and head dips in a nod",
+        "both claws open high in friendly welcome",
+        "one claw points upward with cheerful grin"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/allow-ink-crab.png",
+      "poseFiles": [
+        "poses/allow-ink-crab/pose-01.png",
+        "poses/allow-ink-crab/pose-02.png",
+        "poses/allow-ink-crab/pose-03.png",
+        "poses/allow-ink-crab/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-42f3455f-adc9-4524-b9c7-b5906e0e7bcd.png",
+        "masterSha256": "0ad89bd3758c406b771594ca8bc02c3824ee610aaeec660f9ce831c92749da09"
+      }
+    },
+    {
+      "id": "allow-person-yes",
+      "keyword": "可以",
+      "text": "可以",
+      "style": "fictional-live-action",
+      "direction": "pet-or-person",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: A fictional adult middle-aged East Asian man with short salt-and-pepper hair and plain blue linen shirt, natural photo-real waist-up, no celebrity resemblance. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. looks thoughtful but friendly; 2. nods with small smile; 3. offers one open palm invitingly; 4. gives a calm confident thumbs up. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "looks thoughtful but friendly",
+        "nods with small smile",
+        "offers one open palm invitingly",
+        "gives a calm confident thumbs up"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/allow-person-yes.png",
+      "poseFiles": [
+        "poses/allow-person-yes/pose-01.png",
+        "poses/allow-person-yes/pose-02.png",
+        "poses/allow-person-yes/pose-03.png",
+        "poses/allow-person-yes/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-7e490f11-9df0-4fd8-a563-f1733ac19215.png",
+        "masterSha256": "efb7c5c6cd092be8366d02c97a819e5b02210b60624702fa0be431cb21072c33"
+      }
+    },
+    {
+      "id": "allow-traffic-go",
+      "keyword": "可以",
+      "text": "可以",
+      "style": "internet-meme-grammar",
+      "direction": "pet-or-person",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original anthropomorphic mint desk lamp with expressive eyes on shade and little flexible arms, no brand or letters. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. shade tilted sideways considering; 2. shade dips in a nod; 3. one arm extends palm up while lamp turns upward; 4. both arms open in a welcoming affirmative pose. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "shade tilted sideways considering",
+        "shade dips in a nod",
+        "one arm extends palm up while lamp turns upward",
+        "both arms open in a welcoming affirmative pose"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/allow-traffic-go.png",
+      "poseFiles": [
+        "poses/allow-traffic-go/pose-01.png",
+        "poses/allow-traffic-go/pose-02.png",
+        "poses/allow-traffic-go/pose-03.png",
+        "poses/allow-traffic-go/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-1e466f5a-e7f4-4052-9182-b302f8768429.png",
+        "masterSha256": "300bc747128eb4a4d5b7e5b31a7509fa1565a609b5f39b31a90900b23688d05f"
+      }
+    },
+    {
+      "id": "bye-dumpling-wave",
+      "keyword": "再见",
+      "text": "再见",
+      "style": "original-character",
+      "direction": "core-performance",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: A completely original cream rice-dumpling creature with orange knotted topknot, floppy orange-tipped side tufts and small orange scarf, warm gouache sticker. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. stands smiling with one paw half raised; 2. waves one paw near face; 3. turns body slightly while continuing wave; 4. looks back over shoulder waving farewell. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "stands smiling with one paw half raised",
+        "waves one paw near face",
+        "turns body slightly while continuing wave",
+        "looks back over shoulder waving farewell"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/bye-dumpling-wave.png",
+      "poseFiles": [
+        "poses/bye-dumpling-wave/pose-01.png",
+        "poses/bye-dumpling-wave/pose-02.png",
+        "poses/bye-dumpling-wave/pose-03.png",
+        "poses/bye-dumpling-wave/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-1b84d698-fa4f-483b-a645-5977897c2d69.png",
+        "masterSha256": "45eddb53e92f5360238a00a54bd1b5ba54672d303f33f8425ea77b0196a45a8b"
+      }
+    },
+    {
+      "id": "bye-puffin-wave",
+      "keyword": "再见",
+      "text": "再见",
+      "style": "ai-original-pet",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original little puffin with black white plumage and softly orange beak, detailed feather sticker. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. stands facing viewer wings lowered; 2. raises one wing in greeting; 3. leans sideways waving wing broadly; 4. turns partly away looking back with raised wing. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "stands facing viewer wings lowered",
+        "raises one wing in greeting",
+        "leans sideways waving wing broadly",
+        "turns partly away looking back with raised wing"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/bye-puffin-wave.png",
+      "poseFiles": [
+        "poses/bye-puffin-wave/pose-01.png",
+        "poses/bye-puffin-wave/pose-02.png",
+        "poses/bye-puffin-wave/pose-03.png",
+        "poses/bye-puffin-wave/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-c7a7477e-0cbf-4d5a-88a3-8b35b0d24017.png",
+        "masterSha256": "b8e2b5c17b859b7108d8763aa29f19e52c994dd8acba37043f103eaa8c10e8f9"
+      },
+      "poseRects": [
+        {
+          "left": 0,
+          "top": 0,
+          "width": 680,
+          "height": 580
+        },
+        {
+          "left": 680,
+          "top": 0,
+          "width": 586,
+          "height": 580
+        },
+        {
+          "left": 0,
+          "top": 580,
+          "width": 680,
+          "height": 663
+        },
+        {
+          "left": 680,
+          "top": 580,
+          "width": 586,
+          "height": 663
+        }
+      ]
+    },
+    {
+      "id": "bye-traveler-friend",
+      "keyword": "再见",
+      "text": "再见",
+      "style": "original-life-scene",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original adult woman with short chestnut hair in plain blue jacket holding small blank tan shoulder bag, painterly waist-up. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. holds bag strap smiling toward viewer; 2. lifts free hand to wave; 3. turns shoulder slightly away still waving; 4. looks back over shoulder with warm farewell smile. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "holds bag strap smiling toward viewer",
+        "lifts free hand to wave",
+        "turns shoulder slightly away still waving",
+        "looks back over shoulder with warm farewell smile"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/bye-traveler-friend.png",
+      "poseFiles": [
+        "poses/bye-traveler-friend/pose-01.png",
+        "poses/bye-traveler-friend/pose-02.png",
+        "poses/bye-traveler-friend/pose-03.png",
+        "poses/bye-traveler-friend/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-0beea6de-bb99-431a-9d7c-65d5ea461e4e.png",
+        "masterSha256": "472e7005e2bfb34bb11b2cd7ad45ab11ec8e6285971ee79e541749fffb18899d"
+      }
+    },
+    {
+      "id": "bye-paperplane-away",
+      "keyword": "再见",
+      "text": "再见",
+      "style": "kinetic-typography",
+      "direction": "kinetic-type",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original turquoise paper airplane and coral ribbon arcs around a large EMPTY center for later text, dimensional folded paper. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. airplane rests beside small open oval ribbon; 2. airplane tilts up as ribbon curves around; 3. airplane banks outward while ribbon unfurls; 4. airplane turns toward far corner with curved open loop left behind. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "airplane rests beside small open oval ribbon",
+        "airplane tilts up as ribbon curves around",
+        "airplane banks outward while ribbon unfurls",
+        "airplane turns toward far corner with curved open loop left behind"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/bye-paperplane-away.png",
+      "poseFiles": [
+        "poses/bye-paperplane-away/pose-01.png",
+        "poses/bye-paperplane-away/pose-02.png",
+        "poses/bye-paperplane-away/pose-03.png",
+        "poses/bye-paperplane-away/pose-04.png"
+      ],
+      "textPlacement": "center",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-8e0eec49-7986-45c7-9873-3a5311e3c710.png",
+        "masterSha256": "d016f7e58c1ef248a8efadefe4a59f163dd7ec8b74999f632717151586c1fd73"
+      }
+    },
+    {
+      "id": "bye-plush-fox",
+      "keyword": "再见",
+      "text": "再见",
+      "style": "3d-plush",
+      "direction": "pet-or-person",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original cinnamon plush fox with cream muzzle and blue knitted scarf, stitched soft features. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. stands with paws lowered and gentle smile; 2. lifts one paw beside face; 3. waves paw while body turns slightly; 4. looks back with tail curling and paw still raised. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "stands with paws lowered and gentle smile",
+        "lifts one paw beside face",
+        "waves paw while body turns slightly",
+        "looks back with tail curling and paw still raised"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/bye-plush-fox.png",
+      "poseFiles": [
+        "poses/bye-plush-fox/pose-01.png",
+        "poses/bye-plush-fox/pose-02.png",
+        "poses/bye-plush-fox/pose-03.png",
+        "poses/bye-plush-fox/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-63d18433-2425-48f2-9442-3d77e475c96e.png",
+        "masterSha256": "a188824da68de6573b223a0a944fdc2e396c1553038d3b7c00433c587a57f5ad"
+      }
+    },
+    {
+      "id": "bye-ink-snail",
+      "keyword": "再见",
+      "text": "再见",
+      "style": "hand-drawn",
+      "direction": "pet-or-person",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original little lavender snail with orange spiral shell, rough black ink hand-drawn sticker, no accessories. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. faces viewer with antennae upright; 2. one antenna bends in a wave and head smiles; 3. body stretches to move sideways while looking back; 4. head turns back fully with one small feeler raised farewell. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "faces viewer with antennae upright",
+        "one antenna bends in a wave and head smiles",
+        "body stretches to move sideways while looking back",
+        "head turns back fully with one small feeler raised farewell"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/bye-ink-snail.png",
+      "poseFiles": [
+        "poses/bye-ink-snail/pose-01.png",
+        "poses/bye-ink-snail/pose-02.png",
+        "poses/bye-ink-snail/pose-03.png",
+        "poses/bye-ink-snail/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-62f5bb3f-df21-4eaf-baac-33ce3468f374.png",
+        "masterSha256": "eed9f387990437b21a44100e015f1eda23a85d04d4bbc8e5720ec351b66be007"
+      }
+    },
+    {
+      "id": "bye-person-wave",
+      "keyword": "再见",
+      "text": "再见",
+      "style": "fictional-live-action",
+      "direction": "pet-or-person",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: A fictional adult South Asian woman with wavy shoulder-length black hair and plain ochre blouse, natural photo-real waist-up, no celebrity likeness. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. smiles gently with relaxed hands; 2. raises an open hand near cheek; 3. waves while turning shoulder slightly; 4. looks back warmly with hand still raised. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "smiles gently with relaxed hands",
+        "raises an open hand near cheek",
+        "waves while turning shoulder slightly",
+        "looks back warmly with hand still raised"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/bye-person-wave.png",
+      "poseFiles": [
+        "poses/bye-person-wave/pose-01.png",
+        "poses/bye-person-wave/pose-02.png",
+        "poses/bye-person-wave/pose-03.png",
+        "poses/bye-person-wave/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-ae265665-fa40-4f21-9ff8-1e3badd03c20.png",
+        "masterSha256": "0b93ab933895f0acfcd0c5e2c224f96d3e90bfc09732b59817900bddc8a455fe"
+      }
+    },
+    {
+      "id": "bye-suitcase-hop",
+      "keyword": "再见",
+      "text": "再见",
+      "style": "internet-meme-grammar",
+      "direction": "pet-or-person",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE genuinely transparent RGBA PNG sprite sheet, 2x2 layout with exactly FOUR distinctly different key poses of the SAME original subject. Each complete pose must fit within its own quadrant; keep a WIDE EMPTY TRANSPARENT cross-shaped gutter along the exact 50% horizontal and vertical axes. Every limb, prop and decoration must stay well away from those axes. Keep generous outer margins. Same identity/material/view/lighting across poses. Real changes of limbs, face and posture, never four shifted or resized copies. Crisp appealing sticker silhouette readable at 120px. NO text, letters, numbers, captions, grid, borders, checkerboard pattern, ground plane, background, brands, watermarks, famous characters or celebrity likeness. Transparent background means actual alpha, NOT drawn gray checkerboard. SUBJECT: An original small seafoam suitcase character with expressive face and little feet, plain unmarked shell. FOUR POSES in reading order top-left, top-right, bottom-left, bottom-right: 1. stands ready handle lowered; 2. handle extends and one small arm raises; 3. hops lightly sideways waving arm; 4. lands turned partly away and looks back smiling. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "stands ready handle lowered",
+        "handle extends and one small arm raises",
+        "hops lightly sideways waving arm",
+        "lands turned partly away and looks back smiling"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/bye-suitcase-hop.png",
+      "poseFiles": [
+        "poses/bye-suitcase-hop/pose-01.png",
+        "poses/bye-suitcase-hop/pose-02.png",
+        "poses/bye-suitcase-hop/pose-03.png",
+        "poses/bye-suitcase-hop/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-c9824808-3cb6-4e03-aca7-c9da19595473.png",
+        "masterSha256": "434b33dbdd84716878591fbbb879faa676bbb84fe9681dbf4e8cec4a3468b648"
+      }
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "tool": "built-in-imagegen",
+  "sourceType": "ai-original",
+  "status": "trial-only",
+  "publicationAllowed": false,
+  "items": [
+    {
+      "id": "orange-cat-laugh",
+      "caption": "笑死",
+      "prompt": "Create an ORIGINAL expressive Chinese chat sticker animation sprite sheet, EXACT 4 COLUMNS x 3 ROWS,12 equal square cells, canvas1440x1080. SIMPLE bold handdrawn black contours, flat few colors, NO detailed fur/pencil shading, not realistic illustration. Strong readable facial acting and clear gestures at240px. Same ORIGINAL animal in all cells, not any known character. OPAQUE WHITE background, thin lightgray grid, NO text/symbols/captions/watermarks. Every figure fully contained in upper80% of its cell, bottom20% blank white for caption. Fixed camera/scale, no cropping, same body/head anchor except intentional SMALL squash/stretch. Sequence left-right top-bottom:1 anticipation;2-7 progressively build action in distinct smooth poses;8 expressive peak;9-11 clearly ease back;12 precisely matches1 for seamless loop. Face and body move together meaningfully; do not merely slide a static drawing. No extra limbs, no hand switches, no props. Original FAT ORANGE CAT with small triangle ears, huge soft cheek pads, tiny brow marks, stubby paws, dark orange forehead patch and cream belly. COMEDIC hearty laughter: start broad grin/eyes smiling, paws near belly; gradually eyes squeeze shut, mouth opens huge into laughing bean shape, cheeks lift, BOTH paws clutch belly, body gently squashes at peak8 as laughing hard.9-12 mouth slowly closes, eyes easeopen and belly posture returns. Exaggerate mouth/eyelids/cheeks and paw positions markedly, maintain recognizable head proportions. Fun expressive drawing not cute frozen mascot.",
+      "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-3e308d5a-b280-4a8e-a2f4-f5faa70c67bf.png",
+      "masterFile": "masters/orange-cat-laugh.png",
+      "sha256": "b3ffb210a698ad88c82c3f545f7757a1db930cc235c8f50d6ba576d6083c0c68"
+    },
+    {
+      "id": "long-bill-duck-disdain",
+      "caption": "嫌弃",
+      "prompt": "Create an ORIGINAL expressive Chinese chat sticker animation sprite sheet, EXACT 4 COLUMNS x 3 ROWS,12 equal square cells, canvas1440x1080. SIMPLE bold handdrawn black contours, flat few colors, NO detailed fur/pencil shading, not realistic illustration. Strong readable facial acting and clear gestures at240px. Same ORIGINAL animal in all cells, not any known character. OPAQUE WHITE background, thin lightgray grid, NO text/symbols/captions/watermarks. Every figure fully contained in upper80% of its cell, bottom20% blank white for caption. Fixed camera/scale, no cropping, same body/head anchor except intentional SMALL squash/stretch. Sequence left-right top-bottom:1 anticipation;2-7 progressively build action in distinct smooth poses;8 expressive peak;9-11 clearly ease back;12 precisely matches1 for seamless loop. Face and body move together meaningfully; do not merely slide a static drawing. No extra limbs, no hand switches, no props. Original skinny WHITE DUCK with unusually long flat ochre bill, tiny messy crown feathers, long neck, two simple wings. DISDAINFUL disgust: initial half-lidded sideeye and bill tilteddown, viewer-right wing bent near chest; gradually one brow arches, eyelids narrow, long bill curls into skewed grimace (cartoon bill not human lips), neck leans back slightly, samewing extends OUTWARD palm-like feathers in dismissive shoo. Peak8 extreme unimpressed squint and stretched stopwing;9-12 smoothly retract wing and neck/bill to initial. Funny angular silhouette, unmistakable duck, no clothes, no human face collage.",
+      "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-eb403e9e-4b2e-4e30-a797-3890121413b0.png",
+      "masterFile": "masters/long-bill-duck-disdain.png",
+      "sha256": "fcca9d3e1a91db555b511d845cdcc82fd78a7b53b5ab0decf5ecb07b564d7216"
+    },
+    {
+      "id": "short-ear-rabbit-yay",
+      "caption": "好耶",
+      "prompt": "Create an ORIGINAL expressive Chinese chat sticker animation sprite sheet, EXACT 4 COLUMNS x 3 ROWS,12 equal square cells, canvas1440x1080. SIMPLE bold handdrawn black contours, flat few colors, NO detailed fur/pencil shading, not realistic illustration. Strong readable facial acting and clear gestures at240px. Same ORIGINAL animal in all cells, not any known character. OPAQUE WHITE background, thin lightgray grid, NO text/symbols/captions/watermarks. Every figure fully contained in upper80% of its cell, bottom20% blank white for caption. Fixed camera/scale, no cropping, same body/head anchor except intentional SMALL squash/stretch. Sequence left-right top-bottom:1 anticipation;2-7 progressively build action in distinct smooth poses;8 expressive peak;9-11 clearly ease back;12 precisely matches1 for seamless loop. Face and body move together meaningfully; do not merely slide a static drawing. No extra limbs, no hand switches, no props. Original ROUND CREAM RABBIT with comically short unequal ears, tiny lilac nose and oval lilac belly patch, stubby limbs. JOYOUS celebration: begin hopeful grin, forepaws at chest. Gradually smile becomes wide joyful openmouth, eyes turn happy crescent arcs, BOTH paws lift above shoulders, knees bend into small energetic body squash then straighten at peak8 with ears perked and arms up.9-12 gently lower paws and easebody to start. NO high jump out of frame, no arbitrary translation, visible articulated paws and ear/face changes, genuine happy not manic.",
+      "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-8135f8db-f726-48f7-9721-97adb76963a5.png",
+      "masterFile": "masters/short-ear-rabbit-yay.png",
+      "sha256": "88215e21cfe51cd0d3124dffd3a9ece1e09bd6cd7bf6ccd2cde3abdb6a2a1568"
+    }
+  ]
+}

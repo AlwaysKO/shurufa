@@ -1,0 +1,220 @@
+{
+  "created": "2026-09-14",
+  "sourceType": "ai-original",
+  "status": "trial-only",
+  "publicationAllowed": false,
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "items": [
+    {
+      "id": "whitecat-proud",
+      "caption": "傲娇",
+      "prompt": "Create sprite atlas FOUR columns THREE rows,12 equal SQUARE tiles, overall4:3. OPAQUE pure WHITE background, no text/labels/grid lines. Stable single original character and camera, real facial animation poses not zoom/pan. Each square has SAME local registration: all head/ear tops at local20% tile height, bust bottom local76%, centerx50%. Three ROWS MUST be spaced exactly ONE TILE HEIGHT apart, not compacted upward at bottom. If canvas1448x1086 use362square cells; head tops y72,434,796 and bust baselines y275,637,999. Same size all12, no rescaling. Leave generous white safety margins. Panel12 matches panel1 neutral facial features AND position exactly. Photoreal original white CAT bust, natural feline muzzle no human lips, compact short ears fully visible, blue eyes, no paws. Proud but secretly pleased coy reaction, NOT angry:1 neutral;2 one brow raises;3 eyelids narrow slightly;4 eyes glance aside;5 chin lifts very slightly;6 tiny one-sided closed smile;7 lips press to hide smile;8 key haughty sideways gaze with slightly raised chin and hidden smile;9 chin slowly lowers;10 gaze returns;11 mouth relaxes;12 EXACT neutral pose1.",
+      "masterFile": "masters/whitecat-proud.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-d553d94a-2813-4848-abf5-cc2edf55a167.png",
+      "sha256": "a9d738ef490f5dc991045e022a95e67aef1e1bced8afd2a80ede72518d5a7cca",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "fox-proud",
+      "caption": "傲娇",
+      "prompt": "Create sprite atlas FOUR columns THREE rows,12 equal SQUARE tiles, overall4:3. OPAQUE pure WHITE background, no text/labels/grid lines. Stable single original character and camera, real facial animation poses not zoom/pan. Each square has SAME local registration: all head/ear tops at local20% tile height, bust bottom local76%, centerx50%. Three ROWS MUST be spaced exactly ONE TILE HEIGHT apart, not compacted upward at bottom. If canvas1448x1086 use362square cells; head tops y72,434,796 and bust baselines y275,637,999. Same size all12, no rescaling. Leave generous white safety margins. Panel12 matches panel1 neutral facial features AND position exactly. Original minimal BLACK INK only cartoon FOX head and shoulders, compact triangular ears, expressive eyelids and brows, no hands or props, no known IP. Proud but secretly pleased coy reaction, NOT angry:1 neutral;2 one brow raises;3 eyelids narrow slightly;4 eyes glance aside;5 chin lifts very slightly;6 tiny one-sided closed smile;7 lips press to hide smile;8 key haughty sideways gaze with slightly raised chin and hidden smile;9 chin slowly lowers;10 gaze returns;11 mouth relaxes;12 EXACT neutral pose1.",
+      "masterFile": "masters/fox-proud.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-d01980a5-0d8d-47b9-bf99-2f004ed772d8.png",
+      "sha256": "629feae42d848fd0542dc06e99e3d00f373049c0a7184f187d3becb268bcc2aa",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "hamster-proud",
+      "caption": "傲娇",
+      "prompt": "Create sprite atlas FOUR columns THREE rows,12 equal SQUARE tiles, overall4:3. OPAQUE pure WHITE background, no text/labels/grid lines. Stable single original character and camera, real facial animation poses not zoom/pan. Each square has SAME local registration: all head/ear tops at local20% tile height, bust bottom local76%, centerx50%. Three ROWS MUST be spaced exactly ONE TILE HEIGHT apart, not compacted upward at bottom. If canvas1448x1086 use362square cells; head tops y72,434,796 and bust baselines y275,637,999. Same size all12, no rescaling. Leave generous white safety margins. Panel12 matches panel1 neutral facial features AND position exactly. Original tactile clay golden HAMSTER bust, small round ears, natural tiny animal mouth, no paws. Proud but secretly pleased coy reaction, NOT angry:1 neutral;2 one brow raises;3 eyelids narrow slightly;4 eyes glance aside;5 chin lifts very slightly;6 tiny one-sided closed smile;7 lips press to hide smile;8 key haughty sideways gaze with slightly raised chin and hidden smile;9 chin slowly lowers;10 gaze returns;11 mouth relaxes;12 EXACT neutral pose1.",
+      "masterFile": "masters/hamster-proud.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-49380fbb-61f3-4bfe-a60f-50c9199b7645.png",
+      "sha256": "c895dadfe57921a75435dbbf64514358709b462c7829abb81f25aee2a57ccc76",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "man-proud",
+      "caption": "傲娇",
+      "prompt": "Create sprite atlas FOUR columns THREE rows,12 equal SQUARE tiles, overall4:3. OPAQUE pure WHITE background, no text/labels/grid lines. Stable single original character and camera, real facial animation poses not zoom/pan. Each square has SAME local registration: all head/ear tops at local20% tile height, bust bottom local76%, centerx50%. Three ROWS MUST be spaced exactly ONE TILE HEIGHT apart, not compacted upward at bottom. If canvas1448x1086 use362square cells; head tops y72,434,796 and bust baselines y275,637,999. Same size all12, no rescaling. Leave generous white safety margins. Panel12 matches panel1 neutral facial features AND position exactly. Original fictional handsome Chinese ADULT MALE bust, distinct sleek side-part black hair, forest-green crewneck, realistic photography, NOT celebrity, no hands. Proud but secretly pleased coy reaction, NOT angry:1 neutral;2 one brow raises;3 eyelids narrow slightly;4 eyes glance aside;5 chin lifts very slightly;6 tiny one-sided closed smile;7 lips press to hide smile;8 key haughty sideways gaze with slightly raised chin and hidden smile;9 chin slowly lowers;10 gaze returns;11 mouth relaxes;12 EXACT neutral pose1.",
+      "masterFile": "masters/man-proud.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-bb35ff5b-34fe-4637-8077-07f422c1fe13.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "8743cf19b6d19e320136f6a616b33048874d5890c2ba072ae2c87364ead92ed2",
+      "originalSha256": "0bd7d0bb99c03c0541ab6d9b9020dba13c7d2ca9bef4c66a2bfb20583bf3189d",
+      "revisions": [
+        {
+          "id": "v2-loop-recovery",
+          "prompt": "Repair this exact4columns3rows fictional original Chinese adult man sprite atlas. Bottom row is20pixels too HIGH in its local square cells: move all4 bottom-row busts DOWN20pixels. Final neutral panel12 must precisely match panel1 eyes, mouth, hair silhouette, scale and shoulder baseline within equal square tiles. Improve pose9 recovery: currently suddenly looks DOWN after pose8 looking sideways/up; instead pose9 should turn PARTWAY toward front from pose8 with chin still slightly raised, then10 nearly neutral,11/12 neutral. Do not change top2rows or original identity/green shirt. Keep12 genuine facial poses, white opaque background,4x3 equal square tiles overall4:3, no text/grid, no zoom.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-0e2b3b55-4a49-4d3c-80e1-b1faece9863b.png",
+          "sha256": "f19ac801c0ebc61ec83fce7592ead85e34d0c3795199186d416f832524d04759"
+        },
+        {
+          "id": "v3-registration",
+          "prompt": "Correct LOOP ALIGNMENT of this exact 4column3row sprite atlas. First man's hair top is y37, final man's hair top y737 (=local13) so final is24px too HIGH. Move ALL FOUR bottom-row men DOWN24px. Yes, crop any extra lower shirt at canvas bottom rather than shifting heads back up. Bottom row final head top MUST y761 (local37), hair/face scale and neutral expression identical to panel1. Middle row neutral positions also about10px too high: move all4 middle-row men DOWN10px. Keep facial acting and poses, same original fictional Chinese adult man, exact green shirt and white backdrop. NO moving first row, NO global scaling, NO changes to canvas or tile grid. Exactly4columns3rows equal squares overall4:3, no text.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-b2219701-21fb-43d8-a048-a57114826184.png",
+          "sha256": "8743cf19b6d19e320136f6a616b33048874d5890c2ba072ae2c87364ead92ed2"
+        }
+      ],
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "dachshund-guilty",
+      "caption": "心虚",
+      "prompt": "Create sprite atlas FOUR columns THREE rows,12 equal SQUARE tiles, overall4:3. OPAQUE pure WHITE background, no text/labels/grid lines. Stable single original character and camera, real facial animation poses not zoom/pan. Each square has SAME local registration: all head/ear tops at local20% tile height, bust bottom local76%, centerx50%. Three ROWS MUST be spaced exactly ONE TILE HEIGHT apart, not compacted upward at bottom. If canvas1448x1086 use362square cells; head tops y72,434,796 and bust baselines y275,637,999. Same size all12, no rescaling. Leave generous white safety margins. Panel12 matches panel1 neutral facial features AND position exactly. Photoreal original chestnut DACHSHUND DOG bust, floppy ears, natural long muzzle, no tongue/paws. GUILTY nervous furtive reaction, NOT happy:1 neutral;2 pupils glance left;3 one eyebrow lifts unevenly;4 pupils glance right without head turn;5 lips press tightly;6 chin retracts slightly;7 eyes look sideways under tense brows;8 key guilty furtive glance with tight small mouth;9 eyes shift partly center;10 chin relaxes;11 mouth loosens;12 EXACT neutral pose1. No tears/sweat icons, no extra props.",
+      "masterFile": "masters/dachshund-guilty.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-0b252dc5-6de8-4757-ae3d-a1b1daa3ee04.png",
+      "sha256": "0c56e5cfe796cb3e37bff0bc16b1454b288e25b40c903ec2c01b957f45215db4",
+      "originalSha256": "0c56e5cfe796cb3e37bff0bc16b1454b288e25b40c903ec2c01b957f45215db4",
+      "revisions": [
+        {
+          "id": "v2-registration",
+          "prompt": "Fix LOOP REGISTRATION in this exact4column3row dachshund animation sprite atlas. Row1 dog top y45. Bottom row top y746, local22, so too high23pixels. Move ALL4 bottom-row dog busts DOWN23pixels; first-to-last head/ears/eyes/nose should match same local coordinates. Middle row top y395 local33: move middle-row busts DOWN12pixels. Keep face scale fixed, no resizing. Final panel12 must match panel1 exact neutral face, including pupils and floppy ear outline. Keep all12 true guilty side-glances/tight muzzle/chin-retract poses and actual original dog identity. No other changes, no camera movement. Bottom of shirt/chest may crop if needed but NOT head. White opaque background, no grid/text,4columns3rows square tiles overall4:3.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-75ef1df6-1663-44e7-9d5a-ec9ce9706f55.png",
+          "sha256": "fee0ae805f12f8ba7a9aef949eec6e1386f2941046974e831221e79a59c9ff7a",
+          "result": "rejected-machine-loop-failure"
+        }
+      ],
+      "selectedVersion": "v1-restored-needs-rework",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "needs-rework"
+    },
+    {
+      "id": "puppy-guilty",
+      "caption": "心虚",
+      "prompt": "Create sprite atlas FOUR columns THREE rows,12 equal SQUARE tiles, overall4:3. OPAQUE pure WHITE background, no text/labels/grid lines. Stable single original character and camera, real facial animation poses not zoom/pan. Each square has SAME local registration: all head/ear tops at local20% tile height, bust bottom local76%, centerx50%. Three ROWS MUST be spaced exactly ONE TILE HEIGHT apart, not compacted upward at bottom. If canvas1448x1086 use362square cells; head tops y72,434,796 and bust baselines y275,637,999. Same size all12, no rescaling. Leave generous white safety margins. Panel12 matches panel1 neutral facial features AND position exactly. Original minimal BLACK INK only cartoon PUPPY bust with short floppy ears and expressive brows, original not famous cartoon, no arms or props. GUILTY nervous furtive reaction, NOT happy:1 neutral;2 pupils glance left;3 one eyebrow lifts unevenly;4 pupils glance right without head turn;5 lips press tightly;6 chin retracts slightly;7 eyes look sideways under tense brows;8 key guilty furtive glance with tight small mouth;9 eyes shift partly center;10 chin relaxes;11 mouth loosens;12 EXACT neutral pose1. No tears/sweat icons, no extra props.",
+      "masterFile": "masters/puppy-guilty.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-62dbd4b5-85f4-49a9-b7ac-9f98edc9592b.png",
+      "sha256": "8f3f535b474f057e38a6071e213f72f78257ff42350668e986ab234b043789e0",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "raccoon-guilty",
+      "caption": "心虚",
+      "prompt": "Create sprite atlas FOUR columns THREE rows,12 equal SQUARE tiles, overall4:3. OPAQUE pure WHITE background, no text/labels/grid lines. Stable single original character and camera, real facial animation poses not zoom/pan. Each square has SAME local registration: all head/ear tops at local20% tile height, bust bottom local76%, centerx50%. Three ROWS MUST be spaced exactly ONE TILE HEIGHT apart, not compacted upward at bottom. If canvas1448x1086 use362square cells; head tops y72,434,796 and bust baselines y275,637,999. Same size all12, no rescaling. Leave generous white safety margins. Panel12 matches panel1 neutral facial features AND position exactly. Original tactile clay RACCOON bust with consistent dark eye mask and small round ears, no limbs. GUILTY nervous furtive reaction, NOT happy:1 neutral;2 pupils glance left;3 one eyebrow lifts unevenly;4 pupils glance right without head turn;5 lips press tightly;6 chin retracts slightly;7 eyes look sideways under tense brows;8 key guilty furtive glance with tight small mouth;9 eyes shift partly center;10 chin relaxes;11 mouth loosens;12 EXACT neutral pose1. No tears/sweat icons, no extra props.",
+      "masterFile": "masters/raccoon-guilty.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-9c5d7cf7-a0f1-48f7-9560-e55a0ff81882.png",
+      "sha256": "65c6c9f556750bcdd4c26e912ea16bb02bad8c23f72f797a977355038d50e4b2",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "man-guilty",
+      "caption": "心虚",
+      "prompt": "Create sprite atlas FOUR columns THREE rows,12 equal SQUARE tiles, overall4:3. OPAQUE pure WHITE background, no text/labels/grid lines. Stable single original character and camera, real facial animation poses not zoom/pan. Each square has SAME local registration: all head/ear tops at local20% tile height, bust bottom local76%, centerx50%. Three ROWS MUST be spaced exactly ONE TILE HEIGHT apart, not compacted upward at bottom. If canvas1448x1086 use362square cells; head tops y72,434,796 and bust baselines y275,637,999. Same size all12, no rescaling. Leave generous white safety margins. Panel12 matches panel1 neutral facial features AND position exactly. Original fictional handsome Chinese ADULT MALE bust, distinct messy short black hair, mustard crewneck, realistic photography, NOT celebrity, no hands. GUILTY nervous furtive reaction, NOT happy:1 neutral;2 pupils glance left;3 one eyebrow lifts unevenly;4 pupils glance right without head turn;5 lips press tightly;6 chin retracts slightly;7 eyes look sideways under tense brows;8 key guilty furtive glance with tight small mouth;9 eyes shift partly center;10 chin relaxes;11 mouth loosens;12 EXACT neutral pose1. No tears/sweat icons, no extra props.",
+      "masterFile": "masters/man-guilty.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-b142326b-c26d-4e71-a8ec-011ba12ba4cf.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "978358ac0c7521c4ea0d4271348f8352bc8de7a14aea425111c3c5f403d6e303",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "labrador-downcast",
+      "caption": "失落",
+      "prompt": "Create sprite atlas FOUR columns THREE rows,12 equal SQUARE tiles, overall4:3. OPAQUE pure WHITE background, no text/labels/grid lines. Stable single original character and camera, real facial animation poses not zoom/pan. Each square has SAME local registration: all head/ear tops at local20% tile height, bust bottom local76%, centerx50%. Three ROWS MUST be spaced exactly ONE TILE HEIGHT apart, not compacted upward at bottom. If canvas1448x1086 use362square cells; head tops y72,434,796 and bust baselines y275,637,999. Same size all12, no rescaling. Leave generous white safety margins. Panel12 matches panel1 neutral facial features AND position exactly. Photoreal original chocolate LABRADOR DOG bust, floppy ears, natural canine muzzle no human lips, no tongue/paws. DISAPPOINTED DOWNCAST sadness, NOT sleepy or smiling:1 neutral open eyes;2 brows start lifting in middle;3 mouth corners gently lower;4 eyes look down still OPEN;5 inner brows raised and outer brows drop;6 head dips slightly;7 lips form small unmistakable sad downward curve;8 key downcast lowered gaze with sad mouth and inner raised eyebrows;9 head slowly lifts;10 eyes partly return;11 brow softens;12 EXACT neutral pose1. NEVER smile or close eyes, NO tears/icons/props.",
+      "masterFile": "masters/labrador-downcast.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-66b8910d-7b6a-47ca-96f8-79eb494fa644.png",
+      "sha256": "34917f92064a74ddd0eca0e1f2b2c6f81e40e2bb2abb7fd65064aaabf3916927",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "penguin-downcast",
+      "caption": "失落",
+      "prompt": "Create sprite atlas FOUR columns THREE rows,12 equal SQUARE tiles, overall4:3. OPAQUE pure WHITE background, no text/labels/grid lines. Stable single original character and camera, real facial animation poses not zoom/pan. Each square has SAME local registration: all head/ear tops at local20% tile height, bust bottom local76%, centerx50%. Three ROWS MUST be spaced exactly ONE TILE HEIGHT apart, not compacted upward at bottom. If canvas1448x1086 use362square cells; head tops y72,434,796 and bust baselines y275,637,999. Same size all12, no rescaling. Leave generous white safety margins. Panel12 matches panel1 neutral facial features AND position exactly. Original minimal BLACK INK only cartoon PENGUIN bust, round head and small beak, expressive brows/eyes, no wings/hands, not known IP. DISAPPOINTED DOWNCAST sadness, NOT sleepy or smiling:1 neutral open eyes;2 brows start lifting in middle;3 mouth corners gently lower;4 eyes look down still OPEN;5 inner brows raised and outer brows drop;6 head dips slightly;7 lips form small unmistakable sad downward curve;8 key downcast lowered gaze with sad mouth and inner raised eyebrows;9 head slowly lifts;10 eyes partly return;11 brow softens;12 EXACT neutral pose1. NEVER smile or close eyes, NO tears/icons/props.",
+      "masterFile": "masters/penguin-downcast.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-9786e7d6-8975-41ca-a40b-3f6837bc6ef9.png",
+      "sha256": "0c7ca73b878931c7f0831ede30cdab6a908781291d034c6a32b12bb1005cfc06",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "bear-downcast",
+      "caption": "失落",
+      "prompt": "Create sprite atlas FOUR columns THREE rows,12 equal SQUARE tiles, overall4:3. OPAQUE pure WHITE background, no text/labels/grid lines. Stable single original character and camera, real facial animation poses not zoom/pan. Each square has SAME local registration: all head/ear tops at local20% tile height, bust bottom local76%, centerx50%. Three ROWS MUST be spaced exactly ONE TILE HEIGHT apart, not compacted upward at bottom. If canvas1448x1086 use362square cells; head tops y72,434,796 and bust baselines y275,637,999. Same size all12, no rescaling. Leave generous white safety margins. Panel12 matches panel1 neutral facial features AND position exactly. Original tactile clay warm brown BEAR bust, compact round ears, no limbs. DISAPPOINTED DOWNCAST sadness, NOT sleepy or smiling:1 neutral open eyes;2 brows start lifting in middle;3 mouth corners gently lower;4 eyes look down still OPEN;5 inner brows raised and outer brows drop;6 head dips slightly;7 lips form small unmistakable sad downward curve;8 key downcast lowered gaze with sad mouth and inner raised eyebrows;9 head slowly lifts;10 eyes partly return;11 brow softens;12 EXACT neutral pose1. NEVER smile or close eyes, NO tears/icons/props.",
+      "masterFile": "masters/bear-downcast.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-bbe10a87-cc0b-4805-9940-584b8f099b4d.png",
+      "sha256": "f3d19a28483efc7db8a15447c5eb1034bc6997845554825ab0274641f02e24a8",
+      "originalSha256": "3d37b5d925c2329c7e41f66db050d36b33950d1c3a2e430be55daf8df5bf4ac9",
+      "revisions": [
+        {
+          "id": "v2-registration",
+          "prompt": "Repair exact neutral LOOP POSE in this4column3row original brown clay bear sprite atlas. ALL FOUR bottom-row bear busts need move DOWN10pixels to match local top/shoulder height in row1. Final panel12 must match panel1 EXACTLY neutral eyes/pupils, brows, nose, mouth shape, head/ear size and shoulder baseline. Preserve sad downcast middle-row poses and gradual recovery, no smiling. Same single original clay bear, opaque pure white, no text/grid. FOUR columns THREE rows equal square tiles, overall4:3. No other changes, no global resizing.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-618bb2eb-b456-432b-b966-0f998b91e059.png",
+          "sha256": "f3d19a28483efc7db8a15447c5eb1034bc6997845554825ab0274641f02e24a8"
+        }
+      ],
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    },
+    {
+      "id": "man-downcast",
+      "caption": "失落",
+      "prompt": "Create sprite atlas FOUR columns THREE rows,12 equal SQUARE tiles, overall4:3. OPAQUE pure WHITE background, no text/labels/grid lines. Stable single original character and camera, real facial animation poses not zoom/pan. Each square has SAME local registration: all head/ear tops at local20% tile height, bust bottom local76%, centerx50%. Three ROWS MUST be spaced exactly ONE TILE HEIGHT apart, not compacted upward at bottom. If canvas1448x1086 use362square cells; head tops y72,434,796 and bust baselines y275,637,999. Same size all12, no rescaling. Leave generous white safety margins. Panel12 matches panel1 neutral facial features AND position exactly. Original fictional handsome Chinese ADULT MALE bust, distinct short swept black hair, charcoal crewneck, realistic photography, NOT celebrity, no hands. DISAPPOINTED DOWNCAST sadness, NOT sleepy or smiling:1 neutral open eyes;2 brows start lifting in middle;3 mouth corners gently lower;4 eyes look down still OPEN;5 inner brows raised and outer brows drop;6 head dips slightly;7 lips form small unmistakable sad downward curve;8 key downcast lowered gaze with sad mouth and inner raised eyebrows;9 head slowly lifts;10 eyes partly return;11 brow softens;12 EXACT neutral pose1. NEVER smile or close eyes, NO tears/icons/props.",
+      "masterFile": "masters/man-downcast.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-e99c6278-67f3-4625-8115-a6ed1c68dbe9.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "ae8ca4421118640664b876a0723775a5cb582f8d57b91757b5227f7f574ac420",
+      "staticCharacterReview": "pending",
+      "humanAnimationReview": "pending",
+      "visualTriage": "pending"
+    }
+  ],
+  "rejectedFiles": [
+    {
+      "file": "rejected/man-proud-v1-loop.png",
+      "sha256": "0bd7d0bb99c03c0541ab6d9b9020dba13c7d2ca9bef4c66a2bfb20583bf3189d",
+      "reason": "loopClosure 0.2984027777777778 > 0.22486979166666668"
+    },
+    {
+      "file": "rejected/man-proud-v2-loop.png",
+      "sha256": "f19ac801c0ebc61ec83fce7592ead85e34d0c3795199186d416f832524d04759",
+      "reason": "loopClosure 0.2880902777777778 > 0.27921006944444443"
+    },
+    {
+      "file": "rejected/bear-downcast-v1-loop.png",
+      "sha256": "3d37b5d925c2329c7e41f66db050d36b33950d1c3a2e430be55daf8df5bf4ac9",
+      "reason": "loopClosure 0.17097222222222222 > 0.14700520833333333"
+    },
+    {
+      "file": "rejected/dachshund-guilty-v1-drift.png",
+      "sha256": "0c56e5cfe796cb3e37bff0bc16b1454b288e25b40c903ec2c01b957f45215db4",
+      "reason": "机器通过但抽帧发现恢复段整体上移"
+    },
+    {
+      "file": "rejected/dachshund-guilty-v2-loop.png",
+      "sha256": "fee0ae805f12f8ba7a9aef949eec6e1386f2941046974e831221e79a59c9ff7a",
+      "reason": "修订退化：loopClosure 0.44069444444444444 > 0.4223958333333333"
+    }
+  ],
+  "visualCaveats": {
+    "dachshund-guilty": "恢复段整体上移，修订退化后恢复v1并隔离needs-rework。",
+    "man-proud": "轻微定位/轮廓差异，循环待复核。",
+    "bear-downcast": "轻微定位/轮廓差异，循环待复核。",
+    "proud-group": "可能读成得意或高冷，傲娇的情绪转折需去字幕动态审核。",
+    "downcast-group": "恢复段表情切换需实际播放检查。"
+  }
+}

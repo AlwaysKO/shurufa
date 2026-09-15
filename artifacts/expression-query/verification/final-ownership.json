@@ -1,0 +1,18 @@
+{
+  "roots": [
+    "server/.runtime/expression-assets",
+    "server/dist",
+    "android/YuyanIme/yuyansdk/src/main/assets/expression",
+    "android/YuyanIme/yuyansdk/build/unix",
+    "android/YuyanIme/app/build/unix",
+    "artifacts/expression-query",
+    "artifacts/expression-prototypes",
+    "assets/expression/batches/action-01",
+    "assets/expression/batches/daily-03",
+    "artifacts/expression-batches/action-01",
+    "artifacts/expression-batches/daily-03"
+  ],
+  "checked": 10524,
+  "expected": "ko:ko",
+  "incorrect": []
+}

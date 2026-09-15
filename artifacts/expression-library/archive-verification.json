@@ -1,0 +1,19 @@
+{
+  "date": "2026-09-09",
+  "coreKeywords": 300,
+  "queryExamples": 900,
+  "batches": 30,
+  "exactCrossKeywordConflicts": 0,
+  "archivedKeywords": 20,
+  "gifs": 140,
+  "thumbnails": 140,
+  "published": 52,
+  "reviewOnly": 88,
+  "byteIdenticalToSources": true,
+  "shaVerified": true,
+  "owner": "ko:ko",
+  "apiSwitched": false,
+  "sogouImagesFetched": 0,
+  "newImagesGenerated": 0,
+  "productionCodeChanged": false
+}

@@ -1,0 +1,18 @@
+{
+  "created": "2026-09-15",
+  "sourceChainsVerified": 12,
+  "revisionsVerified": 8,
+  "rejectedHashesVerified": 11,
+  "actualGifMetadataAndShaVerified": 11,
+  "fallbackPixelEqual": 11,
+  "previousGifHashesUnchanged": 118,
+  "machinePass": 11,
+  "machineFail": 1,
+  "quarantined": [
+    "duck-lost"
+  ],
+  "maxGifBytes": 128580,
+  "peakPose8Ms": 900,
+  "actualDynamicPlayback": "not-performed",
+  "publicationAllowed": false
+}

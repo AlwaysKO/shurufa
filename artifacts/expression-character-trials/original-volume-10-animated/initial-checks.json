@@ -1,0 +1,3578 @@
+[
+  {
+    "id": "corgi-hungry",
+    "pass": true,
+    "metadata": {
+      "format": "gif",
+      "width": 240,
+      "height": 240,
+      "pageHeight": 240,
+      "pages": 20,
+      "loop": 0,
+      "delays": [
+        200,
+        200,
+        220,
+        220,
+        220,
+        220,
+        220,
+        110,
+        110,
+        230,
+        230,
+        220,
+        220,
+        180,
+        170,
+        180,
+        170,
+        170,
+        170,
+        340
+      ],
+      "durationMs": 4000,
+      "bytes": 114744,
+      "sha256": "6bb88dc9e3767d64e17870d620b616a216edd78706af06f8b01d928dc9e5737d",
+      "frames": [
+        {
+          "index": 0,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "64fe54ef128e9397ff0c455afba52f96a2d8f37e0c22d5607375f5f755a7bb77"
+        },
+        {
+          "index": 1,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "64fe54ef128e9397ff0c455afba52f96a2d8f37e0c22d5607375f5f755a7bb77"
+        },
+        {
+          "index": 2,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "da22c7033bfc6980ca92ce657bc43f3fef5228823c03ae6125e7e21dd9630d20"
+        },
+        {
+          "index": 3,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "a19ef1beef34c4679add73fcf6937f0ae5e6ed6e540859a559e5c1e843ec87ab"
+        },
+        {
+          "index": 4,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "d7db85e534efa7ef7dc59008720a906fca7b5174ef28c2fa64a0577c43ba072f"
+        },
+        {
+          "index": 5,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "94825958f25774a668096841cb9002f80b85d8bc0e3dc15186ed87693b2e7b1b"
+        },
+        {
+          "index": 6,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "4399c356280be3bbb94749d8a2c67a9702c821ef67b1b141fe906f13e3f1938f"
+        },
+        {
+          "index": 7,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "85fa829f41096b0ed41ba47e9ef3c954eb5cfde701f0f2a807b7519ca5af97e7"
+        },
+        {
+          "index": 8,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "85fa829f41096b0ed41ba47e9ef3c954eb5cfde701f0f2a807b7519ca5af97e7"
+        },
+        {
+          "index": 9,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "7758580b01b62e6dfb824041a402cfa50c2e5fd03eb2772d2a6104327872ab98"
+        },
+        {
+          "index": 10,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "7758580b01b62e6dfb824041a402cfa50c2e5fd03eb2772d2a6104327872ab98"
+        },
+        {
+          "index": 11,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "7758580b01b62e6dfb824041a402cfa50c2e5fd03eb2772d2a6104327872ab98"
+        },
+        {
+          "index": 12,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "7758580b01b62e6dfb824041a402cfa50c2e5fd03eb2772d2a6104327872ab98"
+        },
+        {
+          "index": 13,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "d8f8dcf6c2594cc164b249394a96256f76e18f8fcd5d88fa846ca60a429d91da"
+        },
+        {
+          "index": 14,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "d8f8dcf6c2594cc164b249394a96256f76e18f8fcd5d88fa846ca60a429d91da"
+        },
+        {
+          "index": 15,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "87c8af390fc83cbae3ea60c3ea138ec35f113725d82a64e3f6f563275d8708b3"
+        },
+        {
+          "index": 16,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "87c8af390fc83cbae3ea60c3ea138ec35f113725d82a64e3f6f563275d8708b3"
+        },
+        {
+          "index": 17,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "e20ad6c42b8c3685a42c2750b98ff007bb5686204c752b1408502594a2dd3f94"
+        },
+        {
+          "index": 18,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "e20ad6c42b8c3685a42c2750b98ff007bb5686204c752b1408502594a2dd3f94"
+        },
+        {
+          "index": 19,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "394ac60caabdae0038bf34d1d2ff88d17cd2f989bf229fc3f70cff5ed52b2f5c"
+        }
+      ],
+      "firstFrameSha256": "64fe54ef128e9397ff0c455afba52f96a2d8f37e0c22d5607375f5f755a7bb77",
+      "lastFrameSha256": "394ac60caabdae0038bf34d1d2ff88d17cd2f989bf229fc3f70cff5ed52b2f5c",
+      "loopClosed": true,
+      "motion": {
+        "channelDeltaThreshold": 16,
+        "meaningfulChangedPixelRatio": 0.0015,
+        "uniqueFrameCount": 12,
+        "transitionDifferenceRatios": [
+          0,
+          0.33144097222222224,
+          0.2702951388888889,
+          0.2298263888888889,
+          0.37697916666666664,
+          0.2946875,
+          0.2718055555555556,
+          0,
+          0.20635416666666667,
+          0,
+          0,
+          0,
+          0.38241319444444444,
+          0,
+          0.3032986111111111,
+          0,
+          0.29897569444444444,
+          0,
+          0.18664930555555556
+        ],
+        "meaningfulTransitionCount": 11,
+        "meanInternalDifferenceRatio": 0.16593293128654973,
+        "maxInternalDifferenceRatio": 0.38241319444444444
+      },
+      "loopClosure": {
+        "boundaryDifferenceRatio": 0.44484375,
+        "internalMedianDifferenceRatio": 0.20635416666666667,
+        "allowedBoundaryDifferenceRatio": 0.5158854166666667,
+        "passed": true
+      }
+    },
+    "issues": []
+  },
+  {
+    "id": "rabbit-hungry",
+    "pass": true,
+    "metadata": {
+      "format": "gif",
+      "width": 240,
+      "height": 240,
+      "pageHeight": 240,
+      "pages": 20,
+      "loop": 0,
+      "delays": [
+        200,
+        200,
+        220,
+        220,
+        220,
+        220,
+        220,
+        110,
+        110,
+        230,
+        230,
+        220,
+        220,
+        180,
+        170,
+        180,
+        170,
+        170,
+        170,
+        340
+      ],
+      "durationMs": 4000,
+      "bytes": 88887,
+      "sha256": "2535ab7074e10d91d9e33aba344a4463326e47f32b6fd7baadc9df00158d0740",
+      "frames": [
+        {
+          "index": 0,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "cebc279597c5a498f4440fac82afe0f28fc8e626173ab15a70644e07823ef876"
+        },
+        {
+          "index": 1,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "cebc279597c5a498f4440fac82afe0f28fc8e626173ab15a70644e07823ef876"
+        },
+        {
+          "index": 2,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "5f3b76beed195247e570bd1e74555ff5f882ff939e0f5728280833e489ab18d9"
+        },
+        {
+          "index": 3,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "fc9469eecaa62e2952aeb2452f3595df79bd346b3f26aa0d89970eb15ce7aa03"
+        },
+        {
+          "index": 4,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "39ff104b0d2ac3462ebc834e68bf4de6fb0114a9b77e7fa8099b77e80b9d123e"
+        },
+        {
+          "index": 5,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "8312af5e68b097c7f127244b7a69b3ddc9b09a45a0b076aa94b4f1bd876f677e"
+        },
+        {
+          "index": 6,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "9a82b1245013dc713d98d581c7c89d5e3e93102fc970c5eb985a7b1ee8b50193"
+        },
+        {
+          "index": 7,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "51914962fae97f0205d0c35fde6e3383d4127cc1f434179aad78630b5f6ca34d"
+        },
+        {
+          "index": 8,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "51914962fae97f0205d0c35fde6e3383d4127cc1f434179aad78630b5f6ca34d"
+        },
+        {
+          "index": 9,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "e970f2933365af42c8ab3a525a10f6131456c21a5f362c702fad074930e0c055"
+        },
+        {
+          "index": 10,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "e970f2933365af42c8ab3a525a10f6131456c21a5f362c702fad074930e0c055"
+        },
+        {
+          "index": 11,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "e970f2933365af42c8ab3a525a10f6131456c21a5f362c702fad074930e0c055"
+        },
+        {
+          "index": 12,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "e970f2933365af42c8ab3a525a10f6131456c21a5f362c702fad074930e0c055"
+        },
+        {
+          "index": 13,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "8085ea43984f2b0f76b392cc425ace8dae60589e404cfc526106acc55db0d543"
+        },
+        {
+          "index": 14,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "8085ea43984f2b0f76b392cc425ace8dae60589e404cfc526106acc55db0d543"
+        },
+        {
+          "index": 15,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "dd3998028d2582005a474ae28d85a4b27ff30ed20e0cd03f70a0d1b419785738"
+        },
+        {
+          "index": 16,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "dd3998028d2582005a474ae28d85a4b27ff30ed20e0cd03f70a0d1b419785738"
+        },
+        {
+          "index": 17,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "6ce145f437732f24ad67baf1fc3d5c10eb8ee9cf6945d09ce2fc7340552a73be"
+        },
+        {
+          "index": 18,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "6ce145f437732f24ad67baf1fc3d5c10eb8ee9cf6945d09ce2fc7340552a73be"
+        },
+        {
+          "index": 19,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "47577331cebee3683f31e1dbbfa8446b5ee63d2a59d2445207c4b7b077fe50f9"
+        }
+      ],
+      "firstFrameSha256": "cebc279597c5a498f4440fac82afe0f28fc8e626173ab15a70644e07823ef876",
+      "lastFrameSha256": "47577331cebee3683f31e1dbbfa8446b5ee63d2a59d2445207c4b7b077fe50f9",
+      "loopClosed": true,
+      "motion": {
+        "channelDeltaThreshold": 16,
+        "meaningfulChangedPixelRatio": 0.0015,
+        "uniqueFrameCount": 12,
+        "transitionDifferenceRatios": [
+          0,
+          0.09180555555555556,
+          0.06170138888888889,
+          0.07993055555555556,
+          0.09329861111111111,
+          0.05138888888888889,
+          0.062482638888888886,
+          0,
+          0.04345486111111111,
+          0,
+          0,
+          0,
+          0.10840277777777778,
+          0,
+          0.07911458333333334,
+          0,
+          0.040190972222222225,
+          0,
+          0.07013888888888889
+        ],
+        "meaningfulTransitionCount": 11,
+        "meanInternalDifferenceRatio": 0.0411531432748538,
+        "maxInternalDifferenceRatio": 0.10840277777777778
+      },
+      "loopClosure": {
+        "boundaryDifferenceRatio": 0.08894097222222222,
+        "internalMedianDifferenceRatio": 0.04345486111111111,
+        "allowedBoundaryDifferenceRatio": 0.10863715277777777,
+        "passed": true
+      }
+    },
+    "issues": []
+  },
+  {
+    "id": "pig-hungry",
+    "pass": true,
+    "metadata": {
+      "format": "gif",
+      "width": 240,
+      "height": 240,
+      "pageHeight": 240,
+      "pages": 20,
+      "loop": 0,
+      "delays": [
+        200,
+        200,
+        220,
+        220,
+        220,
+        220,
+        220,
+        110,
+        110,
+        230,
+        230,
+        220,
+        220,
+        180,
+        170,
+        180,
+        170,
+        170,
+        170,
+        340
+      ],
+      "durationMs": 4000,
+      "bytes": 88750,
+      "sha256": "87c5439b42a70da85648344f77947e8a5e91e78301503a429196015401f7c192",
+      "frames": [
+        {
+          "index": 0,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "ecd53f8f1fa1e931c9fafe5ea166eebf1a9518dc96ad4fc77efbbefb5ff97ba4"
+        },
+        {
+          "index": 1,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "ecd53f8f1fa1e931c9fafe5ea166eebf1a9518dc96ad4fc77efbbefb5ff97ba4"
+        },
+        {
+          "index": 2,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "63d2ee00c89371043c200046ec062abc07c35c23947739225c8df913c07876e3"
+        },
+        {
+          "index": 3,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "14bc50aabe5ac081ecc8858701ed0e0215166781356ab8dca7bd0e8e381a28eb"
+        },
+        {
+          "index": 4,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "cfda791d0f57bec3b51586aaf9fa6379f13936b83c98bd6b17cff85a3ecf6c62"
+        },
+        {
+          "index": 5,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "50644ca4278c354c446d0ae564ae6656c1ffdec910a81aa6e62bf935714d0a48"
+        },
+        {
+          "index": 6,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "5effaa435937510c22cba843676159bc4aeeb8aa4a0bdeb516f0f7983fa874f9"
+        },
+        {
+          "index": 7,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "02484a264f11a202cad41bea572c57ac8f85e80ac6fe50195cbcd4e474110427"
+        },
+        {
+          "index": 8,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "02484a264f11a202cad41bea572c57ac8f85e80ac6fe50195cbcd4e474110427"
+        },
+        {
+          "index": 9,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "dc45c2b2e3a57ca6f86c34c4545dd9a4fefdad8342c03991b3b856c62ea09786"
+        },
+        {
+          "index": 10,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "dc45c2b2e3a57ca6f86c34c4545dd9a4fefdad8342c03991b3b856c62ea09786"
+        },
+        {
+          "index": 11,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "dc45c2b2e3a57ca6f86c34c4545dd9a4fefdad8342c03991b3b856c62ea09786"
+        },
+        {
+          "index": 12,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "dc45c2b2e3a57ca6f86c34c4545dd9a4fefdad8342c03991b3b856c62ea09786"
+        },
+        {
+          "index": 13,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "e2fd15459e1dabc92cb30548072548bb35bfac29bd7e129ee65c4e7222f29e1f"
+        },
+        {
+          "index": 14,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "e2fd15459e1dabc92cb30548072548bb35bfac29bd7e129ee65c4e7222f29e1f"
+        },
+        {
+          "index": 15,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "3d0633399d5f8b70a4dd390821d827e1fcf93c47d38aa60aa81bac41c589f2a3"
+        },
+        {
+          "index": 16,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "3d0633399d5f8b70a4dd390821d827e1fcf93c47d38aa60aa81bac41c589f2a3"
+        },
+        {
+          "index": 17,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "5dcfa7f737c56e26756984f8cc3706eb4877159b1e086031400a9a21d24d19c5"
+        },
+        {
+          "index": 18,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "5dcfa7f737c56e26756984f8cc3706eb4877159b1e086031400a9a21d24d19c5"
+        },
+        {
+          "index": 19,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "3438fe2b586492f966ff835b5b86585c95f9448b6524bddaaa93bd8573ab6e87"
+        }
+      ],
+      "firstFrameSha256": "ecd53f8f1fa1e931c9fafe5ea166eebf1a9518dc96ad4fc77efbbefb5ff97ba4",
+      "lastFrameSha256": "3438fe2b586492f966ff835b5b86585c95f9448b6524bddaaa93bd8573ab6e87",
+      "loopClosed": true,
+      "motion": {
+        "channelDeltaThreshold": 16,
+        "meaningfulChangedPixelRatio": 0.0015,
+        "uniqueFrameCount": 12,
+        "transitionDifferenceRatios": [
+          0,
+          0.05517361111111111,
+          0.1388888888888889,
+          0.08895833333333333,
+          0.14748263888888888,
+          0.10588541666666666,
+          0.11375,
+          0,
+          0.10572916666666667,
+          0,
+          0,
+          0,
+          0.1324826388888889,
+          0,
+          0.11394097222222223,
+          0,
+          0.08921875,
+          0,
+          0.08541666666666667
+        ],
+        "meaningfulTransitionCount": 11,
+        "meanInternalDifferenceRatio": 0.06194353070175438,
+        "maxInternalDifferenceRatio": 0.14748263888888888
+      },
+      "loopClosure": {
+        "boundaryDifferenceRatio": 0.10975694444444445,
+        "internalMedianDifferenceRatio": 0.08541666666666667,
+        "allowedBoundaryDifferenceRatio": 0.21354166666666669,
+        "passed": true
+      }
+    },
+    "issues": []
+  },
+  {
+    "id": "man-hungry",
+    "pass": true,
+    "metadata": {
+      "format": "gif",
+      "width": 240,
+      "height": 240,
+      "pageHeight": 240,
+      "pages": 20,
+      "loop": 0,
+      "delays": [
+        200,
+        200,
+        220,
+        220,
+        220,
+        220,
+        220,
+        110,
+        110,
+        230,
+        230,
+        220,
+        220,
+        180,
+        170,
+        180,
+        170,
+        170,
+        170,
+        340
+      ],
+      "durationMs": 4000,
+      "bytes": 81510,
+      "sha256": "7118adeed7dc1c392f0a465f4bce476d0a6a6d7a967ded6ca6a8ddc748e26f9f",
+      "frames": [
+        {
+          "index": 0,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "69c2959cdf289a43e423665bb30e52275f6b9a26a4e2c0249cda98500acdc6d8"
+        },
+        {
+          "index": 1,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "69c2959cdf289a43e423665bb30e52275f6b9a26a4e2c0249cda98500acdc6d8"
+        },
+        {
+          "index": 2,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "5e51e9939db3842208a80bf7fe24d16f0ec9f77927291af362dca6afcff04376"
+        },
+        {
+          "index": 3,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "58ffd3a3015fcf52861522b6ed0dc210eb2363022fa7f3a4ed5ab9747272dcc9"
+        },
+        {
+          "index": 4,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "199153d8fbcf7da6f022e36820caf2374a9ec0e79948cfeea9ee84dee9bef71b"
+        },
+        {
+          "index": 5,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "b55872d4c36d768b9124575202f9adcc4546294214a34110ee1b4debb27110d3"
+        },
+        {
+          "index": 6,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "963035f278ed1d7e771e895686812104192a89bbaa6a1ec3b94e165a77a34a72"
+        },
+        {
+          "index": 7,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "166a0ee4b580b1d72c31291a2966a0f76c945aa81af838c0b73a50c894f812ed"
+        },
+        {
+          "index": 8,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "166a0ee4b580b1d72c31291a2966a0f76c945aa81af838c0b73a50c894f812ed"
+        },
+        {
+          "index": 9,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "b60807fa248fe8b5ef65b3dc567271e5cc9eab12cf9d9f484b22683700b0f721"
+        },
+        {
+          "index": 10,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "b60807fa248fe8b5ef65b3dc567271e5cc9eab12cf9d9f484b22683700b0f721"
+        },
+        {
+          "index": 11,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "b60807fa248fe8b5ef65b3dc567271e5cc9eab12cf9d9f484b22683700b0f721"
+        },
+        {
+          "index": 12,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "b60807fa248fe8b5ef65b3dc567271e5cc9eab12cf9d9f484b22683700b0f721"
+        },
+        {
+          "index": 13,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "31992e18d599e13e8360dea23791f23816f4111b3ee829bd44ead043d9dba9b0"
+        },
+        {
+          "index": 14,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "31992e18d599e13e8360dea23791f23816f4111b3ee829bd44ead043d9dba9b0"
+        },
+        {
+          "index": 15,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "21e99f5cd74553f8dcd90a368bb8a2e3b9fca619b43fe2d8e5a2d720f414166a"
+        },
+        {
+          "index": 16,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "21e99f5cd74553f8dcd90a368bb8a2e3b9fca619b43fe2d8e5a2d720f414166a"
+        },
+        {
+          "index": 17,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "0bfb1cafd256785ec14838d873f74dfaae78cf4febd12bf1fc1faaad30713676"
+        },
+        {
+          "index": 18,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "0bfb1cafd256785ec14838d873f74dfaae78cf4febd12bf1fc1faaad30713676"
+        },
+        {
+          "index": 19,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "47938ae67dd3c4d21c53a4410b643a15c713c36dc6c249576717ad3f61f382f5"
+        }
+      ],
+      "firstFrameSha256": "69c2959cdf289a43e423665bb30e52275f6b9a26a4e2c0249cda98500acdc6d8",
+      "lastFrameSha256": "47938ae67dd3c4d21c53a4410b643a15c713c36dc6c249576717ad3f61f382f5",
+      "loopClosed": true,
+      "motion": {
+        "channelDeltaThreshold": 16,
+        "meaningfulChangedPixelRatio": 0.0015,
+        "uniqueFrameCount": 12,
+        "transitionDifferenceRatios": [
+          0,
+          0.23907986111111112,
+          0.13782986111111112,
+          0.13522569444444443,
+          0.23875,
+          0.1304861111111111,
+          0.15036458333333333,
+          0,
+          0.1424652777777778,
+          0,
+          0,
+          0,
+          0.2160763888888889,
+          0,
+          0.16265625,
+          0,
+          0.13414930555555554,
+          0,
+          0.12012152777777778
+        ],
+        "meaningfulTransitionCount": 11,
+        "meanInternalDifferenceRatio": 0.09511604532163742,
+        "maxInternalDifferenceRatio": 0.23907986111111112
+      },
+      "loopClosure": {
+        "boundaryDifferenceRatio": 0.2012673611111111,
+        "internalMedianDifferenceRatio": 0.1304861111111111,
+        "allowedBoundaryDifferenceRatio": 0.32621527777777776,
+        "passed": true
+      }
+    },
+    "issues": []
+  },
+  {
+    "id": "bulldog-weary",
+    "pass": true,
+    "metadata": {
+      "format": "gif",
+      "width": 240,
+      "height": 240,
+      "pageHeight": 240,
+      "pages": 20,
+      "loop": 0,
+      "delays": [
+        200,
+        200,
+        220,
+        220,
+        220,
+        220,
+        220,
+        110,
+        110,
+        230,
+        230,
+        220,
+        220,
+        180,
+        170,
+        180,
+        170,
+        170,
+        170,
+        340
+      ],
+      "durationMs": 4000,
+      "bytes": 112588,
+      "sha256": "57f0bac3e54d444ed127bfdd6f9121754fadc8d421b1228804aee04b2c8713af",
+      "frames": [
+        {
+          "index": 0,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "a155492da4bf4cf2f07ab6e79714de151538c08f8b38dbd8518d4d897b777cb5"
+        },
+        {
+          "index": 1,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "a155492da4bf4cf2f07ab6e79714de151538c08f8b38dbd8518d4d897b777cb5"
+        },
+        {
+          "index": 2,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "506fe99e6816fe421d4af7c5dd26cb76a94d185f11633ac0674eae54062c4132"
+        },
+        {
+          "index": 3,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "93a834603d34a3a6f25e657f3a098187831f4d768390e106083280dc638c59c8"
+        },
+        {
+          "index": 4,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "9e12a4678a989e919093abb46d3328b0733852de4346a03a214d20098f36c476"
+        },
+        {
+          "index": 5,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "311aa449ce4ded520d058885e93409ab8e5a801a38491ed23c14ea9c302d961d"
+        },
+        {
+          "index": 6,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "33e3f20c30b1f5d8af091f25c2bb7dc7725d671c1b00f6a72d2c3dc27ca171da"
+        },
+        {
+          "index": 7,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "5dfc42e54ebbd9885eed89ee2faf12a18512260d57e82d7c90e24b8f3ada08c0"
+        },
+        {
+          "index": 8,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "5dfc42e54ebbd9885eed89ee2faf12a18512260d57e82d7c90e24b8f3ada08c0"
+        },
+        {
+          "index": 9,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "9c6b56e1fe0585cd6fa369f0f857ceac11df48b66566d58355613335d6fe5eef"
+        },
+        {
+          "index": 10,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "9c6b56e1fe0585cd6fa369f0f857ceac11df48b66566d58355613335d6fe5eef"
+        },
+        {
+          "index": 11,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "9c6b56e1fe0585cd6fa369f0f857ceac11df48b66566d58355613335d6fe5eef"
+        },
+        {
+          "index": 12,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "9c6b56e1fe0585cd6fa369f0f857ceac11df48b66566d58355613335d6fe5eef"
+        },
+        {
+          "index": 13,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "7e04c5cfbc5922f6b83b5643994908f50b91188dea5473ff9f98d11d410aee8e"
+        },
+        {
+          "index": 14,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "7e04c5cfbc5922f6b83b5643994908f50b91188dea5473ff9f98d11d410aee8e"
+        },
+        {
+          "index": 15,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "14b27f8c56a2390ac4484865e4dfc93376fecd5cfc1acdc986b67837a85e9889"
+        },
+        {
+          "index": 16,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "14b27f8c56a2390ac4484865e4dfc93376fecd5cfc1acdc986b67837a85e9889"
+        },
+        {
+          "index": 17,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "302c992233e4e5ad9a9f9cd81bb81443cfa787095edef3d452a48e8ce10b64ea"
+        },
+        {
+          "index": 18,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "302c992233e4e5ad9a9f9cd81bb81443cfa787095edef3d452a48e8ce10b64ea"
+        },
+        {
+          "index": 19,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "a5a98adac3d1d13739308675e09c2f1a766911f451d9a1c4b1725f4121d37f59"
+        }
+      ],
+      "firstFrameSha256": "a155492da4bf4cf2f07ab6e79714de151538c08f8b38dbd8518d4d897b777cb5",
+      "lastFrameSha256": "a5a98adac3d1d13739308675e09c2f1a766911f451d9a1c4b1725f4121d37f59",
+      "loopClosed": true,
+      "motion": {
+        "channelDeltaThreshold": 16,
+        "meaningfulChangedPixelRatio": 0.0015,
+        "uniqueFrameCount": 12,
+        "transitionDifferenceRatios": [
+          0,
+          0.32036458333333334,
+          0.2629861111111111,
+          0.305625,
+          0.2880034722222222,
+          0.2935069444444444,
+          0.29022569444444446,
+          0,
+          0.21151041666666667,
+          0,
+          0,
+          0,
+          0.32947916666666666,
+          0,
+          0.25854166666666667,
+          0,
+          0.19671875,
+          0,
+          0.23694444444444446
+        ],
+        "meaningfulTransitionCount": 11,
+        "meanInternalDifferenceRatio": 0.15757401315789474,
+        "maxInternalDifferenceRatio": 0.32947916666666666
+      },
+      "loopClosure": {
+        "boundaryDifferenceRatio": 0.17940972222222223,
+        "internalMedianDifferenceRatio": 0.21151041666666667,
+        "allowedBoundaryDifferenceRatio": 0.5287760416666667,
+        "passed": true
+      }
+    },
+    "issues": []
+  },
+  {
+    "id": "seal-weary",
+    "pass": true,
+    "metadata": {
+      "format": "gif",
+      "width": 240,
+      "height": 240,
+      "pageHeight": 240,
+      "pages": 20,
+      "loop": 0,
+      "delays": [
+        200,
+        200,
+        220,
+        220,
+        220,
+        220,
+        220,
+        110,
+        110,
+        230,
+        230,
+        220,
+        220,
+        180,
+        170,
+        180,
+        170,
+        170,
+        170,
+        340
+      ],
+      "durationMs": 4000,
+      "bytes": 67058,
+      "sha256": "c7dfe5998c87db5af8b025b9a1cc3b1cceafcbcadec4ec133f660b3ddc02c29b",
+      "frames": [
+        {
+          "index": 0,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "3046b254e42d66791f1af6dae0f1623fad71c0dfa736f5f962c902e7f35da660"
+        },
+        {
+          "index": 1,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "3046b254e42d66791f1af6dae0f1623fad71c0dfa736f5f962c902e7f35da660"
+        },
+        {
+          "index": 2,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "98c570fa2c8fec689b147f031ba7fd51279e606d4e5c756682f13dccb35e2bf7"
+        },
+        {
+          "index": 3,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "ce296b782538a16ce357c1e784a4ca9409a417ebba053b7ba972bbe718240f5d"
+        },
+        {
+          "index": 4,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "5e28e60812806a3da5c33b5f0deeb1d931fe5f1e325adc74b457fe06ef21d3a3"
+        },
+        {
+          "index": 5,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "53abbc4703603c1c45cd3650432da21d9e8076c709e91595d6d34092513d1c9c"
+        },
+        {
+          "index": 6,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "5f47c19c6b3c3b58a21bdd7c6f207284c5d036a4152e2d7506a2b28ec1760df7"
+        },
+        {
+          "index": 7,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "5550ccee3f87fc84a5d52cb6e1b2a3004bd5219d43686d10d2fa1b62484e65c0"
+        },
+        {
+          "index": 8,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "5550ccee3f87fc84a5d52cb6e1b2a3004bd5219d43686d10d2fa1b62484e65c0"
+        },
+        {
+          "index": 9,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "71675ad6582fb891056e6e774d57548a9eff5869904b85ca28389748f407261a"
+        },
+        {
+          "index": 10,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "71675ad6582fb891056e6e774d57548a9eff5869904b85ca28389748f407261a"
+        },
+        {
+          "index": 11,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "71675ad6582fb891056e6e774d57548a9eff5869904b85ca28389748f407261a"
+        },
+        {
+          "index": 12,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "71675ad6582fb891056e6e774d57548a9eff5869904b85ca28389748f407261a"
+        },
+        {
+          "index": 13,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "ae2bf82d2a2536e218220de21886e16c9023b8cb69dc70afb1cb84325473a770"
+        },
+        {
+          "index": 14,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "ae2bf82d2a2536e218220de21886e16c9023b8cb69dc70afb1cb84325473a770"
+        },
+        {
+          "index": 15,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "5fd17e952d23aae92305126561917c8240db806216429f18962c402d46091179"
+        },
+        {
+          "index": 16,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "5fd17e952d23aae92305126561917c8240db806216429f18962c402d46091179"
+        },
+        {
+          "index": 17,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "5a08ffa7ed951491afbe569c16571fe0efdd703a1577bd690629633aa388af83"
+        },
+        {
+          "index": 18,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "5a08ffa7ed951491afbe569c16571fe0efdd703a1577bd690629633aa388af83"
+        },
+        {
+          "index": 19,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "ad446aa2eda182006aba5a40b3daa5467fe9c643eb726dd07ccfb215e46130ea"
+        }
+      ],
+      "firstFrameSha256": "3046b254e42d66791f1af6dae0f1623fad71c0dfa736f5f962c902e7f35da660",
+      "lastFrameSha256": "ad446aa2eda182006aba5a40b3daa5467fe9c643eb726dd07ccfb215e46130ea",
+      "loopClosed": true,
+      "motion": {
+        "channelDeltaThreshold": 16,
+        "meaningfulChangedPixelRatio": 0.0015,
+        "uniqueFrameCount": 12,
+        "transitionDifferenceRatios": [
+          0,
+          0.13038194444444445,
+          0.10413194444444444,
+          0.12402777777777778,
+          0.14515625,
+          0.12503472222222223,
+          0.1299826388888889,
+          0,
+          0.1184375,
+          0,
+          0,
+          0,
+          0.1581423611111111,
+          0,
+          0.13421875,
+          0,
+          0.12670138888888888,
+          0,
+          0.13520833333333335
+        ],
+        "meaningfulTransitionCount": 11,
+        "meanInternalDifferenceRatio": 0.07533808479532163,
+        "maxInternalDifferenceRatio": 0.1581423611111111
+      },
+      "loopClosure": {
+        "boundaryDifferenceRatio": 0.15215277777777778,
+        "internalMedianDifferenceRatio": 0.1184375,
+        "allowedBoundaryDifferenceRatio": 0.29609375,
+        "passed": true
+      }
+    },
+    "issues": []
+  },
+  {
+    "id": "sloth-weary",
+    "pass": true,
+    "metadata": {
+      "format": "gif",
+      "width": 240,
+      "height": 240,
+      "pageHeight": 240,
+      "pages": 20,
+      "loop": 0,
+      "delays": [
+        200,
+        200,
+        220,
+        220,
+        220,
+        220,
+        220,
+        110,
+        110,
+        230,
+        230,
+        220,
+        220,
+        180,
+        170,
+        180,
+        170,
+        170,
+        170,
+        340
+      ],
+      "durationMs": 4000,
+      "bytes": 90588,
+      "sha256": "13f356591c843522f0ee6c163c4e648458d6cf36a22c8a51eb8fd90fdacc2002",
+      "frames": [
+        {
+          "index": 0,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "093e017e2c9d784f930b0d443bef5984b0ff8cb37d9abc8e47fe62d4bcbc0eaa"
+        },
+        {
+          "index": 1,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "093e017e2c9d784f930b0d443bef5984b0ff8cb37d9abc8e47fe62d4bcbc0eaa"
+        },
+        {
+          "index": 2,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "bdc07aa191500390ed4ad27a1cde7b8b3b68f583f1463ca0c34a6cc7c55065d5"
+        },
+        {
+          "index": 3,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "8200609c5676dd51826b5e6afb2d46f1b5636dbe3e373dd09af76776771800ba"
+        },
+        {
+          "index": 4,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "707a7748fe0fcd0fa568afccd632415aa70d6a6a4c77a322fd1008dc9234a65e"
+        },
+        {
+          "index": 5,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "8f4f621b121fafbfc05a648cc63cfd2d98e13d6a61a84b5490587955c681e8f3"
+        },
+        {
+          "index": 6,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "6e20e57beba973abbd0ca22b60253aa4c2512798803f9816a8cd9696c2227632"
+        },
+        {
+          "index": 7,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "d39ce4660aabfe20ea203edbfd06c04a24c9aef6a786e3bb29335a73582d2edf"
+        },
+        {
+          "index": 8,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "d39ce4660aabfe20ea203edbfd06c04a24c9aef6a786e3bb29335a73582d2edf"
+        },
+        {
+          "index": 9,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "94b7578a418f0848853b5c9ed23f1ab4ec6b0d4d337ece46edd519f2ddde138c"
+        },
+        {
+          "index": 10,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "94b7578a418f0848853b5c9ed23f1ab4ec6b0d4d337ece46edd519f2ddde138c"
+        },
+        {
+          "index": 11,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "94b7578a418f0848853b5c9ed23f1ab4ec6b0d4d337ece46edd519f2ddde138c"
+        },
+        {
+          "index": 12,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "94b7578a418f0848853b5c9ed23f1ab4ec6b0d4d337ece46edd519f2ddde138c"
+        },
+        {
+          "index": 13,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "9aab09dd53f696c2fa6b98f4c8f001874079da969e9fd5edf50bde8525b530f7"
+        },
+        {
+          "index": 14,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "9aab09dd53f696c2fa6b98f4c8f001874079da969e9fd5edf50bde8525b530f7"
+        },
+        {
+          "index": 15,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "a812b2ae8b5898ef5d48b0e7a19e4b060dac7f130283a2d368f09251b38b0990"
+        },
+        {
+          "index": 16,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "a812b2ae8b5898ef5d48b0e7a19e4b060dac7f130283a2d368f09251b38b0990"
+        },
+        {
+          "index": 17,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "f379a71965b744f0dc89077ef7baffa02ea856510cbf73765d45ecc567e9acc3"
+        },
+        {
+          "index": 18,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "f379a71965b744f0dc89077ef7baffa02ea856510cbf73765d45ecc567e9acc3"
+        },
+        {
+          "index": 19,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "79bce428d9a0a42caf3fa20fd311e692e7a08b847c91338df76501ceac8c04a6"
+        }
+      ],
+      "firstFrameSha256": "093e017e2c9d784f930b0d443bef5984b0ff8cb37d9abc8e47fe62d4bcbc0eaa",
+      "lastFrameSha256": "79bce428d9a0a42caf3fa20fd311e692e7a08b847c91338df76501ceac8c04a6",
+      "loopClosed": true,
+      "motion": {
+        "channelDeltaThreshold": 16,
+        "meaningfulChangedPixelRatio": 0.0015,
+        "uniqueFrameCount": 12,
+        "transitionDifferenceRatios": [
+          0,
+          0.1556597222222222,
+          0.07829861111111111,
+          0.05286458333333333,
+          0.12324652777777778,
+          0.11986111111111111,
+          0.09473958333333334,
+          0,
+          0.09166666666666666,
+          0,
+          0,
+          0,
+          0.13434027777777777,
+          0,
+          0.08425347222222222,
+          0,
+          0.08574652777777778,
+          0,
+          0.04861111111111111
+        ],
+        "meaningfulTransitionCount": 11,
+        "meanInternalDifferenceRatio": 0.05627832602339182,
+        "maxInternalDifferenceRatio": 0.1556597222222222
+      },
+      "loopClosure": {
+        "boundaryDifferenceRatio": 0.12267361111111111,
+        "internalMedianDifferenceRatio": 0.05286458333333333,
+        "allowedBoundaryDifferenceRatio": 0.13216145833333334,
+        "passed": true
+      }
+    },
+    "issues": []
+  },
+  {
+    "id": "man-weary",
+    "pass": true,
+    "metadata": {
+      "format": "gif",
+      "width": 240,
+      "height": 240,
+      "pageHeight": 240,
+      "pages": 20,
+      "loop": 0,
+      "delays": [
+        200,
+        200,
+        220,
+        220,
+        220,
+        220,
+        220,
+        110,
+        110,
+        230,
+        230,
+        220,
+        220,
+        180,
+        170,
+        180,
+        170,
+        170,
+        170,
+        340
+      ],
+      "durationMs": 4000,
+      "bytes": 79047,
+      "sha256": "47e32b47cc13183bf5b22e137aa96740ac8ddb2110605627fa79a2e485453002",
+      "frames": [
+        {
+          "index": 0,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "9e759a5effba20e4e73aa91d87b20e6ddbb382705aa4f0988d1b282ef59162c7"
+        },
+        {
+          "index": 1,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "9e759a5effba20e4e73aa91d87b20e6ddbb382705aa4f0988d1b282ef59162c7"
+        },
+        {
+          "index": 2,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "ee1a1a8d22d9feb03f55fdd42d4085882091bc56127b7aa18d25fd89ef09a814"
+        },
+        {
+          "index": 3,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "d1560094aa87afede3f1cfd310e6617d6c540346179164d4bdec28159938be25"
+        },
+        {
+          "index": 4,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "53087be478e0c4ab4fd432d3b31a90bf7d83724c6b73810212df8e5e938ade84"
+        },
+        {
+          "index": 5,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "1c22f7f308719a4cd15627744cf9bbc890351f55c980f4638d852dbf7871e242"
+        },
+        {
+          "index": 6,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "01d5bb7ca02eec9d26f741ba1c8c8fc5e4b3ee5b698e6a58e71d96f94a290c8d"
+        },
+        {
+          "index": 7,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "3e2891a3a510247b9b6867ab4ce6386fa63fa10c0551db3825049d090d638773"
+        },
+        {
+          "index": 8,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "3e2891a3a510247b9b6867ab4ce6386fa63fa10c0551db3825049d090d638773"
+        },
+        {
+          "index": 9,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "bad1fd2d40fe16dce474b62d5e8e28820e1a278cba66c5a0b5ad66cd54d6fd2b"
+        },
+        {
+          "index": 10,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "bad1fd2d40fe16dce474b62d5e8e28820e1a278cba66c5a0b5ad66cd54d6fd2b"
+        },
+        {
+          "index": 11,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "bad1fd2d40fe16dce474b62d5e8e28820e1a278cba66c5a0b5ad66cd54d6fd2b"
+        },
+        {
+          "index": 12,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "bad1fd2d40fe16dce474b62d5e8e28820e1a278cba66c5a0b5ad66cd54d6fd2b"
+        },
+        {
+          "index": 13,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "bace69a796d253b834a252b0a16da5e24bfc01a6450997191198daabe1486962"
+        },
+        {
+          "index": 14,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "bace69a796d253b834a252b0a16da5e24bfc01a6450997191198daabe1486962"
+        },
+        {
+          "index": 15,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "0c490e06292e86139719b0c0cb4ac167c69ebe39c6a8b549eec242a6c43b10c9"
+        },
+        {
+          "index": 16,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "0c490e06292e86139719b0c0cb4ac167c69ebe39c6a8b549eec242a6c43b10c9"
+        },
+        {
+          "index": 17,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "88f699edba90d9a7c1ccb630709bbc6a04143435f61c287c14d171c3c7a55125"
+        },
+        {
+          "index": 18,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "88f699edba90d9a7c1ccb630709bbc6a04143435f61c287c14d171c3c7a55125"
+        },
+        {
+          "index": 19,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "b7d4624f8242934a04ae86015eee43b34df83df35a196ecff1ba8a3bb7dc432a"
+        }
+      ],
+      "firstFrameSha256": "9e759a5effba20e4e73aa91d87b20e6ddbb382705aa4f0988d1b282ef59162c7",
+      "lastFrameSha256": "b7d4624f8242934a04ae86015eee43b34df83df35a196ecff1ba8a3bb7dc432a",
+      "loopClosed": true,
+      "motion": {
+        "channelDeltaThreshold": 16,
+        "meaningfulChangedPixelRatio": 0.0015,
+        "uniqueFrameCount": 12,
+        "transitionDifferenceRatios": [
+          0,
+          0.12152777777777778,
+          0.06413194444444445,
+          0.17340277777777777,
+          0.14276041666666667,
+          0.17383680555555556,
+          0.10293402777777778,
+          0,
+          0.07340277777777778,
+          0,
+          0,
+          0,
+          0.16762152777777778,
+          0,
+          0.08682291666666667,
+          0,
+          0.051180555555555556,
+          0,
+          0.06385416666666667
+        ],
+        "meaningfulTransitionCount": 11,
+        "meanInternalDifferenceRatio": 0.06428819444444446,
+        "maxInternalDifferenceRatio": 0.17383680555555556
+      },
+      "loopClosure": {
+        "boundaryDifferenceRatio": 0.07869791666666667,
+        "internalMedianDifferenceRatio": 0.06385416666666667,
+        "allowedBoundaryDifferenceRatio": 0.15963541666666667,
+        "passed": true
+      }
+    },
+    "issues": []
+  },
+  {
+    "id": "gingercat-shush",
+    "pass": true,
+    "metadata": {
+      "format": "gif",
+      "width": 240,
+      "height": 240,
+      "pageHeight": 240,
+      "pages": 20,
+      "loop": 0,
+      "delays": [
+        200,
+        200,
+        220,
+        220,
+        220,
+        220,
+        220,
+        110,
+        110,
+        230,
+        230,
+        220,
+        220,
+        180,
+        170,
+        180,
+        170,
+        170,
+        170,
+        340
+      ],
+      "durationMs": 4000,
+      "bytes": 126655,
+      "sha256": "3b77408f339df1bdbf08f0816ab5f50d25ad29f1281d8c83459eefe4215299a6",
+      "frames": [
+        {
+          "index": 0,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "90baad52fb95c11f96aadb007a13c71f9b3180ab86ca0644a600c7482cc0153c"
+        },
+        {
+          "index": 1,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "90baad52fb95c11f96aadb007a13c71f9b3180ab86ca0644a600c7482cc0153c"
+        },
+        {
+          "index": 2,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "bce62ceb3cffee2edb5497c78e429fe8d166f0efbae6ec3dcc4e353c96685190"
+        },
+        {
+          "index": 3,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "c1dc59703acba18172a6a05e9ff3a9b1733bb73a3a17da36440d078c0143580c"
+        },
+        {
+          "index": 4,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "288c8d935b7f385a2fa08110cb12cce4d783cbcdc0a497cad6f0200a2798b90f"
+        },
+        {
+          "index": 5,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "ca04c6c10f5a960db2daf09275958ed46a0ba2421393d454feb6dad9e5e75817"
+        },
+        {
+          "index": 6,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "c038cf6a062c3d2c0a8b0bfa493447f736b0329e64a38eafb4961d31eb324aea"
+        },
+        {
+          "index": 7,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "35a6f2b8420f2433278fe95752c2d5f719323b761f8b7236c2e33851a3ab3ee5"
+        },
+        {
+          "index": 8,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "35a6f2b8420f2433278fe95752c2d5f719323b761f8b7236c2e33851a3ab3ee5"
+        },
+        {
+          "index": 9,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "0fb3047cd0d7696dde519fac732a30c00ac048cc0112373e84bbc625c1f60bd0"
+        },
+        {
+          "index": 10,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "0fb3047cd0d7696dde519fac732a30c00ac048cc0112373e84bbc625c1f60bd0"
+        },
+        {
+          "index": 11,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "0fb3047cd0d7696dde519fac732a30c00ac048cc0112373e84bbc625c1f60bd0"
+        },
+        {
+          "index": 12,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "0fb3047cd0d7696dde519fac732a30c00ac048cc0112373e84bbc625c1f60bd0"
+        },
+        {
+          "index": 13,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "8e51ea1b1795d181d14582ea835d85c1148beb48a1f33f9e7d566a1797122511"
+        },
+        {
+          "index": 14,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "8e51ea1b1795d181d14582ea835d85c1148beb48a1f33f9e7d566a1797122511"
+        },
+        {
+          "index": 15,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "9ff07bc67e0e88c4cc4d5f7f85e085d398101e1ee803d4cf9959bcf5c040ac87"
+        },
+        {
+          "index": 16,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "9ff07bc67e0e88c4cc4d5f7f85e085d398101e1ee803d4cf9959bcf5c040ac87"
+        },
+        {
+          "index": 17,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "a261b57074b4d3c52acae22d5f41b75741e4b7c4ea80804a6f94e4d782165653"
+        },
+        {
+          "index": 18,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "a261b57074b4d3c52acae22d5f41b75741e4b7c4ea80804a6f94e4d782165653"
+        },
+        {
+          "index": 19,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "df409662feadc58f765f75e1b36a06df690a3627264f53eda35ab869ad55ddfa"
+        }
+      ],
+      "firstFrameSha256": "90baad52fb95c11f96aadb007a13c71f9b3180ab86ca0644a600c7482cc0153c",
+      "lastFrameSha256": "df409662feadc58f765f75e1b36a06df690a3627264f53eda35ab869ad55ddfa",
+      "loopClosed": true,
+      "motion": {
+        "channelDeltaThreshold": 16,
+        "meaningfulChangedPixelRatio": 0.0015,
+        "uniqueFrameCount": 12,
+        "transitionDifferenceRatios": [
+          0,
+          0.39741319444444445,
+          0.4072222222222222,
+          0.3046875,
+          0.5025868055555556,
+          0.43786458333333333,
+          0.40958333333333335,
+          0,
+          0.3990625,
+          0,
+          0,
+          0,
+          0.50875,
+          0,
+          0.46958333333333335,
+          0,
+          0.3892361111111111,
+          0,
+          0.26447916666666665
+        ],
+        "meaningfulTransitionCount": 11,
+        "meanInternalDifferenceRatio": 0.23634046052631583,
+        "maxInternalDifferenceRatio": 0.50875
+      },
+      "loopClosure": {
+        "boundaryDifferenceRatio": 0.4781076388888889,
+        "internalMedianDifferenceRatio": 0.3046875,
+        "allowedBoundaryDifferenceRatio": 0.76171875,
+        "passed": true
+      }
+    },
+    "issues": []
+  },
+  {
+    "id": "owl-shush",
+    "pass": true,
+    "metadata": {
+      "format": "gif",
+      "width": 240,
+      "height": 240,
+      "pageHeight": 240,
+      "pages": 20,
+      "loop": 0,
+      "delays": [
+        200,
+        200,
+        220,
+        220,
+        220,
+        220,
+        220,
+        110,
+        110,
+        230,
+        230,
+        220,
+        220,
+        180,
+        170,
+        180,
+        170,
+        170,
+        170,
+        340
+      ],
+      "durationMs": 4000,
+      "bytes": 110737,
+      "sha256": "65a8a84efc7fb8615b6ee490769d8994a082af08c7b5a0eea80afc445788f5af",
+      "frames": [
+        {
+          "index": 0,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "dc30d5618e504826719cd8c6f4ec5c47285df3ccc159d2da83ddd1e0e984af84"
+        },
+        {
+          "index": 1,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "dc30d5618e504826719cd8c6f4ec5c47285df3ccc159d2da83ddd1e0e984af84"
+        },
+        {
+          "index": 2,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "92f8c1ae7e77c1171102294606e640bf84c0219b5a80c1fad8ab2bdf605bb2df"
+        },
+        {
+          "index": 3,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "3caf9b5d61657ba11dfb7dcbd4ad9251d2e9864b411665c599b9e5d3e42c69f2"
+        },
+        {
+          "index": 4,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "15ef7e141880cbe28c10ffd420aaaba5e2610c7f9bb6ae5da6972bd743420240"
+        },
+        {
+          "index": 5,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "03d07a8b0f57da898fc97dcacd0a0b1b6051eaf01252e9605a8edf160933a05e"
+        },
+        {
+          "index": 6,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "8b1ca371e00b0133cde38901344e5a5ead2b788091476cefaa567778ff065432"
+        },
+        {
+          "index": 7,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "b750659f2daf4a26d464020f52b01718a14dd5791baee73333a9be91113e0271"
+        },
+        {
+          "index": 8,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "b750659f2daf4a26d464020f52b01718a14dd5791baee73333a9be91113e0271"
+        },
+        {
+          "index": 9,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "96146c2d4ad1736283efe6e5db4fc53243c45df0ef29f6d30884acb1ed9acc0f"
+        },
+        {
+          "index": 10,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "96146c2d4ad1736283efe6e5db4fc53243c45df0ef29f6d30884acb1ed9acc0f"
+        },
+        {
+          "index": 11,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "96146c2d4ad1736283efe6e5db4fc53243c45df0ef29f6d30884acb1ed9acc0f"
+        },
+        {
+          "index": 12,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "96146c2d4ad1736283efe6e5db4fc53243c45df0ef29f6d30884acb1ed9acc0f"
+        },
+        {
+          "index": 13,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "21f434cd57ea108746b8202f289eb00384f642eccef35aa2a572b91051dca1b6"
+        },
+        {
+          "index": 14,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "21f434cd57ea108746b8202f289eb00384f642eccef35aa2a572b91051dca1b6"
+        },
+        {
+          "index": 15,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "18f791eb28adb504ab797713d429ced51972c949b45541a7a36e853af1fbca98"
+        },
+        {
+          "index": 16,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "18f791eb28adb504ab797713d429ced51972c949b45541a7a36e853af1fbca98"
+        },
+        {
+          "index": 17,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "86e7f978009050629d7fbc936ccafdb8933e3ee2e05e0481bdfcb37198fbb659"
+        },
+        {
+          "index": 18,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "86e7f978009050629d7fbc936ccafdb8933e3ee2e05e0481bdfcb37198fbb659"
+        },
+        {
+          "index": 19,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "5c85690c73991b8f8b7ce40eaf92f5714a89a15a9940b84ae46f6ca5d0d43dd4"
+        }
+      ],
+      "firstFrameSha256": "dc30d5618e504826719cd8c6f4ec5c47285df3ccc159d2da83ddd1e0e984af84",
+      "lastFrameSha256": "5c85690c73991b8f8b7ce40eaf92f5714a89a15a9940b84ae46f6ca5d0d43dd4",
+      "loopClosed": true,
+      "motion": {
+        "channelDeltaThreshold": 16,
+        "meaningfulChangedPixelRatio": 0.0015,
+        "uniqueFrameCount": 12,
+        "transitionDifferenceRatios": [
+          0,
+          0.20960069444444446,
+          0.21109375,
+          0.20998263888888888,
+          0.2203298611111111,
+          0.20520833333333333,
+          0.215625,
+          0,
+          0.21930555555555556,
+          0,
+          0,
+          0,
+          0.24211805555555554,
+          0,
+          0.22404513888888888,
+          0,
+          0.2159375,
+          0,
+          0.2153125
+        ],
+        "meaningfulTransitionCount": 11,
+        "meanInternalDifferenceRatio": 0.12571363304093566,
+        "maxInternalDifferenceRatio": 0.24211805555555554
+      },
+      "loopClosure": {
+        "boundaryDifferenceRatio": 0.22239583333333332,
+        "internalMedianDifferenceRatio": 0.20960069444444446,
+        "allowedBoundaryDifferenceRatio": 0.5240017361111111,
+        "passed": true
+      }
+    },
+    "issues": []
+  },
+  {
+    "id": "fox-shush",
+    "pass": true,
+    "metadata": {
+      "format": "gif",
+      "width": 240,
+      "height": 240,
+      "pageHeight": 240,
+      "pages": 20,
+      "loop": 0,
+      "delays": [
+        200,
+        200,
+        220,
+        220,
+        220,
+        220,
+        220,
+        110,
+        110,
+        230,
+        230,
+        220,
+        220,
+        180,
+        170,
+        180,
+        170,
+        170,
+        170,
+        340
+      ],
+      "durationMs": 4000,
+      "bytes": 90803,
+      "sha256": "ec7425d407ac62ce65cc38569cedbc2ad74825db1623e52466e8e8b147529ae3",
+      "frames": [
+        {
+          "index": 0,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "6a66220206c31b825c8a458e24272fd20eff3d7e00f868514daf73674a8a32cb"
+        },
+        {
+          "index": 1,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "6a66220206c31b825c8a458e24272fd20eff3d7e00f868514daf73674a8a32cb"
+        },
+        {
+          "index": 2,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "caf30c301494afd935bd929beeb11e5b07a1c648fac93f21c7b995c85179fb42"
+        },
+        {
+          "index": 3,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "02c7f34f3777dc8dc493324c7c201bb5d8bc1e9017afd412c2472aa5b1196986"
+        },
+        {
+          "index": 4,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "f67ae65a46486048e78664aa7cdc379ae8a2b3d4e8535b96ce82dcb88b34ffbe"
+        },
+        {
+          "index": 5,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "8dc876bdd866f6ff86676f4724631fe55fd15267cf225b423f8f676f8da62858"
+        },
+        {
+          "index": 6,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "3e89f50f975bb47892ca6a1c2cb1f923012ec01ea2236adfbacf6f74a455549e"
+        },
+        {
+          "index": 7,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "cb51f8a4c9db1c3ec32e063c073ac0ba76e47f6d4a82a0fce745252bb3e981a1"
+        },
+        {
+          "index": 8,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "cb51f8a4c9db1c3ec32e063c073ac0ba76e47f6d4a82a0fce745252bb3e981a1"
+        },
+        {
+          "index": 9,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "e55ae99f3acd0e9e737b3028ca1bf03c39ca7d4587b39d002273dcd1acf2e89b"
+        },
+        {
+          "index": 10,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "e55ae99f3acd0e9e737b3028ca1bf03c39ca7d4587b39d002273dcd1acf2e89b"
+        },
+        {
+          "index": 11,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "e55ae99f3acd0e9e737b3028ca1bf03c39ca7d4587b39d002273dcd1acf2e89b"
+        },
+        {
+          "index": 12,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "e55ae99f3acd0e9e737b3028ca1bf03c39ca7d4587b39d002273dcd1acf2e89b"
+        },
+        {
+          "index": 13,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "cc33ab82a805ac2a2733d2803d9346f421553aa5b0e1f98821b4aad9d6dfbc41"
+        },
+        {
+          "index": 14,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "cc33ab82a805ac2a2733d2803d9346f421553aa5b0e1f98821b4aad9d6dfbc41"
+        },
+        {
+          "index": 15,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "a761d932b3c5207e1803f0aee68fd0f69592822325f30360b609980ad81b97f3"
+        },
+        {
+          "index": 16,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "a761d932b3c5207e1803f0aee68fd0f69592822325f30360b609980ad81b97f3"
+        },
+        {
+          "index": 17,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "60f84584a76466fb97d9ef82190cd3b4ea1a57e4469179cc278af73f30f2c1d3"
+        },
+        {
+          "index": 18,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "60f84584a76466fb97d9ef82190cd3b4ea1a57e4469179cc278af73f30f2c1d3"
+        },
+        {
+          "index": 19,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "b5d1f7591a64feebb461c552c1a054697fa8872c3ab78e1420e7e4d14565536f"
+        }
+      ],
+      "firstFrameSha256": "6a66220206c31b825c8a458e24272fd20eff3d7e00f868514daf73674a8a32cb",
+      "lastFrameSha256": "b5d1f7591a64feebb461c552c1a054697fa8872c3ab78e1420e7e4d14565536f",
+      "loopClosed": true,
+      "motion": {
+        "channelDeltaThreshold": 16,
+        "meaningfulChangedPixelRatio": 0.0015,
+        "uniqueFrameCount": 12,
+        "transitionDifferenceRatios": [
+          0,
+          0.133125,
+          0.17515625,
+          0.17350694444444445,
+          0.30390625,
+          0.12970486111111112,
+          0.1523263888888889,
+          0,
+          0.15772569444444445,
+          0,
+          0,
+          0,
+          0.28302083333333333,
+          0,
+          0.23083333333333333,
+          0,
+          0.2020486111111111,
+          0,
+          0.12032986111111112
+        ],
+        "meaningfulTransitionCount": 11,
+        "meanInternalDifferenceRatio": 0.10850968567251462,
+        "maxInternalDifferenceRatio": 0.30390625
+      },
+      "loopClosure": {
+        "boundaryDifferenceRatio": 0.29097222222222224,
+        "internalMedianDifferenceRatio": 0.12970486111111112,
+        "allowedBoundaryDifferenceRatio": 0.3242621527777778,
+        "passed": true
+      }
+    },
+    "issues": []
+  },
+  {
+    "id": "man-shush",
+    "pass": true,
+    "metadata": {
+      "format": "gif",
+      "width": 240,
+      "height": 240,
+      "pageHeight": 240,
+      "pages": 20,
+      "loop": 0,
+      "delays": [
+        200,
+        200,
+        220,
+        220,
+        220,
+        220,
+        220,
+        110,
+        110,
+        230,
+        230,
+        220,
+        220,
+        180,
+        170,
+        180,
+        170,
+        170,
+        170,
+        340
+      ],
+      "durationMs": 4000,
+      "bytes": 84888,
+      "sha256": "91c09672203ab934c3718cafe9c1ef48dd542139699ac20c9996b22473f02eec",
+      "frames": [
+        {
+          "index": 0,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "4af771d435b212f90423c4adfec4f06aa24331e419890b42645ad6ba083b30de"
+        },
+        {
+          "index": 1,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "4af771d435b212f90423c4adfec4f06aa24331e419890b42645ad6ba083b30de"
+        },
+        {
+          "index": 2,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "7e1d2000b88db706a74d84f1609382d08002d39f9dc7643f745ac069019bd4b9"
+        },
+        {
+          "index": 3,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "2aeef97e8373c2b146dc656bb15465aa686016e7f4245f9b0e166e06120cc1f5"
+        },
+        {
+          "index": 4,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "c682865ad43507989f90e8de433652e4fd32f2f7fa8bc972cac23a4e7d0b3d76"
+        },
+        {
+          "index": 5,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "bd5d01339d970b20786bb9b37b7c679314bb179f279c915022f81784ba2b6f90"
+        },
+        {
+          "index": 6,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "6b9f62a88e65a5d03dc328ac27ee96ab7adff9787aca1031a9a9d9344a7c6670"
+        },
+        {
+          "index": 7,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "0c0d5aeddfa6ccaf31f8b557a9f283a8065bb98dd868dc3458ea35762b86b0ce"
+        },
+        {
+          "index": 8,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "0c0d5aeddfa6ccaf31f8b557a9f283a8065bb98dd868dc3458ea35762b86b0ce"
+        },
+        {
+          "index": 9,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "558e4422e0d66f5449b1d49e62bcd527b088fe7548eeb17afe84db67583df6a6"
+        },
+        {
+          "index": 10,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "558e4422e0d66f5449b1d49e62bcd527b088fe7548eeb17afe84db67583df6a6"
+        },
+        {
+          "index": 11,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "558e4422e0d66f5449b1d49e62bcd527b088fe7548eeb17afe84db67583df6a6"
+        },
+        {
+          "index": 12,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "558e4422e0d66f5449b1d49e62bcd527b088fe7548eeb17afe84db67583df6a6"
+        },
+        {
+          "index": 13,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "093546bd47e46ed3d0d91c24bccb92dee10e16423470c23c042e9a5a086fa989"
+        },
+        {
+          "index": 14,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "093546bd47e46ed3d0d91c24bccb92dee10e16423470c23c042e9a5a086fa989"
+        },
+        {
+          "index": 15,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "ccda3abbf93e1b09eb420a6ba7accfb35446e1be18f855a597454ffcfba8240f"
+        },
+        {
+          "index": 16,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "ccda3abbf93e1b09eb420a6ba7accfb35446e1be18f855a597454ffcfba8240f"
+        },
+        {
+          "index": 17,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "f98ab6f76eb12706771dae01b46fc4c82b42cb0a645cad2e2504be82ada212a4"
+        },
+        {
+          "index": 18,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "f98ab6f76eb12706771dae01b46fc4c82b42cb0a645cad2e2504be82ada212a4"
+        },
+        {
+          "index": 19,
+          "effectiveAlphaPixels": 55696,
+          "alphaBounds": {
+            "left": 2,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "sha256": "f4c03dccf2dc9eadb50c6f3bdd90edc740e0be448c63935538da389a05e64c18"
+        }
+      ],
+      "firstFrameSha256": "4af771d435b212f90423c4adfec4f06aa24331e419890b42645ad6ba083b30de",
+      "lastFrameSha256": "f4c03dccf2dc9eadb50c6f3bdd90edc740e0be448c63935538da389a05e64c18",
+      "loopClosed": true,
+      "motion": {
+        "channelDeltaThreshold": 16,
+        "meaningfulChangedPixelRatio": 0.0015,
+        "uniqueFrameCount": 12,
+        "transitionDifferenceRatios": [
+          0,
+          0.09810763888888889,
+          0.10894097222222222,
+          0.10487847222222223,
+          0.1276736111111111,
+          0.1175,
+          0.09506944444444444,
+          0,
+          0.08300347222222222,
+          0,
+          0,
+          0,
+          0.13859375,
+          0,
+          0.08574652777777778,
+          0,
+          0.11967013888888889,
+          0,
+          0.06434027777777777
+        ],
+        "meaningfulTransitionCount": 11,
+        "meanInternalDifferenceRatio": 0.06018548976608188,
+        "maxInternalDifferenceRatio": 0.13859375
+      },
+      "loopClosure": {
+        "boundaryDifferenceRatio": 0.09270833333333334,
+        "internalMedianDifferenceRatio": 0.08300347222222222,
+        "allowedBoundaryDifferenceRatio": 0.20750868055555555,
+        "passed": true
+      }
+    },
+    "issues": []
+  }
+]

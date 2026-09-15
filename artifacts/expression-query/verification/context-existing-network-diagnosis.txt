@@ -1,0 +1,62 @@
+旧 InputView 网络测试失败诊断
+基线 HEAD: 9e4230b50d528b092990f0e69b9b47632071abb7
+未运行完整干净 HEAD 测试；以下为只读 git show HEAD 的来源证据。
+
+package com.yuyan.imemodule.data.collect
+
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.preference.PreferenceManager
+import com.yuyan.imemodule.BuildConfig
+
+/** 查询主地址使用线上；设置项仅决定电脑镜像上报地址，连接状态不改变本地学习。 */
+object ServerConfig {
+
+    private const val KEY_SERVER_URL = "server_url"
+
+    @Volatile
+    private var prefs: SharedPreferences? = null
+
+    fun init(context: Context) {
+        if (prefs == null) {
+            prefs = PreferenceManager.getDefaultSharedPreferences(context.applicationContext)
+        }
+    }
+
+    /** 上报独立双传，查询使用线上，不受电脑连接影响。 */
+    val eventTargets: List<String>
+        get() = collectorTargets(prefs?.getString(KEY_SERVER_URL, null))
+
+    val baseUrl: String
+        get() = BuildConfig.COLLECTOR_API_BASE_URL.trim().trimEnd('/')
+
+}
+
+internal fun resolveServerBaseUrl(
+    buildUrl: String,
+    allowOverride: Boolean,
+    configuredUrl: String?,
+): String {
+    val selected = if (allowOverride) configuredUrl?.takeIf { it.isNotBlank() } ?: buildUrl else buildUrl
+    return selected.trim().trimEnd('/')
+}
+
+internal fun collectorTargets(configuredLocalUrl: String?): List<String> = listOf(
+    configuredLocalUrl?.trim()?.trimEnd('/')?.takeIf { it.isNotEmpty() } ?: "http://127.0.0.1:3000",
+    "https://my.dog8ball.com",
+).distinct()
+
+旧用例将 server_url 偏好改成 MockWebServer 后，等待 /api/v1/mobile/expressions/catalog。
+HEAD 的 baseUrl 已固定使用 BuildConfig.COLLECTOR_API_BASE_URL；server_url 只参与 eventTargets。
+因此 MockWebServer 收不到该目录请求，不是单纯 2 秒超时预算不足。
+保留生产地址策略：仅该用例启用 Robolectric ServerConfig getter shadow 指向 MockWebServer，
+并先断言 getter 确实为测试地址；原 HTTP 来源、次数以及关闭/重挂断言全部保留。
+shadow 不应用于其它测试；finally 清理测试地址。
+
+启用 shadow 后，目录/关闭/重挂断言通过；context-review-green.txt 当时仅余推荐 HTTP 计数失败。
+新缓存管线先读 IO 再回到 Main，测试必须推进 Robolectric 暂停的 Main Looper 才会启动推荐。
+原长阻塞 takeRequest 已改为同一 5 秒总期限内 idle + 50ms poll；HTTP来源、下载去重、恰好一次推荐断言保留。
+
+context-final-green.txt 全量 77 项运行中，该旧网络用例已通过全部断言；
+该轮另有 InputView Java heap space OOM 及两个后续 query=null 失败，不能据此宣称全套通过。
+下一轮使用临时 Gradle init 将 Test maxHeapSize 设为 1536m、maxParallelForks=1；不修改项目构建配置。

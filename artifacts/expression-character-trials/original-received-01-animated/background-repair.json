@@ -1,0 +1,5 @@
+{
+  "prompt": "Change ONLY the BLACK BACKGROUND into solid PURE WHITE (#FFFFFF) in this twelve-panel bird animation sheet. Preserve black ink outline, black pupils, brows and beak lines, keep white bird body white. No black backdrop, no transparency. Exact same bird poses, positions, size, 4 columns 3 rows equal square panel geometry, overall 4:3 canvas. Do not change any wing side: the ONLY raised wing stays on VIEWER RIGHT in all panels3-10. Keep all 12 cells and face/feet identical to source. Do not add grid lines, captions, shadows, margins or borders. This is a background replacement only.",
+  "source": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-e1218252-aaad-4de6-9849-2d0e3054c9f8.png",
+  "result": "white background restored, same-side gesture retained"
+}

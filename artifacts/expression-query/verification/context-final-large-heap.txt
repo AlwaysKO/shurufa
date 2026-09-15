@@ -1,0 +1,64 @@
+WARNING: We recommend using a newer Android Gradle plugin to use compileSdk = 36
+
+This Android Gradle plugin (8.7.2) was tested up to compileSdk = 35.
+
+You are strongly encouraged to update your project to use a newer
+Android Gradle plugin that has been tested with compileSdk = 36.
+
+If you are already using the latest version of the Android Gradle plugin,
+you may need to wait until a newer version with support for compileSdk = 36 is available.
+
+For more information refer to the compatibility table:
+https://d.android.com/r/tools/api-level-support
+
+To suppress this warning, add/update
+    android.suppressUnsupportedCompileSdk=36
+to this project's gradle.properties.
+> Task :yuyansdk:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :yuyansdk:preBuild UP-TO-DATE
+> Task :yuyansdk:preOfflineDebugBuild UP-TO-DATE
+> Task :yuyansdk:dataBindingMergeDependencyArtifactsOfflineDebug UP-TO-DATE
+> Task :yuyansdk:generateOfflineDebugResValues UP-TO-DATE
+> Task :yuyansdk:generateOfflineDebugResources UP-TO-DATE
+> Task :yuyansdk:packageOfflineDebugResources UP-TO-DATE
+> Task :yuyansdk:parseOfflineDebugLocalResources UP-TO-DATE
+> Task :yuyansdk:dataBindingGenBaseClassesOfflineDebug UP-TO-DATE
+> Task :yuyansdk:generateOfflineDebugBuildConfig UP-TO-DATE
+> Task :yuyansdk:generateOfflineDebugRFile UP-TO-DATE
+> Task :yuyansdk:kspOfflineDebugKotlin UP-TO-DATE
+> Task :yuyansdk:compileOfflineDebugKotlin UP-TO-DATE
+> Task :yuyansdk:javaPreCompileOfflineDebug UP-TO-DATE
+> Task :yuyansdk:compileOfflineDebugJavaWithJavac UP-TO-DATE
+> Task :yuyansdk:bundleLibRuntimeToJarOfflineDebug UP-TO-DATE
+> Task :yuyansdk:bundleLibCompileToJarOfflineDebug UP-TO-DATE
+> Task :yuyansdk:preOfflineDebugUnitTestBuild UP-TO-DATE
+> Task :yuyansdk:writeOfflineDebugAarMetadata UP-TO-DATE
+> Task :yuyansdk:checkOfflineDebugUnitTestAarMetadata UP-TO-DATE
+> Task :yuyansdk:compileOfflineDebugLibraryResources UP-TO-DATE
+> Task :yuyansdk:generateOfflineDebugUnitTestResValues UP-TO-DATE
+> Task :yuyansdk:mapOfflineDebugUnitTestSourceSetPaths UP-TO-DATE
+> Task :yuyansdk:generateOfflineDebugUnitTestResources UP-TO-DATE
+> Task :yuyansdk:mergeOfflineDebugUnitTestResources UP-TO-DATE
+> Task :yuyansdk:extractDeepLinksOfflineDebug UP-TO-DATE
+> Task :yuyansdk:processOfflineDebugManifest UP-TO-DATE
+> Task :yuyansdk:processOfflineDebugUnitTestManifest UP-TO-DATE
+> Task :yuyansdk:processOfflineDebugUnitTestResources UP-TO-DATE
+> Task :yuyansdk:javaPreCompileOfflineDebugUnitTest UP-TO-DATE
+> Task :yuyansdk:mergeOfflineDebugShaders UP-TO-DATE
+> Task :yuyansdk:compileOfflineDebugShaders NO-SOURCE
+> Task :yuyansdk:generateOfflineDebugAssets UP-TO-DATE
+> Task :yuyansdk:mergeOfflineDebugAssets UP-TO-DATE
+> Task :yuyansdk:generateOfflineDebugUnitTestAssets UP-TO-DATE
+> Task :yuyansdk:packageOfflineDebugAssets UP-TO-DATE
+> Task :yuyansdk:mergeOfflineDebugUnitTestAssets UP-TO-DATE
+> Task :yuyansdk:packageOfflineDebugUnitTestForUnitTest UP-TO-DATE
+> Task :yuyansdk:generateOfflineDebugUnitTestConfig UP-TO-DATE
+> Task :yuyansdk:processOfflineDebugJavaRes UP-TO-DATE
+> Task :yuyansdk:kspOfflineDebugUnitTestKotlin
+> Task :yuyansdk:compileOfflineDebugUnitTestKotlin
+> Task :yuyansdk:compileOfflineDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :yuyansdk:processOfflineDebugUnitTestJavaRes UP-TO-DATE
+> Task :yuyansdk:testOfflineDebugUnitTest
+
+BUILD SUCCESSFUL in 2m 12s
+37 actionable tasks: 3 executed, 34 up-to-date

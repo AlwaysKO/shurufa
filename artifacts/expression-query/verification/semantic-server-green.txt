@@ -1,0 +1,8 @@
+
+ RUN  v4.1.11 /home/ko/project/shurufa/server
+
+
+ Test Files  3 passed (3)
+      Tests  52 passed (52)
+   Start at  11:10:12
+   Duration  1.18s (transform 180ms, setup 0ms, import 394ms, tests 534ms, environment 0ms)

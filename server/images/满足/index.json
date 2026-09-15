@@ -1,0 +1,31 @@
+{
+  "keyword": "满足",
+  "items": [
+    {
+      "id": "scene-rich-10-satisfied",
+      "keyword": "满足",
+      "file": "满足/scene-rich-10-satisfied.gif",
+      "thumbnail": "满足/scene-rich-10-satisfied.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-10/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-10/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-10/gifs/scene-rich-10-satisfied.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-10/thumbnails/scene-rich-10-satisfied.webp",
+      "batch": "scene-rich-10",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "e781318bf6153fc7c967ad4b77e19bb03b6816e56cb24be7971cdd45ceed1747",
+      "thumbnailSha256": "36a6fbc819c3c8d61a18baab65b1f7696254f6b1fcde406deb56dcf28b91eed7",
+      "bytes": 172880,
+      "width": 240,
+      "height": 240,
+      "frames": 20,
+      "durationMs": 4000,
+      "style": "ai-original-pet",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

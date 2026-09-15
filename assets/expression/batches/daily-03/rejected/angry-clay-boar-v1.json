@@ -1,0 +1,33 @@
+{
+  "id": "angry-clay-boar",
+  "keyword": "生气",
+  "text": "生气",
+  "style": "3d-plush",
+  "direction": "pet-or-person",
+  "distribution": "remote",
+  "sourceType": "ai-original",
+  "prompt": "Create ONE genuinely transparent RGBA PNG 2x2 sprite sheet with exactly FOUR clearly DIFFERENT key poses of the SAME subject. Reading order top-left, top-right, bottom-left, bottom-right. Every pose must fit COMPLETELY inside its quadrant, occupying at most 75 percent of its quadrant width and height. Leave WIDE EMPTY TRANSPARENT gutters at the exact horizontal and vertical midpoint. No limb or prop crosses the midpoint. Same identity, scale, material, lighting across poses; genuine limb, face and posture changes, not shifted/scaled copies. Crisp appealing sticker silhouette readable at 120px. All limbs anatomically consistent, no duplicates. NO text, letters, numbers, punctuation, watermarks, logos, famous characters, celebrity resemblance, borders, grids, checkerboard, background, ground plane or rectangular halo. Actual alpha transparency, NOT painted checkerboard. SUBJECT: An original small terracotta clay wild boar with blunt small tusks and teal scarf, cute nonviolent. FOUR POSES: 1. stands with front hooves on hips and frown; 2. puffs round cheeks and flares ears; 3. stomps one front hoof with furrowed brow; 4. sits back with forehooves folded pouting. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+  "motionScript": [
+    "stands with front hooves on hips and frown",
+    "puffs round cheeks and flares ears",
+    "stomps one front hoof with furrowed brow",
+    "sits back with forehooves folded pouting"
+  ],
+  "motionPreset": "impact",
+  "frameCount": 16,
+  "durationMs": 1600,
+  "masterFile": "masters/angry-clay-boar.png",
+  "poseFiles": [
+    "poses/angry-clay-boar/pose-01.png",
+    "poses/angry-clay-boar/pose-02.png",
+    "poses/angry-clay-boar/pose-03.png",
+    "poses/angry-clay-boar/pose-04.png"
+  ],
+  "textPlacement": "bottom",
+  "generation": {
+    "tool": "built-in-imagegen",
+    "date": "2026-09-08",
+    "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-b1eac536-cd8c-4db9-b649-04e7f1c3d220.png",
+    "masterSha256": "de765f871cf9e4487230d1eb21ef0a58efd3cf353154cbd3c05694190aaa1be5"
+  }
+}

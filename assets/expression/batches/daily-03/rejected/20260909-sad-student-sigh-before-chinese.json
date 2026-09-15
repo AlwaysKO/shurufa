@@ -1,0 +1,33 @@
+{
+  "id": "sad-student-sigh",
+  "keyword": "难过",
+  "text": "难过",
+  "style": "original-life-scene",
+  "direction": "pet-or-person",
+  "distribution": "bundled",
+  "sourceType": "ai-original",
+  "prompt": "Create ONE genuinely transparent RGBA PNG 2x2 sprite sheet with exactly FOUR clearly DIFFERENT key poses of the SAME subject. Reading order top-left, top-right, bottom-left, bottom-right. Every pose must fit COMPLETELY inside its quadrant, occupying at most 75 percent of its quadrant width and height. Leave WIDE EMPTY TRANSPARENT gutters at the exact horizontal and vertical midpoint. No limb or prop crosses the midpoint. Same identity, scale, material, lighting across poses; genuine limb, face and posture changes, not shifted/scaled copies. Crisp appealing sticker silhouette readable at 120px. All limbs anatomically consistent, no duplicates. NO text, letters, numbers, punctuation, watermarks, logos, famous characters, celebrity resemblance, borders, grids, checkerboard, background, ground plane or rectangular halo. Actual alpha transparency, NOT painted checkerboard. SUBJECT: An original young adult man with round glasses and plain cream sweater, painterly waist-up holding blank closed blue notebook. FOUR POSES: 1. looks down at notebook held against chest; 2. shoulders slump and lips purse sadly; 3. wipes corner of eye with free hand; 4. holds notebook close looking up with a fragile smile. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+  "motionScript": [
+    "looks down at notebook held against chest",
+    "shoulders slump and lips purse sadly",
+    "wipes corner of eye with free hand",
+    "holds notebook close looking up with a fragile smile"
+  ],
+  "motionPreset": "shake",
+  "frameCount": 16,
+  "durationMs": 1600,
+  "masterFile": "masters/sad-student-sigh.png",
+  "poseFiles": [
+    "poses/sad-student-sigh/pose-01.png",
+    "poses/sad-student-sigh/pose-02.png",
+    "poses/sad-student-sigh/pose-03.png",
+    "poses/sad-student-sigh/pose-04.png"
+  ],
+  "textPlacement": "bottom",
+  "generation": {
+    "tool": "built-in-imagegen",
+    "date": "2026-09-08",
+    "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-cfe4dda3-98aa-4449-abf4-a0413162d473.png",
+    "masterSha256": "c1946cac19bca87116f88f60c40d2aa665c960f744be4824615bab9b6220c798"
+  }
+}

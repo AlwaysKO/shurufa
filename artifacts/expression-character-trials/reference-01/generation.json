@@ -1,0 +1,26 @@
+{
+  "status": "trial-only",
+  "format": "png",
+  "animated": false,
+  "generationTool": "image_gen.imagegen",
+  "referenceSource": "用户本轮上传的熊猫头、蘑菇头两张图",
+  "sourceType": "user-provided-reference",
+  "licenseStatus": "unverified",
+  "publicationAllowed": false,
+  "items": [
+    {
+      "id": "panda-really",
+      "prompt": "Use the FIRST of the two attached images as the actual character reference, not merely loose inspiration. Make one square Chinese internet reaction meme image featuring THIS SAME familiar black-and-white panda-headed humanoid with round black ears, white round face and the same exaggerated grayscale human-face collage aesthetic. Preserve its recognizable character and funny coarse low-fi meme quality; do NOT replace it with a handsome man, clean cute cartoon, anime boy, or different original character. Change the acting to convey incredulous skeptical '真的假的': one eyebrow raised extremely high, the other pinched, narrowed sideways suspicious eyes, head slightly drawn back, crooked open mouth as if saying '你逗我呢', one stubby black arm lifted in an exaggerated palm-up questioning gesture. Funny, ridiculous, slightly smug and cheeky, not horror or violence. White background, bold simple black body, face large and dominant, upperbody centered, visually readable at 240px. Remove all old captions from the supplied image. Add ONLY the exact bold black Chinese caption '真的假的' clearly in a separate white strip at the bottom. No other text or watermark. This is a static character/expression trial, not a sprite sheet.",
+      "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-513470a7-812e-430f-b912-8f6000bec74f.png",
+      "file": "panda-really.png",
+      "sha256": "6648d1262c9fa5e76e3e38cc8f746ad54e6e6615ad3bcaaa309320da49b78d38"
+    },
+    {
+      "id": "mushroom-think",
+      "prompt": "Use the SECOND attached image as the actual character reference, not merely loose inspiration. Create one square Chinese internet reaction meme using THIS SAME tiny humanoid with an oversized heavy black bowl/mushroom haircut, pale grayscale human-face collage face, skinny small body and the same comically coarse black-white meme aesthetic. Preserve recognizable silhouette, haircut and facial comic character. Do NOT turn it into an attractive portrait, neat generic cartoon man, cute child or anime character. Change its expression and gesture to '让我想想': squinting eyes glance sharply up to one side, brows squeezed asymmetrically, pursed crooked lips, oversized head slightly tilted, one small hand exaggeratedly supports or rubs chin, the other arm folded across the tiny torso. A hilariously self-important 'pretending to think really hard' reaction, cheeky and mischievous rather than a polite thoughtful stock illustration. Face dominates, contrasting oversized head and tiny thin body. Solid white background, strong black outlines and flat black hair, keep original crude funny meme tone. Remove every old caption and noisy old background. Add ONLY exact bold black Chinese text '让我想想' in a clean separate white bottom caption strip. No extra writing or watermark. Single static expression trial, not a grid.",
+      "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-f37c6e25-a130-4417-a293-6cc5d2c22026.png",
+      "file": "mushroom-think.png",
+      "sha256": "be723d338101e99c831e4a87be973bb3d04e8ac0d628c074263be70c474a5359"
+    }
+  ]
+}

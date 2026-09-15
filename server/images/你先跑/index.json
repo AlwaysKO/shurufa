@@ -1,0 +1,31 @@
+{
+  "keyword": "你先跑",
+  "items": [
+    {
+      "id": "scene-rich-03-run",
+      "keyword": "你先跑",
+      "file": "你先跑/scene-rich-03-run.gif",
+      "thumbnail": "你先跑/scene-rich-03-run.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-03/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-03/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-03/gifs/scene-rich-03-run.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-03/thumbnails/scene-rich-03-run.webp",
+      "batch": "scene-rich-03",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "6106b46600797744116bc382b853056d49856ec775315baceb46219199706044",
+      "thumbnailSha256": "0e755b4f166a1e985c59fb2bb524e9335f2830a8c2bb3f4bdbbc8c60a7f95fb0",
+      "bytes": 69425,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "durationMs": 1600,
+      "style": "hand-drawn",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

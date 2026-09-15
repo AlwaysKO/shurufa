@@ -1,0 +1,16 @@
+{
+  "method": "decoded-frame-inspection-only",
+  "actualDynamicPlayback": "not-performed",
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "publicationAllowed": false,
+  "pending": 11,
+  "needsRework": [
+    "duck-helpless"
+  ],
+  "caveats": {
+    "duck-helpless": "恢复段整体上移仍明显，needs-rework隔离，不纳入候选。",
+    "mouse-shy": "上移减轻，仍有轻微位置与轮廓差异，待动态复核。",
+    "retriever-relieved": "放心表演主要依赖合眼，去字幕可能读作困倦，待动态语义复核。"
+  }
+}

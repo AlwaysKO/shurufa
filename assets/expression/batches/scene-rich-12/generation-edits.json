@@ -1,0 +1,21 @@
+[
+  {
+    "id": "scene-rich-12-really-line",
+    "prompt": "Edit ONLY hand/arm continuity in this original twelve-panel black and white cartoon sprite sheet. Keep all face expressions, hairstyles, textless background, grid and character identity. 4 columns 3 rows. The questioning hand MUST ALWAYS be the character's LEFT HAND on VIEWER'S RIGHT, emerging from viewer-right shoulder. Viewer-left arm stays relaxed DOWN in EVERY panel. NEVER switch hands. Panel5 viewer-right hand begins lift low nearbelly;6 viewer-right palm midway chestheight;7 viewer-right openpalm chestheight;8 same viewer-right openpalm chestheight (replace incorrect viewer-left gesture), retain skeptical expressive face;9 viewer-right hand lowering justbelowchest, viewer-left arm down;10 viewer-right hand lowernearbelly, viewer-left arm down;11 botharmslow;12 matches firstpanel. Preserve true gradual transitions, original black ink style, no extra arms or text.",
+    "path": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-da781322-3531-4e1e-bfa4-abaf3a08d502.png",
+    "resultPath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-0e0cba82-8f04-4d0e-b8e7-c9ed86c3303a.png"
+  },
+  {
+    "id": "scene-rich-12-think-man",
+    "prompt": "Edit this ORIGINAL fictional Chinese adult man's 12-panel animation sheet ONLY to repair gradual hand transitions and return. Same 4 columns3rows squarecells landscape4:3 size. Preserve handsome original face, body size, hairstyle, shirt/background/lighting. Never copy celebrity. Hand rises on VIEWERLEFT only, otherhandalwayslow. Change panel4 (topright) so hand is LOW at midchest, not already at chin. Panel5 (middlerow first) hand is halfway between chest and chin. Panel6 hand reaches original underchin pose. Panels7/8 unchanged peak thoughtful pose. Panel9 hand has just left chin and sits belowjaw, eyesstillup-left but slightlylower; panel10 hand at midchest, eyeshalfwaybacktofront; panel11 hand lownearbottomframe gazealmostfront; panel12 sameFIRST neutral lowhandpose. Every hand position must be incremental with correct anatomy, no abrupt pop from zero to chin or disappearance. No text, logos, new objects, changes to camera or panelbounds.",
+    "path": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-9b4132eb-f880-4bc5-87d1-9ed4f9a97d72.png",
+    "resultPath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-c3d30bbf-93bd-4f39-a9f1-a8459a978e64.png"
+  },
+  {
+    "id": "scene-rich-12-really-line",
+    "prompt": "Edit ONLY panel10 = BOTTOM ROW, SECOND COLUMN of this original 4x3 twelve-panel black-white cartoon sheet. ALL OTHER 11 PANELS MUST REMAIN UNCHANGED. Panel10 currently has the WRONG ARM bent on VIEWER LEFT. Erase that bent left-side arm/hand and make viewer-left arm hang straight down as in panel11. Instead put the lowering bent hand on VIEWER RIGHT, anatomically connected to the right side of this drawing, palm at BELLY height lower than panel9 and higher than resting panel11. This is the SAME raised hand shown on viewer-right in panels5-9, now lowering, NOT switching sides. Preserve panel10 face, head, shirt, scale, all grid lines and full sheet dimensions. No text.",
+    "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-0e0cba82-8f04-4d0e-b8e7-c9ed86c3303a.png",
+    "path": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-0e0cba82-8f04-4d0e-b8e7-c9ed86c3303a.png",
+    "resultPath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-fa6748bd-c049-4393-b75f-43c0a6b8bfde.png"
+  }
+]

@@ -1,0 +1,101 @@
+package com.yuyan.imemodule.view
+
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.widget.FrameLayout
+import android.widget.ImageView
+import android.graphics.drawable.ColorDrawable
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.test.core.app.ApplicationProvider
+import org.junit.Before
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+
+@RunWith(RobolectricTestRunner::class)
+class CandidateOverlaySpecTest {
+    private lateinit var context: Context
+
+    @Before
+    fun setUp() {
+        context = ApplicationProvider.getApplicationContext()
+    }
+
+    @Test
+    fun `按钮覆盖整行且列表末尾保留按钮宽度`() {
+        val candidates = RecyclerView(context)
+        val action = ImageView(context)
+        val overlay = createCandidateOverlay(context, candidates, action)
+        assertEquals(FrameLayout.LayoutParams.MATCH_PARENT, action.layoutParams.height)
+        assertEquals(action.layoutParams.width + overlay.getChildAt(1).layoutParams.width, candidates.paddingEnd)
+        assertFalse(candidates.clipToPadding)
+        assertEquals(3, overlay.childCount)
+        val paddingDp = (CandidateOverlaySpec.touchTargetDp - CandidateOverlaySpec.iconDp) / 2
+        assertEquals((context.resources.displayMetrics.density * paddingDp).toInt(), action.paddingLeft)
+    }
+
+    @Test
+    fun `按钮左侧是独立渐隐层且随主题一起换色`() {
+        val action = ImageView(context)
+        applyCandidateActionBackground(action, 0xff112233)
+        val overlay = createCandidateOverlay(context, RecyclerView(context), action)
+        assertEquals(3, overlay.childCount)
+        val fade = overlay.getChildAt(1)
+        assertFalse(fade.isClickable)
+        val background = fade.background as android.graphics.drawable.GradientDrawable
+        assertEquals(android.graphics.drawable.GradientDrawable.Orientation.LEFT_RIGHT, background.orientation)
+        assertEquals(listOf(0x00112233, 0xff112233.toInt()), background.colors!!.toList())
+        applyCandidateActionBackground(action, 0xff445566)
+        assertEquals(listOf(0x00445566, 0xff445566.toInt()),
+            (fade.background as android.graphics.drawable.GradientDrawable).colors!!.toList())
+    }
+
+    @Test
+    fun `关闭图形小于点击区域且覆盖候选列表`() {
+        assertEquals(48, CandidateOverlaySpec.touchTargetDp)
+        assertEquals(27, CandidateOverlaySpec.iconDp)
+        assertTrue(CandidateOverlaySpec.overlapDp > 0)
+    }
+
+    @Test
+    fun `候选列表横向滚动且关闭按钮悬浮覆盖`() {
+        val candidates = RecyclerView(context)
+        val action = ImageView(context)
+        val overlay = createCandidateOverlay(context, candidates, action)
+
+        assertEquals(LinearLayoutManager.HORIZONTAL, (candidates.layoutManager as LinearLayoutManager).orientation)
+        assertFalse(candidates.isNestedScrollingEnabled)
+        assertEquals(FrameLayout::class.java, overlay.javaClass)
+        assertEquals(overlay, candidates.parent)
+        assertEquals(FrameLayout.LayoutParams.MATCH_PARENT, candidates.layoutParams.width)
+        assertTrue(action.translationZ > candidates.translationZ)
+    }
+
+    @Test
+    fun `关闭区域背景从左到右均完全不透明`() {
+        val drawable = createCandidateActionBackground(0x00eceff1)
+        val bitmap = Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888)
+        drawable.setBounds(0, 0, bitmap.width, bitmap.height)
+        drawable.draw(Canvas(bitmap))
+
+        assertEquals(255, Color.alpha(bitmap.getPixel(1, 24)))
+        assertEquals(255, Color.alpha(bitmap.getPixel(46, 24)))
+    }
+
+    @Test
+    fun `主题更新会替换关闭区域的不透明背景色`() {
+        val action = ImageView(context)
+
+        applyCandidateActionBackground(action, 0x00112233)
+        applyCandidateActionBackground(action, 0x00445566)
+
+        val background = action.background as ColorDrawable
+        assertEquals(0xff445566.toInt(), background.color)
+    }
+}

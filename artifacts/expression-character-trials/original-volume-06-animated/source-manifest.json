@@ -1,0 +1,170 @@
+{
+  "created": "2026-09-14",
+  "sourceType": "ai-original",
+  "status": "trial-only",
+  "publicationAllowed": false,
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "items": [
+    {
+      "id": "tabby-alert",
+      "caption": "警惕",
+      "prompt": "Create animation sprite atlas EXACTLY FOUR COLUMNS THREE ROWS,12 equal SQUARE tiles, overall4:3 canvas. OPAQUE pure WHITE background; NO grid/text/labels. Same original character every tile, 12 real facial poses not zoom/pan. Camera and bust SIZE/placement fixed. Neutral head/ear top at local18%tile height and bust bottom local78%; leave top and bottom white margins in EVERY square. Each new row is exact one SQUARE TILE HEIGHT below previous, DO NOT compress row spacing. Final neutral frame12 must precisely match frame1 local head position, hair/ear outline, eyes, mouth and bust baseline. No size change, no whole-bust drift, no extra objects. Photoreal original brown TABBY CAT bust, short ears, consistent stripes, natural feline muzzle no human lips, no paws. ALERT WATCHFUL:1 neutral;2 pupils move slightly left;3 eyes focus on something offscreen;4 brows lower;5 eyelids narrow in concentration;6 chin retracts slightly;7 eyes lock sideways;8 key wary sideways stare with tense brows and tight mouth;9 pupils begin returning center;10 chin relaxes;11 brows soften;12 EXACT neutral pose1. No angry teeth, no fangs, no fear symbols.",
+      "masterFile": "masters/tabby-alert.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-888102ea-ac6a-43b3-9abb-f4860f6ab733.png",
+      "sha256": "6d61c57fc44f1e38c0c425b25d824b84a5f5165ba18ecf93c971ab7b74ffad17",
+      "machineReview": "passed",
+      "visualDisposition": "pending"
+    },
+    {
+      "id": "owl-alert",
+      "caption": "警惕",
+      "prompt": "Create animation sprite atlas EXACTLY FOUR COLUMNS THREE ROWS,12 equal SQUARE tiles, overall4:3 canvas. OPAQUE pure WHITE background; NO grid/text/labels. Same original character every tile, 12 real facial poses not zoom/pan. Camera and bust SIZE/placement fixed. Neutral head/ear top at local18%tile height and bust bottom local78%; leave top and bottom white margins in EVERY square. Each new row is exact one SQUARE TILE HEIGHT below previous, DO NOT compress row spacing. Final neutral frame12 must precisely match frame1 local head position, hair/ear outline, eyes, mouth and bust baseline. No size change, no whole-bust drift, no extra objects. Original minimal BLACK INK cartoon OWL bust, round head with two compact feather tufts, expressive eyelids and brows, no wings/hands, no known IP. ALERT WATCHFUL:1 neutral;2 pupils move slightly left;3 eyes focus on something offscreen;4 brows lower;5 eyelids narrow in concentration;6 chin retracts slightly;7 eyes lock sideways;8 key wary sideways stare with tense brows and tight mouth;9 pupils begin returning center;10 chin relaxes;11 brows soften;12 EXACT neutral pose1. No angry teeth, no fangs, no fear symbols.",
+      "masterFile": "masters/owl-alert.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-0003f084-22f2-4f9d-8044-86c52b176fc6.png",
+      "sha256": "b454a9591527c04aab81ac5f83762d25229ac589cec8add0a38a19d1fdc83466",
+      "machineReview": "passed",
+      "visualDisposition": "pending"
+    },
+    {
+      "id": "meerkat-alert",
+      "caption": "警惕",
+      "prompt": "Create animation sprite atlas EXACTLY FOUR COLUMNS THREE ROWS,12 equal SQUARE tiles, overall4:3 canvas. OPAQUE pure WHITE background; NO grid/text/labels. Same original character every tile, 12 real facial poses not zoom/pan. Camera and bust SIZE/placement fixed. Neutral head/ear top at local18%tile height and bust bottom local78%; leave top and bottom white margins in EVERY square. Each new row is exact one SQUARE TILE HEIGHT below previous, DO NOT compress row spacing. Final neutral frame12 must precisely match frame1 local head position, hair/ear outline, eyes, mouth and bust baseline. No size change, no whole-bust drift, no extra objects. Original tactile CLAY MEERKAT bust, tan fur pattern dark eyes and compact round ears, no limbs. ALERT WATCHFUL:1 neutral;2 pupils move slightly left;3 eyes focus on something offscreen;4 brows lower;5 eyelids narrow in concentration;6 chin retracts slightly;7 eyes lock sideways;8 key wary sideways stare with tense brows and tight mouth;9 pupils begin returning center;10 chin relaxes;11 brows soften;12 EXACT neutral pose1. No angry teeth, no fangs, no fear symbols.",
+      "masterFile": "masters/meerkat-alert.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-2bdefb11-3974-4e3c-93e6-a8300e9f06b6.png",
+      "sha256": "a40301fe21c82359100f71f098d9293219f468eb69557781d99f4aaac5829657",
+      "machineReview": "passed",
+      "visualDisposition": "pending"
+    },
+    {
+      "id": "man-alert",
+      "caption": "警惕",
+      "prompt": "Create animation sprite atlas EXACTLY FOUR COLUMNS THREE ROWS,12 equal SQUARE tiles, overall4:3 canvas. OPAQUE pure WHITE background; NO grid/text/labels. Same original character every tile, 12 real facial poses not zoom/pan. Camera and bust SIZE/placement fixed. Neutral head/ear top at local18%tile height and bust bottom local78%; leave top and bottom white margins in EVERY square. Each new row is exact one SQUARE TILE HEIGHT below previous, DO NOT compress row spacing. Final neutral frame12 must precisely match frame1 local head position, hair/ear outline, eyes, mouth and bust baseline. No size change, no whole-bust drift, no extra objects. Original fictional handsome Chinese ADULT MALE bust, distinct short cropped black hair, dark blue crewneck shirt, photoreal, NOT celebrity, no hands. ALERT WATCHFUL:1 neutral;2 pupils move slightly left;3 eyes focus on something offscreen;4 brows lower;5 eyelids narrow in concentration;6 chin retracts slightly;7 eyes lock sideways;8 key wary sideways stare with tense brows and tight mouth;9 pupils begin returning center;10 chin relaxes;11 brows soften;12 EXACT neutral pose1. No angry teeth, no fangs, no fear symbols.",
+      "masterFile": "masters/man-alert.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-7f6c237d-ea08-44ee-a095-54da7ebccb1d.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "b110811c6027cc45ca694bc357e83fa7ce853baee30c1e0cfa774d695dedefd7",
+      "machineReview": "passed",
+      "visualDisposition": "pending"
+    },
+    {
+      "id": "gingercat-content",
+      "caption": "满足",
+      "prompt": "Create animation sprite atlas EXACTLY FOUR COLUMNS THREE ROWS,12 equal SQUARE tiles, overall4:3 canvas. OPAQUE pure WHITE background; NO grid/text/labels. Same original character every tile, 12 real facial poses not zoom/pan. Camera and bust SIZE/placement fixed. Neutral head/ear top at local18%tile height and bust bottom local78%; leave top and bottom white margins in EVERY square. Each new row is exact one SQUARE TILE HEIGHT below previous, DO NOT compress row spacing. Final neutral frame12 must precisely match frame1 local head position, hair/ear outline, eyes, mouth and bust baseline. No size change, no whole-bust drift, no extra objects. Photoreal original orange GINGER CAT bust, short round-tipped ears, natural feline muzzle no human lips, no paws. CONTENTED SATISFIED, not sleepy:1 neutral;2 mouth corners start lifting;3 soft smile grows;4 lower eyelids gently lift;5 cheeks rise;6 chin tilts very slightly up;7 warm CLOSED-MOUTH smile;8 key satisfied peaceful smile with eyes STILL OPEN softly crinkled, no teeth;9 chin lowers;10 smile slowly softens;11 near neutral;12 EXACT neutral pose1. Do NOT close eyes, no laughing, no food/props.",
+      "masterFile": "masters/gingercat-content.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-173166d2-28d0-48f7-a9c6-4ed1ea8f48fd.png",
+      "sha256": "519f94d6e5f818cb36412a8c6e0831d183672c24de6bdd7536b1041c75369e2d",
+      "machineReview": "passed",
+      "visualDisposition": "pending"
+    },
+    {
+      "id": "otter-content",
+      "caption": "满足",
+      "prompt": "Create animation sprite atlas EXACTLY FOUR COLUMNS THREE ROWS,12 equal SQUARE tiles, overall4:3 canvas. OPAQUE pure WHITE background; NO grid/text/labels. Same original character every tile, 12 real facial poses not zoom/pan. Camera and bust SIZE/placement fixed. Neutral head/ear top at local18%tile height and bust bottom local78%; leave top and bottom white margins in EVERY square. Each new row is exact one SQUARE TILE HEIGHT below previous, DO NOT compress row spacing. Final neutral frame12 must precisely match frame1 local head position, hair/ear outline, eyes, mouth and bust baseline. No size change, no whole-bust drift, no extra objects. Original minimal BLACK INK cartoon OTTER bust, small rounded ears, short whiskers and expressive eyes, no limbs, no known IP. CONTENTED SATISFIED, not sleepy:1 neutral;2 mouth corners start lifting;3 soft smile grows;4 lower eyelids gently lift;5 cheeks rise;6 chin tilts very slightly up;7 warm CLOSED-MOUTH smile;8 key satisfied peaceful smile with eyes STILL OPEN softly crinkled, no teeth;9 chin lowers;10 smile slowly softens;11 near neutral;12 EXACT neutral pose1. Do NOT close eyes, no laughing, no food/props.",
+      "masterFile": "masters/otter-content.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-2e32161d-6f2c-4807-883b-e27f50196549.png",
+      "sha256": "0cbde0424690a404fdec6dbb893b130ff846c4568aa5241d7bb8664364790025",
+      "machineReview": "passed",
+      "visualDisposition": "pending"
+    },
+    {
+      "id": "pig-content",
+      "caption": "满足",
+      "prompt": "Create animation sprite atlas EXACTLY FOUR COLUMNS THREE ROWS,12 equal SQUARE tiles, overall4:3 canvas. OPAQUE pure WHITE background; NO grid/text/labels. Same original character every tile, 12 real facial poses not zoom/pan. Camera and bust SIZE/placement fixed. Neutral head/ear top at local18%tile height and bust bottom local78%; leave top and bottom white margins in EVERY square. Each new row is exact one SQUARE TILE HEIGHT below previous, DO NOT compress row spacing. Final neutral frame12 must precisely match frame1 local head position, hair/ear outline, eyes, mouth and bust baseline. No size change, no whole-bust drift, no extra objects. Original tactile CLAY pink PIG bust, small folded ears and round snout, no limbs. CONTENTED SATISFIED, not sleepy:1 neutral;2 mouth corners start lifting;3 soft smile grows;4 lower eyelids gently lift;5 cheeks rise;6 chin tilts very slightly up;7 warm CLOSED-MOUTH smile;8 key satisfied peaceful smile with eyes STILL OPEN softly crinkled, no teeth;9 chin lowers;10 smile slowly softens;11 near neutral;12 EXACT neutral pose1. Do NOT close eyes, no laughing, no food/props.",
+      "masterFile": "masters/pig-content.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-45f083e8-c0b4-42f6-849a-d9766c761b2b.png",
+      "sha256": "d33c9afe67b765b57d99ea03bef275626b787d8ea3dd338e02c8de31e27f7903",
+      "originalSha256": "a9d7e3fed876c996d8e8989ae8316be1d3067801ecfdf2837d1e33bfaab1270f",
+      "revisions": [
+        {
+          "version": 2,
+          "reason": "v1 loopClosure 0.17487847222222222 > 0.15151909722222223; align last pose with first",
+          "prompt": "Edit the attached original 4 columns by 3 rows sprite sheet. Keep same pink clay pig, white background, 12 genuinely different subtle satisfaction facial poses and same resolution/layout. Fix registration and loop closure ONLY: every cell has precisely identical character head outline, ears, shoulders, scale and location relative to its own cell. In particular row 3 column 4 must visually match row 1 column 1 in head position, ear position, nose position, eyes and neutral mouth. Row 3 should gradually return from satisfaction to that neutral opening pose; no downward head drift at row boundaries. Keep middle row genuine smiling cheek/eyelid/mouth expression changes. No text, no borders, no props. Maintain generous white margin above ears and sides. Copy first pose's geometry accurately into last pose.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-4882aff6-728a-4faa-914b-4c84bfb90c44.png",
+          "sha256": "4743e2cc42712dde1ae08772b4ba3150982d1faf809d8bfd47fa8fc98672f7a7"
+        },
+        {
+          "version": 3,
+          "reason": "v2 loopClosure failed; fixed geometry and larger genuine facial changes",
+          "prompt": "Create a precisely registered animation sprite sheet of the same original pink clay pig from reference, 4 columns x 3 rows on pure white. Every square cell head top at 45 pixels relative to cell, head center x180 y175, shoulders bottom y322. Grid total 1448x1086, cell362x362. Critical: bottom row MUST NOT be smaller or lower or higher than top row. All 12 pig outlines and noses anchored identically; vary only eyebrows eyelids and mouth. Sequence neutral, slight smile, smile, happy cheeks, happy squint, delighted, delighted, happy, smile, slight smile, neutral, neutral. FIRST AND LAST CELLS IDENTICAL, identical eyes, mouth, ears, nose, shoulders and shading. Same head and body size for all 12. Cute textured clay sculpture not drawing. No words borders props or hands. Repeat identical fixed pig outline throughout; only inner facial expression changes.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-ea3ed976-8d46-42fc-8b06-1e09ad64785a.png",
+          "sha256": "d33c9afe67b765b57d99ea03bef275626b787d8ea3dd338e02c8de31e27f7903"
+        }
+      ],
+      "selectedVersion": 3,
+      "machineReview": "failed",
+      "visualDisposition": "needs-rework",
+      "outputGif": null
+    },
+    {
+      "id": "man-content",
+      "caption": "满足",
+      "prompt": "Create animation sprite atlas EXACTLY FOUR COLUMNS THREE ROWS,12 equal SQUARE tiles, overall4:3 canvas. OPAQUE pure WHITE background; NO grid/text/labels. Same original character every tile, 12 real facial poses not zoom/pan. Camera and bust SIZE/placement fixed. Neutral head/ear top at local18%tile height and bust bottom local78%; leave top and bottom white margins in EVERY square. Each new row is exact one SQUARE TILE HEIGHT below previous, DO NOT compress row spacing. Final neutral frame12 must precisely match frame1 local head position, hair/ear outline, eyes, mouth and bust baseline. No size change, no whole-bust drift, no extra objects. Original fictional handsome Chinese ADULT MALE bust, distinct medium short softly parted black hair, warm beige crewneck shirt, photoreal, NOT celebrity, no hands. CONTENTED SATISFIED, not sleepy:1 neutral;2 mouth corners start lifting;3 soft smile grows;4 lower eyelids gently lift;5 cheeks rise;6 chin tilts very slightly up;7 warm CLOSED-MOUTH smile;8 key satisfied peaceful smile with eyes STILL OPEN softly crinkled, no teeth;9 chin lowers;10 smile slowly softens;11 near neutral;12 EXACT neutral pose1. Do NOT close eyes, no laughing, no food/props.",
+      "masterFile": "masters/man-content.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-01b251a0-9c89-4206-b12a-c2a70504ae98.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "5c986115368f54a4035baa197ec61f658152d31a16da4f43fc0bb6a23f23b649",
+      "machineReview": "passed",
+      "visualDisposition": "pending"
+    },
+    {
+      "id": "collie-torn",
+      "caption": "纠结",
+      "prompt": "Create animation sprite atlas EXACTLY FOUR COLUMNS THREE ROWS,12 equal SQUARE tiles, overall4:3 canvas. OPAQUE pure WHITE background; NO grid/text/labels. Same original character every tile, 12 real facial poses not zoom/pan. Camera and bust SIZE/placement fixed. Neutral head/ear top at local18%tile height and bust bottom local78%; leave top and bottom white margins in EVERY square. Each new row is exact one SQUARE TILE HEIGHT below previous, DO NOT compress row spacing. Final neutral frame12 must precisely match frame1 local head position, hair/ear outline, eyes, mouth and bust baseline. No size change, no whole-bust drift, no extra objects. Photoreal original black-white BORDER COLLIE DOG bust, compact semi-folded ears, natural dog mouth NO human lips, no tongue/paws. TORN INDECISIVE inner conflict, not anger:1 neutral;2 brows knit slightly;3 eyes glance left;4 mouth pulls a little to left;5 eyes move right;6 mouth shifts a little right;7 one brow raises with other knitted;8 key conflicted expression with sideways eyes and small uncertain crooked mouth plus gentle5degree head tilt;9 head halfway returns;10 gaze centers;11 brow relaxes;12 EXACT neutral pose1. No tears/props/question-mark symbols.",
+      "masterFile": "masters/collie-torn.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-6fabf37d-f7aa-427c-b6c3-397cb1ef251c.png",
+      "sha256": "7152c2a989c0d4992e58616bb20d6a2efeab5b14a1b6facfb253d2dbbd01f3f4",
+      "machineReview": "passed",
+      "visualDisposition": "pending"
+    },
+    {
+      "id": "rabbit-torn",
+      "caption": "纠结",
+      "prompt": "Create animation sprite atlas EXACTLY FOUR COLUMNS THREE ROWS,12 equal SQUARE tiles, overall4:3 canvas. OPAQUE pure WHITE background; NO grid/text/labels. Same original character every tile, 12 real facial poses not zoom/pan. Camera and bust SIZE/placement fixed. Neutral head/ear top at local18%tile height and bust bottom local78%; leave top and bottom white margins in EVERY square. Each new row is exact one SQUARE TILE HEIGHT below previous, DO NOT compress row spacing. Final neutral frame12 must precisely match frame1 local head position, hair/ear outline, eyes, mouth and bust baseline. No size change, no whole-bust drift, no extra objects. Original minimal BLACK INK cartoon RABBIT bust, two SHORT compact ears fully inside square, expressive eyebrows and mouth, no paws, no known IP. TORN INDECISIVE inner conflict, not anger:1 neutral;2 brows knit slightly;3 eyes glance left;4 mouth pulls a little to left;5 eyes move right;6 mouth shifts a little right;7 one brow raises with other knitted;8 key conflicted expression with sideways eyes and small uncertain crooked mouth plus gentle5degree head tilt;9 head halfway returns;10 gaze centers;11 brow relaxes;12 EXACT neutral pose1. No tears/props/question-mark symbols.",
+      "masterFile": "masters/rabbit-torn.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-bb14ba23-182c-42a4-ba09-e308a357d315.png",
+      "sha256": "89d035cc44c8158cc8be94bea62077c6e888f7e163293b200e3b76b8c717c0d9",
+      "machineReview": "passed",
+      "visualDisposition": "pending"
+    },
+    {
+      "id": "panda-torn",
+      "caption": "纠结",
+      "prompt": "Create animation sprite atlas EXACTLY FOUR COLUMNS THREE ROWS,12 equal SQUARE tiles, overall4:3 canvas. OPAQUE pure WHITE background; NO grid/text/labels. Same original character every tile, 12 real facial poses not zoom/pan. Camera and bust SIZE/placement fixed. Neutral head/ear top at local18%tile height and bust bottom local78%; leave top and bottom white margins in EVERY square. Each new row is exact one SQUARE TILE HEIGHT below previous, DO NOT compress row spacing. Final neutral frame12 must precisely match frame1 local head position, hair/ear outline, eyes, mouth and bust baseline. No size change, no whole-bust drift, no extra objects. Original tactile CLAY real-animal PANDA bust, small round ears, not human-faced meme panda, no limbs, no IP. TORN INDECISIVE inner conflict, not anger:1 neutral;2 brows knit slightly;3 eyes glance left;4 mouth pulls a little to left;5 eyes move right;6 mouth shifts a little right;7 one brow raises with other knitted;8 key conflicted expression with sideways eyes and small uncertain crooked mouth plus gentle5degree head tilt;9 head halfway returns;10 gaze centers;11 brow relaxes;12 EXACT neutral pose1. No tears/props/question-mark symbols.",
+      "masterFile": "masters/panda-torn.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-75f0b689-5db5-43e7-b586-f092c7144d3e.png",
+      "sha256": "07c11a66ada0e26e88151ab18be0ac213c768495bb039a0dd5349de050bae955",
+      "machineReview": "passed",
+      "visualDisposition": "pending"
+    },
+    {
+      "id": "man-torn",
+      "caption": "纠结",
+      "prompt": "Create animation sprite atlas EXACTLY FOUR COLUMNS THREE ROWS,12 equal SQUARE tiles, overall4:3 canvas. OPAQUE pure WHITE background; NO grid/text/labels. Same original character every tile, 12 real facial poses not zoom/pan. Camera and bust SIZE/placement fixed. Neutral head/ear top at local18%tile height and bust bottom local78%; leave top and bottom white margins in EVERY square. Each new row is exact one SQUARE TILE HEIGHT below previous, DO NOT compress row spacing. Final neutral frame12 must precisely match frame1 local head position, hair/ear outline, eyes, mouth and bust baseline. No size change, no whole-bust drift, no extra objects. Original fictional handsome Chinese ADULT MALE bust, distinct tousled black hair, burgundy crewneck shirt, photoreal, NOT celebrity, no hands. TORN INDECISIVE inner conflict, not anger:1 neutral;2 brows knit slightly;3 eyes glance left;4 mouth pulls a little to left;5 eyes move right;6 mouth shifts a little right;7 one brow raises with other knitted;8 key conflicted expression with sideways eyes and small uncertain crooked mouth plus gentle5degree head tilt;9 head halfway returns;10 gaze centers;11 brow relaxes;12 EXACT neutral pose1. No tears/props/question-mark symbols.",
+      "masterFile": "masters/man-torn.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-73004fba-19d3-4e7d-9971-45c6a8f003a0.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "eeefe34f7be455844915aa7bcb82973796967936b938a11ef32d6920c3b51eb9",
+      "machineReview": "passed",
+      "visualDisposition": "pending"
+    }
+  ],
+  "rejectedFiles": [
+    {
+      "file": "rejected/pig-content-v1.png",
+      "sha256": "a9d7e3fed876c996d8e8989ae8316be1d3067801ecfdf2837d1e33bfaab1270f",
+      "reason": "loopClosure audit failure"
+    },
+    {
+      "file": "rejected/pig-content-v2.png",
+      "sha256": "4743e2cc42712dde1ae08772b4ba3150982d1faf809d8bfd47fa8fc98672f7a7",
+      "reason": "loopClosure 0.16637152777777778 > 0.14917534722222223"
+    }
+  ]
+}

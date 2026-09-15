@@ -1,0 +1,31 @@
+{
+  "keyword": "溜了",
+  "items": [
+    {
+      "id": "scene-rich-01-leave",
+      "keyword": "溜了",
+      "file": "溜了/scene-rich-01-leave.gif",
+      "thumbnail": "溜了/scene-rich-01-leave.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-01/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-01/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-01/gifs/scene-rich-01-leave.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-01/thumbnails/scene-rich-01-leave.webp",
+      "batch": "scene-rich-01",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "50ff92aad020cc355f9a6929e349da8fa884b6d2659a19c9cb43c2c712080c1a",
+      "thumbnailSha256": "b1edb2589b201f3317274ce7f96e0169d5313a9cea2705a5a191b66a5e7cd7ad",
+      "bytes": 89098,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "durationMs": 1600,
+      "style": "3d-plush",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

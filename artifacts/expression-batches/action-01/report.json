@@ -1,0 +1,1995 @@
+{
+  "version": "2026.09.09.action-01",
+  "expectedTotal": 8,
+  "total": 8,
+  "pass": 8,
+  "fail": 0,
+  "complete": true,
+  "humanReview": "pending",
+  "items": [
+    {
+      "id": "play-core-pillow",
+      "metadata": {
+        "format": "gif",
+        "width": 240,
+        "height": 240,
+        "pageHeight": 240,
+        "pages": 16,
+        "loop": 0,
+        "delays": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "durationMs": 1600,
+        "bytes": 169937,
+        "sha256": "c3792c48b79c5db05eb2520766849842a4fa7529bf0e67dcacf3945e580aac6b",
+        "frames": [
+          {
+            "index": 0,
+            "effectiveAlphaPixels": 12297,
+            "alphaBounds": {
+              "left": 62,
+              "top": 40,
+              "right": 61,
+              "bottom": 29
+            },
+            "sha256": "0abf4e3260def749e5dbe7c1e926cc91e6727029d801062858cced54dffe31f7"
+          },
+          {
+            "index": 1,
+            "effectiveAlphaPixels": 13045,
+            "alphaBounds": {
+              "left": 60,
+              "top": 39,
+              "right": 59,
+              "bottom": 27
+            },
+            "sha256": "2e5f3ab9b74a23c092e7653c6e07c2f767ecdc82e7cb29c9e8ca81f60210fc02"
+          },
+          {
+            "index": 2,
+            "effectiveAlphaPixels": 14361,
+            "alphaBounds": {
+              "left": 59,
+              "top": 21,
+              "right": 57,
+              "bottom": 26
+            },
+            "sha256": "e648072f2b365713775de7b913fa4cf431f6f8dc963b719e13833bf3fad9b84c"
+          },
+          {
+            "index": 3,
+            "effectiveAlphaPixels": 15098,
+            "alphaBounds": {
+              "left": 41,
+              "top": 21,
+              "right": 33,
+              "bottom": 26
+            },
+            "sha256": "32cffa92e442cc72cba6d5d33f6e508a15071cb05a6e8939ad17658d7e1494d2"
+          },
+          {
+            "index": 4,
+            "effectiveAlphaPixels": 14823,
+            "alphaBounds": {
+              "left": 41,
+              "top": 32,
+              "right": 32,
+              "bottom": 27
+            },
+            "sha256": "37d485b669ba60f3de1574a04f845dcbe22d3a8f7491a9eb8bb1e383c4427de5"
+          },
+          {
+            "index": 5,
+            "effectiveAlphaPixels": 15570,
+            "alphaBounds": {
+              "left": 38,
+              "top": 30,
+              "right": 31,
+              "bottom": 25
+            },
+            "sha256": "65722b0c4dbcae9b8181bd054cfa6590792c56eb82ee6486219b8cdd899b3af1"
+          },
+          {
+            "index": 6,
+            "effectiveAlphaPixels": 16598,
+            "alphaBounds": {
+              "left": 36,
+              "top": 29,
+              "right": 31,
+              "bottom": 23
+            },
+            "sha256": "88a67659ede4d038a9def97d0860cd9ab23a6a8bcf23f9709cfa84b41e805f7c"
+          },
+          {
+            "index": 7,
+            "effectiveAlphaPixels": 16238,
+            "alphaBounds": {
+              "left": 34,
+              "top": 29,
+              "right": 32,
+              "bottom": 24
+            },
+            "sha256": "b820b005b5553e2a9a7bf04f84ff7bf3cbf61bd218d682724cf7d42812474716"
+          },
+          {
+            "index": 8,
+            "effectiveAlphaPixels": 16585,
+            "alphaBounds": {
+              "left": 32,
+              "top": 29,
+              "right": 34,
+              "bottom": 22
+            },
+            "sha256": "22b4de67d3ab15cda54de012c9ca69e63170ea82daf95194239b1a9a37bd5947"
+          },
+          {
+            "index": 9,
+            "effectiveAlphaPixels": 17254,
+            "alphaBounds": {
+              "left": 31,
+              "top": 29,
+              "right": 36,
+              "bottom": 21
+            },
+            "sha256": "11c040fa3738cfed0e71e2cccd91ae41e5edc0effa3e5343eabe354c02293948"
+          },
+          {
+            "index": 10,
+            "effectiveAlphaPixels": 16288,
+            "alphaBounds": {
+              "left": 31,
+              "top": 30,
+              "right": 38,
+              "bottom": 23
+            },
+            "sha256": "976fba7405265c6dc4653a75fb07f5736b1008b9a2e1f260b610bc236a205d11"
+          },
+          {
+            "index": 11,
+            "effectiveAlphaPixels": 14545,
+            "alphaBounds": {
+              "left": 32,
+              "top": 32,
+              "right": 41,
+              "bottom": 28
+            },
+            "sha256": "27809c4ac8fd11eb9b12f660e112e8f027615fe9e2d317eba0a5403feb281352"
+          },
+          {
+            "index": 12,
+            "effectiveAlphaPixels": 14816,
+            "alphaBounds": {
+              "left": 33,
+              "top": 22,
+              "right": 41,
+              "bottom": 28
+            },
+            "sha256": "5e6b3ea31b9c5e2103b8f6621093d1edaf90201cd4ff7466b61783b12d5cbe7c"
+          },
+          {
+            "index": 13,
+            "effectiveAlphaPixels": 14062,
+            "alphaBounds": {
+              "left": 60,
+              "top": 23,
+              "right": 60,
+              "bottom": 28
+            },
+            "sha256": "99b8df77417200970753e7515d999f60772fe2139f137e48a8944c1740366e37"
+          },
+          {
+            "index": 14,
+            "effectiveAlphaPixels": 12906,
+            "alphaBounds": {
+              "left": 60,
+              "top": 40,
+              "right": 60,
+              "bottom": 28
+            },
+            "sha256": "66c1131f7dccc7933462d13a5458d2c90e1687e239e483acfae0675858387084"
+          },
+          {
+            "index": 15,
+            "effectiveAlphaPixels": 12297,
+            "alphaBounds": {
+              "left": 62,
+              "top": 40,
+              "right": 61,
+              "bottom": 29
+            },
+            "sha256": "0abf4e3260def749e5dbe7c1e926cc91e6727029d801062858cced54dffe31f7"
+          }
+        ],
+        "firstFrameSha256": "0abf4e3260def749e5dbe7c1e926cc91e6727029d801062858cced54dffe31f7",
+        "lastFrameSha256": "0abf4e3260def749e5dbe7c1e926cc91e6727029d801062858cced54dffe31f7",
+        "loopClosed": true,
+        "motion": {
+          "channelDeltaThreshold": 16,
+          "meaningfulChangedPixelRatio": 0.0015,
+          "uniqueFrameCount": 15,
+          "transitionDifferenceRatios": [
+            0.12840277777777778,
+            0.1620138888888889,
+            0.10116319444444444,
+            0.21664930555555556,
+            0.16352430555555555,
+            0.18449652777777778,
+            0.2097048611111111,
+            0.15539930555555556,
+            0.20296875,
+            0.19534722222222223,
+            0.19550347222222222,
+            0.21125,
+            0.08088541666666667,
+            0.1481076388888889,
+            0.11473958333333334
+          ],
+          "meaningfulTransitionCount": 15,
+          "meanInternalDifferenceRatio": 0.16467708333333334,
+          "maxInternalDifferenceRatio": 0.21664930555555556
+        },
+        "loopClosure": {
+          "boundaryDifferenceRatio": 0,
+          "internalMedianDifferenceRatio": 0.16352430555555555,
+          "allowedBoundaryDifferenceRatio": 0.4088107638888889,
+          "passed": true
+        }
+      },
+      "issues": [],
+      "keyword": "打闹",
+      "distribution": "bundled",
+      "humanReview": "pending"
+    },
+    {
+      "id": "play-cat-paw",
+      "metadata": {
+        "format": "gif",
+        "width": 240,
+        "height": 240,
+        "pageHeight": 240,
+        "pages": 16,
+        "loop": 0,
+        "delays": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "durationMs": 1600,
+        "bytes": 213755,
+        "sha256": "abd07e6d3cf535fcfdaf71d9d37245f12c83c37a03789e23865fb3fc723592d4",
+        "frames": [
+          {
+            "index": 0,
+            "effectiveAlphaPixels": 14775,
+            "alphaBounds": {
+              "left": 64,
+              "top": 21,
+              "right": 64,
+              "bottom": 28
+            },
+            "sha256": "2c468fc09db06576b581b9d6eb8a373e3dbae68c023ac1e46d7554f9fb0929ce"
+          },
+          {
+            "index": 1,
+            "effectiveAlphaPixels": 15676,
+            "alphaBounds": {
+              "left": 61,
+              "top": 22,
+              "right": 62,
+              "bottom": 27
+            },
+            "sha256": "653f15b2f3abc74b61664af8a17e3e1d737fd4e10a05f76826fe54871ce41b52"
+          },
+          {
+            "index": 2,
+            "effectiveAlphaPixels": 15883,
+            "alphaBounds": {
+              "left": 60,
+              "top": 21,
+              "right": 61,
+              "bottom": 26
+            },
+            "sha256": "273270369f0025ea23eb6511ebb28deabe425f4bd493bbfa028eece42f305899"
+          },
+          {
+            "index": 3,
+            "effectiveAlphaPixels": 16260,
+            "alphaBounds": {
+              "left": 41,
+              "top": 22,
+              "right": 33,
+              "bottom": 27
+            },
+            "sha256": "f7bd8137ea5b361251abfc41ca23c5396f171f32420f605687c59b06e8a9f90f"
+          },
+          {
+            "index": 4,
+            "effectiveAlphaPixels": 16164,
+            "alphaBounds": {
+              "left": 41,
+              "top": 22,
+              "right": 32,
+              "bottom": 27
+            },
+            "sha256": "b1c78caa702af82ac9b72f225d74893a531fdc5e17ab616fc8632c01b95d44a8"
+          },
+          {
+            "index": 5,
+            "effectiveAlphaPixels": 17347,
+            "alphaBounds": {
+              "left": 38,
+              "top": 21,
+              "right": 31,
+              "bottom": 22
+            },
+            "sha256": "55ffed5397b41d6604785d9e4380a4bb8472e1d5b9c0f0f3259acc9346007792"
+          },
+          {
+            "index": 6,
+            "effectiveAlphaPixels": 18459,
+            "alphaBounds": {
+              "left": 36,
+              "top": 20,
+              "right": 31,
+              "bottom": 20
+            },
+            "sha256": "c32766221295c41241991a2cd8f8b60cc5745f588c71125608b039a55e623a27"
+          },
+          {
+            "index": 7,
+            "effectiveAlphaPixels": 18032,
+            "alphaBounds": {
+              "left": 34,
+              "top": 28,
+              "right": 32,
+              "bottom": 20
+            },
+            "sha256": "4d4f24e922adda14d7089824892aaa04fce2821ff96519e4372b3156f41e4531"
+          },
+          {
+            "index": 8,
+            "effectiveAlphaPixels": 18068,
+            "alphaBounds": {
+              "left": 32,
+              "top": 26,
+              "right": 34,
+              "bottom": 23
+            },
+            "sha256": "448e7953ed789ddb9c172eb932d39f958296fce61c93f7c74464b53d425ec169"
+          },
+          {
+            "index": 9,
+            "effectiveAlphaPixels": 18058,
+            "alphaBounds": {
+              "left": 31,
+              "top": 21,
+              "right": 36,
+              "bottom": 24
+            },
+            "sha256": "048772d0c9df9b4ba4b0b280ebbcd3a32b79548d7f6e804ea6799373289c2d09"
+          },
+          {
+            "index": 10,
+            "effectiveAlphaPixels": 17224,
+            "alphaBounds": {
+              "left": 31,
+              "top": 22,
+              "right": 38,
+              "bottom": 26
+            },
+            "sha256": "e50bc6d035c08d9823497b889bc15ad2e9f2df4d8e8268cdc3db2fec71d3d517"
+          },
+          {
+            "index": 11,
+            "effectiveAlphaPixels": 15811,
+            "alphaBounds": {
+              "left": 32,
+              "top": 22,
+              "right": 41,
+              "bottom": 28
+            },
+            "sha256": "efc0b4a25f85462e5aafae29aac5ec6d7602374bddedfad98e83a6ff8431ec4c"
+          },
+          {
+            "index": 12,
+            "effectiveAlphaPixels": 16245,
+            "alphaBounds": {
+              "left": 33,
+              "top": 22,
+              "right": 41,
+              "bottom": 25
+            },
+            "sha256": "d450edf7778735464a55d3311bb014cc84da4256748427f334941d275d13d991"
+          },
+          {
+            "index": 13,
+            "effectiveAlphaPixels": 15612,
+            "alphaBounds": {
+              "left": 62,
+              "top": 23,
+              "right": 61,
+              "bottom": 25
+            },
+            "sha256": "f94253a2c1aa2b456b9cbdab38ddddb6f2fbf3b964ff049036592431e4d1b04c"
+          },
+          {
+            "index": 14,
+            "effectiveAlphaPixels": 15466,
+            "alphaBounds": {
+              "left": 62,
+              "top": 21,
+              "right": 62,
+              "bottom": 26
+            },
+            "sha256": "26b73e8a3dde352a032f3cb3d6e69c54861ac92f06464debdd245439069e8970"
+          },
+          {
+            "index": 15,
+            "effectiveAlphaPixels": 14775,
+            "alphaBounds": {
+              "left": 64,
+              "top": 21,
+              "right": 64,
+              "bottom": 28
+            },
+            "sha256": "2c468fc09db06576b581b9d6eb8a373e3dbae68c023ac1e46d7554f9fb0929ce"
+          }
+        ],
+        "firstFrameSha256": "2c468fc09db06576b581b9d6eb8a373e3dbae68c023ac1e46d7554f9fb0929ce",
+        "lastFrameSha256": "2c468fc09db06576b581b9d6eb8a373e3dbae68c023ac1e46d7554f9fb0929ce",
+        "loopClosed": true,
+        "motion": {
+          "channelDeltaThreshold": 16,
+          "meaningfulChangedPixelRatio": 0.0015,
+          "uniqueFrameCount": 15,
+          "transitionDifferenceRatios": [
+            0.15369791666666666,
+            0.1890798611111111,
+            0.11067708333333333,
+            0.20274305555555555,
+            0.21027777777777779,
+            0.20543402777777778,
+            0.21079861111111112,
+            0.1632986111111111,
+            0.22991319444444444,
+            0.20015625,
+            0.20270833333333332,
+            0.20232638888888888,
+            0.09090277777777778,
+            0.17993055555555557,
+            0.1390451388888889
+          ],
+          "meaningfulTransitionCount": 15,
+          "meanInternalDifferenceRatio": 0.17939930555555553,
+          "maxInternalDifferenceRatio": 0.22991319444444444
+        },
+        "loopClosure": {
+          "boundaryDifferenceRatio": 0,
+          "internalMedianDifferenceRatio": 0.20015625,
+          "allowedBoundaryDifferenceRatio": 0.500390625,
+          "passed": true
+        }
+      },
+      "issues": [],
+      "keyword": "打闹",
+      "distribution": "bundled",
+      "humanReview": "pending"
+    },
+    {
+      "id": "play-person-pillow",
+      "metadata": {
+        "format": "gif",
+        "width": 240,
+        "height": 240,
+        "pageHeight": 240,
+        "pages": 16,
+        "loop": 0,
+        "delays": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "durationMs": 1600,
+        "bytes": 205457,
+        "sha256": "e5085112baa7e734bdc8fb7bbc3630de6815246a2a485bcf9de54890c74bda43",
+        "frames": [
+          {
+            "index": 0,
+            "effectiveAlphaPixels": 13713,
+            "alphaBounds": {
+              "left": 59,
+              "top": 37,
+              "right": 59,
+              "bottom": 29
+            },
+            "sha256": "354d54c48249d5248e35af40e0f8498ffff97f8f76108eb39b09b8a3b70f5c68"
+          },
+          {
+            "index": 1,
+            "effectiveAlphaPixels": 14534,
+            "alphaBounds": {
+              "left": 57,
+              "top": 37,
+              "right": 56,
+              "bottom": 27
+            },
+            "sha256": "82a5f984fbbe9dc876fbf74c1c5fa6448cc35ec8a880bfb698b323efce89cd07"
+          },
+          {
+            "index": 2,
+            "effectiveAlphaPixels": 16818,
+            "alphaBounds": {
+              "left": 55,
+              "top": 21,
+              "right": 54,
+              "bottom": 25
+            },
+            "sha256": "829ea7dcd1ce9b89cb3f8802cc45af0b44987fb3196a27696ffaa9e02a448e74"
+          },
+          {
+            "index": 3,
+            "effectiveAlphaPixels": 16728,
+            "alphaBounds": {
+              "left": 41,
+              "top": 21,
+              "right": 33,
+              "bottom": 26
+            },
+            "sha256": "736c5ca06e65755779e0dd335023b08e20cde812ca8e7d22081b5512915e41f0"
+          },
+          {
+            "index": 4,
+            "effectiveAlphaPixels": 15790,
+            "alphaBounds": {
+              "left": 41,
+              "top": 32,
+              "right": 32,
+              "bottom": 28
+            },
+            "sha256": "547122b4bacdca1bf492ad1de7f5220dabbd12f017e5a07b32e70572bf1ee519"
+          },
+          {
+            "index": 5,
+            "effectiveAlphaPixels": 16880,
+            "alphaBounds": {
+              "left": 38,
+              "top": 30,
+              "right": 31,
+              "bottom": 28
+            },
+            "sha256": "c21cee0bdc3cb3f568d8d3db7aa7432e80c54b0d0cdee231ae77efe8ae07d6ca"
+          },
+          {
+            "index": 6,
+            "effectiveAlphaPixels": 18637,
+            "alphaBounds": {
+              "left": 36,
+              "top": 29,
+              "right": 31,
+              "bottom": 25
+            },
+            "sha256": "57feae93d478544e4667ede84f5732f5acfff4f949d03d5304b0addf0e3e2cdf"
+          },
+          {
+            "index": 7,
+            "effectiveAlphaPixels": 18067,
+            "alphaBounds": {
+              "left": 34,
+              "top": 29,
+              "right": 32,
+              "bottom": 24
+            },
+            "sha256": "aafdee849cddb1ecec78d201e1ec2e835779db40ff111832f3acbe65ffa9ee3c"
+          },
+          {
+            "index": 8,
+            "effectiveAlphaPixels": 18730,
+            "alphaBounds": {
+              "left": 32,
+              "top": 29,
+              "right": 34,
+              "bottom": 21
+            },
+            "sha256": "8b19e4e5fc286a3a1b30cc73f3552500b61cfb22a46ab327b50d2ad9211c699b"
+          },
+          {
+            "index": 9,
+            "effectiveAlphaPixels": 19265,
+            "alphaBounds": {
+              "left": 31,
+              "top": 26,
+              "right": 36,
+              "bottom": 19
+            },
+            "sha256": "ea39fd868af4ba3abb9a112de20676dab4c2ea9c91046fa6512567c0dbe35e9c"
+          },
+          {
+            "index": 10,
+            "effectiveAlphaPixels": 17626,
+            "alphaBounds": {
+              "left": 31,
+              "top": 29,
+              "right": 38,
+              "bottom": 22
+            },
+            "sha256": "125d5d283d0cf8a55cea6bad2d6899cc9279f3ad707b16b21642f9871b733ee9"
+          },
+          {
+            "index": 11,
+            "effectiveAlphaPixels": 15801,
+            "alphaBounds": {
+              "left": 32,
+              "top": 32,
+              "right": 41,
+              "bottom": 28
+            },
+            "sha256": "ab1d1d47842b53935e7212530dc474297f270d2b322889de4a5d6c7a0a6f5eda"
+          },
+          {
+            "index": 12,
+            "effectiveAlphaPixels": 16784,
+            "alphaBounds": {
+              "left": 33,
+              "top": 22,
+              "right": 41,
+              "bottom": 29
+            },
+            "sha256": "eced568604e135c11bb651cf4920c8c35beaa9070044a68ed7cdc48522869b4f"
+          },
+          {
+            "index": 13,
+            "effectiveAlphaPixels": 16278,
+            "alphaBounds": {
+              "left": 57,
+              "top": 22,
+              "right": 57,
+              "bottom": 28
+            },
+            "sha256": "c05dbed904a51a7ec051132b08c5605ba55008f037de9d8605d9fe2eda3f0d01"
+          },
+          {
+            "index": 14,
+            "effectiveAlphaPixels": 14446,
+            "alphaBounds": {
+              "left": 58,
+              "top": 37,
+              "right": 57,
+              "bottom": 27
+            },
+            "sha256": "aa08a352356ccf694b1313a53f81cd63cb745edc67c0febc1ad0c4f19f6ededd"
+          },
+          {
+            "index": 15,
+            "effectiveAlphaPixels": 13713,
+            "alphaBounds": {
+              "left": 59,
+              "top": 37,
+              "right": 59,
+              "bottom": 29
+            },
+            "sha256": "354d54c48249d5248e35af40e0f8498ffff97f8f76108eb39b09b8a3b70f5c68"
+          }
+        ],
+        "firstFrameSha256": "354d54c48249d5248e35af40e0f8498ffff97f8f76108eb39b09b8a3b70f5c68",
+        "lastFrameSha256": "354d54c48249d5248e35af40e0f8498ffff97f8f76108eb39b09b8a3b70f5c68",
+        "loopClosed": true,
+        "motion": {
+          "channelDeltaThreshold": 16,
+          "meaningfulChangedPixelRatio": 0.0015,
+          "uniqueFrameCount": 15,
+          "transitionDifferenceRatios": [
+            0.13401041666666666,
+            0.19453125,
+            0.12645833333333334,
+            0.23489583333333333,
+            0.17977430555555557,
+            0.19935763888888888,
+            0.26177083333333334,
+            0.16822916666666668,
+            0.26579861111111114,
+            0.19517361111111112,
+            0.18953125,
+            0.22788194444444446,
+            0.10295138888888888,
+            0.1944965277777778,
+            0.1254340277777778
+          ],
+          "meaningfulTransitionCount": 15,
+          "meanInternalDifferenceRatio": 0.1866863425925926,
+          "maxInternalDifferenceRatio": 0.26579861111111114
+        },
+        "loopClosure": {
+          "boundaryDifferenceRatio": 0,
+          "internalMedianDifferenceRatio": 0.1944965277777778,
+          "allowedBoundaryDifferenceRatio": 0.4862413194444445,
+          "passed": true
+        }
+      },
+      "issues": [],
+      "keyword": "打闹",
+      "distribution": "bundled",
+      "humanReview": "pending"
+    },
+    {
+      "id": "play-clay-mitten",
+      "metadata": {
+        "format": "gif",
+        "width": 240,
+        "height": 240,
+        "pageHeight": 240,
+        "pages": 16,
+        "loop": 0,
+        "delays": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "durationMs": 1600,
+        "bytes": 191940,
+        "sha256": "99b395fb5e84a11572a83c106f4b311e52f684657a76cc56c0255707458758c3",
+        "frames": [
+          {
+            "index": 0,
+            "effectiveAlphaPixels": 15650,
+            "alphaBounds": {
+              "left": 63,
+              "top": 21,
+              "right": 63,
+              "bottom": 29
+            },
+            "sha256": "b895fc5314670f01fac985e84a7b79706ac0a74c78876886b5bbd74bfd548437"
+          },
+          {
+            "index": 1,
+            "effectiveAlphaPixels": 16298,
+            "alphaBounds": {
+              "left": 62,
+              "top": 21,
+              "right": 60,
+              "bottom": 29
+            },
+            "sha256": "d91a666ecfb0e654041244cd315b19cb93c3201c95faece1d8adabec83ef6561"
+          },
+          {
+            "index": 2,
+            "effectiveAlphaPixels": 17146,
+            "alphaBounds": {
+              "left": 49,
+              "top": 22,
+              "right": 40,
+              "bottom": 29
+            },
+            "sha256": "408ffaeb9c91d5580deeee5e98f4d6778dc804e5fad8c50e723e1f4cb3db5ec9"
+          },
+          {
+            "index": 3,
+            "effectiveAlphaPixels": 17500,
+            "alphaBounds": {
+              "left": 41,
+              "top": 22,
+              "right": 33,
+              "bottom": 30
+            },
+            "sha256": "0fdcfb0b85913283093fb6794ed9085ef54abcccd8db0e7d5a18d311235196a9"
+          },
+          {
+            "index": 4,
+            "effectiveAlphaPixels": 16572,
+            "alphaBounds": {
+              "left": 41,
+              "top": 22,
+              "right": 32,
+              "bottom": 29
+            },
+            "sha256": "3fd8cc436499c87e22a8de40cc87c4266b70b7bbc0f95d69de30f33229353a39"
+          },
+          {
+            "index": 5,
+            "effectiveAlphaPixels": 17720,
+            "alphaBounds": {
+              "left": 38,
+              "top": 21,
+              "right": 31,
+              "bottom": 24
+            },
+            "sha256": "b0600a9b833e2d6c22374414a0073d27c7693c98342e3a956a3fcf5b512df29c"
+          },
+          {
+            "index": 6,
+            "effectiveAlphaPixels": 18547,
+            "alphaBounds": {
+              "left": 36,
+              "top": 20,
+              "right": 31,
+              "bottom": 22
+            },
+            "sha256": "3fa666761e926bc196e268b8218ef799cbb3abe01d373ab7440029472cfe6934"
+          },
+          {
+            "index": 7,
+            "effectiveAlphaPixels": 17902,
+            "alphaBounds": {
+              "left": 34,
+              "top": 20,
+              "right": 32,
+              "bottom": 21
+            },
+            "sha256": "2f70d0cfca21851c2bc97a3d2dd95e7f30705f310a85fbc615e9c73fb3f8a313"
+          },
+          {
+            "index": 8,
+            "effectiveAlphaPixels": 17994,
+            "alphaBounds": {
+              "left": 32,
+              "top": 21,
+              "right": 34,
+              "bottom": 24
+            },
+            "sha256": "4f500cc9705e71bbef9070379f6805a5d5f5abb086f85a88350c17a8ae5bd1bb"
+          },
+          {
+            "index": 9,
+            "effectiveAlphaPixels": 18853,
+            "alphaBounds": {
+              "left": 31,
+              "top": 21,
+              "right": 36,
+              "bottom": 25
+            },
+            "sha256": "607f6bd6a39c2970eb94012626245ecf7bec1f70a37c20bb376974ffb8a5b142"
+          },
+          {
+            "index": 10,
+            "effectiveAlphaPixels": 17846,
+            "alphaBounds": {
+              "left": 31,
+              "top": 22,
+              "right": 38,
+              "bottom": 26
+            },
+            "sha256": "8b49839b710c98f6da31c1215ade0f24ae1badda70850d1f2cb7f4e67fccf052"
+          },
+          {
+            "index": 11,
+            "effectiveAlphaPixels": 16768,
+            "alphaBounds": {
+              "left": 32,
+              "top": 22,
+              "right": 41,
+              "bottom": 29
+            },
+            "sha256": "b3c25c9cb162b721e9b1e5e16d28cc49f04defc39581f670002a3d1017d39fef"
+          },
+          {
+            "index": 12,
+            "effectiveAlphaPixels": 17635,
+            "alphaBounds": {
+              "left": 33,
+              "top": 25,
+              "right": 41,
+              "bottom": 28
+            },
+            "sha256": "42abf667ee52f3792261de2c521d470d171c82b84bf79937205fe0a62e4f3f3a"
+          },
+          {
+            "index": 13,
+            "effectiveAlphaPixels": 17110,
+            "alphaBounds": {
+              "left": 41,
+              "top": 25,
+              "right": 47,
+              "bottom": 27
+            },
+            "sha256": "62ffde23306da900375511e70d37c238a5e12e78cc2960c12461b8d0d68a91f4"
+          },
+          {
+            "index": 14,
+            "effectiveAlphaPixels": 16209,
+            "alphaBounds": {
+              "left": 61,
+              "top": 21,
+              "right": 61,
+              "bottom": 28
+            },
+            "sha256": "8c800fd33afe329aa5b963cef92e930af8731ed75573dad9008633b7bd0f246e"
+          },
+          {
+            "index": 15,
+            "effectiveAlphaPixels": 15650,
+            "alphaBounds": {
+              "left": 63,
+              "top": 21,
+              "right": 63,
+              "bottom": 29
+            },
+            "sha256": "b895fc5314670f01fac985e84a7b79706ac0a74c78876886b5bbd74bfd548437"
+          }
+        ],
+        "firstFrameSha256": "b895fc5314670f01fac985e84a7b79706ac0a74c78876886b5bbd74bfd548437",
+        "lastFrameSha256": "b895fc5314670f01fac985e84a7b79706ac0a74c78876886b5bbd74bfd548437",
+        "loopClosed": true,
+        "motion": {
+          "channelDeltaThreshold": 16,
+          "meaningfulChangedPixelRatio": 0.0015,
+          "uniqueFrameCount": 15,
+          "transitionDifferenceRatios": [
+            0.11463541666666667,
+            0.15225694444444443,
+            0.08467013888888889,
+            0.18220486111111112,
+            0.16776041666666666,
+            0.1562673611111111,
+            0.2089236111111111,
+            0.13394097222222223,
+            0.19151041666666666,
+            0.15692708333333333,
+            0.16821180555555557,
+            0.18928819444444445,
+            0.07083333333333333,
+            0.16699652777777776,
+            0.10675347222222223
+          ],
+          "meaningfulTransitionCount": 15,
+          "meanInternalDifferenceRatio": 0.15007870370370366,
+          "maxInternalDifferenceRatio": 0.2089236111111111
+        },
+        "loopClosure": {
+          "boundaryDifferenceRatio": 0,
+          "internalMedianDifferenceRatio": 0.15692708333333333,
+          "allowedBoundaryDifferenceRatio": 0.39231770833333335,
+          "passed": true
+        }
+      },
+      "issues": [],
+      "keyword": "打闹",
+      "distribution": "bundled",
+      "humanReview": "pending"
+    },
+    {
+      "id": "chase-core-run",
+      "metadata": {
+        "format": "gif",
+        "width": 240,
+        "height": 240,
+        "pageHeight": 240,
+        "pages": 16,
+        "loop": 0,
+        "delays": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "durationMs": 1600,
+        "bytes": 188624,
+        "sha256": "d83a763b301f5cc1649372a145738af08b25a69d0197118ffe03f85758cd92b7",
+        "frames": [
+          {
+            "index": 0,
+            "effectiveAlphaPixels": 14007,
+            "alphaBounds": {
+              "left": 61,
+              "top": 31,
+              "right": 60,
+              "bottom": 31
+            },
+            "sha256": "ebd41919c80744ae71b4f98fe75506ea8c3b7659de9891c684ab47e3f1d95ced"
+          },
+          {
+            "index": 1,
+            "effectiveAlphaPixels": 14797,
+            "alphaBounds": {
+              "left": 59,
+              "top": 31,
+              "right": 58,
+              "bottom": 29
+            },
+            "sha256": "067aa2b7e599c156e79c45a056e64885cd89a3eaddce91262f6e36653606cf3f"
+          },
+          {
+            "index": 2,
+            "effectiveAlphaPixels": 15025,
+            "alphaBounds": {
+              "left": 58,
+              "top": 21,
+              "right": 54,
+              "bottom": 28
+            },
+            "sha256": "bacda60fa8df7bd0d4ff56c3369b1aa8da8753714d24150be72a34dfde2162ff"
+          },
+          {
+            "index": 3,
+            "effectiveAlphaPixels": 15681,
+            "alphaBounds": {
+              "left": 41,
+              "top": 22,
+              "right": 33,
+              "bottom": 28
+            },
+            "sha256": "7c238a8171d3909c404f6465e7fbe946db241afc3a6e7922e3250a3e9a3888f5"
+          },
+          {
+            "index": 4,
+            "effectiveAlphaPixels": 15127,
+            "alphaBounds": {
+              "left": 41,
+              "top": 32,
+              "right": 32,
+              "bottom": 29
+            },
+            "sha256": "c59e58808f8deac836594dcebe93896aaa02ed62cbcb6838b2c35d9dc58e8e46"
+          },
+          {
+            "index": 5,
+            "effectiveAlphaPixels": 15909,
+            "alphaBounds": {
+              "left": 38,
+              "top": 30,
+              "right": 31,
+              "bottom": 28
+            },
+            "sha256": "bca274571356a8004734801fa1605e36cb86939ec9ababf06f860b843b5b5048"
+          },
+          {
+            "index": 6,
+            "effectiveAlphaPixels": 17052,
+            "alphaBounds": {
+              "left": 36,
+              "top": 29,
+              "right": 31,
+              "bottom": 26
+            },
+            "sha256": "084b5ba6de155f99472c8ae007089cb587ad9b51844f1b686e68fa288743640a"
+          },
+          {
+            "index": 7,
+            "effectiveAlphaPixels": 17172,
+            "alphaBounds": {
+              "left": 34,
+              "top": 19,
+              "right": 32,
+              "bottom": 26
+            },
+            "sha256": "a0374aeff8e3a9428d69e8fdcb0ddef1155c03def0352994309bef5b0b3b3002"
+          },
+          {
+            "index": 8,
+            "effectiveAlphaPixels": 17482,
+            "alphaBounds": {
+              "left": 32,
+              "top": 20,
+              "right": 34,
+              "bottom": 24
+            },
+            "sha256": "e512b86f6913b74fc747dd3387c868e59e3565d29ba01ea4681a1e127146ef46"
+          },
+          {
+            "index": 9,
+            "effectiveAlphaPixels": 17549,
+            "alphaBounds": {
+              "left": 31,
+              "top": 29,
+              "right": 36,
+              "bottom": 23
+            },
+            "sha256": "c1b11abf09b42f2118eca5ccc922bb78c7b74734accf401dc4fc639083370f8b"
+          },
+          {
+            "index": 10,
+            "effectiveAlphaPixels": 16536,
+            "alphaBounds": {
+              "left": 31,
+              "top": 30,
+              "right": 38,
+              "bottom": 25
+            },
+            "sha256": "9eea3b384042136481bd4413b37c8362312930b303c0b0677a9bccc60a6c463d"
+          },
+          {
+            "index": 11,
+            "effectiveAlphaPixels": 14906,
+            "alphaBounds": {
+              "left": 32,
+              "top": 32,
+              "right": 41,
+              "bottom": 30
+            },
+            "sha256": "e3ef5f32b228f8f6ce5744f755ec0b830b46b4ff18091b40789cb190818363c2"
+          },
+          {
+            "index": 12,
+            "effectiveAlphaPixels": 15419,
+            "alphaBounds": {
+              "left": 33,
+              "top": 23,
+              "right": 41,
+              "bottom": 30
+            },
+            "sha256": "120420d86c06373c38c29502afc424fcb1fdcc73eda28c3370e82bbbabf0cda0"
+          },
+          {
+            "index": 13,
+            "effectiveAlphaPixels": 14790,
+            "alphaBounds": {
+              "left": 54,
+              "top": 23,
+              "right": 56,
+              "bottom": 30
+            },
+            "sha256": "09571f292bcce87738b24f3868855a9d22efc4dfa683eb27aa6c82c4086cd22a"
+          },
+          {
+            "index": 14,
+            "effectiveAlphaPixels": 14708,
+            "alphaBounds": {
+              "left": 59,
+              "top": 31,
+              "right": 59,
+              "bottom": 30
+            },
+            "sha256": "27038e389e1a1abff578172e3b531372a7dc34d8ff83682539a6ec31d35f8b8f"
+          },
+          {
+            "index": 15,
+            "effectiveAlphaPixels": 14007,
+            "alphaBounds": {
+              "left": 61,
+              "top": 31,
+              "right": 60,
+              "bottom": 31
+            },
+            "sha256": "ebd41919c80744ae71b4f98fe75506ea8c3b7659de9891c684ab47e3f1d95ced"
+          }
+        ],
+        "firstFrameSha256": "ebd41919c80744ae71b4f98fe75506ea8c3b7659de9891c684ab47e3f1d95ced",
+        "lastFrameSha256": "ebd41919c80744ae71b4f98fe75506ea8c3b7659de9891c684ab47e3f1d95ced",
+        "loopClosed": true,
+        "motion": {
+          "channelDeltaThreshold": 16,
+          "meaningfulChangedPixelRatio": 0.0015,
+          "uniqueFrameCount": 15,
+          "transitionDifferenceRatios": [
+            0.1446875,
+            0.18144097222222222,
+            0.09852430555555555,
+            0.2096875,
+            0.16572916666666668,
+            0.17984375,
+            0.21569444444444444,
+            0.1595486111111111,
+            0.20569444444444446,
+            0.18977430555555555,
+            0.19741319444444444,
+            0.19661458333333334,
+            0.07590277777777778,
+            0.17114583333333333,
+            0.12357638888888889
+          ],
+          "meaningfulTransitionCount": 15,
+          "meanInternalDifferenceRatio": 0.16768518518518521,
+          "maxInternalDifferenceRatio": 0.21569444444444444
+        },
+        "loopClosure": {
+          "boundaryDifferenceRatio": 0,
+          "internalMedianDifferenceRatio": 0.17984375,
+          "allowedBoundaryDifferenceRatio": 0.449609375,
+          "passed": true
+        }
+      },
+      "issues": [],
+      "keyword": "追赶",
+      "distribution": "bundled",
+      "humanReview": "pending"
+    },
+    {
+      "id": "chase-dog-run",
+      "metadata": {
+        "format": "gif",
+        "width": 240,
+        "height": 240,
+        "pageHeight": 240,
+        "pages": 16,
+        "loop": 0,
+        "delays": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "durationMs": 1600,
+        "bytes": 209433,
+        "sha256": "4e2502edd4fcd69a93f386076c06fa0ac3083947dd98a3a3ffdb36a81763ba7a",
+        "frames": [
+          {
+            "index": 0,
+            "effectiveAlphaPixels": 13982,
+            "alphaBounds": {
+              "left": 57,
+              "top": 29,
+              "right": 56,
+              "bottom": 30
+            },
+            "sha256": "362409c804075033b7ffc20d5c05d0b86687527e6c84ff3bc2454961ec8a7216"
+          },
+          {
+            "index": 1,
+            "effectiveAlphaPixels": 14880,
+            "alphaBounds": {
+              "left": 56,
+              "top": 28,
+              "right": 53,
+              "bottom": 28
+            },
+            "sha256": "94b7c8406b80ab88fb7bd7576ef1e755e5ae1caadf250c33e6bacf9677d74e23"
+          },
+          {
+            "index": 2,
+            "effectiveAlphaPixels": 15016,
+            "alphaBounds": {
+              "left": 59,
+              "top": 38,
+              "right": 57,
+              "bottom": 27
+            },
+            "sha256": "31ff7cfd21618b1b0f1fbc8fd9d862342839422452aad289a79f32366bbf7a9f"
+          },
+          {
+            "index": 3,
+            "effectiveAlphaPixels": 15503,
+            "alphaBounds": {
+              "left": 41,
+              "top": 34,
+              "right": 33,
+              "bottom": 29
+            },
+            "sha256": "101d9092ecb0950dbb65474bb711ec15b29f0b7b0f4324894c20d704eebf30ba"
+          },
+          {
+            "index": 4,
+            "effectiveAlphaPixels": 15293,
+            "alphaBounds": {
+              "left": 41,
+              "top": 32,
+              "right": 32,
+              "bottom": 28
+            },
+            "sha256": "9b36319465c96a6b622f0f42ad0f7ea53c9265d067c640aff61c3dcca1f19d00"
+          },
+          {
+            "index": 5,
+            "effectiveAlphaPixels": 16501,
+            "alphaBounds": {
+              "left": 38,
+              "top": 30,
+              "right": 31,
+              "bottom": 24
+            },
+            "sha256": "4b841a0547016211a3d6e82616bd8a35bb5652bea13396dab48a486e59b1547d"
+          },
+          {
+            "index": 6,
+            "effectiveAlphaPixels": 17494,
+            "alphaBounds": {
+              "left": 36,
+              "top": 28,
+              "right": 31,
+              "bottom": 21
+            },
+            "sha256": "265560866bf01a62487e770b313f314e9a504d290fb8215888bfb221c3532069"
+          },
+          {
+            "index": 7,
+            "effectiveAlphaPixels": 18053,
+            "alphaBounds": {
+              "left": 34,
+              "top": 19,
+              "right": 32,
+              "bottom": 22
+            },
+            "sha256": "5b53c26b8a6cf40d76cee4e86b9119041e8ceb159602acf75ca82e6495a6975d"
+          },
+          {
+            "index": 8,
+            "effectiveAlphaPixels": 18064,
+            "alphaBounds": {
+              "left": 32,
+              "top": 19,
+              "right": 34,
+              "bottom": 24
+            },
+            "sha256": "ba2dc4efa1594b36d4bcacac4fe02c8b3c229d1462aa71a408b53055794d05df"
+          },
+          {
+            "index": 9,
+            "effectiveAlphaPixels": 16989,
+            "alphaBounds": {
+              "left": 31,
+              "top": 29,
+              "right": 36,
+              "bottom": 26
+            },
+            "sha256": "7e09b368d1a78a9733e888378f8a06ee75d9f3b45f8223f5867cf7ec989945d5"
+          },
+          {
+            "index": 10,
+            "effectiveAlphaPixels": 16100,
+            "alphaBounds": {
+              "left": 31,
+              "top": 30,
+              "right": 38,
+              "bottom": 27
+            },
+            "sha256": "fab5532ae87efa1762e324cece4e6ecc3c96b673c34e8a656768cb5f5927d1bd"
+          },
+          {
+            "index": 11,
+            "effectiveAlphaPixels": 14760,
+            "alphaBounds": {
+              "left": 32,
+              "top": 32,
+              "right": 41,
+              "bottom": 29
+            },
+            "sha256": "06026fe8546b6ea41b83283fe02c89c4abeffebc7050cbd42795ea96e99af07a"
+          },
+          {
+            "index": 12,
+            "effectiveAlphaPixels": 15438,
+            "alphaBounds": {
+              "left": 33,
+              "top": 34,
+              "right": 41,
+              "bottom": 26
+            },
+            "sha256": "aea972b67ae0dac06a6a232bed126a4b40678f8d4d1111774cc54b4e10a9a3f9"
+          },
+          {
+            "index": 13,
+            "effectiveAlphaPixels": 14805,
+            "alphaBounds": {
+              "left": 59,
+              "top": 38,
+              "right": 61,
+              "bottom": 26
+            },
+            "sha256": "d3a80955b8640d26f50708af004940bad3d9c0a80231c7ae53f6a6fc2f13d411"
+          },
+          {
+            "index": 14,
+            "effectiveAlphaPixels": 14771,
+            "alphaBounds": {
+              "left": 55,
+              "top": 29,
+              "right": 54,
+              "bottom": 27
+            },
+            "sha256": "3b246d4db230b0f86506ec3d91b6e95e6a7aea6acc1ca20e5ffb6ff3f5807132"
+          },
+          {
+            "index": 15,
+            "effectiveAlphaPixels": 13982,
+            "alphaBounds": {
+              "left": 57,
+              "top": 29,
+              "right": 56,
+              "bottom": 30
+            },
+            "sha256": "362409c804075033b7ffc20d5c05d0b86687527e6c84ff3bc2454961ec8a7216"
+          }
+        ],
+        "firstFrameSha256": "362409c804075033b7ffc20d5c05d0b86687527e6c84ff3bc2454961ec8a7216",
+        "lastFrameSha256": "362409c804075033b7ffc20d5c05d0b86687527e6c84ff3bc2454961ec8a7216",
+        "loopClosed": true,
+        "motion": {
+          "channelDeltaThreshold": 16,
+          "meaningfulChangedPixelRatio": 0.0015,
+          "uniqueFrameCount": 15,
+          "transitionDifferenceRatios": [
+            0.134375,
+            0.20032986111111112,
+            0.09894097222222223,
+            0.20083333333333334,
+            0.1892361111111111,
+            0.18612847222222223,
+            0.2165798611111111,
+            0.17774305555555556,
+            0.23348958333333333,
+            0.18022569444444445,
+            0.18513888888888888,
+            0.19618055555555555,
+            0.08932291666666667,
+            0.19503472222222223,
+            0.13315972222222222
+          ],
+          "meaningfulTransitionCount": 15,
+          "meanInternalDifferenceRatio": 0.17444791666666665,
+          "maxInternalDifferenceRatio": 0.23348958333333333
+        },
+        "loopClosure": {
+          "boundaryDifferenceRatio": 0,
+          "internalMedianDifferenceRatio": 0.18612847222222223,
+          "allowedBoundaryDifferenceRatio": 0.4653211805555556,
+          "passed": true
+        }
+      },
+      "issues": [],
+      "keyword": "追赶",
+      "distribution": "bundled",
+      "humanReview": "pending"
+    },
+    {
+      "id": "chase-person-run",
+      "metadata": {
+        "format": "gif",
+        "width": 240,
+        "height": 240,
+        "pageHeight": 240,
+        "pages": 16,
+        "loop": 0,
+        "delays": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "durationMs": 1600,
+        "bytes": 159930,
+        "sha256": "763744d0d374a8262b5e42a796fe59ef332753f1a351796d530c7f730f198c90",
+        "frames": [
+          {
+            "index": 0,
+            "effectiveAlphaPixels": 10538,
+            "alphaBounds": {
+              "left": 58,
+              "top": 39,
+              "right": 58,
+              "bottom": 32
+            },
+            "sha256": "9d31a64f23cfcc91484911cd818b5fdf97c0079a9cefca86961bc224f5e458e4"
+          },
+          {
+            "index": 1,
+            "effectiveAlphaPixels": 11416,
+            "alphaBounds": {
+              "left": 56,
+              "top": 38,
+              "right": 55,
+              "bottom": 29
+            },
+            "sha256": "234c3b99cd5cd724f72145abe52e41b1233cb13d8fd5b99f9db4f34bbcf9abfb"
+          },
+          {
+            "index": 2,
+            "effectiveAlphaPixels": 12164,
+            "alphaBounds": {
+              "left": 54,
+              "top": 21,
+              "right": 53,
+              "bottom": 28
+            },
+            "sha256": "cd44730bb2b7b7d5aafc6458456b8947dce6206c85ef8bf07f367df5ca961cc1"
+          },
+          {
+            "index": 3,
+            "effectiveAlphaPixels": 12212,
+            "alphaBounds": {
+              "left": 41,
+              "top": 21,
+              "right": 33,
+              "bottom": 28
+            },
+            "sha256": "5ae5c11e551ac711e2bdcc0f5b1e01bd65c9b0b545ceccf58aa101542a47cd73"
+          },
+          {
+            "index": 4,
+            "effectiveAlphaPixels": 11954,
+            "alphaBounds": {
+              "left": 41,
+              "top": 22,
+              "right": 32,
+              "bottom": 30
+            },
+            "sha256": "e42a490a41bdbced710f6d4940955880c3ba0420e3e24dbbd32e4f01a866a733"
+          },
+          {
+            "index": 5,
+            "effectiveAlphaPixels": 13201,
+            "alphaBounds": {
+              "left": 38,
+              "top": 20,
+              "right": 31,
+              "bottom": 29
+            },
+            "sha256": "d04e947fcbba12e4be760951f020d2c4c1d768483cd8a213e07c04c2252ee553"
+          },
+          {
+            "index": 6,
+            "effectiveAlphaPixels": 14871,
+            "alphaBounds": {
+              "left": 36,
+              "top": 19,
+              "right": 31,
+              "bottom": 27
+            },
+            "sha256": "f99e532953a175bdc6d616df7d847c4cce553cb2f9f88087211319469e198e31"
+          },
+          {
+            "index": 7,
+            "effectiveAlphaPixels": 15410,
+            "alphaBounds": {
+              "left": 34,
+              "top": 23,
+              "right": 32,
+              "bottom": 26
+            },
+            "sha256": "05072c6758ce87d22588c38d73bca8c4cbdb64ac0eb5e8e92c2482449dbc3dc4"
+          },
+          {
+            "index": 8,
+            "effectiveAlphaPixels": 15882,
+            "alphaBounds": {
+              "left": 32,
+              "top": 22,
+              "right": 34,
+              "bottom": 23
+            },
+            "sha256": "2402fcc32050afc16c788867e99f5cb672354892ccdfb3a8eb5c8875c83a285f"
+          },
+          {
+            "index": 9,
+            "effectiveAlphaPixels": 15240,
+            "alphaBounds": {
+              "left": 31,
+              "top": 23,
+              "right": 36,
+              "bottom": 22
+            },
+            "sha256": "153989119babf18086e21592a9ac7044560f4ac34fe286df4df0711d5b5be8f5"
+          },
+          {
+            "index": 10,
+            "effectiveAlphaPixels": 13714,
+            "alphaBounds": {
+              "left": 31,
+              "top": 23,
+              "right": 38,
+              "bottom": 24
+            },
+            "sha256": "2222475c80f3315c048e59f618bbe2cf75db1147eebd6508ea49bc9fe2af0a8f"
+          },
+          {
+            "index": 11,
+            "effectiveAlphaPixels": 11966,
+            "alphaBounds": {
+              "left": 32,
+              "top": 23,
+              "right": 41,
+              "bottom": 30
+            },
+            "sha256": "486134e80c90a9c86d54fba536116863ef45705e22f6955f56ce90f8ef03c750"
+          },
+          {
+            "index": 12,
+            "effectiveAlphaPixels": 12309,
+            "alphaBounds": {
+              "left": 33,
+              "top": 22,
+              "right": 41,
+              "bottom": 31
+            },
+            "sha256": "d4f3120b523b8f6ceb2e1020e5bd5e8d096d98684eb752d1560e868321d99c18"
+          },
+          {
+            "index": 13,
+            "effectiveAlphaPixels": 11836,
+            "alphaBounds": {
+              "left": 55,
+              "top": 23,
+              "right": 56,
+              "bottom": 30
+            },
+            "sha256": "c744dcedbb361cf299c705fa5e84d9b2590b627b238b929299a0289fbee0f104"
+          },
+          {
+            "index": 14,
+            "effectiveAlphaPixels": 11357,
+            "alphaBounds": {
+              "left": 56,
+              "top": 38,
+              "right": 56,
+              "bottom": 30
+            },
+            "sha256": "fdc36752bf243522141f8e5d70144075b7acf026b3477d9b95bba868872b0a9f"
+          },
+          {
+            "index": 15,
+            "effectiveAlphaPixels": 10538,
+            "alphaBounds": {
+              "left": 58,
+              "top": 39,
+              "right": 58,
+              "bottom": 32
+            },
+            "sha256": "9d31a64f23cfcc91484911cd818b5fdf97c0079a9cefca86961bc224f5e458e4"
+          }
+        ],
+        "firstFrameSha256": "9d31a64f23cfcc91484911cd818b5fdf97c0079a9cefca86961bc224f5e458e4",
+        "lastFrameSha256": "9d31a64f23cfcc91484911cd818b5fdf97c0079a9cefca86961bc224f5e458e4",
+        "loopClosed": true,
+        "motion": {
+          "channelDeltaThreshold": 16,
+          "meaningfulChangedPixelRatio": 0.0015,
+          "uniqueFrameCount": 15,
+          "transitionDifferenceRatios": [
+            0.11529513888888888,
+            0.14217013888888888,
+            0.1190625,
+            0.1459375,
+            0.15034722222222222,
+            0.16807291666666666,
+            0.19902777777777778,
+            0.153125,
+            0.21355902777777777,
+            0.17098958333333333,
+            0.1659027777777778,
+            0.1500173611111111,
+            0.09597222222222222,
+            0.13842013888888888,
+            0.10631944444444444
+          ],
+          "meaningfulTransitionCount": 15,
+          "meanInternalDifferenceRatio": 0.14894791666666665,
+          "maxInternalDifferenceRatio": 0.21355902777777777
+        },
+        "loopClosure": {
+          "boundaryDifferenceRatio": 0,
+          "internalMedianDifferenceRatio": 0.1500173611111111,
+          "allowedBoundaryDifferenceRatio": 0.37504340277777776,
+          "passed": true
+        }
+      },
+      "issues": [],
+      "keyword": "追赶",
+      "distribution": "bundled",
+      "humanReview": "pending"
+    },
+    {
+      "id": "chase-plush-bird",
+      "metadata": {
+        "format": "gif",
+        "width": 240,
+        "height": 240,
+        "pageHeight": 240,
+        "pages": 16,
+        "loop": 0,
+        "delays": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "durationMs": 1600,
+        "bytes": 180386,
+        "sha256": "622af9cd1ffdab9d371da1db482cdeea860731ab1ad0849147aecca17d29eb07",
+        "frames": [
+          {
+            "index": 0,
+            "effectiveAlphaPixels": 14109,
+            "alphaBounds": {
+              "left": 64,
+              "top": 35,
+              "right": 64,
+              "bottom": 31
+            },
+            "sha256": "03b3595cb84e9fec3cac27761f535389ed5c89a6a39b84bd72801ba9cdfb1eb0"
+          },
+          {
+            "index": 1,
+            "effectiveAlphaPixels": 14709,
+            "alphaBounds": {
+              "left": 61,
+              "top": 34,
+              "right": 61,
+              "bottom": 30
+            },
+            "sha256": "88e1798e78cfd487b769eab3e6b1aae38f5ae46e687f23eedf56e4ef923f497f"
+          },
+          {
+            "index": 2,
+            "effectiveAlphaPixels": 14720,
+            "alphaBounds": {
+              "left": 60,
+              "top": 28,
+              "right": 60,
+              "bottom": 30
+            },
+            "sha256": "69f288bbd500ef1f28d89e256ce41220ef4495322b0a5e5bb85e610bc020e789"
+          },
+          {
+            "index": 3,
+            "effectiveAlphaPixels": 15297,
+            "alphaBounds": {
+              "left": 41,
+              "top": 29,
+              "right": 33,
+              "bottom": 31
+            },
+            "sha256": "21827d3185f448a98d54c5973ca817afe5e15e3140148f786289ca9839af6e1e"
+          },
+          {
+            "index": 4,
+            "effectiveAlphaPixels": 15689,
+            "alphaBounds": {
+              "left": 41,
+              "top": 30,
+              "right": 32,
+              "bottom": 30
+            },
+            "sha256": "cf1cd1ceecf708cb417844813a10fd39f7fce2180c8b884fbc804f0462f54add"
+          },
+          {
+            "index": 5,
+            "effectiveAlphaPixels": 16865,
+            "alphaBounds": {
+              "left": 38,
+              "top": 28,
+              "right": 31,
+              "bottom": 26
+            },
+            "sha256": "6b903ecbd73430b6742c70fdbaa529a0577de74f7fc6d5839d541769812da613"
+          },
+          {
+            "index": 6,
+            "effectiveAlphaPixels": 17727,
+            "alphaBounds": {
+              "left": 36,
+              "top": 27,
+              "right": 31,
+              "bottom": 23
+            },
+            "sha256": "c6bcd66cffc4941d4ef772f75afa35083a7e43d34cea6cd36b4b78e2d9ea6109"
+          },
+          {
+            "index": 7,
+            "effectiveAlphaPixels": 17975,
+            "alphaBounds": {
+              "left": 34,
+              "top": 19,
+              "right": 32,
+              "bottom": 23
+            },
+            "sha256": "40e7eb2f37d8a2e2304b353d3b8e7021b96099e40c9362d1c0d7af604fa3117c"
+          },
+          {
+            "index": 8,
+            "effectiveAlphaPixels": 18232,
+            "alphaBounds": {
+              "left": 32,
+              "top": 19,
+              "right": 34,
+              "bottom": 25
+            },
+            "sha256": "8346e5af3d7cea016799dcc331b5ba9b155f3cec1b56953defe13afe9043329c"
+          },
+          {
+            "index": 9,
+            "effectiveAlphaPixels": 17901,
+            "alphaBounds": {
+              "left": 31,
+              "top": 27,
+              "right": 36,
+              "bottom": 26
+            },
+            "sha256": "c0aa4b0ddb318a091532d9efdfc638a5d17afc533045b3e7ed75ee7bb5a78c80"
+          },
+          {
+            "index": 10,
+            "effectiveAlphaPixels": 16977,
+            "alphaBounds": {
+              "left": 31,
+              "top": 29,
+              "right": 38,
+              "bottom": 28
+            },
+            "sha256": "48babb9d2eba588899ce40b13e75fb73407ab5ad467174281e2edf5cabbdf0ab"
+          },
+          {
+            "index": 11,
+            "effectiveAlphaPixels": 15828,
+            "alphaBounds": {
+              "left": 32,
+              "top": 29,
+              "right": 41,
+              "bottom": 31
+            },
+            "sha256": "d50c5bc1e5e05a13360cbd876a98e72ab28433ed6d05e1622b0700142a3bcc30"
+          },
+          {
+            "index": 12,
+            "effectiveAlphaPixels": 15296,
+            "alphaBounds": {
+              "left": 33,
+              "top": 29,
+              "right": 41,
+              "bottom": 29
+            },
+            "sha256": "ca19a3fb80f1aaa2dfa5a2632b8833b2a7f29b4f7707120234a79d73d6505a6c"
+          },
+          {
+            "index": 13,
+            "effectiveAlphaPixels": 14686,
+            "alphaBounds": {
+              "left": 60,
+              "top": 29,
+              "right": 60,
+              "bottom": 28
+            },
+            "sha256": "376a0a6d5c197117352df1ceff15ab1bf6290260bf8927c9762bbc91bc68d118"
+          },
+          {
+            "index": 14,
+            "effectiveAlphaPixels": 14608,
+            "alphaBounds": {
+              "left": 62,
+              "top": 34,
+              "right": 62,
+              "bottom": 29
+            },
+            "sha256": "3fc15f1e29c22cc5bb91871a1751433d12f27537df47f2029213bcdad2479444"
+          },
+          {
+            "index": 15,
+            "effectiveAlphaPixels": 14109,
+            "alphaBounds": {
+              "left": 64,
+              "top": 35,
+              "right": 64,
+              "bottom": 31
+            },
+            "sha256": "03b3595cb84e9fec3cac27761f535389ed5c89a6a39b84bd72801ba9cdfb1eb0"
+          }
+        ],
+        "firstFrameSha256": "03b3595cb84e9fec3cac27761f535389ed5c89a6a39b84bd72801ba9cdfb1eb0",
+        "lastFrameSha256": "03b3595cb84e9fec3cac27761f535389ed5c89a6a39b84bd72801ba9cdfb1eb0",
+        "loopClosed": true,
+        "motion": {
+          "channelDeltaThreshold": 16,
+          "meaningfulChangedPixelRatio": 0.0015,
+          "uniqueFrameCount": 15,
+          "transitionDifferenceRatios": [
+            0.12932291666666668,
+            0.16880208333333332,
+            0.09328125,
+            0.19730902777777778,
+            0.1818576388888889,
+            0.17524305555555555,
+            0.23682291666666666,
+            0.17765625,
+            0.22913194444444446,
+            0.17921875,
+            0.19463541666666667,
+            0.19,
+            0.06736111111111111,
+            0.1675347222222222,
+            0.11182291666666666
+          ],
+          "meaningfulTransitionCount": 15,
+          "meanInternalDifferenceRatio": 0.16666666666666666,
+          "maxInternalDifferenceRatio": 0.23682291666666666
+        },
+        "loopClosure": {
+          "boundaryDifferenceRatio": 0,
+          "internalMedianDifferenceRatio": 0.17765625,
+          "allowedBoundaryDifferenceRatio": 0.44414062499999996,
+          "passed": true
+        }
+      },
+      "issues": [],
+      "keyword": "追赶",
+      "distribution": "bundled",
+      "humanReview": "pending"
+    }
+  ]
+}

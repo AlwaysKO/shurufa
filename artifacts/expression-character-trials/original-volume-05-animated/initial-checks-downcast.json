@@ -1,0 +1,22 @@
+[
+  {
+    "id": "labrador-downcast",
+    "pass": true,
+    "bytes": 109873
+  },
+  {
+    "id": "penguin-downcast",
+    "pass": true,
+    "bytes": 96026
+  },
+  {
+    "id": "bear-downcast",
+    "pass": false,
+    "error": "Error: GIF审计失败：[{\"id\":\"bear-downcast\",\"field\":\"loopClosure\",\"expected\":0.14700520833333333,\"actual\":0.17097222222222222,\"message\":\"样板 bear-downcast 跨循环边界的感知差异显著高于内部相邻帧\"}]"
+  },
+  {
+    "id": "man-downcast",
+    "pass": true,
+    "bytes": 74742
+  }
+]

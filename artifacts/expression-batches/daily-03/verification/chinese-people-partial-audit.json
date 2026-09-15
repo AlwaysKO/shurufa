@@ -1,0 +1,42 @@
+[
+  {
+    "id": "sad-person-sad",
+    "width": 240,
+    "height": 240,
+    "frames": 16,
+    "durationMs": 1600,
+    "loop": 0,
+    "bytes": 166474,
+    "sha256": "5656b0c5591dbaaeeea84ec0b54ca56ae17c7f2b2fd78703b9a0b4b59eed7cdd"
+  },
+  {
+    "id": "sad-student-sigh",
+    "width": 240,
+    "height": 240,
+    "frames": 16,
+    "durationMs": 1600,
+    "loop": 0,
+    "bytes": 204015,
+    "sha256": "032ea6f5ef90b0ea4e39ab42765b08fdcc0e4a1a41e9c6fbb0be2e43310d32ea"
+  },
+  {
+    "id": "shock-cook-surprise",
+    "width": 240,
+    "height": 240,
+    "frames": 16,
+    "durationMs": 1600,
+    "loop": 0,
+    "bytes": 221851,
+    "sha256": "2ba138be308005c027dd4e9f20d7170ddaa97325c366561f409cd1898fccd459"
+  },
+  {
+    "id": "shock-person-gasp",
+    "width": 240,
+    "height": 240,
+    "frames": 16,
+    "durationMs": 1600,
+    "loop": 0,
+    "bytes": 186949,
+    "sha256": "c5842cebdfb5432a7612ad3777d77e5511d1f303873fb1708bbb769628aaae9e"
+  }
+]

@@ -1,0 +1,31 @@
+{
+  "keyword": "疑惑",
+  "items": [
+    {
+      "id": "scene-rich-10-puzzled",
+      "keyword": "疑惑",
+      "file": "疑惑/scene-rich-10-puzzled.gif",
+      "thumbnail": "疑惑/scene-rich-10-puzzled.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-10/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-10/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-10/gifs/scene-rich-10-puzzled.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-10/thumbnails/scene-rich-10-puzzled.webp",
+      "batch": "scene-rich-10",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "96d89a5aaa4ce5794374b6e4764b2f39f156e733689aa20064b4a4b44f3086de",
+      "thumbnailSha256": "4ef1812bbf4881cc87d29dfe25eceefd24db8a794b689dcb13c048645f8d18b8",
+      "bytes": 138229,
+      "width": 240,
+      "height": 240,
+      "frames": 20,
+      "durationMs": 4000,
+      "style": "ai-original-pet",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

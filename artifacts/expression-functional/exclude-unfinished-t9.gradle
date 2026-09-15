@@ -1,0 +1,11 @@
+gradle.projectsEvaluated {
+    def sdk = gradle.rootProject.findProject(":yuyansdk")
+    sdk.tasks.matching { it.name == "compileOfflineDebugUnitTestKotlin" }.configureEach {
+        exclude "**/com/yuyan/imemodule/data/collect/EventDeliveryTest.kt"
+        exclude "**/com/yuyan/imemodule/data/collect/LocalInputStoreTest.kt"
+        exclude "**/com/yuyan/imemodule/data/completion/CompletionCacheTest.kt"
+        exclude "**/com/yuyan/imemodule/data/completion/InputLearningPolicyTest.kt"
+        exclude "**/com/yuyan/imemodule/data/completion/T9CommitTrackerTest.kt"
+        exclude "**/com/yuyan/imemodule/data/completion/T9LexiconTest.kt"
+    }
+}

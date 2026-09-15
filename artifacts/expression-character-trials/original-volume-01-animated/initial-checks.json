@@ -1,0 +1,62 @@
+[
+  {
+    "id": "cat-shock",
+    "pass": false,
+    "error": "Error: GIF审计失败：[{\"id\":\"cat-shock\",\"field\":\"loopClosure\",\"expected\":0.4059895833333333,\"actual\":0.4134375,\"message\":\"样板 cat-shock 跨循环边界的感知差异显著高于内部相邻帧\"}]"
+  },
+  {
+    "id": "frog-shock",
+    "pass": true,
+    "bytes": 121825
+  },
+  {
+    "id": "owl-shock",
+    "pass": true,
+    "bytes": 100042
+  },
+  {
+    "id": "man-shock",
+    "pass": true,
+    "bytes": 75465
+  },
+  {
+    "id": "husky-disdain",
+    "pass": true,
+    "bytes": 118602
+  },
+  {
+    "id": "duck-disdain",
+    "pass": true,
+    "bytes": 136461
+  },
+  {
+    "id": "alpaca-disdain",
+    "pass": true,
+    "bytes": 90612
+  },
+  {
+    "id": "man-disdain",
+    "pass": true,
+    "bytes": 76304
+  },
+  {
+    "id": "fox-smug",
+    "pass": true,
+    "bytes": 104721
+  },
+  {
+    "id": "gecko-smug",
+    "pass": true,
+    "bytes": 126407
+  },
+  {
+    "id": "seal-smug",
+    "pass": true,
+    "bytes": 74128
+  },
+  {
+    "id": "man-smug",
+    "pass": true,
+    "bytes": 79473
+  }
+]

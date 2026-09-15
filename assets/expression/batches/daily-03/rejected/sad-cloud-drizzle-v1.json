@@ -1,0 +1,33 @@
+{
+  "item": {
+    "id": "sad-cloud-drizzle",
+    "keyword": "难过",
+    "text": "难过",
+    "style": "kinetic-typography",
+    "direction": "kinetic-type",
+    "distribution": "bundled",
+    "sourceType": "ai-original",
+    "prompt": "Create ONE genuinely transparent RGBA PNG 2x2 sprite sheet with exactly FOUR clearly DIFFERENT key poses of the SAME subject. Reading order top-left, top-right, bottom-left, bottom-right. Every pose must fit COMPLETELY inside its quadrant, occupying at most 75 percent of its quadrant width and height. Leave WIDE EMPTY TRANSPARENT gutters at the exact horizontal and vertical midpoint. No limb or prop crosses the midpoint. Same identity, scale, material, lighting across poses; genuine limb, face and posture changes, not shifted/scaled copies. Crisp appealing sticker silhouette readable at 120px. All limbs anatomically consistent, no duplicates. NO text, letters, numbers, punctuation, watermarks, logos, famous characters, celebrity resemblance, borders, grids, checkerboard, background, ground plane or rectangular halo. Actual alpha transparency, NOT painted checkerboard. SUBJECT: An original soft lavender cloud with no face above an EMPTY center, three blue water droplets and a curved turquoise ribbon below, clay sculpture. FOUR POSES: 1. cloud rounded with drops tucked beneath; 2. cloud droops at edges and drops stretch lower beside empty center; 3. cloud contracts as curved ribbon opens like a cradle; 4. cloud broadens gently with one small drop and curved ribbon. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+    "motionScript": [
+      "cloud rounded with drops tucked beneath",
+      "cloud droops at edges and drops stretch lower beside empty center",
+      "cloud contracts as curved ribbon opens like a cradle",
+      "cloud broadens gently with one small drop and curved ribbon"
+    ],
+    "motionPreset": "shake",
+    "frameCount": 16,
+    "durationMs": 1600,
+    "masterFile": "masters/sad-cloud-drizzle.png",
+    "poseFiles": [
+      "poses/sad-cloud-drizzle/pose-01.png",
+      "poses/sad-cloud-drizzle/pose-02.png",
+      "poses/sad-cloud-drizzle/pose-03.png",
+      "poses/sad-cloud-drizzle/pose-04.png"
+    ],
+    "textPlacement": "center"
+  },
+  "source": {
+    "path": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-57dcc38a-e4ce-443e-afe6-7ffb946dd8d6.png",
+    "prompt": "Create ONE genuinely transparent RGBA PNG 2x2 sprite sheet with exactly FOUR clearly DIFFERENT key poses of the SAME subject. Reading order top-left, top-right, bottom-left, bottom-right. Every pose must fit COMPLETELY inside its quadrant, occupying at most 75 percent of its quadrant width and height. Leave WIDE EMPTY TRANSPARENT gutters at the exact horizontal and vertical midpoint. No limb or prop crosses the midpoint. Same identity, scale, material, lighting across poses; genuine limb, face and posture changes, not shifted/scaled copies. Crisp appealing sticker silhouette readable at 120px. All limbs anatomically consistent, no duplicates. NO text, letters, numbers, punctuation, watermarks, logos, famous characters, celebrity resemblance, borders, grids, checkerboard, background, ground plane or rectangular halo. Actual alpha transparency, NOT painted checkerboard. SUBJECT: An original soft lavender cloud with no face above an EMPTY center, three blue water droplets and a curved turquoise ribbon below, clay sculpture. FOUR POSES: 1. cloud rounded with drops tucked beneath; 2. cloud droops at edges and drops stretch lower beside empty center; 3. cloud contracts as curved ribbon opens like a cradle; 4. cloud broadens gently with one small drop and curved ribbon. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "keyword": "好奇",
+  "items": [
+    {
+      "id": "scene-rich-09-curious",
+      "keyword": "好奇",
+      "file": "好奇/scene-rich-09-curious.gif",
+      "thumbnail": "好奇/scene-rich-09-curious.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-09/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-09/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-09/gifs/scene-rich-09-curious.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-09/thumbnails/scene-rich-09-curious.webp",
+      "batch": "scene-rich-09",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "52b4103f6d5c28ef7b842d6fed41d2a28462be9c6c9a5ca937f5f08bb5ce222f",
+      "thumbnailSha256": "cb5860d15d39cc662eb6a860684d6b29162b8fb57abd75ffeb47563ee934ada3",
+      "bytes": 144401,
+      "width": 240,
+      "height": 240,
+      "frames": 20,
+      "durationMs": 4000,
+      "style": "ai-original-pet",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

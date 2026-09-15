@@ -1,0 +1,128 @@
+
+ RUN  v4.1.11 /home/ko/project/shurufa/server
+
+ ❯ src/expression/queryMatching.test.ts (24 tests | 13 failed) 18ms
+     × {"query":"谢谢啦","first":"谢谢","forbidden":[]} 4ms
+     × {"query":"谢谢哦","first":"谢谢","forbidden":[]} 1ms
+     × {"query":"谢谢你","first":"谢谢","forbidden":[]} 0ms
+     × {"query":"多谢","first":"谢谢","forbidden":[]} 0ms
+     × {"query":"今天真的谢谢你啦","first":"谢谢","forbidden":[]} 0ms
+     × {"query":"我打你","first":"打闹","forbidden":[]} 0ms
+     × {"query":"我打你了","first":"打闹","forbidden":[]} 0ms
+     × {"query":"我打你哦","first":"打闹","forbidden":[]} 2ms
+     × {"query":"我打你呀","first":"打闹","forbidden":[]} 4ms
+     × {"query":"我要来抓你了","first":"追赶","forbidden":[]} 0ms
+     × {"query":"我来追你啦","first":"追赶","forbidden":[]} 0ms
+     × {"query":"我今天有点不开心","first":"难过","forbidden":[]} 0ms
+     × {"query":"不可以","first":"不要","forbidden":[]} 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 13 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/expression/queryMatching.test.ts > 两端共享查询语义矩阵 > {"query":"谢谢啦","first":"谢谢","forbidden":[]}
+ FAIL  src/expression/queryMatching.test.ts > 两端共享查询语义矩阵 > {"query":"谢谢哦","first":"谢谢","forbidden":[]}
+ FAIL  src/expression/queryMatching.test.ts > 两端共享查询语义矩阵 > {"query":"谢谢你","first":"谢谢","forbidden":[]}
+ FAIL  src/expression/queryMatching.test.ts > 两端共享查询语义矩阵 > {"query":"多谢","first":"谢谢","forbidden":[]}
+ FAIL  src/expression/queryMatching.test.ts > 两端共享查询语义矩阵 > {"query":"今天真的谢谢你啦","first":"谢谢","forbidden":[]}
+AssertionError: expected undefined to be '谢谢' // Object.is equality
+
+- Expected:
+"谢谢"
+
++ Received:
+undefined
+
+ ❯ src/expression/queryMatching.test.ts:11:41
+      9|  for (const item of cases) it(JSON.stringify(item), () => {
+     10|   const results=rankExpressionAssets(assets,item.query);
+     11|   if(item.first) expect(results[0]?.id).toBe(item.first);
+       |                                         ^
+     12|   for(const forbidden of item.forbidden) expect(results.map(x=>x.id)).…
+     13|   for(const result of results) expect(result.embeddedText).toBe(result…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/13]⎯
+
+ FAIL  src/expression/queryMatching.test.ts > 两端共享查询语义矩阵 > {"query":"我打你","first":"打闹","forbidden":[]}
+ FAIL  src/expression/queryMatching.test.ts > 两端共享查询语义矩阵 > {"query":"我打你了","first":"打闹","forbidden":[]}
+ FAIL  src/expression/queryMatching.test.ts > 两端共享查询语义矩阵 > {"query":"我打你哦","first":"打闹","forbidden":[]}
+ FAIL  src/expression/queryMatching.test.ts > 两端共享查询语义矩阵 > {"query":"我打你呀","first":"打闹","forbidden":[]}
+AssertionError: expected undefined to be '打闹' // Object.is equality
+
+- Expected:
+"打闹"
+
++ Received:
+undefined
+
+ ❯ src/expression/queryMatching.test.ts:11:41
+      9|  for (const item of cases) it(JSON.stringify(item), () => {
+     10|   const results=rankExpressionAssets(assets,item.query);
+     11|   if(item.first) expect(results[0]?.id).toBe(item.first);
+       |                                         ^
+     12|   for(const forbidden of item.forbidden) expect(results.map(x=>x.id)).…
+     13|   for(const result of results) expect(result.embeddedText).toBe(result…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/13]⎯
+
+ FAIL  src/expression/queryMatching.test.ts > 两端共享查询语义矩阵 > {"query":"我要来抓你了","first":"追赶","forbidden":[]}
+ FAIL  src/expression/queryMatching.test.ts > 两端共享查询语义矩阵 > {"query":"我来追你啦","first":"追赶","forbidden":[]}
+AssertionError: expected undefined to be '追赶' // Object.is equality
+
+- Expected:
+"追赶"
+
++ Received:
+undefined
+
+ ❯ src/expression/queryMatching.test.ts:11:41
+      9|  for (const item of cases) it(JSON.stringify(item), () => {
+     10|   const results=rankExpressionAssets(assets,item.query);
+     11|   if(item.first) expect(results[0]?.id).toBe(item.first);
+       |                                         ^
+     12|   for(const forbidden of item.forbidden) expect(results.map(x=>x.id)).…
+     13|   for(const result of results) expect(result.embeddedText).toBe(result…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/13]⎯
+
+ FAIL  src/expression/queryMatching.test.ts > 两端共享查询语义矩阵 > {"query":"我今天有点不开心","first":"难过","forbidden":[]}
+AssertionError: expected undefined to be '难过' // Object.is equality
+
+- Expected:
+"难过"
+
++ Received:
+undefined
+
+ ❯ src/expression/queryMatching.test.ts:11:41
+      9|  for (const item of cases) it(JSON.stringify(item), () => {
+     10|   const results=rankExpressionAssets(assets,item.query);
+     11|   if(item.first) expect(results[0]?.id).toBe(item.first);
+       |                                         ^
+     12|   for(const forbidden of item.forbidden) expect(results.map(x=>x.id)).…
+     13|   for(const result of results) expect(result.embeddedText).toBe(result…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/13]⎯
+
+ FAIL  src/expression/queryMatching.test.ts > 两端共享查询语义矩阵 > {"query":"不可以","first":"不要","forbidden":[]}
+AssertionError: expected undefined to be '不要' // Object.is equality
+
+- Expected:
+"不要"
+
++ Received:
+undefined
+
+ ❯ src/expression/queryMatching.test.ts:11:41
+      9|  for (const item of cases) it(JSON.stringify(item), () => {
+     10|   const results=rankExpressionAssets(assets,item.query);
+     11|   if(item.first) expect(results[0]?.id).toBe(item.first);
+       |                                         ^
+     12|   for(const forbidden of item.forbidden) expect(results.map(x=>x.id)).…
+     13|   for(const result of results) expect(result.embeddedText).toBe(result…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/13]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  13 failed | 11 passed (24)
+   Start at  11:02:25
+   Duration  203ms (transform 37ms, setup 0ms, import 49ms, tests 18ms, environment 0ms)

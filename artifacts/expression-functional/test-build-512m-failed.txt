@@ -1,0 +1,102 @@
+WARNING: We recommend using a newer Android Gradle plugin to use compileSdk = 36
+
+This Android Gradle plugin (8.7.2) was tested up to compileSdk = 35.
+
+You are strongly encouraged to update your project to use a newer
+Android Gradle plugin that has been tested with compileSdk = 36.
+
+If you are already using the latest version of the Android Gradle plugin,
+you may need to wait until a newer version with support for compileSdk = 36 is available.
+
+For more information refer to the compatibility table:
+https://d.android.com/r/tools/api-level-support
+
+To suppress this warning, add/update
+    android.suppressUnsupportedCompileSdk=36
+to this project's gradle.properties.
+> Task :yuyansdk:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :yuyansdk:preBuild UP-TO-DATE
+> Task :yuyansdk:preOfflineDebugBuild UP-TO-DATE
+> Task :yuyansdk:dataBindingMergeDependencyArtifactsOfflineDebug UP-TO-DATE
+> Task :yuyansdk:generateOfflineDebugResValues UP-TO-DATE
+> Task :yuyansdk:generateOfflineDebugResources UP-TO-DATE
+> Task :yuyansdk:packageOfflineDebugResources UP-TO-DATE
+> Task :yuyansdk:parseOfflineDebugLocalResources UP-TO-DATE
+> Task :yuyansdk:dataBindingGenBaseClassesOfflineDebug UP-TO-DATE
+> Task :yuyansdk:generateOfflineDebugBuildConfig UP-TO-DATE
+> Task :yuyansdk:generateOfflineDebugRFile UP-TO-DATE
+> Task :yuyansdk:kspOfflineDebugKotlin UP-TO-DATE
+> Task :yuyansdk:compileOfflineDebugKotlin UP-TO-DATE
+> Task :yuyansdk:javaPreCompileOfflineDebug UP-TO-DATE
+> Task :yuyansdk:compileOfflineDebugJavaWithJavac UP-TO-DATE
+> Task :yuyansdk:bundleLibRuntimeToJarOfflineDebug UP-TO-DATE
+> Task :yuyansdk:bundleLibCompileToJarOfflineDebug UP-TO-DATE
+> Task :yuyansdk:preOfflineDebugUnitTestBuild UP-TO-DATE
+> Task :yuyansdk:writeOfflineDebugAarMetadata UP-TO-DATE
+> Task :yuyansdk:checkOfflineDebugUnitTestAarMetadata UP-TO-DATE
+> Task :yuyansdk:compileOfflineDebugLibraryResources UP-TO-DATE
+> Task :yuyansdk:generateOfflineDebugUnitTestResValues UP-TO-DATE
+> Task :yuyansdk:mapOfflineDebugUnitTestSourceSetPaths UP-TO-DATE
+> Task :yuyansdk:generateOfflineDebugUnitTestResources UP-TO-DATE
+> Task :yuyansdk:mergeOfflineDebugUnitTestResources UP-TO-DATE
+> Task :yuyansdk:extractDeepLinksOfflineDebug UP-TO-DATE
+> Task :yuyansdk:processOfflineDebugManifest UP-TO-DATE
+> Task :yuyansdk:processOfflineDebugUnitTestManifest UP-TO-DATE
+> Task :yuyansdk:processOfflineDebugUnitTestResources UP-TO-DATE
+> Task :yuyansdk:kspOfflineDebugUnitTestKotlin UP-TO-DATE
+> Task :yuyansdk:compileOfflineDebugUnitTestKotlin UP-TO-DATE
+> Task :yuyansdk:javaPreCompileOfflineDebugUnitTest UP-TO-DATE
+> Task :yuyansdk:compileOfflineDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :yuyansdk:mergeOfflineDebugShaders UP-TO-DATE
+> Task :yuyansdk:compileOfflineDebugShaders NO-SOURCE
+> Task :yuyansdk:generateOfflineDebugAssets UP-TO-DATE
+> Task :yuyansdk:mergeOfflineDebugAssets UP-TO-DATE
+> Task :yuyansdk:generateOfflineDebugUnitTestAssets UP-TO-DATE
+> Task :yuyansdk:packageOfflineDebugAssets UP-TO-DATE
+> Task :yuyansdk:mergeOfflineDebugUnitTestAssets UP-TO-DATE
+> Task :yuyansdk:packageOfflineDebugUnitTestForUnitTest UP-TO-DATE
+> Task :yuyansdk:generateOfflineDebugUnitTestConfig UP-TO-DATE
+> Task :yuyansdk:processOfflineDebugJavaRes UP-TO-DATE
+> Task :yuyansdk:processOfflineDebugUnitTestJavaRes UP-TO-DATE
+> Task :yuyansdk:testOfflineDebugUnitTest
+
+ExpressionManualSearchInputViewTest > 真实数字键盘成功发送的123累积为斗图查询 FAILED
+    java.lang.AssertionError at ExpressionManualSearchInputViewTest.kt:370
+
+ExpressionManualSearchInputViewTest > 切换输入目标取消准备不向错误目标发送 FAILED
+    java.lang.OutOfMemoryError at ExpressionManualSearchInputViewTest.kt:1289
+
+ExpressionManualSearchInputViewTest > 方向移动后新数字不拼旧串且失败编辑不改缓存 FAILED
+    java.lang.AssertionError at ExpressionManualSearchInputViewTest.kt:437
+
+ExpressionManualSearchInputViewTest > WRAP_CONTENT宿主连续十轮空态零高度且有结果面板稳定恢复 FAILED
+    java.lang.OutOfMemoryError
+
+ExpressionManualSearchInputViewTest > 发送成功后同词再次提交启动新查询 FAILED
+    java.lang.OutOfMemoryError
+
+
+Exception: java.lang.OutOfMemoryError thrown from the UncaughtExceptionHandler in thread "SDK 30 Main Thread"
+
+Exception: java.lang.OutOfMemoryError thrown from the UncaughtExceptionHandler in thread "Test worker"
+
+> Task :yuyansdk:testOfflineDebugUnitTest FAILED
+
+303 tests completed, 5 failed, 1 skipped
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':yuyansdk:testOfflineDebugUnitTest'.
+> Process 'Gradle Test Executor 3' finished with non-zero exit value 1
+  This problem might be caused by incorrect test process configuration.
+  For more on test execution, please refer to https://docs.gradle.org/8.9/userguide/java_testing.html#sec:test_execution in the Gradle documentation.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 2m 19s
+37 actionable tasks: 1 executed, 36 up-to-date

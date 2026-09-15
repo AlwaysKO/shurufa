@@ -1,0 +1,31 @@
+{
+  "keyword": "等一下",
+  "items": [
+    {
+      "id": "scene-rich-04-wait",
+      "keyword": "等一下",
+      "file": "等一下/scene-rich-04-wait.gif",
+      "thumbnail": "等一下/scene-rich-04-wait.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-04/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-04/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-04/gifs/scene-rich-04-wait.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-04/thumbnails/scene-rich-04-wait.webp",
+      "batch": "scene-rich-04",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "d9876dc3b837ede0adf5aaa6ca29b8e4552d6a99521f5b3f136f747d2f215927",
+      "thumbnailSha256": "fddff43b50cd849a6f5467fd6faa0fb4e398f03bf1693eae0fe2d8e024fc2b1b",
+      "bytes": 99588,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "durationMs": 3000,
+      "style": "hand-drawn",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

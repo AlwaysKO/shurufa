@@ -1,0 +1,247 @@
+[
+  {
+    "query": "谢谢",
+    "first": "谢谢",
+    "forbidden": []
+  },
+  {
+    "query": "谢谢啦",
+    "first": "谢谢",
+    "forbidden": []
+  },
+  {
+    "query": "谢谢哦",
+    "first": "谢谢",
+    "forbidden": []
+  },
+  {
+    "query": "谢谢你",
+    "first": "谢谢",
+    "forbidden": []
+  },
+  {
+    "query": "多谢",
+    "first": "谢谢",
+    "forbidden": []
+  },
+  {
+    "query": "今天真的谢谢你啦",
+    "first": "谢谢",
+    "forbidden": []
+  },
+  {
+    "query": "我打你",
+    "first": "打闹",
+    "forbidden": []
+  },
+  {
+    "query": "我打你了",
+    "first": "打闹",
+    "forbidden": []
+  },
+  {
+    "query": "我打你哦",
+    "first": "打闹",
+    "forbidden": []
+  },
+  {
+    "query": "我打你呀",
+    "first": "打闹",
+    "forbidden": []
+  },
+  {
+    "query": "我要来抓你了",
+    "first": "追赶",
+    "forbidden": []
+  },
+  {
+    "query": "我来追你啦",
+    "first": "追赶",
+    "forbidden": []
+  },
+  {
+    "query": "我今天有点不开心",
+    "first": "难过",
+    "forbidden": []
+  },
+  {
+    "query": "不可以",
+    "first": "不要",
+    "forbidden": []
+  },
+  {
+    "query": "不打你",
+    "first": null,
+    "forbidden": [
+      "打闹"
+    ]
+  },
+  {
+    "query": "不会打你",
+    "first": null,
+    "forbidden": [
+      "打闹"
+    ]
+  },
+  {
+    "query": "别打我",
+    "first": null,
+    "forbidden": [
+      "打闹"
+    ]
+  },
+  {
+    "query": "打字",
+    "first": null,
+    "forbidden": [
+      "打闹"
+    ]
+  },
+  {
+    "query": "打电话",
+    "first": null,
+    "forbidden": [
+      "打闹"
+    ]
+  },
+  {
+    "query": "不开心",
+    "first": null,
+    "forbidden": [
+      "开心"
+    ]
+  },
+  {
+    "query": "不可以",
+    "first": null,
+    "forbidden": [
+      "可以"
+    ]
+  },
+  {
+    "query": "不喜欢",
+    "first": null,
+    "forbidden": [
+      "喜欢"
+    ]
+  },
+  {
+    "query": "天气不错",
+    "first": null,
+    "forbidden": [
+      "打闹",
+      "追赶",
+      "谢谢"
+    ]
+  },
+  {
+    "query": "我没有打你",
+    "first": null,
+    "forbidden": [
+      "打闹"
+    ]
+  },
+  {
+    "query": "我没有要抓你",
+    "first": null,
+    "forbidden": [
+      "追赶"
+    ]
+  },
+  {
+    "query": "我不打算打你",
+    "first": null,
+    "forbidden": [
+      "打闹"
+    ]
+  },
+  {
+    "query": "我打你电话",
+    "first": null,
+    "forbidden": [
+      "打闹"
+    ]
+  },
+  {
+    "query": "我打你的电话",
+    "first": null,
+    "forbidden": [
+      "打闹"
+    ]
+  },
+  {
+    "query": "打我手机",
+    "first": null,
+    "forbidden": [
+      "打闹"
+    ]
+  },
+  {
+    "query": "谢　谢啦",
+    "first": "谢谢",
+    "forbidden": []
+  },
+  {
+    "query": "谢 谢哦",
+    "first": "谢谢",
+    "forbidden": []
+  },
+  {
+    "query": "谢﻿谢啦",
+    "first": "谢谢",
+    "forbidden": []
+  },
+  {
+    "query": "你过来打我啊",
+    "first": "打闹",
+    "forbidden": [
+      "谢谢",
+      "开心",
+      "追赶"
+    ]
+  },
+  {
+    "query": "你过来捶我啊",
+    "first": "打闹",
+    "forbidden": [
+      "谢谢",
+      "追赶"
+    ]
+  },
+  {
+    "query": "我要捶你了",
+    "first": "打闹",
+    "forbidden": [
+      "谢谢",
+      "追赶"
+    ]
+  },
+  {
+    "query": "不要过来打我",
+    "first": null,
+    "forbidden": [
+      "打闹"
+    ]
+  },
+  {
+    "query": "你过来打我电话",
+    "first": null,
+    "forbidden": [
+      "打闹"
+    ]
+  },
+  {
+    "query": "机构",
+    "first": null,
+    "forbidden": [
+      "谢谢",
+      "打闹",
+      "追赶",
+      "开心",
+      "难过",
+      "可以",
+      "不要",
+      "喜欢"
+    ]
+  }
+]

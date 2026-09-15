@@ -1,0 +1,8 @@
+gradle.projectsEvaluated {
+    gradle.rootProject.findProject(':yuyansdk').tasks.matching {
+        it.name == 'testOfflineDebugUnitTest'
+    }.configureEach {
+        maxHeapSize = '1536m'
+        maxParallelForks = 1
+    }
+}

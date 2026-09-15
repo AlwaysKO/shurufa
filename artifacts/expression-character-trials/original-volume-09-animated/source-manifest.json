@@ -1,0 +1,274 @@
+{
+  "created": "2026-09-15",
+  "sourceType": "ai-original",
+  "status": "trial-only",
+  "publicationAllowed": false,
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "generationErrors": [
+    {
+      "id": "duck-lost",
+      "stage": "output",
+      "code": "moderation_blocked",
+      "requestId": "652c9337-a1a0-9154-b7c2-019f58e92832",
+      "note": "无图片返回；同一无害提示词重试一次成功，无审核绕过。"
+    }
+  ],
+  "items": [
+    {
+      "id": "beagle-restrain",
+      "caption": "忍住",
+      "prompt": "Create an ORIGINAL animation sprite sheet, exactly FOUR COLUMNS by THREE ROWS =12 equal SQUARE cells, 4:3 landscape preferably1448x1086. Pure OPAQUE WHITE, no text, grid, border or transparency. Row starts y0,362,724, do NOT pack rows closer together. Within EACH362px cell head top y40, all body/hands bottom no lower than y275, x65..297; bottom87px totally empty WHITE. Camera fixed, same character, scale, lighting, torso anchor in all12. First and last pose EXACTLY same geometry/expression. Genuine eyebrow, eyelid, mouth and limb articulation, not zoom/static clones. No famous IP or real celebrity. Chronological left-right/top-bottom. Photoreal tricolor beagle dog, realistic fur, expressive eyes, long floppy ears. Meaning 'hold it in / suppress a laugh'. Chest-up, NO hands/paws in frame. Pose1 closed mouth neutral;2 side glance noticing something funny;3 one mouth corner tries to lift;4 cheeks subtly puff as lips press together;5 both eyes narrow trying NOT to laugh;6 tighter sealed mouth, cheeks tense;7/8 PEAK: strongly pressed lips, puffed cheeks, eyes squeezed suppressing laughter, inner amused tension, not angry, not open laugh.9 relax cheeks slightly;10 eyes reopen;11 return toward neutral;12 exact pose1. Fixed head/body, no tears/particles.",
+      "masterFile": "masters/beagle-restrain.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-934b16aa-b64d-4018-95ea-c393acde4ae1.png",
+      "sha256": "687a91e5e68f43bf7bed13a46a01718c4dbb635038da412c4249d9d4e1a72298",
+      "originalSha256": "687a91e5e68f43bf7bed13a46a01718c4dbb635038da412c4249d9d4e1a72298",
+      "revisions": [],
+      "selectedVersion": 1
+    },
+    {
+      "id": "frog-restrain",
+      "caption": "忍住",
+      "prompt": "Create an ORIGINAL animation sprite sheet, exactly FOUR COLUMNS by THREE ROWS =12 equal SQUARE cells, 4:3 landscape preferably1448x1086. Pure OPAQUE WHITE, no text, grid, border or transparency. Row starts y0,362,724, do NOT pack rows closer together. Within EACH362px cell head top y40, all body/hands bottom no lower than y275, x65..297; bottom87px totally empty WHITE. Camera fixed, same character, scale, lighting, torso anchor in all12. First and last pose EXACTLY same geometry/expression. Genuine eyebrow, eyelid, mouth and limb articulation, not zoom/static clones. No famous IP or real celebrity. Chronological left-right/top-bottom. Minimal bold BLACK AND WHITE ink cartoon frog, clean round head, original expressive brows, no color. Meaning 'hold it in / suppress a laugh'. Chest-up, NO hands/paws in frame. Pose1 closed mouth neutral;2 side glance noticing something funny;3 one mouth corner tries to lift;4 cheeks subtly puff as lips press together;5 both eyes narrow trying NOT to laugh;6 tighter sealed mouth, cheeks tense;7/8 PEAK: strongly pressed lips, puffed cheeks, eyes squeezed suppressing laughter, inner amused tension, not angry, not open laugh.9 relax cheeks slightly;10 eyes reopen;11 return toward neutral;12 exact pose1. Fixed head/body, no tears/particles.",
+      "masterFile": "masters/frog-restrain.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-fc1a9ef9-7188-45ea-b4fd-844a48b128dc.png",
+      "sha256": "87e76ea963e11cc31c07a8491b22528eafcf008610c020a217559c9e48d5abb3",
+      "originalSha256": "87e76ea963e11cc31c07a8491b22528eafcf008610c020a217559c9e48d5abb3",
+      "revisions": [],
+      "selectedVersion": 1
+    },
+    {
+      "id": "hamster-restrain",
+      "caption": "忍住",
+      "prompt": "Create an ORIGINAL animation sprite sheet, exactly FOUR COLUMNS by THREE ROWS =12 equal SQUARE cells, 4:3 landscape preferably1448x1086. Pure OPAQUE WHITE, no text, grid, border or transparency. Row starts y0,362,724, do NOT pack rows closer together. Within EACH362px cell head top y40, all body/hands bottom no lower than y275, x65..297; bottom87px totally empty WHITE. Camera fixed, same character, scale, lighting, torso anchor in all12. First and last pose EXACTLY same geometry/expression. Genuine eyebrow, eyelid, mouth and limb articulation, not zoom/static clones. No famous IP or real celebrity. Chronological left-right/top-bottom. Matte smooth sculpted clay golden hamster, rounded beige cheeks, tiny pink nose, not fuzzy. Meaning 'hold it in / suppress a laugh'. Chest-up, NO hands/paws in frame. Pose1 closed mouth neutral;2 side glance noticing something funny;3 one mouth corner tries to lift;4 cheeks subtly puff as lips press together;5 both eyes narrow trying NOT to laugh;6 tighter sealed mouth, cheeks tense;7/8 PEAK: strongly pressed lips, puffed cheeks, eyes squeezed suppressing laughter, inner amused tension, not angry, not open laugh.9 relax cheeks slightly;10 eyes reopen;11 return toward neutral;12 exact pose1. Fixed head/body, no tears/particles.",
+      "masterFile": "masters/hamster-restrain.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-6e8a82b5-c35a-4d34-8e7e-a6edbbe53615.png",
+      "sha256": "da3dbcd3fc6e79417524b6133b0526099744614a2a6446770b53712b977c336f",
+      "originalSha256": "cfc945d0da7c5610e87c2d63eb805ee481f8e429bec0bd3743182f9427d5e166",
+      "revisions": [
+        {
+          "id": "hamster-restrain",
+          "version": 2,
+          "prompt": "Edit this 4x3 sprite sheet to fix registration and material. Preserve the same hamster and all 12 facial expressions in order. Make the SAME head/body silhouette size and anchor in every equal square cell. Most importantly cell12 must EXACTLY match cell1 in head size, location, ears, body and neutral expression; do not allow last row to shift up/down. All3 rows occupy equal height. Render genuinely SMOOTH MATTE CLAY, NO fur/hair texture. Suppress-laugh puffed cheeks/pressed mouth in cells7/8. Keep generous WHITE bottom margin inside every cell and all outlines in upper78%. White no text/no grid. 4columns3rows, landscape4:3.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-570068ab-cfd4-4774-a94b-566a2b8cfc6d.png",
+          "sha256": "6c4420c5ccb5c5bf51f89731fce3f36163cc43952ab5317a605e3506edfea224",
+          "referencedMasterAtGeneration": "rejected/hamster-restrain-v1.png"
+        },
+        {
+          "id": "hamster-restrain",
+          "version": 3,
+          "prompt": "Fix only row registration of this existing 4column3row sprite sheet. Canvas1448x1086, cells362x362. LEAVE TOP ROW UNCHANGED. SHIFT ENTIRE SECOND ROW characters DOWN by15 pixels without scaling or redrawing; SHIFT ENTIRE THIRD ROW characters DOWN by30 pixels without scaling. This corrects the too-tight row packing: top of ears must have same cell-relative y, torso bottom same cell-relative y. Also last pose neutral silhouette must match first. Preserve all facial expressions and smooth clay. Do not add motion or exaggeration. Preserve4x3grid, pure opaque WHITE background, no text or borders. It is important not to automatically redistribute subjects evenly with equal whitespace: exact square cells define placement.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-359129a4-4666-4063-93e6-37f443a062bd.png",
+          "sha256": "da3dbcd3fc6e79417524b6133b0526099744614a2a6446770b53712b977c336f",
+          "referencedMasterAtGeneration": "rejected/hamster-restrain-v2.png"
+        }
+      ],
+      "selectedVersion": 3
+    },
+    {
+      "id": "man-restrain",
+      "caption": "忍住",
+      "prompt": "Create an ORIGINAL animation sprite sheet, exactly FOUR COLUMNS by THREE ROWS =12 equal SQUARE cells, 4:3 landscape preferably1448x1086. Pure OPAQUE WHITE, no text, grid, border or transparency. Row starts y0,362,724, do NOT pack rows closer together. Within EACH362px cell head top y40, all body/hands bottom no lower than y275, x65..297; bottom87px totally empty WHITE. Camera fixed, same character, scale, lighting, torso anchor in all12. First and last pose EXACTLY same geometry/expression. Genuine eyebrow, eyelid, mouth and limb articulation, not zoom/static clones. No famous IP or real celebrity. Chronological left-right/top-bottom. Photoreal fictional original handsome CHINESE ADULT MAN age29, black neat short hair, warm gray plain T-shirt, no resemblance to a real person. Meaning 'hold it in / suppress a laugh'. Chest-up, NO hands/paws in frame. Pose1 closed mouth neutral;2 side glance noticing something funny;3 one mouth corner tries to lift;4 cheeks subtly puff as lips press together;5 both eyes narrow trying NOT to laugh;6 tighter sealed mouth, cheeks tense;7/8 PEAK: strongly pressed lips, puffed cheeks, eyes squeezed suppressing laughter, inner amused tension, not angry, not open laugh.9 relax cheeks slightly;10 eyes reopen;11 return toward neutral;12 exact pose1. Fixed head/body, no tears/particles.",
+      "masterFile": "masters/man-restrain.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-96e821d0-fce6-41d1-b6c6-d36550bc389b.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "a13e20326d2f520a10cbcdb3fa9fe4aa95690df9d98a8d3aed08665cf90aff59",
+      "originalSha256": "a13e20326d2f520a10cbcdb3fa9fe4aa95690df9d98a8d3aed08665cf90aff59",
+      "revisions": [],
+      "selectedVersion": 1
+    },
+    {
+      "id": "tabby-lost",
+      "caption": "迷茫",
+      "prompt": "Create an ORIGINAL animation sprite sheet, exactly FOUR COLUMNS by THREE ROWS =12 equal SQUARE cells, 4:3 landscape preferably1448x1086. Pure OPAQUE WHITE, no text, grid, border or transparency. Row starts y0,362,724, do NOT pack rows closer together. Within EACH362px cell head top y40, all body/hands bottom no lower than y275, x65..297; bottom87px totally empty WHITE. Camera fixed, same character, scale, lighting, torso anchor in all12. First and last pose EXACTLY same geometry/expression. Genuine eyebrow, eyelid, mouth and limb articulation, not zoom/static clones. No famous IP or real celebrity. Chronological left-right/top-bottom. Photoreal gray tabby cat, real short fur, expressive feline eyelids and muzzle. Meaning lost and bewildered, 'I have no idea what is going on', not confident curiosity. Chest-up NO hands/paws. Pose1 neutral;2 eyes search left;3 eyes shift right while head stays;4 eyes come center uncertain;5 inner brows raised and tiny puzzled mouth opening;6 brows form worried uneven arch, unfocused eyes;7/8 PEAK: clearly lost vacant gaze, high inner brows, slightly downturned parted mouth, keep expression through8.9 slowly close mouth;10 brows settle;11 eyes neutral;12 exact pose1. No questionmarks or particles, no large tilts.",
+      "masterFile": "masters/tabby-lost.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-cae824c1-3e7e-4083-90fa-0af69ce0f66d.png",
+      "sha256": "2457e5ab21fe7c11b3da21b341dbbd9b2a9f9f7465e5bc74d63e01f108f100cd",
+      "originalSha256": "2457e5ab21fe7c11b3da21b341dbbd9b2a9f9f7465e5bc74d63e01f108f100cd",
+      "revisions": [],
+      "selectedVersion": 1
+    },
+    {
+      "id": "duck-lost",
+      "caption": "迷茫",
+      "prompt": "Create an ORIGINAL animation sprite sheet, exactly FOUR COLUMNS by THREE ROWS =12 equal SQUARE cells, 4:3 landscape preferably1448x1086. Pure OPAQUE WHITE, no text, grid, border or transparency. Row starts y0,362,724, do NOT pack rows closer together. Within EACH362px cell head top y40, all body/hands bottom no lower than y275, x65..297; bottom87px totally empty WHITE. Camera fixed, same character, scale, lighting, torso anchor in all12. First and last pose EXACTLY same geometry/expression. Genuine eyebrow, eyelid, mouth and limb articulation, not zoom/static clones. No famous IP or real celebrity. Chronological left-right/top-bottom. Minimal bold BLACK AND WHITE ink cartoon duck, original simple bill and expressive eyebrows, no color. Meaning lost and bewildered, 'I have no idea what is going on', not confident curiosity. Chest-up NO hands/paws. Pose1 neutral;2 eyes search left;3 eyes shift right while head stays;4 eyes come center uncertain;5 inner brows raised and tiny puzzled mouth opening;6 brows form worried uneven arch, unfocused eyes;7/8 PEAK: clearly lost vacant gaze, high inner brows, slightly downturned parted mouth, keep expression through8.9 slowly close mouth;10 brows settle;11 eyes neutral;12 exact pose1. No questionmarks or particles, no large tilts.",
+      "masterFile": "masters/duck-lost.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-20ebd404-380c-412e-bbd3-89b804f86111.png",
+      "sha256": "6c3c8855bf70302b264bc2a074c816a7ae208073bbc1cd806a957d9cd3962237",
+      "originalSha256": "0a7b656616bcfcafb89fd0ab1911463a95b9c7a99a90061db8aa75adb54af059",
+      "revisions": [
+        {
+          "id": "duck-lost",
+          "version": 2,
+          "prompt": "Redesign the character in this 4x3 sprite sheet as an unmistakably new minimalist geometric duck, while keeping chronological 12 bewildered expressions and grid. Replace tall oval eyes with two SMALL widely spaced ROUND eyes, replace head with simple WIDE FLAT OVAL, tiny short rectangular duck bill centered far below eyes; ZERO cheek feathers, ZERO hair tufts, ZERO long neck, ZERO clothes. A plain broad white oval body attached directly to head with minimal lines. Original animal no known IP or familiar mascot. Eyebrows small horizontal arcs moving from neutral to worried inward raised. Eyes glance left/right then vacant center, slight bill opening at cells7/8. Cell12 identical cell1. Black ink only, white paper, no text/borders, same scale and cell placement, ample bottom margins. Make a genuinely different silhouette, not minor cosmetic edits.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-ed1bd26f-de69-40c8-b1f7-a3664452b61c.png",
+          "sha256": "bf4f5bc053eeb179a166b3f0f914e1108366187801514786b12b69b684ebb7e0",
+          "referencedMasterAtGeneration": "rejected/duck-lost-v1.png"
+        },
+        {
+          "id": "duck-lost",
+          "version": 3,
+          "prompt": "Fix only registration/background of this4column3row geometric duck sheet. Canvas1448x1086, 12square362pxcells. TOP ROW UNCHANGED. SHIFT SECOND ROW subjects DOWN33pixels, THIRD ROW subjects DOWN61pixels; no scaling. Keep same flat-oval head, small round eyes, tiny rectangular bill, oval body and12expressions. Last pose must match first in geometry and location relative to cell. Apply pure OPAQUE WHITE canvas rather than transparency. Do not repack the rows by whitespace; each row is exactly362pxhigh. No text or grid or border. Don't change character design.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-f83fa024-f298-459a-9731-41beec76e3f6.png",
+          "sha256": "3436098810bb18df4ef2d65b13d6731f8bd1abe68e4bca286dd581f87badb49d",
+          "referencedMasterAtGeneration": "rejected/duck-lost-v2.png"
+        },
+        {
+          "id": "duck-lost",
+          "version": 4,
+          "prompt": "Edit this sprite sheet: preserve the geometric duck design and exact grid/position/scale, but REPLACE ALL facial features with ONE coherent 'bewildered, lost' animation in BLACK AND WHITE ONLY. Remove all color, all hearts, all tears, X eyes, tongue, winks, happy arcs. All twelve cells have NORMAL EYES (white round eyes with small black pupils), small expressive eyebrows and tiny black outlined white rectangular bill. Chronological sequence:1 neutral eyes front closed bill;2 pupils left;3 pupils right;4 pupils front brow rising;5 inner brows rise worry bill barely parts;6 eyes glance upward uncertain bill opens a little;7 strongest vacant worried expression with raised inner brows and slightly open downturned bill;8 same worried peak, not happy/love;9 bill starts closing;10 brows settling;11 nearly neutral;12 EXACTLY cell1 neutral expression, geometry and position. This is 12 consecutive poses of ONE emotion, NOT12 different emotion stickers. FOUR COLUMNS THREE ROWS, each cell362square,1448x1086, rows start0/362/724. Entire sheet opaque WHITE background. Keep at least4real facial changes, no particles/text/grid. Last pose exactly first, head/body anchor identical in all cells.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-04ed563a-da2d-42e5-baaa-6f886517cbf8.png",
+          "sha256": "6c3c8855bf70302b264bc2a074c816a7ae208073bbc1cd806a957d9cd3962237",
+          "referencedMasterAtGeneration": "rejected/duck-lost-v3.png"
+        }
+      ],
+      "selectedVersion": 4
+    },
+    {
+      "id": "capybara-lost",
+      "caption": "迷茫",
+      "prompt": "Create an ORIGINAL animation sprite sheet, exactly FOUR COLUMNS by THREE ROWS =12 equal SQUARE cells, 4:3 landscape preferably1448x1086. Pure OPAQUE WHITE, no text, grid, border or transparency. Row starts y0,362,724, do NOT pack rows closer together. Within EACH362px cell head top y40, all body/hands bottom no lower than y275, x65..297; bottom87px totally empty WHITE. Camera fixed, same character, scale, lighting, torso anchor in all12. First and last pose EXACTLY same geometry/expression. Genuine eyebrow, eyelid, mouth and limb articulation, not zoom/static clones. No famous IP or real celebrity. Chronological left-right/top-bottom. Matte smooth sculpted clay brown capybara, broad squared muzzle, small round ears, not furry. Meaning lost and bewildered, 'I have no idea what is going on', not confident curiosity. Chest-up NO hands/paws. Pose1 neutral;2 eyes search left;3 eyes shift right while head stays;4 eyes come center uncertain;5 inner brows raised and tiny puzzled mouth opening;6 brows form worried uneven arch, unfocused eyes;7/8 PEAK: clearly lost vacant gaze, high inner brows, slightly downturned parted mouth, keep expression through8.9 slowly close mouth;10 brows settle;11 eyes neutral;12 exact pose1. No questionmarks or particles, no large tilts.",
+      "masterFile": "masters/capybara-lost.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-6c84b080-44b5-46d8-8bb0-8673d2f839c4.png",
+      "sha256": "a19339ffcf09f1d806662d500adcd9c5a967aec6ba2ecea527eb53a2ae769f2c",
+      "originalSha256": "99e1b97e7c2d726088ed29bf80f468e4ab58ccf284291a96403f233534907b98",
+      "revisions": [
+        {
+          "id": "capybara-lost",
+          "version": 2,
+          "prompt": "Edit this 4x3 sprite sheet only to fix head/body registration and close the animation loop. Keep same smooth clay capybara and the 12 bewildered expressions, peak worried open mouth in cells7/8. Every cell equal square. Cell12 MUST match cell1 EXACTLY in character size, contour, ear position, face geometry, neutral expression, chest boundary and location within cell. Rows exactly 1/3 image height; every neutral face stays at same x/y relative to cell. Do not drift right or change height in final pose. Pure white, no text/grid, 4columns3rows4:3.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-d71686bc-3838-4f14-995f-597d61e42fa1.png",
+          "sha256": "29d1bbaed5123f960ad96b7533fed893d3189ddb5229270387cf386e76663555",
+          "referencedMasterAtGeneration": "rejected/capybara-lost-v1.png"
+        },
+        {
+          "id": "capybara-lost",
+          "version": 3,
+          "prompt": "Fix only registration of this existing4column3row sheet. Canvas1448x1086, cells362x362. TOP ROW stays unchanged. SHIFT ALL SECOND ROW subjects DOWN12 pixels. SHIFT ALL THIRD ROW subjects DOWN24 pixels. No scaling or other edits; body bottom and ear top must have exactly same relative position in each square cell. Last neutral pose must match first neutral pose geometry exactly. Preserve12expressions including worried open mouth in cells7/8 and smooth brown clay. WHITE opaque background, no text/grid. Do not evenly redistribute whitespace between rows; each row is exactly362pxhigh.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-43002486-b994-42cb-85cd-5b4a4e891e22.png",
+          "sha256": "a19339ffcf09f1d806662d500adcd9c5a967aec6ba2ecea527eb53a2ae769f2c",
+          "referencedMasterAtGeneration": "rejected/capybara-lost-v2.png"
+        }
+      ],
+      "selectedVersion": 3
+    },
+    {
+      "id": "man-lost",
+      "caption": "迷茫",
+      "prompt": "Create an ORIGINAL animation sprite sheet, exactly FOUR COLUMNS by THREE ROWS =12 equal SQUARE cells, 4:3 landscape preferably1448x1086. Pure OPAQUE WHITE, no text, grid, border or transparency. Row starts y0,362,724, do NOT pack rows closer together. Within EACH362px cell head top y40, all body/hands bottom no lower than y275, x65..297; bottom87px totally empty WHITE. Camera fixed, same character, scale, lighting, torso anchor in all12. First and last pose EXACTLY same geometry/expression. Genuine eyebrow, eyelid, mouth and limb articulation, not zoom/static clones. No famous IP or real celebrity. Chronological left-right/top-bottom. Photoreal fictional original handsome CHINESE ADULT MAN age27, softly parted black hair, forest green plain T-shirt, not based on real people. Meaning lost and bewildered, 'I have no idea what is going on', not confident curiosity. Chest-up NO hands/paws. Pose1 neutral;2 eyes search left;3 eyes shift right while head stays;4 eyes come center uncertain;5 inner brows raised and tiny puzzled mouth opening;6 brows form worried uneven arch, unfocused eyes;7/8 PEAK: clearly lost vacant gaze, high inner brows, slightly downturned parted mouth, keep expression through8.9 slowly close mouth;10 brows settle;11 eyes neutral;12 exact pose1. No questionmarks or particles, no large tilts.",
+      "masterFile": "masters/man-lost.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-390a142d-e9a6-4d6e-8d27-3a51b2f84f67.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "baaac0db0b18375ec559828234415b2f9f56b6902429ac5ca55457ac39c02d91",
+      "originalSha256": "baaac0db0b18375ec559828234415b2f9f56b6902429ac5ca55457ac39c02d91",
+      "revisions": [],
+      "selectedVersion": 1
+    },
+    {
+      "id": "retriever-facepalm",
+      "caption": "没眼看",
+      "prompt": "Create an ORIGINAL animation sprite sheet, exactly FOUR COLUMNS by THREE ROWS =12 equal SQUARE cells, 4:3 landscape preferably1448x1086. Pure OPAQUE WHITE, no text, grid, border or transparency. Row starts y0,362,724, do NOT pack rows closer together. Within EACH362px cell head top y40, all body/hands bottom no lower than y275, x65..297; bottom87px totally empty WHITE. Camera fixed, same character, scale, lighting, torso anchor in all12. First and last pose EXACTLY same geometry/expression. Genuine eyebrow, eyelid, mouth and limb articulation, not zoom/static clones. No famous IP or real celebrity. Chronological left-right/top-bottom. Photoreal golden retriever dog, real fur, original expressive animal. Use one normal furry paw, NO human fingers. Meaning 'I cannot bear to look', dismayed face-cover, NOT peekaboo or happy. Chest-up. One SAME ANATOMICAL RIGHT hand/paw/flipper remains on VIEWER LEFT throughout, NEVER switch sides, other limb stays absent. Pose1 hand visible high on chest y220;2 dismayed eyes notice;3 eyebrows furrow;4 hand rises to chin;5 toward nose;6 palm/paw moves across eye area;7/8 PEAK: SAME hand/paw covers both eyes, wrist on viewerLEFT, downturned mouth visible underneath, head stays anchored, no smile.9 uncover partly;10 hand below chin;11 lower almost to initial chest position;12 EXACT pose1 including hand. No limb duplication, no fingers through face, no disappearing limb. All hand/arm outline above y275 in each362cell.",
+      "masterFile": "masters/retriever-facepalm.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-10063592-0cfd-4241-ad40-93f46fbf7394.png",
+      "sha256": "873abf5747973f82cbc98fd972419d4ab23a8ea14252973a0522d85b096179ed",
+      "originalSha256": "873abf5747973f82cbc98fd972419d4ab23a8ea14252973a0522d85b096179ed",
+      "revisions": [],
+      "selectedVersion": 1
+    },
+    {
+      "id": "penguin-facepalm",
+      "caption": "没眼看",
+      "prompt": "Create an ORIGINAL animation sprite sheet, exactly FOUR COLUMNS by THREE ROWS =12 equal SQUARE cells, 4:3 landscape preferably1448x1086. Pure OPAQUE WHITE, no text, grid, border or transparency. Row starts y0,362,724, do NOT pack rows closer together. Within EACH362px cell head top y40, all body/hands bottom no lower than y275, x65..297; bottom87px totally empty WHITE. Camera fixed, same character, scale, lighting, torso anchor in all12. First and last pose EXACTLY same geometry/expression. Genuine eyebrow, eyelid, mouth and limb articulation, not zoom/static clones. No famous IP or real celebrity. Chronological left-right/top-bottom. Minimal bold BLACK AND WHITE ink cartoon penguin with expressive eyelids, no color. Use one broad flipper, NO fingers. Meaning 'I cannot bear to look', dismayed face-cover, NOT peekaboo or happy. Chest-up. One SAME ANATOMICAL RIGHT hand/paw/flipper remains on VIEWER LEFT throughout, NEVER switch sides, other limb stays absent. Pose1 hand visible high on chest y220;2 dismayed eyes notice;3 eyebrows furrow;4 hand rises to chin;5 toward nose;6 palm/paw moves across eye area;7/8 PEAK: SAME hand/paw covers both eyes, wrist on viewerLEFT, downturned mouth visible underneath, head stays anchored, no smile.9 uncover partly;10 hand below chin;11 lower almost to initial chest position;12 EXACT pose1 including hand. No limb duplication, no fingers through face, no disappearing limb. All hand/arm outline above y275 in each362cell.",
+      "masterFile": "masters/penguin-facepalm.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-a0295f62-78bd-45e2-a4c4-83af8dd96b16.png",
+      "sha256": "ee3a4c7cbce1f5728ce6baa6c022d81597305c0649691ec7d32f75774f49aa70",
+      "originalSha256": "ee3a4c7cbce1f5728ce6baa6c022d81597305c0649691ec7d32f75774f49aa70",
+      "revisions": [],
+      "selectedVersion": 1
+    },
+    {
+      "id": "bear-facepalm",
+      "caption": "没眼看",
+      "prompt": "Create an ORIGINAL animation sprite sheet, exactly FOUR COLUMNS by THREE ROWS =12 equal SQUARE cells, 4:3 landscape preferably1448x1086. Pure OPAQUE WHITE, no text, grid, border or transparency. Row starts y0,362,724, do NOT pack rows closer together. Within EACH362px cell head top y40, all body/hands bottom no lower than y275, x65..297; bottom87px totally empty WHITE. Camera fixed, same character, scale, lighting, torso anchor in all12. First and last pose EXACTLY same geometry/expression. Genuine eyebrow, eyelid, mouth and limb articulation, not zoom/static clones. No famous IP or real celebrity. Chronological left-right/top-bottom. Matte smooth clay brown bear, rounded head/ears, beige muzzle, not fuzzy. Use one broad round paw, NO human fingers. Meaning 'I cannot bear to look', dismayed face-cover, NOT peekaboo or happy. Chest-up. One SAME ANATOMICAL RIGHT hand/paw/flipper remains on VIEWER LEFT throughout, NEVER switch sides, other limb stays absent. Pose1 hand visible high on chest y220;2 dismayed eyes notice;3 eyebrows furrow;4 hand rises to chin;5 toward nose;6 palm/paw moves across eye area;7/8 PEAK: SAME hand/paw covers both eyes, wrist on viewerLEFT, downturned mouth visible underneath, head stays anchored, no smile.9 uncover partly;10 hand below chin;11 lower almost to initial chest position;12 EXACT pose1 including hand. No limb duplication, no fingers through face, no disappearing limb. All hand/arm outline above y275 in each362cell.",
+      "masterFile": "masters/bear-facepalm.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-a3281ff5-bd83-401a-bdc2-92721fb26df2.png",
+      "sha256": "c6dacb42e0a22c5fb0911d08c7860e927b944651ebc9b350d74ab85af6cbe78c",
+      "originalSha256": "c6dacb42e0a22c5fb0911d08c7860e927b944651ebc9b350d74ab85af6cbe78c",
+      "revisions": [],
+      "selectedVersion": 1
+    },
+    {
+      "id": "man-facepalm",
+      "caption": "没眼看",
+      "prompt": "Create an ORIGINAL animation sprite sheet, exactly FOUR COLUMNS by THREE ROWS =12 equal SQUARE cells, 4:3 landscape preferably1448x1086. Pure OPAQUE WHITE, no text, grid, border or transparency. Row starts y0,362,724, do NOT pack rows closer together. Within EACH362px cell head top y40, all body/hands bottom no lower than y275, x65..297; bottom87px totally empty WHITE. Camera fixed, same character, scale, lighting, torso anchor in all12. First and last pose EXACTLY same geometry/expression. Genuine eyebrow, eyelid, mouth and limb articulation, not zoom/static clones. No famous IP or real celebrity. Chronological left-right/top-bottom. Photoreal fictional original handsome CHINESE ADULT MAN age30, distinct short black textured hair, burgundy plain T-shirt, not based on real people. Exactly one articulated hand with five natural fingers. Meaning 'I cannot bear to look', dismayed face-cover, NOT peekaboo or happy. Chest-up. One SAME ANATOMICAL RIGHT hand/paw/flipper remains on VIEWER LEFT throughout, NEVER switch sides, other limb stays absent. Pose1 hand visible high on chest y220;2 dismayed eyes notice;3 eyebrows furrow;4 hand rises to chin;5 toward nose;6 palm/paw moves across eye area;7/8 PEAK: SAME hand/paw covers both eyes, wrist on viewerLEFT, downturned mouth visible underneath, head stays anchored, no smile.9 uncover partly;10 hand below chin;11 lower almost to initial chest position;12 EXACT pose1 including hand. No limb duplication, no fingers through face, no disappearing limb. All hand/arm outline above y275 in each362cell.",
+      "masterFile": "masters/man-facepalm.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-3b1bc1d4-dcba-44a8-87f4-8c4c9f6f5f00.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "22115ef020f44250fc0098d3fd8224ab0f0d6b36b29eb5165184ba23d8100f77",
+      "originalSha256": "adeba748b74d0298d4647d76697664b86bd9bd700454e60869455a3bdf7e50bd",
+      "revisions": [
+        {
+          "id": "man-facepalm",
+          "version": 2,
+          "prompt": "Edit only the resting hand/forearm placement of the same original Chinese adult man in this12cell4x3 sprite sheet. In cells1,2,3,11,12 raise his SAME right hand (viewerLEFT) by55px relative to each362pxcell to UPPER CHEST directly below collarbone, entire fingers palm wrist visible above y260. It must NOT sit near bottom of cell. In cells4/5/6/7/8/9/10 preserve natural rising-to-cover-eyes trajectory and anatomy; peak7/8stillcoversboth eyes. Same single hand five fingers, never swaps sides. Preserve man's face, hair, burgundy shirt, body/head size and alignment. Cell12identicalcell1 inclhand. White background no captions, same4columns3rows4:3grid, no lines.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-fa7d720c-0af0-4701-8d80-0cafdd5ebc82.png",
+          "sha256": "22115ef020f44250fc0098d3fd8224ab0f0d6b36b29eb5165184ba23d8100f77",
+          "referencedMasterAtGeneration": "rejected/man-facepalm-v1.png"
+        }
+      ],
+      "selectedVersion": 2
+    }
+  ],
+  "rejected": [
+    {
+      "file": "rejected/capybara-lost-v1.png",
+      "sha256": "99e1b97e7c2d726088ed29bf80f468e4ab58ccf284291a96403f233534907b98"
+    },
+    {
+      "file": "rejected/capybara-lost-v2.png",
+      "sha256": "29d1bbaed5123f960ad96b7533fed893d3189ddb5229270387cf386e76663555"
+    },
+    {
+      "file": "rejected/duck-lost-v1.png",
+      "sha256": "0a7b656616bcfcafb89fd0ab1911463a95b9c7a99a90061db8aa75adb54af059"
+    },
+    {
+      "file": "rejected/duck-lost-v2.png",
+      "sha256": "bf4f5bc053eeb179a166b3f0f914e1108366187801514786b12b69b684ebb7e0"
+    },
+    {
+      "file": "rejected/duck-lost-v3.png",
+      "sha256": "3436098810bb18df4ef2d65b13d6731f8bd1abe68e4bca286dd581f87badb49d"
+    },
+    {
+      "file": "rejected/facepalm-v1-evidence.png",
+      "sha256": "0437602399ecf107083f16d15dda7547ffb885320ea932be699a060bf4785516"
+    },
+    {
+      "file": "rejected/hamster-restrain-v1.png",
+      "sha256": "cfc945d0da7c5610e87c2d63eb805ee481f8e429bec0bd3743182f9427d5e166"
+    },
+    {
+      "file": "rejected/hamster-restrain-v2.png",
+      "sha256": "6c4420c5ccb5c5bf51f89731fce3f36163cc43952ab5317a605e3506edfea224"
+    },
+    {
+      "file": "rejected/lost-v1-evidence.png",
+      "sha256": "38f5654de788c9af7809dbb716a0e4a2a3e6fdca695b31b8e30a0234aa1fc6d0"
+    },
+    {
+      "file": "rejected/lost-v3-evidence.png",
+      "sha256": "d0787a62da7a2bd17810f3420ea24c27956f2bb3da46c4bf24b228d87ccb1934"
+    },
+    {
+      "file": "rejected/man-facepalm-v1.png",
+      "sha256": "adeba748b74d0298d4647d76697664b86bd9bd700454e60869455a3bdf7e50bd"
+    }
+  ]
+}

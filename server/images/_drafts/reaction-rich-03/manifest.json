@@ -1,0 +1,48 @@
+{
+  "status": "pending-visual-review",
+  "kind": "static-captionless-concepts",
+  "tool": "image_gen.imagegen",
+  "notes": "四词各一张原创静态画面，不是每词四张成品；尚无中文字幕及真实多姿势GIF，不加入catalog/API/APK。思考图带生成的睡眠符号，非中文排字。",
+  "items": [
+    {
+      "id": "watch-curtain",
+      "keyword": "我就看看",
+      "intent": "窗帘后偷看，装作不参与却藏不住好奇",
+      "sourceType": "ai-original",
+      "file": "watch-curtain.png",
+      "prompt": "One square original Chinese chat reaction image, intent 'I'm just watching, don't mind me', nosy but pretending innocent. Candid photorealistic scene of an original small dark brown curly toy poodle hiding behind a sheer white living-room curtain; its enormous curious eyes and nose press visibly against the thin translucent fabric while one ear and one front paw poke around the edge. Face close to camera, body mostly hidden, gaze fixed intensely toward an offscreen conversation. The obvious unsuccessful attempt to be discreet is the joke. Bright daylight, pale blue wall, slightly crooked houseplant in soft focus, everyday imperfect apartment photography, not luxurious pet advertising. Strong readable eyes, fluffy texture, subtle deadpan expression, close framing and asymmetrical curtain taking left third. Original animal, not famous, no human hands, no costumes, no logos, watermark or writing. No text yet; quiet lower right corner for later short caption, no bottom banner. Natural amusing social reaction rather than generic cute pet portrait.",
+      "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-8d3bc8b4-f1ba-4fbd-8215-638b90576874.png",
+      "sha256": "10611091fef896efd0676a20fcdc4ed09e3017ac30c2c4573069e3aad16eb416"
+    },
+    {
+      "id": "really-magnifier",
+      "keyword": "真的假的",
+      "intent": "放大镜夸大一只眼，认真查证式质疑",
+      "sourceType": "ai-original",
+      "file": "really-magnifier.png",
+      "prompt": "One square original Chinese chat reaction meme, intent 'really? are you sure?', playfully skeptical, NOT fear or amazement. Handmade felt stopmotion miniature: an original pale olive-green frog with one huge raised eyebrow and one half-closed doubtful eye, leaning over a miniature cluttered desk while holding a magnifying glass right against its other eye, making that eye comically enormous through the glass. Tiny mouth pulled to one side in suspicion. Two webbed hands only, one holding magnifier, one resting flat on desk. Face and lens occupy two thirds of frame. Warm felt fibres, clumsy handstitched seams, miniature corkboard with blank pinned scraps in blurred background, detective-like overly serious investigation of a mundane conversation. Slight overhead three-quarter camera, mustard desk lamp, blue-grey background. Cute but eccentric and deadpan, physically funny lens distortion, not generic toy product photography. No existing characters, brands, writing, logos, watermark. Reserve a little clean space top right for later Chinese caption, no caption strip. Ensure clear anatomy and a simple readable visual punchline at thumbnail size.",
+      "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-c17a2757-d486-4992-bcb7-dcab8db90065.png",
+      "sha256": "cdf9daa8bfa0785dc672f2436c30ee617d42b6387b9b045a5f4f3c00e058e335"
+    },
+    {
+      "id": "thinking-idle-wheel",
+      "keyword": "让我想想",
+      "intent": "表面认真思考，脑内仓鼠却在睡觉",
+      "sourceType": "ai-original",
+      "file": "thinking-idle-wheel.png",
+      "prompt": "One square ORIGINAL deadpan chat reaction cartoon, meaning 'let me think', comically buying time rather than genuine genius. Rough black brush and scribbly colored pencil on warm off-white paper, economical funny drawing, not polished mascot art. An original short blue-grey turnip-shaped creature with two little arms and feet, uneven sleepy eyes, sitting on the floor and pressing one finger to its temple in exaggerated intellectual concentration. Above its OPEN hinged cap sits a completely idle tiny hamster on a stationary exercise wheel: the hamster is lying on its back with feet up, asleep, wheel visibly still. This is a clear whimsical thought metaphor, no biological brain or gore. Creature mouth pursed, eyebrows knit, sideways vacant stare; tiny sweat drop near temple. Upper half shows sleeping hamster and wheel, lower right creature fills most of frame, broad natural white left margin for later Chinese short caption. Simple strong silhouettes, visible distinction of creature and hamster, four-limb consistency, no words or letters anywhere, no equations, no existing IP, brands or watermark. Silly unproductive thinking, endearingly honest, not dark horror. Single coherent illustration and generous sparse background.",
+      "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-1e832f31-7e0c-43fe-86dc-61bbd4d93cbc.png",
+      "sha256": "e323e8ef026fe3641dc1ee65bf8b7c32a5649003c7ac1038c7f3e2889da2a645"
+    },
+    {
+      "id": "leaving-skates",
+      "keyword": "溜了",
+      "intent": "慢吞吞的蜗牛穿轮滑鞋机灵退场",
+      "sourceType": "ai-original",
+      "file": "leaving-skates.png",
+      "prompt": "One square original chat reaction image, intent 'I'm out, slipping away now', cheeky graceful retreat from an awkward conversation, not terror or danger. Claymation miniature photography: a tiny original terracotta-orange snail with a chunky pale turquoise spiral shell has secretly put on FOUR ridiculously small roller skates under its soft foot and is rolling briskly toward the open doorway on the right. Snail head turns back toward the viewer, one little eyestalk giving a knowing sideways glance, a small mischievous closed smile, one tiny cartoon arm raised in a casual bye gesture. Shell leans with movement, two short clay dust puffs and curved wheel tracks behind make the exit clear, creature remains sharp. Bare pastel lavender room, door half open showing warm light, empty miniature chair left as if the snail has just abandoned the discussion. Low ground-level three-quarter view, snail large in foreground, matte imperfect handmade clay texture and fingerprints. Physical comedy is a slow animal making a surprisingly efficient getaway. No real brands or existing characters, no text, letters, signs or watermark. No centered standing mascot, no empty bottom caption banner. Leave quiet upper-left background for later deterministic Chinese caption. Clear readable silhouette, two eyestalks, coherent toy anatomy.",
+      "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-2c5507eb-16a9-4a47-842b-bd011fde811f.png",
+      "sha256": "59bffe0780cacfcb783c17a4966473d9ff847bcdb4b2d255b1bf278e2d078b3a"
+    }
+  ]
+}

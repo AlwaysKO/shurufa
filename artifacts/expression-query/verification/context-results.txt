@@ -1,0 +1,8 @@
+验证命令：RELEASE_STORE_FILE=/home/ko/.android/debug.keystore JAVA_HOME=/home/ko/android-tools/jdk-17.0.20+8 ./gradlew -I /tmp/shurufa-context-test-heap.gradle :yuyansdk:testOfflineDebugUnitTest --tests *ExpressionManualSearchTest --tests *ExpressionRecommendationResolverTest --tests *ExpressionRenderPolicyTest --tests *ExpressionManualSearchInputViewTest
+临时 init：allprojects { tasks.withType(Test).configureEach { maxHeapSize = "1536m"; maxParallelForks = 1 } }
+不修改项目构建配置；默认 heap 的前次 OOM 日志保留 context-final-green.txt。
+com.yuyan.imemodule.expression.ExpressionManualSearchTest: tests=16 failures=0 errors=0
+com.yuyan.imemodule.expression.ExpressionRecommendationResolverTest: tests=6 failures=0 errors=0
+com.yuyan.imemodule.expression.render.ExpressionRenderPolicyTest: tests=2 failures=0 errors=0
+com.yuyan.imemodule.keyboard.ExpressionManualSearchInputViewTest: tests=53 failures=0 errors=0
+TOTAL tests=77 failures=0 errors=0

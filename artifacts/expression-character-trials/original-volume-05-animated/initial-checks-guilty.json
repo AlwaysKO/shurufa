@@ -1,0 +1,22 @@
+[
+  {
+    "id": "dachshund-guilty",
+    "pass": true,
+    "bytes": 115702
+  },
+  {
+    "id": "puppy-guilty",
+    "pass": true,
+    "bytes": 128842
+  },
+  {
+    "id": "raccoon-guilty",
+    "pass": true,
+    "bytes": 125786
+  },
+  {
+    "id": "man-guilty",
+    "pass": true,
+    "bytes": 65225
+  }
+]

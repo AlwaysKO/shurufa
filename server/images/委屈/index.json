@@ -1,0 +1,31 @@
+{
+  "keyword": "委屈",
+  "items": [
+    {
+      "id": "scene-rich-06-wronged",
+      "keyword": "委屈",
+      "file": "委屈/scene-rich-06-wronged.gif",
+      "thumbnail": "委屈/scene-rich-06-wronged.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-06/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-06/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-06/gifs/scene-rich-06-wronged.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-06/thumbnails/scene-rich-06-wronged.webp",
+      "batch": "scene-rich-06",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "6e4c1df082f0d5601d39eacc55ed0e46f0ac99ec00c582c4a5a51969373a5908",
+      "thumbnailSha256": "a874783e5eb051315a2b03a80640de3d23845433175d1e130959b7353ba704e5",
+      "bytes": 164178,
+      "width": 240,
+      "height": 240,
+      "frames": 20,
+      "durationMs": 4000,
+      "style": "ai-original-pet",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

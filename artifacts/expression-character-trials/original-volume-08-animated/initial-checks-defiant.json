@@ -1,0 +1,22 @@
+[
+  {
+    "id": "shiba-defiant",
+    "pass": true,
+    "bytes": 112327
+  },
+  {
+    "id": "duck-defiant",
+    "pass": true,
+    "bytes": 132960
+  },
+  {
+    "id": "calf-defiant",
+    "pass": true,
+    "bytes": 83759
+  },
+  {
+    "id": "man-defiant",
+    "pass": true,
+    "bytes": 83876
+  }
+]

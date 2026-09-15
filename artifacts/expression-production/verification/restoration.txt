@@ -1,0 +1,11 @@
+阶段验收暂停后的最终只读恢复核验
+记录来源：主验收代理实际执行命令所得结果；本记录整理未再次操作手机。
+
+adb settings get secure default_input_method
+com.sohu.inputmethod.sogou/.SogouIME
+
+adb settings get global stay_on_while_plugged_in
+0
+
+local.properties 与本次测试前备份执行 cmp
+一致（退出码 0）；原始 Windows SDK 设置已恢复。

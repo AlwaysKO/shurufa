@@ -1,0 +1,64 @@
+{
+  "created": "2026-09-11",
+  "sourceType": "ai-original",
+  "status": "trial-only",
+  "publicationAllowed": false,
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "items": [
+    {
+      "id": "cat-sleepy",
+      "prompt": "Make a professional animation SPRITE SHEET, EXACTLY 4 COLUMNS by 3 ROWS, 12 equal SQUARE cells with no gutters or grid lines. Overall 4:3 aspect ratio, ideally 1536x1152. SOLID PURE WHITE BACKGROUND #FFFFFF, not transparent, not black. No text, no numbers, no symbols, no Zzz. All twelve frames are SAME original subject and fixed camera/lighting/scale. Bottom 22% of EVERY cell stays completely blank white: keep whole character, ears, feet and gestures above that boundary, with top margin. Twelve genuinely drawn successive acting poses, not zooms or translations. Emotion: deeply SLEEPY, not sad or angry. Express through eyelids, brows, mouth and small head posture. Loop smoothly with drawn intermediate poses: poses 1-4 build drowsiness, 5-7 transition into peak, pose8 clear readable sleepy expression (held900ms), poses9-12 gradual return. Pose12 silhouette/location matches pose1 closely. No famous IP, no celebrities. Photorealistic fluffy cream-colored real cat chest-up, stable shoulders and natural ears held in the SAME position throughout, green eyes. No paws in frame. Pose1 heavy half-open eyes mouth closed;2 eyelids droop a little;3 eyelids narrower;4 mouth begins opening;5 small yawn;6 yawn opens wider;7 near full sleepy yawn eyes squint;8 peak moderate yawn eyes squeezed shut tongue visible, not screaming;9 yawn half-closes;10 mouth almost closed eyelids begin opening;11 mouth closed half-open eyes;12 original sleepy face. Keep jaw size plausible and head not moving far.",
+      "masterFile": "masters/cat-sleepy.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-2abfd752-6900-40bc-a85a-07f9e1054478.png",
+      "sha256": "3edf79f6b93662791c3f7c323ff64e8d42bf60ff088d7d18ba45ec10861065dc"
+    },
+    {
+      "id": "owl-sleepy",
+      "prompt": "Make a professional animation SPRITE SHEET, EXACTLY 4 COLUMNS by 3 ROWS, 12 equal SQUARE cells with no gutters or grid lines. Overall 4:3 aspect ratio, ideally 1536x1152. SOLID PURE WHITE BACKGROUND #FFFFFF, not transparent, not black. No text, no numbers, no symbols, no Zzz. All twelve frames are SAME original subject and fixed camera/lighting/scale. Bottom 22% of EVERY cell stays completely blank white: keep whole character, ears, feet and gestures above that boundary, with top margin. Twelve genuinely drawn successive acting poses, not zooms or translations. Emotion: deeply SLEEPY, not sad or angry. Express through eyelids, brows, mouth and small head posture. Loop smoothly with drawn intermediate poses: poses 1-4 build drowsiness, 5-7 transition into peak, pose8 clear readable sleepy expression (held900ms), poses9-12 gradual return. Pose12 silhouette/location matches pose1 closely. No famous IP, no celebrities. Minimal black-ink line art ORIGINAL round little owl, plain white fill, very large eyelids and tiny triangular beak. Full body, both feet planted, both wings resting against sides unchanged. Pose1 droopy half-open eyes;2 upper lids sink;3 eyelids nearly shut;4 tries opening eyes briefly with brows lifted;5 lids sink again;6 head nods down slightly;7 eyes nearly closed head a little lower;8 fully closed heavy lids and slight sleepy head droop, small relaxed beak;9 head starts rising;10 eyes crack open;11 half open;12 initial head position. Owl's face remains front-facing, no wing movement, no accessories. Body/feet never shift; expressive eyelids are main motion, not whole-body vertical translation.",
+      "masterFile": "masters/owl-sleepy.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-8323b3ee-79a1-4f6c-aede-a9d0e70cf0dc.png",
+      "sha256": "9022e00ac6f541cfa056277764b137300a79641e83e6e491c1986bff1a1b700a"
+    },
+    {
+      "id": "penguin-sleepy",
+      "prompt": "Make a professional animation SPRITE SHEET, EXACTLY 4 COLUMNS by 3 ROWS, 12 equal SQUARE cells with no gutters or grid lines. Overall 4:3 aspect ratio, ideally 1536x1152. SOLID PURE WHITE BACKGROUND #FFFFFF, not transparent, not black. No text, no numbers, no symbols, no Zzz. All twelve frames are SAME original subject and fixed camera/lighting/scale. Bottom 22% of EVERY cell stays completely blank white: keep whole character, ears, feet and gestures above that boundary, with top margin. Twelve genuinely drawn successive acting poses, not zooms or translations. Emotion: deeply SLEEPY, not sad or angry. Express through eyelids, brows, mouth and small head posture. Loop smoothly with drawn intermediate poses: poses 1-4 build drowsiness, 5-7 transition into peak, pose8 clear readable sleepy expression (held900ms), poses9-12 gradual return. Pose12 silhouette/location matches pose1 closely. No famous IP, no celebrities. Original tactile clay stop-motion tiny plump slate-blue baby penguin with cream face and belly, small orange beak, two tiny flippers by sides, both feet fixed. Full body, face large. Pose1 relaxed heavy eyes;2 slow blink begins;3 blink nearly shut;4 tiny effort to stay awake, eyes half reopen;5 eyelids sag, beak relaxes slightly open;6 chin droops;7 head nods forward gently;8 sleepiest expression eyes closed, flippers relax outward only a little, beak small relaxed opening;9 head gradually rises with eyes still shut;10 eyes begin opening and beak closes;11 flippers return and eyes half open;12 initial pose. Do not transform anatomy, do not swing or move feet, no black background.",
+      "masterFile": "masters/penguin-sleepy.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-361135e9-62c7-4925-aacc-0743d72d58b5.png",
+      "sha256": "2e24a262578b0bfb7f047bcf5cf5f130ef3e1a4e2a4e9d17fa3207a6d07be1d4",
+      "repairs": [
+        {
+          "prompt": "Layout correction ONLY for this 4-column 3-row penguin animation sheet. Preserve all TWELVE DIFFERENT sleepy poses in their same temporal order and facial expressions, original clay penguin identity, white background. Within EACH square cell, slightly reduce the character to 85% of its current size, anchor toward the top of the cell, so the BOTTOM of the orange FEET is at 73% of that cell's height. All cells must have bottom 25% as completely EMPTY WHITE caption-safe area. Whole character including toes, wings, head entirely visible, no cropping. Same scale/anchor for all twelve poses. Do not resize overall canvas or change 4x3 equal square grid: overall4:3 ratio stays identical. No words, no numbers, no borders, no transparency, solid white background. This is not a new animation: retain eyelid/beak/head changes from the source, do not duplicate one pose.",
+          "source": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-5af4a7e4-2e21-4260-bea6-ee772b8bf6e6.png",
+          "reason": "feet overlapped by caption in original rendered GIF",
+          "preserved": "rejected/penguin-sleepy-v1-caption-overlap.png",
+          "sha256": "2e24a262578b0bfb7f047bcf5cf5f130ef3e1a4e2a4e9d17fa3207a6d07be1d4"
+        }
+      ]
+    },
+    {
+      "id": "man-sleepy",
+      "prompt": "Make a professional animation SPRITE SHEET, EXACTLY 4 COLUMNS by 3 ROWS, 12 equal SQUARE cells with no gutters or grid lines. Overall 4:3 aspect ratio, ideally 1536x1152. SOLID PURE WHITE BACKGROUND #FFFFFF, not transparent, not black. No text, no numbers, no symbols, no Zzz. All twelve frames are SAME original subject and fixed camera/lighting/scale. Bottom 22% of EVERY cell stays completely blank white: keep whole character, ears, feet and gestures above that boundary, with top margin. Twelve genuinely drawn successive acting poses, not zooms or translations. Emotion: deeply SLEEPY, not sad or angry. Express through eyelids, brows, mouth and small head posture. Loop smoothly with drawn intermediate poses: poses 1-4 build drowsiness, 5-7 transition into peak, pose8 clear readable sleepy expression (held900ms), poses9-12 gradual return. Pose12 silhouette/location matches pose1 closely. No famous IP, no celebrities. Realistic photographic chest-up portrait of an ORIGINAL fictional handsome Chinese ADULT MALE age29, slightly tousled short dark hair, ivory crew-neck T-shirt, distinctive friendly face not resembling any real celebrity. Both hands stay OUT OF FRAME in every cell. Shoulders locked and hair/face consistent. Pose1 heavy eyelids neutral mouth;2 tries to stay alert by slightly raising eyebrows;3 lids droop again;4 mouth parts;5 yawn starts eyes narrow;6 jaw gently opens more;7 near full yawn;8 clear moderate yawn closed eyes, no screaming or exaggerated huge mouth;9 jaw halfway closes;10 mouth nearly closed eyes start opening;11 relaxed sleepy face;12 initial heavy-eyed pose. A small natural head tilt only, not moving head position across panels.",
+      "masterFile": "masters/man-sleepy.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-6299ede3-bf7d-4d4b-9a36-836c58d518bf.png",
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "1ab5b809a584a54ad9769287ac89ccb1ab9105dd9ac50bc9324344cc85e62a60"
+    }
+  ],
+  "rejectedFiles": [
+    {
+      "path": "rejected/penguin-sleepy-v1-caption-overlap.gif",
+      "sha256": "6f3b09feb6aeedebcc7e515bf12b2bbc128989a900efe3f477fdfa2f8e0484d0"
+    },
+    {
+      "path": "rejected/penguin-sleepy-v1-caption-overlap.png",
+      "sha256": "cf75b33077720fc1dcaaf0b9968fd7dccf5c56f717059c869a278b2bc6d08e1f"
+    },
+    {
+      "path": "rejected/report-before-penguin-layout-fix.json",
+      "sha256": "739707081641bae2ccbeb509664d282d7deccc22558c98fd99d6dc922fcf602b"
+    }
+  ]
+}

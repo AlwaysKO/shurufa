@@ -1,0 +1,38 @@
+
+ RUN  v4.1.11 /home/ko/project/shurufa/server
+
+ ❯ src/api/expressions.test.ts (14 tests | 1 failed) 417ms
+     × 未知查询不调用没有来源许可门禁的第三方搜索 13ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/api/expressions.test.ts > mobile expression API > 未知查询不调用没有来源许可门禁的第三方搜索
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      "玻璃心",
+      12,
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/api/expressions.test.ts:198:31
+    196|
+    197|     expect(response.status).toBe(200);
+    198|     expect(remote.search).not.toHaveBeenCalled();
+       |                               ^
+    199|     expect(response.body.results.map((item: { id: string }) => item.id…
+    200|       .toEqual(['synthesis-hot', 'synthesis-calm']);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 13 passed (14)
+   Start at  11:05:31
+   Duration  976ms (transform 212ms, setup 0ms, import 466ms, tests 417ms, environment 0ms)

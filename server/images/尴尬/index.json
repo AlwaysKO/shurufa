@@ -1,0 +1,31 @@
+{
+  "keyword": "尴尬",
+  "items": [
+    {
+      "id": "scene-rich-08-awkward",
+      "keyword": "尴尬",
+      "file": "尴尬/scene-rich-08-awkward.gif",
+      "thumbnail": "尴尬/scene-rich-08-awkward.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-08/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-08/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-08/gifs/scene-rich-08-awkward.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-08/thumbnails/scene-rich-08-awkward.webp",
+      "batch": "scene-rich-08",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "93278e310071198510e191c1fd3b9d2b8c2f3a1841e0c1391fe97c45d772ceba",
+      "thumbnailSha256": "9832783465d8e7f4f1898597ada65afe58ce1be5ed68a74e56e2c567d7918151",
+      "bytes": 190375,
+      "width": 240,
+      "height": 240,
+      "frames": 20,
+      "durationMs": 4000,
+      "style": "ai-original-pet",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "method": "decoded-frame-inspection-only",
+  "actualDynamicPlayback": "not-performed",
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "publicationAllowed": false,
+  "pending": 12,
+  "needsRework": [],
+  "caveats": {
+    "defiant-group": "不服可能读成生气或嫌弃，需去字幕动态审核。",
+    "overwhelmed-group": "第8格苦脸较明确；闭眼张嘴仍需排除打哈欠或单纯哭泣读法，循环恢复待播放。",
+    "admire-group": "可能更像点赞而非佩服，动物爪实际采用拟人拇指手势，与原计划普通抬爪有偏差。",
+    "raccoon-admire": "首尾有小幅位置/轮廓变化，循环复核重点。",
+    "otter-admire": "首尾轻微上移/轮廓变化，循环复核重点。",
+    "rabbit-admire": "v2手爪已抬高；新增动作线存在闪现风险，动态待核。",
+    "man-admire": "v2双手上移，抽帧已完整可见；不等于动态批准。",
+    "penguin-overwhelmed": "黑白主体带黄色喙，非纯黑白风格。"
+  }
+}

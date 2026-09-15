@@ -1,0 +1,31 @@
+{
+  "keyword": "安排",
+  "items": [
+    {
+      "id": "scene-rich-08-arrange",
+      "keyword": "安排",
+      "file": "安排/scene-rich-08-arrange.gif",
+      "thumbnail": "安排/scene-rich-08-arrange.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-08/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-08/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-08/gifs/scene-rich-08-arrange.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-08/thumbnails/scene-rich-08-arrange.webp",
+      "batch": "scene-rich-08",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "743c8b387a823f598b94bb2c4cd62b2e01a4ce824a1defd076f729e31444653e",
+      "thumbnailSha256": "8192ada3708bb5c22cadf3fd117437dc853bc9985f18fc508acbbfca26a7ffa2",
+      "bytes": 58954,
+      "width": 240,
+      "height": 240,
+      "frames": 20,
+      "durationMs": 4000,
+      "style": "hand-drawn",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

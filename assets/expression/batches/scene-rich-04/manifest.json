@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "batchId": "scene-rich-04",
+  "status": "review-only",
+  "items": [
+    {
+      "id": "scene-rich-04-wait",
+      "keyword": "等一下",
+      "caption": "等一下",
+      "captionPlacement": "top-left",
+      "masterFile": "masters/scene-rich-04-wait.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Create an ORIGINAL minimalist black marker cartoon animation sheet, exact 3 columns x 3 rows NINE equal square frames, no gutters or dividing lines, opaque pure WHITE background. Same two tiny original creatures throughout: on right an upright rounded potato bean with dot eyes and twig arms; on left a small excited triangular dumpling bouncing impatiently. NOT famous meme characters, no human pasted faces. Meaning WAIT A SECOND: deadpan bean raises one palm to stop impatient friend while slowly fishing an absurdly tiny hourglass from its pocket with other hand, gives knowing side-eye. Funny contrast calm vs impatient. All characters occupy lower two-thirds, clear top-left space for later caption. Locked camera and character scale, simple sparse bold lines, no shading, just one small pale blue hourglass. Nine tightly spaced consecutive poses reading order: 1 bean half-lidded and friend leaning forward, bean right palm already at chest level, other hand at side; 2 palm lifts slightly and friend pauses; 3 palm fully held out in gentle stop gesture, left hand moves to pocket; 4 left hand draws little hourglass halfway out; 5 hourglass raised to stomach level, bean starts side-eye; 6 hourglass clearly displayed at chest, deadpan side-eye at friend, friend slumps in amused defeat; 7 hourglass gently lowered a little; 8 slips back toward pocket, friend straightens; 9 same approximate calm pose as frame1 to loop. Small gradual hand and eye changes, NO sudden changes of shape or object teleporting. Two coherent arms per character, no text, no numbers, no branding. Make expressive line acting legible at 240px, not cute generic sticker posing. Pure white inside and outside figures.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-195b95a6-1749-4fa7-8565-72db26169660.png",
+        "masterSha256": "9bb0dfaa33ca77f0da9fa56853f8b6741ba71ffa5e4adf72e45a1ce2f8bfb0f7"
+      }
+    },
+    {
+      "id": "scene-rich-04-stop",
+      "keyword": "别闹",
+      "caption": "别闹",
+      "captionPlacement": "top-left",
+      "masterFile": "masters/scene-rich-04-stop.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-cb313733-c3a4-454a-a86e-e446f4a98857.png",
+        "prompt": "Create a NEW original minimal doodle animation sheet, precise 3 by 3 grid of NINE equal square frames, each with a pale ivory full-bleed background, NO blank gutters. Funny 'stop it' reaction: one small original oval bird with thick black line outline, tiny triangular beak and tiny dot eyes, sits behind a desk, a friend's simple mitten on right repeatedly waving a little feather near its beak. Bird slowly raises its wing and gently pushes the feather aside while looking deeply unimpressed. Not an existing famous cartoon bird. Avoid any round duck mascot aesthetic: this is tall olive-shaped charcoal-outline sparrow with three scruffy head tufts. Minimal hand-sketched lines, no shading, only muted teal feather. Camera locked, desk horizontal at exactly 78% cell height; bird body from 25% to78% in identical position EVERY CELL, no body reshaping, no camera shifts. Nine chronological incremental poses: 1 bored bird looking straight, feather at right edge, wing low; 2 feather slightly nearer, eyes move right; 3 feather close to beak, bird eyelids narrow; 4 wing raises halfway toward feather; 5 wing touches feather shaft; 6 wing gently pushes feather right and bird gives funniest annoyed side-eye, this is held punchline; 7 wing lowers halfway, feather stays right; 8 wing nearly resting, eyelids relax; 9 exactly initial resting wing and bored face, feather at original right edge. Only very small limb and eye changes, smooth gradual inbetweens. Lower legs not visible behind desk. Tiny ordinary mitten not human realistic hand. Top-left quarter of each cell uncluttered for later caption. Absolutely no words or numbers or borders or watermarks. Full square sheet composition, nine equal-sized aligned frames, not a poster.",
+        "masterSha256": "b68ffb29b63f443c8d38d4982623b0ecb55f356a37e5bfa6994394160498a45c"
+      }
+    },
+    {
+      "id": "scene-rich-04-gossip",
+      "keyword": "吃瓜",
+      "caption": "吃瓜",
+      "captionPlacement": "bottom-left",
+      "masterFile": "masters/scene-rich-04-gossip.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Create a photorealistic ORIGINAL grey-and-white domestic shorthair cat gossip reaction ANIMATION SHEET: exact 3 columns by 3 rows, NINE equal square panels touching, no gutters, no grid borders, no writing. Same cat seated behind a low wood table with a SMALL triangular watermelon slice on a ceramic saucer, warm modest apartment, soft neutral daylight. Cat has a slightly smug curious face, not a famous internet cat. Joke 'watching the gossip': cat notices offscreen drama, slowly leans forward a LITTLE with sharply curious eyes while staying beside watermelon, then quietly settles back pretending not to listen. Eyes first, head second. Entire cat head and visible front paws in every cell, watermelon in lower right clear and unchanged, lower LEFT table clear for later caption. Locked camera, cat shoulders fixed, background and table geometry identical. Reading-order nine subtle incremental poses: 1 paws resting table, relaxed half-open eyes toward viewer; 2 pupils shift toward viewer left, ears perk just a little; 3 eyes widen slightly while head remains forward; 4 head inclines forward 2 degrees, focused curiosity; 5 head forward 4 degrees, one eye subtly narrowed knowingly; 6 strongest gossipy intent gaze, head forward only 5 degrees, eyes bright and focused, mouth closed with natural cheek shape, NOT a human grin; 7 leans back to 3 degrees, eyes still listening sideways; 8 nearly initial head position, eyes start centering; 9 same relaxed pose as1 for easy loop. Small genuine changes, not independent random snapshots or dramatic perspective jumps. Natural animal anatomy, exactly two front paws, no human hands, no clothes, no brands, no letters or watermark. Photographic fur and subtle funny side-eye, not cartoon eyeballs.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-64f58809-01b6-42aa-8f16-06db8c5cb6f5.png",
+        "masterSha256": "8ff4fbb76ec10c30099e9ae42f192381f979fad8d383766e5f15f9288feb49a9"
+      }
+    },
+    {
+      "id": "scene-rich-04-laugh",
+      "keyword": "憋笑",
+      "caption": "憋笑",
+      "captionPlacement": "bottom-left",
+      "masterFile": "masters/scene-rich-04-laugh.png",
+      "sourceType": "ai-original",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "prompt": "Create an ORIGINAL photorealistic funny animal reaction animation contact sheet: exact 3x3 grid NINE equal square photographs without borders gutters labels or text. A real-looking young adult golden retriever with a slightly scruffy muzzle, lying with chin near a soft olive sofa arm, in plain cozy apartment. Intent 'trying not to laugh': mouth stays CLOSED, corners lift subtly, eyes narrow into suppressed amusement, cheeks bunch, dog gives a tiny sideways glance at camera as if sharing a joke. No huge open-mouth laughing, no human teeth, no cartoon facial features. Fixed camera crop head-and-upper-chest, sofa geometry constant, head almost stationary and no dramatic tilt. Lower left sofa area available for later short caption. NINE subtle chronological inbetween poses reading order:1 composed face with relaxed eyes and closed mouth resting just above sofa;2 eyes shift slightly toward camera right;3 outer mouth corners begin tiny uplift, muzzle still closed;4 eyelids narrow a little while cheeks rise slightly;5 eyes narrow further into cheeky amused squint, ears relaxed;6 peak barely-contained smile with closed mouth and almost-squinting eyes, as if desperately keeping a straight face, head dips ONLY 2 degrees;7 cheeks slowly relax a little but amused eyes remain;8 mouth returns almost neutral, eyelids open halfway;9 exactly near starting composed expression and head position. Real animal physiology, soft cinematic candid photograph, fur consistent, no outfits/props/brand/watermark/text. Each adjacent image a small change, genuine intermediate eye/cheek movement, not resized photos, no cross-fade or motion blur. Keep the emotional joke strong yet restrained.",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-3adc9695-4e96-449d-aab2-309973ec6658.png",
+        "masterSha256": "9e05dc3380e04afc663c517d5c88c06fc60f1dc1c7a605008ddf698d45eac135"
+      }
+    }
+  ]
+}

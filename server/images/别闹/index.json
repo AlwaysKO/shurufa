@@ -1,0 +1,31 @@
+{
+  "keyword": "别闹",
+  "items": [
+    {
+      "id": "scene-rich-04-stop",
+      "keyword": "别闹",
+      "file": "别闹/scene-rich-04-stop.gif",
+      "thumbnail": "别闹/scene-rich-04-stop.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-04/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-04/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-04/gifs/scene-rich-04-stop.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-04/thumbnails/scene-rich-04-stop.webp",
+      "batch": "scene-rich-04",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "637763b390623220bd98bb65b2e49c11cbc23d5b3d343ff41759a6ea01f5a0b6",
+      "thumbnailSha256": "7f08427a79f2116e0c843ae91089e03c3ff0745f0573f4857984ff36a712607a",
+      "bytes": 92118,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "durationMs": 3000,
+      "style": "hand-drawn",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

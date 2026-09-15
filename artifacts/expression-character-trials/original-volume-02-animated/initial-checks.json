@@ -1,0 +1,62 @@
+[
+  {
+    "id": "siamese-curious",
+    "pass": true,
+    "bytes": 83589
+  },
+  {
+    "id": "giraffe-curious",
+    "pass": true,
+    "bytes": 144292
+  },
+  {
+    "id": "raccoon-curious",
+    "pass": false,
+    "error": "Error: GIF审计失败：[{\"id\":\"raccoon-curious\",\"field\":\"loopClosure\",\"expected\":0.3651041666666666,\"actual\":0.3658854166666667,\"message\":\"样板 raccoon-curious 跨循环边界的感知差异显著高于内部相邻帧\"}]"
+  },
+  {
+    "id": "man-curious",
+    "pass": true,
+    "bytes": 66919
+  },
+  {
+    "id": "tuxedo-angry",
+    "pass": true,
+    "bytes": 102773
+  },
+  {
+    "id": "puffer-angry",
+    "pass": true,
+    "bytes": 143612
+  },
+  {
+    "id": "calf-angry",
+    "pass": true,
+    "bytes": 93341
+  },
+  {
+    "id": "man-angry",
+    "pass": true,
+    "bytes": 74490
+  },
+  {
+    "id": "shiba-giggle",
+    "pass": true,
+    "bytes": 94303
+  },
+  {
+    "id": "bird-giggle",
+    "pass": false,
+    "error": "Error: GIF审计失败：[{\"id\":\"bird-giggle\",\"field\":\"loopClosure\",\"expected\":0.07573784722222222,\"actual\":0.09260416666666667,\"message\":\"样板 bird-giggle 跨循环边界的感知差异显著高于内部相邻帧\"}]"
+  },
+  {
+    "id": "otter-giggle",
+    "pass": true,
+    "bytes": 96179
+  },
+  {
+    "id": "man-giggle",
+    "pass": false,
+    "error": "Error: GIF审计失败：[{\"id\":\"man-giggle\",\"field\":\"loopClosure\",\"expected\":0.1519097222222222,\"actual\":0.16161458333333334,\"message\":\"样板 man-giggle 跨循环边界的感知差异显著高于内部相邻帧\"}]"
+  }
+]

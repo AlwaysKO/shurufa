@@ -1,0 +1,49 @@
+{
+  "codeCommit": "bc0fb52e4854b762f802ed2e7305cc0ed7d21cf3",
+  "apk": {
+    "path": "android/YuyanIme/app/build/unix/outputs/apk/offline/debug/yuyanIme_2026090718_debug.apk",
+    "versionName": "20260907.18",
+    "bytes": 79437970,
+    "sha256": "13774b11d249c3a89c0ce0e88daa3a361a837293943b2d816868101a5998a170"
+  },
+  "totals": {
+    "tests": 442,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "suites": 71,
+  "testHeapMiB": 1536,
+  "excludedUnfinishedTests": [
+    "android/YuyanIme/yuyansdk/src/test/java/com/yuyan/imemodule/data/collect/EventDeliveryTest.kt",
+    "android/YuyanIme/yuyansdk/src/test/java/com/yuyan/imemodule/data/collect/LocalInputStoreTest.kt",
+    "android/YuyanIme/yuyansdk/src/test/java/com/yuyan/imemodule/data/completion/CompletionCacheTest.kt",
+    "android/YuyanIme/yuyansdk/src/test/java/com/yuyan/imemodule/data/completion/InputLearningPolicyTest.kt",
+    "android/YuyanIme/yuyansdk/src/test/java/com/yuyan/imemodule/data/completion/T9CommitTrackerTest.kt",
+    "android/YuyanIme/yuyansdk/src/test/java/com/yuyan/imemodule/data/completion/T9LexiconTest.kt"
+  ],
+  "externalFilesUnchanged": {
+    "android/YuyanIme/yuyansdk/src/test/java/com/yuyan/imemodule/data/collect/EventDeliveryTest.kt": true,
+    "android/YuyanIme/yuyansdk/src/test/java/com/yuyan/imemodule/data/collect/LocalInputStoreTest.kt": true,
+    "android/YuyanIme/yuyansdk/src/test/java/com/yuyan/imemodule/data/completion/CompletionCacheTest.kt": true,
+    "android/YuyanIme/yuyansdk/src/test/java/com/yuyan/imemodule/data/completion/InputLearningPolicyTest.kt": true,
+    "android/YuyanIme/yuyansdk/src/test/java/com/yuyan/imemodule/data/completion/T9CommitTrackerTest.kt": true,
+    "android/YuyanIme/yuyansdk/src/test/java/com/yuyan/imemodule/data/completion/T9LexiconTest.kt": true,
+    "docs/plans/2026-09-07-local-first-t9.md": true
+  },
+  "userFontScalesPreserved": {
+    "candidate": 1.1,
+    "composing": 1.5
+  },
+  "sdkConfigRestored": true,
+  "reviews": {
+    "spec": "passed",
+    "quality": "passed"
+  },
+  "build": "passed",
+  "newApkInstalled": false,
+  "newShareRouteDeviceVerified": false,
+  "wechatDynamicSendAccepted": false,
+  "scope": "现有套件442通过，精确排除另一暂停任务6个未完成测试；非整个工作区全绿。用户拔掉手机后仅离线测试构建。",
+  "behavior": "微信GIF打开原文件分享，用户选择聊天确认；ShareOpened不是Sent；启动失败沿用原GIF相册fallback。"
+}

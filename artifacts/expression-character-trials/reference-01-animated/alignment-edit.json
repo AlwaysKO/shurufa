@@ -1,0 +1,5 @@
+{
+  "prompt": "Precise alignment repair ONLY. This is a 1448x1086 4-column 3-row sprite sheet. First eight panels unchanged. In the BOTTOM ROW, the entire character artwork (hair+face+hands+body) is positioned about FOUR image pixels TOO HIGH and TWO pixels TOO FAR LEFT versus the top-left panel. Move each bottom-row character DOWN exactly 4 pixels and RIGHT exactly 2 pixels, WITHOUT scaling, changing faces, hands or hairstyle. Keep grid and white background and captionstrip boundaries FIXED. Match last panel's black hair top and side outline position to first panel; the last black hair top should sit at same distance below its panel top as in FIRST panel. Preserve all existing facial poses, no new detail, no text, no resampling of whole canvas. Only bottom-row character alignment changes. This removes visible loop jitter.",
+  "reference": "/home/ko/project/shurufa/artifacts/expression-character-trials/reference-01-animated/masters/mushroom-think.png",
+  "resultPath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-113f728c-d5eb-45d8-9473-722516014f95.png"
+}

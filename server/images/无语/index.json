@@ -1,0 +1,105 @@
+{
+  "keyword": "无语",
+  "items": [
+    {
+      "id": "speechless-ink-facepalm",
+      "keyword": "无语",
+      "file": "无语/speechless-ink-facepalm.gif",
+      "thumbnail": "无语/speechless-ink-facepalm.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/prototypes/manifest.json",
+      "sourceReport": "artifacts/expression-prototypes/report.json",
+      "sourceGif": "artifacts/expression-prototypes/gifs/speechless-ink-facepalm.gif",
+      "sourceThumbnail": "server/.runtime/expression-assets/thumbnails/speechless-ink-facepalm.webp",
+      "batch": "prototypes",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "b2aaecd3a26c909b048de0f8535b353f5bd1a22a043d2714f3d98e2c90156b1c",
+      "thumbnailSha256": "551fd49f17fb847dc466f443d7d588e0ec5f26b3b05517930f2fcb43557c06c5",
+      "bytes": 129079,
+      "width": 240,
+      "height": 240,
+      "frames": 12,
+      "style": "hand-drawn",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    },
+    {
+      "id": "speechless-cat-stare",
+      "keyword": "无语",
+      "file": "无语/speechless-cat-stare.gif",
+      "thumbnail": "无语/speechless-cat-stare.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/prototypes/manifest.json",
+      "sourceReport": "artifacts/expression-prototypes/report.json",
+      "sourceGif": "artifacts/expression-prototypes/gifs/speechless-cat-stare.gif",
+      "sourceThumbnail": "server/.runtime/expression-assets/thumbnails/speechless-cat-stare.webp",
+      "batch": "prototypes",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "35f1b212a46eed72f05ebd4b47086646c99677919caf7f1891592d34ddd0e555",
+      "thumbnailSha256": "81413f7ef46f368d8371d96d9089283c04bbea18f7d288ee5d7d1b176095e1a4",
+      "bytes": 89588,
+      "width": 240,
+      "height": 240,
+      "frames": 10,
+      "style": "ai-original-pet",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    },
+    {
+      "id": "speechless-roommate-freeze",
+      "keyword": "无语",
+      "file": "无语/speechless-roommate-freeze.gif",
+      "thumbnail": "无语/speechless-roommate-freeze.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/prototypes/manifest.json",
+      "sourceReport": "artifacts/expression-prototypes/report.json",
+      "sourceGif": "artifacts/expression-prototypes/gifs/speechless-roommate-freeze.gif",
+      "sourceThumbnail": "server/.runtime/expression-assets/thumbnails/speechless-roommate-freeze.webp",
+      "batch": "prototypes",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "427138b17770f0fc9cbf0d60ac5966773a9f71ae72e365cbcae228d57efc0f5f",
+      "thumbnailSha256": "1eb2f58c707a63e0ec41a76b602c0c51f23cb146a66ee712c711792b6d10c14c",
+      "bytes": 179019,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "style": "fictional-live-action",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    },
+    {
+      "id": "speechless-loading-dots",
+      "keyword": "无语",
+      "file": "无语/speechless-loading-dots.gif",
+      "thumbnail": "无语/speechless-loading-dots.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/prototypes/manifest.json",
+      "sourceReport": "artifacts/expression-prototypes/report.json",
+      "sourceGif": "artifacts/expression-prototypes/gifs/speechless-loading-dots.gif",
+      "sourceThumbnail": "server/.runtime/expression-assets/thumbnails/speechless-loading-dots.webp",
+      "batch": "prototypes",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "6dc6096a251b656321a2f325b76451159348b1737b2c6e1ba1f20733d0647281",
+      "thumbnailSha256": "df372be9f912d57d39ca3ec52612b2fc8651f5f8b0b1c8ca8bc1ad49d2acda66",
+      "bytes": 94078,
+      "width": 240,
+      "height": 240,
+      "frames": 14,
+      "style": "internet-meme-grammar",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

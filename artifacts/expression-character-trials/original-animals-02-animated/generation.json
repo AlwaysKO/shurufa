@@ -1,0 +1,51 @@
+{
+  "tool": "built-in-imagegen",
+  "sourceType": "ai-original",
+  "status": "trial-only",
+  "publicationAllowed": false,
+  "items": [
+    {
+      "id": "orange-cat-slack",
+      "caption": "摸鱼",
+      "ref": "orange-cat-laugh",
+      "prompt": "Create animation sprite sheet EXACTLY4 COLUMNS x3 ROWS,12 equal SQUARE cells,1440x1080. Attached image is ORIGINAL character IDENTITY only; change emotion completely as requested. Same original character in all12 cells. Bold simple ink contours and flat fewcolors, NO detailed illustration or fur. OPAQUE WHITE background, thin lightgray grid, REMOVE referencecaption and all text/symbols. Everything fits upper80% of each cell; bottom20% blank white for caption overlay. Fixed camera/scale/bodybaseline, no clipping. Readingorder1-12: 1initial,2-7 smooth distinct gradual facial/limb acting,8 expressivepeak,9-11 smoothreturn,12matches1 precisely. Keep head silhouette anchored except small intentional acting. No arbitrary wholeimage sliding, no extra limbs, no switching activewing/paw. Eyes/brows/mouth/body convey emotion WITHOUT text. FAT ORANGE CAT from reference. Secretly slacking off, NOT laughing. Tiny plain smartphone held at belly in viewer-left paw throughout, viewer-right paw gently taps screen. Start half-lidded eyes on screen and sneaky crooked CLOSEDmouth smile. Pupils gradually sneak sideways to check for boss, one brow lifts, ears angle slightlyback, tapping paw pauses; peak8 guilty sideeye and smug little grin.9-12 gaze returns to phone and tap resumes. Phone stable, no screen text, no actual fish. Same fat cheeks, foreheadpatch and tiny paws.",
+      "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-9ffb02a0-55c7-44fd-bb47-e06eea83558a.png",
+      "masterFile": "masters/orange-cat-slack.png",
+      "sha256": "649e20492ba2879d739e3997315920ee92408f511c3bfa0ee5f6e58c4350f49b",
+      "referenceFile": "../original-animals-01-animated/output/thumbnails/orange-cat-laugh.webp",
+      "referenceSha256": "447263e7769468b4e482fc0d04a1cc50dad6c8998eebcfb8383d1db0efb3df1d"
+    },
+    {
+      "id": "long-bill-duck-shock",
+      "caption": "震惊",
+      "ref": "long-bill-duck-disdain",
+      "prompt": "Create animation sprite sheet EXACTLY4 COLUMNS x3 ROWS,12 equal SQUARE cells,1440x1080. Attached image is ORIGINAL character IDENTITY only; change emotion completely as requested. Same original character in all12 cells. Bold simple ink contours and flat fewcolors, NO detailed illustration or fur. OPAQUE WHITE background, thin lightgray grid, REMOVE referencecaption and all text/symbols. Everything fits upper80% of each cell; bottom20% blank white for caption overlay. Fixed camera/scale/bodybaseline, no clipping. Readingorder1-12: 1initial,2-7 smooth distinct gradual facial/limb acting,8 expressivepeak,9-11 smoothreturn,12matches1 precisely. Keep head silhouette anchored except small intentional acting. No arbitrary wholeimage sliding, no extra limbs, no switching activewing/paw. Eyes/brows/mouth/body convey emotion WITHOUT text. Same skinny white longbill duck. Shocked disbelief not disdain: begin alert eyes at viewer-right, bill slightlyparted and activewing tucked at chest. Gradually pupils shrink, eyes become VERYround, upper/lower bill separate in startled gape, neck recoils slightly, viewer-right wing spreads in surprise; peak8 frozen wideeye openbill shock.9-12 bill closes gently wingretracts pupilsrecover to start. Same bill identity not human mouth, neck hinge natural, avoid giant translation.",
+      "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-853bbecc-3207-4e27-a8a0-d84acdd20197.png",
+      "masterFile": "masters/long-bill-duck-shock.png",
+      "sha256": "ce8964a0ae6aa1397134937f874eae49f30420c8e46844b6a525bc2b31034c7b",
+      "referenceFile": "../original-animals-01-animated/output/thumbnails/long-bill-duck-disdain.webp",
+      "referenceSha256": "161ffbd668f732896d5594f25f08fd4a0c107c2f01eb20c040f16603a3e29c60"
+    },
+    {
+      "id": "rabbit-refuse",
+      "caption": "拒绝",
+      "ref": "short-ear-rabbit-yay",
+      "prompt": "Create animation sprite sheet EXACTLY4 COLUMNS x3 ROWS,12 equal SQUARE cells,1440x1080. Attached image is ORIGINAL character IDENTITY only; change emotion completely as requested. Same original character in all12 cells. Bold simple ink contours and flat fewcolors, NO detailed illustration or fur. OPAQUE WHITE background, thin lightgray grid, REMOVE referencecaption and all text/symbols. Everything fits upper80% of each cell; bottom20% blank white for caption overlay. Fixed camera/scale/bodybaseline, no clipping. Readingorder1-12: 1initial,2-7 smooth distinct gradual facial/limb acting,8 expressivepeak,9-11 smoothreturn,12matches1 precisely. Keep head silhouette anchored except small intentional acting. No arbitrary wholeimage sliding, no extra limbs, no switching activewing/paw. Eyes/brows/mouth/body convey emotion WITHOUT text. Same cream rabbit with lilacbelly and unequal ears. Firm but cute refusal NOT joy. Begin unimpressed half-lidded eyes, tiny closed frown, viewer-right paw at chest. Gradually one eye narrows and browarches, samepaw lifts outward STOP palm, ears tiltback a little, mouth puckers disapprovingly, peak8 firm dismissive stare with raised stop paw. Otherpaw stays low.9-12 return samepaw to chest and ears/face to start. No tears, no smile, no botharms cheering. Preserve rounded body.",
+      "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-a6466d2c-7c87-414d-be1e-2076bb4c8d62.png",
+      "masterFile": "masters/rabbit-refuse.png",
+      "sha256": "604dfe1697e681cdaf8aea75e8b1db9ac8f65dfa83fe9ff5a11418968e928fb1",
+      "referenceFile": "../original-animals-01-animated/output/thumbnails/short-ear-rabbit-yay.webp",
+      "referenceSha256": "cb0bb43d00e55c92a7fd247dcb3c591d475f7e0706d03c2a1f31a10437b23445",
+      "edits": [
+        {
+          "prompt": "Fix limb continuity in this4x3 sheet. Preserve same rabbit, faces, grid, dimensions and existing poses3-9. In panels1,2,10,11,12 active paw wrongly switches to VIEWER LEFT. Correct ONLY arms in those panels: VIEWER LEFT arm stays down like panel3; VIEWER RIGHT paw lowers toward chest. Panel1 low curled paw on viewerRIGHT;2 slightlyraised halfway to panel3;10 halfway lowering from9;11 nearlylow;12 sameas1. No mirrored entirebody, ears/body/face unchanged. No missing arms or floating dots, no extra text. First/last character alignment identical.",
+          "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-94d7549d-2eb1-4b64-954d-4b67760d6533.png"
+        },
+        {
+          "prompt": "Fix ONLY panel2 (TOP ROW SECOND FROM LEFT). It still has wrong arm on viewerLEFT and a dot where oppositearm shouldbe. Replace panel2 arms with: viewerLEFT arm down at side like panel1; viewerRIGHT paw halfway lifted from panel1 curledchest to panel3 outwardpalm, continuous anatomical forearm. Remove floating black dot. All other11panels must remain unchanged. Same rabbit, grid and canvas. NO wholebody mirroring.",
+          "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-a124c478-576c-4c00-b8a9-826120bc9518.png"
+        }
+      ]
+    }
+  ]
+}

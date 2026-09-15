@@ -1,0 +1,31 @@
+{
+  "keyword": "被你发现了",
+  "items": [
+    {
+      "id": "scene-rich-03-caught",
+      "keyword": "被你发现了",
+      "file": "被你发现了/scene-rich-03-caught.gif",
+      "thumbnail": "被你发现了/scene-rich-03-caught.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-03/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-03/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-03/gifs/scene-rich-03-caught.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-03/thumbnails/scene-rich-03-caught.webp",
+      "batch": "scene-rich-03",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "2e9f78a89af76cbae03be3ec3dda2892e8cc556d6051d309b1adc5c47cfed19e",
+      "thumbnailSha256": "fa71a562f6db1cb1983aeb25a35bd27d4338495792c03219047a6d9791489e0a",
+      "bytes": 112654,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "durationMs": 1600,
+      "style": "ai-original-pet",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

@@ -1,0 +1,1645 @@
+{
+  "version": "2026.09.08.daily-01",
+  "status": "pending-generation-and-visual-review",
+  "keywords": [
+    "你好",
+    "早安",
+    "晚安",
+    "好的",
+    "对不起"
+  ],
+  "items": [
+    {
+      "id": "hello-dumpling-wave",
+      "keyword": "你好",
+      "text": "你好",
+      "style": "original-character",
+      "direction": "core-performance",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: A completely original cream rice-dumpling creature with orange knotted topknot, floppy orange-tipped side tufts and small orange scarf, warm gouache sticker. POSES reading top-left, top-right, bottom-left, bottom-right: 1. arms relaxed smiling; 2. one arm lifts and eyes brighten; 3. big open handed wave with body leaning sideways; 4. both arms welcome with delighted face. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "arms relaxed smiling",
+        "one arm lifts and eyes brighten",
+        "big open handed wave with body leaning sideways",
+        "both arms welcome with delighted face"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/hello-dumpling-wave.png",
+      "poseFiles": [
+        "poses/hello-dumpling-wave/pose-01.png",
+        "poses/hello-dumpling-wave/pose-02.png",
+        "poses/hello-dumpling-wave/pose-03.png",
+        "poses/hello-dumpling-wave/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-27db2df4-fa64-46ac-b5d8-33e0f5868a25.png",
+        "masterSha256": "f84623d6d3ffeb40a5aa28be73c499e45020ff0ab92a00dc62d6a78695fa33cb"
+      }
+    },
+    {
+      "id": "hello-otter-peek",
+      "keyword": "你好",
+      "text": "你好",
+      "style": "ai-original-pet",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: A completely original cinnamon river otter with cream muzzle, soft detailed fur, no clothing. POSES reading top-left, top-right, bottom-left, bottom-right: 1. head peeks around a small smooth pale pebble; 2. whole upper body emerges; 3. one paw raised beside face; 4. both paws waving with broad friendly smile. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "head peeks around a small smooth pale pebble",
+        "whole upper body emerges",
+        "one paw raised beside face",
+        "both paws waving with broad friendly smile"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/hello-otter-peek.png",
+      "poseFiles": [
+        "poses/hello-otter-peek/pose-01.png",
+        "poses/hello-otter-peek/pose-02.png",
+        "poses/hello-otter-peek/pose-03.png",
+        "poses/hello-otter-peek/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-e3a345c1-5aeb-4ed9-8a6d-acd50faa241b.png",
+        "masterSha256": "98eafa3c83e5751c8aef1330a25a826184629a67dc0beba097deba96bee27479"
+      }
+    },
+    {
+      "id": "hello-neighbor-door",
+      "keyword": "你好",
+      "text": "你好",
+      "style": "original-life-scene",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An original adult woman with asymmetrical auburn bob, teal cardigan, editorial gouache waist-up beside a small isolated coral doorframe. POSES reading top-left, top-right, bottom-left, bottom-right: 1. looks curiously around doorframe; 2. leans farther out smiling; 3. raises hand in greeting; 4. waves with head tilted and happy eyes. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "looks curiously around doorframe",
+        "leans farther out smiling",
+        "raises hand in greeting",
+        "waves with head tilted and happy eyes"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/hello-neighbor-door.png",
+      "poseFiles": [
+        "poses/hello-neighbor-door/pose-01.png",
+        "poses/hello-neighbor-door/pose-02.png",
+        "poses/hello-neighbor-door/pose-03.png",
+        "poses/hello-neighbor-door/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-d91f9840-bf99-4e27-9e96-889fbbb6f32a.png",
+        "masterSha256": "101ddfff2da677a86a9bf726f24f54a9aa8c0949ab32fd7fa54640cfe849dbe2"
+      },
+      "poseRects": [
+        {
+          "left": 0,
+          "top": 0,
+          "width": 679,
+          "height": 624
+        },
+        {
+          "left": 679,
+          "top": 0,
+          "width": 555,
+          "height": 623
+        },
+        {
+          "left": 0,
+          "top": 624,
+          "width": 679,
+          "height": 650
+        },
+        {
+          "left": 679,
+          "top": 623,
+          "width": 555,
+          "height": 651
+        }
+      ]
+    },
+    {
+      "id": "hello-orbit-spark",
+      "keyword": "你好",
+      "text": "你好",
+      "style": "kinetic-typography",
+      "direction": "kinetic-type",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An original friendly abstract cluster of coral and teal rounded blobs and four golden sparkle shapes surrounding a LARGE EMPTY center, premium clean dimensional paper-cut art. POSES reading top-left, top-right, bottom-left, bottom-right: 1. blobs tucked at outer edges; 2. blobs unfold inward while center remains empty; 3. sparks burst outward and blobs bounce; 4. blobs settle into a welcoming open ring. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "blobs tucked at outer edges",
+        "blobs unfold inward while center remains empty",
+        "sparks burst outward and blobs bounce",
+        "blobs settle into a welcoming open ring"
+      ],
+      "motionPreset": "impact",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/hello-orbit-spark.png",
+      "poseFiles": [
+        "poses/hello-orbit-spark/pose-01.png",
+        "poses/hello-orbit-spark/pose-02.png",
+        "poses/hello-orbit-spark/pose-03.png",
+        "poses/hello-orbit-spark/pose-04.png"
+      ],
+      "textPlacement": "center",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-66799f85-7891-4b09-be0e-062033662536.png",
+        "masterSha256": "1169aa8d6f6d8c3ea70478777cf44668c064ec590b10caee6d897770c7276606"
+      }
+    },
+    {
+      "id": "hello-plush-rabbit",
+      "keyword": "你好",
+      "text": "你好",
+      "style": "3d-plush",
+      "direction": "contrast-remix",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An entirely original lilac plush rabbit with short mismatched folded ears, tiny turquoise fabric bow, handmade sewn toy texture. POSES reading top-left, top-right, bottom-left, bottom-right: 1. sits with paws down; 2. left soft paw rises; 3. paw waves with ear folding; 4. both paws stretch toward viewer. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "sits with paws down",
+        "left soft paw rises",
+        "paw waves with ear folding",
+        "both paws stretch toward viewer"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/hello-plush-rabbit.png",
+      "poseFiles": [
+        "poses/hello-plush-rabbit/pose-01.png",
+        "poses/hello-plush-rabbit/pose-02.png",
+        "poses/hello-plush-rabbit/pose-03.png",
+        "poses/hello-plush-rabbit/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-48d69c55-a717-474f-8f5a-e6a134760695.png",
+        "masterSha256": "3abe637ed7f5125af41125e102607b6cbf514c2a96cadec0364c70454405af4f"
+      }
+    },
+    {
+      "id": "hello-ink-sparrow",
+      "keyword": "你好",
+      "text": "你好",
+      "style": "hand-drawn",
+      "direction": "contrast-remix",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An original plump little sparrow drawn in expressive thick charcoal strokes with just a mustard yellow cheek and small terracotta feet. POSES reading top-left, top-right, bottom-left, bottom-right: 1. perched neutrally on tiny branch; 2. head tilts strongly left; 3. one wing lifts into greeting; 4. both wings open with friendly eyes. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "perched neutrally on tiny branch",
+        "head tilts strongly left",
+        "one wing lifts into greeting",
+        "both wings open with friendly eyes"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/hello-ink-sparrow.png",
+      "poseFiles": [
+        "poses/hello-ink-sparrow/pose-01.png",
+        "poses/hello-ink-sparrow/pose-02.png",
+        "poses/hello-ink-sparrow/pose-03.png",
+        "poses/hello-ink-sparrow/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-fa7c703d-592e-4ff9-9851-4ac45de688d9.png",
+        "masterSha256": "e334cc4959ae411a67b4dbd651179f6732d706d52b4bfb3d07756930fa805df6"
+      }
+    },
+    {
+      "id": "hello-person-greet",
+      "keyword": "你好",
+      "text": "你好",
+      "style": "fictional-live-action",
+      "direction": "contrast-remix",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: A completely fictional adult East Asian man, broad round face, curly dark hair, plain mustard sweatshirt, waist-up photorealistic studio cutout, not any real identifiable person. POSES reading top-left, top-right, bottom-left, bottom-right: 1. neutral attentive smile; 2. eyebrows raise in recognition; 3. hand lifts in small wave; 4. warm smiling wave with shoulder lean. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "neutral attentive smile",
+        "eyebrows raise in recognition",
+        "hand lifts in small wave",
+        "warm smiling wave with shoulder lean"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/hello-person-greet.png",
+      "poseFiles": [
+        "poses/hello-person-greet/pose-01.png",
+        "poses/hello-person-greet/pose-02.png",
+        "poses/hello-person-greet/pose-03.png",
+        "poses/hello-person-greet/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-79c6acfa-3bbd-477b-b2e7-b4d409154f63.png",
+        "masterSha256": "976e4833278b67ef3c20f39e0d52d3db4f03f814f66971b7a2f0329f7b06b833"
+      },
+      "poseRects": [
+        {
+          "left": 0,
+          "top": 0,
+          "width": 632,
+          "height": 621
+        },
+        {
+          "left": 632,
+          "top": 0,
+          "width": 637,
+          "height": 621
+        },
+        {
+          "left": 0,
+          "top": 621,
+          "width": 680,
+          "height": 619
+        },
+        {
+          "left": 680,
+          "top": 621,
+          "width": 589,
+          "height": 619
+        }
+      ]
+    },
+    {
+      "id": "hello-mailbox-pop",
+      "keyword": "你好",
+      "text": "你好",
+      "style": "internet-meme-grammar",
+      "direction": "contrast-remix",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: A wholly original anthropomorphic mint-green tiny mailbox on stubby feet with two expressive eyes and flexible red flag, playful surreal clay cartoon. POSES reading top-left, top-right, bottom-left, bottom-right: 1. mailbox closed and sleepy; 2. eyes open and flag rises; 3. lid opens and tiny friendly rounded star springs out; 4. star waves while mailbox beams. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "mailbox closed and sleepy",
+        "eyes open and flag rises",
+        "lid opens and tiny friendly rounded star springs out",
+        "star waves while mailbox beams"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/hello-mailbox-pop.png",
+      "poseFiles": [
+        "poses/hello-mailbox-pop/pose-01.png",
+        "poses/hello-mailbox-pop/pose-02.png",
+        "poses/hello-mailbox-pop/pose-03.png",
+        "poses/hello-mailbox-pop/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-1a34f567-ef47-4674-b81d-28a0de979ada.png",
+        "masterSha256": "3e5dfc312f72b64ef844263734278d08301129bcf6acd68bb3c1c74670610e98"
+      },
+      "poseRects": [
+        {
+          "left": 0,
+          "top": 0,
+          "width": 647,
+          "height": 564
+        },
+        {
+          "left": 647,
+          "top": 0,
+          "width": 607,
+          "height": 577
+        },
+        {
+          "left": 0,
+          "top": 564,
+          "width": 647,
+          "height": 690
+        },
+        {
+          "left": 647,
+          "top": 577,
+          "width": 607,
+          "height": 677
+        }
+      ]
+    },
+    {
+      "id": "morning-dumpling-stretch",
+      "keyword": "早安",
+      "text": "早安",
+      "style": "original-character",
+      "direction": "core-performance",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: The original cream rice-dumpling creature with orange knotted topknot, orange-tipped floppy side tufts and orange scarf, warm gouache sticker. POSES reading top-left, top-right, bottom-left, bottom-right: 1. sleepy slouch rubbing one eye; 2. both arms raise slowly; 3. huge full-body stretch with eyes shut and mouth open; 4. upright bright smile greeting the morning. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "sleepy slouch rubbing one eye",
+        "both arms raise slowly",
+        "huge full-body stretch with eyes shut and mouth open",
+        "upright bright smile greeting the morning"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/morning-dumpling-stretch.png",
+      "poseFiles": [
+        "poses/morning-dumpling-stretch/pose-01.png",
+        "poses/morning-dumpling-stretch/pose-02.png",
+        "poses/morning-dumpling-stretch/pose-03.png",
+        "poses/morning-dumpling-stretch/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-6a5e08c6-e191-4d38-9755-55129ad79b6c.png",
+        "masterSha256": "72bbe05380a0be1f240a35c8b67d54fada418037aecc8800314d1677f8eb5d29"
+      },
+      "poseRects": [
+        {
+          "left": 0,
+          "top": 0,
+          "width": 665,
+          "height": 570
+        },
+        {
+          "left": 665,
+          "top": 0,
+          "width": 589,
+          "height": 577
+        },
+        {
+          "left": 0,
+          "top": 570,
+          "width": 665,
+          "height": 684
+        },
+        {
+          "left": 665,
+          "top": 577,
+          "width": 589,
+          "height": 677
+        }
+      ]
+    },
+    {
+      "id": "morning-corgi-sun",
+      "keyword": "早安",
+      "text": "早安",
+      "style": "ai-original-pet",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An original honey-and-white short-legged puppy with large triangular ears, realistically fluffy fur, a tiny isolated golden sun disc behind one shoulder. POSES reading top-left, top-right, bottom-left, bottom-right: 1. sleepy head low over paws; 2. head lifts and one ear perks; 3. front legs stretch far forward and tail lifts; 4. sits awake with happy open mouth. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "sleepy head low over paws",
+        "head lifts and one ear perks",
+        "front legs stretch far forward and tail lifts",
+        "sits awake with happy open mouth"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/morning-corgi-sun.png",
+      "poseFiles": [
+        "poses/morning-corgi-sun/pose-01.png",
+        "poses/morning-corgi-sun/pose-02.png",
+        "poses/morning-corgi-sun/pose-03.png",
+        "poses/morning-corgi-sun/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-ae741f71-9ba1-40c2-88cd-5e28947bcb18.png",
+        "masterSha256": "f66fe1667ffc6c2c7510a70b1b54c292f5bfded237f01f4edd4884a4be8a6fa8"
+      },
+      "poseRects": [
+        {
+          "left": 0,
+          "top": 0,
+          "width": 658,
+          "height": 581
+        },
+        {
+          "left": 658,
+          "top": 0,
+          "width": 596,
+          "height": 581
+        },
+        {
+          "left": 0,
+          "top": 581,
+          "width": 658,
+          "height": 673
+        },
+        {
+          "left": 658,
+          "top": 581,
+          "width": 596,
+          "height": 673
+        }
+      ]
+    },
+    {
+      "id": "morning-coffee-worker",
+      "keyword": "早安",
+      "text": "早安",
+      "style": "original-life-scene",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An original adult office woman with dark blue cropped hair, apricot shirt and blank jade mug, graphic editorial painting waist-up. POSES reading top-left, top-right, bottom-left, bottom-right: 1. sleepy face over mug held securely; 2. brings mug near nose with eyes half-open; 3. eyes brighten and shoulders rise; 4. raises mug in a cheerful morning toast. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "sleepy face over mug held securely",
+        "brings mug near nose with eyes half-open",
+        "eyes brighten and shoulders rise",
+        "raises mug in a cheerful morning toast"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/morning-coffee-worker.png",
+      "poseFiles": [
+        "poses/morning-coffee-worker/pose-01.png",
+        "poses/morning-coffee-worker/pose-02.png",
+        "poses/morning-coffee-worker/pose-03.png",
+        "poses/morning-coffee-worker/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-a2feda26-1ec2-4d69-bd36-44f1f5a311cb.png",
+        "masterSha256": "28629002d819d083b1de3aa89b79eda35724af46abe7f9c26119d1d2760dbe7d"
+      },
+      "poseRects": [
+        {
+          "left": 0,
+          "top": 0,
+          "width": 638,
+          "height": 624
+        },
+        {
+          "left": 638,
+          "top": 0,
+          "width": 576,
+          "height": 648
+        },
+        {
+          "left": 0,
+          "top": 624,
+          "width": 638,
+          "height": 671
+        },
+        {
+          "left": 638,
+          "top": 648,
+          "width": 576,
+          "height": 647
+        }
+      ]
+    },
+    {
+      "id": "morning-sun-unfold",
+      "keyword": "早安",
+      "text": "早安",
+      "style": "kinetic-typography",
+      "direction": "kinetic-type",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An original abstract golden sun arc with rounded rays, lilac cloud puffs and mint dew drops framing a LARGE EMPTY center, soft vector-like paper cut dimensional art. POSES reading top-left, top-right, bottom-left, bottom-right: 1. rays folded down under cloud puffs; 2. sun arc rises and rays unfurl; 3. rays fully stretch with dew droplets springing outward; 4. clouds part and rays gently settle around empty center. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "rays folded down under cloud puffs",
+        "sun arc rises and rays unfurl",
+        "rays fully stretch with dew droplets springing outward",
+        "clouds part and rays gently settle around empty center"
+      ],
+      "motionPreset": "impact",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/morning-sun-unfold.png",
+      "poseFiles": [
+        "poses/morning-sun-unfold/pose-01.png",
+        "poses/morning-sun-unfold/pose-02.png",
+        "poses/morning-sun-unfold/pose-03.png",
+        "poses/morning-sun-unfold/pose-04.png"
+      ],
+      "textPlacement": "center",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-72833da0-7d35-46d2-99ee-e201995d8ed4.png",
+        "masterSha256": "a873352a5973def1df6a722f6205f65f0cb813c7077e1448a82eb7e597de9e40"
+      },
+      "poseRects": [
+        {
+          "left": 0,
+          "top": 0,
+          "width": 677,
+          "height": 522
+        },
+        {
+          "left": 677,
+          "top": 0,
+          "width": 633,
+          "height": 564
+        },
+        {
+          "left": 0,
+          "top": 522,
+          "width": 677,
+          "height": 678
+        },
+        {
+          "left": 677,
+          "top": 564,
+          "width": 633,
+          "height": 636
+        }
+      ]
+    },
+    {
+      "id": "morning-clay-chick",
+      "keyword": "早安",
+      "text": "早安",
+      "style": "3d-plush",
+      "direction": "contrast-remix",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An original round butter-yellow clay chick with two uneven orange crest nubs, tiny coral scarf, matte handmade thumbprint texture. POSES reading top-left, top-right, bottom-left, bottom-right: 1. curled sleepy with eyes closed; 2. cracks open one eye; 3. stands on toes and spreads wings in a stretch; 4. bounces awake with beaming eyes. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "curled sleepy with eyes closed",
+        "cracks open one eye",
+        "stands on toes and spreads wings in a stretch",
+        "bounces awake with beaming eyes"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/morning-clay-chick.png",
+      "poseFiles": [
+        "poses/morning-clay-chick/pose-01.png",
+        "poses/morning-clay-chick/pose-02.png",
+        "poses/morning-clay-chick/pose-03.png",
+        "poses/morning-clay-chick/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-06ab66e2-ae1a-4909-a7ef-71c60f0c9342.png",
+        "masterSha256": "f25cb963f8bc8dffb7a8f99846008a4b5b505b197d69082c9bc4bd0497f001c2"
+      },
+      "poseRects": [
+        {
+          "left": 0,
+          "top": 0,
+          "width": 625,
+          "height": 576
+        },
+        {
+          "left": 625,
+          "top": 0,
+          "width": 629,
+          "height": 555
+        },
+        {
+          "left": 0,
+          "top": 576,
+          "width": 625,
+          "height": 678
+        },
+        {
+          "left": 625,
+          "top": 555,
+          "width": 629,
+          "height": 699
+        }
+      ]
+    },
+    {
+      "id": "morning-sketch-rooster",
+      "keyword": "早安",
+      "text": "早安",
+      "style": "hand-drawn",
+      "direction": "contrast-remix",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An original comical small rooster in rough black brush lines with bold cobalt tail and burnt orange crest, intentionally elegant minimal drawing. POSES reading top-left, top-right, bottom-left, bottom-right: 1. hunched with closed beak; 2. neck stretches upward; 3. head throws back and beak opens in a morning call; 4. chest puffs proudly and tail fans out. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "hunched with closed beak",
+        "neck stretches upward",
+        "head throws back and beak opens in a morning call",
+        "chest puffs proudly and tail fans out"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/morning-sketch-rooster.png",
+      "poseFiles": [
+        "poses/morning-sketch-rooster/pose-01.png",
+        "poses/morning-sketch-rooster/pose-02.png",
+        "poses/morning-sketch-rooster/pose-03.png",
+        "poses/morning-sketch-rooster/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-e23f8d5a-789b-4193-b0c3-76777983e3ea.png",
+        "masterSha256": "ebebf30c551da8aa96506ea2faf84611004edc92d09f2d9202b9b86ed75583ea"
+      },
+      "poseRects": [
+        {
+          "left": 0,
+          "top": 0,
+          "width": 617,
+          "height": 584
+        },
+        {
+          "left": 617,
+          "top": 0,
+          "width": 622,
+          "height": 610
+        },
+        {
+          "left": 0,
+          "top": 584,
+          "width": 617,
+          "height": 685
+        },
+        {
+          "left": 617,
+          "top": 610,
+          "width": 622,
+          "height": 659
+        }
+      ]
+    },
+    {
+      "id": "morning-person-curtain",
+      "keyword": "早安",
+      "text": "早安",
+      "style": "fictional-live-action",
+      "direction": "contrast-remix",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: A fictional adult East Asian woman with shoulder-length wavy hair, plain pale blue pajama top, waist-up photorealistic cutout holding the edge of a small isolated cream curtain, no actual person resemblance. POSES reading top-left, top-right, bottom-left, bottom-right: 1. sleepy gentle face beside gathered curtain; 2. hand pulls curtain edge outward; 3. eyes open wide and free arm stretches; 4. smiles brightly with arm raised in greeting. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "sleepy gentle face beside gathered curtain",
+        "hand pulls curtain edge outward",
+        "eyes open wide and free arm stretches",
+        "smiles brightly with arm raised in greeting"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/morning-person-curtain.png",
+      "poseFiles": [
+        "poses/morning-person-curtain/pose-01.png",
+        "poses/morning-person-curtain/pose-02.png",
+        "poses/morning-person-curtain/pose-03.png",
+        "poses/morning-person-curtain/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-344f4a3f-6a8a-4093-bc47-b7f599a85969.png",
+        "masterSha256": "48d7e3f6f170abe84b9ead2c1e5e7f3e840c9c74a27e23193080f7ec011f0b27"
+      }
+    },
+    {
+      "id": "morning-alarm-dance",
+      "keyword": "早安",
+      "text": "早安",
+      "style": "internet-meme-grammar",
+      "direction": "contrast-remix",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An original mint mechanical alarm clock creature with blank face NO numerals or ticks, two eyes and small orange boot feet, playful polished clay. POSES reading top-left, top-right, bottom-left, bottom-right: 1. sleeping with legs tucked; 2. bells tilt opposite ways as eyes open; 3. jumps with legs spread and bells lifted; 4. lands in jaunty dancing pose smiling. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "sleeping with legs tucked",
+        "bells tilt opposite ways as eyes open",
+        "jumps with legs spread and bells lifted",
+        "lands in jaunty dancing pose smiling"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/morning-alarm-dance.png",
+      "poseFiles": [
+        "poses/morning-alarm-dance/pose-01.png",
+        "poses/morning-alarm-dance/pose-02.png",
+        "poses/morning-alarm-dance/pose-03.png",
+        "poses/morning-alarm-dance/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-da311477-cef4-4bea-b2ca-9a19864c9884.png",
+        "masterSha256": "758c99b7200025ac65bfbf05a19185cbfa2404cf68455930f772189b73477156"
+      }
+    },
+    {
+      "id": "night-dumpling-sleep",
+      "keyword": "晚安",
+      "text": "晚安",
+      "style": "original-character",
+      "direction": "core-performance",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: The original cream rice-dumpling creature with orange knotted topknot and orange-tipped side tufts, tiny orange scarf, a small lavender pillow, warm gouache. POSES reading top-left, top-right, bottom-left, bottom-right: 1. sits hugging pillow with sleepy smile; 2. head droops and eyes half close; 3. curls sideways on pillow with eyes closed; 4. tucks tiny hands under cheek peacefully asleep. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "sits hugging pillow with sleepy smile",
+        "head droops and eyes half close",
+        "curls sideways on pillow with eyes closed",
+        "tucks tiny hands under cheek peacefully asleep"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/night-dumpling-sleep.png",
+      "poseFiles": [
+        "poses/night-dumpling-sleep/pose-01.png",
+        "poses/night-dumpling-sleep/pose-02.png",
+        "poses/night-dumpling-sleep/pose-03.png",
+        "poses/night-dumpling-sleep/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-4fd6071d-d620-44dc-8ea4-5a275a4ed569.png",
+        "masterSha256": "3e6ab1fc487663e7fcb7a893ae7e034ed87b16690659cbfa1179cf03c642a626"
+      }
+    },
+    {
+      "id": "night-cat-curl",
+      "keyword": "晚安",
+      "text": "晚安",
+      "style": "ai-original-pet",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An original silver-gray tabby kitten with cream paws and moss-green eyes, soft realistic fur, isolated small dusty-blue cushion. POSES reading top-left, top-right, bottom-left, bottom-right: 1. sits sleepily on cushion; 2. turns head and folds front paws; 3. curls into compact sleeping crescent; 4. rests nose on tail and closes eyes. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "sits sleepily on cushion",
+        "turns head and folds front paws",
+        "curls into compact sleeping crescent",
+        "rests nose on tail and closes eyes"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/night-cat-curl.png",
+      "poseFiles": [
+        "poses/night-cat-curl/pose-01.png",
+        "poses/night-cat-curl/pose-02.png",
+        "poses/night-cat-curl/pose-03.png",
+        "poses/night-cat-curl/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "poseRects": [
+        {
+          "left": 0,
+          "top": 0,
+          "width": 659,
+          "height": 676
+        },
+        {
+          "left": 659,
+          "top": 0,
+          "width": 595,
+          "height": 676
+        },
+        {
+          "left": 0,
+          "top": 676,
+          "width": 659,
+          "height": 578
+        },
+        {
+          "left": 659,
+          "top": 676,
+          "width": 595,
+          "height": 578
+        }
+      ],
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-2baa593f-1450-416e-a29f-9740eb6e2aa3.png",
+        "masterSha256": "af1d4385da49d63941b654ce4d0dd4a74e9085899d4cd203dbccb1a22847a6e6"
+      }
+    },
+    {
+      "id": "night-bedtime-reader",
+      "keyword": "晚安",
+      "text": "晚安",
+      "style": "original-life-scene",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An original adult man with rounded glasses, olive pajamas, warm painterly waist-up with blank closed book and small isolated pillow, no printed marks. POSES reading top-left, top-right, bottom-left, bottom-right: 1. reads open completely blank book sleepily; 2. yawns covering mouth while supporting book; 3. closes book and rests it safely below arms; 4. leans cheek against pillow with relaxed closed eyes. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。 CRITICAL: genuine RGBA transparent background, not drawn checkerboard. Wide blank transparent separation between four isolated portraits. Each portrait is small enough to fit into central 70% of its own quadrant. Keep entire head arms book pillow complete, separated from all other portraits. Wide transparent middle row and middle column. No background pixels.",
+      "motionScript": [
+        "reads open completely blank book sleepily",
+        "yawns covering mouth while supporting book",
+        "closes book and rests it safely below arms",
+        "leans cheek against pillow with relaxed closed eyes"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/night-bedtime-reader.png",
+      "poseFiles": [
+        "poses/night-bedtime-reader/pose-01.png",
+        "poses/night-bedtime-reader/pose-02.png",
+        "poses/night-bedtime-reader/pose-03.png",
+        "poses/night-bedtime-reader/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-78e4d8e7-e7ea-4060-abc1-52172d330f5b.png",
+        "masterSha256": "6e7f2249c57e66976377c6a89135b889b88c88b90e3642af2e12643bf8abbc04"
+      }
+    },
+    {
+      "id": "night-moon-cloud",
+      "keyword": "晚安",
+      "text": "晚安",
+      "style": "kinetic-typography",
+      "direction": "kinetic-type",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An original lavender crescent arc and small gold four-point stars with soft deep-blue cloud puffs framing a LARGE EMPTY center, layered paper-cut. POSES reading top-left, top-right, bottom-left, bottom-right: 1. stars spread wide and clouds low; 2. clouds puff upward and crescent tilts gently; 3. stars shrink softly and clouds settle closer; 4. crescent nestles among clouds while center stays empty. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "stars spread wide and clouds low",
+        "clouds puff upward and crescent tilts gently",
+        "stars shrink softly and clouds settle closer",
+        "crescent nestles among clouds while center stays empty"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/night-moon-cloud.png",
+      "poseFiles": [
+        "poses/night-moon-cloud/pose-01.png",
+        "poses/night-moon-cloud/pose-02.png",
+        "poses/night-moon-cloud/pose-03.png",
+        "poses/night-moon-cloud/pose-04.png"
+      ],
+      "textPlacement": "center",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-503224c7-028c-4d4a-8ad5-56368bde88d2.png",
+        "masterSha256": "7b137e4f222cafb910a441ccf51ea01b498d456ddfac3c1a30e18239e8052b21"
+      }
+    },
+    {
+      "id": "night-plush-bear",
+      "keyword": "晚安",
+      "text": "晚安",
+      "style": "3d-plush",
+      "direction": "contrast-remix",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An original sage-green knitted plush bear with tiny cream ears, cinnamon stitched nose, small orange blanket, cozy soft toy texture. POSES reading top-left, top-right, bottom-left, bottom-right: 1. sits clutching blanket; 2. pulls blanket up to chest; 3. lies sideways with head on folded paws; 4. blanket covers body while sleepy eyes close. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "sits clutching blanket",
+        "pulls blanket up to chest",
+        "lies sideways with head on folded paws",
+        "blanket covers body while sleepy eyes close"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/night-plush-bear.png",
+      "poseFiles": [
+        "poses/night-plush-bear/pose-01.png",
+        "poses/night-plush-bear/pose-02.png",
+        "poses/night-plush-bear/pose-03.png",
+        "poses/night-plush-bear/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "poseRects": [
+        {
+          "left": 0,
+          "top": 0,
+          "width": 658,
+          "height": 720
+        },
+        {
+          "left": 658,
+          "top": 0,
+          "width": 596,
+          "height": 701
+        },
+        {
+          "left": 0,
+          "top": 720,
+          "width": 658,
+          "height": 534
+        },
+        {
+          "left": 658,
+          "top": 701,
+          "width": 596,
+          "height": 553
+        }
+      ],
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-2a73877a-1512-4f96-acfc-69021b8004e3.png",
+        "masterSha256": "03d179da16507c9ec752e03004ec57630eeef5f61c01b5dc9023059ce07d8bc6"
+      }
+    },
+    {
+      "id": "night-ink-owl",
+      "keyword": "晚安",
+      "text": "晚安",
+      "style": "hand-drawn",
+      "direction": "contrast-remix",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An original sleepy little owl in bold navy ink with pale apricot cheek patches, thick expressive minimal lines, tiny isolated branch. POSES reading top-left, top-right, bottom-left, bottom-right: 1. big eyes looking forward; 2. one eye droops and head tilts; 3. wings wrap around body; 4. both eyes closed and head nestled into shoulder. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "big eyes looking forward",
+        "one eye droops and head tilts",
+        "wings wrap around body",
+        "both eyes closed and head nestled into shoulder"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/night-ink-owl.png",
+      "poseFiles": [
+        "poses/night-ink-owl/pose-01.png",
+        "poses/night-ink-owl/pose-02.png",
+        "poses/night-ink-owl/pose-03.png",
+        "poses/night-ink-owl/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-856bca5c-920c-456d-b325-4ded08fedffa.png",
+        "masterSha256": "8fa91f426534a04dad2582cb241f5b2537d54b7289bff4b60c70c322f8487868"
+      }
+    },
+    {
+      "id": "night-person-goodnight",
+      "keyword": "晚安",
+      "text": "晚安",
+      "style": "fictional-live-action",
+      "direction": "contrast-remix",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: A fictional adult woman with warm medium-brown skin, short natural curls, plain cream sweater, waist-up photorealistic studio cutout, not an identifiable person. POSES reading top-left, top-right, bottom-left, bottom-right: 1. smiles gently with hands near chest; 2. small relaxed wave; 3. hands come together beside cheek; 4. head rests on hands with softly closed eyes. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "smiles gently with hands near chest",
+        "small relaxed wave",
+        "hands come together beside cheek",
+        "head rests on hands with softly closed eyes"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/night-person-goodnight.png",
+      "poseFiles": [
+        "poses/night-person-goodnight/pose-01.png",
+        "poses/night-person-goodnight/pose-02.png",
+        "poses/night-person-goodnight/pose-03.png",
+        "poses/night-person-goodnight/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-61ea79ad-1a36-41f5-a319-66776df7470f.png",
+        "masterSha256": "41ab7a2a640c177d0b7eac770a2dc32a4dc7d52fe54b01e6e2d817db5458c7b1"
+      }
+    },
+    {
+      "id": "night-battery-rest",
+      "keyword": "晚安",
+      "text": "晚安",
+      "style": "internet-meme-grammar",
+      "direction": "contrast-remix",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An original rounded turquoise battery-shaped creature with expressive sleepy eyes, blank casing NO icons or writing, tiny lavender blanket, surreal polished cartoon. POSES reading top-left, top-right, bottom-left, bottom-right: 1. stands drooping with tiny arms; 2. knees bend and blanket rises; 3. lies flat hugging blanket; 4. eyes close and body curls comfortably. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "stands drooping with tiny arms",
+        "knees bend and blanket rises",
+        "lies flat hugging blanket",
+        "eyes close and body curls comfortably"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/night-battery-rest.png",
+      "poseFiles": [
+        "poses/night-battery-rest/pose-01.png",
+        "poses/night-battery-rest/pose-02.png",
+        "poses/night-battery-rest/pose-03.png",
+        "poses/night-battery-rest/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "poseRects": [
+        {
+          "left": 0,
+          "top": 0,
+          "width": 700,
+          "height": 669
+        },
+        {
+          "left": 700,
+          "top": 0,
+          "width": 554,
+          "height": 638
+        },
+        {
+          "left": 0,
+          "top": 669,
+          "width": 700,
+          "height": 585
+        },
+        {
+          "left": 700,
+          "top": 638,
+          "width": 554,
+          "height": 616
+        }
+      ],
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-9feda90a-64c3-4210-8f02-3de1e6ceaef7.png",
+        "masterSha256": "9ba98c9d300f91ea5bc9256794a6432f43c38e1bf71939864fcf029a8c9f14c4"
+      }
+    },
+    {
+      "id": "okay-dumpling-nod",
+      "keyword": "好的",
+      "text": "好的",
+      "style": "original-character",
+      "direction": "core-performance",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: The original cream rice-dumpling creature with orange knotted topknot, floppy orange-tipped side tufts and orange scarf, warm gouache. POSES reading top-left, top-right, bottom-left, bottom-right: 1. attentive face with hands together; 2. chin dips strongly in a nod; 3. head rises with a confident smile; 4. one chunky rounded paw gives clear thumbs up. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。 Layout safety requirement: wide completely empty transparent cross-shaped gutter, 15% of canvas width and height, centered at exact 50% canvas axes. Keep every limb, prop and decorative mark well inside its own quarter, at least 8% canvas away from those axes. No scattered particles in gutters.",
+      "motionScript": [
+        "attentive face with hands together",
+        "chin dips strongly in a nod",
+        "head rises with a confident smile",
+        "one chunky rounded paw gives clear thumbs up"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/okay-dumpling-nod.png",
+      "poseFiles": [
+        "poses/okay-dumpling-nod/pose-01.png",
+        "poses/okay-dumpling-nod/pose-02.png",
+        "poses/okay-dumpling-nod/pose-03.png",
+        "poses/okay-dumpling-nod/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-8a65a814-af99-4db4-8e0a-fb6eab20bd18.png",
+        "masterSha256": "d9e5f0f8f9027f2cdb161f43366bc409cf9095bdc6c43c48e2877c021bd8b9a9"
+      }
+    },
+    {
+      "id": "okay-penguin-salute",
+      "keyword": "好的",
+      "text": "好的",
+      "style": "ai-original-pet",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An original little charcoal-and-cream penguin chick with soft down, small orange feet, no clothing. POSES reading top-left, top-right, bottom-left, bottom-right: 1. stands attentive with flippers down; 2. straightens chest; 3. one flipper rises beside forehead in a playful salute; 4. salute relaxes into enthusiastic wing wave. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。 Layout safety requirement: wide completely empty transparent cross-shaped gutter, 15% of canvas width and height, centered at exact 50% canvas axes. Keep every limb, prop and decorative mark well inside its own quarter, at least 8% canvas away from those axes. No scattered particles in gutters.",
+      "motionScript": [
+        "stands attentive with flippers down",
+        "straightens chest",
+        "one flipper rises beside forehead in a playful salute",
+        "salute relaxes into enthusiastic wing wave"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/okay-penguin-salute.png",
+      "poseFiles": [
+        "poses/okay-penguin-salute/pose-01.png",
+        "poses/okay-penguin-salute/pose-02.png",
+        "poses/okay-penguin-salute/pose-03.png",
+        "poses/okay-penguin-salute/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-58b627fb-6d17-47df-81df-00d01342aaa7.png",
+        "masterSha256": "280e09dff7348ca56efa57d36fba6d8e12ec1a222dfbea465eddbd555ece5e84"
+      }
+    },
+    {
+      "id": "okay-courier-check",
+      "keyword": "好的",
+      "text": "好的",
+      "style": "original-life-scene",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An original adult delivery helper with chestnut cropped hair, plain cobalt work jacket with NO logo, holding a blank tan clipboard, waist-up gouache. POSES reading top-left, top-right, bottom-left, bottom-right: 1. looks carefully at blank clipboard; 2. nods with eyes closed; 3. tucks clipboard under arm; 4. gives clear friendly thumbs up with free hand. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。 Layout safety requirement: wide completely empty transparent cross-shaped gutter, 15% of canvas width and height, centered at exact 50% canvas axes. Keep every limb, prop and decorative mark well inside its own quarter, at least 8% canvas away from those axes. No scattered particles in gutters.",
+      "motionScript": [
+        "looks carefully at blank clipboard",
+        "nods with eyes closed",
+        "tucks clipboard under arm",
+        "gives clear friendly thumbs up with free hand"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/okay-courier-check.png",
+      "poseFiles": [
+        "poses/okay-courier-check/pose-01.png",
+        "poses/okay-courier-check/pose-02.png",
+        "poses/okay-courier-check/pose-03.png",
+        "poses/okay-courier-check/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-587b5034-0f0f-43bc-a391-803e214ab106.png",
+        "masterSha256": "fc273a5d5464abd6afb3a6327238d9af65b8b60520c3d13b2bc34a4cf73c63f8"
+      }
+    },
+    {
+      "id": "okay-check-bloom",
+      "keyword": "好的",
+      "text": "好的",
+      "style": "kinetic-typography",
+      "direction": "kinetic-type",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An original abstract mint rounded check-shaped sculptural ribbon, coral dots and pale yellow folded paper shapes around a LARGE EMPTY center, no lettering. POSES reading top-left, top-right, bottom-left, bottom-right: 1. ribbon curled small at upper edge; 2. ribbon unfolds its short arm; 3. long ribbon arm springs outward with dots scattering; 4. ribbon settles as confetti frames the empty center. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。 Layout safety requirement: wide completely empty transparent cross-shaped gutter, 15% of canvas width and height, centered at exact 50% canvas axes. Keep every limb, prop and decorative mark well inside its own quarter, at least 8% canvas away from those axes. No scattered particles in gutters.",
+      "motionScript": [
+        "ribbon curled small at upper edge",
+        "ribbon unfolds its short arm",
+        "long ribbon arm springs outward with dots scattering",
+        "ribbon settles as confetti frames the empty center"
+      ],
+      "motionPreset": "impact",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/okay-check-bloom.png",
+      "poseFiles": [
+        "poses/okay-check-bloom/pose-01.png",
+        "poses/okay-check-bloom/pose-02.png",
+        "poses/okay-check-bloom/pose-03.png",
+        "poses/okay-check-bloom/pose-04.png"
+      ],
+      "textPlacement": "center",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-d1fe9762-e07d-475e-b71f-b4db429ca74e.png",
+        "masterSha256": "a617e51b4905cf8728dd21c455523813989db38cf1073d4bec68280b02600b48"
+      }
+    },
+    {
+      "id": "okay-clay-seal",
+      "keyword": "好的",
+      "text": "好的",
+      "style": "3d-plush",
+      "direction": "contrast-remix",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An original lavender-gray round clay seal with tiny navy nose, pale cream belly and stubby flippers, handmade matte texture. POSES reading top-left, top-right, bottom-left, bottom-right: 1. sits with head level; 2. head dips in deep nod; 3. raises one flipper brightly; 4. claps flippers together with happy eyes. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。 Layout safety: wide completely empty transparent cross-shaped gutter at exact 50% canvas axes. Each of four subjects fully contained in its quarter with 15% inner safety margin. No scattered particles in gutters.",
+      "motionScript": [
+        "sits with head level",
+        "head dips in deep nod",
+        "raises one flipper brightly",
+        "claps flippers together with happy eyes"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/okay-clay-seal.png",
+      "poseFiles": [
+        "poses/okay-clay-seal/pose-01.png",
+        "poses/okay-clay-seal/pose-02.png",
+        "poses/okay-clay-seal/pose-03.png",
+        "poses/okay-clay-seal/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-85c5d191-e56c-4645-b202-07de67c62407.png",
+        "masterSha256": "5729d8cce6c8e8930083b276cb4b10365982dd811de1bcd6fdcb7773da4c9403"
+      }
+    },
+    {
+      "id": "okay-ink-worker",
+      "keyword": "好的",
+      "text": "好的",
+      "style": "hand-drawn",
+      "direction": "contrast-remix",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: A completely original sticklike adult figure with oversized round head, expressive thick black ink lines, small mustard scarf and simplified mitten hands. POSES reading top-left, top-right, bottom-left, bottom-right: 1. stands alert with round eyes; 2. head nods deeply; 3. one arm bends upward; 4. oversized mitten hand gives an unmistakable thumbs up. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。 Layout safety: wide completely empty transparent cross-shaped gutter at exact 50% canvas axes. Each of four subjects fully contained in its quarter with 15% inner safety margin. No scattered particles in gutters.",
+      "motionScript": [
+        "stands alert with round eyes",
+        "head nods deeply",
+        "one arm bends upward",
+        "oversized mitten hand gives an unmistakable thumbs up"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/okay-ink-worker.png",
+      "poseFiles": [
+        "poses/okay-ink-worker/pose-01.png",
+        "poses/okay-ink-worker/pose-02.png",
+        "poses/okay-ink-worker/pose-03.png",
+        "poses/okay-ink-worker/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-b31c9a11-a417-4221-a44f-ca0ef622af5a.png",
+        "masterSha256": "385348745523e4e931106832153e6b9674dd22a83837dcb4b9a5ef895b053774"
+      }
+    },
+    {
+      "id": "okay-person-thumbs",
+      "keyword": "好的",
+      "text": "好的",
+      "style": "fictional-live-action",
+      "direction": "contrast-remix",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: A fictional adult East Asian man with short neat dark hair, friendly long face, plain forest-green shirt, waist-up photorealistic studio cutout, not any actual person. POSES reading top-left, top-right, bottom-left, bottom-right: 1. attentive calm expression; 2. clear downward nod; 3. raises right thumb near shoulder; 4. broad confident smile and a firm thumbs up. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。 Layout safety: wide completely empty transparent cross-shaped gutter at exact 50% canvas axes. Each of four subjects fully contained in its quarter with 15% inner safety margin. No scattered particles in gutters.",
+      "motionScript": [
+        "attentive calm expression",
+        "clear downward nod",
+        "raises right thumb near shoulder",
+        "broad confident smile and a firm thumbs up"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/okay-person-thumbs.png",
+      "poseFiles": [
+        "poses/okay-person-thumbs/pose-01.png",
+        "poses/okay-person-thumbs/pose-02.png",
+        "poses/okay-person-thumbs/pose-03.png",
+        "poses/okay-person-thumbs/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-925e1363-8694-43ad-97ef-5179ff5fa2e9.png",
+        "masterSha256": "f941b363fa7d8611a714bcc0600059f776444fbd5ebf99d49d26d537f1146a97"
+      }
+    },
+    {
+      "id": "okay-octopus-task",
+      "keyword": "好的",
+      "text": "好的",
+      "style": "internet-meme-grammar",
+      "direction": "contrast-remix",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An original peach tiny octopus office assistant with rounded head, exactly four visible stubby tentacles and a blank blue folder, absurd cheerful clay cartoon. POSES reading top-left, top-right, bottom-left, bottom-right: 1. holds blank folder looking attentive; 2. two free tentacles rise; 3. one tentacle curls into approving gesture while head nods; 4. folder tucked close and free tentacles celebrate. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。 Layout safety: wide completely empty transparent cross-shaped gutter at exact 50% canvas axes. Each of four subjects fully contained in its quarter with 15% inner safety margin. No scattered particles in gutters.",
+      "motionScript": [
+        "holds blank folder looking attentive",
+        "two free tentacles rise",
+        "one tentacle curls into approving gesture while head nods",
+        "folder tucked close and free tentacles celebrate"
+      ],
+      "motionPreset": "shake",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/okay-octopus-task.png",
+      "poseFiles": [
+        "poses/okay-octopus-task/pose-01.png",
+        "poses/okay-octopus-task/pose-02.png",
+        "poses/okay-octopus-task/pose-03.png",
+        "poses/okay-octopus-task/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-91cef43c-d880-4799-b157-44284287da22.png",
+        "masterSha256": "f1fda5b3b4d0117504f0af260893fde936fc2140af203fe5ec105dcd10b85d80"
+      }
+    },
+    {
+      "id": "sorry-dumpling-apology",
+      "keyword": "对不起",
+      "text": "对不起",
+      "style": "original-character",
+      "direction": "core-performance",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: The original cream rice-dumpling creature with orange knotted topknot, floppy orange-tipped side tufts and orange scarf, warm gouache. POSES reading top-left, top-right, bottom-left, bottom-right: 1. looks sheepish with ears lowered; 2. hands clasp at chest and brows arch apologetically; 3. bows deeply at waist with feet planted; 4. rises partway with sincerely regretful eyes. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。 Layout safety: wide completely empty transparent cross-shaped gutter at exact 50% canvas axes. Each of four subjects fully contained in its quarter with 15% inner safety margin. No scattered particles in gutters.",
+      "motionScript": [
+        "looks sheepish with ears lowered",
+        "hands clasp at chest and brows arch apologetically",
+        "bows deeply at waist with feet planted",
+        "rises partway with sincerely regretful eyes"
+      ],
+      "motionPreset": "bow",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/sorry-dumpling-apology.png",
+      "poseFiles": [
+        "poses/sorry-dumpling-apology/pose-01.png",
+        "poses/sorry-dumpling-apology/pose-02.png",
+        "poses/sorry-dumpling-apology/pose-03.png",
+        "poses/sorry-dumpling-apology/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-bfdc88dd-a6e0-4f61-a796-c7bc8ffe655f.png",
+        "masterSha256": "79510666a9ab56a648d9391be1628793b4c3d86bedac2636345d5ed5996bd3c4"
+      }
+    },
+    {
+      "id": "sorry-hedgehog-sorry",
+      "keyword": "对不起",
+      "text": "对不起",
+      "style": "ai-original-pet",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An original tiny cinnamon hedgehog with cream face, round dark eyes and short soft stylized spines, no clothing. POSES reading top-left, top-right, bottom-left, bottom-right: 1. sits looking worried with paws apart; 2. paws come together gently; 3. head dips low in apologetic bow; 4. looks up softly with paws still clasped. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。 Layout safety: wide completely empty transparent cross-shaped gutter at exact 50% canvas axes. Each of four subjects fully contained in its quarter with 15% inner safety margin. No scattered particles in gutters.",
+      "motionScript": [
+        "sits looking worried with paws apart",
+        "paws come together gently",
+        "head dips low in apologetic bow",
+        "looks up softly with paws still clasped"
+      ],
+      "motionPreset": "bow",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/sorry-hedgehog-sorry.png",
+      "poseFiles": [
+        "poses/sorry-hedgehog-sorry/pose-01.png",
+        "poses/sorry-hedgehog-sorry/pose-02.png",
+        "poses/sorry-hedgehog-sorry/pose-03.png",
+        "poses/sorry-hedgehog-sorry/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-b7bd69a2-27b4-48cb-a6e9-5533b7666293.png",
+        "masterSha256": "efd11a89ff04e3042ff505fead168c8952d2ff6470769f6e491c82320c40c660"
+      }
+    },
+    {
+      "id": "sorry-neighbor-spill",
+      "keyword": "对不起",
+      "text": "对不起",
+      "style": "original-life-scene",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An original adult woman with dark auburn bun and plain teal blouse, waist-up watercolor editorial cutout holding a blank cup beside a tiny isolated splash, no words. POSES reading top-left, top-right, bottom-left, bottom-right: 1. eyes widen noticing tiny spill; 2. sets cup securely against chest and winces; 3. free hand comes to chest in apology; 4. bows head with sincere gentle regret. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。 Layout safety: wide completely empty transparent cross-shaped gutter at exact 50% canvas axes. Each of four subjects fully contained in its quarter with 15% inner safety margin. No scattered particles in gutters.",
+      "motionScript": [
+        "eyes widen noticing tiny spill",
+        "sets cup securely against chest and winces",
+        "free hand comes to chest in apology",
+        "bows head with sincere gentle regret"
+      ],
+      "motionPreset": "bow",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/sorry-neighbor-spill.png",
+      "poseFiles": [
+        "poses/sorry-neighbor-spill/pose-01.png",
+        "poses/sorry-neighbor-spill/pose-02.png",
+        "poses/sorry-neighbor-spill/pose-03.png",
+        "poses/sorry-neighbor-spill/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-cc6a0055-d0f6-4eb6-8866-c5b185d7fff3.png",
+        "masterSha256": "e9e240b8ebb34cc430034f6f5481d3abfc5d0af16a32ccbae69bb3735052046d"
+      }
+    },
+    {
+      "id": "sorry-heart-mend",
+      "keyword": "对不起",
+      "text": "对不起",
+      "style": "kinetic-typography",
+      "direction": "kinetic-type",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An original coral heart sculpture split into two friendly rounded halves with golden soft bandage ribbons and lilac dots framing a LARGE EMPTY center, no text. POSES reading top-left, top-right, bottom-left, bottom-right: 1. heart halves slightly apart above center; 2. halves tilt toward each other; 3. gold ribbon folds across their join; 4. heart reconnects while small dots bloom around empty center. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。 Layout safety: wide completely empty transparent cross-shaped gutter at exact 50% canvas axes. Each of four subjects fully contained in its quarter with 15% inner safety margin. No scattered particles in gutters.",
+      "motionScript": [
+        "heart halves slightly apart above center",
+        "halves tilt toward each other",
+        "gold ribbon folds across their join",
+        "heart reconnects while small dots bloom around empty center"
+      ],
+      "motionPreset": "bow",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/sorry-heart-mend.png",
+      "poseFiles": [
+        "poses/sorry-heart-mend/pose-01.png",
+        "poses/sorry-heart-mend/pose-02.png",
+        "poses/sorry-heart-mend/pose-03.png",
+        "poses/sorry-heart-mend/pose-04.png"
+      ],
+      "textPlacement": "center",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-8b2bed19-3003-43f5-bc3e-bf27705c3d2e.png",
+        "masterSha256": "f132e2245fcbb016fe188894cd179ac983bd1b6f166a76d95b4d8cd90a471567"
+      }
+    },
+    {
+      "id": "sorry-plush-elephant",
+      "keyword": "对不起",
+      "text": "对不起",
+      "style": "3d-plush",
+      "direction": "contrast-remix",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An original dusty-blue plush elephant with short rounded trunk, large asymmetrical fabric ears, small cream tummy patch, tiny sewn toy limbs. POSES reading top-left, top-right, bottom-left, bottom-right: 1. stands with embarrassed lowered ears; 2. front paws clasp together; 3. head and trunk bend down deeply; 4. raises head a little with soft apologetic eyes. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。 Layout safety: wide completely empty transparent cross-shaped gutter at exact 50% canvas axes. Each of four subjects fully contained in its quarter with 15% inner safety margin. No scattered particles in gutters.",
+      "motionScript": [
+        "stands with embarrassed lowered ears",
+        "front paws clasp together",
+        "head and trunk bend down deeply",
+        "raises head a little with soft apologetic eyes"
+      ],
+      "motionPreset": "bow",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/sorry-plush-elephant.png",
+      "poseFiles": [
+        "poses/sorry-plush-elephant/pose-01.png",
+        "poses/sorry-plush-elephant/pose-02.png",
+        "poses/sorry-plush-elephant/pose-03.png",
+        "poses/sorry-plush-elephant/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-0730be1b-1a53-42fb-8b52-0b8dfe3401ed.png",
+        "masterSha256": "3c4972033bb1128078acba61483ce8d6766355d0c1a39dd25a22fbc47c129d27"
+      }
+    },
+    {
+      "id": "sorry-ink-pigeon",
+      "keyword": "对不起",
+      "text": "对不起",
+      "style": "hand-drawn",
+      "direction": "contrast-remix",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An original chubby urban pigeon in expressive thick charcoal lines with just cobalt neck patch and coral feet, playful minimal editorial art. POSES reading top-left, top-right, bottom-left, bottom-right: 1. looks aside guiltily; 2. wings draw tightly to chest; 3. head dips and body bows; 4. looks up with arched worried brows. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。 Layout safety: wide completely empty transparent cross-shaped gutter at exact 50% canvas axes. Each of four subjects fully contained in its quarter with 15% inner safety margin. No scattered particles in gutters.",
+      "motionScript": [
+        "looks aside guiltily",
+        "wings draw tightly to chest",
+        "head dips and body bows",
+        "looks up with arched worried brows"
+      ],
+      "motionPreset": "bow",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/sorry-ink-pigeon.png",
+      "poseFiles": [
+        "poses/sorry-ink-pigeon/pose-01.png",
+        "poses/sorry-ink-pigeon/pose-02.png",
+        "poses/sorry-ink-pigeon/pose-03.png",
+        "poses/sorry-ink-pigeon/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-677ace92-b2c7-41f6-8042-3843aab086a6.png",
+        "masterSha256": "e78f6765e25f14f9cb2d894a75267878d66484f90c8cee8ca4131095e8a49fbe"
+      }
+    },
+    {
+      "id": "sorry-person-apology",
+      "keyword": "对不起",
+      "text": "对不起",
+      "style": "fictional-live-action",
+      "direction": "contrast-remix",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: A fictional adult East Asian woman with short straight black bob, plain dusty-rose sweater, waist-up photorealistic cutout, no resemblance to any real person. POSES reading top-left, top-right, bottom-left, bottom-right: 1. sincere concerned face; 2. hands come together near chest; 3. bows head and shoulders respectfully; 4. lifts face slightly with soft regretful smile. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。 Layout safety: wide completely empty transparent cross-shaped gutter at exact 50% canvas axes. Each of four subjects fully contained in its quarter with 15% inner safety margin. No scattered particles in gutters.",
+      "motionScript": [
+        "sincere concerned face",
+        "hands come together near chest",
+        "bows head and shoulders respectfully",
+        "lifts face slightly with soft regretful smile"
+      ],
+      "motionPreset": "bow",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/sorry-person-apology.png",
+      "poseFiles": [
+        "poses/sorry-person-apology/pose-01.png",
+        "poses/sorry-person-apology/pose-02.png",
+        "poses/sorry-person-apology/pose-03.png",
+        "poses/sorry-person-apology/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-c765fbf1-b043-48b6-934b-80f885128ab9.png",
+        "masterSha256": "0aca32d330af66f53c591457ed683cf8d390f1262204c215ead52e9f095983fd"
+      }
+    },
+    {
+      "id": "sorry-flowerpot-oops",
+      "keyword": "对不起",
+      "text": "对不起",
+      "style": "internet-meme-grammar",
+      "direction": "contrast-remix",
+      "distribution": "remote",
+      "sourceType": "ai-original",
+      "prompt": "Create ONE production-ready genuinely transparent PNG 2x2 sprite sheet for ONE original animated chat sticker, four clearly DIFFERENT key poses of exactly the same subject. Invisible equal 2x2 quadrants, each full subject centered within its quadrant, consistent size/view/identity/material/lighting. Generous transparent margins and central gutters, no overlapping cells, no cropping. Real local changes of limbs, face and posture, NOT translated/scaled duplicates. Premium appealing clear silhouette readable at 120px. NO text, letters, numerals, labels, logos, watermarks, panel borders, grids, fake checkerboard, background scene, known characters, brands or celebrity resemblance. True transparent alpha outside artwork, no ground shadow plane. SUBJECT: An entirely original anthropomorphic small terracotta flowerpot with two eyes, two tiny leaf arms and one flexible daisy stem, whimsical dimensional clay. POSES reading top-left, top-right, bottom-left, bottom-right: 1. flowerpot looks startled with leaf arms raised; 2. stem droops and leaf arms meet in front; 3. pot leans forward in a deep apology bow; 4. daisy lifts slightly while eyes remain sheepish. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。 Layout safety: wide completely empty transparent cross-shaped gutter at exact 50% canvas axes. Each of four subjects fully contained in its quarter with 15% inner safety margin. No scattered particles in gutters.",
+      "motionScript": [
+        "flowerpot looks startled with leaf arms raised",
+        "stem droops and leaf arms meet in front",
+        "pot leans forward in a deep apology bow",
+        "daisy lifts slightly while eyes remain sheepish"
+      ],
+      "motionPreset": "bow",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/sorry-flowerpot-oops.png",
+      "poseFiles": [
+        "poses/sorry-flowerpot-oops/pose-01.png",
+        "poses/sorry-flowerpot-oops/pose-02.png",
+        "poses/sorry-flowerpot-oops/pose-03.png",
+        "poses/sorry-flowerpot-oops/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "date": "2026-09-08",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-2649756d-a2d4-488f-9604-4456145ec2a1.png",
+        "masterSha256": "bf5d9ba90aab68bc85e6b9c080e2ff9f31a3726a5182e05d1c30dfc8197d4e90"
+      }
+    }
+  ]
+}

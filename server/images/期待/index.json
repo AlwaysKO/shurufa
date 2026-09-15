@@ -1,0 +1,31 @@
+{
+  "keyword": "期待",
+  "items": [
+    {
+      "id": "scene-rich-06-expect",
+      "keyword": "期待",
+      "file": "期待/scene-rich-06-expect.gif",
+      "thumbnail": "期待/scene-rich-06-expect.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-06/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-06/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-06/gifs/scene-rich-06-expect.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-06/thumbnails/scene-rich-06-expect.webp",
+      "batch": "scene-rich-06",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "c2fed58b979ca50993d0e0d5fbbadb61badb1712bbb6bfcc48ab2a380a2eb5fb",
+      "thumbnailSha256": "5ef0167de636358364b3673f2f8896875065110e08e8dda9f438fd012975c274",
+      "bytes": 150686,
+      "width": 240,
+      "height": 240,
+      "frames": 20,
+      "durationMs": 4000,
+      "style": "ai-original-pet",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

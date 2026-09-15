@@ -1,0 +1,31 @@
+{
+  "keyword": "得意",
+  "items": [
+    {
+      "id": "scene-rich-07-proud",
+      "keyword": "得意",
+      "file": "得意/scene-rich-07-proud.gif",
+      "thumbnail": "得意/scene-rich-07-proud.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/scene-rich-07/manifest.json",
+      "sourceReport": "artifacts/expression-batches/scene-rich-07/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-07/gifs/scene-rich-07-proud.gif",
+      "sourceThumbnail": "artifacts/expression-batches/scene-rich-07/thumbnails/scene-rich-07-proud.webp",
+      "batch": "scene-rich-07",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "d41248e65da4e3271ec29813783642e8eb706351898d91f9b24ad79f18607191",
+      "thumbnailSha256": "73f8fff14dbc764d1ef54a4e46b31b5e0dc2c403848abffec191a2659fb7cdd1",
+      "bytes": 175921,
+      "width": 240,
+      "height": 240,
+      "frames": 20,
+      "durationMs": 4000,
+      "style": "ai-original-pet",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

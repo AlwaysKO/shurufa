@@ -1,0 +1,10 @@
+{
+  "version": "20260908.09",
+  "apkSha256": "abf352f88e2415ee8485a3f2d8a16c7c05aa3b92ddf970c4f307bef7b1e9b49a",
+  "targetedTests": 75,
+  "failures": 0,
+  "installedOnDevices": 1,
+  "route": "grantUriPermission + commitText(content URI)",
+  "gifMotionVerifiedInShurufa": false,
+  "sogouSameDeviceControl": "user confirmed direct animated GIF"
+}

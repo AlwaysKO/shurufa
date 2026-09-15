@@ -1,0 +1,33 @@
+{
+  "id": "shock-cook-surprise",
+  "keyword": "震惊",
+  "text": "震惊",
+  "style": "original-life-scene",
+  "direction": "pet-or-person",
+  "distribution": "bundled",
+  "sourceType": "ai-original",
+  "prompt": "Create ONE genuinely transparent RGBA PNG 2x2 sprite sheet with exactly FOUR clearly DIFFERENT key poses of the SAME subject. Reading order top-left, top-right, bottom-left, bottom-right. Every pose must fit COMPLETELY inside its quadrant, occupying at most 75 percent of its quadrant width and height. Leave WIDE EMPTY TRANSPARENT gutters at the exact horizontal and vertical midpoint. No limb or prop crosses the midpoint. Same identity, scale, material, lighting across poses; genuine limb, face and posture changes, not shifted/scaled copies. Crisp appealing sticker silhouette readable at 120px. All limbs anatomically consistent, no duplicates. NO text, letters, numbers, punctuation, watermarks, logos, famous characters, celebrity resemblance, borders, grids, checkerboard, background, ground plane or rectangular halo. Actual alpha transparency, NOT painted checkerboard. SUBJECT: An original adult man with curly brown hair and plain green apron, painterly waist-up holding a blank wooden spoon. FOUR POSES: 1. looks calmly at spoon in one hand; 2. eyes widen as free hand rises; 3. leans back mouth open and free hand on cheek; 4. covers mouth with free hand spoon stays lowered. 安全约束：完全原创，无文字，无水印，无品牌，无现有角色。",
+  "motionScript": [
+    "looks calmly at spoon in one hand",
+    "eyes widen as free hand rises",
+    "leans back mouth open and free hand on cheek",
+    "covers mouth with free hand spoon stays lowered"
+  ],
+  "motionPreset": "impact",
+  "frameCount": 16,
+  "durationMs": 1600,
+  "masterFile": "masters/shock-cook-surprise.png",
+  "poseFiles": [
+    "poses/shock-cook-surprise/pose-01.png",
+    "poses/shock-cook-surprise/pose-02.png",
+    "poses/shock-cook-surprise/pose-03.png",
+    "poses/shock-cook-surprise/pose-04.png"
+  ],
+  "textPlacement": "bottom",
+  "generation": {
+    "tool": "built-in-imagegen",
+    "date": "2026-09-08",
+    "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-d7f36e67-8fd1-454d-9ab6-e11f687a356c.png",
+    "masterSha256": "d8c10a0c036a5c0fdd8b4aee7e0b432c9896bc561ace4e7d146d75ff08c35608"
+  }
+}

@@ -1,0 +1,6412 @@
+{
+  "schemaVersion": 1,
+  "status": "draft-awaiting-confirmation",
+  "date": "2026-09-09",
+  "scope": "词库与生成批次草案，不导入生产匹配器，不采集外部图片，不触发生成",
+  "policy": {
+    "coreKeywords": 300,
+    "bundledPerKeyword": 4,
+    "remoteExtras": "每词超过4张的授权/原创成品仅通过接口分发；扩展数量逐批确认",
+    "humanSubjects": "涉及人物一律原创中国人物，不使用真实名人脸",
+    "allowedSources": [
+      "ai-original",
+      "cc0",
+      "public-domain",
+      "licensed"
+    ],
+    "referencePolicy": "无明确授权不批量搬运搜狗图片；仅可学习一般题材、情绪机制、风格与节奏，不做近似复制",
+    "matching": "完整词/明确别名/有限句式优先，结合否定和多义词保护；不进行单字重叠，不宣称通用自然语言理解"
+  },
+  "sourceInventory": {
+    "manifests": [
+      {
+        "path": "assets/expression/prototypes/manifest.json",
+        "version": "2026.09.03.1",
+        "itemCount": 12
+      },
+      {
+        "path": "assets/expression/batches/action-01/manifest.json",
+        "version": "2026.09.09.action-01",
+        "itemCount": 8
+      },
+      {
+        "path": "assets/expression/batches/daily-01/manifest.json",
+        "version": "2026.09.08.daily-01",
+        "itemCount": 40
+      },
+      {
+        "path": "assets/expression/batches/daily-02/manifest.json",
+        "version": "2026.09.08.daily-02",
+        "itemCount": 40
+      },
+      {
+        "path": "assets/expression/batches/daily-03/manifest.json",
+        "version": "2026.09.09.daily-03",
+        "itemCount": 40
+      }
+    ],
+    "existingKeywordCount": 20,
+    "existingAssetCount": 140,
+    "productionRegisteredAssetCount": 52,
+    "productionRegisteredKeywordCount": 8
+  },
+  "batches": [
+    {
+      "id": "coverage-01",
+      "label": "基础问候",
+      "category": "问候",
+      "priority": "P0",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "你好",
+        "早安",
+        "晚安",
+        "再见",
+        "下午好",
+        "晚上好",
+        "中午好",
+        "好久不见",
+        "欢迎",
+        "我来了"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-02",
+      "label": "基础确认",
+      "category": "确认与拒绝",
+      "priority": "P0",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "好的",
+        "收到",
+        "可以",
+        "明白",
+        "知道了",
+        "同意",
+        "没问题",
+        "确定",
+        "当然",
+        "记住了"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-03",
+      "label": "感谢道歉",
+      "category": "感谢与道歉",
+      "priority": "P0",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "谢谢",
+        "对不起",
+        "辛苦了",
+        "不客气",
+        "没关系",
+        "抱歉",
+        "麻烦你了",
+        "感谢支持",
+        "谢谢夸奖",
+        "原谅我"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-04",
+      "label": "快乐鼓励",
+      "category": "开心与鼓励",
+      "priority": "P0",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "哈哈",
+        "笑死",
+        "开心",
+        "加油",
+        "太棒了",
+        "恭喜",
+        "好耶",
+        "点赞",
+        "厉害",
+        "期待"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-05",
+      "label": "情绪基础",
+      "category": "负面情绪",
+      "priority": "P0",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "无语",
+        "难过",
+        "生气",
+        "震惊",
+        "委屈",
+        "失望",
+        "烦躁",
+        "害怕",
+        "紧张",
+        "尴尬"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-06",
+      "label": "亲密玩闹",
+      "category": "亲密互动",
+      "priority": "P0",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "抱抱",
+        "想你",
+        "爱你",
+        "亲亲",
+        "摸摸头",
+        "打闹",
+        "追赶",
+        "贴贴",
+        "撒娇",
+        "哄哄我"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-07",
+      "label": "即时沟通",
+      "category": "催促与回复",
+      "priority": "P0",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "在吗",
+        "等一下",
+        "马上来",
+        "快点",
+        "稍后回复",
+        "忙着呢",
+        "说来听听",
+        "然后呢",
+        "有空吗",
+        "回个消息"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-08",
+      "label": "温和拒绝",
+      "category": "确认与拒绝",
+      "priority": "P0",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "不行",
+        "不要",
+        "不了",
+        "拒绝",
+        "算了",
+        "不用了",
+        "不方便",
+        "下次吧",
+        "做不到",
+        "不同意"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-09",
+      "label": "轻松吐槽",
+      "category": "吐槽",
+      "priority": "P0",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "离谱",
+        "好家伙",
+        "服了",
+        "真有你的",
+        "别闹",
+        "救命",
+        "又来了",
+        "听我解释",
+        "你猜",
+        "搞不懂"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-10",
+      "label": "网络反应",
+      "category": "网络口语",
+      "priority": "P0",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "吃瓜",
+        "围观",
+        "路过",
+        "溜了",
+        "破防",
+        "上头",
+        "绝了",
+        "拿捏",
+        "安排",
+        "懂了"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-11",
+      "label": "快乐细分",
+      "category": "开心与鼓励",
+      "priority": "P1",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "偷笑",
+        "大笑",
+        "憋笑",
+        "乐开花",
+        "得意",
+        "感动",
+        "欣慰",
+        "惊喜",
+        "满足",
+        "激动"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-12",
+      "label": "失落疲惫",
+      "category": "负面情绪",
+      "priority": "P1",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "哭哭",
+        "心碎",
+        "孤单",
+        "想家",
+        "心累",
+        "疲惫",
+        "崩溃",
+        "郁闷",
+        "失落",
+        "不想说话"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-13",
+      "label": "疑惑惊讶",
+      "category": "负面情绪",
+      "priority": "P1",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "疑惑",
+        "不懂",
+        "真的假的",
+        "为什么",
+        "怎么回事",
+        "不敢相信",
+        "愣住",
+        "好奇",
+        "意外",
+        "惊呆"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-14",
+      "label": "安慰支持",
+      "category": "安慰与支持",
+      "priority": "P1",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "别难过",
+        "别生气",
+        "慢慢来",
+        "不着急",
+        "会好的",
+        "我陪你",
+        "支持你",
+        "相信你",
+        "你可以的",
+        "辛苦自己"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-15",
+      "label": "吃饭饮食",
+      "category": "生活场景",
+      "priority": "P1",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "吃饭了",
+        "饿了",
+        "吃饱了",
+        "好吃",
+        "想吃",
+        "喝水",
+        "喝茶",
+        "喝咖啡",
+        "点外卖",
+        "吃夜宵"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-16",
+      "label": "睡眠起居",
+      "category": "生活场景",
+      "priority": "P1",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "困了",
+        "睡觉了",
+        "起床了",
+        "赖床",
+        "睡不着",
+        "刚睡醒",
+        "午休",
+        "洗澡去",
+        "刷牙",
+        "收拾房间"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-17",
+      "label": "办公工作",
+      "category": "工作学习",
+      "priority": "P1",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "上班了",
+        "下班了",
+        "加班",
+        "开会",
+        "摸鱼",
+        "赶工",
+        "交作业",
+        "学习中",
+        "考试加油",
+        "完成了"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-18",
+      "label": "进度协作",
+      "category": "催促与回复",
+      "priority": "P1",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "进度如何",
+        "还在处理",
+        "马上完成",
+        "再给点时间",
+        "确认一下",
+        "请查收",
+        "已发送",
+        "重新发一下",
+        "没看到",
+        "看到了"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-19",
+      "label": "出行定位",
+      "category": "生活场景",
+      "priority": "P1",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "出门了",
+        "到家了",
+        "在路上",
+        "快到了",
+        "到了",
+        "堵车",
+        "迟到了",
+        "迷路了",
+        "等车",
+        "注意安全"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-20",
+      "label": "天气健康",
+      "category": "生活场景",
+      "priority": "P1",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "下雨了",
+        "好热",
+        "好冷",
+        "带伞",
+        "多穿点",
+        "感冒了",
+        "不舒服",
+        "早点休息",
+        "保重",
+        "恢复啦"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-21",
+      "label": "朋友社交",
+      "category": "亲密互动",
+      "priority": "P2",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "一起玩",
+        "约起来",
+        "请你吃饭",
+        "我请客",
+        "轮到你了",
+        "算我一个",
+        "带带我",
+        "生日快乐",
+        "周末快乐",
+        "一路顺风"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-22",
+      "label": "节日祝福",
+      "category": "节日祝福",
+      "priority": "P2",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "新年快乐",
+        "春节快乐",
+        "元宵快乐",
+        "端午安康",
+        "中秋快乐",
+        "国庆快乐",
+        "节日快乐",
+        "假期快乐",
+        "开工大吉",
+        "祝你好运"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-23",
+      "label": "自嘲反应",
+      "category": "网络口语",
+      "priority": "P2",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "躺平",
+        "摆烂",
+        "情绪低落",
+        "裂开",
+        "麻了",
+        "打扰了",
+        "告辞",
+        "围观群众",
+        "一言难尽",
+        "不愧是你"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-24",
+      "label": "趣味态度",
+      "category": "吐槽",
+      "priority": "P2",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "摊手",
+        "扶额",
+        "捂脸",
+        "翻白眼",
+        "看热闹",
+        "假装没看见",
+        "无事发生",
+        "撤回",
+        "冷静",
+        "别急"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-25",
+      "label": "关系表达",
+      "category": "亲密互动",
+      "priority": "P2",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "害羞",
+        "脸红",
+        "比心",
+        "心动",
+        "等你",
+        "陪陪我",
+        "舍不得",
+        "牵手",
+        "和好吧",
+        "不许走"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-26",
+      "label": "休闲娱乐",
+      "category": "生活场景",
+      "priority": "P2",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "看电影",
+        "追剧",
+        "听歌",
+        "玩游戏",
+        "运动",
+        "散步",
+        "逛街",
+        "看书",
+        "撸猫",
+        "遛狗"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-27",
+      "label": "日常事务",
+      "category": "生活场景",
+      "priority": "P2",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "手机没电",
+        "信号不好",
+        "断网了",
+        "卡住了",
+        "听不清",
+        "发错了",
+        "打错字",
+        "忘记了",
+        "找到了",
+        "找不到"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-28",
+      "label": "赞美认可",
+      "category": "开心与鼓励",
+      "priority": "P2",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "真可爱",
+        "好看",
+        "真聪明",
+        "有道理",
+        "说得好",
+        "靠谱",
+        "优秀",
+        "佩服",
+        "专业",
+        "学到了"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-29",
+      "label": "思考商量",
+      "category": "确认与拒绝",
+      "priority": "P2",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "考虑一下",
+        "再想想",
+        "商量一下",
+        "看情况",
+        "不一定",
+        "有可能",
+        "再说吧",
+        "听你的",
+        "都可以",
+        "没意见"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    },
+    {
+      "id": "coverage-30",
+      "label": "安排计划",
+      "category": "工作学习",
+      "priority": "P2",
+      "status": "draft-awaiting-confirmation",
+      "keywords": [
+        "定好了",
+        "改时间",
+        "取消了",
+        "提前说",
+        "记得提醒我",
+        "别忘了",
+        "明天见",
+        "回头联系",
+        "一路平安",
+        "顺利完成"
+      ],
+      "bundledPerKeyword": 4,
+      "remoteExtras": "可按需求追加，数量待每批确认"
+    }
+  ],
+  "keywords": [
+    {
+      "keyword": "你好",
+      "category": "问候",
+      "batchId": "coverage-01",
+      "priority": "P0",
+      "queryExamples": [
+        "你好呀",
+        "你好啊",
+        "向你问好"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "production-registered",
+      "existingAssetCount": 8,
+      "productionAssetCount": 8,
+      "existingAssets": [
+        {
+          "id": "hello-dumpling-wave",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "hello-otter-peek",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "hello-neighbor-door",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "hello-orbit-spark",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "hello-plush-rabbit",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "remote"
+        },
+        {
+          "id": "hello-ink-sparrow",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "remote"
+        },
+        {
+          "id": "hello-person-greet",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "remote"
+        },
+        {
+          "id": "hello-mailbox-pop",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "remote"
+        }
+      ]
+    },
+    {
+      "keyword": "早安",
+      "category": "问候",
+      "batchId": "coverage-01",
+      "priority": "P0",
+      "queryExamples": [
+        "早上好",
+        "早安呀",
+        "美好的一天开始了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "production-registered",
+      "existingAssetCount": 8,
+      "productionAssetCount": 8,
+      "existingAssets": [
+        {
+          "id": "morning-dumpling-stretch",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "morning-corgi-sun",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "morning-coffee-worker",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "morning-sun-unfold",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "morning-clay-chick",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "remote"
+        },
+        {
+          "id": "morning-sketch-rooster",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "remote"
+        },
+        {
+          "id": "morning-person-curtain",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "remote"
+        },
+        {
+          "id": "morning-alarm-dance",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "remote"
+        }
+      ]
+    },
+    {
+      "keyword": "晚安",
+      "category": "问候",
+      "batchId": "coverage-01",
+      "priority": "P0",
+      "queryExamples": [
+        "晚安啦",
+        "做个好梦",
+        "祝你睡个好觉"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "production-registered",
+      "existingAssetCount": 8,
+      "productionAssetCount": 8,
+      "existingAssets": [
+        {
+          "id": "night-dumpling-sleep",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "night-cat-curl",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "night-bedtime-reader",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "night-moon-cloud",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "night-plush-bear",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "remote"
+        },
+        {
+          "id": "night-ink-owl",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "remote"
+        },
+        {
+          "id": "night-person-goodnight",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "remote"
+        },
+        {
+          "id": "night-battery-rest",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "remote"
+        }
+      ]
+    },
+    {
+      "keyword": "再见",
+      "category": "问候",
+      "batchId": "coverage-01",
+      "priority": "P0",
+      "queryExamples": [
+        "再见啦",
+        "下次见",
+        "回头再聊"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "existing-review-only",
+      "existingAssetCount": 8,
+      "productionAssetCount": 0,
+      "existingAssets": [
+        {
+          "id": "bye-dumpling-wave",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "bye-puffin-wave",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "bye-traveler-friend",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "bye-paperplane-away",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "bye-plush-fox",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "bye-ink-snail",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "bye-person-wave",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "bye-suitcase-hop",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        }
+      ]
+    },
+    {
+      "keyword": "下午好",
+      "category": "问候",
+      "batchId": "coverage-01",
+      "priority": "P0",
+      "queryExamples": [
+        "下午好呀",
+        "午后问好",
+        "下午向你问好"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "晚上好",
+      "category": "问候",
+      "batchId": "coverage-01",
+      "priority": "P0",
+      "queryExamples": [
+        "晚上好呀",
+        "夜晚问好",
+        "晚上来问个好"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "中午好",
+      "category": "问候",
+      "batchId": "coverage-01",
+      "priority": "P0",
+      "queryExamples": [
+        "中午好呀",
+        "午间问好",
+        "中午来问个好"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "好久不见",
+      "category": "问候",
+      "batchId": "coverage-01",
+      "priority": "P0",
+      "queryExamples": [
+        "好久没见了",
+        "许久未见",
+        "好久没有见到你"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "欢迎",
+      "category": "问候",
+      "batchId": "coverage-01",
+      "priority": "P0",
+      "queryExamples": [
+        "欢迎你来",
+        "欢迎加入",
+        "热烈欢迎"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "我来了",
+      "category": "问候",
+      "batchId": "coverage-01",
+      "priority": "P0",
+      "queryExamples": [
+        "我来啦",
+        "本人来了",
+        "终于赶来了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "好的",
+      "category": "确认与拒绝",
+      "batchId": "coverage-02",
+      "priority": "P0",
+      "queryExamples": [
+        "好哒",
+        "好的呀",
+        "好的没问题"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "production-registered",
+      "existingAssetCount": 8,
+      "productionAssetCount": 8,
+      "existingAssets": [
+        {
+          "id": "okay-dumpling-nod",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "okay-penguin-salute",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "okay-courier-check",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "okay-check-bloom",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "okay-clay-seal",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "remote"
+        },
+        {
+          "id": "okay-ink-worker",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "remote"
+        },
+        {
+          "id": "okay-person-thumbs",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "remote"
+        },
+        {
+          "id": "okay-octopus-task",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "remote"
+        }
+      ]
+    },
+    {
+      "keyword": "收到",
+      "category": "确认与拒绝",
+      "batchId": "coverage-02",
+      "priority": "P0",
+      "queryExamples": [
+        "收到啦",
+        "已经收到",
+        "消息收到了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "existing-review-only",
+      "existingAssetCount": 8,
+      "productionAssetCount": 0,
+      "existingAssets": [
+        {
+          "id": "roger-dumpling-salute",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "roger-meerkat-alert",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "roger-workshop-maker",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "roger-envelope-click",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "roger-plush-raccoon",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "roger-ink-ant",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "roger-person-nod",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "roger-radar-bot",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        }
+      ]
+    },
+    {
+      "keyword": "可以",
+      "category": "确认与拒绝",
+      "batchId": "coverage-02",
+      "priority": "P0",
+      "queryExamples": [
+        "可以呀",
+        "可以的",
+        "这样可以"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "existing-review-only",
+      "existingAssetCount": 8,
+      "productionAssetCount": 0,
+      "existingAssets": [
+        {
+          "id": "allow-dumpling-yes",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "allow-quokka-smile",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "allow-cafe-friend",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "allow-green-gate",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "allow-clay-capybara",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "allow-ink-crab",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "allow-person-yes",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "allow-traffic-go",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        }
+      ]
+    },
+    {
+      "keyword": "明白",
+      "category": "确认与拒绝",
+      "batchId": "coverage-02",
+      "priority": "P0",
+      "queryExamples": [
+        "明白了",
+        "我懂你的意思",
+        "已经理解了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "知道了",
+      "category": "确认与拒绝",
+      "batchId": "coverage-02",
+      "priority": "P0",
+      "queryExamples": [
+        "我知道啦",
+        "已经知道了",
+        "知道这件事了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "同意",
+      "category": "确认与拒绝",
+      "batchId": "coverage-02",
+      "priority": "P0",
+      "queryExamples": [
+        "我同意",
+        "赞成这个提议",
+        "同意你的说法"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "没问题",
+      "category": "确认与拒绝",
+      "batchId": "coverage-02",
+      "priority": "P0",
+      "queryExamples": [
+        "完全没问题",
+        "这事没问题",
+        "没问题交给我"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "确定",
+      "category": "确认与拒绝",
+      "batchId": "coverage-02",
+      "priority": "P0",
+      "queryExamples": [
+        "我确定",
+        "已经确定了",
+        "确定就是这样"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "当然",
+      "category": "确认与拒绝",
+      "batchId": "coverage-02",
+      "priority": "P0",
+      "queryExamples": [
+        "当然啦",
+        "那当然了",
+        "当然是这样"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "记住了",
+      "category": "确认与拒绝",
+      "batchId": "coverage-02",
+      "priority": "P0",
+      "queryExamples": [
+        "我记住啦",
+        "已经记住了",
+        "记在心里了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "谢谢",
+      "category": "感谢与道歉",
+      "batchId": "coverage-03",
+      "priority": "P0",
+      "queryExamples": [
+        "谢谢啦",
+        "谢谢你",
+        "真的感谢你"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "production-registered",
+      "existingAssetCount": 4,
+      "productionAssetCount": 4,
+      "existingAssets": [
+        {
+          "id": "thanks-nuotuan-bow",
+          "manifest": "assets/expression/prototypes/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "thanks-puppy-flower",
+          "manifest": "assets/expression/prototypes/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "thanks-office-helper",
+          "manifest": "assets/expression/prototypes/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "thanks-plush-toast",
+          "manifest": "assets/expression/prototypes/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        }
+      ]
+    },
+    {
+      "keyword": "对不起",
+      "category": "感谢与道歉",
+      "batchId": "coverage-03",
+      "priority": "P0",
+      "queryExamples": [
+        "对不起啦",
+        "真的对不起",
+        "向你道歉"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "production-registered",
+      "existingAssetCount": 8,
+      "productionAssetCount": 8,
+      "existingAssets": [
+        {
+          "id": "sorry-dumpling-apology",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "sorry-hedgehog-sorry",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "sorry-neighbor-spill",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "sorry-heart-mend",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "sorry-plush-elephant",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "remote"
+        },
+        {
+          "id": "sorry-ink-pigeon",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "remote"
+        },
+        {
+          "id": "sorry-person-apology",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "remote"
+        },
+        {
+          "id": "sorry-flowerpot-oops",
+          "manifest": "assets/expression/batches/daily-01/manifest.json",
+          "productionRegistered": true,
+          "distribution": "remote"
+        }
+      ]
+    },
+    {
+      "keyword": "辛苦了",
+      "category": "感谢与道歉",
+      "batchId": "coverage-03",
+      "priority": "P0",
+      "queryExamples": [
+        "你辛苦啦",
+        "大家辛苦了",
+        "今天辛苦你了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "不客气",
+      "category": "感谢与道歉",
+      "batchId": "coverage-03",
+      "priority": "P0",
+      "queryExamples": [
+        "不用客气",
+        "别客气啦",
+        "跟我不用客气"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "没关系",
+      "category": "感谢与道歉",
+      "batchId": "coverage-03",
+      "priority": "P0",
+      "queryExamples": [
+        "没有关系",
+        "没关系的",
+        "这点事没关系"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "抱歉",
+      "category": "感谢与道歉",
+      "batchId": "coverage-03",
+      "priority": "P0",
+      "queryExamples": [
+        "非常抱歉",
+        "实在抱歉",
+        "表示歉意"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "麻烦你了",
+      "category": "感谢与道歉",
+      "batchId": "coverage-03",
+      "priority": "P0",
+      "queryExamples": [
+        "又麻烦你了",
+        "这次麻烦你啦",
+        "给你添麻烦了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "感谢支持",
+      "category": "感谢与道歉",
+      "batchId": "coverage-03",
+      "priority": "P0",
+      "queryExamples": [
+        "感谢你的支持",
+        "谢谢大家支持",
+        "多谢支持"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "谢谢夸奖",
+      "category": "感谢与道歉",
+      "batchId": "coverage-03",
+      "priority": "P0",
+      "queryExamples": [
+        "感谢夸奖",
+        "多谢夸奖",
+        "谢谢你的肯定"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "原谅我",
+      "category": "感谢与道歉",
+      "batchId": "coverage-03",
+      "priority": "P0",
+      "queryExamples": [
+        "请原谅我",
+        "原谅我吧",
+        "能原谅我吗"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "哈哈",
+      "category": "开心与鼓励",
+      "batchId": "coverage-04",
+      "priority": "P0",
+      "queryExamples": [
+        "哈哈哈",
+        "哈哈哈哈",
+        "真的哈哈大笑"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "existing-review-only",
+      "existingAssetCount": 8,
+      "productionAssetCount": 0,
+      "existingAssets": [
+        {
+          "id": "haha-dumpling-giggle",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "haha-redpanda-laugh",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "haha-office-friend",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "haha-bubble-burst",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "haha-plush-llama",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "haha-ink-frog",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "haha-person-laugh",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "haha-toaster-pop",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        }
+      ]
+    },
+    {
+      "keyword": "笑死",
+      "category": "开心与鼓励",
+      "batchId": "coverage-04",
+      "priority": "P0",
+      "queryExamples": [
+        "笑死了",
+        "笑死我了",
+        "太好笑笑死了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "production-registered",
+      "existingAssetCount": 4,
+      "productionAssetCount": 4,
+      "existingAssets": [
+        {
+          "id": "laugh-huohua-table",
+          "manifest": "assets/expression/prototypes/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "laugh-parrot-tumble",
+          "manifest": "assets/expression/prototypes/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "laugh-friend-collapse",
+          "manifest": "assets/expression/prototypes/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "laugh-type-explosion",
+          "manifest": "assets/expression/prototypes/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        }
+      ]
+    },
+    {
+      "keyword": "开心",
+      "category": "开心与鼓励",
+      "batchId": "coverage-04",
+      "priority": "P0",
+      "queryExamples": [
+        "好开心",
+        "今天很开心",
+        "开心极了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "existing-review-only",
+      "existingAssetCount": 8,
+      "productionAssetCount": 0,
+      "existingAssets": [
+        {
+          "id": "happy-dumpling-dance",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "happy-otter-delight",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "happy-baker-celebrate",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "happy-ribbon-bloom",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "happy-plush-seal",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "happy-ink-duck",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "happy-person-grin",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "happy-popcorn-cheer",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        }
+      ]
+    },
+    {
+      "keyword": "加油",
+      "category": "开心与鼓励",
+      "batchId": "coverage-04",
+      "priority": "P0",
+      "queryExamples": [
+        "加油呀",
+        "给你加油",
+        "继续加油"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "existing-review-only",
+      "existingAssetCount": 8,
+      "productionAssetCount": 0,
+      "existingAssets": [
+        {
+          "id": "cheer-dumpling-pump",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "cheer-shiba-paws",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "cheer-runner-friend",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "cheer-arrow-rise",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "cheer-clay-tiger",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "cheer-ink-bird",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "cheer-person-support",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "cheer-pencil-rocket",
+          "manifest": "assets/expression/batches/daily-02/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        }
+      ]
+    },
+    {
+      "keyword": "太棒了",
+      "category": "开心与鼓励",
+      "batchId": "coverage-04",
+      "priority": "P0",
+      "queryExamples": [
+        "真的太棒了",
+        "简直太棒了",
+        "这也太棒了吧"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "恭喜",
+      "category": "开心与鼓励",
+      "batchId": "coverage-04",
+      "priority": "P0",
+      "queryExamples": [
+        "恭喜你呀",
+        "恭喜恭喜",
+        "向你道喜"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "好耶",
+      "category": "开心与鼓励",
+      "batchId": "coverage-04",
+      "priority": "P0",
+      "queryExamples": [
+        "好耶好耶",
+        "太好了好耶",
+        "耶成功啦"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "点赞",
+      "category": "开心与鼓励",
+      "batchId": "coverage-04",
+      "priority": "P0",
+      "queryExamples": [
+        "给你点赞",
+        "必须点个赞",
+        "为你点赞"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "厉害",
+      "category": "开心与鼓励",
+      "batchId": "coverage-04",
+      "priority": "P0",
+      "queryExamples": [
+        "太厉害了",
+        "你真厉害",
+        "厉害极了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "期待",
+      "category": "开心与鼓励",
+      "batchId": "coverage-04",
+      "priority": "P0",
+      "queryExamples": [
+        "好期待",
+        "非常期待",
+        "充满期待"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "无语",
+      "category": "负面情绪",
+      "batchId": "coverage-05",
+      "priority": "P0",
+      "queryExamples": [
+        "无语了",
+        "真的很无语",
+        "无语住了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "production-registered",
+      "existingAssetCount": 4,
+      "productionAssetCount": 4,
+      "existingAssets": [
+        {
+          "id": "speechless-ink-facepalm",
+          "manifest": "assets/expression/prototypes/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "speechless-cat-stare",
+          "manifest": "assets/expression/prototypes/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "speechless-roommate-freeze",
+          "manifest": "assets/expression/prototypes/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        },
+        {
+          "id": "speechless-loading-dots",
+          "manifest": "assets/expression/prototypes/manifest.json",
+          "productionRegistered": true,
+          "distribution": "bundled"
+        }
+      ]
+    },
+    {
+      "keyword": "难过",
+      "category": "负面情绪",
+      "batchId": "coverage-05",
+      "priority": "P0",
+      "queryExamples": [
+        "好难过",
+        "心里很难过",
+        "难过极了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "existing-review-only",
+      "existingAssetCount": 8,
+      "productionAssetCount": 0,
+      "existingAssets": [
+        {
+          "id": "sad-dumpling-tear",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "sad-rabbit-droop",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "sad-student-sigh",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "sad-cloud-drizzle",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "sad-plush-elephant",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "sad-ink-mushroom",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "sad-person-sad",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "sad-tissue-comfort",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        }
+      ]
+    },
+    {
+      "keyword": "生气",
+      "category": "负面情绪",
+      "batchId": "coverage-05",
+      "priority": "P0",
+      "queryExamples": [
+        "我生气了",
+        "真的生气了",
+        "好生气"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "existing-review-only",
+      "existingAssetCount": 8,
+      "productionAssetCount": 0,
+      "existingAssets": [
+        {
+          "id": "angry-dumpling-pout",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "angry-hamster-huff",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "angry-office-pout",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "angry-steam-knot",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "angry-clay-boar",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "angry-ink-cactus",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "angry-person-huff",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "angry-kettle-steam",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        }
+      ]
+    },
+    {
+      "keyword": "震惊",
+      "category": "负面情绪",
+      "batchId": "coverage-05",
+      "priority": "P0",
+      "queryExamples": [
+        "我震惊了",
+        "震惊到了",
+        "实在令人震惊"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "existing-review-only",
+      "existingAssetCount": 8,
+      "productionAssetCount": 0,
+      "existingAssets": [
+        {
+          "id": "shock-dumpling-gasp",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "shock-lemur-gasp",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "shock-cook-surprise",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "shock-burst-fold",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "shock-plush-alpaca",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "shock-ink-gecko",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "shock-person-gasp",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "shock-socket-startle",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        }
+      ]
+    },
+    {
+      "keyword": "委屈",
+      "category": "负面情绪",
+      "batchId": "coverage-05",
+      "priority": "P0",
+      "queryExamples": [
+        "好委屈",
+        "我有点委屈",
+        "委屈极了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "失望",
+      "category": "负面情绪",
+      "batchId": "coverage-05",
+      "priority": "P0",
+      "queryExamples": [
+        "好失望",
+        "我很失望",
+        "有点失望了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "烦躁",
+      "category": "负面情绪",
+      "batchId": "coverage-05",
+      "priority": "P0",
+      "queryExamples": [
+        "好烦躁",
+        "心里很烦躁",
+        "烦躁得很"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "害怕",
+      "category": "负面情绪",
+      "batchId": "coverage-05",
+      "priority": "P0",
+      "queryExamples": [
+        "好害怕",
+        "我有点害怕",
+        "害怕极了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "紧张",
+      "category": "负面情绪",
+      "batchId": "coverage-05",
+      "priority": "P0",
+      "queryExamples": [
+        "好紧张",
+        "我有点紧张",
+        "紧张起来了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "尴尬",
+      "category": "负面情绪",
+      "batchId": "coverage-05",
+      "priority": "P0",
+      "queryExamples": [
+        "好尴尬",
+        "有点尴尬了",
+        "尴尬住了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "抱抱",
+      "category": "亲密互动",
+      "batchId": "coverage-06",
+      "priority": "P0",
+      "queryExamples": [
+        "抱抱我",
+        "给你抱抱",
+        "想要抱抱"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "existing-review-only",
+      "existingAssetCount": 8,
+      "productionAssetCount": 0,
+      "existingAssets": [
+        {
+          "id": "hug-dumpling-hug",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "hug-penguin-hug",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "hug-friend-hug",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "hug-heart-ribbons",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "hug-plush-bear",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "hug-ink-bird",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "hug-person-embrace",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        },
+        {
+          "id": "hug-pillow-welcome",
+          "manifest": "assets/expression/batches/daily-03/manifest.json",
+          "productionRegistered": false,
+          "distribution": "remote"
+        }
+      ]
+    },
+    {
+      "keyword": "想你",
+      "category": "亲密互动",
+      "batchId": "coverage-06",
+      "priority": "P0",
+      "queryExamples": [
+        "想你了",
+        "好想你呀",
+        "真的很想你"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "爱你",
+      "category": "亲密互动",
+      "batchId": "coverage-06",
+      "priority": "P0",
+      "queryExamples": [
+        "爱你呀",
+        "我爱你",
+        "最爱你了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "亲亲",
+      "category": "亲密互动",
+      "batchId": "coverage-06",
+      "priority": "P0",
+      "queryExamples": [
+        "亲亲你",
+        "给你亲亲",
+        "想要亲亲"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "摸摸头",
+      "category": "亲密互动",
+      "batchId": "coverage-06",
+      "priority": "P0",
+      "queryExamples": [
+        "给你摸摸头",
+        "摸摸你的头",
+        "摸头安慰你"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "打闹",
+      "category": "亲密互动",
+      "batchId": "coverage-06",
+      "priority": "P0",
+      "queryExamples": [
+        "我打你哦",
+        "我打你呀",
+        "我打你了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "existing-review-only",
+      "existingAssetCount": 4,
+      "productionAssetCount": 0,
+      "existingAssets": [
+        {
+          "id": "play-core-pillow",
+          "manifest": "assets/expression/batches/action-01/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "play-cat-paw",
+          "manifest": "assets/expression/batches/action-01/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "play-person-pillow",
+          "manifest": "assets/expression/batches/action-01/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "play-clay-mitten",
+          "manifest": "assets/expression/batches/action-01/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        }
+      ],
+      "reviewNotes": "仅限明确玩闹语境；我打你/我打你了/我打你哦/我打你呀先作为候选句式，遇真实威胁、否定、打电话等不命中。"
+    },
+    {
+      "keyword": "追赶",
+      "category": "亲密互动",
+      "batchId": "coverage-06",
+      "priority": "P0",
+      "queryExamples": [
+        "我要来抓你了",
+        "我要追上你啦",
+        "别跑我来追你啦"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "existing-review-only",
+      "existingAssetCount": 4,
+      "productionAssetCount": 0,
+      "existingAssets": [
+        {
+          "id": "chase-core-run",
+          "manifest": "assets/expression/batches/action-01/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "chase-dog-run",
+          "manifest": "assets/expression/batches/action-01/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "chase-person-run",
+          "manifest": "assets/expression/batches/action-01/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        },
+        {
+          "id": "chase-plush-bird",
+          "manifest": "assets/expression/batches/action-01/manifest.json",
+          "productionRegistered": false,
+          "distribution": "bundled"
+        }
+      ],
+      "reviewNotes": "只表达轻松追逐；我要来抓你了等句式需上下文，真实威胁与否定不匹配。"
+    },
+    {
+      "keyword": "贴贴",
+      "category": "亲密互动",
+      "batchId": "coverage-06",
+      "priority": "P0",
+      "queryExamples": [
+        "想和你贴贴",
+        "过来贴贴",
+        "贴贴你"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "撒娇",
+      "category": "亲密互动",
+      "batchId": "coverage-06",
+      "priority": "P0",
+      "queryExamples": [
+        "我要撒娇了",
+        "撒个娇嘛",
+        "跟你撒撒娇"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "哄哄我",
+      "category": "亲密互动",
+      "batchId": "coverage-06",
+      "priority": "P0",
+      "queryExamples": [
+        "快哄哄我",
+        "哄我一下嘛",
+        "我想让你哄哄"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "在吗",
+      "category": "催促与回复",
+      "batchId": "coverage-07",
+      "priority": "P0",
+      "queryExamples": [
+        "你在吗",
+        "现在在不在",
+        "在不在呀"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "等一下",
+      "category": "催促与回复",
+      "batchId": "coverage-07",
+      "priority": "P0",
+      "queryExamples": [
+        "稍等一下",
+        "等我一下",
+        "请等一会儿"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "马上来",
+      "category": "催促与回复",
+      "batchId": "coverage-07",
+      "priority": "P0",
+      "queryExamples": [
+        "我马上来",
+        "马上就来了",
+        "立刻过来"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "快点",
+      "category": "催促与回复",
+      "batchId": "coverage-07",
+      "priority": "P0",
+      "queryExamples": [
+        "快一点啦",
+        "能不能快点",
+        "麻烦快一些"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "稍后回复",
+      "category": "催促与回复",
+      "batchId": "coverage-07",
+      "priority": "P0",
+      "queryExamples": [
+        "我稍后回复你",
+        "晚点回你消息",
+        "稍后再回复"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "忙着呢",
+      "category": "催促与回复",
+      "batchId": "coverage-07",
+      "priority": "P0",
+      "queryExamples": [
+        "我正忙着呢",
+        "现在有点忙",
+        "我这会儿在忙"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "说来听听",
+      "category": "催促与回复",
+      "batchId": "coverage-07",
+      "priority": "P0",
+      "queryExamples": [
+        "说给我听听",
+        "展开说说",
+        "你说我听着"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "然后呢",
+      "category": "催促与回复",
+      "batchId": "coverage-07",
+      "priority": "P0",
+      "queryExamples": [
+        "接下来呢",
+        "后来怎么样",
+        "然后发生了什么"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "有空吗",
+      "category": "催促与回复",
+      "batchId": "coverage-07",
+      "priority": "P0",
+      "queryExamples": [
+        "你现在有空吗",
+        "这会儿方便吗",
+        "有时间吗"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "回个消息",
+      "category": "催促与回复",
+      "batchId": "coverage-07",
+      "priority": "P0",
+      "queryExamples": [
+        "给我回个消息",
+        "看到请回复",
+        "方便时回我一下"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "不行",
+      "category": "确认与拒绝",
+      "batchId": "coverage-08",
+      "priority": "P0",
+      "queryExamples": [
+        "这样不行",
+        "不行的呀",
+        "这个真不行"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "不要",
+      "category": "确认与拒绝",
+      "batchId": "coverage-08",
+      "priority": "P0",
+      "queryExamples": [
+        "我不要这个",
+        "不要啦",
+        "这个我不想要"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "不了",
+      "category": "确认与拒绝",
+      "batchId": "coverage-08",
+      "priority": "P0",
+      "queryExamples": [
+        "这次不了",
+        "我就不了",
+        "还是不了吧"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "拒绝",
+      "category": "确认与拒绝",
+      "batchId": "coverage-08",
+      "priority": "P0",
+      "queryExamples": [
+        "我拒绝",
+        "明确拒绝",
+        "这个请求我拒绝"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "算了",
+      "category": "确认与拒绝",
+      "batchId": "coverage-08",
+      "priority": "P0",
+      "queryExamples": [
+        "算了吧",
+        "还是算了",
+        "这事就算了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "不用了",
+      "category": "确认与拒绝",
+      "batchId": "coverage-08",
+      "priority": "P0",
+      "queryExamples": [
+        "已经不用了",
+        "谢谢不用了",
+        "现在不需要了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "不方便",
+      "category": "确认与拒绝",
+      "batchId": "coverage-08",
+      "priority": "P0",
+      "queryExamples": [
+        "现在不方便",
+        "我这会儿不方便",
+        "暂时不太方便"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "下次吧",
+      "category": "确认与拒绝",
+      "batchId": "coverage-08",
+      "priority": "P0",
+      "queryExamples": [
+        "留到下次吧",
+        "下次再说吧",
+        "这回不行下次吧"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "做不到",
+      "category": "确认与拒绝",
+      "batchId": "coverage-08",
+      "priority": "P0",
+      "queryExamples": [
+        "这个我做不到",
+        "实在做不到",
+        "恐怕做不到"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "不同意",
+      "category": "确认与拒绝",
+      "batchId": "coverage-08",
+      "priority": "P0",
+      "queryExamples": [
+        "我不同意",
+        "不赞成这个提议",
+        "这点我不同意"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "离谱",
+      "category": "吐槽",
+      "batchId": "coverage-09",
+      "priority": "P0",
+      "queryExamples": [
+        "太离谱了",
+        "这也太离谱",
+        "离谱到家了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "好家伙",
+      "category": "吐槽",
+      "batchId": "coverage-09",
+      "priority": "P0",
+      "queryExamples": [
+        "好家伙呀",
+        "我直呼好家伙",
+        "这可真是好家伙"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "服了",
+      "category": "吐槽",
+      "batchId": "coverage-09",
+      "priority": "P0",
+      "queryExamples": [
+        "我服了",
+        "真是服了",
+        "彻底服了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "真有你的",
+      "category": "吐槽",
+      "batchId": "coverage-09",
+      "priority": "P0",
+      "queryExamples": [
+        "还得是你呀",
+        "真有你的啊",
+        "可真有你一套"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "别闹",
+      "category": "吐槽",
+      "batchId": "coverage-09",
+      "priority": "P0",
+      "queryExamples": [
+        "别闹啦",
+        "你别闹了",
+        "别开这种玩笑"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "救命",
+      "category": "吐槽",
+      "batchId": "coverage-09",
+      "priority": "P0",
+      "queryExamples": [
+        "救命好尴尬",
+        "救命太好笑",
+        "救命忙不过来了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": [],
+      "reviewNotes": "这里只支持明确夸张吐槽句式，真实求救不得推送玩笑表情。"
+    },
+    {
+      "keyword": "又来了",
+      "category": "吐槽",
+      "batchId": "coverage-09",
+      "priority": "P0",
+      "queryExamples": [
+        "怎么又来了",
+        "又来这一套",
+        "你又来了呀"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "听我解释",
+      "category": "吐槽",
+      "batchId": "coverage-09",
+      "priority": "P0",
+      "queryExamples": [
+        "你先听我解释",
+        "让我解释一下",
+        "这件事听我解释"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "你猜",
+      "category": "吐槽",
+      "batchId": "coverage-09",
+      "priority": "P0",
+      "queryExamples": [
+        "你猜猜看",
+        "猜一下嘛",
+        "不妨猜一猜"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "搞不懂",
+      "category": "吐槽",
+      "batchId": "coverage-09",
+      "priority": "P0",
+      "queryExamples": [
+        "真的搞不懂",
+        "我搞不懂了",
+        "这件事搞不明白"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "吃瓜",
+      "category": "网络口语",
+      "batchId": "coverage-10",
+      "priority": "P0",
+      "queryExamples": [
+        "我来吃瓜",
+        "坐等吃瓜",
+        "前排吃瓜"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "围观",
+      "category": "网络口语",
+      "batchId": "coverage-10",
+      "priority": "P0",
+      "queryExamples": [
+        "前排围观",
+        "我来围观",
+        "围观一下"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "路过",
+      "category": "网络口语",
+      "batchId": "coverage-10",
+      "priority": "P0",
+      "queryExamples": [
+        "我只是路过",
+        "路过看看",
+        "纯属路过"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "溜了",
+      "category": "网络口语",
+      "batchId": "coverage-10",
+      "priority": "P0",
+      "queryExamples": [
+        "我先溜了",
+        "先溜为敬",
+        "溜了溜了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "破防",
+      "category": "网络口语",
+      "batchId": "coverage-10",
+      "priority": "P0",
+      "queryExamples": [
+        "我破防了",
+        "有点破防",
+        "彻底破防了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "上头",
+      "category": "网络口语",
+      "batchId": "coverage-10",
+      "priority": "P0",
+      "queryExamples": [
+        "有点上头",
+        "实在太上头",
+        "已经上头了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "绝了",
+      "category": "网络口语",
+      "batchId": "coverage-10",
+      "priority": "P0",
+      "queryExamples": [
+        "真是绝了",
+        "这也太绝了",
+        "简直绝了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "拿捏",
+      "category": "网络口语",
+      "batchId": "coverage-10",
+      "priority": "P0",
+      "queryExamples": [
+        "拿捏住了",
+        "轻松拿捏",
+        "已经拿捏了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "安排",
+      "category": "网络口语",
+      "batchId": "coverage-10",
+      "priority": "P0",
+      "queryExamples": [
+        "安排上了",
+        "马上安排",
+        "给你安排"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "懂了",
+      "category": "网络口语",
+      "batchId": "coverage-10",
+      "priority": "P0",
+      "queryExamples": [
+        "这下懂了",
+        "我终于懂了",
+        "懂了懂了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "偷笑",
+      "category": "开心与鼓励",
+      "batchId": "coverage-11",
+      "priority": "P1",
+      "queryExamples": [
+        "忍不住偷笑",
+        "让我偷笑一下",
+        "偷偷笑出声"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "大笑",
+      "category": "开心与鼓励",
+      "batchId": "coverage-11",
+      "priority": "P1",
+      "queryExamples": [
+        "忍不住大笑",
+        "放声大笑",
+        "大笑起来了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "憋笑",
+      "category": "开心与鼓励",
+      "batchId": "coverage-11",
+      "priority": "P1",
+      "queryExamples": [
+        "正在憋笑",
+        "快憋不住笑了",
+        "努力憋笑中"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "乐开花",
+      "category": "开心与鼓励",
+      "batchId": "coverage-11",
+      "priority": "P1",
+      "queryExamples": [
+        "心里乐开花",
+        "开心得乐开花",
+        "乐开花了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "得意",
+      "category": "开心与鼓励",
+      "batchId": "coverage-11",
+      "priority": "P1",
+      "queryExamples": [
+        "有点小得意",
+        "我可得意了",
+        "得意一下"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "感动",
+      "category": "开心与鼓励",
+      "batchId": "coverage-11",
+      "priority": "P1",
+      "queryExamples": [
+        "好感动",
+        "感动到了",
+        "被你感动了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "欣慰",
+      "category": "开心与鼓励",
+      "batchId": "coverage-11",
+      "priority": "P1",
+      "queryExamples": [
+        "很欣慰",
+        "感到很欣慰",
+        "心里特别欣慰"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "惊喜",
+      "category": "开心与鼓励",
+      "batchId": "coverage-11",
+      "priority": "P1",
+      "queryExamples": [
+        "好惊喜",
+        "这真是个惊喜",
+        "惊喜到了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "满足",
+      "category": "开心与鼓励",
+      "batchId": "coverage-11",
+      "priority": "P1",
+      "queryExamples": [
+        "好满足",
+        "心满意足了",
+        "感觉特别满足"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "激动",
+      "category": "开心与鼓励",
+      "batchId": "coverage-11",
+      "priority": "P1",
+      "queryExamples": [
+        "好激动",
+        "我太激动了",
+        "激动起来了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "哭哭",
+      "category": "负面情绪",
+      "batchId": "coverage-12",
+      "priority": "P1",
+      "queryExamples": [
+        "想哭哭了",
+        "让我哭哭",
+        "哭哭求安慰"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "心碎",
+      "category": "负面情绪",
+      "batchId": "coverage-12",
+      "priority": "P1",
+      "queryExamples": [
+        "心都碎了",
+        "有点心碎",
+        "心碎一地"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "孤单",
+      "category": "负面情绪",
+      "batchId": "coverage-12",
+      "priority": "P1",
+      "queryExamples": [
+        "觉得好孤单",
+        "有点孤单",
+        "一个人很孤单"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "想家",
+      "category": "负面情绪",
+      "batchId": "coverage-12",
+      "priority": "P1",
+      "queryExamples": [
+        "我想家了",
+        "好想回家呀",
+        "有点想家了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "心累",
+      "category": "负面情绪",
+      "batchId": "coverage-12",
+      "priority": "P1",
+      "queryExamples": [
+        "好心累",
+        "感觉心好累",
+        "真是心累了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "疲惫",
+      "category": "负面情绪",
+      "batchId": "coverage-12",
+      "priority": "P1",
+      "queryExamples": [
+        "很疲惫",
+        "感到很疲惫",
+        "疲惫不堪了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "崩溃",
+      "category": "负面情绪",
+      "batchId": "coverage-12",
+      "priority": "P1",
+      "queryExamples": [
+        "有点崩溃",
+        "我快崩溃了",
+        "情绪崩溃了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "郁闷",
+      "category": "负面情绪",
+      "batchId": "coverage-12",
+      "priority": "P1",
+      "queryExamples": [
+        "好郁闷",
+        "心里有点郁闷",
+        "郁闷极了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "失落",
+      "category": "负面情绪",
+      "batchId": "coverage-12",
+      "priority": "P1",
+      "queryExamples": [
+        "有点失落",
+        "心里很失落",
+        "感觉失落了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "不想说话",
+      "category": "负面情绪",
+      "batchId": "coverage-12",
+      "priority": "P1",
+      "queryExamples": [
+        "今天不想说话",
+        "暂时不想说话",
+        "现在不想聊天"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "疑惑",
+      "category": "负面情绪",
+      "batchId": "coverage-13",
+      "priority": "P1",
+      "queryExamples": [
+        "有点疑惑",
+        "我很疑惑",
+        "心里充满疑惑"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "不懂",
+      "category": "负面情绪",
+      "batchId": "coverage-13",
+      "priority": "P1",
+      "queryExamples": [
+        "我不懂",
+        "这我真不懂",
+        "完全不懂"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "真的假的",
+      "category": "负面情绪",
+      "batchId": "coverage-13",
+      "priority": "P1",
+      "queryExamples": [
+        "这是真的假的",
+        "到底是真是假",
+        "真的假的呀"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "为什么",
+      "category": "负面情绪",
+      "batchId": "coverage-13",
+      "priority": "P1",
+      "queryExamples": [
+        "这是为什么呀",
+        "到底为什么",
+        "为什么会这样"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "怎么回事",
+      "category": "负面情绪",
+      "batchId": "coverage-13",
+      "priority": "P1",
+      "queryExamples": [
+        "这是怎么回事",
+        "到底怎么回事",
+        "发生什么事了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "不敢相信",
+      "category": "负面情绪",
+      "batchId": "coverage-13",
+      "priority": "P1",
+      "queryExamples": [
+        "我不敢相信",
+        "简直不敢相信",
+        "让人不敢相信"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "愣住",
+      "category": "负面情绪",
+      "batchId": "coverage-13",
+      "priority": "P1",
+      "queryExamples": [
+        "我愣住了",
+        "一下愣住了",
+        "当场愣住"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "好奇",
+      "category": "负面情绪",
+      "batchId": "coverage-13",
+      "priority": "P1",
+      "queryExamples": [
+        "我很好奇",
+        "有点好奇",
+        "忍不住好奇"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "意外",
+      "category": "负面情绪",
+      "batchId": "coverage-13",
+      "priority": "P1",
+      "queryExamples": [
+        "有点意外",
+        "真让人意外",
+        "出乎意料了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "惊呆",
+      "category": "负面情绪",
+      "batchId": "coverage-13",
+      "priority": "P1",
+      "queryExamples": [
+        "我惊呆了",
+        "当场惊呆",
+        "惊呆了好吗"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "别难过",
+      "category": "安慰与支持",
+      "batchId": "coverage-14",
+      "priority": "P1",
+      "queryExamples": [
+        "不要难过啦",
+        "你别难过了",
+        "别难过我在呢"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "别生气",
+      "category": "安慰与支持",
+      "batchId": "coverage-14",
+      "priority": "P1",
+      "queryExamples": [
+        "不要生气啦",
+        "别生我的气",
+        "你先别生气"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "慢慢来",
+      "category": "安慰与支持",
+      "batchId": "coverage-14",
+      "priority": "P1",
+      "queryExamples": [
+        "咱们慢慢来",
+        "慢慢来就好",
+        "这事慢慢来"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "不着急",
+      "category": "安慰与支持",
+      "batchId": "coverage-14",
+      "priority": "P1",
+      "queryExamples": [
+        "先不着急",
+        "咱们不着急",
+        "一点也不着急"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "会好的",
+      "category": "安慰与支持",
+      "batchId": "coverage-14",
+      "priority": "P1",
+      "queryExamples": [
+        "一切会好的",
+        "慢慢会好起来",
+        "都会好起来的"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "我陪你",
+      "category": "安慰与支持",
+      "batchId": "coverage-14",
+      "priority": "P1",
+      "queryExamples": [
+        "我会陪着你",
+        "我一直陪你",
+        "有我陪你呢"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "支持你",
+      "category": "安慰与支持",
+      "batchId": "coverage-14",
+      "priority": "P1",
+      "queryExamples": [
+        "我支持你",
+        "永远支持你",
+        "这次我支持你"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "相信你",
+      "category": "安慰与支持",
+      "batchId": "coverage-14",
+      "priority": "P1",
+      "queryExamples": [
+        "我相信你",
+        "一直相信你",
+        "我对你有信心"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "你可以的",
+      "category": "安慰与支持",
+      "batchId": "coverage-14",
+      "priority": "P1",
+      "queryExamples": [
+        "你一定可以的",
+        "相信自己你可以",
+        "你肯定能行"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "辛苦自己",
+      "category": "安慰与支持",
+      "batchId": "coverage-14",
+      "priority": "P1",
+      "queryExamples": [
+        "辛苦自己了",
+        "今天也辛苦自己",
+        "给努力的自己抱抱"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "吃饭了",
+      "category": "生活场景",
+      "batchId": "coverage-15",
+      "priority": "P1",
+      "queryExamples": [
+        "我要吃饭了",
+        "先去吃饭啦",
+        "正在吃饭呢"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "饿了",
+      "category": "生活场景",
+      "batchId": "coverage-15",
+      "priority": "P1",
+      "queryExamples": [
+        "我饿了",
+        "好饿呀",
+        "肚子饿了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "吃饱了",
+      "category": "生活场景",
+      "batchId": "coverage-15",
+      "priority": "P1",
+      "queryExamples": [
+        "我吃饱啦",
+        "已经吃饱了",
+        "肚子饱饱的"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "好吃",
+      "category": "生活场景",
+      "batchId": "coverage-15",
+      "priority": "P1",
+      "queryExamples": [
+        "真的好吃",
+        "这也太好吃了",
+        "好吃极了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "想吃",
+      "category": "生活场景",
+      "batchId": "coverage-15",
+      "priority": "P1",
+      "queryExamples": [
+        "我想吃这个",
+        "好想吃呀",
+        "有点想吃了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "喝水",
+      "category": "生活场景",
+      "batchId": "coverage-15",
+      "priority": "P1",
+      "queryExamples": [
+        "记得喝水",
+        "该喝水啦",
+        "先喝口水"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "喝茶",
+      "category": "生活场景",
+      "batchId": "coverage-15",
+      "priority": "P1",
+      "queryExamples": [
+        "一起喝茶吧",
+        "来喝杯茶",
+        "喝茶时间到"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "喝咖啡",
+      "category": "生活场景",
+      "batchId": "coverage-15",
+      "priority": "P1",
+      "queryExamples": [
+        "先喝杯咖啡",
+        "我要喝咖啡",
+        "咖啡时间到"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "点外卖",
+      "category": "生活场景",
+      "batchId": "coverage-15",
+      "priority": "P1",
+      "queryExamples": [
+        "准备点外卖",
+        "一起点外卖吗",
+        "我要点外卖了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "吃夜宵",
+      "category": "生活场景",
+      "batchId": "coverage-15",
+      "priority": "P1",
+      "queryExamples": [
+        "一起吃夜宵",
+        "我要吃夜宵",
+        "夜宵安排一下"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "困了",
+      "category": "生活场景",
+      "batchId": "coverage-16",
+      "priority": "P1",
+      "queryExamples": [
+        "我困了",
+        "好困呀",
+        "有点困了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "睡觉了",
+      "category": "生活场景",
+      "batchId": "coverage-16",
+      "priority": "P1",
+      "queryExamples": [
+        "我要睡觉了",
+        "先去睡啦",
+        "准备睡觉了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "起床了",
+      "category": "生活场景",
+      "batchId": "coverage-16",
+      "priority": "P1",
+      "queryExamples": [
+        "我起床啦",
+        "已经起来了",
+        "起床时间到"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "赖床",
+      "category": "生活场景",
+      "batchId": "coverage-16",
+      "priority": "P1",
+      "queryExamples": [
+        "还想赖床",
+        "正在赖床",
+        "再赖会儿床"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "睡不着",
+      "category": "生活场景",
+      "batchId": "coverage-16",
+      "priority": "P1",
+      "queryExamples": [
+        "我睡不着",
+        "怎么也睡不着",
+        "今晚睡不着了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "刚睡醒",
+      "category": "生活场景",
+      "batchId": "coverage-16",
+      "priority": "P1",
+      "queryExamples": [
+        "我刚睡醒",
+        "刚刚醒来",
+        "才睡醒呢"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "午休",
+      "category": "生活场景",
+      "batchId": "coverage-16",
+      "priority": "P1",
+      "queryExamples": [
+        "我要午休了",
+        "午休一会儿",
+        "开始午休啦"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "洗澡去",
+      "category": "生活场景",
+      "batchId": "coverage-16",
+      "priority": "P1",
+      "queryExamples": [
+        "我去洗澡了",
+        "准备去洗澡",
+        "先洗个澡"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "刷牙",
+      "category": "生活场景",
+      "batchId": "coverage-16",
+      "priority": "P1",
+      "queryExamples": [
+        "我去刷牙了",
+        "正在刷牙",
+        "刷牙时间到"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "收拾房间",
+      "category": "生活场景",
+      "batchId": "coverage-16",
+      "priority": "P1",
+      "queryExamples": [
+        "准备收拾房间",
+        "我在整理房间",
+        "收拾一下屋子"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "上班了",
+      "category": "工作学习",
+      "batchId": "coverage-17",
+      "priority": "P1",
+      "queryExamples": [
+        "我要上班了",
+        "开始上班啦",
+        "上班时间到"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "下班了",
+      "category": "工作学习",
+      "batchId": "coverage-17",
+      "priority": "P1",
+      "queryExamples": [
+        "我下班啦",
+        "终于下班了",
+        "下班时间到"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "加班",
+      "category": "工作学习",
+      "batchId": "coverage-17",
+      "priority": "P1",
+      "queryExamples": [
+        "正在加班",
+        "今晚要加班",
+        "还得加班呢"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "开会",
+      "category": "工作学习",
+      "batchId": "coverage-17",
+      "priority": "P1",
+      "queryExamples": [
+        "我去开会了",
+        "正在开会中",
+        "会议开始了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "摸鱼",
+      "category": "工作学习",
+      "batchId": "coverage-17",
+      "priority": "P1",
+      "queryExamples": [
+        "偷偷摸会鱼",
+        "摸鱼时间到",
+        "正在摸鱼呢"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "赶工",
+      "category": "工作学习",
+      "batchId": "coverage-17",
+      "priority": "P1",
+      "queryExamples": [
+        "正在赶工",
+        "今天要赶工",
+        "努力赶工中"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "交作业",
+      "category": "工作学习",
+      "batchId": "coverage-17",
+      "priority": "P1",
+      "queryExamples": [
+        "准备交作业",
+        "我来交作业",
+        "作业交上啦"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "学习中",
+      "category": "工作学习",
+      "batchId": "coverage-17",
+      "priority": "P1",
+      "queryExamples": [
+        "我在学习呢",
+        "正在认真学习",
+        "开启学习模式"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "考试加油",
+      "category": "工作学习",
+      "batchId": "coverage-17",
+      "priority": "P1",
+      "queryExamples": [
+        "祝你考试顺利",
+        "考试要加油",
+        "考场加油呀"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "完成了",
+      "category": "工作学习",
+      "batchId": "coverage-17",
+      "priority": "P1",
+      "queryExamples": [
+        "任务完成啦",
+        "已经完成了",
+        "全部做完了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "进度如何",
+      "category": "催促与回复",
+      "batchId": "coverage-18",
+      "priority": "P1",
+      "queryExamples": [
+        "现在进度怎么样",
+        "进度到哪了",
+        "目前进展如何"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "还在处理",
+      "category": "催促与回复",
+      "batchId": "coverage-18",
+      "priority": "P1",
+      "queryExamples": [
+        "这事还在处理",
+        "正在处理中",
+        "仍在处理呢"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "马上完成",
+      "category": "催促与回复",
+      "batchId": "coverage-18",
+      "priority": "P1",
+      "queryExamples": [
+        "马上就完成了",
+        "快要做完了",
+        "即将完成啦"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "再给点时间",
+      "category": "催促与回复",
+      "batchId": "coverage-18",
+      "priority": "P1",
+      "queryExamples": [
+        "再给我一点时间",
+        "让我再做一会儿",
+        "还需要一些时间"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "确认一下",
+      "category": "催促与回复",
+      "batchId": "coverage-18",
+      "priority": "P1",
+      "queryExamples": [
+        "麻烦确认一下",
+        "请帮忙确认",
+        "再确认一次"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "请查收",
+      "category": "催促与回复",
+      "batchId": "coverage-18",
+      "priority": "P1",
+      "queryExamples": [
+        "文件请查收",
+        "麻烦查收一下",
+        "请注意查收"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "已发送",
+      "category": "催促与回复",
+      "batchId": "coverage-18",
+      "priority": "P1",
+      "queryExamples": [
+        "已经发给你了",
+        "刚刚发送了",
+        "资料已经发送"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "重新发一下",
+      "category": "催促与回复",
+      "batchId": "coverage-18",
+      "priority": "P1",
+      "queryExamples": [
+        "麻烦重新发一下",
+        "请再发一次",
+        "能重发一遍吗"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "没看到",
+      "category": "催促与回复",
+      "batchId": "coverage-18",
+      "priority": "P1",
+      "queryExamples": [
+        "我没看到消息",
+        "刚才没看见",
+        "暂时没有看到"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "看到了",
+      "category": "催促与回复",
+      "batchId": "coverage-18",
+      "priority": "P1",
+      "queryExamples": [
+        "消息看到了",
+        "我已经看见了",
+        "刚刚看到啦"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "出门了",
+      "category": "生活场景",
+      "batchId": "coverage-19",
+      "priority": "P1",
+      "queryExamples": [
+        "我出门啦",
+        "准备出门了",
+        "已经出门了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "到家了",
+      "category": "生活场景",
+      "batchId": "coverage-19",
+      "priority": "P1",
+      "queryExamples": [
+        "我到家啦",
+        "已经到家了",
+        "平安到家啦"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "在路上",
+      "category": "生活场景",
+      "batchId": "coverage-19",
+      "priority": "P1",
+      "queryExamples": [
+        "我在路上了",
+        "现在还在路上",
+        "正在赶来的路上"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "快到了",
+      "category": "生活场景",
+      "batchId": "coverage-19",
+      "priority": "P1",
+      "queryExamples": [
+        "我快到了",
+        "马上就到啦",
+        "离你很近了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "到了",
+      "category": "生活场景",
+      "batchId": "coverage-19",
+      "priority": "P1",
+      "queryExamples": [
+        "我已经到了",
+        "已经抵达了",
+        "刚刚到达"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "堵车",
+      "category": "生活场景",
+      "batchId": "coverage-19",
+      "priority": "P1",
+      "queryExamples": [
+        "路上堵车了",
+        "现在有点堵",
+        "堵在路上了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "迟到了",
+      "category": "生活场景",
+      "batchId": "coverage-19",
+      "priority": "P1",
+      "queryExamples": [
+        "我迟到了",
+        "可能要迟到了",
+        "抱歉来晚了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "迷路了",
+      "category": "生活场景",
+      "batchId": "coverage-19",
+      "priority": "P1",
+      "queryExamples": [
+        "我迷路啦",
+        "好像走错路了",
+        "找不到路了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "等车",
+      "category": "生活场景",
+      "batchId": "coverage-19",
+      "priority": "P1",
+      "queryExamples": [
+        "正在等车",
+        "我还在等车",
+        "等车中呢"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "注意安全",
+      "category": "生活场景",
+      "batchId": "coverage-19",
+      "priority": "P1",
+      "queryExamples": [
+        "路上注意安全",
+        "出门小心安全",
+        "记得注意安全"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "下雨了",
+      "category": "生活场景",
+      "batchId": "coverage-20",
+      "priority": "P1",
+      "queryExamples": [
+        "外面下雨了",
+        "突然下雨啦",
+        "开始下雨了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "好热",
+      "category": "生活场景",
+      "batchId": "coverage-20",
+      "priority": "P1",
+      "queryExamples": [
+        "今天好热",
+        "热得不行了",
+        "天气太热了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "好冷",
+      "category": "生活场景",
+      "batchId": "coverage-20",
+      "priority": "P1",
+      "queryExamples": [
+        "今天好冷",
+        "冷得直哆嗦",
+        "天气太冷了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "带伞",
+      "category": "生活场景",
+      "batchId": "coverage-20",
+      "priority": "P1",
+      "queryExamples": [
+        "出门记得带伞",
+        "别忘了带伞",
+        "今天要带伞"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "多穿点",
+      "category": "生活场景",
+      "batchId": "coverage-20",
+      "priority": "P1",
+      "queryExamples": [
+        "记得多穿点",
+        "天冷多穿衣服",
+        "你要穿暖一点"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "感冒了",
+      "category": "生活场景",
+      "batchId": "coverage-20",
+      "priority": "P1",
+      "queryExamples": [
+        "我感冒啦",
+        "好像感冒了",
+        "有点感冒了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "不舒服",
+      "category": "生活场景",
+      "batchId": "coverage-20",
+      "priority": "P1",
+      "queryExamples": [
+        "身体不太舒服",
+        "我有点不舒服",
+        "今天感觉不舒服"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "早点休息",
+      "category": "生活场景",
+      "batchId": "coverage-20",
+      "priority": "P1",
+      "queryExamples": [
+        "你早点休息",
+        "记得早些休息",
+        "今晚早点休息吧"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "保重",
+      "category": "生活场景",
+      "batchId": "coverage-20",
+      "priority": "P1",
+      "queryExamples": [
+        "多多保重",
+        "你要保重身体",
+        "记得保重自己"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "恢复啦",
+      "category": "生活场景",
+      "batchId": "coverage-20",
+      "priority": "P1",
+      "queryExamples": [
+        "身体恢复啦",
+        "已经恢复精神了",
+        "状态恢复了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "一起玩",
+      "category": "亲密互动",
+      "batchId": "coverage-21",
+      "priority": "P2",
+      "queryExamples": [
+        "要不要一起玩",
+        "咱们一起玩吧",
+        "来一起玩呀"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "约起来",
+      "category": "亲密互动",
+      "batchId": "coverage-21",
+      "priority": "P2",
+      "queryExamples": [
+        "改天约起来",
+        "咱们约起来吧",
+        "周末约起来"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "请你吃饭",
+      "category": "亲密互动",
+      "batchId": "coverage-21",
+      "priority": "P2",
+      "queryExamples": [
+        "这顿我请你",
+        "我请你吃饭",
+        "下次请你吃饭"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "我请客",
+      "category": "亲密互动",
+      "batchId": "coverage-21",
+      "priority": "P2",
+      "queryExamples": [
+        "今天我请客",
+        "这次我来请",
+        "我来买单"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "轮到你了",
+      "category": "亲密互动",
+      "batchId": "coverage-21",
+      "priority": "P2",
+      "queryExamples": [
+        "现在轮到你了",
+        "接下来该你了",
+        "这回到你啦"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "算我一个",
+      "category": "亲密互动",
+      "batchId": "coverage-21",
+      "priority": "P2",
+      "queryExamples": [
+        "带上我一个",
+        "算上我吧",
+        "我也参加"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "带带我",
+      "category": "亲密互动",
+      "batchId": "coverage-21",
+      "priority": "P2",
+      "queryExamples": [
+        "带我一起吧",
+        "求你带带我",
+        "也带上我呀"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "生日快乐",
+      "category": "亲密互动",
+      "batchId": "coverage-21",
+      "priority": "P2",
+      "queryExamples": [
+        "祝你生日快乐",
+        "生日要快乐呀",
+        "祝生日开心"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "周末快乐",
+      "category": "亲密互动",
+      "batchId": "coverage-21",
+      "priority": "P2",
+      "queryExamples": [
+        "祝你周末快乐",
+        "周末开心呀",
+        "愉快的周末呀"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "一路顺风",
+      "category": "亲密互动",
+      "batchId": "coverage-21",
+      "priority": "P2",
+      "queryExamples": [
+        "祝你一路顺风",
+        "愿你一路顺利",
+        "旅途一路顺风"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "新年快乐",
+      "category": "节日祝福",
+      "batchId": "coverage-22",
+      "priority": "P2",
+      "queryExamples": [
+        "祝你新年快乐",
+        "新的一年快乐",
+        "新年快乐呀"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "春节快乐",
+      "category": "节日祝福",
+      "batchId": "coverage-22",
+      "priority": "P2",
+      "queryExamples": [
+        "祝你春节快乐",
+        "春节开心呀",
+        "新春佳节快乐"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "元宵快乐",
+      "category": "节日祝福",
+      "batchId": "coverage-22",
+      "priority": "P2",
+      "queryExamples": [
+        "祝你元宵快乐",
+        "元宵节快乐呀",
+        "元宵佳节快乐"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "端午安康",
+      "category": "节日祝福",
+      "batchId": "coverage-22",
+      "priority": "P2",
+      "queryExamples": [
+        "祝你端午安康",
+        "端午节安康",
+        "愿你端午安康"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "中秋快乐",
+      "category": "节日祝福",
+      "batchId": "coverage-22",
+      "priority": "P2",
+      "queryExamples": [
+        "祝你中秋快乐",
+        "中秋节快乐呀",
+        "中秋佳节快乐"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "国庆快乐",
+      "category": "节日祝福",
+      "batchId": "coverage-22",
+      "priority": "P2",
+      "queryExamples": [
+        "祝你国庆快乐",
+        "国庆节快乐呀",
+        "国庆假期快乐"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "节日快乐",
+      "category": "节日祝福",
+      "batchId": "coverage-22",
+      "priority": "P2",
+      "queryExamples": [
+        "祝你节日快乐",
+        "节日要快乐呀",
+        "祝大家节日快乐"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "假期快乐",
+      "category": "节日祝福",
+      "batchId": "coverage-22",
+      "priority": "P2",
+      "queryExamples": [
+        "祝你假期快乐",
+        "假期开心呀",
+        "享受快乐假期"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "开工大吉",
+      "category": "节日祝福",
+      "batchId": "coverage-22",
+      "priority": "P2",
+      "queryExamples": [
+        "祝你开工大吉",
+        "新年开工大吉",
+        "开工顺顺利利"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "祝你好运",
+      "category": "节日祝福",
+      "batchId": "coverage-22",
+      "priority": "P2",
+      "queryExamples": [
+        "祝你好运呀",
+        "愿你好运连连",
+        "好运送给你"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "躺平",
+      "category": "网络口语",
+      "batchId": "coverage-23",
+      "priority": "P2",
+      "queryExamples": [
+        "先躺平一会儿",
+        "今天想躺平",
+        "让我躺平一下"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "摆烂",
+      "category": "网络口语",
+      "batchId": "coverage-23",
+      "priority": "P2",
+      "queryExamples": [
+        "今天想摆烂",
+        "暂时摆烂一下",
+        "我先摆烂一会儿"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "情绪低落",
+      "category": "网络口语",
+      "batchId": "coverage-23",
+      "priority": "P2",
+      "queryExamples": [
+        "今天有点低落",
+        "突然情绪低落",
+        "心情低落了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "裂开",
+      "category": "网络口语",
+      "batchId": "coverage-23",
+      "priority": "P2",
+      "queryExamples": [
+        "我裂开了",
+        "当场裂开",
+        "真的裂开了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "麻了",
+      "category": "网络口语",
+      "batchId": "coverage-23",
+      "priority": "P2",
+      "queryExamples": [
+        "我麻了",
+        "直接麻了",
+        "整个人都麻了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "打扰了",
+      "category": "网络口语",
+      "batchId": "coverage-23",
+      "priority": "P2",
+      "queryExamples": [
+        "不好意思打扰了",
+        "那我打扰了",
+        "冒昧打扰一下"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "告辞",
+      "category": "网络口语",
+      "batchId": "coverage-23",
+      "priority": "P2",
+      "queryExamples": [
+        "先行告辞",
+        "在下告辞了",
+        "那就告辞啦"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "围观群众",
+      "category": "网络口语",
+      "batchId": "coverage-23",
+      "priority": "P2",
+      "queryExamples": [
+        "我当围观群众",
+        "做个围观群众",
+        "围观群众到场"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "一言难尽",
+      "category": "网络口语",
+      "batchId": "coverage-23",
+      "priority": "P2",
+      "queryExamples": [
+        "真是一言难尽",
+        "这事一言难尽",
+        "情况一言难尽"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "不愧是你",
+      "category": "网络口语",
+      "batchId": "coverage-23",
+      "priority": "P2",
+      "queryExamples": [
+        "果然不愧是你",
+        "真不愧是你呀",
+        "不愧是你啊"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "摊手",
+      "category": "吐槽",
+      "batchId": "coverage-24",
+      "priority": "P2",
+      "queryExamples": [
+        "无奈地摊手",
+        "只好摊手了",
+        "默默摊个手"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "扶额",
+      "category": "吐槽",
+      "batchId": "coverage-24",
+      "priority": "P2",
+      "queryExamples": [
+        "忍不住扶额",
+        "让我扶额一下",
+        "当场扶额"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "捂脸",
+      "category": "吐槽",
+      "batchId": "coverage-24",
+      "priority": "P2",
+      "queryExamples": [
+        "忍不住捂脸",
+        "默默捂个脸",
+        "我先捂脸了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "翻白眼",
+      "category": "吐槽",
+      "batchId": "coverage-24",
+      "priority": "P2",
+      "queryExamples": [
+        "默默翻白眼",
+        "忍不住翻白眼",
+        "给你个白眼"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "看热闹",
+      "category": "吐槽",
+      "batchId": "coverage-24",
+      "priority": "P2",
+      "queryExamples": [
+        "过来看看热闹",
+        "我来凑热闹",
+        "看个热闹呀"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "假装没看见",
+      "category": "吐槽",
+      "batchId": "coverage-24",
+      "priority": "P2",
+      "queryExamples": [
+        "我假装没看见",
+        "当作没看见吧",
+        "假装什么都没看到"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "无事发生",
+      "category": "吐槽",
+      "batchId": "coverage-24",
+      "priority": "P2",
+      "queryExamples": [
+        "假装无事发生",
+        "当作无事发生",
+        "就当什么也没发生"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "撤回",
+      "category": "吐槽",
+      "batchId": "coverage-24",
+      "priority": "P2",
+      "queryExamples": [
+        "这句话我撤回",
+        "申请撤回一下",
+        "赶紧撤回了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "冷静",
+      "category": "吐槽",
+      "batchId": "coverage-24",
+      "priority": "P2",
+      "queryExamples": [
+        "先冷静一下",
+        "大家冷静点",
+        "让我冷静冷静"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "别急",
+      "category": "吐槽",
+      "batchId": "coverage-24",
+      "priority": "P2",
+      "queryExamples": [
+        "你先别急",
+        "大家别急呀",
+        "先别急嘛"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "害羞",
+      "category": "亲密互动",
+      "batchId": "coverage-25",
+      "priority": "P2",
+      "queryExamples": [
+        "我害羞了",
+        "有点害羞",
+        "害羞起来了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "脸红",
+      "category": "亲密互动",
+      "batchId": "coverage-25",
+      "priority": "P2",
+      "queryExamples": [
+        "我脸红了",
+        "脸都红了",
+        "忍不住脸红"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "比心",
+      "category": "亲密互动",
+      "batchId": "coverage-25",
+      "priority": "P2",
+      "queryExamples": [
+        "给你比心",
+        "向你比个心",
+        "比心送给你"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "心动",
+      "category": "亲密互动",
+      "batchId": "coverage-25",
+      "priority": "P2",
+      "queryExamples": [
+        "有点心动",
+        "我心动了",
+        "心动起来了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "等你",
+      "category": "亲密互动",
+      "batchId": "coverage-25",
+      "priority": "P2",
+      "queryExamples": [
+        "我等你呀",
+        "在这里等你",
+        "一直等着你"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "陪陪我",
+      "category": "亲密互动",
+      "batchId": "coverage-25",
+      "priority": "P2",
+      "queryExamples": [
+        "来陪陪我",
+        "能陪我一会儿吗",
+        "想让你陪陪我"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "舍不得",
+      "category": "亲密互动",
+      "batchId": "coverage-25",
+      "priority": "P2",
+      "queryExamples": [
+        "真的舍不得",
+        "好舍不得呀",
+        "有点舍不得了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "牵手",
+      "category": "亲密互动",
+      "batchId": "coverage-25",
+      "priority": "P2",
+      "queryExamples": [
+        "想和你牵手",
+        "牵牵你的手",
+        "一起牵手吧"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "和好吧",
+      "category": "亲密互动",
+      "batchId": "coverage-25",
+      "priority": "P2",
+      "queryExamples": [
+        "我们和好吧",
+        "咱们和好好吗",
+        "要不和好吧"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "不许走",
+      "category": "亲密互动",
+      "batchId": "coverage-25",
+      "priority": "P2",
+      "queryExamples": [
+        "先不许走嘛",
+        "你不许走呀",
+        "再陪我一下别走"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": [],
+      "reviewNotes": "仅轻松亲密互动，不支持强制限制人身自由语境。"
+    },
+    {
+      "keyword": "看电影",
+      "category": "生活场景",
+      "batchId": "coverage-26",
+      "priority": "P2",
+      "queryExamples": [
+        "一起看电影吧",
+        "我在看电影",
+        "准备看部电影"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "追剧",
+      "category": "生活场景",
+      "batchId": "coverage-26",
+      "priority": "P2",
+      "queryExamples": [
+        "正在追剧",
+        "今晚继续追剧",
+        "我要追剧啦"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "听歌",
+      "category": "生活场景",
+      "batchId": "coverage-26",
+      "priority": "P2",
+      "queryExamples": [
+        "我在听歌",
+        "一起听首歌",
+        "听歌放松一下"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "玩游戏",
+      "category": "生活场景",
+      "batchId": "coverage-26",
+      "priority": "P2",
+      "queryExamples": [
+        "我在玩游戏",
+        "一起玩游戏吗",
+        "准备玩会儿游戏"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "运动",
+      "category": "生活场景",
+      "batchId": "coverage-26",
+      "priority": "P2",
+      "queryExamples": [
+        "我要运动啦",
+        "开始运动了",
+        "一起运动吧"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "散步",
+      "category": "生活场景",
+      "batchId": "coverage-26",
+      "priority": "P2",
+      "queryExamples": [
+        "出门散步啦",
+        "一起散散步",
+        "我去散步了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "逛街",
+      "category": "生活场景",
+      "batchId": "coverage-26",
+      "priority": "P2",
+      "queryExamples": [
+        "我去逛街啦",
+        "一起逛街吗",
+        "正在逛街呢"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "看书",
+      "category": "生活场景",
+      "batchId": "coverage-26",
+      "priority": "P2",
+      "queryExamples": [
+        "正在看书",
+        "我要看书了",
+        "安静看会儿书"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "撸猫",
+      "category": "生活场景",
+      "batchId": "coverage-26",
+      "priority": "P2",
+      "queryExamples": [
+        "开始撸猫啦",
+        "我要去撸猫",
+        "撸猫时间到"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "遛狗",
+      "category": "生活场景",
+      "batchId": "coverage-26",
+      "priority": "P2",
+      "queryExamples": [
+        "我去遛狗啦",
+        "正在遛狗呢",
+        "遛狗时间到"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "手机没电",
+      "category": "生活场景",
+      "batchId": "coverage-27",
+      "priority": "P2",
+      "queryExamples": [
+        "手机快没电了",
+        "我手机没电啦",
+        "手机电量不足了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": [],
+      "reviewNotes": "指设备电量，不自动映射人的疲惫。"
+    },
+    {
+      "keyword": "信号不好",
+      "category": "生活场景",
+      "batchId": "coverage-27",
+      "priority": "P2",
+      "queryExamples": [
+        "这里信号不好",
+        "手机没什么信号",
+        "当前信号很差"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "断网了",
+      "category": "生活场景",
+      "batchId": "coverage-27",
+      "priority": "P2",
+      "queryExamples": [
+        "我这边断网了",
+        "网络断开了",
+        "突然没网了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "卡住了",
+      "category": "生活场景",
+      "batchId": "coverage-27",
+      "priority": "P2",
+      "queryExamples": [
+        "画面卡住了",
+        "这边有点卡",
+        "程序卡住了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "听不清",
+      "category": "生活场景",
+      "batchId": "coverage-27",
+      "priority": "P2",
+      "queryExamples": [
+        "我听不清楚",
+        "声音听不清",
+        "刚才没听清"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "发错了",
+      "category": "生活场景",
+      "batchId": "coverage-27",
+      "priority": "P2",
+      "queryExamples": [
+        "消息发错了",
+        "我发错啦",
+        "不小心发错了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "打错字",
+      "category": "生活场景",
+      "batchId": "coverage-27",
+      "priority": "P2",
+      "queryExamples": [
+        "我打错字了",
+        "刚才是打错字",
+        "手滑打错字了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "忘记了",
+      "category": "生活场景",
+      "batchId": "coverage-27",
+      "priority": "P2",
+      "queryExamples": [
+        "我给忘了",
+        "刚刚忘记了",
+        "这事忘掉了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "找到了",
+      "category": "生活场景",
+      "batchId": "coverage-27",
+      "priority": "P2",
+      "queryExamples": [
+        "我找到了",
+        "终于找着了",
+        "已经找到啦"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "找不到",
+      "category": "生活场景",
+      "batchId": "coverage-27",
+      "priority": "P2",
+      "queryExamples": [
+        "我找不到了",
+        "怎么也找不到",
+        "还是没找到"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "真可爱",
+      "category": "开心与鼓励",
+      "batchId": "coverage-28",
+      "priority": "P2",
+      "queryExamples": [
+        "你好可爱呀",
+        "这也太可爱了",
+        "可爱极了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "好看",
+      "category": "开心与鼓励",
+      "batchId": "coverage-28",
+      "priority": "P2",
+      "queryExamples": [
+        "真的好看",
+        "这也太好看了",
+        "好看极了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "真聪明",
+      "category": "开心与鼓励",
+      "batchId": "coverage-28",
+      "priority": "P2",
+      "queryExamples": [
+        "你真聪明呀",
+        "这也太聪明了",
+        "聪明极了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "有道理",
+      "category": "开心与鼓励",
+      "batchId": "coverage-28",
+      "priority": "P2",
+      "queryExamples": [
+        "说得有道理",
+        "确实有道理",
+        "很有道理呀"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "说得好",
+      "category": "开心与鼓励",
+      "batchId": "coverage-28",
+      "priority": "P2",
+      "queryExamples": [
+        "这话说得好",
+        "你说得真好",
+        "说得太好了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "靠谱",
+      "category": "开心与鼓励",
+      "batchId": "coverage-28",
+      "priority": "P2",
+      "queryExamples": [
+        "真的很靠谱",
+        "这个挺靠谱",
+        "你可真靠谱"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "优秀",
+      "category": "开心与鼓励",
+      "batchId": "coverage-28",
+      "priority": "P2",
+      "queryExamples": [
+        "你真优秀",
+        "这也太优秀了",
+        "优秀极了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "佩服",
+      "category": "开心与鼓励",
+      "batchId": "coverage-28",
+      "priority": "P2",
+      "queryExamples": [
+        "我很佩服你",
+        "真让人佩服",
+        "佩服极了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "专业",
+      "category": "开心与鼓励",
+      "batchId": "coverage-28",
+      "priority": "P2",
+      "queryExamples": [
+        "你真专业",
+        "这也太专业了",
+        "专业得很"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "学到了",
+      "category": "开心与鼓励",
+      "batchId": "coverage-28",
+      "priority": "P2",
+      "queryExamples": [
+        "我学到了",
+        "今天又学到了",
+        "这下学会啦"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "考虑一下",
+      "category": "确认与拒绝",
+      "batchId": "coverage-29",
+      "priority": "P2",
+      "queryExamples": [
+        "让我考虑一下",
+        "我再考虑考虑",
+        "需要考虑一下"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "再想想",
+      "category": "确认与拒绝",
+      "batchId": "coverage-29",
+      "priority": "P2",
+      "queryExamples": [
+        "让我再想想",
+        "咱们再想想",
+        "还得再想一想"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "商量一下",
+      "category": "确认与拒绝",
+      "batchId": "coverage-29",
+      "priority": "P2",
+      "queryExamples": [
+        "我们商量一下",
+        "能不能商量商量",
+        "先商量一下吧"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "看情况",
+      "category": "确认与拒绝",
+      "batchId": "coverage-29",
+      "priority": "P2",
+      "queryExamples": [
+        "到时看情况",
+        "先看情况吧",
+        "要看具体情况"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "不一定",
+      "category": "确认与拒绝",
+      "batchId": "coverage-29",
+      "priority": "P2",
+      "queryExamples": [
+        "这可不一定",
+        "还不一定呢",
+        "现在说不一定"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "有可能",
+      "category": "确认与拒绝",
+      "batchId": "coverage-29",
+      "priority": "P2",
+      "queryExamples": [
+        "确实有可能",
+        "这个有可能",
+        "有这种可能"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "再说吧",
+      "category": "确认与拒绝",
+      "batchId": "coverage-29",
+      "priority": "P2",
+      "queryExamples": [
+        "以后再说吧",
+        "到时候再说",
+        "这件事再说吧"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "听你的",
+      "category": "确认与拒绝",
+      "batchId": "coverage-29",
+      "priority": "P2",
+      "queryExamples": [
+        "这次听你的",
+        "那就听你的",
+        "我听你的安排"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "都可以",
+      "category": "确认与拒绝",
+      "batchId": "coverage-29",
+      "priority": "P2",
+      "queryExamples": [
+        "两种都可以",
+        "我觉得都可以",
+        "选哪个都可以"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "没意见",
+      "category": "确认与拒绝",
+      "batchId": "coverage-29",
+      "priority": "P2",
+      "queryExamples": [
+        "我没意见",
+        "对此没有意见",
+        "这样我没意见"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "定好了",
+      "category": "工作学习",
+      "batchId": "coverage-30",
+      "priority": "P2",
+      "queryExamples": [
+        "时间定好了",
+        "已经定下来了",
+        "计划已经定好"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "改时间",
+      "category": "工作学习",
+      "batchId": "coverage-30",
+      "priority": "P2",
+      "queryExamples": [
+        "要不改个时间",
+        "咱们改一下时间",
+        "需要调整时间"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "取消了",
+      "category": "工作学习",
+      "batchId": "coverage-30",
+      "priority": "P2",
+      "queryExamples": [
+        "计划取消了",
+        "已经取消啦",
+        "这次活动取消了"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "提前说",
+      "category": "工作学习",
+      "batchId": "coverage-30",
+      "priority": "P2",
+      "queryExamples": [
+        "记得提前说",
+        "麻烦早点告诉我",
+        "请提前通知我"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "记得提醒我",
+      "category": "工作学习",
+      "batchId": "coverage-30",
+      "priority": "P2",
+      "queryExamples": [
+        "到时提醒我一下",
+        "别忘了提醒我",
+        "记得叫我一声"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "别忘了",
+      "category": "工作学习",
+      "batchId": "coverage-30",
+      "priority": "P2",
+      "queryExamples": [
+        "你可别忘了",
+        "记得不要忘记",
+        "千万别忘了呀"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "明天见",
+      "category": "工作学习",
+      "batchId": "coverage-30",
+      "priority": "P2",
+      "queryExamples": [
+        "咱们明天见",
+        "明天再见啦",
+        "那就明天见"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "回头联系",
+      "category": "工作学习",
+      "batchId": "coverage-30",
+      "priority": "P2",
+      "queryExamples": [
+        "咱们回头联系",
+        "之后再联系你",
+        "回头再联系吧"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "一路平安",
+      "category": "工作学习",
+      "batchId": "coverage-30",
+      "priority": "P2",
+      "queryExamples": [
+        "祝你一路平安",
+        "路上平平安安",
+        "愿你旅途平安"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    },
+    {
+      "keyword": "顺利完成",
+      "category": "工作学习",
+      "batchId": "coverage-30",
+      "priority": "P2",
+      "queryExamples": [
+        "祝你顺利完成",
+        "希望任务顺利完成",
+        "愿你顺利做完"
+      ],
+      "matchingStatus": "examples-only-not-enabled",
+      "assetStatus": "not-generated",
+      "existingAssetCount": 0,
+      "productionAssetCount": 0,
+      "existingAssets": []
+    }
+  ],
+  "weakQueries": [
+    {
+      "query": "你们",
+      "classification": "weak-pronoun",
+      "behavior": "不映射固定情绪；有本次有效输入上下文则使用上下文主题，无主题可明确标注通用招呼/互动集合或不推荐，不伪装精确命中"
+    },
+    {
+      "query": "我们",
+      "classification": "weak-pronoun",
+      "behavior": "不映射固定情绪；有本次有效输入上下文则使用上下文主题，无主题可明确标注通用招呼/互动集合或不推荐，不伪装精确命中"
+    },
+    {
+      "query": "他们",
+      "classification": "weak-pronoun",
+      "behavior": "不映射固定情绪；有本次有效输入上下文则使用上下文主题，无主题可明确标注通用招呼/互动集合或不推荐，不伪装精确命中"
+    },
+    {
+      "query": "她们",
+      "classification": "weak-pronoun",
+      "behavior": "不映射固定情绪；有本次有效输入上下文则使用上下文主题，无主题可明确标注通用招呼/互动集合或不推荐，不伪装精确命中"
+    },
+    {
+      "query": "大家",
+      "classification": "weak-pronoun",
+      "behavior": "不映射固定情绪；有本次有效输入上下文则使用上下文主题，无主题可明确标注通用招呼/互动集合或不推荐，不伪装精确命中"
+    },
+    {
+      "query": "你",
+      "classification": "weak-pronoun",
+      "behavior": "不映射固定情绪；有本次有效输入上下文则使用上下文主题，无主题可明确标注通用招呼/互动集合或不推荐，不伪装精确命中"
+    },
+    {
+      "query": "我",
+      "classification": "weak-pronoun",
+      "behavior": "不映射固定情绪；有本次有效输入上下文则使用上下文主题，无主题可明确标注通用招呼/互动集合或不推荐，不伪装精确命中"
+    },
+    {
+      "query": "他",
+      "classification": "weak-pronoun",
+      "behavior": "不映射固定情绪；有本次有效输入上下文则使用上下文主题，无主题可明确标注通用招呼/互动集合或不推荐，不伪装精确命中"
+    },
+    {
+      "query": "她",
+      "classification": "weak-pronoun",
+      "behavior": "不映射固定情绪；有本次有效输入上下文则使用上下文主题，无主题可明确标注通用招呼/互动集合或不推荐，不伪装精确命中"
+    },
+    {
+      "query": "它们",
+      "classification": "weak-pronoun",
+      "behavior": "不映射固定情绪；有本次有效输入上下文则使用上下文主题，无主题可明确标注通用招呼/互动集合或不推荐，不伪装精确命中"
+    }
+  ],
+  "validation": {
+    "coreCount": 300,
+    "uniqueCoreCount": 300,
+    "exampleCount": 900,
+    "batchCount": 30,
+    "exactQueryConflicts": [],
+    "notes": "仅检查完整字符串重复；语义近似、多义、否定、反讽、混合情绪需规则评审和回归集，不能仅凭本报告自动上线"
+  }
+}

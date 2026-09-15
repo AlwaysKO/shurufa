@@ -1,0 +1,105 @@
+{
+  "keyword": "追赶",
+  "items": [
+    {
+      "id": "chase-core-run",
+      "keyword": "追赶",
+      "file": "追赶/chase-core-run.gif",
+      "thumbnail": "追赶/chase-core-run.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/action-01/manifest.json",
+      "sourceReport": "artifacts/expression-batches/action-01/report.json",
+      "sourceGif": "artifacts/expression-batches/action-01/gifs/chase-core-run.gif",
+      "sourceThumbnail": "artifacts/expression-batches/action-01/thumbnails/chase-core-run.webp",
+      "batch": "action-01",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "d83a763b301f5cc1649372a145738af08b25a69d0197118ffe03f85758cd92b7",
+      "thumbnailSha256": "33d0b79cf135add00955c16d61eeb010768fcd5dceca8e8503a5e89e37383aef",
+      "bytes": 188624,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "style": "original-character",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    },
+    {
+      "id": "chase-dog-run",
+      "keyword": "追赶",
+      "file": "追赶/chase-dog-run.gif",
+      "thumbnail": "追赶/chase-dog-run.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/action-01/manifest.json",
+      "sourceReport": "artifacts/expression-batches/action-01/report.json",
+      "sourceGif": "artifacts/expression-batches/action-01/gifs/chase-dog-run.gif",
+      "sourceThumbnail": "artifacts/expression-batches/action-01/thumbnails/chase-dog-run.webp",
+      "batch": "action-01",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "4e2502edd4fcd69a93f386076c06fa0ac3083947dd98a3a3ffdb36a81763ba7a",
+      "thumbnailSha256": "8b7c75fad0d387cb87b2562955bce7f3c093a9495166635d7e56457c9b2dcf94",
+      "bytes": 209433,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "style": "ai-original-pet",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    },
+    {
+      "id": "chase-person-run",
+      "keyword": "追赶",
+      "file": "追赶/chase-person-run.gif",
+      "thumbnail": "追赶/chase-person-run.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/action-01/manifest.json",
+      "sourceReport": "artifacts/expression-batches/action-01/report.json",
+      "sourceGif": "artifacts/expression-batches/action-01/gifs/chase-person-run.gif",
+      "sourceThumbnail": "artifacts/expression-batches/action-01/thumbnails/chase-person-run.webp",
+      "batch": "action-01",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "763744d0d374a8262b5e42a796fe59ef332753f1a351796d530c7f730f198c90",
+      "thumbnailSha256": "7d5c0e3ad2cc9756705c641338dbc6c7ed7da72a15fff7447bb78a085dfbdca3",
+      "bytes": 159930,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "style": "original-life-scene",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    },
+    {
+      "id": "chase-plush-bird",
+      "keyword": "追赶",
+      "file": "追赶/chase-plush-bird.gif",
+      "thumbnail": "追赶/chase-plush-bird.webp",
+      "sourceType": "ai-original",
+      "sourceManifest": "assets/expression/batches/action-01/manifest.json",
+      "sourceReport": "artifacts/expression-batches/action-01/report.json",
+      "sourceGif": "artifacts/expression-batches/action-01/gifs/chase-plush-bird.gif",
+      "sourceThumbnail": "artifacts/expression-batches/action-01/thumbnails/chase-plush-bird.webp",
+      "batch": "action-01",
+      "status": "published",
+      "plannedDistribution": "bundled",
+      "sha256": "622af9cd1ffdab9d371da1db482cdeea860731ab1ad0849147aecca17d29eb07",
+      "thumbnailSha256": "4ada758682515b83cd4c84d2da022e5a668673baf47c639f84e7ca7b5a1fb0a4",
+      "bytes": 180386,
+      "width": 240,
+      "height": 240,
+      "frames": 16,
+      "style": "3d-plush",
+      "publicationApproval": {
+        "date": "2026-09-11",
+        "basis": "用户明确确认现有184张都接入"
+      }
+    }
+  ]
+}

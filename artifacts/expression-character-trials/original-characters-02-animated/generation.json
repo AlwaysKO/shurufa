@@ -1,0 +1,38 @@
+{
+  "tool": "built-in-imagegen",
+  "sourceType": "ai-original",
+  "status": "trial-only",
+  "publicationAllowed": false,
+  "items": [
+    {
+      "id": "worker-busy",
+      "caption": "忙着呢",
+      "reference": "long-face-worker.png",
+      "prompt": "Create 4 COLUMN x 3 ROW sprite sheet of12 equal SQUARE panels, EXACT canvas1440x1080. Reference is original character identity audition. Use specified character only, remove captions. Solid opaque WHITE background, no alpha, no text or symbols, thin gray grid dividers. Figure must fit entirely inside TOP80% of every square, BOTTOM20% blank white reserved caption, fixed head anchor/scale/baseline, same identity/clothes in all12. True gentle incremental acting in readingorder1-12:1initial,2-7 gradual buildup,8peak,9-11 gradual return,12matches1 precisely in position/expression. No jumpy hand side switches, no whole-body translation, no noise jitter. Preserve handdrawn pencil style with simplified texture for small GIF. LEFT blue shirt Chinese adult office worker at laptop. Keep laptop small at LOWER VIEWER LEFT and both hands typing below chest, fit hands/laptop above80% height. Facefocused with narrow brows and gaze directed DOWN at laptop, not toward viewer. Incrementally fingers depress keyboard, eyebrows pinch as he concentrates, lips press slightly, eyes briefly narrow by peak8 then return. Both forearms anchored at keyboard, anatomically coherent hands, no props moving across frame. Do not change into heartbroken or angry, genuine busy concentration.",
+      "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-1d21977e-3091-4cbf-9e04-65442f52a072.png",
+      "masterFile": "masters/worker-busy.png",
+      "sha256": "02f7c79c5484c4d61250a226c3c3528e26dc32dfec27ed30eb021262e3f2825b",
+      "referenceSha256": "cd4e270613be2f0f5e803117a7afb1ff1a8843e073b46d2a1c9761faf0bac142"
+    },
+    {
+      "id": "young-man-thanks",
+      "caption": "谢谢",
+      "reference": "round-face-young-man.png",
+      "prompt": "Create 4 COLUMN x 3 ROW sprite sheet of12 equal SQUARE panels, EXACT canvas1440x1080. Reference is original character identity audition. Use specified character only, remove captions. Solid opaque WHITE background, no alpha, no text or symbols, thin gray grid dividers. Figure must fit entirely inside TOP80% of every square, BOTTOM20% blank white reserved caption, fixed head anchor/scale/baseline, same identity/clothes in all12. True gentle incremental acting in readingorder1-12:1initial,2-7 gradual buildup,8peak,9-11 gradual return,12matches1 precisely in position/expression. No jumpy hand side switches, no whole-body translation, no noise jitter. Preserve handdrawn pencil style with simplified texture for small GIF. CENTER terracotta hoodie handsome adult Chinese shorthaired man. Warm sincere thanks: both hands loosely clasped together just below chin throughout. Begins direct gentle friendly eyecontact with small smile. Gradually inclines head a TINY amount (not big bow), eyelids soften then partlyclose, eyebrows relax, smile widens with dimple by8.9-12 slowly opens eyes and returns head/smile to start. Hands stay clasped same place, no finger crossover artifacts, no fistpump or cheering or comic grimaces.",
+      "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-120d33d4-e2f9-46aa-bde1-4a501db6f118.png",
+      "masterFile": "masters/young-man-thanks.png",
+      "sha256": "c0eafb1290052c192c8ed91ed9d0b815a7ebf66013f3c3ba18ba4ae4570d0491",
+      "referenceSha256": "0bd694fd6c987d39a4dee38fc882fe0f0354df41a00cd9b8d5165175b76aa76d"
+    },
+    {
+      "id": "dog-hurt",
+      "caption": "委屈",
+      "reference": "droopy-eye-dog-v2.png",
+      "prompt": "Create 4 COLUMN x 3 ROW sprite sheet of12 equal SQUARE panels, EXACT canvas1440x1080. Reference is original character identity audition. Use specified character only, remove captions. Solid opaque WHITE background, no alpha, no text or symbols, thin gray grid dividers. Figure must fit entirely inside TOP80% of every square, BOTTOM20% blank white reserved caption, fixed head anchor/scale/baseline, same identity/clothes in all12. True gentle incremental acting in readingorder1-12:1initial,2-7 gradual buildup,8peak,9-11 gradual return,12matches1 precisely in position/expression. No jumpy hand side switches, no whole-body translation, no noise jitter. Preserve handdrawn pencil style with simplified texture for small GIF. CENTER cream cocoa-eared dog. Sympathetic hurt feelings: BOTH ears drooping down throughout, paws touching together at chest. Initially plaintive upturned eyes and closed downturned mouth. Gradually inner brows rise, lower eyelids moisten subtly, lower lip trembles slightly, paws draw in a little, peak8 most pleading gaze and sad closed mouth. No waterfalls of tears, no tongue, not joy, not exaggerated comedy.9-12 gently ease back to first expression; keep muzzle/nose position and body baseline fixed.",
+      "sourcePath": "/home/ko/.codex/generated_images/01a08df2-9f86-71b2-a98d-64c3d7732251/exec-1e8fca9c-0ecc-4e32-902b-49bafe7cd9c4.png",
+      "masterFile": "masters/dog-hurt.png",
+      "sha256": "9bf743b311af06de51ddf670e1a9535c041b8ee823368ca299d058c3176e303e",
+      "referenceSha256": "362fc80869f3e9185eec6bc3382723009ddb47617732b7933c654ea97ebe3d90"
+    }
+  ]
+}

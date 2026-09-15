@@ -1,0 +1,12 @@
+{
+  "version": "20260908.11",
+  "apkSha256": "88cd96a1c3b44ab4e235a146421f8c2e4f61f364c19340e008b5c4741bf1c5eb",
+  "sourceTests": {"total": 3, "failed": 0},
+  "debugManifestHasBothServices": true,
+  "releaseManifestHasExperimentalService": false,
+  "apkContainsDebugSubclass": true,
+  "installResult": "Success (adb install -r)",
+  "automaticallySelected": false,
+  "sentChatMessages": false,
+  "animationConfirmed": false
+}

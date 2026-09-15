@@ -1,0 +1,16 @@
+{
+  "id": "scene-rich-08-arrange",
+  "keyword": "安排",
+  "caption": "安排",
+  "captionPlacement": "top-left",
+  "masterFile": "masters/scene-rich-08-arrange.png",
+  "sourceType": "ai-original",
+  "generation": {
+    "tool": "image_gen.imagegen",
+    "prompt": "Original minimal black-marker reaction animation sheet FOURcolumns THREErows TWELVE equal square cells landscape4:3, opaque ivory background, thin grey grid at quarters/thirds no gutters no words. Meaning 'consider it arranged': original small round-headed bean with tiny square spectacles behind desk slowly slides a tiny blank task card into a neat tray then gives one confident thumbs-up. Comic hyper-competent little clerk, sparse black lines teal tray accent only, no known mascot or real human face. Fixed camera/body scale, desk80%cellheight, clear top-left for later caption.12 gradual chronological poses:1 hand touches card already halfway in tray, calm half-lidded gaze;2 eyes focus tray;3 card slides a little;4 card slides further;5 card nearly seated;6 card seated, hand lifts slightly;7 hand curls into mitten thumbs-up near chest;8 strongest confident tiny thumbs-up and raised eyebrow;9 thumb hand lowers a little;10 hand relaxes open;11 hand returns toward tray;12 initial calm pose and card position matches initial (tray front hides card edge in ALL frames so no teleport visibly). Other hand stays on desk, exactly2arms. Draw incremental hand movement, no abrupt large gesture or body wobble. All props fixed except small card movement, no text/numbers/logos/watermarks. Twelve source inbetweens for slow4second loop.",
+    "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-b77d27c4-f148-4152-8294-f6f662399dc9.png",
+    "masterSha256": "2573ac6d01a3c1dd568da33350af745bd897454a0b409e6599263d9a4bf3fa41",
+    "correctionPrompt": "Correct this original4column3row animation loop. In BOTTOM-RIGHT cell ONLY make character head outline, glasses, eyebrows, resting hand, reaching arm, chair, desk, tray and blank card match the TOP-LEFT cell EXACTLY in local position/size/pose. No smaller head or shifted desk. Other11cells unchanged. Preserve thin exact grid lines and opaque ivory background. No text or labels. Keep original clerk and subtle task-complete thumbs-up story, this is only loop alignment.",
+    "intermediateSource": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-e7773706-533b-4891-b175-b7a3fad079f8.png"
+  }
+}

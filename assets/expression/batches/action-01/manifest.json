@@ -1,0 +1,276 @@
+{
+  "version": "2026.09.09.action-01",
+  "status": "pending-visual-review",
+  "keywords": [
+    "打闹",
+    "追赶"
+  ],
+  "items": [
+    {
+      "id": "play-core-pillow",
+      "keyword": "打闹",
+      "text": "打闹",
+      "style": "original-character",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create one genuine transparent RGBA PNG 2x2 sprite sheet, FOUR DISTINCT key poses of identical original subject, reading order. Wide fully transparent gutters at middle axes. Each complete pose inside its own quadrant with generous margins. Consistent identity, scale and material, real changes in limbs/expression not mere translations. No text, letters, watermark, logos, existing IP, checkerboard, background or ground. Exactly correct limbs, no duplicates. SUBJECT: A unique cream rice-dumpling creature, tiny orange knotted topknot, two tiny orange tipped tufts and orange scarf, two arms and two feet, holding one soft blue pillow. Soft painted sticker. FOUR POSES: 1. hugs pillow with mischievous smile; 2. raises pillow in both hands; 3. swings soft pillow sideways playfully; 4. hugs pillow laughing. No injury, weapons or aggression.  安全约束（原英文提示的中文记录）：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "hugs pillow with mischievous smile",
+        "raises pillow in both hands",
+        "swings soft pillow sideways playfully",
+        "hugs pillow laughing"
+      ],
+      "motionPreset": "impact",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/play-core-pillow.png",
+      "poseFiles": [
+        "poses/play-core-pillow/pose-01.png",
+        "poses/play-core-pillow/pose-02.png",
+        "poses/play-core-pillow/pose-03.png",
+        "poses/play-core-pillow/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "generatedAt": "2026-09-09",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-2c9170a5-de65-4a5f-a71f-4952b34e0eec.png",
+        "masterSha256": "169b47f6d2eaf65d003e00e3c11081cbc85ab57dccfbe7402398d1a97735e904"
+      }
+    },
+    {
+      "id": "play-cat-paw",
+      "keyword": "打闹",
+      "text": "打闹",
+      "style": "ai-original-pet",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create one genuine transparent RGBA PNG 2x2 sprite sheet, FOUR DISTINCT key poses of identical original subject, reading order. Wide fully transparent gutters at middle axes. Each complete pose inside its own quadrant with generous margins. Consistent identity, scale and material, real changes in limbs/expression not mere translations. No text, letters, watermark, logos, existing IP, checkerboard, background or ground. Exactly correct limbs, no duplicates. SUBJECT: An original round orange kitten with cream muzzle, two arms two legs and one tail, cheeky playful face, plush-like hand drawn sticker. FOUR POSES: 1. sits grinning paws low; 2. lifts one front paw; 3. playfully swats air with that paw; 4. hides mouth behind both front paws giggling. No injury, weapons or aggression.  安全约束（原英文提示的中文记录）：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "sits grinning paws low",
+        "lifts one front paw",
+        "playfully swats air with that paw",
+        "hides mouth behind both front paws giggling"
+      ],
+      "motionPreset": "impact",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/play-cat-paw.png",
+      "poseFiles": [
+        "poses/play-cat-paw/pose-01.png",
+        "poses/play-cat-paw/pose-02.png",
+        "poses/play-cat-paw/pose-03.png",
+        "poses/play-cat-paw/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "generatedAt": "2026-09-09",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-4fc6de59-5a77-4b91-80cd-ae45c58bf0b6.png",
+        "masterSha256": "856d490dbf9a794235a63613f93268eef9bfedb01146f1235378c353091d6230"
+      }
+    },
+    {
+      "id": "play-person-pillow",
+      "keyword": "打闹",
+      "text": "打闹",
+      "style": "original-life-scene",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create one genuine transparent RGBA PNG 2x2 sprite sheet, FOUR DISTINCT key poses of identical original subject, reading order. Wide fully transparent gutters at middle axes. Each complete pose inside its own quadrant with generous margins. Consistent identity, scale and material, real changes in limbs/expression not mere translations. No text, letters, watermark, logos, existing IP, checkerboard, background or ground. Exactly correct limbs, no duplicates. SUBJECT: An entirely fictional original adult Chinese woman, natural East Asian facial features, straight black bob hair, plain yellow sweater, waist-up hand-painted illustration, two hands holding a soft lilac pillow, not any celebrity. FOUR POSES: 1. hugs pillow and smiles cheekily; 2. lifts pillow with both hands; 3. swings pillow playfully left; 4. holds pillow close and laughs. No injury, weapons or aggression. 人物设定：原创中国成年人，非真实人物，非明星。 安全约束（原英文提示的中文记录）：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "hugs pillow and smiles cheekily",
+        "lifts pillow with both hands",
+        "swings pillow playfully left",
+        "holds pillow close and laughs"
+      ],
+      "motionPreset": "impact",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/play-person-pillow.png",
+      "poseFiles": [
+        "poses/play-person-pillow/pose-01.png",
+        "poses/play-person-pillow/pose-02.png",
+        "poses/play-person-pillow/pose-03.png",
+        "poses/play-person-pillow/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "personOrigin": "China",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "generatedAt": "2026-09-09",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-8f0706cd-971a-43ac-ba4d-df98fe3a2778.png",
+        "masterSha256": "f6f3e969752a1c9379f4bc4d86f0abc78b41d874783796449d629ca66d37f666"
+      }
+    },
+    {
+      "id": "play-clay-mitten",
+      "keyword": "打闹",
+      "text": "打闹",
+      "style": "3d-plush",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create one genuine transparent RGBA PNG 2x2 sprite sheet, FOUR DISTINCT key poses of identical original subject, reading order. Wide fully transparent gutters at middle axes. Each complete pose inside its own quadrant with generous margins. Consistent identity, scale and material, real changes in limbs/expression not mere translations. No text, letters, watermark, logos, existing IP, checkerboard, background or ground. Exactly correct limbs, no duplicates. SUBJECT: A completely original teal clay blob character with two arms wearing oversized rounded coral soft mittens, two stubby feet, simple expressive face. Handmade clay stopmotion appearance. FOUR POSES: 1. stands with mittens at sides; 2. raises both mittens playfully; 3. extends one mitten toward viewer without violence; 4. both mittens cover mouth giggling. No injury, weapons or aggression.  安全约束（原英文提示的中文记录）：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "stands with mittens at sides",
+        "raises both mittens playfully",
+        "extends one mitten toward viewer without violence",
+        "both mittens cover mouth giggling"
+      ],
+      "motionPreset": "impact",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/play-clay-mitten.png",
+      "poseFiles": [
+        "poses/play-clay-mitten/pose-01.png",
+        "poses/play-clay-mitten/pose-02.png",
+        "poses/play-clay-mitten/pose-03.png",
+        "poses/play-clay-mitten/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "generatedAt": "2026-09-09",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-275d6190-b33f-4045-9678-156411f8e5b4.png",
+        "masterSha256": "2137964cea16d03f06cd27d2ea32f9300990b206c461cd1a4ebb2ce55f999b43"
+      }
+    },
+    {
+      "id": "chase-core-run",
+      "keyword": "追赶",
+      "text": "追赶",
+      "style": "original-character",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create one genuine transparent RGBA PNG 2x2 sprite sheet, FOUR DISTINCT key poses of identical original subject, reading order. Wide fully transparent gutters at middle axes. Each complete pose inside its own quadrant with generous margins. Consistent identity, scale and material, real changes in limbs/expression not mere translations. No text, letters, watermark, logos, existing IP, checkerboard, background or ground. Exactly correct limbs, no duplicates. SUBJECT: A unique cream rice-dumpling creature, tiny orange knotted topknot, two tiny orange tipped tufts and orange scarf, two arms and two feet. Soft painted sticker. FOUR POSES: 1. leans forward ready to dash; 2. runs side-on with one foot stretched far forward; 3. stumbles playfully backwards with both arms up and one foot high, still happy; 4. faces viewer reaching both hands forward with playful grin. All four body silhouettes must be obviously different. No copies of the same running pose. No injury, no weapons. Wide transparent margins and middle gutters.  安全约束（原英文提示的中文记录）：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "leans forward ready to dash",
+        "runs side-on with one foot stretched far forward",
+        "stumbles playfully backwards with both arms up and one foot high, still happy",
+        "faces viewer reaching both hands forward with playful grin"
+      ],
+      "motionPreset": "impact",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/chase-core-run.png",
+      "poseFiles": [
+        "poses/chase-core-run/pose-01.png",
+        "poses/chase-core-run/pose-02.png",
+        "poses/chase-core-run/pose-03.png",
+        "poses/chase-core-run/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "generatedAt": "2026-09-09",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-4698a7ef-013e-4f1e-b938-69ab3bda5685.png",
+        "masterSha256": "75f724ec243322e8564f339760b2520906fdc78cc497506b84f2b13b6e088f76"
+      }
+    },
+    {
+      "id": "chase-dog-run",
+      "keyword": "追赶",
+      "text": "追赶",
+      "style": "ai-original-pet",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create one genuine transparent RGBA PNG 2x2 sprite sheet, FOUR DISTINCT key poses of identical original subject, reading order. Wide fully transparent gutters at middle axes. Each complete pose inside its own quadrant with generous margins. Consistent identity, scale and material, real changes in limbs/expression not mere translations. No text, letters, watermark, logos, existing IP, checkerboard, background or ground. Exactly correct limbs, no duplicates. SUBJECT: An original small caramel puppy with floppy ears, cream chest, short legs, one tail, hand-drawn full-body sticker. Exactly four legs. Excited playful expression. FOUR POSES: 1. crouches ready to play; 2. bounds forward front paws reaching; 3. bounds with rear paws tucked and ears up; 4. stops grinning with front paws reaching. No injury, weapons or aggression.  安全约束（原英文提示的中文记录）：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "crouches ready to play",
+        "bounds forward front paws reaching",
+        "bounds with rear paws tucked and ears up",
+        "stops grinning with front paws reaching"
+      ],
+      "motionPreset": "impact",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/chase-dog-run.png",
+      "poseFiles": [
+        "poses/chase-dog-run/pose-01.png",
+        "poses/chase-dog-run/pose-02.png",
+        "poses/chase-dog-run/pose-03.png",
+        "poses/chase-dog-run/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "generatedAt": "2026-09-09",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-5a4dc120-d23a-47ea-86b1-931c2f914c67.png",
+        "masterSha256": "984f6020736c63b7b92d8ac547e4f2f2692e214a9415963f62adfc69c661a61c"
+      }
+    },
+    {
+      "id": "chase-person-run",
+      "keyword": "追赶",
+      "text": "追赶",
+      "style": "original-life-scene",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create one genuine transparent RGBA PNG 2x2 sprite sheet, FOUR DISTINCT key poses of identical original subject, reading order. Wide fully transparent gutters at middle axes. Each complete pose inside its own quadrant with generous margins. Consistent identity, scale and material, real changes in limbs/expression not mere translations. No text, letters, watermark, logos, existing IP, checkerboard, background or ground. Exactly correct limbs, no duplicates. SUBJECT: An entirely fictional original adult Chinese man, natural East Asian facial features, neat short black hair, plain green sweatshirt and dark trousers, full-body painterly illustration, exactly two arms and two legs, no celebrity. FOUR POSES: 1. leans forward grinning ready to chase; 2. runs left foot forward right arm forward; 3. runs right foot forward left arm forward; 4. slows and reaches both hands forward playfully. No injury, weapons or aggression. 人物设定：原创中国成年人，非真实人物，非明星。 安全约束（原英文提示的中文记录）：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "leans forward grinning ready to chase",
+        "runs left foot forward right arm forward",
+        "runs right foot forward left arm forward",
+        "slows and reaches both hands forward playfully"
+      ],
+      "motionPreset": "impact",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/chase-person-run.png",
+      "poseFiles": [
+        "poses/chase-person-run/pose-01.png",
+        "poses/chase-person-run/pose-02.png",
+        "poses/chase-person-run/pose-03.png",
+        "poses/chase-person-run/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "personOrigin": "China",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "generatedAt": "2026-09-09",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-fda8d7c9-9d47-4a3f-8803-65daf5ef3892.png",
+        "masterSha256": "bc1a191d71153d3b163f0c5fdf75a7283a7f677f85fc97c2e12932f939e24fa2"
+      }
+    },
+    {
+      "id": "chase-plush-bird",
+      "keyword": "追赶",
+      "text": "追赶",
+      "style": "3d-plush",
+      "direction": "pet-or-person",
+      "distribution": "bundled",
+      "sourceType": "ai-original",
+      "prompt": "Create one genuine transparent RGBA PNG 2x2 sprite sheet, FOUR DISTINCT key poses of identical original subject, reading order. Wide fully transparent gutters at middle axes. Each complete pose inside its own quadrant with generous margins. Consistent identity, scale and material, real changes in limbs/expression not mere translations. No text, letters, watermark, logos, existing IP, checkerboard, background or ground. Exactly correct limbs, no duplicates. SUBJECT: An entirely original round turquoise plush bird with tiny yellow beak, two wings and two orange legs, fuzzy sewn texture, happy playful expression, full-body sticker. FOUR POSES: 1. leans forward ready; 2. runs left leg forward with wings back; 3. runs right leg forward with wings raised; 4. reaches both wings toward viewer grinning. No injury, weapons or aggression.  安全约束（原英文提示的中文记录）：完全原创，无文字，无水印，无品牌，无现有角色。",
+      "motionScript": [
+        "leans forward ready",
+        "runs left leg forward with wings back",
+        "runs right leg forward with wings raised",
+        "reaches both wings toward viewer grinning"
+      ],
+      "motionPreset": "impact",
+      "frameCount": 16,
+      "durationMs": 1600,
+      "masterFile": "masters/chase-plush-bird.png",
+      "poseFiles": [
+        "poses/chase-plush-bird/pose-01.png",
+        "poses/chase-plush-bird/pose-02.png",
+        "poses/chase-plush-bird/pose-03.png",
+        "poses/chase-plush-bird/pose-04.png"
+      ],
+      "textPlacement": "bottom",
+      "generation": {
+        "tool": "image_gen.imagegen",
+        "generatedAt": "2026-09-09",
+        "sourcePath": "/home/ko/.codex/generated_images/01a079dd-838c-7a81-82ba-904fa5ac8e38/exec-91511fe4-b0da-42d5-9a3e-28edb1304836.png",
+        "masterSha256": "0cc1b19fbc08aa5b255af0e783de848874c7b46549e1df78c1fac3b05a6aea1d"
+      }
+    }
+  ]
+}
