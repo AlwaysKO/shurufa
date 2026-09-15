@@ -1,0 +1,112 @@
+{
+  "created": "2026-09-15",
+  "status": "trial-only",
+  "publicationAllowed": false,
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "actualDynamicPlayback": "not-performed",
+  "method": "源图及最终实际GIF帧0/5/10/13/19抽帧；只读独立复核，不代替实际播放或用户语义验收",
+  "machinePass": 12,
+  "reviewCandidates": 11,
+  "needsRework": [
+    "siamese-understand"
+  ],
+  "items": [
+    {
+      "id": "terrier-refuse",
+      "caption": "不听",
+      "status": "pending",
+      "machine": "pass",
+      "publicationAllowed": false,
+      "note": "侧眼到闭眼转脸可见，可能也读作傲娇；无掌部。需实际播放。"
+    },
+    {
+      "id": "mouse-refuse",
+      "caption": "不听",
+      "status": "pending",
+      "machine": "pass",
+      "publicationAllowed": false,
+      "note": "v1/v2循环失败，v3通过；当前掌部完整，截到的是腕臂/躯干，人工待审。"
+    },
+    {
+      "id": "otter-refuse",
+      "caption": "不听",
+      "status": "pending",
+      "machine": "pass",
+      "publicationAllowed": false,
+      "note": "捂耳拒听可见，但源格4抬爪后5又放下、6再抬，动作有反复，实际节奏待审。"
+    },
+    {
+      "id": "man-refuse",
+      "caption": "不听",
+      "status": "pending",
+      "machine": "pass",
+      "publicationAllowed": false,
+      "note": "v2抬高手掌后不再被字幕裁切；拒听闭眼捂耳表演待实际播放。"
+    },
+    {
+      "id": "siamese-understand",
+      "caption": "懂了",
+      "status": "needs-rework",
+      "machine": "pass",
+      "publicationAllowed": false,
+      "note": "needs-rework：v2行位移引入第三行顶部邻格残片，v3统一缩小后残片消失，但首尾耳顶约54→37，17px上移，停止本轮修订。仅问题证据，不计候选。"
+    },
+    {
+      "id": "owl-understand",
+      "caption": "懂了",
+      "status": "pending",
+      "machine": "pass",
+      "publicationAllowed": false,
+      "note": "有真实眉眼/张嘴动作，但不完全是极简线条；第8源格恢复圆眼，懂了语义偏弱、可能惊讶，待用户实际播放审核。"
+    },
+    {
+      "id": "raccoon-understand",
+      "caption": "懂了",
+      "status": "pending",
+      "machine": "pass",
+      "publicationAllowed": false,
+      "note": "v1循环失败、v2通过；点头略偏侧歪，懂了可能读成卖萌，待语义审核。"
+    },
+    {
+      "id": "man-understand",
+      "caption": "懂了",
+      "status": "pending",
+      "machine": "pass",
+      "publicationAllowed": false,
+      "note": "思考、抬眉、食指竖起、微笑可见；可能读为有主意，待语义审核。"
+    },
+    {
+      "id": "spaniel-nervous",
+      "caption": "紧张",
+      "status": "pending",
+      "machine": "pass",
+      "publicationAllowed": false,
+      "note": "左右视线及忧虑眼神可见，峰值变化弱，紧张可能读成委屈，待实际播放。"
+    },
+    {
+      "id": "penguin-nervous",
+      "caption": "紧张",
+      "status": "pending",
+      "machine": "pass",
+      "publicationAllowed": false,
+      "note": "双翼贴胸和不安嘴形可见，黑白有灰色渲染，不完全纯线条，人工待审。"
+    },
+    {
+      "id": "hamster-nervous",
+      "caption": "紧张",
+      "status": "pending",
+      "machine": "pass",
+      "publicationAllowed": false,
+      "note": "v2抬高双爪后爪部完整；可能读作害怕/拜托，人工待审。"
+    },
+    {
+      "id": "man-nervous",
+      "caption": "紧张",
+      "status": "pending",
+      "machine": "pass",
+      "publicationAllowed": false,
+      "note": "v2双手抬至下巴后掌指完整；握手咬唇后皱眉，可能读作担忧/祈求，人工待审。"
+    }
+  ]
+}

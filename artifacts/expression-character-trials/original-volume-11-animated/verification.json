@@ -1,0 +1,19 @@
+{
+  "created": "2026-09-15",
+  "sourceChainsVerified": 12,
+  "revisionsVerified": 8,
+  "rejectedHashesVerified": 12,
+  "actualGifMetadataAndShaVerified": 12,
+  "fallbackPixelEqual": 12,
+  "previousGifHashesUnchanged": 141,
+  "machinePass": 12,
+  "machineFail": 0,
+  "visualNeedsRework": [
+    "siamese-understand"
+  ],
+  "reviewCandidates": 11,
+  "maxGifBytes": 132352,
+  "peakPose8Ms": 900,
+  "actualDynamicPlayback": "not-performed",
+  "publicationAllowed": false
+}

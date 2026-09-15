@@ -1,0 +1,271 @@
+{
+  "created": "2026-09-15",
+  "sourceType": "ai-original",
+  "status": "trial-only",
+  "publicationAllowed": false,
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "items": [
+    {
+      "id": "terrier-refuse",
+      "caption": "不听",
+      "prompt": "Original animation sprite sheet, 4 columns x 3 rows of exactly 12 equal SQUARE cells, landscape 4:3. Plain opaque WHITE background, NO text, NO gridlines. Same original character in all cells, fixed camera/scale/lighting. COMPACT chest-up subject fully inside x22%-78%, y18%-72% of EACH square, generous white above ears and below hands. Registration identical in every row; do NOT arrange by equal gaps around visible shapes. No clipping. NO zoom, translation-only, ghosting, IP, celebrity, logos. Twelve successive ACTED poses of ONE emotion, not a collection of unrelated emojis. Pose8 is the held emotion; recovery starts9; pose12 matches1 exactly in placement and expression. Photoreal wiry tan small terrier dog with folded short ears, scruffy eyebrows, chest-up without paws. Refusing to listen to nagging. 1 neutral face frontal;2 eyes slide left suspicious;3 eyelids narrow;4 lips press firmly;5 eyes close halfway and head starts turning right 3degrees;6 head turns right8degrees, closes eyes;7 chin slightly up stubbornly, eyes firmly shut, mouth tight;8 holds this stubborn refusal;9 head starts gently returning;10 eyes gradually reopen;11 almost front neutral;12 exactly1. No smiling.",
+      "masterFile": "masters/terrier-refuse.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-61d5375f-f0aa-494f-9444-6eda5f10d2de.png",
+      "revisions": [],
+      "selectedVersion": 1,
+      "sha256": "8333ce13b4ad7e5965721d0ecefdab7b79452b7141a93a941e98a966ca855b0a",
+      "originalSha256": "8333ce13b4ad7e5965721d0ecefdab7b79452b7141a93a941e98a966ca855b0a"
+    },
+    {
+      "id": "mouse-refuse",
+      "caption": "不听",
+      "prompt": "Original animation sprite sheet, 4 columns x 3 rows of exactly 12 equal SQUARE cells, landscape 4:3. Plain opaque WHITE background, NO text, NO gridlines. Same original character in all cells, fixed camera/scale/lighting. COMPACT chest-up subject fully inside x22%-78%, y18%-72% of EACH square, generous white above ears and below hands. Registration identical in every row; do NOT arrange by equal gaps around visible shapes. No clipping. NO zoom, translation-only, ghosting, IP, celebrity, logos. Twelve successive ACTED poses of ONE emotion, not a collection of unrelated emojis. Pose8 is the held emotion; recovery starts9; pose12 matches1 exactly in placement and expression. Minimal black-and-white ink cartoon mouse, small rounded ears, pear-shaped face, clean expressive eyebrows, NO familiar costume. Refuses listening:1 palms already beside cheeks fully in frame;2 side-eye;3 brows angle irritated;4 both small paws rise;5 paws approach ears;6 cover both ears while eyes narrow;7 eyes squeeze closed, both paws cover ears with stubborn tight lips;8 hold refusal;9 paws start lowering;10 eyes reopen;11 paws near cheeks;12 exactly1. Two arms only. No head translation.",
+      "masterFile": "masters/mouse-refuse.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-95eac84e-5632-4f87-a14c-07add46b83b9.png",
+      "revisions": [
+        {
+          "id": "mouse-refuse",
+          "version": 2,
+          "prompt": "Correct ONLY registration of this twelve-pose 4x3 square-cell sprite sheet. Keep every expression and both paws and ears unchanged. Row1 unchanged; shift row2 characters DOWN 12 pixels and row3 characters DOWN 24 pixels relative to existing positions. All 12 heads identical scale, no resizing. Last cell must match first cell position, silhouette and expression exactly. The mouse keeps hands by cheeks, moves both hands to block ears at cells7/8, then returns. WHITE opaque background, no borders/text.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-0be46781-e11b-4b32-81c6-a80139b84088.png",
+          "referencedMasterAtGeneration": "rejected/mouse-refuse-v1.png",
+          "sha256": "1fd6d822ca5a2fe3775576471002cfd127f4f16ee5e86a5f19dd637f44524d15"
+        },
+        {
+          "id": "mouse-refuse",
+          "version": 3,
+          "prompt": "Change ONLY final row vertical placement and finalcell alignment. Preserve row1 and row2 exactly. In row3 move every character DOWN10pixels within original equal square grid, preserve entire ears and hands. Lastcell12 must visually match cell1, same ear top relative to cell, face position, pupils, hands and body. Same black white mouse and12 refusal poses. No resizing, no text/grid, white background. Ensure all drawn parts stay inside their cell.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-b023cb48-d052-4276-9a20-da39d8dfa8f8.png",
+          "referencedMasterAtGeneration": "rejected/mouse-refuse-v2.png",
+          "sha256": "31a7073c742d3fba028e88be2eb2a8fd4d5b59c253bb30b70b6dc1f18f571244"
+        }
+      ],
+      "selectedVersion": 3,
+      "sha256": "31a7073c742d3fba028e88be2eb2a8fd4d5b59c253bb30b70b6dc1f18f571244",
+      "originalSha256": "53cb3246475176bc467b9c5e4d1ece4a9969579c73dcccda3b88d4a6ad2bfbcd"
+    },
+    {
+      "id": "otter-refuse",
+      "caption": "不听",
+      "prompt": "Original animation sprite sheet, 4 columns x 3 rows of exactly 12 equal SQUARE cells, landscape 4:3. Plain opaque WHITE background, NO text, NO gridlines. Same original character in all cells, fixed camera/scale/lighting. COMPACT chest-up subject fully inside x22%-78%, y18%-72% of EACH square, generous white above ears and below hands. Registration identical in every row; do NOT arrange by equal gaps around visible shapes. No clipping. NO zoom, translation-only, ghosting, IP, celebrity, logos. Twelve successive ACTED poses of ONE emotion, not a collection of unrelated emojis. Pose8 is the held emotion; recovery starts9; pose12 matches1 exactly in placement and expression. Original smooth matte brown CLAY otter bust, round short ears, pale muzzle, no fur, two rounded paws always above lower safe margin. Refuses listening:1 paws beside cheeks;2 eyes look away left;3 brow furrows;4 right paw rises;5 right paw cups ear;6 other paw reaches opposite ear;7 both ears blocked and eyes tightly closed stubbornly, lips compressed;8 hold;9 relax eyebrows and remove first paw;10 remove second paw;11 return front;12 exactly1.",
+      "masterFile": "masters/otter-refuse.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-732f05aa-70dc-4096-8a40-aa3d4c2269d9.png",
+      "revisions": [],
+      "selectedVersion": 1,
+      "sha256": "9fb271ebf2c04672b9e6a45924a5bfee776723e1fab9bbbfe8953466eafb568a",
+      "originalSha256": "9fb271ebf2c04672b9e6a45924a5bfee776723e1fab9bbbfe8953466eafb568a"
+    },
+    {
+      "id": "man-refuse",
+      "caption": "不听",
+      "prompt": "Original animation sprite sheet, 4 columns x 3 rows of exactly 12 equal SQUARE cells, landscape 4:3. Plain opaque WHITE background, NO text, NO gridlines. Same original character in all cells, fixed camera/scale/lighting. COMPACT chest-up subject fully inside x22%-78%, y18%-72% of EACH square, generous white above ears and below hands. Registration identical in every row; do NOT arrange by equal gaps around visible shapes. No clipping. NO zoom, translation-only, ghosting, IP, celebrity, logos. Twelve successive ACTED poses of ONE emotion, not a collection of unrelated emojis. Pose8 is the held emotion; recovery starts9; pose12 matches1 exactly in placement and expression. Fictional original handsome Chinese adult MALE, age28, short dark textured hair, navy plain shirt, photoreal studio bust, no resemblance to real person. Hands visible near shoulders initially. Refuses nagging:1 neutral, both hands near shoulders;2 skeptical side-eye;3 eyebrows furrow;4 both hands rise;5 palms near ears;6 covers ears;7 eyes firmly shut, mouth pursed, palms cover both ears, slight chin tilt away;8 hold;9 hands release;10 eyes reopen;11 returnneutral;12 exactly1. Anatomically correct two hands.",
+      "masterFile": "masters/man-refuse.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-201860c9-bb77-4a3b-a624-9b544e0b8a22.png",
+      "revisions": [
+        {
+          "id": "man-refuse",
+          "version": 2,
+          "prompt": "Edit this exact12pose4x3 sheet to prevent hand clipping. SAME fictional original Chinese adult male, same navy shirt/face, same refusal blocking both ears at cells7/8. In ALL cells both hands must be fully above upper-chest level: initial/resting hands beside cheekbones instead of shoulders; ALL fingers and whole palms completely above eachcell's72% height. Elbows may extend lower, palms never lower. Preserve12consecutive original emotions with fixed camera/scale. Keep same head position eachrow, ample top margin. OPAQUEWHITE no text/grid.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-c1f0ddeb-c6c2-417e-b95e-e25585bcd125.png",
+          "referencedMasterAtGeneration": "rejected/man-refuse-v1.png",
+          "sha256": "02394ecaf5b342cc735f5ae0e891d77fb1c51ef18952f743d079567de7518e76"
+        }
+      ],
+      "selectedVersion": 2,
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "02394ecaf5b342cc735f5ae0e891d77fb1c51ef18952f743d079567de7518e76",
+      "originalSha256": "415199abee1ba1cec5eb37f53153261b2a3db8e3e7b80d342a225496c1c0c815"
+    },
+    {
+      "id": "siamese-understand",
+      "caption": "懂了",
+      "prompt": "Original animation sprite sheet, 4 columns x 3 rows of exactly 12 equal SQUARE cells, landscape 4:3. Plain opaque WHITE background, NO text, NO gridlines. Same original character in all cells, fixed camera/scale/lighting. COMPACT chest-up subject fully inside x22%-78%, y18%-72% of EACH square, generous white above ears and below hands. Registration identical in every row; do NOT arrange by equal gaps around visible shapes. No clipping. NO zoom, translation-only, ghosting, IP, celebrity, logos. Twelve successive ACTED poses of ONE emotion, not a collection of unrelated emojis. Pose8 is the held emotion; recovery starts9; pose12 matches1 exactly in placement and expression. Photoreal Siamese cat bust, small triangular ears entirely inside generous margins, blue eyes, no paws. Suddenly understands an explanation:1 attentive neutral;2 eyes focus up-left;3 brows slightly knit, lips closed;4 eyes widen a little;5 eyebrows lift asymmetrically;6 mouth opens tiny 'oh';7 knowing relaxed eyes, mouth settles and head tips down4degrees in ONE agreeing nod;8 same knowing expression;9 slowly raises head;10 relax eyebrows;11 neutral attentive;12 exactly1. No smile grin or shock, nod small with stable torso.",
+      "masterFile": "masters/siamese-understand.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-37316092-3b54-423a-a3c5-82ee7c379359.png",
+      "revisions": [
+        {
+          "id": "siamese-understand",
+          "version": 2,
+          "prompt": "Correct only vertical row registration in this12pose4column3row Siamese cat sprite sheet. Row1 unchanged. Move every complete cat in row2 DOWN10pixels; row3 DOWN20pixels. Same scale/ears/fur/expression, no resizing or repacking. Lastcell exactly matches firstcell geometry and position within each square. Keep the12understanding expressions, tiny mouth oh, slight nod in7/8 then gentle return. WHITE opaque background no text/grid.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-58c23bf4-f410-4f66-8c81-c65db7ba07b3.png",
+          "referencedMasterAtGeneration": "rejected/siamese-understand-v1.png",
+          "sha256": "dfde3f6c48103dd7823b32bad902457e9e8ebcbb4251ad3794cec4b9b3d76fc0"
+        },
+        {
+          "id": "siamese-understand",
+          "version": 3,
+          "prompt": "This4x3 animation sheet needs safe margins: the SECOND ROW cat bodies spill past squarecell boundary and appear as a horizontal brown line at TOP of thirdrow animation frames. Make all12 cats uniformly18percent smaller (same scale change for ALL12, never animated zoom), center inside their own SQUARE cell with whole bust between y18%-75% and x22%-78%. White margin around EVERY complete bust; no fragments from adjacent row may enter anothercell. Keep same cat and12 genuine facial poses including realizing oh and agreeing nod in7/8, then return. Cell12 placement and expression exactlymatch1. Equal square4x3grid, opaqueWHITE no lines/text.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-fe4fa200-20d8-4ca3-ad6e-68daf767f621.png",
+          "referencedMasterAtGeneration": "rejected/siamese-understand-v2.png",
+          "sha256": "293238c48158cbe572e6235db960fb95343ae0324960bf9b00b6f2037ff3d621"
+        }
+      ],
+      "selectedVersion": 3,
+      "sha256": "293238c48158cbe572e6235db960fb95343ae0324960bf9b00b6f2037ff3d621",
+      "originalSha256": "b844731566ac0cfd67b35d5029c36e0a470f7918a999a267c3ca8fd3a4931ac7"
+    },
+    {
+      "id": "owl-understand",
+      "caption": "懂了",
+      "prompt": "Original animation sprite sheet, 4 columns x 3 rows of exactly 12 equal SQUARE cells, landscape 4:3. Plain opaque WHITE background, NO text, NO gridlines. Same original character in all cells, fixed camera/scale/lighting. COMPACT chest-up subject fully inside x22%-78%, y18%-72% of EACH square, generous white above ears and below hands. Registration identical in every row; do NOT arrange by equal gaps around visible shapes. No clipping. NO zoom, translation-only, ghosting, IP, celebrity, logos. Twelve successive ACTED poses of ONE emotion, not a collection of unrelated emojis. Pose8 is the held emotion; recovery starts9; pose12 matches1 exactly in placement and expression. Minimal black-and-white ink cartoon small round owl, smooth dome head NO ear tufts, expressive brows and small curved beak. Understands suddenly:1 attentive frontal;2 glance up;3 one eyebrow knits questioning;4 beak slightly parts;5 both brows rise;6 eyes brighten with understanding;7 eyelids relax knowingly and tiny head nod down4degrees;8 hold;9 head gently returns;10 beak closes;11 attentive;12 exactly1. No wings, no symbols.",
+      "masterFile": "masters/owl-understand.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-8b3da34b-bc62-4dcd-ab09-750d06b83e96.png",
+      "revisions": [],
+      "selectedVersion": 1,
+      "sha256": "342bdf02a48f58babdd90496ae565e3c7fec3abfff8af7018cf38410b46499e8",
+      "originalSha256": "342bdf02a48f58babdd90496ae565e3c7fec3abfff8af7018cf38410b46499e8"
+    },
+    {
+      "id": "raccoon-understand",
+      "caption": "懂了",
+      "prompt": "Original animation sprite sheet, 4 columns x 3 rows of exactly 12 equal SQUARE cells, landscape 4:3. Plain opaque WHITE background, NO text, NO gridlines. Same original character in all cells, fixed camera/scale/lighting. COMPACT chest-up subject fully inside x22%-78%, y18%-72% of EACH square, generous white above ears and below hands. Registration identical in every row; do NOT arrange by equal gaps around visible shapes. No clipping. NO zoom, translation-only, ghosting, IP, celebrity, logos. Twelve successive ACTED poses of ONE emotion, not a collection of unrelated emojis. Pose8 is the held emotion; recovery starts9; pose12 matches1 exactly in placement and expression. Smooth matte CLAY warm-gray raccoon bust, round ears, narrow asymmetric natural charcoal eye mask, cream muzzle, no hair/fur. Paws not shown. Understands suddenly:1 attentive neutral;2 sideways questioning eyes;3 brows knit;4 gaze recenters;5 eyebrows lift in realization;6 tiny mouth 'oh';7 head tips down4degrees agreeing, knowing eyes and relaxed smile;8 holds;9 raises head gently;10 smile relaxes;11 attentive;12 exactly1. No bouncing.",
+      "masterFile": "masters/raccoon-understand.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-baf401c9-0000-4335-bff8-b0ccabaf6ee6.png",
+      "revisions": [
+        {
+          "id": "raccoon-understand",
+          "version": 2,
+          "prompt": "Fix this 12pose 4column3row sheet's LOOP REGISTRATION ONLY. Keep same clay raccoon, all expressions and one small understanding nod in cells7/8. Row1 unchanged. Move entire characters row2 DOWN 10pixels, row3 DOWN20pixels. Equal square cell height362, do not pack rows by whitespace. Lastcell must exactly match firstcell ear/head/body position and neutral expression. No scale change, no new fur or detail. White opaque no text.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-d8805156-21bc-4af2-9f63-1bcdfb653c6d.png",
+          "referencedMasterAtGeneration": "rejected/raccoon-understand-v1.png",
+          "sha256": "f50c636c8c8f11b291daf1ac81dbc8f7a10b9e6eceaf7abb80c96c35b6d32cde"
+        }
+      ],
+      "selectedVersion": 2,
+      "sha256": "f50c636c8c8f11b291daf1ac81dbc8f7a10b9e6eceaf7abb80c96c35b6d32cde",
+      "originalSha256": "51c61c65e19993060840842cc3f17f123755a3bf1a5e878f1731184433f6561e"
+    },
+    {
+      "id": "man-understand",
+      "caption": "懂了",
+      "prompt": "Original animation sprite sheet, 4 columns x 3 rows of exactly 12 equal SQUARE cells, landscape 4:3. Plain opaque WHITE background, NO text, NO gridlines. Same original character in all cells, fixed camera/scale/lighting. COMPACT chest-up subject fully inside x22%-78%, y18%-72% of EACH square, generous white above ears and below hands. Registration identical in every row; do NOT arrange by equal gaps around visible shapes. No clipping. NO zoom, translation-only, ghosting, IP, celebrity, logos. Twelve successive ACTED poses of ONE emotion, not a collection of unrelated emojis. Pose8 is the held emotion; recovery starts9; pose12 matches1 exactly in placement and expression. Fictional handsome original Chinese adult MALE age30, short side-part dark hair, forest green shirt, photoreal bust. Right hand visible at shoulder height throughout. Understands a point:1 neutral listening right hand by shoulder;2 browknit thinking;3 glanceup;4 eyes refocus;5 brows lift;6 mouth small oh and right index unfolds upwards;7 knowing halfsmile with index upright beside cheek;8 hold;9 index begins folding;10 mouth relaxes;11 neutral listening;12 exactly1. Correct anatomy, no lower clipped wrists.",
+      "masterFile": "masters/man-understand.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-81f00a78-62c5-4398-b8ff-ff7d1ec1de93.png",
+      "revisions": [],
+      "selectedVersion": 1,
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "153fa324b84c70f32d6a401036aee461e5723e96cb47b53852d0bb0c4680ffbd",
+      "originalSha256": "153fa324b84c70f32d6a401036aee461e5723e96cb47b53852d0bb0c4680ffbd"
+    },
+    {
+      "id": "spaniel-nervous",
+      "caption": "紧张",
+      "prompt": "Original animation sprite sheet, 4 columns x 3 rows of exactly 12 equal SQUARE cells, landscape 4:3. Plain opaque WHITE background, NO text, NO gridlines. Same original character in all cells, fixed camera/scale/lighting. COMPACT chest-up subject fully inside x22%-78%, y18%-72% of EACH square, generous white above ears and below hands. Registration identical in every row; do NOT arrange by equal gaps around visible shapes. No clipping. NO zoom, translation-only, ghosting, IP, celebrity, logos. Twelve successive ACTED poses of ONE emotion, not a collection of unrelated emojis. Pose8 is the held emotion; recovery starts9; pose12 matches1 exactly in placement and expression. Photoreal chest-up chestnut spaniel, compact folded floppy ears fully visible, silky fur, no paws. Nervous awaiting a result:1 alert closed mouth;2 glanceleft;3 glance right with slightly knitted brows;4 mouth corners draw tight;5 ears pull back a little;6 lowerlip quivers subtly;7 wide worried eyes, raised innerbrows, compressed lips, not smiling or angry;8 hold;9 ears relax;10 lips loosen;11 eyes returnfront;12 exactly1. Fixed body no shakes.",
+      "masterFile": "masters/spaniel-nervous.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-a33f6b0f-3970-4afb-9916-3508eae0e7c4.png",
+      "revisions": [],
+      "selectedVersion": 1,
+      "sha256": "694b040bc33d7b6329e4e48c6144b7ed02aef03a0742168d4c5ec322f8a2f37e",
+      "originalSha256": "694b040bc33d7b6329e4e48c6144b7ed02aef03a0742168d4c5ec322f8a2f37e"
+    },
+    {
+      "id": "penguin-nervous",
+      "caption": "紧张",
+      "prompt": "Original animation sprite sheet, 4 columns x 3 rows of exactly 12 equal SQUARE cells, landscape 4:3. Plain opaque WHITE background, NO text, NO gridlines. Same original character in all cells, fixed camera/scale/lighting. COMPACT chest-up subject fully inside x22%-78%, y18%-72% of EACH square, generous white above ears and below hands. Registration identical in every row; do NOT arrange by equal gaps around visible shapes. No clipping. NO zoom, translation-only, ghosting, IP, celebrity, logos. Twelve successive ACTED poses of ONE emotion, not a collection of unrelated emojis. Pose8 is the held emotion; recovery starts9; pose12 matches1 exactly in placement and expression. Minimal black-and-white ink original penguin, small oval eyes with expressive brows, short narrow beak, rounded compact bust, two small wings at upper chest. Nervous awaiting reply:1 wings lightly at chest;2 glanceleft;3 glanceright;4 brows raise inner corners;5 wings press together;6 beak compresses;7 anxious innerbrows up, small uneasy beak, wings tightly pressed on chest;8 hold;9 wings relax;10 brows relax;11 eyesfront;12 exactly1. No costume or familiar IP.",
+      "masterFile": "masters/penguin-nervous.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-4a6be086-673d-4a78-92d0-4684e3372148.png",
+      "revisions": [],
+      "selectedVersion": 1,
+      "sha256": "55f80d3de2e331b3a012acba311900ef4f5da96b59eea9fc020b6ac34bd25568",
+      "originalSha256": "55f80d3de2e331b3a012acba311900ef4f5da96b59eea9fc020b6ac34bd25568"
+    },
+    {
+      "id": "hamster-nervous",
+      "caption": "紧张",
+      "prompt": "Original animation sprite sheet, 4 columns x 3 rows of exactly 12 equal SQUARE cells, landscape 4:3. Plain opaque WHITE background, NO text, NO gridlines. Same original character in all cells, fixed camera/scale/lighting. COMPACT chest-up subject fully inside x22%-78%, y18%-72% of EACH square, generous white above ears and below hands. Registration identical in every row; do NOT arrange by equal gaps around visible shapes. No clipping. NO zoom, translation-only, ghosting, IP, celebrity, logos. Twelve successive ACTED poses of ONE emotion, not a collection of unrelated emojis. Pose8 is the held emotion; recovery starts9; pose12 matches1 exactly in placement and expression. Smooth matte beige CLAY hamster bust, small rounded ears, pale muzzle, NOT fuzzy or plush, tiny paws visible at upper chest. Nervous awaiting answer:1 paws loosely together at chest;2 eyes glanceleft;3 glance right;4 innerbrows rise and lip tightens;5 paws grip each other;6 shoulders tense subtly;7 worried eyes with furrow between raisedinnerbrows, lips pressed, paws gripped;8 hold;9 paws release;10 shoulders relax;11 eyesfront;12 exactly1. No smile, not excited.",
+      "masterFile": "masters/hamster-nervous.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-a6a5dd9b-f615-4326-a681-a469f0d796f5.png",
+      "revisions": [
+        {
+          "id": "hamster-nervous",
+          "version": 2,
+          "prompt": "Fix ONLY paw safety margin in this4x3 12pose clay hamster animation. Same character/emotion sequence. Raise BOTH paws in EVERYcell to just under muzzle, so ALL paws and fingertips fully inside top70% of each square cell. Initial/resting paws must ALSO be raised. Keep paws loose in1/12 and clasped worriedly7/8. No new fur. Fixed scale/position in allrows, lastmatchesfirst. OpaqueWHITE no text.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-2e354938-95e3-44aa-8501-aca997ae3cb6.png",
+          "referencedMasterAtGeneration": "rejected/hamster-nervous-v1.png",
+          "sha256": "370df9d118cbdccfa194860f2e8a6c3d944fd279de5bed630edb57d2d378275a"
+        }
+      ],
+      "selectedVersion": 2,
+      "sha256": "370df9d118cbdccfa194860f2e8a6c3d944fd279de5bed630edb57d2d378275a",
+      "originalSha256": "2ec0c5ed50029af6e544dca2afb6d80e550de77eccb7ce03c82c9929710d1e5d"
+    },
+    {
+      "id": "man-nervous",
+      "caption": "紧张",
+      "prompt": "Original animation sprite sheet, 4 columns x 3 rows of exactly 12 equal SQUARE cells, landscape 4:3. Plain opaque WHITE background, NO text, NO gridlines. Same original character in all cells, fixed camera/scale/lighting. COMPACT chest-up subject fully inside x22%-78%, y18%-72% of EACH square, generous white above ears and below hands. Registration identical in every row; do NOT arrange by equal gaps around visible shapes. No clipping. NO zoom, translation-only, ghosting, IP, celebrity, logos. Twelve successive ACTED poses of ONE emotion, not a collection of unrelated emojis. Pose8 is the held emotion; recovery starts9; pose12 matches1 exactly in placement and expression. Fictional handsome original Chinese adult MALE age27, cropped black hair, slate-gray shirt, photoreal bust, both hands loosely together at upper chest fully visible. Nervous awaiting important result:1 neutral attentive;2 eyes glanceleft;3 glance right;4 innerbrows raise worriedly;5 lips press;6 clasps hands firmly and bites lowerlip very lightly;7 worried eyes and tense clasped hands, tight jaw, no smile;8 hold;9 release lips;10 loosen clasp;11 neutral;12 exactly1. Anatomically correct hands fixed scale.",
+      "masterFile": "masters/man-nervous.png",
+      "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-8a9d74b4-f7c6-4568-9c44-b1048350671f.png",
+      "revisions": [
+        {
+          "id": "man-nervous",
+          "version": 2,
+          "prompt": "Edit ONLY hand placement in this12pose4x3 sheet. Same fictional handsome Chinese adult MALE in gray shirt, same 12 nervous expressions. Raise BOTH clasped hands in EVERY cell to just below the CHIN, fingers near chin and palms fully visible above eachcell's70% height. Resting pose1/12 also hands belowchin, NOT chestbottom. Nervous pose7/8 tense clasp and worried brows. No extra fingers, anatomically correct. Maintain all other face/scale/row positions. WHITE opaque background no text.",
+          "generationSource": "/home/ko/.codex/generated_images/01a090b5-d03a-7821-99b1-b36a5bafccf9/exec-cae4fcaa-d8fa-408a-afdf-9d73cd3dd171.png",
+          "referencedMasterAtGeneration": "rejected/man-nervous-v1.png",
+          "sha256": "bdfa04b952f5a5bd71efc1f01759f581dcd6f913cb3936e89eb3bf95ce543181"
+        }
+      ],
+      "selectedVersion": 2,
+      "personOrigin": "China",
+      "personGender": "male",
+      "adult": true,
+      "sha256": "bdfa04b952f5a5bd71efc1f01759f581dcd6f913cb3936e89eb3bf95ce543181",
+      "originalSha256": "fba6bf39a1b1c5487c4e3f8009dddd1bea7d82011b68d75c6eb131ec9cf49cc3"
+    }
+  ],
+  "rejected": [
+    {
+      "file": "rejected/hamster-nervous-v1.png",
+      "sha256": "2ec0c5ed50029af6e544dca2afb6d80e550de77eccb7ce03c82c9929710d1e5d"
+    },
+    {
+      "file": "rejected/initial-evidence-0.png",
+      "sha256": "f065eba11ba95c976ec04149e486765dfc6bba01a3dc4070afc3a506d7d587f4"
+    },
+    {
+      "file": "rejected/initial-evidence-1.png",
+      "sha256": "b2c50a25c9c5ef088aaca8a4aa743657ca72c8568919242c35a8ba9cb705e002"
+    },
+    {
+      "file": "rejected/initial-evidence-2.png",
+      "sha256": "619a33c30218a3b3062255bd48f2851d0d35c7ab06809b94894e2b8fb90cc456"
+    },
+    {
+      "file": "rejected/man-nervous-v1.png",
+      "sha256": "fba6bf39a1b1c5487c4e3f8009dddd1bea7d82011b68d75c6eb131ec9cf49cc3"
+    },
+    {
+      "file": "rejected/man-refuse-v1.png",
+      "sha256": "415199abee1ba1cec5eb37f53153261b2a3db8e3e7b80d342a225496c1c0c815"
+    },
+    {
+      "file": "rejected/mouse-refuse-v1.png",
+      "sha256": "53cb3246475176bc467b9c5e4d1ece4a9969579c73dcccda3b88d4a6ad2bfbcd"
+    },
+    {
+      "file": "rejected/mouse-refuse-v2.png",
+      "sha256": "1fd6d822ca5a2fe3775576471002cfd127f4f16ee5e86a5f19dd637f44524d15"
+    },
+    {
+      "file": "rejected/raccoon-understand-v1.png",
+      "sha256": "51c61c65e19993060840842cc3f17f123755a3bf1a5e878f1731184433f6561e"
+    },
+    {
+      "file": "rejected/second-understand-evidence.png",
+      "sha256": "f734e9d674fbd7dde6f29d59f950adecbf00559dae51f87416a451f31e6898ac"
+    },
+    {
+      "file": "rejected/siamese-understand-v1.png",
+      "sha256": "b844731566ac0cfd67b35d5029c36e0a470f7918a999a267c3ca8fd3a4931ac7"
+    },
+    {
+      "file": "rejected/siamese-understand-v2.png",
+      "sha256": "dfde3f6c48103dd7823b32bad902457e9e8ebcbb4251ad3794cec4b9b3d76fc0"
+    }
+  ]
+}

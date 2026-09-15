@@ -300,3 +300,16 @@ it('renders twelve volume10 originals with fixed captions and provenance',async(
    await expect(renderReferenceCharacterGif(await master(),{...item,...patch})).rejects.toThrow();
  }
 },30000);
+
+it('renders twelve volume11 originals with fixed captions and provenance',async()=>{
+ const groups=[['不听',['terrier-refuse','mouse-refuse','otter-refuse','man-refuse']],['懂了',['siamese-understand','owl-understand','raccoon-understand','man-understand']],['紧张',['spaniel-nervous','penguin-nervous','hamster-nervous','man-nervous']]] as const;
+ for(const [caption,ids] of groups) for(const id of ids){
+  const item={...panda,id,caption,masterFile:`masters/${id}.png`,sourceType:'ai-original'};
+  const r=await renderReferenceCharacterGif(await master(),item);
+  expect(r.audit.issues).toEqual([]);
+  expect(r.item).toMatchObject({sourceType:'ai-original',status:'trial-only',publicationAllowed:false});
+  if(id.startsWith('man-')) expect(r.item).toMatchObject({personOrigin:'China',personGender:'male',adult:true});
+  for(const patch of [{sourceType:'user-provided-reference'},{publicationAllowed:true},{caption:'错误'}])
+   await expect(renderReferenceCharacterGif(await master(),{...item,...patch})).rejects.toThrow();
+ }
+},30000);

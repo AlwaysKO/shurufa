@@ -1,0 +1,98 @@
+[
+  {
+    "id": "terrier-refuse",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": true,
+    "alphaMin": 0,
+    "alphaMax": 255
+  },
+  {
+    "id": "mouse-refuse",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": true,
+    "alphaMin": 0,
+    "alphaMax": 255
+  },
+  {
+    "id": "otter-refuse",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": false,
+    "alphaMin": 255,
+    "alphaMax": 255
+  },
+  {
+    "id": "man-refuse",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": false,
+    "alphaMin": 255,
+    "alphaMax": 255
+  },
+  {
+    "id": "siamese-understand",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": false,
+    "alphaMin": 255,
+    "alphaMax": 255
+  },
+  {
+    "id": "owl-understand",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": false,
+    "alphaMin": 255,
+    "alphaMax": 255
+  },
+  {
+    "id": "raccoon-understand",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": true,
+    "alphaMin": 0,
+    "alphaMax": 255
+  },
+  {
+    "id": "man-understand",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": false,
+    "alphaMin": 255,
+    "alphaMax": 255
+  },
+  {
+    "id": "spaniel-nervous",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": false,
+    "alphaMin": 255,
+    "alphaMax": 255
+  },
+  {
+    "id": "penguin-nervous",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": false,
+    "alphaMin": 255,
+    "alphaMax": 255
+  },
+  {
+    "id": "hamster-nervous",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": true,
+    "alphaMin": 0,
+    "alphaMax": 255
+  },
+  {
+    "id": "man-nervous",
+    "width": 1448,
+    "height": 1086,
+    "hasAlpha": false,
+    "alphaMin": 255,
+    "alphaMax": 255
+  }
+]
