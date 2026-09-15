@@ -237,6 +237,30 @@ export interface StickerRow {
   createdAt: string;
 }
 
+export interface LibrarySticker {
+  id: string | number;
+  source: 'system' | 'personal';
+  keywords: string[];
+  url: string;
+  format: string;
+  width: number | null;
+  height: number | null;
+  useCount: number | null;
+}
+export interface StickerKeywordGroup {
+  keyword: string;
+  category: string;
+  planned: boolean;
+  custom: boolean;
+  assets: LibrarySticker[];
+}
+export interface StickerLibrary {
+  groups: StickerKeywordGroup[];
+  systemCount: number;
+  personalCount: number;
+  warnings: string[];
+}
+
 export interface StickerPage {
   total: number;
   stickers: StickerRow[];
@@ -509,6 +533,8 @@ export const api = {
   exportData: () => get<ExportData>(`/api/v1/dashboard/export`),
   cleanup: (body: { confirm: string; scope: 'events' | 'all'; from?: string; to?: string; package_name?: string }) =>
     post<CleanupResult>(`/api/v1/dashboard/cleanup`, body),
+  stickerLibrary: () => get<StickerLibrary>('/api/v1/dashboard/sticker-library'),
+  addStickerKeyword: (keyword: string) => post<{ keyword: string }>('/api/v1/dashboard/sticker-keywords', { keyword }),
   stickers: (q = '') => {
     const p = new URLSearchParams();
     if (q) p.set('q', q);

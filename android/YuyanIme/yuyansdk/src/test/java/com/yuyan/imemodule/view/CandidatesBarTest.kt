@@ -55,6 +55,63 @@ class CandidatesBarTest {
     private var originalInputAreaHeight = 0
 
     @Test
+    fun `未选前缀时真实拼音行已绑定整段输入显示`() {
+        val engine = com.yuyan.inputmethod.RimeEngine
+        val stack = engine::class.java.getDeclaredField("keyRecordStack").run {
+            isAccessible = true; get(engine) as com.yuyan.inputmethod.data.KeyRecordStack
+        }
+        @Suppress("UNCHECKED_CAST")
+        val records = stack::class.java.getDeclaredField("keyRecords").run {
+            isAccessible = true; get(stack) as MutableList<com.yuyan.inputmethod.data.InputKey>
+        }
+        val mode = com.yuyan.imemodule.manager.InputModeSwitcher
+        val modeField = mode::class.java.getDeclaredField("mInputMode").apply { isAccessible = true }
+        val previousMode = modeField.getInt(mode)
+        try {
+            modeField.setInt(mode, com.yuyan.imemodule.manager.InputModeSwitcher.MODE_T9_CHINESE)
+            stack.clear(); engine.clearCachedCompositionForSchemaSwitch()
+            "9628924726448264".forEach { records.add(com.yuyan.inputmethod.data.InputKey.T9Key("ADGJMPTW"[it - '2'])) }
+            engine::class.java.getDeclaredField("nativeCandidateMetadata").apply {
+                isAccessible = true
+                set(engine, com.yuyan.imemodule.data.completion.CandidateSelection(listOf(
+                    com.yuyan.imemodule.data.completion.RankedCandidate("我不再彷徨", "wo bu zai pang huang", 0),
+                ), 1))
+            }
+            engine.showComposition = "wo'bu'zai'726448264"
+            DecodingInfo.cacheCandidates(arrayOf(CandidateListItem("wo bu zai", "我不在")))
+            val bar = CandidatesBar(context, null).apply { initialize(RecordingCandidateListener()); showCandidates() }
+            assertEquals("wo'bu'zai'pang'huang", bar.privateField<TextView>("mComposingView").text.toString())
+            assertEquals("wo'bu'zai'726448264", engine.showComposition)
+            assertEquals("我不在", DecodingInfo.candidates.single().text)
+        } finally {
+            stack.clear(); engine.clearCachedCompositionForSchemaSwitch()
+            modeField.setInt(mode, previousMode)
+        }
+    }
+
+    @Test
+    @Config(qualifiers = "w369dp-h820dp-520dpi")
+    @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
+    fun `长拼音可以横向查看全文而不是尾部省略`() {
+        val bar = CandidatesBar(context, null).apply { initialize(RecordingCandidateListener()) }
+        val composing = bar.privateField<TextView>("mComposingView")
+        composing.text = "wo'bu'zai'pang'huang'".repeat(6)
+        bar.refreshComposingRow()
+        val width = dp(250)
+        bar.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(dp(300), View.MeasureSpec.AT_MOST))
+        bar.layout(0, 0, bar.measuredWidth, bar.measuredHeight)
+        assertEquals(null, composing.ellipsize)
+        assertTrue("全文仍保留在可滚动容器内", composing.parent is android.widget.HorizontalScrollView)
+        val scroll = composing.parent as android.widget.HorizontalScrollView
+        scroll.isSmoothScrollingEnabled = false
+        assertTrue(composing.measuredWidth > scroll.measuredWidth)
+        scroll.fullScroll(View.FOCUS_RIGHT)
+        assertTrue("能滚到末尾", scroll.scrollX > 0)
+        assertEquals(composing.text.length, composing.layout.getLineEnd(0))
+    }
+
+    @Test
     @Config(qualifiers = "w369dp-h820dp-520dpi")
     @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
     fun `候选汉字和拼音局部放大不修改全局字号`() {
@@ -93,7 +150,8 @@ class CandidatesBarTest {
         val action = TextView(context).apply { text = "AI斗图"; visibility = View.GONE }
         bar.setExpressionAction(action)
         val composing = bar.privateField<TextView>("mComposingView")
-        val row = composing.parent as View
+        val row = bar.privateField<View>("composingRow")
+        val viewport = bar.privateField<android.widget.HorizontalScrollView>("mComposingScroll")
         for (hasText in listOf(false, true)) for (hasResults in listOf(false, true)) {
             composing.text = if (hasText) "ni hao shi jie ".repeat(30) else ""
             action.visibility = if (hasResults) View.VISIBLE else View.GONE
@@ -105,8 +163,9 @@ class CandidatesBarTest {
             assertEquals(EnvironmentSingleton.instance.effectiveCandidateRowHeight(context.resources.displayMetrics.density) +
                 if (hasText || hasResults) row.height else 0, bar.height)
             if (hasResults) {
-                assertTrue(composing.right <= action.left)
-                assertTrue(kotlin.math.abs(composing.top + composing.height / 2 - action.top - action.height / 2) <= 1)
+                assertTrue("拼音可视区域不能覆盖斗图按钮", viewport.right <= action.left)
+                assertTrue(viewport.clipChildren && viewport.clipToPadding)
+                assertTrue(kotlin.math.abs(viewport.top + viewport.height / 2 - action.top - action.height / 2) <= 1)
             }
         }
     }
@@ -319,7 +378,7 @@ class CandidatesBarTest {
         val item = requireNotNull(recycler.getChildAt(0))
 
         assertEquals(dp(44), bar.height)
-        assertEquals(View.GONE, (composing.parent as View).visibility)
+        assertEquals(View.GONE, bar.privateField<View>("composingRow").visibility)
         assertFalse(composing.isClickable)
         assertFalse(composing.hasOnClickListeners())
         listOf(row, recycler, right, item).forEach { target ->

@@ -58,7 +58,9 @@ export function createApp(pool: pg.Pool, options: CreateAppOptions = {}): expres
   mkdirSync(stickerDir, { recursive: true });
   app.use(
     '/uploads/expression',
-    requireExpressionAssetIdentity,
+    (req, res, next) => req.get('X-Device-Id')
+      ? requireExpressionAssetIdentity(req, res, next)
+      : requireDashboardIdentity(req, res, next),
     express.static(expressionAssetRoot()),
   );
   app.use('/uploads', authorizeUpload(pool), express.static(join(process.cwd(), 'uploads')));

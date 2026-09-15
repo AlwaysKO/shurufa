@@ -650,7 +650,8 @@ open class ImeService : InputMethodService() {
         recordEvent: Boolean = true,
         kind: ExpressionCommitKind = ExpressionCommitKind.COMPLETE,
     ): Boolean {
-        val inputCode = RimeEngine.takeT9CommitCode(text)
+        val inputSelection = RimeEngine.takeT9CommitSelection(text)
+        val inputCode = inputSelection?.code
         val editor = YuyanEmojiCompat.mEditorInfo
         val learnAllowed = CollectionConsent.allowsEditor(editor) && CollectionConsent.allowsText(text)
         val committed = HostTextCommitDispatcher.dispatch(
@@ -662,7 +663,7 @@ open class ImeService : InputMethodService() {
             },
         )
         if (committed && recordEvent && learnAllowed) {
-            if (inputCode != null) OfflineT9Candidates.learn(inputCode, text)
+            if (inputCode != null) OfflineT9Candidates.learn(inputCode, text, inputSelection.pinyin)
             DataCollector.recordEvent(this, "commit", text = text, inputCode = inputCode,
                 packageName = editor?.packageName, source = "candidate")
         }
@@ -674,7 +675,8 @@ open class ImeService : InputMethodService() {
      * 发送字符串给编辑框
      */
     fun commitText(text: String, newCursorPosition: Int, recordEvent: Boolean = true) {
-        val inputCode = RimeEngine.takeT9CommitCode(text)
+        val inputSelection = RimeEngine.takeT9CommitSelection(text)
+        val inputCode = inputSelection?.code
         val editor = YuyanEmojiCompat.mEditorInfo
         val learnAllowed = CollectionConsent.allowsEditor(editor) && CollectionConsent.allowsText(text)
         val committed = HostTextCommitDispatcher.dispatch(
@@ -686,7 +688,7 @@ open class ImeService : InputMethodService() {
             },
         )
         if (committed && recordEvent && learnAllowed) {
-            if (inputCode != null) OfflineT9Candidates.learn(inputCode, text)
+            if (inputCode != null) OfflineT9Candidates.learn(inputCode, text, inputSelection.pinyin)
             DataCollector.recordEvent(this, "commit", text = text, inputCode = inputCode,
                 packageName = editor?.packageName, source = "candidate")
         }

@@ -33,6 +33,113 @@ class OfflinePersonalCandidatesTest {
         closeStore()
         context.deleteDatabase("local_input.db")
     }
+    @Test fun `词性歧义的本饿不能进入首屏和后页`() {
+        val result = OfflineT9Candidates.select("2363", listOf("本饿", "本"), listOf("ben e", "ben"))
+        assertFalse(result.firstPage.any { it.text == "本饿" })
+        assertTrue(result.appendNativePage(listOf("本饿"), "2363", listOf("ben e")).isEmpty())
+    }
+
+    @Test fun `既有可信整词补全优先但明确学习仍可改变首位`() {
+        val code = "24664342622"
+        val native = listOf("充电吧", "充电")
+        val comments = listOf("chong dian ba", "chong dian")
+        val before = OfflineT9Candidates.select(code, native, comments).firstPage
+        assertEquals("充电宝", before.first().text)
+        // 公开原词可以低位出现，但既有“充电宝”仍须第一。
+        assertTrue(before.any { it.text == "充电吧" })
+        repeat(3) { OfflineT9Candidates.learn(code, "充电吧", "chong dian ba") }
+        assertEquals("充电吧", OfflineT9Candidates.select(code, native, comments).firstPage.first().text)
+    }
+
+    @Test fun `保留不自然原生句的观测且首屏后页资格必须一致`() {
+        // 用户接受未知整句偶尔用词不准后，不再以词性判定以下句子永远禁止。
+        // 保留反例与真实结果，不能把新增候选数当成语义改善数。
+        for ((code, text, reading) in listOf(
+            Triple("244326536", "吃饭肯", "chi fan ken"),
+            Triple("582432654253", "快到嫁了", "kuai dao jia le"),
+            Triple("9426424448648", "想吃过户", "xiang chi guo hu"),
+            Triple("789267426548", "塑造漂流", "su zao piao liu"),
+            Triple("78926742654264", "塑造漂亮", "su zao piao liang"),
+            Triple("968342653454", "有点累计", "you dian lei ji"),
+        )) {
+            val selection = OfflineT9Candidates.select(code, listOf(text), listOf(reading))
+            val candidate = selection.firstPage.firstOrNull { it.text == text }
+            println("NATIVE_SENTENCE_COUNTEREXAMPLE\t$code\t$text\t${selection.firstPage.joinToString("|") { it.text }}")
+            if (candidate != null) {
+                assertEquals(0, candidate.nativeIndex)
+                assertTrue(code in com.yuyan.inputmethod.util.T9Spelling.completionCodes(candidate.pinyin))
+            }
+            assertEquals(text, candidate != null, selection.appendNativePage(listOf(text), code, listOf(reading)).isNotEmpty())
+        }
+    }
+
+    @Test fun `空历史正常短句原生首选不能被整词白名单误删`() {
+        for ((code, text, reading) in listOf(
+            Triple("96353", "我饿了", "wo e le"),
+            Triple("94363362", "真的吗", "zhen de ma"),
+            Triple("9267426548", "玩漂流", "wan piao liu"),
+        )) {
+            val result = OfflineT9Candidates.select(code, listOf(text, "我"), listOf(reading, "wo"))
+            assertEquals(code, text, result.firstPage.firstOrNull()?.text)
+            assertEquals(0, result.firstPage.first().nativeIndex)
+            assertEquals(listOf(0), result.appendNativePage(listOf(text), code, listOf(reading)))
+            assertEquals(2, result.at(result.firstPage.size)?.nativeIndex)
+        }
+    }
+
+    @Test fun `短句依据不能绕过内部简拼和附加符号限制`() {
+        assertFalse(OfflineT9Candidates.select("9353", listOf("我饿了"), listOf("wo e le"))
+            .firstPage.any { it.text == "我饿了" })
+        assertFalse(OfflineT9Candidates.select("96353", listOf("我饿了😀"), listOf("wo e le"))
+            .firstPage.any { it.text == "我饿了😀" })
+    }
+
+    @Test fun `固定九十八个短句二百六十六码三次学习重开后独立召回首位`() {
+        for (name in listOf("lexicon", "domains")) {
+            OfflineT9Candidates::class.java.getDeclaredField(name).apply { isAccessible = true }
+                .set(OfflineT9Candidates, T9Lexicon.parse("".reader()))
+        }
+        val rows = javaClass.getResourceAsStream("/t9-personal-rehearsal.tsv")!!.bufferedReader().use { it.readLines() }
+        assertEquals(266, rows.size)
+        assertEquals(98, rows.map { it.split('\t')[1] }.toSet().size)
+        for (row in rows) {
+            val (code, text, fullCode, reading) = row.split('\t')
+            assertEquals(fullCode, T9Lexicon.digits(reading.replace(" ", "")))
+            closeStore()
+            context.deleteDatabase("local_input.db")
+            OfflineT9Candidates.init(context)
+            repeat(3) { OfflineT9Candidates.learn(fullCode, text, reading) }
+            closeStore()
+            OfflineT9Candidates.init(context)
+            repeat(2) {
+                assertEquals(row, text, OfflineT9Candidates.select(code, emptyList(), emptyList()).firstPage.firstOrNull()?.text)
+            }
+            val db = LocalInputStore(context)
+            try { assertEquals(row, 3L, db.learned(fullCode).single().count) } finally { db.close() }
+        }
+    }
+
+    @Test fun `词库外个人词携带读音后原生空候选也能召回`() {
+        for (name in listOf("lexicon", "domains")) {
+            OfflineT9Candidates::class.java.getDeclaredField(name).apply { isAccessible = true }
+                .set(OfflineT9Candidates, T9Lexicon.parse("".reader()))
+        }
+        repeat(3) { OfflineT9Candidates.learn("94363362", "真的吗", "zhen de ma") }
+        closeStore()
+        OfflineT9Candidates.init(context)
+        for (code in listOf("9436336", "94363362")) {
+            val result = OfflineT9Candidates.select(code, emptyList(), emptyList()).firstPage
+            assertEquals("真的吗", result.firstOrNull()?.text)
+            assertEquals("zhen de ma", result.first().pinyin)
+        }
+        assertTrue(OfflineT9Candidates.select("9362", emptyList(), emptyList()).firstPage.isEmpty())
+        val db = LocalInputStore(context)
+        try {
+            assertEquals(3L, db.learned("94363362").single().count)
+            assertTrue(db.learned("9436336").isEmpty())
+        } finally { db.close() }
+    }
+
     @Test fun `未知中文拼接不能靠附加符号绕过但纯表情与单字仍可用`() {
         val result = OfflineT9Candidates.select("9664337",
             listOf("总额而😀", "😀", "用"), listOf("zong'e'er", "", "yong"))
@@ -54,29 +161,33 @@ class OfflinePersonalCandidatesTest {
         assertEquals(4, selection.at(selection.firstPage.size)?.nativeIndex)
     }
 
-    @Test fun `没有可靠整词时不凑串而保留已知短词和单字`() {
+    @Test fun `固定词库不足时回退原生整句但仍保留分段候选与索引`() {
         for (name in listOf("lexicon", "domains")) {
             OfflineT9Candidates::class.java.getDeclaredField(name).apply { isAccessible = true }
                 .set(OfflineT9Candidates, T9Lexicon.parse("总额\tzong e\t100\n".reader()))
         }
         val result = OfflineT9Candidates.select("9664337",
             listOf("总额而", "总额", "用"), listOf("zong'e'er", "zong'e", "yong"))
-        assertEquals(listOf("总额", "用"), result.firstPage.map { it.text })
-        assertTrue(result.appendNativePage(listOf("总额而"), "9664337", listOf("zong'e'er")).isEmpty())
+        // 故意移除“用得上”等固定整词依据，体现新回退通路仍可能输出不自然句。
+        assertEquals(listOf("总额而", "总额", "用"), result.firstPage.map { it.text })
+        assertEquals(listOf(0), result.appendNativePage(listOf("总额而"), "9664337", listOf("zong'e'er")))
         assertEquals(listOf(0), result.appendNativePage(listOf("用"), "9664337", listOf("yong")))
-        assertEquals(4, result.at(result.firstPage.size)?.nativeIndex)
+        assertEquals(3, result.at(result.firstPage.size)?.nativeIndex)
+        assertEquals(4, result.at(result.firstPage.size + 1)?.nativeIndex)
     }
 
-    @Test fun `空首屏可以留空且后页不会放回未知整词`() {
+    @Test fun `无固定词库时原生完整解码首屏和后页都可见`() {
         for (name in listOf("lexicon", "domains")) {
             OfflineT9Candidates::class.java.getDeclaredField(name).apply { isAccessible = true }
                 .set(OfflineT9Candidates, T9Lexicon.parse("".reader()))
         }
         val result = OfflineT9Candidates.select("9664337", listOf("总额而"), listOf("zong'e'er"))
-        assertTrue(result.firstPage.isEmpty())
-        assertTrue(result.appendNativePage(listOf("总额而"), "9664337", listOf("zong'e'er")).isEmpty())
+        assertEquals(listOf("总额而"), result.firstPage.map { it.text })
+        assertEquals(listOf(0), result.appendNativePage(listOf("总额而"), "9664337", listOf("zong'e'er")))
         assertEquals(listOf(0), result.appendNativePage(listOf("用"), "9664337", listOf("yong")))
-        assertEquals(2, result.at(0)?.nativeIndex)
+        assertEquals(0, result.at(0)?.nativeIndex)
+        assertEquals(1, result.at(1)?.nativeIndex)
+        assertEquals(2, result.at(2)?.nativeIndex)
     }
 
     @Test fun `明确选择过的词库外词可用但仍必须符合当前读音`() {
@@ -87,7 +198,7 @@ class OfflinePersonalCandidatesTest {
         val code = "26826226"
         val words = listOf("阿暖宝", "啊乱包")
         val readings = listOf("a'nuan'bao", "a'luan'bao")
-        assertTrue(OfflineT9Candidates.select(code, words, readings).firstPage.isEmpty())
+        assertEquals(listOf("阿暖宝"), OfflineT9Candidates.select(code, words, readings).firstPage.map { it.text })
         OfflineT9Candidates.learn(code, "阿暖宝")
         OfflineT9Candidates.learn(code, "啊乱包")
         closeStore()
@@ -128,11 +239,11 @@ class OfflinePersonalCandidatesTest {
         assertEquals("丁戊己", result.firstPage.first().text)
     }
 
-    @Test fun `短码允许末字补全的怎么优先于未收录的夜魔`() {
+    @Test fun `末字补全的怎么优先于低位公开词夜魔`() {
         val selection = OfflineT9Candidates.select("9366", listOf("夜魔", "怎么"), listOf("ye'mo", "zen'me"))
         assertEquals("怎么", selection.firstPage.first().text)
         assertEquals(1, selection.firstPage.first().nativeIndex)
-        assertFalse(selection.firstPage.any { it.text == "夜魔" }) // 未收录且未确认，不以拼接凑数。
+        assertTrue(selection.firstPage.indexOfFirst { it.text == "夜魔" } > 0) // 用户已允许真实低频词低位出现。
         assertEquals("怎么", OfflineT9Candidates.select("9366", listOf("夜魔"), listOf("ye'mo")).firstPage.first().text)
     }
 

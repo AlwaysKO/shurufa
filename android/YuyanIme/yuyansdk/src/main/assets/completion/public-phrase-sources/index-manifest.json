@@ -1,0 +1,8 @@
+{
+  "repository": "https://github.com/iDvel/rime-ice",
+  "revision": "859e3b5300e0ea01334a627b15db101e94312a75",
+  "entries": 1855331,
+  "size": 29820648,
+  "sha256": "b6eff254207f43337ddb0012be917fe951256086ac0a55f86491f86943645450",
+  "format": "T9WORD1; uint32 LE count, count+1 relative offsets, sorted UTF-8 entries"
+}

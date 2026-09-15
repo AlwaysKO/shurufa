@@ -25,7 +25,6 @@ import com.yuyan.imemodule.data.capture.net.CaptureUploader
 import com.yuyan.imemodule.data.capture.model.CapturedConversation
 import com.yuyan.imemodule.data.capture.model.CapturedMessage
 import com.yuyan.imemodule.data.capture.model.ChatMessageType
-import com.yuyan.imemodule.data.capture.model.ChatPlatform
 import com.yuyan.imemodule.data.capture.model.ConversationType
 import com.yuyan.imemodule.data.capture.ui.CancellableTask
 import com.yuyan.imemodule.data.capture.ui.IntRect
@@ -78,8 +77,8 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         if (!CollectionConsent.enabled(this)) return
         val packageName = event.packageName?.toString() ?: return
         if (packageName !in SUPPORTED_PACKAGES) return
-        if (packageName == WECHAT_PACKAGE) {
-            pendingFallbackRequest()?.let { request ->
+        pendingFallbackRequest()?.let { request ->
+            if (request.packageName == packageName) {
                 scheduleFallback(request, "event:${fallbackRetryGeneration.incrementAndGet()}")
             }
         }
@@ -182,7 +181,11 @@ class PassiveChatAccessibilityService : AccessibilityService() {
             fallbackCaptureMutex.withLock {
                 if (!CollectionConsent.enabled(this@PassiveChatAccessibilityService)) return@withLock
                 if (pendingFallbackRequest() != request) return@withLock
-                val target = currentFallbackTarget() ?: return@withLock
+                val descriptor = notificationScreenshotFallbackDescriptor(request.packageName) ?: run {
+                    completeFallback(request)
+                    return@withLock
+                }
+                val target = currentFallbackTarget(request) ?: return@withLock
                 val asset = mediaCapturer?.capture(
                     windowId = target.windowId,
                     windowBounds = target.windowBounds,
@@ -198,22 +201,27 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                     scheduleFallbackRetry(request)
                     return@withLock
                 }
-                val targetAfterCapture = currentFallbackTarget()
+                val targetAfterCapture = currentFallbackTarget(request)
                 if (targetAfterCapture?.windowId != target.windowId || pendingFallbackRequest() != request) {
                     return@withLock
                 }
                 val preferences = getSharedPreferences(FALLBACK_PREFERENCES, Context.MODE_PRIVATE)
-                if (preferences.getString(LAST_SCREENSHOT_SHA, null) == asset.sha256) {
+                val screenshotShaKey = if (request.packageName == WECHAT_PACKAGE) {
+                    LAST_SCREENSHOT_SHA
+                } else {
+                    "$LAST_SCREENSHOT_SHA:${request.packageName}"
+                }
+                if (preferences.getString(screenshotShaKey, null) == asset.sha256) {
                     completeFallback(request)
                     return@withLock
                 }
 
                 val persistResult = coordinator?.captureParsed(
                     conversation = CapturedConversation(
-                        platform = ChatPlatform.WECHAT,
+                        platform = descriptor.platform,
                         accountKey = "notification-screenshot",
-                        externalKey = "wechat-hidden-notification",
-                        displayName = "微信（截图兜底）",
+                        externalKey = descriptor.externalKey,
+                        displayName = descriptor.displayName,
                         conversationType = ConversationType.UNKNOWN,
                         identityConfidence = FALLBACK_IDENTITY_CONFIDENCE,
                     ),
@@ -223,12 +231,13 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                             senderKey = "notification-screenshot:unknown",
                             direction = ChatDirection.INCOMING,
                             messageType = ChatMessageType.IMAGE,
-                            text = "[微信新消息截图]",
+                            text = descriptor.messageText,
                             displayedTime = isoTimestamp(request.postedAtMillis),
                             occurredAt = isoTimestamp(request.postedAtMillis),
                             metadata = mapOf(
                                 "capture_source" to "notification_screenshot_fallback",
                                 "notification_key" to request.notificationKey,
+                                "source_package" to request.packageName,
                                 "identity_unavailable" to "true",
                             ),
                         ),
@@ -236,7 +245,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                     pendingAssetsByMessage = mapOf(0 to asset),
                 ) ?: CapturePersistResult.FAILED
                 if (persistResult != CapturePersistResult.FAILED) {
-                    preferences.edit().putString(LAST_SCREENSHOT_SHA, asset.sha256).apply()
+                    preferences.edit().putString(screenshotShaKey, asset.sha256).apply()
                     completeFallback(request)
                 } else {
                     scheduleFallbackRetry(request)
@@ -275,14 +284,22 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         )
     }
 
-    private suspend fun currentFallbackTarget(): FallbackTarget? = suspendCancellableCoroutine { continuation ->
+    private suspend fun currentFallbackTarget(
+        request: NotificationScreenshotFallbackRequest,
+    ): FallbackTarget? = suspendCancellableCoroutine { continuation ->
         mainHandler.post {
             if (!continuation.isActive) return@post
             val root = rootInActiveWindow
             val foregroundPackage = root?.packageName?.toString()
             val inputMethodVisible = windows.any { it.type == AccessibilityWindowInfo.TYPE_INPUT_METHOD }
             val screenLocked = (getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager).isDeviceLocked
-            if (!shouldCaptureNotificationFallback(screenLocked, foregroundPackage, inputMethodVisible) || root == null) {
+            if (!shouldCaptureNotificationFallback(
+                    screenLocked = screenLocked,
+                    foregroundPackage = foregroundPackage,
+                    inputMethodVisible = inputMethodVisible,
+                    targetPackage = request.packageName,
+                ) || root == null
+            ) {
                 root?.let(::recycleRoot)
                 continuation.resume(null)
                 return@post

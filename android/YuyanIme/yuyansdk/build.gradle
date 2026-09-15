@@ -19,6 +19,8 @@ static def getAppBuildTime() {
 
 
 android {
+    // 整词索引直接映射APK，避免启动时解压并加载百万词字符串。
+    androidResources { noCompress += ["t9idx"] }
     compileSdk 36
     namespace 'com.yuyan.imemodule'
     defaultConfig {

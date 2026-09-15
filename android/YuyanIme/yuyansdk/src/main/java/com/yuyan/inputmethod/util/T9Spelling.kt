@@ -18,6 +18,36 @@ internal object T9Spelling {
             .filter { it.length in 4..30 }.toSet()
     }
 
+    private val unresolvedKeys = Regex("[2-9]+")
+
+    /** 仅用于显示；候选暂缺时仍显示按键对应的拼读，不展开键帽或修改提交残码。 */
+    fun displayComposition(composition: String, isChineseT9: Boolean): String =
+        if (isChineseT9) unresolvedKeys.replace(composition) { match ->
+            T9PinYinUtils.displayPendingDigits(match.value)
+        }.trimEnd('\'', ' ') else composition
+
+    /** 完整组合的显示与候选过滤分离；这些读音不用于选词、提交或学习。 */
+    fun fullDisplayComposition(code: String, preferredPreedit: String, nativeReadings: List<String>): String {
+        if (code.isEmpty() || code.any { it !in '2'..'9' }) return displayComposition(preferredPreedit, true)
+        val preferredCode = T9Lexicon.digits(preferredPreedit.replace("'", "").replace(" ", ""))
+        var best = if (preferredCode == code) preferredPreedit else code
+        var covered = best.count { it.isLetter() }
+        if (covered == code.length) return best // 已完整对齐的个人首选读音不能被同码原生读音覆盖。
+        for (reading in nativeReadings) {
+            val aligned = preedit(code, reading) ?: continue
+            val count = aligned.count { it.isLetter() }
+            if (count > covered) {
+                best = aligned
+                covered = count
+                if (covered == code.length) break
+            }
+        }
+        return displayComposition(best, true)
+    }
+
+    fun hasUnresolvedComposition(composition: String, isChineseT9: Boolean): Boolean =
+        isChineseT9 && unresolvedKeys.containsMatchIn(composition)
+
     fun preedit(code: String, reading: String): String? {
         if (code.isEmpty() || code.any { it !in '2'..'9' }) return null
         val normalized = reading.trim().lowercase()

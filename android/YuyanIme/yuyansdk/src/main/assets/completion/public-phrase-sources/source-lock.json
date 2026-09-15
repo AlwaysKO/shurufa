@@ -1,0 +1,62 @@
+{
+  "repository": "https://github.com/iDvel/rime-ice",
+  "revision": "859e3b5300e0ea01334a627b15db101e94312a75",
+  "files": [
+    {
+      "path": "LICENSE",
+      "url": "https://raw.githubusercontent.com/iDvel/rime-ice/859e3b5300e0ea01334a627b15db101e94312a75/LICENSE",
+      "size": 35149,
+      "git_blob_sha1": "f288702d2fa16d3cdf0035b15a9fcbc552cd88e7",
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    },
+    {
+      "path": "README.md",
+      "url": "https://raw.githubusercontent.com/iDvel/rime-ice/859e3b5300e0ea01334a627b15db101e94312a75/README.md",
+      "size": 20494,
+      "git_blob_sha1": "924ffc7bd68a193203e6bd9fb2d5d5de2c31e620",
+      "sha256": "818e752e0e4bc38eadd17fd11e4139d31379aa0193476f3885b9f40e3a95f37e"
+    },
+    {
+      "path": "cn_dicts/8105.dict.yaml",
+      "url": "https://raw.githubusercontent.com/iDvel/rime-ice/859e3b5300e0ea01334a627b15db101e94312a75/cn_dicts/8105.dict.yaml",
+      "size": 115728,
+      "git_blob_sha1": "b2e80ec5231c972898e573b412f0378320b08adb",
+      "sha256": "1f9a42b91dea6982baee2551981780271aeffd78876662b9c9f324e56b37b120"
+    },
+    {
+      "path": "cn_dicts/base.dict.yaml",
+      "url": "https://raw.githubusercontent.com/iDvel/rime-ice/859e3b5300e0ea01334a627b15db101e94312a75/cn_dicts/base.dict.yaml",
+      "size": 16603110,
+      "git_blob_sha1": "243cd00d485d116bb86d6aa2fca5ad4c8df6589c",
+      "sha256": "9d759771544adf196a0adf9092435ba4df4c0c50d7886963b6b54bf59d14775a"
+    },
+    {
+      "path": "cn_dicts/ext.dict.yaml",
+      "url": "https://raw.githubusercontent.com/iDvel/rime-ice/859e3b5300e0ea01334a627b15db101e94312a75/cn_dicts/ext.dict.yaml",
+      "size": 11922724,
+      "git_blob_sha1": "b2c9643af0415e9a14db06eed5e7311854b22ba6",
+      "sha256": "70ed708720b8d34b1de3f1256859bf7526eedd54b7bad401e600060a465718d8"
+    },
+    {
+      "path": "cn_dicts/others.dict.yaml",
+      "url": "https://raw.githubusercontent.com/iDvel/rime-ice/859e3b5300e0ea01334a627b15db101e94312a75/cn_dicts/others.dict.yaml",
+      "size": 17454,
+      "git_blob_sha1": "e300d40b1ccf91fc410be6ac8d008b9fc8f1ec9e",
+      "sha256": "c7475d773e619f61b88d47fa8ec789aba02aa0d1c98edaed309e53487b048b32"
+    },
+    {
+      "path": "cn_dicts/tencent.dict.yaml",
+      "url": "https://raw.githubusercontent.com/iDvel/rime-ice/859e3b5300e0ea01334a627b15db101e94312a75/cn_dicts/tencent.dict.yaml",
+      "size": 17333341,
+      "git_blob_sha1": "42fbd0a855efd24faf01a0b35b5e3b2d10cfc6d4",
+      "sha256": "e97d23e59c8bbd9eb99abd461ad954b9de45fb315504069c8a3481a4f24795e4"
+    },
+    {
+      "path": "rime_ice.dict.yaml",
+      "url": "https://raw.githubusercontent.com/iDvel/rime-ice/859e3b5300e0ea01334a627b15db101e94312a75/rime_ice.dict.yaml",
+      "size": 1407,
+      "git_blob_sha1": "3ecce19ad1a5bb0ef443b25cdc5b564e91df6806",
+      "sha256": "30fa643eec7af585cffacdd9bb6556ce4d17a0e848b83ea1fca3fdcfc5891595"
+    }
+  ]
+}

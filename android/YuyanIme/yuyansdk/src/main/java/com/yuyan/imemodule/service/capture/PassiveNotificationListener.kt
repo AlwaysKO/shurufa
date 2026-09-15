@@ -29,6 +29,7 @@ class PassiveNotificationListener : NotificationListenerService() {
     private var coordinator: CaptureCoordinator? = null
     private var mediaImporter: NotificationMediaImporter? = null
     private var fallbackStore: NotificationScreenshotFallbackStore? = null
+    private var waitingForOpenStore: NotificationScreenshotFallbackStore? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -36,6 +37,10 @@ class PassiveNotificationListener : NotificationListenerService() {
         database = captureDatabase
         mediaImporter = NotificationMediaImporter(applicationContext)
         fallbackStore = NotificationScreenshotFallbackStore(applicationContext)
+        waitingForOpenStore = NotificationScreenshotFallbackStore(
+            applicationContext,
+            preferencesName = WAITING_FOR_OPEN_PREFERENCES,
+        )
         coordinator = CaptureCoordinator(
             store = RoomCaptureOutboxStore(captureDatabase.captureDao()),
             deviceId = { DataCollector.deviceId(applicationContext) },
@@ -51,47 +56,60 @@ class PassiveNotificationListener : NotificationListenerService() {
         if (notification.packageName !in SUPPORTED_PACKAGES) return
         val activeCoordinator = coordinator ?: return
         val importer = mediaImporter ?: return
-        scope.launch {
-            if (!CollectionConsent.enabled(this@PassiveNotificationListener)) return@launch
-            val latestMessage = findLatestMessage(notification.notification)
-            val summaryText = notification.notification.extras
-                .getCharSequence(Notification.EXTRA_TEXT)
+        val latestMessage = findLatestMessage(notification.notification)
+        val summaryText = notification.notification.extras
+            .getCharSequence(Notification.EXTRA_TEXT)
+            ?.toString()
+            ?: notification.notification.extras
+                .getCharSequence(Notification.EXTRA_BIG_TEXT)
+                ?.toString()
+        val preliminarySnapshot = NotificationSnapshot(
+            packageName = notification.packageName,
+            notificationKey = notification.key,
+            title = notification.notification.extras
+                .getCharSequence(Notification.EXTRA_CONVERSATION_TITLE)
                 ?.toString()
                 ?: notification.notification.extras
-                    .getCharSequence(Notification.EXTRA_BIG_TEXT)
-                    ?.toString()
+                    .getCharSequence(Notification.EXTRA_TITLE)
+                    ?.toString(),
+            text = latestMessage?.text?.toString() ?: summaryText,
+            postedAtMillis = notification.postTime,
+            isGroupConversation = notification.notification.extras
+                .getBoolean(Notification.EXTRA_IS_GROUP_CONVERSATION, false),
+            senderName = latestMessage?.let(::messageSender),
+            summaryText = summaryText,
+            isMessagingStyle = latestMessage != null,
+            sourceMessageTimestampMillis = latestMessage?.timestamp,
+        )
+        if (parser.shouldIgnore(preliminarySnapshot)) return
+        if (parser.requiresScreenshotFallback(preliminarySnapshot)) {
+            if (eventDeduplicator.shouldAccept(preliminarySnapshot)) {
+                waitingForOpenStore?.offerReplacingNotification(
+                    NotificationScreenshotFallbackRequest(
+                        notificationKey = notification.key,
+                        postedAtMillis = notification.postTime,
+                        packageName = notification.packageName,
+                    ),
+                )
+            }
+            return
+        }
+        scope.launch {
+            if (!CollectionConsent.enabled(this@PassiveNotificationListener)) return@launch
             val mediaUri = latestMessage?.dataUri ?: findFallbackMediaUri(notification.notification)
             val mediaReadable = mediaUri?.let(importer::canRead) == true
-            val snapshot = NotificationSnapshot(
-                packageName = notification.packageName,
-                notificationKey = notification.key,
-                title = notification.notification.extras
-                    .getCharSequence(Notification.EXTRA_CONVERSATION_TITLE)
-                    ?.toString()
-                    ?: notification.notification.extras
-                        .getCharSequence(Notification.EXTRA_TITLE)
-                        ?.toString(),
-                text = latestMessage?.text?.toString() ?: summaryText,
-                postedAtMillis = notification.postTime,
-                isGroupConversation = notification.notification.extras
-                    .getBoolean(Notification.EXTRA_IS_GROUP_CONVERSATION, false),
-                senderName = latestMessage?.let(::messageSender),
+            val snapshot = preliminarySnapshot.copy(
                 mediaUri = mediaUri?.toString(),
                 mediaUriReadable = mediaReadable,
-                summaryText = summaryText,
-                isMessagingStyle = latestMessage != null,
-                sourceMessageTimestampMillis = latestMessage?.timestamp,
             )
             if (!eventDeduplicator.shouldAccept(snapshot)) return@launch
 
-            if (parser.requiresScreenshotFallback(snapshot)) {
-                val request = NotificationScreenshotFallbackRequest(notification.key, notification.postTime)
-                fallbackStore?.offer(request)
-                NotificationScreenshotFallbackBridge.request(request)
-                return@launch
-            }
             if (parser.requiresMediaScreenshotFallback(snapshot)) {
-                val request = NotificationScreenshotFallbackRequest(notification.key, notification.postTime)
+                val request = NotificationScreenshotFallbackRequest(
+                    notificationKey = notification.key,
+                    postedAtMillis = notification.postTime,
+                    packageName = notification.packageName,
+                )
                 fallbackStore?.offer(request)
                 NotificationScreenshotFallbackBridge.request(request)
             }
@@ -114,8 +132,17 @@ class PassiveNotificationListener : NotificationListenerService() {
         }
     }
 
-    override fun onNotificationRemoved(sbn: StatusBarNotification?) {
-        sbn?.key?.let(eventDeduplicator::remove)
+    override fun onNotificationRemoved(
+        sbn: StatusBarNotification?,
+        rankingMap: RankingMap?,
+        reason: Int,
+    ) {
+        val notification = sbn ?: return
+        eventDeduplicator.remove(notification.key)
+        val request = waitingForOpenStore?.takeByNotificationKey(notification.key) ?: return
+        if (!shouldArmNotificationScreenshot(reason)) return
+        fallbackStore?.offer(request)
+        NotificationScreenshotFallbackBridge.request(request)
     }
 
     override fun onDestroy() {
@@ -125,6 +152,7 @@ class PassiveNotificationListener : NotificationListenerService() {
         coordinator = null
         mediaImporter = null
         fallbackStore = null
+        waitingForOpenStore = null
         super.onDestroy()
     }
 
@@ -152,6 +180,7 @@ class PassiveNotificationListener : NotificationListenerService() {
         }
 
     private companion object {
+        const val WAITING_FOR_OPEN_PREFERENCES = "notification_screenshot_waiting_for_open"
         val SUPPORTED_PACKAGES = setOf(
             "com.tencent.mm",
             "com.tencent.mobileqq",

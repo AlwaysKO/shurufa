@@ -13,12 +13,14 @@ import android.view.HapticFeedbackConstants
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.HorizontalScrollView
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupMenu
 import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.core.view.doOnLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.OnScrollListener
@@ -144,6 +146,7 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
     private lateinit var composingRow: LinearLayout
     private var expressionAction: TextView? = null
     private var composingHeight = 0
+    private lateinit var mComposingScroll: HorizontalScrollView
     private lateinit var mComposingView: TextView // 组成字符串的View，用于显示输入的拼音。
     private lateinit var mRVCandidates: RecyclerView    //候选词列表
     private lateinit var mIvMenuSetting: ImageView
@@ -171,9 +174,14 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
             mComposingView = TextView(context).apply {
                 includeFontPadding = false
                 setSingleLine(true)
-                ellipsize = android.text.TextUtils.TruncateAt.END
+                ellipsize = null
                 gravity = Gravity.CENTER_VERTICAL
                 setPadding(dp(10), 0, dp(10), 0)
+            }
+            mComposingScroll = HorizontalScrollView(context).apply {
+                isHorizontalScrollBarEnabled = false
+                isFocusable = false
+                addView(mComposingView)
             }
             mRightArrowBtn = ImageView(context).apply {
                 isClickable = true
@@ -211,7 +219,7 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
                 setPadding(0, 0, dp(10), 0)
                 visibility = GONE
             }
-            composingRow.addView(mComposingView)
+            composingRow.addView(mComposingScroll)
             addView(composingRow, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT))
             this.addView(mCandidatesDataContainer)
             listOf(mCandidatesDataContainer, mCandidatesMenuContainer).forEach { container ->
@@ -247,7 +255,8 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
             instance.heightForcomposing,
             kotlin.math.ceil((composingFont.descent - composingFont.ascent).toDouble()).toInt(),
         )
-        mComposingView.layoutParams = LinearLayout.LayoutParams(0, composingHeight, 1f)
+        mComposingScroll.layoutParams = LinearLayout.LayoutParams(0, composingHeight, 1f)
+        mComposingView.layoutParams = FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, composingHeight)
         refreshComposingRow()
         mCandidatesAdapter.notifyChanged()
     }
@@ -421,7 +430,12 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
      * 显示候选词
      */
     fun showCandidates() {
-        mComposingView.text = DecodingInfo.composingStrForDisplay
+        val composing = DecodingInfo.composingStrForDisplay
+        if (mComposingView.text.toString() != composing) {
+            mComposingView.text = composing
+            // 新输入后露出尾部；单纯刷新候选时不打断用户横向查看前文。
+            mComposingScroll.doOnLayout { mComposingScroll.scrollTo(mComposingView.width, 0) }
+        }
         refreshComposingRow()
         val container = KeyboardManager.instance.currentContainer
         mIvMenuSetting.drawable.setLevel( if(container is InputBaseContainer) 0 else 1)

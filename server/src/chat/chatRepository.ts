@@ -35,6 +35,18 @@ function isWechatCallState(
     && /^(视频|语音)通话/.test(message.text?.trim() ?? '');
 }
 
+function isUnusableWechatNotification(
+  conversation: CapturedConversationInput,
+  message: CapturedMessageInput,
+): boolean {
+  if (conversation.platform !== 'wechat'
+    || conversation.display_name?.trim() !== '微信'
+    || message.metadata?.capture_source !== 'notification') return false;
+  const text = message.text?.trim() ?? '';
+  return /(?:[\d一二三四五六七八九十]+)\s*个联系人.*(?:[\d一二三四五六七八九十]+)\s*条(?:新)?消息/.test(text)
+    || /登录\s*(?:Windows|Mac)\s*微信/i.test(text);
+}
+
 function isRecentDuplicateCallState(
   recent: RecentCallState[],
   message: CapturedMessageInput,
@@ -152,9 +164,15 @@ export async function ingestCapturedMessages(
 
     let inserted = 0;
     let duplicated = 0;
+    let discarded = 0;
     for (const message of messages) {
       const messageAssets = [...new Set(message.asset_sha256 ?? [])];
       if (messageAssets.some((sha256) => missingSet.has(sha256))) continue;
+      if (isUnusableWechatNotification(conversation, message)) {
+        duplicated += 1;
+        discarded += 1;
+        continue;
+      }
       if (existingFingerprints.has(message.fingerprint)) {
         duplicated += 1;
         continue;
@@ -216,6 +234,14 @@ export async function ingestCapturedMessages(
           [message.id, assetsByHash.get(sha256), position],
         );
       }
+    }
+
+    if (discarded === messages.length) {
+      await client.query(
+        `DELETE FROM chat_conversation WHERE id=$1 AND user_id=$2
+         AND NOT EXISTS (SELECT 1 FROM chat_message WHERE conversation_id=$1)`,
+        [conversationId, userId],
+      );
     }
 
     await client.query('COMMIT');

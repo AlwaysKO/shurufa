@@ -1,223 +1,171 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { api, scopedAssetUrl, type StickerRow } from '../api';
+import { api, scopedAssetUrl, type LibrarySticker, type StickerLibrary } from '../api';
+import './content-library.css';
 
-const stickers = ref<StickerRow[]>([]);
-const total = ref(0);
-const q = ref('');
+const library = ref<StickerLibrary>({ groups: [], systemCount: 0, personalCount: 0, warnings: [] });
 const loading = ref(false);
-
-// 上传表单
-const uploadMsg = ref('');
-const uploadErr = ref('');
-const uploading = ref(false);
+const loaded = ref(false);
+const loadError = ref('');
+const busy = ref(false);
+const msg = ref('');
+const err = ref('');
+const q = ref('');
+const filter = ref('all');
+const selectedKeyword = ref('');
+const newKeyword = ref('');
 const fileInput = ref<HTMLInputElement | null>(null);
-const keywords = ref('');
+const uploadingKeyword = ref('');
+const editingId = ref<number | null>(null);
+const editingKeywords = ref('');
+const failedImages = ref(new Set<string>());
+const groupsWithImages = computed(() => library.value.groups.filter(g => g.assets.length).length);
+const filteredGroups = computed(() => library.value.groups.filter(g =>
+  g.keyword.includes(q.value.trim()) && (filter.value === 'all' || (filter.value === 'filled' ? g.assets.length > 0 : !g.assets.length))));
+const activeGroup = computed(() => filteredGroups.value.find(g => g.keyword === selectedKeyword.value) ?? filteredGroups.value[0]);
 
 async function load() {
-  loading.value = true;
-  try {
-    const data = await api.stickers(q.value);
-    stickers.value = data.stickers;
-    total.value = data.total;
-  } catch (e) {
-    uploadErr.value = `加载失败：${(e as Error).message}`;
-  } finally {
-    loading.value = false;
-  }
+  loading.value = true; loadError.value = '';
+  try { library.value = await api.stickerLibrary(); loaded.value = true; }
+  catch (e) { loadError.value = `词库加载失败：${(e as Error).message}`; }
+  finally { loading.value = false; }
 }
-
-/** 读取图片尺寸（用于展示时保持比例） */
+async function addKeyword() {
+  if (busy.value) return;
+  const keyword = newKeyword.value.trim();
+  if (!keyword || keyword.length > 100 || /[,，\r\n]/.test(keyword)) { err.value = '请输入单个关键词（1～100 字，不含逗号或换行）'; return; }
+  const existing = library.value.groups.find(g => g.keyword === keyword);
+  if (existing) { q.value = ''; filter.value = 'all'; selectedKeyword.value = keyword; msg.value = `“${keyword}”已存在，已为你打开，可直接上传图片。`; err.value = ''; newKeyword.value = ''; return; }
+  busy.value = true; msg.value = ''; err.value = '';
+  try {
+    await api.addStickerKeyword(keyword);
+    // 独立创建空组，无需图片；更新本地状态避免成功后刷新失败造成重复提交。
+    library.value.groups.unshift({ keyword, category: '自定义', planned: false, custom: true, assets: [] });
+    q.value = ''; filter.value = 'all'; selectedKeyword.value = keyword; newKeyword.value = '';
+    msg.value = `已新增关键词“${keyword}”，可以现在上传，也可以稍后补图。`;
+  } catch (e) { err.value = `新增失败：${(e as Error).message}`; }
+  finally { busy.value = false; }
+}
 function readImageSize(file: File): Promise<{ width: number; height: number }> {
   return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-      resolve({ width: img.naturalWidth, height: img.naturalHeight });
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error('无法读取图片'));
-    };
+    const url = URL.createObjectURL(file); const img = new Image();
+    img.onload = () => { URL.revokeObjectURL(url); resolve({ width: img.naturalWidth, height: img.naturalHeight }); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('无法读取图片，请检查文件是否损坏')); };
     img.src = url;
   });
 }
-
-async function doUpload() {
-  const file = fileInput.value?.files?.[0];
-  if (!file) {
-    uploadErr.value = '请先选择图片文件';
-    return;
+function chooseUpload() {
+  if (busy.value || !activeGroup.value) return;
+  uploadingKeyword.value = activeGroup.value.keyword;
+  fileInput.value?.click();
+}
+async function uploadFile(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file || busy.value) return;
+  // 文件选择前锁定词；即使选择文件期间切换搜索/分组也不会错传。
+  const keyword = uploadingKeyword.value || activeGroup.value?.keyword;
+  uploadingKeyword.value = '';
+  if (!keyword) return;
+  err.value = ''; msg.value = '';
+  if (!/\.(gif|png|jpe?g|webp)$/i.test(file.name) || !file.size || file.size > 5 * 1024 * 1024) {
+    err.value = '请选择 GIF / PNG / JPG / WebP 图片，单张不超过 5 MB，不能是空文件。'; input.value = ''; return;
   }
-  if (!keywords.value.trim()) {
-    uploadErr.value = '请填写关键词（逗号分隔，如：无语,离谱）';
-    return;
-  }
-  uploading.value = true;
-  uploadMsg.value = '';
-  uploadErr.value = '';
+  busy.value = true;
   try {
-    const buf = await file.arrayBuffer();
-    const bytes = new Uint8Array(buf);
-    let bin = '';
-    for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
     const { width, height } = await readImageSize(file);
-    await api.uploadSticker({
-      file_base64: btoa(bin),
-      filename: file.name,
-      keywords: keywords.value.trim(),
-      width,
-      height,
-    });
-    uploadMsg.value = `已上传（${width}×${height}）`;
-    keywords.value = '';
-    if (fileInput.value) fileInput.value.value = '';
+    const bytes = new Uint8Array(await file.arrayBuffer()); let binary = '';
+    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+    await api.uploadSticker({ file_base64: btoa(binary), filename: file.name, keywords: keyword, width, height });
+    msg.value = `已上传到“${keyword}” · ${width} × ${height}，无需再填写关键词。`;
+    q.value = ''; filter.value = 'all'; selectedKeyword.value = keyword;
     await load();
-  } catch (e) {
-    uploadErr.value = `上传失败：${(e as Error).message}`;
-  } finally {
-    uploading.value = false;
-  }
+  } catch (e) { err.value = `上传失败：${(e as Error).message}`; }
+  finally { input.value = ''; busy.value = false; }
 }
-
-const editingId = ref<number | null>(null);
-const editingKeywords = ref('');
-
-function startEdit(s: StickerRow) {
-  editingId.value = s.id;
-  editingKeywords.value = s.keywords;
+function selectKeyword(keyword: string) { selectedKeyword.value = keyword; editingId.value = null; }
+function startEdit(asset: LibrarySticker) { editingId.value = Number(asset.id); editingKeywords.value = asset.keywords.join('，'); err.value = ''; }
+async function saveEdit(asset: LibrarySticker) {
+  if (busy.value) return;
+  const keywords = editingKeywords.value.split(/[,，]/).map(s => s.trim()).filter(Boolean).join(',');
+  if (!keywords) { err.value = '至少保留一个关键词'; return; }
+  busy.value = true; msg.value = ''; err.value = '';
+  try { await api.updateStickerKeywords(Number(asset.id), keywords); editingId.value = null; msg.value = '图片关键词已更新'; await load(); }
+  catch (e) { err.value = `保存失败：${(e as Error).message}`; }
+  finally { busy.value = false; }
 }
-
-async function saveEdit(s: StickerRow) {
-  try {
-    await api.updateStickerKeywords(s.id, editingKeywords.value.trim());
-    s.keywords = editingKeywords.value.trim();
-  } catch (e) {
-    uploadErr.value = `保存失败：${(e as Error).message}`;
-  }
-  editingId.value = null;
+async function remove(asset: LibrarySticker) {
+  if (busy.value || asset.source !== 'personal' || !confirm('删除这张个人上传的表情？图片会从它关联的所有关键词下移除，关键词本身保留。')) return;
+  busy.value = true; msg.value = ''; err.value = '';
+  try { await api.deleteSticker(Number(asset.id)); msg.value = '图片已删除，关键词已保留'; await load(); }
+  catch (e) { err.value = `删除失败：${(e as Error).message}`; }
+  finally { busy.value = false; }
 }
-
-async function doDelete(s: StickerRow) {
-  if (!confirm(`删除表情包 #${s.id}？图片文件将一并删除。`)) return;
-  try {
-    await api.deleteSticker(s.id);
-    stickers.value = stickers.value.filter((x) => x.id !== s.id);
-    total.value -= 1;
-  } catch (e) {
-    uploadErr.value = `删除失败：${(e as Error).message}`;
-  }
-}
-
-const filtered = computed(() => stickers.value);
+function imageFailed(asset: LibrarySticker) { failedImages.value.add(`${asset.source}:${asset.id}`); }
 onMounted(load);
 </script>
 
 <template>
-  <div class="card">
-    <h3>上传表情包</h3>
-    <p class="desc">支持 gif / png / jpg / webp（建议 &lt; 5MB）。上传后即可在输入法的「斗图」面板中按关键词搜索使用。</p>
-    <div class="form-row">
-      <input ref="fileInput" type="file" accept=".gif,.png,.jpg,.jpeg,.webp" />
-      <input v-model="keywords" class="input" placeholder="关键词，逗号分隔（如：无语,离谱,问号）" style="flex: 2" />
-      <button class="primary" :disabled="uploading" @click="doUpload">{{ uploading ? '上传中…' : '上传' }}</button>
+  <div class="content-library sticker-page">
+    <header class="library-intro">
+      <div class="intro-mark sticker-mark" aria-hidden="true">☺</div>
+      <div><span class="eyebrow">EXPRESSION LIBRARY</span><h2>一个关键词，一组好表情</h2><p>按词查看已有表情，缺什么就补什么。新增关键词和上传图片，现在各有入口。</p></div>
+    </header>
+    <div class="library-stats" aria-label="表情库统计">
+      <div class="library-stat"><span>全部关键词</span><strong>{{ loaded ? library.groups.length : '—' }}</strong></div>
+      <div class="library-stat"><span>已有图片的词</span><strong>{{ loaded ? groupsWithImages : '—' }}</strong></div>
+      <div class="library-stat"><span>系统表情</span><strong>{{ loaded ? library.systemCount : '—' }}</strong></div>
+      <div class="library-stat"><span>我的上传</span><strong>{{ loaded ? library.personalCount : '—' }}</strong></div>
     </div>
-    <p v-if="uploadMsg" class="msg ok">{{ uploadMsg }}</p>
-    <p v-if="uploadErr" class="msg err">{{ uploadErr }}</p>
-  </div>
-
-  <div class="card">
-    <h3>表情包库 <span class="count">{{ total }} 个</span></h3>
-    <div class="form-row">
-      <input v-model="q" class="input" placeholder="搜索关键词…" @keyup.enter="load" />
-      <button class="primary" :disabled="loading" @click="load">搜索</button>
-    </div>
-
-    <p v-if="loading" class="msg">加载中…</p>
-    <p v-else-if="stickers.length === 0" class="msg">暂无表情包，先上传一个吧</p>
-
-    <div v-else class="sticker-grid">
-      <div v-for="s in filtered" :key="s.id" class="sticker-cell">
-        <img :src="scopedAssetUrl(s.url)" :alt="s.keywords" loading="lazy" />
-        <div class="sticker-meta">
-          <template v-if="editingId === s.id">
-            <input v-model="editingKeywords" class="input" @keyup.enter="saveEdit(s)" />
-          </template>
-          <template v-else>
-            <span class="kw" :title="s.keywords">{{ s.keywords }}</span>
-          </template>
-          <div class="actions">
-            <button class="ghost" @click="editingId === s.id ? saveEdit(s) : startEdit(s)">
-              {{ editingId === s.id ? '保存' : '改词' }}
-            </button>
-            <button class="ghost danger" @click="doDelete(s)">删除</button>
-          </div>
+    <section class="library-panel compose-panel">
+      <div class="section-heading"><div><h3>新增关键词</h3><p>只建词，不必同时上传图片。已有关键词请在下方选中后直接上传。</p></div><span class="library-badge">支持空关键词分组</span></div>
+      <form class="library-row" @submit.prevent="addKeyword">
+        <input v-model="newKeyword" data-testid="new-keyword" class="library-input" aria-label="新关键词" maxlength="100" placeholder="输入一个新关键词，例如：开饭啦" />
+        <button data-testid="add-keyword" class="library-button primary" :disabled="busy || loading || !loaded || !newKeyword.trim()" type="button" @click="addKeyword">＋ 新增关键词</button>
+      </form>
+    </section>
+    <p v-if="msg" class="library-notice success" role="status">{{ msg }}</p>
+    <p v-if="err" class="library-notice error" role="alert">{{ err }}</p>
+    <div v-if="loadError" class="library-notice error" role="alert">{{ loadError }}<button data-testid="retry-library" class="text-button" :disabled="loading" @click="load">重新加载</button></div>
+    <p v-for="warning in library.warnings" :key="warning" class="library-notice warning" role="status">{{ warning }}</p>
+    <div v-if="loading && !loaded" class="library-panel library-empty" role="status">正在整理关键词与表情…</div>
+    <div v-if="loaded" class="keyword-layout">
+      <aside class="library-panel keyword-sidebar" aria-label="关键词库">
+        <h3>关键词库 <span class="library-badge">{{ library.groups.length }}</span></h3>
+        <input v-model="q" class="library-input" type="search" aria-label="搜索关键词" placeholder="搜索关键词…" />
+        <div class="library-chips" aria-label="图片状态筛选">
+          <button v-for="item in [{ id: 'all', label: '全部' }, { id: 'filled', label: '有表情' }, { id: 'empty', label: '待补图' }]" :key="item.id" :class="{ active: filter === item.id }" :aria-pressed="filter === item.id" @click="filter = item.id">{{ item.label }}</button>
         </div>
-        <div class="sticker-stats">使用 {{ s.useCount }} 次 · {{ s.format.toUpperCase() }} · {{ s.width }}×{{ s.height }}</div>
-      </div>
+        <nav class="keyword-list" aria-label="选择关键词">
+          <button v-for="group in filteredGroups" :key="group.keyword" :data-testid="`keyword-${group.keyword}`" class="keyword-option" :class="{ active: activeGroup?.keyword === group.keyword }" :aria-current="activeGroup?.keyword === group.keyword ? 'true' : undefined" @click="selectKeyword(group.keyword)"><span>{{ group.keyword }}</span><small>{{ group.assets.length ? `${group.assets.length} 张` : '待补图' }}</small></button>
+          <p v-if="!filteredGroups.length" class="sidebar-footer">没有匹配的关键词</p>
+        </nav>
+        <p class="sidebar-footer">显示 {{ filteredGroups.length }} 个词 · 没有图的词也会保留</p>
+      </aside>
+      <section class="library-panel keyword-gallery">
+        <template v-if="activeGroup">
+          <div class="section-heading">
+            <div><div class="keyword-heading"><h3>{{ activeGroup.keyword }}</h3><span class="library-badge">{{ activeGroup.category }}</span><span v-if="activeGroup.planned" class="library-badge">规划词</span></div><p>{{ activeGroup.assets.length }} 张表情 · 系统 {{ activeGroup.assets.filter(a => a.source === 'system').length }} / 个人 {{ activeGroup.assets.filter(a => a.source === 'personal').length }}</p></div>
+            <button class="library-button primary" :disabled="busy || loading" @click="chooseUpload">{{ busy ? '处理中…' : '＋ 上传到此关键词' }}</button>
+          </div>
+          <input ref="fileInput" data-testid="group-upload-input" class="hidden-upload" type="file" accept=".gif,.png,.jpg,.jpeg,.webp" :aria-label="`上传表情到${activeGroup.keyword}`" @change="uploadFile" />
+          <div v-if="!activeGroup.assets.length" data-testid="empty-keyword" class="library-empty"><span class="empty-mark" aria-hidden="true">☺</span><strong>“{{ activeGroup.keyword }}”还没有表情</strong><p>关键词已在这里，上传一张 GIF 就能补充到这一组。</p><button class="library-button" :disabled="busy || loading" @click="chooseUpload">选择图片上传</button></div>
+          <div v-else class="sticker-grid">
+            <article v-for="asset in activeGroup.assets" :key="`${asset.source}:${asset.id}`" class="sticker-cell">
+              <div class="sticker-preview"><span v-if="failedImages.has(`${asset.source}:${asset.id}`)" class="library-badge">图片加载失败</span><img v-else :src="scopedAssetUrl(asset.url)" :alt="asset.keywords.join('、')" loading="lazy" @error="imageFailed(asset)" /><span class="sticker-format">{{ asset.format.toUpperCase() }}</span></div>
+              <div class="sticker-meta">
+                <span class="library-badge" :class="{ personal: asset.source === 'personal' }">{{ asset.source === 'system' ? '系统素材 · 只读' : '个人上传' }}</span>
+                <template v-if="asset.source === 'personal' && editingId === Number(asset.id)"><input v-model="editingKeywords" class="library-input" aria-label="图片关键词，多个用逗号分隔" @keyup.enter="saveEdit(asset)" /><div class="library-actions"><button class="text-button" :disabled="busy" @click="saveEdit(asset)">保存</button><button class="text-button" :disabled="busy" @click="editingId = null">取消</button></div></template>
+                <p v-else class="sticker-tags">{{ asset.keywords.join(' · ') }}</p>
+                <small>{{ asset.width && asset.height ? `${asset.width} × ${asset.height}` : '尺寸未知' }}<template v-if="asset.source === 'personal'"> · 使用 {{ asset.useCount }} 次</template></small>
+                <div v-if="asset.source === 'personal' && editingId !== Number(asset.id)" class="library-actions"><button class="text-button" :disabled="busy || loading" @click="startEdit(asset)">修改关键词</button><button :data-testid="`delete-sticker-${asset.id}`" class="text-button danger" :disabled="busy || loading" @click="remove(asset)">删除</button></div>
+              </div>
+            </article>
+          </div>
+          <p class="upload-hint">支持 GIF / PNG / JPG / WebP，单张不超过 5 MB。上传后自动归入“{{ activeGroup.keyword }}”，用于当前用户的斗图搜索，不修改系统素材。规划词只作后台展示，不代表已启用推荐；未发布试稿不在这里展示。</p>
+        </template>
+        <div v-else class="library-empty"><strong>{{ q || filter !== 'all' ? '没有匹配的关键词' : '从第一个关键词开始' }}</strong><p>调整左侧筛选，或在上方新增关键词。</p></div>
+      </section>
     </div>
   </div>
 </template>
-
-<style scoped>
-.count {
-  font-weight: normal;
-  color: var(--muted, #888);
-  font-size: 0.85em;
-}
-.sticker-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 12px;
-  margin-top: 12px;
-}
-.sticker-cell {
-  border: 1px solid var(--border, #ddd);
-  border-radius: 8px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-.sticker-cell img {
-  width: 100%;
-  height: 140px;
-  object-fit: contain;
-  background: repeating-conic-gradient(#f3f3f3 0% 25%, #fff 0% 50%) 50% / 16px 16px;
-}
-.sticker-meta {
-  padding: 6px 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 4px;
-}
-.kw {
-  font-size: 0.85em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.actions {
-  display: flex;
-  gap: 4px;
-  flex-shrink: 0;
-}
-.ghost {
-  background: none;
-  border: 1px solid var(--border, #ddd);
-  border-radius: 4px;
-  padding: 2px 6px;
-  font-size: 0.8em;
-  cursor: pointer;
-}
-.ghost.danger {
-  color: #c0392b;
-}
-.sticker-stats {
-  padding: 4px 8px 6px;
-  font-size: 0.75em;
-  color: var(--muted, #888);
-  border-top: 1px dashed var(--border, #eee);
-}
-</style>

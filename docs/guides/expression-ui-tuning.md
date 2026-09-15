@@ -50,11 +50,10 @@ dp 是布局尺寸，sp 是跟随系统字体缩放的字号。候选沿用现�
 
 ## WSL 构建、安装、重新看效果
 
-先确认工作区改的是预期文件；备份 `local.properties`，因为环境脚本会将 Windows SDK 路径换成 Linux 路径。
+先确认工作区改的是预期文件。`local.properties` 保留 Windows SDK 路径；2026-09-14 起环境脚本只导出 WSL 环境变量，不再覆盖此文件，不需要备份/恢复 SDK 配置。
 
 ```bash
 cd /home/ko/project/shurufa/android/YuyanIme
-cp local.properties /tmp/shurufa-local.properties.before-ui
 source /home/ko/android-tools/env.sh
 ./gradlew --project-cache-dir /tmp/shurufa-gradle-wsl-production \
   :yuyansdk:testOfflineDebugUnitTest \
@@ -62,7 +61,6 @@ source /home/ko/android-tools/env.sh
   --tests '*ExpressionLayoutMetricsTest' --tests '*ExpressionViewportObstructionTest'
 ./gradlew --project-cache-dir /tmp/shurufa-gradle-wsl-production :app:assembleOfflineDebug
 find app/build/unix/outputs/apk -name '*offline*debug*.apk' -o -name '*.apk'
-cp /tmp/shurufa-local.properties.before-ui local.properties
 ```
 
 安装时将上面找到的 **offline/debug APK** 路径转换给 Windows adb（不要选 release/其他 flavor）：

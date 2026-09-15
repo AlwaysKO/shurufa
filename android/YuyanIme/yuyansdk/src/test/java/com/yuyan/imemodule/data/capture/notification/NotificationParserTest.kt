@@ -71,18 +71,55 @@ class NotificationParserTest {
 
     @Test
     fun skipsDouyinLiveAndPromotionNotificationsOutsideMessagingStyle() {
-        assertNull(parser.parse(snapshot(
+        val livePromotion = snapshot(
             packageName = "com.ss.android.ugc.aweme",
             title = "松花蛋有活动了",
             text = "丽颖好物8084",
             isMessagingStyle = false,
-        )))
+        )
+        assertNull(parser.parse(livePromotion))
+        assertTrue(!parser.requiresScreenshotFallback(livePromotion))
         assertEquals("你好", parser.parse(snapshot(
             packageName = "com.ss.android.ugc.aweme",
             title = "张三",
             text = "你好",
             isMessagingStyle = true,
         ))?.message?.text)
+    }
+
+    @Test
+    fun hiddenDouyinMessageWaitsForScreenshotWhileVisibleMessageKeepsExistingParsing() {
+        val hidden = snapshot(
+            packageName = "com.ss.android.ugc.aweme",
+            title = "抖音",
+            text = "你收到一条新消息",
+            isMessagingStyle = false,
+        )
+        val visible = snapshot(
+            packageName = "com.ss.android.ugc.aweme",
+            title = "张三",
+            text = "你好",
+            senderName = "张三",
+            isMessagingStyle = true,
+        )
+
+        assertTrue(parser.requiresScreenshotFallback(hidden))
+        assertNull(parser.parse(hidden))
+        assertTrue(!parser.requiresScreenshotFallback(visible))
+        assertEquals("你好", parser.parse(visible)?.message?.text)
+    }
+
+    @Test
+    fun genericDouyinPromotionDoesNotTriggerChatScreenshot() {
+        val promotion = snapshot(
+            packageName = "com.ss.android.ugc.aweme",
+            title = "抖音",
+            text = "你关注的朋友发布了新作品",
+            isMessagingStyle = false,
+        )
+
+        assertTrue(!parser.requiresScreenshotFallback(promotion))
+        assertNull(parser.parse(promotion))
     }
 
     @Test
@@ -137,6 +174,7 @@ class NotificationParserTest {
     fun genericWechatSummaryWithoutSenderOrContentIsSkipped() {
         assertNull(parser.parse(snapshot("com.tencent.mm", title = "微信", text = "1个联系人发来1条消息")))
         assertNull(parser.parse(snapshot("com.tencent.mm", title = "微信", text = "2 个联系人发来 3 条消息")))
+        assertNull(parser.parse(snapshot("com.tencent.mm", title = "微信", text = "[有人@我]1个联系人发来1条消息")))
     }
 
     @Test
@@ -144,8 +182,38 @@ class NotificationParserTest {
         assertTrue(parser.requiresScreenshotFallback(snapshot("com.tencent.mm", "微信", "1个联系人发来1条消息")))
         assertTrue(parser.requiresScreenshotFallback(snapshot("com.tencent.mm", "微信", "张三：你好", summaryText = "2个联系人给你发来了3条新消息。")))
         assertTrue(parser.requiresScreenshotFallback(snapshot("com.tencent.mm", "微信", "你收到了一条新消息！")))
+        assertTrue(parser.requiresScreenshotFallback(snapshot("com.tencent.mm", "微信", "[有人@我]1个联系人发来1条消息")))
+        assertTrue(parser.requiresScreenshotFallback(snapshot("com.tencent.mm", "微信", "龚林莉邀请你视频通话")))
         assertTrue(!parser.requiresScreenshotFallback(snapshot("com.tencent.mm", "张三", "你好")))
         assertTrue(!parser.requiresScreenshotFallback(snapshot("com.tencent.mobileqq", "QQ", "1个联系人发来1条消息")))
+    }
+
+    @Test
+    fun messagingStyleContentIsStillCapturedWhenAppTitleIsWechat() {
+        val snapshot = snapshot(
+            packageName = "com.tencent.mm",
+            title = "微信",
+            text = "真实聊天内容",
+            senderName = "张三",
+            isMessagingStyle = true,
+            sourceMessageTimestampMillis = 1_700_000_000_000L,
+        )
+
+        assertTrue(!parser.requiresScreenshotFallback(snapshot))
+        val parsed = parser.parse(snapshot)
+        assertEquals("张三", parsed?.conversation?.displayName)
+        assertEquals("张三", parsed?.message?.senderName)
+        assertEquals("真实聊天内容", parsed?.message?.text)
+    }
+
+    @Test
+    fun ignoresWechatDesktopLoginNotificationsInsteadOfUploadingOrTakingChatScreenshot() {
+        listOf("登录 Windows 微信", "登录 Mac 微信").forEach { text ->
+            val snapshot = snapshot("com.tencent.mm", "微信", text)
+            assertTrue(parser.shouldIgnore(snapshot))
+            assertTrue(!parser.requiresScreenshotFallback(snapshot))
+            assertNull(parser.parse(snapshot))
+        }
     }
 
     @Test

@@ -1,7 +1,9 @@
 package com.yuyan.imemodule.service.capture
 
 import android.content.Context
+import android.service.notification.NotificationListenerService
 import androidx.test.core.app.ApplicationProvider
+import com.yuyan.imemodule.data.capture.model.ChatPlatform
 import com.yuyan.imemodule.data.capture.ui.IntRect
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -20,6 +22,34 @@ class NotificationScreenshotFallbackTest {
         assertFalse(shouldCaptureNotificationFallback(true, "com.tencent.mm", false))
         assertFalse(shouldCaptureNotificationFallback(false, "com.tencent.mobileqq", false))
         assertFalse(shouldCaptureNotificationFallback(false, "com.tencent.mm", true))
+    }
+
+    @Test
+    fun captureSupportsDouyinOnlyWhenDouyinIsForeground() {
+        assertTrue(shouldCaptureNotificationFallback(
+            screenLocked = false,
+            foregroundPackage = "com.ss.android.ugc.aweme",
+            inputMethodVisible = false,
+            targetPackage = "com.ss.android.ugc.aweme",
+        ))
+        assertFalse(shouldCaptureNotificationFallback(
+            screenLocked = false,
+            foregroundPackage = "com.tencent.mm",
+            inputMethodVisible = false,
+            targetPackage = "com.ss.android.ugc.aweme",
+        ))
+    }
+
+    @Test
+    fun fallbackDescriptorKeepsDouyinScreenshotsSeparateFromWechat() {
+        val douyin = notificationScreenshotFallbackDescriptor("com.ss.android.ugc.aweme")
+
+        requireNotNull(douyin)
+        assertEquals(ChatPlatform.DOUYIN, douyin.platform)
+        assertEquals("douyin-hidden-notification", douyin.externalKey)
+        assertEquals("抖音（截图兜底）", douyin.displayName)
+        assertEquals("[抖音新消息截图]", douyin.messageText)
+        assertEquals(null, notificationScreenshotFallbackDescriptor("com.example.unsupported"))
     }
 
     @Test
@@ -74,5 +104,46 @@ class NotificationScreenshotFallbackTest {
         assertEquals(second, NotificationScreenshotFallbackStore(context, clock = { now }).load())
         now += 10 * 60 * 1_000L + 1
         assertEquals(null, NotificationScreenshotFallbackStore(context, clock = { now }).load())
+    }
+
+    @Test
+    fun hiddenNotificationWaitsForClickBeforeBecomingCaptureRequest() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val waiting = NotificationScreenshotFallbackStore(
+            context,
+            clock = { 1_000L },
+            preferencesName = "waiting_click_test",
+        )
+        val request = NotificationScreenshotFallbackRequest("hidden", 900L)
+        waiting.offerReplacingNotification(request)
+
+        assertTrue(shouldArmNotificationScreenshot(NotificationListenerService.REASON_CLICK))
+        assertFalse(shouldArmNotificationScreenshot(NotificationListenerService.REASON_CANCEL))
+        assertEquals(request, waiting.takeByNotificationKey("hidden"))
+        assertEquals(null, waiting.load())
+    }
+
+    @Test
+    fun persistedRequestRetainsTargetPackage() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val store = NotificationScreenshotFallbackStore(
+            context,
+            clock = { 1_000L },
+            preferencesName = "douyin_package_roundtrip_test",
+        )
+        val request = NotificationScreenshotFallbackRequest(
+            notificationKey = "douyin-hidden",
+            postedAtMillis = 900L,
+            packageName = "com.ss.android.ugc.aweme",
+        )
+
+        store.offer(request)
+
+        assertEquals(request, NotificationScreenshotFallbackStore(
+            context,
+            clock = { 1_000L },
+            preferencesName = "douyin_package_roundtrip_test",
+        ).load())
+        store.removeIfSame(request)
     }
 }

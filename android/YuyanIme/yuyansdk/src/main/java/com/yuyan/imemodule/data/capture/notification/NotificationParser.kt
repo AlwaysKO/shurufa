@@ -35,11 +35,23 @@ data class ParsedNotification(
 )
 
 class NotificationParser {
-    fun requiresScreenshotFallback(snapshot: NotificationSnapshot): Boolean {
+    fun shouldIgnore(snapshot: NotificationSnapshot): Boolean {
         if (snapshot.packageName != WECHAT_PACKAGE) return false
         val title = normalizeCapturedText(snapshot.title)
+        val text = normalizeCapturedText(snapshot.text)
+        return title == "微信" && WECHAT_DESKTOP_LOGIN.containsMatchIn(text)
+    }
+
+    fun requiresScreenshotFallback(snapshot: NotificationSnapshot): Boolean {
+        if (snapshot.packageName !in SCREENSHOT_FALLBACK_PACKAGES || shouldIgnore(snapshot)) return false
+        val title = normalizeCapturedText(snapshot.title)
         val texts = listOf(snapshot.summaryText, snapshot.text).map(::normalizeCapturedText)
-        return title == "微信" && texts.any(WECHAT_AGGREGATE_SUMMARY::matches)
+        if (snapshot.isMessagingStyle || texts.none(String::isNotEmpty)) return false
+        return when (snapshot.packageName) {
+            WECHAT_PACKAGE -> title == "微信"
+            DOUYIN_PACKAGE -> title == "抖音" && texts.any(DOUYIN_HIDDEN_MESSAGE::containsMatchIn)
+            else -> false
+        }
     }
 
     fun requiresMediaScreenshotFallback(snapshot: NotificationSnapshot): Boolean {
@@ -52,6 +64,7 @@ class NotificationParser {
 
     fun parse(snapshot: NotificationSnapshot): ParsedNotification? {
         val platform = PLATFORM_BY_PACKAGE[snapshot.packageName] ?: return null
+        if (shouldIgnore(snapshot)) return null
         if (platform == ChatPlatform.DOUYIN && !snapshot.isMessagingStyle) return null
         val title = normalizeCapturedText(snapshot.title).takeIf(String::isNotEmpty) ?: return null
         val rawText = normalizeCapturedText(snapshot.text).takeIf(String::isNotEmpty) ?: return null
@@ -62,12 +75,17 @@ class NotificationParser {
             ConversationType.DIRECT
         }
         val explicitSender = normalizeCapturedText(snapshot.senderName).takeIf(String::isNotEmpty)
+        val conversationTitle = if (snapshot.isMessagingStyle && title == "微信" && explicitSender != null) {
+            explicitSender
+        } else {
+            title
+        }
         val (senderName, body) = if (snapshot.isGroupConversation && explicitSender != null) {
             explicitSender to rawText
         } else if (snapshot.isGroupConversation) {
             splitGroupMessage(rawText)
         } else {
-            title to rawText
+            (explicitSender ?: conversationTitle) to rawText
         }
         val senderKey = stableNameKey(senderName ?: title)
         val readableMediaUri = snapshot.mediaUri?.takeIf { snapshot.mediaUriReadable }
@@ -83,7 +101,7 @@ class NotificationParser {
             }
         }
         val externalKey = "notification:" + sha256(
-            "${platform.wireName}|$conversationType|$title".toByteArray(Charsets.UTF_8),
+            "${platform.wireName}|$conversationType|$conversationTitle".toByteArray(Charsets.UTF_8),
         )
 
         return ParsedNotification(
@@ -91,7 +109,7 @@ class NotificationParser {
                 platform = platform,
                 accountKey = NOTIFICATION_ACCOUNT_KEY,
                 externalKey = externalKey,
-                displayName = title,
+                displayName = conversationTitle,
                 conversationType = conversationType,
                 identityConfidence = NOTIFICATION_IDENTITY_CONFIDENCE,
             ),
@@ -157,13 +175,14 @@ class NotificationParser {
         const val NOTIFICATION_ACCOUNT_KEY = "notification"
         const val NOTIFICATION_IDENTITY_CONFIDENCE = 0.8
         const val WECHAT_PACKAGE = "com.tencent.mm"
-        val WECHAT_AGGREGATE_SUMMARY = Regex(
-            "^(?:(?:[\\d一二三四五六七八九十]+)\\s*个联系人(?:给你)?发来(?:了)?\\s*(?:[\\d一二三四五六七八九十]+)\\s*条(?:新)?消息|你收到(?:了)?\\s*(?:[\\d一二三四五六七八九十]+)\\s*条(?:新)?消息)[。！!]?${'$'}",
-        )
+        const val DOUYIN_PACKAGE = "com.ss.android.ugc.aweme"
+        val SCREENSHOT_FALLBACK_PACKAGES = setOf(WECHAT_PACKAGE, DOUYIN_PACKAGE)
+        val WECHAT_DESKTOP_LOGIN = Regex("登录\\s*(Windows|Mac)\\s*微信", RegexOption.IGNORE_CASE)
+        val DOUYIN_HIDDEN_MESSAGE = Regex("(收到|发来|发了|有).{0,12}(新消息|消息|私信)|\\d+\\s*条\\s*(新消息|私信)")
         val PLATFORM_BY_PACKAGE = mapOf(
             WECHAT_PACKAGE to ChatPlatform.WECHAT,
             "com.tencent.mobileqq" to ChatPlatform.QQ,
-            "com.ss.android.ugc.aweme" to ChatPlatform.DOUYIN,
+            DOUYIN_PACKAGE to ChatPlatform.DOUYIN,
         )
     }
 }

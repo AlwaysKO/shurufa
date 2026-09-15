@@ -1,0 +1,21 @@
+# Rime dictionary
+# encoding: utf-8
+#
+#
+# https://github.com/iDvel/rime-ice
+# ------- 扩展词库 -------
+#
+#
+# 只保留三个字及以上的
+# 与 base 没有重复
+# 通过朴素的脚本和勤劳的双手完成了注音
+#
+#
+# - 日常更新的一些
+# - tencent.dict.yaml 中的多音字
+# - 简化字八股文 https://github.com/rime/rime-essay-simp
+---
+name: ext
+version: "2026-09-01"
+sort: by_weight
+...

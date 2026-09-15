@@ -103,6 +103,24 @@ describe('ingestCapturedMessages', () => {
     expect((await pool.query('SELECT text FROM chat_message')).rows).toEqual([{ text: '视频通话中' }]);
   });
 
+  it('服务端拒绝旧客户端上传的微信隐藏占位和桌面登录提示', async () => {
+    const genericConversation = { ...conversation, display_name: '微信', external_key: 'wechat-generic' };
+    const hidden = message({
+      text: '[有人@我]1个联系人发来1条消息',
+      metadata: { capture_source: 'notification' },
+    });
+    const desktopLogin = message({
+      fingerprint: 'c'.repeat(64),
+      text: '登录 Windows 微信',
+      metadata: { capture_source: 'notification' },
+    });
+
+    const result = await ingestCapturedMessages(pool, userId, deviceId, genericConversation, [hidden, desktopLogin]);
+
+    expect(result).toMatchObject({ inserted: 0, duplicated: 2 });
+    expect((await pool.query('SELECT id FROM chat_message')).rowCount).toBe(0);
+  });
+
   it('资源缺失时返回哈希且不提前写入相关消息', async () => {
     const missingSha256 = 'd'.repeat(64);
 

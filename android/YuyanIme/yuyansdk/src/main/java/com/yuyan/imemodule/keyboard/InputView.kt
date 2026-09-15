@@ -1141,9 +1141,12 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             }
             KeyEvent.KEYCODE_CLEAR -> resetToIdleState()
             KeyEvent.KEYCODE_ENTER -> {
-                if (DecodingInfo.isCandidatesEmpty || DecodingInfo.isAssociate) sendKeyEvent(keyCode)
-                else commitCandidateAndNotify(DecodingInfo.composingStrForCommit)
-                resetToIdleState()
+                // 不把未解析的九宫格残码直接上屏，也不清空等待选择的按键。
+                if (!DecodingInfo.hasUnresolvedT9Composition) {
+                    if (DecodingInfo.isCandidatesEmpty || DecodingInfo.isAssociate) sendKeyEvent(keyCode)
+                    else commitCandidateAndNotify(DecodingInfo.composingStrForCommit)
+                    resetToIdleState()
+                }
             }
             KeyEvent.KEYCODE_SHIFT_LEFT, KeyEvent.KEYCODE_SHIFT_RIGHT -> {
                 if(InputModeSwitcher.isChinese && !DecodingInfo.isEngineFinish) processInput(KeyEvent(0, 0, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_APOSTROPHE, 0, 0, 0, 0, KeyEvent.FLAG_SOFT_KEYBOARD))
@@ -1642,7 +1645,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     }
 
     private fun showRelationshipReplyCandidates(response: RelationshipReplyResponse) {
-        if (response.candidates.isEmpty() || !DecodingInfo.composingStrForDisplay.isBlank() ||
+        if (response.candidates.isEmpty() || Kernel.isComposing ||
             !currentInputConnection()?.getTextBeforeCursor(1, 0).isNullOrEmpty()
         ) return
         val items = response.candidates.map {

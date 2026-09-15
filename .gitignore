@@ -157,3 +157,18 @@ __pycache__/
 /server/images/_drafts/**/contact-sheets/**/*.gif
 /assets/expression/contact-sheets/**/*.gif
 /server/images/_drafts/**/*.gif
+
+# 临时诊断与测试产物仅留本地，保留 Markdown 结论记录。
+/artifacts/diagnostics/**
+!/artifacts/diagnostics/**/
+!/artifacts/diagnostics/**/*.md
+/artifacts/**/*.html
+coverage/
+.nyc_output/
+.vitest/
+playwright-report/
+test-results/
+*.lcov
+
+# 本机 SDK 环境检查依赖仓库外脚本，不属于可移植项目测试。
+/android/YuyanIme/tools/test_sdk_environment.py

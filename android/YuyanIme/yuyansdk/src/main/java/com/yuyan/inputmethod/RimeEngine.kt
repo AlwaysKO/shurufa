@@ -5,6 +5,7 @@ import com.yuyan.imemodule.application.CustomConstant
 import com.yuyan.imemodule.application.Launcher
 import com.yuyan.imemodule.data.completion.OfflineT9Candidates
 import com.yuyan.imemodule.data.completion.CandidateSelection
+import com.yuyan.imemodule.data.completion.RankedCandidate
 import com.yuyan.imemodule.data.completion.T9CommitTracker
 import com.yuyan.imemodule.data.completion.CompletionSync
 import com.yuyan.imemodule.data.completion.OfflineAssociationCompletion
@@ -25,6 +26,9 @@ import java.util.Locale
 object RimeEngine {
     private val keyRecordStack = KeyRecordStack()
     private var personalCandidates: CandidateSelection? = null
+    private var nativeCandidateMetadata = CandidateSelection(emptyList(), 0)
+    internal fun candidateForSelection(index: Int) = personalCandidates?.at(index - customPhraseSize)
+        ?: nativeCandidateMetadata.at(index - customPhraseSize)
     private val t9CommitTracker = T9CommitTracker()
 
     private fun learningCode(): String {
@@ -37,9 +41,16 @@ object RimeEngine {
     }
 
     fun takeT9CommitCode(text: String): String? = t9CommitTracker.consume(text, true)
+    internal fun takeT9CommitSelection(text: String) = t9CommitTracker.consumeSelection(text, true)
     private var pinyins: Array<String> = emptyArray() // 候选词界面的候选拼音列表
     var showCandidates: List<CandidateListItem> = emptyList() // 所有待展示的候选词
     var showComposition: String = "" // 候选词上方展示的拼音
+    /** 只读显示：用当前原生元数据补全可见拼音，不改供提交/回车门禁使用的showComposition。 */
+    internal fun getT9CompositionForDisplay(): String = T9Spelling.fullDisplayComposition(
+        keyRecordStack.unlockedT9Digits(), showComposition,
+        nativeCandidateMetadata.firstPage.map { it.pinyin },
+    )
+
     var preCommitText: String = "" // 待提交的文字
     private var customPhraseSize: Int = 0 // 自定义引擎候选词长度
     private var associationRimeIndexes: List<Int?> = emptyList()
@@ -62,6 +73,7 @@ object RimeEngine {
 
     internal fun clearCachedCompositionForSchemaSwitch() {
         personalCandidates = null
+        nativeCandidateMetadata = CandidateSelection(emptyList(), 0)
         t9CommitTracker.clear()
         showCandidates = emptyList()
         showComposition = ""
@@ -99,19 +111,21 @@ object RimeEngine {
 
     fun selectCandidate(index: Int): String? {
         val code = learningCode()
-        val selected = personalCandidates?.at(index - customPhraseSize)
+        val selected = candidateForSelection(index)
         if (selected != null && selected.nativeIndex == null) {
             reset()
             preCommitText = selected.text
-            t9CommitTracker.selected(code, selected.text)
+            t9CommitTracker.selected(code, selected.text, selected.pinyin)
             return preCommitText
         }
         val indexReal = selected?.nativeIndex ?: (index - customPhraseSize)
         if (indexReal < 0) return null
+        val chosenText = selected?.text?.takeIf { it.isNotEmpty() } ?: showCandidates.getOrNull(index)?.text.orEmpty()
+        val chosenReading = selected?.pinyin?.takeIf { it.isNotEmpty() } ?: showCandidates.getOrNull(index)?.comment.orEmpty()
         Rime.selectCandidate(indexReal)
         keyRecordStack.pushCandidateSelectAction()
         val committed = updateCandidatesOrCommitText()
-        if (committed != null) t9CommitTracker.selected(code, committed)
+        t9CommitTracker.segment(code, chosenText, chosenReading, committed)
         return committed
     }
 
@@ -136,6 +150,7 @@ object RimeEngine {
                     }
                 }
             }
+            nativeCandidateMetadata.appendNativePage(candidates.map { it.text }, "", candidates.map { it.comment })
             val visible = personalCandidates?.appendNativePage(candidates.map { it.text }, learningCode(), candidates.map { it.comment })
                 ?.map { candidates[it] }?.toTypedArray() ?: candidates
             if (visible.isNotEmpty()) return visible
@@ -153,6 +168,7 @@ object RimeEngine {
 
     fun predictAssociationWords(text: String) {
         personalCandidates = null
+        nativeCandidateMetadata = CandidateSelection(emptyList(), 0)
         pinyins = emptyArray()
         if (text.isNotEmpty()) {
             val merged = AssociationCandidateMerger.merge(
@@ -180,6 +196,7 @@ object RimeEngine {
 
     fun reset() {
         personalCandidates = null
+        nativeCandidateMetadata = CandidateSelection(emptyList(), 0)
         t9CommitTracker.clear()
         showCandidates = emptyList()
         pinyins = emptyArray()
@@ -230,6 +247,7 @@ object RimeEngine {
         if (rimeCommit != null) {
             keyRecordStack.clear()
             personalCandidates = null
+            nativeCandidateMetadata = CandidateSelection(emptyList(), 0)
             preCommitText = rimeCommit.commitText
             preCommitText = if (charCase == KeyEvent.META_SHIFT_ON) {
                 preCommitText.lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
@@ -243,6 +261,9 @@ object RimeEngine {
             return preCommitText
         }
         val candidates = Rime.getRimeContext()?.candidates?.asList() ?: emptyList()
+        nativeCandidateMetadata = CandidateSelection(candidates.mapIndexed { index, item ->
+            RankedCandidate(item.text, item.comment, index)
+        }, candidates.size)
         customPhraseSize = 0
         val compositionText = Rime.compositionText
         showCandidates = when {

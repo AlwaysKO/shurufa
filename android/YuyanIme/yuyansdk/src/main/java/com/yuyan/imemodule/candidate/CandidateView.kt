@@ -140,9 +140,12 @@ class CandidateView(context: Context, private val service: ImeService) : Lifecyc
                 true
             }
             KeyEvent.KEYCODE_ENTER -> {
-                if (DecodingInfo.isCandidatesEmpty || DecodingInfo.isAssociate) sendKeyEvent(keyCode)
-                else commitDecInfoText(DecodingInfo.composingStrForCommit)
-                resetToIdleState()
+                // 与软键盘一致：保留未解析组合，不提交残码或显示提示。
+                if (!DecodingInfo.hasUnresolvedT9Composition) {
+                    if (DecodingInfo.isCandidatesEmpty || DecodingInfo.isAssociate) sendKeyEvent(keyCode)
+                    else commitDecInfoText(DecodingInfo.composingStrForCommit)
+                    resetToIdleState()
+                }
                 true
             }
             KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT -> {

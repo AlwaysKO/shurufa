@@ -78,14 +78,15 @@ adb logcat -s ShurufaCollector OfflineT9
 | `data/capture/ActiveChatContextStore.kt` | 旧即时回复上下文存储；截图采集模式连接后会清空 |
 | `data/relationship/RelationshipReplyPolicy.kt` | 截图统一分析上线前硬关闭即时关系回复请求 |
 
-## 微信对方新消息采集与后续 AI
+## 微信、抖音对方新消息采集与后续 AI
 
 荣耀 ELI-AN00 真机验证中，微信无障碍树只有空根节点，无法可靠识别标题、输入框和左右气泡。
-因此不做页面轮询，以系统“新来通知”为唯一截图触发源。2026-09-11 用户明确选择关闭“通知显示消息详情”，因此汇总通知会持久等待最多 10 分钟；屏幕已解锁、微信在前台且键盘未展开时，延迟合并后截取一张微信内容区图片。不自动点击通知、不切换会话。
+因此不做页面轮询，以系统“新来通知”为截图候选来源。2026-09-14 用户进一步确认：关闭“通知显示消息详情”时，`1个联系人发来1条消息`、`[有人@我]1个联系人发来1条消息` 等占位内容不得上报；端侧只持久保存最多 10 分钟的待打开信号，只有用户实际点击该系统通知后才允许截图。随后在屏幕已解锁、微信位于前台且键盘未展开时，延迟合并后截取一张微信内容区图片。不自动点击通知、不切换会话。`登录 Windows/Mac 微信` 等系统状态直接忽略。
+服务端同时拒绝旧客户端继续上传上述隐藏占位和桌面登录提示，防止未升级 APK 在后台重新产生无价值记录。
 通知正文直接保存，语音、图片、视频号/视频、文件、链接、位置、名片、小程序、红包和转账按类型保存；
 通知若提供可读图片资源则一并上传，并保留正文判断出的语音、视频、表情等原媒体类型；不可读的语音、图片、表情/GIF、视频/视频号、文件和卡片类通知也会进入有界 FIFO 截图队列（同一通知去重，最多保留 20 个、等待最多 10 分钟），不会再由后一条覆盖前一条。截图只能保存当时可见画面，不能取得原始语音、视频或 GIF 完整动画。服务端 `.env` 无需配置 `DEEPSEEK_API_KEY`，客户端也不请求即时 AI 回复。
 
-2026-09-14 根据用户真机反馈补充：同一个仍在通知栏中的微信语音/视频通话状态更新只采集一次，服务端再对 5 分钟内相同联系人、相同通话状态做防重复；通话状态会触发一次支持截图。抖音仅接收 Android `MessagingStyle` 的私聊消息，直播开播、直播间活动和营销通知不属于聊天数据，直接丢弃。截图经 `/api/v1/mobile/chat/assets` 上传并和消息关联，后台聊天采集页直接显示缩略图；仍须满足屏幕解锁、微信在前台且输入法未显示，无法在后台静默打开指定会话。
+2026-09-14 根据用户真机反馈补充：同一个仍在通知栏中的微信语音/视频通话状态更新只采集一次，服务端再对 5 分钟内相同联系人、相同通话状态做防重复；通话状态会触发一次支持截图。抖音保留 Android `MessagingStyle` 私聊通知的原有解析；标题为“抖音”的隐藏详情新消息只登记待打开信号，用户实际点击该通知并进入抖音后才截图，不把通知占位文字上报。直播开播、直播间活动和营销通知既不入库，也不触发截图。截图经 `/api/v1/mobile/chat/assets` 上传并和消息关联，后台聊天采集页直接显示缩略图，并按微信/抖音分别标识、分别去重；仍须满足屏幕解锁、目标应用在前台且输入法未显示，无法在后台静默打开指定会话。
 
 后台聊天采集页可删除当前选中的整个会话，操作前二次确认；会话消息和关系分析记录级联删除，仅由该会话引用的截图媒体同步删除，仍被其他消息引用的共享媒体保留。
 
@@ -128,10 +129,22 @@ git submodule update --init --recursive
 - Cygwin / MSYS 使用 Windows Java，保留 Windows 默认缓存目录。
 - 不在 `settings.gradle` 动态改缓存目录：Gradle 8.9 的最小探针证明那里已太晚，执行历史仍写进旧目录。
 - 旧的共享执行历史不再使用，无需删除源码、用户数据或全局依赖缓存。修改后在 Studio 执行一次 **Sync Project with Gradle Files**，然后正常 Run。
-- 不要同时运行两边构建：`local.properties` 的 SDK 地址与根 `clean` 仍共享。本轮 WSL 验证保存并恢复了 Windows 的 SDK 配置。
+- 不要同时运行两边构建：根 `clean` 仍会影响共享工程；SDK 配置按下节固定，不再来回改写 `local.properties`。
 - 回归：`python3 android/YuyanIme/tools/test_build_cache_isolation.py`，验证实际 POSIX 启动参数（含带空格的 JAVA_HOME）及 Windows IDE 默认值。
 
 官方说明：[Gradle 项目缓存参数](https://docs.gradle.org/current/userguide/project_properties.html)，[项目缓存与构建目录](https://docs.gradle.org/current/userguide/directory_layout.html)。
+
+### SDK location not found：共享配置被 WSL 覆盖（2026-09-14）
+
+本机 WSL 工程是 `E:\Projects\shurufa-android\YuyanIme` 的绑定挂载，两端共用同一个 `local.properties`。旧 `~/android-tools/env.sh` 每次 source 都把 `sdk.dir` 改成 `/home/ko/android-tools/sdk`，导致 Windows Studio 找不到 SDK；重启 IDE 不保证修复此文件。
+
+- `local.properties` 固定保留 Windows 路径：`sdk.dir=E:/AndroidSDK`（本机已核实 SDK 36 存在；其他机器使用实际路径）。该文件不要提交 Git。
+- 本机 `~/android-tools/env.sh` 已移除写入 `local.properties` 的逻辑，只导出 WSL 的 `JAVA_HOME`、`ANDROID_HOME` 等环境变量。
+- WSL 使用下方 source + `./gradlew`。Windows 路径在 Linux 不存在时，当前 Android Gradle 插件会回退到有效的 `ANDROID_HOME`；可能提示无效 `sdk.dir` 警告，不需要为消除警告改写共享文件。
+- 不再执行旧计划中的“先覆盖 Linux 路径、构建后恢复”操作，也不要让后台任务恢复旧备份。此说明取代下述调试指南和旧计划中的 SDK 临时切换办法，不改变其他业务要求。
+- Windows Studio 重新 **Sync Project with Gradle Files** 后构建；不用删除全局缓存或重装 SDK。
+- 环境脚本回归：`python3 android/YuyanIme/tools/test_sdk_environment.py`（仅本机有该环境脚本时执行，否则跳过）。
+- 本轮验收：真实 Gradle SDK 探针在 WSL 解析为 `/home/ko/android-tools/sdk`，Windows 解析为 `E:\AndroidSDK`，两端均找到 `platforms/android-36/android.jar` 且任务成功；共享文件保持 Windows 路径。未运行本轮完整 APK 构建或 IDE 界面验收。Windows 验证沿用 Studio 项目配置的 JDK 17（`E:\Java\microsoft-jdk-17.0.16\jdk-17.0.16+8`），不要将 Gradle JDK 改成新版 Studio 自带的 JBR 25：本轮命令行探针误用它时出现 `Unsupported class file major version 69`。
 
 ### WSL 命令行构建（已验证）
 

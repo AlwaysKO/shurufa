@@ -4,6 +4,26 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class T9CommitTrackerTest {
+    @Test fun `分段选词保存最初编码与整句读音`() {
+        val tracker = T9CommitTracker()
+        tracker.segment("94363362", "真的", "zhen'de", null)
+        tracker.segment("", "吗", "ma", "真的吗")
+        val result = tracker.consumeSelection("真的吗", true)
+        assertEquals("94363362", result?.code)
+        assertEquals("zhen de ma", result?.pinyin)
+        assertNull(tracker.consumeSelection("真的吗", true))
+    }
+    @Test fun `取消或宿主失败不保留分段学习`() {
+        val tracker = T9CommitTracker()
+        tracker.segment("9267426548", "玩", "wan", null)
+        tracker.clear()
+        tracker.segment("", "漂流", "piao'liu", "玩漂流")
+        assertNull(tracker.consumeSelection("玩漂流", true))
+        tracker.segment("9267426548", "玩漂流", "wan piao liu", "玩漂流")
+        assertNull(tracker.consumeSelection("玩漂流", false))
+        assertNull(tracker.consumeSelection("玩漂流", true))
+    }
+
     @Test fun `只有匹配的成功上屏才返回原始编码且只消费一次`() {
         val tracker = T9CommitTracker()
         tracker.selected("46898262", "候选词")

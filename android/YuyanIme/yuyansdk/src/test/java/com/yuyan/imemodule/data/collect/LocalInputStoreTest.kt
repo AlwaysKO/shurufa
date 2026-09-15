@@ -13,6 +13,37 @@ import java.util.UUID
 @Config(sdk = [28])
 class LocalInputStoreTest {
     private val context = ApplicationProvider.getApplicationContext<Context>()
+    @Test fun `版本三升级新增个人读音表但不改旧次数权重和待上传报告`() {
+        val name = "test-${UUID.randomUUID()}.db"
+        val old = LocalInputStore(context, name)
+        old.learn("94363362", "真的吗")
+        old.enqueueReport(PendingReport("old-report", "test", "{}"), listOf("https://online"))
+        old.writableDatabase.execSQL("DROP TABLE personal_word")
+        old.writableDatabase.version = 3
+        old.close()
+        val store = LocalInputStore(context, name)
+        try {
+            assertEquals(1L, store.learned("94363362").single().count)
+            assertEquals(1.0, store.learned("94363362").single().weight, 0.0)
+            assertEquals("old-report", store.pendingReports("https://online").single().id)
+            store.rememberWord("真的吗", "zhen de ma", "system_dictionary")
+            assertEquals("真的吗", store.personalWords("9436336").single().text)
+            assertEquals(1L, store.learned("94363362").single().count)
+        } finally { store.close(); context.deleteDatabase(name) }
+    }
+
+    @Test fun `不符合实际码或逐字音节数的读音不建立独立召回`() {
+        val name = "test-${UUID.randomUUID()}.db"
+        val store = LocalInputStore(context, name)
+        try {
+            store.learn("94363362", "真的吗", pinyin = "zhen ma")
+            store.learn("94363362", "真的吗", pinyin = "ni hao ma")
+            assertTrue(store.personalWords("94363362").isEmpty())
+            assertTrue(store.personalWords("6442662").isEmpty())
+            assertEquals(2L, store.learned("94363362").single().count)
+        } finally { store.close(); context.deleteDatabase(name) }
+    }
+
     @Test fun `相关历史保留来源编码且查询不复制计数或污染三码字母码`() {
         val name = "test-${UUID.randomUUID()}.db"
         val store = LocalInputStore(context, name)

@@ -4,6 +4,8 @@ import android.view.KeyEvent
 import androidx.lifecycle.MutableLiveData
 import com.yuyan.inputmethod.core.CandidateListItem
 import com.yuyan.inputmethod.core.Kernel
+import com.yuyan.inputmethod.util.T9Spelling
+import com.yuyan.imemodule.manager.InputModeSwitcher
 
 /**
  * 词库解码操作对象
@@ -77,7 +79,11 @@ object DecodingInfo {
         get() = Kernel.isFinish
 
     val composingStrForDisplay: String   //获取显示的拼音字符串/
-        get() = Kernel.wordsShowPinyin
+        get() = if (InputModeSwitcher.isChineseT9) Kernel.t9CompositionForDisplay else Kernel.wordsShowPinyin
+
+    /** 未解析九宫格不能回车提交原始残码；等待继续输入或选择候选。 */
+    val hasUnresolvedT9Composition: Boolean
+        get() = T9Spelling.hasUnresolvedComposition(Kernel.wordsShowPinyin, InputModeSwitcher.isChineseT9)
 
     val composingStrForCommit: String   // 获取输入的拼音字符串
         get() = Kernel.wordsShowPinyin.replace("'", "").ifEmpty { getCandidate(0)?.text?:""}

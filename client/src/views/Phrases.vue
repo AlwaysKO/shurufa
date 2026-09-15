@@ -1,178 +1,125 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { api, type UserPhraseRow } from '../api';
+import { phrasePresetGroups } from '../data/phrasePresets';
+import './content-library.css';
 
 const phrases = ref<UserPhraseRow[]>([]);
-const total = ref(0);
-const q = ref('');
 const loading = ref(false);
+const loaded = ref(false);
+const busy = ref(false);
 const msg = ref('');
 const err = ref('');
-
-// 新增表单
-const adding = ref(false);
+const q = ref('');
+const tab = ref<'mine' | 'presets'>('mine');
+const category = ref('全部');
 const newContent = ref('');
+const editingId = ref<number | null>(null);
+const editingContent = ref('');
+const presets = phrasePresetGroups.flatMap(group => group.phrases.map(content => ({ content, category: group.category })));
+const saved = computed(() => new Set(phrases.value.map(p => p.content)));
+const filteredPhrases = computed(() => phrases.value.filter(p => p.content.includes(q.value.trim())));
+const filteredPresets = computed(() => presets.filter(p => (category.value === '全部' || p.category === category.value) && p.content.includes(q.value.trim())));
 
 async function load() {
   loading.value = true;
-  try {
-    const data = await api.userPhrases(q.value);
-    phrases.value = data.phrases;
-    total.value = data.total;
-  } catch (e) {
-    err.value = `加载失败：${(e as Error).message}`;
-  } finally {
-    loading.value = false;
-  }
-}
-
-async function doAdd() {
-  const content = newContent.value.trim();
-  if (!content) {
-    err.value = '请填写常用语内容';
-    return;
-  }
-  adding.value = true;
-  msg.value = '';
   err.value = '';
   try {
-    await api.addUserPhrase(content);
-    msg.value = '已添加，输入法端下次打开「常用语」面板时自动同步';
-    newContent.value = '';
-    await load();
-  } catch (e) {
-    err.value = `添加失败：${(e as Error).message}`;
-  } finally {
-    adding.value = false;
-  }
+    phrases.value = (await api.userPhrases()).phrases;
+    loaded.value = true;
+  } catch (e) { err.value = `加载失败：${(e as Error).message}`; }
+  finally { loading.value = false; }
 }
-
-const editingId = ref<number | null>(null);
-const editingContent = ref('');
-
-function startEdit(p: UserPhraseRow) {
-  editingId.value = p.id;
-  editingContent.value = p.content;
+async function add(content: string, fromPreset = false) {
+  content = content.trim();
+  if (busy.value) return;
+  if (!content || content.length > 500) { err.value = '请输入 1～500 字的常用语'; return; }
+  if (saved.value.has(content)) { msg.value = '这条已在你的常用语中'; return; }
+  busy.value = true; msg.value = ''; err.value = '';
+  try {
+    const row = await api.addUserPhrase(content);
+    phrases.value.unshift(row);
+    msg.value = '已加入我的常用语，手机端下次成功同步后可使用。';
+    if (!fromPreset) newContent.value = '';
+  } catch (e) { err.value = `添加失败：${(e as Error).message}`; }
+  finally { busy.value = false; }
 }
-
+function startEdit(p: UserPhraseRow) { editingId.value = p.id; editingContent.value = p.content; err.value = ''; }
 async function saveEdit(p: UserPhraseRow) {
   const content = editingContent.value.trim();
-  if (!content) {
-    err.value = '内容不能为空';
-    return;
-  }
-  try {
-    await api.updateUserPhrase(p.id, content);
-    p.content = content;
-  } catch (e) {
-    err.value = `保存失败：${(e as Error).message}`;
-  }
-  editingId.value = null;
+  if (busy.value) return;
+  if (!content || content.length > 500) { err.value = '请输入 1～500 字的常用语'; return; }
+  busy.value = true; err.value = ''; msg.value = '';
+  try { await api.updateUserPhrase(p.id, content); p.content = content; editingId.value = null; msg.value = '常用语已更新'; }
+  catch (e) { err.value = `保存失败：${(e as Error).message}`; }
+  finally { busy.value = false; }
 }
-
-async function doDelete(p: UserPhraseRow) {
-  if (!confirm(`删除常用语「${p.content}」？输入法端下次同步后也会移除。`)) return;
-  try {
-    await api.deleteUserPhrase(p.id);
-    phrases.value = phrases.value.filter((x) => x.id !== p.id);
-    total.value -= 1;
-  } catch (e) {
-    err.value = `删除失败：${(e as Error).message}`;
-  }
+async function remove(p: UserPhraseRow) {
+  if (busy.value || !confirm(`删除常用语「${p.content}」？手机下次成功同步后也会移除。`)) return;
+  busy.value = true; err.value = ''; msg.value = '';
+  try { await api.deleteUserPhrase(p.id); phrases.value = phrases.value.filter(x => x.id !== p.id); msg.value = '常用语已删除'; }
+  catch (e) { err.value = `删除失败：${(e as Error).message}`; }
+  finally { busy.value = false; }
 }
-
 onMounted(load);
 </script>
 
 <template>
-  <div class="card">
-    <h3>添加常用语</h3>
-    <p class="desc">常用语会同步到输入法的「常用语」面板（键盘菜单 → 常用语），点击即可一键插入。手机本地新增的常用语也会自动上报到这里。</p>
-    <div class="form-row">
-      <input v-model="newContent" class="input" placeholder="输入常用语内容，如：麻烦发顺丰到付，谢谢。" @keyup.enter="doAdd" />
-      <button class="primary" :disabled="adding" @click="doAdd">{{ adding ? '添加中…' : '添加' }}</button>
-    </div>
-    <p v-if="msg" class="msg ok">{{ msg }}</p>
-    <p v-if="err" class="msg err">{{ err }}</p>
-  </div>
+  <div class="content-library phrase-page">
+    <header class="library-intro">
+      <div class="intro-mark" aria-hidden="true">“</div>
+      <div><span class="eyebrow">QUICK PHRASES</span><h2>常说的话，一键就好</h2><p>管理你的快捷短句，也可以从预置库挑选。只有加入“我的常用语”后才会同步到手机。</p></div>
+      <div class="intro-number"><strong>{{ phrases.length }}</strong><span>我的常用语</span></div>
+    </header>
 
-  <div class="card">
-    <h3>常用语库 <span class="count">{{ total }} 条</span></h3>
-    <div class="form-row">
-      <input v-model="q" class="input" placeholder="搜索内容…" @keyup.enter="load" />
-      <button class="primary" :disabled="loading" @click="load">搜索</button>
-    </div>
+    <section class="library-panel compose-panel">
+      <div class="section-heading"><div><h3>添加自己的常用语</h3><p>手机本地新增的短句也可同步到这里，这里不是输入法的完整词库。</p></div></div>
+      <form class="library-row" @submit.prevent="add(newContent)">
+        <input v-model="newContent" class="library-input" aria-label="新的常用语" maxlength="500" placeholder="写一句经常用的话，例如：收到，我确认后回复你。" />
+        <button class="library-button primary" :disabled="busy || loading || !loaded || !newContent.trim()" type="submit">＋ 添加常用语</button>
+      </form>
+    </section>
+    <p v-if="msg" class="library-notice success" role="status">{{ msg }}</p>
+    <div v-if="err" class="library-notice error" role="alert">{{ err }} <button v-if="!loaded" class="text-button" :disabled="loading" @click="load">重试</button></div>
 
-    <p v-if="loading" class="msg">加载中…</p>
-    <p v-else-if="phrases.length === 0" class="msg">暂无常用语，添加一条吧</p>
-
-    <ul v-else class="phrase-list">
-      <li v-for="p in phrases" :key="p.id" class="phrase-item">
-        <template v-if="editingId === p.id">
-          <input v-model="editingContent" class="input" @keyup.enter="saveEdit(p)" />
-        </template>
-        <template v-else>
-          <span class="phrase-content">{{ p.content }}</span>
-        </template>
-        <span class="phrase-stats">使用 {{ p.useCount }} 次</span>
-        <div class="actions">
-          <button class="ghost" @click="editingId === p.id ? saveEdit(p) : startEdit(p)">
-            {{ editingId === p.id ? '保存' : '编辑' }}
-          </button>
-          <button class="ghost danger" @click="doDelete(p)">删除</button>
+    <section class="library-panel">
+      <div class="library-toolbar">
+        <div class="library-tabs" role="tablist" aria-label="常用语来源">
+          <button :class="{ active: tab === 'mine' }" role="tab" :aria-selected="tab === 'mine'" @click="tab = 'mine'">我的常用语 <span>{{ phrases.length }}</span></button>
+          <button data-testid="preset-tab" :class="{ active: tab === 'presets' }" role="tab" :aria-selected="tab === 'presets'" @click="tab = 'presets'">预置常用语 <span>{{ presets.length }}</span></button>
         </div>
-      </li>
-    </ul>
+        <input v-model="q" class="library-input library-search" type="search" aria-label="搜索常用语" placeholder="搜索短句内容…" />
+      </div>
+      <template v-if="tab === 'presets'">
+        <div class="library-chips" aria-label="预置分类">
+          <button v-for="name in ['全部', ...phrasePresetGroups.map(g => g.category)]" :key="name" :class="{ active: category === name }" :aria-pressed="category === name" @click="category = name">{{ name }}</button>
+        </div>
+        <div class="preset-grid">
+          <article v-for="p in filteredPresets" :key="p.content" class="preset-card">
+            <span class="library-badge">{{ p.category }}</span><p>{{ p.content }}</p>
+            <button data-testid="add-preset" class="library-button" :class="{ saved: saved.has(p.content) }" :disabled="busy || loading || !loaded || saved.has(p.content)" @click="add(p.content, true)">{{ saved.has(p.content) ? '✓ 已加入' : '＋ 加入我的常用语' }}</button>
+          </article>
+        </div>
+        <div v-if="!filteredPresets.length" class="library-empty"><strong>没有匹配的短句</strong><p>试试其他关键词或分类，也可以在上方自行添加。</p></div>
+      </template>
+      <template v-else>
+        <div v-if="loading" class="library-empty" role="status">正在加载常用语…</div>
+        <div v-else-if="!filteredPhrases.length" class="library-empty"><span class="empty-mark" aria-hidden="true">“</span><strong>{{ q ? '没有找到匹配的常用语' : '把常说的话收藏在这里' }}</strong><p>{{ q ? '试试缩短关键词。' : '在上方添加，或到预置库挑几句，不必逐条手动输入。' }}</p><button v-if="!q" class="library-button" @click="tab = 'presets'">浏览预置常用语 →</button></div>
+        <ul v-else class="phrase-list">
+          <li v-for="(p, index) in filteredPhrases" :key="p.id" class="phrase-item">
+            <span class="phrase-index">{{ String(index + 1).padStart(2, '0') }}</span>
+            <div class="phrase-body">
+              <input v-if="editingId === p.id" v-model="editingContent" data-testid="edit-phrase-input" class="library-input" aria-label="编辑常用语" maxlength="500" @keyup.enter="saveEdit(p)" @keyup.esc="editingId = null" />
+              <p v-else>{{ p.content }}</p><small>使用 {{ p.useCount }} 次</small>
+            </div>
+            <div class="library-actions">
+              <template v-if="editingId === p.id"><button data-testid="save-phrase" class="library-button primary small" :disabled="busy" @click="saveEdit(p)">保存</button><button class="library-button small" :disabled="busy" @click="editingId = null">取消</button></template>
+              <button v-else :data-testid="`edit-phrase-${p.id}`" class="library-button small" :disabled="busy" @click="startEdit(p)">编辑</button>
+              <button class="text-button danger" :disabled="busy" @click="remove(p)">删除</button>
+            </div>
+          </li>
+        </ul>
+      </template>
+    </section>
   </div>
 </template>
-
-<style scoped>
-.count {
-  font-weight: normal;
-  color: var(--muted, #888);
-  font-size: 0.85em;
-}
-.phrase-list {
-  list-style: none;
-  margin: 12px 0 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.phrase-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  border: 1px solid var(--border, #ddd);
-  border-radius: 8px;
-}
-.phrase-content {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.phrase-stats {
-  flex-shrink: 0;
-  font-size: 0.75em;
-  color: var(--muted, #888);
-}
-.actions {
-  display: flex;
-  gap: 4px;
-  flex-shrink: 0;
-}
-.ghost {
-  background: none;
-  border: 1px solid var(--border, #ddd);
-  border-radius: 4px;
-  padding: 2px 6px;
-  font-size: 0.8em;
-  cursor: pointer;
-}
-.ghost.danger {
-  color: #c0392b;
-}
-</style>

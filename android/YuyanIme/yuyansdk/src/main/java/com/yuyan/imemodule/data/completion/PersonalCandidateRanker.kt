@@ -51,7 +51,7 @@ internal class CandidateSelection(
                     ?: if (comments == null) texts[it] !in excludedTexts else T9Spelling.allows(code, texts[it], ""))
         }
         visible.forEach { index ->
-            followingPages.add(RankedCandidate(texts[index], nativeIndex = nextNativeIndex + index))
+            followingPages.add(RankedCandidate(texts[index], comments?.getOrNull(index).orEmpty(), nativeIndex = nextNativeIndex + index))
         }
         nextNativeIndex += texts.size
         return visible

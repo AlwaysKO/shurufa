@@ -41,11 +41,30 @@ it('生产不使用默认密码且 cookie Secure', async () => {
   const response = await request(createApp(pool)).post('/api/v1/auth/login').set('X-Dashboard-Request', '1').send({ username: 'owner', password: 'a-unique-long-password-123' });
   expect(response.status).toBe(200); expect(response.headers['set-cookie'][0]).toContain('Secure');
 });
-it('会话到期后拒绝访问', async () => {
-  const app = createApp(pool); const agent = request.agent(app);
-  await agent.post('/api/v1/auth/login').set('X-Dashboard-Request', '1').send({ username: 'admin', password: 'adminhaha' });
-  const spy = vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 9 * 60 * 60 * 1000);
-  try { expect((await agent.get('/api/v1/auth/session')).status).toBe(401); } finally { spy.mockRestore(); }
+it('登录 cookie 保留一天', async () => {
+  const login = await request(createApp(pool)).post('/api/v1/auth/login')
+    .set('X-Dashboard-Request', '1').send({ username: 'admin', password: 'adminhaha' });
+  expect(login.status).toBe(200);
+  expect(login.headers['set-cookie'][0]).toContain('Max-Age=86400');
+});
+it('登录后不足24小时有效，满24小时服务器拒绝旧cookie', async () => {
+  const startedAt = Date.now();
+  const spy = vi.spyOn(Date, 'now').mockReturnValue(startedAt);
+  try {
+    const app = createApp(pool);
+    const login = await request(app).post('/api/v1/auth/login')
+      .set('X-Dashboard-Request', '1').send({ username: 'admin', password: 'adminhaha' });
+    const cookie = login.headers['set-cookie'][0].split(';')[0];
+    // 手动带原 cookie，避免客户端过期丢弃 cookie 掩盖服务端 TTL 错误。
+    for (const hours of [9, 23]) {
+      spy.mockReturnValue(startedAt + hours * 60 * 60 * 1000);
+      expect((await request(app).get('/api/v1/auth/session').set('Cookie', cookie)).status).toBe(200);
+    }
+    spy.mockReturnValue(startedAt + 24 * 60 * 60 * 1000 - 1);
+    expect((await request(app).get('/api/v1/auth/session').set('Cookie', cookie)).status).toBe(200);
+    spy.mockReturnValue(startedAt + 24 * 60 * 60 * 1000);
+    expect((await request(app).get('/api/v1/auth/session').set('Cookie', cookie)).status).toBe(401);
+  } finally { spy.mockRestore(); }
 });
 
 it('部署模板保留管理页面 Host，使同源 HTTPS 登录经过反代仍可成功', async () => {

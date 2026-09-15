@@ -52,6 +52,10 @@ object Kernel {
     val wordsShowPinyin: String
         get() = RimeEngine.showComposition
 
+    /** 仅九宫格UI使用；提交与学习仍读取wordsShowPinyin及实际选择元数据。 */
+    val t9CompositionForDisplay: String
+        get() = RimeEngine.getT9CompositionForDisplay()
+
     /** librime 真实组合状态，不使用候选栏展示缓存推断。 */
     val isComposing: Boolean
         get() = Rime.isComposing

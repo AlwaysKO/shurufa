@@ -258,9 +258,41 @@ object T9PinYinUtils {
         pinyinMap.put("WGTAMG", "zhuang")
     }
 
+    private val incompleteSyllables = setOf(
+        "b", "c", "d", "f", "g", "h", "i", "j", "k", "l", "m", "n",
+        "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "ch", "sh", "zh",
+    )
+    private data class DisplayPath(val text: String, val unresolved: Int, val segments: Int)
+
     /**
-     * 获取T9键码对应的拼音组合
+     * 候选读音暂时缺失时，仅为拼音行提供一种按键等价的拼读。
+     * 内部只拼完整音节，末尾可为声母；不能据此放行候选或提交。
+     * 非法按键组合保留单键代表字母，不丢键，也不伪造完整音节。
      */
+    internal fun displayPendingDigits(code: String): String {
+        val keys = code.map { "ADGJMPTW"[it - '2'] }.joinToString("")
+        val paths = arrayOfNulls<DisplayPath>(keys.length + 1)
+        paths[keys.length] = DisplayPath("", 0, 0)
+        fun join(head: String, tail: String) = if (tail.isEmpty()) head else "$head'$tail"
+        for (start in keys.lastIndex downTo 0) {
+            val next = paths[start + 1]!!
+            var best = DisplayPath(join(keys[start].lowercaseChar().toString(), next.text), next.unresolved + 1, next.segments + 1)
+            // 每个位置最多检查6种长度，不枚举整段拼音的笛卡尔积。
+            for (end in minOf(keys.length, start + 6) downTo start + 1) {
+                val syllable = pinyinMap[keys.substring(start, end)]?.split(',')?.firstOrNull {
+                    end == keys.length || it !in incompleteSyllables
+                } ?: continue
+                val tail = paths[end]!!
+                val path = DisplayPath(join(syllable, tail.text), tail.unresolved, tail.segments + 1)
+                if (path.unresolved < best.unresolved ||
+                    (path.unresolved == best.unresolved && path.segments < best.segments)) best = path
+            }
+            paths[start] = best
+        }
+        return paths[0]!!.text
+    }
+
+    /** 获取T9键码对应的拼音组合。 */
     fun t9KeyToPinyin(t9Sequence: String?): Array<String> {
         if (t9Sequence.isNullOrEmpty()) {
             return emptyArray()

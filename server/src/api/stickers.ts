@@ -4,6 +4,7 @@ import type pg from 'pg';
 import { mkdirSync, writeFileSync, unlinkSync, existsSync } from 'node:fs';
 import { join, extname } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { loadStickerLibrary, rememberStickerKeywords } from './stickerLibrary.js';
 
 
 /** 表情包文件存储目录（server/uploads/stickers），由 app.ts 挂载为 /uploads 静态路径 */
@@ -71,6 +72,22 @@ export function createMobileStickerRouter(pool: pg.Pool): Router {
 
 export function createDashboardStickerRouter(pool: pg.Pool): Router {
   const router = Router();
+
+  router.get('/sticker-library', async (_req, res, next) => {
+    try { res.json(await loadStickerLibrary(pool, res.locals.userId)); }
+    catch (error) { next(error); }
+  });
+
+  router.post('/sticker-keywords', async (req, res, next) => {
+    try {
+      const keyword = typeof req.body?.keyword === 'string' ? req.body.keyword.trim() : '';
+      if (!keyword || keyword.length > 100 || /[,，\r\n]/.test(keyword)) {
+        return res.status(400).json({ error: '请填写单个关键词（1～100字，不含逗号或换行）' });
+      }
+      await rememberStickerKeywords(pool, res.locals.userId, keyword);
+      res.status(201).json({ keyword });
+    } catch (error) { next(error); }
+  });
 
   /** 表情包管理列表（含关键词/使用次数/上传时间） */
   router.get('/stickers', async (req, res, next) => {
@@ -149,6 +166,10 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
       const keywords = String((req.body as { keywords?: string })?.keywords ?? '').trim();
       if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: 'invalid id' });
       if (!keywords) return res.status(400).json({ error: 'keywords required' });
+      const existing = await pool.query<{ keywords: string }>(
+        'SELECT keywords FROM sticker WHERE id = $1 AND user_id = $2', [id, res.locals.userId]);
+      if (!existing.rows.length) return res.status(404).json({ error: 'not found' });
+      await rememberStickerKeywords(pool, res.locals.userId, `${existing.rows[0].keywords},${keywords}`);
       await pool.query(`UPDATE sticker SET keywords = $1 WHERE id = $2 AND user_id = $3`, [
         keywords,
         id,
@@ -165,6 +186,10 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
     try {
       const id = Number(req.params.id);
       if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: 'invalid id' });
+      const existing = await pool.query<{ keywords: string }>(
+        'SELECT keywords FROM sticker WHERE id = $1 AND user_id = $2', [id, res.locals.userId]);
+      if (!existing.rows.length) return res.status(404).json({ error: 'not found' });
+      await rememberStickerKeywords(pool, res.locals.userId, existing.rows[0].keywords);
       const result = await pool.query(
         `DELETE FROM sticker WHERE id = $1 AND user_id = $2 RETURNING file_name`,
         [id, res.locals.userId],

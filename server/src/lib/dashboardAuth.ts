@@ -2,7 +2,8 @@ import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { Router, type Request, type RequestHandler } from 'express';
 
 const COOKIE = 'dashboard_session';
-const LIFETIME = 8 * 60 * 60 * 1000;
+// 从登录时起固定保留 24 小时；服务端会话和浏览器 cookie 使用同一有效期。
+const LIFETIME = 24 * 60 * 60 * 1000;
 const WINDOW = 15 * 60 * 1000;
 const digest = (value: string) => createHash('sha256').update(value).digest();
 

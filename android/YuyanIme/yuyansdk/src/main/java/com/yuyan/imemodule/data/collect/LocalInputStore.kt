@@ -8,6 +8,9 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.Json
 import com.yuyan.imemodule.data.completion.PersonalCandidateRanker
+import com.yuyan.imemodule.data.completion.PersonalWordReading
+import com.yuyan.imemodule.data.completion.T9Candidate
+import com.yuyan.imemodule.data.completion.T9Lexicon
 
 internal data class PendingReport(val id: String, val kind: String, val payload: String)
 
@@ -16,16 +19,18 @@ internal data class CodedLearnedInput(val code: String, val choice: LearnedInput
 
 /** 独立数据库，不迁移或清空既有 Rime 用户库和剪贴板库。 */
 internal class LocalInputStore(context: Context, name: String = "local_input.db", private val now: () -> Long = System::currentTimeMillis) :
-    SQLiteOpenHelper(context.applicationContext, name, null, 3) {
+    SQLiteOpenHelper(context.applicationContext, name, null, 4) {
     private val json = Json { ignoreUnknownKeys = true }
     override fun onCreate(db: SQLiteDatabase) {
         createReportTables(db)
+        createPersonalWords(db)
         db.execSQL("CREATE TABLE pending_event (id TEXT PRIMARY KEY NOT NULL, payload TEXT NOT NULL)")
         db.execSQL("CREATE TABLE event_target (event_id TEXT NOT NULL, target TEXT NOT NULL, PRIMARY KEY(event_id,target))")
         db.execSQL("CREATE INDEX event_target_url ON event_target(target)")
         db.execSQL("CREATE TABLE learned_input (code TEXT NOT NULL, text TEXT NOT NULL, count INTEGER NOT NULL, last_used INTEGER NOT NULL, weight REAL NOT NULL DEFAULT 0, PRIMARY KEY(code,text))")
     }
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        if (oldVersion < 4) createPersonalWords(db)
         if (oldVersion < 3) createReportTables(db)
         if (oldVersion < 2) {
             db.execSQL("ALTER TABLE learned_input ADD COLUMN weight REAL NOT NULL DEFAULT 0")
@@ -130,11 +135,14 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
         } finally { db.endTransaction() }
     }
 
-    @Synchronized fun learn(code: String, text: String, targets: List<String> = emptyList()) {
+    @Synchronized @JvmOverloads fun learn(code: String, text: String, targets: List<String> = emptyList(), pinyin: String = "") {
         if (!validCode(code) || text.length !in 1..30 || text.any { it !in '\u4e00'..'\u9fff' }) return
         val db = writableDatabase
         db.beginTransaction()
         try {
+            PersonalWordReading.normalize(text, pinyin)?.takeIf { PersonalWordReading.matches(code, it) }?.let {
+                rememberWord(text, it, "selection")
+            }
             val timestamp = now()
             val previous = db.rawQuery("SELECT weight,last_used FROM learned_input WHERE code=? AND text=?", arrayOf(code, text)).use { c ->
                 if (c.moveToFirst()) PersonalCandidateRanker.decay(c.getDouble(0), c.getLong(1), timestamp) else 0.0
@@ -169,6 +177,36 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
         ).use { c -> buildList {
             while (c.moveToNext()) add(CodedLearnedInput(c.getString(0),
                 LearnedInput(c.getString(1), c.getLong(2), c.getDouble(3), c.getLong(4))))
+        } }
+    }
+
+    private fun createPersonalWords(db: SQLiteDatabase) {
+        db.execSQL("CREATE TABLE personal_word (text TEXT NOT NULL, pinyin TEXT NOT NULL, full_code TEXT NOT NULL, source TEXT NOT NULL, PRIMARY KEY(text,pinyin,source))")
+        db.execSQL("CREATE INDEX personal_word_code ON personal_word(full_code)")
+    }
+
+    /** 导入与本机点击分开，重复导入不增加次数，也不创建上传事件。未知读音只保留原词。 */
+    @Synchronized fun rememberWord(text: String, pinyin: String, source: String): Boolean {
+        if (text.length !in 1..30 || text.any { it !in '\u4e00'..'\u9fff' }) return false
+        require(source == "selection" || source == "system_dictionary")
+        val reading = PersonalWordReading.normalize(text, pinyin).orEmpty()
+        if (source == "selection" && reading.isEmpty()) return false
+        writableDatabase.insertWithOnConflict("personal_word", null, ContentValues().apply {
+            put("text", text); put("pinyin", reading)
+            put("full_code", T9Lexicon.digits(reading.replace(" ", ""))); put("source", source)
+        }, SQLiteDatabase.CONFLICT_IGNORE)
+        return true
+    }
+
+    @Synchronized fun personalWords(code: String): List<T9Candidate> {
+        if (code.length !in 3..30 || code.any { it !in '2'..'9' }) return emptyList()
+        return readableDatabase.rawQuery(
+            "SELECT DISTINCT text,pinyin FROM personal_word WHERE full_code GLOB ? ORDER BY text,pinyin", arrayOf("$code*"),
+        ).use { c -> buildList {
+            while (c.moveToNext()) {
+                val reading = c.getString(1)
+                if (PersonalWordReading.matches(code, reading)) add(T9Candidate(c.getString(0), reading))
+            }
         } }
     }
 

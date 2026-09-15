@@ -27,6 +27,11 @@ internal class T9Lexicon private constructor(entries: List<T9Candidate>) {
     /** 收录依据不受当前编码长度或首屏八条截断影响，短词前缀和后页同样可确认。 */
     fun containsText(text: String): Boolean = text in knownTexts
 
+    /** 临时构建本次导入词的读音映射，不给全库额外保留逐词索引。 */
+    fun readings(texts: Set<String>): Map<String, List<String>> = if (texts.isEmpty()) emptyMap() else
+        buckets.values.asSequence().flatten().filter { it.candidate.text in texts }
+            .map { it.candidate }.groupBy({ it.text }, { it.pinyin })
+
     private val buckets = entries.map { Entry(it, it.pinyin.split(' ').map(::digits)) }
         .groupBy { it.syllables.first().first() }
 
