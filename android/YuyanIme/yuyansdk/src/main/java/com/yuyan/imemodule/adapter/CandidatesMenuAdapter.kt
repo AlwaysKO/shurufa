@@ -2,6 +2,8 @@ package com.yuyan.imemodule.adapter
 
 import android.content.Context
 import android.content.res.ColorStateList
+import android.graphics.Typeface
+import android.graphics.drawable.InsetDrawable
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.StateListDrawable
@@ -101,10 +103,15 @@ class CandidatesMenuAdapter(context: Context?) : RecyclerView.Adapter<Candidates
 
         icon.visibility = View.VISIBLE
         icon.setImageResource(item.funImgResource)
-        val color = if (isSettingsMenuSelect(item)) activeTheme.accentKeyBackgroundColor else activeTheme.keyTextColor
+        val color = when {
+            showLabel -> if (activeTheme.isDark) Color.rgb(185, 176, 255) else Color.rgb(93, 74, 193)
+            isSettingsMenuSelect(item) -> activeTheme.accentKeyBackgroundColor
+            else -> activeTheme.keyTextColor
+        }
         ImageViewCompat.setImageTintList(icon, ColorStateList.valueOf(color))
         label.setTextColor(color)
-        holder.itemView.background = toolbarPressBackground()
+        label.setTypeface(null, if (showLabel) Typeface.BOLD else Typeface.NORMAL)
+        holder.itemView.background = if (showLabel) aiDoutuBackground() else toolbarPressBackground()
         holder.itemView.isClickable = true
         holder.itemView.isFocusable = true
         holder.itemView.setOnClickListener { view ->
@@ -116,6 +123,19 @@ class CandidatesMenuAdapter(context: Context?) : RecyclerView.Adapter<Candidates
     }
 
     fun getMenuMode(position: Int): SkbMenuMode? = items.getOrNull(position)?.item?.skbMenuMode
+
+    private fun aiDoutuBackground(): StateListDrawable = StateListDrawable().apply {
+        fun surface(pressed: Boolean) = InsetDrawable(GradientDrawable(
+            GradientDrawable.Orientation.TL_BR,
+            if (activeTheme.isDark) intArrayOf(0xff35314d.toInt(), 0xff293a48.toInt())
+            else intArrayOf(0xffeee8ff.toInt(), 0xffe2f3ff.toInt()),
+        ).apply {
+            cornerRadius = adapterContext.dp(12).toFloat()
+            if (pressed) setColor(activeTheme.keyPressHighlightColor)
+        }, adapterContext.dp(3), adapterContext.dp(1), adapterContext.dp(3), adapterContext.dp(1))
+        addState(intArrayOf(android.R.attr.state_pressed), surface(true))
+        addState(intArrayOf(), surface(false))
+    }
 
     private fun toolbarPressBackground(): StateListDrawable = StateListDrawable().apply {
         addState(

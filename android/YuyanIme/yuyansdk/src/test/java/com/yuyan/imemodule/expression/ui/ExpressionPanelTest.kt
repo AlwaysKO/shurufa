@@ -42,7 +42,7 @@ import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 class ExpressionPanelTest {
-    @Test fun `DIY标签按原句筛选实际图库并在无关查询时显示空态`() {
+    @Test fun `DIY标签相关优先且未知查询仍可选完整无字GIF池`() {
         val actualCatalog = ExpressionCatalog.fromAssets(context)
         val panel = ExpressionPanel(context)
         val state = ExpressionPanelState().apply {
@@ -62,8 +62,8 @@ class ExpressionPanelTest {
         state.applyResults(2, emptyList())
         state.selectTab(ExpressionPanelTab.AI_SYNTHESIS)
         panel.render(state, actualCatalog)
-        assertEquals(0, list.adapter!!.itemCount)
-        assertEquals(View.VISIBLE, panel.findViewById<View>(R.id.expression_empty_results).visibility)
+        assertEquals(expected.size, list.adapter!!.itemCount)
+        assertEquals(View.GONE, panel.findViewById<View>(R.id.expression_empty_results).visibility)
     }
 
     @Test fun `忙状态显示实际交付阶段而不是一直显示合成`() {
@@ -232,7 +232,7 @@ class ExpressionPanelTest {
         assertEquals(View.VISIBLE, panel.findViewById<View>(R.id.expression_more).visibility)
         assertEquals(View.VISIBLE, panel.findViewById<View>(R.id.expression_close).visibility)
         assertEquals("关闭AI斗图推荐", panel.findViewById<View>(R.id.expression_close).contentDescription)
-        assertEquals(View.VISIBLE, panel.findViewById<View>(R.id.expression_enable).visibility)
+        assertEquals(View.GONE, panel.findViewById<View>(R.id.expression_enable).visibility)
     }
 
     @Test

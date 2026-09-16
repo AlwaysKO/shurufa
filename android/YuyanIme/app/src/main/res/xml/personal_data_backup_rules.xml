@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 来源词库通过个人后台恢复；不能复制为新手机的新点击。键盘设置仍可系统备份。 -->
+<full-backup-content>
+    <exclude domain="database" path="local_input.db" />
+    <exclude domain="database" path="local_input.db-journal" />
+    <exclude domain="database" path="local_input.db-wal" />
+    <exclude domain="database" path="local_input.db-shm" />
+    <exclude domain="sharedpref" path="personal_dictionary_sync_v1.xml" />
+    <exclude domain="sharedpref" path="system_dictionary_migration_v1.xml" />
+</full-backup-content>

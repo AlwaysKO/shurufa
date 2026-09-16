@@ -78,7 +78,8 @@ class CandidatesMenuAdapterTest {
         assertNotNull("AI斗图必须是可见文字而不只是图标说明", label)
         assertEquals("AI斗图", label.text.toString())
         assertEquals(View.VISIBLE, label.visibility)
-        assertEquals(ThemeManager.activeTheme.keyTextColor, label.currentTextColor)
+        assertTrue("AI入口采用强调色", ThemeManager.activeTheme.keyTextColor != label.currentTextColor)
+        assertTrue("标签有适度字重", label.typeface.isBold)
         holder.itemView.measure(
             View.MeasureSpec.makeMeasureSpec(holder.itemView.layoutParams.width, View.MeasureSpec.EXACTLY),
             View.MeasureSpec.makeMeasureSpec(holder.itemView.layoutParams.height, View.MeasureSpec.EXACTLY),
@@ -130,7 +131,7 @@ class CandidatesMenuAdapterTest {
         assertTrue(holder.itemView.minimumWidth >= dp(44))
         assertTrue(holder.itemView.minimumHeight >= dp(44))
         assertEquals(item.funName, icon.contentDescription)
-        assertEquals(ThemeManager.activeTheme.keyTextColor, icon.imageTintList?.defaultColor)
+        assertEquals(holder.itemView.findViewById<android.widget.TextView>(R.id.candidates_menu_label).currentTextColor, icon.imageTintList?.defaultColor)
         assertNotNull(holder.itemView.background)
         assertEquals(SkbMenuMode.AiDoutu, clickedMode)
     }

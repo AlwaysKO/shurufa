@@ -186,35 +186,44 @@ class ExpressionManualSearchInputViewTest {
     }
 
     @Test
-    fun `生产斗图按钮迁入拼音共行且空结果移除整行`() {
+    fun `生产拼音行旧斗图入口始终隐藏`() {
         val inputView = realChatInputView()
         val panel = inputView.findViewById<ExpressionPanel>(R.id.expression_panel)
-        val bar = inputView.mSkbCandidatesBarView
         val button = inputView.findViewById<View>(R.id.expression_enable)
-        val composing = bar.javaClass.getDeclaredField("mComposingView").apply { isAccessible = true }.get(bar) as android.widget.TextView
-        val row = composing.parent as android.view.ViewGroup
-        assertSame(row, button.parent)
-        assertEquals(2, row.childCount)
-        assertEquals(View.GONE, row.visibility)
         val state = inputView.expressionState()
         state.beginQuery("谢谢", 700)
         state.applyResults(700, listOf(ExpressionAsset(id="shared", type="prebuilt", format="gif", version="v1",
             fileName="shared.gif", sha256="a".repeat(64), width=240, height=240)))
         panel.render(state, ExpressionCatalog.fromAssets(context))
-        assertEquals(View.VISIBLE, row.visibility)
-        assertEquals(View.VISIBLE, button.visibility)
-        button.performClick()
-        assertEquals(View.GONE, panel.visibility)
-        assertEquals(View.VISIBLE, row.visibility)
-        button.performClick()
-        assertEquals(View.VISIBLE, panel.visibility)
-        bar.setExpressionAction(panel.recommendationAction)
-        bar.updateTheme(ThemeManager.activeTheme.keyTextColor)
-        assertEquals(2, row.childCount)
-        state.clear()
-        panel.render(state, ExpressionCatalog.fromAssets(context))
         assertEquals(View.GONE, button.visibility)
-        assertEquals(View.GONE, row.visibility)
+        assertEquals(View.GONE, (button.parent as View).visibility)
+        assertEquals(View.VISIBLE, panel.visibility)
+    }
+
+    @Test
+    fun `工具栏手动打开广覆盖无字GIF再点击关闭第三次重开`() {
+        val inputView = realChatInputView()
+        inputView.expressionComposingTextSource = ExpressionComposingTextSource(
+            isComposing = { true }, rawInput = { "ji'gou" },
+            isAssociate = { false }, candidateText = { "机构" },
+        )
+        val state = inputView.expressionState()
+        inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+        assertTrue(state.isVisible)
+        assertEquals(ExpressionPanelTab.AI_SYNTHESIS, state.selectedTab)
+        assertEquals("机构", state.query)
+        assertTrue(state.results.size >= 12)
+        assertTrue(state.results.all { it.type == "synthesis-template" && it.format == "gif" && it.embeddedText.isNullOrBlank() })
+        inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+        assertFalse(state.isVisible)
+        assertTrue(state.recommendationsPaused)
+        assertFalse(state.applyResults(1, state.results))
+        inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+        assertTrue(state.isVisible)
+        assertEquals(ExpressionPanelTab.AI_SYNTHESIS, state.selectedTab)
+        state.selectTab(ExpressionPanelTab.EMOJI_SYNTHESIS)
+        inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+        assertFalse("切换标签后顶部按钮仍须关闭", state.isVisible)
     }
 
     @Test
@@ -1215,7 +1224,7 @@ class ExpressionManualSearchInputViewTest {
 
     @Test
     @Config(shadows = [LocalServerConfigShadow::class])
-    fun `关闭推荐后卸载重挂零自动网络且AI按钮只恢复一次搜索`() {
+    fun `关闭推荐后卸载重挂零自动网络且AI按钮本地打开模板池`() {
         val server = MockWebServer().apply {
             dispatcher = object : Dispatcher() {
                 override fun dispatch(request: RecordedRequest): MockResponse = when {
@@ -1259,9 +1268,10 @@ class ExpressionManualSearchInputViewTest {
             panel.findViewById<View>(R.id.expression_close).performClick()
             assertTrue(state.recommendationsPaused)
 
-            inputView.findViewById<View>(R.id.expression_enable).performClick()
-            assertEquals(listOf(oldResult), state.results)
-            assertNull("恢复已有结果不得强制刷新目录", server.takeRequest(300, TimeUnit.MILLISECONDS))
+            inputView.searchExpressionsManually()
+            assertEquals(ExpressionPanelTab.AI_SYNTHESIS, state.selectedTab)
+            assertTrue(state.results.isNotEmpty())
+            assertNull("手动选模板不得强制刷新目录", server.takeRequest(300, TimeUnit.MILLISECONDS))
             panel.findViewById<View>(R.id.expression_close).performClick()
             assertTrue(state.recommendationsPaused)
 
@@ -1277,26 +1287,10 @@ class ExpressionManualSearchInputViewTest {
             inputView.searchExpressionsManually()
             assertEquals(requestIdBeforeManualSearch + 1, inputView.expressionRequestId())
             assertFalse(inputView.expressionState().recommendationsPaused)
-            // 本地补图和远端推荐并行，不能要求推荐请求先到；来源和次数门禁不变。
-            val expectedAssetPaths = ExpressionCatalog.fromAssets(context).recommend("重挂后手动搜索")
-                .map { "/uploads/expression/${it.fileName}" }.toSet()
-            val assetRequests = mutableSetOf<String>()
-            var recommendationCount = 0
-            val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5)
-            while (System.nanoTime() < deadline) {
-                // 缓存读取从 IO 回到 Main 后才启动查询；不能在暂停的主 Looper 上长时间阻塞。
-                Shadows.shadowOf(Looper.getMainLooper()).idle()
-                val request = server.takeRequest(50, TimeUnit.MILLISECONDS) ?: continue
-                val path = request.path.orEmpty()
-                if (path.startsWith("/api/v1/mobile/expressions/recommend?")) {
-                    recommendationCount++
-                    assertEquals("推荐查询不得重复: $path", 1, recommendationCount)
-                } else {
-                    assertTrue("只允许本次推荐所需素材，不得刷新目录: $path", path in expectedAssetPaths)
-                    assertTrue("同一素材不得重复下载: $path", assetRequests.add(path))
-                }
-            }
-            assertEquals("手动搜索必须恰好发出一次推荐请求", 1, recommendationCount)
+            Shadows.shadowOf(Looper.getMainLooper()).idle()
+            assertEquals(ExpressionPanelTab.AI_SYNTHESIS, inputView.expressionState().selectedTab)
+            assertTrue(inputView.expressionState().results.isNotEmpty())
+            assertNull("手动模板池不等待或发起关键词推荐请求", server.takeRequest(500, TimeUnit.MILLISECONDS))
         } finally {
             server.shutdown()
             LocalServerConfigShadow.url = ""

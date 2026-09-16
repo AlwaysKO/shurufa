@@ -57,6 +57,7 @@ import com.yuyan.imemodule.expression.ExpressionComposingTextSource
 import com.yuyan.imemodule.expression.ExpressionCommitKind
 import com.yuyan.imemodule.expression.ExpressionInputTargetTracker
 import com.yuyan.imemodule.expression.ExpressionManualSearch
+import com.yuyan.imemodule.expression.ExpressionPanelTab
 import com.yuyan.imemodule.expression.ExpressionPanelState
 import com.yuyan.imemodule.expression.ExpressionPreviewJobSlot
 import com.yuyan.imemodule.expression.ExpressionPanelPresentation
@@ -400,10 +401,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 ).show()
             },
             preparePanel = ::prepareExpressionPanelForManualSearch,
-            searchImmediately = { query ->
-                expressionManualQuery = query
-                expressionQueryCoordinator.searchImmediately(query)
-            },
+            searchImmediately = ::showManualSynthesisTemplates,
         )
         bindHostTextListeners()
     }
@@ -618,8 +616,32 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         expressionSync?.let { expressionPanel.render(expressionPanelState, it.currentCatalog()) }
     }
 
-    /** 工具栏 AI 斗图手动搜索入口。 */
+    /** 手动选图不等待远端关键词搜索，也不受自动玩笑表达门禁限制。 */
+    private fun showManualSynthesisTemplates(query: String) {
+        val sync = expressionSync ?: return
+        if (!expressionPanelState.chatEditor) return
+        expressionQueryCoordinator.reset()
+        expressionSearchJob?.cancel()
+        expressionSearchJob = null
+        expressionPreviewJobs.cancel()
+        expressionPreparationJob?.cancel()
+        expressionPreparationJob = null
+        expressionManualQuery = query
+        val requestId = ++expressionRequestId
+        expressionPanelState.beginQuery(query, requestId, manual = true)
+        expressionPanelState.applyResults(requestId, sync.currentCatalog().synthesisTemplates(query))
+        expressionPanelState.selectTab(ExpressionPanelTab.AI_SYNTHESIS)
+        expressionPanel.render(expressionPanelState, sync.currentCatalog())
+    }
+
+    /** 顶部唯一 AI 斗图入口：自动推荐可切换为合成池，合成池再次点击则关闭。 */
     fun searchExpressionsManually() {
+        if (expressionPanelState.isRecommendationVisible &&
+            expressionManualQuery != null
+        ) {
+            expressionPanel.onRecommendationVisibilityChange?.invoke(false)
+            return
+        }
         expressionManualSearch.perform(
             activeComposingText = expressionComposingTextSource.currentText(
                 mSkbCandidatesBarView.getActiveCandNo(),

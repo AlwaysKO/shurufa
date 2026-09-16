@@ -4,6 +4,7 @@ import cors from 'cors';
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import type pg from 'pg';
+import { createMobileDictionaryRouter, createDashboardDictionaryRouter } from './api/personalDictionary.js';
 import { createMobileRouter } from './api/mobile.js';
 import { createDashboardRouter } from './api/dashboard.js';
 import { createMobileStickerRouter, createDashboardStickerRouter } from './api/stickers.js';
@@ -67,6 +68,7 @@ export function createApp(pool: pg.Pool, options: CreateAppOptions = {}): expres
 
   // 输入法端 API
   app.use('/api/v1/mobile', requireMobileIdentity);
+  app.use('/api/v1/mobile/dictionary', createMobileDictionaryRouter(pool));
   app.use('/api/v1/mobile', createMobileRouter(pool));
   app.use('/api/v1/mobile', createMobileStickerRouter(pool));
   app.use('/api/v1/mobile', createMobilePhraseRouter(pool));
@@ -82,6 +84,7 @@ export function createApp(pool: pg.Pool, options: CreateAppOptions = {}): expres
 
   // Dashboard API
   app.use('/api/v1/dashboard', auth.requireSession, auth.protectWrite, requireDashboardIdentity);
+  app.use('/api/v1/dashboard/dictionary', createDashboardDictionaryRouter(pool));
   app.use('/api/v1/dashboard', createDashboardRouter(pool));
   app.use('/api/v1/dashboard', createDashboardStickerRouter(pool));
   app.use('/api/v1/dashboard', createDashboardPhraseRouter(pool));

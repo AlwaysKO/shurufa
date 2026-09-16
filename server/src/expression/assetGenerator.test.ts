@@ -55,6 +55,61 @@ describe('generateExpressionAssets', () => {
     return { root, bytes, asset, manifest, options };
   }
 
+  async function nativeTemplateFixture(sourceType = 'ai-original') {
+    const base = await prebuiltFixture();
+    const bytes = await readFile(new URL('../../../artifacts/expression-character-trials/ai-synthesis-blank-01/output/cat-side-eye.gif', import.meta.url));
+    await writeFile(join(base.options.sourceRoot, 'approved.gif'), bytes);
+    await writeFile(join(base.options.sourceRoot, 'approval.json'), JSON.stringify({
+      status: 'approved', approvedIds: ['blank-approved'], licensedIds: ['blank-approved'],
+      approvedAssets: [{ id: 'blank-approved', sourceType, sha256: createHash('sha256').update(bytes).digest('hex') }],
+    }));
+    const template = {
+      id: 'blank-approved', type: 'gif', source: 'approved.gif', keywords: ['嫌弃'], emotions: ['skeptical'],
+      textSafeArea: { x: 6, y: 188, width: 228, height: 46 },
+      layout: { minFontSize: 14, maxFontSize: 24, textColor: '#222222', strokeColor: '#ffffff', strokeWidth: 2, alignment: 'center', maxLines: 2 },
+      animation: { sha256: createHash('sha256').update(bytes).digest('hex'), sourceType,
+        provenance: { manifest: 'source.json', itemId: 'cat-side-eye', approvalRecord: 'approval.json' } },
+    };
+    const manifest = { version: 'native-v1', expectedCounts: { templates: 1, animatedTemplates: 1, emojiBases: 0 },
+      templates: [template], emojiBases: [], builtInTemplateIds: [template.id] };
+    await writeFile(base.options.manifestPath, JSON.stringify(manifest));
+    return { ...base, bytes, template, manifest };
+  }
+
+  it.each(['ai-original', 'licensed'])('已批准%s无字动作模板原字节复制且保留20帧四秒', async sourceType => {
+    const { bytes, options } = await nativeTemplateFixture(sourceType);
+    const catalog = await generateExpressionAssets(options);
+    const item = catalog.templates[0];
+    expect(item).toMatchObject({ type: 'synthesis-template', format: 'gif', width: 240, height: 240,
+      embeddedText: null, sourceType, textSafeArea: { x: 6, y: 188, width: 228, height: 46 } });
+    expect(await readFile(join(options.outputRoot, item.fileName))).toEqual(bytes);
+    expect(await readFile(join(options.androidAssetsRoot, item.fileName))).toEqual(bytes);
+    const meta = await sharp(await readFile(join(options.outputRoot, item.fileName)), { animated: true }).metadata();
+    expect(meta.pages).toBe(20);
+    expect(meta.delay?.reduce((a, b) => a + b, 0)).toBe(4000);
+  });
+
+  it.each(['sha', 'sourceType', 'approval', 'path', 'layout', 'area', 'static', 'replacement', 'sourceTypeSwap'])('动作模板%s无效时预检失败且旧输出不被删除', async invalid => {
+    const { template, manifest, options } = await nativeTemplateFixture('licensed');
+    if (invalid === 'sha') template.animation.sha256 = '0'.repeat(64);
+    if (invalid === 'sourceType') template.animation.sourceType = 'user-provided-reference';
+    if (invalid === 'approval') await writeFile(join(options.sourceRoot, 'approval.json'), JSON.stringify({ status: 'pending', approvedIds: [], licensedIds: [] }));
+    if (invalid === 'path') template.source = '../outside.gif';
+    if (invalid === 'layout') template.layout.minFontSize = 0;
+    if (invalid === 'area') template.textSafeArea.width = 999;
+    if (invalid === 'static') template.type = 'static';
+    if (invalid === 'replacement') {
+      const replacement = await readFile(new URL('../../../artifacts/expression-character-trials/ai-synthesis-blank-01/output/man-snicker.gif', import.meta.url));
+      await writeFile(join(options.sourceRoot, 'approved.gif'), replacement);
+      template.animation.sha256 = createHash('sha256').update(replacement).digest('hex');
+    }
+    if (invalid === 'sourceTypeSwap') template.animation.sourceType = 'ai-original';
+    await writeFile(options.manifestPath, JSON.stringify(manifest));
+    await expect(generateExpressionAssets(options)).rejects.toThrow();
+    expect(await readFile(join(options.outputRoot, 'sentinel'), 'utf8')).toBe('preserve');
+    expect(await readFile(join(options.androidAssetsRoot, 'sentinel'), 'utf8')).toBe('preserve');
+  });
+
   it('全部批准的184张预制GIF按词最多内置4张且保持原字节', async () => {
     const { options } = await prebuiltFixture();
     const sourceRoot = new URL('../../../assets/expression/', import.meta.url).pathname;

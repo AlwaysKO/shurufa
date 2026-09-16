@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import type pg from 'pg';
 import { expressionAssetRoot } from './expressions.js';
 import type { ExpressionAsset } from '../types/expression.js';
+import { expressionSynonymGroups } from '../expression/queryMatching.js';
 
 export function splitStickerKeywords(value: string): string[] {
   return [...new Set(value.split(/[,，]/).map(word => word.trim()).filter(Boolean))];
@@ -31,6 +32,42 @@ interface KeywordGroup {
   planned: boolean;
   custom: boolean;
   assets: LibraryAsset[];
+}
+
+interface SemanticKeywordGroup extends KeywordGroup {
+  aliases: string[];
+  confirmedAliases: string[];
+}
+
+// 来源：2026-09-15 用户明确要求以下说法在后台共用“打闹”组。
+// 仅后台分组及个人上传标签，不修改系统/Android 匹配器或启用整份语义草案。
+const confirmedPlayAliases = ['扁你', '我来打你了', '过来打我啊'];
+function mergeSemanticGroups(rawGroups: KeywordGroup[]): SemanticKeywordGroup[] {
+  const definitions = expressionSynonymGroups.map(words => ({
+    keyword: words[0],
+    aliases: [...words, ...(words[0] === '打闹' ? confirmedPlayAliases : [])],
+    confirmedAliases: words[0] === '打闹' ? [...confirmedPlayAliases] : [],
+  }));
+  const byAlias = new Map(definitions.flatMap(def => def.aliases.map(alias => [alias, def] as const)));
+  const merged = new Map<string, SemanticKeywordGroup>();
+  const seenAssets = new Map<string, Set<string>>();
+  for (const raw of rawGroups) {
+    const definition = byAlias.get(raw.keyword) ?? { keyword: raw.keyword, aliases: [raw.keyword], confirmedAliases: [] };
+    let group = merged.get(definition.keyword);
+    if (!group) {
+      group = { ...raw, ...definition, assets: [] };
+      merged.set(group.keyword, group); seenAssets.set(group.keyword, new Set());
+    }
+    group.planned ||= raw.planned;
+    group.custom ||= raw.custom;
+    if (group.category === '其他' && raw.category !== '其他') group.category = raw.category;
+    const seen = seenAssets.get(group.keyword)!;
+    for (const asset of raw.assets) {
+      const key = `${asset.source}:${asset.id}`;
+      if (!seen.has(key)) { seen.add(key); group.assets.push(asset); }
+    }
+  }
+  return [...merged.values()];
 }
 
 export async function loadStickerLibrary(pool: pg.Pool, userId: string) {
@@ -73,5 +110,5 @@ export async function loadStickerLibrary(pool: pg.Pool, userId: string) {
       url: `/uploads/stickers/${asset.file_name}`, format: asset.format,
       width: asset.width, height: asset.height, useCount: Number(asset.use_count) });
   }
-  return { groups: [...groups.values()], systemCount, personalCount: personal.rows.length, warnings };
+  return { groups: mergeSemanticGroups([...groups.values()]), systemCount, personalCount: personal.rows.length, warnings };
 }

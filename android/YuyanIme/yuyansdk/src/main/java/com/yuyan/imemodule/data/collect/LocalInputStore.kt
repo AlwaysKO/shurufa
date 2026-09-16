@@ -19,17 +19,19 @@ internal data class CodedLearnedInput(val code: String, val choice: LearnedInput
 
 /** 独立数据库，不迁移或清空既有 Rime 用户库和剪贴板库。 */
 internal class LocalInputStore(context: Context, name: String = "local_input.db", private val now: () -> Long = System::currentTimeMillis) :
-    SQLiteOpenHelper(context.applicationContext, name, null, 4) {
+    SQLiteOpenHelper(context.applicationContext, name, null, 5) {
     private val json = Json { ignoreUnknownKeys = true }
     override fun onCreate(db: SQLiteDatabase) {
         createReportTables(db)
         createPersonalWords(db)
+        createDictionarySyncTables(db)
         db.execSQL("CREATE TABLE pending_event (id TEXT PRIMARY KEY NOT NULL, payload TEXT NOT NULL)")
         db.execSQL("CREATE TABLE event_target (event_id TEXT NOT NULL, target TEXT NOT NULL, PRIMARY KEY(event_id,target))")
         db.execSQL("CREATE INDEX event_target_url ON event_target(target)")
         db.execSQL("CREATE TABLE learned_input (code TEXT NOT NULL, text TEXT NOT NULL, count INTEGER NOT NULL, last_used INTEGER NOT NULL, weight REAL NOT NULL DEFAULT 0, PRIMARY KEY(code,text))")
     }
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        if (oldVersion < 5) createDictionarySyncTables(db)
         if (oldVersion < 4) createPersonalWords(db)
         if (oldVersion < 3) createReportTables(db)
         if (oldVersion < 2) {
@@ -159,25 +161,30 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
             db.setTransactionSuccessful()
         } finally { db.endTransaction() }
     }
-    @Synchronized fun learned(code: String): List<LearnedInput> = readableDatabase.rawQuery(
-        "SELECT text,count,weight,last_used FROM learned_input WHERE code=? ORDER BY last_used DESC,text", arrayOf(code),
-    ).use { c -> buildList { while (c.moveToNext()) add(LearnedInput(c.getString(0), c.getLong(1), c.getDouble(2), c.getLong(3))) } }
-        .sortedByDescending { PersonalCandidateRanker.decay(it.weight, it.lastUsed, now()) }.take(64)
+    @Synchronized fun learned(code: String): List<LearnedInput> = effectiveChoices("code=?", arrayOf(code))
+        .map { it.choice }.sortedWith(compareByDescending<LearnedInput> {
+            PersonalCandidateRanker.decay(it.weight, it.lastUsed, now())
+        }.thenByDescending { it.lastUsed }.thenBy { it.text }).take(64)
 
-    /** 只读潜在相关编码，调用方还必须按候选实际读音校验；不复制次数或上传事件。 */
+    /** 编码边界与原逻辑一致；只将独立的远端证据加入，远端记录不写回本机学习表。 */
     @Synchronized fun relatedLearned(code: String): List<CodedLearnedInput> {
-        if (code.length !in 4..30 || code.any { it !in '2'..'9' }) {
-            return learned(code).map { CodedLearnedInput(code, it) }
-        }
-        val prefixes = (4..code.length).map { code.take(it) }
-        val placeholders = prefixes.joinToString(",") { "?" }
-        return readableDatabase.rawQuery(
-            "SELECT code,text,count,weight,last_used FROM learned_input WHERE code GLOB ? OR code IN ($placeholders)",
-            (listOf("$code*") + prefixes).toTypedArray(),
+        if (code.length !in 4..30 || code.any { it !in '2'..'9' }) return learned(code).map { CodedLearnedInput(code,it) }
+        val prefixes=(4..code.length).map { code.take(it) }
+        val placeholders=prefixes.joinToString(",") { "?" }
+        return effectiveChoices("(code GLOB ? OR code IN ($placeholders))", (listOf("$code*")+prefixes).toTypedArray())
+    }
+
+    private fun effectiveChoices(where: String, args: Array<String>): List<CodedLearnedInput> {
+        val rows=readableDatabase.rawQuery(
+            "SELECT code,text,count,weight,last_used FROM (SELECT code,text,count,weight,last_used FROM learned_input UNION ALL SELECT code,text,count,weight,last_used FROM dictionary_remote_choice) WHERE $where AND text NOT IN (SELECT text FROM dictionary_policy WHERE status!='enabled')", args,
         ).use { c -> buildList {
-            while (c.moveToNext()) add(CodedLearnedInput(c.getString(0),
-                LearnedInput(c.getString(1), c.getLong(2), c.getDouble(3), c.getLong(4))))
+            while(c.moveToNext()) add(CodedLearnedInput(c.getString(0),LearnedInput(c.getString(1),c.getLong(2),c.getDouble(3),c.getLong(4))))
         } }
+        return rows.groupBy { it.code to it.choice.text }.map { (key,values) ->
+            val at=values.maxOf { it.choice.lastUsed }
+            CodedLearnedInput(key.first, LearnedInput(key.second,values.sumOf { it.choice.count },
+                values.sumOf { PersonalCandidateRanker.decay(it.choice.weight,it.choice.lastUsed,at) },at))
+        }
     }
 
     private fun createPersonalWords(db: SQLiteDatabase) {
@@ -201,13 +208,55 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
     @Synchronized fun personalWords(code: String): List<T9Candidate> {
         if (code.length !in 3..30 || code.any { it !in '2'..'9' }) return emptyList()
         return readableDatabase.rawQuery(
-            "SELECT DISTINCT text,pinyin FROM personal_word WHERE full_code GLOB ? ORDER BY text,pinyin", arrayOf("$code*"),
+            "SELECT DISTINCT text,pinyin FROM (SELECT text,pinyin,full_code FROM personal_word UNION ALL SELECT text,pinyin,full_code FROM dictionary_remote_word) WHERE full_code GLOB ? AND text NOT IN (SELECT text FROM dictionary_policy WHERE status!='enabled') ORDER BY text,pinyin", arrayOf("$code*"),
         ).use { c -> buildList {
             while (c.moveToNext()) {
                 val reading = c.getString(1)
                 if (PersonalWordReading.matches(code, reading)) add(T9Candidate(c.getString(0), reading))
             }
         } }
+    }
+
+    private fun createDictionarySyncTables(db: SQLiteDatabase) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS dictionary_remote_choice (device_id TEXT NOT NULL,code TEXT NOT NULL,text TEXT NOT NULL,count INTEGER NOT NULL,weight REAL NOT NULL,last_used INTEGER NOT NULL,PRIMARY KEY(device_id,code,text))")
+        db.execSQL("CREATE INDEX IF NOT EXISTS dictionary_remote_choice_code ON dictionary_remote_choice(code)")
+        db.execSQL("CREATE TABLE IF NOT EXISTS dictionary_remote_word (device_id TEXT NOT NULL,text TEXT NOT NULL,pinyin TEXT NOT NULL,full_code TEXT NOT NULL,source TEXT NOT NULL,PRIMARY KEY(device_id,text,pinyin,source))")
+        db.execSQL("CREATE INDEX IF NOT EXISTS dictionary_remote_word_code ON dictionary_remote_word(full_code)")
+        db.execSQL("CREATE TABLE IF NOT EXISTS dictionary_policy (text TEXT PRIMARY KEY NOT NULL,status TEXT NOT NULL)")
+    }
+
+    /** 只导出本机原始数据。恢复层永不上传，避免新旧手机无限累计相同权重。 */
+    @Synchronized fun dictionaryExport(): List<DictionaryRecord> = buildList {
+        readableDatabase.rawQuery("SELECT code,text,count,weight,last_used FROM learned_input ORDER BY code,text",null).use { c ->
+            while(c.moveToNext()) add(DictionaryRecord("choice",c.getString(1),c.getString(0),"","selection",c.getLong(2),c.getDouble(3),c.getLong(4)))
+        }
+        readableDatabase.rawQuery("SELECT text,pinyin,source FROM personal_word ORDER BY text,pinyin,source",null).use { c ->
+            while(c.moveToNext()) add(DictionaryRecord("word",c.getString(0),"",c.getString(1),c.getString(2),0,0.0,0))
+        }
+    }.filter { it.valid() }
+
+    /** 完整快照先校验再事务替换，失败不清空已恢复词库。删除决策独立于原始记录。 */
+    @Synchronized fun applyDictionarySnapshot(snapshot: DictionarySnapshot, selfDeviceId: String) {
+        require(snapshot.revision.matches(Regex("[a-f0-9]{64}")))
+        require(snapshot.entries.size <= 100_000 && snapshot.entries.all { it.deviceId.isNotEmpty() && it.valid() })
+        require(snapshot.policies.all { it.status in listOf("enabled","disabled","deleted") && it.text.length in 1..30 && it.text.all { ch -> ch in '\u4e00'..'\u9fff' } })
+        val db=writableDatabase
+        db.beginTransaction()
+        try {
+            db.delete("dictionary_remote_word",null,null); db.delete("dictionary_remote_choice",null,null); db.delete("dictionary_policy",null,null)
+            snapshot.policies.forEach { p -> db.insertOrThrow("dictionary_policy",null,ContentValues().apply { put("text",p.text);put("status",p.status) }) }
+            snapshot.entries.filter { it.deviceId!=selfDeviceId }.forEach { e ->
+                val values=ContentValues().apply { put("device_id",e.deviceId);put("text",e.text) }
+                if(e.kind=="choice") {
+                    values.put("code",e.code);values.put("count",e.count);values.put("weight",e.weight);values.put("last_used",e.lastUsed)
+                    db.insertOrThrow("dictionary_remote_choice",null,values)
+                } else {
+                    values.put("pinyin",e.pinyin);values.put("full_code",T9Lexicon.digits(e.pinyin.replace(" ","")));values.put("source",e.source)
+                    db.insertOrThrow("dictionary_remote_word",null,values)
+                }
+            }
+            db.setTransactionSuccessful()
+        } finally {db.endTransaction()}
     }
 
     private fun validCode(code: String): Boolean =

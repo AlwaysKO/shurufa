@@ -20,6 +20,7 @@ const messageType = ref('all');
 const loading = ref(false);
 const error = ref('');
 const deleting = ref(false);
+const previewImage = ref<{ src: string; alt: string } | null>(null);
 
 const platformNames = { wechat: '微信', qq: 'QQ', douyin: '抖音' } as const;
 const directionNames = { incoming: '收到', outgoing: '发送', system: '系统' } as const;
@@ -33,6 +34,14 @@ const visibleMessages = computed(() => messageType.value === 'all'
 function formatTime(value: string | null): string {
   if (!value) return '-';
   return new Date(value).toLocaleString('zh-CN', { hour12: false });
+}
+
+function openImagePreview(url: string, alt: string) {
+  previewImage.value = { src: scopedAssetUrl(url), alt };
+}
+
+function closeImagePreview() {
+  previewImage.value = null;
 }
 
 async function selectConversation(conversation: ChatConversationRow) {
@@ -152,13 +161,45 @@ onMounted(load);
           </div>
           <p v-if="message.text" class="message-text">{{ message.text }}</p>
           <div v-if="message.assets.length" class="media-grid">
-            <a v-for="asset in message.assets" :key="asset.id" :href="scopedAssetUrl(asset.url)" target="_blank">
+            <button
+              v-for="asset in message.assets"
+              :key="asset.id"
+              class="media-preview-button"
+              type="button"
+              :data-testid="`open-chat-image-${asset.id}`"
+              :aria-label="`放大查看${message.text || message.message_type}`"
+              @click="openImagePreview(asset.url, message.text || message.message_type)"
+            >
               <img :src="scopedAssetUrl(asset.url)" :alt="message.text || message.message_type" loading="lazy" />
-            </a>
+            </button>
           </div>
         </article>
       </div>
     </section>
+  </div>
+
+  <div
+    v-if="previewImage"
+    class="image-preview-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-label="图片预览"
+    data-testid="chat-image-preview"
+    @click.self="closeImagePreview"
+  >
+    <button
+      class="image-preview-close"
+      type="button"
+      aria-label="关闭图片预览"
+      data-testid="close-chat-image-preview"
+      @click="closeImagePreview"
+    >×</button>
+    <img
+      class="image-preview-image"
+      :src="previewImage.src"
+      :alt="previewImage.alt"
+      data-testid="chat-image-preview-image"
+    />
   </div>
 </template>
 
@@ -187,7 +228,11 @@ onMounted(load);
 .badge { padding: 2px 6px; border-radius: 10px; background: rgba(55, 66, 250, .1); color: #3742fa; }
 .message-text { margin-top: 8px; white-space: pre-wrap; word-break: break-word; line-height: 1.6; }
 .media-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.media-preview-button { padding: 0; border: 0; border-radius: 6px; background: transparent; cursor: zoom-in; }
 .media-grid img { width: 120px; height: 100px; object-fit: contain; border-radius: 6px; background: #fff; }
+.image-preview-overlay { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 32px; background: rgba(15, 18, 28, .82); }
+.image-preview-image { display: block; max-width: 92vw; max-height: 90vh; object-fit: contain; border-radius: 8px; box-shadow: 0 16px 48px rgba(0, 0, 0, .35); }
+.image-preview-close { position: fixed; top: 18px; right: 22px; width: 42px; height: 42px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .92); color: #2f3542; font-size: 30px; line-height: 1; cursor: pointer; }
 .error { padding: 10px 14px; margin-bottom: 16px; border-radius: 6px; background: #fff0f0; color: #c0392b; }
-@media (max-width: 820px) { .capture-layout { grid-template-columns: 1fr; } .message { max-width: 100%; } }
+@media (max-width: 820px) { .capture-layout { grid-template-columns: 1fr; } .message { max-width: 100%; } .image-preview-overlay { padding: 16px; } }
 </style>

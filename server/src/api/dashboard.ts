@@ -2,6 +2,7 @@ import { Router } from 'express';
 import type pg from 'pg';
 import { resolveMissingIps } from '../lib/ipgeo.js';
 import { resolveMissingAddresses } from '../lib/geocoder.js';
+import { queryGroupedEdits } from './groupedEdits.js';
 
 
 /** 事件内容类型：语音 / 图片 / 文字（用于列表展示与筛选） */
@@ -14,7 +15,19 @@ const CONTENT_TYPE_SQL = `CASE
 END`;
 
 /** 行为事件（列表默认展示：输入/粘贴/复制/语音等有内容的行为，不含 key/compose 等底层事件） */
-const BEHAVIOR_TYPES = "('commit','candidate_commit','paste','paste_inferred','external_insert','clipboard_change','voice')";
+const BEHAVIOR_TYPES = "('commit','candidate_commit','paste','paste_inferred','external_insert','clipboard_change','voice','delete','external_delete')";
+
+/** Raw and grouped views share address enrichment, including each group's history. */
+async function enrichEventLocations(pool: pg.Pool, rows: Array<{ client_ip?: unknown; ip_location?: unknown }>) {
+  const missingIps = rows.filter(row => !row.ip_location)
+    .map(row => row.client_ip).filter((ip): ip is string => typeof ip === 'string' && !!ip);
+  const locations = await resolveMissingIps(pool, missingIps);
+  for (const row of rows) {
+    if (!row.ip_location && typeof row.client_ip === 'string' && row.client_ip) {
+      row.ip_location = locations.get(row.client_ip) ?? null;
+    }
+  }
+}
 
 function daysAgo(days: number): Date {
   return new Date(Date.now() - days * 86_400_000);
@@ -701,7 +714,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
 
   /**
    * 行为明细列表：每一次输入/粘贴/复制/语音/图片行为。
-   * 支持筛选：device_id（用户）、from/to（时间范围）、q（关键词）、type（all|text|paste|voice|image）、all=1（含底层事件）
+   * 支持筛选：device_id（用户）、from/to（时间范围）、q（关键词）、type（all|text|paste|voice|image|delete）、all=1（含底层事件）
    * 分页：page / page_size（默认 20，最大 100）
    */
   router.get('/events', async (req, res, next) => {
@@ -736,12 +749,13 @@ export function createDashboardRouter(pool: pg.Pool): Router {
       if (from) add('occurred_at >= ?', new Date(from));
       if (to) add('occurred_at <= ?', new Date(to));
       if (days) add('occurred_at >= ?', daysAgo(days));
-      if (q) add('(text ILIKE ? OR input_code ILIKE ? OR client_ip = ?)', `%${q}%`, `%${q}%`, q);
+      if (q) add('(text ILIKE ? OR text_before ILIKE ? OR text_after ILIKE ? OR input_code ILIKE ? OR client_ip = ?)', `%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`, q);
       if (!showAll) conds.push(`event_type IN ${BEHAVIOR_TYPES}`);
 
       // 类型筛选（对应列表“类型”列）
       const typeConds: Record<string, string> = {
         text: `event_type IN ('commit','candidate_commit','external_insert')`,
+        delete: `event_type IN ('delete','external_delete')`,
         paste: `event_type IN ('paste','paste_inferred','clipboard_change')`,
         voice: `event_type = 'voice'`,
         image: `${CONTENT_TYPE_SQL} = 'image'`,
@@ -750,11 +764,18 @@ export function createDashboardRouter(pool: pg.Pool): Router {
 
       const where = conds.join(' AND ');
 
+      if (req.query.grouped === '1') {
+        const grouped = await queryGroupedEdits(pool, where, params, CONTENT_TYPE_SQL, page, pageSize);
+        await enrichEventLocations(pool, grouped.items.flatMap(item => [item, ...item.edit_events]));
+        res.json({ ...grouped, page, page_size: pageSize });
+        return;
+      }
+
       const total = await pool.query(`SELECT COUNT(*)::int AS total FROM input_event WHERE ${where}`, params);
 
       const items = await pool.query(
         `SELECT id, occurred_at, event_type, ${CONTENT_TYPE_SQL} AS content_type,
-                text, input_code, package_name, device_id, session_id,
+                text, text_before, text_after, input_code, package_name, device_id, session_id, editor_id, sequence_no,
                 client_ip, ip_location, network_type
          FROM input_event
          WHERE ${where}
@@ -764,13 +785,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
       );
 
       // 当前响应直接带回结果；相同 IP 的新记录复用缓存，不重复请求解析服务。
-      const rows = items.rows as Array<{ client_ip: string | null; ip_location: string | null }>;
-      const missingIps = rows.filter((row) => !row.ip_location)
-        .map((row) => row.client_ip).filter((ip): ip is string => !!ip);
-      const locations = await resolveMissingIps(pool, missingIps);
-      for (const row of rows) {
-        if (!row.ip_location && row.client_ip) row.ip_location = locations.get(row.client_ip) ?? null;
-      }
+      await enrichEventLocations(pool, items.rows);
 
       res.json({ total: total.rows[0].total, page, page_size: pageSize, items: items.rows });
     } catch (err) {

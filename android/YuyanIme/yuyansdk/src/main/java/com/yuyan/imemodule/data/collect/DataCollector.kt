@@ -38,6 +38,7 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -76,6 +77,7 @@ object DataCollector {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     @Volatile private var eventStore: LocalInputStore? = null
     @Volatile private var delivery: EventDelivery? = null
+    @Volatile private var dictionarySync: PersonalDictionarySync? = null
     @Volatile private var appContext: Context? = null
     private var networkRegistered = false
     private val flushing = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
@@ -115,6 +117,13 @@ object DataCollector {
         prefs = PreferenceManager.getDefaultSharedPreferences(app)
         currentDeviceId = deviceId(app)
         ServerConfig.init(app)
+        if (dictionarySync == null) dictionarySync = PersonalDictionarySync(
+            store(app), app.getSharedPreferences("personal_dictionary_sync_v1", 0), http,
+            currentDeviceId!!, ServerConfig.baseUrl, { CollectionConsent.enabled(app) }, {
+                val migration = app.getSharedPreferences("system_dictionary_migration_v1", 0)
+                migration.getString("status", "not_attempted")!! to migration.getInt("imported", 0)
+            },
+        )
         if (CollectionConsent.enabled(app)) {
             CompletionSync.init(app)
             PhraseSync.init(app)
@@ -135,13 +144,10 @@ object DataCollector {
     }
 
     /** 设备 UUID：首次生成后持久化 */
-    fun deviceId(context: Context): String {
-        val sp = PreferenceManager.getDefaultSharedPreferences(context)
-        sp.getString(KEY_DEVICE_UUID, null)?.let { return it }
-        val id = UUID.randomUUID().toString()
-        sp.edit().putString(KEY_DEVICE_UUID, id).apply()
-        return id
-    }
+    fun deviceId(context: Context): String = InstallDeviceIdentity.resolve(
+        PreferenceManager.getDefaultSharedPreferences(context), KEY_DEVICE_UUID,
+        java.io.File(context.noBackupFilesDir, "collector_device_identity"),
+    )
 
     val locationTrackingEnabled: Boolean
         get() = appContext?.let { CollectionConsent.enabled(it) } == true && (prefs?.getBoolean(KEY_LOCATION_ENABLE, true) ?: true)
@@ -207,8 +213,13 @@ object DataCollector {
         editorId: String? = null,
         inputCode: String? = null,
         source: String? = null,
-    ) {
-        if (!CollectionConsent.enabled(context) || !CollectionConsent.allowsEditor(YuyanEmojiCompat.mEditorInfo) || !CollectionConsent.allowsText(text)) return
+        sessionId: String? = null,
+        sequenceNo: Long? = null,
+        textBefore: String? = null,
+        textAfter: String? = null,
+        metadata: JsonObject? = null,
+    ): Boolean {
+        if (!CollectionConsent.enabled(context) || !CollectionConsent.allowsEditor(YuyanEmojiCompat.mEditorInfo) || !CollectionConsent.allowsText(text) || !CollectionConsent.allowsText(textBefore) || !CollectionConsent.allowsText(textAfter)) return false
         val event = MobileEvent(
             id = UUID.randomUUID().toString(),
             deviceId = deviceId(context),
@@ -216,7 +227,11 @@ object DataCollector {
             text = text?.take(5000),
             packageName = packageName,
             editorId = editorId,
-            sequenceNo = System.currentTimeMillis(),
+            sequenceNo = sequenceNo ?: System.currentTimeMillis(),
+            sessionId = sessionId,
+            textBefore = textBefore,
+            textAfter = textAfter,
+            metadata = metadata,
             inputCode = inputCode,
             networkType = networkType(context),
             source = source,
@@ -225,8 +240,10 @@ object DataCollector {
         try {
             store(context).enqueue(event, ServerConfig.eventTargets)
             requestSync()
+            return true
         } catch (error: Exception) {
             Log.e(TAG, "事件落盘失败，未视为已上报", error)
+            return false
         }
     }
 
@@ -244,6 +261,9 @@ object DataCollector {
                     val now = android.os.SystemClock.elapsedRealtime()
                     if (now < (lastAttempt[target] ?: 0L)) return@launch
                     val ok = uploader.flush(target)
+                    if (target == ServerConfig.baseUrl && CollectionConsent.enabled(app)) {
+                        if (dictionarySync?.run() == false) Log.w(TAG, "个人词库尚未同步确认，保留本机记录")
+                    }
                     lastAttempt[target] = android.os.SystemClock.elapsedRealtime() + if (ok) 5_000 else FLUSH_INTERVAL_MS
                     if (!ok) Log.w(TAG, "同步未确认，保留手机待传数据")
                 } finally { flushing.remove(target) }
@@ -550,6 +570,10 @@ internal data class MobileEvent(
     @SerialName("package_name") val packageName: String? = null,
     @SerialName("editor_id") val editorId: String? = null,
     @SerialName("sequence_no") val sequenceNo: Long = 0,
+    @SerialName("session_id") val sessionId: String? = null,
+    @SerialName("text_before") val textBefore: String? = null,
+    @SerialName("text_after") val textAfter: String? = null,
+    val metadata: JsonObject? = null,
     @SerialName("input_code") val inputCode: String? = null,
     @SerialName("network_type") val networkType: String? = null,
     val source: String? = null,

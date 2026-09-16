@@ -8,17 +8,34 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
 class ExpressionCatalogTest {
-    @Test fun `DIY候选只保留当前句子的相关模板不展示整个图集`() {
+    @Test fun `手动模板池覆盖所有无字可编辑GIF且相关优先`() {
         val layout = com.yuyan.imemodule.expression.model.ExpressionTextLayout(18, 40, "#ffffff", "#000000", 2, "center", 2)
         val area = com.yuyan.imemodule.expression.model.ExpressionTextSafeArea(0, 0, 200, 80)
+        val blank = asset("happy", keywords = listOf("开心")).copy(format = "gif", textSafeArea = area, layout = layout)
         val catalog = ExpressionCatalog(document(assets = listOf(
-            asset("hit", keywords = listOf("打你")).copy(textSafeArea = area, layout = layout),
-            asset("happy", keywords = listOf("开心")).copy(textSafeArea = area, layout = layout),
-            asset("not-editable", keywords = listOf("打我")),
-            asset("captioned", type = "prebuilt", embeddedText = "打我"),
+            blank,
+            blank.copy(id = "tease", keywords = listOf("调侃")),
+            blank.copy(id = "static", format = "webp"),
+            blank.copy(id = "printed", embeddedText = "旧字"),
+            blank.copy(id = "no-layout", layout = null),
+            blank.copy(id = "prebuilt", type = "prebuilt"),
         )))
-        assertEquals(listOf("hit"), catalog.synthesisTemplates("你过来打我啊").map { it.id })
-        assertEquals(emptyList<String>(), catalog.synthesisTemplates("机构").map { it.id })
+        assertEquals(listOf("tease", "happy"), catalog.synthesisTemplates("调侃").map { it.id })
+        assertEquals(setOf("happy", "tease"), catalog.synthesisTemplates("机构").map { it.id }.toSet())
+        assertEquals(emptyList<String>(), catalog.synthesisTemplates(" ").map { it.id })
+    }
+
+    @Test fun `未命中成品且有明确玩笑语气才自动展示广覆盖GIF池`() {
+        val blank = asset("blank", keywords = listOf("开心")).copy(format = "gif",
+            textSafeArea = com.yuyan.imemodule.expression.model.ExpressionTextSafeArea(0, 0, 200, 80),
+            layout = com.yuyan.imemodule.expression.model.ExpressionTextLayout(18, 40, "#ffffff", "#000000", 2, "center", 2))
+        val catalog = ExpressionCatalog(document(assets = listOf(blank)))
+        listOf("你可真是个人才", "我直接原地裂开", "给你颁个奖吧").forEach {
+            assertEquals(it, listOf("blank"), catalog.recommend(it).map { it.id })
+        }
+        listOf("项目会议", "机构", "不要嘲讽别人", "文件已经发送").forEach {
+            assertEquals(it, emptyList<String>(), catalog.recommend(it).map { it.id })
+        }
     }
 
     @Test

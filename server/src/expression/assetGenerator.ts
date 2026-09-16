@@ -17,6 +17,12 @@ interface SourceTemplate {
   source: string;
   keywords: string[];
   emotions: string[];
+  /** 已批准的无字动作原件；存在时禁止走静态缩放动画生成器。 */
+  animation?: {
+    sha256: string;
+    sourceType: NonNullable<ExpressionAsset['sourceType']>;
+    provenance: { manifest: string; itemId: string; approvalRecord: string };
+  };
   sourceCrop?: {
     x: number;
     y: number;
@@ -172,6 +178,68 @@ function validateManifest(manifest: ExpressionSourceManifest): void {
       throw new Error(`内置清单引用未知组合：${key}`);
     }
   }
+}
+
+/** 无字动作模板在删除任何旧输出前完成来源、文字区域和全帧预检。 */
+async function validateAnimatedTemplates(templates: SourceTemplate[], sourceRoot: string): Promise<Map<string, Buffer>> {
+  const result = new Map<string, Buffer>();
+  const native = templates.filter(template => template.animation !== undefined);
+  if (native.length === 0) return result;
+  const root = await realpath(sourceRoot);
+  const withinRoot = (path: string) => {
+    const rel = relative(root, path);
+    return rel !== '..' && !rel.startsWith(`..${sep}`) && !isAbsolute(rel);
+  };
+  const localPath = async (path: string) => {
+    if (typeof path !== 'string' || !path || isAbsolute(path) || path.includes('\\') || !withinRoot(resolve(root, path))) {
+      throw new Error('动作模板路径越界');
+    }
+    const actual = await realpath(resolve(root, path));
+    if (!withinRoot(actual)) throw new Error('动作模板路径越界');
+    return actual;
+  };
+  for (const template of native) {
+    const animation = template.animation;
+    if (!animation || template.type !== 'gif' || template.sourceCrop !== undefined
+      || !['ai-original', 'cc0', 'public-domain', 'licensed'].includes(animation.sourceType)
+      || !animation.provenance?.manifest?.trim() || !animation.provenance.itemId?.trim()) {
+      throw new Error(`动作模板来源无效：${template.id}`);
+    }
+    const approval = JSON.parse(await readFile(await localPath(animation.provenance.approvalRecord), 'utf8'));
+    if (approval.status !== 'approved' || !Array.isArray(approval.approvedIds) || !approval.approvedIds.includes(template.id)
+      || (animation.sourceType === 'licensed' && (!Array.isArray(approval.licensedIds) || !approval.licensedIds.includes(template.id)))) {
+      throw new Error(`动作模板缺少批准或授权记录：${template.id}`);
+    }
+    if (!Array.isArray(approval.approvedAssets) || !approval.approvedAssets.some(
+      (asset: { id: string; sourceType: string; sha256: string }) => asset.id === template.id
+        && asset.sourceType === animation.sourceType && asset.sha256 === animation.sha256,
+    )) throw new Error(`动作模板版本与批准记录不一致：${template.id}`);
+    const area = template.textSafeArea;
+    const layout = template.layout;
+    if (!area || ![area.x, area.y, area.width, area.height].every(Number.isInteger)
+      || area.x < 0 || area.y < 0 || area.width <= 0 || area.height <= 0
+      || area.x + area.width > 240 || area.y + area.height > 240
+      || !layout || ![layout.minFontSize, layout.maxFontSize, layout.strokeWidth, layout.maxLines].every(Number.isInteger)
+      || layout.minFontSize <= 0 || layout.maxFontSize < layout.minFontSize || layout.strokeWidth < 0
+      || layout.maxLines < 1 || !['start', 'center', 'end'].includes(layout.alignment)
+      || !/^#[a-f0-9]{6}$/i.test(layout.textColor) || !/^#[a-f0-9]{6}$/i.test(layout.strokeColor)) {
+      throw new Error(`动作模板文字区域或排版无效：${template.id}`);
+    }
+    const bytes = await readFile(await localPath(template.source));
+    if (!/^[a-f0-9]{64}$/.test(animation.sha256) || createHash('sha256').update(bytes).digest('hex') !== animation.sha256) {
+      throw new Error(`动作模板 SHA-256 不符：${template.id}`);
+    }
+    const metadata = await sharp(bytes, { animated: true }).metadata();
+    const duration = (metadata.delay ?? []).reduce((a, b) => a + b, 0);
+    if (metadata.format !== 'gif' || metadata.width !== 240 || metadata.pageHeight !== 240
+      || (metadata.pages ?? 1) < 10 || (metadata.pages ?? 1) > 20 || duration < 800 || duration > 4000
+      || metadata.loop !== 0 || bytes.length >= 250 * 1024) {
+      throw new Error(`动作 GIF 质量不合格：${template.id}`);
+    }
+    await sharp(bytes, { animated: true }).raw().toBuffer();
+    result.set(template.id, bytes);
+  }
+  return result;
 }
 
 // Validate and retain the exact accepted bytes before deleting either output directory.
@@ -372,7 +440,22 @@ async function renderTemplate(
   sourceRoot: string,
   outputRoot: string,
   version: string,
+  animationBytes?: Buffer,
 ): Promise<ExpressionAsset> {
+  if (animationBytes) {
+    const fileName = posix.join('templates', `${template.id}.gif`);
+    const thumbnailFileName = posix.join('thumbnails', `${template.id}.webp`);
+    await ensureParent(join(outputRoot, fileName));
+    await ensureParent(join(outputRoot, thumbnailFileName));
+    await writeFile(join(outputRoot, fileName), animationBytes);
+    await sharp(animationBytes, { page: 0, pages: 1 }).webp({ lossless: true }).toFile(join(outputRoot, thumbnailFileName));
+    return {
+      id: template.id, type: 'synthesis-template', format: 'gif', version, fileName, thumbnailFileName,
+      sha256: template.animation!.sha256, sourceType: template.animation!.sourceType,
+      width: 240, height: 240, keywords: template.keywords, emotions: template.emotions,
+      embeddedText: null, textSafeArea: template.textSafeArea, layout: template.layout, heat: 0,
+    };
+  }
   const sourcePath = join(sourceRoot, template.source);
   const source = await prepareTemplateSource(sourcePath, template.sourceCrop);
   const extension = template.type === 'gif' ? 'gif' : 'webp';
@@ -603,6 +686,7 @@ export async function generateExpressionAssets(
     await readFile(options.manifestPath, 'utf8'),
   ) as ExpressionSourceManifest;
   validateManifest(manifest);
+  const animationSources = await validateAnimatedTemplates(manifest.templates, options.sourceRoot);
   const prebuiltSources = await validatePrebuiltAssets(manifest.prebuiltAssets ?? [], options.sourceRoot);
   await rm(options.outputRoot, { recursive: true, force: true });
   await mkdir(options.outputRoot, { recursive: true });
@@ -619,6 +703,7 @@ export async function generateExpressionAssets(
       options.sourceRoot,
       options.outputRoot,
       manifest.version,
+      animationSources.get(template.id),
     ));
   }
   const sourceTemplates = new Map(manifest.templates.map((template) => [template.id, template]));

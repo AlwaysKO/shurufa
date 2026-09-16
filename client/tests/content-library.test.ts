@@ -61,8 +61,8 @@ it('编辑常用语保存失败保持输入内容，成功才退出编辑', asyn
   expect(view.find('edit-phrase-input')).toBeDefined(); expect(view.text()).toContain('离线');
 });
 const library = { systemCount: 1, personalCount: 0, warnings: [], groups: [
-  { keyword: '你好', category: '问候', planned: true, custom: false, assets: [{ id: 'hello', source: 'system', url: '/uploads/expression/hello.gif', format: 'gif', keywords: ['你好'], width: 240, height: 240, useCount: null }] },
-  { keyword: '晚安', category: '问候', planned: true, custom: false, assets: [] },
+  { keyword: '你好', aliases: ['你好'], confirmedAliases: [], category: '问候', planned: true, custom: false, assets: [{ id: 'hello', source: 'system', url: '/uploads/expression/hello.gif', format: 'gif', keywords: ['你好'], width: 240, height: 240, useCount: null }] },
+  { keyword: '晚安', aliases: ['晚安'], confirmedAliases: [], category: '问候', planned: true, custom: false, assets: [] },
 ] };
 it('完整词表显示空组，新增词不上传文件，切换关键词可查看已有表情', async () => {
   const add = vi.fn().mockResolvedValue({ keyword: '测试' }); const upload = vi.fn();
@@ -111,4 +111,89 @@ it('搜索和待补图筛选不把系统图片串到空关键词', async () => {
   const emptyFilter = view.all().find(n => n.tag === 'button' && n.text === '待补图')!;
   emptyFilter.props.onClick(); await settle();
   expect(view.find('keyword-你好')).toBeUndefined(); expect(view.find('keyword-晚安')).toBeDefined();
+});
+function pagedLibrary(count = 25) {
+  return { systemCount: 0, personalCount: 0, warnings: [], groups: Array.from({ length: count }, (_, i) => ({
+    keyword: `词${String(i + 1).padStart(2, '0')}`, aliases: [`词${String(i + 1).padStart(2, '0')}`], confirmedAliases: [],
+    category: '测试', planned: false, custom: true, assets: [],
+  })) };
+}
+it('每页10组，可前后翻页、首末页与跳页，非法跳页保持当前页', async () => {
+  const view = await mount('Stickers', { stickerLibrary: vi.fn().mockResolvedValue(pagedLibrary()) });
+  const keywordButtons = () => view.all().filter(n => n.tag === 'button' && n.props['data-testid']?.startsWith('keyword-'));
+  expect(keywordButtons()).toHaveLength(10);
+  expect(view.find('first-keyword-page')!.props.disabled).toBe(true);
+  view.find('next-keyword-page')!.props.onClick(); await settle();
+  expect(view.find('keyword-词11')).toBeDefined(); expect(view.find('keyword-词01')).toBeUndefined();
+  expect(view.find('keyword-词11')!.props['aria-current']).toBe('true');
+  view.find('last-keyword-page')!.props.onClick(); await settle();
+  expect(keywordButtons()).toHaveLength(5); expect(view.find('next-keyword-page')!.props.disabled).toBe(true);
+  view.find('previous-keyword-page')!.props.onClick(); await settle(); expect(view.find('keyword-词11')).toBeDefined();
+  view.find('first-keyword-page')!.props.onClick(); await settle(); expect(view.find('keyword-词01')).toBeDefined();
+  view.find('keyword-page-input')!.props['onUpdate:modelValue']('2');
+  view.find('jump-keyword-page')!.props.onClick(); await settle(); expect(view.find('keyword-词11')).toBeDefined();
+  for (const invalid of ['', '0', '-1', '1.5', 'abc', '4']) {
+    view.find('keyword-page-input')!.props['onUpdate:modelValue'](invalid);
+    view.find('jump-keyword-page')!.props.onClick(); await settle();
+    expect(view.find('keyword-词11')).toBeDefined(); expect(view.find('keyword-page-error')).toBeDefined();
+  }
+});
+it('搜索及筛选重置到首页，零结果禁用全部分页按钮', async () => {
+  const view = await mount('Stickers', { stickerLibrary: vi.fn().mockResolvedValue(pagedLibrary()) });
+  expect(view.find('last-keyword-page')).toBeDefined(); view.find('last-keyword-page')!.props.onClick(); await settle();
+  const search = view.all().find(n => n.props['aria-label'] === '搜索关键词')!;
+  search.props['onUpdate:modelValue']('词01'); await settle();
+  expect(view.find('keyword-词01')).toBeDefined(); expect(view.find('first-keyword-page')!.props.disabled).toBe(true);
+  search.props['onUpdate:modelValue']('不存在'); await settle();
+  for (const id of ['first-keyword-page', 'previous-keyword-page', 'next-keyword-page', 'last-keyword-page', 'jump-keyword-page']) expect(view.find(id)!.props.disabled).toBe(true);
+  search.props['onUpdate:modelValue'](''); await settle();
+  view.find('last-keyword-page')!.props.onClick(); await settle();
+  view.all().find(n => n.tag === 'button' && n.text === '待补图')!.props.onClick(); await settle();
+  expect(view.find('keyword-词01')).toBeDefined();
+});
+it('搜索别名定位语义组，新增已有别名跳到所在页而不重复建词，上传携带整组标签', async () => {
+  const data = pagedLibrary(10);
+  const aliases = ['打闹', '打你', '揍你', '扁你', '我来打你了', '过来打我啊'];
+  data.groups.push({ keyword: '打闹', aliases, confirmedAliases: ['扁你', '我来打你了', '过来打我啊'], category: '动作', planned: true, custom: false, assets: [] });
+  const add = vi.fn(); const upload = vi.fn().mockResolvedValue({});
+  const view = await mount('Stickers', { stickerLibrary: vi.fn().mockResolvedValue(data), addStickerKeyword: add, uploadSticker: upload });
+  view.find('new-keyword')!.props['onUpdate:modelValue']('扁你');
+  await view.find('add-keyword')!.props.onClick(); await settle();
+  expect(add).not.toHaveBeenCalled(); expect(view.find('keyword-打闹')).toBeDefined();
+  expect(view.find('group-aliases')).toBeDefined(); expect(view.text()).toContain('过来打我啊');
+  const search = view.all().find(n => n.props['aria-label'] === '搜索关键词')!;
+  search.props['onUpdate:modelValue']('我来打你了'); await settle(); expect(view.find('keyword-打闹')).toBeDefined();
+  vi.stubGlobal('Image', class { naturalWidth = 240; naturalHeight = 240; onload: (() => void) | null = null; set src(_s: string) { this.onload?.(); } });
+  // 打开选择器时捕获组信息，随后翻到别页也不能把图片传错组。
+  view.find('group-upload-button')!.props.onClick();
+  search.props['onUpdate:modelValue'](''); await settle();
+  view.find('first-keyword-page')!.props.onClick(); await settle();
+  await view.find('group-upload-input')!.props.onChange({ target: { files: [new File(['GIF89a'], 'group.gif')], value: 'group.gif' } });
+  await settle(); expect(upload).toHaveBeenCalledWith(expect.objectContaining({ keywords: aliases.join(',') }));
+  expect(view.find('keyword-打闹')!.props['aria-current']).toBe('true');
+});
+it('有表情筛选的尾页数量缩减后，刷新自动收敛到有效页', async () => {
+  const base = pagedLibrary();
+  const full = { ...base, groups: base.groups.map((g, i) => ({ ...g, assets: [
+    { id: i + 1, source: 'personal', keywords: g.aliases, url: `/uploads/stickers/${i + 1}.gif`, format: 'gif', width: 240, height: 240, useCount: 0 },
+  ] })) };
+  const reduced = { ...full, groups: full.groups.map((g, i) => i < 20 ? g : { ...g, assets: [] }) };
+  const view = await mount('Stickers', { stickerLibrary: vi.fn().mockResolvedValueOnce(full).mockResolvedValueOnce(reduced), deleteSticker: vi.fn().mockResolvedValue({}) });
+  view.all().find(n => n.tag === 'button' && n.text === '有表情')!.props.onClick(); await settle();
+  view.find('last-keyword-page')!.props.onClick(); await settle();
+  view.find('keyword-词25')!.props.onClick(); await settle();
+  vi.stubGlobal('confirm', () => true);
+  await view.find('delete-sticker-25')!.props.onClick(); await settle();
+  expect(view.find('keyword-词11')).toBeDefined(); expect(view.find('keyword-词25')).toBeUndefined();
+  expect(view.find('last-keyword-page')!.props.disabled).toBe(true);
+});
+it('新增成功但刷新失败时保留新分组，重复输入不重复提交', async () => {
+  const add = vi.fn().mockResolvedValue({ keyword: '新增成功' });
+  const view = await mount('Stickers', { stickerLibrary: vi.fn().mockResolvedValueOnce(library).mockRejectedValueOnce(new Error('刷新离线')), addStickerKeyword: add });
+  view.find('new-keyword')!.props['onUpdate:modelValue']('新增成功');
+  await view.find('add-keyword')!.props.onClick(); await settle();
+  expect(view.find('keyword-新增成功')).toBeDefined(); expect(view.text()).toContain('刷新离线');
+  view.find('new-keyword')!.props['onUpdate:modelValue']('新增成功');
+  await view.find('add-keyword')!.props.onClick(); await settle();
+  expect(add).toHaveBeenCalledTimes(1);
 });

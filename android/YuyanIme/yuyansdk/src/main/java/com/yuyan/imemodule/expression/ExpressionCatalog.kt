@@ -30,6 +30,11 @@ class ExpressionCatalog(
                 .thenBy { it.ranked.index })
         if (related.isNotEmpty()) return related.take(limit).map { it.ranked.asset }
 
+        if (ExpressionSynthesisIntent.matches(normalizedQuery)) {
+            val pool = synthesisTemplates(normalizedQuery)
+            if (pool.isNotEmpty()) return pool.take(limit)
+        }
+
         return indexed
             .filter { it.asset.type == "synthesis-template" }
             .map { ranked ->
@@ -50,12 +55,15 @@ class ExpressionCatalog(
             .map { it.ranked.asset }
     }
 
-    /** DIY只用当前句子相关且可贴字的空白模板，不受预制图优先返回影响。 */
-    fun synthesisTemplates(query: String): List<ExpressionAsset> = ExpressionCatalog(
-        document.copy(templates = document.templates.filter {
-            it.type == "synthesis-template" && it.textSafeArea != null && it.layout != null
-        }),
-    ).recommend(query)
+    /** 手动 DIY 展示全部无字可编辑 GIF；相关项前置，不用查询词过滤掉其他情绪。 */
+    fun synthesisTemplates(query: String): List<ExpressionAsset> {
+        val text = ExpressionQueryMatching.normalize(query)
+        if (text.isEmpty()) return emptyList()
+        return document.templates.filter {
+            it.type == "synthesis-template" && it.format == "gif" && it.embeddedText.isNullOrBlank() &&
+                it.textSafeArea != null && it.layout != null
+        }.sortedByDescending { ExpressionQueryMatching.score(text, it.keywords) }
+    }
 
     fun search(query: String): List<ExpressionAsset> = recommend(query)
 

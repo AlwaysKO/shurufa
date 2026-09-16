@@ -10,16 +10,19 @@ const page = ref(1);
 const pageSize = 20;
 const error = ref('');
 
-const type = ref<'all' | 'text' | 'paste' | 'voice' | 'image'>('all');
+const type = ref<'all' | 'text' | 'paste' | 'voice' | 'image' | 'delete'>('all');
 const deviceId = ref('');
 const days = ref<number | null>(null);
 const from = ref('');
 const to = ref('');
 const q = ref('');
 const showAll = ref(false);
+const grouped = ref(true);
 const loading = ref(false);
+let latestRequest = 0;
 
 async function load() {
+  const request = ++latestRequest;
   loading.value = true;
   error.value = '';
   try {
@@ -31,21 +34,33 @@ async function load() {
       q: q.value.trim() || undefined,
       type: type.value,
       all: showAll.value,
+      grouped: grouped.value && !showAll.value,
       page: page.value,
       page_size: pageSize,
     });
+    if (request !== latestRequest) return;
     items.value = res.items;
     total.value = res.total;
   } catch (e) {
-    error.value = (e as Error).message;
+    if (request === latestRequest) error.value = (e as Error).message;
   } finally {
-    loading.value = false;
+    if (request === latestRequest) loading.value = false;
   }
 }
 
 function search() {
   page.value = 1;
   load();
+}
+
+function changeMode(value: boolean) {
+  grouped.value = value && !showAll.value;
+  search();
+}
+
+function changeUnderlyingEvents() {
+  if (showAll.value) grouped.value = false;
+  search();
 }
 
 function quickDays(d: number | null) {
@@ -63,6 +78,7 @@ function resetFilters() {
   to.value = '';
   q.value = '';
   showAll.value = false;
+  grouped.value = true;
   search();
 }
 
@@ -72,6 +88,7 @@ const deviceOf = (id: string) => devices.value.find((d) => d.id === id);
 
 /** 类型徽标：语音/图片/文字（颜色区分） */
 const badge = (item: ActivityItem) => {
+  if (['delete', 'external_delete'].includes(item.event_type)) return { cls: 'badge deletion', label: '删除' };
   if (item.content_type === 'voice') return { cls: 'badge voice', label: '语音' };
   if (item.content_type === 'image') return { cls: 'badge image', label: '图片' };
   return { cls: 'badge text', label: eventTypeName(item.event_type) };
@@ -79,9 +96,17 @@ const badge = (item: ActivityItem) => {
 
 const displayText = (item: ActivityItem) => {
   if (item.text) return item.text;
+  if (['delete', 'external_delete'].includes(item.event_type)) return '[删除内容未采集]';
   if (item.content_type === 'image') return '[图片]';
   return '[空]';
 };
+
+const hasCompleteEdit = (item: ActivityItem) => grouped.value && item.edit_complete === true && item.text_after != null;
+const summaryText = (item: ActivityItem) => hasCompleteEdit(item)
+  ? (item.text_after === '' ? '（已清空输入框）' : item.text_after!)
+  : displayText(item);
+
+const snapshotText = (value: string | null | undefined) => value == null ? '（未采集）' : value === '' ? '（空输入框）' : value;
 
 onMounted(async () => {
   // 支持 URL ?q= 预填搜索（词云等页面点击词跳转过来）
@@ -100,12 +125,21 @@ onMounted(async () => {
 </script>
 
 <template>
+  <div class="edit-mode">
+    <div class="mode-buttons" role="group" aria-label="记录显示方式">
+      <button data-testid="mode-grouped" :class="{ active: grouped }" :disabled="showAll" @click="changeMode(true)">整段编辑</button>
+      <button data-testid="mode-raw" :class="{ active: !grouped }" @click="changeMode(false)">原始操作</button>
+    </div>
+    <p>{{ grouped ? '按同一输入框的编辑会话展示最新状态，删除、替换过程可展开查看。' : '逐条显示原始操作，不拼接为完整句子。' }} 不代表消息已发送。</p>
+  </div>
   <div class="filters">
     <button :class="{ active: type === 'all' }" @click="type = 'all'; search()">全部</button>
     <button :class="{ active: type === 'text' }" @click="type = 'text'; search()">输入</button>
     <button :class="{ active: type === 'paste' }" @click="type = 'paste'; search()">粘贴</button>
     <button :class="{ active: type === 'voice' }" @click="type = 'voice'; search()">语音</button>
     <button :class="{ active: type === 'image' }" @click="type = 'image'; search()">图片</button>
+
+    <button :class="{ active: type === 'delete' }" @click="type = 'delete'; search()">删除</button>
 
     <span style="width: 8px"></span>
     <select v-model="deviceId" class="input" @change="search()">
@@ -124,7 +158,7 @@ onMounted(async () => {
     <button class="btn" @click="search()">搜索</button>
     <button class="btn" @click="resetFilters()">重置</button>
 
-    <label class="check"><input v-model="showAll" type="checkbox" @change="search()" /> 显示全部事件（含按键/删除）</label>
+    <label class="check"><input v-model="showAll" data-testid="show-all" type="checkbox" @change="changeUnderlyingEvents()" /> 显示底层事件（含按键/拼音组合）</label>
   </div>
 
   <div v-if="error" class="empty">加载失败：{{ error }}</div>
@@ -146,7 +180,34 @@ onMounted(async () => {
         <tr v-for="item in items" :key="item.id">
           <td style="white-space: nowrap">{{ fmtTime(item.occurred_at) }}</td>
           <td><span class="badge" :class="badge(item).cls">{{ badge(item).label }}</span></td>
-          <td :title="item.text ?? ''" style="max-width: 420px; word-break: break-all">{{ displayText(item) }}</td>
+          <td style="max-width: 420px; word-break: break-all">
+            <div class="event-text">{{ summaryText(item) }}</div>
+            <small v-if="grouped" class="edit-status" :class="{ incomplete: !hasCompleteEdit(item) }">
+              {{ hasCompleteEdit(item) ? '完整快照 · 当前整段' : '片段 / 缺少完整编辑证据' }}
+            </small>
+            <details v-if="grouped && item.edit_events?.length" class="edit-snapshots">
+              <summary>查看全部编辑过程 · {{ item.edit_count ?? item.edit_events.length }} 次操作</summary>
+              <ol class="edit-history">
+                <li v-for="operation in item.edit_events" :key="operation.id" class="edit-operation">
+                  <div class="operation-meta">{{ fmtTime(operation.occurred_at) }} · {{ eventTypeName(operation.event_type) }}<span v-if="operation.sequence_no != null"> · #{{ operation.sequence_no }}</span></div>
+                  <div class="operation-text">{{ displayText(operation) }}</div>
+                  <dl>
+                    <dt>编辑前</dt><dd>{{ snapshotText(operation.text_before) }}</dd>
+                    <dt>编辑后</dt><dd>{{ snapshotText(operation.text_after) }}</dd>
+                  </dl>
+                </li>
+              </ol>
+              <small>保留原始输入、删除与替换记录；缺失快照不补猜。</small>
+            </details>
+            <details v-else-if="item.text_before != null || item.text_after != null" class="edit-snapshots">
+              <summary>查看编辑前后</summary>
+              <dl>
+                <dt>编辑前</dt><dd>{{ snapshotText(item.text_before) }}</dd>
+                <dt>编辑后</dt><dd>{{ snapshotText(item.text_after) }}</dd>
+              </dl>
+              <small>设备上报的文本快照，不代表消息已发送。</small>
+            </details>
+          </td>
           <td>{{ appName(item.package_name) }}</td>
           <td>
             <span v-if="deviceDetailLines(deviceOf(item.device_id)).length" class="dev" :title="deviceDetailLines(deviceOf(item.device_id)).join('\n')">
@@ -163,7 +224,7 @@ onMounted(async () => {
     <div v-if="!items.length && !loading" class="empty">没有符合条件的行为记录</div>
 
     <div class="pager">
-      <span>共 {{ total }} 条</span>
+      <span>共 {{ total }} {{ grouped ? '组' : '条' }}</span>
       <button :disabled="page <= 1" @click="page--; load()">上一页</button>
       <span>{{ page }} / {{ totalPages }}</span>
       <button :disabled="page >= totalPages" @click="page++; load()">下一页</button>
@@ -172,6 +233,20 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.edit-mode { margin-bottom: 16px; padding: 14px 16px; background: #fff; border: 1px solid #e7eaf2; border-radius: 12px; }
+.mode-buttons { display: inline-flex; gap: 4px; padding: 4px; border-radius: 9px; background: #f3f5fb; }
+.mode-buttons button { border: 0; border-radius: 6px; padding: 7px 16px; background: transparent; color: #65708a; cursor: pointer; }
+.mode-buttons button.active { background: #fff; color: #4b57ce; box-shadow: 0 1px 4px #23305615; }
+.mode-buttons button:disabled { opacity: 0.45; cursor: not-allowed; }
+.edit-mode p { margin: 10px 0 0; color: #747d8c; font-size: 12px; line-height: 1.7; }
+.edit-status { display: block; margin-top: 5px; color: #38836a; font-size: 11px; }
+.edit-status.incomplete { color: #9a743e; }
+.edit-history { margin: 12px 0; padding-left: 22px; }
+.edit-operation { padding: 10px 0; border-bottom: 1px solid #e5e8f0; }
+.edit-operation:last-child { border-bottom: 0; }
+.operation-meta { color: #747d8c; font-size: 11px; }
+.operation-text { margin-top: 6px; white-space: pre-wrap; overflow-wrap: anywhere; }
+
 .input {
   padding: 6px 10px;
   border-radius: 8px;
@@ -194,6 +269,13 @@ onMounted(async () => {
 .check { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #57606f; cursor: pointer; }
 .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 12px; white-space: nowrap; }
 .badge.text { background: #dfe4ea; color: #2f3542; }
+.badge.deletion { background: #fff0ef; color: #b5473e; }
+.event-text, .edit-snapshots dd { white-space: pre-wrap; overflow-wrap: anywhere; }
+.edit-snapshots { margin-top: 8px; padding: 8px 10px; background: #f7f8fc; border-radius: 8px; font-size: 12px; }
+.edit-snapshots summary { cursor: pointer; color: #5865b5; }
+.edit-snapshots dl { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 8px; }
+.edit-snapshots dt, .edit-snapshots small { color: #747d8c; }
+.edit-snapshots dd { margin: 0; }
 .badge.voice { background: #eccc68; color: #7d5a00; }
 .badge.image { background: #ffa502; color: #fff; }
 .badge.net-wifi { background: #d1f2eb; color: #148f77; }

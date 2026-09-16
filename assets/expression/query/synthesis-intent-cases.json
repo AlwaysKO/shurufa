@@ -1,0 +1,70 @@
+[
+  {
+    "query": "你可真是个人才",
+    "playful": true
+  },
+  {
+    "query": "我直接原地裂开",
+    "playful": true
+  },
+  {
+    "query": "给你颁个奖吧",
+    "playful": true
+  },
+  {
+    "query": "笑不活了",
+    "playful": true
+  },
+  {
+    "query": "小丑竟是我自己",
+    "playful": true
+  },
+  {
+    "query": "你这个显眼包",
+    "playful": true
+  },
+  {
+    "query": "逗你玩呢",
+    "playful": true
+  },
+  {
+    "query": "文件已经发送",
+    "playful": false
+  },
+  {
+    "query": "项目会议",
+    "playful": false
+  },
+  {
+    "query": "机构",
+    "playful": false
+  },
+  {
+    "query": "不要嘲讽别人",
+    "playful": false
+  },
+  {
+    "query": "别拿人家开玩笑",
+    "playful": false
+  },
+  {
+    "query": "这不是开玩笑",
+    "playful": false
+  },
+  {
+    "query": "没有开玩笑，我是认真的",
+    "playful": false
+  },
+  {
+    "query": "你可真是个好人",
+    "playful": false
+  },
+  {
+    "query": "",
+    "playful": false
+  },
+  {
+    "query": "请不要再对别人阴阳怪气",
+    "playful": false
+  }
+]

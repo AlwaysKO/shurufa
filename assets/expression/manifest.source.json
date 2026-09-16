@@ -1,11 +1,17 @@
 {
-  "version": "2026.09.11.archive-184",
+  "version": "2026.09.16.blank-6",
   "expectedCounts": {
-    "templates": 60,
-    "animatedTemplates": 20,
+    "templates": 66,
+    "animatedTemplates": 26,
     "emojiBases": 48
   },
   "builtInTemplateIds": [
+    "blank-cat-side-eye",
+    "blank-man-snicker",
+    "blank-line-exasperated",
+    "blank-otter-smug",
+    "blank-mushroom-think",
+    "blank-panda-really",
     "tpl-01",
     "tpl-02",
     "tpl-03",
@@ -53,6 +59,234 @@
     "pleading__pleading"
   ],
   "templates": [
+    {
+      "id": "blank-cat-side-eye",
+      "type": "gif",
+      "source": "templates/blank-cat-side-eye.gif",
+      "keywords": [
+        "嫌弃",
+        "质疑",
+        "侧眼",
+        "调侃"
+      ],
+      "emotions": [
+        "skeptical"
+      ],
+      "textSafeArea": {
+        "x": 6,
+        "y": 190,
+        "width": 228,
+        "height": 44
+      },
+      "layout": {
+        "minFontSize": 12,
+        "maxFontSize": 24,
+        "textColor": "#222222",
+        "strokeColor": "#ffffff",
+        "strokeWidth": 1,
+        "alignment": "center",
+        "maxLines": 2
+      },
+      "animation": {
+        "sha256": "6b51de6dad852865ac9b16045457f8f26cf72b1a4a75dc220a65be6ab55bd1ba",
+        "sourceType": "ai-original",
+        "provenance": {
+          "manifest": "artifacts/expression-character-trials/ai-synthesis-blank-01/report.json",
+          "itemId": "cat-side-eye",
+          "approvalRecord": "approvals/2026-09-16-blank-gif-release.json"
+        }
+      }
+    },
+    {
+      "id": "blank-man-snicker",
+      "type": "gif",
+      "source": "templates/blank-man-snicker.gif",
+      "keywords": [
+        "偷笑",
+        "憋笑",
+        "调侃",
+        "笑死"
+      ],
+      "emotions": [
+        "tease"
+      ],
+      "textSafeArea": {
+        "x": 6,
+        "y": 202,
+        "width": 228,
+        "height": 32
+      },
+      "layout": {
+        "minFontSize": 12,
+        "maxFontSize": 24,
+        "textColor": "#222222",
+        "strokeColor": "#ffffff",
+        "strokeWidth": 1,
+        "alignment": "center",
+        "maxLines": 2
+      },
+      "animation": {
+        "sha256": "24865f49ee4025269dc60918fba6edc133ad4b5e3dfb0dda7de74dfc844d39a6",
+        "sourceType": "ai-original",
+        "provenance": {
+          "manifest": "artifacts/expression-character-trials/ai-synthesis-blank-01/report.json",
+          "itemId": "man-snicker",
+          "approvalRecord": "approvals/2026-09-16-blank-gif-release.json"
+        }
+      }
+    },
+    {
+      "id": "blank-line-exasperated",
+      "type": "gif",
+      "source": "templates/blank-line-exasperated.gif",
+      "keywords": [
+        "抓狂",
+        "无奈",
+        "无语",
+        "原地裂开"
+      ],
+      "emotions": [
+        "frustrated"
+      ],
+      "textSafeArea": {
+        "x": 6,
+        "y": 190,
+        "width": 228,
+        "height": 44
+      },
+      "layout": {
+        "minFontSize": 12,
+        "maxFontSize": 24,
+        "textColor": "#222222",
+        "strokeColor": "#ffffff",
+        "strokeWidth": 1,
+        "alignment": "center",
+        "maxLines": 2
+      },
+      "animation": {
+        "sha256": "51226d4843fe116363541b76cc7deb663a18c89134e415d2fb800ed5dfe31725",
+        "sourceType": "ai-original",
+        "provenance": {
+          "manifest": "artifacts/expression-character-trials/ai-synthesis-blank-01/report.json",
+          "itemId": "line-exasperated",
+          "approvalRecord": "approvals/2026-09-16-blank-gif-release.json"
+        }
+      }
+    },
+    {
+      "id": "blank-otter-smug",
+      "type": "gif",
+      "source": "templates/blank-otter-smug.gif",
+      "keywords": [
+        "得意",
+        "显摆",
+        "骄傲",
+        "给你颁个奖"
+      ],
+      "emotions": [
+        "proud"
+      ],
+      "textSafeArea": {
+        "x": 6,
+        "y": 190,
+        "width": 228,
+        "height": 44
+      },
+      "layout": {
+        "minFontSize": 12,
+        "maxFontSize": 24,
+        "textColor": "#222222",
+        "strokeColor": "#ffffff",
+        "strokeWidth": 1,
+        "alignment": "center",
+        "maxLines": 2
+      },
+      "animation": {
+        "sha256": "fce4e36bc5a8546fdc450320f9444c83e3081163cef52fd6ae27e11035bef431",
+        "sourceType": "ai-original",
+        "provenance": {
+          "manifest": "artifacts/expression-character-trials/ai-synthesis-blank-01/report.json",
+          "itemId": "otter-smug",
+          "approvalRecord": "approvals/2026-09-16-blank-gif-release.json"
+        }
+      }
+    },
+    {
+      "id": "blank-mushroom-think",
+      "type": "gif",
+      "source": "templates/blank-mushroom-think.gif",
+      "keywords": [
+        "思考",
+        "让我想想",
+        "琢磨",
+        "犹豫"
+      ],
+      "emotions": [
+        "thinking"
+      ],
+      "textSafeArea": {
+        "x": 6,
+        "y": 202,
+        "width": 228,
+        "height": 32
+      },
+      "layout": {
+        "minFontSize": 12,
+        "maxFontSize": 24,
+        "textColor": "#222222",
+        "strokeColor": "#ffffff",
+        "strokeWidth": 1,
+        "alignment": "center",
+        "maxLines": 2
+      },
+      "animation": {
+        "sha256": "2c1b4b03b7de6d503711ffa730a3aba48d3b9ca2c3c053d28993e5423cd117a5",
+        "sourceType": "licensed",
+        "provenance": {
+          "manifest": "artifacts/expression-character-trials/reference-01-animated/generation.json",
+          "itemId": "mushroom-think",
+          "approvalRecord": "approvals/2026-09-16-blank-gif-release.json"
+        }
+      }
+    },
+    {
+      "id": "blank-panda-really",
+      "type": "gif",
+      "source": "templates/blank-panda-really.gif",
+      "keywords": [
+        "质疑",
+        "真的假的",
+        "怀疑",
+        "不信"
+      ],
+      "emotions": [
+        "skeptical"
+      ],
+      "textSafeArea": {
+        "x": 6,
+        "y": 202,
+        "width": 228,
+        "height": 32
+      },
+      "layout": {
+        "minFontSize": 12,
+        "maxFontSize": 24,
+        "textColor": "#222222",
+        "strokeColor": "#ffffff",
+        "strokeWidth": 1,
+        "alignment": "center",
+        "maxLines": 2
+      },
+      "animation": {
+        "sha256": "16581dcefff8b203073b1a7cfdb7830841fb578c957e0567dc4d15ac2b74af87",
+        "sourceType": "licensed",
+        "provenance": {
+          "manifest": "artifacts/expression-character-trials/reference-01-animated/generation.json",
+          "itemId": "panda-really",
+          "approvalRecord": "approvals/2026-09-16-blank-gif-release.json"
+        }
+      }
+    },
     {
       "id": "tpl-01",
       "type": "gif",

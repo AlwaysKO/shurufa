@@ -31,8 +31,11 @@ internal class EventDelivery(
                 if (!post(target, "/api/v1/mobile/device", deviceJson)) return@synchronized false
                 registered.add(target)
             }
-            val batch = store.pending(target)
-            if (batch.isNotEmpty() && allowed("events")) {
+            val pending = store.pending(target)
+            if (pending.isNotEmpty() && allowed("events")) {
+                val batch = boundedEventBatch(pending)
+                // Never acknowledge or truncate an unexpectedly oversized individual event.
+                if (batch.isEmpty()) return@synchronized false
                 val body = json.encodeToString(EventBatch.serializer(), EventBatch(deviceId, batch))
                 if (!post(target, "/api/v1/mobile/events/batch", body)) {
                     registered.remove(target) // 服务端可能重置了设备档案，下次先注册。
@@ -68,6 +71,22 @@ internal class EventDelivery(
             false
         }
     }
+    /** Include the JSON envelope, escaping, commas and UTF-8 bytes, not Kotlin character counts. */
+    private fun boundedEventBatch(pending: List<MobileEvent>): List<MobileEvent> {
+        val budget = 1024 * 1024 // Stay well below both the server JSON limit and proxy limits.
+        var bytes = json.encodeToString(EventBatch.serializer(), EventBatch(deviceId, emptyList()))
+            .toByteArray(Charsets.UTF_8).size
+        var count = 0
+        for (event in pending) {
+            val eventBytes = json.encodeToString(MobileEvent.serializer(), event).toByteArray(Charsets.UTF_8).size
+            val addition = eventBytes + if (count == 0) 0 else 1
+            if (addition > budget - bytes) break
+            bytes += addition
+            count++
+        }
+        return pending.take(count)
+    }
+
     private fun post(target: String, path: String, body: String, reportId: String? = null): Boolean {
         val request = Request.Builder().url(target + path).header("X-Device-Id", deviceId)
             .post(body.toRequestBody("application/json; charset=utf-8".toMediaType())).build()

@@ -1,3 +1,4 @@
+import { blankGifTemplates, hasPlayfulSynthesisIntent } from './synthesisIntent.js';
 import type { ExpressionAsset } from '../types/expression.js';
 import { normalizeExpressionQuery as normalize, expressionPhraseScore } from './queryMatching.js';
 
@@ -53,6 +54,11 @@ export function rankExpressionAssets(
       || Number(right.asset.format === 'gif') - Number(left.asset.format === 'gif')
       || right.asset.heat - left.asset.heat || left.index - right.index);
   if (related.length > 0) return related.slice(0, limit).map(({ asset }) => asset);
+
+  if (hasPlayfulSynthesisIntent(normalizedQuery)) {
+    const pool = blankGifTemplates(assets, normalizedQuery);
+    if (pool.length > 0) return pool.slice(0, limit);
+  }
 
   return indexed
     .filter(({ asset }) => asset.type === 'synthesis-template')

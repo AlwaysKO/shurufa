@@ -3,7 +3,7 @@ export function normalizeExpressionQuery(value: string): string {
   return value.toLowerCase().replace(/[\s\p{P}\p{S}]+/gu, '');
 }
 
-const groups: readonly (readonly string[])[] = [
+export const expressionSynonymGroups: readonly (readonly string[])[] = [
   ['谢谢', '感谢', '多谢', '感激'],
   ['打闹', '玩闹', '打你', '打我', '揍你', '揍我', '捶你', '捶我'],
   ['追赶', '抓你', '抓我', '追你', '追我', '捉你', '捉我'],
@@ -48,7 +48,7 @@ export function expressionPhraseScore(query: string, values: readonly string[]):
     if (phrase.length < 2) continue;
     if (containsPositive(query, phrase)) score = Math.max(score, 900 + Math.min(phrase.length, 99));
     else if (query.includes(phrase)) blocked = true;
-    for (const group of groups) {
+    for (const group of expressionSynonymGroups) {
       if (!group.some((alias) => containsPositive(phrase, alias))) continue;
       if (group.some((alias) => containsPositive(query, alias))) score = Math.max(score, 800);
       else if (group.some((alias) => query.includes(alias))) blocked = true;

@@ -21,6 +21,7 @@ const sourceManifest = JSON.parse(readFileSync(fileURLToPath(
   templates: Array<{
     keywords: string[];
     sourceCrop?: { y: number; height: number };
+    animation?: { sha256: string };
     layout: { minFontSize: number; maxFontSize: number; strokeWidth: number };
   }>;
 };
@@ -47,6 +48,22 @@ function asset(overrides: Partial<ExpressionAsset>): ExpressionAsset {
 }
 
 describe('expression catalog', () => {
+  it('明确玩笑语气且无成品命中才兜底无字GIF池', () => {
+    const blank = asset({ id: 'blank', format: 'gif', keywords: ['开心'],
+      textSafeArea: { x: 0, y: 0, width: 200, height: 80 },
+      layout: { minFontSize: 18, maxFontSize: 40, textColor: '#ffffff', strokeColor: '#000000', strokeWidth: 2, alignment: 'center', maxLines: 2 } });
+    const invalid = [asset({ ...blank, id: 'static', format: 'webp' }),
+      asset({ ...blank, id: 'printed', embeddedText: '旧字' }),
+      asset({ ...blank, id: 'no-layout', layout: null })];
+    for (const query of ['你可真是个人才', '我直接原地裂开', '给你颁个奖吧']) {
+      expect(rankExpressionAssets([blank, ...invalid], query).map(x => x.id)).toEqual(['blank']);
+    }
+    for (const query of ['项目会议', '机构', '不要嘲讽别人', '文件已经发送']) {
+      expect(rankExpressionAssets([blank], query)).toEqual([]);
+    }
+    expect(rankExpressionAssets([blank, asset({ id: 'hit', type: 'prebuilt', embeddedText: '你可真是个人才' })], '你可真是个人才').map(x => x.id)).toEqual(['hit']);
+  });
+
   it('保留 Emoji 组合选择顺序', () => {
     expect(emojiCombinationKey('angry', 'cry')).toBe('angry__cry');
     expect(emojiCombinationKey('cry', 'angry')).toBe('cry__angry');
@@ -129,9 +146,14 @@ describe('expression catalog', () => {
     }
   });
 
-  it('内置候选裁掉顶部空白并使用大号粗体友好的描边规格', () => {
+  it('旧静态源候选保留裁切与描边规格，原生动作模板不重复裁切', () => {
     expect(sourceManifest.version).toBe(EXPRESSION_CATALOG_VERSION);
-    for (const template of sourceManifest.templates) {
+    const legacy = sourceManifest.templates.filter(template => !template.animation);
+    expect(legacy).toHaveLength(60);
+    for (const template of sourceManifest.templates.filter(template => template.animation)) {
+      expect(template.sourceCrop).toBeUndefined();
+    }
+    for (const template of legacy) {
       expect(template.sourceCrop?.y).toBeGreaterThanOrEqual(150);
       expect(template.sourceCrop?.height).toBeLessThanOrEqual(234);
       expect(template.layout.minFontSize).toBeGreaterThanOrEqual(32);

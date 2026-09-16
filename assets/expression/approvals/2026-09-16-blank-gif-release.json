@@ -1,0 +1,61 @@
+{
+  "date": "2026-09-16",
+  "status": "approved",
+  "scope": "shurufa 正式 AI 合成无字 GIF 模板库",
+  "userApproval": "这几张可以，放进正式图库吧……这两个gif你加进来",
+  "licensedReferenceConfirmation": {
+    "question": "蘑菇头和熊猫头的原参考图，你有用于正式产品的授权吗？",
+    "answer": "有",
+    "evidenceType": "user-statement",
+    "independentlyVerifiedLicenseDocument": false
+  },
+  "approvedIds": [
+    "blank-cat-side-eye",
+    "blank-man-snicker",
+    "blank-line-exasperated",
+    "blank-otter-smug",
+    "blank-mushroom-think",
+    "blank-panda-really"
+  ],
+  "licensedIds": [
+    "blank-mushroom-think",
+    "blank-panda-really"
+  ],
+  "sourceRecords": [
+    "artifacts/expression-character-trials/ai-synthesis-blank-01/production-notes.md",
+    "artifacts/expression-character-trials/reference-01-animated/generation.json"
+  ],
+  "notes": "只批准上述六张/对应无字派生版本；不修改历史试稿来源，不扩展到新批次或其他参考图。",
+  "approvedAssets": [
+    {
+      "id": "blank-cat-side-eye",
+      "sourceType": "ai-original",
+      "sha256": "6b51de6dad852865ac9b16045457f8f26cf72b1a4a75dc220a65be6ab55bd1ba"
+    },
+    {
+      "id": "blank-man-snicker",
+      "sourceType": "ai-original",
+      "sha256": "24865f49ee4025269dc60918fba6edc133ad4b5e3dfb0dda7de74dfc844d39a6"
+    },
+    {
+      "id": "blank-line-exasperated",
+      "sourceType": "ai-original",
+      "sha256": "51226d4843fe116363541b76cc7deb663a18c89134e415d2fb800ed5dfe31725"
+    },
+    {
+      "id": "blank-otter-smug",
+      "sourceType": "ai-original",
+      "sha256": "fce4e36bc5a8546fdc450320f9444c83e3081163cef52fd6ae27e11035bef431"
+    },
+    {
+      "id": "blank-mushroom-think",
+      "sourceType": "licensed",
+      "sha256": "2c1b4b03b7de6d503711ffa730a3aba48d3b9ca2c3c053d28993e5423cd117a5"
+    },
+    {
+      "id": "blank-panda-really",
+      "sourceType": "licensed",
+      "sha256": "16581dcefff8b203073b1a7cfdb7830841fb578c957e0567dc4d15ac2b74af87"
+    }
+  ]
+}

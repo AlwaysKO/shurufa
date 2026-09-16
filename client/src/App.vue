@@ -37,6 +37,7 @@ const navGroups: NavGroup[] = [
     { path: '/clipboard-history', label: '剪贴板历史' }, { path: '/chat-capture', label: '聊天采集' },
   ] },
   { key: 'assets', label: '个人资产', icon: '◇', items: [
+    { path: '/personal-dictionary', label: '个人词库与换机' },
     { path: '/user-phrases', label: '常用语' }, { path: '/stickers', label: '表情包' },
     { path: '/relationships', label: '关系记忆' },
   ] },

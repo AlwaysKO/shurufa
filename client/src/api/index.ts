@@ -135,6 +135,13 @@ export interface ActivityItem {
   event_type: string;
   content_type: 'text' | 'voice' | 'image' | string;
   text: string | null;
+  text_before?: string | null;
+  text_after?: string | null;
+  edit_count?: number;
+  edit_complete?: boolean;
+  edit_events?: ActivityItem[];
+  editor_id?: string | null;
+  sequence_no?: number | string | null;
   input_code: string | null;
   package_name: string | null;
   device_id: string;
@@ -153,6 +160,7 @@ export interface ActivityQuery {
   q?: string;
   type?: string;
   all?: boolean;
+  grouped?: boolean;
   page?: number;
   page_size?: number;
 }
@@ -249,6 +257,8 @@ export interface LibrarySticker {
 }
 export interface StickerKeywordGroup {
   keyword: string;
+  aliases: string[];
+  confirmedAliases: string[];
   category: string;
   planned: boolean;
   custom: boolean;
@@ -518,6 +528,7 @@ export const api = {
     if (query.q) p.set('q', query.q);
     if (query.type && query.type !== 'all') p.set('type', query.type);
     if (query.all) p.set('all', '1');
+    if (query.grouped) p.set('grouped', '1');
     if (query.page) p.set('page', String(query.page));
     if (query.page_size) p.set('page_size', String(query.page_size));
     return get<ActivityPage>(`/api/v1/dashboard/events?${p.toString()}`);

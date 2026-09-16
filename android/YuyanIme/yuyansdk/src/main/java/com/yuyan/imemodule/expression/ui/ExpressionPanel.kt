@@ -175,7 +175,8 @@ class ExpressionPanel @JvmOverloads constructor(
         visibility = if (state.isRecommendationVisible) View.VISIBLE else View.GONE
         recommendationSection.visibility = if (state.isRecommendationVisible) View.VISIBLE else View.GONE
         toolRow.visibility = View.GONE
-        enableButton.visibility = if (state.isRecommendationActionVisible) View.VISIBLE else View.GONE
+        // 仅保留顶部工具栏入口；不再占用拼音共行。
+        enableButton.visibility = View.GONE
         onRecommendationActionVisibilityChanged?.invoke()
         enableButton.contentDescription = context.getString(
             when {

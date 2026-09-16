@@ -18,6 +18,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.CursorAnchorInfo
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.ExtractedTextRequest
 import android.view.inputmethod.InputConnection
 import android.window.OnBackInvokedCallback
 import android.window.OnBackInvokedDispatcher
@@ -28,6 +29,8 @@ import com.yuyan.imemodule.data.completion.OfflineT9Candidates
 import com.yuyan.imemodule.data.collect.CollectionConsent
 import com.yuyan.imemodule.data.completion.canLearnInput
 import com.yuyan.inputmethod.RimeEngine
+import com.yuyan.imemodule.data.collect.CommittedEditTracker
+import com.yuyan.imemodule.data.collect.committedSnapshot
 import com.yuyan.imemodule.data.collect.DataCollector
 import com.yuyan.imemodule.data.capture.OutgoingVoiceCapture
 import com.yuyan.imemodule.data.emojicon.YuyanEmojiCompat
@@ -53,6 +56,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import splitties.bitflags.hasFlag
 
 /**
@@ -88,6 +93,72 @@ open class ImeService : InputMethodService() {
     private var hostTextCommitListenerOwner: Any? = null
     private var hostTextCommitListener: ((String, ExpressionCommitKind) -> Unit)? = null
     private var hostTextEditListener: (() -> Unit)? = null
+    private val committedEdits = CommittedEditTracker()
+    private var composingForHistory = false
+    private var historyComposingText: String? = null
+
+    private fun clearHistoryComposition() {
+        composingForHistory = false
+        historyComposingText = null
+    }
+
+    private fun historyAllowed(): Boolean =
+        CollectionConsent.enabled(this) && CollectionConsent.allowsEditor(YuyanEmojiCompat.mEditorInfo)
+
+    private fun readCommittedText(connection: InputConnection? = currentInputConnection): String? {
+        if (!historyAllowed()) { committedEdits.reset(); return null }
+        return runCatching {
+            committedSnapshot(connection?.getExtractedText(ExtractedTextRequest().apply {
+                flags = InputConnection.GET_TEXT_WITH_STYLES
+                hintMaxChars = 5001
+                hintMaxLines = 1000
+            }, 0), composingForHistory || voiceHasPartialText)
+        }.getOrNull()
+    }
+
+    private fun recordHostEdit(
+        before: String?,
+        eventType: String,
+        fallbackText: String? = null,
+        source: String = "keyboard",
+        inputCode: String? = null,
+        after: String? = readCommittedText(),
+    ) {
+        if (!historyAllowed() || !CollectionConsent.allowsText(fallbackText) ||
+            !CollectionConsent.allowsText(before) || !CollectionConsent.allowsText(after)) {
+            committedEdits.reset()
+            return
+        }
+        // 某些宿主会延迟提供更新快照；不能因此丢掉已接受的提交。
+        val unchangedCommit = before != null && before == after &&
+            eventType in setOf("commit", "voice", "paste") && !fallbackText.isNullOrEmpty()
+        val edit = (if (unchangedCommit) committedEdits.record(null, null)
+            else committedEdits.record(before, after)) ?: return
+        val removed = eventType == "delete" || eventType == "external_delete"
+        val text = (if (removed) edit.removedText else edit.insertedText) ?: fallbackText
+        val editor = YuyanEmojiCompat.mEditorInfo
+        if (!DataCollector.recordEvent(this, eventType, text = text,
+                packageName = editor?.packageName, editorId = editor?.fieldId?.toString(),
+                source = source, inputCode = inputCode, sessionId = edit.sessionId,
+                sequenceNo = edit.sequenceNo, textBefore = edit.before, textAfter = edit.after,
+                metadata = buildJsonObject {
+                    put("edit_protocol", 1)
+                    put("snapshot_complete", edit.complete)
+                    put("text_truncated", (text?.length ?: 0) > 5000)
+                })) committedEdits.reset()
+    }
+
+    /** 宿主菜单/清空等异步变化：只有已跟踪的输入框和可读快照才记录，不读取其他聊天。 */
+    private fun observeHostEdit() {
+        if (!historyAllowed()) { committedEdits.reset(); return }
+        if (composingForHistory || voiceHasPartialText) return
+        val before = committedEdits.lastText ?: return
+        val after = readCommittedText() ?: run { committedEdits.reset(); return }
+        if (before != after) recordHostEdit(before,
+            if (after.length < before.length) "external_delete" else "external_insert",
+            source = "host_change", after = after)
+    }
+
     internal var hostKeyEventSender: (Int) -> Boolean = ::sendUnmodifiedKeyEventsAndReport
     internal var hostTextCommitter: (String, Int) -> Boolean = { text, newCursorPosition ->
         currentInputConnection?.commitText(
@@ -143,6 +214,8 @@ open class ImeService : InputMethodService() {
     }
 
     override fun onStartInput(editorInfo: EditorInfo?, restarting: Boolean) {
+        committedEdits.reset()
+        clearHistoryComposition()
         if (activeVoiceSession != null) cancelVoiceInput()
         YuyanEmojiCompat.setEditorInfo(editorInfo)
         handleHardwareKeyboard()
@@ -191,7 +264,6 @@ open class ImeService : InputMethodService() {
         voiceFallbackAttempted = false
         voiceStopRequested = false
         voiceCancelled = false
-        voiceHasPartialText = false
         val onDeviceAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
             SpeechRecognizer.isOnDeviceRecognitionAvailable(this)
         val session = VoiceInputSession(
@@ -235,18 +307,20 @@ open class ImeService : InputMethodService() {
                     if (!isVoiceCallbackActive(session, recognizer)) return
                     val text = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()
                     if (!voiceCancelled && !text.isNullOrBlank()) {
+                        val before = readCommittedText(session.connection)
+                        val unverifiedComposition = before == null && (composingForHistory || voiceHasPartialText)
                         val committed = session.connection.commitText(
                             StringUtils.converted2FlowerTypeface(text),
                             1,
                         ) == true
-                        voiceHasPartialText = false
                         if (committed) {
-                            DataCollector.recordEvent(
-                                this@ImeService, "voice", text = text,
-                                packageName = session.packageName,
-                                source = "voice",
-                            )
+                            voiceHasPartialText = false
+                            clearHistoryComposition()
+                            recordHostEdit(before, "voice", text, source = "voice",
+                                after = if (unverifiedComposition) null else readCommittedText(session.connection))
                             OutgoingVoiceCapture.record(this@ImeService, session.packageName, text)
+                        } else {
+                            clearVoiceComposition(session)
                         }
                     } else {
                         clearVoiceComposition(session)
@@ -277,7 +351,10 @@ open class ImeService : InputMethodService() {
                         ?.firstOrNull()
                         ?.takeIf(String::isNotBlank)
                         ?.let { partial ->
-                            voiceHasPartialText = session.connection.setComposingText(partial, 1) == true
+                            if (session.connection.setComposingText(partial, 1) == true) {
+                                voiceHasPartialText = true
+                                historyComposingText = partial
+                            }
                         }
                 }
                 override fun onEvent(eventType: Int, params: Bundle?) {}
@@ -311,9 +388,12 @@ open class ImeService : InputMethodService() {
 
     private fun clearVoiceComposition(session: VoiceInputSession) {
         if (!voiceHasPartialText) return
-        session.connection.setComposingText("", 1)
-        session.connection.finishComposingText()
-        voiceHasPartialText = false
+        if (session.connection.setComposingText("", 1)) {
+            session.connection.finishComposingText()
+            voiceHasPartialText = false
+            clearHistoryComposition()
+        }
+        // 清理失败仍视作未确认，宿主不提供样式时快照必须保持未知。
     }
 
     private fun isVoiceSessionActive(session: VoiceInputSession): Boolean = isCurrentVoiceCallback(
@@ -439,6 +519,21 @@ open class ImeService : InputMethodService() {
 
     override fun onUpdateSelection(oldSelStart: Int, oldSelEnd: Int, newSelStart: Int, newSelEnd: Int, candidatesStart: Int, candidatesEnd: Int) {
         super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd)
+        if (candidatesStart >= 0 && candidatesEnd > candidatesStart) {
+            composingForHistory = true
+        } else {
+            // 负范围可能是前一次编辑的延迟回调，不能把当前未确认文字当成正文。
+            // 只有实际完整输入框为空才确认外部清空；其余等待自身成功提交/取消组合。
+            if (composingForHistory || voiceHasPartialText) {
+                val empty = if (historyAllowed()) runCatching {
+                    val current = currentInputConnection?.getExtractedText(ExtractedTextRequest(), 0)
+                    current != null && current.startOffset == 0 && current.partialStartOffset == -1 &&
+                        current.text?.isEmpty() == true
+                }.getOrDefault(false) else false
+                if (empty) { clearHistoryComposition(); voiceHasPartialText = false }
+            }
+            if (!composingForHistory && !voiceHasPartialText) observeHostEdit()
+        }
         if (isSoftKeyboard) mInputView.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesEnd)
     }
 
@@ -462,6 +557,8 @@ open class ImeService : InputMethodService() {
     }
 
     override fun onFinishInput() {
+        committedEdits.reset()
+        clearHistoryComposition()
         cancelVoiceInput()
         YuyanEmojiCompat.setEditorInfo(null)
         super.onFinishInput()
@@ -530,7 +627,11 @@ open class ImeService : InputMethodService() {
 
     private fun sendMessageBoundaryKeyEventAndReport(): Boolean {
         val sent = hostKeyEventSender(KeyEvent.KEYCODE_ENTER)
-        if (sent) hostTextEditListener?.invoke()
+        if (sent) {
+            observeHostEdit()
+            committedEdits.reset()
+            hostTextEditListener?.invoke()
+        }
         return sent
     }
 
@@ -613,12 +714,21 @@ open class ImeService : InputMethodService() {
         shift: Boolean = false,
     ): Boolean {
         if (!keyEventCode.isTextEditingKey()) return false
+        val before = readCommittedText()
+        val wasComposing = composingForHistory || voiceHasPartialText
         val sent = if (!alt && !ctrl && !shift) {
             hostKeyEventSender(keyEventCode)
         } else {
             sendCombinationKeyEventsAndReport(keyEventCode, alt, ctrl, shift)
         }
-        if (sent) hostTextEditListener?.invoke()
+        if (sent) {
+            if ((keyEventCode == KeyEvent.KEYCODE_DEL || keyEventCode == KeyEvent.KEYCODE_FORWARD_DEL) &&
+                (!wasComposing || before != null)) {
+                val after = readCommittedText()
+                if (!wasComposing || after != null) recordHostEdit(before, "delete", source = "key", after = after)
+            }
+            hostTextEditListener?.invoke()
+        }
         return sent
     }
 
@@ -626,7 +736,10 @@ open class ImeService : InputMethodService() {
      * 向输入框提交预选词
      */
     fun setComposingText(text: CharSequence) {
-        currentInputConnection.setComposingText(text, 1)
+        if (currentInputConnection.setComposingText(text, 1)) {
+            composingForHistory = text.isNotEmpty()
+            historyComposingText = text.toString().takeIf { it.isNotEmpty() }
+        }
     }
 
 
@@ -634,7 +747,15 @@ open class ImeService : InputMethodService() {
      * 结束提交预选词
      */
     fun finishComposingText() {
-        currentInputConnection.finishComposingText()
+        val before = readCommittedText()
+        val completedText = historyComposingText
+        val hadComposition = composingForHistory || voiceHasPartialText || completedText != null
+        if (currentInputConnection.finishComposingText()) {
+            clearHistoryComposition()
+            voiceHasPartialText = false
+            if (hadComposition) recordHostEdit(before, "commit", completedText, source = "composition_finish",
+                after = if (before == null) null else readCommittedText())
+        }
     }
 
     /**
@@ -654,6 +775,8 @@ open class ImeService : InputMethodService() {
         val inputCode = inputSelection?.code
         val editor = YuyanEmojiCompat.mEditorInfo
         val learnAllowed = CollectionConsent.allowsEditor(editor) && CollectionConsent.allowsText(text)
+        val before = readCommittedText()
+        val unverifiedComposition = before == null && (composingForHistory || voiceHasPartialText)
         val committed = HostTextCommitDispatcher.dispatch(
             text = text,
             kind = kind,
@@ -662,11 +785,16 @@ open class ImeService : InputMethodService() {
                 hostTextCommitListener?.invoke(committedText, commitKind)
             },
         )
+        if (committed) {
+            clearHistoryComposition()
+            voiceHasPartialText = false
+        }
         if (committed && recordEvent && learnAllowed) {
             if (inputCode != null) OfflineT9Candidates.learn(inputCode, text, inputSelection.pinyin)
-            DataCollector.recordEvent(this, "commit", text = text, inputCode = inputCode,
-                packageName = editor?.packageName, source = "candidate")
+            recordHostEdit(before, "commit", text, source = "candidate", inputCode = inputCode,
+                after = if (unverifiedComposition) null else readCommittedText())
         }
+        if (committed && (!recordEvent || !learnAllowed)) committedEdits.reset()
         if (committed && text.hasLineBreak()) hostTextEditListener?.invoke()
         return committed
     }
@@ -679,6 +807,8 @@ open class ImeService : InputMethodService() {
         val inputCode = inputSelection?.code
         val editor = YuyanEmojiCompat.mEditorInfo
         val learnAllowed = CollectionConsent.allowsEditor(editor) && CollectionConsent.allowsText(text)
+        val before = readCommittedText()
+        val unverifiedComposition = before == null && (composingForHistory || voiceHasPartialText)
         val committed = HostTextCommitDispatcher.dispatch(
             text = text,
             kind = ExpressionCommitKind.COMPLETE,
@@ -687,11 +817,16 @@ open class ImeService : InputMethodService() {
                 hostTextCommitListener?.invoke(committedText, commitKind)
             },
         )
+        if (committed) {
+            clearHistoryComposition()
+            voiceHasPartialText = false
+        }
         if (committed && recordEvent && learnAllowed) {
             if (inputCode != null) OfflineT9Candidates.learn(inputCode, text, inputSelection.pinyin)
-            DataCollector.recordEvent(this, "commit", text = text, inputCode = inputCode,
-                packageName = editor?.packageName, source = "candidate")
+            recordHostEdit(before, "commit", text, source = "candidate", inputCode = inputCode,
+                after = if (unverifiedComposition) null else readCommittedText())
         }
+        if (committed && (!recordEvent || !learnAllowed)) committedEdits.reset()
         if (committed && text.hasLineBreak()) hostTextEditListener?.invoke()
     }
 
@@ -724,7 +859,11 @@ open class ImeService : InputMethodService() {
     }
 
     fun commitTextEditMenu(id:Int) {
+        val before = readCommittedText()
         if (currentInputConnection?.performContextMenuAction(id) == true) {
+            if (id == android.R.id.paste || id == android.R.id.pasteAsPlainText || id == android.R.id.cut) {
+                recordHostEdit(before, if (id == android.R.id.cut) "delete" else "paste", source = "edit_menu")
+            }
             hostTextEditListener?.invoke()
         }
     }
@@ -735,20 +874,23 @@ open class ImeService : InputMethodService() {
 
     internal fun performEditorActionAndReport(editorAction: Int): Boolean {
         val performed = hostEditorActionSender(editorAction)
-        if (performed) hostTextEditListener?.invoke()
+        if (performed) {
+            observeHostEdit()
+            committedEdits.reset()
+            hostTextEditListener?.invoke()
+        }
         return performed
     }
 
     fun deleteSurroundingText(length:Int) {
-        val deleted = getTextBeforeCursor(length)
-        if (deleted.isNotBlank()) {
-            DataCollector.recordEvent(
-                this, "delete", text = deleted,
-                packageName = YuyanEmojiCompat.mEditorInfo?.packageName,
-                source = "key",
-            )
-        }
+        val before = readCommittedText()
+        val wasComposing = composingForHistory || voiceHasPartialText
+        val deleted = if (historyAllowed() && !wasComposing) getTextBeforeCursor(length) else null
         if (currentInputConnection?.deleteSurroundingText(length, 0) == true) {
+            val after = readCommittedText()
+            if (!wasComposing || (before != null && after != null)) {
+                recordHostEdit(before, "delete", deleted, source = "key", after = after)
+            }
             hostTextEditListener?.invoke()
         }
     }

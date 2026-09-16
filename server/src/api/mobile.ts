@@ -12,9 +12,9 @@ async function insertEvents(pool: pg.Pool, userId: string, events: MobileEvent[]
   const values: unknown[] = [];
   const params: string[] = [];
   events.forEach((e, i) => {
-    const n = i * 17;
+    const n = i * 19;
     params.push(
-      `($${n + 1},$${n + 2},$${n + 3},$${n + 4},$${n + 5},$${n + 6},$${n + 7},$${n + 8},$${n + 9},$${n + 10},$${n + 11},$${n + 12},$${n + 13},$${n + 14},$${n + 15},$${n + 16},$${n + 17})`,
+      `($${n + 1},$${n + 2},$${n + 3},$${n + 4},$${n + 5},$${n + 6},$${n + 7},$${n + 8},$${n + 9},$${n + 10},$${n + 11},$${n + 12},$${n + 13},$${n + 14},$${n + 15},$${n + 16},$${n + 17},$${n + 18},$${n + 19})`,
     );
     values.push(
       e.id,
@@ -34,13 +34,15 @@ async function insertEvents(pool: pg.Pool, userId: string, events: MobileEvent[]
       JSON.stringify(e.metadata ?? {}),
       clientIp ?? null,
       e.network_type ?? null,
+      e.text_before ?? null,
+      e.text_after ?? null,
     );
   });
   const sql = `
     INSERT INTO input_event
       (id, user_id, device_id, session_id, sequence_no, occurred_at,
        package_name, editor_id, event_type, source, source_confidence,
-       text, input_code, clipboard_id, metadata, client_ip, network_type)
+       text, input_code, clipboard_id, metadata, client_ip, network_type, text_before, text_after)
     VALUES ${params.join(',')}
     ON CONFLICT (id) DO NOTHING`;
   const result = await pool.query(sql, values);

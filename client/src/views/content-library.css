@@ -122,3 +122,24 @@
   .content-library .library-stats { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
   .content-library .library-stat { min-width:0; }
 }
+/* 语义组目录：固定每页10组，不再用长滚动列表代替分页。 */
+.content-library .keyword-list { max-height:none; overflow:visible; }
+.content-library .keyword-label { display:flex; flex-direction:column; gap:5px; }
+.content-library .keyword-label em { font-size:10px; font-style:normal; color:#8995b1; font-weight:400; }
+.content-library .keyword-pagination { margin-top:14px; border-top:1px solid var(--lib-border); padding-top:14px; }
+.content-library .page-summary { color:#8490a4; font-size:11px; line-height:1.9; margin-bottom:10px; }
+.content-library .page-buttons { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:5px; }
+.content-library .keyword-pagination button { min-height:30px; padding:5px 3px; border:1px solid #dfe5ef; background:#fff; color:#5261d8; border-radius:6px; font-size:11px; white-space:nowrap; }
+.content-library .keyword-pagination button:hover:not(:disabled) { background:#eef1ff; border-color:#bcc6f4; }
+.content-library .page-jump { display:flex; align-items:center; gap:7px; font-size:11px; color:#8490a4; margin-top:10px; }
+.content-library .page-jump .library-input { width:58px; height:30px; padding:0 7px; margin:0; text-align:center; }
+.content-library .page-jump button { flex:1; }
+.content-library .page-error { color:#b94f58; font-size:11px; line-height:1.7; margin-top:8px; }
+.content-library .semantic-aliases { padding:16px; margin:0 0 20px; border:1px solid #e6eaf5; border-radius:10px; background:#f9faff; }
+.content-library .alias-heading { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:12px; }
+.content-library .alias-heading strong { font-size:13px; }
+.content-library .alias-heading>span { color:#8995ab; font-size:11px; }
+.content-library .alias-tags { display:flex; flex-wrap:wrap; gap:7px; }
+.content-library .alias-tags .library-badge { background:#fff; border:1px solid #e3e8f2; color:#62718d; font-size:12px; padding:5px 9px; white-space:normal; overflow-wrap:anywhere; }
+.content-library .alias-tags .library-badge.confirmed { color:#5261d8; border-color:#ced6ff; background:#f0f3ff; }
+.content-library .semantic-aliases>p { margin-top:12px; font-size:11px; line-height:1.8; color:#8c98ad; }
