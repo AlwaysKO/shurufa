@@ -21,6 +21,19 @@ data class UiNodeSnapshot(
     val children: List<UiNodeSnapshot>,
 )
 
+internal fun preferredAccessibilitySnapshot(
+    activeRoot: UiNodeSnapshot?,
+    eventSource: UiNodeSnapshot?,
+): UiNodeSnapshot? = when {
+    activeRoot.isUsableAccessibilitySnapshot() -> activeRoot
+    eventSource.isUsableAccessibilitySnapshot() -> eventSource
+    else -> activeRoot ?: eventSource
+}
+
+internal fun UiNodeSnapshot?.isUsableAccessibilitySnapshot(): Boolean =
+    this != null && bounds.right > bounds.left && bounds.bottom > bounds.top &&
+        (className != null || viewId != null || text != null || contentDescription != null || children.isNotEmpty())
+
 fun UiNodeSnapshot.stableTreeSignature(): String {
     val canonical = buildString { appendCanonicalNode(this@stableTreeSignature) }
     return sha256(canonical.toByteArray(Charsets.UTF_8))

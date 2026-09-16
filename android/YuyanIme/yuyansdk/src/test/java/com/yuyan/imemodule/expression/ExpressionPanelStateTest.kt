@@ -7,6 +7,39 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ExpressionPanelStateTest {
+    @Test fun `已选推荐被更新为空时不能停留在隐藏标签`() {
+        val state = ExpressionPanelState()
+        state.beginQuery("谢谢", 1)
+        state.applyResults(1, listOf(asset("thanks")))
+        state.selectTab(ExpressionPanelTab.RECOMMENDED)
+        state.applyResults(1, listOf(asset("blank").copy(type = "synthesis-template", format = "gif")))
+        assertTrue(state.results.isEmpty())
+        assertEquals(ExpressionPanelTab.AI_SYNTHESIS, state.selectedTab)
+    }
+
+    @Test fun `自动空回调后命中仍显示推荐且自动合成兜底可被成品替代`() {
+        val state = ExpressionPanelState()
+        state.beginQuery("谢谢", 1)
+        state.applyResults(1, emptyList())
+        assertEquals(ExpressionPanelTab.RECOMMENDED, state.selectedTab)
+        state.applyResults(1, listOf(asset("blank").copy(type = "synthesis-template", format = "gif")))
+        assertEquals(ExpressionPanelTab.AI_SYNTHESIS, state.selectedTab)
+        state.applyResults(1, listOf(asset("thanks")))
+        assertEquals(ExpressionPanelTab.RECOMMENDED, state.selectedTab)
+        state.selectTab(ExpressionPanelTab.AI_SYNTHESIS)
+        state.applyResults(1, listOf(asset("thanks-late")))
+        assertEquals(ExpressionPanelTab.AI_SYNTHESIS, state.selectedTab)
+    }
+
+    @Test fun `自动合成结果不能冒充推荐图且直接选择AI合成`() {
+        val state = ExpressionPanelState()
+        state.beginQuery("笑死", 1)
+        state.applyResults(1, listOf(asset("blank-cat").copy(type = "synthesis-template", format = "gif")))
+        assertTrue(state.results.isEmpty())
+        assertTrue(state.isContentVisible)
+        assertEquals(ExpressionPanelTab.AI_SYNTHESIS, state.selectedTab)
+    }
+
     @Test fun `手动搜索无推荐时仍可选择合成模板而自动搜索保持隐藏`() {
         val state = ExpressionPanelState()
         state.beginQuery("机构", 1, manual = true)
@@ -194,7 +227,7 @@ class ExpressionPanelStateTest {
 
     private fun asset(id: String) = ExpressionAsset(
         id = id,
-        type = "synthesis-template",
+        type = "prebuilt",
         format = "webp",
         version = "v1",
         fileName = "templates/$id.webp",

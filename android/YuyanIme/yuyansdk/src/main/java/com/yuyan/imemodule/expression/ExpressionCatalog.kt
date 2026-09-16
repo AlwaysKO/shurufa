@@ -14,10 +14,15 @@ class ExpressionCatalog(
         val normalizedQuery = ExpressionQueryMatching.normalize(query)
         if (normalizedQuery.isEmpty() || limit <= 0) return emptyList()
         val indexed = document.templates
+            .filterNot { it.id in document.retiredTemplateIds }
             .mapIndexed { index, asset -> RankedAsset(asset, index) }
         val prebuilt = indexed.filter { ranked ->
-            ranked.asset.type == "prebuilt" &&
-                ranked.asset.embeddedText?.let(ExpressionQueryMatching::normalize) == normalizedQuery
+            ranked.asset.type == "prebuilt" && (
+                ranked.asset.embeddedText?.let(ExpressionQueryMatching::normalize) == normalizedQuery ||
+                    (ranked.asset.sourceType == "owner-upload" && ranked.asset.keywords.any {
+                        ExpressionQueryMatching.normalize(it) == normalizedQuery
+                    })
+                )
         }
         if (prebuilt.isNotEmpty()) return rank(prebuilt, limit)
         val related = indexed.filter { it.asset.type == "prebuilt" }
@@ -60,7 +65,7 @@ class ExpressionCatalog(
         val text = ExpressionQueryMatching.normalize(query)
         if (text.isEmpty()) return emptyList()
         return document.templates.filter {
-            it.type == "synthesis-template" && it.format == "gif" && it.embeddedText.isNullOrBlank() &&
+            it.id !in document.retiredTemplateIds && it.type == "synthesis-template" && it.format == "gif" && it.embeddedText.isNullOrBlank() &&
                 it.textSafeArea != null && it.layout != null
         }.sortedByDescending { ExpressionQueryMatching.score(text, it.keywords) }
     }
@@ -80,10 +85,14 @@ class ExpressionCatalog(
     fun findCombination(firstId: String, secondId: String): EmojiCombination? =
         document.emojiCombinations.firstOrNull { it.key == "${firstId}__${secondId}" }
 
-    fun merge(remote: ExpressionCatalogDocument): ExpressionCatalog = ExpressionCatalog(
+    fun merge(remote: ExpressionCatalogDocument): ExpressionCatalog = if (remote.complete) {
+        ExpressionCatalog(remote.copy(templates = remote.templates.filterNot { it.id in remote.retiredTemplateIds }))
+    } else ExpressionCatalog(
         ExpressionCatalogDocument(
             version = remote.version,
-            templates = mergeBy(document.templates, remote.templates) { it.id },
+            templates = mergeBy(document.templates, remote.templates) { it.id }
+                .filterNot { it.id in document.retiredTemplateIds || it.id in remote.retiredTemplateIds },
+            retiredTemplateIds = (document.retiredTemplateIds + remote.retiredTemplateIds).distinct(),
             emojiBases = mergeBy(document.emojiBases, remote.emojiBases) { it.id },
             emojiCombinations = mergeBy(
                 document.emojiCombinations,

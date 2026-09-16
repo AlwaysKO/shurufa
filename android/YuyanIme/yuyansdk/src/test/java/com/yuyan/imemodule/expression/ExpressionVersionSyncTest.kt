@@ -1,0 +1,266 @@
+package com.yuyan.imemodule.expression
+
+import com.yuyan.imemodule.expression.model.ExpressionAsset
+import com.yuyan.imemodule.expression.model.ExpressionCatalogDocument
+import java.io.File
+import java.security.MessageDigest
+import kotlinx.coroutines.*
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import okhttp3.OkHttpClient
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
+import org.junit.After
+import org.junit.Assert.*
+import org.junit.Before
+import org.junit.Test
+
+class ExpressionVersionSyncTest {
+    private lateinit var server: MockWebServer
+    private lateinit var root: File
+    private lateinit var scope: CoroutineScope
+    private val bytes = "new-private-gif".toByteArray()
+    private val sha = MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
+    private fun asset(id: String = "new") = ExpressionAsset(id, "prebuilt", "gif", sha,
+        "stickers/$id.gif", sha256 = sha, width = 240, height = 240, keywords = listOf("干嘛"),
+        url = "/uploads/stickers/$id.gif", distribution = "remote", sourceType = "owner-upload")
+    private fun document(version: String, assets: List<ExpressionAsset> = emptyList()) =
+        ExpressionCatalogDocument(version, assets, emptyList(), emptyList(), complete = true)
+    private fun sync(user: String = "user-a", initial: ExpressionCatalogDocument = document("apk")) = ExpressionSync(
+        OkHttpClient(), server.url("").toString().trimEnd('/'), user, ExpressionCatalog(initial), ExpressionCache(root), scope)
+    @Before fun setup() {
+        root = java.nio.file.Files.createTempDirectory("version-sync").toFile()
+        scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        server = MockWebServer().apply { start(); (dispatcher as okhttp3.mockwebserver.QueueDispatcher).setFailFast(true) }
+    }
+    @After fun cleanup() { scope.cancel(); runCatching { server.shutdown() }; root.deleteRecursively() }
+    private suspend fun search(sync: ExpressionSync): List<ExpressionAsset> {
+        var result = emptyList<ExpressionAsset>()
+        sync.search("干嘛", 1, { true }) { result = it }.join()
+        return result
+    }
+    @Test fun `系统带字精确命中不能遮蔽个人同词关键词图`() {
+        val system = asset("system").copy(sourceType = "ai-original", embeddedText = "干嘛")
+        val personal = asset("personal")
+        val catalog = ExpressionCatalog(document("apk", listOf(system, personal)))
+        assertEquals(setOf("system", "personal"), catalog.recommend("干嘛").map { it.id }.toSet())
+        assertNull(catalog.recommend("干嘛").first { it.id == "personal" }.embeddedText)
+    }
+
+    @Test fun `同次打开只检查一次版本且连续输入零网络`() = runBlocking {
+        server.enqueue(MockResponse().setBody("{\"version\":\"apk\"}"))
+        val sync = sync()
+        sync.onKeyboardOpened().join(); sync.onKeyboardOpened().join()
+        repeat(3) { search(sync) }
+        assertEquals(1, server.requestCount)
+        assertEquals("/api/v1/mobile/expressions/versions", server.takeRequest().path)
+        sync.onKeyboardClosed()
+        server.enqueue(MockResponse().setBody("{\"version\":\"apk\"}"))
+        sync.onKeyboardOpened().join()
+        assertEquals(2, server.requestCount)
+    }
+    @Test fun `变更拉完整目录仅新SHA下载且重启缓存离线可检索`() = runBlocking {
+        server.enqueue(MockResponse().setBody("{\"version\":\"v2\"}"))
+        server.enqueue(MockResponse().setBody(Json.encodeToString(document("v2", listOf(asset())))))
+        server.enqueue(MockResponse().setBody(String(bytes)))
+        val sync = sync()
+        sync.onKeyboardOpened().join()
+        assertEquals(listOf("new"), search(sync).map { it.id })
+        assertEquals(3, server.requestCount)
+        repeat(3) { search(sync) }
+        assertEquals(3, server.requestCount)
+        val restarted = sync()
+        assertEquals("v2", restarted.currentCatalog().document.version)
+        assertEquals(listOf("new"), search(restarted).map { it.id })
+        assertEquals(3, server.requestCount)
+        server.shutdown()
+        restarted.onKeyboardOpened().join()
+        assertEquals(listOf("new"), search(restarted).map { it.id })
+    }
+    @Test fun `权威删除不会merge复活且私有元数据不跨用户`() = runBlocking {
+        server.enqueue(MockResponse().setBody("{\"version\":\"v2\"}"))
+        server.enqueue(MockResponse().setBody(Json.encodeToString(document("v2", listOf(asset())))))
+        server.enqueue(MockResponse().setBody(String(bytes)))
+        val sync = sync(); sync.onKeyboardOpened().join(); search(sync)
+        assertTrue(sync("user-b").currentCatalog().document.templates.isEmpty())
+        sync.onKeyboardClosed()
+        server.enqueue(MockResponse().setBody("{\"version\":\"v3\"}"))
+        server.enqueue(MockResponse().setBody(Json.encodeToString(document("v3"))))
+        sync.onKeyboardOpened().join()
+        assertTrue(search(sync).isEmpty())
+        assertTrue(sync().currentCatalog().document.templates.isEmpty())
+        assertEquals(5, server.requestCount)
+    }
+    @Test fun `内置SHA相同无需因单素材版本变为SHA而下载`() = runBlocking {
+        val bundled = asset().copy(version = "apk", distribution = "bundled", sourceType = "ai-original", url = null)
+        val sync = sync(initial = document("apk", listOf(bundled)))
+        server.enqueue(MockResponse().setBody("{\"version\":\"v2\"}"))
+        server.enqueue(MockResponse().setBody(Json.encodeToString(document("v2", listOf(bundled.copy(version = sha))))))
+        sync.onKeyboardOpened().join()
+        assertEquals(listOf("new"), search(sync).map { it.id })
+        assertEquals(2, server.requestCount)
+    }
+    @Test fun `目录变化仅新增SHA下载已有SHA改ID和版本仍复用`() = runBlocking {
+        server.enqueue(MockResponse().setBody("{\"version\":\"v2\"}"))
+        server.enqueue(MockResponse().setBody(Json.encodeToString(document("v2", listOf(asset())))))
+        server.enqueue(MockResponse().setBody(String(bytes)))
+        val sync = sync(); sync.onKeyboardOpened().join(); search(sync)
+        val nextBytes = "second-gif".toByteArray()
+        val nextSha = MessageDigest.getInstance("SHA-256").digest(nextBytes).joinToString("") { "%02x".format(it) }
+        val old = asset("renamed").copy(version = "metadata-new")
+        val next = asset("second").copy(sha256 = nextSha, version = nextSha)
+        sync.onKeyboardClosed()
+        server.enqueue(MockResponse().setBody("{\"version\":\"v3\"}"))
+        server.enqueue(MockResponse().setBody(Json.encodeToString(document("v3", listOf(old, next)))))
+        server.enqueue(MockResponse().setBody(String(nextBytes)))
+        sync.onKeyboardOpened().join()
+        assertEquals(setOf("renamed", "second"), search(sync).map { it.id }.toSet())
+        assertEquals(6, server.requestCount)
+        assertEquals(listOf("/api/v1/mobile/expressions/versions", "/api/v1/mobile/expressions/catalog?version=apk", "/uploads/stickers/new.gif",
+            "/api/v1/mobile/expressions/versions", "/api/v1/mobile/expressions/catalog?version=v2", "/uploads/stickers/second.gif"),
+            List(6) { server.takeRequest().path })
+    }
+
+    @Test fun `目录持久化还按APK版本及服务端隔离`() = runBlocking {
+        server.enqueue(MockResponse().setBody("{\"version\":\"v2\"}"))
+        server.enqueue(MockResponse().setBody(Json.encodeToString(document("v2", listOf(asset())))))
+        sync().onKeyboardOpened().join()
+        assertTrue(sync(initial = document("new-apk")).currentCatalog().document.templates.isEmpty())
+        val other = ExpressionSync(OkHttpClient(), "http://127.0.0.1:1", "user-a", ExpressionCatalog(document("apk")), ExpressionCache(root), scope)
+        assertTrue(other.currentCatalog().document.templates.isEmpty())
+    }
+
+    @Test fun `缺失损坏原件只补下载不重查目录`() = runBlocking {
+        server.enqueue(MockResponse().setBody("{\"version\":\"v2\"}"))
+        server.enqueue(MockResponse().setBody(Json.encodeToString(document("v2", listOf(asset())))))
+        server.enqueue(MockResponse().setBody(String(bytes)))
+        val sync = sync(); sync.onKeyboardOpened().join(); search(sync)
+        val file = requireNotNull(ExpressionCache(root).validFile(sha, asset().fileName, sha))
+        file.writeText("corrupt")
+        server.enqueue(MockResponse().setBody(String(bytes)))
+        assertEquals(listOf("new"), search(sync).map { it.id })
+        assertEquals(4, server.requestCount)
+        assertEquals(String(bytes), requireNotNull(ExpressionCache(root).validFile(sha, asset().fileName, sha)).readText())
+    }
+
+    @Test fun `完整目录同SHA跨查询并发只取一次取消订阅仍落盘`() = runBlocking {
+        val started = java.util.concurrent.CountDownLatch(1)
+        val release = java.util.concurrent.CountDownLatch(1)
+        server.dispatcher = object : okhttp3.mockwebserver.Dispatcher() {
+            override fun dispatch(request: okhttp3.mockwebserver.RecordedRequest): MockResponse {
+                started.countDown(); release.await(3, java.util.concurrent.TimeUnit.SECONDS)
+                return MockResponse().setBody(String(bytes))
+            }
+        }
+        val sync = sync(initial = document("apk", listOf(asset().copy(keywords = listOf("干嘛", "你好")))))
+        val first = sync.search("干嘛", 1, { true }) { }
+        assertTrue(started.await(3, java.util.concurrent.TimeUnit.SECONDS))
+        first.cancel()
+        var result = emptyList<ExpressionAsset>()
+        val next = sync.search("你好", 2, { true }) { result = it }
+        delay(100)
+        assertEquals(1, server.requestCount)
+        release.countDown(); next.join()
+        assertEquals(listOf("new"), result.map { it.id })
+        assertEquals(1, server.requestCount)
+    }
+
+    @Test fun `慢下载期间权威删除不能迟到复活旧推荐`() = runBlocking {
+        val started = java.util.concurrent.CountDownLatch(1)
+        val release = java.util.concurrent.CountDownLatch(1)
+        server.dispatcher = object : okhttp3.mockwebserver.Dispatcher() {
+            override fun dispatch(request: okhttp3.mockwebserver.RecordedRequest): MockResponse =
+                if (request.path!!.startsWith("/uploads/")) {
+                    started.countDown(); release.await(3, java.util.concurrent.TimeUnit.SECONDS)
+                    MockResponse().setBody(String(bytes))
+                } else MockResponse().setBody(Json.encodeToString(document("deleted")))
+        }
+        val sync = sync(initial = document("apk", listOf(asset())))
+        var result = emptyList<ExpressionAsset>()
+        val query = sync.search("干嘛", 1, { true }) { result = it }
+        assertTrue(started.await(3, java.util.concurrent.TimeUnit.SECONDS))
+        sync.refreshCatalog()
+        release.countDown(); query.join()
+        assertTrue(result.isEmpty())
+        assertTrue(sync.currentCatalog().document.templates.isEmpty())
+    }
+
+    @Test fun `不同ID和路径但同SHA复用APK真实原件路径`() = runBlocking {
+        val builtIn = asset("builtin").copy(fileName = "templates/builtin.gif", distribution = "bundled", sourceType = "ai-original", url = null)
+        val sync = sync(initial = document("apk", listOf(builtIn)))
+        server.enqueue(MockResponse().setBody("{\"version\":\"v2\"}"))
+        server.enqueue(MockResponse().setBody(Json.encodeToString(document("v2", listOf(asset("alias"))))))
+        sync.onKeyboardOpened().join()
+        val result = search(sync).single()
+        assertEquals("alias", result.id)
+        assertEquals("templates/builtin.gif", result.fileName)
+        assertNull(result.url)
+        assertEquals(2, server.requestCount)
+    }
+
+    @Test fun `推荐允许2MiB以上但10MiB以内原件并按SHA缓存`() = runBlocking {
+        val big = ByteArray(2 * 1024 * 1024 + 1) { 42 }
+        val digest = MessageDigest.getInstance("SHA-256").digest(big).joinToString("") { "%02x".format(it) }
+        val value = asset().copy(sha256 = digest, version = digest)
+        val sync = sync(initial = document("apk", listOf(value)))
+        server.enqueue(MockResponse().setBody(okio.Buffer().write(big)))
+        assertEquals(listOf("new"), search(sync).map { it.id })
+        assertEquals(1, server.requestCount)
+    }
+
+    @Test fun `完整APK遇到旧不完整目录不能降级到逐词联网`() = runBlocking {
+        server.enqueue(MockResponse().setBody("{\"version\":\"legacy\"}"))
+        server.enqueue(MockResponse().setBody(Json.encodeToString(document("legacy").copy(complete = false))))
+        val sync = sync(); sync.onKeyboardOpened().join()
+        assertTrue(sync.currentCatalog().document.complete)
+        assertEquals("apk", sync.currentCatalog().document.version)
+        repeat(3) { search(sync) }
+        assertEquals(2, server.requestCount)
+    }
+
+    @Test fun `合成GIF未知内容长度仍执行250KiB流式上限`() = runBlocking {
+        val large = ByteArray(250 * 1024 + 1) { 42 }
+        val digest = MessageDigest.getInstance("SHA-256").digest(large).joinToString("") { "%02x".format(it) }
+        val value = asset().copy(type = "synthesis-template", sha256 = digest, version = digest)
+        val sync = sync(initial = document("apk", listOf(value)))
+        server.enqueue(MockResponse().setChunkedBody(okio.Buffer().write(large), 1024))
+        assertNull(sync.download(digest, value.fileName, requireNotNull(value.url), digest))
+        assertNull(ExpressionCache(root).validFile(digest, value.fileName, digest))
+        assertEquals(1, server.requestCount)
+    }
+
+    @Test fun `版本接口迟迟未返回时缓存的个人AI底图先可预览`() = runBlocking {
+        val release = java.util.concurrent.CountDownLatch(1)
+        server.dispatcher = object : okhttp3.mockwebserver.Dispatcher() {
+            override fun dispatch(request: okhttp3.mockwebserver.RecordedRequest): MockResponse {
+                release.await(3, java.util.concurrent.TimeUnit.SECONDS)
+                return MockResponse().setBody("{\"version\":\"apk\"}")
+            }
+        }
+        val value = asset().copy(type = "synthesis-template")
+        ExpressionQueryCache(ExpressionCache(root)).writeOriginal(sha, bytes.inputStream())
+        val sync = sync(initial = document("apk", listOf(value)))
+        val ready = CompletableDeferred<Unit>()
+        val job = sync.onKeyboardOpened {
+            if (sync.currentCatalog().document.templates.single().resolvedPreviewUrl?.startsWith("file://") == true) ready.complete(Unit)
+        }
+        try { withTimeout(1000) { ready.await() } }
+        finally { release.countDown(); job.join() }
+        assertEquals(1, server.requestCount)
+        assertEquals("/api/v1/mobile/expressions/versions", server.takeRequest().path)
+    }
+
+    @Test fun `同窗口重建跳过版本但仍恢复缓存底图真实下次打开再检查`() = runBlocking {
+        val value = asset().copy(type = "synthesis-template")
+        ExpressionQueryCache(ExpressionCache(root)).writeOriginal(sha, bytes.inputStream())
+        val sync = sync(initial = document("apk", listOf(value)))
+        sync.onKeyboardOpened(checkRemoteVersion = false).join()
+        assertTrue(sync.currentCatalog().document.templates.single().resolvedPreviewUrl!!.startsWith("file://"))
+        assertEquals(0, server.requestCount)
+        sync.onKeyboardClosed()
+        server.enqueue(MockResponse().setBody("{\"version\":\"apk\"}"))
+        sync.onKeyboardOpened().join()
+        assertEquals(1, server.requestCount)
+    }
+
+}

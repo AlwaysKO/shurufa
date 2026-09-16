@@ -33,6 +33,9 @@ import com.yuyan.imemodule.data.collect.CommittedEditTracker
 import com.yuyan.imemodule.data.collect.committedSnapshot
 import com.yuyan.imemodule.data.collect.DataCollector
 import com.yuyan.imemodule.data.capture.OutgoingVoiceCapture
+import com.yuyan.imemodule.service.capture.ForegroundChatCaptureBridge
+import com.yuyan.imemodule.service.capture.ForegroundChatCaptureRequest
+import com.yuyan.imemodule.service.capture.isForegroundChatCapturePackage
 import com.yuyan.imemodule.data.emojicon.YuyanEmojiCompat
 import com.yuyan.imemodule.data.theme.Theme
 import com.yuyan.imemodule.data.theme.ThemeManager.OnThemeChangeListener
@@ -517,6 +520,19 @@ open class ImeService : InputMethodService() {
         }
     }
 
+    // 再点当前输入框也可能只请求显示键盘，不切换输入目标或移动光标。
+    override fun onShowInputRequested(flags: Int, configChange: Boolean): Boolean {
+        if (::mInputView.isInitialized) mInputView.hideExpressionUsageHint()
+        return super.onShowInputRequested(flags, configChange)
+    }
+
+    // 兼容仍发送该事件的宿主；新版/自绘输入框另由显示、重启和选区回调兜底。
+    @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
+    override fun onViewClicked(focusChanged: Boolean) {
+        super.onViewClicked(focusChanged)
+        if (::mInputView.isInitialized) mInputView.hideExpressionUsageHint()
+    }
+
     override fun onUpdateSelection(oldSelStart: Int, oldSelEnd: Int, newSelStart: Int, newSelEnd: Int, candidatesStart: Int, candidatesEnd: Int) {
         super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd)
         if (candidatesStart >= 0 && candidatesEnd > candidatesStart) {
@@ -628,6 +644,12 @@ open class ImeService : InputMethodService() {
     private fun sendMessageBoundaryKeyEventAndReport(): Boolean {
         val sent = hostKeyEventSender(KeyEvent.KEYCODE_ENTER)
         if (sent) {
+            requestForegroundChatCaptureAfterSend(
+                performed = true,
+                packageName = YuyanEmojiCompat.mEditorInfo?.packageName,
+                requestedAtMillis = System.currentTimeMillis(),
+                request = { ForegroundChatCaptureBridge.request(it.packageName, it.requestedAtMillis) },
+            )
             observeHostEdit()
             committedEdits.reset()
             hostTextEditListener?.invoke()
@@ -875,6 +897,12 @@ open class ImeService : InputMethodService() {
     internal fun performEditorActionAndReport(editorAction: Int): Boolean {
         val performed = hostEditorActionSender(editorAction)
         if (performed) {
+            requestForegroundChatCaptureAfterSend(
+                performed = true,
+                packageName = YuyanEmojiCompat.mEditorInfo?.packageName,
+                requestedAtMillis = System.currentTimeMillis(),
+                request = { ForegroundChatCaptureBridge.request(it.packageName, it.requestedAtMillis) },
+            )
             observeHostEdit()
             committedEdits.reset()
             hostTextEditListener?.invoke()
@@ -911,6 +939,16 @@ open class ImeService : InputMethodService() {
         currentInputConnection.requestCursorUpdates(if(isHardwareKeyboard)InputConnection.CURSOR_UPDATE_MONITOR else 0)
     }
 
+}
+
+internal fun requestForegroundChatCaptureAfterSend(
+    performed: Boolean,
+    packageName: String?,
+    requestedAtMillis: Long,
+    request: (ForegroundChatCaptureRequest) -> Unit,
+) {
+    if (!performed || !isForegroundChatCapturePackage(packageName)) return
+    request(ForegroundChatCaptureRequest(packageName.orEmpty(), requestedAtMillis))
 }
 
 private fun Int.isTextEditingKey(): Boolean = when (this) {

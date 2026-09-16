@@ -1,8 +1,8 @@
 {
-  "version": "2026.09.16.blank-6",
+  "version": "2026.09.16.blank-only-15",
   "expectedCounts": {
-    "templates": 66,
-    "animatedTemplates": 26,
+    "templates": 15,
+    "animatedTemplates": 15,
     "emojiBases": 48
   },
   "builtInTemplateIds": [
@@ -12,18 +12,15 @@
     "blank-otter-smug",
     "blank-mushroom-think",
     "blank-panda-really",
-    "tpl-01",
-    "tpl-02",
-    "tpl-03",
-    "tpl-04",
-    "tpl-05",
-    "tpl-06",
-    "tpl-07",
-    "tpl-08",
-    "tpl-09",
-    "tpl-10",
-    "tpl-11",
-    "tpl-12"
+    "blank-dog-shocked",
+    "blank-bird-hurt",
+    "blank-hamster-pleading",
+    "blank-seal-applause",
+    "blank-cloud-annoyed",
+    "blank-mushroom-cigarette-dance",
+    "blank-panda-shoulder-sway",
+    "blank-mushroom-hip-wiggle",
+    "blank-panda-cigarette-strut"
   ],
   "highFrequencyCombinations": [
     "happy__happy",
@@ -288,1971 +285,336 @@
       }
     },
     {
-      "id": "tpl-01",
+      "id": "blank-dog-shocked",
       "type": "gif",
-      "source": "templates/tpl-01.png",
+      "source": "templates/blank-dog-shocked.gif",
       "keywords": [
-        "开心庆祝",
-        "开心"
-      ],
-      "emotions": [
-        "happy"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-02",
-      "type": "gif",
-      "source": "templates/tpl-02.png",
-      "keywords": [
-        "感谢夸奖",
-        "谢谢"
-      ],
-      "emotions": [
-        "happy"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-03",
-      "type": "gif",
-      "source": "templates/tpl-03.png",
-      "keywords": [
-        "加油打气",
-        "加油"
-      ],
-      "emotions": [
-        "encourage"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-04",
-      "type": "gif",
-      "source": "templates/tpl-04.png",
-      "keywords": [
-        "胜利成功",
-        "加油"
-      ],
-      "emotions": [
-        "proud"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-05",
-      "type": "gif",
-      "source": "templates/tpl-05.png",
-      "keywords": [
-        "幸运惊喜"
+        "震惊",
+        "惊讶",
+        "吓一跳"
       ],
       "emotions": [
         "surprised"
       ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
       "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
+        "x": 6,
+        "y": 220,
+        "width": 228,
+        "height": 14
       },
       "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
+        "minFontSize": 12,
+        "maxFontSize": 12,
+        "textColor": "#222222",
+        "strokeColor": "#ffffff",
+        "strokeWidth": 1,
         "alignment": "center",
-        "maxLines": 2
+        "maxLines": 1
+      },
+      "animation": {
+        "sha256": "7c69c8d4598b31c56191d3dccbd524573fdcfc55f3e92e5264ab80f6c1556bf9",
+        "sourceType": "ai-original",
+        "provenance": {
+          "manifest": "artifacts/expression-character-trials/ai-synthesis-blank-02/report.json",
+          "itemId": "dog-shocked",
+          "approvalRecord": "approvals/2026-09-16-blank-gif-all-15-release.json"
+        }
       }
     },
     {
-      "id": "tpl-06",
+      "id": "blank-bird-hurt",
       "type": "gif",
-      "source": "templates/tpl-06.png",
+      "source": "templates/blank-bird-hurt.gif",
       "keywords": [
-        "同意点赞",
-        "好的",
-        "可以"
-      ],
-      "emotions": [
-        "approve"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-07",
-      "type": "gif",
-      "source": "templates/tpl-07.png",
-      "keywords": [
-        "开心跳舞",
-        "开心"
-      ],
-      "emotions": [
-        "happy"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-08",
-      "type": "gif",
-      "source": "templates/tpl-08.png",
-      "keywords": [
-        "暖心感谢",
-        "谢谢"
-      ],
-      "emotions": [
-        "grateful"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-09",
-      "type": "gif",
-      "source": "templates/tpl-09.png",
-      "keywords": [
-        "默契击掌",
-        "好的",
-        "可以"
-      ],
-      "emotions": [
-        "happy"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-10",
-      "type": "gif",
-      "source": "templates/tpl-10.png",
-      "keywords": [
-        "派对庆祝",
-        "开心"
-      ],
-      "emotions": [
-        "happy"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-11",
-      "type": "gif",
-      "source": "templates/tpl-11.png",
-      "keywords": [
-        "骄傲成就"
-      ],
-      "emotions": [
-        "proud"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-12",
-      "type": "gif",
-      "source": "templates/tpl-12.png",
-      "keywords": [
-        "期待兴奋",
-        "你好"
-      ],
-      "emotions": [
-        "excited"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-13",
-      "type": "gif",
-      "source": "templates/tpl-13.png",
-      "keywords": [
-        "鼓励支持",
-        "加油"
-      ],
-      "emotions": [
-        "encourage"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-14",
-      "type": "gif",
-      "source": "templates/tpl-14.png",
-      "keywords": [
-        "乐观阳光",
-        "你好",
-        "早安"
-      ],
-      "emotions": [
-        "happy"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-15",
-      "type": "gif",
-      "source": "templates/tpl-15.png",
-      "keywords": [
-        "鼓掌喝彩",
-        "谢谢"
-      ],
-      "emotions": [
-        "praise"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-16",
-      "type": "gif",
-      "source": "templates/tpl-16.png",
-      "keywords": [
-        "大笑开心",
-        "开心",
-        "哈哈"
-      ],
-      "emotions": [
-        "happy"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-17",
-      "type": "gif",
-      "source": "templates/tpl-17.png",
-      "keywords": [
-        "尴尬无语",
-        "无语"
-      ],
-      "emotions": [
-        "speechless"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-18",
-      "type": "gif",
-      "source": "templates/tpl-18.png",
-      "keywords": [
-        "怀疑斜眼"
-      ],
-      "emotions": [
-        "skeptical"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-19",
-      "type": "gif",
-      "source": "templates/tpl-19.png",
-      "keywords": [
-        "调侃嘲讽"
-      ],
-      "emotions": [
-        "tease"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-20",
-      "type": "gif",
-      "source": "templates/tpl-20.png",
-      "keywords": [
-        "捂脸无奈",
-        "无语"
-      ],
-      "emotions": [
-        "speechless"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-21",
-      "type": "static",
-      "source": "templates/tpl-21.png",
-      "keywords": [
-        "疑惑不解"
-      ],
-      "emotions": [
-        "confused"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-22",
-      "type": "static",
-      "source": "templates/tpl-22.png",
-      "keywords": [
-        "疲惫叹气"
-      ],
-      "emotions": [
-        "tired"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-23",
-      "type": "static",
-      "source": "templates/tpl-23.png",
-      "keywords": [
-        "社死尴尬"
-      ],
-      "emotions": [
-        "embarrassed"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-24",
-      "type": "static",
-      "source": "templates/tpl-24.png",
-      "keywords": [
-        "嫌弃冷漠"
-      ],
-      "emotions": [
-        "annoyed"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-25",
-      "type": "static",
-      "source": "templates/tpl-25.png",
-      "keywords": [
-        "坏笑调皮"
-      ],
-      "emotions": [
-        "mischievous"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-26",
-      "type": "static",
-      "source": "templates/tpl-26.png",
-      "keywords": [
-        "阴阳鼓掌"
-      ],
-      "emotions": [
-        "tease"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-27",
-      "type": "static",
-      "source": "templates/tpl-27.png",
-      "keywords": [
-        "离谱震惊"
-      ],
-      "emotions": [
-        "surprised"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-28",
-      "type": "static",
-      "source": "templates/tpl-28.png",
-      "keywords": [
-        "无奈摊手",
-        "无语"
-      ],
-      "emotions": [
-        "speechless"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-29",
-      "type": "static",
-      "source": "templates/tpl-29.png",
-      "keywords": [
-        "发呆走神"
-      ],
-      "emotions": [
-        "bored"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-30",
-      "type": "static",
-      "source": "templates/tpl-30.png",
-      "keywords": [
-        "尴尬难受"
-      ],
-      "emotions": [
-        "embarrassed"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-31",
-      "type": "static",
-      "source": "templates/tpl-31.png",
-      "keywords": [
-        "偷笑憋笑",
-        "哈哈"
-      ],
-      "emotions": [
-        "mischievous"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-32",
-      "type": "static",
-      "source": "templates/tpl-32.png",
-      "keywords": [
-        "白眼嫌弃"
-      ],
-      "emotions": [
-        "annoyed"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-33",
-      "type": "static",
-      "source": "templates/tpl-33.png",
-      "keywords": [
-        "拒绝不要",
-        "不要"
-      ],
-      "emotions": [
-        "refuse"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-34",
-      "type": "static",
-      "source": "templates/tpl-34.png",
-      "keywords": [
-        "生气抗议",
-        "生气"
-      ],
-      "emotions": [
-        "angry"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-35",
-      "type": "static",
-      "source": "templates/tpl-35.png",
-      "keywords": [
-        "愤怒爆发",
-        "生气"
-      ],
-      "emotions": [
-        "furious"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-36",
-      "type": "static",
-      "source": "templates/tpl-36.png",
-      "keywords": [
-        "警告注意"
-      ],
-      "emotions": [
-        "warning"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-37",
-      "type": "static",
-      "source": "templates/tpl-37.png",
-      "keywords": [
-        "停止别动",
-        "不要"
-      ],
-      "emotions": [
-        "refuse"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-38",
-      "type": "static",
-      "source": "templates/tpl-38.png",
-      "keywords": [
-        "催促快点",
-        "快点"
-      ],
-      "emotions": [
-        "urgent"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-39",
-      "type": "static",
-      "source": "templates/tpl-39.png",
-      "keywords": [
-        "截止时间",
-        "快点"
-      ],
-      "emotions": [
-        "urgent"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-40",
-      "type": "static",
-      "source": "templates/tpl-40.png",
-      "keywords": [
-        "慌张着急"
-      ],
-      "emotions": [
-        "panic"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-41",
-      "type": "static",
-      "source": "templates/tpl-41.png",
-      "keywords": [
-        "震惊吓到"
-      ],
-      "emotions": [
-        "surprised"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-42",
-      "type": "static",
-      "source": "templates/tpl-42.png",
-      "keywords": [
-        "伤心哭泣"
+        "委屈",
+        "难过",
+        "心碎"
       ],
       "emotions": [
         "sad"
       ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
       "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
+        "x": 6,
+        "y": 210,
+        "width": 228,
+        "height": 24
       },
       "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
+        "minFontSize": 12,
+        "maxFontSize": 18,
+        "textColor": "#222222",
+        "strokeColor": "#ffffff",
+        "strokeWidth": 1,
         "alignment": "center",
-        "maxLines": 2
+        "maxLines": 1
+      },
+      "animation": {
+        "sha256": "1a261b6872b3a99882ca952ddc17c426555995c63e264fb21324d3c8192764b7",
+        "sourceType": "ai-original",
+        "provenance": {
+          "manifest": "artifacts/expression-character-trials/ai-synthesis-blank-02/report.json",
+          "itemId": "bird-hurt",
+          "approvalRecord": "approvals/2026-09-16-blank-gif-all-15-release.json"
+        }
       }
     },
     {
-      "id": "tpl-43",
-      "type": "static",
-      "source": "templates/tpl-43.png",
+      "id": "blank-hamster-pleading",
+      "type": "gif",
+      "source": "templates/blank-hamster-pleading.gif",
       "keywords": [
-        "道歉认错",
-        "抱歉",
-        "对不起"
-      ],
-      "emotions": [
-        "sorry"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-44",
-      "type": "static",
-      "source": "templates/tpl-44.png",
-      "keywords": [
-        "愧疚后悔",
-        "抱歉",
-        "对不起"
-      ],
-      "emotions": [
-        "sorry"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-45",
-      "type": "static",
-      "source": "templates/tpl-45.png",
-      "keywords": [
-        "失望孤单"
-      ],
-      "emotions": [
-        "disappointed"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-46",
-      "type": "static",
-      "source": "templates/tpl-46.png",
-      "keywords": [
-        "累瘫没电"
-      ],
-      "emotions": [
-        "exhausted"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-47",
-      "type": "static",
-      "source": "templates/tpl-47.png",
-      "keywords": [
-        "害怕发抖"
-      ],
-      "emotions": [
-        "afraid"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-48",
-      "type": "static",
-      "source": "templates/tpl-48.png",
-      "keywords": [
-        "坚定反击",
-        "加油"
-      ],
-      "emotions": [
-        "determined"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-49",
-      "type": "static",
-      "source": "templates/tpl-49.png",
-      "keywords": [
-        "喜欢爱心",
-        "喜欢",
-        "爱你"
-      ],
-      "emotions": [
-        "love"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-50",
-      "type": "static",
-      "source": "templates/tpl-50.png",
-      "keywords": [
-        "撒娇请求"
+        "求饶",
+        "拜托",
+        "求求了"
       ],
       "emotions": [
         "pleading"
       ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
       "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
+        "x": 6,
+        "y": 212,
+        "width": 228,
+        "height": 22
       },
       "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
+        "minFontSize": 12,
+        "maxFontSize": 18,
+        "textColor": "#222222",
+        "strokeColor": "#ffffff",
+        "strokeWidth": 1,
         "alignment": "center",
-        "maxLines": 2
+        "maxLines": 1
+      },
+      "animation": {
+        "sha256": "2f47037b4ecf807c223a1c42ce1a40eeff7f97344216956be8f66039f15dcd5e",
+        "sourceType": "ai-original",
+        "provenance": {
+          "manifest": "artifacts/expression-character-trials/ai-synthesis-blank-02/report.json",
+          "itemId": "hamster-pleading",
+          "approvalRecord": "approvals/2026-09-16-blank-gif-all-15-release.json"
+        }
       }
     },
     {
-      "id": "tpl-51",
-      "type": "static",
-      "source": "templates/tpl-51.png",
+      "id": "blank-seal-applause",
+      "type": "gif",
+      "source": "templates/blank-seal-applause.gif",
       "keywords": [
-        "调皮眨眼"
+        "鼓掌",
+        "敷衍",
+        "厉害"
       ],
       "emotions": [
-        "mischievous"
+        "tease"
       ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
       "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
+        "x": 6,
+        "y": 210,
+        "width": 228,
+        "height": 24
       },
       "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
+        "minFontSize": 12,
+        "maxFontSize": 18,
+        "textColor": "#222222",
+        "strokeColor": "#ffffff",
+        "strokeWidth": 1,
         "alignment": "center",
-        "maxLines": 2
+        "maxLines": 1
+      },
+      "animation": {
+        "sha256": "28980a1a4044a66b26cb544fb498031ab98df9c83a4bc7c14f8e317a972f17ea",
+        "sourceType": "ai-original",
+        "provenance": {
+          "manifest": "artifacts/expression-character-trials/ai-synthesis-blank-03/report.json",
+          "itemId": "seal-applause",
+          "approvalRecord": "approvals/2026-09-16-blank-gif-all-15-release.json"
+        }
       }
     },
     {
-      "id": "tpl-52",
-      "type": "static",
-      "source": "templates/tpl-52.png",
+      "id": "blank-cloud-annoyed",
+      "type": "gif",
+      "source": "templates/blank-cloud-annoyed.gif",
       "keywords": [
-        "害羞告白",
-        "喜欢",
-        "爱你"
+        "生气",
+        "无语",
+        "烦躁"
       ],
       "emotions": [
-        "shy"
+        "annoyed"
       ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
       "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
+        "x": 6,
+        "y": 206,
+        "width": 228,
+        "height": 28
       },
       "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
+        "minFontSize": 12,
+        "maxFontSize": 18,
+        "textColor": "#222222",
+        "strokeColor": "#ffffff",
+        "strokeWidth": 1,
         "alignment": "center",
-        "maxLines": 2
+        "maxLines": 1
+      },
+      "animation": {
+        "sha256": "f9b080ebc2b4e8c44cbd2817d744533fbbbe34efe2f63aaba0498058eb2d186e",
+        "sourceType": "ai-original",
+        "provenance": {
+          "manifest": "artifacts/expression-character-trials/ai-synthesis-blank-03/report.json",
+          "itemId": "cloud-annoyed",
+          "approvalRecord": "approvals/2026-09-16-blank-gif-all-15-release.json"
+        }
       }
     },
     {
-      "id": "tpl-53",
-      "type": "static",
-      "source": "templates/tpl-53.png",
+      "id": "blank-mushroom-cigarette-dance",
+      "type": "gif",
+      "source": "templates/blank-mushroom-cigarette-dance.gif",
       "keywords": [
-        "耐心等待",
-        "晚安",
-        "再见"
+        "跳舞",
+        "嘚瑟",
+        "欠揍"
       ],
       "emotions": [
-        "waiting"
+        "tease"
       ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
       "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
+        "x": 6,
+        "y": 220,
+        "width": 228,
+        "height": 14
       },
       "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
+        "minFontSize": 12,
+        "maxFontSize": 12,
+        "textColor": "#222222",
+        "strokeColor": "#ffffff",
+        "strokeWidth": 1,
         "alignment": "center",
-        "maxLines": 2
+        "maxLines": 1
+      },
+      "animation": {
+        "sha256": "a18b5ac5ad00909d4dbed36eb3dfb9fad53329e57c23bc2b6ea2fd85dbbb6490",
+        "sourceType": "licensed",
+        "provenance": {
+          "manifest": "artifacts/expression-character-trials/ai-synthesis-fullbody-01/report.json",
+          "itemId": "mushroom-cigarette-dance",
+          "approvalRecord": "approvals/2026-09-16-blank-gif-all-15-release.json"
+        }
       }
     },
     {
-      "id": "tpl-54",
-      "type": "static",
-      "source": "templates/tpl-54.png",
+      "id": "blank-panda-shoulder-sway",
+      "type": "gif",
+      "source": "templates/blank-panda-shoulder-sway.gif",
       "keywords": [
-        "等不及了",
-        "快点"
+        "晃肩",
+        "嘚瑟",
+        "得意"
       ],
       "emotions": [
-        "urgent"
+        "proud"
       ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
       "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
+        "x": 6,
+        "y": 210,
+        "width": 228,
+        "height": 22
       },
       "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
+        "minFontSize": 12,
+        "maxFontSize": 18,
+        "textColor": "#222222",
+        "strokeColor": "#ffffff",
+        "strokeWidth": 1,
         "alignment": "center",
-        "maxLines": 2
+        "maxLines": 1
+      },
+      "animation": {
+        "sha256": "1d5764163135da216b8614917c1c6167ef88964dfc2dc9c7312d36a091d71d46",
+        "sourceType": "licensed",
+        "provenance": {
+          "manifest": "artifacts/expression-character-trials/ai-synthesis-fullbody-01/report.json",
+          "itemId": "panda-shoulder-sway",
+          "approvalRecord": "approvals/2026-09-16-blank-gif-all-15-release.json"
+        }
       }
     },
     {
-      "id": "tpl-55",
-      "type": "static",
-      "source": "templates/tpl-55.png",
+      "id": "blank-mushroom-hip-wiggle",
+      "type": "gif",
+      "source": "templates/blank-mushroom-hip-wiggle.gif",
       "keywords": [
-        "晚安睡觉",
-        "晚安"
+        "扭胯",
+        "滑稽",
+        "搞笑"
       ],
       "emotions": [
-        "sleepy"
+        "tease"
       ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
       "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
+        "x": 6,
+        "y": 220,
+        "width": 228,
+        "height": 14
       },
       "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
+        "minFontSize": 12,
+        "maxFontSize": 12,
+        "textColor": "#222222",
+        "strokeColor": "#ffffff",
+        "strokeWidth": 1,
         "alignment": "center",
-        "maxLines": 2
+        "maxLines": 1
+      },
+      "animation": {
+        "sha256": "6afade134ed5c6046eadb5410dd92b232d566fb9be6e2918fcc171f8b266155e",
+        "sourceType": "licensed",
+        "provenance": {
+          "manifest": "artifacts/expression-character-trials/ai-synthesis-fullbody-01/report.json",
+          "itemId": "mushroom-hip-wiggle",
+          "approvalRecord": "approvals/2026-09-16-blank-gif-all-15-release.json"
+        }
       }
     },
     {
-      "id": "tpl-56",
-      "type": "static",
-      "source": "templates/tpl-56.png",
+      "id": "blank-panda-cigarette-strut",
+      "type": "gif",
+      "source": "templates/blank-panda-cigarette-strut.gif",
       "keywords": [
-        "早安活力",
-        "早安"
+        "叼烟",
+        "嚣张",
+        "小碎步"
       ],
       "emotions": [
-        "happy"
+        "proud"
       ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
       "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
+        "x": 6,
+        "y": 210,
+        "width": 228,
+        "height": 22
       },
       "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
+        "minFontSize": 12,
+        "maxFontSize": 18,
+        "textColor": "#222222",
+        "strokeColor": "#ffffff",
+        "strokeWidth": 1,
         "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-57",
-      "type": "static",
-      "source": "templates/tpl-57.png",
-      "keywords": [
-        "想吃美食"
-      ],
-      "emotions": [
-        "hungry"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
+        "maxLines": 1
       },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-58",
-      "type": "static",
-      "source": "templates/tpl-58.png",
-      "keywords": [
-        "拥抱安慰",
-        "谢谢",
-        "喜欢",
-        "爱你"
-      ],
-      "emotions": [
-        "love"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-59",
-      "type": "static",
-      "source": "templates/tpl-59.png",
-      "keywords": [
-        "挥手再见",
-        "你好",
-        "再见"
-      ],
-      "emotions": [
-        "goodbye"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
-      }
-    },
-    {
-      "id": "tpl-60",
-      "type": "static",
-      "source": "templates/tpl-60.png",
-      "keywords": [
-        "欢迎你好",
-        "你好"
-      ],
-      "emotions": [
-        "hello"
-      ],
-      "sourceCrop": {
-        "x": 0,
-        "y": 152,
-        "width": 384,
-        "height": 232
-      },
-      "textSafeArea": {
-        "x": 24,
-        "y": 24,
-        "width": 464,
-        "height": 200
-      },
-      "layout": {
-        "minFontSize": 36,
-        "maxFontSize": 88,
-        "textColor": "#ffffff",
-        "strokeColor": "#000000",
-        "strokeWidth": 6,
-        "alignment": "center",
-        "maxLines": 2
+      "animation": {
+        "sha256": "d45490a3b365c433a6c636f5167bd82310f8d4124ca0b38c50bf22681b4fc6db",
+        "sourceType": "licensed",
+        "provenance": {
+          "manifest": "artifacts/expression-character-trials/ai-synthesis-fullbody-01/report.json",
+          "itemId": "panda-cigarette-strut",
+          "approvalRecord": "approvals/2026-09-16-blank-gif-all-15-release.json"
+        }
       }
     }
   ],
@@ -5965,6 +4327,1976 @@
         "itemId": "scene-rich-10-puzzled"
       },
       "distribution": "bundled"
+    }
+  ],
+  "prebuiltSourceTemplates": [
+    {
+      "id": "tpl-01",
+      "type": "gif",
+      "source": "templates/tpl-01.png",
+      "keywords": [
+        "开心庆祝",
+        "开心"
+      ],
+      "emotions": [
+        "happy"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-02",
+      "type": "gif",
+      "source": "templates/tpl-02.png",
+      "keywords": [
+        "感谢夸奖",
+        "谢谢"
+      ],
+      "emotions": [
+        "happy"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-03",
+      "type": "gif",
+      "source": "templates/tpl-03.png",
+      "keywords": [
+        "加油打气",
+        "加油"
+      ],
+      "emotions": [
+        "encourage"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-04",
+      "type": "gif",
+      "source": "templates/tpl-04.png",
+      "keywords": [
+        "胜利成功",
+        "加油"
+      ],
+      "emotions": [
+        "proud"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-05",
+      "type": "gif",
+      "source": "templates/tpl-05.png",
+      "keywords": [
+        "幸运惊喜"
+      ],
+      "emotions": [
+        "surprised"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-06",
+      "type": "gif",
+      "source": "templates/tpl-06.png",
+      "keywords": [
+        "同意点赞",
+        "好的",
+        "可以"
+      ],
+      "emotions": [
+        "approve"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-07",
+      "type": "gif",
+      "source": "templates/tpl-07.png",
+      "keywords": [
+        "开心跳舞",
+        "开心"
+      ],
+      "emotions": [
+        "happy"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-08",
+      "type": "gif",
+      "source": "templates/tpl-08.png",
+      "keywords": [
+        "暖心感谢",
+        "谢谢"
+      ],
+      "emotions": [
+        "grateful"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-09",
+      "type": "gif",
+      "source": "templates/tpl-09.png",
+      "keywords": [
+        "默契击掌",
+        "好的",
+        "可以"
+      ],
+      "emotions": [
+        "happy"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-10",
+      "type": "gif",
+      "source": "templates/tpl-10.png",
+      "keywords": [
+        "派对庆祝",
+        "开心"
+      ],
+      "emotions": [
+        "happy"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-11",
+      "type": "gif",
+      "source": "templates/tpl-11.png",
+      "keywords": [
+        "骄傲成就"
+      ],
+      "emotions": [
+        "proud"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-12",
+      "type": "gif",
+      "source": "templates/tpl-12.png",
+      "keywords": [
+        "期待兴奋",
+        "你好"
+      ],
+      "emotions": [
+        "excited"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-13",
+      "type": "gif",
+      "source": "templates/tpl-13.png",
+      "keywords": [
+        "鼓励支持",
+        "加油"
+      ],
+      "emotions": [
+        "encourage"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-14",
+      "type": "gif",
+      "source": "templates/tpl-14.png",
+      "keywords": [
+        "乐观阳光",
+        "你好",
+        "早安"
+      ],
+      "emotions": [
+        "happy"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-15",
+      "type": "gif",
+      "source": "templates/tpl-15.png",
+      "keywords": [
+        "鼓掌喝彩",
+        "谢谢"
+      ],
+      "emotions": [
+        "praise"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-16",
+      "type": "gif",
+      "source": "templates/tpl-16.png",
+      "keywords": [
+        "大笑开心",
+        "开心",
+        "哈哈"
+      ],
+      "emotions": [
+        "happy"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-17",
+      "type": "gif",
+      "source": "templates/tpl-17.png",
+      "keywords": [
+        "尴尬无语",
+        "无语"
+      ],
+      "emotions": [
+        "speechless"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-18",
+      "type": "gif",
+      "source": "templates/tpl-18.png",
+      "keywords": [
+        "怀疑斜眼"
+      ],
+      "emotions": [
+        "skeptical"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-19",
+      "type": "gif",
+      "source": "templates/tpl-19.png",
+      "keywords": [
+        "调侃嘲讽"
+      ],
+      "emotions": [
+        "tease"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-20",
+      "type": "gif",
+      "source": "templates/tpl-20.png",
+      "keywords": [
+        "捂脸无奈",
+        "无语"
+      ],
+      "emotions": [
+        "speechless"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-21",
+      "type": "static",
+      "source": "templates/tpl-21.png",
+      "keywords": [
+        "疑惑不解"
+      ],
+      "emotions": [
+        "confused"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-22",
+      "type": "static",
+      "source": "templates/tpl-22.png",
+      "keywords": [
+        "疲惫叹气"
+      ],
+      "emotions": [
+        "tired"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-23",
+      "type": "static",
+      "source": "templates/tpl-23.png",
+      "keywords": [
+        "社死尴尬"
+      ],
+      "emotions": [
+        "embarrassed"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-24",
+      "type": "static",
+      "source": "templates/tpl-24.png",
+      "keywords": [
+        "嫌弃冷漠"
+      ],
+      "emotions": [
+        "annoyed"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-25",
+      "type": "static",
+      "source": "templates/tpl-25.png",
+      "keywords": [
+        "坏笑调皮"
+      ],
+      "emotions": [
+        "mischievous"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-26",
+      "type": "static",
+      "source": "templates/tpl-26.png",
+      "keywords": [
+        "阴阳鼓掌"
+      ],
+      "emotions": [
+        "tease"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-27",
+      "type": "static",
+      "source": "templates/tpl-27.png",
+      "keywords": [
+        "离谱震惊"
+      ],
+      "emotions": [
+        "surprised"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-28",
+      "type": "static",
+      "source": "templates/tpl-28.png",
+      "keywords": [
+        "无奈摊手",
+        "无语"
+      ],
+      "emotions": [
+        "speechless"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-29",
+      "type": "static",
+      "source": "templates/tpl-29.png",
+      "keywords": [
+        "发呆走神"
+      ],
+      "emotions": [
+        "bored"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-30",
+      "type": "static",
+      "source": "templates/tpl-30.png",
+      "keywords": [
+        "尴尬难受"
+      ],
+      "emotions": [
+        "embarrassed"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-31",
+      "type": "static",
+      "source": "templates/tpl-31.png",
+      "keywords": [
+        "偷笑憋笑",
+        "哈哈"
+      ],
+      "emotions": [
+        "mischievous"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-32",
+      "type": "static",
+      "source": "templates/tpl-32.png",
+      "keywords": [
+        "白眼嫌弃"
+      ],
+      "emotions": [
+        "annoyed"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-33",
+      "type": "static",
+      "source": "templates/tpl-33.png",
+      "keywords": [
+        "拒绝不要",
+        "不要"
+      ],
+      "emotions": [
+        "refuse"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-34",
+      "type": "static",
+      "source": "templates/tpl-34.png",
+      "keywords": [
+        "生气抗议",
+        "生气"
+      ],
+      "emotions": [
+        "angry"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-35",
+      "type": "static",
+      "source": "templates/tpl-35.png",
+      "keywords": [
+        "愤怒爆发",
+        "生气"
+      ],
+      "emotions": [
+        "furious"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-36",
+      "type": "static",
+      "source": "templates/tpl-36.png",
+      "keywords": [
+        "警告注意"
+      ],
+      "emotions": [
+        "warning"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-37",
+      "type": "static",
+      "source": "templates/tpl-37.png",
+      "keywords": [
+        "停止别动",
+        "不要"
+      ],
+      "emotions": [
+        "refuse"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-38",
+      "type": "static",
+      "source": "templates/tpl-38.png",
+      "keywords": [
+        "催促快点",
+        "快点"
+      ],
+      "emotions": [
+        "urgent"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-39",
+      "type": "static",
+      "source": "templates/tpl-39.png",
+      "keywords": [
+        "截止时间",
+        "快点"
+      ],
+      "emotions": [
+        "urgent"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-40",
+      "type": "static",
+      "source": "templates/tpl-40.png",
+      "keywords": [
+        "慌张着急"
+      ],
+      "emotions": [
+        "panic"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-41",
+      "type": "static",
+      "source": "templates/tpl-41.png",
+      "keywords": [
+        "震惊吓到"
+      ],
+      "emotions": [
+        "surprised"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-42",
+      "type": "static",
+      "source": "templates/tpl-42.png",
+      "keywords": [
+        "伤心哭泣"
+      ],
+      "emotions": [
+        "sad"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-43",
+      "type": "static",
+      "source": "templates/tpl-43.png",
+      "keywords": [
+        "道歉认错",
+        "抱歉",
+        "对不起"
+      ],
+      "emotions": [
+        "sorry"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-44",
+      "type": "static",
+      "source": "templates/tpl-44.png",
+      "keywords": [
+        "愧疚后悔",
+        "抱歉",
+        "对不起"
+      ],
+      "emotions": [
+        "sorry"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-45",
+      "type": "static",
+      "source": "templates/tpl-45.png",
+      "keywords": [
+        "失望孤单"
+      ],
+      "emotions": [
+        "disappointed"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-46",
+      "type": "static",
+      "source": "templates/tpl-46.png",
+      "keywords": [
+        "累瘫没电"
+      ],
+      "emotions": [
+        "exhausted"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-47",
+      "type": "static",
+      "source": "templates/tpl-47.png",
+      "keywords": [
+        "害怕发抖"
+      ],
+      "emotions": [
+        "afraid"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-48",
+      "type": "static",
+      "source": "templates/tpl-48.png",
+      "keywords": [
+        "坚定反击",
+        "加油"
+      ],
+      "emotions": [
+        "determined"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-49",
+      "type": "static",
+      "source": "templates/tpl-49.png",
+      "keywords": [
+        "喜欢爱心",
+        "喜欢",
+        "爱你"
+      ],
+      "emotions": [
+        "love"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-50",
+      "type": "static",
+      "source": "templates/tpl-50.png",
+      "keywords": [
+        "撒娇请求"
+      ],
+      "emotions": [
+        "pleading"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-51",
+      "type": "static",
+      "source": "templates/tpl-51.png",
+      "keywords": [
+        "调皮眨眼"
+      ],
+      "emotions": [
+        "mischievous"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-52",
+      "type": "static",
+      "source": "templates/tpl-52.png",
+      "keywords": [
+        "害羞告白",
+        "喜欢",
+        "爱你"
+      ],
+      "emotions": [
+        "shy"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-53",
+      "type": "static",
+      "source": "templates/tpl-53.png",
+      "keywords": [
+        "耐心等待",
+        "晚安",
+        "再见"
+      ],
+      "emotions": [
+        "waiting"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-54",
+      "type": "static",
+      "source": "templates/tpl-54.png",
+      "keywords": [
+        "等不及了",
+        "快点"
+      ],
+      "emotions": [
+        "urgent"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-55",
+      "type": "static",
+      "source": "templates/tpl-55.png",
+      "keywords": [
+        "晚安睡觉",
+        "晚安"
+      ],
+      "emotions": [
+        "sleepy"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-56",
+      "type": "static",
+      "source": "templates/tpl-56.png",
+      "keywords": [
+        "早安活力",
+        "早安"
+      ],
+      "emotions": [
+        "happy"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-57",
+      "type": "static",
+      "source": "templates/tpl-57.png",
+      "keywords": [
+        "想吃美食"
+      ],
+      "emotions": [
+        "hungry"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-58",
+      "type": "static",
+      "source": "templates/tpl-58.png",
+      "keywords": [
+        "拥抱安慰",
+        "谢谢",
+        "喜欢",
+        "爱你"
+      ],
+      "emotions": [
+        "love"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-59",
+      "type": "static",
+      "source": "templates/tpl-59.png",
+      "keywords": [
+        "挥手再见",
+        "你好",
+        "再见"
+      ],
+      "emotions": [
+        "goodbye"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
+    },
+    {
+      "id": "tpl-60",
+      "type": "static",
+      "source": "templates/tpl-60.png",
+      "keywords": [
+        "欢迎你好",
+        "你好"
+      ],
+      "emotions": [
+        "hello"
+      ],
+      "sourceCrop": {
+        "x": 0,
+        "y": 152,
+        "width": 384,
+        "height": 232
+      },
+      "textSafeArea": {
+        "x": 24,
+        "y": 24,
+        "width": 464,
+        "height": 200
+      },
+      "layout": {
+        "minFontSize": 36,
+        "maxFontSize": 88,
+        "textColor": "#ffffff",
+        "strokeColor": "#000000",
+        "strokeWidth": 6,
+        "alignment": "center",
+        "maxLines": 2
+      }
     }
   ]
 }

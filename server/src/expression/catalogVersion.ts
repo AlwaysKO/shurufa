@@ -1,1 +1,1 @@
-export const EXPRESSION_CATALOG_VERSION = '2026.09.16.blank-6';
+export const EXPRESSION_CATALOG_VERSION = '2026.09.16.blank-only-15';

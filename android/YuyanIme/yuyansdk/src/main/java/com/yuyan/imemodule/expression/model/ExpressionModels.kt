@@ -47,6 +47,9 @@ data class ExpressionAsset(
     @Transient val originalForRecommendation: Boolean = false,
     /** 仅决定原件分发；remote 元数据和首帧缩略图仍保留在 APK。 */
     val distribution: String = "bundled",
+    val sourceType: String? = null,
+    /** 完整目录的预览只读校验后本地文件，不能交由Glide绕过SHA缓存下载。 */
+    @Transient val localPreviewOnly: Boolean = false,
 )
 
 @Serializable
@@ -83,4 +86,6 @@ data class ExpressionCatalogDocument(
     val templates: List<ExpressionAsset>,
     val emojiBases: List<EmojiBase>,
     val emojiCombinations: List<EmojiCombination>,
+    val retiredTemplateIds: List<String> = emptyList(),
+    val complete: Boolean = false,
 )

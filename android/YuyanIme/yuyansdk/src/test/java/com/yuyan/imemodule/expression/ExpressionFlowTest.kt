@@ -279,7 +279,9 @@ class ExpressionFlowTest {
 
     @Test
     fun `候选推荐到 GIF 准备取消和单次确认形成完整链路`() = runBlocking {
-        val gif = asset("arrow-gif", "gif", keywords = listOf("放箭"))
+        val gif = asset("arrow-gif", "gif", keywords = listOf("放箭")).copy(
+            type = "prebuilt", embeddedText = "放箭", textSafeArea = null, layout = null,
+        )
         val catalog = ExpressionCatalog(document(templates = listOf(gif)))
         val panel = ExpressionPanelState()
         val sender = RecordingSender()

@@ -30,7 +30,7 @@ class ExpressionPanelState(
         get() = isRecommendationVisible
     /** 候选拼音共行内的恢复按钮；不是独立工具行。 */
     val isRecommendationActionVisible: Boolean
-        get() = chatEditor && aiStickerEnabled && (manualQuery || results.isNotEmpty())
+        get() = chatEditor && aiStickerEnabled && (manualQuery || synthesisAvailable || results.isNotEmpty())
     val isRecommendationVisible: Boolean
         get() = isContentVisible && !recommendationsHidden
     val recommendationsPaused: Boolean
@@ -46,6 +46,8 @@ class ExpressionPanelState(
     var keyboardVisible: Boolean = true
         private set
 
+    private var tabChosenByUser = false
+    private var synthesisAvailable = false
     private var manualQuery = false
     private var recommendationsHidden = false
     private var requestId = 0L
@@ -57,6 +59,7 @@ class ExpressionPanelState(
         val normalized = query.trim()
         require(normalized.isNotEmpty()) { "query must not be blank" }
         if (normalized != this.query) {
+            tabChosenByUser = false
             selectedTab = ExpressionPanelTab.RECOMMENDED
             collapse()
         }
@@ -64,6 +67,7 @@ class ExpressionPanelState(
         this.query = normalized
         this.requestId = requestId
         results = emptyList()
+        synthesisAvailable = false
         isContentVisible = false
     }
 
@@ -73,16 +77,28 @@ class ExpressionPanelState(
     fun applyResults(requestId: Long, results: List<ExpressionAsset>): Boolean {
         if (!chatEditor) return false
         if (!acceptResponse(requestId)) return false
-        this.results = results
-        isContentVisible = aiStickerEnabled && !recommendationsHidden && (manualQuery || results.isNotEmpty())
-        if (manualQuery && results.isEmpty() && selectedTab == ExpressionPanelTab.RECOMMENDED) {
+        this.results = results.filter { it.type == "prebuilt" }
+        synthesisAvailable = results.any { it.type == "synthesis-template" }
+        isContentVisible = aiStickerEnabled && !recommendationsHidden &&
+            (manualQuery || synthesisAvailable || this.results.isNotEmpty())
+        if (this.results.isEmpty() && (manualQuery || synthesisAvailable) &&
+            selectedTab == ExpressionPanelTab.RECOMMENDED) {
             selectedTab = ExpressionPanelTab.AI_SYNTHESIS
+            tabChosenByUser = false
+        }
+        if (!tabChosenByUser) {
+            if (this.results.isNotEmpty() && !manualQuery) {
+                selectedTab = ExpressionPanelTab.RECOMMENDED
+            } else if (this.results.isEmpty() && (manualQuery || synthesisAvailable)) {
+                selectedTab = ExpressionPanelTab.AI_SYNTHESIS
+            }
         }
         return true
     }
 
     fun selectTab(tab: ExpressionPanelTab) {
-        if (!aiStickerEnabled) return
+        if (!aiStickerEnabled || (tab == ExpressionPanelTab.RECOMMENDED && results.isEmpty())) return
+        tabChosenByUser = true
         selectedTab = tab
     }
 
@@ -98,7 +114,7 @@ class ExpressionPanelState(
     fun restoreRecommendations() {
         if (chatEditor && aiStickerEnabled) {
             recommendationsHidden = false
-            isContentVisible = manualQuery || results.isNotEmpty()
+            isContentVisible = manualQuery || synthesisAvailable || results.isNotEmpty()
         }
     }
 
@@ -118,7 +134,7 @@ class ExpressionPanelState(
         if (!enabled) {
             clear()
         } else {
-            isContentVisible = chatEditor && (manualQuery || results.isNotEmpty())
+            isContentVisible = chatEditor && (manualQuery || synthesisAvailable || results.isNotEmpty())
         }
     }
 
@@ -135,9 +151,11 @@ class ExpressionPanelState(
     fun clear() {
         isPreparing = false
         manualQuery = false
+        tabChosenByUser = false
         query = null
         selectedTab = ExpressionPanelTab.RECOMMENDED
         results = emptyList()
+        synthesisAvailable = false
         isContentVisible = false
         recommendationsHidden = false
         collapse()

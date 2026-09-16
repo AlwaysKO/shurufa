@@ -22,7 +22,7 @@ export interface ExpressionTextLayout {
 }
 
 export interface ExpressionAsset {
-  sourceType?: 'ai-original' | 'cc0' | 'public-domain' | 'licensed';
+  sourceType?: 'ai-original' | 'cc0' | 'public-domain' | 'licensed' | 'owner-upload';
   distribution?: 'bundled' | 'remote';
   id: string;
   type: ExpressionAssetType;

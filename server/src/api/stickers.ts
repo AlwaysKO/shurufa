@@ -1,14 +1,16 @@
+import { systemExpressionCatalog } from './expressionSnapshot.js';
+import sharp from 'sharp';
 import { Router } from 'express';
 import type express from 'express';
 import type pg from 'pg';
 import { mkdirSync, writeFileSync, unlinkSync, existsSync } from 'node:fs';
 import { join, extname } from 'node:path';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { loadStickerLibrary, rememberStickerKeywords } from './stickerLibrary.js';
 
 
 /** 表情包文件存储目录（server/uploads/stickers），由 app.ts 挂载为 /uploads 静态路径 */
-const STICKER_DIR = join(process.cwd(), 'uploads', 'stickers');
+const stickerDirectory = () => join(process.cwd(), 'uploads', 'stickers');
 
 const ALLOWED_FORMAT: Record<string, string> = {
   '.gif': 'gif',
@@ -78,6 +80,18 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
     catch (error) { next(error); }
   });
 
+  // 系统成品只删除当前用户的可见引用，保留原文件与来源证据。
+  router.delete('/system-stickers/:id', async (req, res, next) => {
+    try {
+      const asset = (await systemExpressionCatalog()).templates.find(item => item.id === req.params.id && item.type !== 'synthesis-template');
+      if (!asset || !/^[a-f0-9]{64}$/.test(asset.sha256)) return res.status(404).json({ error: 'not found' });
+      await rememberStickerKeywords(pool, res.locals.userId, asset.keywords.join(','));
+      await pool.query(`INSERT INTO keyword_gif_removal (user_id, sha256, asset_id) VALUES ($1,$2,$3)
+        ON CONFLICT (user_id, sha256) DO NOTHING`, [res.locals.userId, asset.sha256, asset.id]);
+      res.json({ ok: true });
+    } catch (error) { next(error); }
+  });
+
   router.post('/sticker-keywords', async (req, res, next) => {
     try {
       const keyword = typeof req.body?.keyword === 'string' ? req.body.keyword.trim() : '';
@@ -130,18 +144,24 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
       if (buffer.length === 0 || buffer.length > 10 * 1024 * 1024) {
         return res.status(400).json({ error: 'file size must be 0 ~ 10MB' });
       }
+      let dimensions;
+      try {
+        dimensions = await sharp(buffer, { animated: true, limitInputPixels: 100_000_000 }).metadata();
+        const detected = dimensions.format === 'jpeg' ? 'jpg' : dimensions.format;
+        if (detected !== format) return res.status(400).json({ error: 'image format does not match filename' });
+      } catch { return res.status(400).json({ error: 'invalid image' }); }
       const keywords = String(body.keywords ?? '').trim();
       if (!keywords) return res.status(400).json({ error: 'keywords required' });
 
-      mkdirSync(STICKER_DIR, { recursive: true });
+      mkdirSync(stickerDirectory(), { recursive: true });
       const fileName = `${randomUUID()}${ext}`;
-      writeFileSync(join(STICKER_DIR, fileName), buffer);
+      writeFileSync(join(stickerDirectory(), fileName), buffer);
 
       const result = await pool.query(
-        `INSERT INTO sticker (user_id, keywords, file_name, format, width, height)
-         VALUES ($1, $2, $3, $4, $5, $6)
+        `INSERT INTO sticker (user_id, keywords, file_name, format, width, height, sha256)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
          RETURNING id, keywords, file_name, format, width, height, use_count, created_at`,
-        [res.locals.userId, keywords, fileName, format, body.width ?? null, body.height ?? null],
+        [res.locals.userId, keywords, fileName, format, dimensions.width ?? null, dimensions.pageHeight ?? dimensions.height ?? null, createHash('sha256').update(buffer).digest('hex')],
       );
       const row = result.rows[0] as Record<string, unknown>;
       res.status(201).json({
@@ -196,7 +216,7 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
       );
       if (result.rowCount === 0) return res.status(404).json({ error: 'not found' });
       const fileName = (result.rows[0] as { file_name: string }).file_name;
-      const filePath = join(STICKER_DIR, fileName);
+      const filePath = join(stickerDirectory(), fileName);
       if (existsSync(filePath)) unlinkSync(filePath); // 文件已缺失时忽略，不影响删除
       res.json({ ok: true });
     } catch (err) {

@@ -56,7 +56,7 @@ manifest.templates = [...templates, ...manifest.templates.filter((t: { id: strin
 manifest.builtInTemplateIds = [...new Set([...templates.map(t => t.id), ...manifest.builtInTemplateIds])];
 manifest.expectedCounts.templates = manifest.templates.length;
 manifest.expectedCounts.animatedTemplates = manifest.templates.filter((t: { type: string }) => t.type === 'gif').length;
-manifest.version = '2026.09.16.blank-6';
+manifest.version = '2026.09.16.blank-only-6';
 await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
 await writeFile(join(root, 'server/src/expression/catalogVersion.ts'), `export const EXPRESSION_CATALOG_VERSION = '${manifest.version}';\n`);
 await writeFile(join(sourceRoot, 'approvals/2026-09-16-blank-gif-quality.json'), JSON.stringify(prepared.map(({ entry, id, sha256, audit }) => ({

@@ -245,6 +245,21 @@ export interface StickerRow {
   createdAt: string;
 }
 
+export interface SynthesisSafeArea { x: number; y: number; width: number; height: number }
+export interface SynthesisLayout {
+  minFontSize: number; maxFontSize: number; textColor: string; strokeColor: string;
+  strokeWidth: number; alignment: 'center'; maxLines: number;
+}
+export interface SynthesisAsset {
+  id: string; name: string; source: 'system' | 'personal'; deletable: boolean;
+  url: string; format: 'gif'; sha256: string; width: number; height: number;
+  textSafeArea: SynthesisSafeArea; layout: SynthesisLayout;
+}
+export interface SynthesisUpload {
+  file_base64: string; filename: string; name: string; noTextConfirmed: true;
+  rightsConfirmed: true; sourceStatement: string; textSafeArea: SynthesisSafeArea; layout: SynthesisLayout;
+}
+
 export interface LibrarySticker {
   id: string | number;
   source: 'system' | 'personal';
@@ -544,6 +559,9 @@ export const api = {
   exportData: () => get<ExportData>(`/api/v1/dashboard/export`),
   cleanup: (body: { confirm: string; scope: 'events' | 'all'; from?: string; to?: string; package_name?: string }) =>
     post<CleanupResult>(`/api/v1/dashboard/cleanup`, body),
+  synthesisLibrary: () => get<{ assets: SynthesisAsset[]; total: number }>('/api/v1/dashboard/synthesis-library'),
+  uploadSynthesisAsset: (body: SynthesisUpload) => post<{ asset: SynthesisAsset; duplicate: boolean }>('/api/v1/dashboard/synthesis-library', body),
+  deleteSynthesisAsset: (id: string) => del(`/api/v1/dashboard/synthesis-library/${encodeURIComponent(id)}`),
   stickerLibrary: () => get<StickerLibrary>('/api/v1/dashboard/sticker-library'),
   addStickerKeyword: (keyword: string) => post<{ keyword: string }>('/api/v1/dashboard/sticker-keywords', { keyword }),
   stickers: (q = '') => {
@@ -555,6 +573,7 @@ export const api = {
     post<StickerRow>(`/api/v1/dashboard/stickers`, body),
   updateStickerKeywords: (id: number, keywords: string) =>
     patch<{ ok: boolean }>(`/api/v1/dashboard/stickers/${id}`, { keywords }),
+  deleteSystemSticker: (id: string) => del(`/api/v1/dashboard/system-stickers/${encodeURIComponent(id)}`),
   deleteSticker: (id: number) => del(`/api/v1/dashboard/stickers/${id}`),
   userPhrases: (q = '') => {
     const p = new URLSearchParams();

@@ -38,7 +38,8 @@ const navGroups: NavGroup[] = [
   ] },
   { key: 'assets', label: '个人资产', icon: '◇', items: [
     { path: '/personal-dictionary', label: '个人词库与换机' },
-    { path: '/user-phrases', label: '常用语' }, { path: '/stickers', label: '表情包' },
+    { path: '/user-phrases', label: '常用语' }, { path: '/stickers', label: '关键词推荐图' },
+    { path: '/ai-synthesis', label: 'AI 合成底图' },
     { path: '/relationships', label: '关系记忆' },
   ] },
   { key: 'manage', label: '设备与数据', icon: '⚙', items: [

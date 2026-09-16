@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import * as echarts from 'echarts';
 import { api, appName, type ReportData } from '../api';
 
@@ -7,6 +7,7 @@ const type = ref<'daily' | 'weekly'>('daily');
 const dateStr = ref(todayStr());
 const data = ref<ReportData | null>(null);
 const error = ref('');
+const chartEl = ref<HTMLDivElement | null>(null);
 
 function todayStr(): string {
   const d = new Date();
@@ -59,20 +60,42 @@ function switchType(t: 'daily' | 'weekly') {
   load();
 }
 
+let requestId = 0;
 async function load() {
+  const id = ++requestId;
   try {
-    data.value = await api.report(type.value, dateStr.value);
+    const result = await api.report(type.value, dateStr.value);
+    // 快速切换日期或离开页面后，忽略过期响应。
+    if (id !== requestId) return;
+    error.value = '';
+    data.value = result;
+    // 图表容器受 v-if 控制，等待数据对应的 DOM 挂载。
+    await nextTick();
+    if (id !== requestId) return;
     renderChart();
   } catch (e) {
+    if (id !== requestId) return;
+    disposeChart();
     error.value = (e as Error).message;
   }
 }
 
 let chart: echarts.ECharts | null = null;
+function disposeChart() {
+  chart?.dispose();
+  chart = null;
+}
+
+function resizeChart() {
+  chart?.resize();
+}
+
 function renderChart() {
-  const el = document.getElementById('report-source-chart');
-  if (!el || !data.value) return;
-  chart ??= echarts.init(el);
+  if (!chartEl.value || !data.value) {
+    disposeChart();
+    return;
+  }
+  chart ??= echarts.init(chartEl.value);
   const s = data.value.source_distribution;
   chart.setOption({
     tooltip: { trigger: 'item', formatter: '{b}: {c} 字 ({d}%)' },
@@ -103,7 +126,15 @@ function locLabel(l: { address: string | null; latitude: string; longitude: stri
   return `${Number(l.latitude).toFixed(4)}, ${Number(l.longitude).toFixed(4)}`;
 }
 
-onMounted(load);
+onMounted(() => {
+  window.addEventListener('resize', resizeChart);
+  load();
+});
+onBeforeUnmount(() => {
+  ++requestId;
+  window.removeEventListener('resize', resizeChart);
+  disposeChart();
+});
 </script>
 
 <template>
@@ -145,7 +176,8 @@ onMounted(load);
 
       <div class="card">
         <h3>输入方式分布</h3>
-        <div id="report-source-chart" class="chart chart-sm"></div>
+        <div v-if="data.source_distribution.total > 0" id="report-source-chart" ref="chartEl" class="chart chart-sm"></div>
+        <div v-else class="empty chart-sm source-empty">当前时段暂无输入数据</div>
       </div>
     </div>
 
@@ -201,6 +233,7 @@ onMounted(load);
 .app-label { width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rank-num { font-size: 12px; color: #747d8c; white-space: nowrap; }
 .chart-sm { height: 240px; }
+.source-empty { display: flex; align-items: center; justify-content: center; }
 .phrase-list { list-style: none; }
 .phrase-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f2f6; font-size: 14px; }
 .phrase-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

@@ -1,0 +1,3208 @@
+{
+  "applied": true,
+  "items": [
+    {
+      "id": "play-core-pillow",
+      "sourceReport": "artifacts/expression-batches/action-01/report.json",
+      "sourceGif": "artifacts/expression-batches/action-01/gifs/play-core-pillow.gif",
+      "status": "already-present",
+      "sha256": "c3792c48b79c5db05eb2520766849842a4fa7529bf0e67dcacf3945e580aac6b"
+    },
+    {
+      "id": "play-cat-paw",
+      "sourceReport": "artifacts/expression-batches/action-01/report.json",
+      "sourceGif": "artifacts/expression-batches/action-01/gifs/play-cat-paw.gif",
+      "status": "already-present",
+      "sha256": "abd07e6d3cf535fcfdaf71d9d37245f12c83c37a03789e23865fb3fc723592d4"
+    },
+    {
+      "id": "play-person-pillow",
+      "sourceReport": "artifacts/expression-batches/action-01/report.json",
+      "sourceGif": "artifacts/expression-batches/action-01/gifs/play-person-pillow.gif",
+      "status": "already-present",
+      "sha256": "e5085112baa7e734bdc8fb7bbc3630de6815246a2a485bcf9de54890c74bda43"
+    },
+    {
+      "id": "play-clay-mitten",
+      "sourceReport": "artifacts/expression-batches/action-01/report.json",
+      "sourceGif": "artifacts/expression-batches/action-01/gifs/play-clay-mitten.gif",
+      "status": "already-present",
+      "sha256": "99b395fb5e84a11572a83c106f4b311e52f684657a76cc56c0255707458758c3"
+    },
+    {
+      "id": "chase-core-run",
+      "sourceReport": "artifacts/expression-batches/action-01/report.json",
+      "sourceGif": "artifacts/expression-batches/action-01/gifs/chase-core-run.gif",
+      "status": "already-present",
+      "sha256": "d83a763b301f5cc1649372a145738af08b25a69d0197118ffe03f85758cd92b7"
+    },
+    {
+      "id": "chase-dog-run",
+      "sourceReport": "artifacts/expression-batches/action-01/report.json",
+      "sourceGif": "artifacts/expression-batches/action-01/gifs/chase-dog-run.gif",
+      "status": "already-present",
+      "sha256": "4e2502edd4fcd69a93f386076c06fa0ac3083947dd98a3a3ffdb36a81763ba7a"
+    },
+    {
+      "id": "chase-person-run",
+      "sourceReport": "artifacts/expression-batches/action-01/report.json",
+      "sourceGif": "artifacts/expression-batches/action-01/gifs/chase-person-run.gif",
+      "status": "already-present",
+      "sha256": "763744d0d374a8262b5e42a796fe59ef332753f1a351796d530c7f730f198c90"
+    },
+    {
+      "id": "chase-plush-bird",
+      "sourceReport": "artifacts/expression-batches/action-01/report.json",
+      "sourceGif": "artifacts/expression-batches/action-01/gifs/chase-plush-bird.gif",
+      "status": "already-present",
+      "sha256": "622af9cd1ffdab9d371da1db482cdeea860731ab1ad0849147aecca17d29eb07"
+    },
+    {
+      "id": "hello-dumpling-wave",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/hello-dumpling-wave.gif",
+      "status": "already-present",
+      "sha256": "68a69bd02ee1a3aa359fe1d2ee7b1db2f64c33e9ded39e2849a9f3477fe12d4f"
+    },
+    {
+      "id": "hello-otter-peek",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/hello-otter-peek.gif",
+      "status": "already-present",
+      "sha256": "9343937ad4658b6fd1ece9835a4a2da0ad61aafc8495c3ce6716f12b0f47a7d5"
+    },
+    {
+      "id": "hello-neighbor-door",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/hello-neighbor-door.gif",
+      "status": "already-present",
+      "sha256": "86cd58cb5d335b44ce65301131441d50c7b26842a35cca547629ab32ae5582b3"
+    },
+    {
+      "id": "hello-orbit-spark",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/hello-orbit-spark.gif",
+      "status": "already-present",
+      "sha256": "080a74166c2befb6df9492d7ce5ce6cea9dd346ba1544910a752c71170ba382e"
+    },
+    {
+      "id": "hello-plush-rabbit",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/hello-plush-rabbit.gif",
+      "status": "already-present",
+      "sha256": "436a5ad8e1ec8a0681d0ecc1bca1c3f2a1ec196e7ad1d24be2991cfc649f06b9"
+    },
+    {
+      "id": "hello-ink-sparrow",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/hello-ink-sparrow.gif",
+      "status": "already-present",
+      "sha256": "59e3e1044a0032b4b0c612ca2cde5a4de7dea93d7abc9c7a9e2d57ad5c01e877"
+    },
+    {
+      "id": "hello-person-greet",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/hello-person-greet.gif",
+      "status": "already-present",
+      "sha256": "cc8254fcc9244e715911733d57f4d2ef14adf5a9141a7c9370cf9ecac70bd960"
+    },
+    {
+      "id": "hello-mailbox-pop",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/hello-mailbox-pop.gif",
+      "status": "already-present",
+      "sha256": "ae2bbb28e0fc7f993fa999a44388900a1c9f477e17231f410e49b94711184079"
+    },
+    {
+      "id": "morning-dumpling-stretch",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/morning-dumpling-stretch.gif",
+      "status": "already-present",
+      "sha256": "8f07cb8e7b9ed62f4ac3cdf2b628cbdbd77b252a42c460743f2b78029002e073"
+    },
+    {
+      "id": "morning-corgi-sun",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/morning-corgi-sun.gif",
+      "status": "already-present",
+      "sha256": "027e3e8f1257a7e923b94113ba281415c9f98866df50f0ee4a6929b419ef920d"
+    },
+    {
+      "id": "morning-coffee-worker",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/morning-coffee-worker.gif",
+      "status": "already-present",
+      "sha256": "ff980dc912b5ed275e14e531c1e3a08330ed2b5fa8a9e281fa1612e41a090b49"
+    },
+    {
+      "id": "morning-sun-unfold",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/morning-sun-unfold.gif",
+      "status": "already-present",
+      "sha256": "9d7b317884f4d089a6effefd6816fd1a7872c0b19cff5149f11810aefc5cdb55"
+    },
+    {
+      "id": "morning-clay-chick",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/morning-clay-chick.gif",
+      "status": "already-present",
+      "sha256": "062e5a74ddc407e3c4d1e9c5d8b6ab6392375f78e9d91498efe593fce76f48c0"
+    },
+    {
+      "id": "morning-sketch-rooster",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/morning-sketch-rooster.gif",
+      "status": "already-present",
+      "sha256": "39ad9f2ebb35e44430419935eede173aef2f31279bb4c559ad8822b129acf315"
+    },
+    {
+      "id": "morning-person-curtain",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/morning-person-curtain.gif",
+      "status": "already-present",
+      "sha256": "900164b2b04a96bf388baa4ba0d17c5a0e9b539bde80584e78dd1818c1782b72"
+    },
+    {
+      "id": "morning-alarm-dance",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/morning-alarm-dance.gif",
+      "status": "already-present",
+      "sha256": "571d712f61ea78c37a633a628da7bd3a7fb1efd739d7ec4a8269d9917ac5bd00"
+    },
+    {
+      "id": "night-dumpling-sleep",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/night-dumpling-sleep.gif",
+      "status": "already-present",
+      "sha256": "fecbd4cffb47b4761ea5ca6d6dc2105e0a9195b7eb725f07124dbcaea12b7e3b"
+    },
+    {
+      "id": "night-cat-curl",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/night-cat-curl.gif",
+      "status": "already-present",
+      "sha256": "ea55189ca325dd5c7100c6725138433bf1195b2c254ebff26c9eba5ca02cac03"
+    },
+    {
+      "id": "night-bedtime-reader",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/night-bedtime-reader.gif",
+      "status": "already-present",
+      "sha256": "d31797aa69dbbee6af9ba6479f0364fd8b627431d2e85c198e1444c52a62b08f"
+    },
+    {
+      "id": "night-moon-cloud",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/night-moon-cloud.gif",
+      "status": "already-present",
+      "sha256": "366bdb369f5d61c1418257be3f52f254a04c5fbd48a3965ce74ad30239913adb"
+    },
+    {
+      "id": "night-plush-bear",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/night-plush-bear.gif",
+      "status": "already-present",
+      "sha256": "3115b5defe841b3febc43fa3b1d9da6ced9bc9f9d402e440224e0bfd9cf96577"
+    },
+    {
+      "id": "night-ink-owl",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/night-ink-owl.gif",
+      "status": "already-present",
+      "sha256": "c517b6ba3932c2d68d7e22960ed28986e976af68ca8829ab63b51f1cdd908599"
+    },
+    {
+      "id": "night-person-goodnight",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/night-person-goodnight.gif",
+      "status": "already-present",
+      "sha256": "86f4264ed05cc468e25b452a8a933950dbad12dcdb2e7604ce98e6cd5e7d4268"
+    },
+    {
+      "id": "night-battery-rest",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/night-battery-rest.gif",
+      "status": "already-present",
+      "sha256": "94b4e166ee7d3369e6a2a5ff99396d895fb0cb1fdf336dc0b14182bd9072701f"
+    },
+    {
+      "id": "okay-dumpling-nod",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/okay-dumpling-nod.gif",
+      "status": "already-present",
+      "sha256": "ea576b5f0e305236cd206efde98ca2b95709b047e6b39bc347d8c6d362d9984a"
+    },
+    {
+      "id": "okay-penguin-salute",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/okay-penguin-salute.gif",
+      "status": "already-present",
+      "sha256": "8b2e81d64ea6f8a15a3a29adae80495c98b7b876aa652bd7e3b57edd5eccc934"
+    },
+    {
+      "id": "okay-courier-check",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/okay-courier-check.gif",
+      "status": "already-present",
+      "sha256": "00aa525a0e35a4107ed489c97ec0ea32c038b8b42e18b16e866abb62df4af7e8"
+    },
+    {
+      "id": "okay-check-bloom",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/okay-check-bloom.gif",
+      "status": "already-present",
+      "sha256": "900796c0054eed84bcec5683b576bedaf42894ac7241d3ecf2d3d2081a3e80ad"
+    },
+    {
+      "id": "okay-clay-seal",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/okay-clay-seal.gif",
+      "status": "already-present",
+      "sha256": "ada5e1805c76a0d0e4454e22bc5f839b9b06dbc9e3fee0f3ace86df7d05c0f2d"
+    },
+    {
+      "id": "okay-ink-worker",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/okay-ink-worker.gif",
+      "status": "already-present",
+      "sha256": "78bd787cc9840d2351c84f988d3bb5973477374bdde63e8736bf378e0e3f9393"
+    },
+    {
+      "id": "okay-person-thumbs",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/okay-person-thumbs.gif",
+      "status": "already-present",
+      "sha256": "0c2a1b60bccc5534c4ef558cef7ec741fe9eabfdecf3a9ab858c273f2031acab"
+    },
+    {
+      "id": "okay-octopus-task",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/okay-octopus-task.gif",
+      "status": "already-present",
+      "sha256": "d46429eaa6d95197578a2d196c6c910bb71a7ff948028cc42cee315fb443c3e7"
+    },
+    {
+      "id": "sorry-dumpling-apology",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/sorry-dumpling-apology.gif",
+      "status": "already-present",
+      "sha256": "f06aab3d7cd4de0c113a17e148ccf667d4a8c60a4431f3af588d22c7c7f50fe9"
+    },
+    {
+      "id": "sorry-hedgehog-sorry",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/sorry-hedgehog-sorry.gif",
+      "status": "already-present",
+      "sha256": "8984c46c5d5ca414f91beeb61e6c1ca3c7309416bfa4fef8b356419702c32f73"
+    },
+    {
+      "id": "sorry-neighbor-spill",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/sorry-neighbor-spill.gif",
+      "status": "already-present",
+      "sha256": "b3c6393216519628071e375c0d6dc3cb990206606bf3b24d361299b40e9ce83c"
+    },
+    {
+      "id": "sorry-heart-mend",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/sorry-heart-mend.gif",
+      "status": "already-present",
+      "sha256": "43a246623aa18283c549119c44e24c544a0348183f7f51237a92dcca6e4e6ce4"
+    },
+    {
+      "id": "sorry-plush-elephant",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/sorry-plush-elephant.gif",
+      "status": "already-present",
+      "sha256": "b8e0ba230db208c7e4feea09696f46f36cb62ccbc10f6682c8646b7398877dcb"
+    },
+    {
+      "id": "sorry-ink-pigeon",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/sorry-ink-pigeon.gif",
+      "status": "already-present",
+      "sha256": "3357eea56780a859d8815834ba08bbf959c8292d9ca78eff9f0b41414c42b915"
+    },
+    {
+      "id": "sorry-person-apology",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/sorry-person-apology.gif",
+      "status": "already-present",
+      "sha256": "a618a2d883e37c8ccc5ed6ff45ccb29397c22aa95a4b5cea8463bd0568613a1a"
+    },
+    {
+      "id": "sorry-flowerpot-oops",
+      "sourceReport": "artifacts/expression-batches/daily-01/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-01/gifs/sorry-flowerpot-oops.gif",
+      "status": "already-present",
+      "sha256": "8310c0efc0c02571256a4e6621afc70c2d7faa45eff2e04bb6b5984cca64bb50"
+    },
+    {
+      "id": "haha-dumpling-giggle",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/haha-dumpling-giggle.gif",
+      "status": "already-present",
+      "sha256": "d0962213b5d8987c666d18e6508877211db135f17d9eb661187b53d3a58ace58"
+    },
+    {
+      "id": "haha-redpanda-laugh",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/haha-redpanda-laugh.gif",
+      "status": "already-present",
+      "sha256": "19e73c1f1d8af96709971294db78d5a04277f4a3a5f50fcbc662293584551b40"
+    },
+    {
+      "id": "haha-office-friend",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/haha-office-friend.gif",
+      "status": "already-present",
+      "sha256": "82369ad5945cb17da8ada6397a3aad63e5a16767571374207386e558b3db24d5"
+    },
+    {
+      "id": "haha-bubble-burst",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/haha-bubble-burst.gif",
+      "status": "already-present",
+      "sha256": "85aff78a898e0d5977e6bd83fb3236a59d9367b5765f81cc3d77c2e38a140aac"
+    },
+    {
+      "id": "haha-plush-llama",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/haha-plush-llama.gif",
+      "status": "already-present",
+      "sha256": "3f1c6e26d5b9583e719ae9fd42e3ff1b706ef4c8429f46d2a65d4dd3aac3b899"
+    },
+    {
+      "id": "haha-ink-frog",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/haha-ink-frog.gif",
+      "status": "already-present",
+      "sha256": "b0019cab94235ab6c02fd3802b466bfc1294b8e66cc75a9803d9081ab0fd3285"
+    },
+    {
+      "id": "haha-person-laugh",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/haha-person-laugh.gif",
+      "status": "already-present",
+      "sha256": "6457195fc1c9b8125907dbad96d4d801f3d4315a326c446ae1b5639524330dbe"
+    },
+    {
+      "id": "haha-toaster-pop",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/haha-toaster-pop.gif",
+      "status": "already-present",
+      "sha256": "e6919199bd68fd3e2bdb813b45a04c307c23c4238501067b79a201a03f92c0a7"
+    },
+    {
+      "id": "cheer-dumpling-pump",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/cheer-dumpling-pump.gif",
+      "status": "already-present",
+      "sha256": "35b999bb3f36f596c843e0ff881e565cfe9cf2d1444267be53b14b307ee9e7d5"
+    },
+    {
+      "id": "cheer-shiba-paws",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/cheer-shiba-paws.gif",
+      "status": "already-present",
+      "sha256": "303500d851ca6a3cea18485fd4aab267a6f9eccbc9dcf8f12852908f40a1636a"
+    },
+    {
+      "id": "cheer-runner-friend",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/cheer-runner-friend.gif",
+      "status": "already-present",
+      "sha256": "039a3b9d719d806e76ce6b65f0ad11d20b0ef317b54f60e849e0394c6edd8879"
+    },
+    {
+      "id": "cheer-arrow-rise",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/cheer-arrow-rise.gif",
+      "status": "already-present",
+      "sha256": "7169266169d35fa73ac25ec128be37bb5b4718d8b9d4137050ed69011801fc4f"
+    },
+    {
+      "id": "cheer-clay-tiger",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/cheer-clay-tiger.gif",
+      "status": "already-present",
+      "sha256": "654e81c8f28e03dadd5de3c2ac39f2fa7d534228720e316d99fea2d8be4c1fef"
+    },
+    {
+      "id": "cheer-ink-bird",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/cheer-ink-bird.gif",
+      "status": "already-present",
+      "sha256": "389e1a92c0bffd41621ea95161f9ee3d0304a337e1c8c959e6878005c9f54b66"
+    },
+    {
+      "id": "cheer-person-support",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/cheer-person-support.gif",
+      "status": "already-present",
+      "sha256": "735b52bc1242070caf5d3bf812181645af956729e0e1eec1177dca61b435f2d3"
+    },
+    {
+      "id": "cheer-pencil-rocket",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/cheer-pencil-rocket.gif",
+      "status": "already-present",
+      "sha256": "8a005645e5e8bc67a2e084859cab55ea2c7f48fb966dc5fc19f60c9fe5e49ecb"
+    },
+    {
+      "id": "roger-dumpling-salute",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/roger-dumpling-salute.gif",
+      "status": "already-present",
+      "sha256": "9a5f2d165be6a5cfc7df3b1f996c0f0cb65aef4607f9620a46d806901153c39c"
+    },
+    {
+      "id": "roger-meerkat-alert",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/roger-meerkat-alert.gif",
+      "status": "already-present",
+      "sha256": "01eae09212dcb987452b09c2eecd986b3128cf6013d134f0dda86b0b5cb6bd78"
+    },
+    {
+      "id": "roger-workshop-maker",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/roger-workshop-maker.gif",
+      "status": "already-present",
+      "sha256": "d41942d8f19316efdfb7f01526a4a24d5b73fb5ba658ece07d05d9f53b9db7df"
+    },
+    {
+      "id": "roger-envelope-click",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/roger-envelope-click.gif",
+      "status": "already-present",
+      "sha256": "159f771dd9b63c2a6ce939e6b55de0159f82543dd0fbf1b8ae70b0c57d3dd094"
+    },
+    {
+      "id": "roger-plush-raccoon",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/roger-plush-raccoon.gif",
+      "status": "already-present",
+      "sha256": "68941c3a12891088edbdd62330f08398fc6d4271666cf2c3ce9fe9b8ccfb1d22"
+    },
+    {
+      "id": "roger-ink-ant",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/roger-ink-ant.gif",
+      "status": "already-present",
+      "sha256": "577ce522a2af85639f8d6d3dcc4a2015e826b3457360ac58f800f4e16402beed"
+    },
+    {
+      "id": "roger-person-nod",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/roger-person-nod.gif",
+      "status": "already-present",
+      "sha256": "76f54b3caed017d9fc1e34268addd2a66ad188c7841088bbef86943d7d93b2e9"
+    },
+    {
+      "id": "roger-radar-bot",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/roger-radar-bot.gif",
+      "status": "already-present",
+      "sha256": "5751af234f42d13ea7b073b24eaa0df5ccc8fcdcd7b83f249e09ed313d79fb98"
+    },
+    {
+      "id": "allow-dumpling-yes",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/allow-dumpling-yes.gif",
+      "status": "already-present",
+      "sha256": "312f9fce908b0ff64c4ff123b3764ce7b1e4e1612122af10db6f3e84c147c54c"
+    },
+    {
+      "id": "allow-quokka-smile",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/allow-quokka-smile.gif",
+      "status": "already-present",
+      "sha256": "24bc42482d2827ccfdbed0ce13784e784eec4e7987575f1cf6771ffc228b2bd9"
+    },
+    {
+      "id": "allow-cafe-friend",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/allow-cafe-friend.gif",
+      "status": "already-present",
+      "sha256": "a155a758cbd9c647019a30596dd4ac6a9efba36b9896ceffa6a51f786400888a"
+    },
+    {
+      "id": "allow-green-gate",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/allow-green-gate.gif",
+      "status": "already-present",
+      "sha256": "96d89924e6b19bfaeca17f032fb499274de9328de69de2df8695c080fde6e475"
+    },
+    {
+      "id": "allow-clay-capybara",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/allow-clay-capybara.gif",
+      "status": "already-present",
+      "sha256": "5ed6328ddc1fbde49ab787d1a5392336a9cee1a034b4b9b012022b9eaaa5d30c"
+    },
+    {
+      "id": "allow-ink-crab",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/allow-ink-crab.gif",
+      "status": "already-present",
+      "sha256": "45641410f6fb9296d413e0e3c0d165eb2bab49cb7bd529b577e2a645d79735e8"
+    },
+    {
+      "id": "allow-person-yes",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/allow-person-yes.gif",
+      "status": "already-present",
+      "sha256": "b862b0767bd0f1057897cd5d099a85f4c41779d33a502ce9ff6a264f3f7b14a4"
+    },
+    {
+      "id": "allow-traffic-go",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/allow-traffic-go.gif",
+      "status": "already-present",
+      "sha256": "fbe399dbe9820963940eea705188db004da64aa36107531bb616d7e7a4a57b3a"
+    },
+    {
+      "id": "bye-dumpling-wave",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/bye-dumpling-wave.gif",
+      "status": "already-present",
+      "sha256": "75ebebadce224a2d26f5353d1ebfdec4b8ca4ee872a86b21d8260e16728c0481"
+    },
+    {
+      "id": "bye-puffin-wave",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/bye-puffin-wave.gif",
+      "status": "already-present",
+      "sha256": "1db8e385091ef2f28496c3c1d45883cd99a115449d7298bba5240d3ed1eedfdc"
+    },
+    {
+      "id": "bye-traveler-friend",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/bye-traveler-friend.gif",
+      "status": "already-present",
+      "sha256": "12e079d94049838c816e84c04922882a9fdcf46fed638b84564fca493271a2b2"
+    },
+    {
+      "id": "bye-paperplane-away",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/bye-paperplane-away.gif",
+      "status": "already-present",
+      "sha256": "d694ac587df4b3f9b58629dc7a85e1cdb7d64ead6c001fa27eb3bb420166c0b1"
+    },
+    {
+      "id": "bye-plush-fox",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/bye-plush-fox.gif",
+      "status": "already-present",
+      "sha256": "a3ccfd600114ca078108f57761f537a9b69606533d372d9df92e4189469106b9"
+    },
+    {
+      "id": "bye-ink-snail",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/bye-ink-snail.gif",
+      "status": "already-present",
+      "sha256": "9d07d995ee045b55a0c3032b65d92273f531e6c89efdab1d0dc8482adbb6521d"
+    },
+    {
+      "id": "bye-person-wave",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/bye-person-wave.gif",
+      "status": "already-present",
+      "sha256": "06b49a2b80458d7911f5adfd89f4d38924071682fc951b4a7e7ddc3afbf56764"
+    },
+    {
+      "id": "bye-suitcase-hop",
+      "sourceReport": "artifacts/expression-batches/daily-02/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-02/gifs/bye-suitcase-hop.gif",
+      "status": "already-present",
+      "sha256": "115c1edcee4cdbcbdd3a56a4c45f4a8c2c8dcf38711eb47ef1c8d24adadea49b"
+    },
+    {
+      "id": "happy-dumpling-dance",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/happy-dumpling-dance.gif",
+      "status": "already-present",
+      "sha256": "29e4d608f07ccc13b7c98e53c73f7ed390e1b2a1caa75fc75b54bc2dbd3a72d3"
+    },
+    {
+      "id": "happy-otter-delight",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/happy-otter-delight.gif",
+      "status": "already-present",
+      "sha256": "6341f68c87cf40bc591df5373a161a3d2fea2f48e81d0d225ef11601a830da83"
+    },
+    {
+      "id": "happy-baker-celebrate",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/happy-baker-celebrate.gif",
+      "status": "already-present",
+      "sha256": "9643f1a89affa4ecf4fe28c93877304f2cb10d97c691faa1210d7d97391efc9f"
+    },
+    {
+      "id": "happy-ribbon-bloom",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/happy-ribbon-bloom.gif",
+      "status": "already-present",
+      "sha256": "26e9a70e6398037ffd54a93a073661d3df0c9414a2f4b4f192330586fd37fa11"
+    },
+    {
+      "id": "happy-plush-seal",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/happy-plush-seal.gif",
+      "status": "already-present",
+      "sha256": "95bf2291d08b38e065410540c81b080e9f89c4a2040314a48748af47e4743c47"
+    },
+    {
+      "id": "happy-ink-duck",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/happy-ink-duck.gif",
+      "status": "already-present",
+      "sha256": "5ec3a818c00a264d5573a9606bfd464f9fe6e299719873207c463ddcd5cfcd32"
+    },
+    {
+      "id": "happy-person-grin",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/happy-person-grin.gif",
+      "status": "already-present",
+      "sha256": "2b95f9fb6dafa9f4c42611a8247a021cfb0591310dcab0aa221d1a162041236c"
+    },
+    {
+      "id": "happy-popcorn-cheer",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/happy-popcorn-cheer.gif",
+      "status": "already-present",
+      "sha256": "e0b54ca788de6c91a596c19bd1fcc447f7eb76eabe5a07e78bc28902e0044f24"
+    },
+    {
+      "id": "sad-dumpling-tear",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/sad-dumpling-tear.gif",
+      "status": "already-present",
+      "sha256": "344cc1a3f15e605f7b2150a76143a5c98c40ad7d6dd2dca7cd9c9febd011eff5"
+    },
+    {
+      "id": "sad-rabbit-droop",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/sad-rabbit-droop.gif",
+      "status": "already-present",
+      "sha256": "2ea22e35e1456d95d1d8ff7f1c85b2ab446d3f24450bbb8061701a371ecfe530"
+    },
+    {
+      "id": "sad-student-sigh",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/sad-student-sigh.gif",
+      "status": "already-present",
+      "sha256": "032ea6f5ef90b0ea4e39ab42765b08fdcc0e4a1a41e9c6fbb0be2e43310d32ea"
+    },
+    {
+      "id": "sad-cloud-drizzle",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/sad-cloud-drizzle.gif",
+      "status": "already-present",
+      "sha256": "5666f2a4e187317e467a0ea8fafca6e2241ca06e751c51026f3a667566b6d5c4"
+    },
+    {
+      "id": "sad-plush-elephant",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/sad-plush-elephant.gif",
+      "status": "already-present",
+      "sha256": "4827d0f1a43b034fd936afcb60f2cf41e1b52a5c18a8612abd41d8618a1cbf9a"
+    },
+    {
+      "id": "sad-ink-mushroom",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/sad-ink-mushroom.gif",
+      "status": "already-present",
+      "sha256": "62d1304ba4220d122446feaf7c428a58f4f947474bda88864e44f87c7ad21f05"
+    },
+    {
+      "id": "sad-person-sad",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/sad-person-sad.gif",
+      "status": "already-present",
+      "sha256": "5656b0c5591dbaaeeea84ec0b54ca56ae17c7f2b2fd78703b9a0b4b59eed7cdd"
+    },
+    {
+      "id": "sad-tissue-comfort",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/sad-tissue-comfort.gif",
+      "status": "already-present",
+      "sha256": "9c5da395d5ad70bfbe34db2a7b819b8a541ffaae66054e552bf0660fc4e988a7"
+    },
+    {
+      "id": "angry-dumpling-pout",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/angry-dumpling-pout.gif",
+      "status": "already-present",
+      "sha256": "529e83a0a86eab634e47207289049e655286731e7646f9b1154eda206ec3ac94"
+    },
+    {
+      "id": "angry-hamster-huff",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/angry-hamster-huff.gif",
+      "status": "already-present",
+      "sha256": "9103ffc7f12b2150ed272326a9be8fe2e37e8b284b0fdb195cc8e52ce47cd1b6"
+    },
+    {
+      "id": "angry-office-pout",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/angry-office-pout.gif",
+      "status": "already-present",
+      "sha256": "9899b45e860722278bddd2b74270548c8e80c1c7fba34d3c46c4c39cae1ac6ea"
+    },
+    {
+      "id": "angry-steam-knot",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/angry-steam-knot.gif",
+      "status": "already-present",
+      "sha256": "71cc7c4939f8ff1b17f32456ba01e758ba5081ee190458f906643a35bdfdb896"
+    },
+    {
+      "id": "angry-clay-boar",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/angry-clay-boar.gif",
+      "status": "already-present",
+      "sha256": "1296559f856b9f23b493b82ebcd5cf6ea12bf3ffc2e3c864bec7198939fb2e14"
+    },
+    {
+      "id": "angry-ink-cactus",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/angry-ink-cactus.gif",
+      "status": "already-present",
+      "sha256": "594e0e692c4b5660fefa21842ffe3b80661d7793d7774d879fbd6399b94b8f00"
+    },
+    {
+      "id": "angry-person-huff",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/angry-person-huff.gif",
+      "status": "already-present",
+      "sha256": "bbbd7f62de24b20b30d2d4b6b2f817eb6538caa23257736bce956a084e012b26"
+    },
+    {
+      "id": "angry-kettle-steam",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/angry-kettle-steam.gif",
+      "status": "already-present",
+      "sha256": "fa50e0947a6d3894990eab0e3fc76deb5ffa9a8ff2aa2576a6a8f288bae0cde1"
+    },
+    {
+      "id": "shock-dumpling-gasp",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/shock-dumpling-gasp.gif",
+      "status": "already-present",
+      "sha256": "40494ee2a62ca4af3752c8c0029dc470252b1f492df781be5d28b4cb8dd7f9d8"
+    },
+    {
+      "id": "shock-lemur-gasp",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/shock-lemur-gasp.gif",
+      "status": "already-present",
+      "sha256": "d4687a3766ad7148fbc9ca63203188f7c8e922ede3c8ef1a406bf83fb5ea52f4"
+    },
+    {
+      "id": "shock-cook-surprise",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/shock-cook-surprise.gif",
+      "status": "already-present",
+      "sha256": "2ba138be308005c027dd4e9f20d7170ddaa97325c366561f409cd1898fccd459"
+    },
+    {
+      "id": "shock-burst-fold",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/shock-burst-fold.gif",
+      "status": "already-present",
+      "sha256": "b730c0a9a62bcee2df841fc3dbd0e217ceda72f71eba59941e0c2ef1f0c40523"
+    },
+    {
+      "id": "shock-plush-alpaca",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/shock-plush-alpaca.gif",
+      "status": "already-present",
+      "sha256": "e84d68f575bd12ca371e47fa3e91d6a63a75a22bf999c2a05b1da9e0266343f9"
+    },
+    {
+      "id": "shock-ink-gecko",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/shock-ink-gecko.gif",
+      "status": "already-present",
+      "sha256": "96b5786752da07396c702da04e3dfad9f1bf081e8a527bc4fe0cbf774133169e"
+    },
+    {
+      "id": "shock-person-gasp",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/shock-person-gasp.gif",
+      "status": "already-present",
+      "sha256": "c5842cebdfb5432a7612ad3777d77e5511d1f303873fb1708bbb769628aaae9e"
+    },
+    {
+      "id": "shock-socket-startle",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/shock-socket-startle.gif",
+      "status": "already-present",
+      "sha256": "4cf83149b48343ac91e9ee041c50bc99ea969b9271b09836ac172e30910d522b"
+    },
+    {
+      "id": "hug-dumpling-hug",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/hug-dumpling-hug.gif",
+      "status": "already-present",
+      "sha256": "f22bdeac9df1a2def024efd4336d6303dacdb1618e37898f24436c4b772bef68"
+    },
+    {
+      "id": "hug-penguin-hug",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/hug-penguin-hug.gif",
+      "status": "already-present",
+      "sha256": "ba17272c19c80c4b5c6800d170496fcff344fc3216965c0fb3c461a4c8c41873"
+    },
+    {
+      "id": "hug-friend-hug",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/hug-friend-hug.gif",
+      "status": "already-present",
+      "sha256": "66287c0d57e843f545a730ecadaf52e615433833a5bea3222d492364f22ed238"
+    },
+    {
+      "id": "hug-heart-ribbons",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/hug-heart-ribbons.gif",
+      "status": "already-present",
+      "sha256": "aa0bb2a77d736c7d5dc385776bdcdc224897b411f010603a94c90bcc830d88f8"
+    },
+    {
+      "id": "hug-plush-bear",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/hug-plush-bear.gif",
+      "status": "already-present",
+      "sha256": "c1c0b2ca34462bbac6852df1d48791d68f08a005bdbc9d51995e9a5e68388147"
+    },
+    {
+      "id": "hug-ink-bird",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/hug-ink-bird.gif",
+      "status": "already-present",
+      "sha256": "14f3bf44ea6aa5455b8ea3f125bae01d046bf5da2f457ae76e64e25029134415"
+    },
+    {
+      "id": "hug-person-embrace",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/hug-person-embrace.gif",
+      "status": "already-present",
+      "sha256": "451f19723746eeb6103d1383d5f222c69b7c46fbb800fe94a3d4050f1a2fe0b8"
+    },
+    {
+      "id": "hug-pillow-welcome",
+      "sourceReport": "artifacts/expression-batches/daily-03/report.json",
+      "sourceGif": "artifacts/expression-batches/daily-03/gifs/hug-pillow-welcome.gif",
+      "status": "already-present",
+      "sha256": "0fe91914710ef06788da7935b0e96232cf38368467e7f7e1c68311af218e0477"
+    },
+    {
+      "id": "scene-rich-01-look",
+      "sourceReport": "artifacts/expression-batches/scene-rich-01/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-01/gifs/scene-rich-01-look.gif",
+      "status": "already-present",
+      "sha256": "29cad6951bcfdd4a7df493a2ce57c9415a3700c6ed147d611160efcb5739f008"
+    },
+    {
+      "id": "scene-rich-01-really",
+      "sourceReport": "artifacts/expression-batches/scene-rich-01/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-01/gifs/scene-rich-01-really.gif",
+      "status": "already-present",
+      "sha256": "0de13a2507d80ee9cef2e246f1d8cfa783b44e0c698139179084e5cb01e4b5c6"
+    },
+    {
+      "id": "scene-rich-01-think",
+      "sourceReport": "artifacts/expression-batches/scene-rich-01/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-01/gifs/scene-rich-01-think.gif",
+      "status": "already-present",
+      "sha256": "38fb4f79d6067bdb930a0a8d19f15d608fb0219898b7af8fef05c42f41ecd7a7"
+    },
+    {
+      "id": "scene-rich-01-leave",
+      "sourceReport": "artifacts/expression-batches/scene-rich-01/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-01/gifs/scene-rich-01-leave.gif",
+      "status": "already-present",
+      "sha256": "50ff92aad020cc355f9a6929e349da8fa884b6d2659a19c9cb43c2c712080c1a"
+    },
+    {
+      "id": "scene-rich-02-wink",
+      "sourceReport": "artifacts/expression-batches/scene-rich-02/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-02/gifs/scene-rich-02-wink.gif",
+      "status": "already-present",
+      "sha256": "8f327acba234556e9ffa8f35e1471b076d3aff684f4179a2dfb1d6264cc2ce47"
+    },
+    {
+      "id": "scene-rich-02-details",
+      "sourceReport": "artifacts/expression-batches/scene-rich-02/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-02/gifs/scene-rich-02-details.gif",
+      "status": "already-present",
+      "sha256": "7310e3f11e6c39be29cc75abc944af61a116ef071e67abd0856525925e5a17e5"
+    },
+    {
+      "id": "scene-rich-02-what",
+      "sourceReport": "artifacts/expression-batches/scene-rich-02/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-02/gifs/scene-rich-02-what.gif",
+      "status": "already-present",
+      "sha256": "e54a7fa2980214ab1b915c0298407d428b59cd05803cac66586bc3c7b21aefc3"
+    },
+    {
+      "id": "scene-rich-02-realize",
+      "sourceReport": "artifacts/expression-batches/scene-rich-02/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-02/gifs/scene-rich-02-realize.gif",
+      "status": "already-present",
+      "sha256": "1d56784aeaddef0747aba34aa8b936c3f0711aa6abaf5a6e1755b7ac063a7678"
+    },
+    {
+      "id": "scene-rich-03-serious-v2",
+      "sourceReport": "artifacts/expression-batches/scene-rich-03-serious-v2/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-03-serious-v2/serious-v2.gif",
+      "status": "imported",
+      "catalogId": "generated-149d386198066dbe9d2283ab",
+      "keyword": "你认真的",
+      "sha256": "149d386198066dbe9d2283aba96a56e50b59bba458060159793c9e90ffca9cbe",
+      "bytes": 150666
+    },
+    {
+      "id": "scene-rich-03-run",
+      "sourceReport": "artifacts/expression-batches/scene-rich-03/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-03/gifs/scene-rich-03-run.gif",
+      "status": "already-present",
+      "sha256": "6106b46600797744116bc382b853056d49856ec775315baceb46219199706044"
+    },
+    {
+      "id": "scene-rich-03-annoyed",
+      "sourceReport": "artifacts/expression-batches/scene-rich-03/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-03/gifs/scene-rich-03-annoyed.gif",
+      "status": "already-present",
+      "sha256": "be7c2b3481781a5bf4cfda910d61bfc7ac1c6931edd19097d8a8555ad49a3560"
+    },
+    {
+      "id": "scene-rich-03-serious",
+      "sourceReport": "artifacts/expression-batches/scene-rich-03/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-03/gifs/scene-rich-03-serious.gif",
+      "status": "already-present",
+      "sha256": "bf5fb132a2320c466bbff50b85008c3ece5fe49fb8f208e4edb8b333a526263d"
+    },
+    {
+      "id": "scene-rich-03-caught",
+      "sourceReport": "artifacts/expression-batches/scene-rich-03/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-03/gifs/scene-rich-03-caught.gif",
+      "status": "already-present",
+      "sha256": "2e9f78a89af76cbae03be3ec3dda2892e8cc556d6051d309b1adc5c47cfed19e"
+    },
+    {
+      "id": "scene-rich-04-wait",
+      "sourceReport": "artifacts/expression-batches/scene-rich-04/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-04/gifs/scene-rich-04-wait.gif",
+      "status": "already-present",
+      "sha256": "d9876dc3b837ede0adf5aaa6ca29b8e4552d6a99521f5b3f136f747d2f215927"
+    },
+    {
+      "id": "scene-rich-04-stop",
+      "sourceReport": "artifacts/expression-batches/scene-rich-04/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-04/gifs/scene-rich-04-stop.gif",
+      "status": "already-present",
+      "sha256": "637763b390623220bd98bb65b2e49c11cbc23d5b3d343ff41759a6ea01f5a0b6"
+    },
+    {
+      "id": "scene-rich-04-gossip",
+      "sourceReport": "artifacts/expression-batches/scene-rich-04/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-04/gifs/scene-rich-04-gossip.gif",
+      "status": "already-present",
+      "sha256": "157fc468c1ea1e7a3f895fec00a1a2aa790ce847f0271c5df56575b6a47d7f68"
+    },
+    {
+      "id": "scene-rich-04-laugh",
+      "sourceReport": "artifacts/expression-batches/scene-rich-04/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-04/gifs/scene-rich-04-laugh.gif",
+      "status": "already-present",
+      "sha256": "58b7186e80a82e1f3034845ac6f4c8b8aee597753a1ce3712714200d9d4ce582"
+    },
+    {
+      "id": "scene-rich-05-guess",
+      "sourceReport": "artifacts/expression-batches/scene-rich-05/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-05/gifs/scene-rich-05-guess.gif",
+      "status": "already-present",
+      "sha256": "40f4320945fc176ad493a8d597a9109b9835d7f14899e82b991adcfdd871e1e7"
+    },
+    {
+      "id": "scene-rich-05-explain",
+      "sourceReport": "artifacts/expression-batches/scene-rich-05/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-05/gifs/scene-rich-05-explain.gif",
+      "status": "already-present",
+      "sha256": "8233e9c14d3465265d75620f5f9ffb2ba9654009d5a4b7c367a85b3d5e007eb0"
+    },
+    {
+      "id": "scene-rich-05-disgust",
+      "sourceReport": "artifacts/expression-batches/scene-rich-05/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-05/gifs/scene-rich-05-disgust.gif",
+      "status": "already-present",
+      "sha256": "7e9fb4bd188890e600eca9418a6e72a56cd12e628f4058f5e7564703be5f9a69"
+    },
+    {
+      "id": "scene-rich-05-sleepy",
+      "sourceReport": "artifacts/expression-batches/scene-rich-05/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-05/gifs/scene-rich-05-sleepy.gif",
+      "status": "already-present",
+      "sha256": "a4eb2dbf47329422a39bdccd40384331078f3f7a721211d88303140f4d923f94"
+    },
+    {
+      "id": "scene-rich-06-no",
+      "sourceReport": "artifacts/expression-batches/scene-rich-06/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-06/gifs/scene-rich-06-no.gif",
+      "status": "already-present",
+      "sha256": "fdfeac53973c4f5d6d3997f41699aed0aafeaf238b3be18094c7b1fe7f433926"
+    },
+    {
+      "id": "scene-rich-06-slack",
+      "sourceReport": "artifacts/expression-batches/scene-rich-06/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-06/gifs/scene-rich-06-slack.gif",
+      "status": "already-present",
+      "sha256": "c9aa1206874bf5d98b7e870cd3fae21ec64e299cd887685605442a75c5a512c6"
+    },
+    {
+      "id": "scene-rich-06-wronged",
+      "sourceReport": "artifacts/expression-batches/scene-rich-06/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-06/gifs/scene-rich-06-wronged.gif",
+      "status": "already-present",
+      "sha256": "6e4c1df082f0d5601d39eacc55ed0e46f0ac99ec00c582c4a5a51969373a5908"
+    },
+    {
+      "id": "scene-rich-06-expect",
+      "sourceReport": "artifacts/expression-batches/scene-rich-06/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-06/gifs/scene-rich-06-expect.gif",
+      "status": "already-present",
+      "sha256": "c2fed58b979ca50993d0e0d5fbbadb61badb1712bbb6bfcc48ab2a380a2eb5fb"
+    },
+    {
+      "id": "scene-rich-07-ok",
+      "sourceReport": "artifacts/expression-batches/scene-rich-07/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-07/gifs/scene-rich-07-ok.gif",
+      "status": "already-present",
+      "sha256": "406e1411a44f8ba13f357a343d0d5fb340497917a88bda18914b00558e0b99be"
+    },
+    {
+      "id": "scene-rich-07-tired",
+      "sourceReport": "artifacts/expression-batches/scene-rich-07/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-07/gifs/scene-rich-07-tired.gif",
+      "status": "already-present",
+      "sha256": "1c7ffb28323cdef3229716952cd667c4fd6bdc1b1f0fd5f76e0c9dfa82e11fd2"
+    },
+    {
+      "id": "scene-rich-07-proud",
+      "sourceReport": "artifacts/expression-batches/scene-rich-07/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-07/gifs/scene-rich-07-proud.gif",
+      "status": "already-present",
+      "sha256": "d41248e65da4e3271ec29813783642e8eb706351898d91f9b24ad79f18607191"
+    },
+    {
+      "id": "scene-rich-07-shy",
+      "sourceReport": "artifacts/expression-batches/scene-rich-07/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-07/gifs/scene-rich-07-shy.gif",
+      "status": "already-present",
+      "sha256": "5ca71439ab6b6ece3eb9f658de8b9d5d02ebd2a1bd3492cd52e2e73824c7e33c"
+    },
+    {
+      "id": "scene-rich-08-arrange",
+      "sourceReport": "artifacts/expression-batches/scene-rich-08/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-08/gifs/scene-rich-08-arrange.gif",
+      "status": "already-present",
+      "sha256": "743c8b387a823f598b94bb2c4cd62b2e01a4ce824a1defd076f729e31444653e"
+    },
+    {
+      "id": "scene-rich-08-calm",
+      "sourceReport": "artifacts/expression-batches/scene-rich-08/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-08/gifs/scene-rich-08-calm.gif",
+      "status": "already-present",
+      "sha256": "688596b986286407443d136efba38a88b6f824475b4f1c5fb8f2327f25ed447c"
+    },
+    {
+      "id": "scene-rich-08-hungry",
+      "sourceReport": "artifacts/expression-batches/scene-rich-08/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-08/gifs/scene-rich-08-hungry.gif",
+      "status": "already-present",
+      "sha256": "d8fd33bf442210efc3ac6fdd8526bc4392505e6eada9ddf0d9bf415cc5570954"
+    },
+    {
+      "id": "scene-rich-08-awkward",
+      "sourceReport": "artifacts/expression-batches/scene-rich-08/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-08/gifs/scene-rich-08-awkward.gif",
+      "status": "already-present",
+      "sha256": "93278e310071198510e191c1fd3b9d2b8c2f3a1841e0c1391fe97c45d772ceba"
+    },
+    {
+      "id": "scene-rich-09-comfort",
+      "sourceReport": "artifacts/expression-batches/scene-rich-09/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-09/gifs/scene-rich-09-comfort.gif",
+      "status": "already-present",
+      "sha256": "5d18b365466228d924bd6e58856cf49af82af5ccbfbb742003f28e391bdd68e0"
+    },
+    {
+      "id": "scene-rich-09-welcome",
+      "sourceReport": "artifacts/expression-batches/scene-rich-09/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-09/gifs/scene-rich-09-welcome.gif",
+      "status": "already-present",
+      "sha256": "6dc9ad82a2151ff06cc7a2a84c96eb4722baad96526e02826cec93f6dc170a87"
+    },
+    {
+      "id": "scene-rich-09-nervous",
+      "sourceReport": "artifacts/expression-batches/scene-rich-09/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-09/gifs/scene-rich-09-nervous.gif",
+      "status": "already-present",
+      "sha256": "182903621919530a32ff08a4f2a7a2b5acd25cc9dc27a3a8f93c648fab96c818"
+    },
+    {
+      "id": "scene-rich-09-curious",
+      "sourceReport": "artifacts/expression-batches/scene-rich-09/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-09/gifs/scene-rich-09-curious.gif",
+      "status": "already-present",
+      "sha256": "52b4103f6d5c28ef7b842d6fed41d2a28462be9c6c9a5ca937f5f08bb5ce222f"
+    },
+    {
+      "id": "scene-rich-10-offwork",
+      "sourceReport": "artifacts/expression-batches/scene-rich-10/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-10/gifs/scene-rich-10-offwork.gif",
+      "status": "already-present",
+      "sha256": "c147e381833c2f8beea0aa42c59edfdceb672ebda8b7ec1c9d6fb07084f9f3fd"
+    },
+    {
+      "id": "scene-rich-10-busy",
+      "sourceReport": "artifacts/expression-batches/scene-rich-10/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-10/gifs/scene-rich-10-busy.gif",
+      "status": "already-present",
+      "sha256": "278b87f506e3791757e9799848c9c21c40ca59cc4f69be7faed0441883346633"
+    },
+    {
+      "id": "scene-rich-10-satisfied",
+      "sourceReport": "artifacts/expression-batches/scene-rich-10/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-10/gifs/scene-rich-10-satisfied.gif",
+      "status": "already-present",
+      "sha256": "e781318bf6153fc7c967ad4b77e19bb03b6816e56cb24be7971cdd45ceed1747"
+    },
+    {
+      "id": "scene-rich-10-puzzled",
+      "sourceReport": "artifacts/expression-batches/scene-rich-10/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-10/gifs/scene-rich-10-puzzled.gif",
+      "status": "already-present",
+      "sha256": "96d89a5aaa4ce5794374b6e4764b2f39f156e733689aa20064b4a4b44f3086de"
+    },
+    {
+      "id": "scene-rich-11-watch-line",
+      "sourceReport": "artifacts/expression-batches/scene-rich-11/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-11/gifs/scene-rich-11-watch-line.gif",
+      "status": "excluded",
+      "reason": "用户明确负面反馈，保留旧稿但不复活"
+    },
+    {
+      "id": "scene-rich-11-watch-person",
+      "sourceReport": "artifacts/expression-batches/scene-rich-11/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-11/gifs/scene-rich-11-watch-person.gif",
+      "status": "imported",
+      "catalogId": "generated-109117819e5025292a0d3834",
+      "keyword": "我就看看",
+      "sha256": "109117819e5025292a0d3834cb6889c529ad5748cd88b85f462ce0013f1ede1c",
+      "bytes": 105173
+    },
+    {
+      "id": "scene-rich-11-watch-clay",
+      "sourceReport": "artifacts/expression-batches/scene-rich-11/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-11/gifs/scene-rich-11-watch-clay.gif",
+      "status": "imported",
+      "catalogId": "generated-cfae47158c53d4cf38052abe",
+      "keyword": "我就看看",
+      "sha256": "cfae47158c53d4cf38052abe9f194fe08ce598125fa91c84b8b1f9e66d95d765",
+      "bytes": 88321
+    },
+    {
+      "id": "scene-rich-11-really-dog",
+      "sourceReport": "artifacts/expression-batches/scene-rich-11/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-11/gifs/scene-rich-11-really-dog.gif",
+      "status": "imported",
+      "catalogId": "generated-23413667367e4e75078f2b76",
+      "keyword": "真的假的",
+      "sha256": "23413667367e4e75078f2b764fe03fe93b04a26c9fbedfed81f62244b8f64f22",
+      "bytes": 168546
+    },
+    {
+      "id": "scene-rich-12-really-man",
+      "sourceReport": "artifacts/expression-batches/scene-rich-12/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-12/gifs/scene-rich-12-really-man.gif",
+      "status": "imported",
+      "catalogId": "generated-638c6aaf02918d44d6374044",
+      "keyword": "真的假的",
+      "sha256": "638c6aaf02918d44d6374044eb2229eab8d1c4cd853e351764462327bebaffe1",
+      "bytes": 131172
+    },
+    {
+      "id": "scene-rich-12-really-line",
+      "sourceReport": "artifacts/expression-batches/scene-rich-12/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-12/gifs/scene-rich-12-really-line.gif",
+      "status": "imported",
+      "catalogId": "generated-ccf83c98d767945fa0132c9d",
+      "keyword": "真的假的",
+      "sha256": "ccf83c98d767945fa0132c9d4278d5f0ad87dbe98f4dcc5eded08618cfc04fca",
+      "bytes": 135509
+    },
+    {
+      "id": "scene-rich-12-think-man",
+      "sourceReport": "artifacts/expression-batches/scene-rich-12/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-12/gifs/scene-rich-12-think-man.gif",
+      "status": "imported",
+      "catalogId": "generated-a0ccc6a522771b7490e617da",
+      "keyword": "让我想想",
+      "sha256": "a0ccc6a522771b7490e617da4819738ab67de0b48bd3c0e65173aa7cd50fa9f3",
+      "bytes": 120321
+    },
+    {
+      "id": "scene-rich-12-think-line",
+      "sourceReport": "artifacts/expression-batches/scene-rich-12/report.json",
+      "sourceGif": "artifacts/expression-batches/scene-rich-12/gifs/scene-rich-12-think-line.gif",
+      "status": "imported",
+      "catalogId": "generated-928957f1bc26f07000f671a0",
+      "keyword": "让我想想",
+      "sha256": "928957f1bc26f07000f671a08abd8267dec6f7b24d76d5f8f3d87dd90be909ba",
+      "bytes": 134777
+    },
+    {
+      "id": "understand-core-knot",
+      "sourceReport": "artifacts/expression-batches/semantic-01/report.json",
+      "sourceGif": "artifacts/expression-batches/semantic-01/gifs/understand-core-knot.gif",
+      "status": "already-present",
+      "sha256": "5947061ca33262a5960a0ae4141766d76a51715865e4dce98012aa1302320012"
+    },
+    {
+      "id": "understand-bird-notebook",
+      "sourceReport": "artifacts/expression-batches/semantic-01/report.json",
+      "sourceGif": "artifacts/expression-batches/semantic-01/gifs/understand-bird-notebook.gif",
+      "status": "already-present",
+      "sha256": "95a4cc916dee5d25bcbd29686866ad5d8826038d8ddd94aad05845e61d8bbb3f"
+    },
+    {
+      "id": "understand-person-nod",
+      "sourceReport": "artifacts/expression-batches/semantic-01/report.json",
+      "sourceGif": "artifacts/expression-batches/semantic-01/gifs/understand-person-nod.gif",
+      "status": "already-present",
+      "sha256": "a020ab426de8f6df0a4f513f50ec40ce8f4c8c551bac19b9f1466b33f786c8b4"
+    },
+    {
+      "id": "understand-clay-pebble",
+      "sourceReport": "artifacts/expression-batches/semantic-01/report.json",
+      "sourceGif": "artifacts/expression-batches/semantic-01/gifs/understand-clay-pebble.gif",
+      "status": "already-present",
+      "sha256": "2628ac5cb3f2a4de13bc72f13b70877dbbbdcbe1ff0c54b94763769ce3e911be"
+    },
+    {
+      "id": "orange-cat-laugh",
+      "sourceReport": "artifacts/expression-character-trials/original-animals-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-animals-01-animated/output/gifs/orange-cat-laugh.gif",
+      "status": "imported",
+      "catalogId": "generated-42542057d320983ac442bee6",
+      "keyword": "笑死",
+      "sha256": "42542057d320983ac442bee638c3f3f49a30b878eddd52f975d2b7c4e57de23c",
+      "bytes": 62688
+    },
+    {
+      "id": "long-bill-duck-disdain",
+      "sourceReport": "artifacts/expression-character-trials/original-animals-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-animals-01-animated/output/gifs/long-bill-duck-disdain.gif",
+      "status": "imported",
+      "catalogId": "generated-18954e01616c139e876b8f6f",
+      "keyword": "嫌弃",
+      "sha256": "18954e01616c139e876b8f6f19b367a953abf9142b257154f8e447aa22a95813",
+      "bytes": 80913
+    },
+    {
+      "id": "short-ear-rabbit-yay",
+      "sourceReport": "artifacts/expression-character-trials/original-animals-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-animals-01-animated/output/gifs/short-ear-rabbit-yay.gif",
+      "status": "imported",
+      "catalogId": "generated-c2c068f40818e6cc2bf30dfd",
+      "keyword": "好耶",
+      "sha256": "c2c068f40818e6cc2bf30dfd2c07b4f0c92a450ad0843183f1bdfe9e5b5de994",
+      "bytes": 81718
+    },
+    {
+      "id": "orange-cat-slack",
+      "sourceReport": "artifacts/expression-character-trials/original-animals-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-animals-02-animated/output/gifs/orange-cat-slack.gif",
+      "status": "imported",
+      "catalogId": "generated-76d18536cf0557848fa21a88",
+      "keyword": "摸鱼",
+      "sha256": "76d18536cf0557848fa21a881219d4c84f4d16288c0debe75516c1337f4b0622",
+      "bytes": 58876
+    },
+    {
+      "id": "long-bill-duck-shock",
+      "sourceReport": "artifacts/expression-character-trials/original-animals-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-animals-02-animated/output/gifs/long-bill-duck-shock.gif",
+      "status": "imported",
+      "catalogId": "generated-473b607849dade47d43723d4",
+      "keyword": "震惊",
+      "sha256": "473b607849dade47d43723d43f26b069af0f26fd4fb9daf7f1a638b3ab67d889",
+      "bytes": 60696
+    },
+    {
+      "id": "rabbit-refuse",
+      "sourceReport": "artifacts/expression-character-trials/original-animals-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-animals-02-animated/output/gifs/rabbit-refuse.gif",
+      "status": "imported",
+      "catalogId": "generated-595d02d136847a3012de2c75",
+      "keyword": "拒绝",
+      "sha256": "595d02d136847a3012de2c75e3fd6c5c2a5bb1ee8aba9e46e91bf21183fa16ca",
+      "bytes": 69496
+    },
+    {
+      "id": "worker-tired",
+      "sourceReport": "artifacts/expression-character-trials/original-characters-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-characters-01-animated/output/gifs/worker-tired.gif",
+      "status": "imported",
+      "catalogId": "generated-6d1daae762379b3141b6adf1",
+      "keyword": "心累",
+      "sha256": "6d1daae762379b3141b6adf17dd23177c08d7ca37545345fe9330ecf6fd30bbe",
+      "bytes": 121989
+    },
+    {
+      "id": "young-man-cheer",
+      "sourceReport": "artifacts/expression-character-trials/original-characters-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-characters-01-animated/output/gifs/young-man-cheer.gif",
+      "status": "imported",
+      "catalogId": "generated-2457fc7905b381cb1f89c96f",
+      "keyword": "加油",
+      "sha256": "2457fc7905b381cb1f89c96fb6d973891f782dfe84b843c309f282cddebc7b6e",
+      "bytes": 93365
+    },
+    {
+      "id": "dog-hopeful",
+      "sourceReport": "artifacts/expression-character-trials/original-characters-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-characters-01-animated/output/gifs/dog-hopeful.gif",
+      "status": "imported",
+      "catalogId": "generated-0b66c45fb33ded8c3e480c60",
+      "keyword": "期待",
+      "sha256": "0b66c45fb33ded8c3e480c6038b9fe274bc8e718d053fb4f6f71afceb4c596cc",
+      "bytes": 130824
+    },
+    {
+      "id": "worker-busy",
+      "sourceReport": "artifacts/expression-character-trials/original-characters-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-characters-02-animated/output/gifs/worker-busy.gif",
+      "status": "imported",
+      "catalogId": "generated-b3c915e335e034eb52972be3",
+      "keyword": "忙着呢",
+      "sha256": "b3c915e335e034eb52972be30d3fe3b900b4c60228f2a4c562268fbed04c051e",
+      "bytes": 125388
+    },
+    {
+      "id": "young-man-thanks",
+      "sourceReport": "artifacts/expression-character-trials/original-characters-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-characters-02-animated/output/gifs/young-man-thanks.gif",
+      "status": "imported",
+      "catalogId": "generated-76d05275fbce6ac94a5e4179",
+      "keyword": "谢谢",
+      "sha256": "76d05275fbce6ac94a5e417955658aaff12dd214c8b745fe1b098346b4032d60",
+      "bytes": 107798
+    },
+    {
+      "id": "dog-hurt",
+      "sourceReport": "artifacts/expression-character-trials/original-characters-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-characters-02-animated/output/gifs/dog-hurt.gif",
+      "status": "imported",
+      "catalogId": "generated-6304cd3cad825e4d52f50dd3",
+      "keyword": "委屈",
+      "sha256": "6304cd3cad825e4d52f50dd30ac4170ab758c3bb6d9065eefd5e50d4aeca14f2",
+      "bytes": 109984
+    },
+    {
+      "id": "dog-great",
+      "sourceReport": "artifacts/expression-character-trials/original-great-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-great-01-animated/output/gifs/dog-great.gif",
+      "status": "imported",
+      "catalogId": "generated-0f21336cdfc8323e2ab7fa4e",
+      "keyword": "太好了",
+      "sha256": "0f21336cdfc8323e2ab7fa4e74313f9e9507fa9afc2002089c45877ea61428e3",
+      "bytes": 115846
+    },
+    {
+      "id": "crab-great",
+      "sourceReport": "artifacts/expression-character-trials/original-great-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-great-01-animated/output/gifs/crab-great.gif",
+      "status": "imported",
+      "catalogId": "generated-a8b74aa4d4312a3948478c9c",
+      "keyword": "太好了",
+      "sha256": "a8b74aa4d4312a3948478c9c609f2f74f556a29cf167e13330f640a942cacdd7",
+      "bytes": 130322
+    },
+    {
+      "id": "pig-great",
+      "sourceReport": "artifacts/expression-character-trials/original-great-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-great-01-animated/output/gifs/pig-great.gif",
+      "status": "imported",
+      "catalogId": "generated-2f74a985c9c2d4a5444a1b07",
+      "keyword": "太好了",
+      "sha256": "2f74a985c9c2d4a5444a1b07d2140bf3afe69396e19ca67937d192f43cee595a",
+      "bytes": 69491
+    },
+    {
+      "id": "man-great",
+      "sourceReport": "artifacts/expression-character-trials/original-great-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-great-01-animated/output/gifs/man-great.gif",
+      "status": "imported",
+      "catalogId": "generated-2da09a277664ecbd2137a014",
+      "keyword": "太好了",
+      "sha256": "2da09a277664ecbd2137a0145f435c47e15c8632234a7009de8e04a79fafba95",
+      "bytes": 73826
+    },
+    {
+      "id": "spaniel-hurt",
+      "sourceReport": "artifacts/expression-character-trials/original-hurt-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-hurt-01-animated/output/gifs/spaniel-hurt.gif",
+      "status": "imported",
+      "catalogId": "generated-8d81de27e9b9121a82ce5dac",
+      "keyword": "委屈",
+      "sha256": "8d81de27e9b9121a82ce5dac15a80da737a9315d1debd61534ee89f848e7503f",
+      "bytes": 92461
+    },
+    {
+      "id": "rabbit-hurt",
+      "sourceReport": "artifacts/expression-character-trials/original-hurt-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-hurt-01-animated/output/gifs/rabbit-hurt.gif",
+      "status": "imported",
+      "catalogId": "generated-b78538015dbcf9be09ba9fcb",
+      "keyword": "委屈",
+      "sha256": "b78538015dbcf9be09ba9fcb0acc221ed6bd141782ed86c439e809f5b83fc80b",
+      "bytes": 105144
+    },
+    {
+      "id": "hedgehog-hurt",
+      "sourceReport": "artifacts/expression-character-trials/original-hurt-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-hurt-01-animated/output/gifs/hedgehog-hurt.gif",
+      "status": "imported",
+      "catalogId": "generated-1c6d429ce7e7822f041273b7",
+      "keyword": "委屈",
+      "sha256": "1c6d429ce7e7822f041273b7dad5e8200ec6857bae1929cc23917e253bc2741a",
+      "bytes": 92988
+    },
+    {
+      "id": "man-hurt",
+      "sourceReport": "artifacts/expression-character-trials/original-hurt-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-hurt-01-animated/output/gifs/man-hurt.gif",
+      "status": "imported",
+      "catalogId": "generated-f643513e3825b04404762c79",
+      "keyword": "委屈",
+      "sha256": "f643513e3825b04404762c791bd779ea925db7c99b1ba126cdd3931ff8f9ae4b",
+      "bytes": 78588
+    },
+    {
+      "id": "cat-look",
+      "sourceReport": "artifacts/expression-character-trials/original-look-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-look-01-animated/output/gifs/cat-look.gif",
+      "status": "imported",
+      "catalogId": "generated-eba95390caaab11a57d893e5",
+      "keyword": "我就看看",
+      "sha256": "eba95390caaab11a57d893e5ffcd6b4bb6565df179d5429f4ae9b13f987504dd",
+      "bytes": 131406
+    },
+    {
+      "id": "bird-look",
+      "sourceReport": "artifacts/expression-character-trials/original-look-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-look-01-animated/output/gifs/bird-look.gif",
+      "status": "imported",
+      "catalogId": "generated-84320b36b851d1750b571b89",
+      "keyword": "我就看看",
+      "sha256": "84320b36b851d1750b571b895d5c0e4c90a672fa5d2d744a70a2e810249fbdce",
+      "bytes": 121351
+    },
+    {
+      "id": "seal-look",
+      "sourceReport": "artifacts/expression-character-trials/original-look-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-look-01-animated/output/gifs/seal-look.gif",
+      "status": "imported",
+      "catalogId": "generated-ff34f54e3d15c04cabcc5890",
+      "keyword": "我就看看",
+      "sha256": "ff34f54e3d15c04cabcc5890c61ac31c6bb9b4f9c9986ac8cea9a3fa3b3e0ee6",
+      "bytes": 97625
+    },
+    {
+      "id": "man-look",
+      "sourceReport": "artifacts/expression-character-trials/original-look-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-look-01-animated/output/gifs/man-look.gif",
+      "status": "imported",
+      "catalogId": "generated-c1e4dd9513dc4695c1ddd7dc",
+      "keyword": "我就看看",
+      "sha256": "c1e4dd9513dc4695c1ddd7dc429882c09b9abeb68a368440256701ed74044497",
+      "bytes": 114612
+    },
+    {
+      "id": "dog-received",
+      "sourceReport": "artifacts/expression-character-trials/original-received-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-received-01-animated/output/gifs/dog-received.gif",
+      "status": "imported",
+      "catalogId": "generated-39591625951f5643e32df0cf",
+      "keyword": "收到",
+      "sha256": "39591625951f5643e32df0cfc80d79c52b807a34bfaad7b52c79fdab4b939bf4",
+      "bytes": 92671
+    },
+    {
+      "id": "bird-received",
+      "sourceReport": "artifacts/expression-character-trials/original-received-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-received-01-animated/output/gifs/bird-received.gif",
+      "status": "imported",
+      "catalogId": "generated-deaa1eb0c66d0ced2f64cb83",
+      "keyword": "收到",
+      "sha256": "deaa1eb0c66d0ced2f64cb83525edf51581f0703789f48b433569ae18b35b77a",
+      "bytes": 116410
+    },
+    {
+      "id": "otter-received",
+      "sourceReport": "artifacts/expression-character-trials/original-received-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-received-01-animated/output/gifs/otter-received.gif",
+      "status": "imported",
+      "catalogId": "generated-71e0370448dded4b505a014d",
+      "keyword": "收到",
+      "sha256": "71e0370448dded4b505a014d5cebd5f005cbe74da36436efb81d53cd602d92ed",
+      "bytes": 76304
+    },
+    {
+      "id": "man-received",
+      "sourceReport": "artifacts/expression-character-trials/original-received-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-received-01-animated/output/gifs/man-received.gif",
+      "status": "imported",
+      "catalogId": "generated-b7ad9012453c8f629f926507",
+      "keyword": "收到",
+      "sha256": "b7ad9012453c8f629f9265071beeeed52cff6a3ed748b6b7a561fa11f4cd344c",
+      "bytes": 77151
+    },
+    {
+      "id": "cat-sleepy",
+      "sourceReport": "artifacts/expression-character-trials/original-sleepy-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-sleepy-01-animated/output/gifs/cat-sleepy.gif",
+      "status": "imported",
+      "catalogId": "generated-be64f85a7ca8a24f6db056d9",
+      "keyword": "困了",
+      "sha256": "be64f85a7ca8a24f6db056d9f8afe2221493e1d2e1fe6c97ba8c2e57aec9f680",
+      "bytes": 128179
+    },
+    {
+      "id": "owl-sleepy",
+      "sourceReport": "artifacts/expression-character-trials/original-sleepy-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-sleepy-01-animated/output/gifs/owl-sleepy.gif",
+      "status": "imported",
+      "catalogId": "generated-8548b0a7ab6d643ff179445d",
+      "keyword": "困了",
+      "sha256": "8548b0a7ab6d643ff179445d8d6cc4de50a1e2fa28ed05f9601fc26daf8a81d1",
+      "bytes": 133536
+    },
+    {
+      "id": "penguin-sleepy",
+      "sourceReport": "artifacts/expression-character-trials/original-sleepy-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-sleepy-01-animated/output/gifs/penguin-sleepy.gif",
+      "status": "imported",
+      "catalogId": "generated-eb6680c469702df726898707",
+      "keyword": "困了",
+      "sha256": "eb6680c469702df72689870702167d52d82131872dd96d98f91005397649e89b",
+      "bytes": 62128
+    },
+    {
+      "id": "man-sleepy",
+      "sourceReport": "artifacts/expression-character-trials/original-sleepy-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-sleepy-01-animated/output/gifs/man-sleepy.gif",
+      "status": "imported",
+      "catalogId": "generated-3dcfe49e04e467dcac89e7fb",
+      "keyword": "困了",
+      "sha256": "3dcfe49e04e467dcac89e7fbbca032da358ab12a5ebc8b4dceb07a23edc6113e",
+      "bytes": 84153
+    },
+    {
+      "id": "husky-speechless",
+      "sourceReport": "artifacts/expression-character-trials/original-speechless-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-speechless-01-animated/output/gifs/husky-speechless.gif",
+      "status": "imported",
+      "catalogId": "generated-be17e540d3e87549945311d9",
+      "keyword": "无语",
+      "sha256": "be17e540d3e87549945311d921c0f82f79f1e3201877d9fcd4a082f86d37734f",
+      "bytes": 130141
+    },
+    {
+      "id": "frog-speechless",
+      "sourceReport": "artifacts/expression-character-trials/original-speechless-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-speechless-01-animated/output/gifs/frog-speechless.gif",
+      "status": "imported",
+      "catalogId": "generated-4aebc85cdf5aef8a0bf7a393",
+      "keyword": "无语",
+      "sha256": "4aebc85cdf5aef8a0bf7a393307826de9a883e161784b24a0b59cd8d95052dc3",
+      "bytes": 113090
+    },
+    {
+      "id": "capybara-speechless",
+      "sourceReport": "artifacts/expression-character-trials/original-speechless-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-speechless-01-animated/output/gifs/capybara-speechless.gif",
+      "status": "imported",
+      "catalogId": "generated-5164247b7273be7f9e2698d9",
+      "keyword": "无语",
+      "sha256": "5164247b7273be7f9e2698d9589a134850f7163a0517106d11af4e54cecd627e",
+      "bytes": 82560
+    },
+    {
+      "id": "man-speechless",
+      "sourceReport": "artifacts/expression-character-trials/original-speechless-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-speechless-01-animated/output/gifs/man-speechless.gif",
+      "status": "imported",
+      "catalogId": "generated-51f2f6bdb06888c2fd3aa35d",
+      "keyword": "无语",
+      "sha256": "51f2f6bdb06888c2fd3aa35d3036d9059d1aee2284aee3b869bc226ee417e4a6",
+      "bytes": 81082
+    },
+    {
+      "id": "cat-shock",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-01-animated/output/gifs/cat-shock.gif",
+      "status": "imported",
+      "catalogId": "generated-c184661de42496a6364c6c1d",
+      "keyword": "震惊",
+      "sha256": "c184661de42496a6364c6c1dc7b4a4e5b3513d83688ee28e26097fed3a100a74",
+      "bytes": 97584
+    },
+    {
+      "id": "frog-shock",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-01-animated/output/gifs/frog-shock.gif",
+      "status": "imported",
+      "catalogId": "generated-30a1279e7766545d5ab31d61",
+      "keyword": "震惊",
+      "sha256": "30a1279e7766545d5ab31d618202a29b15daac722cc20b32455f5806c15af711",
+      "bytes": 123354
+    },
+    {
+      "id": "owl-shock",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-01-animated/output/gifs/owl-shock.gif",
+      "status": "imported",
+      "catalogId": "generated-b534d282d8431890ec39aea0",
+      "keyword": "震惊",
+      "sha256": "b534d282d8431890ec39aea0258c2059ef0ff801d79d266ce4c09842efed7f6c",
+      "bytes": 100042
+    },
+    {
+      "id": "man-shock",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-01-animated/output/gifs/man-shock.gif",
+      "status": "imported",
+      "catalogId": "generated-b32478c7d4263c38cdc87e2f",
+      "keyword": "震惊",
+      "sha256": "b32478c7d4263c38cdc87e2f4f17e5049498fc4b113508d4f1e6e8d9cc46948f",
+      "bytes": 75465
+    },
+    {
+      "id": "husky-disdain",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-01-animated/output/gifs/husky-disdain.gif",
+      "status": "imported",
+      "catalogId": "generated-ff98474d2e14b49f2e000e98",
+      "keyword": "嫌弃",
+      "sha256": "ff98474d2e14b49f2e000e98b65fba185fdbb8de772214697738afccb62e35d1",
+      "bytes": 118602
+    },
+    {
+      "id": "duck-disdain",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-01-animated/output/gifs/duck-disdain.gif",
+      "status": "imported",
+      "catalogId": "generated-204691dafe49ba9a12a18060",
+      "keyword": "嫌弃",
+      "sha256": "204691dafe49ba9a12a18060e1c429ff8508aac0340113b2fd5d642b40abc57f",
+      "bytes": 133484
+    },
+    {
+      "id": "alpaca-disdain",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-01-animated/output/gifs/alpaca-disdain.gif",
+      "status": "imported",
+      "catalogId": "generated-bb8106c38324b8f051a1a77c",
+      "keyword": "嫌弃",
+      "sha256": "bb8106c38324b8f051a1a77ced9fb596c79098d21dcf802afa684952f76c0077",
+      "bytes": 90612
+    },
+    {
+      "id": "man-disdain",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-01-animated/output/gifs/man-disdain.gif",
+      "status": "imported",
+      "catalogId": "generated-c4f7f498cccf750a35a4b9af",
+      "keyword": "嫌弃",
+      "sha256": "c4f7f498cccf750a35a4b9af3a7a648d1c5a326ab411b4196f25bcfa6435811f",
+      "bytes": 76304
+    },
+    {
+      "id": "fox-smug",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-01-animated/output/gifs/fox-smug.gif",
+      "status": "imported",
+      "catalogId": "generated-a299698d4efdb014c9470b79",
+      "keyword": "得意",
+      "sha256": "a299698d4efdb014c9470b7917ac9ec1e2df05a1d3a12921e9e510cf7b6ea9fd",
+      "bytes": 104721
+    },
+    {
+      "id": "gecko-smug",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-01-animated/output/gifs/gecko-smug.gif",
+      "status": "imported",
+      "catalogId": "generated-e27789c2dcef078ba98cdc52",
+      "keyword": "得意",
+      "sha256": "e27789c2dcef078ba98cdc528797dc6a4db3f01f9adb4c14c9adf5e29dc7c7e9",
+      "bytes": 126407
+    },
+    {
+      "id": "seal-smug",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-01-animated/output/gifs/seal-smug.gif",
+      "status": "imported",
+      "catalogId": "generated-dd7e36e5da1dbe7234927d6e",
+      "keyword": "得意",
+      "sha256": "dd7e36e5da1dbe7234927d6e29a3faa72c5958fdece2562f6ceff0575c6a3703",
+      "bytes": 74128
+    },
+    {
+      "id": "man-smug",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-01-animated/output/gifs/man-smug.gif",
+      "status": "imported",
+      "catalogId": "generated-5ed9b8600a2bdaeadf062475",
+      "keyword": "得意",
+      "sha256": "5ed9b8600a2bdaeadf062475afb84461bec29247e84cdde00aea44c67849ccf4",
+      "bytes": 79473
+    },
+    {
+      "id": "siamese-curious",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-02-animated/output/gifs/siamese-curious.gif",
+      "status": "imported",
+      "catalogId": "generated-3338ddebbac1cd30ea138f3d",
+      "keyword": "好奇",
+      "sha256": "3338ddebbac1cd30ea138f3da91aefd6475bd8735c205642d523b99f5933f510",
+      "bytes": 83589
+    },
+    {
+      "id": "giraffe-curious",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-02-animated/output/gifs/giraffe-curious.gif",
+      "status": "imported",
+      "catalogId": "generated-fe135ee5d595742bb8388969",
+      "keyword": "好奇",
+      "sha256": "fe135ee5d595742bb83889694debaa3fb2a3256a38490b01e16e5ef25353ed26",
+      "bytes": 144292
+    },
+    {
+      "id": "raccoon-curious",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-02-animated/output/gifs/raccoon-curious.gif",
+      "status": "imported",
+      "catalogId": "generated-f145fbd23ebef341cb54c63a",
+      "keyword": "好奇",
+      "sha256": "f145fbd23ebef341cb54c63a1165ee17cc9dd91565dd929c20bfbc166d8169b1",
+      "bytes": 101081
+    },
+    {
+      "id": "man-curious",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-02-animated/output/gifs/man-curious.gif",
+      "status": "imported",
+      "catalogId": "generated-984db7a2f15b982ad31724fa",
+      "keyword": "好奇",
+      "sha256": "984db7a2f15b982ad31724fabf918b0f50c3f04c6714147f19fb08d34d0bbdb8",
+      "bytes": 66919
+    },
+    {
+      "id": "tuxedo-angry",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-02-animated/output/gifs/tuxedo-angry.gif",
+      "status": "imported",
+      "catalogId": "generated-91d458bd6b9eed8c0f901bf2",
+      "keyword": "生气",
+      "sha256": "91d458bd6b9eed8c0f901bf2bdb12e52577d5933493d2dd496daa3accc32ac1a",
+      "bytes": 102773
+    },
+    {
+      "id": "puffer-angry",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-02-animated/output/gifs/puffer-angry.gif",
+      "status": "imported",
+      "catalogId": "generated-8bc57298d7e6356538b9fc6a",
+      "keyword": "生气",
+      "sha256": "8bc57298d7e6356538b9fc6a69cfc3c18f1b98795731427d316004864eeb2bfa",
+      "bytes": 143612
+    },
+    {
+      "id": "calf-angry",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-02-animated/output/gifs/calf-angry.gif",
+      "status": "imported",
+      "catalogId": "generated-c137811ebbda634ece2469cc",
+      "keyword": "生气",
+      "sha256": "c137811ebbda634ece2469cc715672a08d375bd0e1f276d764b00a073e829078",
+      "bytes": 93341
+    },
+    {
+      "id": "man-angry",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-02-animated/output/gifs/man-angry.gif",
+      "status": "imported",
+      "catalogId": "generated-13a7d15e1cf0f91acb3a71c8",
+      "keyword": "生气",
+      "sha256": "13a7d15e1cf0f91acb3a71c83cbe61c34513ec59f8c50c5df0cf47919b359b67",
+      "bytes": 74490
+    },
+    {
+      "id": "shiba-giggle",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-02-animated/output/gifs/shiba-giggle.gif",
+      "status": "imported",
+      "catalogId": "generated-91ea4ed8785899fc626003eb",
+      "keyword": "偷笑",
+      "sha256": "91ea4ed8785899fc626003eb6be573c12d747473fee424f18307fcd1e0b472f6",
+      "bytes": 73485
+    },
+    {
+      "id": "bird-giggle",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-02-animated/output/gifs/bird-giggle.gif",
+      "status": "imported",
+      "catalogId": "generated-bb92af5807aea456c503caae",
+      "keyword": "偷笑",
+      "sha256": "bb92af5807aea456c503caae324ac577485c64825c80ae41f43393e881236e78",
+      "bytes": 140655
+    },
+    {
+      "id": "otter-giggle",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-02-animated/output/gifs/otter-giggle.gif",
+      "status": "imported",
+      "catalogId": "generated-3c81913d83e7c407696e5229",
+      "keyword": "偷笑",
+      "sha256": "3c81913d83e7c407696e522970ff6ad3fa96e8b94d28c2a216a84ee0fa2e2282",
+      "bytes": 96179
+    },
+    {
+      "id": "man-giggle",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-02-animated/output/gifs/man-giggle.gif",
+      "status": "imported",
+      "catalogId": "generated-03b2453cd4c0b85ce511e6bf",
+      "keyword": "偷笑",
+      "sha256": "03b2453cd4c0b85ce511e6bff306461ec55a1578bafd386f85ec2b5a51c72e6b",
+      "bytes": 102095
+    },
+    {
+      "id": "graycat-awkward",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-03-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-03-animated/output/gifs/graycat-awkward.gif",
+      "status": "imported",
+      "catalogId": "generated-5bdcbfa0d6c74b75294262a6",
+      "keyword": "尴尬",
+      "sha256": "5bdcbfa0d6c74b75294262a6b6dc46fb658f4c30c9813c9d36d1755475c43003",
+      "bytes": 128933
+    },
+    {
+      "id": "turtle-awkward",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-03-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-03-animated/output/gifs/turtle-awkward.gif",
+      "status": "excluded",
+      "reason": "明确标记需返工"
+    },
+    {
+      "id": "penguin-awkward",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-03-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-03-animated/output/gifs/penguin-awkward.gif",
+      "status": "imported",
+      "catalogId": "generated-65d7748676876a08ca3c1aa3",
+      "keyword": "尴尬",
+      "sha256": "65d7748676876a08ca3c1aa3b636378e827c12a9a9cd5384c4a8d39de5a7c17c",
+      "bytes": 79774
+    },
+    {
+      "id": "man-awkward",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-03-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-03-animated/output/gifs/man-awkward.gif",
+      "status": "imported",
+      "catalogId": "generated-0a25709d4f2da41348fe0bdd",
+      "keyword": "尴尬",
+      "sha256": "0a25709d4f2da41348fe0bddb98210b57d3424c077085286e49da319d7e752bf",
+      "bytes": 80018
+    },
+    {
+      "id": "corgi-eager",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-03-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-03-animated/output/gifs/corgi-eager.gif",
+      "status": "imported",
+      "catalogId": "generated-9a6cec93b1907e7c647c2425",
+      "keyword": "期待",
+      "sha256": "9a6cec93b1907e7c647c24254fd2b5d4a6d7dfbb9815fdc51c01b8c76e5b5e1a",
+      "bytes": 103092
+    },
+    {
+      "id": "seal-eager",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-03-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-03-animated/output/gifs/seal-eager.gif",
+      "status": "imported",
+      "catalogId": "generated-a2ae823081cade7dcff3c090",
+      "keyword": "期待",
+      "sha256": "a2ae823081cade7dcff3c090a3ba6b0064dc14d8cf33bed6c9467820648a2c6b",
+      "bytes": 123649
+    },
+    {
+      "id": "fawn-eager",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-03-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-03-animated/output/gifs/fawn-eager.gif",
+      "status": "imported",
+      "catalogId": "generated-a01405f91a755ce15a15e2c6",
+      "keyword": "期待",
+      "sha256": "a01405f91a755ce15a15e2c64df60176f5b972ec8f687b7e3fd229b68579ee38",
+      "bytes": 85120
+    },
+    {
+      "id": "man-eager",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-03-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-03-animated/output/gifs/man-eager.gif",
+      "status": "imported",
+      "catalogId": "generated-b951fc96c75183471848a1af",
+      "keyword": "期待",
+      "sha256": "b951fc96c75183471848a1afce0a796380629bfbd4afbbbd4e90b535f827d079",
+      "bytes": 70872
+    },
+    {
+      "id": "beagle-puzzled",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-03-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-03-animated/output/gifs/beagle-puzzled.gif",
+      "status": "imported",
+      "catalogId": "generated-3eb642d11558818c111766bc",
+      "keyword": "疑惑",
+      "sha256": "3eb642d11558818c111766bc790c30b4758beb42bf8a3969b10cf2270e6debd0",
+      "bytes": 110453
+    },
+    {
+      "id": "owl-puzzled",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-03-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-03-animated/output/gifs/owl-puzzled.gif",
+      "status": "imported",
+      "catalogId": "generated-21866cca54b5f3599c1a979b",
+      "keyword": "疑惑",
+      "sha256": "21866cca54b5f3599c1a979b55de9dbd598360afa43178e4a79e0487b01e1b92",
+      "bytes": 135653
+    },
+    {
+      "id": "panda-puzzled",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-03-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-03-animated/output/gifs/panda-puzzled.gif",
+      "status": "imported",
+      "catalogId": "generated-6e2f8948463db272fabaef01",
+      "keyword": "疑惑",
+      "sha256": "6e2f8948463db272fabaef0195d3827fc3f636751d132e3b3fe3b0e8d94e7e39",
+      "bytes": 88732
+    },
+    {
+      "id": "man-puzzled",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-03-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-03-animated/output/gifs/man-puzzled.gif",
+      "status": "imported",
+      "catalogId": "generated-a11fb47aa57f269b5f1dd0bc",
+      "keyword": "疑惑",
+      "sha256": "a11fb47aa57f269b5f1dd0bc20fda55dc501a1622319c78d3921d210a840aef1",
+      "bytes": 78893
+    },
+    {
+      "id": "siamese-shy",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-04-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-04-animated/output/gifs/siamese-shy.gif",
+      "status": "imported",
+      "catalogId": "generated-9bae7bfd72a6c5c4fde585d8",
+      "keyword": "害羞",
+      "sha256": "9bae7bfd72a6c5c4fde585d8bd5a8a8c01aee812a4ba0470d9588a4f3f9d15db",
+      "bytes": 90163
+    },
+    {
+      "id": "mouse-shy",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-04-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-04-animated/output/gifs/mouse-shy.gif",
+      "status": "imported",
+      "catalogId": "generated-1a00670394d31647e704ffd8",
+      "keyword": "害羞",
+      "sha256": "1a00670394d31647e704ffd83031f14f8c7f2bf03a3b1023fa055ea73212642e",
+      "bytes": 125691
+    },
+    {
+      "id": "rabbit-shy",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-04-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-04-animated/output/gifs/rabbit-shy.gif",
+      "status": "imported",
+      "catalogId": "generated-ff0c58373432af11eec7a359",
+      "keyword": "害羞",
+      "sha256": "ff0c58373432af11eec7a35943bbb4b6d7f192a2b2b53603a1668a539f4ea505",
+      "bytes": 84177
+    },
+    {
+      "id": "man-shy",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-04-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-04-animated/output/gifs/man-shy.gif",
+      "status": "imported",
+      "catalogId": "generated-3515a031d7736296350def4c",
+      "keyword": "害羞",
+      "sha256": "3515a031d7736296350def4c7328356d08649017671f351ddd85ae744b3c9d7c",
+      "bytes": 66848
+    },
+    {
+      "id": "retriever-relieved",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-04-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-04-animated/output/gifs/retriever-relieved.gif",
+      "status": "imported",
+      "catalogId": "generated-8a95b63a5362ae47be4ae0d6",
+      "keyword": "放心",
+      "sha256": "8a95b63a5362ae47be4ae0d620897d512811f45866acb9b39c8fff5de0746bb9",
+      "bytes": 107130
+    },
+    {
+      "id": "capybara-relieved",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-04-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-04-animated/output/gifs/capybara-relieved.gif",
+      "status": "imported",
+      "catalogId": "generated-94e7193900b00eea3e378d2e",
+      "keyword": "放心",
+      "sha256": "94e7193900b00eea3e378d2e20dc513e7fc21babaf546b878d9f1fe118db034b",
+      "bytes": 72165
+    },
+    {
+      "id": "sealion-relieved",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-04-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-04-animated/output/gifs/sealion-relieved.gif",
+      "status": "imported",
+      "catalogId": "generated-d32732b6a370ebc2d4e2e09d",
+      "keyword": "放心",
+      "sha256": "d32732b6a370ebc2d4e2e09de9fa4bc619809f814c84a76a51f9ab318ba1eb55",
+      "bytes": 76830
+    },
+    {
+      "id": "man-relieved",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-04-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-04-animated/output/gifs/man-relieved.gif",
+      "status": "imported",
+      "catalogId": "generated-55e3c54558436c811c634461",
+      "keyword": "放心",
+      "sha256": "55e3c54558436c811c634461363e7db25d0d3df2b4d3be38bc286a010f6e48e5",
+      "bytes": 65231
+    },
+    {
+      "id": "husky-helpless",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-04-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-04-animated/output/gifs/husky-helpless.gif",
+      "status": "imported",
+      "catalogId": "generated-88a5247f8350ce43668f95f5",
+      "keyword": "无奈",
+      "sha256": "88a5247f8350ce43668f95f59dc2685bcc5c1c97dccbffc913118f352db8ac37",
+      "bytes": 119631
+    },
+    {
+      "id": "duck-helpless",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-04-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-04-animated/output/gifs/duck-helpless.gif",
+      "status": "excluded",
+      "reason": "明确标记需返工"
+    },
+    {
+      "id": "koala-helpless",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-04-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-04-animated/output/gifs/koala-helpless.gif",
+      "status": "imported",
+      "catalogId": "generated-e2db0b23f49ae702bc8ca197",
+      "keyword": "无奈",
+      "sha256": "e2db0b23f49ae702bc8ca1978aeec5a28f743350e1afba6d2de30c944163f76a",
+      "bytes": 102665
+    },
+    {
+      "id": "man-helpless",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-04-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-04-animated/output/gifs/man-helpless.gif",
+      "status": "imported",
+      "catalogId": "generated-0f022270943fc1a18f897519",
+      "keyword": "无奈",
+      "sha256": "0f022270943fc1a18f8975194cbf0cfbd69a672787350a529d40d170acf9a3c8",
+      "bytes": 69854
+    },
+    {
+      "id": "whitecat-proud",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-05-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-05-animated/output/gifs/whitecat-proud.gif",
+      "status": "imported",
+      "catalogId": "generated-682aeaf6403ddd2230e22ce9",
+      "keyword": "傲娇",
+      "sha256": "682aeaf6403ddd2230e22ce9c7696d7700e73584109df35734e3454ddc564f5e",
+      "bytes": 101572
+    },
+    {
+      "id": "fox-proud",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-05-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-05-animated/output/gifs/fox-proud.gif",
+      "status": "imported",
+      "catalogId": "generated-1e13eff4c94d8f0dc19adf92",
+      "keyword": "傲娇",
+      "sha256": "1e13eff4c94d8f0dc19adf927a2923377ee0211df998fcad783049d6442a5a8c",
+      "bytes": 136152
+    },
+    {
+      "id": "hamster-proud",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-05-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-05-animated/output/gifs/hamster-proud.gif",
+      "status": "imported",
+      "catalogId": "generated-6fc56730dcb4473cf3861674",
+      "keyword": "傲娇",
+      "sha256": "6fc56730dcb4473cf3861674f6e4a38845bb5d8ea423b1d8e019cc09b3e52690",
+      "bytes": 100136
+    },
+    {
+      "id": "man-proud",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-05-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-05-animated/output/gifs/man-proud.gif",
+      "status": "imported",
+      "catalogId": "generated-7f12ed2d262900f9d0c4fbdd",
+      "keyword": "傲娇",
+      "sha256": "7f12ed2d262900f9d0c4fbdd98eb51e6fffba2252e0487493222b3ecda01d831",
+      "bytes": 104836
+    },
+    {
+      "id": "dachshund-guilty",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-05-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-05-animated/output/gifs/dachshund-guilty.gif",
+      "status": "excluded",
+      "reason": "明确标记需返工"
+    },
+    {
+      "id": "puppy-guilty",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-05-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-05-animated/output/gifs/puppy-guilty.gif",
+      "status": "imported",
+      "catalogId": "generated-ae806817f8348d5a20ce3762",
+      "keyword": "心虚",
+      "sha256": "ae806817f8348d5a20ce376221ed70099f1e719339a4c7a70c035a10e2728128",
+      "bytes": 128842
+    },
+    {
+      "id": "raccoon-guilty",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-05-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-05-animated/output/gifs/raccoon-guilty.gif",
+      "status": "imported",
+      "catalogId": "generated-fb7ac20dcf07fdee1474d3a0",
+      "keyword": "心虚",
+      "sha256": "fb7ac20dcf07fdee1474d3a044ddea6ad2c2ebc428517e2072ab6f6650162b95",
+      "bytes": 125786
+    },
+    {
+      "id": "man-guilty",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-05-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-05-animated/output/gifs/man-guilty.gif",
+      "status": "imported",
+      "catalogId": "generated-82925ee0327d61674040661c",
+      "keyword": "心虚",
+      "sha256": "82925ee0327d61674040661c066307ee8c981a6b4d1a941a284a6ec3bd708542",
+      "bytes": 65225
+    },
+    {
+      "id": "labrador-downcast",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-05-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-05-animated/output/gifs/labrador-downcast.gif",
+      "status": "imported",
+      "catalogId": "generated-7b37c2b29e688959fdf9264a",
+      "keyword": "失落",
+      "sha256": "7b37c2b29e688959fdf9264ad0fb1c228f8dbed6856b5e2f715bbf8a1c47b5d6",
+      "bytes": 109873
+    },
+    {
+      "id": "penguin-downcast",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-05-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-05-animated/output/gifs/penguin-downcast.gif",
+      "status": "imported",
+      "catalogId": "generated-01158731a026fb22c900f59b",
+      "keyword": "失落",
+      "sha256": "01158731a026fb22c900f59bfa9dfed597ca440cc964a5d71b78653671fdc676",
+      "bytes": 96026
+    },
+    {
+      "id": "bear-downcast",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-05-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-05-animated/output/gifs/bear-downcast.gif",
+      "status": "imported",
+      "catalogId": "generated-ffd632e456fee4798976da13",
+      "keyword": "失落",
+      "sha256": "ffd632e456fee4798976da139312a474e810800f69bfe4483d677b4b34d46289",
+      "bytes": 110107
+    },
+    {
+      "id": "man-downcast",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-05-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-05-animated/output/gifs/man-downcast.gif",
+      "status": "imported",
+      "catalogId": "generated-79ab172a5db19b6167dcb061",
+      "keyword": "失落",
+      "sha256": "79ab172a5db19b6167dcb061df13e27cc6445e52d879fdf9b78cc017050c11c0",
+      "bytes": 74742
+    },
+    {
+      "id": "tabby-alert",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-06-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-06-animated/output/gifs/tabby-alert.gif",
+      "status": "imported",
+      "catalogId": "generated-a8b271b24e9b0edf07d75395",
+      "keyword": "警惕",
+      "sha256": "a8b271b24e9b0edf07d75395ce1ede1f9eb73ba6aaf0740ac16ca9b81e826c6d",
+      "bytes": 150502
+    },
+    {
+      "id": "owl-alert",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-06-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-06-animated/output/gifs/owl-alert.gif",
+      "status": "imported",
+      "catalogId": "generated-c38f4cec99ffdff43bf99e13",
+      "keyword": "警惕",
+      "sha256": "c38f4cec99ffdff43bf99e130182716213c1047c970cc2fb0df443816768a0c8",
+      "bytes": 135706
+    },
+    {
+      "id": "meerkat-alert",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-06-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-06-animated/output/gifs/meerkat-alert.gif",
+      "status": "imported",
+      "catalogId": "generated-4548527ed4e6ed4895c93e5d",
+      "keyword": "警惕",
+      "sha256": "4548527ed4e6ed4895c93e5d16bd815e66ac4229607cfe5895b942c3733a6e90",
+      "bytes": 94388
+    },
+    {
+      "id": "man-alert",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-06-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-06-animated/output/gifs/man-alert.gif",
+      "status": "imported",
+      "catalogId": "generated-485258471783da26d3347087",
+      "keyword": "警惕",
+      "sha256": "485258471783da26d3347087736d0fe657ffe1f1ca80a4ea65d1312a1a9ec8c0",
+      "bytes": 67575
+    },
+    {
+      "id": "gingercat-content",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-06-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-06-animated/output/gifs/gingercat-content.gif",
+      "status": "imported",
+      "catalogId": "generated-a2b1471a24ec21fe47211237",
+      "keyword": "满足",
+      "sha256": "a2b1471a24ec21fe472112375e4f25f1803c23cf95b77063fb44b7a89bbd4424",
+      "bytes": 102494
+    },
+    {
+      "id": "otter-content",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-06-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-06-animated/output/gifs/otter-content.gif",
+      "status": "imported",
+      "catalogId": "generated-2182d2aea229817fa100d947",
+      "keyword": "满足",
+      "sha256": "2182d2aea229817fa100d947b2e1bd2335d8437f19959493e8ecae6fe6adaf24",
+      "bytes": 140182
+    },
+    {
+      "id": "man-content",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-06-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-06-animated/output/gifs/man-content.gif",
+      "status": "imported",
+      "catalogId": "generated-50a3c9bbb39c3e3e61415526",
+      "keyword": "满足",
+      "sha256": "50a3c9bbb39c3e3e61415526fdf6552e5ca098f422df993a150c7b91e4ddf3a4",
+      "bytes": 71953
+    },
+    {
+      "id": "collie-torn",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-06-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-06-animated/output/gifs/collie-torn.gif",
+      "status": "imported",
+      "catalogId": "generated-64f40414590444d149424dd1",
+      "keyword": "纠结",
+      "sha256": "64f40414590444d149424dd19c353c38e32c8cfd42aeb189ce186937d94814bc",
+      "bytes": 114244
+    },
+    {
+      "id": "rabbit-torn",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-06-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-06-animated/output/gifs/rabbit-torn.gif",
+      "status": "imported",
+      "catalogId": "generated-b8eac4e20159689cc47270d8",
+      "keyword": "纠结",
+      "sha256": "b8eac4e20159689cc47270d8f8ca2bf87a65fb1819160400a9c3c029f7c5917b",
+      "bytes": 123697
+    },
+    {
+      "id": "panda-torn",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-06-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-06-animated/output/gifs/panda-torn.gif",
+      "status": "imported",
+      "catalogId": "generated-e58b318e58e57706de25f8aa",
+      "keyword": "纠结",
+      "sha256": "e58b318e58e57706de25f8aae3edb793fad70e3958e798a453d51aba0b629b4c",
+      "bytes": 94207
+    },
+    {
+      "id": "man-torn",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-06-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-06-animated/output/gifs/man-torn.gif",
+      "status": "imported",
+      "catalogId": "generated-2d9be4b6c9fd991d915d8680",
+      "keyword": "纠结",
+      "sha256": "2d9be4b6c9fd991d915d86807cd1cc2e71048d2aba150c1bff95485f8146254a",
+      "bytes": 78820
+    },
+    {
+      "id": "retriever-encourage",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-07-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-07-animated/output/gifs/retriever-encourage.gif",
+      "status": "imported",
+      "catalogId": "generated-018891dab201558e0be6a4e6",
+      "keyword": "加油",
+      "sha256": "018891dab201558e0be6a4e6cd02c92852d90bf3c09a21a7e4ecd21960be8eae",
+      "bytes": 75548
+    },
+    {
+      "id": "frog-encourage",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-07-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-07-animated/output/gifs/frog-encourage.gif",
+      "status": "imported",
+      "catalogId": "generated-9f8717252c2618d53c3db7e7",
+      "keyword": "加油",
+      "sha256": "9f8717252c2618d53c3db7e75729e8ea63847686f1ea7675eada4ee1239e2e84",
+      "bytes": 136240
+    },
+    {
+      "id": "man-encourage",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-07-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-07-animated/output/gifs/man-encourage.gif",
+      "status": "imported",
+      "catalogId": "generated-06852e2e54872dec0ac799c8",
+      "keyword": "加油",
+      "sha256": "06852e2e54872dec0ac799c8a15584ea8e3df8abaffa259b974539c339d492f2",
+      "bytes": 79477
+    },
+    {
+      "id": "tabby-please",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-07-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-07-animated/output/gifs/tabby-please.gif",
+      "status": "imported",
+      "catalogId": "generated-63d76f1acf544ededa7f04af",
+      "keyword": "拜托",
+      "sha256": "63d76f1acf544ededa7f04afa7df7be60705999cf5612f90e07bc34cf119eb97",
+      "bytes": 94943
+    },
+    {
+      "id": "seal-please",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-07-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-07-animated/output/gifs/seal-please.gif",
+      "status": "imported",
+      "catalogId": "generated-519d6d3bf1f31e34c121257f",
+      "keyword": "拜托",
+      "sha256": "519d6d3bf1f31e34c121257fbe8be4c1bf127a0bb1df1ba025f82f7fcbeeeb0e",
+      "bytes": 130334
+    },
+    {
+      "id": "hamster-please",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-07-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-07-animated/output/gifs/hamster-please.gif",
+      "status": "imported",
+      "catalogId": "generated-d4b4636806b9b68397227a08",
+      "keyword": "拜托",
+      "sha256": "d4b4636806b9b68397227a087824f9352c0c381f77f4833f6bdfa7b3dfb83414",
+      "bytes": 81334
+    },
+    {
+      "id": "man-please",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-07-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-07-animated/output/gifs/man-please.gif",
+      "status": "imported",
+      "catalogId": "generated-e4f9479a6385499aa4244636",
+      "keyword": "拜托",
+      "sha256": "e4f9479a6385499aa42446363e330c7d378fc83d6423404e7ba9204d0f2a2ccb",
+      "bytes": 68557
+    },
+    {
+      "id": "husky-calm",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-07-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-07-animated/output/gifs/husky-calm.gif",
+      "status": "imported",
+      "catalogId": "generated-8911966fa9ed25a1f1328bdc",
+      "keyword": "冷静",
+      "sha256": "8911966fa9ed25a1f1328bdce0bc511dbcc82305c1d03931f4f388de2698166f",
+      "bytes": 138635
+    },
+    {
+      "id": "penguin-calm",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-07-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-07-animated/output/gifs/penguin-calm.gif",
+      "status": "imported",
+      "catalogId": "generated-dd1d27d38b9ef60e6bd7daec",
+      "keyword": "冷静",
+      "sha256": "dd1d27d38b9ef60e6bd7daec5ed077955f1d0ee82cd7d11c917579f53a5d59b4",
+      "bytes": 115233
+    },
+    {
+      "id": "capybara-calm",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-07-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-07-animated/output/gifs/capybara-calm.gif",
+      "status": "imported",
+      "catalogId": "generated-63bced98db5b8de419e34b1a",
+      "keyword": "冷静",
+      "sha256": "63bced98db5b8de419e34b1a58a78bc08c838169fd7e73b77b07c754f2c64b15",
+      "bytes": 59848
+    },
+    {
+      "id": "man-calm",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-07-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-07-animated/output/gifs/man-calm.gif",
+      "status": "imported",
+      "catalogId": "generated-388a84055931442081148834",
+      "keyword": "冷静",
+      "sha256": "388a840559314420811488340350bb8054d40c66ea0307a8f5e341b88d0d49d0",
+      "bytes": 90678
+    },
+    {
+      "id": "shiba-defiant",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-08-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-08-animated/output/gifs/shiba-defiant.gif",
+      "status": "imported",
+      "catalogId": "generated-08c3ac3774d2ddc7cc526389",
+      "keyword": "不服",
+      "sha256": "08c3ac3774d2ddc7cc526389577f3d2b9d4b8ca6e183d8c8798bdf9c3ff65ba4",
+      "bytes": 112327
+    },
+    {
+      "id": "duck-defiant",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-08-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-08-animated/output/gifs/duck-defiant.gif",
+      "status": "imported",
+      "catalogId": "generated-e6c0ab187e4539db6153593a",
+      "keyword": "不服",
+      "sha256": "e6c0ab187e4539db6153593a0bca77339998d8cdfff2399fd57a7128d7d29b86",
+      "bytes": 132960
+    },
+    {
+      "id": "calf-defiant",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-08-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-08-animated/output/gifs/calf-defiant.gif",
+      "status": "imported",
+      "catalogId": "generated-ed225559dd8d5e695facae69",
+      "keyword": "不服",
+      "sha256": "ed225559dd8d5e695facae6995583b4baa4241b8b7bc3acbab13ba71d62ba8f5",
+      "bytes": 83759
+    },
+    {
+      "id": "man-defiant",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-08-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-08-animated/output/gifs/man-defiant.gif",
+      "status": "imported",
+      "catalogId": "generated-2e4aaa50366e7824a489a970",
+      "keyword": "不服",
+      "sha256": "2e4aaa50366e7824a489a970615b52a72d452fc523663cdf16ca24c9b7cbc86c",
+      "bytes": 83876
+    },
+    {
+      "id": "gingercat-overwhelmed",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-08-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-08-animated/output/gifs/gingercat-overwhelmed.gif",
+      "status": "imported",
+      "catalogId": "generated-2380caed9e94837b1ac0585b",
+      "keyword": "崩溃",
+      "sha256": "2380caed9e94837b1ac0585b5f8ab18853306f504a8a76141beb6b383b0a58f8",
+      "bytes": 113999
+    },
+    {
+      "id": "penguin-overwhelmed",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-08-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-08-animated/output/gifs/penguin-overwhelmed.gif",
+      "status": "imported",
+      "catalogId": "generated-2bb0661f93135c32bb9281b6",
+      "keyword": "崩溃",
+      "sha256": "2bb0661f93135c32bb9281b6f082f72ee9e9a3b2c775661380e50e130fdff570",
+      "bytes": 64138
+    },
+    {
+      "id": "sloth-overwhelmed",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-08-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-08-animated/output/gifs/sloth-overwhelmed.gif",
+      "status": "imported",
+      "catalogId": "generated-4d559e6998eb7b2459382800",
+      "keyword": "崩溃",
+      "sha256": "4d559e6998eb7b245938280004c1c6e6275fecdc160f7fb48864c1e4fb931ab2",
+      "bytes": 90482
+    },
+    {
+      "id": "man-overwhelmed",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-08-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-08-animated/output/gifs/man-overwhelmed.gif",
+      "status": "imported",
+      "catalogId": "generated-b7fb3e6706e5add4fccf7ea8",
+      "keyword": "崩溃",
+      "sha256": "b7fb3e6706e5add4fccf7ea8d5d9b5a29deea66aa235551c3869b48ef678f0d3",
+      "bytes": 75549
+    },
+    {
+      "id": "raccoon-admire",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-08-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-08-animated/output/gifs/raccoon-admire.gif",
+      "status": "imported",
+      "catalogId": "generated-02b13f00b86a5afbdda6f53e",
+      "keyword": "佩服",
+      "sha256": "02b13f00b86a5afbdda6f53e8061955fb647f17fb982864ca3f43aca089b7615",
+      "bytes": 124610
+    },
+    {
+      "id": "rabbit-admire",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-08-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-08-animated/output/gifs/rabbit-admire.gif",
+      "status": "imported",
+      "catalogId": "generated-5f7677c37b552d7698545a07",
+      "keyword": "佩服",
+      "sha256": "5f7677c37b552d7698545a073afe05da8075f5add36df4d250b7cc0e14c535aa",
+      "bytes": 136573
+    },
+    {
+      "id": "otter-admire",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-08-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-08-animated/output/gifs/otter-admire.gif",
+      "status": "imported",
+      "catalogId": "generated-0eebba298c827b0267d6ff04",
+      "keyword": "佩服",
+      "sha256": "0eebba298c827b0267d6ff04eb4ad92875013c45f9c7ed7e59601d316aff3579",
+      "bytes": 83073
+    },
+    {
+      "id": "man-admire",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-08-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-08-animated/output/gifs/man-admire.gif",
+      "status": "imported",
+      "catalogId": "generated-a21bb57a19310271fd5fcce2",
+      "keyword": "佩服",
+      "sha256": "a21bb57a19310271fd5fcce296c7df755276ab61c94bea033511397d4c086940",
+      "bytes": 94898
+    },
+    {
+      "id": "beagle-restrain",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-09-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-09-animated/output/gifs/beagle-restrain.gif",
+      "status": "imported",
+      "catalogId": "generated-3aa3c6386e0fdf5f02a6f60d",
+      "keyword": "忍住",
+      "sha256": "3aa3c6386e0fdf5f02a6f60dce8e12ad5a4859b716e293d1ec1a3f3759f09037",
+      "bytes": 113255
+    },
+    {
+      "id": "frog-restrain",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-09-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-09-animated/output/gifs/frog-restrain.gif",
+      "status": "imported",
+      "catalogId": "generated-e4fd75a6139cdb93d9397ae4",
+      "keyword": "忍住",
+      "sha256": "e4fd75a6139cdb93d9397ae4f7d5f982330637266b655b73e4a1409674cb49d8",
+      "bytes": 128580
+    },
+    {
+      "id": "hamster-restrain",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-09-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-09-animated/output/gifs/hamster-restrain.gif",
+      "status": "imported",
+      "catalogId": "generated-996d9263697954056b3cb4c9",
+      "keyword": "忍住",
+      "sha256": "996d9263697954056b3cb4c99e7ac5f9e7f3d9f4d381a2df590f481811f2ecea",
+      "bytes": 79001
+    },
+    {
+      "id": "man-restrain",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-09-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-09-animated/output/gifs/man-restrain.gif",
+      "status": "imported",
+      "catalogId": "generated-9f6fc0de00bc886ffcc1491e",
+      "keyword": "忍住",
+      "sha256": "9f6fc0de00bc886ffcc1491e2231a52c181bf23378c0ccab68100d45e9672120",
+      "bytes": 69792
+    },
+    {
+      "id": "tabby-lost",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-09-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-09-animated/output/gifs/tabby-lost.gif",
+      "status": "imported",
+      "catalogId": "generated-0eec0a741e805df96e0d21f7",
+      "keyword": "迷茫",
+      "sha256": "0eec0a741e805df96e0d21f75b9b21a1295aba8648104c9f4b933cd220f37093",
+      "bytes": 124580
+    },
+    {
+      "id": "capybara-lost",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-09-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-09-animated/output/gifs/capybara-lost.gif",
+      "status": "imported",
+      "catalogId": "generated-4104a8b952dbf52a58b67195",
+      "keyword": "迷茫",
+      "sha256": "4104a8b952dbf52a58b6719534c3359b8875293b4f7755ddcdb8dd03260ea8ef",
+      "bytes": 83994
+    },
+    {
+      "id": "man-lost",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-09-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-09-animated/output/gifs/man-lost.gif",
+      "status": "imported",
+      "catalogId": "generated-d9b8953ee7a5e929603723fc",
+      "keyword": "迷茫",
+      "sha256": "d9b8953ee7a5e929603723fca69e452ccee009287e8bcb49fe369fae83bc27aa",
+      "bytes": 74672
+    },
+    {
+      "id": "retriever-facepalm",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-09-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-09-animated/output/gifs/retriever-facepalm.gif",
+      "status": "imported",
+      "catalogId": "generated-34d01065e60a159652f287ab",
+      "keyword": "没眼看",
+      "sha256": "34d01065e60a159652f287ab17b7ec974a289f58935c31d8d4d70f6f2bb1055a",
+      "bytes": 110689
+    },
+    {
+      "id": "penguin-facepalm",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-09-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-09-animated/output/gifs/penguin-facepalm.gif",
+      "status": "imported",
+      "catalogId": "generated-3835276d1394b7b1e73dd814",
+      "keyword": "没眼看",
+      "sha256": "3835276d1394b7b1e73dd81469dbe1513e063d1471ceb5ef928a4bff31ca19d3",
+      "bytes": 107987
+    },
+    {
+      "id": "bear-facepalm",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-09-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-09-animated/output/gifs/bear-facepalm.gif",
+      "status": "imported",
+      "catalogId": "generated-51799bf1099dbf684fb617a6",
+      "keyword": "没眼看",
+      "sha256": "51799bf1099dbf684fb617a632df50382ffa5d48abda3cfeda3ed32d0c865355",
+      "bytes": 80304
+    },
+    {
+      "id": "man-facepalm",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-09-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-09-animated/output/gifs/man-facepalm.gif",
+      "status": "imported",
+      "catalogId": "generated-136c3a422a53371a5a354ef9",
+      "keyword": "没眼看",
+      "sha256": "136c3a422a53371a5a354ef97341273a3517178c806f76e1d8d64eda767ec13c",
+      "bytes": 106937
+    },
+    {
+      "id": "corgi-hungry",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-10-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-10-animated/output/gifs/corgi-hungry.gif",
+      "status": "imported",
+      "catalogId": "generated-5e0f302f3a07ab719317fdf8",
+      "keyword": "饿了",
+      "sha256": "5e0f302f3a07ab719317fdf8321af697a5952e2a14e52c000559663feaf0aa52",
+      "bytes": 93975
+    },
+    {
+      "id": "rabbit-hungry",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-10-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-10-animated/output/gifs/rabbit-hungry.gif",
+      "status": "imported",
+      "catalogId": "generated-2535ab7074e10d91d9e33aba",
+      "keyword": "饿了",
+      "sha256": "2535ab7074e10d91d9e33aba344a4463326e47f32b6fd7baadc9df00158d0740",
+      "bytes": 88887
+    },
+    {
+      "id": "pig-hungry",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-10-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-10-animated/output/gifs/pig-hungry.gif",
+      "status": "imported",
+      "catalogId": "generated-87c5439b42a70da85648344f",
+      "keyword": "饿了",
+      "sha256": "87c5439b42a70da85648344f77947e8a5e91e78301503a429196015401f7c192",
+      "bytes": 88750
+    },
+    {
+      "id": "man-hungry",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-10-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-10-animated/output/gifs/man-hungry.gif",
+      "status": "imported",
+      "catalogId": "generated-7118adeed7dc1c392f0a465f",
+      "keyword": "饿了",
+      "sha256": "7118adeed7dc1c392f0a465f4bce476d0a6a6d7a967ded6ca6a8ddc748e26f9f",
+      "bytes": 81510
+    },
+    {
+      "id": "bulldog-weary",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-10-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-10-animated/output/gifs/bulldog-weary.gif",
+      "status": "imported",
+      "catalogId": "generated-57f0bac3e54d444ed127bfdd",
+      "keyword": "心累",
+      "sha256": "57f0bac3e54d444ed127bfdd6f9121754fadc8d421b1228804aee04b2c8713af",
+      "bytes": 112588
+    },
+    {
+      "id": "seal-weary",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-10-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-10-animated/output/gifs/seal-weary.gif",
+      "status": "excluded",
+      "reason": "明确标记需返工"
+    },
+    {
+      "id": "sloth-weary",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-10-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-10-animated/output/gifs/sloth-weary.gif",
+      "status": "imported",
+      "catalogId": "generated-13f356591c843522f0ee6c16",
+      "keyword": "心累",
+      "sha256": "13f356591c843522f0ee6c163c4e648458d6cf36a22c8a51eb8fd90fdacc2002",
+      "bytes": 90588
+    },
+    {
+      "id": "man-weary",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-10-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-10-animated/output/gifs/man-weary.gif",
+      "status": "imported",
+      "catalogId": "generated-47e32b47cc13183bf5b22e13",
+      "keyword": "心累",
+      "sha256": "47e32b47cc13183bf5b22e137aa96740ac8ddb2110605627fa79a2e485453002",
+      "bytes": 79047
+    },
+    {
+      "id": "gingercat-shush",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-10-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-10-animated/output/gifs/gingercat-shush.gif",
+      "status": "excluded",
+      "reason": "明确标记需返工"
+    },
+    {
+      "id": "owl-shush",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-10-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-10-animated/output/gifs/owl-shush.gif",
+      "status": "imported",
+      "catalogId": "generated-65a8a84efc7fb8615b6ee490",
+      "keyword": "嘘",
+      "sha256": "65a8a84efc7fb8615b6ee490769d8994a082af08c7b5a0eea80afc445788f5af",
+      "bytes": 110737
+    },
+    {
+      "id": "fox-shush",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-10-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-10-animated/output/gifs/fox-shush.gif",
+      "status": "imported",
+      "catalogId": "generated-9782409c490559e161d7f5eb",
+      "keyword": "嘘",
+      "sha256": "9782409c490559e161d7f5ebd7af5007c1fd8828947d169452960e34e7e8dfbd",
+      "bytes": 88253
+    },
+    {
+      "id": "man-shush",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-10-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-10-animated/output/gifs/man-shush.gif",
+      "status": "imported",
+      "catalogId": "generated-07f13f70eeb42d32c19574ba",
+      "keyword": "嘘",
+      "sha256": "07f13f70eeb42d32c19574ba68b73286c1e92b01658b435f398e8c6e6f1697e5",
+      "bytes": 81841
+    },
+    {
+      "id": "terrier-refuse",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-11-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-11-animated/output/gifs/terrier-refuse.gif",
+      "status": "imported",
+      "catalogId": "generated-66da3c13baff9bfba71b9f74",
+      "keyword": "不听",
+      "sha256": "66da3c13baff9bfba71b9f74dc8ed697993695e547fc3393614029efb642f140",
+      "bytes": 116014
+    },
+    {
+      "id": "mouse-refuse",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-11-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-11-animated/output/gifs/mouse-refuse.gif",
+      "status": "imported",
+      "catalogId": "generated-71973961802976c681e68f0e",
+      "keyword": "不听",
+      "sha256": "71973961802976c681e68f0ec7e0c0a1f1fd098ef62a810212706adb6e81f55d",
+      "bytes": 61269
+    },
+    {
+      "id": "otter-refuse",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-11-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-11-animated/output/gifs/otter-refuse.gif",
+      "status": "imported",
+      "catalogId": "generated-c3402f08e4f6c4110ad70371",
+      "keyword": "不听",
+      "sha256": "c3402f08e4f6c4110ad703717db9b3737d19859a127a93b87c2b63fd4fe8ce85",
+      "bytes": 82038
+    },
+    {
+      "id": "man-refuse",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-11-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-11-animated/output/gifs/man-refuse.gif",
+      "status": "imported",
+      "catalogId": "generated-b0e0a21a58b0d78c02498daa",
+      "keyword": "不听",
+      "sha256": "b0e0a21a58b0d78c02498daafe1c64e253497f2ddb0f5326310bc2a04889a158",
+      "bytes": 86205
+    },
+    {
+      "id": "siamese-understand",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-11-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-11-animated/output/gifs/siamese-understand.gif",
+      "status": "excluded",
+      "reason": "明确标记需返工"
+    },
+    {
+      "id": "owl-understand",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-11-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-11-animated/output/gifs/owl-understand.gif",
+      "status": "imported",
+      "catalogId": "generated-289033286dc7011939b1fb88",
+      "keyword": "懂了",
+      "sha256": "289033286dc7011939b1fb88a3332d7795bdcceb99d42d7f32b14fc79f672dfb",
+      "bytes": 132352
+    },
+    {
+      "id": "raccoon-understand",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-11-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-11-animated/output/gifs/raccoon-understand.gif",
+      "status": "imported",
+      "catalogId": "generated-fd24bfc986e417d4807a0239",
+      "keyword": "懂了",
+      "sha256": "fd24bfc986e417d4807a02396d5ded38a39d2fdf502cbfae49cd8b5469901f51",
+      "bytes": 76763
+    },
+    {
+      "id": "man-understand",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-11-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-11-animated/output/gifs/man-understand.gif",
+      "status": "imported",
+      "catalogId": "generated-a6ecd6fff5a3ee363a9baf4f",
+      "keyword": "懂了",
+      "sha256": "a6ecd6fff5a3ee363a9baf4fe64b8d1b792f6c5bd2f84b617a33e4623f9039e8",
+      "bytes": 85194
+    },
+    {
+      "id": "spaniel-nervous",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-11-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-11-animated/output/gifs/spaniel-nervous.gif",
+      "status": "imported",
+      "catalogId": "generated-22343900c1555caecec48a41",
+      "keyword": "紧张",
+      "sha256": "22343900c1555caecec48a415b0102fc9bbe7e51b083f258618a9e12b1a09601",
+      "bytes": 116657
+    },
+    {
+      "id": "penguin-nervous",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-11-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-11-animated/output/gifs/penguin-nervous.gif",
+      "status": "imported",
+      "catalogId": "generated-df6b5d6b843a537b9e90cd56",
+      "keyword": "紧张",
+      "sha256": "df6b5d6b843a537b9e90cd56b6b8a8c2a2d95ff66d226e89a1ef3d4394cb2db9",
+      "bytes": 82572
+    },
+    {
+      "id": "hamster-nervous",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-11-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-11-animated/output/gifs/hamster-nervous.gif",
+      "status": "imported",
+      "catalogId": "generated-4f8871174f8762af38c553c5",
+      "keyword": "紧张",
+      "sha256": "4f8871174f8762af38c553c572d43905eacd50eaea3b601d3437a0c12bffafb2",
+      "bytes": 75526
+    },
+    {
+      "id": "man-nervous",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-11-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/original-volume-11-animated/output/gifs/man-nervous.gif",
+      "status": "imported",
+      "catalogId": "generated-9ebd13d9a28cdfbf6751dd43",
+      "keyword": "紧张",
+      "sha256": "9ebd13d9a28cdfbf6751dd435462a98755f82aedbb38419db5c0394acb0b576b",
+      "bytes": 105598
+    },
+    {
+      "id": "panda-really",
+      "sourceReport": "artifacts/expression-character-trials/reference-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/reference-01-animated/output/gifs/panda-really.gif",
+      "status": "imported",
+      "catalogId": "generated-8118a44268be166e33e9f1ce",
+      "keyword": "真的假的",
+      "sha256": "8118a44268be166e33e9f1ce32cd119ec5eb8fc94e8cab340d8eaadf7abff853",
+      "bytes": 105027
+    },
+    {
+      "id": "mushroom-think",
+      "sourceReport": "artifacts/expression-character-trials/reference-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/reference-01-animated/output/gifs/mushroom-think.gif",
+      "status": "imported",
+      "catalogId": "generated-667ccff71e5d5946e1d20728",
+      "keyword": "让我想想",
+      "sha256": "667ccff71e5d5946e1d20728c4501ef5aac030a961f332c403a7ebf902761dc3",
+      "bytes": 117399
+    },
+    {
+      "id": "panda-talented",
+      "sourceReport": "artifacts/expression-character-trials/reference-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/reference-02-animated/output/gifs/panda-talented.gif",
+      "status": "excluded",
+      "reason": "来源或许可未确认"
+    },
+    {
+      "id": "mushroom-learned",
+      "sourceReport": "artifacts/expression-character-trials/reference-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/reference-02-animated/output/gifs/mushroom-learned.gif",
+      "status": "excluded",
+      "reason": "来源或许可未确认"
+    },
+    {
+      "id": "panda-refuse",
+      "sourceReport": "artifacts/expression-character-trials/reference-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/reference-02-animated/output/gifs/panda-refuse.gif",
+      "status": "excluded",
+      "reason": "来源或许可未确认"
+    },
+    {
+      "id": "mushroom-confused",
+      "sourceReport": "artifacts/expression-character-trials/reference-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/reference-02-animated/output/gifs/mushroom-confused.gif",
+      "status": "excluded",
+      "reason": "来源或许可未确认"
+    },
+    {
+      "id": "schnauzer-afternoon",
+      "sourceReport": "artifacts/expression-character-trials/web-original-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-01-animated/output/gifs/schnauzer-afternoon.gif",
+      "status": "excluded",
+      "reason": "明确标记需返工"
+    },
+    {
+      "id": "seal-afternoon",
+      "sourceReport": "artifacts/expression-character-trials/web-original-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-01-animated/output/gifs/seal-afternoon.gif",
+      "status": "imported",
+      "catalogId": "generated-0e471b0a7fffbc971b735d35",
+      "keyword": "下午好",
+      "sha256": "0e471b0a7fffbc971b735d3545f6471e1a421a1f2316653615d9a6a31a949b9f",
+      "bytes": 114871
+    },
+    {
+      "id": "koala-afternoon",
+      "sourceReport": "artifacts/expression-character-trials/web-original-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-01-animated/output/gifs/koala-afternoon.gif",
+      "status": "imported",
+      "catalogId": "generated-04e53bcf8e17a65aee67b0e0",
+      "keyword": "下午好",
+      "sha256": "04e53bcf8e17a65aee67b0e07c5a0ea462c70f190167b55fb2b8c52b1f40af43",
+      "bytes": 69512
+    },
+    {
+      "id": "man-afternoon",
+      "sourceReport": "artifacts/expression-character-trials/web-original-01-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-01-animated/output/gifs/man-afternoon.gif",
+      "status": "excluded",
+      "reason": "明确标记需返工"
+    },
+    {
+      "id": "schnauzer-afternoon",
+      "sourceReport": "artifacts/expression-character-trials/web-original-01-completion/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-01-completion/output/gifs/schnauzer-afternoon.gif",
+      "status": "excluded",
+      "reason": "明确标记需返工"
+    },
+    {
+      "id": "man-afternoon",
+      "sourceReport": "artifacts/expression-character-trials/web-original-01-completion/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-01-completion/output/gifs/man-afternoon.gif",
+      "status": "excluded",
+      "reason": "明确标记需返工"
+    },
+    {
+      "id": "schnauzer-afternoon",
+      "sourceReport": "artifacts/expression-character-trials/web-original-01-framed/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-01-framed/output/gifs/schnauzer-afternoon.gif",
+      "status": "imported",
+      "catalogId": "generated-2e0a15059b61f7c03cb35197",
+      "keyword": "下午好",
+      "sha256": "2e0a15059b61f7c03cb35197ca596bc1c5fc36f1a649240a65c0a417c905cbf4",
+      "bytes": 54964
+    },
+    {
+      "id": "man-afternoon",
+      "sourceReport": "artifacts/expression-character-trials/web-original-01-framed/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-01-framed/output/gifs/man-afternoon.gif",
+      "status": "imported",
+      "catalogId": "generated-90bb8bd760926b716f3abd54",
+      "keyword": "下午好",
+      "sha256": "90bb8bd760926b716f3abd542b49f92c58af4c6ed7a3becdc4e36cc26eb75173",
+      "bytes": 60896
+    },
+    {
+      "id": "siamese-evening",
+      "sourceReport": "artifacts/expression-character-trials/web-original-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-02-animated/output/gifs/siamese-evening.gif",
+      "status": "imported",
+      "catalogId": "generated-551021cbe6cbdba31acbfea9",
+      "keyword": "晚上好",
+      "sha256": "551021cbe6cbdba31acbfea9c922c09c0df164addcfdf1c3c8127b876a8d6dd2",
+      "bytes": 68637
+    },
+    {
+      "id": "hedgehog-evening",
+      "sourceReport": "artifacts/expression-character-trials/web-original-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-02-animated/output/gifs/hedgehog-evening.gif",
+      "status": "imported",
+      "catalogId": "generated-08803ddd6f3b865a01c678d3",
+      "keyword": "晚上好",
+      "sha256": "08803ddd6f3b865a01c678d3bbadff5bc231bbd95044544ccb3a6a4a5398f617",
+      "bytes": 96959
+    },
+    {
+      "id": "beaver-evening",
+      "sourceReport": "artifacts/expression-character-trials/web-original-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-02-animated/output/gifs/beaver-evening.gif",
+      "status": "imported",
+      "catalogId": "generated-257729a587a4df3a2b01e59d",
+      "keyword": "晚上好",
+      "sha256": "257729a587a4df3a2b01e59dded21a58faf3ecde0dcfb10a5a4fa1be5fac7d90",
+      "bytes": 60036
+    },
+    {
+      "id": "man-evening",
+      "sourceReport": "artifacts/expression-character-trials/web-original-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-02-animated/output/gifs/man-evening.gif",
+      "status": "imported",
+      "catalogId": "generated-ec943fa9351f772134eb827c",
+      "keyword": "晚上好",
+      "sha256": "ec943fa9351f772134eb827cb218b0acfdb06aa376d142ea2352dfa329210f66",
+      "bytes": 61096
+    },
+    {
+      "id": "puppy-noon",
+      "sourceReport": "artifacts/expression-character-trials/web-original-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-02-animated/output/gifs/puppy-noon.gif",
+      "status": "imported",
+      "catalogId": "generated-d11a96719f7afab782f418c3",
+      "keyword": "中午好",
+      "sha256": "d11a96719f7afab782f418c3dd79ab20054920c13ac16e14bd95a83bfa366534",
+      "bytes": 71517
+    },
+    {
+      "id": "sparrow-noon",
+      "sourceReport": "artifacts/expression-character-trials/web-original-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-02-animated/output/gifs/sparrow-noon.gif",
+      "status": "imported",
+      "catalogId": "generated-eba122c4ad2ba85e5d357871",
+      "keyword": "中午好",
+      "sha256": "eba122c4ad2ba85e5d357871396ef8a39ea0c447ad2e95b45811f10744a24aaf",
+      "bytes": 89546
+    },
+    {
+      "id": "fawn-noon",
+      "sourceReport": "artifacts/expression-character-trials/web-original-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-02-animated/output/gifs/fawn-noon.gif",
+      "status": "imported",
+      "catalogId": "generated-b346af82c3c691820bc6bd3e",
+      "keyword": "中午好",
+      "sha256": "b346af82c3c691820bc6bd3ed9328dfefbc9dcc0593e9d5112fd27eed784f35a",
+      "bytes": 71620
+    },
+    {
+      "id": "man-noon",
+      "sourceReport": "artifacts/expression-character-trials/web-original-02-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-02-animated/output/gifs/man-noon.gif",
+      "status": "imported",
+      "catalogId": "generated-b2313a37c8826a371a96d16c",
+      "keyword": "中午好",
+      "sha256": "b2313a37c8826a371a96d16cdfb2ad93d45e9e32f4f3cc34c1f1e3936cf6384a",
+      "bytes": 59201
+    },
+    {
+      "id": "thanks-nuotuan-bow",
+      "sourceReport": "artifacts/expression-prototypes/report.json",
+      "sourceGif": "artifacts/expression-prototypes/gifs/thanks-nuotuan-bow.gif",
+      "status": "already-present",
+      "sha256": "c5a931212a3207645d50dedc047bb3dedf4453f53ce3d8abe20274ffe2adf829"
+    },
+    {
+      "id": "thanks-puppy-flower",
+      "sourceReport": "artifacts/expression-prototypes/report.json",
+      "sourceGif": "artifacts/expression-prototypes/gifs/thanks-puppy-flower.gif",
+      "status": "already-present",
+      "sha256": "096abc93a00f2125fadab9857fcb08b71355f6a46135800ca32846dc0037e76f"
+    },
+    {
+      "id": "thanks-office-helper",
+      "sourceReport": "artifacts/expression-prototypes/report.json",
+      "sourceGif": "artifacts/expression-prototypes/gifs/thanks-office-helper.gif",
+      "status": "already-present",
+      "sha256": "2712ea9e1890d9df5327fbdb67d932163c58e9541f1087ac18a2a92d1d8476b0"
+    },
+    {
+      "id": "thanks-plush-toast",
+      "sourceReport": "artifacts/expression-prototypes/report.json",
+      "sourceGif": "artifacts/expression-prototypes/gifs/thanks-plush-toast.gif",
+      "status": "already-present",
+      "sha256": "4398e3e24e201c2d98edaf590a5f6933560c82ee7fa24574019a0794f7fa35b6"
+    },
+    {
+      "id": "speechless-ink-facepalm",
+      "sourceReport": "artifacts/expression-prototypes/report.json",
+      "sourceGif": "artifacts/expression-prototypes/gifs/speechless-ink-facepalm.gif",
+      "status": "already-present",
+      "sha256": "b2aaecd3a26c909b048de0f8535b353f5bd1a22a043d2714f3d98e2c90156b1c"
+    },
+    {
+      "id": "speechless-cat-stare",
+      "sourceReport": "artifacts/expression-prototypes/report.json",
+      "sourceGif": "artifacts/expression-prototypes/gifs/speechless-cat-stare.gif",
+      "status": "already-present",
+      "sha256": "35f1b212a46eed72f05ebd4b47086646c99677919caf7f1891592d34ddd0e555"
+    },
+    {
+      "id": "speechless-roommate-freeze",
+      "sourceReport": "artifacts/expression-prototypes/report.json",
+      "sourceGif": "artifacts/expression-prototypes/gifs/speechless-roommate-freeze.gif",
+      "status": "already-present",
+      "sha256": "427138b17770f0fc9cbf0d60ac5966773a9f71ae72e365cbcae228d57efc0f5f"
+    },
+    {
+      "id": "speechless-loading-dots",
+      "sourceReport": "artifacts/expression-prototypes/report.json",
+      "sourceGif": "artifacts/expression-prototypes/gifs/speechless-loading-dots.gif",
+      "status": "already-present",
+      "sha256": "6dc6096a251b656321a2f325b76451159348b1737b2c6e1ba1f20733d0647281"
+    },
+    {
+      "id": "laugh-huohua-table",
+      "sourceReport": "artifacts/expression-prototypes/report.json",
+      "sourceGif": "artifacts/expression-prototypes/gifs/laugh-huohua-table.gif",
+      "status": "already-present",
+      "sha256": "43195541be8a6001c325182c5a0d6eaf68ccda01c526945977ecc4ef8468e8bc"
+    },
+    {
+      "id": "laugh-parrot-tumble",
+      "sourceReport": "artifacts/expression-prototypes/report.json",
+      "sourceGif": "artifacts/expression-prototypes/gifs/laugh-parrot-tumble.gif",
+      "status": "already-present",
+      "sha256": "cc42f4b678d64bf3e7b9838827ca5b58f631cf8e3ca84ae7c82845ce5766d97a"
+    },
+    {
+      "id": "laugh-friend-collapse",
+      "sourceReport": "artifacts/expression-prototypes/report.json",
+      "sourceGif": "artifacts/expression-prototypes/gifs/laugh-friend-collapse.gif",
+      "status": "already-present",
+      "sha256": "5c5162ac27da1e0bff8abfd0be49e3ddd9cd31abfbf5b5b0491e9d65c371043a"
+    },
+    {
+      "id": "laugh-type-explosion",
+      "sourceReport": "artifacts/expression-prototypes/report.json",
+      "sourceGif": "artifacts/expression-prototypes/gifs/laugh-type-explosion.gif",
+      "status": "already-present",
+      "sha256": "020d74bf26a649bf7d2f971829ec1b37db4924194cea9624a70e45bc4bb5b912"
+    }
+  ]
+}

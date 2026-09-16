@@ -124,9 +124,9 @@ async function saveEdit(asset: LibrarySticker) {
   finally { busy.value = false; }
 }
 async function remove(asset: LibrarySticker) {
-  if (busy.value || asset.source !== 'personal' || !confirm('删除这张个人上传的表情？图片会从它关联的所有关键词下移除，关键词本身保留。')) return;
+  if (busy.value || !confirm('删除这张表情？它将从当前用户的所有关联关键词和推荐结果中移除，关键词保留。')) return;
   busy.value = true; msg.value = ''; err.value = '';
-  try { await api.deleteSticker(Number(asset.id)); msg.value = '图片已删除，关键词已保留'; await load(); }
+  try { if (asset.source === 'system') await api.deleteSystemSticker(String(asset.id)); else await api.deleteSticker(Number(asset.id)); msg.value = '图片已删除，关键词已保留'; await load(); }
   catch (e) { err.value = `删除失败：${(e as Error).message}`; }
   finally { busy.value = false; }
 }
@@ -201,15 +201,15 @@ onMounted(load);
             <article v-for="asset in activeGroup.assets" :key="`${asset.source}:${asset.id}`" class="sticker-cell">
               <div class="sticker-preview"><span v-if="failedImages.has(`${asset.source}:${asset.id}`)" class="library-badge">图片加载失败</span><img v-else :src="scopedAssetUrl(asset.url)" :alt="asset.keywords.join('、')" loading="lazy" @error="imageFailed(asset)" /><span class="sticker-format">{{ asset.format.toUpperCase() }}</span></div>
               <div class="sticker-meta">
-                <span class="library-badge" :class="{ personal: asset.source === 'personal' }">{{ asset.source === 'system' ? '系统素材 · 只读' : '个人上传' }}</span>
+                <span class="library-badge" :class="{ personal: asset.source === 'personal' }">{{ asset.source === 'system' ? '系统素材' : '个人上传' }}</span>
                 <template v-if="asset.source === 'personal' && editingId === Number(asset.id)"><input v-model="editingKeywords" class="library-input" aria-label="图片关键词，多个用逗号分隔" @keyup.enter="saveEdit(asset)" /><div class="library-actions"><button class="text-button" :disabled="busy" @click="saveEdit(asset)">保存</button><button class="text-button" :disabled="busy" @click="editingId = null">取消</button></div></template>
                 <p v-else class="sticker-tags">{{ asset.keywords.join(' · ') }}</p>
                 <small>{{ asset.width && asset.height ? `${asset.width} × ${asset.height}` : '尺寸未知' }}<template v-if="asset.source === 'personal'"> · 使用 {{ asset.useCount }} 次</template></small>
-                <div v-if="asset.source === 'personal' && editingId !== Number(asset.id)" class="library-actions"><button class="text-button" :disabled="busy || loading" @click="startEdit(asset)">修改关键词</button><button :data-testid="`delete-sticker-${asset.id}`" class="text-button danger" :disabled="busy || loading" @click="remove(asset)">删除</button></div>
+                <div v-if="editingId !== Number(asset.id)" class="library-actions"><button v-if="asset.source === 'personal'" class="text-button" :disabled="busy || loading" @click="startEdit(asset)">修改关键词</button><button :data-testid="`delete-sticker-${asset.id}`" class="text-button danger" :disabled="busy || loading" @click="remove(asset)">删除</button></div>
               </div>
             </article>
           </div>
-          <p class="upload-hint">支持 GIF / PNG / JPG / WebP，单张不超过 5 MB。上传后归入“{{ activeGroup.keyword }}”语义组并关联上面的说法，用于当前用户的斗图搜索，不修改系统素材。规划词只作后台展示，不代表已启用推荐；未发布试稿不在这里展示。</p>
+          <p class="upload-hint">支持 GIF / PNG / JPG / WebP，单张不超过 5 MB。上传后归入“{{ activeGroup.keyword }}”语义组并关联上面的说法，用于当前用户的斗图搜索与手机关键词推荐；手机下次打开键盘检查更新后补充，不修改系统素材。空关键词组不触发图片推荐，规划词不等于已启用全部语义扩展；未发布试稿不在这里展示。</p>
         </template>
         <div v-else class="library-empty"><strong>{{ q || filter !== 'all' ? '没有匹配的关键词' : '从第一个关键词开始' }}</strong><p>调整左侧筛选，或在上方新增关键词。</p></div>
       </section>

@@ -183,6 +183,29 @@ class CaptureCoordinatorTest {
     }
 
     @Test
+    fun conversationScreenshotOnlyPersistsWhenCapturedImageHashChanges() = runBlocking {
+        val screenshot = mediaMessage(IntRect(0, 10, 100, 90)).copy(
+            metadata = mapOf("capture_kind" to "conversation_screenshot"),
+        )
+        val adapter = FakeAdapter(success(screenshot))
+        val store = FakeStore()
+        var currentHash = "first-screen"
+        val coordinator = coordinator(
+            adapter,
+            store,
+            mediaCapturer = MediaAssetCapturer { _, _, _ -> mapOf(0 to pendingAsset(currentHash)) },
+        )
+
+        coordinator.capture("com.tencent.mm", snapshot, windowId = 7)
+        coordinator.capture("com.tencent.mm", snapshot, windowId = 7)
+        currentHash = "second-screen"
+        coordinator.capture("com.tencent.mm", snapshot, windowId = 7)
+
+        assertEquals(2, store.pending.size)
+        assertEquals(setOf("first-screen", "second-screen"), store.assets.keys)
+    }
+
+    @Test
     fun repeatedNotificationAndMatchingPageMessageShareStableFingerprint() = runBlocking {
         val notificationMessage = message("同一条消息", time = "")
             .copy(displayedTime = null, metadata = mapOf("capture_source" to "notification"))

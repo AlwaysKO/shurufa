@@ -94,6 +94,7 @@ beforeEach(async () => {
     new URL('../../migrations/011_expression_assets.sql', import.meta.url),
     'utf8',
   ));
+  for (const file of ['005_sticker.sql', '018_synthesis_library.sql', '019_keyword_gif_removal.sql']) await pool.query(readFileSync(new URL(`../../migrations/${file}`, import.meta.url), 'utf8'));
   root = await mkdtemp(join(tmpdir(), 'expressions-api-'));
   vi.spyOn(process, 'cwd').mockReturnValue(root);
   const runtimeRoot = join(root, '.runtime', 'expression-assets');
@@ -125,7 +126,7 @@ describe('mobile expression API', () => {
     const expected = production.templates.filter((item) => item.format === 'gif' && item.embeddedText === word);
     expect(expected).toHaveLength(8);
     expect(response.body.results).toEqual(expected.map((item) => ({
-      ...item, url: `/uploads/expression/${item.fileName}`,
+      ...item, version: item.sha256, url: `/uploads/expression/${item.fileName}`,
       thumbnail_url: `/uploads/expression/${item.thumbnailFileName}`,
     })));
     expect(response.body.results.map((item: { distribution: string }) => item.distribution))
@@ -139,7 +140,8 @@ describe('mobile expression API', () => {
       .get('/api/v1/mobile/expressions/catalog')
       .set('X-Device-Id', USER_A);
     expect(response.status).toBe(200);
-    expect(response.body).toMatchObject({ version: 'api-v1' });
+    expect(response.body).toMatchObject({ complete: true });
+    expect(response.body.version).toMatch(/^[a-f0-9]{64}$/);
     expect(response.body.templates).toHaveLength(6);
     expect(response.body.templates.find((item: { id: string }) => item.id === 'hello-2'))
       .toMatchObject({ sourceType: 'ai-original', sha256: 'b'.repeat(64) });
@@ -147,7 +149,7 @@ describe('mobile expression API', () => {
       .not.toHaveProperty('sourceType');
 
     const unchanged = await request(app)
-      .get('/api/v1/mobile/expressions/catalog?version=api-v1')
+      .get(`/api/v1/mobile/expressions/catalog?version=${response.body.version}`)
       .set('X-Device-Id', USER_A);
     expect(unchanged.status).toBe(304);
   });

@@ -18,6 +18,10 @@ const sourceManifest = JSON.parse(readFileSync(fileURLToPath(
 ), 'utf8')) as {
   version: string;
   prebuiltAssets: Array<{ id: string; embeddedText: string; style: string }>;
+  prebuiltSourceTemplates: Array<{
+    keywords: string[]; sourceCrop?: { y: number; height: number };
+    layout: { minFontSize: number; maxFontSize: number; strokeWidth: number };
+  }>;
   templates: Array<{
     keywords: string[];
     sourceCrop?: { y: number; height: number };
@@ -48,6 +52,13 @@ function asset(overrides: Partial<ExpressionAsset>): ExpressionAsset {
 }
 
 describe('expression catalog', () => {
+  it('个人明确关键词命中与系统带字同词一起推荐', () => {
+    const system = asset({ id: 'system', type: 'prebuilt', format: 'gif', embeddedText: '你好' });
+    const personal = asset({ id: 'personal', type: 'prebuilt', format: 'gif', sourceType: 'owner-upload', keywords: ['你好'], embeddedText: null });
+    expect(rankExpressionAssets([system, personal], '你好').map(a => a.id)).toEqual(['system', 'personal']);
+    expect(personal.embeddedText).toBeNull();
+  });
+
   it('明确玩笑语气且无成品命中才兜底无字GIF池', () => {
     const blank = asset({ id: 'blank', format: 'gif', keywords: ['开心'],
       textSafeArea: { x: 0, y: 0, width: 200, height: 80 },
@@ -141,14 +152,14 @@ describe('expression catalog', () => {
 
   it('常用词在源清单中各自关联多张预制图片', () => {
     for (const phrase of ['你好', '谢谢', '加油', '晚安', '早安', '再见', '抱歉', '喜欢', '不要', '快点']) {
-      const matches = sourceManifest.templates.filter(({ keywords }) => keywords.includes(phrase));
+      const matches = sourceManifest.prebuiltSourceTemplates.filter(({ keywords }) => keywords.includes(phrase));
       expect(matches.length, phrase).toBeGreaterThanOrEqual(2);
     }
   });
 
   it('旧静态源候选保留裁切与描边规格，原生动作模板不重复裁切', () => {
     expect(sourceManifest.version).toBe(EXPRESSION_CATALOG_VERSION);
-    const legacy = sourceManifest.templates.filter(template => !template.animation);
+    const legacy = sourceManifest.prebuiltSourceTemplates;
     expect(legacy).toHaveLength(60);
     for (const template of sourceManifest.templates.filter(template => template.animation)) {
       expect(template.sourceCrop).toBeUndefined();

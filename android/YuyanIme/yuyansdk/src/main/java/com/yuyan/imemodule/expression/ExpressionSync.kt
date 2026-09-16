@@ -7,6 +7,8 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import java.util.concurrent.TimeUnit
@@ -40,6 +42,7 @@ class ExpressionSync(
     initialCatalog: ExpressionCatalog,
     private val cache: ExpressionCache,
     private val scope: CoroutineScope,
+    catalogDirectory: File = File(cache.queryRoot, "catalogs"),
 ) {
     @Volatile
     private var catalog = initialCatalog
@@ -48,7 +51,87 @@ class ExpressionSync(
     private val bundledThumbnails = initialCatalog.document.templates
         .mapNotNull { asset -> asset.thumbnailFileName?.let { asset.id to it } }.toMap()
 
-    fun currentCatalog(): ExpressionCatalog = catalog
+    private val catalogStore = ExpressionCatalogStore(catalogDirectory, baseUrl, deviceId, initialCatalog.document.version)
+    private val refreshMutex = Mutex()
+    private val keyboardLock = Any()
+    private var keyboardSession: Job? = null
+
+    private data class VerifiedPreview(val file: File, val bytes: Long, val modified: Long)
+    private val verifiedPreviews = java.util.concurrent.ConcurrentHashMap<String, VerifiedPreview>()
+
+    /** UI只看已验证结果/内置SHA元数据，绝不在render时扫描全部GIF内容。 */
+    fun currentCatalog(): ExpressionCatalog {
+        val snapshot = catalog
+        if (!snapshot.document.complete) return snapshot
+        return ExpressionCatalog(snapshot.document.copy(templates = snapshot.document.templates.map { asset ->
+            bundledAsset(asset) ?: verifiedPreviews[asset.sha256]?.takeIf {
+                it.file.isFile && it.file.length() == it.bytes && it.file.lastModified() == it.modified
+            }?.let { asset.copy(resolvedPreviewUrl = "file://${it.file.absolutePath}", localPreviewOnly = true) }
+                ?: asset.copy(localPreviewOnly = true, distribution = "remote")
+        }))
+    }
+
+    /** onWindowShown重复通知/开关AI面板不产生额外版本请求；真正隐藏后才开始下一次检查。 */
+    fun onKeyboardOpened(checkRemoteVersion: Boolean = true, onChanged: () -> Unit = {}): Job = synchronized(keyboardLock) {
+        keyboardSession ?: scope.launch(start = CoroutineStart.LAZY) {
+            // 离线重启也先显示已落盘的个人底图，不等待版本接口超时；此阶段绝不下载。
+            withContext(Dispatchers.IO) {
+                catalog.document.templates.filter { it.type == "synthesis-template" && !matchesBundled(it) }
+                    .forEach(::localAsset)
+            }
+            onChanged()
+            if (checkRemoteVersion) refreshMutex.withLock {
+                checkVersion()
+                onChanged()
+            }
+            // 合成池无关键词门禁，提前补齐新底图；不预取全推荐库，推荐原件按匹配懒取。
+            for (asset in catalog.document.templates.filter { it.type == "synthesis-template" && !matchesBundled(it) }) {
+                withContext(Dispatchers.IO) {
+                    if (stillCurrent(asset) && localAsset(asset) == null) {
+                        download(asset.version, asset.fileName,
+                            asset.url ?: "/uploads/expression/${asset.fileName}", asset.sha256)
+                        localAsset(asset)
+                    }
+                }
+                onChanged()
+            }
+        }.also { keyboardSession = it; it.start() }
+    }
+
+    fun onKeyboardClosed() = synchronized(keyboardLock) {
+        // 保留已开始的元数据请求和字节预取，防止切换窗口浪费已经下载的流量。
+        keyboardSession = null
+    }
+
+    private suspend fun checkVersion() = withContext(Dispatchers.IO) {
+        try {
+            val request = Request.Builder().url("${baseUrl.trimEnd('/')}/api/v1/mobile/expressions/versions")
+                .header("X-Device-Id", deviceId).build()
+            val version = networkClient.newCall(request).awaitBody { response ->
+                check(response.isSuccessful)
+                json.decodeFromString<VersionResponse>(readMetadata(response, 4096)).version
+            }
+            if (version != catalog.document.version) refreshCatalog()
+        } catch (cancelled: CancellationException) { throw cancelled }
+        catch (_: Exception) { /* 持久目录离线可用，不降级为每词联网。 */ }
+    }
+
+    private fun readMetadata(response: Response, limit: Int): String {
+        val body = requireNotNull(response.body)
+        check(body.contentLength() <= limit)
+        return body.byteStream().use { input ->
+            val output = ByteArrayOutputStream()
+            val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+            while (true) {
+                val count = input.read(buffer)
+                if (count < 0) break
+                check(output.size() + count <= limit)
+                output.write(buffer, 0, count)
+            }
+            output.toString("UTF-8")
+        }
+    }
+
 
     suspend fun refreshCatalog(): ExpressionCatalog = withContext(Dispatchers.IO) {
         try {
@@ -61,13 +144,16 @@ class ExpressionSync(
                 .url(url)
                 .header("X-Device-Id", deviceId)
                 .build()
-            client.newCall(request).awaitResponse().use { response ->
-                if (response.code == 304) return@withContext catalog
+            networkClient.newCall(request).awaitBody { response ->
+                if (response.code == 304) return@awaitBody catalog
                 check(response.isSuccessful) { "catalog request failed: ${response.code}" }
                 val remote = json.decodeFromString<ExpressionCatalogDocument>(
-                    response.body?.string().orEmpty(),
+                    readMetadata(response, ExpressionCatalogStore.MAX_BYTES),
                 )
-                catalog = catalog.merge(remote)
+                check(!catalog.document.complete || remote.complete) { "incomplete catalog cannot replace an authoritative snapshot" }
+                val accepted = if (remote.complete) sanitizeSnapshot(remote) else remote
+                if (accepted.complete) catalogStore.write(accepted)
+                catalog = catalog.merge(accepted)
                 catalog
             }
         } catch (cancelled: CancellationException) {
@@ -77,8 +163,9 @@ class ExpressionSync(
         }
     }
 
-    private val queryCache = ExpressionQueryCache(cache)
-    private val trustedBundled = initialCatalog.document.templates.associateBy { it.id }
+    private val queryCache = ExpressionQueryCache(cache, maxAssetBytes = 10L * 1024 * 1024)
+    private val trustedInitialAssets = initialCatalog.document.templates.associateBy { it.id }
+    private val trustedBundled = initialCatalog.document.templates.filter { it.distribution != "remote" }.associateBy { it.sha256 }
     private val networkClient = client.newBuilder().callTimeout(30, TimeUnit.SECONDS)
         .followRedirects(false).followSslRedirects(false).build()
     private val pendingLock = Any()
@@ -86,6 +173,22 @@ class ExpressionSync(
     private val downloads = mutableMapOf<String, Deferred<File?>>()
     private val downloadSlots = Semaphore(2)
     private class QueryWork(val result: CompletableDeferred<List<ExpressionAsset>?>)
+
+    init {
+        catalogStore.read()?.let { saved ->
+            runCatching { sanitizeSnapshot(saved) }.getOrNull()?.let { catalog = ExpressionCatalog(it) }
+        }
+    }
+
+    private fun sanitizeSnapshot(document: ExpressionCatalogDocument): ExpressionCatalogDocument {
+        require(document.version.matches(Regex("[A-Za-z0-9._-]+")))
+        require(document.templates.size <= 10000)
+        return document.copy(templates = document.templates.filter { asset ->
+            trusted(ExpressionQueryCache.Item(asset, asset.sourceType))
+        }.map { it.copy(resolvedPreviewUrl = null, localPreviewOnly = false,
+            thumbnailUrl = it.thumbnailUrl?.takeIf(::sameOrigin)) })
+    }
+
 
     fun search(
         query: String,
@@ -95,6 +198,22 @@ class ExpressionSync(
     ): Job = scope.launch {
         val normalized = ExpressionQueryMatching.normalize(query)
         if (normalized.isEmpty() || normalized.length > 100) return@launch
+        if (catalog.document.complete) {
+            val candidates = catalog.recommend(query)
+            val local = withContext(Dispatchers.IO) { candidates.mapNotNull(::localAsset) }
+            if (acceptResponse(requestId)) onResult(local.filter(::stillCurrent))
+            // 独立于订阅者，快速输入取消旧搜索时仍完成已启动的SHA原件预取。
+            val prefetch = scope.async(Dispatchers.IO) {
+                for (asset in candidates) if (stillCurrent(asset) && localAsset(asset) == null) {
+                    download(asset.version, asset.fileName,
+                        asset.url ?: "/uploads/expression/${asset.fileName}", asset.sha256)
+                }
+                candidates.mapNotNull(::localAsset)
+            }
+            val loaded = prefetch.await()
+            if (acceptResponse(requestId)) onResult(loaded.filter(::stillCurrent))
+            return@launch
+        }
         val (entry, local, complete) = withContext(Dispatchers.IO) {
             val entry = queryCache.read(baseUrl, normalized)
             val cached = entry?.items.orEmpty().filter(::trusted).map { it.asset }
@@ -112,28 +231,45 @@ class ExpressionSync(
     }
 
     private fun rank(query: String, assets: List<ExpressionAsset>): List<ExpressionAsset> =
-        ExpressionCatalog(ExpressionCatalogDocument(catalog.document.version, assets, emptyList(), emptyList()))
+        ExpressionCatalog(ExpressionCatalogDocument(catalog.document.version, assets, emptyList(), emptyList(), catalog.document.retiredTemplateIds))
             .recommend(query)
 
-    private fun localAsset(asset: ExpressionAsset): ExpressionAsset? {
-        val file = runCatching { cache.validFile(asset.version, asset.fileName, asset.sha256) }.getOrNull()
-        if (file != null) return asset.copy(resolvedPreviewUrl = "file://${file.absolutePath}")
-        val bundled = trustedBundled[asset.id]
-        return if (bundled?.distribution != "remote" && matchesBundled(asset)) asset.copy(resolvedPreviewUrl = null)
-        else null
+    private fun stillCurrent(asset: ExpressionAsset): Boolean = catalog.document.templates.any {
+        it.id == asset.id && it.sha256 == asset.sha256 && it.id !in catalog.document.retiredTemplateIds
     }
 
-    private fun matchesBundled(asset: ExpressionAsset): Boolean = trustedBundled[asset.id]?.let {
-        it.version == asset.version && it.fileName == asset.fileName && it.sha256 == asset.sha256
-    } == true
+    private fun bundledAsset(asset: ExpressionAsset): ExpressionAsset? = trustedBundled[asset.sha256]?.let { bundled ->
+        // ID/远端路径可变，真正相同的SHA复用APK物理路径，预览与发送都可直接打开。
+        asset.copy(fileName = bundled.fileName, thumbnailFileName = bundled.thumbnailFileName,
+            distribution = "bundled", resolvedPreviewUrl = null, url = null, thumbnailUrl = null,
+            localPreviewOnly = catalog.document.complete)
+    }
+
+    /** 仅在IO搜索/预取中读取SHA，不在UI render中调用。 */
+    private fun localAsset(asset: ExpressionAsset): ExpressionAsset? {
+        bundledAsset(asset)?.let { return it }
+        val file = runCatching { cache.validFile(asset.version, asset.fileName, asset.sha256) }.getOrNull()
+        if (file != null) {
+            verifiedPreviews[asset.sha256] = VerifiedPreview(file, file.length(), file.lastModified())
+            return asset.copy(resolvedPreviewUrl = "file://${file.absolutePath}", localPreviewOnly = catalog.document.complete)
+        }
+        verifiedPreviews.remove(asset.sha256)
+        return null
+    }
+
+    private fun matchesBundled(asset: ExpressionAsset): Boolean = asset.sha256 in trustedBundled
 
     private fun trusted(item: ExpressionQueryCache.Item): Boolean {
         val asset = item.asset
+        if (asset.id in catalog.document.retiredTemplateIds) return false
         if (!ExpressionQueryCache.SHA_PATTERN.matches(asset.sha256)) return false
         if (!runCatching { cache.file(asset.version, asset.fileName); true }.getOrDefault(false)) return false
         if (asset.type !in setOf("prebuilt", "synthesis-template") ||
             asset.format !in setOf("gif", "png", "jpg", "jpeg", "webp")) return false
-        if (!matchesBundled(asset) && item.sourceType !in setOf("ai-original", "cc0", "public-domain", "licensed")) return false
+        val matchesInitial = trustedInitialAssets[asset.id]?.let {
+            it.fileName == asset.fileName && it.sha256 == asset.sha256
+        } == true
+        if (!matchesBundled(asset) && !matchesInitial && item.sourceType !in setOf("ai-original", "cc0", "public-domain", "licensed", "owner-upload")) return false
         return asset.url == null || sameOrigin(asset.url)
     }
 
@@ -228,13 +364,18 @@ class ExpressionSync(
                 scope.async(Dispatchers.IO, start = CoroutineStart.LAZY) {
                     try {
                         downloadSlots.withPermit {
+                            // 取得限流槽时另一下载可能刚落盘，真正HTTP前再查一次，关闭并发空隙。
+                            cache.validFile(version, relativePath, sha256)?.let { return@withPermit it }
                             val request = Request.Builder().url(resolveExpressionRemoteSource(baseUrl, url))
                                 .header("X-Device-Id", deviceId).build()
                             networkClient.newCall(request).awaitBody { response ->
                                 check(response.isSuccessful)
                                 val body = response.body ?: return@awaitBody null
-                                check(body.contentLength() <= queryCache.maxAssetBytes)
-                                queryCache.writeOriginal(sha256, body.byteStream())
+                                val limit = if (catalog.document.complete && catalog.document.templates.any {
+                                    it.sha256 == sha256 && it.type == "synthesis-template"
+                                }) 250L * 1024 else queryCache.maxAssetBytes
+                                check(body.contentLength() <= limit)
+                                queryCache.writeOriginal(sha256, body.byteStream(), limit)
                             }
                         }
                     } catch (cancelled: CancellationException) {
@@ -249,6 +390,9 @@ class ExpressionSync(
         }
         work?.await()
     }
+
+    @Serializable
+    private data class VersionResponse(val version: String)
 
     @Serializable
     private data class RecommendationResponse(

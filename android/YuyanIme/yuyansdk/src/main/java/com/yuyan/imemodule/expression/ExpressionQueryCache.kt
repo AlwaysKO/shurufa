@@ -58,7 +58,7 @@ internal class ExpressionQueryCache(
     }
 
     /** 有界流式复制，不能把远端整个图片加载到内存。失败不替换既有有效原件。 */
-    fun writeOriginal(sha256: String, input: InputStream): File? {
+    fun writeOriginal(sha256: String, input: InputStream, byteLimit: Long = maxAssetBytes): File? {
         if (!SHA_PATTERN.matches(sha256)) { input.close(); return null }
         synchronized(diskLock) { check(originals.mkdirs() || originals.isDirectory) }
         val part = File.createTempFile("original-", ".part", originals)
@@ -72,7 +72,7 @@ internal class ExpressionQueryCache(
                         val count = source.read(buffer)
                         if (count < 0) break
                         length += count
-                        if (length > maxAssetBytes || length > maxBytes) return null
+                        if (length > byteLimit || length > maxAssetBytes || length > maxBytes) return null
                         digest.update(buffer, 0, count)
                         output.write(buffer, 0, count)
                     }

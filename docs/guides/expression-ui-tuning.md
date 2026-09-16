@@ -76,3 +76,10 @@ APK=/实际找到的/offline/debug/APK路径.apk
 ```
 
 Android Studio 也可选 offlineDebug 变体后 Build/Run；原生代码/XML变更不能承诺无需重装或重启 IME。保持 Windows SDK 配置，不要把 WSL SDK 路径作为团队源码提交。
+
+## 2026-09-16 推荐/合成分离
+- 推荐标签仅在 ExpressionPanelState.results 存在 prebuilt 时显示；未命中时隐藏该标签，不把合成模板放进推荐结果。
+- AI标签从 catalog.synthesisTemplates(query) 读取无字池；手动入口保留同词已命中的推荐，默认打开AI；再次点击工具栏关闭。
+- 自动空回调不抢页；自动合成兜底后若远端命中成品则回推荐；用户主动选AI/Emoji时不抢页。
+- 正式合成仅6个 blank-* 动作GIF，旧60个源归 prebuiltSourceTemplates，仅用于维持原带字推荐，不打入APK合成目录；退役ID通过目录和缓存过滤防止旧图复活。
+- 当前gradlew已自动注入project-cache-dir，不要重复传旧示例中的同名参数。此次并行工作使用本地临时init脚本隔离build输出，详情见 docs/plans/2026-09-16-ai-pool-apk-replacement.md。

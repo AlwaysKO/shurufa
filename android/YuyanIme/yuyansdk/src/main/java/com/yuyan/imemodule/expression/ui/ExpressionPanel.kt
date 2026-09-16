@@ -185,6 +185,7 @@ class ExpressionPanel @JvmOverloads constructor(
                 else -> R.string.ai_sticker_search
             },
         )
+        recommendedTab.visibility = if (state.results.isNotEmpty()) View.VISIBLE else View.GONE
         recommendedTab.isSelected = state.selectedTab == ExpressionPanelTab.RECOMMENDED
         templatesTab.isSelected = state.selectedTab == ExpressionPanelTab.AI_SYNTHESIS
         emojiTab.isSelected = state.selectedTab == ExpressionPanelTab.EMOJI_SYNTHESIS

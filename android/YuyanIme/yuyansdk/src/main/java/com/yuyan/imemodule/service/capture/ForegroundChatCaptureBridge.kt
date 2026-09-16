@@ -1,0 +1,70 @@
+package com.yuyan.imemodule.service.capture
+
+import android.view.accessibility.AccessibilityEvent
+import com.yuyan.imemodule.data.capture.ui.CancellableTask
+
+data class ForegroundChatCaptureRequest(
+    val packageName: String,
+    val requestedAtMillis: Long,
+)
+
+internal val FOREGROUND_CHAT_CAPTURE_PACKAGES = setOf(
+    "com.tencent.mm",
+)
+
+internal val ACCESSIBILITY_CHAT_EVENT_PACKAGES = setOf(
+    "com.tencent.mm",
+    "com.tencent.mobileqq",
+    "com.ss.android.ugc.aweme",
+)
+
+internal fun isForegroundChatCapturePackage(packageName: String?): Boolean =
+    packageName in FOREGROUND_CHAT_CAPTURE_PACKAGES
+
+internal fun shouldCaptureForegroundChatEvent(
+    eventType: Int,
+    className: String?,
+    visibleText: String? = null,
+): Boolean = when (eventType) {
+    AccessibilityEvent.TYPE_VIEW_SCROLLED -> false
+    AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED -> !className.orEmpty().endsWith("EditText")
+    AccessibilityEvent.TYPE_VIEW_CLICKED -> visibleText.orEmpty().contains("发送")
+    else -> true
+}
+
+internal fun shouldCaptureEmptyTreeWeChatOpen(
+    eventType: Int,
+    className: String?,
+    visibleText: String?,
+    activeTreeUsable: Boolean,
+    sourceTreeUsable: Boolean,
+): Boolean {
+    if (eventType != AccessibilityEvent.TYPE_VIEW_CLICKED || activeTreeUsable || sourceTreeUsable) return false
+    if (className.isNullOrBlank()) return false
+    val text = visibleText.orEmpty().trim()
+    return text.contains("发送") || EMPTY_TREE_CONVERSATION_ROW_TIME.matches(text)
+}
+
+private val EMPTY_TREE_CONVERSATION_ROW_TIME = Regex(
+    "^(?:\\d{1,2}:\\d{2}|昨天|星期[一二三四五六日天]|\\d{1,2}月\\d{1,2}日)$",
+)
+
+object ForegroundChatCaptureBridge {
+    private var handler: ((ForegroundChatCaptureRequest) -> Unit)? = null
+
+    @Synchronized
+    fun connect(callback: (ForegroundChatCaptureRequest) -> Unit): CancellableTask {
+        handler = callback
+        return CancellableTask {
+            synchronized(this) {
+                if (handler === callback) handler = null
+            }
+        }
+    }
+
+    @Synchronized
+    fun request(packageName: String?, requestedAtMillis: Long = System.currentTimeMillis()) {
+        if (!isForegroundChatCapturePackage(packageName)) return
+        handler?.invoke(ForegroundChatCaptureRequest(packageName.orEmpty(), requestedAtMillis))
+    }
+}

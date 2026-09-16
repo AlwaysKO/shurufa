@@ -40,8 +40,8 @@ export function rankExpressionAssets(
   const indexed = assets.map((asset, index) => ({ asset, index }));
   const prebuilt = indexed.filter(({ asset }) => (
     asset.type === 'prebuilt'
-    && asset.embeddedText !== null
-    && normalize(asset.embeddedText) === normalizedQuery
+    && ((asset.embeddedText !== null && normalize(asset.embeddedText) === normalizedQuery)
+      || (asset.sourceType === 'owner-upload' && asset.keywords.some(keyword => normalize(keyword) === normalizedQuery)))
   ));
   if (prebuilt.length > 0) return ranked(prebuilt);
 

@@ -142,14 +142,24 @@ internal object OfflineT9Candidates {
         // 频率只在可信词之间排序，不再以硬门槛给未知拼接结果让位。
         val base = if (numeric && code.length >= 4) {
             val (exact, partial) = local.partition { T9Lexicon.digits(it.pinyin.replace(" ", "")) == code }
-            val (established, publicOnly) = original.partition { locallyTrusted(it.text, it.pinyin) }
+            // 完整单音节不是分段前缀；只提升精确覆盖全部按键的单字，不提前补全。
+            // completionCodes 同时约束整词学习/回退，不能为单字排序扩大它的语义。
+            val (singleSyllables, remaining) = original.partition {
+                it.text.codePointCount(0, it.text.length) == 1 &&
+                    Character.isIdeographic(it.text.codePointAt(0)) &&
+                    T9Lexicon.digits(it.pinyin.trim().replace('ü', 'v')) == code
+            }
+            val (established, publicOnly) = remaining.partition { locallyTrusted(it.text, it.pinyin) }
             val (whole, prefix) = established.partition { code in T9Spelling.completionCodes(it.pinyin) }
             val (publicWhole, publicPrefix) = publicOnly.partition { code in T9Spelling.completionCodes(it.pinyin) }
             // 完整候选仍优先；分段前缀不再按词库来源分级，避免公开短词落到大量单字之后。
             val segmentPrefixes = (prefix + publicPrefix).sortedBy { it.nativeIndex }
             // 新收录只补回被误删的候选，不挤掉已有可信整词/末字补全。
-            if (code.length >= 6) exact + whole + partial + publicWhole + nativeSentences + segmentPrefixes
-            else whole + exact + partial + publicWhole + nativeSentences + segmentPrefixes
+            singleSyllables + if (code.length >= 6) {
+                exact + whole + partial + publicWhole + nativeSentences + segmentPrefixes
+            } else {
+                whole + exact + partial + publicWhole + nativeSentences + segmentPrefixes
+            }
         } else original + local
         val validTexts = base.mapTo(hashSetOf()) { it.text }
         val compatibleReadings = (allLocalReadings.map { RankedCandidate(it.text, it.pinyin) } + original + nativeSentences)

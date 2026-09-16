@@ -13,7 +13,9 @@ export function authorizeUpload(pool: pg.Pool) {
       }
 
       const relativePath = req.path.replace(/^\//, '');
-      const result = relativePath.startsWith('stickers/')
+      const result = relativePath.startsWith('synthesis/')
+        ? await pool.query('SELECT 1 FROM synthesis_asset WHERE user_id = $1 AND file_name = $2', [userId, relativePath.slice('synthesis/'.length)])
+        : relativePath.startsWith('stickers/')
         ? await pool.query(
           'SELECT 1 FROM sticker WHERE user_id = $1 AND file_name = $2',
           [userId, relativePath.slice('stickers/'.length)],

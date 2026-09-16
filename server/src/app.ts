@@ -1,3 +1,5 @@
+import { resolveKeywordGifFile } from './expression/keywordGifLibrary.js';
+import { createSynthesisLibraryRouter } from './api/synthesisLibrary.js';
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
@@ -62,6 +64,15 @@ export function createApp(pool: pg.Pool, options: CreateAppOptions = {}): expres
     (req, res, next) => req.get('X-Device-Id')
       ? requireExpressionAssetIdentity(req, res, next)
       : requireDashboardIdentity(req, res, next),
+    async (req, res, next) => {
+      const match = /^\/generated\/([a-z0-9][a-z0-9_-]*)\.(gif|webp)$/.exec(req.path);
+      if (!match) return next();
+      try {
+        const file = await resolveKeywordGifFile(match[1], match[2] as 'gif' | 'webp');
+        if (!file) { res.sendStatus(404); return; }
+        res.sendFile(file, error => { if (error) next(error); });
+      } catch (error) { next(error); }
+    },
     express.static(expressionAssetRoot()),
   );
   app.use('/uploads', authorizeUpload(pool), express.static(join(process.cwd(), 'uploads')));
@@ -87,6 +98,7 @@ export function createApp(pool: pg.Pool, options: CreateAppOptions = {}): expres
   app.use('/api/v1/dashboard/dictionary', createDashboardDictionaryRouter(pool));
   app.use('/api/v1/dashboard', createDashboardRouter(pool));
   app.use('/api/v1/dashboard', createDashboardStickerRouter(pool));
+  app.use('/api/v1/dashboard', createSynthesisLibraryRouter(pool));
   app.use('/api/v1/dashboard', createDashboardPhraseRouter(pool));
   app.use('/api/v1/dashboard/chat', createChatDashboardRouter(pool));
   app.use('/api/v1/dashboard/relationships', createRelationshipDashboardRouter(pool));

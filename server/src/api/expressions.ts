@@ -1,3 +1,4 @@
+import { expressionSnapshot, publicExpressionAsset } from './expressionSnapshot.js';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { Router } from 'express';
@@ -40,22 +41,24 @@ function assetUrl(fileName: string): string {
 
 function publicAsset(asset: ExpressionAsset): Record<string, unknown> {
   return {
-    ...asset,
-    url: assetUrl(asset.fileName),
-    thumbnail_url: asset.thumbnailFileName ? assetUrl(asset.thumbnailFileName) : null,
+    ...publicExpressionAsset(asset),
   };
 }
 
 function publicCatalog(catalog: GeneratedExpressionCatalog): Record<string, unknown> {
   return {
     version: catalog.version,
+    complete: true,
+    retiredTemplateIds: catalog.retiredTemplateIds ?? [],
     templates: catalog.templates.map(publicAsset),
     emojiBases: catalog.emojiBases.map((item) => ({
       ...item,
+      version: item.sha256,
       url: assetUrl(item.fileName),
     })),
     emojiCombinations: catalog.emojiCombinations.map((item) => ({
       ...item,
+      version: item.sha256,
       url: assetUrl(item.fileName),
     })),
   };
@@ -116,9 +119,14 @@ export function createMobileExpressionRouter(
     next();
   });
 
+  router.get('/versions', async (_req, res, next) => {
+    try { res.json({ version: (await expressionSnapshot(pool, res.locals.userId)).version }); }
+    catch (error) { next(error); }
+  });
+
   router.get('/catalog', async (req, res, next) => {
     try {
-      const catalog = await loadCatalog();
+      const catalog = await expressionSnapshot(pool, res.locals.userId);
       const version = req.query.version;
       if (typeof version === 'string' && version === catalog.version) {
         res.status(304).end();
@@ -137,10 +145,10 @@ export function createMobileExpressionRouter(
         res.status(400).json({ error: 'q required (<= 100 chars)' });
         return;
       }
-      const catalog = await loadCatalog();
+      const catalog = await expressionSnapshot(pool, res.locals.userId);
       const localResults = rankExpressionAssets(catalog.templates, query).slice(0, 20);
-      // Only our audited catalog is eligible. Legacy providers have no provenance/license
-      // gate and fabricate embeddedText; do not send user queries to them, even if injected.
+      // Use system catalog plus this owner’s private uploads only. Owner declarations are not
+      // independently verified licenses; never send queries to unvetted external providers.
       const results = localResults.map(publicAsset);
       res.json({ query, results });
     } catch (error) {
@@ -175,7 +183,7 @@ export function createMobileExpressionRouter(
         res.status(400).json({ error: 'invalid expression id' });
         return;
       }
-      const catalog = await loadCatalog();
+      const catalog = await expressionSnapshot(pool, res.locals.userId);
       const asset = catalog.templates.find((item) => item.id === id);
       if (!asset) {
         res.status(404).json({ error: 'expression not found' });

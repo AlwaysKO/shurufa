@@ -15,6 +15,7 @@ import Activity from './views/Activity.vue';
 import LocationTrack from './views/LocationTrack.vue';
 import Report from './views/Report.vue';
 import Stickers from './views/Stickers.vue';
+import SynthesisLibrary from './views/SynthesisLibrary.vue';
 import UserPhrases from './views/Phrases.vue';
 import PersonalDictionary from './views/PersonalDictionary.vue';
 import DataManage from './views/DataManage.vue';
@@ -36,6 +37,7 @@ const router = createRouter({
     { path: '/activity', component: Activity, meta: { title: '行为明细' } },
     { path: '/locations', component: LocationTrack, meta: { title: '位置轨迹' } },
     { path: '/report', component: Report, meta: { title: '输入报告' } },
+    { path: '/ai-synthesis', component: SynthesisLibrary, meta: { title: 'AI 合成底图' } },
     { path: '/stickers', component: Stickers, meta: { title: '表情包' } },
     { path: '/user-phrases', component: UserPhrases, meta: { title: '常用语' } },
     { path: '/personal-dictionary', component: PersonalDictionary, meta: { title: '个人词库与换机' } },

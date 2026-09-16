@@ -7,6 +7,26 @@ import org.junit.Test
 
 class ExpressionAssetPreviewTest {
     @Test
+    fun `完整目录缓存SHA无扩展名仍使用本地原件不回退HTTP`() {
+        val gif = asset(format = "gif").copy(
+            resolvedPreviewUrl = "file:///cache/expression-query/originals/abcd",
+            url = "https://example.test/private.gif", localPreviewOnly = true,
+        )
+        assertEquals("file:///cache/expression-query/originals/abcd", previewSource(gif))
+    }
+
+    @Test
+    fun `完整目录未缓存原件禁止预览绕过同步器直接GET`() {
+        val gif = asset(format = "gif").copy(
+            distribution = "remote", url = "https://example.test/private.gif",
+            thumbnailUrl = "https://example.test/private.webp", localPreviewOnly = true,
+        )
+        val sources = previewSources(gif)
+        org.junit.Assert.assertFalse(sources.primary.startsWith("http"))
+        org.junit.Assert.assertNull(sources.fallback)
+    }
+
+    @Test
     fun `内置 GIF 忽略静态缩略图并播放原动画`() {
         val asset = asset(format = "gif").copy(
             fileName = "templates/reaction.gif",

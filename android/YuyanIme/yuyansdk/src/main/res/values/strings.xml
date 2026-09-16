@@ -186,8 +186,8 @@
     <string name="ime_hide_icon_tips">启动器不显示图标，部分机型无效</string>
 
     <string name="setting_server_url">电脑 API 地址</string>
-    <string name="setting_server_url_tips">留空为 USB ADB 的 http://127.0.0.1:3000（需 adb reverse）。这是本地补传目标，不是 5175 网页地址；线上始终同步到 https://my.dog8ball.com。局域网地址请使用 HTTPS。</string>
-    <string name="setting_server_url_auto">默认：http://127.0.0.1:3000（需 adb reverse）；同时上传线上</string>
+    <string name="setting_server_url_tips">留空为 USB ADB 的 http://127.0.0.1:3000（需 adb reverse）。只有检测到 USB 数据连接且该地址 /health 正常时才上传本地；线上始终同步到 https://my.dog8ball.com。局域网地址请使用 HTTPS。</string>
+    <string name="setting_server_url_auto">默认：http://127.0.0.1:3000；仅 USB 连接且健康检查通过时上传本地</string>
     <string name="setting_location_tracking">位置采集</string>
     <string name="setting_location_tracking_tips">每分钟上报一次位置，仅存储在你的服务器（同位置不重复记录）</string>
     <string name="voice_input">语音输入</string>
@@ -198,7 +198,7 @@
     <string name="voice_input_permission_denied">未允许麦克风权限，无法使用语音输入</string>
     <string name="quick_keyboard_theme">键盘与主题</string>
     <string name="ai_sticker_search">AI斗图</string>
-    <string name="expression_manual_search_missing_text">请先输入文字，再点击搜索按钮</string>
+    <string name="expression_manual_search_missing_text">AI斗图：根据你输入的文字匹配表情。请先输入文字，再点击“AI斗图”。</string>
     <string name="expression_tool_hide_recommendations">关闭AI斗图推荐</string>
     <string name="expression_tool_restore_recommendations">恢复AI斗图推荐</string>
     <string name="expression_emoji_back_first">返回选择第一个表情</string>

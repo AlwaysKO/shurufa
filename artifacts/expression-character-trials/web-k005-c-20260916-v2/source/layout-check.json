@@ -1,0 +1,122 @@
+[
+  {
+    "pose": 1,
+    "bounds": [
+      49,
+      48,
+      283,
+      259
+    ],
+    "captionInkRatio": 0.0
+  },
+  {
+    "pose": 2,
+    "bounds": [
+      48,
+      48,
+      281,
+      259
+    ],
+    "captionInkRatio": 0.0
+  },
+  {
+    "pose": 3,
+    "bounds": [
+      48,
+      48,
+      281,
+      259
+    ],
+    "captionInkRatio": 0.0
+  },
+  {
+    "pose": 4,
+    "bounds": [
+      48,
+      48,
+      281,
+      259
+    ],
+    "captionInkRatio": 0.0
+  },
+  {
+    "pose": 5,
+    "bounds": [
+      49,
+      47,
+      282,
+      259
+    ],
+    "captionInkRatio": 0.0
+  },
+  {
+    "pose": 6,
+    "bounds": [
+      48,
+      47,
+      281,
+      259
+    ],
+    "captionInkRatio": 0.0
+  },
+  {
+    "pose": 7,
+    "bounds": [
+      48,
+      47,
+      281,
+      259
+    ],
+    "captionInkRatio": 0.0
+  },
+  {
+    "pose": 8,
+    "bounds": [
+      48,
+      47,
+      281,
+      259
+    ],
+    "captionInkRatio": 0.0
+  },
+  {
+    "pose": 9,
+    "bounds": [
+      49,
+      47,
+      282,
+      259
+    ],
+    "captionInkRatio": 0.0
+  },
+  {
+    "pose": 10,
+    "bounds": [
+      48,
+      47,
+      281,
+      259
+    ],
+    "captionInkRatio": 0.0
+  },
+  {
+    "pose": 11,
+    "bounds": [
+      49,
+      47,
+      281,
+      259
+    ],
+    "captionInkRatio": 0.0
+  },
+  {
+    "pose": 12,
+    "bounds": [
+      48,
+      47,
+      282,
+      259
+    ],
+    "captionInkRatio": 0.0
+  }
+]

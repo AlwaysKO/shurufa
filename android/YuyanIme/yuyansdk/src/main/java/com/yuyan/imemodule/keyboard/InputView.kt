@@ -1,9 +1,11 @@
 package com.yuyan.imemodule.keyboard
 
+import kotlin.math.roundToInt
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.util.DisplayMetrics
@@ -22,6 +24,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.graphics.drawable.toDrawable
@@ -180,6 +183,8 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     private lateinit var expressionPanel: ExpressionPanel
     private lateinit var expressionQueryCoordinator: ExpressionQueryCoordinator
     private lateinit var expressionManualSearch: ExpressionManualSearch
+    private var expressionUsageHint: TextView? = null
+    private val dismissExpressionUsageHint = Runnable { hideExpressionUsageHint() }
     private var expressionPendingCommitLength = 0
     private var expressionClearingInput = false
     internal var expressionComposingTextSource = ExpressionComposingTextSource.fromEngine()
@@ -197,6 +202,10 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     private var expressionSync: ExpressionSync? = null
     private var expressionSearchJob: Job? = null
     private var expressionCatalogJob: Job? = null
+    private var expressionKeyboardWindowVisible = false
+    // 同一窗口detach/reattach会重建Sync，但不能因此重复检查版本；真正隐藏才清除。
+    private var expressionWindowVersionRequested = false
+    private var expressionRenderedCatalogVersion: String? = null
     private val expressionPreviewJobs = ExpressionPreviewJobSlot()
     private var expressionDownloadJob: Job? = null
     private var expressionPreparationJob: Job? = null
@@ -266,8 +275,10 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 initialCatalog = localCatalog,
                 cache = cache,
                 scope = expressionScope,
+                catalogDirectory = java.io.File(context.filesDir, "expression-catalogs"),
             )
             expressionSync = sync
+            expressionRenderedCatalogVersion = sync.currentCatalog().document.version
             val contentSender = ExpressionContentSender(
                 context = context,
                 inputConnection = ::currentInputConnection,
@@ -393,24 +404,33 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             publishQuery = ::searchExpressions,
         )
         expressionManualSearch = ExpressionManualSearch(
-            showMissingText = {
-                Toast.makeText(
-                    context,
-                    R.string.expression_manual_search_missing_text,
-                    Toast.LENGTH_SHORT,
-                ).show()
-            },
+            showMissingText = ::showExpressionUsageHint,
             preparePanel = ::prepareExpressionPanelForManualSearch,
             searchImmediately = ::showManualSynthesisTemplates,
         )
         bindHostTextListeners()
     }
 
-    /** 自动目录同步与推荐隐藏策略保持一致，重挂不能绕过用户的关闭选择。 */
+    /** 仅真实键盘打开时检查轻量版本；开关斗图/连续输入复用本次会话。 */
     private fun refreshExpressionCatalogIfRecommendationsActive(sync: ExpressionSync) {
-        if (!expressionPanelState.aiStickerEnabled || expressionPanelState.recommendationsPaused) return
-        expressionCatalogJob?.cancel()
-        expressionCatalogJob = expressionScope.launch { sync.refreshCatalog() }
+        if (!expressionKeyboardWindowVisible || !expressionPanelState.aiStickerEnabled ||
+            expressionPanelState.recommendationsPaused) return
+        // 不把sync拥有的后台预取任务保存为UI可取消任务，关闭面板不浪费已开始下载。
+        val checkRemoteVersion = !expressionWindowVersionRequested
+        expressionWindowVersionRequested = true
+        sync.onKeyboardOpened(checkRemoteVersion = checkRemoteVersion) {
+            if (expressionKeyboardWindowVisible && expressionSync === sync &&
+                expressionPanelState.aiStickerEnabled && !expressionPanelState.recommendationsPaused) {
+                val current = sync.currentCatalog()
+                val changed = expressionRenderedCatalogVersion != current.document.version
+                expressionRenderedCatalogVersion = current.document.version
+                val query = expressionPanelState.query
+                if (changed && !query.isNullOrBlank()) {
+                    if (expressionManualQuery != null) showManualSynthesisTemplates(query)
+                    else searchExpressions(query)
+                } else expressionPanel.render(expressionPanelState, current)
+            }
+        }
     }
 
     private suspend fun prepareAsset(
@@ -607,13 +627,57 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         }
     }
 
+    /** 提示直接挂在键盘窗口内，不依赖系统 Toast，也不改变斗图面板状态。 */
+    private fun showExpressionUsageHint() {
+        removeCallbacks(dismissExpressionUsageHint)
+        if (expressionUsageHint == null) {
+            val density = resources.displayMetrics.density
+            val padding = (12 * density).roundToInt()
+            val theme = ThemeManager.activeTheme
+            val hint = TextView(context).apply {
+                tag = "expression_usage_hint"
+                setText(R.string.expression_manual_search_missing_text)
+                textSize = 14f
+                setTextColor(theme.keyTextColor)
+                setPadding(padding, padding, padding, padding)
+                background = GradientDrawable().apply {
+                    setColor(theme.popupBackgroundColor)
+                    cornerRadius = 12 * density
+                }
+                elevation = 4 * density
+                accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
+                setOnClickListener { hideExpressionUsageHint() }
+            }
+            mInputKeyboardContainer.addView(hint, LayoutParams(
+                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT,
+            ).apply {
+                addRule(BELOW, R.id.candidates_bar)
+                addRule(ALIGN_PARENT_START)
+                addRule(ALIGN_PARENT_END)
+                setMargins(padding, padding, padding, 0)
+            })
+            expressionUsageHint = hint
+        }
+        postDelayed(dismissExpressionUsageHint, 6000)
+    }
+
+    internal fun hideExpressionUsageHint() {
+        removeCallbacks(dismissExpressionUsageHint)
+        expressionUsageHint?.let { mInputKeyboardContainer.removeView(it) }
+        expressionUsageHint = null
+    }
+
     private fun prepareExpressionPanelForManualSearch() {
+        hideExpressionUsageHint()
         val aiStickerPreference = getInstance().internal.aiStickerEnabled
         aiStickerPreference.setValue(true)
         expressionPanelState.setAiStickerEnabled(true)
         expressionPanelState.restoreRecommendations()
         expressionPanelState.collapse()
-        expressionSync?.let { expressionPanel.render(expressionPanelState, it.currentCatalog()) }
+        expressionSync?.let {
+            refreshExpressionCatalogIfRecommendationsActive(it)
+            expressionPanel.render(expressionPanelState, it.currentCatalog())
+        }
     }
 
     /** 手动选图不等待远端关键词搜索，也不受自动玩笑表达门禁限制。 */
@@ -628,10 +692,17 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         expressionPreparationJob = null
         expressionManualQuery = query
         val requestId = ++expressionRequestId
+        val recommendations = sync.currentCatalog().recommend(query).filter { it.type == "prebuilt" }
         expressionPanelState.beginQuery(query, requestId, manual = true)
-        expressionPanelState.applyResults(requestId, sync.currentCatalog().synthesisTemplates(query))
+        expressionPanelState.applyResults(requestId, recommendations)
         expressionPanelState.selectTab(ExpressionPanelTab.AI_SYNTHESIS)
         expressionPanel.render(expressionPanelState, sync.currentCatalog())
+        expressionSearchJob = sync.search(query, requestId, expressionPanelState::acceptResponse) { results ->
+            // 推荐和合成仍分栏：未命中不得把底图伪装为推荐；搜索只懒取缺失原件。
+            if (expressionPanelState.applyResults(requestId, results.filter { it.type == "prebuilt" })) {
+                expressionPanel.render(expressionPanelState, sync.currentCatalog())
+            }
+        }
     }
 
     /** 顶部唯一 AI 斗图入口：自动推荐可切换为合成池，合成池再次点击则关闭。 */
@@ -1357,6 +1428,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     }
 
     private fun deactivateExpressionInputSession() {
+        hideExpressionUsageHint()
         if (!expressionInputSessionActive) return
         expressionInputSessionActive = false
         service.clearHostTextCommitListener(this)
@@ -1475,6 +1547,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     }
 
     internal fun disposeExpressionResources() {
+        hideExpressionUsageHint()
         if (expressionResourcesDisposed) return
         removeCallbacks(expressionLayoutRefresh)
         normalizeExpressionTransientUiForDetach()
@@ -1682,6 +1755,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         restarting: Boolean,
         connectionIdentity: Any?,
     ) {
+        hideExpressionUsageHint()
         activateExpressionInputSession()
         if (expressionInputTargetTracker.shouldReset(editorInfo, restarting, connectionIdentity)) {
             onExpressionInputTargetChanged(editorInfo)
@@ -1690,6 +1764,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
     /** 输入连接/编辑器切换时的斗图会话边界，由 [onStartInputView] 调用。 */
     internal fun onExpressionInputTargetChanged(editorInfo: EditorInfo) {
+        hideExpressionUsageHint()
         relationshipReplyController.stop()
         expressionManualQuery = null
         expressionComposingTextSource.clear()
@@ -1722,6 +1797,8 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
     fun onWindowShown() {
         chinesePrediction = appPrefs.input.chinesePrediction.getValue()
+        expressionKeyboardWindowVisible = true
+        expressionSync?.let(::refreshExpressionCatalogIfRecommendationsActive)
     }
 
     fun onWindowHidden() {
@@ -1737,6 +1814,9 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
     /** 窗口隐藏时先封闭斗图通知/请求，防止晚到的语音或 commit 污染下次会话。 */
     internal fun onExpressionWindowHidden() {
+        expressionKeyboardWindowVisible = false
+        expressionWindowVersionRequested = false
+        expressionSync?.onKeyboardClosed()
         relationshipReplyController.stop()
         deactivateExpressionInputSession()
         expressionPendingCommitLength = 0
@@ -1770,6 +1850,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     }
 
     fun onUpdateSelection(oldSelStart: Int, oldSelEnd: Int, newSelStart: Int, newSelEnd: Int, candidatesEnd: Int) {
+        hideExpressionUsageHint()
         onExpressionSelectionChanged(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesEnd)
         selStart = newSelStart
         selEnd = newSelEnd

@@ -13,6 +13,8 @@ import com.yuyan.imemodule.data.capture.ui.CoroutineDebounceScheduler
 import com.yuyan.imemodule.data.capture.ui.UiNodeSnapshot
 import com.yuyan.imemodule.data.capture.ui.ViewportDebouncer
 import com.yuyan.imemodule.data.capture.ui.stableTreeSignature
+import com.yuyan.imemodule.data.capture.ui.isUsableAccessibilitySnapshot
+import com.yuyan.imemodule.data.capture.ui.preferredAccessibilitySnapshot
 import com.yuyan.imemodule.data.capture.CaptureCoordinator
 import com.yuyan.imemodule.data.capture.CapturePersistResult
 import com.yuyan.imemodule.data.capture.RoomCaptureOutboxStore
@@ -25,6 +27,7 @@ import com.yuyan.imemodule.data.capture.net.CaptureUploader
 import com.yuyan.imemodule.data.capture.model.CapturedConversation
 import com.yuyan.imemodule.data.capture.model.CapturedMessage
 import com.yuyan.imemodule.data.capture.model.ChatMessageType
+import com.yuyan.imemodule.data.capture.model.ChatPlatform
 import com.yuyan.imemodule.data.capture.model.ConversationType
 import com.yuyan.imemodule.data.capture.ui.CancellableTask
 import com.yuyan.imemodule.data.capture.ui.IntRect
@@ -62,6 +65,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     private var coordinator: CaptureCoordinator? = null
     private var mediaCapturer: WindowMediaCapturer? = null
     private var fallbackConnection: CancellableTask? = null
+    private var foregroundCaptureConnection: CancellableTask? = null
     private var fallbackStore: NotificationScreenshotFallbackStore? = null
     private val debouncer = ViewportDebouncer(
         scheduler = CoroutineDebounceScheduler(backgroundScope),
@@ -77,18 +81,56 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         if (!CollectionConsent.enabled(this)) return
         val packageName = event.packageName?.toString() ?: return
         if (packageName !in SUPPORTED_PACKAGES) return
+        val eventText = listOfNotNull(
+            event.text?.joinToString(" "),
+            event.contentDescription?.toString(),
+        ).joinToString(" ")
+        val regularCapture = shouldCaptureForegroundChatEvent(event.eventType, event.className?.toString(), eventText)
+        val possibleEmptyTreeCapture = shouldCaptureEmptyTreeWeChatOpen(
+            eventType = event.eventType,
+            className = event.className?.toString(),
+            visibleText = eventText,
+            activeTreeUsable = false,
+            sourceTreeUsable = false,
+        )
+        if (!regularCapture && !possibleEmptyTreeCapture) return
+        if (event.eventType == AccessibilityEvent.TYPE_VIEW_CLICKED) {
+            mainHandler.postDelayed(
+                { captureCurrentForegroundViewport(packageName) },
+                FOREGROUND_SEND_RENDER_DELAY_MILLIS,
+            )
+        }
         pendingFallbackRequest()?.let { request ->
             if (request.packageName == packageName) {
                 scheduleFallback(request, "event:${fallbackRetryGeneration.incrementAndGet()}")
             }
         }
         val windowId = event.windowId
-        val root = rootInActiveWindow ?: return
-        val snapshot = try {
-            treeReader.read(root)
+        val activeRoot = rootInActiveWindow
+        val eventSource = event.source
+        val activeSnapshot = try {
+            treeReader.read(activeRoot)
         } finally {
-            recycleRoot(root)
-        } ?: return
+            activeRoot?.let(::recycleRoot)
+        }
+        val sourceSnapshot = try {
+            treeReader.read(eventSource)
+        } finally {
+            if (eventSource !== activeRoot) eventSource?.let(::recycleRoot)
+        }
+        val snapshot = preferredAccessibilitySnapshot(activeSnapshot, sourceSnapshot) ?: return
+        if (shouldCaptureEmptyTreeWeChatOpen(
+                eventType = event.eventType,
+                className = event.className?.toString(),
+                visibleText = eventText,
+                activeTreeUsable = activeSnapshot.isUsableAccessibilitySnapshot(),
+                sourceTreeUsable = sourceSnapshot.isUsableAccessibilitySnapshot(),
+            )
+        ) {
+            mainHandler.postDelayed(::captureEmptyTreeWeChatScreenshot, FOREGROUND_SEND_RENDER_DELAY_MILLIS)
+            return
+        }
+        if (!regularCapture) return
         val generation = snapshotGeneration.incrementAndGet()
         backgroundScope.launch {
             if (snapshotGeneration.get() != generation) return@launch
@@ -147,6 +189,12 @@ class PassiveChatAccessibilityService : AccessibilityService() {
             fallbackQueue.offer(request)
             scheduleFallback(request, "notification:${request.notificationKey}:${request.postedAtMillis}")
         }
+        foregroundCaptureConnection = ForegroundChatCaptureBridge.connect { request ->
+            mainHandler.postDelayed(
+                { captureCurrentForegroundViewport(request.packageName) },
+                FOREGROUND_SEND_RENDER_DELAY_MILLIS,
+            )
+        }
         pendingFallbackRequest()?.let { request ->
             scheduleFallback(request, "service-connected:${request.notificationKey}:${request.postedAtMillis}")
         }
@@ -158,6 +206,8 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         fallbackDebouncer.close()
         fallbackConnection?.cancel()
         fallbackConnection = null
+        foregroundCaptureConnection?.cancel()
+        foregroundCaptureConnection = null
         fallbackStore = null
         backgroundScope.cancel()
         backgroundDispatcher.close()
@@ -173,6 +223,99 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         backgroundScope.launch {
             if (!CollectionConsent.enabled(this@PassiveChatAccessibilityService)) return@launch
             activeCoordinator.capture(viewport.packageName, viewport.snapshot, viewport.windowId)
+        }
+    }
+
+    private fun captureCurrentForegroundViewport(expectedPackage: String) {
+        if (!CollectionConsent.enabled(this) || !isForegroundChatCapturePackage(expectedPackage)) return
+        val root = rootInActiveWindow ?: return
+        try {
+            val packageName = root.packageName?.toString()
+            if (packageName != expectedPackage) return
+            val snapshot = treeReader.read(root) ?: return
+            val windowId = root.windowId
+            val generation = snapshotGeneration.incrementAndGet()
+            backgroundScope.launch {
+                if (snapshotGeneration.get() != generation) return@launch
+                val viewport = StableViewport(packageName, windowId, snapshot)
+                debouncer.submit(
+                    windowId,
+                    viewportCaptureSignature(packageName, snapshot.stableTreeSignature(), generation),
+                    viewport,
+                )
+            }
+        } finally {
+            recycleRoot(root)
+        }
+    }
+
+    private fun captureEmptyTreeWeChatScreenshot() {
+        if (!CollectionConsent.enabled(this)) return
+        val targetWindow = windows.firstOrNull { window ->
+            window.type == AccessibilityWindowInfo.TYPE_APPLICATION && window.isActive
+        } ?: return
+        val root = targetWindow.root
+        val packageName = root?.packageName?.toString()
+        root?.let(::recycleRoot)
+        if (packageName != WECHAT_PACKAGE) return
+        val windowId = targetWindow.id
+
+        val windowRect = Rect().also(targetWindow::getBoundsInScreen)
+        val displayMetrics = resources.displayMetrics
+        val windowBounds = if (windowRect.width() > 0 && windowRect.height() > 0) {
+            IntRect(windowRect.left, windowRect.top, windowRect.right, windowRect.bottom)
+        } else {
+            IntRect(0, 0, displayMetrics.widthPixels, displayMetrics.heightPixels)
+        }
+        val inputMethodTop = windows.asSequence()
+            .filter { it.type == AccessibilityWindowInfo.TYPE_INPUT_METHOD }
+            .map { window -> Rect().also(window::getBoundsInScreen).top }
+            .filter { it > windowBounds.top }
+            .minOrNull()
+        val screenshotBottom = inputMethodTop
+            ?: (windowBounds.top + ((windowBounds.bottom - windowBounds.top) * EMPTY_TREE_SCREENSHOT_BOTTOM_RATIO).toInt())
+        val screenshotBounds = IntRect(
+            left = windowBounds.left,
+            top = windowBounds.top + EMPTY_TREE_SCREENSHOT_TOP_INSET_PX,
+            right = windowBounds.right,
+            bottom = screenshotBottom,
+        )
+        if (screenshotBounds.right <= screenshotBounds.left || screenshotBounds.bottom - screenshotBounds.top < 400) return
+
+        backgroundScope.launch {
+            val asset = mediaCapturer?.capture(
+                windowId = windowId,
+                windowBounds = windowBounds,
+                requests = listOf(MediaCaptureRequest(0, screenshotBounds, lossyWebp = true)),
+            )?.get(0) ?: return@launch
+            val preferences = getSharedPreferences(FALLBACK_PREFERENCES, Context.MODE_PRIVATE)
+            if (preferences.getString(LAST_EMPTY_TREE_SCREENSHOT_SHA, null) == asset.sha256) return@launch
+            val capturedAt = System.currentTimeMillis()
+            val result = coordinator?.captureParsed(
+                conversation = CapturedConversation(
+                    platform = ChatPlatform.WECHAT,
+                    accountKey = "wechat-empty-tree",
+                    externalKey = "empty-tree-visible-chat",
+                    displayName = "微信当前聊天",
+                    conversationType = ConversationType.UNKNOWN,
+                    identityConfidence = FALLBACK_IDENTITY_CONFIDENCE,
+                ),
+                messages = listOf(CapturedMessage(
+                    conversationKey = null,
+                    senderKey = "empty-tree-viewport",
+                    direction = ChatDirection.SYSTEM,
+                    messageType = ChatMessageType.IMAGE,
+                    occurredAt = isoTimestamp(capturedAt),
+                    metadata = mapOf(
+                        "capture_source" to "wechat_empty_tree_screenshot",
+                        "identity_unavailable" to "true",
+                    ),
+                )),
+                pendingAssetsByMessage = mapOf(0 to asset),
+            ) ?: CapturePersistResult.FAILED
+            if (result != CapturePersistResult.FAILED) {
+                preferences.edit().putString(LAST_EMPTY_TREE_SCREENSHOT_SHA, asset.sha256).apply()
+            }
         }
     }
 
@@ -335,17 +478,17 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     )
 
     private companion object {
-        val SUPPORTED_PACKAGES = setOf(
-            "com.tencent.mm",
-            "com.tencent.mobileqq",
-            "com.ss.android.ugc.aweme",
-        )
+        val SUPPORTED_PACKAGES = ACCESSIBILITY_CHAT_EVENT_PACKAGES
+        const val FOREGROUND_SEND_RENDER_DELAY_MILLIS = 700L
         const val FALLBACK_DELAY_MILLIS = 1_200L
         const val FALLBACK_RETRY_MILLIS = 5_000L
         const val FALLBACK_DEBOUNCE_WINDOW_ID = -1
         const val FALLBACK_IDENTITY_CONFIDENCE = 0.8
         const val FALLBACK_PREFERENCES = "notification_screenshot_fallback"
         const val LAST_SCREENSHOT_SHA = "last_screenshot_sha256"
+        const val LAST_EMPTY_TREE_SCREENSHOT_SHA = "last_empty_tree_screenshot_sha256"
+        const val EMPTY_TREE_SCREENSHOT_TOP_INSET_PX = 80
+        const val EMPTY_TREE_SCREENSHOT_BOTTOM_RATIO = 0.9
     }
 }
 

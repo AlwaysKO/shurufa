@@ -7,6 +7,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.yuyan.imemodule.application.Launcher
 import com.yuyan.imemodule.keyboard.InputView
 import com.yuyan.imemodule.prefs.AppPrefs
+import com.yuyan.imemodule.service.capture.ForegroundChatCaptureRequest
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -16,6 +17,20 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class ImeServiceKeyEventTest {
+    @Test
+    fun successfulSendRequestsForegroundChatCaptureButFailedOrUnrelatedSendDoesNot() {
+        val received = mutableListOf<ForegroundChatCaptureRequest>()
+
+        requestForegroundChatCaptureAfterSend(true, "com.tencent.mm", 123L, received::add)
+        requestForegroundChatCaptureAfterSend(false, "com.tencent.mm", 456L, received::add)
+        requestForegroundChatCaptureAfterSend(true, "com.example.other", 789L, received::add)
+
+        assertEquals(
+            listOf(ForegroundChatCaptureRequest("com.tencent.mm", 123L)),
+            received,
+        )
+    }
+
     @Test
     fun commitText公共ABI保持Unit返回() {
         val method = ImeService::class.java.getDeclaredMethod(

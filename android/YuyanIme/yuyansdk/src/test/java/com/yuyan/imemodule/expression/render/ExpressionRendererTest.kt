@@ -32,7 +32,7 @@ class ExpressionRendererTest {
         val context = androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>()
         val phrase = "谢谢你今天帮忙"
         val catalog = com.yuyan.imemodule.expression.ExpressionCatalog.fromAssets(context)
-        val template = catalog.synthesisTemplates(phrase).first { it.id == "tpl-02" }
+        val template = catalog.synthesisTemplates(phrase).first { it.id == "blank-cat-side-eye" }
         val source = temporaryFolder.newFile("actual-source.gif").apply {
             context.assets.open("expression/${template.fileName}").use { writeBytes(it.readBytes()) }
         }

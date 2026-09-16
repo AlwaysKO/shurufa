@@ -76,6 +76,26 @@ describe('generateExpressionAssets', () => {
     return { ...base, bytes, template, manifest };
   }
 
+  it('旧源仅构建带字推荐不再输出合成模板且APK不残留旧文件', async () => {
+    const { options, manifest, template } = await nativeTemplateFixture();
+    const legacy = { ...template, id: 'legacy', animation: undefined, type: 'static', source: 'legacy.png' };
+    await writeFile(join(options.sourceRoot, 'legacy.png'), await sharp({
+      create: { width: 512, height: 512, channels: 4, background: '#ffffff' },
+    }).png().toBuffer());
+    const oldPath = join(options.androidAssetsRoot, 'templates/legacy.webp');
+    await mkdir(join(options.androidAssetsRoot, 'templates'), { recursive: true });
+    await writeFile(oldPath, 'old');
+    await writeFile(options.manifestPath, JSON.stringify({ ...manifest, prebuiltSourceTemplates: [legacy],
+      prebuiltPhrases: [{ text: '谢谢', aliases: [], templateIds: ['legacy'] }] }));
+    const catalog = await generateExpressionAssets(options);
+    expect(catalog).toHaveProperty('complete', true);
+    expect(catalog.templates.filter(item => item.type === 'synthesis-template').map(item => item.id)).toEqual([template.id]);
+    expect((catalog as unknown as { retiredTemplateIds: string[] }).retiredTemplateIds).toEqual(['legacy']);
+    expect(catalog.templates.some(item => item.type === 'prebuilt' && item.embeddedText === '谢谢')).toBe(true);
+    await expect(readFile(oldPath)).rejects.toThrow();
+    await expect(readFile(join(options.outputRoot, 'templates/legacy.webp'))).rejects.toThrow();
+  });
+
   it.each(['ai-original', 'licensed'])('已批准%s无字动作模板原字节复制且保留20帧四秒', async sourceType => {
     const { bytes, options } = await nativeTemplateFixture(sourceType);
     const catalog = await generateExpressionAssets(options);
@@ -147,7 +167,7 @@ describe('generateExpressionAssets', () => {
     // Keep this focused fixture cheap: the full chain separately audits legacy templates/bases.
     await writeFile(options.manifestPath, JSON.stringify({
       ...manifest, expectedCounts: { templates: 0, animatedTemplates: 0, emojiBases: 0 },
-      templates: [], emojiBases: [], prebuiltPhrases: [], builtInTemplateIds: [], highFrequencyCombinations: [],
+      templates: [], prebuiltSourceTemplates: [], emojiBases: [], prebuiltPhrases: [], builtInTemplateIds: [], highFrequencyCombinations: [],
     }));
     const catalog = await generateExpressionAssets({ ...options, sourceRoot });
     expect(JSON.parse(await readFile(join(options.androidAssetsRoot, 'catalog.json'), 'utf8'))).toEqual(catalog);

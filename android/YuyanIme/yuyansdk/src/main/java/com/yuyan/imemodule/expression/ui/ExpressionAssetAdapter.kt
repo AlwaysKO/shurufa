@@ -147,6 +147,16 @@ internal data class ExpressionPreviewSources(
 )
 
 internal fun previewSources(asset: ExpressionAsset): ExpressionPreviewSources {
+    // resolvedPreviewUrl由SHA解析器产生，缓存文件按hash命名，不能要求.gif后缀。
+    if (asset.localPreviewOnly) {
+        val local = asset.resolvedPreviewUrl?.takeIf {
+            it.startsWith("file://", ignoreCase = true) || it.startsWith("content://", ignoreCase = true)
+        }
+        val bundled = if (asset.distribution != "remote")
+            "file:///android_asset/expression/${asset.fileName.trimStart('/')}" else null
+        return ExpressionPreviewSources(local ?: bundled ?: "file:///expression-unavailable")
+    }
+
     val primary = if (asset.format.equals("gif", ignoreCase = true)) {
         remoteCandidate(asset.resolvedPreviewUrl)?.takeIf { isLocalGifExpressionSource(it.path) }
             ?: remoteCandidate(asset.thumbnailUrl)?.takeIf { isLocalGifExpressionSource(it.path) }

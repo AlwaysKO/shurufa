@@ -1,0 +1,32 @@
+import { readFileSync } from 'node:fs';
+import { mkdtemp, mkdir, writeFile, rm, readFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { newDb, DataType } from 'pg-mem';
+import type pg from 'pg';
+import request from 'supertest';
+import { beforeEach, afterEach, expect, it, vi } from 'vitest';
+import { createApp } from '../app.js';
+import { authenticatedRequest } from '../lib/dashboardAuthTestHelper.js';
+const A='00000000-0000-4000-8000-00000000000a', B='00000000-0000-4000-8000-00000000000b';
+let pool:pg.Pool,root:string,app:ReturnType<typeof createApp>,agent:Awaited<ReturnType<typeof authenticatedRequest>>;
+const asset={id:'generated-evening',type:'prebuilt',format:'gif',sourceType:'ai-original',distribution:'remote',version:'a'.repeat(64),sha256:'a'.repeat(64),fileName:'generated/generated-evening.gif',thumbnailFileName:null,width:240,height:240,keywords:['晚上好'],emotions:[],embeddedText:'晚上好',textSafeArea:null,layout:null,heat:0,sourceGif:'artifacts/evening.gif',sourceReport:'artifacts/report.json',approval:{date:'2026-09-16',basis:'用户全量授权'}};
+beforeEach(async()=>{const db=newDb();db.public.registerFunction({name:'trim',args:[DataType.text],returns:DataType.text,implementation:(s:string)=>s.trim()});db.public.registerFunction({name:'length',args:[DataType.text],returns:DataType.integer,implementation:(s:string)=>s.length});pool=new(db.adapters.createPg().Pool)();for(const name of ['011_expression_assets.sql','005_sticker.sql','015_sticker_keywords.sql','018_synthesis_library.sql','019_keyword_gif_removal.sql'])await pool.query(readFileSync(new URL('../../migrations/'+name,import.meta.url),'utf8').split('-- 兼容历史')[0]);root=await mkdtemp(join(tmpdir(),'keyword-api-'));for(const path of ['server/.runtime/expression-assets','assets/expression/query','artifacts'])await mkdir(join(root,path),{recursive:true});await writeFile(join(root,'server/.runtime/expression-assets/catalog.json'),JSON.stringify({version:'v1',templates:[],emojiBases:[],emojiCombinations:[]}));await writeFile(join(root,'assets/expression/approved-keyword-gifs.json'),JSON.stringify({items:[asset]}));await writeFile(join(root,'artifacts/evening.gif'),'GIF89a');vi.spyOn(process,'cwd').mockReturnValue(join(root,'server'));app=createApp(pool);agent=await authenticatedRequest(app);});
+afterEach(async()=>{vi.restoreAllMocks();await pool.end();if(root)await rm(root,{recursive:true,force:true});});
+it('补录图后台可见、推荐可用、鉴权文件可读；删除后两端消失、版本改变、其他用户不受影响、重导不复活',async()=>{
+ const library=await agent.get(`/api/v1/dashboard/sticker-library?user_id=${A}`);expect(library.status).toBe(200);expect(library.body.groups.find((g:any)=>g.keyword==='晚上好').assets).toHaveLength(1);
+ const rec=()=>request(app).get('/api/v1/mobile/expressions/recommend?q='+encodeURIComponent('晚上好')).set('X-Device-Id',A);
+ expect((await rec()).body.results.map((x:any)=>x.id)).toContain(asset.id);
+ expect((await request(app).post(`/api/v1/mobile/expressions/${asset.id}/use`).set('X-Device-Id',A)).status).toBe(200);
+ const versions=()=>request(app).get('/api/v1/mobile/expressions/versions').set('X-Device-Id',A);
+ const before=(await versions()).body.version;
+ const url='/uploads/expression/generated/generated-evening.gif';expect((await request(app).get(url)).status).toBe(401);expect((await agent.get(url+'?user_id='+A)).status).toBe(200);
+ expect((await agent.delete(`/api/v1/dashboard/system-stickers/${asset.id}?user_id=${A}`)).status).toBe(200);
+ expect((await rec()).body.results).toEqual([]);expect((await versions()).body.version).not.toBe(before);
+ const after=await agent.get(`/api/v1/dashboard/sticker-library?user_id=${A}`);expect(after.body.groups.find((g:any)=>g.keyword==='晚上好').assets).toEqual([]);
+ expect((await request(app).get('/api/v1/mobile/expressions/recommend?q='+encodeURIComponent('晚上好')).set('X-Device-Id',B)).body.results).toHaveLength(1);
+ await writeFile(join(root,'assets/expression/approved-keyword-gifs.json'),JSON.stringify({items:[{...asset,id:'generated-new-id'}]}));expect((await rec()).body.results).toEqual([]);expect(await readFile(join(root,'artifacts/evening.gif'),'utf8')).toBe('GIF89a');
+});
+it('拒绝未知ID和未登录删除，不写删除标记',async()=>{expect((await request(app).delete('/api/v1/dashboard/system-stickers/'+asset.id+'?user_id='+A)).status).toBe(401);expect((await agent.delete('/api/v1/dashboard/system-stickers/no-such?user_id='+A)).status).toBe(404);expect((await pool.query('SELECT * FROM keyword_gif_removal')).rows).toEqual([]);});
+
+it('删除系统引用不应隐藏用户明确上传的独立个人记录',async()=>{await pool.query("INSERT INTO sticker(user_id,keywords,file_name,format,sha256) VALUES($1,'晚上好','personal.gif','gif',$2)",[A,asset.sha256]);await agent.delete(`/api/v1/dashboard/system-stickers/${asset.id}?user_id=${A}`);const r=await request(app).get('/api/v1/mobile/expressions/recommend?q='+encodeURIComponent('晚上好')).set('X-Device-Id',A);expect(r.body.results.map((x:any)=>x.id)).toEqual(['sticker-1']);});

@@ -1,3 +1,4 @@
+import { readKeywordGifCatalog, mergeKeywordGifCatalog, removedKeywordGifHashes } from '../expression/keywordGifLibrary.js';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type pg from 'pg';
@@ -95,8 +96,11 @@ export async function loadStickerLibrary(pool: pg.Pool, userId: string) {
   for (const item of coverage.keywords) Object.assign(group(item.keyword), { category: item.category, planned: true });
   for (const item of custom.rows) group(item.keyword).custom = true;
   let systemCount = 0;
-  for (const asset of catalog.templates) {
-    if (!asset.keywords.length) continue;
+  const removed = await removedKeywordGifHashes(pool, userId);
+  for (const asset of mergeKeywordGifCatalog(catalog.templates, await readKeywordGifCatalog())) {
+    if (asset.type === 'synthesis-template' || !asset.keywords.length) continue;
+    for (const keyword of asset.keywords) group(keyword);
+    if (removed.has(asset.sha256)) continue;
     systemCount++;
     for (const keyword of new Set(asset.keywords)) {
       group(keyword).assets.push({ id: asset.id, source: 'system', keywords: asset.keywords,

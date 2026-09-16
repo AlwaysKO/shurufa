@@ -1,0 +1,4893 @@
+{
+  "schemaVersion": 1,
+  "approval": "2026-09-16 用户明确全量补录及后续默认入库",
+  "items": [
+    {
+      "id": "generated-149d386198066dbe9d2283ab",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "149d386198066dbe9d2283aba96a56e50b59bba458060159793c9e90ffca9cbe",
+      "sha256": "149d386198066dbe9d2283aba96a56e50b59bba458060159793c9e90ffca9cbe",
+      "fileName": "generated/generated-149d386198066dbe9d2283ab.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "你认真的"
+      ],
+      "emotions": [],
+      "embeddedText": "你认真的",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-batches/scene-rich-03-serious-v2/serious-v2.gif",
+      "sourceReport": "artifacts/expression-batches/scene-rich-03-serious-v2/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-109117819e5025292a0d3834",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "109117819e5025292a0d3834cb6889c529ad5748cd88b85f462ce0013f1ede1c",
+      "sha256": "109117819e5025292a0d3834cb6889c529ad5748cd88b85f462ce0013f1ede1c",
+      "fileName": "generated/generated-109117819e5025292a0d3834.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "我就看看"
+      ],
+      "emotions": [],
+      "embeddedText": "我就看看",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-batches/scene-rich-11/gifs/scene-rich-11-watch-person.gif",
+      "sourceReport": "artifacts/expression-batches/scene-rich-11/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-cfae47158c53d4cf38052abe",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "cfae47158c53d4cf38052abe9f194fe08ce598125fa91c84b8b1f9e66d95d765",
+      "sha256": "cfae47158c53d4cf38052abe9f194fe08ce598125fa91c84b8b1f9e66d95d765",
+      "fileName": "generated/generated-cfae47158c53d4cf38052abe.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "我就看看"
+      ],
+      "emotions": [],
+      "embeddedText": "我就看看",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-batches/scene-rich-11/gifs/scene-rich-11-watch-clay.gif",
+      "sourceReport": "artifacts/expression-batches/scene-rich-11/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-23413667367e4e75078f2b76",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "23413667367e4e75078f2b764fe03fe93b04a26c9fbedfed81f62244b8f64f22",
+      "sha256": "23413667367e4e75078f2b764fe03fe93b04a26c9fbedfed81f62244b8f64f22",
+      "fileName": "generated/generated-23413667367e4e75078f2b76.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "真的假的"
+      ],
+      "emotions": [],
+      "embeddedText": "真的假的",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-batches/scene-rich-11/gifs/scene-rich-11-really-dog.gif",
+      "sourceReport": "artifacts/expression-batches/scene-rich-11/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-638c6aaf02918d44d6374044",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "638c6aaf02918d44d6374044eb2229eab8d1c4cd853e351764462327bebaffe1",
+      "sha256": "638c6aaf02918d44d6374044eb2229eab8d1c4cd853e351764462327bebaffe1",
+      "fileName": "generated/generated-638c6aaf02918d44d6374044.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "真的假的"
+      ],
+      "emotions": [],
+      "embeddedText": "真的假的",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-batches/scene-rich-12/gifs/scene-rich-12-really-man.gif",
+      "sourceReport": "artifacts/expression-batches/scene-rich-12/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-ccf83c98d767945fa0132c9d",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "ccf83c98d767945fa0132c9d4278d5f0ad87dbe98f4dcc5eded08618cfc04fca",
+      "sha256": "ccf83c98d767945fa0132c9d4278d5f0ad87dbe98f4dcc5eded08618cfc04fca",
+      "fileName": "generated/generated-ccf83c98d767945fa0132c9d.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "真的假的"
+      ],
+      "emotions": [],
+      "embeddedText": "真的假的",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-batches/scene-rich-12/gifs/scene-rich-12-really-line.gif",
+      "sourceReport": "artifacts/expression-batches/scene-rich-12/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-a0ccc6a522771b7490e617da",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "a0ccc6a522771b7490e617da4819738ab67de0b48bd3c0e65173aa7cd50fa9f3",
+      "sha256": "a0ccc6a522771b7490e617da4819738ab67de0b48bd3c0e65173aa7cd50fa9f3",
+      "fileName": "generated/generated-a0ccc6a522771b7490e617da.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "让我想想"
+      ],
+      "emotions": [],
+      "embeddedText": "让我想想",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-batches/scene-rich-12/gifs/scene-rich-12-think-man.gif",
+      "sourceReport": "artifacts/expression-batches/scene-rich-12/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-928957f1bc26f07000f671a0",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "928957f1bc26f07000f671a08abd8267dec6f7b24d76d5f8f3d87dd90be909ba",
+      "sha256": "928957f1bc26f07000f671a08abd8267dec6f7b24d76d5f8f3d87dd90be909ba",
+      "fileName": "generated/generated-928957f1bc26f07000f671a0.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "让我想想"
+      ],
+      "emotions": [],
+      "embeddedText": "让我想想",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-batches/scene-rich-12/gifs/scene-rich-12-think-line.gif",
+      "sourceReport": "artifacts/expression-batches/scene-rich-12/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-42542057d320983ac442bee6",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "42542057d320983ac442bee638c3f3f49a30b878eddd52f975d2b7c4e57de23c",
+      "sha256": "42542057d320983ac442bee638c3f3f49a30b878eddd52f975d2b7c4e57de23c",
+      "fileName": "generated/generated-42542057d320983ac442bee6.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "笑死"
+      ],
+      "emotions": [],
+      "embeddedText": "笑死",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-animals-01-animated/output/gifs/orange-cat-laugh.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-animals-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-18954e01616c139e876b8f6f",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "18954e01616c139e876b8f6f19b367a953abf9142b257154f8e447aa22a95813",
+      "sha256": "18954e01616c139e876b8f6f19b367a953abf9142b257154f8e447aa22a95813",
+      "fileName": "generated/generated-18954e01616c139e876b8f6f.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "嫌弃"
+      ],
+      "emotions": [],
+      "embeddedText": "嫌弃",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-animals-01-animated/output/gifs/long-bill-duck-disdain.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-animals-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-c2c068f40818e6cc2bf30dfd",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "c2c068f40818e6cc2bf30dfd2c07b4f0c92a450ad0843183f1bdfe9e5b5de994",
+      "sha256": "c2c068f40818e6cc2bf30dfd2c07b4f0c92a450ad0843183f1bdfe9e5b5de994",
+      "fileName": "generated/generated-c2c068f40818e6cc2bf30dfd.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "好耶"
+      ],
+      "emotions": [],
+      "embeddedText": "好耶",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-animals-01-animated/output/gifs/short-ear-rabbit-yay.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-animals-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-76d18536cf0557848fa21a88",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "76d18536cf0557848fa21a881219d4c84f4d16288c0debe75516c1337f4b0622",
+      "sha256": "76d18536cf0557848fa21a881219d4c84f4d16288c0debe75516c1337f4b0622",
+      "fileName": "generated/generated-76d18536cf0557848fa21a88.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "摸鱼"
+      ],
+      "emotions": [],
+      "embeddedText": "摸鱼",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-animals-02-animated/output/gifs/orange-cat-slack.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-animals-02-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-473b607849dade47d43723d4",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "473b607849dade47d43723d43f26b069af0f26fd4fb9daf7f1a638b3ab67d889",
+      "sha256": "473b607849dade47d43723d43f26b069af0f26fd4fb9daf7f1a638b3ab67d889",
+      "fileName": "generated/generated-473b607849dade47d43723d4.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "震惊"
+      ],
+      "emotions": [],
+      "embeddedText": "震惊",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-animals-02-animated/output/gifs/long-bill-duck-shock.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-animals-02-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-595d02d136847a3012de2c75",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "595d02d136847a3012de2c75e3fd6c5c2a5bb1ee8aba9e46e91bf21183fa16ca",
+      "sha256": "595d02d136847a3012de2c75e3fd6c5c2a5bb1ee8aba9e46e91bf21183fa16ca",
+      "fileName": "generated/generated-595d02d136847a3012de2c75.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "拒绝"
+      ],
+      "emotions": [],
+      "embeddedText": "拒绝",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-animals-02-animated/output/gifs/rabbit-refuse.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-animals-02-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-6d1daae762379b3141b6adf1",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "6d1daae762379b3141b6adf17dd23177c08d7ca37545345fe9330ecf6fd30bbe",
+      "sha256": "6d1daae762379b3141b6adf17dd23177c08d7ca37545345fe9330ecf6fd30bbe",
+      "fileName": "generated/generated-6d1daae762379b3141b6adf1.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "心累"
+      ],
+      "emotions": [],
+      "embeddedText": "心累",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-characters-01-animated/output/gifs/worker-tired.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-characters-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-2457fc7905b381cb1f89c96f",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "2457fc7905b381cb1f89c96fb6d973891f782dfe84b843c309f282cddebc7b6e",
+      "sha256": "2457fc7905b381cb1f89c96fb6d973891f782dfe84b843c309f282cddebc7b6e",
+      "fileName": "generated/generated-2457fc7905b381cb1f89c96f.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "加油"
+      ],
+      "emotions": [],
+      "embeddedText": "加油",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-characters-01-animated/output/gifs/young-man-cheer.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-characters-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-0b66c45fb33ded8c3e480c60",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "0b66c45fb33ded8c3e480c6038b9fe274bc8e718d053fb4f6f71afceb4c596cc",
+      "sha256": "0b66c45fb33ded8c3e480c6038b9fe274bc8e718d053fb4f6f71afceb4c596cc",
+      "fileName": "generated/generated-0b66c45fb33ded8c3e480c60.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "期待"
+      ],
+      "emotions": [],
+      "embeddedText": "期待",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-characters-01-animated/output/gifs/dog-hopeful.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-characters-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-b3c915e335e034eb52972be3",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "b3c915e335e034eb52972be30d3fe3b900b4c60228f2a4c562268fbed04c051e",
+      "sha256": "b3c915e335e034eb52972be30d3fe3b900b4c60228f2a4c562268fbed04c051e",
+      "fileName": "generated/generated-b3c915e335e034eb52972be3.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "忙着呢"
+      ],
+      "emotions": [],
+      "embeddedText": "忙着呢",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-characters-02-animated/output/gifs/worker-busy.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-characters-02-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-76d05275fbce6ac94a5e4179",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "76d05275fbce6ac94a5e417955658aaff12dd214c8b745fe1b098346b4032d60",
+      "sha256": "76d05275fbce6ac94a5e417955658aaff12dd214c8b745fe1b098346b4032d60",
+      "fileName": "generated/generated-76d05275fbce6ac94a5e4179.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "谢谢"
+      ],
+      "emotions": [],
+      "embeddedText": "谢谢",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-characters-02-animated/output/gifs/young-man-thanks.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-characters-02-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-6304cd3cad825e4d52f50dd3",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "6304cd3cad825e4d52f50dd30ac4170ab758c3bb6d9065eefd5e50d4aeca14f2",
+      "sha256": "6304cd3cad825e4d52f50dd30ac4170ab758c3bb6d9065eefd5e50d4aeca14f2",
+      "fileName": "generated/generated-6304cd3cad825e4d52f50dd3.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "委屈"
+      ],
+      "emotions": [],
+      "embeddedText": "委屈",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-characters-02-animated/output/gifs/dog-hurt.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-characters-02-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-0f21336cdfc8323e2ab7fa4e",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "0f21336cdfc8323e2ab7fa4e74313f9e9507fa9afc2002089c45877ea61428e3",
+      "sha256": "0f21336cdfc8323e2ab7fa4e74313f9e9507fa9afc2002089c45877ea61428e3",
+      "fileName": "generated/generated-0f21336cdfc8323e2ab7fa4e.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "太好了"
+      ],
+      "emotions": [],
+      "embeddedText": "太好了",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-great-01-animated/output/gifs/dog-great.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-great-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-a8b74aa4d4312a3948478c9c",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "a8b74aa4d4312a3948478c9c609f2f74f556a29cf167e13330f640a942cacdd7",
+      "sha256": "a8b74aa4d4312a3948478c9c609f2f74f556a29cf167e13330f640a942cacdd7",
+      "fileName": "generated/generated-a8b74aa4d4312a3948478c9c.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "太好了"
+      ],
+      "emotions": [],
+      "embeddedText": "太好了",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-great-01-animated/output/gifs/crab-great.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-great-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-2f74a985c9c2d4a5444a1b07",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "2f74a985c9c2d4a5444a1b07d2140bf3afe69396e19ca67937d192f43cee595a",
+      "sha256": "2f74a985c9c2d4a5444a1b07d2140bf3afe69396e19ca67937d192f43cee595a",
+      "fileName": "generated/generated-2f74a985c9c2d4a5444a1b07.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "太好了"
+      ],
+      "emotions": [],
+      "embeddedText": "太好了",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-great-01-animated/output/gifs/pig-great.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-great-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-2da09a277664ecbd2137a014",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "2da09a277664ecbd2137a0145f435c47e15c8632234a7009de8e04a79fafba95",
+      "sha256": "2da09a277664ecbd2137a0145f435c47e15c8632234a7009de8e04a79fafba95",
+      "fileName": "generated/generated-2da09a277664ecbd2137a014.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "太好了"
+      ],
+      "emotions": [],
+      "embeddedText": "太好了",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-great-01-animated/output/gifs/man-great.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-great-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-8d81de27e9b9121a82ce5dac",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "8d81de27e9b9121a82ce5dac15a80da737a9315d1debd61534ee89f848e7503f",
+      "sha256": "8d81de27e9b9121a82ce5dac15a80da737a9315d1debd61534ee89f848e7503f",
+      "fileName": "generated/generated-8d81de27e9b9121a82ce5dac.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "委屈"
+      ],
+      "emotions": [],
+      "embeddedText": "委屈",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-hurt-01-animated/output/gifs/spaniel-hurt.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-hurt-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-b78538015dbcf9be09ba9fcb",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "b78538015dbcf9be09ba9fcb0acc221ed6bd141782ed86c439e809f5b83fc80b",
+      "sha256": "b78538015dbcf9be09ba9fcb0acc221ed6bd141782ed86c439e809f5b83fc80b",
+      "fileName": "generated/generated-b78538015dbcf9be09ba9fcb.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "委屈"
+      ],
+      "emotions": [],
+      "embeddedText": "委屈",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-hurt-01-animated/output/gifs/rabbit-hurt.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-hurt-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-1c6d429ce7e7822f041273b7",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "1c6d429ce7e7822f041273b7dad5e8200ec6857bae1929cc23917e253bc2741a",
+      "sha256": "1c6d429ce7e7822f041273b7dad5e8200ec6857bae1929cc23917e253bc2741a",
+      "fileName": "generated/generated-1c6d429ce7e7822f041273b7.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "委屈"
+      ],
+      "emotions": [],
+      "embeddedText": "委屈",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-hurt-01-animated/output/gifs/hedgehog-hurt.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-hurt-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-f643513e3825b04404762c79",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "f643513e3825b04404762c791bd779ea925db7c99b1ba126cdd3931ff8f9ae4b",
+      "sha256": "f643513e3825b04404762c791bd779ea925db7c99b1ba126cdd3931ff8f9ae4b",
+      "fileName": "generated/generated-f643513e3825b04404762c79.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "委屈"
+      ],
+      "emotions": [],
+      "embeddedText": "委屈",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-hurt-01-animated/output/gifs/man-hurt.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-hurt-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-eba95390caaab11a57d893e5",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "eba95390caaab11a57d893e5ffcd6b4bb6565df179d5429f4ae9b13f987504dd",
+      "sha256": "eba95390caaab11a57d893e5ffcd6b4bb6565df179d5429f4ae9b13f987504dd",
+      "fileName": "generated/generated-eba95390caaab11a57d893e5.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "我就看看"
+      ],
+      "emotions": [],
+      "embeddedText": "我就看看",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-look-01-animated/output/gifs/cat-look.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-look-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-84320b36b851d1750b571b89",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "84320b36b851d1750b571b895d5c0e4c90a672fa5d2d744a70a2e810249fbdce",
+      "sha256": "84320b36b851d1750b571b895d5c0e4c90a672fa5d2d744a70a2e810249fbdce",
+      "fileName": "generated/generated-84320b36b851d1750b571b89.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "我就看看"
+      ],
+      "emotions": [],
+      "embeddedText": "我就看看",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-look-01-animated/output/gifs/bird-look.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-look-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-ff34f54e3d15c04cabcc5890",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "ff34f54e3d15c04cabcc5890c61ac31c6bb9b4f9c9986ac8cea9a3fa3b3e0ee6",
+      "sha256": "ff34f54e3d15c04cabcc5890c61ac31c6bb9b4f9c9986ac8cea9a3fa3b3e0ee6",
+      "fileName": "generated/generated-ff34f54e3d15c04cabcc5890.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "我就看看"
+      ],
+      "emotions": [],
+      "embeddedText": "我就看看",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-look-01-animated/output/gifs/seal-look.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-look-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-c1e4dd9513dc4695c1ddd7dc",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "c1e4dd9513dc4695c1ddd7dc429882c09b9abeb68a368440256701ed74044497",
+      "sha256": "c1e4dd9513dc4695c1ddd7dc429882c09b9abeb68a368440256701ed74044497",
+      "fileName": "generated/generated-c1e4dd9513dc4695c1ddd7dc.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "我就看看"
+      ],
+      "emotions": [],
+      "embeddedText": "我就看看",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-look-01-animated/output/gifs/man-look.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-look-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-39591625951f5643e32df0cf",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "39591625951f5643e32df0cfc80d79c52b807a34bfaad7b52c79fdab4b939bf4",
+      "sha256": "39591625951f5643e32df0cfc80d79c52b807a34bfaad7b52c79fdab4b939bf4",
+      "fileName": "generated/generated-39591625951f5643e32df0cf.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "收到"
+      ],
+      "emotions": [],
+      "embeddedText": "收到",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-received-01-animated/output/gifs/dog-received.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-received-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-deaa1eb0c66d0ced2f64cb83",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "deaa1eb0c66d0ced2f64cb83525edf51581f0703789f48b433569ae18b35b77a",
+      "sha256": "deaa1eb0c66d0ced2f64cb83525edf51581f0703789f48b433569ae18b35b77a",
+      "fileName": "generated/generated-deaa1eb0c66d0ced2f64cb83.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "收到"
+      ],
+      "emotions": [],
+      "embeddedText": "收到",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-received-01-animated/output/gifs/bird-received.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-received-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-71e0370448dded4b505a014d",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "71e0370448dded4b505a014d5cebd5f005cbe74da36436efb81d53cd602d92ed",
+      "sha256": "71e0370448dded4b505a014d5cebd5f005cbe74da36436efb81d53cd602d92ed",
+      "fileName": "generated/generated-71e0370448dded4b505a014d.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "收到"
+      ],
+      "emotions": [],
+      "embeddedText": "收到",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-received-01-animated/output/gifs/otter-received.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-received-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-b7ad9012453c8f629f926507",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "b7ad9012453c8f629f9265071beeeed52cff6a3ed748b6b7a561fa11f4cd344c",
+      "sha256": "b7ad9012453c8f629f9265071beeeed52cff6a3ed748b6b7a561fa11f4cd344c",
+      "fileName": "generated/generated-b7ad9012453c8f629f926507.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "收到"
+      ],
+      "emotions": [],
+      "embeddedText": "收到",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-received-01-animated/output/gifs/man-received.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-received-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-be64f85a7ca8a24f6db056d9",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "be64f85a7ca8a24f6db056d9f8afe2221493e1d2e1fe6c97ba8c2e57aec9f680",
+      "sha256": "be64f85a7ca8a24f6db056d9f8afe2221493e1d2e1fe6c97ba8c2e57aec9f680",
+      "fileName": "generated/generated-be64f85a7ca8a24f6db056d9.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "困了"
+      ],
+      "emotions": [],
+      "embeddedText": "困了",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-sleepy-01-animated/output/gifs/cat-sleepy.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-sleepy-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-8548b0a7ab6d643ff179445d",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "8548b0a7ab6d643ff179445d8d6cc4de50a1e2fa28ed05f9601fc26daf8a81d1",
+      "sha256": "8548b0a7ab6d643ff179445d8d6cc4de50a1e2fa28ed05f9601fc26daf8a81d1",
+      "fileName": "generated/generated-8548b0a7ab6d643ff179445d.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "困了"
+      ],
+      "emotions": [],
+      "embeddedText": "困了",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-sleepy-01-animated/output/gifs/owl-sleepy.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-sleepy-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-eb6680c469702df726898707",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "eb6680c469702df72689870702167d52d82131872dd96d98f91005397649e89b",
+      "sha256": "eb6680c469702df72689870702167d52d82131872dd96d98f91005397649e89b",
+      "fileName": "generated/generated-eb6680c469702df726898707.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "困了"
+      ],
+      "emotions": [],
+      "embeddedText": "困了",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-sleepy-01-animated/output/gifs/penguin-sleepy.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-sleepy-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-3dcfe49e04e467dcac89e7fb",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "3dcfe49e04e467dcac89e7fbbca032da358ab12a5ebc8b4dceb07a23edc6113e",
+      "sha256": "3dcfe49e04e467dcac89e7fbbca032da358ab12a5ebc8b4dceb07a23edc6113e",
+      "fileName": "generated/generated-3dcfe49e04e467dcac89e7fb.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "困了"
+      ],
+      "emotions": [],
+      "embeddedText": "困了",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-sleepy-01-animated/output/gifs/man-sleepy.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-sleepy-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-be17e540d3e87549945311d9",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "be17e540d3e87549945311d921c0f82f79f1e3201877d9fcd4a082f86d37734f",
+      "sha256": "be17e540d3e87549945311d921c0f82f79f1e3201877d9fcd4a082f86d37734f",
+      "fileName": "generated/generated-be17e540d3e87549945311d9.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "无语"
+      ],
+      "emotions": [],
+      "embeddedText": "无语",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-speechless-01-animated/output/gifs/husky-speechless.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-speechless-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-4aebc85cdf5aef8a0bf7a393",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "4aebc85cdf5aef8a0bf7a393307826de9a883e161784b24a0b59cd8d95052dc3",
+      "sha256": "4aebc85cdf5aef8a0bf7a393307826de9a883e161784b24a0b59cd8d95052dc3",
+      "fileName": "generated/generated-4aebc85cdf5aef8a0bf7a393.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "无语"
+      ],
+      "emotions": [],
+      "embeddedText": "无语",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-speechless-01-animated/output/gifs/frog-speechless.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-speechless-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-5164247b7273be7f9e2698d9",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "5164247b7273be7f9e2698d9589a134850f7163a0517106d11af4e54cecd627e",
+      "sha256": "5164247b7273be7f9e2698d9589a134850f7163a0517106d11af4e54cecd627e",
+      "fileName": "generated/generated-5164247b7273be7f9e2698d9.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "无语"
+      ],
+      "emotions": [],
+      "embeddedText": "无语",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-speechless-01-animated/output/gifs/capybara-speechless.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-speechless-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-51f2f6bdb06888c2fd3aa35d",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "51f2f6bdb06888c2fd3aa35d3036d9059d1aee2284aee3b869bc226ee417e4a6",
+      "sha256": "51f2f6bdb06888c2fd3aa35d3036d9059d1aee2284aee3b869bc226ee417e4a6",
+      "fileName": "generated/generated-51f2f6bdb06888c2fd3aa35d.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "无语"
+      ],
+      "emotions": [],
+      "embeddedText": "无语",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-speechless-01-animated/output/gifs/man-speechless.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-speechless-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-c184661de42496a6364c6c1d",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "c184661de42496a6364c6c1dc7b4a4e5b3513d83688ee28e26097fed3a100a74",
+      "sha256": "c184661de42496a6364c6c1dc7b4a4e5b3513d83688ee28e26097fed3a100a74",
+      "fileName": "generated/generated-c184661de42496a6364c6c1d.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "震惊"
+      ],
+      "emotions": [],
+      "embeddedText": "震惊",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-01-animated/output/gifs/cat-shock.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-30a1279e7766545d5ab31d61",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "30a1279e7766545d5ab31d618202a29b15daac722cc20b32455f5806c15af711",
+      "sha256": "30a1279e7766545d5ab31d618202a29b15daac722cc20b32455f5806c15af711",
+      "fileName": "generated/generated-30a1279e7766545d5ab31d61.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "震惊"
+      ],
+      "emotions": [],
+      "embeddedText": "震惊",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-01-animated/output/gifs/frog-shock.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-b534d282d8431890ec39aea0",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "b534d282d8431890ec39aea0258c2059ef0ff801d79d266ce4c09842efed7f6c",
+      "sha256": "b534d282d8431890ec39aea0258c2059ef0ff801d79d266ce4c09842efed7f6c",
+      "fileName": "generated/generated-b534d282d8431890ec39aea0.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "震惊"
+      ],
+      "emotions": [],
+      "embeddedText": "震惊",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-01-animated/output/gifs/owl-shock.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-b32478c7d4263c38cdc87e2f",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "b32478c7d4263c38cdc87e2f4f17e5049498fc4b113508d4f1e6e8d9cc46948f",
+      "sha256": "b32478c7d4263c38cdc87e2f4f17e5049498fc4b113508d4f1e6e8d9cc46948f",
+      "fileName": "generated/generated-b32478c7d4263c38cdc87e2f.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "震惊"
+      ],
+      "emotions": [],
+      "embeddedText": "震惊",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-01-animated/output/gifs/man-shock.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-ff98474d2e14b49f2e000e98",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "ff98474d2e14b49f2e000e98b65fba185fdbb8de772214697738afccb62e35d1",
+      "sha256": "ff98474d2e14b49f2e000e98b65fba185fdbb8de772214697738afccb62e35d1",
+      "fileName": "generated/generated-ff98474d2e14b49f2e000e98.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "嫌弃"
+      ],
+      "emotions": [],
+      "embeddedText": "嫌弃",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-01-animated/output/gifs/husky-disdain.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-204691dafe49ba9a12a18060",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "204691dafe49ba9a12a18060e1c429ff8508aac0340113b2fd5d642b40abc57f",
+      "sha256": "204691dafe49ba9a12a18060e1c429ff8508aac0340113b2fd5d642b40abc57f",
+      "fileName": "generated/generated-204691dafe49ba9a12a18060.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "嫌弃"
+      ],
+      "emotions": [],
+      "embeddedText": "嫌弃",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-01-animated/output/gifs/duck-disdain.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-bb8106c38324b8f051a1a77c",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "bb8106c38324b8f051a1a77ced9fb596c79098d21dcf802afa684952f76c0077",
+      "sha256": "bb8106c38324b8f051a1a77ced9fb596c79098d21dcf802afa684952f76c0077",
+      "fileName": "generated/generated-bb8106c38324b8f051a1a77c.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "嫌弃"
+      ],
+      "emotions": [],
+      "embeddedText": "嫌弃",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-01-animated/output/gifs/alpaca-disdain.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-c4f7f498cccf750a35a4b9af",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "c4f7f498cccf750a35a4b9af3a7a648d1c5a326ab411b4196f25bcfa6435811f",
+      "sha256": "c4f7f498cccf750a35a4b9af3a7a648d1c5a326ab411b4196f25bcfa6435811f",
+      "fileName": "generated/generated-c4f7f498cccf750a35a4b9af.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "嫌弃"
+      ],
+      "emotions": [],
+      "embeddedText": "嫌弃",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-01-animated/output/gifs/man-disdain.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-a299698d4efdb014c9470b79",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "a299698d4efdb014c9470b7917ac9ec1e2df05a1d3a12921e9e510cf7b6ea9fd",
+      "sha256": "a299698d4efdb014c9470b7917ac9ec1e2df05a1d3a12921e9e510cf7b6ea9fd",
+      "fileName": "generated/generated-a299698d4efdb014c9470b79.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "得意"
+      ],
+      "emotions": [],
+      "embeddedText": "得意",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-01-animated/output/gifs/fox-smug.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-e27789c2dcef078ba98cdc52",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "e27789c2dcef078ba98cdc528797dc6a4db3f01f9adb4c14c9adf5e29dc7c7e9",
+      "sha256": "e27789c2dcef078ba98cdc528797dc6a4db3f01f9adb4c14c9adf5e29dc7c7e9",
+      "fileName": "generated/generated-e27789c2dcef078ba98cdc52.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "得意"
+      ],
+      "emotions": [],
+      "embeddedText": "得意",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-01-animated/output/gifs/gecko-smug.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-dd7e36e5da1dbe7234927d6e",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "dd7e36e5da1dbe7234927d6e29a3faa72c5958fdece2562f6ceff0575c6a3703",
+      "sha256": "dd7e36e5da1dbe7234927d6e29a3faa72c5958fdece2562f6ceff0575c6a3703",
+      "fileName": "generated/generated-dd7e36e5da1dbe7234927d6e.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "得意"
+      ],
+      "emotions": [],
+      "embeddedText": "得意",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-01-animated/output/gifs/seal-smug.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-5ed9b8600a2bdaeadf062475",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "5ed9b8600a2bdaeadf062475afb84461bec29247e84cdde00aea44c67849ccf4",
+      "sha256": "5ed9b8600a2bdaeadf062475afb84461bec29247e84cdde00aea44c67849ccf4",
+      "fileName": "generated/generated-5ed9b8600a2bdaeadf062475.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "得意"
+      ],
+      "emotions": [],
+      "embeddedText": "得意",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-01-animated/output/gifs/man-smug.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-3338ddebbac1cd30ea138f3d",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "3338ddebbac1cd30ea138f3da91aefd6475bd8735c205642d523b99f5933f510",
+      "sha256": "3338ddebbac1cd30ea138f3da91aefd6475bd8735c205642d523b99f5933f510",
+      "fileName": "generated/generated-3338ddebbac1cd30ea138f3d.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "好奇"
+      ],
+      "emotions": [],
+      "embeddedText": "好奇",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-02-animated/output/gifs/siamese-curious.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-02-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-fe135ee5d595742bb8388969",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "fe135ee5d595742bb83889694debaa3fb2a3256a38490b01e16e5ef25353ed26",
+      "sha256": "fe135ee5d595742bb83889694debaa3fb2a3256a38490b01e16e5ef25353ed26",
+      "fileName": "generated/generated-fe135ee5d595742bb8388969.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "好奇"
+      ],
+      "emotions": [],
+      "embeddedText": "好奇",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-02-animated/output/gifs/giraffe-curious.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-02-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-f145fbd23ebef341cb54c63a",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "f145fbd23ebef341cb54c63a1165ee17cc9dd91565dd929c20bfbc166d8169b1",
+      "sha256": "f145fbd23ebef341cb54c63a1165ee17cc9dd91565dd929c20bfbc166d8169b1",
+      "fileName": "generated/generated-f145fbd23ebef341cb54c63a.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "好奇"
+      ],
+      "emotions": [],
+      "embeddedText": "好奇",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-02-animated/output/gifs/raccoon-curious.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-02-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-984db7a2f15b982ad31724fa",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "984db7a2f15b982ad31724fabf918b0f50c3f04c6714147f19fb08d34d0bbdb8",
+      "sha256": "984db7a2f15b982ad31724fabf918b0f50c3f04c6714147f19fb08d34d0bbdb8",
+      "fileName": "generated/generated-984db7a2f15b982ad31724fa.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "好奇"
+      ],
+      "emotions": [],
+      "embeddedText": "好奇",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-02-animated/output/gifs/man-curious.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-02-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-91d458bd6b9eed8c0f901bf2",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "91d458bd6b9eed8c0f901bf2bdb12e52577d5933493d2dd496daa3accc32ac1a",
+      "sha256": "91d458bd6b9eed8c0f901bf2bdb12e52577d5933493d2dd496daa3accc32ac1a",
+      "fileName": "generated/generated-91d458bd6b9eed8c0f901bf2.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "生气"
+      ],
+      "emotions": [],
+      "embeddedText": "生气",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-02-animated/output/gifs/tuxedo-angry.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-02-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-8bc57298d7e6356538b9fc6a",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "8bc57298d7e6356538b9fc6a69cfc3c18f1b98795731427d316004864eeb2bfa",
+      "sha256": "8bc57298d7e6356538b9fc6a69cfc3c18f1b98795731427d316004864eeb2bfa",
+      "fileName": "generated/generated-8bc57298d7e6356538b9fc6a.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "生气"
+      ],
+      "emotions": [],
+      "embeddedText": "生气",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-02-animated/output/gifs/puffer-angry.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-02-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-c137811ebbda634ece2469cc",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "c137811ebbda634ece2469cc715672a08d375bd0e1f276d764b00a073e829078",
+      "sha256": "c137811ebbda634ece2469cc715672a08d375bd0e1f276d764b00a073e829078",
+      "fileName": "generated/generated-c137811ebbda634ece2469cc.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "生气"
+      ],
+      "emotions": [],
+      "embeddedText": "生气",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-02-animated/output/gifs/calf-angry.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-02-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-13a7d15e1cf0f91acb3a71c8",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "13a7d15e1cf0f91acb3a71c83cbe61c34513ec59f8c50c5df0cf47919b359b67",
+      "sha256": "13a7d15e1cf0f91acb3a71c83cbe61c34513ec59f8c50c5df0cf47919b359b67",
+      "fileName": "generated/generated-13a7d15e1cf0f91acb3a71c8.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "生气"
+      ],
+      "emotions": [],
+      "embeddedText": "生气",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-02-animated/output/gifs/man-angry.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-02-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-91ea4ed8785899fc626003eb",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "91ea4ed8785899fc626003eb6be573c12d747473fee424f18307fcd1e0b472f6",
+      "sha256": "91ea4ed8785899fc626003eb6be573c12d747473fee424f18307fcd1e0b472f6",
+      "fileName": "generated/generated-91ea4ed8785899fc626003eb.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "偷笑"
+      ],
+      "emotions": [],
+      "embeddedText": "偷笑",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-02-animated/output/gifs/shiba-giggle.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-02-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-bb92af5807aea456c503caae",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "bb92af5807aea456c503caae324ac577485c64825c80ae41f43393e881236e78",
+      "sha256": "bb92af5807aea456c503caae324ac577485c64825c80ae41f43393e881236e78",
+      "fileName": "generated/generated-bb92af5807aea456c503caae.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "偷笑"
+      ],
+      "emotions": [],
+      "embeddedText": "偷笑",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-02-animated/output/gifs/bird-giggle.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-02-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-3c81913d83e7c407696e5229",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "3c81913d83e7c407696e522970ff6ad3fa96e8b94d28c2a216a84ee0fa2e2282",
+      "sha256": "3c81913d83e7c407696e522970ff6ad3fa96e8b94d28c2a216a84ee0fa2e2282",
+      "fileName": "generated/generated-3c81913d83e7c407696e5229.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "偷笑"
+      ],
+      "emotions": [],
+      "embeddedText": "偷笑",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-02-animated/output/gifs/otter-giggle.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-02-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-03b2453cd4c0b85ce511e6bf",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "03b2453cd4c0b85ce511e6bff306461ec55a1578bafd386f85ec2b5a51c72e6b",
+      "sha256": "03b2453cd4c0b85ce511e6bff306461ec55a1578bafd386f85ec2b5a51c72e6b",
+      "fileName": "generated/generated-03b2453cd4c0b85ce511e6bf.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "偷笑"
+      ],
+      "emotions": [],
+      "embeddedText": "偷笑",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-02-animated/output/gifs/man-giggle.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-02-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-5bdcbfa0d6c74b75294262a6",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "5bdcbfa0d6c74b75294262a6b6dc46fb658f4c30c9813c9d36d1755475c43003",
+      "sha256": "5bdcbfa0d6c74b75294262a6b6dc46fb658f4c30c9813c9d36d1755475c43003",
+      "fileName": "generated/generated-5bdcbfa0d6c74b75294262a6.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "尴尬"
+      ],
+      "emotions": [],
+      "embeddedText": "尴尬",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-03-animated/output/gifs/graycat-awkward.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-03-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-65d7748676876a08ca3c1aa3",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "65d7748676876a08ca3c1aa3b636378e827c12a9a9cd5384c4a8d39de5a7c17c",
+      "sha256": "65d7748676876a08ca3c1aa3b636378e827c12a9a9cd5384c4a8d39de5a7c17c",
+      "fileName": "generated/generated-65d7748676876a08ca3c1aa3.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "尴尬"
+      ],
+      "emotions": [],
+      "embeddedText": "尴尬",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-03-animated/output/gifs/penguin-awkward.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-03-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-0a25709d4f2da41348fe0bdd",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "0a25709d4f2da41348fe0bddb98210b57d3424c077085286e49da319d7e752bf",
+      "sha256": "0a25709d4f2da41348fe0bddb98210b57d3424c077085286e49da319d7e752bf",
+      "fileName": "generated/generated-0a25709d4f2da41348fe0bdd.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "尴尬"
+      ],
+      "emotions": [],
+      "embeddedText": "尴尬",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-03-animated/output/gifs/man-awkward.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-03-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-9a6cec93b1907e7c647c2425",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "9a6cec93b1907e7c647c24254fd2b5d4a6d7dfbb9815fdc51c01b8c76e5b5e1a",
+      "sha256": "9a6cec93b1907e7c647c24254fd2b5d4a6d7dfbb9815fdc51c01b8c76e5b5e1a",
+      "fileName": "generated/generated-9a6cec93b1907e7c647c2425.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "期待"
+      ],
+      "emotions": [],
+      "embeddedText": "期待",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-03-animated/output/gifs/corgi-eager.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-03-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-a2ae823081cade7dcff3c090",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "a2ae823081cade7dcff3c090a3ba6b0064dc14d8cf33bed6c9467820648a2c6b",
+      "sha256": "a2ae823081cade7dcff3c090a3ba6b0064dc14d8cf33bed6c9467820648a2c6b",
+      "fileName": "generated/generated-a2ae823081cade7dcff3c090.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "期待"
+      ],
+      "emotions": [],
+      "embeddedText": "期待",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-03-animated/output/gifs/seal-eager.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-03-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-a01405f91a755ce15a15e2c6",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "a01405f91a755ce15a15e2c64df60176f5b972ec8f687b7e3fd229b68579ee38",
+      "sha256": "a01405f91a755ce15a15e2c64df60176f5b972ec8f687b7e3fd229b68579ee38",
+      "fileName": "generated/generated-a01405f91a755ce15a15e2c6.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "期待"
+      ],
+      "emotions": [],
+      "embeddedText": "期待",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-03-animated/output/gifs/fawn-eager.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-03-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-b951fc96c75183471848a1af",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "b951fc96c75183471848a1afce0a796380629bfbd4afbbbd4e90b535f827d079",
+      "sha256": "b951fc96c75183471848a1afce0a796380629bfbd4afbbbd4e90b535f827d079",
+      "fileName": "generated/generated-b951fc96c75183471848a1af.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "期待"
+      ],
+      "emotions": [],
+      "embeddedText": "期待",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-03-animated/output/gifs/man-eager.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-03-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-3eb642d11558818c111766bc",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "3eb642d11558818c111766bc790c30b4758beb42bf8a3969b10cf2270e6debd0",
+      "sha256": "3eb642d11558818c111766bc790c30b4758beb42bf8a3969b10cf2270e6debd0",
+      "fileName": "generated/generated-3eb642d11558818c111766bc.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "疑惑"
+      ],
+      "emotions": [],
+      "embeddedText": "疑惑",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-03-animated/output/gifs/beagle-puzzled.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-03-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-21866cca54b5f3599c1a979b",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "21866cca54b5f3599c1a979b55de9dbd598360afa43178e4a79e0487b01e1b92",
+      "sha256": "21866cca54b5f3599c1a979b55de9dbd598360afa43178e4a79e0487b01e1b92",
+      "fileName": "generated/generated-21866cca54b5f3599c1a979b.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "疑惑"
+      ],
+      "emotions": [],
+      "embeddedText": "疑惑",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-03-animated/output/gifs/owl-puzzled.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-03-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-6e2f8948463db272fabaef01",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "6e2f8948463db272fabaef0195d3827fc3f636751d132e3b3fe3b0e8d94e7e39",
+      "sha256": "6e2f8948463db272fabaef0195d3827fc3f636751d132e3b3fe3b0e8d94e7e39",
+      "fileName": "generated/generated-6e2f8948463db272fabaef01.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "疑惑"
+      ],
+      "emotions": [],
+      "embeddedText": "疑惑",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-03-animated/output/gifs/panda-puzzled.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-03-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-a11fb47aa57f269b5f1dd0bc",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "a11fb47aa57f269b5f1dd0bc20fda55dc501a1622319c78d3921d210a840aef1",
+      "sha256": "a11fb47aa57f269b5f1dd0bc20fda55dc501a1622319c78d3921d210a840aef1",
+      "fileName": "generated/generated-a11fb47aa57f269b5f1dd0bc.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "疑惑"
+      ],
+      "emotions": [],
+      "embeddedText": "疑惑",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-03-animated/output/gifs/man-puzzled.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-03-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-9bae7bfd72a6c5c4fde585d8",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "9bae7bfd72a6c5c4fde585d8bd5a8a8c01aee812a4ba0470d9588a4f3f9d15db",
+      "sha256": "9bae7bfd72a6c5c4fde585d8bd5a8a8c01aee812a4ba0470d9588a4f3f9d15db",
+      "fileName": "generated/generated-9bae7bfd72a6c5c4fde585d8.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "害羞"
+      ],
+      "emotions": [],
+      "embeddedText": "害羞",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-04-animated/output/gifs/siamese-shy.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-04-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-1a00670394d31647e704ffd8",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "1a00670394d31647e704ffd83031f14f8c7f2bf03a3b1023fa055ea73212642e",
+      "sha256": "1a00670394d31647e704ffd83031f14f8c7f2bf03a3b1023fa055ea73212642e",
+      "fileName": "generated/generated-1a00670394d31647e704ffd8.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "害羞"
+      ],
+      "emotions": [],
+      "embeddedText": "害羞",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-04-animated/output/gifs/mouse-shy.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-04-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-ff0c58373432af11eec7a359",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "ff0c58373432af11eec7a35943bbb4b6d7f192a2b2b53603a1668a539f4ea505",
+      "sha256": "ff0c58373432af11eec7a35943bbb4b6d7f192a2b2b53603a1668a539f4ea505",
+      "fileName": "generated/generated-ff0c58373432af11eec7a359.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "害羞"
+      ],
+      "emotions": [],
+      "embeddedText": "害羞",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-04-animated/output/gifs/rabbit-shy.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-04-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-3515a031d7736296350def4c",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "3515a031d7736296350def4c7328356d08649017671f351ddd85ae744b3c9d7c",
+      "sha256": "3515a031d7736296350def4c7328356d08649017671f351ddd85ae744b3c9d7c",
+      "fileName": "generated/generated-3515a031d7736296350def4c.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "害羞"
+      ],
+      "emotions": [],
+      "embeddedText": "害羞",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-04-animated/output/gifs/man-shy.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-04-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-8a95b63a5362ae47be4ae0d6",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "8a95b63a5362ae47be4ae0d620897d512811f45866acb9b39c8fff5de0746bb9",
+      "sha256": "8a95b63a5362ae47be4ae0d620897d512811f45866acb9b39c8fff5de0746bb9",
+      "fileName": "generated/generated-8a95b63a5362ae47be4ae0d6.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "放心"
+      ],
+      "emotions": [],
+      "embeddedText": "放心",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-04-animated/output/gifs/retriever-relieved.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-04-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-94e7193900b00eea3e378d2e",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "94e7193900b00eea3e378d2e20dc513e7fc21babaf546b878d9f1fe118db034b",
+      "sha256": "94e7193900b00eea3e378d2e20dc513e7fc21babaf546b878d9f1fe118db034b",
+      "fileName": "generated/generated-94e7193900b00eea3e378d2e.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "放心"
+      ],
+      "emotions": [],
+      "embeddedText": "放心",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-04-animated/output/gifs/capybara-relieved.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-04-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-d32732b6a370ebc2d4e2e09d",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "d32732b6a370ebc2d4e2e09de9fa4bc619809f814c84a76a51f9ab318ba1eb55",
+      "sha256": "d32732b6a370ebc2d4e2e09de9fa4bc619809f814c84a76a51f9ab318ba1eb55",
+      "fileName": "generated/generated-d32732b6a370ebc2d4e2e09d.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "放心"
+      ],
+      "emotions": [],
+      "embeddedText": "放心",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-04-animated/output/gifs/sealion-relieved.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-04-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-55e3c54558436c811c634461",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "55e3c54558436c811c634461363e7db25d0d3df2b4d3be38bc286a010f6e48e5",
+      "sha256": "55e3c54558436c811c634461363e7db25d0d3df2b4d3be38bc286a010f6e48e5",
+      "fileName": "generated/generated-55e3c54558436c811c634461.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "放心"
+      ],
+      "emotions": [],
+      "embeddedText": "放心",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-04-animated/output/gifs/man-relieved.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-04-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-88a5247f8350ce43668f95f5",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "88a5247f8350ce43668f95f59dc2685bcc5c1c97dccbffc913118f352db8ac37",
+      "sha256": "88a5247f8350ce43668f95f59dc2685bcc5c1c97dccbffc913118f352db8ac37",
+      "fileName": "generated/generated-88a5247f8350ce43668f95f5.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "无奈"
+      ],
+      "emotions": [],
+      "embeddedText": "无奈",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-04-animated/output/gifs/husky-helpless.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-04-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-e2db0b23f49ae702bc8ca197",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "e2db0b23f49ae702bc8ca1978aeec5a28f743350e1afba6d2de30c944163f76a",
+      "sha256": "e2db0b23f49ae702bc8ca1978aeec5a28f743350e1afba6d2de30c944163f76a",
+      "fileName": "generated/generated-e2db0b23f49ae702bc8ca197.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "无奈"
+      ],
+      "emotions": [],
+      "embeddedText": "无奈",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-04-animated/output/gifs/koala-helpless.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-04-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-0f022270943fc1a18f897519",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "0f022270943fc1a18f8975194cbf0cfbd69a672787350a529d40d170acf9a3c8",
+      "sha256": "0f022270943fc1a18f8975194cbf0cfbd69a672787350a529d40d170acf9a3c8",
+      "fileName": "generated/generated-0f022270943fc1a18f897519.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "无奈"
+      ],
+      "emotions": [],
+      "embeddedText": "无奈",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-04-animated/output/gifs/man-helpless.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-04-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-682aeaf6403ddd2230e22ce9",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "682aeaf6403ddd2230e22ce9c7696d7700e73584109df35734e3454ddc564f5e",
+      "sha256": "682aeaf6403ddd2230e22ce9c7696d7700e73584109df35734e3454ddc564f5e",
+      "fileName": "generated/generated-682aeaf6403ddd2230e22ce9.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "傲娇"
+      ],
+      "emotions": [],
+      "embeddedText": "傲娇",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-05-animated/output/gifs/whitecat-proud.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-05-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-1e13eff4c94d8f0dc19adf92",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "1e13eff4c94d8f0dc19adf927a2923377ee0211df998fcad783049d6442a5a8c",
+      "sha256": "1e13eff4c94d8f0dc19adf927a2923377ee0211df998fcad783049d6442a5a8c",
+      "fileName": "generated/generated-1e13eff4c94d8f0dc19adf92.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "傲娇"
+      ],
+      "emotions": [],
+      "embeddedText": "傲娇",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-05-animated/output/gifs/fox-proud.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-05-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-6fc56730dcb4473cf3861674",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "6fc56730dcb4473cf3861674f6e4a38845bb5d8ea423b1d8e019cc09b3e52690",
+      "sha256": "6fc56730dcb4473cf3861674f6e4a38845bb5d8ea423b1d8e019cc09b3e52690",
+      "fileName": "generated/generated-6fc56730dcb4473cf3861674.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "傲娇"
+      ],
+      "emotions": [],
+      "embeddedText": "傲娇",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-05-animated/output/gifs/hamster-proud.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-05-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-7f12ed2d262900f9d0c4fbdd",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "7f12ed2d262900f9d0c4fbdd98eb51e6fffba2252e0487493222b3ecda01d831",
+      "sha256": "7f12ed2d262900f9d0c4fbdd98eb51e6fffba2252e0487493222b3ecda01d831",
+      "fileName": "generated/generated-7f12ed2d262900f9d0c4fbdd.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "傲娇"
+      ],
+      "emotions": [],
+      "embeddedText": "傲娇",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-05-animated/output/gifs/man-proud.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-05-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-ae806817f8348d5a20ce3762",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "ae806817f8348d5a20ce376221ed70099f1e719339a4c7a70c035a10e2728128",
+      "sha256": "ae806817f8348d5a20ce376221ed70099f1e719339a4c7a70c035a10e2728128",
+      "fileName": "generated/generated-ae806817f8348d5a20ce3762.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "心虚"
+      ],
+      "emotions": [],
+      "embeddedText": "心虚",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-05-animated/output/gifs/puppy-guilty.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-05-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-fb7ac20dcf07fdee1474d3a0",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "fb7ac20dcf07fdee1474d3a044ddea6ad2c2ebc428517e2072ab6f6650162b95",
+      "sha256": "fb7ac20dcf07fdee1474d3a044ddea6ad2c2ebc428517e2072ab6f6650162b95",
+      "fileName": "generated/generated-fb7ac20dcf07fdee1474d3a0.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "心虚"
+      ],
+      "emotions": [],
+      "embeddedText": "心虚",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-05-animated/output/gifs/raccoon-guilty.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-05-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-82925ee0327d61674040661c",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "82925ee0327d61674040661c066307ee8c981a6b4d1a941a284a6ec3bd708542",
+      "sha256": "82925ee0327d61674040661c066307ee8c981a6b4d1a941a284a6ec3bd708542",
+      "fileName": "generated/generated-82925ee0327d61674040661c.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "心虚"
+      ],
+      "emotions": [],
+      "embeddedText": "心虚",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-05-animated/output/gifs/man-guilty.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-05-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-7b37c2b29e688959fdf9264a",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "7b37c2b29e688959fdf9264ad0fb1c228f8dbed6856b5e2f715bbf8a1c47b5d6",
+      "sha256": "7b37c2b29e688959fdf9264ad0fb1c228f8dbed6856b5e2f715bbf8a1c47b5d6",
+      "fileName": "generated/generated-7b37c2b29e688959fdf9264a.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "失落"
+      ],
+      "emotions": [],
+      "embeddedText": "失落",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-05-animated/output/gifs/labrador-downcast.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-05-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-01158731a026fb22c900f59b",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "01158731a026fb22c900f59bfa9dfed597ca440cc964a5d71b78653671fdc676",
+      "sha256": "01158731a026fb22c900f59bfa9dfed597ca440cc964a5d71b78653671fdc676",
+      "fileName": "generated/generated-01158731a026fb22c900f59b.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "失落"
+      ],
+      "emotions": [],
+      "embeddedText": "失落",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-05-animated/output/gifs/penguin-downcast.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-05-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-ffd632e456fee4798976da13",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "ffd632e456fee4798976da139312a474e810800f69bfe4483d677b4b34d46289",
+      "sha256": "ffd632e456fee4798976da139312a474e810800f69bfe4483d677b4b34d46289",
+      "fileName": "generated/generated-ffd632e456fee4798976da13.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "失落"
+      ],
+      "emotions": [],
+      "embeddedText": "失落",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-05-animated/output/gifs/bear-downcast.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-05-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-79ab172a5db19b6167dcb061",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "79ab172a5db19b6167dcb061df13e27cc6445e52d879fdf9b78cc017050c11c0",
+      "sha256": "79ab172a5db19b6167dcb061df13e27cc6445e52d879fdf9b78cc017050c11c0",
+      "fileName": "generated/generated-79ab172a5db19b6167dcb061.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "失落"
+      ],
+      "emotions": [],
+      "embeddedText": "失落",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-05-animated/output/gifs/man-downcast.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-05-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-a8b271b24e9b0edf07d75395",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "a8b271b24e9b0edf07d75395ce1ede1f9eb73ba6aaf0740ac16ca9b81e826c6d",
+      "sha256": "a8b271b24e9b0edf07d75395ce1ede1f9eb73ba6aaf0740ac16ca9b81e826c6d",
+      "fileName": "generated/generated-a8b271b24e9b0edf07d75395.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "警惕"
+      ],
+      "emotions": [],
+      "embeddedText": "警惕",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-06-animated/output/gifs/tabby-alert.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-06-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-c38f4cec99ffdff43bf99e13",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "c38f4cec99ffdff43bf99e130182716213c1047c970cc2fb0df443816768a0c8",
+      "sha256": "c38f4cec99ffdff43bf99e130182716213c1047c970cc2fb0df443816768a0c8",
+      "fileName": "generated/generated-c38f4cec99ffdff43bf99e13.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "警惕"
+      ],
+      "emotions": [],
+      "embeddedText": "警惕",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-06-animated/output/gifs/owl-alert.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-06-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-4548527ed4e6ed4895c93e5d",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "4548527ed4e6ed4895c93e5d16bd815e66ac4229607cfe5895b942c3733a6e90",
+      "sha256": "4548527ed4e6ed4895c93e5d16bd815e66ac4229607cfe5895b942c3733a6e90",
+      "fileName": "generated/generated-4548527ed4e6ed4895c93e5d.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "警惕"
+      ],
+      "emotions": [],
+      "embeddedText": "警惕",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-06-animated/output/gifs/meerkat-alert.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-06-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-485258471783da26d3347087",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "485258471783da26d3347087736d0fe657ffe1f1ca80a4ea65d1312a1a9ec8c0",
+      "sha256": "485258471783da26d3347087736d0fe657ffe1f1ca80a4ea65d1312a1a9ec8c0",
+      "fileName": "generated/generated-485258471783da26d3347087.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "警惕"
+      ],
+      "emotions": [],
+      "embeddedText": "警惕",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-06-animated/output/gifs/man-alert.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-06-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-a2b1471a24ec21fe47211237",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "a2b1471a24ec21fe472112375e4f25f1803c23cf95b77063fb44b7a89bbd4424",
+      "sha256": "a2b1471a24ec21fe472112375e4f25f1803c23cf95b77063fb44b7a89bbd4424",
+      "fileName": "generated/generated-a2b1471a24ec21fe47211237.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "满足"
+      ],
+      "emotions": [],
+      "embeddedText": "满足",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-06-animated/output/gifs/gingercat-content.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-06-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-2182d2aea229817fa100d947",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "2182d2aea229817fa100d947b2e1bd2335d8437f19959493e8ecae6fe6adaf24",
+      "sha256": "2182d2aea229817fa100d947b2e1bd2335d8437f19959493e8ecae6fe6adaf24",
+      "fileName": "generated/generated-2182d2aea229817fa100d947.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "满足"
+      ],
+      "emotions": [],
+      "embeddedText": "满足",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-06-animated/output/gifs/otter-content.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-06-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-50a3c9bbb39c3e3e61415526",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "50a3c9bbb39c3e3e61415526fdf6552e5ca098f422df993a150c7b91e4ddf3a4",
+      "sha256": "50a3c9bbb39c3e3e61415526fdf6552e5ca098f422df993a150c7b91e4ddf3a4",
+      "fileName": "generated/generated-50a3c9bbb39c3e3e61415526.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "满足"
+      ],
+      "emotions": [],
+      "embeddedText": "满足",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-06-animated/output/gifs/man-content.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-06-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-64f40414590444d149424dd1",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "64f40414590444d149424dd19c353c38e32c8cfd42aeb189ce186937d94814bc",
+      "sha256": "64f40414590444d149424dd19c353c38e32c8cfd42aeb189ce186937d94814bc",
+      "fileName": "generated/generated-64f40414590444d149424dd1.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "纠结"
+      ],
+      "emotions": [],
+      "embeddedText": "纠结",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-06-animated/output/gifs/collie-torn.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-06-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-b8eac4e20159689cc47270d8",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "b8eac4e20159689cc47270d8f8ca2bf87a65fb1819160400a9c3c029f7c5917b",
+      "sha256": "b8eac4e20159689cc47270d8f8ca2bf87a65fb1819160400a9c3c029f7c5917b",
+      "fileName": "generated/generated-b8eac4e20159689cc47270d8.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "纠结"
+      ],
+      "emotions": [],
+      "embeddedText": "纠结",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-06-animated/output/gifs/rabbit-torn.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-06-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-e58b318e58e57706de25f8aa",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "e58b318e58e57706de25f8aae3edb793fad70e3958e798a453d51aba0b629b4c",
+      "sha256": "e58b318e58e57706de25f8aae3edb793fad70e3958e798a453d51aba0b629b4c",
+      "fileName": "generated/generated-e58b318e58e57706de25f8aa.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "纠结"
+      ],
+      "emotions": [],
+      "embeddedText": "纠结",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-06-animated/output/gifs/panda-torn.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-06-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-2d9be4b6c9fd991d915d8680",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "2d9be4b6c9fd991d915d86807cd1cc2e71048d2aba150c1bff95485f8146254a",
+      "sha256": "2d9be4b6c9fd991d915d86807cd1cc2e71048d2aba150c1bff95485f8146254a",
+      "fileName": "generated/generated-2d9be4b6c9fd991d915d8680.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "纠结"
+      ],
+      "emotions": [],
+      "embeddedText": "纠结",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-06-animated/output/gifs/man-torn.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-06-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-018891dab201558e0be6a4e6",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "018891dab201558e0be6a4e6cd02c92852d90bf3c09a21a7e4ecd21960be8eae",
+      "sha256": "018891dab201558e0be6a4e6cd02c92852d90bf3c09a21a7e4ecd21960be8eae",
+      "fileName": "generated/generated-018891dab201558e0be6a4e6.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "加油"
+      ],
+      "emotions": [],
+      "embeddedText": "加油",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-07-animated/output/gifs/retriever-encourage.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-07-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-9f8717252c2618d53c3db7e7",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "9f8717252c2618d53c3db7e75729e8ea63847686f1ea7675eada4ee1239e2e84",
+      "sha256": "9f8717252c2618d53c3db7e75729e8ea63847686f1ea7675eada4ee1239e2e84",
+      "fileName": "generated/generated-9f8717252c2618d53c3db7e7.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "加油"
+      ],
+      "emotions": [],
+      "embeddedText": "加油",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-07-animated/output/gifs/frog-encourage.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-07-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-06852e2e54872dec0ac799c8",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "06852e2e54872dec0ac799c8a15584ea8e3df8abaffa259b974539c339d492f2",
+      "sha256": "06852e2e54872dec0ac799c8a15584ea8e3df8abaffa259b974539c339d492f2",
+      "fileName": "generated/generated-06852e2e54872dec0ac799c8.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "加油"
+      ],
+      "emotions": [],
+      "embeddedText": "加油",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-07-animated/output/gifs/man-encourage.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-07-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-63d76f1acf544ededa7f04af",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "63d76f1acf544ededa7f04afa7df7be60705999cf5612f90e07bc34cf119eb97",
+      "sha256": "63d76f1acf544ededa7f04afa7df7be60705999cf5612f90e07bc34cf119eb97",
+      "fileName": "generated/generated-63d76f1acf544ededa7f04af.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "拜托"
+      ],
+      "emotions": [],
+      "embeddedText": "拜托",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-07-animated/output/gifs/tabby-please.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-07-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-519d6d3bf1f31e34c121257f",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "519d6d3bf1f31e34c121257fbe8be4c1bf127a0bb1df1ba025f82f7fcbeeeb0e",
+      "sha256": "519d6d3bf1f31e34c121257fbe8be4c1bf127a0bb1df1ba025f82f7fcbeeeb0e",
+      "fileName": "generated/generated-519d6d3bf1f31e34c121257f.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "拜托"
+      ],
+      "emotions": [],
+      "embeddedText": "拜托",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-07-animated/output/gifs/seal-please.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-07-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-d4b4636806b9b68397227a08",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "d4b4636806b9b68397227a087824f9352c0c381f77f4833f6bdfa7b3dfb83414",
+      "sha256": "d4b4636806b9b68397227a087824f9352c0c381f77f4833f6bdfa7b3dfb83414",
+      "fileName": "generated/generated-d4b4636806b9b68397227a08.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "拜托"
+      ],
+      "emotions": [],
+      "embeddedText": "拜托",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-07-animated/output/gifs/hamster-please.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-07-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-e4f9479a6385499aa4244636",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "e4f9479a6385499aa42446363e330c7d378fc83d6423404e7ba9204d0f2a2ccb",
+      "sha256": "e4f9479a6385499aa42446363e330c7d378fc83d6423404e7ba9204d0f2a2ccb",
+      "fileName": "generated/generated-e4f9479a6385499aa4244636.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "拜托"
+      ],
+      "emotions": [],
+      "embeddedText": "拜托",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-07-animated/output/gifs/man-please.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-07-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-8911966fa9ed25a1f1328bdc",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "8911966fa9ed25a1f1328bdce0bc511dbcc82305c1d03931f4f388de2698166f",
+      "sha256": "8911966fa9ed25a1f1328bdce0bc511dbcc82305c1d03931f4f388de2698166f",
+      "fileName": "generated/generated-8911966fa9ed25a1f1328bdc.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "冷静"
+      ],
+      "emotions": [],
+      "embeddedText": "冷静",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-07-animated/output/gifs/husky-calm.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-07-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-dd1d27d38b9ef60e6bd7daec",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "dd1d27d38b9ef60e6bd7daec5ed077955f1d0ee82cd7d11c917579f53a5d59b4",
+      "sha256": "dd1d27d38b9ef60e6bd7daec5ed077955f1d0ee82cd7d11c917579f53a5d59b4",
+      "fileName": "generated/generated-dd1d27d38b9ef60e6bd7daec.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "冷静"
+      ],
+      "emotions": [],
+      "embeddedText": "冷静",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-07-animated/output/gifs/penguin-calm.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-07-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-63bced98db5b8de419e34b1a",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "63bced98db5b8de419e34b1a58a78bc08c838169fd7e73b77b07c754f2c64b15",
+      "sha256": "63bced98db5b8de419e34b1a58a78bc08c838169fd7e73b77b07c754f2c64b15",
+      "fileName": "generated/generated-63bced98db5b8de419e34b1a.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "冷静"
+      ],
+      "emotions": [],
+      "embeddedText": "冷静",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-07-animated/output/gifs/capybara-calm.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-07-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-388a84055931442081148834",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "388a840559314420811488340350bb8054d40c66ea0307a8f5e341b88d0d49d0",
+      "sha256": "388a840559314420811488340350bb8054d40c66ea0307a8f5e341b88d0d49d0",
+      "fileName": "generated/generated-388a84055931442081148834.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "冷静"
+      ],
+      "emotions": [],
+      "embeddedText": "冷静",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-07-animated/output/gifs/man-calm.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-07-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-08c3ac3774d2ddc7cc526389",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "08c3ac3774d2ddc7cc526389577f3d2b9d4b8ca6e183d8c8798bdf9c3ff65ba4",
+      "sha256": "08c3ac3774d2ddc7cc526389577f3d2b9d4b8ca6e183d8c8798bdf9c3ff65ba4",
+      "fileName": "generated/generated-08c3ac3774d2ddc7cc526389.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "不服"
+      ],
+      "emotions": [],
+      "embeddedText": "不服",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-08-animated/output/gifs/shiba-defiant.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-08-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-e6c0ab187e4539db6153593a",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "e6c0ab187e4539db6153593a0bca77339998d8cdfff2399fd57a7128d7d29b86",
+      "sha256": "e6c0ab187e4539db6153593a0bca77339998d8cdfff2399fd57a7128d7d29b86",
+      "fileName": "generated/generated-e6c0ab187e4539db6153593a.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "不服"
+      ],
+      "emotions": [],
+      "embeddedText": "不服",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-08-animated/output/gifs/duck-defiant.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-08-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-ed225559dd8d5e695facae69",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "ed225559dd8d5e695facae6995583b4baa4241b8b7bc3acbab13ba71d62ba8f5",
+      "sha256": "ed225559dd8d5e695facae6995583b4baa4241b8b7bc3acbab13ba71d62ba8f5",
+      "fileName": "generated/generated-ed225559dd8d5e695facae69.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "不服"
+      ],
+      "emotions": [],
+      "embeddedText": "不服",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-08-animated/output/gifs/calf-defiant.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-08-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-2e4aaa50366e7824a489a970",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "2e4aaa50366e7824a489a970615b52a72d452fc523663cdf16ca24c9b7cbc86c",
+      "sha256": "2e4aaa50366e7824a489a970615b52a72d452fc523663cdf16ca24c9b7cbc86c",
+      "fileName": "generated/generated-2e4aaa50366e7824a489a970.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "不服"
+      ],
+      "emotions": [],
+      "embeddedText": "不服",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-08-animated/output/gifs/man-defiant.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-08-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-2380caed9e94837b1ac0585b",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "2380caed9e94837b1ac0585b5f8ab18853306f504a8a76141beb6b383b0a58f8",
+      "sha256": "2380caed9e94837b1ac0585b5f8ab18853306f504a8a76141beb6b383b0a58f8",
+      "fileName": "generated/generated-2380caed9e94837b1ac0585b.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "崩溃"
+      ],
+      "emotions": [],
+      "embeddedText": "崩溃",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-08-animated/output/gifs/gingercat-overwhelmed.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-08-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-2bb0661f93135c32bb9281b6",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "2bb0661f93135c32bb9281b6f082f72ee9e9a3b2c775661380e50e130fdff570",
+      "sha256": "2bb0661f93135c32bb9281b6f082f72ee9e9a3b2c775661380e50e130fdff570",
+      "fileName": "generated/generated-2bb0661f93135c32bb9281b6.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "崩溃"
+      ],
+      "emotions": [],
+      "embeddedText": "崩溃",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-08-animated/output/gifs/penguin-overwhelmed.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-08-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-4d559e6998eb7b2459382800",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "4d559e6998eb7b245938280004c1c6e6275fecdc160f7fb48864c1e4fb931ab2",
+      "sha256": "4d559e6998eb7b245938280004c1c6e6275fecdc160f7fb48864c1e4fb931ab2",
+      "fileName": "generated/generated-4d559e6998eb7b2459382800.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "崩溃"
+      ],
+      "emotions": [],
+      "embeddedText": "崩溃",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-08-animated/output/gifs/sloth-overwhelmed.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-08-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-b7fb3e6706e5add4fccf7ea8",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "b7fb3e6706e5add4fccf7ea8d5d9b5a29deea66aa235551c3869b48ef678f0d3",
+      "sha256": "b7fb3e6706e5add4fccf7ea8d5d9b5a29deea66aa235551c3869b48ef678f0d3",
+      "fileName": "generated/generated-b7fb3e6706e5add4fccf7ea8.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "崩溃"
+      ],
+      "emotions": [],
+      "embeddedText": "崩溃",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-08-animated/output/gifs/man-overwhelmed.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-08-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-02b13f00b86a5afbdda6f53e",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "02b13f00b86a5afbdda6f53e8061955fb647f17fb982864ca3f43aca089b7615",
+      "sha256": "02b13f00b86a5afbdda6f53e8061955fb647f17fb982864ca3f43aca089b7615",
+      "fileName": "generated/generated-02b13f00b86a5afbdda6f53e.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "佩服"
+      ],
+      "emotions": [],
+      "embeddedText": "佩服",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-08-animated/output/gifs/raccoon-admire.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-08-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-5f7677c37b552d7698545a07",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "5f7677c37b552d7698545a073afe05da8075f5add36df4d250b7cc0e14c535aa",
+      "sha256": "5f7677c37b552d7698545a073afe05da8075f5add36df4d250b7cc0e14c535aa",
+      "fileName": "generated/generated-5f7677c37b552d7698545a07.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "佩服"
+      ],
+      "emotions": [],
+      "embeddedText": "佩服",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-08-animated/output/gifs/rabbit-admire.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-08-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-0eebba298c827b0267d6ff04",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "0eebba298c827b0267d6ff04eb4ad92875013c45f9c7ed7e59601d316aff3579",
+      "sha256": "0eebba298c827b0267d6ff04eb4ad92875013c45f9c7ed7e59601d316aff3579",
+      "fileName": "generated/generated-0eebba298c827b0267d6ff04.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "佩服"
+      ],
+      "emotions": [],
+      "embeddedText": "佩服",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-08-animated/output/gifs/otter-admire.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-08-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-a21bb57a19310271fd5fcce2",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "a21bb57a19310271fd5fcce296c7df755276ab61c94bea033511397d4c086940",
+      "sha256": "a21bb57a19310271fd5fcce296c7df755276ab61c94bea033511397d4c086940",
+      "fileName": "generated/generated-a21bb57a19310271fd5fcce2.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "佩服"
+      ],
+      "emotions": [],
+      "embeddedText": "佩服",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-08-animated/output/gifs/man-admire.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-08-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-3aa3c6386e0fdf5f02a6f60d",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "3aa3c6386e0fdf5f02a6f60dce8e12ad5a4859b716e293d1ec1a3f3759f09037",
+      "sha256": "3aa3c6386e0fdf5f02a6f60dce8e12ad5a4859b716e293d1ec1a3f3759f09037",
+      "fileName": "generated/generated-3aa3c6386e0fdf5f02a6f60d.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "忍住"
+      ],
+      "emotions": [],
+      "embeddedText": "忍住",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-09-animated/output/gifs/beagle-restrain.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-09-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-e4fd75a6139cdb93d9397ae4",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "e4fd75a6139cdb93d9397ae4f7d5f982330637266b655b73e4a1409674cb49d8",
+      "sha256": "e4fd75a6139cdb93d9397ae4f7d5f982330637266b655b73e4a1409674cb49d8",
+      "fileName": "generated/generated-e4fd75a6139cdb93d9397ae4.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "忍住"
+      ],
+      "emotions": [],
+      "embeddedText": "忍住",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-09-animated/output/gifs/frog-restrain.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-09-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-996d9263697954056b3cb4c9",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "996d9263697954056b3cb4c99e7ac5f9e7f3d9f4d381a2df590f481811f2ecea",
+      "sha256": "996d9263697954056b3cb4c99e7ac5f9e7f3d9f4d381a2df590f481811f2ecea",
+      "fileName": "generated/generated-996d9263697954056b3cb4c9.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "忍住"
+      ],
+      "emotions": [],
+      "embeddedText": "忍住",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-09-animated/output/gifs/hamster-restrain.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-09-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-9f6fc0de00bc886ffcc1491e",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "9f6fc0de00bc886ffcc1491e2231a52c181bf23378c0ccab68100d45e9672120",
+      "sha256": "9f6fc0de00bc886ffcc1491e2231a52c181bf23378c0ccab68100d45e9672120",
+      "fileName": "generated/generated-9f6fc0de00bc886ffcc1491e.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "忍住"
+      ],
+      "emotions": [],
+      "embeddedText": "忍住",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-09-animated/output/gifs/man-restrain.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-09-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-0eec0a741e805df96e0d21f7",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "0eec0a741e805df96e0d21f75b9b21a1295aba8648104c9f4b933cd220f37093",
+      "sha256": "0eec0a741e805df96e0d21f75b9b21a1295aba8648104c9f4b933cd220f37093",
+      "fileName": "generated/generated-0eec0a741e805df96e0d21f7.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "迷茫"
+      ],
+      "emotions": [],
+      "embeddedText": "迷茫",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-09-animated/output/gifs/tabby-lost.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-09-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-4104a8b952dbf52a58b67195",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "4104a8b952dbf52a58b6719534c3359b8875293b4f7755ddcdb8dd03260ea8ef",
+      "sha256": "4104a8b952dbf52a58b6719534c3359b8875293b4f7755ddcdb8dd03260ea8ef",
+      "fileName": "generated/generated-4104a8b952dbf52a58b67195.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "迷茫"
+      ],
+      "emotions": [],
+      "embeddedText": "迷茫",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-09-animated/output/gifs/capybara-lost.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-09-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-d9b8953ee7a5e929603723fc",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "d9b8953ee7a5e929603723fca69e452ccee009287e8bcb49fe369fae83bc27aa",
+      "sha256": "d9b8953ee7a5e929603723fca69e452ccee009287e8bcb49fe369fae83bc27aa",
+      "fileName": "generated/generated-d9b8953ee7a5e929603723fc.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "迷茫"
+      ],
+      "emotions": [],
+      "embeddedText": "迷茫",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-09-animated/output/gifs/man-lost.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-09-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-34d01065e60a159652f287ab",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "34d01065e60a159652f287ab17b7ec974a289f58935c31d8d4d70f6f2bb1055a",
+      "sha256": "34d01065e60a159652f287ab17b7ec974a289f58935c31d8d4d70f6f2bb1055a",
+      "fileName": "generated/generated-34d01065e60a159652f287ab.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "没眼看"
+      ],
+      "emotions": [],
+      "embeddedText": "没眼看",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-09-animated/output/gifs/retriever-facepalm.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-09-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-3835276d1394b7b1e73dd814",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "3835276d1394b7b1e73dd81469dbe1513e063d1471ceb5ef928a4bff31ca19d3",
+      "sha256": "3835276d1394b7b1e73dd81469dbe1513e063d1471ceb5ef928a4bff31ca19d3",
+      "fileName": "generated/generated-3835276d1394b7b1e73dd814.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "没眼看"
+      ],
+      "emotions": [],
+      "embeddedText": "没眼看",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-09-animated/output/gifs/penguin-facepalm.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-09-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-51799bf1099dbf684fb617a6",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "51799bf1099dbf684fb617a632df50382ffa5d48abda3cfeda3ed32d0c865355",
+      "sha256": "51799bf1099dbf684fb617a632df50382ffa5d48abda3cfeda3ed32d0c865355",
+      "fileName": "generated/generated-51799bf1099dbf684fb617a6.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "没眼看"
+      ],
+      "emotions": [],
+      "embeddedText": "没眼看",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-09-animated/output/gifs/bear-facepalm.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-09-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-136c3a422a53371a5a354ef9",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "136c3a422a53371a5a354ef97341273a3517178c806f76e1d8d64eda767ec13c",
+      "sha256": "136c3a422a53371a5a354ef97341273a3517178c806f76e1d8d64eda767ec13c",
+      "fileName": "generated/generated-136c3a422a53371a5a354ef9.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "没眼看"
+      ],
+      "emotions": [],
+      "embeddedText": "没眼看",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-09-animated/output/gifs/man-facepalm.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-09-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-5e0f302f3a07ab719317fdf8",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "5e0f302f3a07ab719317fdf8321af697a5952e2a14e52c000559663feaf0aa52",
+      "sha256": "5e0f302f3a07ab719317fdf8321af697a5952e2a14e52c000559663feaf0aa52",
+      "fileName": "generated/generated-5e0f302f3a07ab719317fdf8.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "饿了"
+      ],
+      "emotions": [],
+      "embeddedText": "饿了",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-10-animated/output/gifs/corgi-hungry.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-10-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-2535ab7074e10d91d9e33aba",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "2535ab7074e10d91d9e33aba344a4463326e47f32b6fd7baadc9df00158d0740",
+      "sha256": "2535ab7074e10d91d9e33aba344a4463326e47f32b6fd7baadc9df00158d0740",
+      "fileName": "generated/generated-2535ab7074e10d91d9e33aba.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "饿了"
+      ],
+      "emotions": [],
+      "embeddedText": "饿了",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-10-animated/output/gifs/rabbit-hungry.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-10-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-87c5439b42a70da85648344f",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "87c5439b42a70da85648344f77947e8a5e91e78301503a429196015401f7c192",
+      "sha256": "87c5439b42a70da85648344f77947e8a5e91e78301503a429196015401f7c192",
+      "fileName": "generated/generated-87c5439b42a70da85648344f.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "饿了"
+      ],
+      "emotions": [],
+      "embeddedText": "饿了",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-10-animated/output/gifs/pig-hungry.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-10-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-7118adeed7dc1c392f0a465f",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "7118adeed7dc1c392f0a465f4bce476d0a6a6d7a967ded6ca6a8ddc748e26f9f",
+      "sha256": "7118adeed7dc1c392f0a465f4bce476d0a6a6d7a967ded6ca6a8ddc748e26f9f",
+      "fileName": "generated/generated-7118adeed7dc1c392f0a465f.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "饿了"
+      ],
+      "emotions": [],
+      "embeddedText": "饿了",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-10-animated/output/gifs/man-hungry.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-10-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-57f0bac3e54d444ed127bfdd",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "57f0bac3e54d444ed127bfdd6f9121754fadc8d421b1228804aee04b2c8713af",
+      "sha256": "57f0bac3e54d444ed127bfdd6f9121754fadc8d421b1228804aee04b2c8713af",
+      "fileName": "generated/generated-57f0bac3e54d444ed127bfdd.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "心累"
+      ],
+      "emotions": [],
+      "embeddedText": "心累",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-10-animated/output/gifs/bulldog-weary.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-10-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-13f356591c843522f0ee6c16",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "13f356591c843522f0ee6c163c4e648458d6cf36a22c8a51eb8fd90fdacc2002",
+      "sha256": "13f356591c843522f0ee6c163c4e648458d6cf36a22c8a51eb8fd90fdacc2002",
+      "fileName": "generated/generated-13f356591c843522f0ee6c16.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "心累"
+      ],
+      "emotions": [],
+      "embeddedText": "心累",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-10-animated/output/gifs/sloth-weary.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-10-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-47e32b47cc13183bf5b22e13",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "47e32b47cc13183bf5b22e137aa96740ac8ddb2110605627fa79a2e485453002",
+      "sha256": "47e32b47cc13183bf5b22e137aa96740ac8ddb2110605627fa79a2e485453002",
+      "fileName": "generated/generated-47e32b47cc13183bf5b22e13.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "心累"
+      ],
+      "emotions": [],
+      "embeddedText": "心累",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-10-animated/output/gifs/man-weary.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-10-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-65a8a84efc7fb8615b6ee490",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "65a8a84efc7fb8615b6ee490769d8994a082af08c7b5a0eea80afc445788f5af",
+      "sha256": "65a8a84efc7fb8615b6ee490769d8994a082af08c7b5a0eea80afc445788f5af",
+      "fileName": "generated/generated-65a8a84efc7fb8615b6ee490.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "嘘"
+      ],
+      "emotions": [],
+      "embeddedText": "嘘",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-10-animated/output/gifs/owl-shush.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-10-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-9782409c490559e161d7f5eb",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "9782409c490559e161d7f5ebd7af5007c1fd8828947d169452960e34e7e8dfbd",
+      "sha256": "9782409c490559e161d7f5ebd7af5007c1fd8828947d169452960e34e7e8dfbd",
+      "fileName": "generated/generated-9782409c490559e161d7f5eb.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "嘘"
+      ],
+      "emotions": [],
+      "embeddedText": "嘘",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-10-animated/output/gifs/fox-shush.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-10-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-07f13f70eeb42d32c19574ba",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "07f13f70eeb42d32c19574ba68b73286c1e92b01658b435f398e8c6e6f1697e5",
+      "sha256": "07f13f70eeb42d32c19574ba68b73286c1e92b01658b435f398e8c6e6f1697e5",
+      "fileName": "generated/generated-07f13f70eeb42d32c19574ba.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "嘘"
+      ],
+      "emotions": [],
+      "embeddedText": "嘘",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-10-animated/output/gifs/man-shush.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-10-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-66da3c13baff9bfba71b9f74",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "66da3c13baff9bfba71b9f74dc8ed697993695e547fc3393614029efb642f140",
+      "sha256": "66da3c13baff9bfba71b9f74dc8ed697993695e547fc3393614029efb642f140",
+      "fileName": "generated/generated-66da3c13baff9bfba71b9f74.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "不听"
+      ],
+      "emotions": [],
+      "embeddedText": "不听",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-11-animated/output/gifs/terrier-refuse.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-11-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-71973961802976c681e68f0e",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "71973961802976c681e68f0ec7e0c0a1f1fd098ef62a810212706adb6e81f55d",
+      "sha256": "71973961802976c681e68f0ec7e0c0a1f1fd098ef62a810212706adb6e81f55d",
+      "fileName": "generated/generated-71973961802976c681e68f0e.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "不听"
+      ],
+      "emotions": [],
+      "embeddedText": "不听",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-11-animated/output/gifs/mouse-refuse.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-11-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-c3402f08e4f6c4110ad70371",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "c3402f08e4f6c4110ad703717db9b3737d19859a127a93b87c2b63fd4fe8ce85",
+      "sha256": "c3402f08e4f6c4110ad703717db9b3737d19859a127a93b87c2b63fd4fe8ce85",
+      "fileName": "generated/generated-c3402f08e4f6c4110ad70371.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "不听"
+      ],
+      "emotions": [],
+      "embeddedText": "不听",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-11-animated/output/gifs/otter-refuse.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-11-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-b0e0a21a58b0d78c02498daa",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "b0e0a21a58b0d78c02498daafe1c64e253497f2ddb0f5326310bc2a04889a158",
+      "sha256": "b0e0a21a58b0d78c02498daafe1c64e253497f2ddb0f5326310bc2a04889a158",
+      "fileName": "generated/generated-b0e0a21a58b0d78c02498daa.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "不听"
+      ],
+      "emotions": [],
+      "embeddedText": "不听",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-11-animated/output/gifs/man-refuse.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-11-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-289033286dc7011939b1fb88",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "289033286dc7011939b1fb88a3332d7795bdcceb99d42d7f32b14fc79f672dfb",
+      "sha256": "289033286dc7011939b1fb88a3332d7795bdcceb99d42d7f32b14fc79f672dfb",
+      "fileName": "generated/generated-289033286dc7011939b1fb88.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "懂了"
+      ],
+      "emotions": [],
+      "embeddedText": "懂了",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-11-animated/output/gifs/owl-understand.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-11-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-fd24bfc986e417d4807a0239",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "fd24bfc986e417d4807a02396d5ded38a39d2fdf502cbfae49cd8b5469901f51",
+      "sha256": "fd24bfc986e417d4807a02396d5ded38a39d2fdf502cbfae49cd8b5469901f51",
+      "fileName": "generated/generated-fd24bfc986e417d4807a0239.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "懂了"
+      ],
+      "emotions": [],
+      "embeddedText": "懂了",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-11-animated/output/gifs/raccoon-understand.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-11-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-a6ecd6fff5a3ee363a9baf4f",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "a6ecd6fff5a3ee363a9baf4fe64b8d1b792f6c5bd2f84b617a33e4623f9039e8",
+      "sha256": "a6ecd6fff5a3ee363a9baf4fe64b8d1b792f6c5bd2f84b617a33e4623f9039e8",
+      "fileName": "generated/generated-a6ecd6fff5a3ee363a9baf4f.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "懂了"
+      ],
+      "emotions": [],
+      "embeddedText": "懂了",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-11-animated/output/gifs/man-understand.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-11-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-22343900c1555caecec48a41",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "22343900c1555caecec48a415b0102fc9bbe7e51b083f258618a9e12b1a09601",
+      "sha256": "22343900c1555caecec48a415b0102fc9bbe7e51b083f258618a9e12b1a09601",
+      "fileName": "generated/generated-22343900c1555caecec48a41.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "紧张"
+      ],
+      "emotions": [],
+      "embeddedText": "紧张",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-11-animated/output/gifs/spaniel-nervous.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-11-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-df6b5d6b843a537b9e90cd56",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "df6b5d6b843a537b9e90cd56b6b8a8c2a2d95ff66d226e89a1ef3d4394cb2db9",
+      "sha256": "df6b5d6b843a537b9e90cd56b6b8a8c2a2d95ff66d226e89a1ef3d4394cb2db9",
+      "fileName": "generated/generated-df6b5d6b843a537b9e90cd56.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "紧张"
+      ],
+      "emotions": [],
+      "embeddedText": "紧张",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-11-animated/output/gifs/penguin-nervous.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-11-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-4f8871174f8762af38c553c5",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "4f8871174f8762af38c553c572d43905eacd50eaea3b601d3437a0c12bffafb2",
+      "sha256": "4f8871174f8762af38c553c572d43905eacd50eaea3b601d3437a0c12bffafb2",
+      "fileName": "generated/generated-4f8871174f8762af38c553c5.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "紧张"
+      ],
+      "emotions": [],
+      "embeddedText": "紧张",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-11-animated/output/gifs/hamster-nervous.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-11-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-9ebd13d9a28cdfbf6751dd43",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "9ebd13d9a28cdfbf6751dd435462a98755f82aedbb38419db5c0394acb0b576b",
+      "sha256": "9ebd13d9a28cdfbf6751dd435462a98755f82aedbb38419db5c0394acb0b576b",
+      "fileName": "generated/generated-9ebd13d9a28cdfbf6751dd43.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "紧张"
+      ],
+      "emotions": [],
+      "embeddedText": "紧张",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/original-volume-11-animated/output/gifs/man-nervous.gif",
+      "sourceReport": "artifacts/expression-character-trials/original-volume-11-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-8118a44268be166e33e9f1ce",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "licensed",
+      "distribution": "remote",
+      "version": "8118a44268be166e33e9f1ce32cd119ec5eb8fc94e8cab340d8eaadf7abff853",
+      "sha256": "8118a44268be166e33e9f1ce32cd119ec5eb8fc94e8cab340d8eaadf7abff853",
+      "fileName": "generated/generated-8118a44268be166e33e9f1ce.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "真的假的"
+      ],
+      "emotions": [],
+      "embeddedText": "真的假的",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/reference-01-animated/output/gifs/panda-really.gif",
+      "sourceReport": "artifacts/expression-character-trials/reference-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明；形象许可依据 artifacts/expression-character-trials/reference-01-animated/authorization-2026-09-16.md 中用户声明，非独立法律核验"
+      }
+    },
+    {
+      "id": "generated-667ccff71e5d5946e1d20728",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "licensed",
+      "distribution": "remote",
+      "version": "667ccff71e5d5946e1d20728c4501ef5aac030a961f332c403a7ebf902761dc3",
+      "sha256": "667ccff71e5d5946e1d20728c4501ef5aac030a961f332c403a7ebf902761dc3",
+      "fileName": "generated/generated-667ccff71e5d5946e1d20728.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "让我想想"
+      ],
+      "emotions": [],
+      "embeddedText": "让我想想",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/reference-01-animated/output/gifs/mushroom-think.gif",
+      "sourceReport": "artifacts/expression-character-trials/reference-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明；形象许可依据 artifacts/expression-character-trials/reference-01-animated/authorization-2026-09-16.md 中用户声明，非独立法律核验"
+      }
+    },
+    {
+      "id": "generated-0e471b0a7fffbc971b735d35",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "0e471b0a7fffbc971b735d3545f6471e1a421a1f2316653615d9a6a31a949b9f",
+      "sha256": "0e471b0a7fffbc971b735d3545f6471e1a421a1f2316653615d9a6a31a949b9f",
+      "fileName": "generated/generated-0e471b0a7fffbc971b735d35.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "下午好"
+      ],
+      "emotions": [],
+      "embeddedText": "下午好",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-01-animated/output/gifs/seal-afternoon.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-04e53bcf8e17a65aee67b0e0",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "04e53bcf8e17a65aee67b0e07c5a0ea462c70f190167b55fb2b8c52b1f40af43",
+      "sha256": "04e53bcf8e17a65aee67b0e07c5a0ea462c70f190167b55fb2b8c52b1f40af43",
+      "fileName": "generated/generated-04e53bcf8e17a65aee67b0e0.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "下午好"
+      ],
+      "emotions": [],
+      "embeddedText": "下午好",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-01-animated/output/gifs/koala-afternoon.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-01-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-2e0a15059b61f7c03cb35197",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "2e0a15059b61f7c03cb35197ca596bc1c5fc36f1a649240a65c0a417c905cbf4",
+      "sha256": "2e0a15059b61f7c03cb35197ca596bc1c5fc36f1a649240a65c0a417c905cbf4",
+      "fileName": "generated/generated-2e0a15059b61f7c03cb35197.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "下午好"
+      ],
+      "emotions": [],
+      "embeddedText": "下午好",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-01-framed/output/gifs/schnauzer-afternoon.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-01-framed/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-90bb8bd760926b716f3abd54",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "90bb8bd760926b716f3abd542b49f92c58af4c6ed7a3becdc4e36cc26eb75173",
+      "sha256": "90bb8bd760926b716f3abd542b49f92c58af4c6ed7a3becdc4e36cc26eb75173",
+      "fileName": "generated/generated-90bb8bd760926b716f3abd54.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "下午好"
+      ],
+      "emotions": [],
+      "embeddedText": "下午好",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-01-framed/output/gifs/man-afternoon.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-01-framed/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-551021cbe6cbdba31acbfea9",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "551021cbe6cbdba31acbfea9c922c09c0df164addcfdf1c3c8127b876a8d6dd2",
+      "sha256": "551021cbe6cbdba31acbfea9c922c09c0df164addcfdf1c3c8127b876a8d6dd2",
+      "fileName": "generated/generated-551021cbe6cbdba31acbfea9.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "晚上好"
+      ],
+      "emotions": [],
+      "embeddedText": "晚上好",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-02-animated/output/gifs/siamese-evening.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-02-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-08803ddd6f3b865a01c678d3",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "08803ddd6f3b865a01c678d3bbadff5bc231bbd95044544ccb3a6a4a5398f617",
+      "sha256": "08803ddd6f3b865a01c678d3bbadff5bc231bbd95044544ccb3a6a4a5398f617",
+      "fileName": "generated/generated-08803ddd6f3b865a01c678d3.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "晚上好"
+      ],
+      "emotions": [],
+      "embeddedText": "晚上好",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-02-animated/output/gifs/hedgehog-evening.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-02-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-257729a587a4df3a2b01e59d",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "257729a587a4df3a2b01e59dded21a58faf3ecde0dcfb10a5a4fa1be5fac7d90",
+      "sha256": "257729a587a4df3a2b01e59dded21a58faf3ecde0dcfb10a5a4fa1be5fac7d90",
+      "fileName": "generated/generated-257729a587a4df3a2b01e59d.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "晚上好"
+      ],
+      "emotions": [],
+      "embeddedText": "晚上好",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-02-animated/output/gifs/beaver-evening.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-02-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-ec943fa9351f772134eb827c",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "ec943fa9351f772134eb827cb218b0acfdb06aa376d142ea2352dfa329210f66",
+      "sha256": "ec943fa9351f772134eb827cb218b0acfdb06aa376d142ea2352dfa329210f66",
+      "fileName": "generated/generated-ec943fa9351f772134eb827c.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "晚上好"
+      ],
+      "emotions": [],
+      "embeddedText": "晚上好",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-02-animated/output/gifs/man-evening.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-02-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-d11a96719f7afab782f418c3",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "d11a96719f7afab782f418c3dd79ab20054920c13ac16e14bd95a83bfa366534",
+      "sha256": "d11a96719f7afab782f418c3dd79ab20054920c13ac16e14bd95a83bfa366534",
+      "fileName": "generated/generated-d11a96719f7afab782f418c3.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "中午好"
+      ],
+      "emotions": [],
+      "embeddedText": "中午好",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-02-animated/output/gifs/puppy-noon.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-02-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-eba122c4ad2ba85e5d357871",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "eba122c4ad2ba85e5d357871396ef8a39ea0c447ad2e95b45811f10744a24aaf",
+      "sha256": "eba122c4ad2ba85e5d357871396ef8a39ea0c447ad2e95b45811f10744a24aaf",
+      "fileName": "generated/generated-eba122c4ad2ba85e5d357871.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "中午好"
+      ],
+      "emotions": [],
+      "embeddedText": "中午好",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-02-animated/output/gifs/sparrow-noon.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-02-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-b346af82c3c691820bc6bd3e",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "b346af82c3c691820bc6bd3ed9328dfefbc9dcc0593e9d5112fd27eed784f35a",
+      "sha256": "b346af82c3c691820bc6bd3ed9328dfefbc9dcc0593e9d5112fd27eed784f35a",
+      "fileName": "generated/generated-b346af82c3c691820bc6bd3e.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "中午好"
+      ],
+      "emotions": [],
+      "embeddedText": "中午好",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-02-animated/output/gifs/fawn-noon.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-02-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-b2313a37c8826a371a96d16c",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "b2313a37c8826a371a96d16cdfb2ad93d45e9e32f4f3cc34c1f1e3936cf6384a",
+      "sha256": "b2313a37c8826a371a96d16cdfb2ad93d45e9e32f4f3cc34c1f1e3936cf6384a",
+      "fileName": "generated/generated-b2313a37c8826a371a96d16c.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "中午好"
+      ],
+      "emotions": [],
+      "embeddedText": "中午好",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-02-animated/output/gifs/man-noon.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-02-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    }
+  ]
+}

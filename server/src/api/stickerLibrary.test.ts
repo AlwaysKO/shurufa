@@ -23,6 +23,7 @@ beforeEach(async () => {
   // pg-mem 不支持 regexp_split_to_table；迁移回填与幂等另在真实 PostgreSQL 事务中验证。
   const migration = new URL('../../migrations/015_sticker_keywords.sql', import.meta.url);
   await pool.query(readFileSync(migration, 'utf8').split('-- 兼容历史')[0]);
+  await pool.query(readFileSync(new URL('../../migrations/019_keyword_gif_removal.sql', import.meta.url), 'utf8'));
   root = await mkdtemp(join(tmpdir(), 'sticker-library-'));
   await mkdir(join(root, 'server/.runtime/expression-assets/prebuilt'), { recursive: true });
   await mkdir(join(root, 'assets/expression/query'), { recursive: true });

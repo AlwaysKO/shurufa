@@ -77,11 +77,15 @@ interface ExpressionSourceManifest {
   prebuiltPhrases?: SourcePrebuiltPhrase[];
   prebuiltAssets?: SourcePrebuiltAsset[];
   templates: SourceTemplate[];
+  /** 仅供历史带字推荐构建，不发布到合成池或APK。 */
+  prebuiltSourceTemplates?: SourceTemplate[];
   emojiBases: SourceEmojiBase[];
 }
 
 export interface GeneratedExpressionCatalog {
   version: string;
+  complete?: boolean;
+  retiredTemplateIds?: string[];
   templates: ExpressionAsset[];
   emojiBases: EmojiBase[];
   emojiCombinations: EmojiCombination[];
@@ -123,9 +127,10 @@ function assertUniqueIds(items: readonly { id: string }[], label: string): void 
 }
 
 function validateManifest(manifest: ExpressionSourceManifest): void {
-  assertUniqueIds(manifest.templates, '模板');
+  assertUniqueIds([...manifest.templates, ...(manifest.prebuiltSourceTemplates ?? [])], '模板');
   assertUniqueIds([
     ...manifest.templates,
+    ...(manifest.prebuiltSourceTemplates ?? []),
     ...(manifest.prebuiltAssets ?? []),
     ...(manifest.prebuiltPhrases ?? []).flatMap((phrase, index) => phrase.templateIds.map((id) => ({
       id: `${phrase.idPrefix ?? `prebuilt-${String(index + 1).padStart(2, '0')}`}-${id}`,
@@ -157,6 +162,7 @@ function validateManifest(manifest: ExpressionSourceManifest): void {
   for (const id of manifest.builtInTemplateIds ?? []) {
     if (!templateIds.has(id)) throw new Error(`内置清单引用未知模板：${id}`);
   }
+  const sourceIds = new Set([...templateIds, ...(manifest.prebuiltSourceTemplates ?? []).map(item => item.id)]);
   const phraseTexts = new Set<string>();
   for (const phrase of manifest.prebuiltPhrases ?? []) {
     if (phrase.idPrefix !== undefined && (typeof phrase.idPrefix !== 'string' || !ID_PATTERN.test(phrase.idPrefix) || phrase.idPrefix.includes('__'))) {
@@ -168,7 +174,7 @@ function validateManifest(manifest: ExpressionSourceManifest): void {
     phraseTexts.add(text);
     if (phrase.templateIds.length === 0) throw new Error(`预制短语未关联模板：${text}`);
     for (const id of phrase.templateIds) {
-      if (!templateIds.has(id)) throw new Error(`预制短语引用未知模板：${text}/${id}`);
+      if (!sourceIds.has(id)) throw new Error(`预制短语引用未知模板：${text}/${id}`);
     }
   }
   const emojiIds = new Set(manifest.emojiBases.map(({ id }) => id));
@@ -686,7 +692,8 @@ export async function generateExpressionAssets(
     await readFile(options.manifestPath, 'utf8'),
   ) as ExpressionSourceManifest;
   validateManifest(manifest);
-  const animationSources = await validateAnimatedTemplates(manifest.templates, options.sourceRoot);
+  const allSources = [...manifest.templates, ...(manifest.prebuiltSourceTemplates ?? [])];
+  const animationSources = await validateAnimatedTemplates(allSources, options.sourceRoot);
   const prebuiltSources = await validatePrebuiltAssets(manifest.prebuiltAssets ?? [], options.sourceRoot);
   await rm(options.outputRoot, { recursive: true, force: true });
   await mkdir(options.outputRoot, { recursive: true });
@@ -697,7 +704,7 @@ export async function generateExpressionAssets(
       asset, prebuiltSources.get(asset.id)!, options.outputRoot, manifest.version,
     ));
   }
-  for (const template of manifest.templates) {
+  for (const template of allSources) {
     templates.push(await renderTemplate(
       template,
       options.sourceRoot,
@@ -706,7 +713,7 @@ export async function generateExpressionAssets(
       animationSources.get(template.id),
     ));
   }
-  const sourceTemplates = new Map(manifest.templates.map((template) => [template.id, template]));
+  const sourceTemplates = new Map(allSources.map((template) => [template.id, template]));
   const templateAssets = new Map(templates.map((template) => [template.id, template]));
   for (const [phraseIndex, phrase] of (manifest.prebuiltPhrases ?? []).entries()) {
     for (const templateId of phrase.templateIds) {
@@ -719,6 +726,14 @@ export async function generateExpressionAssets(
         manifest.version,
       ));
     }
+  }
+  const sourceOnlyIds = new Set((manifest.prebuiltSourceTemplates ?? []).map(item => item.id));
+  for (let i = templates.length - 1; i >= 0; i -= 1) {
+    const item = templates[i];
+    if (!sourceOnlyIds.has(item.id)) continue;
+    await rm(join(options.outputRoot, item.fileName), { force: true });
+    if (item.thumbnailFileName) await rm(join(options.outputRoot, item.thumbnailFileName), { force: true });
+    templates.splice(i, 1);
   }
   const emojiBases: EmojiBase[] = [];
   for (const [index, base] of manifest.emojiBases.entries()) {
@@ -744,6 +759,8 @@ export async function generateExpressionAssets(
 
   const catalog: GeneratedExpressionCatalog = {
     version: manifest.version,
+    complete: true,
+    retiredTemplateIds: [...sourceOnlyIds],
     templates,
     emojiBases,
     emojiCombinations,

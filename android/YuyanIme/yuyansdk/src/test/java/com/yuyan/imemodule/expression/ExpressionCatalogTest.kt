@@ -118,6 +118,13 @@ class ExpressionCatalogTest {
     }
 
     @Test
+    fun `已下架旧合成不会被旧远端目录复活`() {
+        val local = ExpressionCatalog.fromJson("""{"version":"new","templates":[],"emojiBases":[],"emojiCombinations":[],"retiredTemplateIds":["old"]}""")
+        val merged = local.merge(document(assets = listOf(asset("old"), asset("keep", type = "prebuilt"))))
+        assertEquals(listOf("keep"), merged.document.templates.map { it.id })
+    }
+
+    @Test
     fun `远端增量按 ID 覆盖并保留本地素材`() {
         val local = ExpressionCatalog(document(assets = listOf(asset("local"), asset("shared", heat = 1))))
         val remote = document(

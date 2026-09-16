@@ -1,0 +1,454 @@
+{
+  "date": "2026-09-16",
+  "status": "approved",
+  "scope": "AI合成无字GIF正式图库及APK内置；不与关键词推荐混用",
+  "userApproval": "把现在所有的用于ai合成的无字gif都纳入apk中。",
+  "confirmedPlan": "15张合格GIF；摆烂循环不合格排除。用户回复可以。",
+  "licensedReferenceConfirmation": {
+    "evidence": "user-statement",
+    "answer": "有",
+    "independentlyVerifiedLicenseDocument": false,
+    "record": "artifacts/expression-character-trials/reference-01-animated/authorization-2026-09-16.md"
+  },
+  "approvedIds": [
+    "blank-cat-side-eye",
+    "blank-man-snicker",
+    "blank-line-exasperated",
+    "blank-otter-smug",
+    "blank-mushroom-think",
+    "blank-panda-really",
+    "blank-dog-shocked",
+    "blank-bird-hurt",
+    "blank-hamster-pleading",
+    "blank-seal-applause",
+    "blank-cloud-annoyed",
+    "blank-mushroom-cigarette-dance",
+    "blank-panda-shoulder-sway",
+    "blank-mushroom-hip-wiggle",
+    "blank-panda-cigarette-strut"
+  ],
+  "licensedIds": [
+    "blank-mushroom-think",
+    "blank-panda-really",
+    "blank-mushroom-cigarette-dance",
+    "blank-panda-shoulder-sway",
+    "blank-mushroom-hip-wiggle",
+    "blank-panda-cigarette-strut"
+  ],
+  "approvedAssets": [
+    {
+      "id": "blank-cat-side-eye",
+      "sourceType": "ai-original",
+      "sha256": "6b51de6dad852865ac9b16045457f8f26cf72b1a4a75dc220a65be6ab55bd1ba"
+    },
+    {
+      "id": "blank-man-snicker",
+      "sourceType": "ai-original",
+      "sha256": "24865f49ee4025269dc60918fba6edc133ad4b5e3dfb0dda7de74dfc844d39a6"
+    },
+    {
+      "id": "blank-line-exasperated",
+      "sourceType": "ai-original",
+      "sha256": "51226d4843fe116363541b76cc7deb663a18c89134e415d2fb800ed5dfe31725"
+    },
+    {
+      "id": "blank-otter-smug",
+      "sourceType": "ai-original",
+      "sha256": "fce4e36bc5a8546fdc450320f9444c83e3081163cef52fd6ae27e11035bef431"
+    },
+    {
+      "id": "blank-mushroom-think",
+      "sourceType": "licensed",
+      "sha256": "2c1b4b03b7de6d503711ffa730a3aba48d3b9ca2c3c053d28993e5423cd117a5"
+    },
+    {
+      "id": "blank-panda-really",
+      "sourceType": "licensed",
+      "sha256": "16581dcefff8b203073b1a7cfdb7830841fb578c957e0567dc4d15ac2b74af87"
+    },
+    {
+      "id": "blank-dog-shocked",
+      "sourceType": "ai-original",
+      "sha256": "7c69c8d4598b31c56191d3dccbd524573fdcfc55f3e92e5264ab80f6c1556bf9"
+    },
+    {
+      "id": "blank-bird-hurt",
+      "sourceType": "ai-original",
+      "sha256": "1a261b6872b3a99882ca952ddc17c426555995c63e264fb21324d3c8192764b7"
+    },
+    {
+      "id": "blank-hamster-pleading",
+      "sourceType": "ai-original",
+      "sha256": "2f47037b4ecf807c223a1c42ce1a40eeff7f97344216956be8f66039f15dcd5e"
+    },
+    {
+      "id": "blank-seal-applause",
+      "sourceType": "ai-original",
+      "sha256": "28980a1a4044a66b26cb544fb498031ab98df9c83a4bc7c14f8e317a972f17ea"
+    },
+    {
+      "id": "blank-cloud-annoyed",
+      "sourceType": "ai-original",
+      "sha256": "f9b080ebc2b4e8c44cbd2817d744533fbbbe34efe2f63aaba0498058eb2d186e"
+    },
+    {
+      "id": "blank-mushroom-cigarette-dance",
+      "sourceType": "licensed",
+      "sha256": "a18b5ac5ad00909d4dbed36eb3dfb9fad53329e57c23bc2b6ea2fd85dbbb6490"
+    },
+    {
+      "id": "blank-panda-shoulder-sway",
+      "sourceType": "licensed",
+      "sha256": "1d5764163135da216b8614917c1c6167ef88964dfc2dc9c7312d36a091d71d46"
+    },
+    {
+      "id": "blank-mushroom-hip-wiggle",
+      "sourceType": "licensed",
+      "sha256": "6afade134ed5c6046eadb5410dd92b232d566fb9be6e2918fcc171f8b266155e"
+    },
+    {
+      "id": "blank-panda-cigarette-strut",
+      "sourceType": "licensed",
+      "sha256": "d45490a3b365c433a6c636f5167bd82310f8d4124ca0b38c50bf22681b4fc6db"
+    }
+  ],
+  "excludedIds": [
+    "blank-bean-slacking"
+  ],
+  "additionalTemplates": [
+    {
+      "id": "blank-dog-shocked",
+      "type": "gif",
+      "source": "templates/blank-dog-shocked.gif",
+      "keywords": [
+        "震惊",
+        "惊讶",
+        "吓一跳"
+      ],
+      "emotions": [
+        "surprised"
+      ],
+      "textSafeArea": {
+        "x": 6,
+        "y": 220,
+        "width": 228,
+        "height": 14
+      },
+      "layout": {
+        "minFontSize": 12,
+        "maxFontSize": 12,
+        "textColor": "#222222",
+        "strokeColor": "#ffffff",
+        "strokeWidth": 1,
+        "alignment": "center",
+        "maxLines": 1
+      },
+      "animation": {
+        "sha256": "7c69c8d4598b31c56191d3dccbd524573fdcfc55f3e92e5264ab80f6c1556bf9",
+        "sourceType": "ai-original",
+        "provenance": {
+          "manifest": "artifacts/expression-character-trials/ai-synthesis-blank-02/report.json",
+          "itemId": "dog-shocked",
+          "approvalRecord": "approvals/2026-09-16-blank-gif-all-15-release.json"
+        }
+      }
+    },
+    {
+      "id": "blank-bird-hurt",
+      "type": "gif",
+      "source": "templates/blank-bird-hurt.gif",
+      "keywords": [
+        "委屈",
+        "难过",
+        "心碎"
+      ],
+      "emotions": [
+        "sad"
+      ],
+      "textSafeArea": {
+        "x": 6,
+        "y": 210,
+        "width": 228,
+        "height": 24
+      },
+      "layout": {
+        "minFontSize": 12,
+        "maxFontSize": 18,
+        "textColor": "#222222",
+        "strokeColor": "#ffffff",
+        "strokeWidth": 1,
+        "alignment": "center",
+        "maxLines": 1
+      },
+      "animation": {
+        "sha256": "1a261b6872b3a99882ca952ddc17c426555995c63e264fb21324d3c8192764b7",
+        "sourceType": "ai-original",
+        "provenance": {
+          "manifest": "artifacts/expression-character-trials/ai-synthesis-blank-02/report.json",
+          "itemId": "bird-hurt",
+          "approvalRecord": "approvals/2026-09-16-blank-gif-all-15-release.json"
+        }
+      }
+    },
+    {
+      "id": "blank-hamster-pleading",
+      "type": "gif",
+      "source": "templates/blank-hamster-pleading.gif",
+      "keywords": [
+        "求饶",
+        "拜托",
+        "求求了"
+      ],
+      "emotions": [
+        "pleading"
+      ],
+      "textSafeArea": {
+        "x": 6,
+        "y": 212,
+        "width": 228,
+        "height": 22
+      },
+      "layout": {
+        "minFontSize": 12,
+        "maxFontSize": 18,
+        "textColor": "#222222",
+        "strokeColor": "#ffffff",
+        "strokeWidth": 1,
+        "alignment": "center",
+        "maxLines": 1
+      },
+      "animation": {
+        "sha256": "2f47037b4ecf807c223a1c42ce1a40eeff7f97344216956be8f66039f15dcd5e",
+        "sourceType": "ai-original",
+        "provenance": {
+          "manifest": "artifacts/expression-character-trials/ai-synthesis-blank-02/report.json",
+          "itemId": "hamster-pleading",
+          "approvalRecord": "approvals/2026-09-16-blank-gif-all-15-release.json"
+        }
+      }
+    },
+    {
+      "id": "blank-seal-applause",
+      "type": "gif",
+      "source": "templates/blank-seal-applause.gif",
+      "keywords": [
+        "鼓掌",
+        "敷衍",
+        "厉害"
+      ],
+      "emotions": [
+        "tease"
+      ],
+      "textSafeArea": {
+        "x": 6,
+        "y": 210,
+        "width": 228,
+        "height": 24
+      },
+      "layout": {
+        "minFontSize": 12,
+        "maxFontSize": 18,
+        "textColor": "#222222",
+        "strokeColor": "#ffffff",
+        "strokeWidth": 1,
+        "alignment": "center",
+        "maxLines": 1
+      },
+      "animation": {
+        "sha256": "28980a1a4044a66b26cb544fb498031ab98df9c83a4bc7c14f8e317a972f17ea",
+        "sourceType": "ai-original",
+        "provenance": {
+          "manifest": "artifacts/expression-character-trials/ai-synthesis-blank-03/report.json",
+          "itemId": "seal-applause",
+          "approvalRecord": "approvals/2026-09-16-blank-gif-all-15-release.json"
+        }
+      }
+    },
+    {
+      "id": "blank-cloud-annoyed",
+      "type": "gif",
+      "source": "templates/blank-cloud-annoyed.gif",
+      "keywords": [
+        "生气",
+        "无语",
+        "烦躁"
+      ],
+      "emotions": [
+        "annoyed"
+      ],
+      "textSafeArea": {
+        "x": 6,
+        "y": 206,
+        "width": 228,
+        "height": 28
+      },
+      "layout": {
+        "minFontSize": 12,
+        "maxFontSize": 18,
+        "textColor": "#222222",
+        "strokeColor": "#ffffff",
+        "strokeWidth": 1,
+        "alignment": "center",
+        "maxLines": 1
+      },
+      "animation": {
+        "sha256": "f9b080ebc2b4e8c44cbd2817d744533fbbbe34efe2f63aaba0498058eb2d186e",
+        "sourceType": "ai-original",
+        "provenance": {
+          "manifest": "artifacts/expression-character-trials/ai-synthesis-blank-03/report.json",
+          "itemId": "cloud-annoyed",
+          "approvalRecord": "approvals/2026-09-16-blank-gif-all-15-release.json"
+        }
+      }
+    },
+    {
+      "id": "blank-mushroom-cigarette-dance",
+      "type": "gif",
+      "source": "templates/blank-mushroom-cigarette-dance.gif",
+      "keywords": [
+        "跳舞",
+        "嘚瑟",
+        "欠揍"
+      ],
+      "emotions": [
+        "tease"
+      ],
+      "textSafeArea": {
+        "x": 6,
+        "y": 220,
+        "width": 228,
+        "height": 14
+      },
+      "layout": {
+        "minFontSize": 12,
+        "maxFontSize": 12,
+        "textColor": "#222222",
+        "strokeColor": "#ffffff",
+        "strokeWidth": 1,
+        "alignment": "center",
+        "maxLines": 1
+      },
+      "animation": {
+        "sha256": "a18b5ac5ad00909d4dbed36eb3dfb9fad53329e57c23bc2b6ea2fd85dbbb6490",
+        "sourceType": "licensed",
+        "provenance": {
+          "manifest": "artifacts/expression-character-trials/ai-synthesis-fullbody-01/report.json",
+          "itemId": "mushroom-cigarette-dance",
+          "approvalRecord": "approvals/2026-09-16-blank-gif-all-15-release.json"
+        }
+      }
+    },
+    {
+      "id": "blank-panda-shoulder-sway",
+      "type": "gif",
+      "source": "templates/blank-panda-shoulder-sway.gif",
+      "keywords": [
+        "晃肩",
+        "嘚瑟",
+        "得意"
+      ],
+      "emotions": [
+        "proud"
+      ],
+      "textSafeArea": {
+        "x": 6,
+        "y": 210,
+        "width": 228,
+        "height": 22
+      },
+      "layout": {
+        "minFontSize": 12,
+        "maxFontSize": 18,
+        "textColor": "#222222",
+        "strokeColor": "#ffffff",
+        "strokeWidth": 1,
+        "alignment": "center",
+        "maxLines": 1
+      },
+      "animation": {
+        "sha256": "1d5764163135da216b8614917c1c6167ef88964dfc2dc9c7312d36a091d71d46",
+        "sourceType": "licensed",
+        "provenance": {
+          "manifest": "artifacts/expression-character-trials/ai-synthesis-fullbody-01/report.json",
+          "itemId": "panda-shoulder-sway",
+          "approvalRecord": "approvals/2026-09-16-blank-gif-all-15-release.json"
+        }
+      }
+    },
+    {
+      "id": "blank-mushroom-hip-wiggle",
+      "type": "gif",
+      "source": "templates/blank-mushroom-hip-wiggle.gif",
+      "keywords": [
+        "扭胯",
+        "滑稽",
+        "搞笑"
+      ],
+      "emotions": [
+        "tease"
+      ],
+      "textSafeArea": {
+        "x": 6,
+        "y": 220,
+        "width": 228,
+        "height": 14
+      },
+      "layout": {
+        "minFontSize": 12,
+        "maxFontSize": 12,
+        "textColor": "#222222",
+        "strokeColor": "#ffffff",
+        "strokeWidth": 1,
+        "alignment": "center",
+        "maxLines": 1
+      },
+      "animation": {
+        "sha256": "6afade134ed5c6046eadb5410dd92b232d566fb9be6e2918fcc171f8b266155e",
+        "sourceType": "licensed",
+        "provenance": {
+          "manifest": "artifacts/expression-character-trials/ai-synthesis-fullbody-01/report.json",
+          "itemId": "mushroom-hip-wiggle",
+          "approvalRecord": "approvals/2026-09-16-blank-gif-all-15-release.json"
+        }
+      }
+    },
+    {
+      "id": "blank-panda-cigarette-strut",
+      "type": "gif",
+      "source": "templates/blank-panda-cigarette-strut.gif",
+      "keywords": [
+        "叼烟",
+        "嚣张",
+        "小碎步"
+      ],
+      "emotions": [
+        "proud"
+      ],
+      "textSafeArea": {
+        "x": 6,
+        "y": 210,
+        "width": 228,
+        "height": 22
+      },
+      "layout": {
+        "minFontSize": 12,
+        "maxFontSize": 18,
+        "textColor": "#222222",
+        "strokeColor": "#ffffff",
+        "strokeWidth": 1,
+        "alignment": "center",
+        "maxLines": 1
+      },
+      "animation": {
+        "sha256": "d45490a3b365c433a6c636f5167bd82310f8d4124ca0b38c50bf22681b4fc6db",
+        "sourceType": "licensed",
+        "provenance": {
+          "manifest": "artifacts/expression-character-trials/ai-synthesis-fullbody-01/report.json",
+          "itemId": "panda-cigarette-strut",
+          "approvalRecord": "approvals/2026-09-16-blank-gif-all-15-release.json"
+        }
+      }
+    }
+  ],
+  "layoutReview": "全身四张逐姿势检查，蘑菇头文字区 y=220 高14 单行12px，熊猫头 y=210 高22，保留原字节，不覆盖腿脚；边缘拼版残线不是肢体。"
+}

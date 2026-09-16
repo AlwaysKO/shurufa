@@ -1,8 +1,10 @@
 package com.yuyan.imemodule.data.capture.adapter
 
-/** 页面方向不可可靠识别时保持空注册表；对方新消息由通知监听采集。 */
+/** 只注册能够保守确认聊天标题和输入区的页面截图适配器。 */
 object AdapterRegistry {
-    private val adapters: List<ChatAppAdapter> = emptyList()
+    private val adapters: List<ChatAppAdapter> = listOf(
+        WeChatChatAdapter(),
+    )
 
     fun forPackage(packageName: String): ChatAppAdapter? =
         adapters.firstOrNull { it.packageName == packageName }

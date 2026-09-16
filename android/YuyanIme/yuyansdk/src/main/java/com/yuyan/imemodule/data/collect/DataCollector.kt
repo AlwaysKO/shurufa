@@ -247,10 +247,12 @@ object DataCollector {
         val app = appContext ?: return@coroutineScope
         if (!CollectionConsent.enabled(app)) return@coroutineScope
         val targets = (ServerConfig.eventTargets + eventStore?.targets().orEmpty() + eventStore?.reportTargets().orEmpty()).distinct()
+        val targetGate = collectorTargetGate(app, ServerConfig.baseUrl)
         targets.forEach { target ->
             if (!flushing.add(target)) return@forEach
             launch(Dispatchers.IO) {
                 try {
+                    if (!targetGate.canUpload(target)) return@launch
                     val now = android.os.SystemClock.elapsedRealtime()
                     if (now < (lastAttempt[target] ?: 0L)) return@launch
                     val ok = uploader.flush(target)

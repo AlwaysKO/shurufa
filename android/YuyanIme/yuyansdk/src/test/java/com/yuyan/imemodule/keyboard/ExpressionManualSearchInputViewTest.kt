@@ -9,6 +9,7 @@ import android.text.InputType
 import android.view.KeyEvent
 import android.view.View
 import android.widget.FrameLayout
+import android.widget.TextView
 import android.view.inputmethod.EditorInfo
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
@@ -212,8 +213,10 @@ class ExpressionManualSearchInputViewTest {
         assertTrue(state.isVisible)
         assertEquals(ExpressionPanelTab.AI_SYNTHESIS, state.selectedTab)
         assertEquals("机构", state.query)
-        assertTrue(state.results.size >= 12)
-        assertTrue(state.results.all { it.type == "synthesis-template" && it.format == "gif" && it.embeddedText.isNullOrBlank() })
+        assertTrue(state.results.isEmpty())
+        assertEquals(15, inputView.findViewById<RecyclerView>(R.id.expression_asset_list).adapter!!.itemCount)
+        val pool = ExpressionCatalog.fromAssets(context).synthesisTemplates("机构")
+        assertTrue(pool.all { it.id.startsWith("blank-") && it.format == "gif" && it.embeddedText.isNullOrBlank() })
         inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
         assertFalse(state.isVisible)
         assertTrue(state.recommendationsPaused)
@@ -236,7 +239,14 @@ class ExpressionManualSearchInputViewTest {
 
         inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
 
-        assertEquals("请先输入文字，再点击搜索按钮", ShadowToast.getTextOfLatestToast())
+        val hint = inputView.findViewWithTag<TextView>("expression_usage_hint")
+        assertNotNull("空输入应在键盘内显示用途提示", hint)
+        assertEquals("AI斗图：根据你输入的文字匹配表情。请先输入文字，再点击“AI斗图”。", hint.text.toString())
+        assertEquals(View.VISIBLE, hint.visibility)
+        assertNull("不再依赖系统 Toast", ShadowToast.getTextOfLatestToast())
+        assertFalse(before.isVisible)
+        hint.performClick()
+        assertNull(inputView.findViewWithTag<TextView>("expression_usage_hint"))
         val after = inputView.expressionState()
         assertFalse(after.aiStickerEnabled)
         assertNull(after.query)
@@ -245,9 +255,129 @@ class ExpressionManualSearchInputViewTest {
     }
 
     @Test
+    @Suppress("DEPRECATION")
+    fun `再次点击同一输入框立即关闭用途提示且保留斗图状态`() {
+        val inputView = realChatInputView()
+        inputView.searchExpressionsManually()
+        assertNotNull(inputView.findViewWithTag<TextView>("expression_usage_hint"))
+        val state = inputView.expressionState()
+        state.beginQuery("保留", 91)
+
+        services.last().onViewClicked(false)
+
+        assertNull(inputView.findViewWithTag<TextView>("expression_usage_hint"))
+        assertEquals("保留", state.query)
+    }
+
+    @Test
+    fun `输入框再次请求键盘立即关闭用途提示`() {
+        val inputView = realChatInputView()
+        inputView.searchExpressionsManually()
+        assertNotNull(inputView.findViewWithTag<TextView>("expression_usage_hint"))
+
+        services.last().onShowInputRequested(android.view.inputmethod.InputMethod.SHOW_EXPLICIT, false)
+
+        assertNull(inputView.findViewWithTag<TextView>("expression_usage_hint"))
+    }
+
+    @Test
+    fun `输入框选区回调即使位置未变也立即关闭用途提示`() {
+        val inputView = realChatInputView()
+        inputView.searchExpressionsManually()
+        assertNotNull(inputView.findViewWithTag<TextView>("expression_usage_hint"))
+
+        inputView.onUpdateSelection(0, 0, 0, 0, -1)
+
+        assertNull(inputView.findViewWithTag<TextView>("expression_usage_hint"))
+    }
+
+    @Test
+    fun `同一输入目标重启立即关闭用途提示但不重置查询`() {
+        val inputView = realChatInputView()
+        val editor = chatEditorInfo()
+        val connection = Any()
+        inputView.onExpressionInputViewStarted(editor, false, connection)
+        inputView.searchExpressionsManually()
+        assertNotNull(inputView.findViewWithTag<TextView>("expression_usage_hint"))
+        inputView.expressionState().beginQuery("保留", 92)
+
+        inputView.onExpressionInputViewStarted(editor, true, connection)
+
+        assertNull(inputView.findViewWithTag<TextView>("expression_usage_hint"))
+        assertEquals("保留", inputView.expressionState().query)
+    }
+
+    @Test
+    fun `空输入用途提示重复点击不叠加并会自动消失`() {
+        val inputView = realChatInputView()
+        attachAndLayout(inputView, 2000)
+        val root = inputView.rootView
+        fun layoutRoot() {
+            root.measure(
+                View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(2000, View.MeasureSpec.EXACTLY),
+            )
+            root.layout(0, 0, 1080, 2000)
+        }
+        layoutRoot()
+        val keyboardHeight = inputView.height
+        inputView.searchExpressionsManually()
+        layoutRoot()
+        assertEquals("提示不应撑高键盘", keyboardHeight, inputView.height)
+        val first = inputView.findViewWithTag<TextView>("expression_usage_hint")
+        assertNotNull(first)
+        assertTrue("提示必须有可见尺寸：hint=${first.width}x${first.height}, parent=${(first.parent as View).width}x${(first.parent as View).height}", first.width > 0 && first.height > 0)
+        inputView.searchExpressionsManually()
+        assertSame(first, inputView.findViewWithTag<TextView>("expression_usage_hint"))
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(6, TimeUnit.SECONDS)
+        assertNull(inputView.findViewWithTag<TextView>("expression_usage_hint"))
+    }
+
+    @Test
+    fun `输入目标切换和资源释放会清理用途提示`() {
+        val inputView = realChatInputView()
+        inputView.searchExpressionsManually()
+        assertNotNull(inputView.findViewWithTag<TextView>("expression_usage_hint"))
+        inputView.onExpressionInputTargetChanged(EditorInfo())
+        assertNull(inputView.findViewWithTag<TextView>("expression_usage_hint"))
+        inputView.searchExpressionsManually()
+        assertNotNull(inputView.findViewWithTag<TextView>("expression_usage_hint"))
+        inputView.disposeExpressionResources()
+        assertNull(inputView.findViewWithTag<TextView>("expression_usage_hint"))
+    }
+
+    @Test
+    fun `干嘛未命中时手动AI只显示合成且谢谢命中仍可显示推荐`() {
+        val inputView = realChatInputView()
+        for (query in listOf("干嘛", "谢谢")) {
+            inputView.expressionState().clear()
+            inputView.expressionComposingTextSource = ExpressionComposingTextSource(
+                isComposing = { true }, rawInput = { "test" }, isAssociate = { false },
+                candidateText = { query },
+            )
+            inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+            val state = inputView.expressionState()
+            assertEquals(ExpressionPanelTab.AI_SYNTHESIS, state.selectedTab)
+            val tab = inputView.findViewById<TextView>(R.id.expression_tab_recommended)
+            if (query == "干嘛") {
+                assertTrue(state.results.isEmpty())
+                assertEquals(View.GONE, tab.visibility)
+            } else {
+                assertTrue(state.results.isNotEmpty())
+                assertTrue(state.results.all { it.type == "prebuilt" })
+                assertEquals(View.VISIBLE, tab.visibility)
+                tab.performClick()
+                assertEquals(ExpressionPanelTab.RECOMMENDED, state.selectedTab)
+            }
+        }
+    }
+
+    @Test
     fun `生产AI斗图入口优先当前组合候选并立即启用现有面板查询`() {
         AppPrefs.getInstance().internal.aiStickerEnabled.setValue(false)
         val inputView = realChatInputView()
+        inputView.searchExpressionsManually()
+        assertNotNull(inputView.findViewWithTag<TextView>("expression_usage_hint"))
         inputView.expressionComposingTextSource = ExpressionComposingTextSource(
             isComposing = { true },
             rawInput = { "min'ying'qi'ye" },
@@ -259,6 +389,7 @@ class ExpressionManualSearchInputViewTest {
 
         val state = inputView.expressionState()
         assertEquals("民营企业", state.query)
+        assertNull(inputView.findViewWithTag<TextView>("expression_usage_hint"))
         assertTrue(state.aiStickerEnabled)
         assertTrue(AppPrefs.getInstance().internal.aiStickerEnabled.getValue())
     }
@@ -325,7 +456,8 @@ class ExpressionManualSearchInputViewTest {
         assertNull(inputView.expressionState().query)
         ShadowToast.reset()
         inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
-        assertEquals("请先输入文字，再点击搜索按钮", ShadowToast.getTextOfLatestToast())
+        assertEquals(context.getString(R.string.expression_manual_search_missing_text),
+            inputView.findViewWithTag<TextView>("expression_usage_hint")?.text?.toString())
         assertNull(inputView.expressionState().query)
 
         inputView.onSettingsMenuClick(SkbMenuMode.Emojicon)
@@ -345,7 +477,8 @@ class ExpressionManualSearchInputViewTest {
 
         inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
 
-        assertEquals("请先输入文字，再点击搜索按钮", ShadowToast.getTextOfLatestToast())
+        assertEquals(context.getString(R.string.expression_manual_search_missing_text),
+            inputView.findViewWithTag<TextView>("expression_usage_hint")?.text?.toString())
         assertNull(inputView.expressionState().query)
     }
 
@@ -363,7 +496,8 @@ class ExpressionManualSearchInputViewTest {
         inputView.commitCandidateAndNotify("短语内部文字")
         inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
 
-        assertEquals("请先输入文字，再点击搜索按钮", ShadowToast.getTextOfLatestToast())
+        assertEquals(context.getString(R.string.expression_manual_search_missing_text),
+            inputView.findViewWithTag<TextView>("expression_usage_hint")?.text?.toString())
         assertNull(inputView.expressionState().query)
     }
 
@@ -462,7 +596,8 @@ class ExpressionManualSearchInputViewTest {
         inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
 
         assertEquals(2, numericSendCount)
-        assertEquals("请先输入文字，再点击搜索按钮", ShadowToast.getTextOfLatestToast())
+        assertEquals(context.getString(R.string.expression_manual_search_missing_text),
+            inputView.findViewWithTag<TextView>("expression_usage_hint")?.text?.toString())
         assertNull(inputView.expressionState().query)
     }
 
@@ -584,7 +719,8 @@ class ExpressionManualSearchInputViewTest {
         assertTrue(service.sendNumericKeyEventAndReport(KeyEvent.KEYCODE_7))
         Shadows.shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
         inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
-        assertEquals("请先输入文字，再点击搜索按钮", ShadowToast.getTextOfLatestToast())
+        assertEquals(context.getString(R.string.expression_manual_search_missing_text),
+            inputView.findViewWithTag<TextView>("expression_usage_hint")?.text?.toString())
         assertNull(inputView.expressionState().query)
 
         inputView.onExpressionInputViewStarted(chatEditorInfo(), restarting = false, connectionIdentity = Any())
@@ -617,7 +753,8 @@ class ExpressionManualSearchInputViewTest {
         assertEquals("9", newInputView.expressionState().query)
         ShadowToast.reset()
         oldInputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
-        assertEquals("请先输入文字，再点击搜索按钮", ShadowToast.getTextOfLatestToast())
+        assertEquals(context.getString(R.string.expression_manual_search_missing_text),
+            oldInputView.findViewWithTag<TextView>("expression_usage_hint")?.text?.toString())
     }
 
     @Test
@@ -1228,8 +1365,8 @@ class ExpressionManualSearchInputViewTest {
         val server = MockWebServer().apply {
             dispatcher = object : Dispatcher() {
                 override fun dispatch(request: RecordedRequest): MockResponse = when {
-                    request.path?.startsWith("/api/v1/mobile/expressions/catalog") == true ->
-                        MockResponse().setResponseCode(304)
+                    request.path == "/api/v1/mobile/expressions/versions" ->
+                        MockResponse().setBody("""{"version":"${ExpressionCatalog.fromAssets(context).document.version}"}""")
                     request.path?.startsWith("/api/v1/mobile/expressions/recommend") == true ->
                         MockResponse().setBody("""{"results":[]}""")
                     else -> MockResponse().setResponseCode(404)
@@ -1237,14 +1374,25 @@ class ExpressionManualSearchInputViewTest {
             }
             start()
         }
+        fun pollRequest(timeoutMs: Long): RecordedRequest? {
+            val end = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeoutMs)
+            do {
+                // IO priming/HTTP回调需切回Main；阻塞主线程takeRequest会产生假红或假绿。
+                Shadows.shadowOf(Looper.getMainLooper()).idle()
+                server.takeRequest(10, TimeUnit.MILLISECONDS)?.let { return it }
+            } while (System.nanoTime() < end)
+            return null
+        }
         try {
             LocalServerConfigShadow.url = server.url("/").toString().trimEnd('/')
             assertEquals(LocalServerConfigShadow.url, ServerConfig.baseUrl)
             AppPrefs.getInstance().internal.aiStickerEnabled.setValue(true)
             val inputView = realChatInputView()
-            assertTrue(server.takeRequest(2, TimeUnit.SECONDS)?.path?.startsWith(
-                "/api/v1/mobile/expressions/catalog",
-            ) == true)
+            assertNull("仅构造InputView不得联网", pollRequest(300))
+            inputView.onWindowShown()
+            Shadows.shadowOf(Looper.getMainLooper()).idle()
+            assertEquals("/api/v1/mobile/expressions/versions", pollRequest(2000)?.path)
+            assertNull("版本未变不拉目录或GIF", pollRequest(300))
 
             val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
             val root = FrameLayout(activity)
@@ -1270,27 +1418,35 @@ class ExpressionManualSearchInputViewTest {
 
             inputView.searchExpressionsManually()
             assertEquals(ExpressionPanelTab.AI_SYNTHESIS, state.selectedTab)
-            assertTrue(state.results.isNotEmpty())
-            assertNull("手动选模板不得强制刷新目录", server.takeRequest(300, TimeUnit.MILLISECONDS))
+            assertEquals(15, panel.findViewById<RecyclerView>(R.id.expression_asset_list).adapter!!.itemCount)
+            assertNull("手动选模板不得强制刷新目录", pollRequest(300))
             panel.findViewById<View>(R.id.expression_close).performClick()
             assertTrue(state.recommendationsPaused)
 
             root.removeView(inputView)
             root.addView(inputView)
 
-            assertNull("重挂不得自动刷新目录", server.takeRequest(500, TimeUnit.MILLISECONDS))
+            assertNull("重挂不得自动刷新目录", pollRequest(500))
             val requestIdBeforeManualSearch = inputView.expressionRequestId()
             inputView.notifyExpressionTextCommitted("重挂后手动搜索")
             Shadows.shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
-            assertNull("关闭期间普通输入不得联网", server.takeRequest(300, TimeUnit.MILLISECONDS))
+            assertNull("关闭期间普通输入不得联网", pollRequest(300))
 
             inputView.searchExpressionsManually()
             assertEquals(requestIdBeforeManualSearch + 1, inputView.expressionRequestId())
             assertFalse(inputView.expressionState().recommendationsPaused)
             Shadows.shadowOf(Looper.getMainLooper()).idle()
             assertEquals(ExpressionPanelTab.AI_SYNTHESIS, inputView.expressionState().selectedTab)
-            assertTrue(inputView.expressionState().results.isNotEmpty())
-            assertNull("手动模板池不等待或发起关键词推荐请求", server.takeRequest(500, TimeUnit.MILLISECONDS))
+            assertTrue(inputView.expressionState().results.isEmpty())
+            assertEquals(15, panel.findViewById<RecyclerView>(R.id.expression_asset_list).adapter!!.itemCount)
+            assertNull("手动模板池不等待或发起关键词推荐请求", pollRequest(500))
+
+            inputView.onExpressionWindowHidden()
+            inputView.onWindowShown()
+            Shadows.shadowOf(Looper.getMainLooper()).idle()
+            assertEquals("真实隐藏后再打开需重新检查轻量版本", "/api/v1/mobile/expressions/versions",
+                pollRequest(2000)?.path)
+            assertNull("第二次打开版本未变仍不拉目录或GIF", pollRequest(300))
         } finally {
             server.shutdown()
             LocalServerConfigShadow.url = ""
@@ -1318,7 +1474,7 @@ class ExpressionManualSearchInputViewTest {
         assertTrue(state.recommendationsPaused)
         assertEquals(
             context.getString(R.string.expression_manual_search_missing_text),
-            ShadowToast.getTextOfLatestToast(),
+            inputView.findViewWithTag<TextView>("expression_usage_hint")?.text?.toString(),
         )
     }
 
