@@ -1,0 +1,14 @@
+{
+  "staticCharacterReview": "needs-rework",
+  "humanAnimationReview": "pending",
+  "publicationAllowed": false,
+  "candidates": [],
+  "needsRework": [
+    "schnauzer-afternoon",
+    "man-afternoon"
+  ],
+  "notes": {
+    "schnauzer-afternoon": "取消道具后脚底跨行注册改善，同侧爪连续；但主体过大，底部留白不足、脚底紧邻字幕，尚不计候选。",
+    "man-afternoon": "完整坐姿解决胸像裁手问题；同一侧手招呼动作连续，但身体仍画得过大，鞋子底部贴近/部分进入字幕条，尚不计候选。"
+  }
+}

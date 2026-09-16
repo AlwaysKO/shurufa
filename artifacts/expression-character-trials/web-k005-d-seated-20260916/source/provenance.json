@@ -1,0 +1,32 @@
+{
+  "sourceType": "ai-original",
+  "promptFile": "prompt.txt",
+  "conversationUrl": "https://chatgpt.com/c/6aaa3f7c-18b8-83e9-9e07-a63180b399ee",
+  "generatedAt": "2026-09-16T07:02:01.740Z",
+  "publicationAllowed": false,
+  "staticCharacterReview": "needs-rework",
+  "humanAnimationReview": "pending",
+  "deletion": "confirmed-in-web-ui",
+  "files": [
+    {
+      "file": "master.png",
+      "sha256": "6362c8f7d36edaaf170ea1151fd7c217c7c036263a8a2f20ff6edda7863c3abb",
+      "bytes": 1621018,
+      "size": [
+        1448,
+        1086
+      ],
+      "downloadName": "ChatGPT Image 2026年9月16日 15_02_02.png"
+    }
+  ],
+  "deletionEvidence": {
+    "initialReloadHadStaleLink": true,
+    "openingExactDeletedUrlRedirectedHome": true,
+    "oldLinkAbsentAfterRedirect": true,
+    "checkedAt": "2026-09-16T07:06:48.792419+00:00"
+  },
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "reviewReason": "构图仍侵入提示词要求的底部26%留白，GIF底部主体紧贴字幕，保留原图及诊断导出，待构图整理。"
+}

@@ -1,0 +1,28 @@
+{
+  "sourceType": "ai-original",
+  "promptFile": "prompt.txt",
+  "conversationUrl": "https://chatgpt.com/c/6aaa40cc-6ad0-83ea-869b-6e5ab957d355",
+  "generatedAt": "2026-09-16T07:07:35.756Z",
+  "publicationAllowed": false,
+  "staticCharacterReview": "needs-rework",
+  "humanAnimationReview": "pending",
+  "deletion": "confirmed-in-web-ui",
+  "files": [
+    {
+      "file": "master.png",
+      "sha256": "5ee1f2e46bc50790339434694a8bf330c3db2c9ad37c067d08fb74896144c2b3",
+      "bytes": 1401121,
+      "size": [
+        1448,
+        1086
+      ],
+      "downloadName": "ChatGPT Image 2026年9月16日 15_07_39.png"
+    }
+  ],
+  "deletionEvidence": {
+    "returnedHome": true,
+    "linkAbsentAfterReload": true,
+    "checkedAt": "2026-09-16T07:08:13.894Z"
+  },
+  "reviewReason": "构图仍侵入提示词要求的底部26%留白，GIF底部主体紧贴字幕，保留原图及诊断导出，待构图整理。"
+}

@@ -1,0 +1,18 @@
+[
+  {
+    "id": "schnauzer-afternoon",
+    "frames": 20,
+    "durationMs": 4000,
+    "bytes": 73536,
+    "sha256": "9b59537f7dd13ce64e4f1fdffef5cb704c6f0c2cd3578734dbcb69b9367bc5eb",
+    "thumbnailVisiblePixelsAndAlphaMatch": true
+  },
+  {
+    "id": "man-afternoon",
+    "frames": 20,
+    "durationMs": 4000,
+    "bytes": 71480,
+    "sha256": "f2709a67ce620a860d0e1239cd028ce0bd82a9eab2e548f887118b1afb7b6938",
+    "thumbnailVisiblePixelsAndAlphaMatch": true
+  }
+]
