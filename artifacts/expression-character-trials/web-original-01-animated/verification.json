@@ -1,0 +1,34 @@
+[
+  {
+    "id": "schnauzer-afternoon",
+    "bytes": 68879,
+    "frames": 20,
+    "durationMs": 4000,
+    "sha256": "acc854c4a0bc0b12bd3c67becd83832af48ac2a9d575b5665780baf90399fa55",
+    "thumbnailVisiblePixelsAndAlphaMatch": true
+  },
+  {
+    "id": "seal-afternoon",
+    "bytes": 114871,
+    "frames": 20,
+    "durationMs": 4000,
+    "sha256": "0e471b0a7fffbc971b735d3545f6471e1a421a1f2316653615d9a6a31a949b9f",
+    "thumbnailVisiblePixelsAndAlphaMatch": true
+  },
+  {
+    "id": "koala-afternoon",
+    "bytes": 69512,
+    "frames": 20,
+    "durationMs": 4000,
+    "sha256": "04e53bcf8e17a65aee67b0e07c5a0ea462c70f190167b55fb2b8c52b1f40af43",
+    "thumbnailVisiblePixelsAndAlphaMatch": true
+  },
+  {
+    "id": "man-afternoon",
+    "bytes": 78999,
+    "frames": 20,
+    "durationMs": 4000,
+    "sha256": "de1857777933115a9268f32b9396783a8fa5e10a00faa0faad3367734bf6c4de",
+    "thumbnailVisiblePixelsAndAlphaMatch": true
+  }
+]

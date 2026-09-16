@@ -1,0 +1,20 @@
+{
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "publicationAllowed": false,
+  "method": "source inspection and actual GIF frame contact sheet; not continuous-playback approval",
+  "candidates": [
+    "seal-afternoon",
+    "koala-afternoon"
+  ],
+  "needsRework": [
+    "schnauzer-afternoon",
+    "man-afternoon"
+  ],
+  "notes": {
+    "schnauzer-afternoon": "首稿真实动物风格和同侧爪连续，但第一至第三行整体基线约上移24源像素。编辑稿改了角色/风格、杯子侧别且挥爪换侧，更差，不采用。导出首稿仅作问题追溯，不算候选。",
+    "seal-afternoon": "采用网页双方案中的第一张，第二张出现网格线而不采用。主体与字幕不相交；少量斑点和轮廓变化、抬鳍节奏仍需播放复核。源图底部留白略小于严格26%提示目标，不声称逐字完全遵循。",
+    "koala-afternoon": "第二版改善抬爪顺序，12格底部26%区域灰度阈值220下无内容，源主体基线约259稳定；仍需用户确认表演生动度与循环。",
+    "man-afternoon": "三次母图均未完全解决留白：v1/v2人像过大且低放手裁切；v3附参考编辑引入约54源像素的行间头部漂移，停止重复修订。导出v2只作问题追溯，不算候选。"
+  }
+}

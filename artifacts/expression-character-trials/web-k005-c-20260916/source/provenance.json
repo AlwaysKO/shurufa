@@ -1,0 +1,23 @@
+{
+  "source": "ChatGPT website via user-authorized Chrome Dev",
+  "conversationUrl": "https://chatgpt.com/c/6aaa318c-9430-83ea-bbbe-05946d8cbb2c",
+  "archivedAt": "2026-09-16T06:05:57.201828+00:00",
+  "sha256": "70cd2822abc6e986cf235914d739f57ca16cc80f87822a9e2877938360d4680e",
+  "format": "PNG",
+  "size": [
+    1448,
+    1086
+  ],
+  "bytes": 1409662,
+  "promptFile": "prompt.txt",
+  "conversationDeletion": "confirmed-in-web-ui",
+  "staticCharacterReview": "needs-rework",
+  "humanAnimationReview": "pending",
+  "publicationAllowed": false,
+  "deletionCheckedAt": "2026-09-16T06:07:26.708460+00:00",
+  "deletionEvidence": {
+    "confirmationDialogClicked": true,
+    "returnedToHome": true,
+    "chatLinkAbsentAfterReload": true
+  }
+}

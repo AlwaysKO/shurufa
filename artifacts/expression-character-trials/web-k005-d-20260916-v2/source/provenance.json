@@ -1,0 +1,23 @@
+{
+  "url": "https://chatgpt.com/c/6aaa35e4-a8d4-83ea-8172-52ca19444def",
+  "downloadName": "ChatGPT Image 2026年9月16日 14_21_35.png",
+  "date": "2026-09-16T06:21:35.920Z",
+  "size": [
+    1448,
+    1086
+  ],
+  "sha256": "cb9b950b17714915cb72e1fd8f34671bf852d8fe4281616b03b49a41f57b5488",
+  "sourceType": "ai-original",
+  "promptFile": "prompt.txt",
+  "deletion": "confirmed-in-web-ui",
+  "publicationAllowed": false,
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletionEvidence": {
+    "confirmationClicked": true,
+    "homeAndReloadCompleted": true,
+    "oldLinkAbsent": true
+  },
+  "staticCharacterReview": "needs-rework"
+}

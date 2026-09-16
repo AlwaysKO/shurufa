@@ -313,3 +313,17 @@ it('renders twelve volume11 originals with fixed captions and provenance',async(
    await expect(renderReferenceCharacterGif(await master(),{...item,...patch})).rejects.toThrow();
  }
 },30000);
+
+it('renders web01 afternoon greetings without weakening source or publication checks',async()=>{
+ const b=await master();
+ for(const id of ['schnauzer-afternoon','seal-afternoon','koala-afternoon','man-afternoon']) {
+  const item={...panda,id,caption:'下午好',masterFile:`masters/${id}.png`,sourceType:'ai-original'};
+  const r=await renderReferenceCharacterGif(b,item);
+  expect(r.audit.issues).toEqual([]);
+  expect(r.item).toMatchObject({sourceType:'ai-original',status:'trial-only',publicationAllowed:false});
+  expect(r.audit.metadata).toMatchObject({width:240,height:240,pages:20,durationMs:4000,loop:0});
+  if(id==='man-afternoon') expect(r.item).toMatchObject({personOrigin:'China',personGender:'male',adult:true});
+  for(const patch of [{sourceType:'user-provided-reference'},{publicationAllowed:true},{caption:'错误'},{masterFile:'../escape.png'}])
+   await expect(renderReferenceCharacterGif(b,{...item,...patch})).rejects.toThrow();
+ }
+},30000);

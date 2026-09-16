@@ -1,0 +1,18 @@
+{
+  "url": "https://chatgpt.com/c/6aaa368a-d3f0-83ea-818f-00b045c1a1c3",
+  "downloadName": "ChatGPT Image 2026年9月16日 14_25_27.png",
+  "date": "2026-09-16T06:25:28.450Z",
+  "size": [
+    1448,
+    1086
+  ],
+  "sha256": "46b24d8dbfbfabe02be19c5ed7882745643afa96e31594a3a67f50ba82920922",
+  "sourceType": "ai-original",
+  "promptFile": "prompt.txt",
+  "deletion": "confirmed-in-web-ui",
+  "publicationAllowed": false,
+  "deletionEvidence": {
+    "home": "https://chatgpt.com/",
+    "linkAbsent": true
+  }
+}
