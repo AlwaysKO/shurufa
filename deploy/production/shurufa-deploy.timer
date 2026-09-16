@@ -1,0 +1,9 @@
+[Unit]
+Description=Check Shurufa GitHub main every minute
+[Timer]
+OnBootSec=30s
+OnUnitInactiveSec=60s
+AccuracySec=5s
+Unit=shurufa-deploy.service
+[Install]
+WantedBy=timers.target

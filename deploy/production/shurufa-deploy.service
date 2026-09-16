@@ -1,0 +1,12 @@
+[Unit]
+Description=Build and deploy Shurufa GitHub main
+After=network-online.target postgresql.service
+Wants=network-online.target
+[Service]
+Type=oneshot
+User=ubuntu
+Group=www-data
+UMask=0022
+ExecStart=/home/ubuntu/shurufa-deploy/deploy.sh
+TimeoutStartSec=30min
+Nice=10

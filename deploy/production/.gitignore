@@ -1,0 +1,6 @@
+production.env
+access.txt
+htpasswd
+*.lock
+*.log
+*.bak*

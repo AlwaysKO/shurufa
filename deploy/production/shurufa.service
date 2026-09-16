@@ -1,0 +1,20 @@
+[Unit]
+Description=Shurufa application
+After=network.target postgresql.service
+Requires=postgresql.service
+[Service]
+Type=simple
+User=ubuntu
+Group=www-data
+WorkingDirectory=/data/phpwww/shurufa/current/server
+EnvironmentFile=/home/ubuntu/shurufa-deploy/production.env
+ExecStart=/home/ubuntu/.local/node22/bin/node /home/ubuntu/shurufa-deploy/serve.mjs
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=15
+UMask=0027
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+[Install]
+WantedBy=multi-user.target
