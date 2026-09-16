@@ -1,0 +1,27 @@
+{
+  "sourceType": "ai-original",
+  "promptFile": "prompt.txt",
+  "conversationUrl": "https://chatgpt.com/c/6aaa4a45-3b04-83ea-8be0-be01d59bbada",
+  "generatedAt": "2026-09-16T07:48:07.733Z",
+  "publicationAllowed": false,
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "deletion": "confirmed-in-web-ui",
+  "files": [
+    {
+      "file": "master.png",
+      "sha256": "3f2ae47bab2aeec4cdc6e5c9640908bcc3e7d573e6c103d4608e9845e7d46ab2",
+      "bytes": 1532913,
+      "size": [
+        1448,
+        1086
+      ],
+      "downloadName": "ChatGPT Image 2026年9月16日 15_48_08.png"
+    }
+  ],
+  "deletionEvidence": {
+    "returnedHome": true,
+    "linkAbsentAfterReload": true,
+    "checkedAt": "2026-09-16T07:48:37.079Z"
+  }
+}

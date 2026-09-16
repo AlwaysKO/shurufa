@@ -327,3 +327,17 @@ it('renders web01 afternoon greetings without weakening source or publication ch
    await expect(renderReferenceCharacterGif(b,{...item,...patch})).rejects.toThrow();
  }
 },30000);
+
+it('renders web02 evening and noon originals with fixed identity and pending publication',async()=>{
+ const b=await master();
+ for(const [caption,ids] of [['晚上好',['siamese-evening','hedgehog-evening','beaver-evening','man-evening']],['中午好',['puppy-noon','sparrow-noon','fawn-noon','man-noon']]] as const){
+  for(const id of ids){
+   const item={...panda,id,caption,masterFile:`masters/${id}.png`,sourceType:'ai-original'};
+   const r=await renderReferenceCharacterGif(b,item);
+   expect(r.audit.issues).toEqual([]);
+   expect(r.item).toMatchObject({sourceType:'ai-original',status:'trial-only',publicationAllowed:false});
+   if(id.startsWith('man-'))expect(r.item).toMatchObject({personOrigin:'China',personGender:'male',adult:true});
+   for(const patch of [{caption:'晚安'},{sourceType:'user-provided-reference'},{publicationAllowed:true},{masterFile:'../other.png'}])await expect(renderReferenceCharacterGif(b,{...item,...patch})).rejects.toThrow();
+  }
+ }
+},30000);

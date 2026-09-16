@@ -1,0 +1,47 @@
+{
+  "reviewMethod": "助手查看原始12格母图及真实GIF帧0/5/10/13/19拼版；不代替用户实际动态审美验收",
+  "humanAnimationReview": "pending",
+  "publicationAllowed": false,
+  "items": [
+    {
+      "id": "siamese-evening",
+      "assistantStaticReview": "candidate-with-notes",
+      "notes": "固定双爪，以视线、耳朵和轻微点头问候；未见换侧。表情偏冷淡，是否足够像友好晚间问候待用户播放判断。"
+    },
+    {
+      "id": "hedgehog-evening",
+      "assistantStaticReview": "candidate-with-notes",
+      "notes": "同侧小爪从放下到抬起再回落，灯具固定；表情变化较轻，生动程度待审。"
+    },
+    {
+      "id": "beaver-evening",
+      "assistantStaticReview": "candidate-with-notes",
+      "notes": "同侧挥爪与月亮灯，整理后脚底稳定；源格7底部有极少浅色影子像素进入下26%诊断区，未进入最终字幕覆盖区，无切断肢体。"
+    },
+    {
+      "id": "man-evening",
+      "assistantStaticReview": "candidate-with-notes",
+      "notes": "双手同时抬起和回落，避免换手跳切；完整盘腿与脚部可见，小灯电线保留，未擦除或补画。"
+    },
+    {
+      "id": "puppy-noon",
+      "assistantStaticReview": "candidate-with-notes",
+      "notes": "看饭碗、抬头、张嘴笑再回看饭碗；第二版未见原先跨行耳朵碎片，四爪不换侧。"
+    },
+    {
+      "id": "sparrow-noon",
+      "assistantStaticReview": "candidate-with-notes",
+      "notes": "双翅对称张开、看饭碗邀请、双翅回收，不再单翅突然换侧；收翅过渡顺滑程度待播放。"
+    },
+    {
+      "id": "fawn-noon",
+      "assistantStaticReview": "candidate-with-notes",
+      "notes": "双蹄一直握碗，抬起展示午餐后放低，不使用单手换侧挥动。"
+    },
+    {
+      "id": "man-noon",
+      "assistantStaticReview": "candidate-with-notes",
+      "notes": "双掌邀请午餐后收回，保留完整盘腿；原PNG局部透明，整理时正常铺白，未对人物补画。"
+    }
+  ]
+}

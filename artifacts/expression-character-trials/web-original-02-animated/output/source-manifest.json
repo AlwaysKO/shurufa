@@ -1,0 +1,1109 @@
+{
+  "authorization": "2026-09-16 用户连续制作新稿，沿用已允许的统一缩放、对齐脚底和补白；不修改原图或补画",
+  "items": [
+    {
+      "id": "siamese-evening",
+      "source": "web-original-02-animated/sources/siamese-evening-v2/source/master.png",
+      "sha256": "24c839d5ae8c88670772033c29939d877e0b1af9f2bcfbb4986cb1d6b4ad4f4d",
+      "baselines": [
+        278,
+        278,
+        278,
+        278,
+        277,
+        277,
+        277,
+        277,
+        277,
+        277,
+        277,
+        277
+      ],
+      "scale": 0.8,
+      "provenance": {
+        "sourceType": "ai-original",
+        "promptFile": "prompt.txt",
+        "conversationUrl": "https://chatgpt.com/c/6aaa50a3-5bc4-83ea-8df7-2242f0d25b9e",
+        "generatedAt": "2026-09-16T08:15:07.567Z",
+        "publicationAllowed": false,
+        "staticCharacterReview": "pending",
+        "humanAnimationReview": "pending",
+        "deletion": "confirmed-in-web-ui",
+        "files": [
+          {
+            "file": "master.png",
+            "sha256": "24c839d5ae8c88670772033c29939d877e0b1af9f2bcfbb4986cb1d6b4ad4f4d",
+            "bytes": 1449317,
+            "size": [
+              1448,
+              1086
+            ],
+            "downloadName": "ChatGPT Image 2026年9月16日 16_15_08.png"
+          }
+        ],
+        "deletionEvidence": {
+          "returnedHome": true,
+          "linkAbsentAfterReload": true,
+          "checkedAt": "2026-09-16T08:15:51.354Z"
+        }
+      },
+      "prompt": "直接生成一张PNG图片：4列3行、12个等大正方形动画姿势格，横向4:3，1440×1080。真实动物摄影的原创暹罗猫，奶油身体、深咖啡耳脸和尾尖、明亮蓝眼，细腻真实短毛，完整坐姿。不是卡通，不戴衣服，不复制IP。\n聊天意图“晚上好”：猫在暖色小夜灯旁注意到熟人，用眼神、耳朵、嘴形和一次轻轻点头表达亲近问候。不要挥爪！12格双前爪都必须踩在同一位置，保持四肢、身体和尾巴不动。避免从一只爪跳到另一只爪。画面左侧一个很小的深蓝夜灯静止，不闪烁、不移动、设计始终相同；背景始终纯白。\n固定镜头、固定主体大小，所有格的脚底对齐相同高度。每格下方30%纯白给后期字幕，耳尖、尾巴、爪和夜灯完整，不切边。没有文字、编号、格线、水印、运动线和特效。\n12个时间点必须是连续的真实微表情表演，不要复制静态图片：\n第一行：1平静睁眼看前方；2目光转向观众一侧、耳朵朝声音轻转；3目光接上、眉眼稍扬、头向观众偏转约5度；4嘴角与胡须垫放松、眼神更柔和，头转回正面。\n第二行：5下巴开始轻轻向下点约3度；6点头到低处约6度，眼睛仍明亮睁开；7点头后抬回约3度，眼睛柔和微眯、嘴微微张开体现友好；8抬回正面，保留同样温和欢迎神态与微微张嘴，不提前冷脸。\n第三行：9嘴逐渐合上、眼睛逐渐张开；10表情柔和放松，耳朵逐渐恢复；11头和目光接近初始；12严格回到第1格，头姿、耳姿、嘴形、双爪、身体和夜灯位置一致。\n只小幅点头，不摇晃身体；猫保持清醒，不睡觉、不打哈欠、不长人类牙齿，不动爪、不移动全图、不缩放、不重影、不机械倒放。只输出这一张12格母图。\n",
+      "framedSha256": "86294f6705075ee4d24f1e03fcc25c999dd9f66abff9d95b34c9dbcbdf6b67cd",
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 27,
+          "baseline": 278
+        },
+        {
+          "pose": 1,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 27,
+          "baseline": 278
+        },
+        {
+          "pose": 2,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 27,
+          "baseline": 278
+        },
+        {
+          "pose": 3,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 27,
+          "baseline": 278
+        },
+        {
+          "pose": 4,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 28,
+          "baseline": 277
+        },
+        {
+          "pose": 5,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 28,
+          "baseline": 277
+        },
+        {
+          "pose": 6,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 28,
+          "baseline": 277
+        },
+        {
+          "pose": 7,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 28,
+          "baseline": 277
+        },
+        {
+          "pose": 8,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 28,
+          "baseline": 277
+        },
+        {
+          "pose": 9,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 28,
+          "baseline": 277
+        },
+        {
+          "pose": 10,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 28,
+          "baseline": 277
+        },
+        {
+          "pose": 11,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 28,
+          "baseline": 277
+        }
+      ],
+      "scaledSize": 290,
+      "cellSize": 362,
+      "targetBaselineRatio": 0.69
+    },
+    {
+      "id": "hedgehog-evening",
+      "source": "web-original-02-animated/sources/hedgehog-evening/source/master.png",
+      "sha256": "2939b22b031c71ef8f86c836e35f2b784018e78c95ed6f0ce818408dfa3e93e3",
+      "baselines": [
+        276,
+        276,
+        276,
+        276,
+        275,
+        275,
+        275,
+        275,
+        273,
+        273,
+        273,
+        273
+      ],
+      "scale": 0.8,
+      "provenance": {
+        "sourceType": "ai-original",
+        "promptFile": "prompt.txt",
+        "conversationUrl": "https://chatgpt.com/c/6aaa490d-0918-83ea-8b8e-80dec1200137",
+        "generatedAt": "2026-09-16T07:42:51.219Z",
+        "publicationAllowed": false,
+        "staticCharacterReview": "pending",
+        "humanAnimationReview": "pending",
+        "deletion": "confirmed-in-web-ui",
+        "files": [
+          {
+            "file": "master.png",
+            "sha256": "2939b22b031c71ef8f86c836e35f2b784018e78c95ed6f0ce818408dfa3e93e3",
+            "bytes": 1215983,
+            "size": [
+              1448,
+              1086
+            ],
+            "downloadName": "ChatGPT Image 2026年9月16日 15_42_55.png"
+          }
+        ],
+        "deletionEvidence": {
+          "returnedHome": true,
+          "linkAbsentAfterReload": true,
+          "checkedAt": "2026-09-16T07:43:28.327Z"
+        }
+      },
+      "prompt": "直接生成一张PNG，不要只回复文字。4列×3行共12个等大正方格，横向4:3，目标1440×1080。一个同一角色的一次连续表演，不是12个不同角色。原创，不复制任何现成IP或明星脸。纯白不透明背景，无文字、编号、边框、格线、水印、运动线或特效。镜头、角色大小、光照和身体坐姿固定，每一格单独对齐同样脚底高度。角色与道具全部完整，耳尖、头发、手掌/翅膀/爪尖绝不裁切。主体只占每格上部居中区域，脚底在70%高度，底部30%纯白给后期字幕；三行的每一格都必须留白。手势在脸旁或胸前，不伸出格子。不能全图移动、缩放、机械倒放或重影冒充动作。12格分别真实绘制过渡姿势，第一格和第12格的身体/头姿/神态/道具位置严格吻合。\n意图：晚上好。\n角色与媒介：原创黑白极简小刺猬，圆润身体、少数大锯齿形背刺轮廓，不画复杂毛发，纯白填色和少量粗黑线，黑眼黑鼻；绝无彩色、灰色渐变和3D。左边一个简单黑线小夜灯静止，灯不闪烁。\n表演特色：先抬眉睁眼、嘴角微笑，再画面右侧短前爪贴近脸旁轻轻挥手，另一爪一直贴身体；不能把爪画成人类手。\n第一排：1平静睁眼、活动肢体放低；2视线发现观众、眉耳先动；3嘴角开始舒展、活动肢体刚开始抬；4笑意增多、活动肢体到腹部或低胸前。\n第二排：5活动肢体到胸前；6到脸旁/肩旁或翅膀展开；7最明确的友好问候神态、轻轻向外挥动；8保持问候的明亮神态，同一肢体轻轻回摆，不能提前恢复默认脸。\n第三排：9肢体开始下降、笑意保留；10下降到腹前、笑意渐收；11接近原来位置、头逐渐回正；12严格回到第1格。夜间问候不是晚安：全程清醒，不打哈欠、不闭眼睡觉。\n严格沿同一画面侧执行动作，不交换左右，保持肢体数量、身体与道具尺寸和配色不变。不要生成为GIF，只生成这张12帧母图。\n",
+      "framedSha256": "2cbafa3edf6e541575cd910ce0934f43bc6fb30bf0593f4f634334041f2bb7cd",
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 29,
+          "baseline": 276
+        },
+        {
+          "pose": 1,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 29,
+          "baseline": 276
+        },
+        {
+          "pose": 2,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 29,
+          "baseline": 276
+        },
+        {
+          "pose": 3,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 29,
+          "baseline": 276
+        },
+        {
+          "pose": 4,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 29,
+          "baseline": 275
+        },
+        {
+          "pose": 5,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 29,
+          "baseline": 275
+        },
+        {
+          "pose": 6,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 29,
+          "baseline": 275
+        },
+        {
+          "pose": 7,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 29,
+          "baseline": 275
+        },
+        {
+          "pose": 8,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 31,
+          "baseline": 273
+        },
+        {
+          "pose": 9,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 31,
+          "baseline": 273
+        },
+        {
+          "pose": 10,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 31,
+          "baseline": 273
+        },
+        {
+          "pose": 11,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 31,
+          "baseline": 273
+        }
+      ],
+      "scaledSize": 290,
+      "cellSize": 362,
+      "targetBaselineRatio": 0.69
+    },
+    {
+      "id": "beaver-evening",
+      "source": "web-original-02-animated/sources/beaver-evening/source/master.png",
+      "sha256": "8f2b8cfa60023cfda60c8951d43e90fecbf0c8fd8d47792e2e7802160b63a6df",
+      "baselines": [
+        264,
+        263,
+        264,
+        264,
+        254,
+        254,
+        254,
+        254,
+        238,
+        238,
+        238,
+        237
+      ],
+      "scale": 0.8,
+      "provenance": {
+        "sourceType": "ai-original",
+        "promptFile": "prompt.txt",
+        "conversationUrl": "https://chatgpt.com/c/6aaa498b-99c4-83e9-98c9-c7ec05e6a7b5",
+        "generatedAt": "2026-09-16T07:45:03.164Z",
+        "publicationAllowed": false,
+        "staticCharacterReview": "pending",
+        "humanAnimationReview": "pending",
+        "deletion": "confirmed-in-web-ui",
+        "files": [
+          {
+            "file": "master.png",
+            "sha256": "8f2b8cfa60023cfda60c8951d43e90fecbf0c8fd8d47792e2e7802160b63a6df",
+            "bytes": 1371658,
+            "size": [
+              1448,
+              1086
+            ],
+            "downloadName": "ChatGPT Image 2026年9月16日 15_45_08.png"
+          }
+        ],
+        "deletionEvidence": {
+          "returnedHome": true,
+          "linkAbsentAfterReload": true,
+          "checkedAt": "2026-09-16T07:45:44.833Z"
+        }
+      },
+      "prompt": "直接生成一张PNG，不要只回复文字。4列×3行共12个等大正方格，横向4:3，目标1440×1080。一个同一角色的一次连续表演，不是12个不同角色。原创，不复制任何现成IP或明星脸。纯白不透明背景，无文字、编号、边框、格线、水印、运动线或特效。镜头、角色大小、光照和身体坐姿固定，每一格单独对齐同样脚底高度。角色与道具全部完整，耳尖、头发、手掌/翅膀/爪尖绝不裁切。主体只占每格上部居中区域，脚底在70%高度，底部30%纯白给后期字幕；三行的每一格都必须留白。手势在脸旁或胸前，不伸出格子。不能全图移动、缩放、机械倒放或重影冒充动作。12格分别真实绘制过渡姿势，第一格和第12格的身体/头姿/神态/道具位置严格吻合。\n意图：晚上好。\n角色与媒介：原创棕色哑光黏土小河狸，米色肚子、小圆耳、两颗自然门牙、宽扁尾巴置于身后，完整坐姿，平滑黏土材质而非毛绒。左侧小巧深蓝夜灯静止。\n表演特色：从轻微低头休息到抬眉看向朋友，柔和开心地笑，画面右侧短前爪由腹部抬到脸旁打招呼，左爪一直放腹前，尾巴不移动。\n第一排：1平静睁眼、活动肢体放低；2视线发现观众、眉耳先动；3嘴角开始舒展、活动肢体刚开始抬；4笑意增多、活动肢体到腹部或低胸前。\n第二排：5活动肢体到胸前；6到脸旁/肩旁或翅膀展开；7最明确的友好问候神态、轻轻向外挥动；8保持问候的明亮神态，同一肢体轻轻回摆，不能提前恢复默认脸。\n第三排：9肢体开始下降、笑意保留；10下降到腹前、笑意渐收；11接近原来位置、头逐渐回正；12严格回到第1格。夜间问候不是晚安：全程清醒，不打哈欠、不闭眼睡觉。\n严格沿同一画面侧执行动作，不交换左右，保持肢体数量、身体与道具尺寸和配色不变。不要生成为GIF，只生成这张12帧母图。\n",
+      "framedSha256": "2cda79c7f87c40f6eea6951378801e0648aa8011e29ffa1d63257b6b6b56f941",
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 38,
+          "baseline": 264
+        },
+        {
+          "pose": 1,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 39,
+          "baseline": 263
+        },
+        {
+          "pose": 2,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 38,
+          "baseline": 264
+        },
+        {
+          "pose": 3,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 38,
+          "baseline": 264
+        },
+        {
+          "pose": 4,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 46,
+          "baseline": 254
+        },
+        {
+          "pose": 5,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 46,
+          "baseline": 254
+        },
+        {
+          "pose": 6,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 46,
+          "baseline": 254
+        },
+        {
+          "pose": 7,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 46,
+          "baseline": 254
+        },
+        {
+          "pose": 8,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 59,
+          "baseline": 238
+        },
+        {
+          "pose": 9,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 59,
+          "baseline": 238
+        },
+        {
+          "pose": 10,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 59,
+          "baseline": 238
+        },
+        {
+          "pose": 11,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 60,
+          "baseline": 237
+        }
+      ],
+      "scaledSize": 290,
+      "cellSize": 362,
+      "targetBaselineRatio": 0.69
+    },
+    {
+      "id": "man-evening",
+      "source": "web-original-02-animated/sources/man-evening-v2/source/master.png",
+      "sha256": "cb1ad6dead0bcc24f664e228a8c61b4e128ff0c55c6e87efd964821f09fbee02",
+      "baselines": [
+        331,
+        331,
+        331,
+        331,
+        331,
+        331,
+        331,
+        331,
+        331,
+        331,
+        331,
+        331
+      ],
+      "scale": 0.74,
+      "provenance": {
+        "sourceType": "ai-original",
+        "promptFile": "prompt.txt",
+        "conversationUrl": "https://chatgpt.com/c/6aaa50fa-dd24-83ea-af4f-731d4a8dd871",
+        "generatedAt": "2026-09-16T08:16:47.197Z",
+        "publicationAllowed": false,
+        "staticCharacterReview": "pending",
+        "humanAnimationReview": "pending",
+        "deletion": "confirmed-in-web-ui",
+        "files": [
+          {
+            "file": "master.png",
+            "sha256": "cb1ad6dead0bcc24f664e228a8c61b4e128ff0c55c6e87efd964821f09fbee02",
+            "bytes": 1561988,
+            "size": [
+              1448,
+              1086
+            ],
+            "downloadName": "ChatGPT Image 2026年9月16日 16_16_47.png"
+          }
+        ],
+        "deletionEvidence": {
+          "returnedHome": true,
+          "linkAbsentAfterReload": true,
+          "checkedAt": "2026-09-16T08:17:21.875Z"
+        }
+      },
+      "prompt": "直接生成一张PNG，不要只回复文字。4列×3行共12个等大正方格，横向4:3，目标1440×1080。一个同一角色的一次连续表演，不是12个不同角色。原创，不复制任何现成IP或明星脸。纯白不透明背景，无文字、编号、边框、格线、水印、运动线或特效。镜头、角色大小、光照和身体坐姿固定，每一格单独对齐同样脚底高度。角色与道具全部完整，耳尖、头发、手掌/翅膀/爪尖绝不裁切。主体只占每格上部居中区域，脚底在70%高度，底部30%纯白给后期字幕；三行的每一格都必须留白。手势在脸旁或胸前，不伸出格子。不能全图移动、缩放、机械倒放或重影冒充动作。12格分别真实绘制过渡姿势，第一格和第12格的身体/头姿/神态/道具位置严格吻合。\n意图：晚上好。\n角色与媒介：虚构原创中国成年男性，约30岁，帅气成熟，短黑发自然侧分、不像任何明星，米棕色无图案毛衣、深灰裤子、白鞋，完整盘腿坐姿，真实人物摄影质感。头到鞋子都完整，不要胸像；右侧没有杂物，画面左侧一个小巧夜灯静止。\n这次只做对称动作，避免左右手混淆。表演是晚上看到朋友后，两只手一起抬起，用双掌做小幅温和欢迎，再一起放回膝盖。不是一只手挥手，不允许某一帧突然把一只活动手换到另一侧。一直可看见两只完整手掌与手腕，每手五指，前臂连接自然。双手不要挡脸，不高举过头。身体、双腿、鞋子和夜灯固定。\n12格按顺序：1双手放各自膝盖、平静看前方；2目光抬起眉梢轻扬、双手还在膝盖；3自然微笑、双手一起离开膝盖；4双手到腹前；5双手到低胸前；6双手到肩旁、掌心朝观众；7双手在脸两侧、温和笑容最明显，双掌小幅向外摆；8双掌小幅回摆但继续保持温和欢迎神态；9双手一起降到胸前；10一起降到腹前、笑意收敛；11双手接近膝盖；12严格回到第1格。不是欢呼，不大笑，不打哈欠，不闭眼睡觉。\n只输出完整12姿势PNG母图，不要文字解释。",
+      "framedSha256": "f8a3abb5e4075d70e2d919a6cbef5567ba7d7f2e1a4409f13e09ddff77ec6262",
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 331
+        },
+        {
+          "pose": 1,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 331
+        },
+        {
+          "pose": 2,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 331
+        },
+        {
+          "pose": 3,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 331
+        },
+        {
+          "pose": 4,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 331
+        },
+        {
+          "pose": 5,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 331
+        },
+        {
+          "pose": 6,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 331
+        },
+        {
+          "pose": 7,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 331
+        },
+        {
+          "pose": 8,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 331
+        },
+        {
+          "pose": 9,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 331
+        },
+        {
+          "pose": 10,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 331
+        },
+        {
+          "pose": 11,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 331
+        }
+      ],
+      "scaledSize": 268,
+      "cellSize": 362,
+      "targetBaselineRatio": 0.69
+    },
+    {
+      "id": "puppy-noon",
+      "source": "web-original-02-animated/sources/puppy-noon-v2/source/master.png",
+      "sha256": "cad2c13d7f3e325570a4d6332adbf1ba663a7a015b7af22818b03a87b6b11a51",
+      "baselines": [
+        318,
+        319,
+        319,
+        319,
+        316,
+        316,
+        316,
+        316,
+        315,
+        315,
+        315,
+        315
+      ],
+      "scale": 0.78,
+      "provenance": {
+        "sourceType": "ai-original",
+        "promptFile": "prompt.txt",
+        "conversationUrl": "https://chatgpt.com/c/6aaa5155-64ec-83ea-a340-46346d1447dd",
+        "generatedAt": "2026-09-16T08:18:10.786Z",
+        "publicationAllowed": false,
+        "staticCharacterReview": "pending",
+        "humanAnimationReview": "pending",
+        "deletion": "confirmed-in-web-ui",
+        "files": [
+          {
+            "file": "master.png",
+            "sha256": "cad2c13d7f3e325570a4d6332adbf1ba663a7a015b7af22818b03a87b6b11a51",
+            "bytes": 1412499,
+            "size": [
+              1448,
+              1086
+            ],
+            "downloadName": "ChatGPT Image 2026年9月16日 16_18_11.png"
+          }
+        ],
+        "deletionEvidence": {
+          "returnedHome": true,
+          "linkAbsentAfterReload": true,
+          "checkedAt": "2026-09-16T08:18:42.941Z"
+        }
+      },
+      "prompt": "最高优先：12个方格里的小狗都要小，耳尖到脚底最多只占每格高度50%，最上方和最下方至少各有20%的空白！每行之间要有很宽的白带，任何一格的耳朵/毛发不能碰到相邻行，不能越过自己的方格。饭碗也缩小、不要碰到邻格。图像整体仍是4列3行1440×1080，不添加可见格线。\n直接生成一张PNG，不要只回复文字。4列×3行共12个等大正方格，横向4:3，目标1440×1080。一个同一角色的一次连续表演，不是12个不同角色。原创，不复制任何现成IP或明星脸。纯白不透明背景，无文字、编号、边框、格线、水印、运动线或特效。镜头、角色大小、光照和身体坐姿固定，每一格单独对齐同样脚底高度。角色与道具全部完整，耳尖、头发、手掌/翅膀/爪尖绝不裁切。主体只占每格上部居中区域，脚底在70%高度，底部30%纯白给后期字幕；三行的每一格都必须留白。手势在脸旁或胸前，不伸出格子。不能全图移动、缩放、机械倒放或重影冒充动作。12格分别真实绘制过渡姿势，第一格和第12格的身体/头姿/神态/道具位置严格吻合。\n意图：中午好。\n角色与媒介：真实摄影的原创短耳米色小狗，奶白胸毛，黑鼻明亮棕眼，完整坐姿，不穿衣服；左侧一个小白色午餐碗固定在地面，只有少量米饭，不画桌子。\n表演完全由眼神、耳朵、嘴形与轻微头姿完成。所有12格双前爪都落在同一位置，后腿身体也不动，不能挥爪！小狗从午餐碗抬眼认出朋友，耳朵稍振、嘴自然张开作友好笑容，轻轻点头招呼，再看一眼午餐碗，表现“中午好，一起吃吧”。不要用人手，不要人的牙齿。\n第一行：1看向饭碗、嘴合；2仅眼神先抬起看观众；3头跟着抬起、耳朵稍提；4头正对观众、嘴角放松。\n第二行：5嘴微张、头轻轻点下一点；6头抬回、眼神更亮；7友善笑容、少量舌尖、耳朵朝前，头面向观众；8保留此友善神态，视线轻轻示意饭碗，不低下头或收回笑容。\n第三行：9笑意稍收、头轻轻朝饭碗方向转约5度；10视线回到碗；11嘴逐渐合上，头降低；12严格回到第1格。12格双爪不动；杯碗不移动，米饭数量和形状不改变，不吃饭不咀嚼。\n只输出完整12姿势PNG母图，不要文字解释。",
+      "framedSha256": "714557fb32eab4745dc29f817026972a835c524e72a68b2afd079a99db64edc4",
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 2,
+          "baseline": 318
+        },
+        {
+          "pose": 1,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 1,
+          "baseline": 319
+        },
+        {
+          "pose": 2,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 1,
+          "baseline": 319
+        },
+        {
+          "pose": 3,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 1,
+          "baseline": 319
+        },
+        {
+          "pose": 4,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 4,
+          "baseline": 316
+        },
+        {
+          "pose": 5,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 4,
+          "baseline": 316
+        },
+        {
+          "pose": 6,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 4,
+          "baseline": 316
+        },
+        {
+          "pose": 7,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 4,
+          "baseline": 316
+        },
+        {
+          "pose": 8,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 4,
+          "baseline": 315
+        },
+        {
+          "pose": 9,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 4,
+          "baseline": 315
+        },
+        {
+          "pose": 10,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 4,
+          "baseline": 315
+        },
+        {
+          "pose": 11,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 4,
+          "baseline": 315
+        }
+      ],
+      "scaledSize": 282,
+      "cellSize": 362,
+      "targetBaselineRatio": 0.69
+    },
+    {
+      "id": "sparrow-noon",
+      "source": "web-original-02-animated/sources/sparrow-noon-v2/source/master.png",
+      "sha256": "75e90b877debe0aabaf102e8413cda5ca9444de837b048d539342b57413772b8",
+      "baselines": [
+        310,
+        310,
+        310,
+        310,
+        299,
+        299,
+        299,
+        299,
+        287,
+        287,
+        287,
+        287
+      ],
+      "scale": 0.8,
+      "provenance": {
+        "sourceType": "ai-original",
+        "promptFile": "prompt.txt",
+        "conversationUrl": "https://chatgpt.com/c/6aaa51a6-4b74-83ea-9646-edadae4a4ff0",
+        "generatedAt": "2026-09-16T08:19:31.804Z",
+        "publicationAllowed": false,
+        "staticCharacterReview": "pending",
+        "humanAnimationReview": "pending",
+        "deletion": "confirmed-in-web-ui",
+        "files": [
+          {
+            "file": "master.png",
+            "sha256": "75e90b877debe0aabaf102e8413cda5ca9444de837b048d539342b57413772b8",
+            "bytes": 1125985,
+            "size": [
+              1448,
+              1086
+            ],
+            "downloadName": "ChatGPT Image 2026年9月16日 16_19_32.png"
+          }
+        ],
+        "deletionEvidence": {
+          "returnedHome": true,
+          "linkAbsentAfterReload": true,
+          "checkedAt": "2026-09-16T08:19:45.396Z"
+        }
+      },
+      "prompt": "直接生成一张PNG，不要只回复文字。4列×3行共12个等大正方格，横向4:3，目标1440×1080。一个同一角色的一次连续表演，不是12个不同角色。原创，不复制任何现成IP或明星脸。纯白不透明背景，无文字、编号、边框、格线、水印、运动线或特效。镜头、角色大小、光照和身体坐姿固定，每一格单独对齐同样脚底高度。角色与道具全部完整，耳尖、头发、手掌/翅膀/爪尖绝不裁切。主体只占每格上部居中区域，脚底在70%高度，底部30%纯白给后期字幕；三行的每一格都必须留白。手势在脸旁或胸前，不伸出格子。不能全图移动、缩放、机械倒放或重影冒充动作。12格分别真实绘制过渡姿势，第一格和第12格的身体/头姿/神态/道具位置严格吻合。\n意图：中午好。\n角色与媒介：原创黑白极简小麻雀，圆脑袋、短喙、小翅膀、两只简洁鸟脚、纯白填色与干净粗黑轮廓，少量黑块，无颜色、灰影、复杂羽毛和3D。左侧一个黑线小饭碗静止。\n最高优先：始终白色不透明背景，不要透明通道、黑底或棋盘格。表演采取对称双翼动作，避免左右翼换侧跳变。两只翼始终一起抬起/展开/收回，不能一只展开另一只收起。鸟脚、身体和饭碗位置固定，不能用人类手指。\n表演“中午好，一起吃吧”：1平静低头看饭碗，双翼贴身；2视线先抬起；3头抬起面向观众、喙开始微笑；4双翼一起稍离身体；5双翼一起半展开、眉梢轻扬；6双翼继续温和向两侧展开；7双翼对称展开到约45度、眼神明亮、喙微张，亲切欢迎；8保持双翼开放与笑容，头轻轻朝饭碗点一下示意邀请，不改成单翼指碗；9双翼开始收回、微笑保留；10双翼半收回，头逐渐向饭碗看；11双翼接近身体，喙逐渐合上；12与第1格完全一致。\n全程双翼完整，宽度不超过格子70%。无动作线、符号或其他装饰，真实画12个连续过渡姿势。只输出这一张12格白底PNG母图。",
+      "framedSha256": "3dad424d790e043744d9cbf4500e8660136b420d7d23552f348182f3bcfd2843",
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 1,
+          "baseline": 310
+        },
+        {
+          "pose": 1,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 1,
+          "baseline": 310
+        },
+        {
+          "pose": 2,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 1,
+          "baseline": 310
+        },
+        {
+          "pose": 3,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 1,
+          "baseline": 310
+        },
+        {
+          "pose": 4,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 10,
+          "baseline": 299
+        },
+        {
+          "pose": 5,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 10,
+          "baseline": 299
+        },
+        {
+          "pose": 6,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 10,
+          "baseline": 299
+        },
+        {
+          "pose": 7,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 10,
+          "baseline": 299
+        },
+        {
+          "pose": 8,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 20,
+          "baseline": 287
+        },
+        {
+          "pose": 9,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 20,
+          "baseline": 287
+        },
+        {
+          "pose": 10,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 20,
+          "baseline": 287
+        },
+        {
+          "pose": 11,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 20,
+          "baseline": 287
+        }
+      ],
+      "scaledSize": 290,
+      "cellSize": 362,
+      "targetBaselineRatio": 0.69
+    },
+    {
+      "id": "fawn-noon",
+      "source": "web-original-02-animated/sources/fawn-noon/source/master.png",
+      "sha256": "dce80b3836efc103f515d6fb06808bc4d41739f0bed936542e363aeed05378c1",
+      "baselines": [
+        285,
+        285,
+        285,
+        285,
+        285,
+        285,
+        285,
+        285,
+        284,
+        284,
+        284,
+        284
+      ],
+      "scale": 0.8,
+      "provenance": {
+        "sourceType": "ai-original",
+        "promptFile": "prompt.txt",
+        "conversationUrl": "https://chatgpt.com/c/6aaa4c5d-8330-83e9-a798-437883e9b0d7",
+        "generatedAt": "2026-09-16T07:56:56.429Z",
+        "publicationAllowed": false,
+        "staticCharacterReview": "pending",
+        "humanAnimationReview": "pending",
+        "deletion": "confirmed-in-web-ui",
+        "files": [
+          {
+            "file": "master.png",
+            "sha256": "dce80b3836efc103f515d6fb06808bc4d41739f0bed936542e363aeed05378c1",
+            "bytes": 1267462,
+            "size": [
+              1448,
+              1086
+            ],
+            "downloadName": "ChatGPT Image 2026年9月16日 15_57_00.png"
+          }
+        ],
+        "deletionEvidence": {
+          "returnedHome": true,
+          "linkAbsentAfterReload": true,
+          "checkedAt": "2026-09-16T07:57:27.232Z"
+        }
+      },
+      "prompt": "直接生成一张PNG，不要只回复文字。4列×3行共12个等大正方格，横向4:3，目标1440×1080。一个同一角色的一次连续表演，不是12个不同角色。原创，不复制任何现成IP或明星脸。纯白不透明背景，无文字、编号、边框、格线、水印、运动线或特效。镜头、角色大小、光照和身体坐姿固定，每一格单独对齐同样脚底高度。角色与道具全部完整，耳尖、头发、手掌/翅膀/爪尖绝不裁切。主体只占每格上部居中区域，脚底在70%高度，底部30%纯白给后期字幕；三行的每一格都必须留白。手势在脸旁或胸前，不伸出格子。不能全图移动、缩放、机械倒放或重影冒充动作。12格分别真实绘制过渡姿势，第一格和第12格的身体/头姿/神态/道具位置严格吻合。\n意图：中午好。\n角色与媒介：原创浅棕色哑光黏土小鹿，奶白肚子、小耳、少量固定白斑，无鹿角，完整坐姿，平滑黏土而非毛绒；一个米白小饭碗放在双前蹄之间、被双蹄从两侧轻轻托住。\n表演“中午好，一起吃吧”：小鹿抬眼认出朋友，耳朵稍振、温和微笑，双前蹄托着同一只小饭碗慢慢举到胸前，向观众展示邀请午餐，然后自然放回腹部前方。两只前蹄都一直接触碗两侧，左右对称，不能长成人手或多出第三只蹄。碗里少量米饭始终保持形状，不吃饭不洒饭。\n第一行：1低头看碗、碗在腹前最低处；2眼神抬起看观众、碗不动；3头抬起眉眼变柔、碗开始离开低处；4双蹄一起托碗稍微举高。\n第二行：5碗升到低胸前；6碗继续到胸前、温和微笑；7亲切微笑最明显，双蹄托碗在胸前略向观众展示，不遮脸；8保留笑容和邀请姿势，碗仍在胸前，不放下。\n第三行：9碗开始下降、笑容保留；10碗下降到腹前、笑意渐收；11碗接近最低位置、头略低；12严格回到第1格，双蹄、碗、头姿和视线一致。屁股、后蹄、身体大小与机位固定。\n只输出这张12格姿势母图，不要文字解释。",
+      "framedSha256": "0232a8748d64e0373c3e3b56b466712d7e92e798b8739512ffea9a1cca9795d0",
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 21,
+          "baseline": 285
+        },
+        {
+          "pose": 1,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 21,
+          "baseline": 285
+        },
+        {
+          "pose": 2,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 21,
+          "baseline": 285
+        },
+        {
+          "pose": 3,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 21,
+          "baseline": 285
+        },
+        {
+          "pose": 4,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 21,
+          "baseline": 285
+        },
+        {
+          "pose": 5,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 21,
+          "baseline": 285
+        },
+        {
+          "pose": 6,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 21,
+          "baseline": 285
+        },
+        {
+          "pose": 7,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 21,
+          "baseline": 285
+        },
+        {
+          "pose": 8,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 22,
+          "baseline": 284
+        },
+        {
+          "pose": 9,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 22,
+          "baseline": 284
+        },
+        {
+          "pose": 10,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 22,
+          "baseline": 284
+        },
+        {
+          "pose": 11,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 22,
+          "baseline": 284
+        }
+      ],
+      "scaledSize": 290,
+      "cellSize": 362,
+      "targetBaselineRatio": 0.69
+    },
+    {
+      "id": "man-noon",
+      "source": "web-original-02-animated/sources/man-noon/source/master.png",
+      "sha256": "9e6b22553c6f183eeb85ddbc4d6f40bbeca6c1f003f4aaa07dba007a13798fbb",
+      "baselines": [
+        319,
+        319,
+        320,
+        322,
+        317,
+        317,
+        318,
+        317,
+        316,
+        316,
+        315,
+        314
+      ],
+      "scale": 0.76,
+      "provenance": {
+        "sourceType": "ai-original",
+        "promptFile": "prompt.txt",
+        "conversationUrl": "https://chatgpt.com/c/6aaa4e29-5aa0-83e9-a8b0-94f9e1d12f50",
+        "generatedAt": "2026-09-16T08:04:47.523Z",
+        "publicationAllowed": false,
+        "staticCharacterReview": "pending",
+        "humanAnimationReview": "pending",
+        "deletion": "confirmed-in-web-ui",
+        "files": [
+          {
+            "file": "master.png",
+            "sha256": "9e6b22553c6f183eeb85ddbc4d6f40bbeca6c1f003f4aaa07dba007a13798fbb",
+            "bytes": 1471420,
+            "size": [
+              1448,
+              1086
+            ],
+            "downloadName": "ChatGPT Image 2026年9月16日 16_04_51.png"
+          }
+        ],
+        "deletionEvidence": {
+          "returnedHome": true,
+          "linkAbsentAfterReload": true,
+          "checkedAt": "2026-09-16T08:05:31.988Z"
+        }
+      },
+      "prompt": "直接生成一张PNG，不要只回复文字。4列×3行共12个等大正方格，横向4:3，目标1440×1080。一个同一角色的一次连续表演，不是12个不同角色。原创，不复制任何现成IP或明星脸。纯白不透明背景，无文字、编号、边框、格线、水印、运动线或特效。镜头、角色大小、光照和身体坐姿固定，每一格单独对齐同样脚底高度。角色与道具全部完整，耳尖、头发、手掌/翅膀/爪尖绝不裁切。主体只占每格上部居中区域，脚底在70%高度，底部30%纯白给后期字幕；三行的每一格都必须留白。手势在脸旁或胸前，不伸出格子。不能全图移动、缩放、机械倒放或重影冒充动作。12格分别真实绘制过渡姿势，第一格和第12格的身体/头姿/神态/道具位置严格吻合。\n意图：中午好。\n角色与媒介：虚构原创中国成年男性，约27岁，帅气有辨识度，短寸黑发、自然小麦肤色、不像明星；深绿色开衫和白T恤、深色裤、白鞋，完整盘腿坐姿，真实摄影。不要胸像，手脚均完整；画面左侧一小白饭碗静止，不要桌子或其他角色。\n表演是认出朋友后温和点头，然后同时打开两只手、掌心朝上作“一起吃吧”的邀请。双手对称运动，始终能看见两只手与完整手腕，各五指，不要交替挥一只手、不挡脸。另一侧的小饭碗不动。身体、双腿和鞋子固定。\n第一行：1略低头看饭碗、两手各放膝盖；2视线先抬起看观众；3头抬起、嘴角微笑；4双手一起离膝盖、到腹部前方。\n第二行：5双掌慢慢朝上、自然抬眉；6双手在低胸前温和向外打开；7笑容最亲切，双手掌心向上作邀请、轻轻点头；8保留双掌开放邀请姿势和微笑，视线向小饭碗示意，不放下。\n第三行：9双手逐渐往回收；10双手落至腹前、笑意渐收；11双手接近膝盖、视线下降；12严格回到第1格，双手放膝盖、略低头看碗。不是兴奋欢呼、不是耸肩疑问、不是吃饭咀嚼。\n只输出这张12格姿势母图，不要文字解释。",
+      "framedSha256": "5aeeb9ab752f2df3fcea7381e22eefb2e2c75b7ca95cd7d922e42ebe6d5702bf",
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 7,
+          "baseline": 319
+        },
+        {
+          "pose": 1,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 7,
+          "baseline": 319
+        },
+        {
+          "pose": 2,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 7,
+          "baseline": 320
+        },
+        {
+          "pose": 3,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 5,
+          "baseline": 322
+        },
+        {
+          "pose": 4,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 9,
+          "baseline": 317
+        },
+        {
+          "pose": 5,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 9,
+          "baseline": 317
+        },
+        {
+          "pose": 6,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 8,
+          "baseline": 318
+        },
+        {
+          "pose": 7,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 9,
+          "baseline": 317
+        },
+        {
+          "pose": 8,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 10,
+          "baseline": 316
+        },
+        {
+          "pose": 9,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 10,
+          "baseline": 316
+        },
+        {
+          "pose": 10,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 10,
+          "baseline": 315
+        },
+        {
+          "pose": 11,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 11,
+          "baseline": 314
+        }
+      ],
+      "scaledSize": 275,
+      "cellSize": 362,
+      "targetBaselineRatio": 0.69
+    }
+  ]
+}

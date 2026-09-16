@@ -1,0 +1,505 @@
+{
+  "items": [
+    {
+      "id": "siamese-evening",
+      "frames": 20,
+      "durationMs": 4000,
+      "bytes": 68637,
+      "sha256": "551021cbe6cbdba31acbfea9c922c09c0df164addcfdf1c3c8127b876a8d6dd2",
+      "bottom26PercentInkRatioAt245": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "thumbnailVisiblePixelsAndAlphaMatch": true
+    },
+    {
+      "id": "hedgehog-evening",
+      "frames": 20,
+      "durationMs": 4000,
+      "bytes": 96959,
+      "sha256": "08803ddd6f3b865a01c678d3bbadff5bc231bbd95044544ccb3a6a4a5398f617",
+      "bottom26PercentInkRatioAt245": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "thumbnailVisiblePixelsAndAlphaMatch": true
+    },
+    {
+      "id": "beaver-evening",
+      "frames": 20,
+      "durationMs": 4000,
+      "bytes": 60036,
+      "sha256": "257729a587a4df3a2b01e59dded21a58faf3ecde0dcfb10a5a4fa1be5fac7d90",
+      "bottom26PercentInkRatioAt245": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.00011631288165164292,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "thumbnailVisiblePixelsAndAlphaMatch": true
+    },
+    {
+      "id": "man-evening",
+      "frames": 20,
+      "durationMs": 4000,
+      "bytes": 61096,
+      "sha256": "ec943fa9351f772134eb827cb218b0acfdb06aa376d142ea2352dfa329210f66",
+      "bottom26PercentInkRatioAt245": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "thumbnailVisiblePixelsAndAlphaMatch": true
+    },
+    {
+      "id": "puppy-noon",
+      "frames": 20,
+      "durationMs": 4000,
+      "bytes": 71517,
+      "sha256": "d11a96719f7afab782f418c3dd79ab20054920c13ac16e14bd95a83bfa366534",
+      "bottom26PercentInkRatioAt245": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "thumbnailVisiblePixelsAndAlphaMatch": true
+    },
+    {
+      "id": "sparrow-noon",
+      "frames": 20,
+      "durationMs": 4000,
+      "bytes": 89546,
+      "sha256": "eba122c4ad2ba85e5d357871396ef8a39ea0c447ad2e95b45811f10744a24aaf",
+      "bottom26PercentInkRatioAt245": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "thumbnailVisiblePixelsAndAlphaMatch": true
+    },
+    {
+      "id": "fawn-noon",
+      "frames": 20,
+      "durationMs": 4000,
+      "bytes": 71620,
+      "sha256": "b346af82c3c691820bc6bd3ed9328dfefbc9dcc0593e9d5112fd27eed784f35a",
+      "bottom26PercentInkRatioAt245": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "thumbnailVisiblePixelsAndAlphaMatch": true
+    },
+    {
+      "id": "man-noon",
+      "frames": 20,
+      "durationMs": 4000,
+      "bytes": 59201,
+      "sha256": "b2313a37c8826a371a96d16cdfb2ad93d45e9e32f4f3cc34c1f1e3936cf6384a",
+      "bottom26PercentInkRatioAt245": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "thumbnailVisiblePixelsAndAlphaMatch": true
+    }
+  ],
+  "sourceAttempts": [
+    {
+      "id": "beaver-evening",
+      "conversationUrl": "https://chatgpt.com/c/6aaa498b-99c4-83e9-98c9-c7ec05e6a7b5",
+      "files": [
+        {
+          "file": "master.png",
+          "sha256": "8f2b8cfa60023cfda60c8951d43e90fecbf0c8fd8d47792e2e7802160b63a6df",
+          "bytes": 1371658,
+          "size": [
+            1448,
+            1086
+          ],
+          "downloadName": "ChatGPT Image 2026年9月16日 15_45_08.png"
+        }
+      ],
+      "deletion": "confirmed-in-web-ui",
+      "deletionEvidence": {
+        "returnedHome": true,
+        "linkAbsentAfterReload": true,
+        "checkedAt": "2026-09-16T07:45:44.833Z"
+      }
+    },
+    {
+      "id": "fawn-noon",
+      "conversationUrl": "https://chatgpt.com/c/6aaa4c5d-8330-83e9-a798-437883e9b0d7",
+      "files": [
+        {
+          "file": "master.png",
+          "sha256": "dce80b3836efc103f515d6fb06808bc4d41739f0bed936542e363aeed05378c1",
+          "bytes": 1267462,
+          "size": [
+            1448,
+            1086
+          ],
+          "downloadName": "ChatGPT Image 2026年9月16日 15_57_00.png"
+        }
+      ],
+      "deletion": "confirmed-in-web-ui",
+      "deletionEvidence": {
+        "returnedHome": true,
+        "linkAbsentAfterReload": true,
+        "checkedAt": "2026-09-16T07:57:27.232Z"
+      }
+    },
+    {
+      "id": "hedgehog-evening",
+      "conversationUrl": "https://chatgpt.com/c/6aaa490d-0918-83ea-8b8e-80dec1200137",
+      "files": [
+        {
+          "file": "master.png",
+          "sha256": "2939b22b031c71ef8f86c836e35f2b784018e78c95ed6f0ce818408dfa3e93e3",
+          "bytes": 1215983,
+          "size": [
+            1448,
+            1086
+          ],
+          "downloadName": "ChatGPT Image 2026年9月16日 15_42_55.png"
+        }
+      ],
+      "deletion": "confirmed-in-web-ui",
+      "deletionEvidence": {
+        "returnedHome": true,
+        "linkAbsentAfterReload": true,
+        "checkedAt": "2026-09-16T07:43:28.327Z"
+      }
+    },
+    {
+      "id": "man-evening",
+      "conversationUrl": "https://chatgpt.com/c/6aaa4a45-3b04-83ea-8be0-be01d59bbada",
+      "files": [
+        {
+          "file": "master.png",
+          "sha256": "3f2ae47bab2aeec4cdc6e5c9640908bcc3e7d573e6c103d4608e9845e7d46ab2",
+          "bytes": 1532913,
+          "size": [
+            1448,
+            1086
+          ],
+          "downloadName": "ChatGPT Image 2026年9月16日 15_48_08.png"
+        }
+      ],
+      "deletion": "confirmed-in-web-ui",
+      "deletionEvidence": {
+        "returnedHome": true,
+        "linkAbsentAfterReload": true,
+        "checkedAt": "2026-09-16T07:48:37.079Z"
+      }
+    },
+    {
+      "id": "man-evening-v2",
+      "conversationUrl": "https://chatgpt.com/c/6aaa50fa-dd24-83ea-af4f-731d4a8dd871",
+      "files": [
+        {
+          "file": "master.png",
+          "sha256": "cb1ad6dead0bcc24f664e228a8c61b4e128ff0c55c6e87efd964821f09fbee02",
+          "bytes": 1561988,
+          "size": [
+            1448,
+            1086
+          ],
+          "downloadName": "ChatGPT Image 2026年9月16日 16_16_47.png"
+        }
+      ],
+      "deletion": "confirmed-in-web-ui",
+      "deletionEvidence": {
+        "returnedHome": true,
+        "linkAbsentAfterReload": true,
+        "checkedAt": "2026-09-16T08:17:21.875Z"
+      }
+    },
+    {
+      "id": "man-noon",
+      "conversationUrl": "https://chatgpt.com/c/6aaa4e29-5aa0-83e9-a8b0-94f9e1d12f50",
+      "files": [
+        {
+          "file": "master.png",
+          "sha256": "9e6b22553c6f183eeb85ddbc4d6f40bbeca6c1f003f4aaa07dba007a13798fbb",
+          "bytes": 1471420,
+          "size": [
+            1448,
+            1086
+          ],
+          "downloadName": "ChatGPT Image 2026年9月16日 16_04_51.png"
+        }
+      ],
+      "deletion": "confirmed-in-web-ui",
+      "deletionEvidence": {
+        "returnedHome": true,
+        "linkAbsentAfterReload": true,
+        "checkedAt": "2026-09-16T08:05:31.988Z"
+      }
+    },
+    {
+      "id": "puppy-noon",
+      "conversationUrl": "https://chatgpt.com/c/6aaa4b12-8220-83ea-aee7-40096268889a",
+      "files": [
+        {
+          "file": "master.png",
+          "sha256": "595c89d3b78ef83b64a5118b417d8517f1e208cc9e12e1f781bbe05bbf6822a3",
+          "bytes": 1438529,
+          "size": [
+            1448,
+            1086
+          ],
+          "downloadName": "ChatGPT Image 2026年9月16日 15_51_37.png"
+        }
+      ],
+      "deletion": "confirmed-in-web-ui",
+      "deletionEvidence": {
+        "returnedHome": true,
+        "linkAbsentAfterReload": true,
+        "checkedAt": "2026-09-16T07:52:14.172Z"
+      }
+    },
+    {
+      "id": "puppy-noon-v2",
+      "conversationUrl": "https://chatgpt.com/c/6aaa5155-64ec-83ea-a340-46346d1447dd",
+      "files": [
+        {
+          "file": "master.png",
+          "sha256": "cad2c13d7f3e325570a4d6332adbf1ba663a7a015b7af22818b03a87b6b11a51",
+          "bytes": 1412499,
+          "size": [
+            1448,
+            1086
+          ],
+          "downloadName": "ChatGPT Image 2026年9月16日 16_18_11.png"
+        }
+      ],
+      "deletion": "confirmed-in-web-ui",
+      "deletionEvidence": {
+        "returnedHome": true,
+        "linkAbsentAfterReload": true,
+        "checkedAt": "2026-09-16T08:18:42.941Z"
+      }
+    },
+    {
+      "id": "siamese-evening",
+      "conversationUrl": "https://chatgpt.com/c/6aaa489b-10a4-83ea-a85e-917f35d0c82f",
+      "files": [
+        {
+          "file": "master.png",
+          "sha256": "c104bf0f3dc217101d9d5af290afcfb9157e82bbe8de4e759fcff82460a18a6f",
+          "bytes": 1429052,
+          "size": [
+            1448,
+            1086
+          ],
+          "downloadName": "ChatGPT Image 2026年9月16日 15_40_53.png"
+        }
+      ],
+      "deletion": "confirmed-in-web-ui",
+      "deletionEvidence": {
+        "returnedHome": true,
+        "linkAbsentAfterReload": true,
+        "checkedAt": "2026-09-16T07:41:22.223Z"
+      }
+    },
+    {
+      "id": "siamese-evening-v2",
+      "conversationUrl": "https://chatgpt.com/c/6aaa50a3-5bc4-83ea-8df7-2242f0d25b9e",
+      "files": [
+        {
+          "file": "master.png",
+          "sha256": "24c839d5ae8c88670772033c29939d877e0b1af9f2bcfbb4986cb1d6b4ad4f4d",
+          "bytes": 1449317,
+          "size": [
+            1448,
+            1086
+          ],
+          "downloadName": "ChatGPT Image 2026年9月16日 16_15_08.png"
+        }
+      ],
+      "deletion": "confirmed-in-web-ui",
+      "deletionEvidence": {
+        "returnedHome": true,
+        "linkAbsentAfterReload": true,
+        "checkedAt": "2026-09-16T08:15:51.354Z"
+      }
+    },
+    {
+      "id": "sparrow-noon",
+      "conversationUrl": "https://chatgpt.com/c/6aaa4ba7-ef78-83e9-bf1a-3b12de9e0c2a",
+      "files": [
+        {
+          "file": "master.png",
+          "sha256": "1b7c8311dafdf985f63d8b66d890146e99decc5c9697f1306e0ebde023b4d529",
+          "bytes": 926179,
+          "size": [
+            1448,
+            1086
+          ],
+          "downloadName": "ChatGPT Image 2026年9月16日 15_53_55.png"
+        }
+      ],
+      "deletion": "confirmed-in-web-ui",
+      "deletionEvidence": {
+        "returnedHome": true,
+        "linkAbsentAfterReload": true,
+        "checkedAt": "2026-09-16T07:54:18.747Z"
+      }
+    },
+    {
+      "id": "sparrow-noon-v2",
+      "conversationUrl": "https://chatgpt.com/c/6aaa51a6-4b74-83ea-9646-edadae4a4ff0",
+      "files": [
+        {
+          "file": "master.png",
+          "sha256": "75e90b877debe0aabaf102e8413cda5ca9444de837b048d539342b57413772b8",
+          "bytes": 1125985,
+          "size": [
+            1448,
+            1086
+          ],
+          "downloadName": "ChatGPT Image 2026年9月16日 16_19_32.png"
+        }
+      ],
+      "deletion": "confirmed-in-web-ui",
+      "deletionEvidence": {
+        "returnedHome": true,
+        "linkAbsentAfterReload": true,
+        "checkedAt": "2026-09-16T08:19:45.396Z"
+      }
+    }
+  ],
+  "previousBatchGifs": [
+    {
+      "path": "artifacts/expression-character-trials/web-original-01-animated/sample/man-afternoon.gif",
+      "sha256": "de1857777933115a9268f32b9396783a8fa5e10a00faa0faad3367734bf6c4de",
+      "matchesHead": null
+    },
+    {
+      "path": "artifacts/expression-character-trials/web-original-01-animated/sample/seal-afternoon.gif",
+      "sha256": "0e471b0a7fffbc971b735d3545f6471e1a421a1f2316653615d9a6a31a949b9f",
+      "matchesHead": null
+    },
+    {
+      "path": "artifacts/expression-character-trials/web-original-01-animated/sample/koala-afternoon.gif",
+      "sha256": "04e53bcf8e17a65aee67b0e07c5a0ea462c70f190167b55fb2b8c52b1f40af43",
+      "matchesHead": null
+    },
+    {
+      "path": "artifacts/expression-character-trials/web-original-01-animated/output/gifs/man-afternoon.gif",
+      "sha256": "de1857777933115a9268f32b9396783a8fa5e10a00faa0faad3367734bf6c4de",
+      "matchesHead": null
+    },
+    {
+      "path": "artifacts/expression-character-trials/web-original-01-animated/output/gifs/seal-afternoon.gif",
+      "sha256": "0e471b0a7fffbc971b735d3545f6471e1a421a1f2316653615d9a6a31a949b9f",
+      "matchesHead": true
+    },
+    {
+      "path": "artifacts/expression-character-trials/web-original-01-animated/output/gifs/schnauzer-afternoon.gif",
+      "sha256": "acc854c4a0bc0b12bd3c67becd83832af48ac2a9d575b5665780baf90399fa55",
+      "matchesHead": null
+    },
+    {
+      "path": "artifacts/expression-character-trials/web-original-01-animated/output/gifs/koala-afternoon.gif",
+      "sha256": "04e53bcf8e17a65aee67b0e07c5a0ea462c70f190167b55fb2b8c52b1f40af43",
+      "matchesHead": true
+    },
+    {
+      "path": "artifacts/expression-character-trials/web-original-01-completion/output/gifs/man-afternoon.gif",
+      "sha256": "f2709a67ce620a860d0e1239cd028ce0bd82a9eab2e548f887118b1afb7b6938",
+      "matchesHead": null
+    },
+    {
+      "path": "artifacts/expression-character-trials/web-original-01-completion/output/gifs/schnauzer-afternoon.gif",
+      "sha256": "9b59537f7dd13ce64e4f1fdffef5cb704c6f0c2cd3578734dbcb69b9367bc5eb",
+      "matchesHead": null
+    },
+    {
+      "path": "artifacts/expression-character-trials/web-original-01-framed/output/gifs/man-afternoon.gif",
+      "sha256": "90bb8bd760926b716f3abd542b49f92c58af4c6ed7a3becdc4e36cc26eb75173",
+      "matchesHead": true
+    },
+    {
+      "path": "artifacts/expression-character-trials/web-original-01-framed/output/gifs/schnauzer-afternoon.gif",
+      "sha256": "2e0a15059b61f7c03cb35197ca596bc1c5fc36f1a649240a65c0a417c905cbf4",
+      "matchesHead": true
+    }
+  ],
+  "humanAnimationReview": "pending",
+  "publicationAllowed": false
+}
