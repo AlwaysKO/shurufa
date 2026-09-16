@@ -1,0 +1,20 @@
+{
+  "staticCharacterReview": "pending",
+  "humanAnimationReview": "pending",
+  "publicationAllowed": false,
+  "assistantLayoutCheck": "passed",
+  "newCandidates": [
+    "schnauzer-afternoon",
+    "man-afternoon"
+  ],
+  "existingCandidates": [
+    "seal-afternoon",
+    "koala-afternoon"
+  ],
+  "notes": [
+    "同一张母图12格均采用290/362统一尺度；只按显式脚底参考调整y，无逐格水平重心追踪。",
+    "每格底部26%在RGB阈值245下无内容，真实GIF抽帧手掌和鞋子均完整。",
+    "缩小后男性面部可辨细节下降，调色板颗粒仍明显，是否足够生动需用户播放审核；不以构图通过宣称审美合格。",
+    "未重新生成网页图片；源图及上轮6个GIF哈希未变。"
+  ]
+}

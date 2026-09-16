@@ -1,0 +1,285 @@
+{
+  "authorization": "2026-09-16 用户允许两份新稿统一缩放、对齐脚底和补白；不修改原图或补画",
+  "items": [
+    {
+      "id": "schnauzer-afternoon",
+      "source": "web-k005-a-clean-20260916/source/master.png",
+      "sha256": "5ee1f2e46bc50790339434694a8bf330c3db2c9ad37c067d08fb74896144c2b3",
+      "baselines": [
+        303,
+        303,
+        303,
+        303,
+        303,
+        303,
+        303,
+        303,
+        303,
+        303,
+        303,
+        303
+      ],
+      "provenance": {
+        "sourceType": "ai-original",
+        "promptFile": "prompt.txt",
+        "conversationUrl": "https://chatgpt.com/c/6aaa40cc-6ad0-83ea-869b-6e5ab957d355",
+        "generatedAt": "2026-09-16T07:07:35.756Z",
+        "publicationAllowed": false,
+        "staticCharacterReview": "needs-rework",
+        "humanAnimationReview": "pending",
+        "deletion": "confirmed-in-web-ui",
+        "files": [
+          {
+            "file": "master.png",
+            "sha256": "5ee1f2e46bc50790339434694a8bf330c3db2c9ad37c067d08fb74896144c2b3",
+            "bytes": 1401121,
+            "size": [
+              1448,
+              1086
+            ],
+            "downloadName": "ChatGPT Image 2026年9月16日 15_07_39.png"
+          }
+        ],
+        "deletionEvidence": {
+          "returnedHome": true,
+          "linkAbsentAfterReload": true,
+          "checkedAt": "2026-09-16T07:08:13.894Z"
+        },
+        "reviewReason": "构图仍侵入提示词要求的底部26%留白，GIF底部主体紧贴字幕，保留原图及诊断导出，待构图整理。"
+      },
+      "prompt": "直接生成一张PNG：真实动物摄影风格的原创雪纳瑞动画接触表，4列×3行共12个等大正方格，横向4:3、1440×1080。不是卡通、不是3D玩偶、不是插画，不复制已有IP。\n同一只盐胡椒色小型雪纳瑞，真实细密毛发、自然折耳、奶白胡须、黑鼻，戴无图案深蓝三角巾。纯白背景，无桌子、杯子、书、植物、地面线、阴影花纹、文字、编号、网格线。完全取消道具，注意力只在狗的眼神和同一侧前爪上。\n每格是同一固定机位和固定大小的完整坐姿狗，耳尖到脚底只占格子高度55%，放在上部居中。所有12格脚底严格在各自格内68%高度，头顶约13%高度；下面整整30%绝对白色，完整身体及两只脚都不能落入底部白区。整张4列3行仍铺满画布，三个行里的脚底位置按各自方格对齐，不是整张图片同一条底线。无论爪怎么抬，屁股、后腿、另一前爪及脚底基线都不动，镜头不移动。\n表演“下午好”：刚休息好，眼睛先注意到观众，耳朵稍振，嘴角放松露出友好神态，画面右侧前爪小幅抬起打招呼，再放回原处。动物真实爪子，没有人类手指；爪只抬到胸前，不用高举过头。画面左侧前爪一直落地，绝不换侧。\n第一排：1平静睁眼、嘴合、双前爪落地；2视线稍抬向观众、耳朵稍立、双爪不动；3嘴角开始放松、画面右侧前爪刚离地；4右爪升到肚子前、头微微偏向观众。\n第二排：5右爪升到胸前；6右爪继续稍升至下巴以下，嘴微张；7眼神明亮、嘴微张露一点舌尖、右爪在下巴以下向外轻挥；8保持同样问候神态、同一右爪小幅回摆，另一爪牢牢落地。\n第三排：9右爪下降到胸前；10右爪下降到肚子前，嘴逐渐合上；11右爪接近地面，头渐回正；12严格回到第1格，双爪落地、平静睁眼、嘴合，耳姿和身体大小位置完全一致。\n12格是连续真实姿势，不是单图平移缩放。不要动作线、重影或特效。不要四格一组各画一遍动作，而是整整12格一个动作。只输出这张母图。\n",
+      "framedSha256": "3d9ceac4a26bd05d377468f81e3bd099c246b9652b5663e4f28012b9997c0c88",
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 7,
+          "baseline": 303
+        },
+        {
+          "pose": 1,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 7,
+          "baseline": 303
+        },
+        {
+          "pose": 2,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 7,
+          "baseline": 303
+        },
+        {
+          "pose": 3,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 7,
+          "baseline": 303
+        },
+        {
+          "pose": 4,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 7,
+          "baseline": 303
+        },
+        {
+          "pose": 5,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 7,
+          "baseline": 303
+        },
+        {
+          "pose": 6,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 7,
+          "baseline": 303
+        },
+        {
+          "pose": 7,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 7,
+          "baseline": 303
+        },
+        {
+          "pose": 8,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 7,
+          "baseline": 303
+        },
+        {
+          "pose": 9,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 7,
+          "baseline": 303
+        },
+        {
+          "pose": 10,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 7,
+          "baseline": 303
+        },
+        {
+          "pose": 11,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 7,
+          "baseline": 303
+        }
+      ],
+      "scaledSize": 290,
+      "cellSize": 362,
+      "targetBaselineRatio": 0.69
+    },
+    {
+      "id": "man-afternoon",
+      "source": "web-k005-d-seated-20260916/source/master.png",
+      "sha256": "6362c8f7d36edaaf170ea1151fd7c217c7c036263a8a2f20ff6edda7863c3abb",
+      "baselines": [
+        308,
+        308,
+        308,
+        308,
+        309,
+        309,
+        309,
+        309,
+        308,
+        308,
+        308,
+        308
+      ],
+      "provenance": {
+        "sourceType": "ai-original",
+        "promptFile": "prompt.txt",
+        "conversationUrl": "https://chatgpt.com/c/6aaa3f7c-18b8-83e9-9e07-a63180b399ee",
+        "generatedAt": "2026-09-16T07:02:01.740Z",
+        "publicationAllowed": false,
+        "staticCharacterReview": "needs-rework",
+        "humanAnimationReview": "pending",
+        "deletion": "confirmed-in-web-ui",
+        "files": [
+          {
+            "file": "master.png",
+            "sha256": "6362c8f7d36edaaf170ea1151fd7c217c7c036263a8a2f20ff6edda7863c3abb",
+            "bytes": 1621018,
+            "size": [
+              1448,
+              1086
+            ],
+            "downloadName": "ChatGPT Image 2026年9月16日 15_02_02.png"
+          }
+        ],
+        "deletionEvidence": {
+          "initialReloadHadStaleLink": true,
+          "openingExactDeletedUrlRedirectedHome": true,
+          "oldLinkAbsentAfterRedirect": true,
+          "checkedAt": "2026-09-16T07:06:48.792419+00:00"
+        },
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "reviewReason": "构图仍侵入提示词要求的底部26%留白，GIF底部主体紧贴字幕，保留原图及诊断导出，待构图整理。"
+      },
+      "prompt": "直接生成PNG图片，不要文字答复。一张12帧动画接触表，4列×3行等大正方格，画布横向4:3、1440×1080，没有格子边框、线条、文字或编号。\n内容是一个虚构原创中国成年男性，28岁、帅气、不像任何真实明星，短黑发、浅蓝纯色衬衫、深灰长裤、白色鞋子，真实人物摄影，不要卡通或动漫。他盘腿坐着，完整全身可见，头、双手、双腿和鞋子全部在画面内。不要胸像！不要把身体在胸部或腰部裁断！不要椅子或桌子，没有其他人和道具。纯白无缝背景，柔和午后自然光。\n他的动作意图是“下午好”：刚休息下来，看到熟人，抬眼、眉梢一提，露出自然暖笑，用画面右侧的手小幅挥手招呼，再把手放回膝盖。另一手一直放在另一膝盖。身体、双腿、双脚、衣服和照明始终固定，只有目光、眉嘴和右侧手臂真实活动。挥手必须五指自然完整，手掌不挡脸。\n为了后期字幕，每一格人物仅占中央上部。每格下方三分之一全白，人物的鞋底在格内约68%高度，发顶在约12%高度。12格人物同样大小，所有格的头顶、膝盖和鞋底对齐同一高度。特别注意第二行与第三行不能相对第一行上移，不能逐格缩放。人物外面必须有宽敞白边。\n从左到右、从上到下：\n第一行：1平静地看向前下方、双手放膝盖；2眼睛抬起看向观众、眉稍扬、双手不动；3温和笑意出现、画面右侧手刚离膝盖；4笑意加深、右侧手升到腹前。\n第二行：5手升到胸前；6手到肩旁、掌心朝观众、手指自然展开；7眼神明亮、笑容自然、手掌在脸旁向外小幅挥动；8同一手仍在脸旁、小幅回摆，保持友好笑容。\n第三行：9手开始落到胸前、仍微笑；10手落到腹前、笑意渐收；11手接近膝盖、神态渐平静；12严格回到第1格，双手放膝盖，身体和头的位置、视线、表情、鞋子位置完全与第1格一致。\n12个真实过渡姿势，不是复制同一图片，不要重影、动作线、特效、变焦、全图移动或机械倒放。输出一个同一人物的连续姿势表，不是多人合影。\n",
+      "framedSha256": "2cb0a7d83f0f0a6626503290063d4b14329e356a75ac3b4ffb938c91231239c2",
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 3,
+          "baseline": 308
+        },
+        {
+          "pose": 1,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 3,
+          "baseline": 308
+        },
+        {
+          "pose": 2,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 3,
+          "baseline": 308
+        },
+        {
+          "pose": 3,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 3,
+          "baseline": 308
+        },
+        {
+          "pose": 4,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 2,
+          "baseline": 309
+        },
+        {
+          "pose": 5,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 2,
+          "baseline": 309
+        },
+        {
+          "pose": 6,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 2,
+          "baseline": 309
+        },
+        {
+          "pose": 7,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 2,
+          "baseline": 309
+        },
+        {
+          "pose": 8,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 3,
+          "baseline": 308
+        },
+        {
+          "pose": 9,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 3,
+          "baseline": 308
+        },
+        {
+          "pose": 10,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 3,
+          "baseline": 308
+        },
+        {
+          "pose": 11,
+          "scale": 0.8011049723756906,
+          "left": 36,
+          "top": 3,
+          "baseline": 308
+        }
+      ],
+      "scaledSize": 290,
+      "cellSize": 362,
+      "targetBaselineRatio": 0.69
+    }
+  ]
+}

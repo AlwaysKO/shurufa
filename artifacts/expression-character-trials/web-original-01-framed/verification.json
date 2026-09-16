@@ -1,0 +1,46 @@
+[
+  {
+    "id": "schnauzer-afternoon",
+    "frames": 20,
+    "durationMs": 4000,
+    "bytes": 54964,
+    "sha256": "2e0a15059b61f7c03cb35197ca596bc1c5fc36f1a649240a65c0a417c905cbf4",
+    "bottom26PercentInkRatioAt245": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "thumbnailVisiblePixelsAndAlphaMatch": true
+  },
+  {
+    "id": "man-afternoon",
+    "frames": 20,
+    "durationMs": 4000,
+    "bytes": 60896,
+    "sha256": "90bb8bd760926b716f3abd542b49f92c58af4c6ed7a3becdc4e36cc26eb75173",
+    "bottom26PercentInkRatioAt245": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "thumbnailVisiblePixelsAndAlphaMatch": true
+  }
+]
