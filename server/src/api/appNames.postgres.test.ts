@@ -1,24 +1,33 @@
 import { randomUUID } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { readFileSync, realpathSync } from 'node:fs';
+import { join, basename } from 'node:path';
 import pg from 'pg';
 import request from 'supertest';
 import { beforeAll, afterAll, beforeEach, expect, it } from 'vitest';
 import { createApp } from '../app.js';
 import { authenticatedRequest } from '../lib/dashboardAuthTestHelper.js';
 
-// 只在显式提供的本机数据库中创建随机 schema，绝不改业务表。
-const url = process.env.APP_NAMES_TEST_DATABASE_URL;
-if (url && !['localhost', '127.0.0.1', '[::1]'].includes(new URL(url).hostname)) throw Error('Only local PostgreSQL is allowed');
-const test = url ? it : it.skip;
+// 只允许专用脚本 initdb 创建的独立实例；绝不使用业务 URL 或默认 TCP 连接。
+const cluster = process.env.APP_NAMES_TEST_CLUSTER;
+if (cluster && (!basename(cluster).startsWith('shurufa-app-names.') ||
+  readFileSync(join(cluster, 'test-instance-only'), 'utf8') !== 'shurufa-app-names-only')) {
+  throw Error('Dedicated test instance required');
+}
+const test = cluster ? it : it.skip;
 const schema = `app_names_test_${randomUUID().replaceAll('-', '')}`;
 const A = randomUUID(), B = randomUUID();
 let pool: pg.Pool;
+let isolated = false;
 let app: ReturnType<typeof createApp>;
 let agent: Awaited<ReturnType<typeof authenticatedRequest>>;
 beforeAll(async () => {
-  if (!url) return;
-  // 每次新建/重建连接都限定 schema，不能依赖仅对一条连接生效的 SET。
-  pool = new pg.Pool({ connectionString: url, max: 1, options: `-c search_path=${schema}` });
+  if (!cluster) return;
+  pool = new pg.Pool({ host: join(cluster, 'socket'), port: 5432, user: process.env.USER || 'ko',
+    database: 'app_names_test', max: 1, options: `-c search_path=${schema}` });
+  const identity = (await pool.query("SELECT current_setting('data_directory') AS dir, current_database() AS db")).rows[0];
+  expect(realpathSync(identity.dir)).toBe(realpathSync(join(cluster, 'data')));
+  expect(identity.db).toBe('app_names_test');
+  isolated = true;
   await pool.query(`CREATE SCHEMA ${schema}`);
   await pool.query(`SET search_path TO ${schema}`);
   const sql = readFileSync(new URL('../../migrations/001_init.sql', import.meta.url), 'utf8');
@@ -29,10 +38,11 @@ beforeAll(async () => {
 });
 afterAll(async () => {
   if (!pool) return;
-  try { await pool.query(`DROP SCHEMA ${schema} CASCADE`); } finally { await pool.end(); }
+  try { if (isolated) await pool.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`); } finally { await pool.end(); }
 });
 beforeEach(async () => {
-  if (!pool) return;
+  if (!cluster) return;
+  if (!isolated) throw Error("Isolation was not verified");
   // 失败即停止，不得在默认 public schema 上执行清理。
   expect((await pool.query('SELECT current_schema() AS name')).rows[0].name).toBe(schema);
   await pool.query(`DELETE FROM ${schema}.input_event`);

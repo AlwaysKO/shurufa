@@ -28,7 +28,7 @@ internal fun shouldCaptureForegroundChatEvent(
 ): Boolean = when (eventType) {
     AccessibilityEvent.TYPE_VIEW_SCROLLED -> false
     AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED -> !className.orEmpty().endsWith("EditText")
-    AccessibilityEvent.TYPE_VIEW_CLICKED -> visibleText.orEmpty().contains("发送")
+    AccessibilityEvent.TYPE_VIEW_CLICKED -> visibleText.orEmpty().isWeChatCaptureAction()
     else -> true
 }
 
@@ -40,10 +40,19 @@ internal fun shouldCaptureEmptyTreeWeChatOpen(
     sourceTreeUsable: Boolean,
 ): Boolean {
     if (eventType != AccessibilityEvent.TYPE_VIEW_CLICKED || activeTreeUsable || sourceTreeUsable) return false
-    if (className.isNullOrBlank()) return false
     val text = visibleText.orEmpty().trim()
-    return text.contains("发送") || EMPTY_TREE_CONVERSATION_ROW_TIME.matches(text)
+    if (className.isNullOrBlank() && !text.contains("转文字")) return false
+    return text.isWeChatCaptureAction() || EMPTY_TREE_CONVERSATION_ROW_TIME.matches(text)
 }
+
+internal fun emptyTreeWeChatCaptureDelays(visibleText: String?): List<Long> = when {
+    visibleText.orEmpty().trim().contains("转文字") -> listOf(1_500L, 6_000L)
+    visibleText.orEmpty().isWeChatCaptureAction() ||
+        EMPTY_TREE_CONVERSATION_ROW_TIME.matches(visibleText.orEmpty().trim()) -> listOf(700L)
+    else -> emptyList()
+}
+
+private fun String.isWeChatCaptureAction(): Boolean = contains("发送") || contains("转文字")
 
 private val EMPTY_TREE_CONVERSATION_ROW_TIME = Regex(
     "^(?:\\d{1,2}:\\d{2}|昨天|星期[一二三四五六日天]|\\d{1,2}月\\d{1,2}日)$",

@@ -19,7 +19,7 @@ internal data class CodedLearnedInput(val code: String, val choice: LearnedInput
 
 /** 独立数据库，不迁移或清空既有 Rime 用户库和剪贴板库。 */
 internal class LocalInputStore(context: Context, name: String = "local_input.db", private val now: () -> Long = System::currentTimeMillis) :
-    SQLiteOpenHelper(context.applicationContext, name, null, 5) {
+    SQLiteOpenHelper(context.applicationContext, name, null, 7) {
     private val json = Json { ignoreUnknownKeys = true }
     override fun onCreate(db: SQLiteDatabase) {
         createReportTables(db)
@@ -34,6 +34,20 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
         if (oldVersion < 5) createDictionarySyncTables(db)
         if (oldVersion < 4) createPersonalWords(db)
         if (oldVersion < 3) createReportTables(db)
+        if (oldVersion < 6 && !hasColumn(db, "pending_report", "online_confirmed_at")) {
+            db.execSQL("ALTER TABLE pending_report ADD COLUMN online_confirmed_at INTEGER")
+        }
+        if (oldVersion < 7) {
+            // v5 及更早版本只有固定线上目标；目标关联仅会在该目标明确确认后删除。
+            // 只在一次性升级中恢复这项历史事实，运行期绝不根据 URL 缺失推断线上成功。
+            db.execSQL(
+                """UPDATE pending_report SET online_confirmed_at=?
+                   WHERE online_confirmed_at IS NULL AND kind IN ('chat_asset','chat_messages')
+                     AND EXISTS(SELECT 1 FROM report_target t WHERE t.report_id=pending_report.id)
+                     AND NOT EXISTS(SELECT 1 FROM report_target t WHERE t.report_id=pending_report.id AND t.target=?)""",
+                arrayOf(now(), LEGACY_ONLINE_TARGET),
+            )
+        }
         if (oldVersion < 2) {
             db.execSQL("ALTER TABLE learned_input ADD COLUMN weight REAL NOT NULL DEFAULT 0")
             db.execSQL("UPDATE learned_input SET weight=count")
@@ -76,7 +90,7 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
     }
 
     private fun createReportTables(db: SQLiteDatabase) {
-        db.execSQL("CREATE TABLE pending_report (id TEXT PRIMARY KEY NOT NULL, kind TEXT NOT NULL, payload TEXT NOT NULL)")
+        db.execSQL("CREATE TABLE pending_report (id TEXT PRIMARY KEY NOT NULL, kind TEXT NOT NULL, payload TEXT NOT NULL, online_confirmed_at INTEGER)")
         db.execSQL("CREATE TABLE report_target (report_id TEXT NOT NULL, target TEXT NOT NULL, attempted_at INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(report_id,target))")
         db.execSQL("CREATE INDEX report_target_url ON report_target(target,attempted_at)")
     }
@@ -99,6 +113,28 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
     @Synchronized fun reportTargets(): List<String> = readableDatabase.rawQuery("SELECT DISTINCT target FROM report_target", null).use { c ->
         buildList { while(c.moveToNext()) add(c.getString(0)) }
     }
+
+    /** 域名变化只改写尚未确认的线上投递目标；正文和电脑目标保持原状。 */
+    @Synchronized fun replaceTarget(oldTarget: String, newTarget: String) {
+        if (oldTarget == newTarget) return
+        val db = writableDatabase
+        db.beginTransaction()
+        try {
+            db.execSQL(
+                "INSERT OR IGNORE INTO event_target(event_id,target) SELECT event_id,? FROM event_target WHERE target=?",
+                arrayOf(newTarget, oldTarget),
+            )
+            db.delete("event_target", "target=?", arrayOf(oldTarget))
+            db.execSQL(
+                """INSERT OR IGNORE INTO report_target(report_id,target,attempted_at)
+                   SELECT report_id,?,attempted_at FROM report_target WHERE target=?""",
+                arrayOf(newTarget, oldTarget),
+            )
+            db.delete("report_target", "target=?", arrayOf(oldTarget))
+            db.setTransactionSuccessful()
+        } finally { db.endTransaction() }
+    }
+
     @Synchronized fun pendingReports(target: String, limit: Int = 20, includeLocation: Boolean = true): List<PendingReport> = readableDatabase.rawQuery(
         "SELECT r.id,r.kind,LENGTH(r.payload) FROM pending_report r JOIN report_target t ON t.report_id=r.id WHERE t.target=? AND (? = '1' OR r.kind != 'location') ORDER BY CASE r.kind WHEN 'chat_asset' THEN 0 WHEN 'chat_messages' THEN 1 ELSE 2 END,t.attempted_at,r.rowid LIMIT ?",
         arrayOf(target, if(includeLocation) "1" else "0", limit.coerceIn(1,20).toString()),
@@ -127,15 +163,47 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
     @Synchronized fun deferReport(target: String, id: String) {
         writableDatabase.execSQL("UPDATE report_target SET attempted_at=? WHERE report_id=? AND target=?", arrayOf<Any>(now(),id,target))
     }
-    @Synchronized fun acknowledgeReports(target: String, ids: List<String>) {
+    @Synchronized fun acknowledgeReports(target: String, ids: List<String>, onlineTarget: String? = null) {
         val db=writableDatabase
         db.beginTransaction()
         try {
+            if (target == onlineTarget) ids.forEach {
+                db.execSQL("UPDATE pending_report SET online_confirmed_at=? WHERE id=?", arrayOf(now(), it))
+            }
             ids.forEach { db.delete("report_target","report_id=? AND target=?",arrayOf(it,target)) }
             db.execSQL("DELETE FROM pending_report WHERE NOT EXISTS(SELECT 1 FROM report_target t WHERE t.report_id=pending_report.id)")
             db.setTransactionSuccessful()
         } finally { db.endTransaction() }
     }
+
+    /** 线上未确认的记录没有时间戳，绝不参与过期删除。 */
+    @Synchronized fun pruneExpiredLocalChatReports(onlineTarget: String, retentionMs: Long) {
+        require(retentionMs >= 0)
+        val cutoff = now() - retentionMs
+        val db = writableDatabase
+        db.beginTransaction()
+        try {
+            db.execSQL(
+                """DELETE FROM report_target
+                   WHERE target!=? AND report_id IN (
+                     SELECT id FROM pending_report
+                     WHERE kind IN ('chat_asset','chat_messages')
+                       AND online_confirmed_at IS NOT NULL AND online_confirmed_at<=?
+                   )""",
+                arrayOf(onlineTarget, cutoff),
+            )
+            db.execSQL("DELETE FROM pending_report WHERE NOT EXISTS(SELECT 1 FROM report_target t WHERE t.report_id=pending_report.id)")
+            db.setTransactionSuccessful()
+        } finally { db.endTransaction() }
+    }
+
+    private fun hasColumn(db: SQLiteDatabase, table: String, column: String): Boolean =
+        db.rawQuery("PRAGMA table_info($table)", null).use { cursor ->
+            val nameIndex = cursor.getColumnIndex("name")
+            var found = false
+            while (cursor.moveToNext() && !found) found = cursor.getString(nameIndex) == column
+            found
+        }
 
     @Synchronized @JvmOverloads fun learn(code: String, text: String, targets: List<String> = emptyList(), pinyin: String = "") {
         if (!validCode(code) || text.length !in 1..30 || text.any { it !in '\u4e00'..'\u9fff' }) return
@@ -262,4 +330,8 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
     private fun validCode(code: String): Boolean =
         (code.length in 3..30 && code.all { it in '2'..'9' }) ||
             (code.length in 2..30 && code.all { it in 'a'..'z' })
+
+    private companion object {
+        const val LEGACY_ONLINE_TARGET = "https://my.dog8ball.com"
+    }
 }

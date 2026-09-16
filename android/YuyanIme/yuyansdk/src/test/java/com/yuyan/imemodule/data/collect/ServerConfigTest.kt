@@ -6,6 +6,23 @@ import org.junit.Test
 class ServerConfigTest {
 
     @Test
+    fun `online target accepts only clean https origin`() {
+        assertEquals("https://new.example.com", normalizeOnlineServerUrl(" https://new.example.com/ "))
+        assertEquals(null, normalizeOnlineServerUrl("http://new.example.com"))
+        assertEquals(null, normalizeOnlineServerUrl("https://user:pass@new.example.com"))
+        assertEquals(null, normalizeOnlineServerUrl("https://new.example.com/api"))
+        assertEquals(null, normalizeOnlineServerUrl("https://new.example.com?q=1"))
+    }
+
+    @Test
+    fun `collector targets use configured online domain independently from local target`() {
+        assertEquals(
+            listOf("http://127.0.0.1:3000", "https://new.example.com"),
+            collectorTargets(null, "https://new.example.com/"),
+        )
+    }
+
+    @Test
     fun `debug build uses configured local url when present`() {
         assertEquals(
             "http://192.168.1.20:3000",

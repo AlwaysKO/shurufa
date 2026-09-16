@@ -13,6 +13,106 @@ import java.util.UUID
 @Config(sdk = [28])
 class LocalInputStoreTest {
     private val context = ApplicationProvider.getApplicationContext<Context>()
+    private val sevenDays = 7L * 24 * 60 * 60 * 1000
+
+    @Test fun `聊天报告线上确认后本地失败仅保留七天`() {
+        val name = "test-${UUID.randomUUID()}.db"
+        var now = 1_000L
+        val store = LocalInputStore(context, name, now = { now })
+        try {
+            val report = PendingReport("chat-asset-1", "chat_asset", "{}")
+            store.enqueueReport(report, listOf("http://local", "https://online"))
+            store.acknowledgeReports("https://online", listOf(report.id), "https://online")
+
+            now += sevenDays - 1
+            store.pruneExpiredLocalChatReports("https://online", sevenDays)
+            assertEquals(listOf(report.id), store.pendingReports("http://local").map { it.id })
+
+            now += 1
+            store.pruneExpiredLocalChatReports("https://online", sevenDays)
+            assertTrue(store.pendingReports("http://local").isEmpty())
+            assertTrue(store.reportTargets().isEmpty())
+        } finally { store.close(); context.deleteDatabase(name) }
+    }
+
+    @Test fun `聊天报告线上未确认无论多久都不能删除`() {
+        val name = "test-${UUID.randomUUID()}.db"
+        var now = 1_000L
+        val store = LocalInputStore(context, name, now = { now })
+        try {
+            val report = PendingReport("chat-message-1", "chat_messages", "{}")
+            store.enqueueReport(report, listOf("http://local", "https://online"))
+            now += sevenDays * 10
+            store.pruneExpiredLocalChatReports("https://online", sevenDays)
+            assertEquals(listOf(report.id), store.pendingReports("http://local").map { it.id })
+            assertEquals(listOf(report.id), store.pendingReports("https://online").map { it.id })
+        } finally { store.close(); context.deleteDatabase(name) }
+    }
+
+    @Test fun `聊天报告两端确认后立即删除手机记录`() {
+        val name = "test-${UUID.randomUUID()}.db"
+        val store = LocalInputStore(context, name, now = { 1_000L })
+        try {
+            val report = PendingReport("chat-message-2", "chat_messages", "{}")
+            store.enqueueReport(report, listOf("http://local", "https://online"))
+            store.acknowledgeReports("https://online", listOf(report.id), "https://online")
+            store.acknowledgeReports("http://local", listOf(report.id), "https://online")
+            assertTrue(store.reportTargets().isEmpty())
+            assertTrue(store.pendingReports("http://local").isEmpty())
+            assertTrue(store.pendingReports("https://online").isEmpty())
+        } finally { store.close(); context.deleteDatabase(name) }
+    }
+
+    @Test fun `线上域名变化只迁移未确认线上目标并保留电脑目标`() {
+        val name = "test-${UUID.randomUUID()}.db"
+        val store = LocalInputStore(context, name, now = { 1_000L })
+        try {
+            val event = MobileEvent("event-domain", "device-1", "commit", text = "内容", occurredAt = "2026-09-16T00:00:00Z")
+            val report = PendingReport("chat-domain", "chat_asset", "{}")
+            store.enqueue(event, listOf("http://local", "https://old.example"))
+            store.enqueueReport(report, listOf("http://local", "https://old.example"))
+
+            store.replaceTarget("https://old.example", "https://new.example")
+
+            assertTrue(store.pending("https://old.example").isEmpty())
+            assertTrue(store.pendingReports("https://old.example").isEmpty())
+            assertEquals(listOf(event), store.pending("https://new.example"))
+            assertEquals(listOf(report.id), store.pendingReports("https://new.example").map { it.id })
+            assertEquals(listOf(event), store.pending("http://local"))
+            assertEquals(listOf(report.id), store.pendingReports("http://local").map { it.id })
+        } finally { store.close(); context.deleteDatabase(name) }
+    }
+
+    @Test fun `当前版本不能根据线上URL缺失推断成功并删除`() {
+        val name = "test-${UUID.randomUUID()}.db"
+        var now = 1_000L
+        val store = LocalInputStore(context, name, now = { now })
+        try {
+            val report = PendingReport("legacy-chat-1", "chat_asset", "{}")
+            store.enqueueReport(report, listOf("http://local", "https://online"))
+            store.acknowledgeReports("https://online", listOf(report.id)) // 旧版没有保存线上确认时间
+            now += sevenDays * 10
+            store.pruneExpiredLocalChatReports("https://online", sevenDays)
+            assertEquals(listOf(report.id), store.pendingReports("http://local").map { it.id })
+        } finally { store.close(); context.deleteDatabase(name) }
+    }
+
+    @Test fun `版本五升级保留聊天报告并增加线上确认状态`() {
+        val name = "test-${UUID.randomUUID()}.db"
+        context.openOrCreateDatabase(name, 0, null).use { db ->
+            db.execSQL("CREATE TABLE pending_report (id TEXT PRIMARY KEY NOT NULL,kind TEXT NOT NULL,payload TEXT NOT NULL)")
+            db.execSQL("CREATE TABLE report_target (report_id TEXT NOT NULL,target TEXT NOT NULL,attempted_at INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(report_id,target))")
+            db.execSQL("INSERT INTO pending_report VALUES('old-chat','chat_messages','{}')")
+            db.execSQL("INSERT INTO report_target VALUES('old-chat','http://local',0)")
+            db.version = 5
+        }
+        val store = LocalInputStore(context, name, now = { 1_000L })
+        try {
+            assertEquals("old-chat", store.pendingReports("http://local").single().id)
+            store.pruneExpiredLocalChatReports("https://online", 0)
+            assertTrue(store.pendingReports("http://local").isEmpty())
+        } finally { store.close(); context.deleteDatabase(name) }
+    }
     @Test fun `版本三升级新增个人读音表但不改旧次数权重和待上传报告`() {
         val name = "test-${UUID.randomUUID()}.db"
         val old = LocalInputStore(context, name)

@@ -26,6 +26,8 @@ export interface MobileEvent {
   session_id?: string | null;
   sequence_no?: number | null;
   package_name?: string | null;
+  /** 手机系统显示名，可选；存入事件 metadata，旧客户端仍兼容。 */
+  app_name?: string | null;
   editor_id?: string | null;
   text?: string | null;
   text_before?: string | null;

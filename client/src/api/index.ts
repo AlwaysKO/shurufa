@@ -53,6 +53,7 @@ export interface HeatmapCell {
 
 export interface AppStat {
   package_name: string;
+  app_name?: string | null;
   event_count: string;
   input_chars: string;
 }
@@ -200,7 +201,7 @@ export interface ReportData {
   };
   peak_hours: Array<{ hour: number; chars: string }>;
   source_distribution: { typed: number; pasted: number; external: number; voice: number; total: number };
-  top_apps: Array<{ package_name: string; event_count: string; input_chars: string }>;
+  top_apps: Array<{ package_name: string; app_name?: string | null; event_count: string; input_chars: string }>;
   top_phrases: Array<{ phrase: string; use_count: string }>;
   top_locations: Array<{
     latitude: string;
@@ -232,6 +233,10 @@ export interface ExportData {
 export interface CleanupResult {
   scope: 'events' | 'all';
   deleted: Record<string, number>;
+}
+
+export interface CollectorSetting {
+  collector_base_url: string;
 }
 
 export interface StickerRow {
@@ -559,6 +564,9 @@ export const api = {
   exportData: () => get<ExportData>(`/api/v1/dashboard/export`),
   cleanup: (body: { confirm: string; scope: 'events' | 'all'; from?: string; to?: string; package_name?: string }) =>
     post<CleanupResult>(`/api/v1/dashboard/cleanup`, body),
+  collectorSetting: () => get<CollectorSetting>('/api/v1/dashboard/settings/collector'),
+  updateCollectorSetting: (collectorBaseUrl: string) =>
+    put<{ ok: boolean; collector_base_url: string }>('/api/v1/dashboard/settings/collector', { collector_base_url: collectorBaseUrl }),
   synthesisLibrary: () => get<{ assets: SynthesisAsset[]; total: number }>('/api/v1/dashboard/synthesis-library'),
   uploadSynthesisAsset: (body: SynthesisUpload) => post<{ asset: SynthesisAsset; duplicate: boolean }>('/api/v1/dashboard/synthesis-library', body),
   deleteSynthesisAsset: (id: string) => del(`/api/v1/dashboard/synthesis-library/${encodeURIComponent(id)}`),
@@ -687,8 +695,9 @@ export const deviceDetailLines = (d?: DeviceRow | null): string[] => {
 export const networkName = (t: string | null): string =>
   ({ wifi: 'Wi-Fi', mobile: '移动网络', ethernet: '有线', bluetooth: '蓝牙', vpn: 'VPN' })[t ?? ''] ?? t ?? '-';
 
-/** 常见包名 → 中文名 */
-export const appName = (pkg: string | null): string => {
+/** 优先系统真实名称，其次常见名称映射；未知应用保留完整包名。 */
+export const appName = (pkg: string | null, reportedName?: string | null): string => {
+  if (reportedName?.trim()) return reportedName.trim();
   if (!pkg) return '未知';
   const map: Record<string, string> = {
     'com.tencent.mm': '微信',
@@ -701,6 +710,5 @@ export const appName = (pkg: string | null): string => {
     'com.zhihu.android': '知乎',
     'com.tencent.wechat': '微信',
   };
-  const short = pkg.split('.').slice(-2).join('.');
-  return map[pkg] ?? short;
+  return map[pkg] ?? pkg;
 };

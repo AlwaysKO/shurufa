@@ -1,8 +1,10 @@
+import { withAppNames } from '../lib/appNames.js';
 import { Router } from 'express';
 import type pg from 'pg';
 import { resolveMissingIps } from '../lib/ipgeo.js';
 import { resolveMissingAddresses } from '../lib/geocoder.js';
 import { queryGroupedEdits } from './groupedEdits.js';
+import { collectorBaseUrl, saveCollectorBaseUrl } from '../lib/runtimeSettings.js';
 
 
 /** 事件内容类型：语音 / 图片 / 文字（用于列表展示与筛选） */
@@ -35,6 +37,19 @@ function daysAgo(days: number): Date {
 
 export function createDashboardRouter(pool: pg.Pool): Router {
   const router = Router();
+
+  router.get('/settings/collector', async (_req, res, next) => {
+    try { res.json({ collector_base_url: await collectorBaseUrl(pool) }); }
+    catch (err) { next(err); }
+  });
+
+  router.put('/settings/collector', async (req, res, next) => {
+    try {
+      const value = await saveCollectorBaseUrl(pool, req.body?.collector_base_url);
+      if (!value) return res.status(400).json({ error: 'collector_base_url must be an HTTPS origin' });
+      res.json({ ok: true, collector_base_url: value });
+    } catch (err) { next(err); }
+  });
 
   /** 输入总览：今日/近7天/累计统计，输入方式占比，删除修改次数 */
   router.get('/overview', async (req, res, next) => {
@@ -180,7 +195,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
          LIMIT 20`,
         [res.locals.userId, daysAgo(days)],
       );
-      res.json({ days, apps: result.rows });
+      res.json({ days, apps: await withAppNames(pool, res.locals.userId, result.rows) });
     } catch (err) {
       next(err);
     }
@@ -569,7 +584,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
           voice: Number(s.voiced),
           total: sourceTotal,
         },
-        top_apps: topApps.rows,
+        top_apps: await withAppNames(pool, res.locals.userId, topApps.rows),
         top_phrases: topPhrases.rows,
         top_locations: topLocations.rows,
       });

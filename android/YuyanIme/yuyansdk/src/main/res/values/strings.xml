@@ -186,7 +186,7 @@
     <string name="ime_hide_icon_tips">启动器不显示图标，部分机型无效</string>
 
     <string name="setting_server_url">电脑 API 地址</string>
-    <string name="setting_server_url_tips">留空为 USB ADB 的 http://127.0.0.1:3000（需 adb reverse）。只有检测到 USB 数据连接且该地址 /health 正常时才上传本地；线上始终同步到 https://my.dog8ball.com。局域网地址请使用 HTTPS。</string>
+    <string name="setting_server_url_tips">留空为 USB ADB 的 http://127.0.0.1:3000（需 adb reverse）。只有检测到 USB 数据连接且该地址 /health 正常时才上传本地；线上地址由网页后台“数据管理”配置并从当前线上后台安全迁移。局域网地址请使用 HTTPS。</string>
     <string name="setting_server_url_auto">默认：http://127.0.0.1:3000；仅 USB 连接且健康检查通过时上传本地</string>
     <string name="setting_location_tracking">位置采集</string>
     <string name="setting_location_tracking_tips">每分钟上报一次位置，仅存储在你的服务器（同位置不重复记录）</string>

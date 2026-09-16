@@ -60,7 +60,7 @@ function mount() {
   const require = (name: string) => {
     if (name === 'vue') return Vue;
     if (name === 'echarts') return { init };
-    if (name === '../api') return { api: { report: request }, appName: (s: string) => s };
+    if (name === '../api') return { api: { report: request }, appName: (s: string, name?: string) => name || s };
     throw Error(`Unexpected import: ${name}`);
   };
   new Function('require', 'module', 'exports', 'document', 'window', code)(require, module, module.exports,
@@ -150,4 +150,13 @@ it('首次请求失败后可通过今天按钮重新加载图表', async () => {
   h.click('今天'); h.pending[1].resolve(report()); await flush();
   expect(h.text()).not.toContain('加载失败'); expect(h.container()).toBeDefined();
   expect(h.init).toHaveBeenCalledTimes(1);
+});
+
+
+it('报表摘要及 Top 应用优先展示接口返回的真实名称', async () => {
+  const h = mount(); h.pending[0].resolve({ ...report(), top_apps: [
+    { package_name: 'org.example.chat', app_name: '我的聊天', input_chars: '120', event_count: '12' },
+  ] }); await flush();
+  expect(h.text()).toContain('主要在 我的聊天 中');
+  expect(h.text()).not.toContain('org.example.chat');
 });

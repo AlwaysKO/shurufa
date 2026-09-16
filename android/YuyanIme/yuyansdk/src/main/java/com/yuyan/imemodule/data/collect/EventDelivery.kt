@@ -18,6 +18,7 @@ internal class EventDelivery(
     private val http: OkHttpClient,
     private val deviceId: String,
     private val deviceJson: String,
+    private val onlineTarget: () -> String? = { null },
     private val allowed: (String?) -> Boolean = { true },
 ) {
     private val locks = ConcurrentHashMap<String, Any>()
@@ -58,7 +59,7 @@ internal class EventDelivery(
                     }.toString()
                     post(target, path, payload, if (isChat) null else report.id)
                 } catch (_: Exception) { false }
-                if (sent) store.acknowledgeReports(target, listOf(report.id))
+                if (sent) store.acknowledgeReports(target, listOf(report.id), onlineTarget())
                 else {
                     store.deferReport(target, report.id) // 保留失败项，但给后续正常报告发送机会。
                     registered.remove(target)

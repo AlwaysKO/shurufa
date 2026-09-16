@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { api } from '../api';
 
 const exporting = ref(false);
@@ -11,8 +11,30 @@ const scope = ref<'events' | 'all'>('events');
 const from = ref('');
 const to = ref('');
 const pkg = ref('');
+const collectorBaseUrl = ref('');
+const collectorBusy = ref(false);
+const collectorMessage = ref('');
 
 const canCleanup = computed(() => confirmText.value === 'DELETE' && !busy.value);
+
+async function loadCollectorSetting() {
+  collectorMessage.value = '';
+  try { collectorBaseUrl.value = (await api.collectorSetting()).collector_base_url; }
+  catch (e) { collectorMessage.value = `读取失败：${(e as Error).message}`; }
+}
+
+async function saveCollectorSetting() {
+  collectorBusy.value = true;
+  collectorMessage.value = '';
+  try {
+    const result = await api.updateCollectorSetting(collectorBaseUrl.value);
+    collectorBaseUrl.value = result.collector_base_url;
+    collectorMessage.value = '已保存。手机下一次连接当前线上后台时会迁移尚未确认的线上队列。';
+  } catch (e) { collectorMessage.value = `保存失败：${(e as Error).message}`; }
+  finally { collectorBusy.value = false; }
+}
+
+onMounted(loadCollectorSetting);
 
 /** 导出全部数据为 JSON 文件下载 */
 async function doExport() {
@@ -67,6 +89,16 @@ async function doCleanup() {
 
 <template>
   <div class="card">
+    <h3>线上采集 API 域名</h3>
+    <p class="desc">只填写 HTTPS 根地址，例如 https://collector.example.com。请先保持旧域名可用，等手机取得新配置后再停用旧域名。</p>
+    <form class="collector-form" @submit.prevent="saveCollectorSetting">
+      <input v-model.trim="collectorBaseUrl" type="url" required placeholder="https://collector.example.com" />
+      <button class="primary" type="submit" :disabled="collectorBusy">{{ collectorBusy ? '保存中…' : '保存域名' }}</button>
+    </form>
+    <p v-if="collectorMessage" class="msg" :class="{ err: collectorMessage.includes('失败') }">{{ collectorMessage }}</p>
+  </div>
+
+  <div class="card">
     <h3>导出数据（JSON）</h3>
     <p class="desc">将设备、事件日志、词频统计、补全模型、位置轨迹全部导出为 JSON 文件，用于备份或迁移。</p>
     <button class="primary" :disabled="exporting" @click="doExport">{{ exporting ? '导出中…' : '导出全部数据' }}</button>
@@ -120,4 +152,6 @@ button.danger-btn:disabled { opacity: .4; cursor: not-allowed; }
 .danger { border-left: 4px solid #ff4757; }
 .msg { font-size: 13px; margin-top: 12px; color: #2ed573; }
 .msg.err { color: #ff4757; }
+.collector-form { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.collector-form input { min-width:min(460px, 100%); padding:8px 10px; border:1px solid #dfe4ea; border-radius:6px; }
 </style>

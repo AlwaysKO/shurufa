@@ -35,6 +35,11 @@ class ForegroundChatCaptureBridgeTest {
             "android.widget.Button",
             visibleText = "发送",
         ))
+        assertTrue(shouldCaptureForegroundChatEvent(
+            AccessibilityEvent.TYPE_VIEW_CLICKED,
+            "android.widget.TextView",
+            visibleText = "转文字",
+        ))
     }
 
     @Test
@@ -85,6 +90,13 @@ class ForegroundChatCaptureBridgeTest {
         ))
         assertTrue(shouldCaptureEmptyTreeWeChatOpen(
             eventType = AccessibilityEvent.TYPE_VIEW_CLICKED,
+            className = null,
+            visibleText = "转文字",
+            activeTreeUsable = false,
+            sourceTreeUsable = false,
+        ))
+        assertTrue(shouldCaptureEmptyTreeWeChatOpen(
+            eventType = AccessibilityEvent.TYPE_VIEW_CLICKED,
             className = "android.widget.Button",
             visibleText = "发送",
             activeTreeUsable = false,
@@ -104,5 +116,19 @@ class ForegroundChatCaptureBridgeTest {
             activeTreeUsable = true,
             sourceTreeUsable = false,
         ))
+    }
+
+    @Test
+    fun weChatVoiceTranscriptClickUsesBoundedDelayedScreenshots() {
+        assertTrue(shouldCaptureEmptyTreeWeChatOpen(
+            eventType = AccessibilityEvent.TYPE_VIEW_CLICKED,
+            className = "android.widget.TextView",
+            visibleText = "转文字",
+            activeTreeUsable = false,
+            sourceTreeUsable = false,
+        ))
+        assertEquals(listOf(1_500L, 6_000L), emptyTreeWeChatCaptureDelays("转文字"))
+        assertEquals(listOf(700L), emptyTreeWeChatCaptureDelays("发送"))
+        assertTrue(emptyTreeWeChatCaptureDelays("播放语音").isEmpty())
     }
 }

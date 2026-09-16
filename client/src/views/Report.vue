@@ -37,7 +37,7 @@ const headline = computed(() => {
   const chars = Number(d.summary.input_chars);
   const events = Number(d.summary.input_events);
   const peak = d.peak_hours[0];
-  const app = d.top_apps[0] ? appName(d.top_apps[0].package_name) : null;
+  const app = d.top_apps[0] ? appName(d.top_apps[0].package_name, d.top_apps[0].app_name) : null;
   const parts = [`${d.type === 'daily' ? '这一天' : '这一周'}你输入了 ${chars.toLocaleString()} 字`];
   if (events > 0) parts.push(`${events.toLocaleString()} 次`);
   if (d.type === 'weekly' && Number(d.summary.active_days) > 0) parts.push(`活跃 ${d.summary.active_days} 天`);
@@ -185,7 +185,7 @@ onBeforeUnmount(() => {
       <div class="card">
         <h3>Top 应用</h3>
         <div v-for="a in data.top_apps" :key="a.package_name" class="rank-row">
-          <span class="rank-label app-label">{{ appName(a.package_name) }}</span>
+          <span class="rank-label app-label" :title="`${appName(a.package_name, a.app_name)} (${a.package_name})`">{{ appName(a.package_name, a.app_name) }}</span>
           <span class="pct-bar" :style="{ width: appBarWidth(a.input_chars) }"></span>
           <span class="rank-num">{{ Number(a.input_chars).toLocaleString() }} 字</span>
         </div>

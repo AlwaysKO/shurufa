@@ -10,23 +10,35 @@ let chart: echarts.ECharts | null = null;
 async function load() {
   try {
     const res = await api.apps(days.value);
-    const rows = res.apps.map((a) => ({ name: appName(a.package_name), chars: Number(a.input_chars), events: Number(a.event_count) }));
+    const rows = res.apps.map((a) => ({ packageName: a.package_name, name: appName(a.package_name, a.app_name), chars: Number(a.input_chars), events: Number(a.event_count) }));
     render(rows);
   } catch (e) {
     error.value = (e as Error).message;
   }
 }
 
-function render(rows: Array<{ name: string; chars: number; events: number }>) {
+function render(rows: Array<{ packageName: string; name: string; chars: number; events: number }>) {
   const el = document.getElementById('apps-chart');
   if (!el) return;
   chart ??= echarts.init(el);
+  const ordered = [...rows].reverse();
+  const names = new Map(rows.map(row => [row.packageName, row.name]));
   chart.setOption({
-    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-    grid: { left: 100, right: 40, top: 20, bottom: 30 },
+    tooltip: {
+      trigger: 'axis', axisPointer: { type: 'shadow' }, renderMode: 'richText', confine: true,
+      formatter: (params: unknown) => {
+        const item = (Array.isArray(params) ? params[0] : params) as { dataIndex: number };
+        const row = ordered[item.dataIndex];
+        return row ? `${row.name}\n${row.packageName}\n输入字符：${row.chars.toLocaleString()}\n输入事件：${row.events.toLocaleString()}` : '';
+      },
+    },
+    grid: { left: 12, right: 28, top: 20, bottom: 30, containLabel: true },
     xAxis: { type: 'value' },
-    yAxis: { type: 'category', data: rows.map((r) => r.name).reverse() },
-    series: [{ name: '输入字符', type: 'bar', data: rows.map((r) => r.chars).reverse(), itemStyle: { color: '#2ed573' } }],
+    yAxis: {
+      type: 'category', data: ordered.map(row => row.packageName),
+      axisLabel: { width: 140, overflow: 'truncate', formatter: (pkg: string) => names.get(pkg) ?? pkg },
+    },
+    series: [{ name: '输入字符', type: 'bar', data: ordered.map(row => row.chars), itemStyle: { color: '#2ed573' } }],
   });
 }
 

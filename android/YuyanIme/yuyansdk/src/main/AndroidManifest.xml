@@ -10,6 +10,11 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <queries>
+        <!-- 仅让已知输入目标的应用标签可查询，不枚举或上报安装列表。 -->
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
         <provider android:authorities="user_dictionary" />
         <intent>
             <action android:name="android.intent.action.GET_CONTENT"/>

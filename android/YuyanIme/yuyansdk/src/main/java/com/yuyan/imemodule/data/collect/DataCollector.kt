@@ -31,6 +31,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.jsonObject
@@ -66,6 +67,8 @@ object DataCollector {
     private const val FLUSH_INTERVAL_MS = 30_000L
     private const val LOCATION_INTERVAL_MS = 60_000L
     private const val LOCATION_MIN_DISTANCE_M = 10f
+    private const val LOCAL_CHAT_RETENTION_MS = 7L * 24 * 60 * 60 * 1000
+    private const val ONLINE_CONFIG_REFRESH_MS = 5L * 60 * 1000
 
     private val json = Json { ignoreUnknownKeys = true }
     private val http = OkHttpClient.Builder()
@@ -74,6 +77,7 @@ object DataCollector {
         .callTimeout(15, TimeUnit.SECONDS)
         .build()
 
+    private val appNames = AppNameResolver()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     @Volatile private var eventStore: LocalInputStore? = null
     @Volatile private var delivery: EventDelivery? = null
@@ -87,6 +91,8 @@ object DataCollector {
     @Synchronized private fun store(context: Context): LocalInputStore =
         eventStore ?: LocalInputStore(context).also { eventStore = it }
     private val locationUploadMutex = Mutex()
+    private val onlineConfigMutex = Mutex()
+    @Volatile private var lastOnlineConfigRefreshElapsed = 0L
     private val passiveRegistrationGate = LocationRegistrationGate()
     private val activeRegistrationGate = LocationRegistrationGate()
     // SimpleDateFormat 非线程安全（IME 主线程 + IO 协程并发调用），用 ThreadLocal 隔离
@@ -189,9 +195,14 @@ object DataCollector {
             romVersion = Build.DISPLAY,
             ramMb = (totalMem() / 1024 / 1024).toInt(),
         )
-        delivery = EventDelivery(store(context), http, info.id, json.encodeToString(DeviceInfo.serializer(), info)) { kind ->
-            CollectionConsent.enabled(context) && (kind != "location" || locationTrackingEnabled)
-        }
+        delivery = EventDelivery(
+            store = store(context),
+            http = http,
+            deviceId = info.id,
+            deviceJson = json.encodeToString(DeviceInfo.serializer(), info),
+            onlineTarget = { ServerConfig.baseUrl },
+            allowed = { kind -> CollectionConsent.enabled(context) && (kind != "location" || locationTrackingEnabled) },
+        )
         requestSync()
     }
 
@@ -219,6 +230,7 @@ object DataCollector {
             eventType = eventType,
             text = text?.take(5000),
             packageName = packageName,
+            appName = appNames.resolve(context, packageName),
             editorId = editorId,
             sequenceNo = sequenceNo ?: System.currentTimeMillis(),
             sessionId = sessionId,
@@ -245,9 +257,17 @@ object DataCollector {
     suspend fun flushNow() = coroutineScope {
         val uploader = delivery ?: return@coroutineScope
         val app = appContext ?: return@coroutineScope
-        if (!CollectionConsent.enabled(app)) return@coroutineScope
+        if (!CollectionConsent.enabled(app)) {
+            eventStore?.pruneExpiredLocalChatReports(ServerConfig.baseUrl, LOCAL_CHAT_RETENTION_MS)
+            return@coroutineScope
+        }
+        refreshOnlineServerUrl(app)
+        val onlineTarget = ServerConfig.baseUrl
+        eventStore?.let {
+            it.pruneExpiredLocalChatReports(onlineTarget, LOCAL_CHAT_RETENTION_MS)
+        }
         val targets = (ServerConfig.eventTargets + eventStore?.targets().orEmpty() + eventStore?.reportTargets().orEmpty()).distinct()
-        val targetGate = collectorTargetGate(app, ServerConfig.baseUrl)
+        val targetGate = collectorTargetGate(app, onlineTarget)
         targets.forEach { target ->
             if (!flushing.add(target)) return@forEach
             launch(Dispatchers.IO) {
@@ -273,6 +293,31 @@ object DataCollector {
                 } finally { flushing.remove(target) }
             }
         }
+    }
+
+    private suspend fun refreshOnlineServerUrl(context: Context) = onlineConfigMutex.withLock {
+        val elapsed = android.os.SystemClock.elapsedRealtime()
+        if (lastOnlineConfigRefreshElapsed != 0L &&
+            elapsed - lastOnlineConfigRefreshElapsed in 0 until ONLINE_CONFIG_REFRESH_MS
+        ) return@withLock
+        lastOnlineConfigRefreshElapsed = elapsed
+        val current = ServerConfig.baseUrl
+        val discovered = withContext(Dispatchers.IO) {
+            try {
+                val request = Request.Builder()
+                    .url("$current/api/v1/mobile/config")
+                    .header("X-Device-Id", deviceId(context))
+                    .get()
+                    .build()
+                http.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) null else json.parseToJsonElement(response.body?.string().orEmpty())
+                        .jsonObject["collector_base_url"]?.jsonPrimitive?.contentOrNull
+                }
+            } catch (_: Exception) { null }
+        } ?: return@withLock
+        val (oldTarget, newTarget) = ServerConfig.updateOnlineServerUrl(discovered) ?: return@withLock
+        store(context).replaceTarget(oldTarget, newTarget)
+        Log.i(TAG, "线上同步目标已按后台配置更新")
     }
 
     /** Durable before returning; callers never wait for network. */
@@ -582,6 +627,7 @@ internal data class MobileEvent(
     @SerialName("network_type") val networkType: String? = null,
     val source: String? = null,
     @SerialName("occurred_at") val occurredAt: String,
+    @SerialName("app_name") val appName: String? = null,
 )
 
 @Serializable

@@ -127,7 +127,9 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                 sourceTreeUsable = sourceSnapshot.isUsableAccessibilitySnapshot(),
             )
         ) {
-            mainHandler.postDelayed(::captureEmptyTreeWeChatScreenshot, FOREGROUND_SEND_RENDER_DELAY_MILLIS)
+            emptyTreeWeChatCaptureDelays(eventText).forEach { delayMillis ->
+                mainHandler.postDelayed(::captureEmptyTreeWeChatScreenshot, delayMillis)
+            }
             return
         }
         if (!regularCapture) return

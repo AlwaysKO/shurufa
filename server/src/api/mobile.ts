@@ -4,6 +4,8 @@ import type express from 'express';
 import type pg from 'pg';
 import { EVENT_TYPES, type DeviceInfo, type MobileEvent, type SessionInfo } from '../types/events.js';
 import { locationKey } from '../lib/geocoder.js';
+import { eventMetadata } from '../lib/appNames.js';
+import { collectorBaseUrl } from '../lib/runtimeSettings.js';
 
 
 /** 批量插入事件（幂等：冲突跳过），返回实际插入数 */
@@ -31,7 +33,7 @@ async function insertEvents(pool: pg.Pool, userId: string, events: MobileEvent[]
       e.text ?? null,
       e.input_code ?? null,
       e.clipboard_id ?? null,
-      JSON.stringify(e.metadata ?? {}),
+      JSON.stringify(eventMetadata(e)),
       clientIp ?? null,
       e.network_type ?? null,
       e.text_before ?? null,
@@ -59,6 +61,12 @@ function requestIp(req: express.Request): string {
 export function createMobileRouter(pool: pg.Pool): Router {
   const router = Router();
   router.use(createMobileReportRouter(pool));
+
+  router.get('/config', async (_req, res, next) => {
+    try {
+      res.json({ collector_base_url: await collectorBaseUrl(pool) });
+    } catch (err) { next(err); }
+  });
 
   /** 注册/更新设备 */
   router.post('/device', async (req, res, next) => {
