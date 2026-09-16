@@ -7,6 +7,7 @@ const total = ref(0), page = ref(1), deviceId = ref(''), q = ref(''), status = r
 const view = ref('raw');
 const selected = ref<string[]>([]), busy = ref(false), loading = ref(false), error = ref(''), notice = ref('');
 let generation = 0;
+const canManage = computed(() => devices.value.some(d => d.in_group) && devices.value.filter(d => d.in_group).every(d => d.restore_enabled !== false));
 const pageCount = computed(() => Math.max(1,Math.ceil(total.value/50)));
 const label = (d:DictionaryDevice) => d.dashboard_name || [d.brand,d.model].filter(Boolean).join(' ') || d.name || d.device_id;
 const deviceName = (id:string) => devices.value.find(d => d.device_id===id) ? label(devices.value.find(d => d.device_id===id)!) : id;
@@ -24,13 +25,13 @@ async function load(targetPage=page.value) {
 }
 function filterDevice(id:string) {deviceId.value=id;view.value='raw';void load(1);}
 async function bind(d:DictionaryDevice) {
-  if(busy.value || !confirm(`将「${label(d)} · ${d.device_id.slice(-8)}」所属的个人词库与当前词库合并？其已绑定手机也会一起加入，原始上报来源保留，已有停用/删除规则优先。请确认都是你要共享词库的手机。`)) return;
+  if(busy.value || !canManage.value || d.restore_enabled === false || !confirm(`将「${label(d)} · ${d.device_id.slice(-8)}」所属的个人词库与当前词库合并？其已绑定手机也会一起加入，原始上报来源保留，已有停用/删除规则优先。请确认都是你要共享词库的手机。`)) return;
   busy.value=true; error.value=''; notice.value='';
   try {await dictionaryApi.bind(d.device_id);notice.value='后台绑定已保存，等待手机联网同步。';await load(1);}
   catch(e) {error.value=(e as Error).message;} finally {busy.value=false;}
 }
 async function decide(texts:string[],value:DictionaryStatus) {
-  if(busy.value || !texts.length) return;
+  if(busy.value || !canManage.value || !texts.length) return;
   if(value!=='enabled' && !confirm(`${statuses[value]}这 ${texts.length} 个词的个人学习与加权？绑定手机同步后生效，原始上报明细保留；不会屏蔽公共词库中的同名词。`)) return;
   busy.value=true;error.value='';notice.value='';
   try {await dictionaryApi.decisions([...new Set(texts)],value);notice.value='决策已保存，等待手机确认应用。';await load();}
@@ -48,15 +49,16 @@ onMounted(()=>load(1)); onBeforeUnmount(()=>{generation++;});
       <div class="device-grid">
         <article v-for="d in devices" :key="d.device_id" class="device-card">
           <strong>{{ label(d) }}</strong><small>{{ [d.brand,d.model].filter(Boolean).join(' ') }}</small><small>{{ d.device_id }}</small>
-          <p>{{ d.in_group ? (d.synced ? '手机已确认应用' : '等待手机同步') : '未绑定此词库' }}</p>
+          <p>{{ d.restore_enabled === false ? '仅备份：本站收到上报，不向手机下发管理决策' : d.in_group ? (d.synced ? '手机已确认应用' : '等待手机同步') : '未绑定此词库' }}</p>
           <p>最近上报：{{ date(d.last_report_at) }}<br>应用确认：{{ date(d.applied_at) }}</p>
           <p>系统词典：{{ migration[d.migration_status] || d.migration_status }} · 导入 {{ d.imported }} 词</p>
           <button v-if="d.in_group" :data-testid="`device-${d.device_id}`" :disabled="busy||loading" @click="filterDevice(d.device_id)">查看此手机明细</button>
-          <button v-else :data-testid="`bind-${d.device_id}`" :disabled="busy||loading" @click="bind(d)">绑定到当前个人词库</button>
+          <button v-else :data-testid="`bind-${d.device_id}`" :disabled="busy||loading||!canManage||d.restore_enabled===false" @click="bind(d)">绑定到当前个人词库</button>
         </article>
       </div>
     </section>
     <section class="library-panel">
+      <p v-if="devices.length && !canManage" class="library-notice">本站为这些手机的词库备份端，可以查看各自上报；保留、删除和换机绑定请在主后台操作。通过左上角切换手机可查看其他手机的独立备份。</p>
       <h3>{{ view==='merged' ? '合并后的个人词库' : deviceId ? deviceName(deviceId)+'的上报明细' : '共享个人词库 · 各来源明细' }}</h3>
       <p>同一个词可有多台手机、多种编码的记录，不等于重复加权。次数只指真实选词；导入词不伪造次数。“未记录”读音的词可能无法直接召回。</p>
       <form class="library-row" @submit.prevent="load(1)">
@@ -66,7 +68,7 @@ onMounted(()=>load(1)); onBeforeUnmount(()=>{generation++;});
         <select v-model="status" aria-label="个人词语状态"><option value="">全部状态</option><option value="enabled">启用</option><option value="disabled">停用</option><option value="deleted">已删除</option></select>
         <button :disabled="busy||loading">查询</button>
       </form>
-      <div class="batch-actions"><span>已选 {{ selected.length }} 词</span><button v-for="s in (['enabled','disabled','deleted'] as const)" :key="s" :disabled="busy||loading||!selected.length" @click="decide(selected,s)">批量{{ statuses[s] }}</button></div>
+      <div class="batch-actions"><span>已选 {{ selected.length }} 词</span><button v-for="s in (['enabled','disabled','deleted'] as const)" :key="s" :disabled="busy||loading||!canManage||!selected.length" @click="decide(selected,s)">批量{{ statuses[s] }}</button></div>
       <div class="table-scroll"><table><thead><tr><th>选择</th><th>词语/状态</th><th>手机/来源</th><th>拼音/输入码</th><th>次数/原始权重</th><th>管理</th></tr></thead>
         <tbody><tr v-for="(r,i) in rows" :key="[r.device_id,r.text,r.kind,r.code,r.pinyin,r.source].join('|')">
           <td><input v-model="selected" type="checkbox" :value="r.text" :aria-label="`选择${r.text}`" :disabled="busy||loading"></td>
@@ -74,7 +76,7 @@ onMounted(()=>load(1)); onBeforeUnmount(()=>{generation++;});
           <td>{{ r.device_ids ? r.device_ids.map(deviceName).join('、') : deviceName(r.device_id) }}<br>{{ r.kind==='merged' ? '多个来源（切回明细可查看）' : r.source==='system_dictionary' ? '系统词典导入' : r.kind==='choice' ? '实际选词学习' : '选词读音' }}</td>
           <td>{{ r.pinyin || '未记录' }}<br>{{ r.code || '—' }}</td>
           <td>{{ r.kind!=='word' ? r.count : '—（非点击记录）' }}<br>{{ r.kind==='merged' ? '按各编码分别生效' : r.kind==='choice' ? r.weight.toFixed(2) : '—' }}<br><small>{{ r.last_used ? new Date(r.last_used).toLocaleString('zh-CN') : '无使用时间' }}</small></td>
-          <td><button :disabled="busy||loading" @click="decide([r.text],'enabled')">保留/恢复</button><button :disabled="busy||loading" @click="decide([r.text],'disabled')">停用</button><button :data-testid="`delete-${i}`" :disabled="busy||loading" @click="decide([r.text],'deleted')">删除</button></td>
+          <td><button :disabled="busy||loading||!canManage" @click="decide([r.text],'enabled')">保留/恢复</button><button :disabled="busy||loading||!canManage" @click="decide([r.text],'disabled')">停用</button><button :data-testid="`delete-${i}`" :disabled="busy||loading||!canManage" @click="decide([r.text],'deleted')">删除</button></td>
         </tr></tbody></table></div>
       <p v-if="!rows.length">{{ loading ? '正在加载…' : '尚无匹配的上报词条' }}</p>
       <footer class="batch-actions"><span>共 {{ total }} 条来源记录 · {{ page }}/{{ pageCount }} 页</span><button :disabled="busy||loading||page<=1" @click="load(page-1)">上一页</button><button data-testid="next-page" :disabled="busy||loading||page>=pageCount" @click="load(page+1)">下一页</button><button :disabled="busy||loading" @click="load()">刷新同步状态</button></footer>

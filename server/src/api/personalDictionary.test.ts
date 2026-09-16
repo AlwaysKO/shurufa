@@ -28,6 +28,8 @@ beforeEach(async () => {
   await pool.query('INSERT INTO device(id,name) VALUES($1,$3),($2,$4)', [A,B,'旧手机','新手机']);
   const path = new URL('../../migrations/016_personal_dictionary.sql', import.meta.url);
   if (existsSync(path)) await pool.query(readFileSync(path,'utf8'));
+  const rolePath=new URL('../../migrations/017_dictionary_target_role.sql',import.meta.url);
+  if(existsSync(rolePath)) await pool.query(readFileSync(rolePath,'utf8'));
   app = createApp(pool);
 });
 afterEach(async () => {
@@ -35,6 +37,26 @@ afterEach(async () => {
   finally { testSchema=undefined; await pool.end(); }
 });
 describe('个人词库后台绑定与同步', () => {
+  it('仅备份目标能查看上报但不得假装管理决策会应用到手机', async () => {
+    expect((await mobile(A,'post','/register').send({restore_enabled:false})).status).toBe(200);
+    await upload(A);
+    const admin=await dash();
+    const devices=(await admin.get(`/api/v1/dashboard/dictionary/devices?user_id=${A}`)).body.devices;
+    expect(devices[0].restore_enabled).toBe(false);
+    expect((await admin.get(`/api/v1/dashboard/dictionary/entries?user_id=${A}`)).body.total).toBe(1);
+    expect((await admin.post(`/api/v1/dashboard/dictionary/decisions?user_id=${A}`).send({texts:['充电宝'],status:'deleted'})).status).toBe(409);
+    await mobile(B,'post','/register').send({});
+    expect((await admin.post(`/api/v1/dashboard/dictionary/bind?user_id=${B}`).send({device_id:A})).status).toBe(409);
+  });
+  it('目标从主控切为备份再切回时旧确认不得冒充本次应用', async () => {
+    await mobile(A,'post','/register').send({});await upload(A);
+    const revision=(await mobile(A,'get','')).body.revision;
+    await mobile(A,'post','/ack').send({revision});
+    await mobile(A,'post','/register').send({restore_enabled:false});
+    await mobile(A,'post','/register').send({restore_enabled:true});
+    const devices=(await (await dash()).get(`/api/v1/dashboard/dictionary/devices?user_id=${A}`)).body.devices;
+    expect(devices[0].synced).toBe(false);
+  });
   it('合并视图按词去重但来源与真实次数可追溯', async () => {
     for(const id of [A,B]) await mobile(id,'post','/register').send({});
     await upload(A,[choice(),word]); await upload(B,[choice('充电宝',2)]);

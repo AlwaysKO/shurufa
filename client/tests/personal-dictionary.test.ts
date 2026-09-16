@@ -70,3 +70,11 @@ it('绑定必须确认，删除发出后台决策而不是抹掉上报明细', a
   expect(api.decisions).toHaveBeenCalledWith(['充电宝'],'deleted');
   expect(view.text()).toContain('充电宝');
 });
+it('镜像展示上报而不显示等待应用或允许无效管理操作',async()=>{
+  const api=mockApi();api.devices.mockResolvedValue({devices:devices.map(d=>({...d,restore_enabled:false}))});
+  const view=await mount('PersonalDictionary',api);
+  expect(view.text()).toContain('仅备份');
+  expect(view.text()).not.toContain('等待手机同步');
+  expect(view.find('delete-0')!.props.disabled).toBe(true);
+  expect(view.find('bind-new')!.props.disabled).toBe(true);
+});

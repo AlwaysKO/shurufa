@@ -3,7 +3,7 @@ import { currentUserId } from './index';
 export type DictionaryStatus = 'enabled' | 'disabled' | 'deleted';
 export interface DictionaryDevice {
   device_id: string; group_id: string; name: string; model: string; brand: string; dashboard_name: string;
-  in_group: boolean; synced: boolean; last_report_at: string | null; applied_at: string | null;
+  in_group: boolean; synced: boolean; restore_enabled?: boolean; last_report_at: string | null; applied_at: string | null;
   migration_status: string; imported: number;
 }
 export interface DictionaryEntry {

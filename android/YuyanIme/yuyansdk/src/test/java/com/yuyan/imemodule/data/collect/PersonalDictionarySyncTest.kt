@@ -50,4 +50,47 @@ class PersonalDictionarySyncTest {
             assertFalse(sync.run());assertEquals(3,server.requestCount);assertEquals(1L,store.learned("93663").single().count)
         };server.shutdown()
     }
+    @Test fun `电脑镜像只上报不拉取或覆盖主后台决策`() {
+        val server=MockWebServer();server.start()
+        try {
+            LocalInputStore(context,"mirror-${UUID.randomUUID()}.db").withStore { store ->
+                store.learn("93663","怎么")
+                val prefs=context.getSharedPreferences("test-${UUID.randomUUID()}",0)
+                val sync=PersonalDictionarySync(store,prefs,OkHttpClient(),"new",server.url("/").toString(),{true},{"complete" to 0}, restoreFromTarget=false, statePrefix="local_")
+                server.enqueue(MockResponse().setBody("{\"ok\":true}"))
+                server.enqueue(MockResponse().setBody("{\"ok\":true}"))
+                assertTrue(sync.run())
+                assertEquals(2,server.requestCount)
+                assertEquals("/api/v1/mobile/dictionary/register",server.takeRequest().path)
+                assertEquals("/api/v1/mobile/dictionary/report",server.takeRequest().path)
+                assertEquals(1L,store.learned("93663").single().count)
+            }
+        } finally {server.shutdown()}
+    }
+    @Test fun `两端缓存独立本地失败后补传不重置线上凭据与已确认上传`() {
+        val local=MockWebServer();val online=MockWebServer();local.start();online.start()
+        try {
+            LocalInputStore(context,"dual-${UUID.randomUUID()}.db").withStore { store ->
+                store.learn("93663","怎么")
+                val prefs=context.getSharedPreferences("test-${UUID.randomUUID()}",0)
+                val oldToken="a".repeat(64);prefs.edit().putString("token",oldToken).commit()
+                val a=PersonalDictionarySync(store,prefs,OkHttpClient(),"new",online.url("/").toString(),{true},{"complete" to 0})
+                val b=PersonalDictionarySync(store,prefs,OkHttpClient(),"new",local.url("/").toString(),{true},{"complete" to 0}, restoreFromTarget=false, statePrefix="local_")
+                local.enqueue(MockResponse().setResponseCode(503));assertFalse(b.run())
+                online.enqueue(MockResponse().setBody("{\"ok\":true,\"has_report\":false}"))
+                online.enqueue(MockResponse().setBody("{\"ok\":true}"));online.enqueue(MockResponse().setBody(body()));online.enqueue(MockResponse().setBody("{\"ok\":true}"))
+                assertTrue(a.run());assertEquals(oldToken,online.takeRequest().getHeader("X-Dictionary-Token"))
+                repeat(3) {online.takeRequest()}
+                local.enqueue(MockResponse().setBody("{\"ok\":true,\"has_report\":false}"));local.enqueue(MockResponse().setBody("{\"ok\":true}"));assertTrue(b.run())
+                online.enqueue(MockResponse().setBody("{\"ok\":true,\"has_report\":true}"));online.enqueue(MockResponse().setBody(body()));online.enqueue(MockResponse().setBody("{\"ok\":true}"));assertTrue(a.run())
+                assertEquals("/api/v1/mobile/dictionary/register",online.takeRequest().path)
+                assertEquals("/api/v1/mobile/dictionary",online.takeRequest().path) // 没有重复report
+                assertEquals("/api/v1/mobile/dictionary/ack",online.takeRequest().path)
+                assertEquals(3,local.requestCount)
+                assertEquals(oldToken,prefs.getString("token",null))
+                assertNotEquals(oldToken,prefs.getString("local_token",null))
+            }
+        } finally {local.shutdown();online.shutdown()}
+    }
+
 }

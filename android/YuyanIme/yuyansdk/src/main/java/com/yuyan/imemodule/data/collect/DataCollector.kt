@@ -77,7 +77,7 @@ object DataCollector {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     @Volatile private var eventStore: LocalInputStore? = null
     @Volatile private var delivery: EventDelivery? = null
-    @Volatile private var dictionarySync: PersonalDictionarySync? = null
+    private val dictionarySyncs = java.util.concurrent.ConcurrentHashMap<DictionarySyncTarget, PersonalDictionarySync>()
     @Volatile private var appContext: Context? = null
     private var networkRegistered = false
     private val flushing = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
@@ -117,13 +117,6 @@ object DataCollector {
         prefs = PreferenceManager.getDefaultSharedPreferences(app)
         currentDeviceId = deviceId(app)
         ServerConfig.init(app)
-        if (dictionarySync == null) dictionarySync = PersonalDictionarySync(
-            store(app), app.getSharedPreferences("personal_dictionary_sync_v1", 0), http,
-            currentDeviceId!!, ServerConfig.baseUrl, { CollectionConsent.enabled(app) }, {
-                val migration = app.getSharedPreferences("system_dictionary_migration_v1", 0)
-                migration.getString("status", "not_attempted")!! to migration.getInt("imported", 0)
-            },
-        )
         if (CollectionConsent.enabled(app)) {
             CompletionSync.init(app)
             PhraseSync.init(app)
@@ -261,8 +254,17 @@ object DataCollector {
                     val now = android.os.SystemClock.elapsedRealtime()
                     if (now < (lastAttempt[target] ?: 0L)) return@launch
                     val ok = uploader.flush(target)
-                    if (target == ServerConfig.baseUrl && CollectionConsent.enabled(app)) {
-                        if (dictionarySync?.run() == false) Log.w(TAG, "个人词库尚未同步确认，保留本机记录")
+                    val plan = dictionarySyncTargets(ServerConfig.eventTargets, ServerConfig.baseUrl, ServerConfig.dictionaryAuthorityUrl)
+                        .firstOrNull { it.url == target }
+                    if (plan != null && CollectionConsent.enabled(app)) {
+                        val sync = dictionarySyncs.getOrPut(plan) {
+                            PersonalDictionarySync(store(app), app.getSharedPreferences("personal_dictionary_sync_v1", 0), http,
+                                deviceId(app), plan.url, { CollectionConsent.enabled(app) }, {
+                                    val migration = app.getSharedPreferences("system_dictionary_migration_v1", 0)
+                                    migration.getString("status", "not_attempted")!! to migration.getInt("imported", 0)
+                                }, restoreFromTarget = plan.restoreFromTarget, statePrefix = plan.statePrefix)
+                        }
+                        if (!sync.run()) Log.w(TAG, "个人词库尚未同步确认，保留本机记录（目标：$target）")
                     }
                     lastAttempt[target] = android.os.SystemClock.elapsedRealtime() + if (ok) 5_000 else FLUSH_INTERVAL_MS
                     if (!ok) Log.w(TAG, "同步未确认，保留手机待传数据")

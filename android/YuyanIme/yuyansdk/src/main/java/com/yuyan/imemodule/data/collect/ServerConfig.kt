@@ -23,6 +23,9 @@ object ServerConfig {
     val eventTargets: List<String>
         get() = collectorTargets(prefs?.getString(KEY_SERVER_URL, null))
 
+    /** 词库数据双传；未明确切换前，仍只接收既有线上主后台决策。 */
+    val dictionaryAuthorityUrl: String get() = baseUrl
+
     val baseUrl: String
         get() = BuildConfig.COLLECTOR_API_BASE_URL.trim().trimEnd('/')
 

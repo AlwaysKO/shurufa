@@ -16,7 +16,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import java.security.MessageDigest
 import java.security.SecureRandom
 
-/** 只向主后台同步个人词库；事件镜像的控制决策不得反向覆盖主后台。调用方在 IO 线程运行。 */
+/** 当前目标独立上传；只有主控目标可恢复与确认，备份目标绝不覆盖手机决策。调用方在 IO 线程运行。 */
 internal class PersonalDictionarySync(
     private val store: LocalInputStore,
     private val prefs: SharedPreferences,
@@ -25,6 +25,8 @@ internal class PersonalDictionarySync(
     baseUrl: String,
     private val enabled: () -> Boolean,
     private val migration: () -> Pair<String,Int>,
+    private val restoreFromTarget: Boolean = true,
+    private val statePrefix: String = "",
 ) {
     private val endpoint=baseUrl.trimEnd('/')+"/api/v1/mobile/dictionary"
     private val json=Json { ignoreUnknownKeys=true; encodeDefaults=true }
@@ -32,8 +34,8 @@ internal class PersonalDictionarySync(
     @Synchronized fun run(): Boolean {
         if (!enabled()) return false
         return try {
-            val token=prefs.getString("token",null) ?: ByteArray(32).also { SecureRandom().nextBytes(it) }
-                .joinToString("") { "%02x".format(it) }.also { check(prefs.edit().putString("token",it).commit()) }
+            val token=prefs.getString(statePrefix+"token",null) ?: ByteArray(32).also { SecureRandom().nextBytes(it) }
+                .joinToString("") { "%02x".format(it) }.also { check(prefs.edit().putString(statePrefix+"token",it).commit()) }
             fun request(path:String, body:String?=null):String {
                 check(enabled()) { "sync disabled" }
                 val builder=Request.Builder().url(endpoint+path).header("X-Device-Id",deviceId).header("X-Dictionary-Token",token)
@@ -52,20 +54,21 @@ internal class PersonalDictionarySync(
                 }
             }
             // 注册回执不缓存：服务端重置后必须补传本机数据。
-            val registered=json.parseToJsonElement(request("/register","{}")).jsonObject
+            val registered=json.parseToJsonElement(request("/register",buildJsonObject {put("restore_enabled",restoreFromTarget)}.toString())).jsonObject
             val records=store.dictionaryExport()
             val (status,imported)=migration()
             val serialized=json.encodeToString(ListSerializer(DictionaryRecord.serializer()),records)
             val fingerprint=MessageDigest.getInstance("SHA-256").digest((endpoint+serialized+status+imported).toByteArray()).joinToString("") { "%02x".format(it) }
             // 周期性补传全量也采用替换语义，服务器不会把上报当新点击。
-            val due=System.currentTimeMillis()-prefs.getLong("uploaded_at",0)>24*60*60*1000L
-            if(registered["has_report"]?.jsonPrimitive?.booleanOrNull != true || prefs.getString("uploaded_hash",null)!=fingerprint || due) {
-                val sequence=maxOf(System.currentTimeMillis(),prefs.getLong("sequence",0)+1)
-                check(prefs.edit().putLong("sequence",sequence).commit())
+            val due=System.currentTimeMillis()-prefs.getLong(statePrefix+"uploaded_at",0)>24*60*60*1000L
+            if(registered["has_report"]?.jsonPrimitive?.booleanOrNull != true || prefs.getString(statePrefix+"uploaded_hash",null)!=fingerprint || due) {
+                val sequence=maxOf(System.currentTimeMillis(),prefs.getLong(statePrefix+"sequence",0)+1)
+                check(prefs.edit().putLong(statePrefix+"sequence",sequence).commit())
                 val batches=records.chunked(500).ifEmpty { listOf(emptyList()) }
                 batches.forEach { batch -> request("/report",json.encodeToString(DictionaryReport.serializer(),DictionaryReport(sequence,batch,status,imported))) }
-                check(prefs.edit().putString("uploaded_hash",fingerprint).putLong("uploaded_at",System.currentTimeMillis()).commit())
+                check(prefs.edit().putString(statePrefix+"uploaded_hash",fingerprint).putLong(statePrefix+"uploaded_at",System.currentTimeMillis()).commit())
             }
+            if (!restoreFromTarget) return true
             val snapshot=json.decodeFromString(DictionarySnapshot.serializer(),request(""))
             check(enabled())
             store.applyDictionarySnapshot(snapshot,deviceId)

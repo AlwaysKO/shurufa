@@ -64,10 +64,18 @@ export function createMobileDictionaryRouter(pool: pg.Pool): Router {
   const r = Router();
   r.post('/register',transaction(pool,async(db,req,res) => {
     const id = res.locals.userId, token = req.get('X-Dictionary-Token');
+    const restores=req.body?.restore_enabled ?? true;
+    if(typeof restores!=='boolean') throw new HttpError(400,'invalid restore mode');
     if (!token || !/^[0-9a-f]{64}$/.test(token)) throw new HttpError(401,'dictionary credential required');
     if (!(await db.query('SELECT id FROM device WHERE id=$1',[id])).rowCount) throw new HttpError(409,'请先注册设备');
     await db.query(`INSERT INTO dictionary_device(device_id,group_id,token_hash) VALUES($1,$1,$2) ON CONFLICT DO NOTHING`,[id,hash(token)]);
-    const registered = await authenticate(db,req,id); return {ok:true,has_report:registered.last_report_at != null};
+    const registered = await authenticate(db,req,id);
+    // 主控角色变化后必须重新应用并确认，不能沿用切换前的确认版本。
+    if (registered.restore_enabled !== restores) {
+      await db.query('UPDATE dictionary_device SET applied_revision=NULL WHERE device_id=$1',[id]);
+    }
+    await db.query('UPDATE dictionary_device SET restore_enabled=$2 WHERE device_id=$1',[id,restores]);
+    return {ok:true,has_report:registered.last_report_at != null};
   }));
   r.post('/report',transaction(pool,async(db,req,res) => {
     const id = res.locals.userId; await authenticate(db,req,id);
@@ -100,9 +108,9 @@ export function createDashboardDictionaryRouter(pool: pg.Pool): Router {
   const r = Router();
   r.get('/devices',transaction(pool,async(db,_req,res) => {
     const d = await device(db,res.locals.userId), current = await snapshot(db,d.group_id);
-    const rows = (await db.query(`SELECT s.device_id,s.group_id,s.last_report_at,s.applied_at,s.applied_revision,s.migration_status,s.imported,
+    const rows = (await db.query(`SELECT s.device_id,s.group_id,s.last_report_at,s.applied_at,s.applied_revision,s.migration_status,s.imported,s.restore_enabled,
       d.name,d.model,d.brand,d.dashboard_name FROM dictionary_device s JOIN device d ON d.id=s.device_id ORDER BY s.device_id`)).rows;
-    return {group_id:d.group_id,devices:rows.map(row => ({...row,in_group:row.group_id===d.group_id,synced:row.group_id===d.group_id && row.applied_revision===current.revision}))};
+    return {group_id:d.group_id,devices:rows.map(row => ({...row,in_group:row.group_id===d.group_id,synced:row.restore_enabled && row.group_id===d.group_id && row.applied_revision===current.revision}))};
   }));
   r.get('/entries',transaction(pool,async(db,req,res) => {
     const d = await device(db,res.locals.userId), data = await snapshot(db,d.group_id);
@@ -131,6 +139,7 @@ export function createDashboardDictionaryRouter(pool: pg.Pool): Router {
     const id=req.body?.device_id;
     if (typeof id !== 'string' || !uuid.test(id)) throw new HttpError(400,'请选择目标设备');
     const current=await device(db,res.locals.userId), incoming=await device(db,id);
+    if (!current.restore_enabled || !incoming.restore_enabled) throw new HttpError(409,'此设备仅向本站备份，请在主后台管理词库');
     if (current.group_id===incoming.group_id) return {ok:true};
     const policies=(await db.query('SELECT text,status FROM dictionary_policy WHERE group_id=$1',[incoming.group_id])).rows;
     const severity: Record<Status,number>={enabled:0,disabled:1,deleted:2};
@@ -145,6 +154,7 @@ export function createDashboardDictionaryRouter(pool: pg.Pool): Router {
   }));
   r.post('/decisions',transaction(pool,async(db,req,res) => {
     const d=await device(db,res.locals.userId), {texts,status}=req.body ?? {};
+    if (!d.restore_enabled) throw new HttpError(409,'此设备仅向本站备份，请在主后台管理词库');
     if (!Array.isArray(texts) || !texts.length || texts.length>500 || !texts.every(chinese) || !['enabled','disabled','deleted'].includes(status)) throw new HttpError(400,'invalid decision');
     for (const text of new Set(texts)) await db.query(`INSERT INTO dictionary_policy(group_id,text,status) VALUES($1,$2,$3)
       ON CONFLICT(group_id,text) DO UPDATE SET status=EXCLUDED.status,updated_at=NOW()`,[d.group_id,text,status]);
