@@ -281,14 +281,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
             .map { window -> Rect().also(window::getBoundsInScreen).top }
             .filter { it > windowBounds.top }
             .minOrNull()
-        val screenshotBottom = inputMethodTop
-            ?: (windowBounds.top + ((windowBounds.bottom - windowBounds.top) * EMPTY_TREE_SCREENSHOT_BOTTOM_RATIO).toInt())
-        val screenshotBounds = IntRect(
-            left = windowBounds.left,
-            top = windowBounds.top + EMPTY_TREE_SCREENSHOT_TOP_INSET_PX,
-            right = windowBounds.right,
-            bottom = screenshotBottom,
-        )
+        val screenshotBounds = emptyTreeScreenshotBounds(windowBounds, inputMethodTop)
         if (screenshotBounds.right <= screenshotBounds.left || screenshotBounds.bottom - screenshotBounds.top < 400) return
 
         backgroundScope.launch {
@@ -499,10 +492,16 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         const val FALLBACK_PREFERENCES = "notification_screenshot_fallback"
         const val LAST_SCREENSHOT_SHA = "last_screenshot_sha256"
         const val LAST_EMPTY_TREE_SCREENSHOT_SHA = "last_empty_tree_screenshot_sha256"
-        const val EMPTY_TREE_SCREENSHOT_TOP_INSET_PX = 80
-        const val EMPTY_TREE_SCREENSHOT_BOTTOM_RATIO = 0.9
     }
 }
+
+internal fun emptyTreeScreenshotBounds(windowBounds: IntRect, inputMethodTop: Int?): IntRect = IntRect(
+    left = windowBounds.left,
+    top = windowBounds.top + 80,
+    right = windowBounds.right,
+    // 空树设备无法定位微信输入栏。没有系统键盘时保留完整窗口，避免截断最后一条消息。
+    bottom = inputMethodTop?.coerceAtMost(windowBounds.bottom) ?: windowBounds.bottom,
+)
 
 internal fun viewportCaptureSignature(packageName: String, treeSignature: String, eventGeneration: Long): String =
     if (packageName == "com.tencent.mm") "$treeSignature:$eventGeneration" else treeSignature
