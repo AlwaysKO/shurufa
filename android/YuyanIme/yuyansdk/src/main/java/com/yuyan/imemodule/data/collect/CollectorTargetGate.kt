@@ -1,7 +1,9 @@
 package com.yuyan.imemodule.data.collect
 
 import android.content.Context
+import android.content.Intent
 import android.content.IntentFilter
+import android.os.BatteryManager
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -27,12 +29,16 @@ internal fun isUsbDataLink(connected: Boolean, configured: Boolean): Boolean = c
 
 internal fun isUsbDataLink(context: Context): Boolean {
     val state = context.registerReceiver(null, IntentFilter("android.hardware.usb.action.USB_STATE"))
-        ?: return false
-    return isUsbDataLink(
+    val dataLink = state != null && isUsbDataLink(
         connected = state.getBooleanExtra("connected", false),
         configured = state.getBooleanExtra("configured", false),
     )
+    val battery = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+    val usbPowered = battery?.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) == BatteryManager.BATTERY_PLUGGED_USB
+    return isPhysicalUsbConnected(dataLink, usbPowered)
 }
+
+internal fun isPhysicalUsbConnected(dataLink: Boolean, usbPowered: Boolean): Boolean = dataLink || usbPowered
 
 internal fun localCollectorHealthy(http: OkHttpClient, target: String): Boolean = try {
     val request = Request.Builder().url(target.trimEnd('/') + "/health").get().build()

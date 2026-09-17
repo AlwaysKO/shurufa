@@ -52,6 +52,13 @@ class CollectorTargetGateTest {
     }
 
     @Test
+    fun `honor usb power is accepted when usb state broadcast is missing`() {
+        assertTrue(isPhysicalUsbConnected(dataLink = false, usbPowered = true))
+        assertTrue(isPhysicalUsbConnected(dataLink = true, usbPowered = false))
+        assertFalse(isPhysicalUsbConnected(dataLink = false, usbPowered = false))
+    }
+
+    @Test
     fun `local health requires successful ok response`() {
         val server = MockWebServer()
         server.enqueue(MockResponse().setResponseCode(200).setBody("{\"status\":\"ok\"}"))

@@ -603,6 +603,8 @@ export const api = {
     ),
   deleteChatConversation: (conversationId: number) =>
     del(`/api/v1/dashboard/chat/conversations/${conversationId}`),
+  deleteChatImage: (messageId: string, assetId: number) =>
+    del(`/api/v1/dashboard/chat/messages/${encodeURIComponent(messageId)}/assets/${assetId}`),
   relationships: (page = 1, pageSize = 100) =>
     get<{ total: number; page: number; page_size: number; relationships: RelationshipRow[] }>(
       `/api/v1/dashboard/relationships?page=${page}&page_size=${pageSize}`,

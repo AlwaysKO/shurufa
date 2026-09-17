@@ -23,6 +23,9 @@ import com.yuyan.imemodule.data.capture.db.CaptureDatabase
 import com.yuyan.imemodule.data.capture.media.WindowMediaCapturer
 import com.yuyan.imemodule.data.capture.media.WindowScreenshotter
 import com.yuyan.imemodule.data.capture.media.MediaCaptureRequest
+import com.yuyan.imemodule.data.capture.media.MlKitWechatScreenshotIdentityResolver
+import com.yuyan.imemodule.data.capture.media.ScreenshotConversationIdentityResolver
+import com.yuyan.imemodule.data.capture.media.screenshotConversationIdentity
 import com.yuyan.imemodule.data.capture.net.CaptureUploader
 import com.yuyan.imemodule.data.capture.model.CapturedConversation
 import com.yuyan.imemodule.data.capture.model.CapturedMessage
@@ -64,6 +67,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     private var captureDatabase: CaptureDatabase? = null
     private var coordinator: CaptureCoordinator? = null
     private var mediaCapturer: WindowMediaCapturer? = null
+    private var screenshotIdentityResolver: ScreenshotConversationIdentityResolver? = null
     private var fallbackConnection: CancellableTask? = null
     private var foregroundCaptureConnection: CancellableTask? = null
     private var fallbackStore: NotificationScreenshotFallbackStore? = null
@@ -158,6 +162,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         )
         captureDatabase = database
         mediaCapturer = activeMediaCapturer
+        screenshotIdentityResolver = MlKitWechatScreenshotIdentityResolver()
         fallbackStore = NotificationScreenshotFallbackStore(applicationContext)
         coordinator = CaptureCoordinator(
             adapterForPackage = AdapterRegistry::forPackage,
@@ -217,6 +222,8 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         captureDatabase = null
         coordinator = null
         mediaCapturer = null
+        (screenshotIdentityResolver as? java.io.Closeable)?.close()
+        screenshotIdentityResolver = null
         super.onDestroy()
     }
 
@@ -292,25 +299,28 @@ class PassiveChatAccessibilityService : AccessibilityService() {
             )?.get(0) ?: return@launch
             val preferences = getSharedPreferences(FALLBACK_PREFERENCES, Context.MODE_PRIVATE)
             if (preferences.getString(LAST_EMPTY_TREE_SCREENSHOT_SHA, null) == asset.sha256) return@launch
+            val identity = screenshotIdentityResolver?.resolve(asset)
+                ?: screenshotConversationIdentity(null, asset.perceptualHash.orEmpty())
             val capturedAt = System.currentTimeMillis()
             val result = coordinator?.captureParsed(
                 conversation = CapturedConversation(
                     platform = ChatPlatform.WECHAT,
                     accountKey = "wechat-empty-tree",
-                    externalKey = "empty-tree-visible-chat",
-                    displayName = "微信当前聊天",
-                    conversationType = ConversationType.UNKNOWN,
-                    identityConfidence = FALLBACK_IDENTITY_CONFIDENCE,
+                    externalKey = identity.externalKey,
+                    displayName = identity.displayName,
+                    conversationType = identity.conversationType,
+                    identityConfidence = identity.confidence,
                 ),
                 messages = listOf(CapturedMessage(
                     conversationKey = null,
-                    senderKey = "empty-tree-viewport",
+                    senderKey = "${identity.externalKey}:viewport",
                     direction = ChatDirection.SYSTEM,
                     messageType = ChatMessageType.IMAGE,
                     occurredAt = isoTimestamp(capturedAt),
                     metadata = mapOf(
                         "capture_source" to "wechat_empty_tree_screenshot",
-                        "identity_unavailable" to "true",
+                        "identity_unavailable" to (identity.source != "on_device_title_ocr").toString(),
+                        "conversation_identity_source" to identity.source,
                     ),
                 )),
                 pendingAssetsByMessage = mapOf(0 to asset),

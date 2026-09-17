@@ -8,6 +8,8 @@ import { createApp } from '../app.js';
 
 let pool: pg.Pool;
 let conversationId: number;
+let firstMessageId: string;
+let assetId: number;
 const userId = '00000000-0000-0000-0000-000000000001';
 
 beforeEach(async () => {
@@ -29,7 +31,8 @@ beforeEach(async () => {
     (user_id, sha256, mime_type, storage_path, byte_size, width, height)
     VALUES ($1, $2, 'image/webp', 'chat/aa/asset.webp', 10, 100, 80)
     RETURNING id`, [userId, 'a'.repeat(64)]);
-  const firstMessageId = crypto.randomUUID();
+  assetId = asset.rows[0].id;
+  firstMessageId = crypto.randomUUID();
   await pool.query(`INSERT INTO chat_message
     (id, user_id, device_id, conversation_id, platform, fingerprint,
      content_fingerprint, sender_key, sender_name, direction, message_type,
@@ -137,5 +140,42 @@ describe('chat dashboard API', () => {
 
     expect(response.status).toBe(404);
     expect((await pool.query('SELECT id FROM chat_conversation WHERE id=$1', [conversationId])).rowCount).toBe(1);
+  });
+
+  it('可删除单张截图并清理失去最后资源的空截图消息', async () => {
+    const response = await (await authenticatedRequest(createApp(pool)))
+      .delete(`/api/v1/dashboard/chat/messages/${firstMessageId}/assets/${assetId}?user_id=${userId}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({ ok: true, deleted_asset: true, deleted_message: true });
+    expect((await pool.query('SELECT 1 FROM chat_message_asset WHERE message_id=$1', [firstMessageId])).rowCount).toBe(0);
+    expect((await pool.query('SELECT 1 FROM chat_message WHERE id=$1', [firstMessageId])).rowCount).toBe(0);
+    expect((await pool.query('SELECT 1 FROM media_asset WHERE id=$1', [assetId])).rowCount).toBe(0);
+    expect((await pool.query('SELECT 1 FROM chat_conversation WHERE id=$1', [conversationId])).rowCount).toBe(1);
+  });
+
+  it('单图删除不删除其他消息仍引用的共享资源', async () => {
+    const sharedMessage = crypto.randomUUID();
+    await pool.query(`INSERT INTO chat_message
+      (id,user_id,device_id,conversation_id,platform,fingerprint,content_fingerprint,
+       sender_key,direction,message_type,captured_at)
+      VALUES($1,$2,$3,$4,'wechat',$5,$6,'peer','incoming','image',NOW())`,
+    [sharedMessage, userId, crypto.randomUUID(), conversationId, '1'.repeat(64), '2'.repeat(64)]);
+    await pool.query('INSERT INTO chat_message_asset(message_id,asset_id) VALUES($1,$2)', [sharedMessage, assetId]);
+
+    const response = await (await authenticatedRequest(createApp(pool)))
+      .delete(`/api/v1/dashboard/chat/messages/${firstMessageId}/assets/${assetId}?user_id=${userId}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({ deleted_asset: false, deleted_message: true });
+    expect((await pool.query('SELECT 1 FROM media_asset WHERE id=$1', [assetId])).rowCount).toBe(1);
+    expect((await pool.query('SELECT 1 FROM chat_message_asset WHERE message_id=$1 AND asset_id=$2', [sharedMessage, assetId])).rowCount).toBe(1);
+  });
+
+  it('不能删除其他用户消息中的图片', async () => {
+    const response = await (await authenticatedRequest(createApp(pool)))
+      .delete(`/api/v1/dashboard/chat/messages/${firstMessageId}/assets/${assetId}?user_id=00000000-0000-4000-8000-000000000099`);
+    expect(response.status).toBe(404);
+    expect((await pool.query('SELECT 1 FROM chat_message_asset WHERE message_id=$1 AND asset_id=$2', [firstMessageId, assetId])).rowCount).toBe(1);
   });
 });

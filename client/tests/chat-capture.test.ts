@@ -29,6 +29,7 @@ async function settle() {
 }
 
 async function mountChatCapture() {
+  const deletedImages: Array<[string, number]> = [];
   const source = readFileSync(new URL('../src/views/ChatCapture.vue', import.meta.url), 'utf8');
   const { descriptor } = parse(source);
   const compiled = compileScript(descriptor, { id: 'chat-capture-test', inlineTemplate: true });
@@ -80,6 +81,10 @@ async function mountChatCapture() {
       text: '聊天截图', displayed_time: null, occurred_at: '2026-09-16T00:00:00Z', captured_at: '2026-09-16T00:00:00Z',
       sequence_hint: null, metadata: {}, assets: [{ id: 8, sha256: 'a'.repeat(64), mime_type: 'image/png', width: 1200, height: 2664, role: 'content', position: 0, url: '/uploads/chat/screenshot.png' }],
     }] }),
+    deleteChatImage: async (messageId: string, assetId: number) => {
+      deletedImages.push([messageId, assetId]);
+      return { ok: true, deleted_asset: true, deleted_message: true };
+    },
   };
   const module = { exports: {} as { default: Vue.Component } };
   const require = (name: string) => {
@@ -102,7 +107,7 @@ async function mountChatCapture() {
   const all = (target: Node): Node[] => [target, ...target.children.flatMap(all)];
   const find = (id: string) => all(root).find((target) => target.props['data-testid'] === id);
   Object.assign(globalThis, { document: previousDocument, Document: previousDocumentConstructor, ShadowRoot: previousShadowRoot });
-  return { source, find };
+  return { source, find, deletedImages };
 }
 
 it('点击聊天图片在本页弹窗预览并可关闭，不再生成新窗口链接', async () => {
@@ -118,4 +123,17 @@ it('点击聊天图片在本页弹窗预览并可关闭，不再生成新窗口�
   view.find('close-chat-image-preview')!.props.onClick();
   await Vue.nextTick();
   expect(view.find('chat-image-preview')).toBeUndefined();
+});
+
+it('单张聊天图片提供独立删除并调用消息资源接口', async () => {
+  const view = await mountChatCapture();
+  const previousWindow = globalThis.window;
+  globalThis.window = { confirm: () => true } as Window & typeof globalThis;
+  try {
+    view.find('delete-chat-image-8')!.props.onClick();
+    await settle();
+    expect(view.deletedImages).toEqual([['message-1', 8]]);
+  } finally {
+    globalThis.window = previousWindow;
+  }
 });

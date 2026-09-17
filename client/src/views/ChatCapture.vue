@@ -20,6 +20,7 @@ const messageType = ref('all');
 const loading = ref(false);
 const error = ref('');
 const deleting = ref(false);
+const deletingAssetId = ref<number | null>(null);
 const previewImage = ref<{ src: string; alt: string } | null>(null);
 
 const platformNames = { wechat: '微信', qq: 'QQ', douyin: '抖音' } as const;
@@ -96,6 +97,29 @@ async function deleteSelectedConversation() {
   }
 }
 
+async function deleteImage(message: ChatMessageRow, assetId: number) {
+  if (deletingAssetId.value !== null) return;
+  if (!window.confirm('确定删除这张聊天截图吗？此操作不可恢复。')) return;
+  deletingAssetId.value = assetId;
+  error.value = '';
+  try {
+    await api.deleteChatImage(message.id, assetId);
+    const conversation = selected.value;
+    if (conversation) await selectConversation(conversation);
+    const [overviewResult, conversationResult] = await Promise.all([
+      api.chatCaptureOverview(),
+      api.chatConversations(),
+    ]);
+    overview.value = overviewResult;
+    conversations.value = conversationResult.conversations;
+    selected.value = conversation ? conversations.value.find((item) => item.id === conversation.id) ?? null : null;
+  } catch (reason) {
+    error.value = `删除图片失败：${(reason as Error).message}`;
+  } finally {
+    deletingAssetId.value = null;
+  }
+}
+
 onMounted(load);
 </script>
 
@@ -161,9 +185,8 @@ onMounted(load);
           </div>
           <p v-if="message.text" class="message-text">{{ message.text }}</p>
           <div v-if="message.assets.length" class="media-grid">
+            <div v-for="asset in message.assets" :key="asset.id" class="media-item">
             <button
-              v-for="asset in message.assets"
-              :key="asset.id"
               class="media-preview-button"
               type="button"
               :data-testid="`open-chat-image-${asset.id}`"
@@ -172,6 +195,15 @@ onMounted(load);
             >
               <img :src="scopedAssetUrl(asset.url)" :alt="message.text || message.message_type" loading="lazy" />
             </button>
+            <button
+              class="media-delete-button"
+              type="button"
+              :disabled="deletingAssetId !== null"
+              :data-testid="`delete-chat-image-${asset.id}`"
+              aria-label="删除这张聊天截图"
+              @click="deleteImage(message, asset.id)"
+            >{{ deletingAssetId === asset.id ? '删除中…' : '删除图片' }}</button>
+            </div>
           </div>
         </article>
       </div>
@@ -228,8 +260,11 @@ onMounted(load);
 .badge { padding: 2px 6px; border-radius: 10px; background: rgba(55, 66, 250, .1); color: #3742fa; }
 .message-text { margin-top: 8px; white-space: pre-wrap; word-break: break-word; line-height: 1.6; }
 .media-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.media-item { display:grid; gap:5px; justify-items:start; }
 .media-preview-button { padding: 0; border: 0; border-radius: 6px; background: transparent; cursor: zoom-in; }
 .media-grid img { width: 120px; height: 100px; object-fit: contain; border-radius: 6px; background: #fff; }
+.media-delete-button { padding:4px 9px; border:1px solid #ff6b81; border-radius:5px; background:#fff; color:#c0392b; cursor:pointer; font-size:12px; }
+.media-delete-button:disabled { cursor:not-allowed; opacity:.5; }
 .image-preview-overlay { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 32px; background: rgba(15, 18, 28, .82); }
 .image-preview-image { display: block; max-width: 92vw; max-height: 90vh; object-fit: contain; border-radius: 8px; box-shadow: 0 16px 48px rgba(0, 0, 0, .35); }
 .image-preview-close { position: fixed; top: 18px; right: 22px; width: 42px; height: 42px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .92); color: #2f3542; font-size: 30px; line-height: 1; cursor: pointer; }

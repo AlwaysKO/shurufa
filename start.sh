@@ -84,26 +84,47 @@ fi
 
 npm --prefix server run migrate
 
-if adb_bin="$(find_adb)" && "$adb_bin" get-state >/dev/null 2>&1; then
+configure_adb_reverse() {
+  local adb_bin reverse_target_port reverse_output wsl_host relay_script
+  adb_bin="$(find_adb)" || return 1
+  "$adb_bin" get-state >/dev/null 2>&1 || return 1
   reverse_target_port="${PORT:-3000}"
   if [[ "$adb_bin" == *.exe ]]; then
     reverse_target_port="${ADB_RELAY_PORT:-3001}"
+  fi
+  reverse_output="$("$adb_bin" reverse --list 2>/dev/null || true)"
+  if [[ "$reverse_output" == *"tcp:${PORT:-3000} tcp:$reverse_target_port"* ]]; then
+    return 0
+  fi
+  if [[ "$adb_bin" == *.exe ]]; then
     wsl_host="$(hostname -I | awk '{print $1}')"
     relay_script="$(wslpath -w "$REPO_ROOT/scripts/windows/start-wsl-relay.ps1")"
     powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$relay_script" \
       -ListenPort "$reverse_target_port" -TargetHost "$wsl_host" -TargetPort "${PORT:-3000}"
   fi
   "$adb_bin" reverse "tcp:${PORT:-3000}" "tcp:$reverse_target_port"
+}
+
+if configure_adb_reverse; then
   echo "ADB reverse 已建立：手机 127.0.0.1:${PORT:-3000} → API ${PORT:-3000}"
 else
   echo "警告：WSL ADB 未识别到手机，本地 Debug 包暂时无法通过 USB 上报。" >&2
-  echo "连接修复后可手动执行: adb reverse tcp:${PORT:-3000} tcp:${PORT:-3000}" >&2
+  echo "保持本脚本运行；手机稍后通过 USB 接入时会自动建立本地补传通道。" >&2
 fi
+
+# 手机可能晚于开发服务接入，且拔插会清空 adb reverse；持续恢复通道，避免必须重启本地后台。
+(
+  while sleep 5; do
+    configure_adb_reverse >/dev/null 2>&1 || true
+  done
+) &
+adb_watcher_pid=$!
 
 server_pid=""
 client_pid=""
 cleanup() {
   trap - EXIT INT TERM
+  [[ -n "${adb_watcher_pid:-}" ]] && kill "$adb_watcher_pid" 2>/dev/null || true
   [[ -n "$server_pid" ]] && kill "$server_pid" 2>/dev/null || true
   [[ -n "$client_pid" ]] && kill "$client_pid" 2>/dev/null || true
   wait "$server_pid" "$client_pid" 2>/dev/null || true

@@ -218,5 +218,76 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
     }
   });
 
+  router.delete('/messages/:messageId/assets/:assetId', async (req, res, next) => {
+    const messageId = req.params.messageId;
+    const assetId = Number(req.params.assetId);
+    if (!messageId || !Number.isSafeInteger(assetId) || assetId <= 0) {
+      return res.status(400).json({ error: 'message_id or asset_id is invalid' });
+    }
+    const client = await pool.connect();
+    let deletedPath: string | null = null;
+    try {
+      await client.query('BEGIN');
+      const association = await client.query(
+        `SELECT ma.message_id FROM chat_message_asset ma
+         JOIN chat_message m ON m.id=ma.message_id
+         JOIN media_asset a ON a.id=ma.asset_id
+         WHERE ma.message_id=$1 AND ma.asset_id=$2 AND m.user_id=$3 AND a.user_id=$3
+         FOR UPDATE`,
+        [messageId, assetId, res.locals.userId],
+      );
+      if (association.rowCount === 0) {
+        await client.query('ROLLBACK');
+        return res.status(404).json({ error: 'message image not found' });
+      }
+      await client.query(
+        'DELETE FROM chat_message_asset WHERE message_id=$1 AND asset_id=$2',
+        [messageId, assetId],
+      );
+      const remainingMessageAssets = await client.query(
+        'SELECT 1 FROM chat_message_asset WHERE message_id=$1 LIMIT 1',
+        [messageId],
+      );
+      const deletedMessage = remainingMessageAssets.rowCount === 0
+        ? await client.query(
+          `DELETE FROM chat_message
+           WHERE id=$1 AND user_id=$2 AND message_type='image'
+             AND (text IS NULL OR text='' OR text IN ('图片','截图'))
+           RETURNING id`,
+          [messageId, res.locals.userId],
+        )
+        : { rowCount: 0 };
+      const remainingAssetReferences = await client.query(
+        'SELECT 1 FROM chat_message_asset WHERE asset_id=$1 LIMIT 1',
+        [assetId],
+      );
+      const deletedAsset = remainingAssetReferences.rowCount === 0
+        ? await client.query<{ storage_path: string }>(
+          `DELETE FROM media_asset
+           WHERE id=$1 AND user_id=$2
+           RETURNING storage_path`,
+          [assetId, res.locals.userId],
+        )
+        : { rowCount: 0, rows: [] as Array<{ storage_path: string }> };
+      deletedPath = deletedAsset.rows[0]?.storage_path ?? null;
+      await client.query('COMMIT');
+      if (deletedPath) {
+        const uploadsRoot = resolve(process.cwd(), 'uploads');
+        const filePath = resolve(uploadsRoot, deletedPath);
+        if (filePath.startsWith(`${uploadsRoot}${sep}`)) await unlink(filePath).catch(() => {});
+      }
+      res.json({
+        ok: true,
+        deleted_asset: deletedAsset.rowCount === 1,
+        deleted_message: deletedMessage.rowCount === 1,
+      });
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => {});
+      next(error);
+    } finally {
+      client.release();
+    }
+  });
+
   return router;
 }

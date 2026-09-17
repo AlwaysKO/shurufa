@@ -116,6 +116,8 @@ dependencies {
     ksp "androidx.room:room-compiler:2.7.2"
     implementation "androidx.room:room-ktx:2.7.2"
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    // 微信空无障碍树截图只在端侧识别顶部会话标题；模型随 APK 打包，不上传 OCR 请求。
+    implementation 'com.google.mlkit:text-recognition-chinese:16.0.1'
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'androidx.test:core:1.6.1'
     testImplementation 'org.robolectric:robolectric:4.14.1'
