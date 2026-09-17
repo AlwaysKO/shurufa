@@ -27,6 +27,15 @@ class WechatScreenshotIdentityTest {
         assertEquals(ConversationType.GROUP, first.conversationType)
     }
 
+    @Test fun `ocr digit after group suffix and full width punctuation do not split conversation`() {
+        val noisy = screenshotConversationIdentity("一起加油！噢力给！(6)8", "fallback-a")
+        val clean = screenshotConversationIdentity("一起加油!噢力给!", "fallback-b")
+
+        assertEquals("一起加油！噢力给！", noisy.displayName)
+        assertEquals(clean.externalKey, noisy.externalKey)
+        assertEquals(ConversationType.GROUP, noisy.conversationType)
+    }
+
     @Test fun `different chat names produce different keys and visual fallback stays isolated`() {
         assertNotEquals(
             screenshotConversationIdentity("张三", "same").externalKey,

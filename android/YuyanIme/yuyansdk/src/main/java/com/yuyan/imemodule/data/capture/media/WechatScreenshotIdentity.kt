@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import java.io.Closeable
+import java.text.Normalizer
 import kotlin.coroutines.resume
 import kotlin.math.abs
 
@@ -60,11 +61,13 @@ internal fun screenshotConversationIdentity(
     fallbackHeaderHash: String,
 ): ScreenshotConversationIdentity {
     val raw = recognizedTitle?.trim()?.replace(Regex("\\s+"), " ").orEmpty()
-    val groupSuffix = Regex("[（(]\\s*\\d+\\s*[）)]$")
+    // 荣耀截图中微信群人数偶尔被 OCR 拆成“(6)8”；尾部孤立数字同群人数一起丢弃。
+    val groupSuffix = Regex("[（(]\\s*\\d+\\s*[）)](?:\\s*\\d{1,2})?$")
     val isGroup = groupSuffix.containsMatchIn(raw)
     val normalized = raw.replace(groupSuffix, "").trim().takeIf { it.isNotEmpty() }
     if (normalized != null) {
-        val key = sha256(normalized.lowercase().toByteArray(Charsets.UTF_8))
+        val stableTitle = Normalizer.normalize(normalized, Normalizer.Form.NFKC).lowercase()
+        val key = sha256(stableTitle.toByteArray(Charsets.UTF_8))
         return ScreenshotConversationIdentity(
             externalKey = "title:$key",
             displayName = normalized,
