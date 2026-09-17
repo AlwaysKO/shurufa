@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { useConfirmation } from '../confirmation';
 import { computed, onMounted, ref, watch } from 'vue';
 import { api, scopedAssetUrl, type LibrarySticker, type StickerLibrary } from '../api';
 import './content-library.css';
+
+const askConfirmation = useConfirmation();
 
 const library = ref<StickerLibrary>({ groups: [], systemCount: 0, personalCount: 0, warnings: [] });
 const loading = ref(false);
@@ -124,7 +127,8 @@ async function saveEdit(asset: LibrarySticker) {
   finally { busy.value = false; }
 }
 async function remove(asset: LibrarySticker) {
-  if (busy.value || !confirm('删除这张表情？它将从当前用户的所有关联关键词和推荐结果中移除，关键词保留。')) return;
+  if (busy.value || !(await askConfirmation('删除这张表情？它将从当前用户的所有关联关键词和推荐结果中移除，关键词保留。'))) return;
+  if (busy.value || loading.value) return;
   busy.value = true; msg.value = ''; err.value = '';
   try { if (asset.source === 'system') await api.deleteSystemSticker(String(asset.id)); else await api.deleteSticker(Number(asset.id)); msg.value = '图片已删除，关键词已保留'; await load(); }
   catch (e) { err.value = `删除失败：${(e as Error).message}`; }

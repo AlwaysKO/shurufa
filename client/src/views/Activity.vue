@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { useConfirmation } from '../confirmation';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { api, appName, deviceDetailLines, deviceLabel, eventTypeName, networkName, type ActivityItem, type DeviceRow } from '../api';
+
+const askConfirmation = useConfirmation();
 
 const items = ref<ActivityItem[]>([]);
 const devices = ref<DeviceRow[]>([]);
@@ -124,7 +127,8 @@ async function deleteRecord(item: ActivityItem) {
   const ids = mode === 'group' && item.edit_events?.length ? item.edit_events.map(event => event.id) : [item.id];
   const preview = summaryText(item).slice(0, 160);
   const message = `确定永久删除${mode === 'group' ? '这段记录及其全部原始操作' : '这条原始操作'}吗？\n共 ${ids.length} 条原始记录。\n\n${preview}\n\n删除后无法撤销，仅影响当前后台，不联动手机或其他服务器副本。`;
-  if (!confirm(message)) return;
+  if (!(await askConfirmation(message))) return;
+  if (loading.value || deletingId.value || unmounted) return;
   deletingId.value = item.id;
   deleteError.value = '';
   deleteMessage.value = '';

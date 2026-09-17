@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { useConfirmation } from '../confirmation';
 import { computed, onMounted, onBeforeUnmount, ref } from 'vue';
 import { dictionaryApi, type DictionaryDevice, type DictionaryEntry, type DictionaryStatus } from '../api/personalDictionary';
 import './content-library.css';
+const askConfirmation = useConfirmation();
+
 const devices = ref<DictionaryDevice[]>([]), rows = ref<DictionaryEntry[]>([]);
 const total = ref(0), page = ref(1), deviceId = ref(''), q = ref(''), status = ref('');
 const view = ref('raw');
@@ -25,14 +28,16 @@ async function load(targetPage=page.value) {
 }
 function filterDevice(id:string) {deviceId.value=id;view.value='raw';void load(1);}
 async function bind(d:DictionaryDevice) {
-  if(busy.value || !canManage.value || d.restore_enabled === false || !confirm(`将「${label(d)} · ${d.device_id.slice(-8)}」所属的个人词库与当前词库合并？其已绑定手机也会一起加入，原始上报来源保留，已有停用/删除规则优先。请确认都是你要共享词库的手机。`)) return;
+  if(busy.value || !canManage.value || d.restore_enabled === false || !(await askConfirmation(`将「${label(d)} · ${d.device_id.slice(-8)}」所属的个人词库与当前词库合并？其已绑定手机也会一起加入，原始上报来源保留，已有停用/删除规则优先。请确认都是你要共享词库的手机。`, { title: '确认合并个人词库', confirmText: '确认合并' }))) return;
+  if (busy.value || !canManage.value) return;
   busy.value=true; error.value=''; notice.value='';
   try {await dictionaryApi.bind(d.device_id);notice.value='后台绑定已保存，等待手机联网同步。';await load(1);}
   catch(e) {error.value=(e as Error).message;} finally {busy.value=false;}
 }
 async function decide(texts:string[],value:DictionaryStatus) {
   if(busy.value || !canManage.value || !texts.length) return;
-  if(value!=='enabled' && !confirm(`${statuses[value]}这 ${texts.length} 个词的个人学习与加权？绑定手机同步后生效，原始上报明细保留；不会屏蔽公共词库中的同名词。`)) return;
+  if(value!=='enabled' && !(await askConfirmation(`${statuses[value]}这 ${texts.length} 个词的个人学习与加权？绑定手机同步后生效，原始上报明细保留；不会屏蔽公共词库中的同名词。`, { title: value === 'deleted' ? '确认删除个人词语' : '确认停用个人词语', confirmText: value === 'deleted' ? '确认删除' : '确认停用' }))) return;
+  if (busy.value || !canManage.value) return;
   busy.value=true;error.value='';notice.value='';
   try {await dictionaryApi.decisions([...new Set(texts)],value);notice.value='决策已保存，等待手机确认应用。';await load();}
   catch(e) {error.value=(e as Error).message;} finally {busy.value=false;}

@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import ConfirmationDialog from './components/ConfirmationDialog.vue';
+import { cancelConfirmation, confirmation } from './confirmation';
 import { authenticated, logout, loginName } from './auth';
 import { useRoute } from 'vue-router';
 import { api, currentUserId, deviceLabel, setCurrentUserId, type DeviceRow } from './api';
 
 type NavGroup = { key: string; label: string; icon: string; items: Array<{ path: string; label: string }> };
 const route = useRoute();
+watch([() => route.fullPath, currentUserId, authenticated], cancelConfirmation, { flush: 'sync' });
 const selectedUser = ref<DeviceRow | null>(null);
 const usersReady = ref(false);
 const initializationError = ref('');
@@ -129,7 +132,7 @@ function seenAt(value: string) { return new Date(value).toLocaleString('zh-CN', 
 
 <template>
   <RouterView v-if="!authenticated && route.path === '/login'" />
-  <div v-if="authenticated" class="layout">
+  <div v-if="authenticated" class="layout" :inert="!!confirmation">
     <aside class="sidebar">
       <div class="logo">⌨️ 我的输入法</div>
       <button class="current-user" type="button" @click="signOut">{{ loginName }} · 退出登录</button>
@@ -208,6 +211,7 @@ function seenAt(value: string) { return new Date(value).toLocaleString('zh-CN', 
       </div>
     </Teleport>
   </div>
+  <ConfirmationDialog />
 </template>
 
 <style>

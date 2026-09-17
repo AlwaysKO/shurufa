@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { useConfirmation } from '../confirmation';
 import { onMounted, onBeforeUnmount, reactive, ref } from 'vue';
 import { api, scopedAssetUrl, type SynthesisAsset } from '../api';
 import './content-library.css';
+
+const askConfirmation = useConfirmation();
 
 const assets = ref<SynthesisAsset[]>([]);
 const loading = ref(false); const loaded = ref(false); const busy = ref(false);
@@ -61,7 +64,8 @@ async function upload() {
   finally { busy.value = false; }
 }
 async function remove(asset: SynthesisAsset) {
-  if (busy.value || !asset.deletable || asset.source !== 'personal' || !confirm(`删除“${asset.name}”这张 AI 合成底图？不会删除关键词推荐图。手机下次检查更新后移除。`)) return;
+  if (busy.value || !asset.deletable || asset.source !== 'personal' || !(await askConfirmation(`删除“${asset.name}”这张 AI 合成底图？不会删除关键词推荐图。手机下次检查更新后移除。`))) return;
+  if (busy.value || loading.value) return;
   busy.value = true; error.value = ''; message.value = '';
   try { await api.deleteSynthesisAsset(asset.id); message.value = '底图已删除，关键词推荐图库不受影响。'; await load(); }
   catch (e) { error.value = `删除失败：${(e as Error).message}`; }

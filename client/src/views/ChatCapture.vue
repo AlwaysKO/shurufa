@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useConfirmation } from '../confirmation';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import {
   api,
@@ -7,6 +8,8 @@ import {
   type ChatMessageRow,
   scopedAssetUrl,
 } from '../api';
+
+const askConfirmation = useConfirmation();
 
 const overview = ref<ChatCaptureOverview>({
   conversation_count: 0,
@@ -158,7 +161,8 @@ async function deleteSelectedConversation() {
   const conversation = selected.value;
   if (!conversation || loading.value || deleting.value || deletingAssetId.value !== null) return;
   const name = conversation.display_name || conversation.external_key;
-  if (!window.confirm(`确定删除“${name}”及其全部聊天记录吗？此操作不可恢复。`)) return;
+  if (!(await askConfirmation(`确定删除“${name}”及其全部聊天记录吗？此操作不可恢复。`))) return;
+  if (loading.value || deleting.value || deletingAssetId.value !== null || disposed) return;
   deleting.value = true;
   error.value = '';
   try {
@@ -175,7 +179,8 @@ async function deleteSelectedConversation() {
 
 async function deleteImage(message: ChatMessageRow, assetId: number) {
   if (loading.value || deleting.value || deletingAssetId.value !== null) return;
-  if (!window.confirm('确定删除这张聊天截图吗？此操作不可恢复。')) return;
+  if (!(await askConfirmation('确定删除这张聊天截图吗？此操作不可恢复。'))) return;
+  if (loading.value || deleting.value || deletingAssetId.value !== null || disposed) return;
   deletingAssetId.value = assetId;
   error.value = '';
   try {

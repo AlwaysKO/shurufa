@@ -52,7 +52,8 @@ export function useConfirmation() {
   return async (message: string, options?: ConfirmationOptions): Promise<boolean> => {
     if (!alive || waiting) return false;
     waiting = true;
-    try { return await requestConfirmation(message, options, owner) && alive; }
+    const version = contextVersion;
+    try { return await requestConfirmation(message, options, owner) && alive && version === contextVersion; }
     finally { waiting = false; }
   };
 }

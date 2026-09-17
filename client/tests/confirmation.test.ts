@@ -69,3 +69,17 @@ it('全部相关页面改用统一确认服务，不遗留浏览器原生确认'
   expect(app).toContain('ConfirmationDialog');
   expect(app).toContain('cancelConfirmation');
 });
+
+it('确认结果传回组件前发生用户切换，也不能继续删除', async () => {
+  let confirm!: ReturnType<typeof useConfirmation>;
+  const renderer = Vue.createRenderer<any, any>({ createElement: () => ({}), createText: () => ({}), createComment: () => ({}), setText() {}, setElementText() {}, parentNode: () => null, nextSibling: () => null, patchProp() {}, insert() {}, remove() {}, insertStaticContent: () => [{}, {}] });
+  const app = renderer.createApp({ setup() { confirm = useConfirmation(); return () => null; } });
+  app.mount({});
+  try {
+    const pending = confirm('即将删除');
+    finishConfirmation(true);
+    await Promise.resolve(); // 底层请求已接受，组件封装层尚未恢复。
+    cancelConfirmation();
+    expect(await pending).toBe(false);
+  } finally { app.unmount(); }
+});

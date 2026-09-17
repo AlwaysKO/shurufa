@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { useConfirmation } from '../confirmation';
 import { computed, onMounted, ref } from 'vue';
 import { api } from '../api';
+
+const askConfirmation = useConfirmation();
 
 const exporting = ref(false);
 const exportMsg = ref('');
@@ -59,16 +62,22 @@ async function doExport() {
 }
 
 async function doCleanup() {
+  if (!canCleanup.value) return;
+  const payload = {
+    confirm: confirmText.value,
+    scope: scope.value,
+    from: from.value || undefined,
+    to: to.value || undefined,
+    package_name: pkg.value || undefined,
+  };
+  const timeRange = payload.from || payload.to ? `${payload.from || '不限起始'} ～ ${payload.to || '不限结束'}` : '全部时间';
+  const message = `确定永久清理当前用户的数据吗？\n范围：${payload.scope === 'all' ? '输入事件及会话、位置、统计等关联数据' : '仅输入事件'}\n时间：${timeRange}\n应用：${payload.package_name || '全部应用'}\n\n删除后无法恢复，建议先导出备份。`;
+  if (!(await askConfirmation(message, { title: '确认清理数据', confirmText: '确认清理' }))) return;
+  if (!canCleanup.value) return;
   busy.value = true;
   result.value = '';
   try {
-    const r = await api.cleanup({
-      confirm: confirmText.value,
-      scope: scope.value,
-      from: from.value || undefined,
-      to: to.value || undefined,
-      package_name: pkg.value || undefined,
-    });
+    const r = await api.cleanup(payload);
     const d = r.deleted;
     const parts = [`已删除 ${d.events ?? 0} 条事件`];
     if (r.scope === 'all') {

@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import { useConfirmation } from '../confirmation';
 import { computed, onMounted, ref } from 'vue';
 import { api, type UserPhraseRow } from '../api';
 import { phrasePresetGroups } from '../data/phrasePresets';
 import './content-library.css';
+
+const askConfirmation = useConfirmation();
 
 const phrases = ref<UserPhraseRow[]>([]);
 const loading = ref(false);
@@ -55,7 +58,8 @@ async function saveEdit(p: UserPhraseRow) {
   finally { busy.value = false; }
 }
 async function remove(p: UserPhraseRow) {
-  if (busy.value || !confirm(`删除常用语「${p.content}」？手机下次成功同步后也会移除。`)) return;
+  if (busy.value || !(await askConfirmation(`删除常用语「${p.content}」？手机下次成功同步后也会移除。`))) return;
+  if (busy.value) return;
   busy.value = true; err.value = ''; msg.value = '';
   try { await api.deleteUserPhrase(p.id); phrases.value = phrases.value.filter(x => x.id !== p.id); msg.value = '常用语已删除'; }
   catch (e) { err.value = `删除失败：${(e as Error).message}`; }
