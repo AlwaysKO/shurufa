@@ -16,9 +16,11 @@ fi
 release="$base/releases/$(date -u +%Y%m%dT%H%M%S)-${sha:0:12}"
 mkdir -p "$release"
 echo "Building $sha in $release"
-git -C "$repo" archive "$sha" server client assets | tar -x -C "$release"
+# Runtime uploads must never come from the release archive.
+git -C "$repo" archive "$sha" server client assets | tar --exclude='server/uploads' -x -C "$release"
 printf '%s\n' "$sha" > "$release/REVISION"
-ln -s "$base/shared/uploads" "$release/server/uploads"
+mkdir -p "$base/shared/uploads"
+ln -sT "$base/shared/uploads" "$release/server/uploads"
 cd "$release/server"
 npm ci --no-audit --no-fund
 npm run build
