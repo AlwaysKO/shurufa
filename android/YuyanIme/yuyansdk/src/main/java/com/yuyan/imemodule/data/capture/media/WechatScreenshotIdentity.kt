@@ -62,7 +62,7 @@ internal fun screenshotConversationIdentity(
 ): ScreenshotConversationIdentity {
     val raw = recognizedTitle?.trim()?.replace(Regex("\\s+"), " ").orEmpty()
     // 荣耀截图中微信群人数偶尔被 OCR 拆成“(6)8”；尾部孤立数字同群人数一起丢弃。
-    val groupSuffix = Regex("[（(]\\s*\\d+\\s*[）)](?:\\s*\\d{1,2})?$")
+    val groupSuffix = Regex("[（(]\\s*\\d+\\s*[）)](?:\\s*[A-Za-z0-9]{1,2})?$")
     val isGroup = groupSuffix.containsMatchIn(raw)
     val normalized = raw.replace(groupSuffix, "").trim().takeIf { it.isNotEmpty() }
     if (normalized != null) {

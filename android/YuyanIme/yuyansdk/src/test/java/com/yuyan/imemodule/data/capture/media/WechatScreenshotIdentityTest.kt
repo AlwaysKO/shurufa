@@ -36,6 +36,15 @@ class WechatScreenshotIdentityTest {
         assertEquals(ConversationType.GROUP, noisy.conversationType)
     }
 
+    @Test fun `ocr letter after group member count is removed`() {
+        val noisy = screenshotConversationIdentity("一路江湖(210)A", "fallback-a")
+        val clean = screenshotConversationIdentity("一路江湖(210)", "fallback-b")
+
+        assertEquals("一路江湖", noisy.displayName)
+        assertEquals(clean.externalKey, noisy.externalKey)
+        assertEquals(ConversationType.GROUP, noisy.conversationType)
+    }
+
     @Test fun `different chat names produce different keys and visual fallback stays isolated`() {
         assertNotEquals(
             screenshotConversationIdentity("张三", "same").externalKey,
