@@ -1,0 +1,121 @@
+{
+  "needsRework": [],
+  "rejectedSources": [
+    {
+      "id": "corgi-forgive",
+      "version": "v1",
+      "sha256": "58e0c536f9e03a8bb253759ee4b8488804c3795296b317c12a28cbd443319bc6",
+      "reason": "第三排前两格耳尖跨到第二排格线以上，暗像素脚底检测361实际包含下一排耳朵；主体过大且排间基线漂移，不得裁耳或分格移形掩盖"
+    },
+    {
+      "id": "man-forgive",
+      "version": "v1",
+      "sha256": "0b6a24046e84a5aebf22fe5270d4543198ba62ec137c245de0b8be49df6582a8",
+      "reason": "要求写实摄影原创成年男性，结果为大头3D幼态卡通，与摄影风格不符，会与黏土风格重复；保留废稿不入库"
+    }
+  ],
+  "replacements": [
+    {
+      "id": "corgi-forgive",
+      "version": "v2",
+      "basis": "重新生成小主体与完整耳尖，原PNG不改"
+    },
+    {
+      "id": "man-forgive",
+      "version": "v2",
+      "basis": "重新生成写实成年男性，非3D卡通，双手及全身完整"
+    }
+  ],
+  "reviewScope": "主线程逐源及真实后台连续截图检查；独立代理逐源和原GIF审计复核，不是用户审美认可",
+  "notes": [
+    "line-forgive实际为淡彩线条，不是纯黑白",
+    "line-absurd中段小弯发线有局部波动，但秃顶轮廓、眼镜与侧发稳定，未认定身份跳变",
+    "真人动作与喜感较卡通克制"
+  ],
+  "items": [
+    {
+      "id": "corgi-forgive",
+      "status": "no-blocking-issue-found",
+      "sourceSha256": "f0ca73799bd87a9f9945b3a96f513f4b0af4b25e02a88134e18d3a9451c750dd",
+      "gifSha256": "34784c590f2eca57abe72de80b049bb0944f8bb5460c6dfe47409ce0a0ddb2ea",
+      "issues": []
+    },
+    {
+      "id": "line-forgive",
+      "status": "no-blocking-issue-found",
+      "sourceSha256": "481601683f8105cabcd3de3a3de17e21e299a266b282c93551325e7289e88555",
+      "gifSha256": "ab23201c54e7cbeb1e666e397c74c6439f9959a6dd10319083e6094a61a4448e",
+      "issues": []
+    },
+    {
+      "id": "clay-forgive",
+      "status": "no-blocking-issue-found",
+      "sourceSha256": "9dcb97735f3be22ac4d1eff0c5d7918e8f17544ad7019a60dc4eb9f2e00be89b",
+      "gifSha256": "2f7f860ef23f141e1c7bc1063e5aab5efd0b96136ce11c16ac404f5f91984c17",
+      "issues": []
+    },
+    {
+      "id": "man-forgive",
+      "status": "no-blocking-issue-found",
+      "sourceSha256": "66927830ef8984b3177088f2b2dc89d0b73bb2c01347f23c6159145862180400",
+      "gifSha256": "769e3e2afcbd9ec15349cdcb66b514d88b8668f7576adc49a741a921efd8cbdf",
+      "issues": []
+    },
+    {
+      "id": "sparrow-bravo",
+      "status": "no-blocking-issue-found",
+      "sourceSha256": "9c4dcb8c0bd641179370baf8d38297eb24871b7a3989719105a683f6e4b92a8a",
+      "gifSha256": "be3dd7b87b55588c75c6985a9397091e70a84cff7fea1533f6e2f69ff21bb05f",
+      "issues": []
+    },
+    {
+      "id": "line-bravo",
+      "status": "no-blocking-issue-found",
+      "sourceSha256": "41a184566cc160641629f12bb2097d544d7289cc8401891314606e28f890f5a6",
+      "gifSha256": "a0b3e2d774b34482b5aaf4edde187ca1cdcbefffbd1d501e88ba2bdb06607c8e",
+      "issues": []
+    },
+    {
+      "id": "clay-bravo",
+      "status": "no-blocking-issue-found",
+      "sourceSha256": "a469cc8ee780238f7f51c21a9eecf9ac9ce5e37f7b63c981bad0a7842dfb3a8b",
+      "gifSha256": "bb60974f60e32c9f5581775a38141dc14ba3dd0232697b2a19bf753e9963b13e",
+      "issues": []
+    },
+    {
+      "id": "man-bravo",
+      "status": "no-blocking-issue-found",
+      "sourceSha256": "a27e3fd479fee7a0ae48b510c3cf7713a2957bbc89e2f667f59f69a88cf6b540",
+      "gifSha256": "96b219252ccadab7c0035b98bbc5de778388af03528c714cc580cb9fffecba3c",
+      "issues": []
+    },
+    {
+      "id": "cat-absurd",
+      "status": "no-blocking-issue-found",
+      "sourceSha256": "f9072fac7ecb54bba7656f8461088dd1f30b075718f9b66ee50fb4bc075a6397",
+      "gifSha256": "38291e20db069f037c6ca34878d6ef75b0f9f56d977d811aa66b284db71b131c",
+      "issues": []
+    },
+    {
+      "id": "line-absurd",
+      "status": "no-blocking-issue-found",
+      "sourceSha256": "5e7b0029bc10d6040e4232579c727a3b6f4d8990c16a5383a42698bb7fc7db3c",
+      "gifSha256": "3c2f1e7eb253f536f9011307b676998d10a5ed0b24210c980f7ed15ea026160d",
+      "issues": []
+    },
+    {
+      "id": "clay-absurd",
+      "status": "no-blocking-issue-found",
+      "sourceSha256": "77517693e1f6e02704a7c02f739ed09d3e0f0fbb23a7897cdd8aa9e61f07abbc",
+      "gifSha256": "da5c93cbd297442592b1207d5ac0c581e9a9d25248fec5d1bd237d7cb9cb80e1",
+      "issues": []
+    },
+    {
+      "id": "man-absurd",
+      "status": "no-blocking-issue-found",
+      "sourceSha256": "5b2fde39d8a70ebf772fb41e094179d6761d63f97569e52c05f604e86f1ae104",
+      "gifSha256": "1ec0c3a570d286305b352aaa2a7a53bf5f4a67a7857d1836dd545d67e63403d5",
+      "issues": []
+    }
+  ]
+}

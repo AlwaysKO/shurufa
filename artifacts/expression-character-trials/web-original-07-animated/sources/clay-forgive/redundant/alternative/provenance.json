@@ -1,0 +1,23 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab8f73-bdc0-83e9-8923-a5bf4d22362b",
+  "sourceFileId": "file_0000000019ac82078df5d0e0ce9cd22c",
+  "requestedDate": "2026-09-17",
+  "status": "redundant-not-selected",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "8ff2e03b77db126d88cf49a5551cc08a96922d3301a188ccf42042418789357a",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T06:57:49.483432+00:00",
+  "generationObservedAt": "2026-09-17T06:57:49.483432+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "clay-forgive-alternative.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T06:58:44.294387+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  },
+  "reason": "网页同次提供额外候选，仅选第一份完成本张；该份不渲染不入库"
+}

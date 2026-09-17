@@ -13,6 +13,8 @@ const overview = ref<ChatCaptureOverview>({
   message_count: 0,
   media_count: 0,
 });
+const platform = ref<ChatConversationRow['platform']>('wechat');
+let latestLoad = 0;
 const conversations = ref<ChatConversationRow[]>([]);
 const selected = ref<ChatConversationRow | null>(null);
 const messages = ref<ChatMessageRow[]>([]);
@@ -52,7 +54,8 @@ function formatImageLabelTime(value: string): string {
 }
 
 function messageDisplayName(message: ChatMessageRow): string {
-  if (message.metadata.capture_source === 'wechat_empty_tree_screenshot' && selected.value) {
+  if ((message.metadata.capture_source === 'wechat_empty_tree_screenshot' ||
+      message.metadata.capture_kind === 'conversation_screenshot') && selected.value) {
     const chatName = selected.value.display_name || selected.value.external_key;
     return `${chatName} ${formatImageLabelTime(message.captured_at)}`;
   }
@@ -110,16 +113,32 @@ async function changePage(next: number) {
   await loadMessages();
 }
 
+async function selectPlatform(next: ChatConversationRow['platform']) {
+  if (next === platform.value || deleting.value || deletingAssetId.value !== null) return;
+  platform.value = next;
+  latestRequest += 1;
+  selected.value = null;
+  conversations.value = [];
+  messages.value = [];
+  previewImage.value = null;
+  page.value = 1;
+  total.value = 0;
+  messageType.value = 'all';
+  overview.value = { conversation_count: 0, message_count: 0, media_count: 0 };
+  await load();
+}
+
 async function load() {
+  const request = ++latestLoad;
   loading.value = true;
   error.value = '';
   messageError.value = '';
   try {
     const [overviewResult, conversationResult] = await Promise.all([
-      api.chatCaptureOverview(),
-      api.chatConversations(),
+      api.chatCaptureOverview(platform.value),
+      api.chatConversations(1, 100, platform.value),
     ]);
-    if (disposed) return;
+    if (disposed || request !== latestLoad) return;
     overview.value = overviewResult;
     conversations.value = conversationResult.conversations;
     selected.value = conversations.value[0] ?? null;
@@ -129,7 +148,7 @@ async function load() {
     if (selected.value) await loadMessages();
     else loading.value = false;
   } catch (reason) {
-    if (disposed) return;
+    if (disposed || request !== latestLoad) return;
     error.value = `加载采集数据失败：${(reason as Error).message}`;
     loading.value = false;
   }
@@ -164,8 +183,8 @@ async function deleteImage(message: ChatMessageRow, assetId: number) {
     const conversation = selected.value;
     if (conversation) await loadMessages();
     const [overviewResult, conversationResult] = await Promise.all([
-      api.chatCaptureOverview(),
-      api.chatConversations(),
+      api.chatCaptureOverview(platform.value),
+      api.chatConversations(1, 100, platform.value),
     ]);
     if (disposed) return;
     overview.value = overviewResult;
@@ -179,10 +198,19 @@ async function deleteImage(message: ChatMessageRow, assetId: number) {
 }
 
 onMounted(load);
-onBeforeUnmount(() => { disposed = true; latestRequest += 1; });
+onBeforeUnmount(() => { disposed = true; latestRequest += 1; latestLoad += 1; });
 </script>
 
 <template>
+  <nav class="platform-tabs" role="tablist" aria-label="聊天采集 App">
+    <button
+      v-for="(name, key) in platformNames" :key="key"
+      type="button" role="tab" :aria-selected="platform === key"
+      :data-testid="`chat-tab-${key}`" :class="{ active: platform === key }"
+      :disabled="deleting || deletingAssetId !== null"
+      @click="selectPlatform(key)"
+    >{{ name }}</button>
+  </nav>
   <div class="stat-grid capture-stats">
     <div class="stat"><div class="num">{{ overview.conversation_count }}</div><div class="label">会话</div></div>
     <div class="stat"><div class="num">{{ overview.message_count }}</div><div class="label">消息</div></div>
@@ -311,6 +339,11 @@ onBeforeUnmount(() => { disposed = true; latestRequest += 1; });
 </template>
 
 <style scoped>
+.platform-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.platform-tabs button { padding: 9px 24px; border: 1px solid #d5dbe5; border-radius: 8px; background: white; cursor: pointer; }
+.platform-tabs button.active { color: #fff; background: #2563eb; border-color: #2563eb; }
+.platform-tabs button:disabled { opacity: .5; cursor: not-allowed; }
+
 .capture-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
 .capture-stats .stat { display: flex; align-items: baseline; gap: 8px; padding: 10px 14px; }
 .capture-stats .num { font-size: 22px; }

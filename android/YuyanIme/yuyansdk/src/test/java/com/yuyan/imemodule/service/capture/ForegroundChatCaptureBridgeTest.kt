@@ -55,10 +55,10 @@ class ForegroundChatCaptureBridgeTest {
     }
 
     @Test
-    fun supportedChatPackagesExcludeUnrelatedAndLiveApps() {
+    fun supportedChatPackagesRequireRegisteredPageAdapters() {
         assertTrue(isForegroundChatCapturePackage("com.tencent.mm"))
         assertFalse(isForegroundChatCapturePackage("com.tencent.mobileqq"))
-        assertFalse(isForegroundChatCapturePackage("com.ss.android.ugc.aweme"))
+        assertTrue(isForegroundChatCapturePackage("com.ss.android.ugc.aweme"))
         assertFalse(isForegroundChatCapturePackage("com.example.other"))
         assertFalse(isForegroundChatCapturePackage(null))
     }

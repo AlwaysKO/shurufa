@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab9740-1128-83ea-a2f4-63ab8bc6d38e",
+  "sourceFileId": "file_000000005af482098248bd4597f9149e",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "f9072fac7ecb54bba7656f8461088dd1f30b075718f9b66ee50fb4bc075a6397",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T07:29:43.217307+00:00",
+  "generationObservedAt": "2026-09-17T07:29:43.217307+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "cat-absurd.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T07:31:22.375281+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

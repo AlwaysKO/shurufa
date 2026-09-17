@@ -28,6 +28,7 @@ async function mount(name: string, api: Record<string, any>) {
   const module = { exports: {} as { default: Vue.Component } };
   const require = (id: string) => {
     if (id === 'vue') return Vue;
+    if (id === '../confirmation') return { useConfirmation: () => async (message: string) => Boolean(globalThis.confirm?.(message)) };
     if (id === 'vue-router') return { useRoute: () => ({ query: {} }) };
     if (id === '../api') return { api, appName: (s: string) => s, deviceDetailLines: () => [], deviceLabel: () => '', eventTypeName: (s: string) => s, networkName: (s: string) => s };
     if (id === '../data/phrasePresets') return presets;
@@ -230,4 +231,23 @@ it('行为明细每页20条，整段及原始模式翻页均固定请求20', asy
   expect(events.mock.calls.at(-1)![0]).toMatchObject({ page: 2, page_size: 20 });
   view.find('mode-raw')!.props.onClick(); await settle();
   expect(events.mock.calls.at(-1)![0]).toMatchObject({ page: 1, page_size: 20, grouped: false });
+});
+
+it('批量清理保留DELETE校验，必须经自定义确认，取消不提交且使用确认时的筛选快照', async () => {
+  const cleanup = vi.fn().mockResolvedValue({ scope: 'events', deleted: { events: 1 } });
+  const confirm = vi.fn().mockReturnValue(false); vi.stubGlobal('confirm', confirm);
+  const view = await mount('DataManage', { cleanup, collectorSetting: async () => ({ collector_base_url: '' }) });
+  const action = view.all().find(n => n.tag === 'button' && n.text === '确认清理')!;
+  await action.props.onClick(); await settle();
+  expect(cleanup).not.toHaveBeenCalled(); expect(confirm).not.toHaveBeenCalled();
+  const input = view.all().find(n => n.tag === 'input' && n.props.placeholder?.includes('DELETE'))!;
+  input.props['onUpdate:modelValue']('DELETE'); await settle();
+  await action.props.onClick(); await settle();
+  expect(confirm).toHaveBeenCalled(); expect(cleanup).not.toHaveBeenCalled();
+  expect(confirm.mock.calls[0][0]).toContain('全部时间');
+  expect(confirm.mock.calls[0][0]).toContain('全部应用');
+  confirm.mockReturnValue(true);
+  await action.props.onClick(); await settle();
+  expect(cleanup).toHaveBeenCalledTimes(1);
+  expect(cleanup).toHaveBeenCalledWith({ confirm: 'DELETE', scope: 'events', from: undefined, to: undefined, package_name: undefined });
 });

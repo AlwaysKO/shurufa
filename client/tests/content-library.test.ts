@@ -28,6 +28,7 @@ async function mount(name: string, api: Record<string, any>) {
   const module = { exports: {} as { default: Vue.Component } };
   const require = (id: string) => {
     if (id === 'vue') return Vue;
+    if (id === '../confirmation') return { useConfirmation: () => async (message: string) => Boolean(globalThis.confirm?.(message)) };
     if (id === '../api') return { api, scopedAssetUrl: (url: string) => url };
     if (id === '../data/phrasePresets') return presets;
     if (id.endsWith('.css')) return {};

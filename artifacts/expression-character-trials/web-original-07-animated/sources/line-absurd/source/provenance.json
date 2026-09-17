@@ -1,0 +1,25 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab980e-d4c8-83ea-a406-a4e3eaa7aa4b",
+  "sourceFileId": "file_00000000b29c81f8bf00c8844a10b46e",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "5e7b0029bc10d6040e4232579c727a3b6f4d8990c16a5383a42698bb7fc7db3c",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T07:33:21.145403+00:00",
+  "generationObservedAt": "2026-09-17T07:33:21.145403+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "line-absurd.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T07:34:55.604113+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

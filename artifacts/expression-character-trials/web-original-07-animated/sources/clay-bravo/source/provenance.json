@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab94ab-6d24-83ea-a086-3f072d9a0b4f",
+  "sourceFileId": "file_0000000089e88209a17a1ae675becf6d",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "a469cc8ee780238f7f51c21a9eecf9ac9ce5e37f7b63c981bad0a7842dfb3a8b",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T07:21:00.367423+00:00",
+  "generationObservedAt": "2026-09-17T07:21:00.367423+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "clay-bravo.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T07:22:25.131573+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

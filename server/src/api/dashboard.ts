@@ -2,7 +2,7 @@ import { withAppNames } from '../lib/appNames.js';
 import { Router } from 'express';
 import type pg from 'pg';
 import { resolveMissingIps } from '../lib/ipgeo.js';
-import { resolveMissingAddresses } from '../lib/geocoder.js';
+import { addressResolution, resolveMissingAddresses } from '../lib/geocoder.js';
 import { queryGroupedEdits } from './groupedEdits.js';
 import { createActivityDeletionRouter } from './activityDeletion.js';
 import { collectorBaseUrl, saveCollectorBaseUrl } from '../lib/runtimeSettings.js';
@@ -844,13 +844,19 @@ export function createDashboardRouter(pool: pg.Pool): Router {
         address: string | null;
       }>;
 
-      // 懒解析未解析过的坐标（不阻塞响应，下次查询即有地址）
+      // 后台排队解析；返回真实状态，页面随后自动拉取结果。
       resolveMissingAddresses(
         pool,
         rows.filter((r) => !r.address).map((r) => ({ id: r.id, lat: Number(r.latitude), lng: Number(r.longitude) })),
-      ).catch(() => {});
+        userId,
+      ).catch(() => { console.warn('[geocoder] 地址解析任务异常'); });
 
-      res.json({ days, total: rows.length, locations: rows });
+      res.json({ days, total: rows.length, locations: rows.map(row => ({
+        ...row,
+        ...(row.address
+          ? { address_status: 'resolved', address_error: null, address_retry_at: null }
+          : addressResolution(pool, userId, { id: row.id, lat: Number(row.latitude), lng: Number(row.longitude) })),
+      })) });
     } catch (err) {
       next(err);
     }

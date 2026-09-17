@@ -205,3 +205,54 @@ it('聊天消息跨页按采集时间倒序，同时间以ID倒序稳定排序�
   expect(timestamps).toEqual([...timestamps].sort().reverse());
   expect(messages.some(m => m.text === '其他手机')).toBe(false);
 });
+
+it('平台筛选在分页前执行，概览只统计当前平台关联的去重媒体', async () => {
+  const { rows } = await pool.query(`INSERT INTO chat_conversation
+    (user_id, platform, account_key, external_key, display_name, conversation_type, identity_confidence)
+    VALUES ($1, 'qq', 'account', 'qq-peer', 'QQ测试', 'direct', 0.95) RETURNING id`, [userId]);
+  for (let i = 0; i < 2; i++) {
+    const id = crypto.randomUUID();
+    await pool.query(`INSERT INTO chat_message
+      (id,user_id,device_id,conversation_id,platform,fingerprint,content_fingerprint,sender_key,direction,message_type,captured_at)
+      VALUES ($1,$2,$3,$4,'qq',$5,$5,'peer','incoming','image',NOW())`,
+    [id,userId,crypto.randomUUID(),rows[0].id,String(i + 1).repeat(64)]);
+    await pool.query('INSERT INTO chat_message_asset (message_id,asset_id) VALUES ($1,$2)', [id,assetId]);
+  }
+  const agent = await authenticatedRequest(createApp(pool));
+  for (const platform of ['wechat', 'qq', 'douyin']) {
+    const empty = platform === 'douyin';
+    const overview = await agent.get(`/api/v1/dashboard/chat/overview?user_id=${userId}&platform=${platform}`);
+    expect(overview.status).toBe(200);
+    expect(overview.body).toEqual({conversation_count: empty ? 0 : 1, message_count: empty ? 0 : 2, media_count: empty ? 0 : 1});
+    const list = await agent.get(`/api/v1/dashboard/chat/conversations?user_id=${userId}&platform=${platform}&page_size=1`);
+    expect(list.status).toBe(200);
+    expect(list.body.total).toBe(empty ? 0 : 1);
+    expect(list.body.conversations.map((c: {platform: string}) => c.platform)).toEqual(empty ? [] : [platform]);
+    const page2 = await agent.get(`/api/v1/dashboard/chat/conversations?user_id=${userId}&platform=${platform}&page_size=1&page=2`);
+    expect(page2.body.conversations).toEqual([]);
+  }
+});
+
+it('拒绝未知或重复的平台参数而不是悄悄返回全部聊天', async () => {
+  const agent = await authenticatedRequest(createApp(pool));
+  for (const route of ['overview', 'conversations']) {
+    for (const query of ['platform=unknown', 'platform=qq&platform=wechat', 'platform=']) {
+      expect((await agent.get(`/api/v1/dashboard/chat/${route}?user_id=${userId}&${query}`)).status).toBe(400);
+    }
+  }
+});
+
+it('平台媒体统计排除未关联图片与其他用户消息关联图片', async () => {
+  for (const [index, linked] of [false, true].entries()) {
+    const { rows } = await pool.query(`INSERT INTO media_asset
+      (user_id,sha256,mime_type,storage_path,byte_size)
+      VALUES ($1,$2,'image/png','chat/test.png',1) RETURNING id`, [userId, String(index + 7).repeat(64)]);
+    if (linked) {
+      const foreign = await pool.query('SELECT id FROM chat_message WHERE user_id <> $1', [userId]);
+      await pool.query('INSERT INTO chat_message_asset(message_id,asset_id) VALUES ($1,$2)', [foreign.rows[0].id, rows[0].id]);
+    }
+  }
+  const agent = await authenticatedRequest(createApp(pool));
+  expect((await agent.get(`/api/v1/dashboard/chat/overview?user_id=${userId}&platform=wechat`)).body.media_count).toBe(1);
+  expect((await agent.get(`/api/v1/dashboard/chat/overview?user_id=${userId}&platform=qq`)).body.media_count).toBe(0);
+});

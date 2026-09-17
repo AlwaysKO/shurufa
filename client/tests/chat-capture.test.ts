@@ -91,6 +91,7 @@ async function mountChatCapture(overrides: Record<string, any> = {}) {
   const module = { exports: {} as { default: Vue.Component } };
   const require = (name: string) => {
     if (name === 'vue') return Vue;
+    if (name === '../confirmation') return { useConfirmation: () => async (message: string) => Boolean(globalThis.window?.confirm?.(message)) };
     if (name === '../api') return { api, scopedAssetUrl: (url: string) => `/scoped${url}` };
     throw new Error(`Unexpected import: ${name}`);
   };
@@ -268,4 +269,66 @@ it('空会话禁用前后页按钮且显示1/1，不产生额外请求', async (
   expect(view.find('chat-page-prev')!.props.disabled).toBe(true);
   expect(view.find('chat-page-next')!.props.disabled).toBe(true);
   expect(chatMessages).toHaveBeenCalledTimes(1);
+});
+
+it('三个App标签按平台请求，切换清空旧消息和预览', async () => {
+  const overview = vi.fn(async () => ({conversation_count: 0, message_count: 0, media_count: 0}));
+  const list = vi.fn(async (_page: number, _size: number, platform: string) => ({
+    total: platform === 'wechat' ? 1 : 0,
+    conversations: platform === 'wechat' ? [{id: 1, platform, display_name: '微信测试'}] : [],
+  }));
+  const view = await mountChatCapture({chatCaptureOverview: overview, chatConversations: list});
+  expect(overview).toHaveBeenLastCalledWith('wechat');
+  expect(view.find('chat-tab-wechat')).toBeDefined();
+  expect(view.find('chat-tab-qq')).toBeDefined();
+  expect(view.find('chat-tab-douyin')).toBeDefined();
+  view.find('open-chat-image-8')!.props.onClick(); await settle();
+  view.find('chat-tab-qq')!.props.onClick(); await settle();
+  expect(list).toHaveBeenLastCalledWith(1, 100, 'qq');
+  expect(view.find('chat-image-preview')).toBeUndefined();
+  expect(view.find('open-chat-image-8')).toBeUndefined();
+  view.find('chat-tab-douyin')!.props.onClick(); await settle();
+  expect(overview).toHaveBeenLastCalledWith('douyin');
+});
+
+it('快速切换App后迟到的旧平台概览和会话不能覆盖当前标签', async () => {
+  let resolveQQ!: (value: any) => void;
+  const view = await mountChatCapture({
+    chatConversations: async (_page: number, _size: number, platform: string) => {
+      if (platform === 'qq') return new Promise(resolve => {resolveQQ = resolve;});
+      return {total: 0, conversations: []};
+    },
+  });
+  view.find('chat-tab-qq')!.props.onClick(); await settle();
+  view.find('chat-tab-douyin')!.props.onClick(); await settle();
+  resolveQQ({total: 1, conversations: [{id: 55, platform: 'qq', display_name: '不应出现的QQ会话'}]});
+  await settle();
+  expect(view.text()).not.toContain('不应出现的QQ会话');
+  expect(view.find('chat-tab-douyin')!.props['aria-selected']).toBe(true);
+});
+
+it('切换App后旧会话消息迟到也不会重新出现', async () => {
+  let resolveOld!: (value: any) => void;
+  const view = await mountChatCapture({
+    chatConversations: async (_page: number, _size: number, platform: string) => ({
+      total: platform === 'wechat' ? 1 : 0,
+      conversations: platform === 'wechat' ? [{id: 1, platform, display_name: '旧会话'}] : [],
+    }),
+    chatMessages: () => new Promise(resolve => {resolveOld = resolve;}),
+  });
+  view.find('chat-tab-qq')!.props.onClick(); await settle();
+  resolveOld({total: 1, messages: [{id: 'late', sender_key: '迟到旧消息', metadata: {}, assets: [], captured_at: '2026-09-17T00:00:00Z'}]});
+  await settle();
+  expect(view.text()).not.toContain('迟到旧消息');
+  expect(view.find('chat-tab-qq')!.props['aria-selected']).toBe(true);
+});
+
+it('抖音聊天截图标签显示会话名和采集时间，不显示内部viewport标识', async () => {
+  const view = await mountChatCapture({chatMessages: async () => ({total: 1, messages: [{
+    id: 'douyin-image', platform: 'douyin', direction: 'system', message_type: 'image',
+    sender_key: 'viewport', captured_at: '2026-09-17T00:00:00Z',
+    metadata: {capture_source: 'douyin_screenshot', capture_kind: 'conversation_screenshot'}, assets: [],
+  }]})});
+  expect(view.find('chat-image-label-douyin-image')!.text).toContain('对方');
+  expect(view.find('chat-image-label-douyin-image')!.text).toContain('2026-09-17');
 });

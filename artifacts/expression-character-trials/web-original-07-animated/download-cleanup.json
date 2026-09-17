@@ -1,0 +1,60 @@
+{
+  "checkedAt": "2026-09-17T07:52:12.930702+00:00",
+  "browserDownloadBehavior": "default",
+  "remaining": 0,
+  "removedVerifiedCopies": [
+    {
+      "file": "cat-absurd.png",
+      "sha256": "f9072fac7ecb54bba7656f8461088dd1f30b075718f9b66ee50fb4bc075a6397"
+    },
+    {
+      "file": "clay-absurd.png",
+      "sha256": "77517693e1f6e02704a7c02f739ed09d3e0f0fbb23a7897cdd8aa9e61f07abbc"
+    },
+    {
+      "file": "clay-bravo.png",
+      "sha256": "a469cc8ee780238f7f51c21a9eecf9ac9ce5e37f7b63c981bad0a7842dfb3a8b"
+    },
+    {
+      "file": "clay-forgive-alternative.png",
+      "sha256": "8ff2e03b77db126d88cf49a5551cc08a96922d3301a188ccf42042418789357a"
+    },
+    {
+      "file": "clay-forgive.png",
+      "sha256": "9dcb97735f3be22ac4d1eff0c5d7918e8f17544ad7019a60dc4eb9f2e00be89b"
+    },
+    {
+      "file": "corgi-forgive.png",
+      "sha256": "f0ca73799bd87a9f9945b3a96f513f4b0af4b25e02a88134e18d3a9451c750dd"
+    },
+    {
+      "file": "line-absurd.png",
+      "sha256": "5e7b0029bc10d6040e4232579c727a3b6f4d8990c16a5383a42698bb7fc7db3c"
+    },
+    {
+      "file": "line-bravo.png",
+      "sha256": "41a184566cc160641629f12bb2097d544d7289cc8401891314606e28f890f5a6"
+    },
+    {
+      "file": "line-forgive.png",
+      "sha256": "481601683f8105cabcd3de3a3de17e21e299a266b282c93551325e7289e88555"
+    },
+    {
+      "file": "man-absurd.png",
+      "sha256": "5b2fde39d8a70ebf772fb41e094179d6761d63f97569e52c05f604e86f1ae104"
+    },
+    {
+      "file": "man-bravo.png",
+      "sha256": "a27e3fd479fee7a0ae48b510c3cf7713a2957bbc89e2f667f59f69a88cf6b540"
+    },
+    {
+      "file": "man-forgive.png",
+      "sha256": "66927830ef8984b3177088f2b2dc89d0b73bb2c01347f23c6159145862180400"
+    },
+    {
+      "file": "sparrow-bravo.png",
+      "sha256": "9c4dcb8c0bd641179370baf8d38297eb24871b7a3989719105a683f6e4b92a8a"
+    }
+  ],
+  "archivedSourcesRetained": true
+}

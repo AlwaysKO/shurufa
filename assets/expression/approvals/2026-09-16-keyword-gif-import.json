@@ -3601,6 +3601,126 @@
       "bytes": 35093
     },
     {
+      "id": "corgi-forgive",
+      "sourceReport": "artifacts/expression-character-trials/web-original-07-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-07-animated/output/gifs/corgi-forgive.gif",
+      "status": "imported",
+      "catalogId": "generated-34784c590f2eca57abe72de8",
+      "keyword": "原谅我",
+      "sha256": "34784c590f2eca57abe72de80b049bb0944f8bb5460c6dfe47409ce0a0ddb2ea",
+      "bytes": 69244
+    },
+    {
+      "id": "line-forgive",
+      "sourceReport": "artifacts/expression-character-trials/web-original-07-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-07-animated/output/gifs/line-forgive.gif",
+      "status": "imported",
+      "catalogId": "generated-ab23201c54e7cbeb1e666e39",
+      "keyword": "原谅我",
+      "sha256": "ab23201c54e7cbeb1e666e397c74c6439f9959a6dd10319083e6094a61a4448e",
+      "bytes": 79286
+    },
+    {
+      "id": "clay-forgive",
+      "sourceReport": "artifacts/expression-character-trials/web-original-07-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-07-animated/output/gifs/clay-forgive.gif",
+      "status": "imported",
+      "catalogId": "generated-2f7f860ef23f141e1c7bc106",
+      "keyword": "原谅我",
+      "sha256": "2f7f860ef23f141e1c7bc1063e5aab5efd0b96136ce11c16ac404f5f91984c17",
+      "bytes": 48218
+    },
+    {
+      "id": "man-forgive",
+      "sourceReport": "artifacts/expression-character-trials/web-original-07-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-07-animated/output/gifs/man-forgive.gif",
+      "status": "imported",
+      "catalogId": "generated-769e3e2afcbd9ec15349cdcb",
+      "keyword": "原谅我",
+      "sha256": "769e3e2afcbd9ec15349cdcb66b514d88b8668f7576adc49a741a921efd8cbdf",
+      "bytes": 50774
+    },
+    {
+      "id": "sparrow-bravo",
+      "sourceReport": "artifacts/expression-character-trials/web-original-07-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-07-animated/output/gifs/sparrow-bravo.gif",
+      "status": "imported",
+      "catalogId": "generated-be3dd7b87b55588c75c6985a",
+      "keyword": "太棒了",
+      "sha256": "be3dd7b87b55588c75c6985a9397091e70a84cff7fea1533f6e2f69ff21bb05f",
+      "bytes": 64219
+    },
+    {
+      "id": "line-bravo",
+      "sourceReport": "artifacts/expression-character-trials/web-original-07-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-07-animated/output/gifs/line-bravo.gif",
+      "status": "imported",
+      "catalogId": "generated-a0b3e2d774b34482b5aaf4ed",
+      "keyword": "太棒了",
+      "sha256": "a0b3e2d774b34482b5aaf4edde187ca1cdcbefffbd1d501e88ba2bdb06607c8e",
+      "bytes": 77019
+    },
+    {
+      "id": "clay-bravo",
+      "sourceReport": "artifacts/expression-character-trials/web-original-07-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-07-animated/output/gifs/clay-bravo.gif",
+      "status": "imported",
+      "catalogId": "generated-bb60974f60e32c9f5581775a",
+      "keyword": "太棒了",
+      "sha256": "bb60974f60e32c9f5581775a38141dc14ba3dd0232697b2a19bf753e9963b13e",
+      "bytes": 52676
+    },
+    {
+      "id": "man-bravo",
+      "sourceReport": "artifacts/expression-character-trials/web-original-07-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-07-animated/output/gifs/man-bravo.gif",
+      "status": "imported",
+      "catalogId": "generated-96b219252ccadab7c0035b98",
+      "keyword": "太棒了",
+      "sha256": "96b219252ccadab7c0035b98bbc5de778388af03528c714cc580cb9fffecba3c",
+      "bytes": 68978
+    },
+    {
+      "id": "cat-absurd",
+      "sourceReport": "artifacts/expression-character-trials/web-original-07-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-07-animated/output/gifs/cat-absurd.gif",
+      "status": "imported",
+      "catalogId": "generated-38291e20db069f037c6ca348",
+      "keyword": "离谱",
+      "sha256": "38291e20db069f037c6ca34878d6ef75b0f9f56d977d811aa66b284db71b131c",
+      "bytes": 91778
+    },
+    {
+      "id": "line-absurd",
+      "sourceReport": "artifacts/expression-character-trials/web-original-07-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-07-animated/output/gifs/line-absurd.gif",
+      "status": "imported",
+      "catalogId": "generated-3c2f1e7eb253f536f9011307",
+      "keyword": "离谱",
+      "sha256": "3c2f1e7eb253f536f9011307b676998d10a5ed0b24210c980f7ed15ea026160d",
+      "bytes": 80509
+    },
+    {
+      "id": "clay-absurd",
+      "sourceReport": "artifacts/expression-character-trials/web-original-07-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-07-animated/output/gifs/clay-absurd.gif",
+      "status": "imported",
+      "catalogId": "generated-da5c93cbd297442592b1207d",
+      "keyword": "离谱",
+      "sha256": "da5c93cbd297442592b1207d5ac0c581e9a9d25248fec5d1bd237d7cb9cb80e1",
+      "bytes": 59047
+    },
+    {
+      "id": "man-absurd",
+      "sourceReport": "artifacts/expression-character-trials/web-original-07-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-07-animated/output/gifs/man-absurd.gif",
+      "status": "imported",
+      "catalogId": "generated-1ec0c3a570d286305b352aaa",
+      "keyword": "离谱",
+      "sha256": "1ec0c3a570d286305b352aaa2a7a53bf5f4a67a7857d1836dd545d67e63403d5",
+      "bytes": 35418
+    },
+    {
       "id": "thanks-nuotuan-bow",
       "sourceReport": "artifacts/expression-prototypes/report.json",
       "sourceGif": "artifacts/expression-prototypes/gifs/thanks-nuotuan-bow.gif",

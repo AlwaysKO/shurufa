@@ -28,6 +28,7 @@ async function mount(name: string, api: Record<string, any>) {
   const module = { exports: {} as { default: Vue.Component } };
   const require = (id: string) => {
     if (id === 'vue') return Vue;
+    if (id === '../confirmation') return { useConfirmation: () => async (message: string) => Boolean(globalThis.confirm?.(message)) };
     if (id === 'vue-router') return { useRoute: () => ({ query: {} }) };
     if (id === '../api/personalDictionary') return { dictionaryApi: api };
     if (id === '../api') return { api, appName: (s: string) => s, deviceDetailLines: () => [], deviceLabel: () => '', eventTypeName: (s: string) => s, networkName: (s: string) => s };

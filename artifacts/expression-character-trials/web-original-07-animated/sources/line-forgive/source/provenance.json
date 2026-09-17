@@ -1,0 +1,25 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab8ed3-a3a4-83ea-a1f6-e932ac76644e",
+  "sourceFileId": "file_000000007edc81f5bf1e43727a23f8f9",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "481601683f8105cabcd3de3a3de17e21e299a266b282c93551325e7289e88555",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T06:53:45.281235+00:00",
+  "generationObservedAt": "2026-09-17T06:53:45.281235+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "line-forgive.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T06:54:39.311405+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

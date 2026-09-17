@@ -1,0 +1,25 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab95f5-3610-83ea-9a15-8cbd131bc2ff",
+  "sourceFileId": "file_00000000500081f59920e40852ba41f0",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "a27e3fd479fee7a0ae48b510c3cf7713a2957bbc89e2f667f59f69a88cf6b540",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T07:26:04.307799+00:00",
+  "generationObservedAt": "2026-09-17T07:26:04.307799+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "man-bravo.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T07:27:55.938261+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab98e3-a574-83e9-a8e8-f6d58e27660f",
+  "sourceFileId": "file_0000000077e88206bde3f9006ee8da0f",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "77517693e1f6e02704a7c02f739ed09d3e0f0fbb23a7897cdd8aa9e61f07abbc",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T07:38:09.021115+00:00",
+  "generationObservedAt": "2026-09-17T07:38:09.021115+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "clay-absurd.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T07:40:22.618620+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

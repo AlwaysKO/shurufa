@@ -4,6 +4,7 @@ package com.yuyan.imemodule.data.capture.adapter
 object AdapterRegistry {
     private val adapters: List<ChatAppAdapter> = listOf(
         WeChatChatAdapter(),
+        DouyinChatAdapter(),
     )
 
     fun forPackage(packageName: String): ChatAppAdapter? =

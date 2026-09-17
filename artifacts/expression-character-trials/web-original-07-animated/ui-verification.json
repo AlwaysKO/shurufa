@@ -1,0 +1,145 @@
+{
+  "checkedAt": "2026-09-17T07:52:12.931424+00:00",
+  "url": "http://localhost:5175/stickers",
+  "realUserId": "f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+  "groups": [
+    {
+      "keyword": "原谅我",
+      "visibleGifCount": 4,
+      "newGifCount": 4,
+      "deleteButtonCount": 4,
+      "newImagesNaturalSize": [
+        240,
+        240
+      ],
+      "allNewImagesComplete": true,
+      "changedPixelsPerNewImage": [
+        18354,
+        9291,
+        6301,
+        14667
+      ],
+      "newImageRects": [
+        [
+          570,
+          383
+        ],
+        [
+          785,
+          383
+        ],
+        [
+          999,
+          383
+        ],
+        [
+          1213,
+          383
+        ]
+      ],
+      "playbackEvidence": "真实后台连续截图，4张新GIF区域均变化；看到柯基歪耳抬眼、挠后脑、猪抬眼变微笑、真人捂胸求原谅；字幕全身完整。",
+      "screenshots": [
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web07/forgive-0.png",
+          "sha256": "8e0f62c561fe5d283f0e52cf0dc1cfafabc89f314bd3c82966bff94b36ec2d81"
+        },
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web07/forgive-1.png",
+          "sha256": "de1bbf08e5c7655b5b0c7611b28dfef01700a9d21b943689d4791601f74d1640"
+        }
+      ]
+    },
+    {
+      "keyword": "太棒了",
+      "visibleGifCount": 4,
+      "newGifCount": 4,
+      "deleteButtonCount": 4,
+      "newImagesNaturalSize": [
+        240,
+        240
+      ],
+      "allNewImagesComplete": true,
+      "changedPixelsPerNewImage": [
+        6516,
+        15039,
+        16289,
+        15533
+      ],
+      "newImageRects": [
+        [
+          570,
+          383
+        ],
+        [
+          785,
+          383
+        ],
+        [
+          999,
+          383
+        ],
+        [
+          1213,
+          383
+        ]
+      ],
+      "playbackEvidence": "真实后台连续截图4张区域均变化，可见麻雀抬头、握拳回落、鳄鱼拍掌笑和真人抬拇指，字幕全身完整。",
+      "screenshots": [
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web07/bravo-0.png",
+          "sha256": "c2dab23416a3bfead3744528cf65e41fa6905b00bc85ed7aa82abc14ccc8090c"
+        },
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web07/bravo-1.png",
+          "sha256": "8324b4e9e317fecb0de91dd54c60a8a42221a27b6bdd8e0e3e1e92b80bbd70b6"
+        }
+      ]
+    },
+    {
+      "keyword": "离谱",
+      "visibleGifCount": 4,
+      "newGifCount": 4,
+      "deleteButtonCount": 4,
+      "newImagesNaturalSize": [
+        240,
+        240
+      ],
+      "allNewImagesComplete": true,
+      "changedPixelsPerNewImage": [
+        15252,
+        15746,
+        4245,
+        3027
+      ],
+      "newImageRects": [
+        [
+          570,
+          383
+        ],
+        [
+          785,
+          383
+        ],
+        [
+          999,
+          383
+        ],
+        [
+          1213,
+          383
+        ]
+      ],
+      "playbackEvidence": "真实后台连续截图4张区域均变化，可见猫压耳张嘴、秃顶男挑眉摊掌、羊驼翻眼垂耳和真人捏眉心，字幕及全身完整。",
+      "screenshots": [
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web07/absurd-0.png",
+          "sha256": "5fc8a60984c62eab321a10fe9da7e5c61cd1f827eaf82745093ec23bf62630d6"
+        },
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web07/absurd-1.png",
+          "sha256": "246321240f716c7fbbb99f3cf76310f0b84d96e17363f8ce7e532817cc3131ea"
+        }
+      ]
+    }
+  ]
+}

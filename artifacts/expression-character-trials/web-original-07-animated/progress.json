@@ -1,0 +1,8 @@
+{
+  "batch": "web07",
+  "target": 12,
+  "completedAndImported": 12,
+  "status": "delivery-verified",
+  "openBlockers": [],
+  "verification": "verification.json"
+}

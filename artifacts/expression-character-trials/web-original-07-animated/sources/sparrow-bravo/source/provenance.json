@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab92f5-9af0-83ea-a3f8-7e3c22961f35",
+  "sourceFileId": "file_00000000b7a88207b955c553e7dd3041",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "9c4dcb8c0bd641179370baf8d38297eb24871b7a3989719105a683f6e4b92a8a",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T07:12:11.413990+00:00",
+  "generationObservedAt": "2026-09-17T07:12:11.413990+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "sparrow-bravo.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T07:13:50.054384+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

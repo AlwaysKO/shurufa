@@ -405,3 +405,19 @@ it('renders web06 twelve originals with fixed captions and source gates',async()
   }
  }
 },30000);
+
+it('renders web07 twelve originals with fixed captions and source gates',async()=>{
+ const b=await master();
+ for(const [caption,ids] of [['原谅我',['corgi-forgive','line-forgive','clay-forgive','man-forgive']],['太棒了',['sparrow-bravo','line-bravo','clay-bravo','man-bravo']],['离谱',['cat-absurd','line-absurd','clay-absurd','man-absurd']]] as const){
+  for(const id of ids){
+   const item={...panda,id,caption,masterFile:`masters/${id}.png`,sourceType:'ai-original'};
+   const r=await renderReferenceCharacterGif(b,item);
+   expect(r.audit.issues).toEqual([]);
+   expect(r.audit.metadata).toMatchObject({width:240,height:240,pages:20,durationMs:4000,loop:0});
+   expect(r.gif.length).toBeLessThan(250*1024);expect(new Set(r.timeline.map(x=>x.pose)).size).toBe(12);
+   expect(r.item).toMatchObject({sourceType:'ai-original',status:'trial-only',publicationAllowed:false});
+   if(/^(man|line)-/.test(id))expect(r.item).toMatchObject({personOrigin:'China',personGender:'male',adult:true});
+   for(const patch of [{caption:'错误'},{sourceType:'unknown'},{publicationAllowed:true},{masterFile:'../other.png'}])await expect(renderReferenceCharacterGif(b,{...item,...patch})).rejects.toThrow();
+  }
+ }
+},30000);

@@ -1,6 +1,6 @@
 package com.yuyan.imemodule.expression
 
-/** 选中斗图后立即清空当前编辑内容，不等待图片准备或发送结果。 */
+/** 执行输入清理；调用方须先确认交付结果、输入连接和原始文本未变化。 */
 internal object ExpressionSelectionInputClearer {
     private const val MAX_CURSOR_TEXT_LENGTH = 1_000
 

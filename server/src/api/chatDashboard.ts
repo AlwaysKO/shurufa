@@ -17,20 +17,38 @@ function iso(value: unknown): unknown {
 export function createChatDashboardRouter(pool: pg.Pool): Router {
   const router = Router();
 
-  router.get('/overview', async (_req, res, next) => {
+  // 可选参数保留旧客户端行为；传入时必须严格选择一个平台。
+  router.use(['/overview', '/conversations'], (req, res, next) => {
+    const platform = req.query.platform;
+    if (platform !== undefined && (typeof platform !== 'string' || !['wechat', 'qq', 'douyin'].includes(platform))) {
+      res.status(400).json({ error: 'platform is invalid' });
+      return;
+    }
+    next();
+  });
+
+  router.get('/overview', async (req, res, next) => {
     try {
+      const platform = req.query.platform as string | undefined;
+      const filter = platform === undefined ? '' : ' AND platform = $2';
+      const params = platform === undefined ? [res.locals.userId] : [res.locals.userId, platform];
       const [conversations, messages, media] = await Promise.all([
         pool.query<{ count: string }>(
-          'SELECT COUNT(*) AS count FROM chat_conversation WHERE user_id = $1',
-          [res.locals.userId],
+          `SELECT COUNT(*) AS count FROM chat_conversation WHERE user_id = $1${filter}`,
+          params,
         ),
         pool.query<{ count: string }>(
-          'SELECT COUNT(*) AS count FROM chat_message WHERE user_id = $1',
-          [res.locals.userId],
+          `SELECT COUNT(*) AS count FROM chat_message WHERE user_id = $1${filter}`,
+          params,
         ),
         pool.query<{ count: string }>(
-          'SELECT COUNT(*) AS count FROM media_asset WHERE user_id = $1',
-          [res.locals.userId],
+          platform === undefined
+            ? 'SELECT COUNT(*) AS count FROM media_asset WHERE user_id = $1'
+            : `SELECT COUNT(DISTINCT a.id) AS count FROM media_asset a
+               JOIN chat_message_asset ma ON ma.asset_id = a.id
+               JOIN chat_message m ON m.id = ma.message_id
+               WHERE a.user_id = $1 AND m.user_id = $1 AND m.platform = $2`,
+          params,
         ),
       ]);
       res.json({
@@ -46,10 +64,13 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
   router.get('/conversations', async (req, res, next) => {
     try {
       const { page, pageSize, offset } = pagination(req.query as Record<string, unknown>);
+      const platform = req.query.platform as string | undefined;
+      const filter = platform === undefined ? '' : ' AND platform = $2';
+      const params = platform === undefined ? [res.locals.userId] : [res.locals.userId, platform];
       const [totalResult, rowsResult] = await Promise.all([
         pool.query<{ count: string }>(
-          'SELECT COUNT(*) AS count FROM chat_conversation WHERE user_id = $1',
-          [res.locals.userId],
+          `SELECT COUNT(*) AS count FROM chat_conversation WHERE user_id = $1${filter}`,
+          params,
         ),
         pool.query(
           `SELECT
@@ -59,13 +80,13 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
              MAX(m.captured_at) AS last_message_at
            FROM chat_conversation c
            LEFT JOIN chat_message m ON m.conversation_id = c.id AND m.user_id = c.user_id
-           WHERE c.user_id = $1
+           WHERE c.user_id = $1${platform === undefined ? '' : ' AND c.platform = $4'}
            GROUP BY c.id, c.platform, c.account_key, c.external_key, c.display_name,
                     c.conversation_type, c.identity_confidence, c.first_seen_at,
                     c.last_seen_at
            ORDER BY c.last_seen_at DESC, c.id DESC
            LIMIT $2 OFFSET $3`,
-          [res.locals.userId, pageSize, offset],
+          platform === undefined ? [res.locals.userId, pageSize, offset] : [res.locals.userId, pageSize, offset, platform],
         ),
       ]);
       res.json({

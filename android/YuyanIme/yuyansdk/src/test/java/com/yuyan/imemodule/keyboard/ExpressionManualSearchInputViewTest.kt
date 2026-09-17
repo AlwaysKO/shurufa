@@ -1499,7 +1499,7 @@ class ExpressionManualSearchInputViewTest {
     fun `AI准备失败恢复卡片可重试`() = verifyPendingPreparation(fail = true)
 
     @Test
-    fun `AI准备完成保存相册才清结果`() = verifyPendingPreparation(save = true)
+    fun `AI准备完成但仅保存相册时保留输入和卡片`() = verifyPendingPreparation(save = true)
 
     @Test
     fun `真实编辑取消准备且旧finally不覆盖新查询`() = verifyPendingPreparation(cancel = "edit")
@@ -1531,11 +1531,29 @@ class ExpressionManualSearchInputViewTest {
     @Test
     fun `AI准备超时恢复卡片且旧任务不能迟到发送`() = verifyPendingPreparation(timeout = true)
 
-    private fun verifyPendingPreparation(fail: Boolean = false, save: Boolean = false, cancel: String? = null, repeatQuery: Boolean = false, share: Boolean = false, timeout: Boolean = false) {
+    @Test
+    fun `准备后编辑器文字已变化不能清掉新输入`() = verifyPendingPreparation(changedText = true)
+
+    @Test
+    fun `准备后无法读取完整输入时不自动清空`() = verifyPendingPreparation(readableInput = false)
+
+    private fun verifyPendingPreparation(fail: Boolean = false, save: Boolean = false, cancel: String? = null, repeatQuery: Boolean = false, share: Boolean = false, timeout: Boolean = false, changedText: Boolean = false, readableInput: Boolean = true) {
         val inputView = realChatInputView()
+        var clearCalls = 0
+        var inputText = "谢谢"
         val connection = object : android.view.inputmethod.BaseInputConnection(View(context), true) {
+            override fun getExtractedText(request: android.view.inputmethod.ExtractedTextRequest?, flags: Int): android.view.inputmethod.ExtractedText? =
+                if (!readableInput) null else android.view.inputmethod.ExtractedText().apply {
+                    text = inputText; startOffset = 0; partialStartOffset = -1; partialEndOffset = -1
+                }
+            override fun getTextBeforeCursor(n: Int, flags: Int): CharSequence? = if (readableInput) inputText else null
+            override fun getTextAfterCursor(n: Int, flags: Int): CharSequence? = if (readableInput) "" else null
+            override fun getSelectedText(flags: Int): CharSequence? = null
             override fun performContextMenuAction(id: Int) = true
-            override fun commitText(text: CharSequence?, newCursorPosition: Int) = true
+            override fun commitText(text: CharSequence?, newCursorPosition: Int): Boolean {
+                if (text.isNullOrEmpty()) clearCalls++
+                return true
+            }
         }
         org.robolectric.util.ReflectionHelpers.setField(services.last(), "mStartedInputConnection", connection)
         val coordinator = InputView::class.java.getDeclaredField("expressionQueryCoordinator").apply { isAccessible = true }.get(inputView)
@@ -1572,6 +1590,7 @@ class ExpressionManualSearchInputViewTest {
         InputView::class.java.getDeclaredField("expressionFlow").apply { isAccessible = true; set(inputView, flow) }
         panel.onAssetClick?.invoke(asset)
         Shadows.shadowOf(Looper.getMainLooper()).idle()
+        assertEquals("准备完成前不能删除输入", 0, clearCalls)
         assertEquals("谢谢", state.query)
         assertEquals("谢谢", preparedQuery)
         assertEquals(ExpressionPanelTab.AI_SYNTHESIS, state.selectedTab)
@@ -1580,10 +1599,10 @@ class ExpressionManualSearchInputViewTest {
         panel.onAssetClick?.invoke(asset)
         assertEquals(1, prepareCount)
         assertEquals(0, sent)
-        // 自身清输入的迟到选区回调也不能取消素材准备。
+        // 准备期间迟到的选区回调不能取消素材准备。
         inputView.onExpressionSelectionChanged(2, 2, 0, 0, -1)
         assertTrue(state.isPreparing)
-        // 清输入发布的普通空候选不能取消正在准备的任务。
+        // 普通空候选不能取消正在准备的任务。
         DecodingInfo.candidatesLiveData.value = emptyList()
         Shadows.shadowOf(Looper.getMainLooper()).idle()
         assertTrue(state.isPreparing)
@@ -1628,6 +1647,7 @@ class ExpressionManualSearchInputViewTest {
             assertFalse(current.isPreparing)
             return
         }
+        if (changedText) inputText = "后来输入"
         release.complete(Unit)
         Shadows.shadowOf(Looper.getMainLooper()).idle()
         if (fail) {
@@ -1643,8 +1663,15 @@ class ExpressionManualSearchInputViewTest {
         assertEquals(1, sent)
         assertFalse(state.isPreparing)
         if (share) assertEquals("已交给当前微信会话，请确认动图是否发出", ShadowToast.getTextOfLatestToast())
-        assertNull(state.query)
-        assertEquals(View.GONE, panel.visibility)
+        if (save || share) {
+            assertEquals("未确认发送不能删除输入", 0, clearCalls)
+            assertEquals("谢谢", state.query)
+            assertEquals(View.VISIBLE, panel.visibility)
+        } else {
+            assertEquals(if (changedText || !readableInput) 0 else 1, clearCalls)
+            assertNull(state.query)
+            assertEquals(View.GONE, panel.visibility)
+        }
         if (repeatQuery) {
             val requestBefore = inputView.expressionRequestId()
             inputView.notifyExpressionTextCommitted("谢谢")

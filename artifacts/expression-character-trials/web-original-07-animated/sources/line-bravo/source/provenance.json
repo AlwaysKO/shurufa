@@ -1,0 +1,25 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab93f2-22cc-83ea-b345-813de61e297e",
+  "sourceFileId": "file_00000000043881f5b2d531c6d5e01fa1",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "41a184566cc160641629f12bb2097d544d7289cc8401891314606e28f890f5a6",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T07:15:54.326249+00:00",
+  "generationObservedAt": "2026-09-17T07:15:54.326249+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "line-bravo.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T07:16:55.384601+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

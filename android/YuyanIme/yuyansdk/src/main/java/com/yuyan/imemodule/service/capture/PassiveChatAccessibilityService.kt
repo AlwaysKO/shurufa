@@ -504,4 +504,5 @@ internal fun emptyTreeScreenshotBounds(windowBounds: IntRect, inputMethodTop: In
 )
 
 internal fun viewportCaptureSignature(packageName: String, treeSignature: String, eventGeneration: Long): String =
-    if (packageName == "com.tencent.mm") "$treeSignature:$eventGeneration" else treeSignature
+    if (packageName == "com.tencent.mm" || packageName == "com.ss.android.ugc.aweme")
+        "$treeSignature:$eventGeneration" else treeSignature

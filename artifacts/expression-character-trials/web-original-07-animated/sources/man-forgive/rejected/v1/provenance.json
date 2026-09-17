@@ -1,0 +1,26 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab9068-5634-83ea-9191-e694b1345ef3",
+  "sourceFileId": "file_000000002c70820781440d171b0b03a6",
+  "requestedDate": "2026-09-17",
+  "status": "rejected",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "0b6a24046e84a5aebf22fe5270d4543198ba62ec137c245de0b8be49df6582a8",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T07:00:52.329415+00:00",
+  "generationObservedAt": "2026-09-17T07:00:52.329415+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "man-forgive.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T07:02:29.811437+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  },
+  "rejectionReason": "要求写实摄影原创成年男性，结果为大头3D幼态卡通，与摄影风格不符，会与黏土风格重复；保留废稿不入库"
+}

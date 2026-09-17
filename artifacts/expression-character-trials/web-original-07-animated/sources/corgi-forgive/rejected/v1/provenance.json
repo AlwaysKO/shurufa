@@ -1,0 +1,23 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab8c1b-3010-83ea-96c5-41fb62b2c746",
+  "sourceFileId": "file_000000001f14820691ca792a3b797d4a",
+  "requestedDate": "2026-09-17",
+  "status": "rejected",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "58e0c536f9e03a8bb253759ee4b8488804c3795296b317c12a28cbd443319bc6",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T06:42:33.945201+00:00",
+  "generationObservedAt": "2026-09-17T06:42:33.945201+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "corgi-forgive.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T06:45:39.097963+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  },
+  "rejectionReason": "第三排前两格耳尖跨到第二排格线以上，暗像素脚底检测361实际包含下一排耳朵；主体过大且排间基线漂移，不得裁耳或分格移形掩盖"
+}

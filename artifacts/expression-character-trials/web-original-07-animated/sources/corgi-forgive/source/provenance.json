@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab8d56-2098-83ea-a2f7-c637de3c29c4",
+  "sourceFileId": "file_00000000441881f5b1a18327a29bcc3a",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "f0ca73799bd87a9f9945b3a96f513f4b0af4b25e02a88134e18d3a9451c750dd",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T06:51:05.931507+00:00",
+  "generationObservedAt": "2026-09-17T06:51:05.931507+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "corgi-forgive.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T06:51:59.584097+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

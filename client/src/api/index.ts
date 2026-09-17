@@ -191,6 +191,9 @@ export interface LocationRow {
   occurred_at: string;
   first_seen_at: string;
   last_seen_at: string;
+  address_status?: 'pending' | 'resolving' | 'failed' | 'resolved';
+  address_error?: string | null;
+  address_retry_at?: string | null;
 }
 
 export interface ReportData {
@@ -609,10 +612,10 @@ export const api = {
   updateUserPhrase: (id: number, content: string) =>
     patch<{ ok: boolean }>(`/api/v1/dashboard/user-phrases/${id}`, { content }),
   deleteUserPhrase: (id: number) => del(`/api/v1/dashboard/user-phrases/${id}`),
-  chatCaptureOverview: () => get<ChatCaptureOverview>('/api/v1/dashboard/chat/overview'),
-  chatConversations: (page = 1, pageSize = 100) =>
+  chatCaptureOverview: (platform?: ChatConversationRow['platform']) => get<ChatCaptureOverview>(`/api/v1/dashboard/chat/overview${platform ? `?platform=${platform}` : ''}`),
+  chatConversations: (page = 1, pageSize = 100, platform?: ChatConversationRow['platform']) =>
     get<{ total: number; page: number; page_size: number; conversations: ChatConversationRow[] }>(
-      `/api/v1/dashboard/chat/conversations?page=${page}&page_size=${pageSize}`,
+      `/api/v1/dashboard/chat/conversations?page=${page}&page_size=${pageSize}${platform ? `&platform=${platform}` : ''}`,
     ),
   chatMessages: (conversationId: number, page = 1, pageSize = 100) =>
     get<{ total: number; page: number; page_size: number; messages: ChatMessageRow[] }>(

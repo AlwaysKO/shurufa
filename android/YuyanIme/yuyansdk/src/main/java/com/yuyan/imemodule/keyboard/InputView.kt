@@ -496,18 +496,18 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         val query = expressionPanelState.query ?: return
         if (expressionPreparationJob?.isActive == true) return
         performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-        if (!clearInputForExpressionSelection()) return
         prepareExpressionForSending { expressionFlow.prepareAndSend(asset, query) }
     }
 
     private fun sendDirectly(combination: EmojiCombination) {
         if (expressionPreparationJob?.isActive == true) return
         performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-        if (!clearInputForExpressionSelection()) return
         prepareExpressionForSending { expressionFlow.prepareAndSend(combination) }
     }
 
     private fun prepareExpressionForSending(prepareAndSend: suspend () -> ExpressionSendResult) {
+        val originalConnection = currentInputConnection()
+        val originalText = expressionInputSnapshot(originalConnection)
         val state = expressionPanelState
         state.isPreparing = true
         state.preparationStage = com.yuyan.imemodule.expression.send.ExpressionSendStage.PREPARING
@@ -519,12 +519,17 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 val result = prepareAndSend()
                 if (expressionPreparationJob !== owner || expressionPanelState !== state) return@launch
                 showExpressionSendResult(result)
-                if (result == ExpressionSendResult.Sent || result == ExpressionSendResult.SavedToGallery ||
-                    result == ExpressionSendResult.WechatSubmitted
-                ) {
+                if (result == ExpressionSendResult.Sent) {
+                    // 仅宿主接受后清理同一编辑器内未变化的原输入；准备/失败/另存不删除文字。
+                    if (originalText != null && currentInputConnection() === originalConnection &&
+                        expressionInputSnapshot(originalConnection) == originalText
+                    ) clearInputForExpressionSelection()
                     expressionPreparationJob = null // 清结果不能取消当前已完成发送或交接的任务。
                     expressionQueryCoordinator.reset()
                     clearExpressionQuery()
+                } else if (result == ExpressionSendResult.SavedToGallery || result == ExpressionSendResult.WechatSubmitted) {
+                    // 保存或仅交接不等于发送；卡片保留，允许同词再次主动触发。
+                    expressionQueryCoordinator.reset()
                 }
             } finally {
                 if (expressionPreparationJob === owner && expressionPanelState === state) {
@@ -537,6 +542,20 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         expressionPreparationJob = job
         job.start()
     }
+
+    private fun expressionInputSnapshot(connection: android.view.inputmethod.InputConnection?): String? = runCatching {
+        if (connection == null) return@runCatching null
+        val limit = 16_384
+        val extracted = connection.getExtractedText(
+            android.view.inputmethod.ExtractedTextRequest().apply { hintMaxChars = limit }, 0,
+        ) ?: return@runCatching null
+        val text = extracted.text?.toString() ?: return@runCatching null
+        // 宿主不提供完整快照时宁可保留，不能仅凭光标两侧空文本误删选中内容。
+        if (extracted.startOffset != 0 || extracted.partialStartOffset != -1 ||
+            extracted.partialEndOffset != -1 || text.length >= limit
+        ) return@runCatching null
+        text
+    }.getOrNull()
 
     private fun clearInputForExpressionSelection(): Boolean {
         val connection = currentInputConnection()
