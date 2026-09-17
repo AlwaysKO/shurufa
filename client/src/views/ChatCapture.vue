@@ -37,6 +37,21 @@ function formatTime(value: string | null): string {
   return new Date(value).toLocaleString('zh-CN', { hour12: false });
 }
 
+function formatImageLabelTime(value: string): string {
+  const date = new Date(value);
+  const pad = (part: number) => String(part).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} `
+    + `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
+
+function messageDisplayName(message: ChatMessageRow): string {
+  if (message.metadata.capture_source === 'wechat_empty_tree_screenshot' && selected.value) {
+    const chatName = selected.value.display_name || selected.value.external_key;
+    return `${chatName} ${formatImageLabelTime(message.captured_at)}`;
+  }
+  return message.sender_name || message.sender_key;
+}
+
 function openImagePreview(url: string, alt: string) {
   previewImage.value = { src: scopedAssetUrl(url), alt };
 }
@@ -178,7 +193,7 @@ onMounted(load);
           :class="message.direction"
         >
           <div class="message-head">
-            <span>{{ message.sender_name || message.sender_key }}</span>
+            <span :data-testid="`chat-image-label-${message.id}`">{{ messageDisplayName(message) }}</span>
             <span class="badge">{{ directionNames[message.direction] }}</span>
             <span class="badge">{{ message.message_type }}</span>
             <time>{{ formatTime(message.occurred_at || message.captured_at) }}</time>

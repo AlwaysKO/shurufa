@@ -77,9 +77,10 @@ async function mountChatCapture() {
       first_seen_at: '2026-09-16T00:00:00Z', last_seen_at: '2026-09-16T00:00:00Z', last_message_at: '2026-09-16T00:00:00Z',
     }] }),
     chatMessages: async () => ({ messages: [{
-      id: 'message-1', platform: 'wechat', direction: 'incoming', message_type: 'image', sender_key: 'peer', sender_name: '对方',
+      id: 'message-1', platform: 'wechat', direction: 'system', message_type: 'image',
+      sender_key: `title:${'a'.repeat(64)}:viewport`, sender_name: null,
       text: '聊天截图', displayed_time: null, occurred_at: '2026-09-16T00:00:00Z', captured_at: '2026-09-16T00:00:00Z',
-      sequence_hint: null, metadata: {}, assets: [{ id: 8, sha256: 'a'.repeat(64), mime_type: 'image/png', width: 1200, height: 2664, role: 'content', position: 0, url: '/uploads/chat/screenshot.png' }],
+      sequence_hint: null, metadata: { capture_source: 'wechat_empty_tree_screenshot' }, assets: [{ id: 8, sha256: 'a'.repeat(64), mime_type: 'image/png', width: 1200, height: 2664, role: 'content', position: 0, url: '/uploads/chat/screenshot.png' }],
     }] }),
     deleteChatImage: async (messageId: string, assetId: number) => {
       deletedImages.push([messageId, assetId]);
@@ -136,4 +137,13 @@ it('单张聊天图片提供独立删除并调用消息资源接口', async () =
   } finally {
     globalThis.window = previousWindow;
   }
+});
+
+it('截图名称显示聊天名称和精确到秒的采集时间，不暴露内部哈希', async () => {
+  const view = await mountChatCapture();
+  const label = view.find('chat-image-label-message-1')?.text ?? '';
+
+  expect(label).toMatch(/^对方 \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
+  expect(label).not.toContain('title:');
+  expect(label).not.toContain(':viewport');
 });
