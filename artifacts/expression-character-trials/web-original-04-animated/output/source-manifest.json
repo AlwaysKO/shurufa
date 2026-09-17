@@ -1,0 +1,1299 @@
+{
+  "items": [
+    {
+      "id": "collie-certain",
+      "sha256": "db19b24833df6d5503038b61bc9939fa045fe3c6f42b8425cd301794dc15ba75",
+      "scale": 0.72,
+      "baselines": [
+        338,
+        338,
+        338,
+        338,
+        338,
+        338,
+        338,
+        338,
+        338,
+        338,
+        338,
+        338
+      ],
+      "prompt": "请直接生成一张全新原创动画母图，不要只回复说明，无需参考图片。\nExactly 4 columns and 3 rows, 12 equal square cells in chronological row-major order, PNG 1448x1086 or 1536x1152. Pure white background, NO text, letters, logos, numbers, grid lines or symbols. Fixed frontal camera. Identical character identity, size and body coordinates across cells. Full head, hands/paws and feet visible with generous margins; feet at 72% cell height, bottom 22% blank for deterministic caption later. 12 genuinely distinct consecutive acting poses, no duplicated images, no mirroring, no extra limbs. First 3 subtle anticipation poses, 4-6 gradual main gesture, 7-8 clear emotional peak, 9-11 gradual recovery, 12 extremely close to pose1 for a seamless loop. Keep legs, feet and torso stationary; only intended head/face/arms change. Do not lean whole body or change clothing. One original photorealistic brown-and-white border collie seated frontally. A steady confident affirmative nod: ears focus, eyes meet viewer, chin gradually dips for a decisive nod then rises back; alert confident small open-mouth smile at poses 7 and 8. Paws and haunches fixed. Generate the new image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aab57e0-6970-83e9-97d7-185b1de47b35",
+        "sourceFileId": "file_0000000073b082068cc8845a702b46a5",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "db19b24833df6d5503038b61bc9939fa045fe3c6f42b8425cd301794dc15ba75",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T02:59:57.110070+00:00",
+        "generationObservedAt": "2026-09-17T02:59:57.110070+00:00",
+        "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+        "originalDownloadName": "collie-certain.png",
+        "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+        "deletedAt": "2026-09-17T03:00:48.147511+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 6,
+          "baseline": 338
+        },
+        {
+          "pose": 1,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 6,
+          "baseline": 338
+        },
+        {
+          "pose": 2,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 6,
+          "baseline": 338
+        },
+        {
+          "pose": 3,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 6,
+          "baseline": 338
+        },
+        {
+          "pose": 4,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 6,
+          "baseline": 338
+        },
+        {
+          "pose": 5,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 6,
+          "baseline": 338
+        },
+        {
+          "pose": 6,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 6,
+          "baseline": 338
+        },
+        {
+          "pose": 7,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 6,
+          "baseline": 338
+        },
+        {
+          "pose": 8,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 6,
+          "baseline": 338
+        },
+        {
+          "pose": 9,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 6,
+          "baseline": 338
+        },
+        {
+          "pose": 10,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 6,
+          "baseline": 338
+        },
+        {
+          "pose": 11,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 6,
+          "baseline": 338
+        }
+      ]
+    },
+    {
+      "id": "line-certain",
+      "sha256": "0dc408962292a4755db6e2a58ee654497e46f2e84fe2f9afacf7bb2df312396b",
+      "scale": 0.74,
+      "baselines": [
+        328,
+        328,
+        328,
+        328,
+        328,
+        328,
+        328,
+        328,
+        328,
+        328,
+        328,
+        328
+      ],
+      "prompt": "请直接生成一张全新原创动画母图，不要只回复说明，无需参考图片。\nExactly 4 columns and 3 rows, 12 equal square cells in chronological row-major order, PNG 1448x1086 or 1536x1152. Pure white background, NO text, letters, logos, numbers, grid lines or symbols. Fixed frontal camera. Identical character identity, size and body coordinates across cells. Full head, hands/paws and feet visible with generous margins; feet at 72% cell height, bottom 22% blank for deterministic caption later. 12 genuinely distinct consecutive acting poses, no duplicated images, no mirroring, no extra limbs. First 3 subtle anticipation poses, 4-6 gradual main gesture, 7-8 clear emotional peak, 9-11 gradual recovery, 12 extremely close to pose1 for a seamless loop. Keep legs, feet and torso stationary; only intended head/face/arms change. Do not lean whole body or change clothing. One original minimalist black-and-white Chinese adult man age 35, angular face and short crewcut, plain shirt and trousers. Right hand on viewer-left rises into a firm thumbs-up near chest as eyebrow lifts with confident narrowed eyes. Pose8 holds a confident thumbs-up; gently lower hand and relax back. No motion symbols. Generate the new image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aab58a5-12f4-83ea-9611-301902a6c177",
+        "sourceFileId": "file_000000000ecc81f583d2532e5f83188f",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "0dc408962292a4755db6e2a58ee654497e46f2e84fe2f9afacf7bb2df312396b",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T03:02:42.765352+00:00",
+        "generationObservedAt": "2026-09-17T03:02:42.765352+00:00",
+        "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+        "originalDownloadName": "line-certain.png",
+        "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-17T03:03:07.611009+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 7,
+          "baseline": 328
+        },
+        {
+          "pose": 1,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 7,
+          "baseline": 328
+        },
+        {
+          "pose": 2,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 7,
+          "baseline": 328
+        },
+        {
+          "pose": 3,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 7,
+          "baseline": 328
+        },
+        {
+          "pose": 4,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 7,
+          "baseline": 328
+        },
+        {
+          "pose": 5,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 7,
+          "baseline": 328
+        },
+        {
+          "pose": 6,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 7,
+          "baseline": 328
+        },
+        {
+          "pose": 7,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 7,
+          "baseline": 328
+        },
+        {
+          "pose": 8,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 7,
+          "baseline": 328
+        },
+        {
+          "pose": 9,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 7,
+          "baseline": 328
+        },
+        {
+          "pose": 10,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 7,
+          "baseline": 328
+        },
+        {
+          "pose": 11,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 7,
+          "baseline": 328
+        }
+      ]
+    },
+    {
+      "id": "clay-certain",
+      "sha256": "0418d8df7c02f5392a52bc067d9bd4cea11f88b8ee30a34a7204d5f7346664f3",
+      "scale": 0.76,
+      "baselines": [
+        321,
+        321,
+        321,
+        321,
+        321,
+        321,
+        321,
+        321,
+        321,
+        321,
+        321,
+        321
+      ],
+      "prompt": "请直接生成一张全新原创动画母图，不要只回复说明，无需参考图片。\nExactly 4 columns and 3 rows, 12 equal square cells in chronological row-major order, PNG 1448x1086 or 1536x1152. Pure white background, NO text, letters, logos, numbers, grid lines or symbols. Fixed frontal camera. Identical character identity, size and body coordinates across cells. Full head, hands/paws and feet visible with generous margins; feet at 72% cell height, bottom 22% blank for deterministic caption later. 12 genuinely distinct consecutive acting poses, no duplicated images, no mirroring, no extra limbs. First 3 subtle anticipation poses, 4-6 gradual main gesture, 7-8 clear emotional peak, 9-11 gradual recovery, 12 extremely close to pose1 for a seamless loop. Keep legs, feet and torso stationary; only intended head/face/arms change. Do not lean whole body or change clothing. One original clay cream-colored bear with small round ears seated full body. Both paws start at belly. A determined affirmative little nod, then its right paw on viewer-left taps upper chest with confidence; pose8 proud closed-mouth smile and paw on chest; gently return paw and head. Fixed feet and body. Generate the new image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aab592f-a30c-83ea-95e5-4955b56d4c89",
+        "sourceFileId": "file_00000000a73082069b9488cca56b892b",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "0418d8df7c02f5392a52bc067d9bd4cea11f88b8ee30a34a7204d5f7346664f3",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T03:05:00.083093+00:00",
+        "generationObservedAt": "2026-09-17T03:05:00.083093+00:00",
+        "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+        "originalDownloadName": "clay-certain.png",
+        "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+        "deletedAt": "2026-09-17T03:05:29.740198+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 6,
+          "baseline": 321
+        },
+        {
+          "pose": 1,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 6,
+          "baseline": 321
+        },
+        {
+          "pose": 2,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 6,
+          "baseline": 321
+        },
+        {
+          "pose": 3,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 6,
+          "baseline": 321
+        },
+        {
+          "pose": 4,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 6,
+          "baseline": 321
+        },
+        {
+          "pose": 5,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 6,
+          "baseline": 321
+        },
+        {
+          "pose": 6,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 6,
+          "baseline": 321
+        },
+        {
+          "pose": 7,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 6,
+          "baseline": 321
+        },
+        {
+          "pose": 8,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 6,
+          "baseline": 321
+        },
+        {
+          "pose": 9,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 6,
+          "baseline": 321
+        },
+        {
+          "pose": 10,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 6,
+          "baseline": 321
+        },
+        {
+          "pose": 11,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 6,
+          "baseline": 321
+        }
+      ]
+    },
+    {
+      "id": "man-certain",
+      "sha256": "42295d353b08d1dd068a98a3b2849f850ff5ad01cebe9d6cebd7fb16f6663ea6",
+      "scale": 0.76,
+      "baselines": [
+        321,
+        321,
+        321,
+        321,
+        321,
+        321,
+        321,
+        321,
+        321,
+        321,
+        321,
+        321
+      ],
+      "prompt": "请直接生成一张全新原创动画母图，不要只回复说明，无需参考图片。\nExactly 4 columns and 3 rows, 12 equal square cells in chronological row-major order, PNG 1448x1086 or 1536x1152. Pure white background, NO text, letters, logos, numbers, grid lines or symbols. Fixed frontal camera. Identical character identity, size and body coordinates across cells. Full head, hands/paws and feet visible with generous margins; feet at 72% cell height, bottom 22% blank for deterministic caption later. 12 genuinely distinct consecutive acting poses, no duplicated images, no mirroring, no extra limbs. First 3 subtle anticipation poses, 4-6 gradual main gesture, 7-8 clear emotional peak, 9-11 gradual recovery, 12 extremely close to pose1 for a seamless loop. Keep legs, feet and torso stationary; only intended head/face/arms change. Do not lean whole body or change clothing. One original photorealistic Chinese adult man age 32, handsome distinct square face, short black hair, navy polo and beige trousers, brown shoes, no celebrity resemblance. Right hand on viewer-left lifts with index finger upright near chest to indicate definite yes, eyes focused, a small affirmative chin dip. Pose8 clear confident smile and same finger gesture. Hand gradually returns. Left arm stays down. Generate the new image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aab59bd-fb08-83ea-8b4d-50e9c82e7dbf",
+        "sourceFileId": "file_0000000001a881f58ecd15d2acb4d249",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "42295d353b08d1dd068a98a3b2849f850ff5ad01cebe9d6cebd7fb16f6663ea6",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T03:07:22.543960+00:00",
+        "generationObservedAt": "2026-09-17T03:07:22.543960+00:00",
+        "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+        "originalDownloadName": "man-certain.png",
+        "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-17T03:07:46.085049+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 6,
+          "baseline": 321
+        },
+        {
+          "pose": 1,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 6,
+          "baseline": 321
+        },
+        {
+          "pose": 2,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 6,
+          "baseline": 321
+        },
+        {
+          "pose": 3,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 6,
+          "baseline": 321
+        },
+        {
+          "pose": 4,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 6,
+          "baseline": 321
+        },
+        {
+          "pose": 5,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 6,
+          "baseline": 321
+        },
+        {
+          "pose": 6,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 6,
+          "baseline": 321
+        },
+        {
+          "pose": 7,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 6,
+          "baseline": 321
+        },
+        {
+          "pose": 8,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 6,
+          "baseline": 321
+        },
+        {
+          "pose": 9,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 6,
+          "baseline": 321
+        },
+        {
+          "pose": 10,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 6,
+          "baseline": 321
+        },
+        {
+          "pose": 11,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 6,
+          "baseline": 321
+        }
+      ]
+    },
+    {
+      "id": "cat-reassure",
+      "sha256": "5f15bc5622287ac25de9cbe8348d046da234b94be59e763254c6fa48ef0dbb45",
+      "scale": 0.78,
+      "baselines": [
+        311,
+        311,
+        311,
+        311,
+        311,
+        311,
+        311,
+        311,
+        311,
+        311,
+        311,
+        311
+      ],
+      "prompt": "请直接生成一张全新原创动画母图，不要只回复说明，无需参考图片。\nExactly 4 columns and 3 rows, 12 equal square cells in chronological row-major order, PNG 1448x1086 or 1536x1152. Pure white background, NO text, letters, logos, numbers, grid lines or symbols. Fixed frontal camera. Identical character identity, size and body coordinates across cells. Full head, hands/paws and feet visible with generous margins; feet at 72% cell height, bottom 22% blank for deterministic caption later. 12 genuinely distinct consecutive acting poses, no duplicated images, no mirroring, no extra limbs. First 3 subtle anticipation poses, 4-6 gradual main gesture, 7-8 clear emotional peak, 9-11 gradual recovery, 12 extremely close to pose1 for a seamless loop. Keep legs, feet and torso stationary; only intended head/face/arms change. Do not lean whole body or change clothing. One original photorealistic orange tabby cat seated with four paws fully visible. Kindly reassuring expression: stern eyebrow area softens, eyes slowly blink, head tilts gently toward its own left, then relaxes into a soft almost-smile at pose8, returns straight and opens eyes. Body and tail stationary, small real head/eyelid changes. Generate the new image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aab5a46-1eb0-83ea-aee2-8d9d3fcff378",
+        "sourceFileId": "file_000000008edc81faba34ac74abff7b6e",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "5f15bc5622287ac25de9cbe8348d046da234b94be59e763254c6fa48ef0dbb45",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T03:09:39.531790+00:00",
+        "generationObservedAt": "2026-09-17T03:09:39.531790+00:00",
+        "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+        "originalDownloadName": "cat-reassure.png",
+        "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+        "deletedAt": "2026-09-17T03:10:03.818450+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 8,
+          "baseline": 311
+        },
+        {
+          "pose": 1,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 8,
+          "baseline": 311
+        },
+        {
+          "pose": 2,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 8,
+          "baseline": 311
+        },
+        {
+          "pose": 3,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 8,
+          "baseline": 311
+        },
+        {
+          "pose": 4,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 8,
+          "baseline": 311
+        },
+        {
+          "pose": 5,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 8,
+          "baseline": 311
+        },
+        {
+          "pose": 6,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 8,
+          "baseline": 311
+        },
+        {
+          "pose": 7,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 8,
+          "baseline": 311
+        },
+        {
+          "pose": 8,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 8,
+          "baseline": 311
+        },
+        {
+          "pose": 9,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 8,
+          "baseline": 311
+        },
+        {
+          "pose": 10,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 8,
+          "baseline": 311
+        },
+        {
+          "pose": 11,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 8,
+          "baseline": 311
+        }
+      ]
+    },
+    {
+      "id": "line-reassure",
+      "sha256": "ea72d6fdf482e91c9da581e2a513d45f0313d8a0e6b72535724168a35f517491",
+      "scale": 0.74,
+      "baselines": [
+        330,
+        330,
+        330,
+        330,
+        330,
+        330,
+        330,
+        330,
+        330,
+        330,
+        330,
+        330
+      ],
+      "prompt": "请直接生成一张全新原创动画母图，不要只回复说明，无需参考图片。\nExactly 4 columns and 3 rows, 12 equal square cells in chronological row-major order, PNG 1448x1086 or 1536x1152. Pure white background, NO text, letters, logos, numbers, grid lines or symbols. Fixed frontal camera. Identical character identity, size and body coordinates across cells. Full head, hands/paws and feet visible with generous margins; feet at 72% cell height, bottom 22% blank for deterministic caption later. 12 genuinely distinct consecutive acting poses, no duplicated images, no mirroring, no extra limbs. First 3 subtle anticipation poses, 4-6 gradual main gesture, 7-8 clear emotional peak, 9-11 gradual recovery, 12 extremely close to pose1 for a seamless loop. Keep legs, feet and torso stationary; only intended head/face/arms change. Do not lean whole body or change clothing. One original minimalist black-and-white Chinese adult man age 40, oval face, thin eyebrows, short side-part hair, plain sweater trousers and shoes. Reassuring forgiving smile; right forearm on viewer-left rises with open relaxed palm, a tiny 'no worries' side-to-side wrist motion without switching sides, soft eyebrows and slight nod. Pose8 warm forgiving smile and open palm; hand gradually lowers. No symbols. Generate the new image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aab5acf-e590-83ea-8cbf-efafba3efba0",
+        "sourceFileId": "file_0000000083208230b3f5e6c4f50ea908",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "ea72d6fdf482e91c9da581e2a513d45f0313d8a0e6b72535724168a35f517491",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T03:12:03.603908+00:00",
+        "generationObservedAt": "2026-09-17T03:12:03.603908+00:00",
+        "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+        "originalDownloadName": "line-reassure.png",
+        "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-17T03:12:39.011990+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 330
+        },
+        {
+          "pose": 1,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 330
+        },
+        {
+          "pose": 2,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 330
+        },
+        {
+          "pose": 3,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 330
+        },
+        {
+          "pose": 4,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 330
+        },
+        {
+          "pose": 5,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 330
+        },
+        {
+          "pose": 6,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 330
+        },
+        {
+          "pose": 7,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 330
+        },
+        {
+          "pose": 8,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 330
+        },
+        {
+          "pose": 9,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 330
+        },
+        {
+          "pose": 10,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 330
+        },
+        {
+          "pose": 11,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 330
+        }
+      ]
+    },
+    {
+      "id": "clay-reassure",
+      "sha256": "c40b47f072d19a8a1e13bbfed7c76a743c4388dd42c606f21ad43399618ecd8c",
+      "scale": 0.78,
+      "baselines": [
+        307,
+        307,
+        307,
+        307,
+        308,
+        308,
+        308,
+        308,
+        308,
+        308,
+        308,
+        308
+      ],
+      "prompt": "请直接生成一张全新原创动画母图，不要只回复说明，无需参考图片。\nExactly 4 columns and 3 rows, 12 equal square cells in chronological row-major order, PNG 1448x1086 or 1536x1152. Pure white background, NO text, letters, logos, numbers, grid lines or symbols. Fixed frontal camera. Identical character identity, size and body coordinates across cells. Full head, hands/paws and feet visible with generous margins; feet at 72% cell height, bottom 22% blank for deterministic caption later. 12 genuinely distinct consecutive acting poses, no duplicated images, no mirroring, no extra limbs. First 3 subtle anticipation poses, 4-6 gradual main gesture, 7-8 clear emotional peak, 9-11 gradual recovery, 12 extremely close to pose1 for a seamless loop. Keep legs, feet and torso stationary; only intended head/face/arms change. Do not lean whole body or change clothing. One original clay blue-gray seal seated upright, rounded flippers, expressive dark eyes, full visible tail base. Both flippers gently spread a little with reassuring relaxed look, eyelids soften, small head tilt; pose8 soft reassuring smile with relaxed spread flippers. Flippers slowly return to sides. No human hands; grounded body. Generate the new image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aab5b6d-3c14-83ea-9f5c-f6b1c35cb0cb",
+        "sourceFileId": "file_0000000089048207b1ecf5f73f690d4a",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "c40b47f072d19a8a1e13bbfed7c76a743c4388dd42c606f21ad43399618ecd8c",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T03:15:31.531914+00:00",
+        "generationObservedAt": "2026-09-17T03:15:31.531914+00:00",
+        "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+        "originalDownloadName": "clay-reassure.png",
+        "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+        "deletedAt": "2026-09-17T03:16:25.263817+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 11,
+          "baseline": 307
+        },
+        {
+          "pose": 1,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 11,
+          "baseline": 307
+        },
+        {
+          "pose": 2,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 11,
+          "baseline": 307
+        },
+        {
+          "pose": 3,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 11,
+          "baseline": 307
+        },
+        {
+          "pose": 4,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 10,
+          "baseline": 308
+        },
+        {
+          "pose": 5,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 10,
+          "baseline": 308
+        },
+        {
+          "pose": 6,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 10,
+          "baseline": 308
+        },
+        {
+          "pose": 7,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 10,
+          "baseline": 308
+        },
+        {
+          "pose": 8,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 10,
+          "baseline": 308
+        },
+        {
+          "pose": 9,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 10,
+          "baseline": 308
+        },
+        {
+          "pose": 10,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 10,
+          "baseline": 308
+        },
+        {
+          "pose": 11,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 10,
+          "baseline": 308
+        }
+      ]
+    },
+    {
+      "id": "man-reassure",
+      "sha256": "b93630f5b4f42cbd9aec90e5c8dc75d3d45725e4be27cb5469d52ef6b743895f",
+      "scale": 0.74,
+      "baselines": [
+        329,
+        329,
+        329,
+        329,
+        329,
+        329,
+        329,
+        329,
+        329,
+        329,
+        329,
+        329
+      ],
+      "prompt": "请直接生成一张全新原创动画母图，不要只回复说明，无需参考图片。\nExactly 4 columns and 3 rows, 12 equal square cells in chronological row-major order, PNG 1448x1086 or 1536x1152. Pure white background, NO text, letters, logos, numbers, grid lines or symbols. Fixed frontal camera. Identical character identity, size and body coordinates across cells. Full head, hands/paws and feet visible with generous margins; feet at 72% cell height, bottom 22% blank for deterministic caption later. 12 genuinely distinct consecutive acting poses, no duplicated images, no mirroring, no extra limbs. First 3 subtle anticipation poses, 4-6 gradual main gesture, 7-8 clear emotional peak, 9-11 gradual recovery, 12 extremely close to pose1 for a seamless loop. Keep legs, feet and torso stationary; only intended head/face/arms change. Do not lean whole body or change clothing. One original photorealistic Chinese adult man age 36, handsome original oval face, neat short hair, light gray cardigan, white shirt, dark trousers and black shoes, no celebrity resemblance. Warm forgiving expression, right hand on viewer-left lifts a relaxed palm at lower chest, gentle small wrist sway and kind nod; pose8 reassuring gentle smile. Slowly return hand, feet fixed. Generate the new image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aab5c4d-49a4-83ea-9201-55cced4a19e2",
+        "sourceFileId": "file_00000000fe108206abeecb3719ca6dc5",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "b93630f5b4f42cbd9aec90e5c8dc75d3d45725e4be27cb5469d52ef6b743895f",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T03:18:51.851079+00:00",
+        "generationObservedAt": "2026-09-17T03:18:51.851079+00:00",
+        "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+        "originalDownloadName": "man-reassure.png",
+        "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-17T03:19:43.003757+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 6,
+          "baseline": 329
+        },
+        {
+          "pose": 1,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 6,
+          "baseline": 329
+        },
+        {
+          "pose": 2,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 6,
+          "baseline": 329
+        },
+        {
+          "pose": 3,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 6,
+          "baseline": 329
+        },
+        {
+          "pose": 4,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 6,
+          "baseline": 329
+        },
+        {
+          "pose": 5,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 6,
+          "baseline": 329
+        },
+        {
+          "pose": 6,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 6,
+          "baseline": 329
+        },
+        {
+          "pose": 7,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 6,
+          "baseline": 329
+        },
+        {
+          "pose": 8,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 6,
+          "baseline": 329
+        },
+        {
+          "pose": 9,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 6,
+          "baseline": 329
+        },
+        {
+          "pose": 10,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 6,
+          "baseline": 329
+        },
+        {
+          "pose": 11,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 6,
+          "baseline": 329
+        }
+      ]
+    },
+    {
+      "id": "dog-congrats",
+      "sha256": "c83a36cf2d6ca37925c43e86643a8f1dacc68e6592b31f3f241b83da81d49887",
+      "scale": 0.75,
+      "baselines": [
+        325,
+        325,
+        325,
+        325,
+        325,
+        325,
+        325,
+        325,
+        325,
+        325,
+        325,
+        325
+      ],
+      "prompt": "请直接生成一张全新原创动画母图，不要只回复说明，无需参考图片。\nExactly 4 columns and 3 rows, 12 equal square cells in chronological row-major order, PNG 1448x1086 or 1536x1152. Pure white background, NO text, letters, logos, numbers, grid lines or symbols. Fixed frontal camera. Identical character identity, size and body coordinates across cells. Full head, hands/paws and feet visible with generous margins; feet at 72% cell height, bottom 22% blank for deterministic caption later. 12 genuinely distinct consecutive acting poses, no duplicated images, no mirroring, no extra limbs. First 3 subtle anticipation poses, 4-6 gradual main gesture, 7-8 clear emotional peak, 9-11 gradual recovery, 12 extremely close to pose1 for a seamless loop. Keep legs, feet and torso stationary; only intended head/face/arms change. Do not lean whole body or change clothing. One original photorealistic corgi seated full body. Joyful congratulatory reaction: ears perk progressively, eyes brighten, chin rises slightly, mouth opens into delighted dog grin, pose8 very happy friendly grin, then close mouth and relax ears gradually. No human hands, paws and tail fixed, no tongue changing side. Generate the new image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aab5d13-22ac-83ea-95d3-b72291edd312",
+        "sourceFileId": "file_00000000b57481f7915602475a9a114a",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "c83a36cf2d6ca37925c43e86643a8f1dacc68e6592b31f3f241b83da81d49887",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T03:21:57.550779+00:00",
+        "generationObservedAt": "2026-09-17T03:21:57.550779+00:00",
+        "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+        "originalDownloadName": "dog-congrats.png",
+        "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+        "deletedAt": "2026-09-17T03:22:45.836098+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 6,
+          "baseline": 325
+        },
+        {
+          "pose": 1,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 6,
+          "baseline": 325
+        },
+        {
+          "pose": 2,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 6,
+          "baseline": 325
+        },
+        {
+          "pose": 3,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 6,
+          "baseline": 325
+        },
+        {
+          "pose": 4,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 6,
+          "baseline": 325
+        },
+        {
+          "pose": 5,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 6,
+          "baseline": 325
+        },
+        {
+          "pose": 6,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 6,
+          "baseline": 325
+        },
+        {
+          "pose": 7,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 6,
+          "baseline": 325
+        },
+        {
+          "pose": 8,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 6,
+          "baseline": 325
+        },
+        {
+          "pose": 9,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 6,
+          "baseline": 325
+        },
+        {
+          "pose": 10,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 6,
+          "baseline": 325
+        },
+        {
+          "pose": 11,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 6,
+          "baseline": 325
+        }
+      ]
+    },
+    {
+      "id": "line-congrats",
+      "sha256": "a0ff9f40d54152f331c6744b49e1ba6f8c292cffad12d11d39dd51e158610aa6",
+      "scale": 0.73,
+      "baselines": [
+        332,
+        332,
+        332,
+        332,
+        331,
+        331,
+        331,
+        331,
+        331,
+        331,
+        331,
+        331
+      ],
+      "prompt": "请直接生成一张全新原创动画母图，不要只回复说明，无需参考图片。\nExactly 4 columns and 3 rows, 12 equal square cells in chronological row-major order, PNG 1448x1086 or 1536x1152. Pure white background, NO text, letters, logos, numbers, grid lines or symbols. Fixed frontal camera. Identical character identity, size and body coordinates across cells. Full head, hands/paws and feet visible with generous margins; feet at 72% cell height, bottom 22% blank for deterministic caption later. 12 genuinely distinct consecutive acting poses, no duplicated images, no mirroring, no extra limbs. First 3 subtle anticipation poses, 4-6 gradual main gesture, 7-8 clear emotional peak, 9-11 gradual recovery, 12 extremely close to pose1 for a seamless loop. Keep legs, feet and torso stationary; only intended head/face/arms change. Do not lean whole body or change clothing. One original minimalist black-and-white Chinese adult man age 30, original wide jaw, short curly hair, shirt trousers and sneakers. Both hands rise toward each other at chest for a courteous Chinese fist-and-palm congratulations salute: right fist covered by left open palm at center, correct fixed hand identities. Smile broadens as hands join; pose8 smiling salute held. Hands gently separate and lower. No swapping hands or motion symbols. Generate the new image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aab5dc9-da18-83ea-96aa-c6ccecacb678",
+        "sourceFileId": "file_0000000029a4820981ce2eb9a35d92a6",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "a0ff9f40d54152f331c6744b49e1ba6f8c292cffad12d11d39dd51e158610aa6",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T03:25:07.482590+00:00",
+        "generationObservedAt": "2026-09-17T03:25:07.482590+00:00",
+        "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+        "originalDownloadName": "line-congrats.png",
+        "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-17T03:26:05.591644+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7292817679558011,
+          "left": 49,
+          "top": 8,
+          "baseline": 332
+        },
+        {
+          "pose": 1,
+          "scale": 0.7292817679558011,
+          "left": 49,
+          "top": 8,
+          "baseline": 332
+        },
+        {
+          "pose": 2,
+          "scale": 0.7292817679558011,
+          "left": 49,
+          "top": 8,
+          "baseline": 332
+        },
+        {
+          "pose": 3,
+          "scale": 0.7292817679558011,
+          "left": 49,
+          "top": 8,
+          "baseline": 332
+        },
+        {
+          "pose": 4,
+          "scale": 0.7292817679558011,
+          "left": 49,
+          "top": 8,
+          "baseline": 331
+        },
+        {
+          "pose": 5,
+          "scale": 0.7292817679558011,
+          "left": 49,
+          "top": 8,
+          "baseline": 331
+        },
+        {
+          "pose": 6,
+          "scale": 0.7292817679558011,
+          "left": 49,
+          "top": 8,
+          "baseline": 331
+        },
+        {
+          "pose": 7,
+          "scale": 0.7292817679558011,
+          "left": 49,
+          "top": 8,
+          "baseline": 331
+        },
+        {
+          "pose": 8,
+          "scale": 0.7292817679558011,
+          "left": 49,
+          "top": 8,
+          "baseline": 331
+        },
+        {
+          "pose": 9,
+          "scale": 0.7292817679558011,
+          "left": 49,
+          "top": 8,
+          "baseline": 331
+        },
+        {
+          "pose": 10,
+          "scale": 0.7292817679558011,
+          "left": 49,
+          "top": 8,
+          "baseline": 331
+        },
+        {
+          "pose": 11,
+          "scale": 0.7292817679558011,
+          "left": 49,
+          "top": 8,
+          "baseline": 331
+        }
+      ]
+    }
+  ]
+}

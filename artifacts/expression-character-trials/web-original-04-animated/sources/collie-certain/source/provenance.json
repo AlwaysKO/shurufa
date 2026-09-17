@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab57e0-6970-83e9-97d7-185b1de47b35",
+  "sourceFileId": "file_0000000073b082068cc8845a702b46a5",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "db19b24833df6d5503038b61bc9939fa045fe3c6f42b8425cd301794dc15ba75",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T02:59:57.110070+00:00",
+  "generationObservedAt": "2026-09-17T02:59:57.110070+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "collie-certain.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T03:00:48.147511+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

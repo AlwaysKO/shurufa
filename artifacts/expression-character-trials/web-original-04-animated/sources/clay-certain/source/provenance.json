@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab592f-a30c-83ea-95e5-4955b56d4c89",
+  "sourceFileId": "file_00000000a73082069b9488cca56b892b",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "0418d8df7c02f5392a52bc067d9bd4cea11f88b8ee30a34a7204d5f7346664f3",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T03:05:00.083093+00:00",
+  "generationObservedAt": "2026-09-17T03:05:00.083093+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "clay-certain.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T03:05:29.740198+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

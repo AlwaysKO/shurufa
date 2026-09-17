@@ -1,0 +1,25 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab59bd-fb08-83ea-8b4d-50e9c82e7dbf",
+  "sourceFileId": "file_0000000001a881f58ecd15d2acb4d249",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "42295d353b08d1dd068a98a3b2849f850ff5ad01cebe9d6cebd7fb16f6663ea6",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T03:07:22.543960+00:00",
+  "generationObservedAt": "2026-09-17T03:07:22.543960+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "man-certain.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T03:07:46.085049+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

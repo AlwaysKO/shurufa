@@ -6,6 +6,21 @@ import { join } from 'node:path';
 import { renderReferenceCharacterGif, resolveReferenceMaster } from './referenceCharacterRenderer.js';
 const panda = { id: 'panda-really', caption: '真的假的', sourceType: 'user-provided-reference',
   status: 'trial-only', publicationAllowed: false, masterFile: 'masters/panda-really.png' } as const;
+
+it('renders web03 fixed keyword identities without weakening audit or provenance',async()=>{
+ const b=await master();
+ const groups=[['好久不见',['retriever-reunion','line-reunion','clay-reunion','man-reunion']],['欢迎',['cat-welcome','line-welcome','clay-welcome','man-welcome']],['我来了',['rabbit-arrived','line-arrived','clay-arrived','man-arrived']]] as const;
+ for(const [caption,ids] of groups)for(const id of ids){
+  const item={...panda,id,caption,masterFile:`masters/${id}.png`,sourceType:'ai-original'};
+  const r=await renderReferenceCharacterGif(b,item);
+  expect(r.audit.issues).toEqual([]);
+  expect(r.audit.metadata).toMatchObject({width:240,height:240,pages:20,durationMs:4000,loop:0});
+  expect(r.poses).toHaveLength(12);
+  expect(r.gif.length).toBeLessThan(250*1024);
+  if(id.startsWith('man-')||id.startsWith('line-'))expect(r.item).toMatchObject({personOrigin:'China',personGender:'male',adult:true});
+  for(const patch of [{caption:'错误'},{sourceType:'user-provided-reference'},{publicationAllowed:true},{masterFile:'../other.png'}])await expect(renderReferenceCharacterGif(b,{...item,...patch})).rejects.toThrow();
+ }
+},30000);
 async function master(still = false) {
   const xs=[60,65,75,90,110,130,155,180,145,110,80,60];
   const tiles=await Promise.all(xs.map(x=>sharp(Buffer.from(`<svg width="240" height="240"><rect width="240" height="240" fill="white"/><circle cx="${still?60:x}" cy="95" r="26" fill="#222"/></svg>`)).png().toBuffer()));
@@ -338,6 +353,23 @@ it('renders web02 evening and noon originals with fixed identity and pending pub
    expect(r.item).toMatchObject({sourceType:'ai-original',status:'trial-only',publicationAllowed:false});
    if(id.startsWith('man-'))expect(r.item).toMatchObject({personOrigin:'China',personGender:'male',adult:true});
    for(const patch of [{caption:'晚安'},{sourceType:'user-provided-reference'},{publicationAllowed:true},{masterFile:'../other.png'}])await expect(renderReferenceCharacterGif(b,{...item,...patch})).rejects.toThrow();
+  }
+ }
+},30000);
+
+
+it('renders web04 twelve originals with fixed captions and source gates',async()=>{
+ const b=await master();
+ for(const [caption,ids] of [['确定',['collie-certain','line-certain','clay-certain','man-certain']],['没关系',['cat-reassure','line-reassure','clay-reassure','man-reassure']],['恭喜',['dog-congrats','line-congrats','clay-congrats','man-congrats']]] as const){
+  for(const id of ids){
+   const item={...panda,id,caption,masterFile:`masters/${id}.png`,sourceType:'ai-original'};
+   const r=await renderReferenceCharacterGif(b,item);
+   expect(r.audit.issues).toEqual([]);
+   expect(r.audit.metadata).toMatchObject({width:240,height:240,pages:20,durationMs:4000,loop:0});
+   expect(r.gif.length).toBeLessThan(250*1024);expect(new Set(r.timeline.map(x=>x.pose)).size).toBe(12);
+   expect(r.item).toMatchObject({sourceType:'ai-original',status:'trial-only',publicationAllowed:false});
+   if(/^(man|line)-/.test(id))expect(r.item).toMatchObject({personOrigin:'China',personGender:'male',adult:true});
+   for(const patch of [{caption:'错误'},{sourceType:'unknown'},{publicationAllowed:true},{masterFile:'../other.png'}])await expect(renderReferenceCharacterGif(b,{...item,...patch})).rejects.toThrow();
   }
  }
 },30000);

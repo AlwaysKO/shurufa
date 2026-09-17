@@ -152,6 +152,12 @@ export interface ActivityItem {
   network_type: string | null;
 }
 
+export interface ActivityDeleteRequest {
+  confirm: 'DELETE';
+  mode: 'single' | 'group';
+  event_ids: string[];
+}
+
 export interface ActivityQuery {
   device_id?: string;
   package_name?: string;
@@ -517,6 +523,17 @@ async function put<T>(url: string, body: unknown): Promise<T> {
 }
 
 export const api = {
+  deleteActivity: async (id: string, body: ActivityDeleteRequest): Promise<{ deleted: number }> => {
+    const url = withDashboardUser(`/api/v1/dashboard/events/${encodeURIComponent(id)}/delete`);
+    const response = await dashboardFetch(url, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      const result = await response.json().catch(() => null);
+      throw new Error(typeof result?.error === 'string' ? result.error : `删除请求失败（${response.status}）`);
+    }
+    return response.json();
+  },
   overview: (days = 7) => get<OverviewData>(`/api/v1/dashboard/overview?days=${days}`),
   timeline: (days = 30) => get<{ days: number; timeline: TimelinePoint[] }>(`/api/v1/dashboard/timeline?days=${days}`),
   hours: (days = 30) => get<{ days: number; hours: HourPoint[] }>(`/api/v1/dashboard/hours?days=${days}`),

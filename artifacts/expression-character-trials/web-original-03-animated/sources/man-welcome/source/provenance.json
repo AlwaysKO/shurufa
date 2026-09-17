@@ -1,0 +1,25 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab4ddd-0920-83ea-9537-65931aa9b5e7",
+  "sourceFileId": "file_00000000e28c82079d20745806d19e24",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "4da63818d50623d934cb41fcccc758dacdb9134f30e57c049f0b7e44e237c540",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T02:16:40.118507+00:00",
+  "generationObservedAt": "2026-09-17T02:16:40.118507+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "man-welcome.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T02:17:08.222214+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

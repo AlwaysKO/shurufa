@@ -1,0 +1,450 @@
+{
+  "completedAt": "2026-09-17T02:48:33.574813+00:00",
+  "batch": "web-original-03-animated",
+  "approvalBasis": "当前用户明确默认授权：合格关键词成品入库并用于推荐；不是用户逐张观看证明",
+  "keywords": {
+    "好久不见": 4,
+    "欢迎": 4,
+    "我来了": 4
+  },
+  "stylesPerKeyword": [
+    "写实动物",
+    "极简黑白",
+    "黏土/3D",
+    "原创中国成年男性真人"
+  ],
+  "finalGifCount": 12,
+  "actualImportedCount": 12,
+  "catalogBefore": 181,
+  "catalogAfter": 193,
+  "sourceConversationsCreated": 13,
+  "sourceConversationsDeleted": 13,
+  "rejectedMasterCount": 1,
+  "redundantMasterCount": 1,
+  "notes": [
+    "cat-welcome同一对话生成两份母图，均归档；仅variant1进入成品，variant2冗余不入库",
+    "line-arrived v1循环审计失败，从未入库；v2为独立新源并通过原始门禁，未恢复失败稿",
+    "Windows Chrome Dev使用原登录配置，未重新登录ChatGPT，未改充值/账号设置",
+    "真实后台最初处于隐藏页时GIF不推进，激活页面确认visible后再采样；不把静止截图当播放证明",
+    "删除防复活在隔离随机用户上逐张执行真实DELETE，再运行真实importer；只清理该测试用户记录，真实用户及旧图未删除"
+  ],
+  "technical": {
+    "width": 240,
+    "height": 240,
+    "durationMs": 4000,
+    "frames": 20,
+    "realPoses": 12,
+    "keyExpressionHoldMs": 900,
+    "loop": 0,
+    "minBytes": 43287,
+    "maxBytes": 81288,
+    "auditIssueCount": 0,
+    "thresholdsChanged": false
+  },
+  "delivery": {
+    "checkedAt": "2026-09-17T02:44:20.374Z",
+    "recommendStatus": 200,
+    "verified": [
+      {
+        "id": "generated-b1713f96b22e250f30685beb",
+        "keyword": "好久不见",
+        "url": "/uploads/expression/generated/generated-b1713f96b22e250f30685beb.gif",
+        "http": 200,
+        "sha256": "b1713f96b22e250f30685beb520e0d99e699c620c5ddbb3dfdd268a467b1fea7",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 64338,
+        "loop": 0
+      },
+      {
+        "id": "generated-33b2390a5d9e6017caf21464",
+        "keyword": "好久不见",
+        "url": "/uploads/expression/generated/generated-33b2390a5d9e6017caf21464.gif",
+        "http": 200,
+        "sha256": "33b2390a5d9e6017caf2146491cafa983db7fb2e05cf969492db26de3ecc0d0d",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 64677,
+        "loop": 0
+      },
+      {
+        "id": "generated-02557f58253d4b4464a4c025",
+        "keyword": "好久不见",
+        "url": "/uploads/expression/generated/generated-02557f58253d4b4464a4c025.gif",
+        "http": 200,
+        "sha256": "02557f58253d4b4464a4c0253dd34b03640548c077d216b5d1e517d922f1f293",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 58104,
+        "loop": 0
+      },
+      {
+        "id": "generated-ec53ca303a9e018efaa39706",
+        "keyword": "好久不见",
+        "url": "/uploads/expression/generated/generated-ec53ca303a9e018efaa39706.gif",
+        "http": 200,
+        "sha256": "ec53ca303a9e018efaa397060313937830ed01844f1305e7f6c83250c01b0605",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 43496,
+        "loop": 0
+      },
+      {
+        "id": "generated-23a0364b756caa8189e7e5ff",
+        "keyword": "欢迎",
+        "url": "/uploads/expression/generated/generated-23a0364b756caa8189e7e5ff.gif",
+        "http": 200,
+        "sha256": "23a0364b756caa8189e7e5ff32868544899dc481fc027a58bcee84a75757cdec",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 66966,
+        "loop": 0
+      },
+      {
+        "id": "generated-1476642eaf86386fd576f4ea",
+        "keyword": "欢迎",
+        "url": "/uploads/expression/generated/generated-1476642eaf86386fd576f4ea.gif",
+        "http": 200,
+        "sha256": "1476642eaf86386fd576f4ea21310aa2e2c8ad1e2180d32382a7af8bf7a55093",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 66317,
+        "loop": 0
+      },
+      {
+        "id": "generated-e6d2d15a3bde395303352835",
+        "keyword": "欢迎",
+        "url": "/uploads/expression/generated/generated-e6d2d15a3bde395303352835.gif",
+        "http": 200,
+        "sha256": "e6d2d15a3bde395303352835ed74d75f19e16851dd5a929a431cc56a251e7eac",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 54038,
+        "loop": 0
+      },
+      {
+        "id": "generated-93599b17f06b21b079417d80",
+        "keyword": "欢迎",
+        "url": "/uploads/expression/generated/generated-93599b17f06b21b079417d80.gif",
+        "http": 200,
+        "sha256": "93599b17f06b21b079417d80cf6d3622fa3739963c953a90b7b186cc93911b61",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 69097,
+        "loop": 0
+      },
+      {
+        "id": "generated-cfe4c7a5aea9df4a80dbe077",
+        "keyword": "我来了",
+        "url": "/uploads/expression/generated/generated-cfe4c7a5aea9df4a80dbe077.gif",
+        "http": 200,
+        "sha256": "cfe4c7a5aea9df4a80dbe077f38d883b7684da25399dfcdb70f626397931a2b0",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 81288,
+        "loop": 0
+      },
+      {
+        "id": "generated-90f73333888789257d3f5c79",
+        "keyword": "我来了",
+        "url": "/uploads/expression/generated/generated-90f73333888789257d3f5c79.gif",
+        "http": 200,
+        "sha256": "90f73333888789257d3f5c7971cded860ff41c89ed8970e2c6b63db661501762",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 43287,
+        "loop": 0
+      },
+      {
+        "id": "generated-d61ab5fe5e4a1b616b281238",
+        "keyword": "我来了",
+        "url": "/uploads/expression/generated/generated-d61ab5fe5e4a1b616b281238.gif",
+        "http": 200,
+        "sha256": "d61ab5fe5e4a1b616b2812384d78818254cd7a3fc58eaaafc58ed04629d1d89b",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 69683,
+        "loop": 0
+      },
+      {
+        "id": "generated-2a0d61d1b9f721e018cf4eba",
+        "keyword": "我来了",
+        "url": "/uploads/expression/generated/generated-2a0d61d1b9f721e018cf4eba.gif",
+        "http": 200,
+        "sha256": "2a0d61d1b9f721e018cf4ebac89ed8ee26f5a50af3dc71a4bd2ff3a6c3062588",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 80753,
+        "loop": 0
+      }
+    ]
+  },
+  "deletion": {
+    "checkedAt": "2026-09-17T02:44:32.256Z",
+    "testUser": "adf0c42f-0015-4bdc-ae45-a22b9580f44e",
+    "deletedCount": 12,
+    "ids": [
+      "generated-b1713f96b22e250f30685beb",
+      "generated-33b2390a5d9e6017caf21464",
+      "generated-02557f58253d4b4464a4c025",
+      "generated-ec53ca303a9e018efaa39706",
+      "generated-23a0364b756caa8189e7e5ff",
+      "generated-1476642eaf86386fd576f4ea",
+      "generated-e6d2d15a3bde395303352835",
+      "generated-93599b17f06b21b079417d80",
+      "generated-cfe4c7a5aea9df4a80dbe077",
+      "generated-90f73333888789257d3f5c79",
+      "generated-d61ab5fe5e4a1b616b281238",
+      "generated-2a0d61d1b9f721e018cf4eba"
+    ],
+    "deletionHides": true,
+    "reimportDoesNotRestore": true,
+    "realUserUnaffected": true,
+    "sourceFilesRetained": true,
+    "importer": "\n> shurufa-server@0.1.0 expression:import-keywords\n> tsx scripts/importKeywordGifs.ts --apply\n\n{\"applied\":true,\"imported\":193,\"alreadyPresent\":184,\"excluded\":15,\"report\":\"assets/expression/approvals/2026-09-16-keyword-gif-import.json\"}\n"
+  },
+  "uiEvidence": "ui-verification.json",
+  "sourceCleanup": [
+    {
+      "path": "sources/cat-welcome/source/provenance.json",
+      "sha256": "0f7ecb3572779ccde1dcb18cfaa6607ec3370583f1bc52f3ebec51125b78f252",
+      "conversation": "https://chatgpt.com/c/6aab4832-d9a8-83e9-9fc1-984388241e81",
+      "deletedAt": "2026-09-17T01:56:07.766440+00:00",
+      "status": "downloaded-decodable"
+    },
+    {
+      "path": "sources/clay-arrived/source/provenance.json",
+      "sha256": "c7325854892bc9a975c16a83b9f09c605ca37d6b1f588411f998b545e28a093a",
+      "conversation": "https://chatgpt.com/c/6aab51f0-203c-83ea-b5b5-cbca1928857f",
+      "deletedAt": "2026-09-17T02:36:40.733330+00:00",
+      "status": "downloaded-decodable"
+    },
+    {
+      "path": "sources/clay-reunion/source/provenance.json",
+      "sha256": "2100b3efcef219140264bb699940b60e426e64ad310a09a1e725ce4cba4eb6c3",
+      "conversation": "https://chatgpt.com/c/6aab452c-1ec4-83ea-89ef-05098ffad8f2",
+      "deletedAt": "2026-09-17T01:44:05.675450+00:00",
+      "status": "downloaded-decodable"
+    },
+    {
+      "path": "sources/clay-welcome/source/provenance.json",
+      "sha256": "66183c31ee5c383d683056b2e5111ae1599c0d0848a545b72bc11a904ccd00f9",
+      "conversation": "https://chatgpt.com/c/6aab4b21-ab70-83ea-bfb9-a391edc8111e",
+      "deletedAt": "2026-09-17T02:14:30.938000+00:00",
+      "status": "downloaded-decodable"
+    },
+    {
+      "path": "sources/line-arrived/rejected/v1/source/provenance.json",
+      "sha256": "1d4376c34f035557492c0d951d4ea5186b41ea2edbe507af89222618f9023b31",
+      "conversation": "https://chatgpt.com/c/6aab50a2-88b0-83ea-8bcd-3f6470615b1f",
+      "deletedAt": "2026-09-17T02:32:02.928203+00:00",
+      "status": "rejected-technical-audit"
+    },
+    {
+      "path": "sources/line-arrived/source/provenance.json",
+      "sha256": "a37d9efbcdf93839a2cab3faa69ec69739f336f1f42a38ad1bb30408e130713e",
+      "conversation": "https://chatgpt.com/c/6aab5404-858c-83ea-a3f7-cd6c20c1cbd8",
+      "deletedAt": "2026-09-17T02:43:38.452789+00:00",
+      "status": "downloaded-decodable"
+    },
+    {
+      "path": "sources/line-reunion/source/provenance.json",
+      "sha256": "e7524aba28ec01bc4250927a3d8660445b55c58663bc286635020a8e8df347c2",
+      "conversation": "https://chatgpt.com/c/6aab43ab-8d3c-83ea-a5d2-09456dc19c51",
+      "deletedAt": "2026-09-17T01:37:44.310517+00:00",
+      "status": "downloaded-decodable"
+    },
+    {
+      "path": "sources/line-welcome/source/provenance.json",
+      "sha256": "61ff5ae8aa9ea4ff9426d58df1149c83a9d21e171acb0d8af430bc99018ec8d4",
+      "conversation": "https://chatgpt.com/c/6aab4995-3a54-83ea-b92c-f2f356795f8d",
+      "deletedAt": "2026-09-17T02:01:44.817049+00:00",
+      "status": "downloaded-decodable"
+    },
+    {
+      "path": "sources/man-arrived/source/provenance.json",
+      "sha256": "263ffb90e3577310c371f0729517ea0ee6fec5b0a7440c8c3068191107eb0ed6",
+      "conversation": "https://chatgpt.com/c/6aab52fb-abc4-83e9-a12f-81908818a53f",
+      "deletedAt": "2026-09-17T02:41:05.582182+00:00",
+      "status": "downloaded-decodable"
+    },
+    {
+      "path": "sources/man-reunion/source/provenance.json",
+      "sha256": "e0a2b97b7bc2d51edfd94b1779c407671ae440b019729f865e376f782ed9cf22",
+      "conversation": "https://chatgpt.com/c/6aab46ad-4da4-83e9-85d8-1f9704c3dbad",
+      "deletedAt": "2026-09-17T01:49:23.676253+00:00",
+      "status": "downloaded-decodable"
+    },
+    {
+      "path": "sources/man-welcome/source/provenance.json",
+      "sha256": "4da63818d50623d934cb41fcccc758dacdb9134f30e57c049f0b7e44e237c540",
+      "conversation": "https://chatgpt.com/c/6aab4ddd-0920-83ea-9537-65931aa9b5e7",
+      "deletedAt": "2026-09-17T02:17:08.222214+00:00",
+      "status": "downloaded-decodable"
+    },
+    {
+      "path": "sources/rabbit-arrived/source/provenance.json",
+      "sha256": "4aac77deee8bc3c44047d874141695797d1fd6d9eac05be4b42fde9e08672b13",
+      "conversation": "https://chatgpt.com/c/6aab4e7d-d934-83e9-9f8a-b97e1bbdcbd8",
+      "deletedAt": "2026-09-17T02:26:20.242787+00:00",
+      "status": "downloaded-decodable"
+    },
+    {
+      "path": "sources/retriever-reunion/source/provenance.json",
+      "sha256": "18d847299860e35dda2ffb9ddc6cf32857e0da97f73509ecc12332b1cf489074",
+      "conversation": "https://chatgpt.com/c/6aab428b-ed30-83e9-abe3-387379447a6b",
+      "deletedAt": "2026-09-17T01:31:00.773775+00:00",
+      "status": "downloaded-decodable"
+    }
+  ],
+  "validation": {
+    "build": "npm run build 退出0",
+    "tests": "5个文件43项测试通过；2026-09-17 10:45:54开始，58.83秒",
+    "commands": [
+      "npx tsx scripts/render-web03-framed.ts",
+      "npm run expression:import-keywords",
+      "npx tsx .runtime/verify-web03.mjs",
+      "npm run build",
+      "npx vitest run src/expression/referenceCharacterRenderer.test.ts src/expression/gridFraming.test.ts src/expression/keywordGifLibrary.test.ts src/expression/web03Script.test.ts src/api/keywordGifLibrary.test.ts --maxWorkers=1"
+    ],
+    "warning": "既有Fontconfig缓存版本警告；未修改系统缓存"
+  },
+  "blockingIssues": [],
+  "notPerformed": [
+    "未推送远端",
+    "未打包或发布APK",
+    "未创建独立HTML预览",
+    "未git add -f",
+    "未改旧图或无字AI合成底图库"
+  ],
+  "downloadTempCleanup": {
+    "checkedAt": "2026-09-17T02:49:29.660707+00:00",
+    "removedVerifiedCopies": [
+      {
+        "file": "backend-0.png",
+        "sha256": "3ec9d1450bc3ce2c3c09ad0f91b795437bc03399da06e63e5ee597ec8e3be7de",
+        "archivedAs": "artifacts/diagnostics/2026-09-17-web03/backend-0.png"
+      },
+      {
+        "file": "backend-1.png",
+        "sha256": "3ec9d1450bc3ce2c3c09ad0f91b795437bc03399da06e63e5ee597ec8e3be7de",
+        "archivedAs": "artifacts/diagnostics/2026-09-17-web03/backend-0.png"
+      },
+      {
+        "file": "backend-2.png",
+        "sha256": "3ec9d1450bc3ce2c3c09ad0f91b795437bc03399da06e63e5ee597ec8e3be7de",
+        "archivedAs": "artifacts/diagnostics/2026-09-17-web03/backend-0.png"
+      },
+      {
+        "file": "backend-3.png",
+        "sha256": "37fde923aad1350c0279d0bfc6f7700d5e3a2b91c892e637387d890dd7fd0ee8",
+        "archivedAs": "artifacts/diagnostics/2026-09-17-web03/backend-3.png"
+      },
+      {
+        "file": "backend-4.png",
+        "sha256": "be818480e6cbb239ee29e14c55a77346b6fb5e457246741fd4d1ced24343bc40",
+        "archivedAs": "artifacts/diagnostics/2026-09-17-web03/backend-4.png"
+      },
+      {
+        "file": "cat-welcome-v1.png",
+        "sha256": "0f7ecb3572779ccde1dcb18cfaa6607ec3370583f1bc52f3ebec51125b78f252",
+        "archivedAs": "artifacts/expression-character-trials/web-original-03-animated/sources/cat-welcome/source/variant-1.png"
+      },
+      {
+        "file": "cat-welcome-v2.png",
+        "sha256": "3bde3194cfbceda429c1370e54d32b5ff14f7ab4b9bb276ef7a35a0a6a4633b6",
+        "archivedAs": "artifacts/expression-character-trials/web-original-03-animated/sources/cat-welcome/source/variant-2.png"
+      },
+      {
+        "file": "ChatGPT Image 2026年9月17日 09_28_13.png",
+        "sha256": "18d847299860e35dda2ffb9ddc6cf32857e0da97f73509ecc12332b1cf489074",
+        "archivedAs": "artifacts/expression-character-trials/web-original-03-animated/sources/retriever-reunion/source/master.png"
+      },
+      {
+        "file": "ChatGPT Image 2026年9月17日 09_36_29.png",
+        "sha256": "e7524aba28ec01bc4250927a3d8660445b55c58663bc286635020a8e8df347c2",
+        "archivedAs": "artifacts/expression-character-trials/web-original-03-animated/sources/line-reunion/source/master.png"
+      },
+      {
+        "file": "ChatGPT Image 2026年9月17日 09_36_33.png",
+        "sha256": "e7524aba28ec01bc4250927a3d8660445b55c58663bc286635020a8e8df347c2",
+        "archivedAs": "artifacts/expression-character-trials/web-original-03-animated/sources/line-reunion/source/master.png"
+      },
+      {
+        "file": "ChatGPT Image 2026年9月17日 09_42_54.png",
+        "sha256": "2100b3efcef219140264bb699940b60e426e64ad310a09a1e725ce4cba4eb6c3",
+        "archivedAs": "artifacts/expression-character-trials/web-original-03-animated/sources/clay-reunion/source/master.png"
+      },
+      {
+        "file": "ChatGPT Image 2026年9月17日 09_46_55.png",
+        "sha256": "e0a2b97b7bc2d51edfd94b1779c407671ae440b019729f865e376f782ed9cf22",
+        "archivedAs": "artifacts/expression-character-trials/web-original-03-animated/sources/man-reunion/source/master.png"
+      },
+      {
+        "file": "clay-arrived.png",
+        "sha256": "c7325854892bc9a975c16a83b9f09c605ca37d6b1f588411f998b545e28a093a",
+        "archivedAs": "artifacts/expression-character-trials/web-original-03-animated/sources/clay-arrived/source/master.png"
+      },
+      {
+        "file": "clay-welcome.png",
+        "sha256": "66183c31ee5c383d683056b2e5111ae1599c0d0848a545b72bc11a904ccd00f9",
+        "archivedAs": "artifacts/expression-character-trials/web-original-03-animated/sources/clay-welcome/source/master.png"
+      },
+      {
+        "file": "line-arrived-v2.png",
+        "sha256": "a37d9efbcdf93839a2cab3faa69ec69739f336f1f42a38ad1bb30408e130713e",
+        "archivedAs": "artifacts/expression-character-trials/web-original-03-animated/sources/line-arrived/source/master.png"
+      },
+      {
+        "file": "line-arrived.png",
+        "sha256": "1d4376c34f035557492c0d951d4ea5186b41ea2edbe507af89222618f9023b31",
+        "archivedAs": "artifacts/expression-character-trials/web-original-03-animated/sources/line-arrived/rejected/v1/source/master.png"
+      },
+      {
+        "file": "line-welcome.png",
+        "sha256": "61ff5ae8aa9ea4ff9426d58df1149c83a9d21e171acb0d8af430bc99018ec8d4",
+        "archivedAs": "artifacts/expression-character-trials/web-original-03-animated/sources/line-welcome/source/master.png"
+      },
+      {
+        "file": "man-arrived.png",
+        "sha256": "263ffb90e3577310c371f0729517ea0ee6fec5b0a7440c8c3068191107eb0ed6",
+        "archivedAs": "artifacts/expression-character-trials/web-original-03-animated/sources/man-arrived/source/master.png"
+      },
+      {
+        "file": "man-welcome.png",
+        "sha256": "4da63818d50623d934cb41fcccc758dacdb9134f30e57c049f0b7e44e237c540",
+        "archivedAs": "artifacts/expression-character-trials/web-original-03-animated/sources/man-welcome/source/master.png"
+      },
+      {
+        "file": "rabbit-arrived.png",
+        "sha256": "4aac77deee8bc3c44047d874141695797d1fd6d9eac05be4b42fde9e08672b13",
+        "archivedAs": "artifacts/expression-character-trials/web-original-03-animated/sources/rabbit-arrived/source/master.png"
+      }
+    ],
+    "unmatchedKept": []
+  }
+}

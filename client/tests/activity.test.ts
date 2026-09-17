@@ -136,3 +136,87 @@ it('快速切换时较早的整段响应不能覆盖当前原始模式', async (
   expect(view.text()).toContain('当前原始记录');
   expect(view.text()).not.toContain('晚上九点见');
 });
+
+it('每行删除前确认整段摘要和原始记录数量，取消不发请求', async () => {
+  const confirm = vi.fn().mockReturnValue(false); vi.stubGlobal('confirm', confirm);
+  const deleteActivity = vi.fn();
+  const view = await mount('Activity', { deleteActivity, devices: async () => ({ devices: [] }), events: async () => ({ total: 1, items: [editGroup] }) });
+  const button = view.find('delete-activity-c'); expect(button).toBeDefined();
+  button!.props.onClick(); await settle();
+  expect(confirm.mock.calls[0][0]).toContain('晚上九点见');
+  expect(confirm.mock.calls[0][0]).toContain('3 条');
+  expect(confirm.mock.calls[0][0]).toContain('永久删除');
+  expect(deleteActivity).not.toHaveBeenCalled(); expect(view.text()).toContain('晚上九点见');
+});
+
+it('确认整段删除发送准确ID列表，成功后刷新且保持筛选', async () => {
+  vi.stubGlobal('confirm', vi.fn().mockReturnValue(true));
+  const events = vi.fn().mockResolvedValueOnce({ total: 1, items: [editGroup] }).mockResolvedValue({ total: 0, items: [] });
+  const deleteActivity = vi.fn().mockResolvedValue({ deleted: 3 });
+  const view = await mount('Activity', { events, deleteActivity, devices: async () => ({ devices: [] }) });
+  expect(view.find('delete-activity-c')).toBeDefined(); view.find('delete-activity-c')!.props.onClick(); await settle();
+  expect(deleteActivity).toHaveBeenCalledWith('c', { confirm: 'DELETE', mode: 'group', event_ids: ['a', 'b', 'c'] });
+  expect(events).toHaveBeenCalledTimes(2);
+  expect(events.mock.calls[1][0]).toEqual(events.mock.calls[0][0]);
+  expect(view.text()).toContain('已删除 3 条'); expect(view.text()).not.toContain('晚上九点见');
+});
+
+it('原始模式只确认并发送所点单条ID', async () => {
+  const confirm = vi.fn().mockReturnValue(true); vi.stubGlobal('confirm', confirm);
+  const deleteActivity = vi.fn().mockResolvedValue({ deleted: 1 });
+  const view = await mount('Activity', { deleteActivity, devices: async () => ({ devices: [] }), events: async () => ({ total: 1, items: [editGroup] }) });
+  view.find('mode-raw')!.props.onClick(); await settle();
+  expect(view.find('delete-activity-c')).toBeDefined(); view.find('delete-activity-c')!.props.onClick(); await settle();
+  expect(deleteActivity).toHaveBeenCalledWith('c', { confirm: 'DELETE', mode: 'single', event_ids: ['c'] });
+  expect(confirm.mock.calls[0][0]).toContain('1 条');
+});
+
+it('删除失败保留列表和原文，展示错误而非假装已删除', async () => {
+  vi.stubGlobal('confirm', vi.fn().mockReturnValue(true));
+  const deleteActivity = vi.fn().mockRejectedValue(Error('记录已变化，请刷新后重新确认'));
+  const events = vi.fn().mockResolvedValue({ total: 1, items: [editGroup] });
+  const view = await mount('Activity', { events, deleteActivity, devices: async () => ({ devices: [] }) });
+  expect(view.find('delete-activity-c')).toBeDefined(); view.find('delete-activity-c')!.props.onClick(); await settle();
+  expect(view.text()).toContain('删除失败'); expect(view.text()).toContain('记录已变化');
+  expect(view.text()).toContain('晚上九点见'); expect(events).toHaveBeenCalledTimes(1);
+  expect(view.find('delete-activity-c')?.props.disabled).toBe(false);
+});
+
+it('请求进行中防止重复删除，加载中的旧行不能被删除', async () => {
+  vi.stubGlobal('confirm', vi.fn().mockReturnValue(true));
+  let resolveDelete!: (value: unknown) => void;
+  const deleteActivity = vi.fn(() => new Promise(resolve => { resolveDelete = resolve; }));
+  const view = await mount('Activity', { deleteActivity, devices: async () => ({ devices: [] }), events: async () => ({ total: 1, items: [editGroup] }) });
+  expect(view.find('delete-activity-c')).toBeDefined();
+  view.find('delete-activity-c')!.props.onClick(); view.find('delete-activity-c')!.props.onClick(); await settle();
+  expect(deleteActivity).toHaveBeenCalledTimes(1); expect(view.find('delete-activity-c')?.props.disabled).toBe(true);
+  resolveDelete({ deleted: 3 }); await settle();
+});
+
+it('删除末页最后一行后回到有效页，不留空白分页', async () => {
+  vi.stubGlobal('confirm', vi.fn().mockReturnValue(true));
+  const events = vi.fn()
+    .mockResolvedValueOnce({ total: 21, items: [editGroup] })
+    .mockResolvedValueOnce({ total: 21, items: [editGroup] })
+    .mockResolvedValueOnce({ total: 20, items: [] })
+    .mockResolvedValue({ total: 20, items: [{ ...editGroup, id: 'remaining' }] });
+  const view = await mount('Activity', { events, deleteActivity: async () => ({ deleted: 3 }), devices: async () => ({ devices: [] }) });
+  view.all().find(n => n.tag === 'button' && n.text === '下一页')!.props.onClick(); await settle();
+  expect(view.find('delete-activity-c')).toBeDefined(); view.find('delete-activity-c')!.props.onClick(); await settle();
+  expect(events.mock.calls.map(call => call[0].page)).toEqual([1, 2, 2, 1]);
+  expect(view.find('delete-activity-remaining')).toBeDefined();
+});
+
+it('切换模式正在加载时，旧行不可发起删除', async () => {
+  const confirm = vi.fn().mockReturnValue(true); vi.stubGlobal('confirm', confirm);
+  let respond!: (value: unknown) => void;
+  const events = vi.fn().mockResolvedValueOnce({ total: 1, items: [editGroup] })
+    .mockImplementationOnce(() => new Promise(resolve => { respond = resolve; }));
+  const deleteActivity = vi.fn();
+  const view = await mount('Activity', { events, deleteActivity, devices: async () => ({ devices: [] }) });
+  view.find('mode-raw')!.props.onClick(); await settle();
+  expect(view.find('delete-activity-c')?.props.disabled).toBe(true);
+  view.find('delete-activity-c')!.props.onClick(); await settle();
+  expect(confirm).not.toHaveBeenCalled(); expect(deleteActivity).not.toHaveBeenCalled();
+  respond({ total: 1, items: [editGroup] }); await settle();
+});

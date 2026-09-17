@@ -1,0 +1,23 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab43ab-8d3c-83ea-a5d2-09456dc19c51",
+  "requestedDate": "2026-09-17",
+  "deletion": "confirmed-in-web-ui",
+  "status": "downloaded-decodable",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "sha256": "e7524aba28ec01bc4250927a3d8660445b55c58663bc286635020a8e8df347c2",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T01:36:59.460856+00:00",
+  "originalDownloadName": "ChatGPT Image 2026年9月17日 09_36_33.png",
+  "deletedAt": "2026-09-17T01:37:44.310517+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  },
+  "generationObservedAt": "2026-09-17T01:36:59.460856+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻"
+}

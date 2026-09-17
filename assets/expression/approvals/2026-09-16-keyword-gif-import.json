@@ -3121,6 +3121,226 @@
       "bytes": 59201
     },
     {
+      "id": "retriever-reunion",
+      "sourceReport": "artifacts/expression-character-trials/web-original-03-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-03-animated/output/gifs/retriever-reunion.gif",
+      "status": "imported",
+      "catalogId": "generated-b1713f96b22e250f30685beb",
+      "keyword": "好久不见",
+      "sha256": "b1713f96b22e250f30685beb520e0d99e699c620c5ddbb3dfdd268a467b1fea7",
+      "bytes": 64338
+    },
+    {
+      "id": "line-reunion",
+      "sourceReport": "artifacts/expression-character-trials/web-original-03-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-03-animated/output/gifs/line-reunion.gif",
+      "status": "imported",
+      "catalogId": "generated-33b2390a5d9e6017caf21464",
+      "keyword": "好久不见",
+      "sha256": "33b2390a5d9e6017caf2146491cafa983db7fb2e05cf969492db26de3ecc0d0d",
+      "bytes": 64677
+    },
+    {
+      "id": "clay-reunion",
+      "sourceReport": "artifacts/expression-character-trials/web-original-03-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-03-animated/output/gifs/clay-reunion.gif",
+      "status": "imported",
+      "catalogId": "generated-02557f58253d4b4464a4c025",
+      "keyword": "好久不见",
+      "sha256": "02557f58253d4b4464a4c0253dd34b03640548c077d216b5d1e517d922f1f293",
+      "bytes": 58104
+    },
+    {
+      "id": "man-reunion",
+      "sourceReport": "artifacts/expression-character-trials/web-original-03-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-03-animated/output/gifs/man-reunion.gif",
+      "status": "imported",
+      "catalogId": "generated-ec53ca303a9e018efaa39706",
+      "keyword": "好久不见",
+      "sha256": "ec53ca303a9e018efaa397060313937830ed01844f1305e7f6c83250c01b0605",
+      "bytes": 43496
+    },
+    {
+      "id": "cat-welcome",
+      "sourceReport": "artifacts/expression-character-trials/web-original-03-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-03-animated/output/gifs/cat-welcome.gif",
+      "status": "imported",
+      "catalogId": "generated-23a0364b756caa8189e7e5ff",
+      "keyword": "欢迎",
+      "sha256": "23a0364b756caa8189e7e5ff32868544899dc481fc027a58bcee84a75757cdec",
+      "bytes": 66966
+    },
+    {
+      "id": "line-welcome",
+      "sourceReport": "artifacts/expression-character-trials/web-original-03-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-03-animated/output/gifs/line-welcome.gif",
+      "status": "imported",
+      "catalogId": "generated-1476642eaf86386fd576f4ea",
+      "keyword": "欢迎",
+      "sha256": "1476642eaf86386fd576f4ea21310aa2e2c8ad1e2180d32382a7af8bf7a55093",
+      "bytes": 66317
+    },
+    {
+      "id": "clay-welcome",
+      "sourceReport": "artifacts/expression-character-trials/web-original-03-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-03-animated/output/gifs/clay-welcome.gif",
+      "status": "imported",
+      "catalogId": "generated-e6d2d15a3bde395303352835",
+      "keyword": "欢迎",
+      "sha256": "e6d2d15a3bde395303352835ed74d75f19e16851dd5a929a431cc56a251e7eac",
+      "bytes": 54038
+    },
+    {
+      "id": "man-welcome",
+      "sourceReport": "artifacts/expression-character-trials/web-original-03-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-03-animated/output/gifs/man-welcome.gif",
+      "status": "imported",
+      "catalogId": "generated-93599b17f06b21b079417d80",
+      "keyword": "欢迎",
+      "sha256": "93599b17f06b21b079417d80cf6d3622fa3739963c953a90b7b186cc93911b61",
+      "bytes": 69097
+    },
+    {
+      "id": "rabbit-arrived",
+      "sourceReport": "artifacts/expression-character-trials/web-original-03-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-03-animated/output/gifs/rabbit-arrived.gif",
+      "status": "imported",
+      "catalogId": "generated-cfe4c7a5aea9df4a80dbe077",
+      "keyword": "我来了",
+      "sha256": "cfe4c7a5aea9df4a80dbe077f38d883b7684da25399dfcdb70f626397931a2b0",
+      "bytes": 81288
+    },
+    {
+      "id": "clay-arrived",
+      "sourceReport": "artifacts/expression-character-trials/web-original-03-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-03-animated/output/gifs/clay-arrived.gif",
+      "status": "imported",
+      "catalogId": "generated-90f73333888789257d3f5c79",
+      "keyword": "我来了",
+      "sha256": "90f73333888789257d3f5c7971cded860ff41c89ed8970e2c6b63db661501762",
+      "bytes": 43287
+    },
+    {
+      "id": "man-arrived",
+      "sourceReport": "artifacts/expression-character-trials/web-original-03-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-03-animated/output/gifs/man-arrived.gif",
+      "status": "imported",
+      "catalogId": "generated-d61ab5fe5e4a1b616b281238",
+      "keyword": "我来了",
+      "sha256": "d61ab5fe5e4a1b616b2812384d78818254cd7a3fc58eaaafc58ed04629d1d89b",
+      "bytes": 69683
+    },
+    {
+      "id": "line-arrived",
+      "sourceReport": "artifacts/expression-character-trials/web-original-03-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-03-animated/output/gifs/line-arrived.gif",
+      "status": "imported",
+      "catalogId": "generated-2a0d61d1b9f721e018cf4eba",
+      "keyword": "我来了",
+      "sha256": "2a0d61d1b9f721e018cf4ebac89ed8ee26f5a50af3dc71a4bd2ff3a6c3062588",
+      "bytes": 80753
+    },
+    {
+      "id": "collie-certain",
+      "sourceReport": "artifacts/expression-character-trials/web-original-04-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-04-animated/output/gifs/collie-certain.gif",
+      "status": "imported",
+      "catalogId": "generated-7c6e03c3b4c158c23fd926d3",
+      "keyword": "确定",
+      "sha256": "7c6e03c3b4c158c23fd926d31037fb26b40a15588acebde936749fca8a3ab7f1",
+      "bytes": 65426
+    },
+    {
+      "id": "line-certain",
+      "sourceReport": "artifacts/expression-character-trials/web-original-04-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-04-animated/output/gifs/line-certain.gif",
+      "status": "imported",
+      "catalogId": "generated-8b3e7dffee92467e212b25aa",
+      "keyword": "确定",
+      "sha256": "8b3e7dffee92467e212b25aace12d1945ccb0f735a2a2dd5ff01648eb71b7b6d",
+      "bytes": 81496
+    },
+    {
+      "id": "clay-certain",
+      "sourceReport": "artifacts/expression-character-trials/web-original-04-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-04-animated/output/gifs/clay-certain.gif",
+      "status": "imported",
+      "catalogId": "generated-6fcd31ae7de6141b248e680e",
+      "keyword": "确定",
+      "sha256": "6fcd31ae7de6141b248e680e137e7357cd0cb0287c58f247cedb5f83c73379e1",
+      "bytes": 46644
+    },
+    {
+      "id": "man-certain",
+      "sourceReport": "artifacts/expression-character-trials/web-original-04-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-04-animated/output/gifs/man-certain.gif",
+      "status": "imported",
+      "catalogId": "generated-3ca7f7874ad1391ff7e3f65b",
+      "keyword": "确定",
+      "sha256": "3ca7f7874ad1391ff7e3f65b28e8ea857e310b22a7ef8a7ef950f9b8fa29a8a7",
+      "bytes": 61034
+    },
+    {
+      "id": "cat-reassure",
+      "sourceReport": "artifacts/expression-character-trials/web-original-04-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-04-animated/output/gifs/cat-reassure.gif",
+      "status": "imported",
+      "catalogId": "generated-4847da464e86f03dddeba38f",
+      "keyword": "没关系",
+      "sha256": "4847da464e86f03dddeba38f8ea056c30319b5bc74411f33c8fced062d9fb364",
+      "bytes": 61465
+    },
+    {
+      "id": "line-reassure",
+      "sourceReport": "artifacts/expression-character-trials/web-original-04-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-04-animated/output/gifs/line-reassure.gif",
+      "status": "imported",
+      "catalogId": "generated-7e304072a498788e5d38025e",
+      "keyword": "没关系",
+      "sha256": "7e304072a498788e5d38025ed948cbcaa6073952f2dbf03db2d8c63ff83706c6",
+      "bytes": 82084
+    },
+    {
+      "id": "clay-reassure",
+      "sourceReport": "artifacts/expression-character-trials/web-original-04-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-04-animated/output/gifs/clay-reassure.gif",
+      "status": "imported",
+      "catalogId": "generated-dc7754b05203742bdfedca32",
+      "keyword": "没关系",
+      "sha256": "dc7754b05203742bdfedca325bb14d33f3aa349d9164f6e2e4e73bd5d1890ad1",
+      "bytes": 56550
+    },
+    {
+      "id": "man-reassure",
+      "sourceReport": "artifacts/expression-character-trials/web-original-04-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-04-animated/output/gifs/man-reassure.gif",
+      "status": "imported",
+      "catalogId": "generated-1398fd12431bd6f09a87c4a0",
+      "keyword": "没关系",
+      "sha256": "1398fd12431bd6f09a87c4a03d224a573508c35ebc21b66f04d97564c22271f4",
+      "bytes": 47657
+    },
+    {
+      "id": "dog-congrats",
+      "sourceReport": "artifacts/expression-character-trials/web-original-04-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-04-animated/output/gifs/dog-congrats.gif",
+      "status": "imported",
+      "catalogId": "generated-409fba68f17c95e498ae1c24",
+      "keyword": "恭喜",
+      "sha256": "409fba68f17c95e498ae1c24c58d89b0a4323104954db86a80aeb187f4163b30",
+      "bytes": 64831
+    },
+    {
+      "id": "line-congrats",
+      "sourceReport": "artifacts/expression-character-trials/web-original-04-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-04-animated/output/gifs/line-congrats.gif",
+      "status": "imported",
+      "catalogId": "generated-07f0429c284a9b4883ca774d",
+      "keyword": "恭喜",
+      "sha256": "07f0429c284a9b4883ca774d167d3ce8a51d240e511532c392bbcdc375337eec",
+      "bytes": 78190
+    },
+    {
       "id": "thanks-nuotuan-bow",
       "sourceReport": "artifacts/expression-prototypes/report.json",
       "sourceGif": "artifacts/expression-prototypes/gifs/thanks-nuotuan-bow.gif",

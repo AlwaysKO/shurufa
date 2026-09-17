@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab4e7d-d934-83e9-9f8a-b97e1bbdcbd8",
+  "sourceFileId": "file_00000000cd308209a0c22831ba15dc5d",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "4aac77deee8bc3c44047d874141695797d1fd6d9eac05be4b42fde9e08672b13",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T02:25:49.879198+00:00",
+  "generationObservedAt": "2026-09-17T02:25:49.879198+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "rabbit-arrived.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T02:26:20.242787+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

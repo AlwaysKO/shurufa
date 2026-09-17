@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab5d13-22ac-83ea-95d3-b72291edd312",
+  "sourceFileId": "file_00000000b57481f7915602475a9a114a",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "c83a36cf2d6ca37925c43e86643a8f1dacc68e6592b31f3f241b83da81d49887",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T03:21:57.550779+00:00",
+  "generationObservedAt": "2026-09-17T03:21:57.550779+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "dog-congrats.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T03:22:45.836098+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

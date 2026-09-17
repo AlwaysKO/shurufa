@@ -1,0 +1,25 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab5dc9-da18-83ea-96aa-c6ccecacb678",
+  "sourceFileId": "file_0000000029a4820981ce2eb9a35d92a6",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "a0ff9f40d54152f331c6744b49e1ba6f8c292cffad12d11d39dd51e158610aa6",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T03:25:07.482590+00:00",
+  "generationObservedAt": "2026-09-17T03:25:07.482590+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "line-congrats.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T03:26:05.591644+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

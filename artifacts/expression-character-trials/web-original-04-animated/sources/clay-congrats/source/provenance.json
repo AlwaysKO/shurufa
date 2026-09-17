@@ -1,0 +1,16 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab5e93-d074-83ea-9f9c-1d24458b4996",
+  "sourceFileId": "file_0000000042788207a43885c4091733fd",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "not-yet-deleted",
+  "sha256": "daa15e9ce88dcf59e0f9f28033a2c792bae2e8b3c7f150f81a1c5291abc83ad4",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T03:28:32.367516+00:00",
+  "generationObservedAt": "2026-09-17T03:28:32.367516+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "clay-congrats.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘"
+}

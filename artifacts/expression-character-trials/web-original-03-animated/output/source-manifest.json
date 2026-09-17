@@ -1,0 +1,1566 @@
+{
+  "items": [
+    {
+      "id": "retriever-reunion",
+      "sha256": "18d847299860e35dda2ffb9ddc6cf32857e0da97f73509ecc12332b1cf489074",
+      "scale": 0.78,
+      "baselines": [
+        309,
+        309,
+        309,
+        309,
+        308,
+        307,
+        309,
+        308,
+        309,
+        309,
+        309,
+        309
+      ],
+      "prompt": "Generate one original animation master image, not a finished GIF. Exactly 4 columns by 3 rows, 12 equal square cells, row-major temporal order, a clean seamless white background without grid lines. Prefer 1536x1152 pixels. Subject: one original photorealistic adult golden retriever dog seated, full body with all paws and ears entirely visible, fixed frontal camera. Meaning: recognizing a friend after a long time apart, delighted but tender reunion (Chinese caption will later be added: 好久不见). No letters, text, labels, numbers, logos or watermarks. Each cell contains the same dog at identical scale and location; feet baseline fixed at 72% of each cell height, keep bottom 22% blank for later caption. Leave generous empty margins. Twelve genuinely different sequential acting poses: 1 calm attentive face; 2 eyes focus and brow lifts; 3 subtle head tilt right in recognition; 4 ears perk and mouth begins opening; 5 bright eyes and warm open-mouthed smile; 6 chest leans forward slightly while all paws stay planted; 7 delighted reunion smile with gentle squint; 8 soften gaze, mouth closes slightly; 9 head begins returning to level; 10 chest returns to neutral; 11 ears relax with remaining smile; 12 nearly original calm posture, subtle warm eyes. Four normal canine limbs only, no human hands, no added props. No hopping, camera zoom, sideways movement, changes of identity, duplicated poses or flipped body. High visual continuity; small but clearly visible distinct changes in face, ears and head per pose. Generate the image now.",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aab428b-ed30-83e9-abe3-387379447a6b",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "18d847299860e35dda2ffb9ddc6cf32857e0da97f73509ecc12332b1cf489074",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T01:28:39.780076+00:00",
+        "originalDownloadName": "ChatGPT Image 2026年9月17日 09_28_13.png",
+        "deletedAt": "2026-09-17T01:31:00.773775+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        },
+        "generationObservedAt": "2026-09-17T01:28:39.780076+00:00",
+        "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻"
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 9,
+          "baseline": 309
+        },
+        {
+          "pose": 1,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 9,
+          "baseline": 309
+        },
+        {
+          "pose": 2,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 9,
+          "baseline": 309
+        },
+        {
+          "pose": 3,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 9,
+          "baseline": 309
+        },
+        {
+          "pose": 4,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 10,
+          "baseline": 308
+        },
+        {
+          "pose": 5,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 11,
+          "baseline": 307
+        },
+        {
+          "pose": 6,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 9,
+          "baseline": 309
+        },
+        {
+          "pose": 7,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 10,
+          "baseline": 308
+        },
+        {
+          "pose": 8,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 9,
+          "baseline": 309
+        },
+        {
+          "pose": 9,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 9,
+          "baseline": 309
+        },
+        {
+          "pose": 10,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 9,
+          "baseline": 309
+        },
+        {
+          "pose": 11,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 9,
+          "baseline": 309
+        }
+      ]
+    },
+    {
+      "id": "line-reunion",
+      "sha256": "e7524aba28ec01bc4250927a3d8660445b55c58663bc286635020a8e8df347c2",
+      "scale": 0.78,
+      "baselines": [
+        309,
+        309,
+        309,
+        309,
+        309,
+        309,
+        309,
+        309,
+        314,
+        314,
+        314,
+        314
+      ],
+      "prompt": "Generate one original animation sprite sheet, exactly 4 columns by 3 rows, 12 equal square cells in temporal row-major order. Prefer 1536x1152 PNG. Pure white background, no lines separating cells. No text, numbers, letters, watermarks or logos. Fixed frontal camera, identical character design and scale across all 12 cells. Whole body including head, hands/paws and feet fully visible with generous margins; feet fixed at 72% of each cell height, bottom 22% empty for a caption added later. Do NOT crop, mirror, duplicate poses, add limbs or change props. Show 12 genuinely different successive acting poses, small coherent changes, smoothly returning to the original neutral pose. One original minimalist black-and-white adult male character, Chinese adult male in a plain white shirt, short angular hairstyle, expressive brows, small simple face, full body, clean bold sparse lines, not a meme face or celebrity. Meaning long-awaited reunion. Poses: 1 relaxed arms down; 2 gaze focuses; 3 one brow lifts recognition; 4 eyes soften; 5 right hand starts rising to chest; 6 right palm warmly opens at chest level; 7 strong sincere reunion smile, slightly leaning forward, feet planted; 8 smile with gentle squint; 9 palm slowly lowers; 10 elbow relaxes; 11 back upright; 12 arms down with a faint smile. Keep right hand on viewer-left at all times. Generate this image now.\n\n补充提示：请现在直接生成上述12格母图，调用图片生成工具，不要只回复文字。\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aab43ab-8d3c-83ea-a5d2-09456dc19c51",
+        "requestedDate": "2026-09-17",
+        "deletion": "confirmed-in-web-ui",
+        "status": "downloaded-decodable",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "sha256": "e7524aba28ec01bc4250927a3d8660445b55c58663bc286635020a8e8df347c2",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T01:36:59.460856+00:00",
+        "originalDownloadName": "ChatGPT Image 2026年9月17日 09_36_33.png",
+        "deletedAt": "2026-09-17T01:37:44.310517+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        },
+        "generationObservedAt": "2026-09-17T01:36:59.460856+00:00",
+        "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻"
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 9,
+          "baseline": 309
+        },
+        {
+          "pose": 1,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 9,
+          "baseline": 309
+        },
+        {
+          "pose": 2,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 9,
+          "baseline": 309
+        },
+        {
+          "pose": 3,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 9,
+          "baseline": 309
+        },
+        {
+          "pose": 4,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 9,
+          "baseline": 309
+        },
+        {
+          "pose": 5,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 9,
+          "baseline": 309
+        },
+        {
+          "pose": 6,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 9,
+          "baseline": 309
+        },
+        {
+          "pose": 7,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 9,
+          "baseline": 309
+        },
+        {
+          "pose": 8,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 5,
+          "baseline": 314
+        },
+        {
+          "pose": 9,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 5,
+          "baseline": 314
+        },
+        {
+          "pose": 10,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 5,
+          "baseline": 314
+        },
+        {
+          "pose": 11,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 5,
+          "baseline": 314
+        }
+      ]
+    },
+    {
+      "id": "clay-reunion",
+      "sha256": "2100b3efcef219140264bb699940b60e426e64ad310a09a1e725ce4cba4eb6c3",
+      "scale": 0.78,
+      "baselines": [
+        310,
+        310,
+        310,
+        310,
+        309,
+        309,
+        309,
+        309,
+        309,
+        309,
+        309,
+        309
+      ],
+      "prompt": "请立即调用图片生成工具生成图片，不要仅回复文字。\nGenerate one original animation sprite sheet, exactly 4 columns by 3 rows, 12 equal square cells in temporal row-major order. Prefer 1536x1152 PNG. Pure white background, no lines separating cells. No text, numbers, letters, watermarks or logos. Fixed frontal camera, identical character design and scale across all 12 cells. Whole body including head, hands/paws and feet fully visible with generous margins; feet fixed at 72% of each cell height, bottom 22% empty for a caption added later. Do NOT crop, mirror, duplicate poses, add limbs or change props. Show 12 genuinely different successive acting poses, small coherent changes, smoothly returning to the original neutral pose. One original handmade clay brown otter, full body seated, chunky little forepaws, textured clay surface and soft studio lighting. Meaning warm delighted recognition of an old friend, not generic waving. Poses: 1 calm seated, forepaws near belly; 2 head lifts slightly; 3 eyes widen in recognition; 4 mouth corners lift; 5 forepaws move slightly apart; 6 forepaws open toward friend; 7 tender joyful face with squint; 8 soften smile and tilt head a little left; 9 head begins straightening; 10 forepaws draw back; 11 calm with warm smile; 12 return nearly to pose 1. Keep feet seated in place. Generate this image now.\n\n创建图片模式补充：请依据本对话上一条完整提示词，生成水獭12格动画母图。\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aab452c-1ec4-83ea-89ef-05098ffad8f2",
+        "requestedDate": "2026-09-17",
+        "deletion": "confirmed-in-web-ui",
+        "status": "downloaded-decodable",
+        "sha256": "2100b3efcef219140264bb699940b60e426e64ad310a09a1e725ce4cba4eb6c3",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T01:43:25.347336+00:00",
+        "originalDownloadName": "ChatGPT Image 2026年9月17日 09_42_54.png",
+        "deletedAt": "2026-09-17T01:44:05.675450+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        },
+        "generationObservedAt": "2026-09-17T01:43:25.347336+00:00",
+        "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻"
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 8,
+          "baseline": 310
+        },
+        {
+          "pose": 1,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 8,
+          "baseline": 310
+        },
+        {
+          "pose": 2,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 8,
+          "baseline": 310
+        },
+        {
+          "pose": 3,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 8,
+          "baseline": 310
+        },
+        {
+          "pose": 4,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 9,
+          "baseline": 309
+        },
+        {
+          "pose": 5,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 9,
+          "baseline": 309
+        },
+        {
+          "pose": 6,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 9,
+          "baseline": 309
+        },
+        {
+          "pose": 7,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 9,
+          "baseline": 309
+        },
+        {
+          "pose": 8,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 9,
+          "baseline": 309
+        },
+        {
+          "pose": 9,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 9,
+          "baseline": 309
+        },
+        {
+          "pose": 10,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 9,
+          "baseline": 309
+        },
+        {
+          "pose": 11,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 9,
+          "baseline": 309
+        }
+      ]
+    },
+    {
+      "id": "man-reunion",
+      "sha256": "e0a2b97b7bc2d51edfd94b1779c407671ae440b019729f865e376f782ed9cf22",
+      "scale": 0.74,
+      "baselines": [
+        326,
+        326,
+        326,
+        326,
+        326,
+        326,
+        326,
+        326,
+        326,
+        326,
+        326,
+        326
+      ],
+      "prompt": "Generate one original animation sprite sheet, exactly 4 columns by 3 rows, 12 equal square cells in temporal row-major order. Prefer 1536x1152 PNG. Pure white background, no lines separating cells. No text, numbers, letters, watermarks or logos. Fixed frontal camera, identical character design and scale across all 12 cells. Whole body including head, hands/paws and feet fully visible with generous margins; feet fixed at 72% of each cell height, bottom 22% empty for a caption added later. Do NOT crop, mirror, duplicate poses, add limbs or change props. Show 12 genuinely different successive acting poses, small coherent changes, smoothly returning to the original neutral pose. One original photorealistic handsome Chinese adult man age 30, not resembling any celebrity, short neat black hair, navy casual jacket, cream shirt and charcoal trousers, white shoes. Full body standing, fixed camera. Meaning recognizing a long-unseen friend with warm surprise. Poses: 1 neutral hands down; 2 focus gaze; 3 raised brows recognizing friend; 4 pleasantly surprised lips part; 5 right hand rises to heart; 6 right palm rests on chest; 7 warm heartfelt smile and tiny forward lean, feet planted; 8 soften eyes; 9 return upright; 10 right hand lowers to waist; 11 hand nearly down; 12 original posture with small smile. Hand remains viewer-left. Generate this image now.\n\n创建图片模式补充：This is a brand-new original image generated from scratch, not an edit and not a reference-character task. There is no target image and no attachment is needed. Invent the original Chinese adult man as described above and generate the 4 by 3, twelve-pose master image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aab46ad-4da4-83e9-85d8-1f9704c3dbad",
+        "requestedDate": "2026-09-17",
+        "deletion": "confirmed-in-web-ui",
+        "status": "downloaded-decodable",
+        "sha256": "e0a2b97b7bc2d51edfd94b1779c407671ae440b019729f865e376f782ed9cf22",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T01:47:59.027221+00:00",
+        "originalDownloadName": "ChatGPT Image 2026年9月17日 09_46_55.png",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-17T01:49:23.676253+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        },
+        "generationObservedAt": "2026-09-17T01:47:59.027221+00:00",
+        "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻"
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 326
+        },
+        {
+          "pose": 1,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 326
+        },
+        {
+          "pose": 2,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 326
+        },
+        {
+          "pose": 3,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 326
+        },
+        {
+          "pose": 4,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 326
+        },
+        {
+          "pose": 5,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 326
+        },
+        {
+          "pose": 6,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 326
+        },
+        {
+          "pose": 7,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 326
+        },
+        {
+          "pose": 8,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 326
+        },
+        {
+          "pose": 9,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 326
+        },
+        {
+          "pose": 10,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 326
+        },
+        {
+          "pose": 11,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 326
+        }
+      ]
+    },
+    {
+      "id": "cat-welcome",
+      "sha256": "0f7ecb3572779ccde1dcb18cfaa6607ec3370583f1bc52f3ebec51125b78f252",
+      "scale": 0.78,
+      "baselines": [
+        306,
+        306,
+        306,
+        306,
+        305,
+        305,
+        305,
+        305,
+        305,
+        305,
+        305,
+        305
+      ],
+      "prompt": "Generate one original animation sprite sheet, exactly 4 columns by 3 rows, 12 equal square cells in temporal row-major order. Prefer 1536x1152 PNG. Pure white background, no lines separating cells. No text, numbers, letters, watermarks or logos. Fixed frontal camera, identical character design and scale across all 12 cells. Whole body including head, hands/paws and feet fully visible with generous margins; feet fixed at 72% of each cell height, bottom 22% empty for a caption added later. Do NOT crop, mirror, duplicate poses, add limbs or change props. Show 12 genuinely different successive acting poses, small coherent changes, smoothly returning to the original neutral pose. One original photorealistic tuxedo cat seated full body, same symmetrical markings in every cell. Meaning welcoming someone in, inviting warm expression. Poses: 1 alert neutral; 2 eyes brighten; 3 head tilts slightly toward viewer-left; 4 mouth relaxes; 5 ears angle forward welcoming; 6 slow contented eye narrowing; 7 strongest friendly slow-blink expression; 8 eyes half reopen; 9 head returns halfway; 10 eyes reopen; 11 ears settle; 12 attentive original pose. All four paws remain grounded. No human smile or human hands. Generate this image now.\n\n补充：请现在调用图片生成工具生成上述全新原创的猫咪12格母图。这是从零创作，不是编辑，不需要参考图或附件。\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aab4832-d9a8-83e9-9fc1-984388241e81",
+        "requestedDate": "2026-09-17",
+        "deletion": "confirmed-in-web-ui",
+        "status": "downloaded-decodable",
+        "downloadedAt": "2026-09-17T01:55:36.229706+00:00",
+        "variants": [
+          {
+            "file": "variant-1.png",
+            "sourceFileId": "file_0000000032c882098b6b2ec734a560f2",
+            "sha256": "0f7ecb3572779ccde1dcb18cfaa6607ec3370583f1bc52f3ebec51125b78f252",
+            "width": 1448,
+            "height": 1086
+          },
+          {
+            "file": "variant-2.png",
+            "sourceFileId": "file_0000000016b0820989a6e7a6f83313b0",
+            "sha256": "3bde3194cfbceda429c1370e54d32b5ff14f7ab4b9bb276ef7a35a0a6a4633b6",
+            "width": 1448,
+            "height": 1086
+          }
+        ],
+        "downloadMethod": "网页已显示图片的原始src，经已登录网页fetch原字节下载，无canvas重绘",
+        "sha256": "0f7ecb3572779ccde1dcb18cfaa6607ec3370583f1bc52f3ebec51125b78f252",
+        "width": 1448,
+        "height": 1086,
+        "selectedVariant": 1,
+        "unusedVariantReason": "同一请求延迟后补发产生的冗余版本，保留原图，不另做GIF或入库",
+        "deletedAt": "2026-09-17T01:56:07.766440+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        },
+        "generationObservedAt": "2026-09-17T01:55:36.229706+00:00",
+        "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻"
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 11,
+          "baseline": 306
+        },
+        {
+          "pose": 1,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 11,
+          "baseline": 306
+        },
+        {
+          "pose": 2,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 11,
+          "baseline": 306
+        },
+        {
+          "pose": 3,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 11,
+          "baseline": 306
+        },
+        {
+          "pose": 4,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 12,
+          "baseline": 305
+        },
+        {
+          "pose": 5,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 12,
+          "baseline": 305
+        },
+        {
+          "pose": 6,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 12,
+          "baseline": 305
+        },
+        {
+          "pose": 7,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 12,
+          "baseline": 305
+        },
+        {
+          "pose": 8,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 12,
+          "baseline": 305
+        },
+        {
+          "pose": 9,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 12,
+          "baseline": 305
+        },
+        {
+          "pose": 10,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 12,
+          "baseline": 305
+        },
+        {
+          "pose": 11,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 12,
+          "baseline": 305
+        }
+      ]
+    },
+    {
+      "id": "line-welcome",
+      "sha256": "61ff5ae8aa9ea4ff9426d58df1149c83a9d21e171acb0d8af430bc99018ec8d4",
+      "scale": 0.76,
+      "baselines": [
+        324,
+        324,
+        324,
+        324,
+        319,
+        319,
+        319,
+        319,
+        314,
+        314,
+        314,
+        314
+      ],
+      "prompt": "Generate one original animation sprite sheet, exactly 4 columns by 3 rows, 12 equal square cells in temporal row-major order. Prefer 1536x1152 PNG. Pure white background, no lines separating cells. No text, numbers, letters, watermarks or logos. Fixed frontal camera, identical character design and scale across all 12 cells. Whole body including head, hands/paws and feet fully visible with generous margins; feet fixed at 72% of each cell height, bottom 22% empty for a caption added later. Do NOT crop, mirror, duplicate poses, add limbs or change props. Show 12 genuinely different successive acting poses, small coherent changes, smoothly returning to the original neutral pose. One original minimalist black-and-white Chinese adult male with round spectacles, plain vest and trousers, bold sparse lines, expressive face, no known character. Full body. Meaning warmly inviting a visitor to enter. Poses: 1 both hands down neutral; 2 smile begins; 3 right elbow bends; 4 right forearm opens toward viewer-left; 5 right palm up inviting; 6 deeper smile; 7 gentle courteous bow, right palm open; 8 bow begins lifting; 9 right elbow returns; 10 right hand lowers; 11 torso straightens; 12 original posture. Feet stay put. Right hand always on viewer-left, five fingers, left hand stays down. Generate this image now.\n\n补充提示：This is a brand-new original image generated from scratch, not an edit and not a reference-character task. There is no target image and no attachment is needed. Invent the original Chinese adult male line-art character described above and generate the 4 by 3, twelve-pose master image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aab4995-3a54-83ea-b92c-f2f356795f8d",
+        "sourceFileId": "file_000000009f3c81f5a4ab9a32df9c2531",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "61ff5ae8aa9ea4ff9426d58df1149c83a9d21e171acb0d8af430bc99018ec8d4",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T02:01:00.126523+00:00",
+        "generationObservedAt": "2026-09-17T02:01:00.126523+00:00",
+        "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+        "originalDownloadName": "line-welcome.png",
+        "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-17T02:01:44.817049+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 4,
+          "baseline": 324
+        },
+        {
+          "pose": 1,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 4,
+          "baseline": 324
+        },
+        {
+          "pose": 2,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 4,
+          "baseline": 324
+        },
+        {
+          "pose": 3,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 4,
+          "baseline": 324
+        },
+        {
+          "pose": 4,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 7,
+          "baseline": 319
+        },
+        {
+          "pose": 5,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 7,
+          "baseline": 319
+        },
+        {
+          "pose": 6,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 7,
+          "baseline": 319
+        },
+        {
+          "pose": 7,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 7,
+          "baseline": 319
+        },
+        {
+          "pose": 8,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 11,
+          "baseline": 314
+        },
+        {
+          "pose": 9,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 11,
+          "baseline": 314
+        },
+        {
+          "pose": 10,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 11,
+          "baseline": 314
+        },
+        {
+          "pose": 11,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 11,
+          "baseline": 314
+        }
+      ]
+    },
+    {
+      "id": "clay-welcome",
+      "sha256": "66183c31ee5c383d683056b2e5111ae1599c0d0848a545b72bc11a904ccd00f9",
+      "scale": 0.76,
+      "baselines": [
+        319,
+        319,
+        319,
+        319,
+        318,
+        318,
+        318,
+        318,
+        318,
+        318,
+        318,
+        318
+      ],
+      "prompt": "Create a BRAND NEW image from text only. This is NOT an edit, there is NO input or reference image, and no attachment is needed. Invent the original character described below. Call the image creation tool now, rather than asking for a reference. Generate one original animation sprite sheet, exactly 4 columns by 3 rows, 12 equal square cells in temporal row-major order. Prefer 1536x1152 PNG. Pure white background, no lines separating cells. No text, numbers, letters, watermarks or logos. Fixed frontal camera, identical character design and scale across all 12 cells. Whole body including head, hands/paws and feet fully visible with generous margins; feet fixed at 72% of each cell height, bottom 22% empty for a caption added later. Do NOT crop, mirror, duplicate poses, add limbs or change props. Show 12 genuinely different successive acting poses, small coherent changes, smoothly returning to the original neutral pose. One original clay red fox sitting upright with large triangular ears and a cream belly, soft sculpted texture, full body, not a known character. Meaning hospitable welcome. Poses: 1 paws together at belly; 2 ears perk; 3 smile starts; 4 forepaws separate slightly; 5 both forepaws open invitingly; 6 head makes small polite nod; 7 big warm welcome smile with paws open; 8 head returns; 9 forepaws start coming back; 10 forepaws near belly; 11 smile softens; 12 original position. No jumping, grounded seated body. Generate this image now.\n\n补充提示：请直接生成上一条要求的全新黏土狐狸12格母图。无需参考图，无需附件，不是编辑图片。\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aab4b21-ab70-83ea-bfb9-a391edc8111e",
+        "sourceFileId": "file_000000000f808209a962157fd97a0020",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "66183c31ee5c383d683056b2e5111ae1599c0d0848a545b72bc11a904ccd00f9",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T02:13:54.455204+00:00",
+        "generationObservedAt": "2026-09-17T02:13:54.455204+00:00",
+        "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+        "originalDownloadName": "clay-welcome.png",
+        "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+        "deletedAt": "2026-09-17T02:14:30.938000+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 7,
+          "baseline": 319
+        },
+        {
+          "pose": 1,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 7,
+          "baseline": 319
+        },
+        {
+          "pose": 2,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 7,
+          "baseline": 319
+        },
+        {
+          "pose": 3,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 7,
+          "baseline": 319
+        },
+        {
+          "pose": 4,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 8,
+          "baseline": 318
+        },
+        {
+          "pose": 5,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 8,
+          "baseline": 318
+        },
+        {
+          "pose": 6,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 8,
+          "baseline": 318
+        },
+        {
+          "pose": 7,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 8,
+          "baseline": 318
+        },
+        {
+          "pose": 8,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 8,
+          "baseline": 318
+        },
+        {
+          "pose": 9,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 8,
+          "baseline": 318
+        },
+        {
+          "pose": 10,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 8,
+          "baseline": 318
+        },
+        {
+          "pose": 11,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 8,
+          "baseline": 318
+        }
+      ]
+    },
+    {
+      "id": "man-welcome",
+      "sha256": "4da63818d50623d934cb41fcccc758dacdb9134f30e57c049f0b7e44e237c540",
+      "scale": 0.72,
+      "baselines": [
+        336,
+        336,
+        336,
+        336,
+        336,
+        336,
+        336,
+        336,
+        336,
+        336,
+        336,
+        336
+      ],
+      "prompt": "Create a BRAND NEW image from text only. This is NOT an edit, there is NO input or reference image, and no attachment is needed. Invent the original character described below. Call the image creation tool now, rather than asking for a reference. Generate one original animation sprite sheet, exactly 4 columns by 3 rows, 12 equal square cells in temporal row-major order. Prefer 1536x1152 PNG. Pure white background, no lines separating cells. No text, numbers, letters, watermarks or logos. Fixed frontal camera, identical character design and scale across all 12 cells. Whole body including head, hands/paws and feet fully visible with generous margins; feet fixed at 72% of each cell height, bottom 22% empty for a caption added later. Do NOT crop, mirror, duplicate poses, add limbs or change props. Show 12 genuinely different successive acting poses, small coherent changes, smoothly returning to the original neutral pose. One original handsome Chinese adult man age 35, not a celebrity, textured short hair, sage green overshirt and beige trousers, brown shoes, photorealistic full body standing. Meaning welcoming a guest. Poses: 1 neutral arms by sides; 2 friendly eye contact; 3 small warm smile; 4 right elbow bends; 5 right forearm extends toward viewer-left with palm up; 6 slight courteous forward bow; 7 welcome smile at bow peak; 8 raise torso halfway; 9 right arm begins returning; 10 palm lowers; 11 torso straight; 12 original stance. No props, feet grounded, left hand stays by side. Generate this image now.\n\n补充提示：请现在直接生成这张全新原创中国成年男性欢迎动作12格母图，不是编辑，不需要任何参考图片。\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aab4ddd-0920-83ea-9537-65931aa9b5e7",
+        "sourceFileId": "file_00000000e28c82079d20745806d19e24",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "4da63818d50623d934cb41fcccc758dacdb9134f30e57c049f0b7e44e237c540",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T02:16:40.118507+00:00",
+        "generationObservedAt": "2026-09-17T02:16:40.118507+00:00",
+        "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+        "originalDownloadName": "man-welcome.png",
+        "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-17T02:17:08.222214+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 8,
+          "baseline": 336
+        },
+        {
+          "pose": 1,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 8,
+          "baseline": 336
+        },
+        {
+          "pose": 2,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 8,
+          "baseline": 336
+        },
+        {
+          "pose": 3,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 8,
+          "baseline": 336
+        },
+        {
+          "pose": 4,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 8,
+          "baseline": 336
+        },
+        {
+          "pose": 5,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 8,
+          "baseline": 336
+        },
+        {
+          "pose": 6,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 8,
+          "baseline": 336
+        },
+        {
+          "pose": 7,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 8,
+          "baseline": 336
+        },
+        {
+          "pose": 8,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 8,
+          "baseline": 336
+        },
+        {
+          "pose": 9,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 8,
+          "baseline": 336
+        },
+        {
+          "pose": 10,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 8,
+          "baseline": 336
+        },
+        {
+          "pose": 11,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 8,
+          "baseline": 336
+        }
+      ]
+    },
+    {
+      "id": "rabbit-arrived",
+      "sha256": "4aac77deee8bc3c44047d874141695797d1fd6d9eac05be4b42fde9e08672b13",
+      "scale": 0.76,
+      "baselines": [
+        318,
+        318,
+        318,
+        318,
+        318,
+        318,
+        318,
+        318,
+        317,
+        317,
+        317,
+        317
+      ],
+      "prompt": "Create a BRAND NEW image from text only. This is NOT an edit, there is NO input or reference image, and no attachment is needed. Invent the original character described below. Call the image creation tool now, rather than asking for a reference. Generate one original animation sprite sheet, exactly 4 columns by 3 rows, 12 equal square cells in temporal row-major order. Prefer 1536x1152 PNG. Pure white background, no lines separating cells. No text, numbers, letters, watermarks or logos. Fixed frontal camera, identical character design and scale across all 12 cells. Whole body including head, hands/paws and feet fully visible with generous margins; feet fixed at 72% of each cell height, bottom 22% empty for a caption added later. Do NOT crop, mirror, duplicate poses, add limbs or change props. Show 12 genuinely different successive acting poses, small coherent changes, smoothly returning to the original neutral pose. One original photorealistic gray rabbit seated full body with all paws visible, fixed frontal view, original natural animal. Meaning arriving and getting someone's attention. Poses: 1 ears mildly relaxed; 2 ears begin perking; 3 eyes focus; 4 head lifts slightly; 5 ears upright in attention; 6 nose tilts forward slightly; 7 bright eager ready expression; 8 nose settles; 9 head begins lowering; 10 ears relax halfway; 11 gaze softens; 12 original seated posture. No body travel, no jump or duplicated pose. Generate this image now.\n\n补充提示：请直接生成上述全新灰兔12格动作母图，不需要参考图，不是图片编辑。\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aab4e7d-d934-83e9-9f8a-b97e1bbdcbd8",
+        "sourceFileId": "file_00000000cd308209a0c22831ba15dc5d",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "4aac77deee8bc3c44047d874141695797d1fd6d9eac05be4b42fde9e08672b13",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T02:25:49.879198+00:00",
+        "generationObservedAt": "2026-09-17T02:25:49.879198+00:00",
+        "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+        "originalDownloadName": "rabbit-arrived.png",
+        "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+        "deletedAt": "2026-09-17T02:26:20.242787+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 8,
+          "baseline": 318
+        },
+        {
+          "pose": 1,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 8,
+          "baseline": 318
+        },
+        {
+          "pose": 2,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 8,
+          "baseline": 318
+        },
+        {
+          "pose": 3,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 8,
+          "baseline": 318
+        },
+        {
+          "pose": 4,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 8,
+          "baseline": 318
+        },
+        {
+          "pose": 5,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 8,
+          "baseline": 318
+        },
+        {
+          "pose": 6,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 8,
+          "baseline": 318
+        },
+        {
+          "pose": 7,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 8,
+          "baseline": 318
+        },
+        {
+          "pose": 8,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 9,
+          "baseline": 317
+        },
+        {
+          "pose": 9,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 9,
+          "baseline": 317
+        },
+        {
+          "pose": 10,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 9,
+          "baseline": 317
+        },
+        {
+          "pose": 11,
+          "scale": 0.7596685082872928,
+          "left": 43,
+          "top": 9,
+          "baseline": 317
+        }
+      ]
+    },
+    {
+      "id": "clay-arrived",
+      "sha256": "c7325854892bc9a975c16a83b9f09c605ca37d6b1f588411f998b545e28a093a",
+      "scale": 0.78,
+      "baselines": [
+        308,
+        308,
+        308,
+        308,
+        308,
+        308,
+        308,
+        308,
+        308,
+        308,
+        308,
+        308
+      ],
+      "prompt": "请直接从零生成一张新图片，不需要参考图或附件。这不是图片编辑。\nCreate a BRAND NEW image from text only. This is NOT an edit, there is NO input or reference image, and no attachment is needed. Invent the original character described below. Call the image creation tool now, rather than asking for a reference. Generate one original animation sprite sheet, exactly 4 columns by 3 rows, 12 equal square cells in temporal row-major order. Prefer 1536x1152 PNG. Pure white background, no lines separating cells. No text, numbers, letters, watermarks or logos. Fixed frontal camera, identical character design and scale across all 12 cells. Whole body including head, hands/paws and feet fully visible with generous margins; feet fixed at 72% of each cell height, bottom 22% empty for a caption added later. Do NOT crop, mirror, duplicate poses, add limbs or change props. Show 12 genuinely different successive acting poses, small coherent changes, smoothly returning to the original neutral pose. One original clay yellow duck, orange beak and feet, full body standing grounded, small rounded wings, soft textured 3D studio render. Meaning I am here and ready. Poses: 1 neutral; 2 head lifts; 3 eyes brighten; 4 right wing begins lifting on viewer-left; 5 right wing raised halfway; 6 right wing at shoulder height; 7 happy open beak and eager upright posture; 8 beak closes halfway; 9 right wing starts lowering; 10 wing halfway down; 11 wing nearly beside body; 12 original neutral stance. Wings never become human hands. No jump, no extra wings. Generate this image now.\n\n补充提示：请重试直接生成全新黏土黄色鸭子12格动画母图，按照上面的动作顺序，不是编辑图，不需要参考图片。\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aab51f0-203c-83ea-b5b5-cbca1928857f",
+        "sourceFileId": "file_00000000699882118fb604013159e195",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "c7325854892bc9a975c16a83b9f09c605ca37d6b1f588411f998b545e28a093a",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T02:36:12.543763+00:00",
+        "generationObservedAt": "2026-09-17T02:36:12.543763+00:00",
+        "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+        "originalDownloadName": "clay-arrived.png",
+        "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+        "deletedAt": "2026-09-17T02:36:40.733330+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 10,
+          "baseline": 308
+        },
+        {
+          "pose": 1,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 10,
+          "baseline": 308
+        },
+        {
+          "pose": 2,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 10,
+          "baseline": 308
+        },
+        {
+          "pose": 3,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 10,
+          "baseline": 308
+        },
+        {
+          "pose": 4,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 10,
+          "baseline": 308
+        },
+        {
+          "pose": 5,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 10,
+          "baseline": 308
+        },
+        {
+          "pose": 6,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 10,
+          "baseline": 308
+        },
+        {
+          "pose": 7,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 10,
+          "baseline": 308
+        },
+        {
+          "pose": 8,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 10,
+          "baseline": 308
+        },
+        {
+          "pose": 9,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 10,
+          "baseline": 308
+        },
+        {
+          "pose": 10,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 10,
+          "baseline": 308
+        },
+        {
+          "pose": 11,
+          "scale": 0.7790055248618785,
+          "left": 40,
+          "top": 10,
+          "baseline": 308
+        }
+      ]
+    },
+    {
+      "id": "man-arrived",
+      "sha256": "263ffb90e3577310c371f0729517ea0ee6fec5b0a7440c8c3068191107eb0ed6",
+      "scale": 0.75,
+      "baselines": [
+        322,
+        322,
+        322,
+        322,
+        322,
+        322,
+        322,
+        322,
+        322,
+        322,
+        322,
+        322
+      ],
+      "prompt": "请直接从零生成一张新图片，不需要参考图或附件。这不是图片编辑。\nCreate a BRAND NEW image from text only. This is NOT an edit, there is NO input or reference image, and no attachment is needed. Invent the original character described below. Call the image creation tool now, rather than asking for a reference. Generate one original animation sprite sheet, exactly 4 columns by 3 rows, 12 equal square cells in temporal row-major order. Prefer 1536x1152 PNG. Pure white background, no lines separating cells. No text, numbers, letters, watermarks or logos. Fixed frontal camera, identical character design and scale across all 12 cells. Whole body including head, hands/paws and feet fully visible with generous margins; feet fixed at 72% of each cell height, bottom 22% empty for a caption added later. Do NOT crop, mirror, duplicate poses, add limbs or change props. Show 12 genuinely different successive acting poses, small coherent changes, smoothly returning to the original neutral pose. One original photorealistic handsome Chinese adult man age 28, no celebrity resemblance, slightly wavy short black hair, rust orange sweatshirt, dark jeans and white trainers. Full body standing. Meaning I have arrived, friendly confident announcement. Poses: 1 arms down; 2 eyes make contact; 3 smile begins; 4 right hand rises from waist; 5 right hand at chest; 6 right palm opens forward at shoulder height; 7 bright friendly greeting expression; 8 palm tilts slightly; 9 right elbow starts lowering; 10 hand at chest; 11 hand almost down; 12 original neutral stance with small smile. Feet planted, no camera movement, no mirroring, five fingers. Generate this image now.\n\n补充提示：请现在调用生图工具，直接生成上述全新原创中国成年男性的12格动作母图，不要只回复说明。\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aab52fb-abc4-83e9-a12f-81908818a53f",
+        "sourceFileId": "file_00000000593082098d140070f7749202",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "263ffb90e3577310c371f0729517ea0ee6fec5b0a7440c8c3068191107eb0ed6",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T02:40:34.041558+00:00",
+        "generationObservedAt": "2026-09-17T02:40:34.041558+00:00",
+        "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+        "originalDownloadName": "man-arrived.png",
+        "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-17T02:41:05.582182+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 8,
+          "baseline": 322
+        },
+        {
+          "pose": 1,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 8,
+          "baseline": 322
+        },
+        {
+          "pose": 2,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 8,
+          "baseline": 322
+        },
+        {
+          "pose": 3,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 8,
+          "baseline": 322
+        },
+        {
+          "pose": 4,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 8,
+          "baseline": 322
+        },
+        {
+          "pose": 5,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 8,
+          "baseline": 322
+        },
+        {
+          "pose": 6,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 8,
+          "baseline": 322
+        },
+        {
+          "pose": 7,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 8,
+          "baseline": 322
+        },
+        {
+          "pose": 8,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 8,
+          "baseline": 322
+        },
+        {
+          "pose": 9,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 8,
+          "baseline": 322
+        },
+        {
+          "pose": 10,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 8,
+          "baseline": 322
+        },
+        {
+          "pose": 11,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 8,
+          "baseline": 322
+        }
+      ]
+    },
+    {
+      "id": "line-arrived",
+      "sha256": "a37d9efbcdf93839a2cab3faa69ec69739f336f1f42a38ad1bb30408e130713e",
+      "scale": 0.73,
+      "baselines": [
+        331,
+        331,
+        331,
+        331,
+        331,
+        331,
+        331,
+        331,
+        331,
+        331,
+        331,
+        331
+      ],
+      "prompt": "请直接生成全新的12格PNG母图，无参考图片。\nGenerate an original animation sprite sheet: exactly 4 columns x 3 rows, 12 equal square cells, 1536x1152 or 1448x1086 PNG, pure white background, no grid lines, no text, no logos, no symbols or motion marks. Minimal black-and-white line drawing of one original Chinese adult man age 30, round face, short dark hair, plain T-shirt, trousers and sneakers, no celebrity resemblance. Whole head, hands and both feet fully inside every cell. Fixed frontal camera, fixed identical character size, feet at 72% cell height, bottom 22% empty. The meaning is 'I am here', confident friendly self-introduction. Keep the head center, torso outline, left arm, hips, trousers and shoes at exactly the SAME coordinates in ALL cells. Only eyebrows, smile and RIGHT forearm on viewer-left animate; no forward body lean, no bobbing, no changing clothing. Twelve successive distinct poses: 1 resting right arm beside body with gentle smile; 2 eyebrow rises slightly; 3 right elbow begins bending; 4 hand reaches waist; 5 hand approaches chest; 6 thumb points toward own chest; 7 broad confident smile; 8 same confident self-pointing gesture with relaxed eyebrows; 9 thumb relaxes; 10 right hand returns halfway down; 11 hand nearly reaches resting position; 12 resting right arm and expression extremely close to frame 1 for seamless loop, but not a duplicated frame. Ensure the transition from frame12 to frame1 is smaller than the normal internal pose changes. No hand changes, no extra fingers or limbs, no cropping. This is a new image, not editing. Generate the image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aab5404-858c-83ea-a3f7-cd6c20c1cbd8",
+        "sourceFileId": "file_000000006bac82098559fd486114b349",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "a37d9efbcdf93839a2cab3faa69ec69739f336f1f42a38ad1bb30408e130713e",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T02:43:10.768685+00:00",
+        "generationObservedAt": "2026-09-17T02:43:10.768685+00:00",
+        "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+        "originalDownloadName": "line-arrived-v2.png",
+        "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-17T02:43:38.452789+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7292817679558011,
+          "left": 49,
+          "top": 8,
+          "baseline": 331
+        },
+        {
+          "pose": 1,
+          "scale": 0.7292817679558011,
+          "left": 49,
+          "top": 8,
+          "baseline": 331
+        },
+        {
+          "pose": 2,
+          "scale": 0.7292817679558011,
+          "left": 49,
+          "top": 8,
+          "baseline": 331
+        },
+        {
+          "pose": 3,
+          "scale": 0.7292817679558011,
+          "left": 49,
+          "top": 8,
+          "baseline": 331
+        },
+        {
+          "pose": 4,
+          "scale": 0.7292817679558011,
+          "left": 49,
+          "top": 8,
+          "baseline": 331
+        },
+        {
+          "pose": 5,
+          "scale": 0.7292817679558011,
+          "left": 49,
+          "top": 8,
+          "baseline": 331
+        },
+        {
+          "pose": 6,
+          "scale": 0.7292817679558011,
+          "left": 49,
+          "top": 8,
+          "baseline": 331
+        },
+        {
+          "pose": 7,
+          "scale": 0.7292817679558011,
+          "left": 49,
+          "top": 8,
+          "baseline": 331
+        },
+        {
+          "pose": 8,
+          "scale": 0.7292817679558011,
+          "left": 49,
+          "top": 8,
+          "baseline": 331
+        },
+        {
+          "pose": 9,
+          "scale": 0.7292817679558011,
+          "left": 49,
+          "top": 8,
+          "baseline": 331
+        },
+        {
+          "pose": 10,
+          "scale": 0.7292817679558011,
+          "left": 49,
+          "top": 8,
+          "baseline": 331
+        },
+        {
+          "pose": 11,
+          "scale": 0.7292817679558011,
+          "left": 49,
+          "top": 8,
+          "baseline": 331
+        }
+      ]
+    }
+  ]
+}

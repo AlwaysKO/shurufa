@@ -1,0 +1,61 @@
+{
+  "checkedAt": "2026-09-17T03:12:25.719839+00:00",
+  "url": "http://localhost:5175/stickers",
+  "realUserId": "f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+  "groups": [
+    {
+      "keyword": "确定",
+      "visibleGifCount": 4,
+      "deleteButtonCount": 4,
+      "naturalSize": [
+        240,
+        240
+      ],
+      "allImagesComplete": true,
+      "changedPixelsPerImage": [
+        6341,
+        9228,
+        6048,
+        5499
+      ],
+      "playbackEvidence": "真实后台连续截图中四GIF区域均发生变化，实际看到点头和手势/表情；不是抽帧预览。",
+      "screenshots": [
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web04/certain-final-0.png",
+          "sha256": "db23d0a86b6dca99963dd6bac4ea89dbab7ab1bbca25c5cef093c1a7ee3fd04b"
+        },
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web04/certain-final-1.png",
+          "sha256": "f6d6a2f85a33e7ab14114717d6a18ed39cacd4aacb8205a22b344c0d9f229f4b"
+        }
+      ]
+    },
+    {
+      "keyword": "没关系",
+      "visibleGifCount": 4,
+      "deleteButtonCount": 4,
+      "naturalSize": [
+        240,
+        240
+      ],
+      "allImagesComplete": true,
+      "changedPixelsPerImage": [
+        15412,
+        9766,
+        7244,
+        2827
+      ],
+      "playbackEvidence": "真实后台连续截图四GIF区域均发生变化，实际看到眯眼侧头、摆手、鳍肢张开及回落，非静态预览。",
+      "screenshots": [
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web04/reassure-0.png",
+          "sha256": "57cbcfa433f88d0038a68044bb5012371ed1fec3981288d6c40cea1a6f8177ff"
+        },
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web04/reassure-1.png",
+          "sha256": "c2a70fa41bc89786d3eae1b40c4fe89cb2758248d4bf02d0f4fe8d032d34bdc8"
+        }
+      ]
+    }
+  ]
+}

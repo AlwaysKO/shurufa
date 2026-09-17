@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab5a46-1eb0-83ea-aee2-8d9d3fcff378",
+  "sourceFileId": "file_000000008edc81faba34ac74abff7b6e",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "5f15bc5622287ac25de9cbe8348d046da234b94be59e763254c6fa48ef0dbb45",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T03:09:39.531790+00:00",
+  "generationObservedAt": "2026-09-17T03:09:39.531790+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "cat-reassure.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T03:10:03.818450+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

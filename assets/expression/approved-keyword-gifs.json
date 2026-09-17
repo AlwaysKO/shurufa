@@ -4888,6 +4888,600 @@
         "date": "2026-09-16",
         "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
       }
+    },
+    {
+      "id": "generated-b1713f96b22e250f30685beb",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "b1713f96b22e250f30685beb520e0d99e699c620c5ddbb3dfdd268a467b1fea7",
+      "sha256": "b1713f96b22e250f30685beb520e0d99e699c620c5ddbb3dfdd268a467b1fea7",
+      "fileName": "generated/generated-b1713f96b22e250f30685beb.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "好久不见"
+      ],
+      "emotions": [],
+      "embeddedText": "好久不见",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-03-animated/output/gifs/retriever-reunion.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-03-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-33b2390a5d9e6017caf21464",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "33b2390a5d9e6017caf2146491cafa983db7fb2e05cf969492db26de3ecc0d0d",
+      "sha256": "33b2390a5d9e6017caf2146491cafa983db7fb2e05cf969492db26de3ecc0d0d",
+      "fileName": "generated/generated-33b2390a5d9e6017caf21464.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "好久不见"
+      ],
+      "emotions": [],
+      "embeddedText": "好久不见",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-03-animated/output/gifs/line-reunion.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-03-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-02557f58253d4b4464a4c025",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "02557f58253d4b4464a4c0253dd34b03640548c077d216b5d1e517d922f1f293",
+      "sha256": "02557f58253d4b4464a4c0253dd34b03640548c077d216b5d1e517d922f1f293",
+      "fileName": "generated/generated-02557f58253d4b4464a4c025.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "好久不见"
+      ],
+      "emotions": [],
+      "embeddedText": "好久不见",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-03-animated/output/gifs/clay-reunion.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-03-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-ec53ca303a9e018efaa39706",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "ec53ca303a9e018efaa397060313937830ed01844f1305e7f6c83250c01b0605",
+      "sha256": "ec53ca303a9e018efaa397060313937830ed01844f1305e7f6c83250c01b0605",
+      "fileName": "generated/generated-ec53ca303a9e018efaa39706.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "好久不见"
+      ],
+      "emotions": [],
+      "embeddedText": "好久不见",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-03-animated/output/gifs/man-reunion.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-03-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-23a0364b756caa8189e7e5ff",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "23a0364b756caa8189e7e5ff32868544899dc481fc027a58bcee84a75757cdec",
+      "sha256": "23a0364b756caa8189e7e5ff32868544899dc481fc027a58bcee84a75757cdec",
+      "fileName": "generated/generated-23a0364b756caa8189e7e5ff.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "欢迎"
+      ],
+      "emotions": [],
+      "embeddedText": "欢迎",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-03-animated/output/gifs/cat-welcome.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-03-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-1476642eaf86386fd576f4ea",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "1476642eaf86386fd576f4ea21310aa2e2c8ad1e2180d32382a7af8bf7a55093",
+      "sha256": "1476642eaf86386fd576f4ea21310aa2e2c8ad1e2180d32382a7af8bf7a55093",
+      "fileName": "generated/generated-1476642eaf86386fd576f4ea.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "欢迎"
+      ],
+      "emotions": [],
+      "embeddedText": "欢迎",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-03-animated/output/gifs/line-welcome.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-03-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-e6d2d15a3bde395303352835",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "e6d2d15a3bde395303352835ed74d75f19e16851dd5a929a431cc56a251e7eac",
+      "sha256": "e6d2d15a3bde395303352835ed74d75f19e16851dd5a929a431cc56a251e7eac",
+      "fileName": "generated/generated-e6d2d15a3bde395303352835.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "欢迎"
+      ],
+      "emotions": [],
+      "embeddedText": "欢迎",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-03-animated/output/gifs/clay-welcome.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-03-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-93599b17f06b21b079417d80",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "93599b17f06b21b079417d80cf6d3622fa3739963c953a90b7b186cc93911b61",
+      "sha256": "93599b17f06b21b079417d80cf6d3622fa3739963c953a90b7b186cc93911b61",
+      "fileName": "generated/generated-93599b17f06b21b079417d80.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "欢迎"
+      ],
+      "emotions": [],
+      "embeddedText": "欢迎",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-03-animated/output/gifs/man-welcome.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-03-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-cfe4c7a5aea9df4a80dbe077",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "cfe4c7a5aea9df4a80dbe077f38d883b7684da25399dfcdb70f626397931a2b0",
+      "sha256": "cfe4c7a5aea9df4a80dbe077f38d883b7684da25399dfcdb70f626397931a2b0",
+      "fileName": "generated/generated-cfe4c7a5aea9df4a80dbe077.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "我来了"
+      ],
+      "emotions": [],
+      "embeddedText": "我来了",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-03-animated/output/gifs/rabbit-arrived.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-03-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-90f73333888789257d3f5c79",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "90f73333888789257d3f5c7971cded860ff41c89ed8970e2c6b63db661501762",
+      "sha256": "90f73333888789257d3f5c7971cded860ff41c89ed8970e2c6b63db661501762",
+      "fileName": "generated/generated-90f73333888789257d3f5c79.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "我来了"
+      ],
+      "emotions": [],
+      "embeddedText": "我来了",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-03-animated/output/gifs/clay-arrived.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-03-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-d61ab5fe5e4a1b616b281238",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "d61ab5fe5e4a1b616b2812384d78818254cd7a3fc58eaaafc58ed04629d1d89b",
+      "sha256": "d61ab5fe5e4a1b616b2812384d78818254cd7a3fc58eaaafc58ed04629d1d89b",
+      "fileName": "generated/generated-d61ab5fe5e4a1b616b281238.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "我来了"
+      ],
+      "emotions": [],
+      "embeddedText": "我来了",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-03-animated/output/gifs/man-arrived.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-03-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-2a0d61d1b9f721e018cf4eba",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "2a0d61d1b9f721e018cf4ebac89ed8ee26f5a50af3dc71a4bd2ff3a6c3062588",
+      "sha256": "2a0d61d1b9f721e018cf4ebac89ed8ee26f5a50af3dc71a4bd2ff3a6c3062588",
+      "fileName": "generated/generated-2a0d61d1b9f721e018cf4eba.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "我来了"
+      ],
+      "emotions": [],
+      "embeddedText": "我来了",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-03-animated/output/gifs/line-arrived.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-03-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-7c6e03c3b4c158c23fd926d3",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "7c6e03c3b4c158c23fd926d31037fb26b40a15588acebde936749fca8a3ab7f1",
+      "sha256": "7c6e03c3b4c158c23fd926d31037fb26b40a15588acebde936749fca8a3ab7f1",
+      "fileName": "generated/generated-7c6e03c3b4c158c23fd926d3.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "确定"
+      ],
+      "emotions": [],
+      "embeddedText": "确定",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-04-animated/output/gifs/collie-certain.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-04-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-8b3e7dffee92467e212b25aa",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "8b3e7dffee92467e212b25aace12d1945ccb0f735a2a2dd5ff01648eb71b7b6d",
+      "sha256": "8b3e7dffee92467e212b25aace12d1945ccb0f735a2a2dd5ff01648eb71b7b6d",
+      "fileName": "generated/generated-8b3e7dffee92467e212b25aa.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "确定"
+      ],
+      "emotions": [],
+      "embeddedText": "确定",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-04-animated/output/gifs/line-certain.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-04-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-6fcd31ae7de6141b248e680e",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "6fcd31ae7de6141b248e680e137e7357cd0cb0287c58f247cedb5f83c73379e1",
+      "sha256": "6fcd31ae7de6141b248e680e137e7357cd0cb0287c58f247cedb5f83c73379e1",
+      "fileName": "generated/generated-6fcd31ae7de6141b248e680e.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "确定"
+      ],
+      "emotions": [],
+      "embeddedText": "确定",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-04-animated/output/gifs/clay-certain.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-04-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-3ca7f7874ad1391ff7e3f65b",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "3ca7f7874ad1391ff7e3f65b28e8ea857e310b22a7ef8a7ef950f9b8fa29a8a7",
+      "sha256": "3ca7f7874ad1391ff7e3f65b28e8ea857e310b22a7ef8a7ef950f9b8fa29a8a7",
+      "fileName": "generated/generated-3ca7f7874ad1391ff7e3f65b.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "确定"
+      ],
+      "emotions": [],
+      "embeddedText": "确定",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-04-animated/output/gifs/man-certain.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-04-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-4847da464e86f03dddeba38f",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "4847da464e86f03dddeba38f8ea056c30319b5bc74411f33c8fced062d9fb364",
+      "sha256": "4847da464e86f03dddeba38f8ea056c30319b5bc74411f33c8fced062d9fb364",
+      "fileName": "generated/generated-4847da464e86f03dddeba38f.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "没关系"
+      ],
+      "emotions": [],
+      "embeddedText": "没关系",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-04-animated/output/gifs/cat-reassure.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-04-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-7e304072a498788e5d38025e",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "7e304072a498788e5d38025ed948cbcaa6073952f2dbf03db2d8c63ff83706c6",
+      "sha256": "7e304072a498788e5d38025ed948cbcaa6073952f2dbf03db2d8c63ff83706c6",
+      "fileName": "generated/generated-7e304072a498788e5d38025e.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "没关系"
+      ],
+      "emotions": [],
+      "embeddedText": "没关系",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-04-animated/output/gifs/line-reassure.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-04-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-dc7754b05203742bdfedca32",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "dc7754b05203742bdfedca325bb14d33f3aa349d9164f6e2e4e73bd5d1890ad1",
+      "sha256": "dc7754b05203742bdfedca325bb14d33f3aa349d9164f6e2e4e73bd5d1890ad1",
+      "fileName": "generated/generated-dc7754b05203742bdfedca32.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "没关系"
+      ],
+      "emotions": [],
+      "embeddedText": "没关系",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-04-animated/output/gifs/clay-reassure.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-04-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-1398fd12431bd6f09a87c4a0",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "1398fd12431bd6f09a87c4a03d224a573508c35ebc21b66f04d97564c22271f4",
+      "sha256": "1398fd12431bd6f09a87c4a03d224a573508c35ebc21b66f04d97564c22271f4",
+      "fileName": "generated/generated-1398fd12431bd6f09a87c4a0.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "没关系"
+      ],
+      "emotions": [],
+      "embeddedText": "没关系",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-04-animated/output/gifs/man-reassure.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-04-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-409fba68f17c95e498ae1c24",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "409fba68f17c95e498ae1c24c58d89b0a4323104954db86a80aeb187f4163b30",
+      "sha256": "409fba68f17c95e498ae1c24c58d89b0a4323104954db86a80aeb187f4163b30",
+      "fileName": "generated/generated-409fba68f17c95e498ae1c24.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "恭喜"
+      ],
+      "emotions": [],
+      "embeddedText": "恭喜",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-04-animated/output/gifs/dog-congrats.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-04-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-07f0429c284a9b4883ca774d",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "07f0429c284a9b4883ca774d167d3ce8a51d240e511532c392bbcdc375337eec",
+      "sha256": "07f0429c284a9b4883ca774d167d3ce8a51d240e511532c392bbcdc375337eec",
+      "fileName": "generated/generated-07f0429c284a9b4883ca774d.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "恭喜"
+      ],
+      "emotions": [],
+      "embeddedText": "恭喜",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-04-animated/output/gifs/line-congrats.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-04-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
     }
   ]
 }

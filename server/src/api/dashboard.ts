@@ -4,6 +4,7 @@ import type pg from 'pg';
 import { resolveMissingIps } from '../lib/ipgeo.js';
 import { resolveMissingAddresses } from '../lib/geocoder.js';
 import { queryGroupedEdits } from './groupedEdits.js';
+import { createActivityDeletionRouter } from './activityDeletion.js';
 import { collectorBaseUrl, saveCollectorBaseUrl } from '../lib/runtimeSettings.js';
 
 
@@ -37,6 +38,7 @@ function daysAgo(days: number): Date {
 
 export function createDashboardRouter(pool: pg.Pool): Router {
   const router = Router();
+  router.use(createActivityDeletionRouter(pool));
 
   router.get('/settings/collector', async (_req, res, next) => {
     try { res.json({ collector_base_url: await collectorBaseUrl(pool) }); }

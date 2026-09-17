@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { api, appName, deviceDetailLines, deviceLabel, eventTypeName, networkName, type ActivityItem, type DeviceRow } from '../api';
 
@@ -9,6 +9,10 @@ const total = ref(0);
 const page = ref(1);
 const pageSize = 20;
 const error = ref('');
+const deleteError = ref('');
+const deleteMessage = ref('');
+const deletingId = ref<string | null>(null);
+let unmounted = false;
 
 const type = ref<'all' | 'text' | 'paste' | 'voice' | 'image' | 'delete'>('all');
 const deviceId = ref('');
@@ -21,7 +25,7 @@ const grouped = ref(true);
 const loading = ref(false);
 let latestRequest = 0;
 
-async function load() {
+async function load(): Promise<void> {
   const request = ++latestRequest;
   loading.value = true;
   error.value = '';
@@ -41,6 +45,12 @@ async function load() {
     if (request !== latestRequest) return;
     items.value = res.items;
     total.value = res.total;
+    // 删除末页最后一行时，按服务器返回的总数回到有效页。
+    const lastPage = Math.max(1, Math.ceil(res.total / pageSize));
+    if (page.value > lastPage) {
+      page.value = lastPage;
+      await load();
+    }
   } catch (e) {
     if (request === latestRequest) error.value = (e as Error).message;
   } finally {
@@ -108,6 +118,28 @@ const summaryText = (item: ActivityItem) => hasCompleteEdit(item)
 
 const snapshotText = (value: string | null | undefined) => value == null ? '（未采集）' : value === '' ? '（空输入框）' : value;
 
+async function deleteRecord(item: ActivityItem) {
+  if (loading.value || deletingId.value || unmounted) return;
+  const mode = grouped.value && !showAll.value ? 'group' : 'single';
+  const ids = mode === 'group' && item.edit_events?.length ? item.edit_events.map(event => event.id) : [item.id];
+  const preview = summaryText(item).slice(0, 160);
+  const message = `确定永久删除${mode === 'group' ? '这段记录及其全部原始操作' : '这条原始操作'}吗？\n共 ${ids.length} 条原始记录。\n\n${preview}\n\n删除后无法撤销，仅影响当前后台，不联动手机或其他服务器副本。`;
+  if (!confirm(message)) return;
+  deletingId.value = item.id;
+  deleteError.value = '';
+  deleteMessage.value = '';
+  try {
+    const result = await api.deleteActivity(item.id, { confirm: 'DELETE', mode, event_ids: ids });
+    if (unmounted) return;
+    deleteMessage.value = `已删除 ${result.deleted} 条原始记录`;
+    await load();
+  } catch (error) {
+    if (!unmounted) deleteError.value = (error as Error).message;
+  } finally { deletingId.value = null; }
+}
+
+onBeforeUnmount(() => { unmounted = true; ++latestRequest; });
+
 onMounted(async () => {
   // 支持 URL ?q= 预填搜索（词云等页面点击词跳转过来）
   const route = useRoute();
@@ -161,6 +193,8 @@ onMounted(async () => {
     <label class="check"><input v-model="showAll" data-testid="show-all" type="checkbox" @change="changeUnderlyingEvents()" /> 显示底层事件（含按键/拼音组合）</label>
   </div>
 
+  <div v-if="deleteError" class="delete-notice delete-error" role="alert">删除失败：{{ deleteError }}</div>
+  <div v-if="deleteMessage" class="delete-notice delete-success" role="status">{{ deleteMessage }}</div>
   <div v-if="error" class="empty">加载失败：{{ error }}</div>
   <div v-else class="card" style="padding: 0">
     <table>
@@ -174,6 +208,7 @@ onMounted(async () => {
           <th style="width: 80px">网络</th>
           <th style="width: 120px">IP</th>
           <th style="width: 160px">地址</th>
+          <th style="width: 90px">操作</th>
         </tr>
       </thead>
       <tbody>
@@ -218,6 +253,12 @@ onMounted(async () => {
           <td><span v-if="item.network_type" class="badge" :class="'net-' + item.network_type">{{ networkName(item.network_type) }}</span><span v-else>-</span></td>
           <td style="font-family: monospace; font-size: 12px">{{ item.client_ip || '-' }}</td>
           <td style="font-size: 12px; color: #57606f">{{ item.ip_location || (item.client_ip ? '暂未解析' : '-') }}</td>
+          <td>
+            <button class="delete-record" :data-testid="`delete-activity-${item.id}`"
+              :disabled="loading || deletingId !== null" @click="deleteRecord(item)">
+              {{ deletingId === item.id ? '删除中…' : grouped ? '删除整段' : '删除' }}
+            </button>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -233,6 +274,11 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.delete-record { padding: 5px 10px; border: 1px solid #ffc9c9; border-radius: 5px; background: #fff5f5; color: #c0392b; cursor: pointer; white-space: nowrap; }
+.delete-record:disabled { opacity: 0.5; cursor: not-allowed; }
+.delete-notice { padding: 10px 14px; margin-bottom: 12px; border-radius: 6px; font-size: 13px; }
+.delete-error { color: #a52a2a; background: #fff0f0; }
+.delete-success { color: #23704b; background: #edf9f2; }
 .edit-mode { margin-bottom: 16px; padding: 14px 16px; background: #fff; border: 1px solid #e7eaf2; border-radius: 12px; }
 .mode-buttons { display: inline-flex; gap: 4px; padding: 4px; border-radius: 9px; background: #f3f5fb; }
 .mode-buttons button { border: 0; border-radius: 6px; padding: 7px 16px; background: transparent; color: #65708a; cursor: pointer; }

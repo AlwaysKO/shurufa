@@ -1,0 +1,25 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab52fb-abc4-83e9-a12f-81908818a53f",
+  "sourceFileId": "file_00000000593082098d140070f7749202",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "263ffb90e3577310c371f0729517ea0ee6fec5b0a7440c8c3068191107eb0ed6",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T02:40:34.041558+00:00",
+  "generationObservedAt": "2026-09-17T02:40:34.041558+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "man-arrived.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T02:41:05.582182+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

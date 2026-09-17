@@ -1,0 +1,21 @@
+{
+  "needsRework": [],
+  "reviewMethod": "助手逐格查看原始母图、保留原始技术审计；真实后台播放另见ui-verification.json；不是用户逐张观看证明",
+  "rejectedSources": [
+    {
+      "id": "line-arrived",
+      "version": "v1",
+      "sha256": "1d4376c34f035557492c0d951d4ea5186b41ea2edbe507af89222618f9023b31",
+      "path": "sources/line-arrived/rejected/v1",
+      "reason": "原始loopClosure审计失败，未入库"
+    }
+  ],
+  "replacements": [
+    {
+      "id": "line-arrived",
+      "version": "v2",
+      "sha256": "a37d9efbcdf93839a2cab3faa69ec69739f336f1f42a38ad1bb30408e130713e",
+      "basis": "独立新对话重生成，新母图通过全部原始审计；不是恢复v1"
+    }
+  ]
+}

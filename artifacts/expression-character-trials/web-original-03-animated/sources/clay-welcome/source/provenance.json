@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab4b21-ab70-83ea-bfb9-a391edc8111e",
+  "sourceFileId": "file_000000000f808209a962157fd97a0020",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "66183c31ee5c383d683056b2e5111ae1599c0d0848a545b72bc11a904ccd00f9",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T02:13:54.455204+00:00",
+  "generationObservedAt": "2026-09-17T02:13:54.455204+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "clay-welcome.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T02:14:30.938000+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

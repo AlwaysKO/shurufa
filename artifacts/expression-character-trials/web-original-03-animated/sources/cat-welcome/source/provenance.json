@@ -1,0 +1,38 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab4832-d9a8-83e9-9fc1-984388241e81",
+  "requestedDate": "2026-09-17",
+  "deletion": "confirmed-in-web-ui",
+  "status": "downloaded-decodable",
+  "downloadedAt": "2026-09-17T01:55:36.229706+00:00",
+  "variants": [
+    {
+      "file": "variant-1.png",
+      "sourceFileId": "file_0000000032c882098b6b2ec734a560f2",
+      "sha256": "0f7ecb3572779ccde1dcb18cfaa6607ec3370583f1bc52f3ebec51125b78f252",
+      "width": 1448,
+      "height": 1086
+    },
+    {
+      "file": "variant-2.png",
+      "sourceFileId": "file_0000000016b0820989a6e7a6f83313b0",
+      "sha256": "3bde3194cfbceda429c1370e54d32b5ff14f7ab4b9bb276ef7a35a0a6a4633b6",
+      "width": 1448,
+      "height": 1086
+    }
+  ],
+  "downloadMethod": "网页已显示图片的原始src，经已登录网页fetch原字节下载，无canvas重绘",
+  "sha256": "0f7ecb3572779ccde1dcb18cfaa6607ec3370583f1bc52f3ebec51125b78f252",
+  "width": 1448,
+  "height": 1086,
+  "selectedVariant": 1,
+  "unusedVariantReason": "同一请求延迟后补发产生的冗余版本，保留原图，不另做GIF或入库",
+  "deletedAt": "2026-09-17T01:56:07.766440+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  },
+  "generationObservedAt": "2026-09-17T01:55:36.229706+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻"
+}

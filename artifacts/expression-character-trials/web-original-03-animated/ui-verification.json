@@ -1,0 +1,96 @@
+{
+  "checkedAt": "2026-09-17T02:21:11.581896+00:00",
+  "url": "http://localhost:5175/stickers",
+  "realUserId": "f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+  "groups": [
+    {
+      "keyword": "好久不见",
+      "visibleGifCount": 4,
+      "naturalSize": [
+        240,
+        240
+      ],
+      "allImagesComplete": true,
+      "deleteButtonCount": 4,
+      "playbackEvidence": "真实后台两次截图中四个GIF显示区域均有像素变化，已目视确认动作与字幕；未创建独立预览",
+      "changedPixelsPerImage": [
+        7651,
+        13784,
+        7741,
+        15469
+      ],
+      "screenshots": [
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web03/reunion-0.png",
+          "sha256": "33b428f4c8939f9d07281ff24ceb536c8dfbd366f41fa8b07161599146667dac"
+        },
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web03/reunion-1.png",
+          "sha256": "d24586288d80d16c5080a2acad941078ffa6a4c9b3ccd201525cd1f36f1a61a9"
+        }
+      ]
+    },
+    {
+      "keyword": "欢迎",
+      "visibleGifCount": 4,
+      "naturalSize": [
+        240,
+        240
+      ],
+      "allImagesComplete": true,
+      "deleteButtonCount": 4,
+      "playbackEvidence": "真实后台两次截图中四个GIF显示区域均有像素变化，已目视确认动作与字幕；未创建独立预览",
+      "changedPixelsPerImage": [
+        7806,
+        17184,
+        7473,
+        8092
+      ],
+      "screenshots": [
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web03/welcome-0.png",
+          "sha256": "28b98d3a1d530ec2da6510ce31e86c75cd7be184b21fc865137e9d53f2ce1b03"
+        },
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web03/welcome-1.png",
+          "sha256": "20a3925da9804755e135ff5b2b33fa550385f766a323c13bc616530664fd444f"
+        }
+      ]
+    },
+    {
+      "keyword": "我来了",
+      "checkedAt": "2026-09-17T02:48:33.551683+00:00",
+      "visibleGifCount": 4,
+      "naturalSize": [
+        240,
+        240
+      ],
+      "allImagesComplete": true,
+      "deleteButtonCount": 4,
+      "playbackEvidence": "先确认document.visibilityState=visible，再对真实后台连续截图；四个GIF显示区域均有像素变化，已目视确认手势、耳朵、翅膀动作和字幕；未创建独立预览",
+      "changedPixelsPerImage": [
+        15526,
+        5663,
+        8765,
+        15558
+      ],
+      "screenshots": [
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web03/arrived-live-0.png",
+          "sha256": "14b4214d1f7d94c7aea25a458079d57a31cc1c3b8209a8afe81831dafc29339e"
+        },
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web03/arrived-live-1.png",
+          "sha256": "fc7dc65e2cdc0e5f2691504af1960a40d464fe1c2ab3515205179a15e73499d4"
+        }
+      ]
+    }
+  ],
+  "finalInventory": {
+    "totalGroups": 315,
+    "filledGroups": 88,
+    "emptyGroups": 227,
+    "systemAssetsIncludingStatic": 437,
+    "personalAssets": 0
+  }
+}

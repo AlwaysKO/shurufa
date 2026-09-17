@@ -1,0 +1,15 @@
+{
+  "realUser": "f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+  "groups": 315,
+  "emptyGroups": 227,
+  "underFourAssets": 27,
+  "catalogCount": 193,
+  "existingQualifiedMissedImports": 0,
+  "scope": "既有导入器扫描的最终报告范围；图片数量不等于风格数量",
+  "selectedEmptyGroups": [
+    "确定",
+    "没关系",
+    "恭喜"
+  ],
+  "warnings": []
+}

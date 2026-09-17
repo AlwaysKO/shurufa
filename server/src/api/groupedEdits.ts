@@ -44,7 +44,7 @@ export function summarizeEditGroup(input: EditEvent[]) {
 }
 
 /** Group identity is structured JSON, avoiding delimiter collisions and cross-editor merges. */
-const GROUP_KEY = `CASE WHEN metadata->'edit_protocol' = '1'::jsonb
+export const GROUP_KEY = `CASE WHEN metadata->'edit_protocol' = '1'::jsonb
   AND session_id IS NOT NULL AND COALESCE(package_name, '') <> '' AND COALESCE(editor_id, '') <> ''
   AND event_type IN (${EDIT_TYPES_SQL})
   THEN jsonb_build_array('edit', user_id, device_id, package_name, editor_id, session_id)
