@@ -6,6 +6,7 @@
 ## 文件
 
 - `deploy.sh`：拉取 `origin/main`，构建前后端及表情素材，备份数据库、执行迁移、切换发布目录并检查健康状态；失败时回退应用版本。
+- `stage-keyword-gifs.py`：按已入库清单从本次 Git 版本补齐成品 GIF；缺文件或 SHA 不一致时阻止发布。与 `deploy.sh` 一起安装到运行目录。
 - `migrate.mjs`：在事务中执行新增 SQL 迁移，校验已执行迁移的校验和。
 - `healthcheck.mjs`：检查健康接口，并使用环境变量中的管理账号登录、访问后台 API、退出会话。
 - `serve.mjs`：应用启动入口，仅监听本机地址。
@@ -27,7 +28,7 @@ systemd 在开机后约 30 秒开始检查，此后在上次任务结束 60 秒�
 推送到 main（包括仅修改文档或本目录）会触发现有自动部署；其他分支不会。
 构建完成后脚本会将源码工作目录 `git reset --hard` 到所部署提交，因此不要在生产源码目录保留未提交修改。
 
-当前脚本仅从 Git 导出 `server`、`client`、`assets`，不会自动将本目录同步到 `/home/ubuntu/shurufa-deploy`。
+当前脚本从 Git 导出 `server`、`client`、`assets`，再按 `approved-keyword-gifs.json` 补齐清单引用的成品 GIF，不导出制作原图。上传目录始终指向共享存储。本目录不会自动同步到 `/home/ubuntu/shurufa-deploy`。
 以后修改本目录的部署逻辑，需要另外在维护时段将审核后的文件安装到运行目录；服务配置变更还需要 systemd 重新加载。
 本目录不是本地开发启动脚本，路径、端口和权限均针对现有服务器。
 

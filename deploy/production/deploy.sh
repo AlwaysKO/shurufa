@@ -18,6 +18,7 @@ mkdir -p "$release"
 echo "Building $sha in $release"
 # Runtime uploads must never come from the release archive.
 git -C "$repo" archive "$sha" server client assets | tar --exclude='server/uploads' -x -C "$release"
+python3 "$config/stage-keyword-gifs.py" "$repo" "$sha" "$release"
 printf '%s\n' "$sha" > "$release/REVISION"
 mkdir -p "$base/shared/uploads"
 ln -sT "$base/shared/uploads" "$release/server/uploads"
