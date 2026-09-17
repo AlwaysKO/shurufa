@@ -1,0 +1,91 @@
+{
+  "checkedAt": "2026-09-17T03:46:53.782318+00:00",
+  "reviewer": "Codex静态逐格检查与独立只读复核，播放另见ui-verification.json",
+  "needsRework": [],
+  "items": [
+    {
+      "id": "collie-certain",
+      "keyword": "确定",
+      "style": "写实动物",
+      "passed": true,
+      "notes": "完整主体及肢体、身份方向连续，动作/表情匹配语义；12真实姿势，未见必须重做问题。非用户逐张观看证明。"
+    },
+    {
+      "id": "line-certain",
+      "keyword": "确定",
+      "style": "极简黑白",
+      "passed": true,
+      "notes": "完整主体及肢体、身份方向连续，动作/表情匹配语义；12真实姿势，未见必须重做问题。非用户逐张观看证明。"
+    },
+    {
+      "id": "clay-certain",
+      "keyword": "确定",
+      "style": "黏土3D",
+      "passed": true,
+      "notes": "完整主体及肢体、身份方向连续，动作/表情匹配语义；12真实姿势，未见必须重做问题。非用户逐张观看证明。"
+    },
+    {
+      "id": "man-certain",
+      "keyword": "确定",
+      "style": "原创真人",
+      "passed": true,
+      "notes": "完整主体及肢体、身份方向连续，动作/表情匹配语义；12真实姿势，未见必须重做问题。非用户逐张观看证明。"
+    },
+    {
+      "id": "cat-reassure",
+      "keyword": "没关系",
+      "style": "写实动物",
+      "passed": true,
+      "notes": "完整主体及肢体、身份方向连续，动作/表情匹配语义；12真实姿势，未见必须重做问题。非用户逐张观看证明。"
+    },
+    {
+      "id": "line-reassure",
+      "keyword": "没关系",
+      "style": "极简黑白",
+      "passed": true,
+      "notes": "完整主体及肢体、身份方向连续，动作/表情匹配语义；12真实姿势，未见必须重做问题。非用户逐张观看证明。"
+    },
+    {
+      "id": "clay-reassure",
+      "keyword": "没关系",
+      "style": "黏土3D",
+      "passed": true,
+      "notes": "完整主体及肢体、身份方向连续，动作/表情匹配语义；12真实姿势，未见必须重做问题。非用户逐张观看证明。"
+    },
+    {
+      "id": "man-reassure",
+      "keyword": "没关系",
+      "style": "原创真人",
+      "passed": true,
+      "notes": "完整主体及肢体、身份方向连续，动作/表情匹配语义；12真实姿势，未见必须重做问题。非用户逐张观看证明。"
+    },
+    {
+      "id": "dog-congrats",
+      "keyword": "恭喜",
+      "style": "写实动物",
+      "passed": true,
+      "notes": "完整主体及肢体、身份方向连续，动作/表情匹配语义；12真实姿势，未见必须重做问题。非用户逐张观看证明。"
+    },
+    {
+      "id": "line-congrats",
+      "keyword": "恭喜",
+      "style": "极简黑白",
+      "passed": true,
+      "notes": "完整主体及肢体、身份方向连续，动作/表情匹配语义；12真实姿势，未见必须重做问题。非用户逐张观看证明。"
+    },
+    {
+      "id": "clay-congrats",
+      "keyword": "恭喜",
+      "style": "黏土3D",
+      "passed": true,
+      "notes": "完整主体及肢体、身份方向连续，动作/表情匹配语义；12真实姿势，未见必须重做问题。非用户逐张观看证明。"
+    },
+    {
+      "id": "man-congrats",
+      "keyword": "恭喜",
+      "style": "原创真人",
+      "passed": true,
+      "notes": "完整主体及肢体、身份方向连续，动作/表情匹配语义；12真实姿势，未见必须重做问题。非用户逐张观看证明。"
+    }
+  ]
+}

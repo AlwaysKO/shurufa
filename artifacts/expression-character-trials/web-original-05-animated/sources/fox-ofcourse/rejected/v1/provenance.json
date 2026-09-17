@@ -1,0 +1,23 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab6579-1434-83ea-8cac-1886214e0053",
+  "sourceFileId": "file_0000000014088209a2f5541e4fed7e0f",
+  "requestedDate": "2026-09-17",
+  "status": "rejected-source-geometry",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "4dddb54048971ee1d56ec8fb0596d8b1141c33e9bf1963ca5c42f5ed2e6d9fa6",
+  "width": 1447,
+  "height": 1087,
+  "downloadedAt": "2026-09-17T03:57:27.253831+00:00",
+  "generationObservedAt": "2026-09-17T03:57:27.253831+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "fox-ofcourse.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T03:58:02.617574+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  },
+  "rejectionReason": "原图1447×1087不是4×3等大正方格，且耳尖贴近格边；不修改原图或放宽构图门禁。"
+}

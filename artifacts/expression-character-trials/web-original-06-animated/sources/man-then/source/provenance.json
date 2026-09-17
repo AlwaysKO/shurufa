@@ -1,0 +1,25 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab882a-eccc-83e9-8832-9f49893a32ec",
+  "sourceFileId": "file_000000003eb882099c10bbf7578b058a",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "62f1329764602ea2227efbe5d3fb1cbb5945a72b8e0e3c5a49061e6074124672",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T06:25:39.036229+00:00",
+  "generationObservedAt": "2026-09-17T06:25:39.036229+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "man-then.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T06:26:22.137677+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

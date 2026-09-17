@@ -1,0 +1,26 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab66a8-24e0-83e9-bf6e-f609e79ab8c7",
+  "sourceFileId": "file_00000000e41c81f5ada391e7a35f17e6",
+  "requestedDate": "2026-09-17",
+  "status": "rejected-source-geometry-and-performance",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "74a26f0df69fdf2b55b371acd213addfe0c17dc70db437aa6205ec427e1a3786",
+  "width": 1447,
+  "height": 1087,
+  "downloadedAt": "2026-09-17T04:02:31.679804+00:00",
+  "generationObservedAt": "2026-09-17T04:02:31.679804+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "line-ofcourse.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T04:03:06.747919+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  },
+  "rejectionReason": "1447x1087非正方格；第3格与第4格拇指换手，不能构图掩盖"
+}

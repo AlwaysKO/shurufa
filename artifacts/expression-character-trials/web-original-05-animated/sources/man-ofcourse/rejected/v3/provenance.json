@@ -1,0 +1,26 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab6938-fd60-83ea-9bc0-f137758ccdb7",
+  "sourceFileId": "file_00000000fb388209bded9245432a3e3b",
+  "requestedDate": "2026-09-17",
+  "status": "rejected-visible-grid",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "832026baa61828d29b0e0192346ca2eb84371976a4002879ac9474d7e24ae992",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T04:13:35.451143+00:00",
+  "generationObservedAt": "2026-09-17T04:13:35.451143+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "man-ofcourse.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T04:14:19.241148+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  },
+  "rejectionReason": "出现黑色格线，且拇指逐渐变成电话手势，与设计不符"
+}

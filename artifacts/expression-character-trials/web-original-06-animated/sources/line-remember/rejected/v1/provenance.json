@@ -1,0 +1,26 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab83b1-e30c-83ea-be0e-baf9cf91fc89",
+  "sourceFileId": "file_0000000002c88206b7dc6cb806632038",
+  "requestedDate": "2026-09-17",
+  "status": "rejected",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "d74c9562a1b31c0ea91a4a7915377f783ac3522eb724eb46b539e8fbe18f5caf",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T06:07:43.402852+00:00",
+  "generationObservedAt": "2026-09-17T06:07:43.402852+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "line-remember.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T06:09:00.021981+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  },
+  "reason": "同次生成第一候选第9至12格几乎相同，缺乏真实回正表演；采用另一完整候选，不入库"
+}

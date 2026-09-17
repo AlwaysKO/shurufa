@@ -1,0 +1,25 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab6c27-8b60-83ea-905a-5bc232d58547",
+  "sourceFileId": "file_00000000cad881f58eb033ec0bcb4b3e",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "b26720daa15804de16ef41ab0c7ebe0a7f37f8d3541da8c417e03e51d4184988",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T04:26:08.944853+00:00",
+  "generationObservedAt": "2026-09-17T04:26:08.944853+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "man-praised.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T04:26:40.014565+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

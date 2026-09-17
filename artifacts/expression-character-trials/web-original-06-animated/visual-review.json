@@ -1,0 +1,127 @@
+{
+  "needsRework": [],
+  "rejectedSources": [
+    {
+      "id": "bird-praise-more",
+      "version": "v1",
+      "sha256": "609e7a008d60400a4b082ebb46e12eb2c6229a5b124497d4c3615476288a0b85",
+      "reason": "鸟翼多出手指/第三只爪，属于额外肢体；不能构图遮挡"
+    },
+    {
+      "id": "owl-then",
+      "version": "v1",
+      "sha256": "7ca1d10cb9a6cb71b47b9a28d5e36032c2ae0855ff13be365ecba6866c2ab8c8",
+      "reason": "固定树墩底部在格线处被截断，没有完整道具留白；重新生成完整矮树墩，不通过缩小掩盖原图截断"
+    },
+    {
+      "id": "line-remember",
+      "version": "v1-first-candidate",
+      "sha256": "d74c9562a1b31c0ea91a4a7915377f783ac3522eb724eb46b539e8fbe18f5caf",
+      "reason": "同次生成第一候选第9至12格几乎相同，缺乏真实回正表演；采用另一完整候选，不入库"
+    }
+  ],
+  "replacements": [
+    {
+      "id": "bird-praise-more",
+      "version": "v2",
+      "basis": "双翼收拢、双脚落地，无额外爪"
+    },
+    {
+      "id": "owl-then",
+      "version": "v2",
+      "basis": "重新生成完整矮木墩，全身双脚与道具完整白边，不修改废稿"
+    },
+    {
+      "id": "line-remember",
+      "version": "same-conversation-second-candidate",
+      "basis": "另一候选含笑、低头和回正，不用第一候选四格近重复回正"
+    }
+  ],
+  "reviewScope": "主线程原母图与真实后台播放检查；独立代理12图静态逐格及原GIF审计复核，不是用户审美认可",
+  "items": [
+    {
+      "id": "bird-praise-more",
+      "status": "no-blocking-issue-found",
+      "sourceSha256": "9043be25134a6dc03d292bd4bcaeb5d32454c55c59834f345f8e5d92d72a9c3e",
+      "gifSha256": "7f4c8ff43e7e55c4316d23089e56e04be995ba67d4518c81feb44270af2ed084",
+      "issues": []
+    },
+    {
+      "id": "line-praise-more",
+      "status": "no-blocking-issue-found",
+      "sourceSha256": "6664e9ba1f89cc8bd71512db1d847c41208d9e4b4ba35a0b30ee86905fa71206",
+      "gifSha256": "4e761a87134982b4bfe2badd0e437ef6a46d6c828ec06cebb3ecfb71bb068c10",
+      "issues": []
+    },
+    {
+      "id": "clay-praise-more",
+      "status": "no-blocking-issue-found",
+      "sourceSha256": "ac5123535226913b7dbebbc87ce0c02fbc85360e3225c41eb5ccfb3d2cd180f4",
+      "gifSha256": "0b5187d876ad5985e09e5ae0257a29a92a67f27478aabe0e3f11c1dc68ac40cf",
+      "issues": []
+    },
+    {
+      "id": "man-praise-more",
+      "status": "no-blocking-issue-found",
+      "sourceSha256": "08f6628237c542de313cebcf916371edfd8850759329509deda16f81b5edce0c",
+      "gifSha256": "d65b59878e177681254279376ac6c4ead977afe9fbb691664b1a82e370a5d41a",
+      "issues": []
+    },
+    {
+      "id": "elephant-remember",
+      "status": "no-blocking-issue-found",
+      "sourceSha256": "434eec172b0dcf0e1428d843bf229f2522c51ba9f80defe59f1bf0bcd1e6d03c",
+      "gifSha256": "0cdf339513abcc6964369d816ba0d1ae5274422215ca5a7a0f8c628d6020b15c",
+      "issues": []
+    },
+    {
+      "id": "line-remember",
+      "status": "no-blocking-issue-found",
+      "sourceSha256": "732c8a782457b22dabdb3caf3d14c8de2273a376a26dc19825bc0f9227a02576",
+      "gifSha256": "291a307f7b959ea4aa4098938681fc06f4f13953e0525d074a894c2a977b89f5",
+      "issues": []
+    },
+    {
+      "id": "clay-remember",
+      "status": "no-blocking-issue-found",
+      "sourceSha256": "42f67d9514580c13fdce8bbedd8e94e8dfab84c1912621eeaaf5d76265b726c5",
+      "gifSha256": "1f0a754bd30a0d5bc670b90d21ca5658a6e99671e6dab5895f79f3fcc1053684",
+      "issues": []
+    },
+    {
+      "id": "man-remember",
+      "status": "no-blocking-issue-found",
+      "sourceSha256": "860304c88ed0e9607822314a7af6a1847119588663bb9a582bafdc3eab04e40f",
+      "gifSha256": "a61e9769686b4610647f4eff41b9fe10cda1630846375d2686937c1c3f690678",
+      "issues": []
+    },
+    {
+      "id": "owl-then",
+      "status": "no-blocking-issue-found",
+      "sourceSha256": "d57670bf3ae09c74e9d9b1566bdf6d43d69e7b07d43bbcdc17ee2aaea731b6c7",
+      "gifSha256": "9979eddef3bb7a0da6bd7d38d14fced567e4527293a89f04bf84eb1a107eaf42",
+      "issues": []
+    },
+    {
+      "id": "line-then",
+      "status": "no-blocking-issue-found",
+      "sourceSha256": "edc3a36b4779dc739f3f27642eb276f6f9714560b9b1965cf4f7e88f89a6d378",
+      "gifSha256": "f930124c1bda2f903a3da921092576378bb5fde2561ba97bca6e313286014a57",
+      "issues": []
+    },
+    {
+      "id": "clay-then",
+      "status": "no-blocking-issue-found",
+      "sourceSha256": "64b2f6352db93d8657e5e0e1671c974edacc293cb0fb45f98f4dc001a97fe1b1",
+      "gifSha256": "4b453ae7dd8265dfd177437de5403e9f22126243b48b018877ff6d9c91b68919",
+      "issues": []
+    },
+    {
+      "id": "man-then",
+      "status": "no-blocking-issue-found",
+      "sourceSha256": "62f1329764602ea2227efbe5d3fb1cbb5945a72b8e0e3c5a49061e6074124672",
+      "gifSha256": "c22abc114e50b149d89b1a12fdd2ae6b9cacbab03cf1a4674f8ed5a6aa530f8c",
+      "issues": []
+    }
+  ]
+}

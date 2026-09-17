@@ -1,0 +1,25 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab7345-d9f8-83ea-992a-898fa15ab0a5",
+  "sourceFileId": "file_00000000bb588207aab83bd827e78008",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "5938bd148393fa9e0773e4562e3b464c3b2ff64af6fc2dab035fe8293eff0bfd",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T04:56:35.913136+00:00",
+  "generationObservedAt": "2026-09-17T04:56:35.913136+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "man-wow.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T04:57:16.622811+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab7ec8-7930-83ea-a1c3-34e695d32d7d",
+  "sourceFileId": "file_00000000a898820680c5bc3577cf79a4",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "9043be25134a6dc03d292bd4bcaeb5d32454c55c59834f345f8e5d92d72a9c3e",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T05:46:04.120847+00:00",
+  "generationObservedAt": "2026-09-17T05:46:04.120847+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "bird-praise-more.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T05:47:06.436609+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

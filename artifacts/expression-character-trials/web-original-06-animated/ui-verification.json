@@ -1,0 +1,145 @@
+{
+  "checkedAt": "2026-09-17T06:29:37.241050+00:00",
+  "url": "http://localhost:5175/stickers",
+  "realUserId": "f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+  "groups": [
+    {
+      "keyword": "谢谢夸奖",
+      "visibleGifCount": 8,
+      "newGifCount": 4,
+      "deleteButtonCount": 8,
+      "newImagesNaturalSize": [
+        240,
+        240
+      ],
+      "allNewImagesComplete": true,
+      "changedPixelsPerNewImage": [
+        15641,
+        15825,
+        6611,
+        12411
+      ],
+      "newImageRects": [
+        [
+          1428,
+          61
+        ],
+        [
+          1642,
+          61
+        ],
+        [
+          570,
+          409
+        ],
+        [
+          785,
+          409
+        ]
+      ],
+      "playbackEvidence": "真实后台连续截图中4张新GIF区域均变化，看到羽冠立起、摆手转招手、摸胸嘚瑟及摆姿态；字幕完整，不是抽帧预览。",
+      "screenshots": [
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web06/praise-more-final-0.png",
+          "sha256": "9ea81934cbdaceab2820c9a4d2d8bce5a8850489806133273e4a8869eb6d4963"
+        },
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web06/praise-more-final-1.png",
+          "sha256": "45aba541e4357f0e1481618815c9d16f830b0539df11177a0b7b88588c4ddcdf"
+        }
+      ]
+    },
+    {
+      "keyword": "记住了",
+      "visibleGifCount": 4,
+      "newGifCount": 4,
+      "deleteButtonCount": 4,
+      "newImagesNaturalSize": [
+        240,
+        240
+      ],
+      "allNewImagesComplete": true,
+      "changedPixelsPerNewImage": [
+        6473,
+        11844,
+        6637,
+        15228
+      ],
+      "newImageRects": [
+        [
+          570,
+          439
+        ],
+        [
+          785,
+          439
+        ],
+        [
+          999,
+          439
+        ],
+        [
+          1213,
+          439
+        ]
+      ],
+      "playbackEvidence": "真实后台连续截图，4张区域均有变化，鼻触额、指头记忆、企鹅认真抬鳍和人物回落可见；字幕及全身完整。",
+      "screenshots": [
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web06/remember-final-0.png",
+          "sha256": "c84608dbbc13f08887aeed6677490692e0f20e770b91f1b03b9a32cc80598f8e"
+        },
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web06/remember-final-1.png",
+          "sha256": "dd3d68aa0cf561976878b9d4f8ac732310875ca29c877ff84853b518ffdaccde"
+        }
+      ]
+    },
+    {
+      "keyword": "然后呢",
+      "visibleGifCount": 4,
+      "newGifCount": 4,
+      "deleteButtonCount": 4,
+      "newImagesNaturalSize": [
+        240,
+        240
+      ],
+      "allNewImagesComplete": true,
+      "changedPixelsPerNewImage": [
+        5296,
+        14511,
+        5371,
+        15056
+      ],
+      "newImageRects": [
+        [
+          570,
+          439
+        ],
+        [
+          785,
+          439
+        ],
+        [
+          999,
+          439
+        ],
+        [
+          1213,
+          439
+        ]
+      ],
+      "playbackEvidence": "真实后台连续截图，4张区域均有变化，猫头鹰歪头、侧耳挑眉、河马摊掌和真人追问可见；字幕及全身完整。",
+      "screenshots": [
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web06/then-final-0.png",
+          "sha256": "0e116010efcd244fdcd968385abb120dd7a51c9535c4852195483dadce69de3e"
+        },
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web06/then-final-1.png",
+          "sha256": "028b95e84770d408d6256004e8fee62d70df1df596e25059a6b92975320d9c46"
+        }
+      ]
+    }
+  ]
+}

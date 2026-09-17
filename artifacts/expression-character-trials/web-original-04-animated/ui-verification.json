@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-09-17T03:12:25.719839+00:00",
+  "checkedAt": "2026-09-17T03:45:59.371893+00:00",
   "url": "http://localhost:5175/stickers",
   "realUserId": "f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
   "groups": [
@@ -54,6 +54,33 @@
         {
           "path": "artifacts/diagnostics/2026-09-17-web04/reassure-1.png",
           "sha256": "c2a70fa41bc89786d3eae1b40c4fe89cb2758248d4bf02d0f4fe8d032d34bdc8"
+        }
+      ]
+    },
+    {
+      "keyword": "恭喜",
+      "visibleGifCount": 4,
+      "deleteButtonCount": 4,
+      "naturalSize": [
+        240,
+        240
+      ],
+      "allImagesComplete": true,
+      "changedPixelsPerImage": [
+        7064,
+        9169,
+        7305,
+        5984
+      ],
+      "playbackEvidence": "真实后台连续截图四GIF区域均变化，看到耳朵嘴形及双手合拢/回落，字幕完整；非抽帧预览。",
+      "screenshots": [
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web04/congrats-0.png",
+          "sha256": "1081aee6dc4bf0d6349acc9b04e950a07671c995b5d38f1f4296c0fce08fe567"
+        },
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web04/congrats-1.png",
+          "sha256": "b032053cda646a87b13f53b1bf97d092b25ebd2b445ea18a207d74456dbb685d"
         }
       ]
     }

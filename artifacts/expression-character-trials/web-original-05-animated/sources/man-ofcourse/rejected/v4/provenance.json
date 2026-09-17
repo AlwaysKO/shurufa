@@ -1,0 +1,26 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab69de-3610-83ea-a99e-b8a184420b5a",
+  "sourceFileId": "file_00000000cad0822f816936d57fbf7c4d",
+  "requestedDate": "2026-09-17",
+  "status": "rejected-cross-grid",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "3570a45d5d73e68def14b8d90e3224f2076b138b3f53ee14915a80e98cc2f783",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T04:16:07.250305+00:00",
+  "generationObservedAt": "2026-09-17T04:16:07.250305+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "man-ofcourse.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T04:16:59.344699+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  },
+  "rejectionReason": "实际角色行间距约325像素而非362，第二行头部跨入第一格；不得靠逐格搬移/裁图掩盖"
+}

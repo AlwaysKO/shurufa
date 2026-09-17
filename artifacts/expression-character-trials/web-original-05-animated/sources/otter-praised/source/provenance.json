@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab6a7e-5600-83ea-b9b7-ccab4809b4be",
+  "sourceFileId": "file_00000000aa9481f5af424f81d2e5646d",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "ea3cce9b48699b01e541efe8a1b07372123e4f0b141aedc652666bc4bf8d37b8",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T04:18:51.650683+00:00",
+  "generationObservedAt": "2026-09-17T04:18:51.650683+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "otter-praised.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T04:19:23.413733+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

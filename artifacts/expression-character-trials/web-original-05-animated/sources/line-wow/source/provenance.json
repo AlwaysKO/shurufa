@@ -1,0 +1,25 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab705c-69d8-83ea-8904-bad73a2d0539",
+  "sourceFileId": "file_00000000013c81f6b0e53a15d4772aa1",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "9106d39e374ca9c4dc4fe7dc20881501032856f1ee478369941d15e7eda5e12b",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T04:43:49.546043+00:00",
+  "generationObservedAt": "2026-09-17T04:43:49.546043+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "line-wow.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T04:44:36.822761+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

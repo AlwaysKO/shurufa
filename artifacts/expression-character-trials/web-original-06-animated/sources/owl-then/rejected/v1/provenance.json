@@ -1,0 +1,23 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab85be-9200-83ea-aa2e-34a7c8974896",
+  "sourceFileId": "file_00000000a05481f9abd0ebe4e221b156",
+  "requestedDate": "2026-09-17",
+  "status": "rejected",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "7ca1d10cb9a6cb71b47b9a28d5e36032c2ae0855ff13be365ecba6866c2ab8c8",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T06:14:29.449869+00:00",
+  "generationObservedAt": "2026-09-17T06:14:29.449869+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "owl-then.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T06:15:28.308497+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  },
+  "rejectionReason": "固定树墩底部在格线处被截断，没有完整道具留白；重新生成完整矮树墩，不通过缩小掩盖原图截断"
+}

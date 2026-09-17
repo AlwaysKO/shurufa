@@ -3341,6 +3341,266 @@
       "bytes": 78190
     },
     {
+      "id": "clay-congrats",
+      "sourceReport": "artifacts/expression-character-trials/web-original-04-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-04-animated/output/gifs/clay-congrats.gif",
+      "status": "imported",
+      "catalogId": "generated-096de1c45138833bb2956f60",
+      "keyword": "恭喜",
+      "sha256": "096de1c45138833bb2956f603dc690792f531f0e29c5518af86cfcc18c5bd8be",
+      "bytes": 59773
+    },
+    {
+      "id": "man-congrats",
+      "sourceReport": "artifacts/expression-character-trials/web-original-04-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-04-animated/output/gifs/man-congrats.gif",
+      "status": "imported",
+      "catalogId": "generated-7e0a6dadd4e857ca4a40fe40",
+      "keyword": "恭喜",
+      "sha256": "7e0a6dadd4e857ca4a40fe40ae88b004ff75f3fd48daf07ea7f630918a66c114",
+      "bytes": 44359
+    },
+    {
+      "id": "fox-ofcourse",
+      "sourceReport": "artifacts/expression-character-trials/web-original-05-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-05-animated/output/gifs/fox-ofcourse.gif",
+      "status": "imported",
+      "catalogId": "generated-91f13b54600b1806e080612b",
+      "keyword": "当然",
+      "sha256": "91f13b54600b1806e080612baac0bb17daf4b8ee263585b5bbb75fc4044754f5",
+      "bytes": 68030
+    },
+    {
+      "id": "line-ofcourse",
+      "sourceReport": "artifacts/expression-character-trials/web-original-05-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-05-animated/output/gifs/line-ofcourse.gif",
+      "status": "imported",
+      "catalogId": "generated-af6bb0f423002a19ef71fde7",
+      "keyword": "当然",
+      "sha256": "af6bb0f423002a19ef71fde7de89e20fd2d9e3174271b87e340f5ed74658575c",
+      "bytes": 90774
+    },
+    {
+      "id": "clay-ofcourse",
+      "sourceReport": "artifacts/expression-character-trials/web-original-05-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-05-animated/output/gifs/clay-ofcourse.gif",
+      "status": "imported",
+      "catalogId": "generated-f5a930134c2cb0f225e58103",
+      "keyword": "当然",
+      "sha256": "f5a930134c2cb0f225e58103b37c8db8f4fe8c446eb0f606c57791e39f5fc99e",
+      "bytes": 52818
+    },
+    {
+      "id": "otter-praised",
+      "sourceReport": "artifacts/expression-character-trials/web-original-05-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-05-animated/output/gifs/otter-praised.gif",
+      "status": "imported",
+      "catalogId": "generated-b80f7a38896fb0a628da6af1",
+      "keyword": "谢谢夸奖",
+      "sha256": "b80f7a38896fb0a628da6af13b8cd2a3f105a4de458699be8b636c02068aa6e9",
+      "bytes": 69174
+    },
+    {
+      "id": "line-praised",
+      "sourceReport": "artifacts/expression-character-trials/web-original-05-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-05-animated/output/gifs/line-praised.gif",
+      "status": "imported",
+      "catalogId": "generated-51f518770c57fe60d9a5f3d1",
+      "keyword": "谢谢夸奖",
+      "sha256": "51f518770c57fe60d9a5f3d1ae61993208aee65a5882ea41b619d6a3bcc3fd41",
+      "bytes": 71824
+    },
+    {
+      "id": "clay-praised",
+      "sourceReport": "artifacts/expression-character-trials/web-original-05-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-05-animated/output/gifs/clay-praised.gif",
+      "status": "imported",
+      "catalogId": "generated-f7ddf5774dd6bef3505a2e6f",
+      "keyword": "谢谢夸奖",
+      "sha256": "f7ddf5774dd6bef3505a2e6f17c7a1cc37e6139212a783a2465ede4faca1415d",
+      "bytes": 51759
+    },
+    {
+      "id": "man-praised",
+      "sourceReport": "artifacts/expression-character-trials/web-original-05-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-05-animated/output/gifs/man-praised.gif",
+      "status": "imported",
+      "catalogId": "generated-4841d09104ad0464e403d3c4",
+      "keyword": "谢谢夸奖",
+      "sha256": "4841d09104ad0464e403d3c4c15fab2f94f150a30a7b68224ffa091ba91d00ef",
+      "bytes": 42685
+    },
+    {
+      "id": "cat-wow",
+      "sourceReport": "artifacts/expression-character-trials/web-original-05-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-05-animated/output/gifs/cat-wow.gif",
+      "status": "imported",
+      "catalogId": "generated-0d2dfcb83f3541c5680412a4",
+      "keyword": "好家伙",
+      "sha256": "0d2dfcb83f3541c5680412a46a383b26499e5a300a00a9ce8980c26220c9e969",
+      "bytes": 99552
+    },
+    {
+      "id": "line-wow",
+      "sourceReport": "artifacts/expression-character-trials/web-original-05-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-05-animated/output/gifs/line-wow.gif",
+      "status": "imported",
+      "catalogId": "generated-b7b64b953a4e18a6eda32202",
+      "keyword": "好家伙",
+      "sha256": "b7b64b953a4e18a6eda32202bb73da0df1951e3bba5bfe630198a925fc9f7225",
+      "bytes": 77830
+    },
+    {
+      "id": "clay-wow",
+      "sourceReport": "artifacts/expression-character-trials/web-original-05-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-05-animated/output/gifs/clay-wow.gif",
+      "status": "imported",
+      "catalogId": "generated-f1106a0fea36cd7150bc6774",
+      "keyword": "好家伙",
+      "sha256": "f1106a0fea36cd7150bc67742a52028138e024f4bdbb583bc85e52de93096cfa",
+      "bytes": 49519
+    },
+    {
+      "id": "man-wow",
+      "sourceReport": "artifacts/expression-character-trials/web-original-05-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-05-animated/output/gifs/man-wow.gif",
+      "status": "imported",
+      "catalogId": "generated-e2cd3324c0aa4aa3a793bdf2",
+      "keyword": "好家伙",
+      "sha256": "e2cd3324c0aa4aa3a793bdf20262f90ebc06322b6c42cd4aae8b187b69faf916",
+      "bytes": 58685
+    },
+    {
+      "id": "man-ofcourse",
+      "sourceReport": "artifacts/expression-character-trials/web-original-05-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-05-animated/output/gifs/man-ofcourse.gif",
+      "status": "imported",
+      "catalogId": "generated-be47d84f6af6e7e17d4cbec6",
+      "keyword": "当然",
+      "sha256": "be47d84f6af6e7e17d4cbec69446ac965922f0efa7437a60d426d87cdcfc22b2",
+      "bytes": 44930
+    },
+    {
+      "id": "bird-praise-more",
+      "sourceReport": "artifacts/expression-character-trials/web-original-06-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-06-animated/output/gifs/bird-praise-more.gif",
+      "status": "imported",
+      "catalogId": "generated-7f4c8ff43e7e55c4316d2308",
+      "keyword": "谢谢夸奖",
+      "sha256": "7f4c8ff43e7e55c4316d23089e56e04be995ba67d4518c81feb44270af2ed084",
+      "bytes": 52963
+    },
+    {
+      "id": "line-praise-more",
+      "sourceReport": "artifacts/expression-character-trials/web-original-06-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-06-animated/output/gifs/line-praise-more.gif",
+      "status": "imported",
+      "catalogId": "generated-4e761a87134982b4bfe2badd",
+      "keyword": "谢谢夸奖",
+      "sha256": "4e761a87134982b4bfe2badd0e437ef6a46d6c828ec06cebb3ecfb71bb068c10",
+      "bytes": 85207
+    },
+    {
+      "id": "clay-praise-more",
+      "sourceReport": "artifacts/expression-character-trials/web-original-06-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-06-animated/output/gifs/clay-praise-more.gif",
+      "status": "imported",
+      "catalogId": "generated-0b5187d876ad5985e09e5ae0",
+      "keyword": "谢谢夸奖",
+      "sha256": "0b5187d876ad5985e09e5ae0257a29a92a67f27478aabe0e3f11c1dc68ac40cf",
+      "bytes": 51159
+    },
+    {
+      "id": "man-praise-more",
+      "sourceReport": "artifacts/expression-character-trials/web-original-06-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-06-animated/output/gifs/man-praise-more.gif",
+      "status": "imported",
+      "catalogId": "generated-d65b59878e17768125427937",
+      "keyword": "谢谢夸奖",
+      "sha256": "d65b59878e177681254279376ac6c4ead977afe9fbb691664b1a82e370a5d41a",
+      "bytes": 38661
+    },
+    {
+      "id": "elephant-remember",
+      "sourceReport": "artifacts/expression-character-trials/web-original-06-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-06-animated/output/gifs/elephant-remember.gif",
+      "status": "imported",
+      "catalogId": "generated-0cdf339513abcc6964369d81",
+      "keyword": "记住了",
+      "sha256": "0cdf339513abcc6964369d816ba0d1ae5274422215ca5a7a0f8c628d6020b15c",
+      "bytes": 61086
+    },
+    {
+      "id": "line-remember",
+      "sourceReport": "artifacts/expression-character-trials/web-original-06-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-06-animated/output/gifs/line-remember.gif",
+      "status": "imported",
+      "catalogId": "generated-291a307f7b959ea4aa409893",
+      "keyword": "记住了",
+      "sha256": "291a307f7b959ea4aa4098938681fc06f4f13953e0525d074a894c2a977b89f5",
+      "bytes": 79656
+    },
+    {
+      "id": "clay-remember",
+      "sourceReport": "artifacts/expression-character-trials/web-original-06-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-06-animated/output/gifs/clay-remember.gif",
+      "status": "imported",
+      "catalogId": "generated-1f0a754bd30a0d5bc670b90d",
+      "keyword": "记住了",
+      "sha256": "1f0a754bd30a0d5bc670b90d21ca5658a6e99671e6dab5895f79f3fcc1053684",
+      "bytes": 45957
+    },
+    {
+      "id": "man-remember",
+      "sourceReport": "artifacts/expression-character-trials/web-original-06-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-06-animated/output/gifs/man-remember.gif",
+      "status": "imported",
+      "catalogId": "generated-a61e9769686b4610647f4eff",
+      "keyword": "记住了",
+      "sha256": "a61e9769686b4610647f4eff41b9fe10cda1630846375d2686937c1c3f690678",
+      "bytes": 35720
+    },
+    {
+      "id": "owl-then",
+      "sourceReport": "artifacts/expression-character-trials/web-original-06-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-06-animated/output/gifs/owl-then.gif",
+      "status": "imported",
+      "catalogId": "generated-9979eddef3bb7a0da6bd7d38",
+      "keyword": "然后呢",
+      "sha256": "9979eddef3bb7a0da6bd7d38d14fced567e4527293a89f04bf84eb1a107eaf42",
+      "bytes": 66557
+    },
+    {
+      "id": "line-then",
+      "sourceReport": "artifacts/expression-character-trials/web-original-06-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-06-animated/output/gifs/line-then.gif",
+      "status": "imported",
+      "catalogId": "generated-f930124c1bda2f903a3da921",
+      "keyword": "然后呢",
+      "sha256": "f930124c1bda2f903a3da921092576378bb5fde2561ba97bca6e313286014a57",
+      "bytes": 66365
+    },
+    {
+      "id": "clay-then",
+      "sourceReport": "artifacts/expression-character-trials/web-original-06-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-06-animated/output/gifs/clay-then.gif",
+      "status": "imported",
+      "catalogId": "generated-4b453ae7dd8265dfd177437d",
+      "keyword": "然后呢",
+      "sha256": "4b453ae7dd8265dfd177437de5403e9f22126243b48b018877ff6d9c91b68919",
+      "bytes": 64413
+    },
+    {
+      "id": "man-then",
+      "sourceReport": "artifacts/expression-character-trials/web-original-06-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-06-animated/output/gifs/man-then.gif",
+      "status": "imported",
+      "catalogId": "generated-c22abc114e50b149d89b1a12",
+      "keyword": "然后呢",
+      "sha256": "c22abc114e50b149d89b1a12fdd2ae6b9cacbab03cf1a4674f8ed5a6aa530f8c",
+      "bytes": 35093
+    },
+    {
       "id": "thanks-nuotuan-bow",
       "sourceReport": "artifacts/expression-prototypes/report.json",
       "sourceGif": "artifacts/expression-prototypes/gifs/thanks-nuotuan-bow.gif",

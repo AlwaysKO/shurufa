@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab8633-e2ec-83ea-88f5-3983e310eb4b",
+  "sourceFileId": "file_00000000f02c82099871b0561cf6eac8",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "d57670bf3ae09c74e9d9b1566bdf6d43d69e7b07d43bbcdc17ee2aaea731b6c7",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T06:17:28.340987+00:00",
+  "generationObservedAt": "2026-09-17T06:17:28.340987+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "owl-then.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T06:18:11.739463+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

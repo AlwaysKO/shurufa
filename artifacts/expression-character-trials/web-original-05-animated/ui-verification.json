@@ -1,0 +1,88 @@
+{
+  "checkedAt": "2026-09-17T04:28:07.524546+00:00",
+  "url": "http://localhost:5175/stickers",
+  "realUserId": "f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+  "groups": [
+    {
+      "keyword": "谢谢夸奖",
+      "visibleGifCount": 4,
+      "deleteButtonCount": 4,
+      "naturalSize": [
+        240,
+        240
+      ],
+      "allImagesComplete": true,
+      "changedPixelsPerImage": [
+        7677,
+        9051,
+        7772,
+        14024
+      ],
+      "playbackEvidence": "真实后台两截图逐GIF区域变化，目视捂嘴偷笑、摸脸与摸头得意，字幕不遮挡；非抽帧预览。",
+      "screenshots": [
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web05/praised-0.png",
+          "sha256": "6a1446228865473c814c9df2b209caea8d422737a41609e1a803b5911789e061"
+        },
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web05/praised-1.png",
+          "sha256": "668cb7021ecf36724e7524cd6f98aa7fdf794cabef5194810eec975ffc0e26a3"
+        }
+      ]
+    },
+    {
+      "keyword": "好家伙",
+      "visibleGifCount": 4,
+      "deleteButtonCount": 4,
+      "naturalSize": [
+        240,
+        240
+      ],
+      "allImagesComplete": true,
+      "changedPixelsPerImage": [
+        16165,
+        16667,
+        6989,
+        15593
+      ],
+      "playbackEvidence": "真实后台两截图各GIF区域变化，目视瞪眼张嘴、摊手和鼓腮，字幕完整；不是抽帧预览。",
+      "screenshots": [
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web05/wow-0.png",
+          "sha256": "4167c8cee69f306a70b001bf86682818e111dcf4b2be475820780e707f2f18f4"
+        },
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web05/wow-1.png",
+          "sha256": "f787ac37873a3bbc4c1e174f506a773b086ead5cf263b473493f9d59d996a95e"
+        }
+      ]
+    },
+    {
+      "keyword": "当然",
+      "visibleGifCount": 4,
+      "deleteButtonCount": 4,
+      "naturalSize": [
+        240,
+        240
+      ],
+      "allImagesComplete": true,
+      "changedPixelsPerImage": [
+        6386,
+        11397,
+        16641,
+        13103
+      ],
+      "playbackEvidence": "真实后台两截图各GIF区域变化，目视侧眼挑耳、鼓腮、眨眼及抬下巴，字幕完整；不是抽帧预览。",
+      "screenshots": [
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web05/ofcourse-0.png",
+          "sha256": "5b48d093e9371e80c2a720c3f664bfc63f588eba580749eae7958aae3cb7dee2"
+        },
+        {
+          "path": "artifacts/diagnostics/2026-09-17-web05/ofcourse-1.png",
+          "sha256": "a0e4c7dc2495052bdd131c092dc004e4d4d5cb65348fa7abdd81df8b01e4fa83"
+        }
+      ]
+    }
+  ]
+}

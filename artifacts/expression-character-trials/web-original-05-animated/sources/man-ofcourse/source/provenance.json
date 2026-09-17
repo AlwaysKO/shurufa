@@ -1,0 +1,25 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab73f0-b2cc-83ea-add3-0d4b894b1e4b",
+  "sourceFileId": "file_00000000ecd081f596213adc2488f32d",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "341321841901bed94eead884397e885131416179e61fe8cdc8cbc00e591a6603",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T05:01:19.503015+00:00",
+  "generationObservedAt": "2026-09-17T05:01:19.503015+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "man-ofcourse.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T05:02:18.638032+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

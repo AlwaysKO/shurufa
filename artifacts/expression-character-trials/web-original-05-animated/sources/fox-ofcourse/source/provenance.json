@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab660e-2e64-83e9-b507-1d52253bcbe8",
+  "sourceFileId": "file_00000000fd188211b7d00a9c4e2c495a",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "d018e3bdb4d46f54d597f7855db50518bcba6955530bd533aed691afc2088c71",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T04:00:00.193877+00:00",
+  "generationObservedAt": "2026-09-17T04:00:00.193877+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "fox-ofcourse-v2.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T04:00:36.115005+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

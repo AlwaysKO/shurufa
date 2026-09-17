@@ -1,0 +1,191 @@
+{
+  "needsRework": [],
+  "rejectedSources": [
+    {
+      "id": "fox-ofcourse",
+      "version": "v1",
+      "sha256": "4dddb54048971ee1d56ec8fb0596d8b1141c33e9bf1963ca5c42f5ed2e6d9fa6",
+      "reason": "原图1447×1087不是4×3等大正方格，且耳尖贴近格边；不修改原图或放宽构图门禁。"
+    },
+    {
+      "id": "line-ofcourse",
+      "version": "v1",
+      "sha256": "74a26f0df69fdf2b55b371acd213addfe0c17dc70db437aa6205ec427e1a3786",
+      "reason": "1447x1087非正方格；第3格与第4格拇指换手，不能构图掩盖"
+    },
+    {
+      "id": "man-ofcourse",
+      "version": "v1",
+      "sha256": "08af388104a3640937e291d406935aaa2c2e4a7387f46707dd9016f03cd461cc",
+      "reason": "输出偏幼态3D卡通，与本组黏土风格重复且不符合真人喜剧表演设计"
+    },
+    {
+      "id": "man-ofcourse",
+      "version": "v2",
+      "sha256": "3898661869ea8b629175343174ae91905744da42122056146f759750d4226be7",
+      "reason": "1447x1087非4x3正方格PNG，原门禁拒绝"
+    },
+    {
+      "id": "man-ofcourse",
+      "version": "v3",
+      "sha256": "832026baa61828d29b0e0192346ca2eb84371976a4002879ac9474d7e24ae992",
+      "reason": "出现黑色格线，且拇指逐渐变成电话手势，与设计不符"
+    },
+    {
+      "id": "man-ofcourse",
+      "version": "v4",
+      "sha256": "3570a45d5d73e68def14b8d90e3224f2076b138b3f53ee14915a80e98cc2f783",
+      "reason": "实际角色行间距约325像素而非362，第二行头部跨入第一格；不得靠逐格搬移/裁图掩盖"
+    },
+    {
+      "id": "cat-wow",
+      "version": "v1",
+      "sha256": "09df98f72847b3e30fd2ab1ce34b0989e465c07deb7d1cd1d26b317e65a70369",
+      "reason": "第3-10格抬前爪但原两支撑前腿都保留，三条前肢；独立复核一致"
+    },
+    {
+      "id": "cat-wow",
+      "version": "v2",
+      "sha256": "0d1e32225712a2f8ff593d7afb23f3483bc6744391cba3252caa13fd3a1196f5",
+      "reason": "1447x1087非4x3等大正方格"
+    },
+    {
+      "id": "line-wow",
+      "version": "v1",
+      "sha256": "b78d2922f811e2dac9fa4017c2041576bfa1fb71c4916d7c2a473f054e448360",
+      "reason": "第7格头发越过362像素格线进入第3格，不能裁掉或靠构图隐藏"
+    },
+    {
+      "id": "line-wow",
+      "version": "v2",
+      "sha256": "3d8cd019937c62fd26938032807dbbac819279be5ffe9da2855fad6b00e4515d",
+      "reason": "1447x1087非4x3等大正方格"
+    },
+    {
+      "id": "clay-wow",
+      "version": "v1",
+      "sha256": "fb63fa05589777682134fcd5aadf322d6a0e9763cdfa6a90bc7d8f9973fa8bbb",
+      "reason": "1447x1087非4x3等大正方格"
+    }
+  ],
+  "replacements": [
+    {
+      "id": "fox-ofcourse",
+      "version": "v2",
+      "basis": "重新网页生成1448x1086母图，耳尖完整；v1不入库"
+    },
+    {
+      "id": "line-ofcourse",
+      "version": "v2",
+      "basis": "独立新图1448x1086、右手viewer-left全程一致；v1不入库"
+    },
+    {
+      "id": "cat-wow",
+      "version": "v3",
+      "basis": "双前爪全程落地，等大正方格，无额外前肢；前两版保留不入库"
+    },
+    {
+      "id": "line-wow",
+      "version": "v3",
+      "basis": "等大正方格、头顶完整不跨格，淡彩极简线条（实际非纯黑白），不是改原图"
+    },
+    {
+      "id": "clay-wow",
+      "version": "v2",
+      "basis": "等大正方格，原稿仍留存；同对话第二张冗余图保留但不入库"
+    },
+    {
+      "id": "man-ofcourse",
+      "version": "v5",
+      "basis": "新图真人成年男性，以侧眼抬下巴嘚瑟演出，正方格且无跨格，四份废稿不入库"
+    }
+  ],
+  "checkedAt": "2026-09-17T05:08:09.049589+00:00",
+  "reviewMethod": "助手逐格母图检查+独立只读复核+原技术审计；播放见ui-verification.json；非用户审美认可",
+  "items": [
+    {
+      "id": "fox-ofcourse",
+      "keyword": "当然",
+      "actualStyle": "写实动物",
+      "passed": true,
+      "notes": "未见必须重做的肢体/跨格/换侧问题；夸张神态配合动作，实际喜感满意程度仍由用户判断。"
+    },
+    {
+      "id": "line-ofcourse",
+      "keyword": "当然",
+      "actualStyle": "极简黑白",
+      "passed": true,
+      "notes": "未见必须重做的肢体/跨格/换侧问题；夸张神态配合动作，实际喜感满意程度仍由用户判断。"
+    },
+    {
+      "id": "clay-ofcourse",
+      "keyword": "当然",
+      "actualStyle": "黏土3D",
+      "passed": true,
+      "notes": "未见必须重做的肢体/跨格/换侧问题；夸张神态配合动作，实际喜感满意程度仍由用户判断。"
+    },
+    {
+      "id": "man-ofcourse",
+      "keyword": "当然",
+      "actualStyle": "原创中国成年男性",
+      "passed": true,
+      "notes": "未见必须重做的肢体/跨格/换侧问题；夸张神态配合动作，实际喜感满意程度仍由用户判断。"
+    },
+    {
+      "id": "otter-praised",
+      "keyword": "谢谢夸奖",
+      "actualStyle": "写实动物",
+      "passed": true,
+      "notes": "未见必须重做的肢体/跨格/换侧问题；夸张神态配合动作，实际喜感满意程度仍由用户判断。"
+    },
+    {
+      "id": "line-praised",
+      "keyword": "谢谢夸奖",
+      "actualStyle": "极简黑白",
+      "passed": true,
+      "notes": "未见必须重做的肢体/跨格/换侧问题；夸张神态配合动作，实际喜感满意程度仍由用户判断。"
+    },
+    {
+      "id": "clay-praised",
+      "keyword": "谢谢夸奖",
+      "actualStyle": "黏土3D",
+      "passed": true,
+      "notes": "未见必须重做的肢体/跨格/换侧问题；夸张神态配合动作，实际喜感满意程度仍由用户判断。"
+    },
+    {
+      "id": "man-praised",
+      "keyword": "谢谢夸奖",
+      "actualStyle": "原创中国成年男性",
+      "passed": true,
+      "notes": "未见必须重做的肢体/跨格/换侧问题；夸张神态配合动作，实际喜感满意程度仍由用户判断。"
+    },
+    {
+      "id": "cat-wow",
+      "keyword": "好家伙",
+      "actualStyle": "写实动物",
+      "passed": true,
+      "notes": "未见必须重做的肢体/跨格/换侧问题；夸张神态配合动作，实际喜感满意程度仍由用户判断。"
+    },
+    {
+      "id": "line-wow",
+      "keyword": "好家伙",
+      "actualStyle": "淡彩极简线条",
+      "passed": true,
+      "notes": "未见必须重做的肢体/跨格/换侧问题；夸张神态配合动作，实际喜感满意程度仍由用户判断。"
+    },
+    {
+      "id": "clay-wow",
+      "keyword": "好家伙",
+      "actualStyle": "黏土3D",
+      "passed": true,
+      "notes": "未见必须重做的肢体/跨格/换侧问题；夸张神态配合动作，实际喜感满意程度仍由用户判断。"
+    },
+    {
+      "id": "man-wow",
+      "keyword": "好家伙",
+      "actualStyle": "原创中国成年男性",
+      "passed": true,
+      "notes": "未见必须重做的肢体/跨格/换侧问题；夸张神态配合动作，实际喜感满意程度仍由用户判断。"
+    }
+  ]
+}

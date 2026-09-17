@@ -1,0 +1,26 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab6f02-7af0-83e9-873a-28ae96057884",
+  "sourceFileId": "file_000000008f048206b2bb7ece1d4bfb93",
+  "requestedDate": "2026-09-17",
+  "status": "rejected-cross-grid",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "b78d2922f811e2dac9fa4017c2041576bfa1fb71c4916d7c2a473f054e448360",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T04:37:59.997077+00:00",
+  "generationObservedAt": "2026-09-17T04:37:59.997077+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "line-wow.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T04:38:51.482048+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  },
+  "rejectionReason": "第7格头发越过362像素格线进入第3格，不能裁掉或靠构图隐藏"
+}

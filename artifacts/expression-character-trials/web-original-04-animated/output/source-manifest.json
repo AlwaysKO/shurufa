@@ -1294,6 +1294,265 @@
           "baseline": 331
         }
       ]
+    },
+    {
+      "id": "clay-congrats",
+      "sha256": "daa15e9ce88dcf59e0f9f28033a2c792bae2e8b3c7f150f81a1c5291abc83ad4",
+      "scale": 0.77,
+      "baselines": [
+        315,
+        316,
+        316,
+        316,
+        316,
+        316,
+        316,
+        316,
+        316,
+        316,
+        316,
+        316
+      ],
+      "prompt": "请直接生成一张全新原创动画母图，不要只回复说明，无需参考图片。\nExactly 4 columns and 3 rows, 12 equal square cells in chronological row-major order, PNG 1448x1086 or 1536x1152. Pure white background, NO text, letters, logos, numbers, grid lines or symbols. Fixed frontal camera. Identical character identity, size and body coordinates across cells. Full head, hands/paws and feet visible with generous margins; feet at 72% cell height, bottom 22% blank for deterministic caption later. 12 genuinely distinct consecutive acting poses, no duplicated images, no mirroring, no extra limbs. First 3 subtle anticipation poses, 4-6 gradual main gesture, 7-8 clear emotional peak, 9-11 gradual recovery, 12 extremely close to pose1 for a seamless loop. Keep legs, feet and torso stationary; only intended head/face/arms change. Do not lean whole body or change clothing. One original clay reddish-brown squirrel seated full body, large bushy tail fixed behind its own left side, cream belly and round muzzle. Both paws rise gradually from belly then come together in a gentle joyful clap; pose8 eyes sparkling, broad smile and paws together at chest. Paws gently separate then lower; feet and tail unchanged, no props or particles. Generate the new image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aab5e93-d074-83ea-9f9c-1d24458b4996",
+        "sourceFileId": "file_0000000042788207a43885c4091733fd",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "daa15e9ce88dcf59e0f9f28033a2c792bae2e8b3c7f150f81a1c5291abc83ad4",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T03:28:32.367516+00:00",
+        "generationObservedAt": "2026-09-17T03:28:32.367516+00:00",
+        "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+        "originalDownloadName": "clay-congrats.png",
+        "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+        "deletedAt": "2026-09-17T03:36:27.804771+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7707182320441989,
+          "left": 41,
+          "top": 7,
+          "baseline": 315
+        },
+        {
+          "pose": 1,
+          "scale": 0.7707182320441989,
+          "left": 41,
+          "top": 6,
+          "baseline": 316
+        },
+        {
+          "pose": 2,
+          "scale": 0.7707182320441989,
+          "left": 41,
+          "top": 6,
+          "baseline": 316
+        },
+        {
+          "pose": 3,
+          "scale": 0.7707182320441989,
+          "left": 41,
+          "top": 6,
+          "baseline": 316
+        },
+        {
+          "pose": 4,
+          "scale": 0.7707182320441989,
+          "left": 41,
+          "top": 6,
+          "baseline": 316
+        },
+        {
+          "pose": 5,
+          "scale": 0.7707182320441989,
+          "left": 41,
+          "top": 6,
+          "baseline": 316
+        },
+        {
+          "pose": 6,
+          "scale": 0.7707182320441989,
+          "left": 41,
+          "top": 6,
+          "baseline": 316
+        },
+        {
+          "pose": 7,
+          "scale": 0.7707182320441989,
+          "left": 41,
+          "top": 6,
+          "baseline": 316
+        },
+        {
+          "pose": 8,
+          "scale": 0.7707182320441989,
+          "left": 41,
+          "top": 6,
+          "baseline": 316
+        },
+        {
+          "pose": 9,
+          "scale": 0.7707182320441989,
+          "left": 41,
+          "top": 6,
+          "baseline": 316
+        },
+        {
+          "pose": 10,
+          "scale": 0.7707182320441989,
+          "left": 41,
+          "top": 6,
+          "baseline": 316
+        },
+        {
+          "pose": 11,
+          "scale": 0.7707182320441989,
+          "left": 41,
+          "top": 6,
+          "baseline": 316
+        }
+      ]
+    },
+    {
+      "id": "man-congrats",
+      "sha256": "4bb3034570004cd5ebffec6f4fc5aa98ab4342c941c83443f3dac9c3624d9aba",
+      "scale": 0.75,
+      "baselines": [
+        325,
+        325,
+        325,
+        325,
+        325,
+        325,
+        325,
+        325,
+        324,
+        325,
+        324,
+        324
+      ],
+      "prompt": "请直接生成一张全新原创动画母图，不要只回复说明，无需参考图片。\nExactly 4 columns and 3 rows, 12 equal square cells in chronological row-major order, PNG 1448x1086 or 1536x1152. Pure white background, NO text, letters, logos, numbers, grid lines or symbols. Fixed frontal camera. Identical character identity, size and body coordinates across cells. Full head, hands/paws and feet visible with generous margins; feet at 72% cell height, bottom 22% blank for deterministic caption later. 12 genuinely distinct consecutive acting poses, no duplicated images, no mirroring, no extra limbs. First 3 subtle anticipation poses, 4-6 gradual main gesture, 7-8 clear emotional peak, 9-11 gradual recovery, 12 extremely close to pose1 for a seamless loop. Keep legs, feet and torso stationary; only intended head/face/arms change. Do not lean whole body or change clothing. One original photorealistic Chinese adult man age 29, handsome distinct face, short slightly wavy black hair, burgundy knit sweater, dark trousers and brown shoes, no celebrity resemblance. Both hands rise from waist for gentle applause: palms approach, touch once centrally, slightly separate with proud delighted smile. Pose8 hands together near chest with bright congratulatory expression, then slowly return to sides. No extra fingers or crossed arms. Generate the new image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aab60fe-d6d0-83ea-89dd-2782be1cfbf6",
+        "sourceFileId": "file_00000000f21c82068ce5fe7cab88f106",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "4bb3034570004cd5ebffec6f4fc5aa98ab4342c941c83443f3dac9c3624d9aba",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T03:38:08.830563+00:00",
+        "generationObservedAt": "2026-09-17T03:38:08.830563+00:00",
+        "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+        "originalDownloadName": "man-congrats.png",
+        "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-17T03:38:53.459461+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 6,
+          "baseline": 325
+        },
+        {
+          "pose": 1,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 6,
+          "baseline": 325
+        },
+        {
+          "pose": 2,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 6,
+          "baseline": 325
+        },
+        {
+          "pose": 3,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 6,
+          "baseline": 325
+        },
+        {
+          "pose": 4,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 6,
+          "baseline": 325
+        },
+        {
+          "pose": 5,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 6,
+          "baseline": 325
+        },
+        {
+          "pose": 6,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 6,
+          "baseline": 325
+        },
+        {
+          "pose": 7,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 6,
+          "baseline": 325
+        },
+        {
+          "pose": 8,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 6,
+          "baseline": 324
+        },
+        {
+          "pose": 9,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 6,
+          "baseline": 325
+        },
+        {
+          "pose": 10,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 6,
+          "baseline": 324
+        },
+        {
+          "pose": 11,
+          "scale": 0.7513812154696132,
+          "left": 45,
+          "top": 6,
+          "baseline": 324
+        }
+      ]
     }
   ]
 }

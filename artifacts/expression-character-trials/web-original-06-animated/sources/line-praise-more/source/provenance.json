@@ -1,0 +1,25 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab7f9e-9168-83e9-983c-2b2077f0dd1d",
+  "sourceFileId": "file_0000000093588211ba8f6221d60f2b41",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "6664e9ba1f89cc8bd71512db1d847c41208d9e4b4ba35a0b30ee86905fa71206",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T05:49:08.980676+00:00",
+  "generationObservedAt": "2026-09-17T05:49:08.980676+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "line-praise-more.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T05:50:16.917446+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

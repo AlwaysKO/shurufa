@@ -1,0 +1,23 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab6dbe-0cac-83ea-94d1-76338d3adf74",
+  "sourceFileId": "file_000000005a8c81f79323c27bdf0d56de",
+  "requestedDate": "2026-09-17",
+  "status": "rejected-source-geometry",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "0d1e32225712a2f8ff593d7afb23f3483bc6744391cba3252caa13fd3a1196f5",
+  "width": 1447,
+  "height": 1087,
+  "downloadedAt": "2026-09-17T04:32:28.673364+00:00",
+  "generationObservedAt": "2026-09-17T04:32:28.673364+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "cat-wow.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T04:33:32.920718+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  },
+  "rejectionReason": "1447x1087非4x3等大正方格"
+}

@@ -1,0 +1,64 @@
+{
+  "checkedAt": "2026-09-17T05:06:18.400754+00:00",
+  "remainingCopiesRemoved": [
+    {
+      "name": "cat-wow.png",
+      "sha256": "da27649cab066cb02628696eb02fc968574d5d63f37016f5464f23b701c75e86"
+    },
+    {
+      "name": "clay-ofcourse.png",
+      "sha256": "afcd8f3deb78fef252e1e929e33c908e4f567b6b0862acc380508a42fdd6907c"
+    },
+    {
+      "name": "clay-praised.png",
+      "sha256": "e1609048b65461c20da9088dd653b78790bba8b6d6113e31c6dbc987550a131f"
+    },
+    {
+      "name": "clay-wow-extra.png",
+      "sha256": "b5267a87d8264ce09b207e85a976acab6a1fe307364990012a8c224ece2208cc"
+    },
+    {
+      "name": "clay-wow.png",
+      "sha256": "ac5cee6966df5c52bdb678837b9515888a35b6bc6a8ddca19d5df5a087357cec"
+    },
+    {
+      "name": "fox-ofcourse-v2.png",
+      "sha256": "d018e3bdb4d46f54d597f7855db50518bcba6955530bd533aed691afc2088c71"
+    },
+    {
+      "name": "fox-ofcourse.png",
+      "sha256": "4dddb54048971ee1d56ec8fb0596d8b1141c33e9bf1963ca5c42f5ed2e6d9fa6"
+    },
+    {
+      "name": "line-ofcourse.png",
+      "sha256": "03bd902c4368b7ba3bb9dfe84ddbd07f016e01892dda94a361bae1f5cc1d22af"
+    },
+    {
+      "name": "line-praised.png",
+      "sha256": "58360f405c822fc02289cc4e7f008c05315535e4048138023a46d3cdb6fc91a4"
+    },
+    {
+      "name": "line-wow.png",
+      "sha256": "9106d39e374ca9c4dc4fe7dc20881501032856f1ee478369941d15e7eda5e12b"
+    },
+    {
+      "name": "man-ofcourse.png",
+      "sha256": "341321841901bed94eead884397e885131416179e61fe8cdc8cbc00e591a6603"
+    },
+    {
+      "name": "man-praised.png",
+      "sha256": "b26720daa15804de16ef41ab0c7ebe0a7f37f8d3541da8c417e03e51d4184988"
+    },
+    {
+      "name": "man-wow.png",
+      "sha256": "5938bd148393fa9e0773e4562e3b464c3b2ff64af6fc2dab035fe8293eff0bfd"
+    },
+    {
+      "name": "otter-praised.png",
+      "sha256": "ea3cce9b48699b01e541efe8a1b07372123e4f0b141aedc652666bc4bf8d37b8"
+    }
+  ],
+  "earlierRetryCopiesRemovedOnlyAfterArchiveShaMatch": true,
+  "all24ArchivedOriginalsRetained": true,
+  "browserDownloadBehaviorRestored": "default"
+}

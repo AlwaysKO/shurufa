@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab81ec-be40-83ea-b714-9241f20f4236",
+  "sourceFileId": "file_00000000795482099af70860f0e7ba85",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "434eec172b0dcf0e1428d843bf229f2522c51ba9f80defe59f1bf0bcd1e6d03c",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T06:00:17.029552+00:00",
+  "generationObservedAt": "2026-09-17T06:00:17.029552+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "elephant-remember.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T06:04:29.828676+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

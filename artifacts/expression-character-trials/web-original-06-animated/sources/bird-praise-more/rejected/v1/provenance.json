@@ -1,0 +1,23 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab7da6-ada0-83ea-b115-302c9d2a1826",
+  "sourceFileId": "file_0000000034188206b48df40c0d7d3c1c",
+  "requestedDate": "2026-09-17",
+  "status": "rejected",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "609e7a008d60400a4b082ebb46e12eb2c6229a5b124497d4c3615476288a0b85",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T05:42:03.396265+00:00",
+  "generationObservedAt": "2026-09-17T05:42:03.396265+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "bird-praise-more.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T05:43:33.401234+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  },
+  "rejectionReason": "鸟翼多出手指/第三只爪，属于额外肢体；不能构图遮挡"
+}

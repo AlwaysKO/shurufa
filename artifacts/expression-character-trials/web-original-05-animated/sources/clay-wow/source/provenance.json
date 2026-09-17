@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab719c-31b0-83ea-93e0-6f62754e0230",
+  "sourceFileId": "file_000000004c308211bcc87acb1e00dce7",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "ac5cee6966df5c52bdb678837b9515888a35b6bc6a8ddca19d5df5a087357cec",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T04:52:54.735596+00:00",
+  "generationObservedAt": "2026-09-17T04:52:54.735596+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "clay-wow.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T04:54:25.758196+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

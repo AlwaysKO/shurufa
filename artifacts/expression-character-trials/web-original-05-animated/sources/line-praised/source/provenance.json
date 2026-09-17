@@ -1,0 +1,25 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab6b0f-6fac-83ea-a8c9-a01ffe9dda39",
+  "sourceFileId": "file_00000000cd58820988f18739ecc95b28",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "58360f405c822fc02289cc4e7f008c05315535e4048138023a46d3cdb6fc91a4",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T04:20:55.617809+00:00",
+  "generationObservedAt": "2026-09-17T04:20:55.617809+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "line-praised.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T04:21:27.651558+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

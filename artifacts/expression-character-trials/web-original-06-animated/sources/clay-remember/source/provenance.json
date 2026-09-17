@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab84bf-ff0c-83e9-a00b-16125b93cfaf",
+  "sourceFileId": "file_0000000017c48209a8d1c34a147c224c",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "42f67d9514580c13fdce8bbedd8e94e8dfab84c1912621eeaaf5d76265b726c5",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T06:10:38.530014+00:00",
+  "generationObservedAt": "2026-09-17T06:10:38.530014+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "clay-remember.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T06:11:04.845811+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

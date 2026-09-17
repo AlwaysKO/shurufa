@@ -1,0 +1,25 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab853c-e480-83ea-84d0-5c1ec3cc0273",
+  "sourceFileId": "file_0000000088e8820994fa49a9c655bdd1",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "860304c88ed0e9607822314a7af6a1847119588663bb9a582bafdc3eab04e40f",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T06:12:42.112888+00:00",
+  "generationObservedAt": "2026-09-17T06:12:42.112888+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "man-remember.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T06:13:14.393596+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

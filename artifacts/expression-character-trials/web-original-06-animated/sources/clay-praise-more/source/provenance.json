@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab805d-5330-83ea-9928-d185d4d8771a",
+  "sourceFileId": "file_0000000027b08207b7f53baccc1ec9d3",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "ac5123535226913b7dbebbc87ce0c02fbc85360e3225c41eb5ccfb3d2cd180f4",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T05:52:21.950519+00:00",
+  "generationObservedAt": "2026-09-17T05:52:21.950519+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "clay-praise-more.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T05:53:33.936782+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

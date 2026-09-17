@@ -179,3 +179,29 @@ describe('chat dashboard API', () => {
     expect((await pool.query('SELECT 1 FROM chat_message_asset WHERE message_id=$1 AND asset_id=$2', [firstMessageId, assetId])).rowCount).toBe(1);
   });
 });
+
+it('聊天消息跨页按采集时间倒序，同时间以ID倒序稳定排序且隔离用户', async () => {
+  const ids = Array.from({ length: 30 }, (_, i) => `10000000-0000-4000-8000-${String(i + 1).padStart(12, '0')}`);
+  for (const [i, id] of ids.entries()) {
+    await pool.query(`INSERT INTO chat_message
+      (id, user_id, device_id, conversation_id, platform, fingerprint, content_fingerprint,
+       sender_key, direction, message_type, text, captured_at)
+      VALUES ($1, $2, $3, $4, 'wechat', $5, $5, 'peer', 'incoming', 'image', '截图', $6)`,
+      [id, userId, crypto.randomUUID(), conversationId, String(i + 1).padStart(64, '0'),
+       new Date(i < 15 ? '2026-09-16T10:00:00Z' : '2026-09-17T10:00:00Z')]);
+  }
+  const agent = await authenticatedRequest(createApp(pool));
+  const first = await agent.get(`/api/v1/dashboard/chat/messages?user_id=${userId}&conversation_id=${conversationId}&page=1&page_size=24`);
+  const second = await agent.get(`/api/v1/dashboard/chat/messages?user_id=${userId}&conversation_id=${conversationId}&page=2&page_size=24`);
+  expect(first.status).toBe(200);
+  expect(second.status).toBe(200);
+  expect(first.body.total).toBe(32);
+  expect(first.body.messages).toHaveLength(24);
+  expect(second.body.messages).toHaveLength(8);
+  const messages = [...first.body.messages, ...second.body.messages];
+  expect(messages.slice(0, 30).map(m => m.id)).toEqual([...ids].reverse());
+  expect(new Set(messages.map(m => m.id)).size).toBe(32);
+  const timestamps = messages.map(m => m.captured_at);
+  expect(timestamps).toEqual([...timestamps].sort().reverse());
+  expect(messages.some(m => m.text === '其他手机')).toBe(false);
+});

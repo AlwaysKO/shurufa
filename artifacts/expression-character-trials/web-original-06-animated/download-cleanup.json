@@ -1,0 +1,60 @@
+{
+  "checkedAt": "2026-09-17T06:29:38.629881+00:00",
+  "browserDownloadBehavior": "default",
+  "remaining": 0,
+  "removedVerifiedCopies": [
+    {
+      "file": "bird-praise-more.png",
+      "sha256": "9043be25134a6dc03d292bd4bcaeb5d32454c55c59834f345f8e5d92d72a9c3e"
+    },
+    {
+      "file": "clay-praise-more.png",
+      "sha256": "ac5123535226913b7dbebbc87ce0c02fbc85360e3225c41eb5ccfb3d2cd180f4"
+    },
+    {
+      "file": "clay-remember.png",
+      "sha256": "42f67d9514580c13fdce8bbedd8e94e8dfab84c1912621eeaaf5d76265b726c5"
+    },
+    {
+      "file": "clay-then.png",
+      "sha256": "64b2f6352db93d8657e5e0e1671c974edacc293cb0fb45f98f4dc001a97fe1b1"
+    },
+    {
+      "file": "elephant-remember.png",
+      "sha256": "434eec172b0dcf0e1428d843bf229f2522c51ba9f80defe59f1bf0bcd1e6d03c"
+    },
+    {
+      "file": "line-praise-more.png",
+      "sha256": "6664e9ba1f89cc8bd71512db1d847c41208d9e4b4ba35a0b30ee86905fa71206"
+    },
+    {
+      "file": "line-remember-alternative.png",
+      "sha256": "732c8a782457b22dabdb3caf3d14c8de2273a376a26dc19825bc0f9227a02576"
+    },
+    {
+      "file": "line-remember.png",
+      "sha256": "d74c9562a1b31c0ea91a4a7915377f783ac3522eb724eb46b539e8fbe18f5caf"
+    },
+    {
+      "file": "line-then.png",
+      "sha256": "edc3a36b4779dc739f3f27642eb276f6f9714560b9b1965cf4f7e88f89a6d378"
+    },
+    {
+      "file": "man-praise-more.png",
+      "sha256": "08f6628237c542de313cebcf916371edfd8850759329509deda16f81b5edce0c"
+    },
+    {
+      "file": "man-remember.png",
+      "sha256": "860304c88ed0e9607822314a7af6a1847119588663bb9a582bafdc3eab04e40f"
+    },
+    {
+      "file": "man-then.png",
+      "sha256": "62f1329764602ea2227efbe5d3fb1cbb5945a72b8e0e3c5a49061e6074124672"
+    },
+    {
+      "file": "owl-then.png",
+      "sha256": "d57670bf3ae09c74e9d9b1566bdf6d43d69e7b07d43bbcdc17ee2aaea731b6c7"
+    }
+  ],
+  "archivedSourcesRetained": true
+}

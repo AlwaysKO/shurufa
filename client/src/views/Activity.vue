@@ -265,7 +265,7 @@ onMounted(async () => {
     <div v-if="!items.length && !loading" class="empty">没有符合条件的行为记录</div>
 
     <div class="pager">
-      <span>共 {{ total }} {{ grouped ? '组' : '条' }}</span>
+      <span>共 {{ total }} {{ grouped ? '组' : '条' }} · 每页 {{ pageSize }} {{ grouped ? '组' : '条' }}</span>
       <button :disabled="page <= 1" @click="page--; load()">上一页</button>
       <span>{{ page }} / {{ totalPages }}</span>
       <button :disabled="page >= totalPages" @click="page++; load()">下一页</button>

@@ -1,0 +1,25 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab60fe-d6d0-83ea-89dd-2782be1cfbf6",
+  "sourceFileId": "file_00000000f21c82068ce5fe7cab88f106",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "4bb3034570004cd5ebffec6f4fc5aa98ab4342c941c83443f3dac9c3624d9aba",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T03:38:08.830563+00:00",
+  "generationObservedAt": "2026-09-17T03:38:08.830563+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "man-congrats.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T03:38:53.459461+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

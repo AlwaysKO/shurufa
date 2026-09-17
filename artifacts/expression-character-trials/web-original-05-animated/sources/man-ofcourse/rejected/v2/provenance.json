@@ -1,0 +1,26 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aab68a5-73a8-83ea-b384-52b186580b45",
+  "sourceFileId": "file_00000000927481f5a940533acd5233e5",
+  "requestedDate": "2026-09-17",
+  "status": "rejected-source-geometry",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "3898661869ea8b629175343174ae91905744da42122056146f759750d4226be7",
+  "width": 1447,
+  "height": 1087,
+  "downloadedAt": "2026-09-17T04:10:34.285217+00:00",
+  "generationObservedAt": "2026-09-17T04:10:34.285217+00:00",
+  "generationTimeBasis": "归档解码时已确认网页生成完成，非服务端精确生成时刻",
+  "originalDownloadName": "man-ofcourse.png",
+  "downloadMethod": "已登录网页fetch可见图片原始src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T04:11:32.927467+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  },
+  "rejectionReason": "1447x1087非4x3正方格PNG，原门禁拒绝"
+}

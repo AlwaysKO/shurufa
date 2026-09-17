@@ -220,3 +220,14 @@ it('切换模式正在加载时，旧行不可发起删除', async () => {
   expect(confirm).not.toHaveBeenCalled(); expect(deleteActivity).not.toHaveBeenCalled();
   respond({ total: 1, items: [editGroup] }); await settle();
 });
+
+it('行为明细每页20条，整段及原始模式翻页均固定请求20', async () => {
+  const events = vi.fn().mockResolvedValue({ total: 41, items: [] });
+  const view = await mount('Activity', { events, devices: async () => ({ devices: [] }) });
+  expect(events.mock.calls.at(-1)![0]).toMatchObject({ page: 1, page_size: 20 });
+  expect(view.text()).toContain('每页 20');
+  view.all().find(n => n.tag === 'button' && n.text === '下一页')!.props.onClick(); await settle();
+  expect(events.mock.calls.at(-1)![0]).toMatchObject({ page: 2, page_size: 20 });
+  view.find('mode-raw')!.props.onClick(); await settle();
+  expect(events.mock.calls.at(-1)![0]).toMatchObject({ page: 1, page_size: 20, grouped: false });
+});
