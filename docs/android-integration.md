@@ -311,6 +311,8 @@ cd /home/ko/project/shurufa
 
 如果 USB 设备由 Windows 管理，可在 `.env.local` 设置 Windows `adb.exe` 路径。`start.sh` 会自动启动仅监听 `127.0.0.1:3001` 的 Windows 中继，再建立“手机 3000 → Windows 3001 → WSL 3000”通道；不需要把 API 暴露到局域网。脚本运行期间每 5 秒检查一次，手机晚接入或拔插导致 reverse 丢失时会自动恢复。本机 Platform Tools 37 与部分手机配合时还需 `ADB_USB_LEGACY=1`。
 
+荣耀设备在 Android Studio 覆盖安装 APK 后可能清除已启用的无障碍服务。个人开发机可在未提交的 `.env.local` 设置 `AUTO_ENABLE_CHAT_ACCESSIBILITY=true`；`start.sh local` 检测到已授权 USB ADB 和 Debug 包后，会恢复聊天采集服务并保留其他已启用的无障碍组件。该选项默认关闭，只在电脑连接期间有效，不能让普通应用绕过 Android 权限在离线状态静默开启服务；用户主动关闭采集时也应同步关闭此本机选项。
+
 先确认 `adb devices -l` 中手机状态为 `device`；如果为空或为 `unauthorized`，需要先让 WSL 的 ADB 能识别手机并在手机上允许 USB 调试。也可以使用 Android 的无线调试，让该 ADB 连接手机后再执行 reverse。
 
 查看链路状态和实时上报日志：

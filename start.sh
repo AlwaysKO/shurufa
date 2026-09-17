@@ -4,6 +4,8 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=scripts/lib/env.sh
 source "$REPO_ROOT/scripts/lib/env.sh"
+# shellcheck source=scripts/lib/chat-accessibility.sh
+source "$REPO_ROOT/scripts/lib/chat-accessibility.sh"
 
 environment="local"
 dry_run=false
@@ -88,6 +90,7 @@ configure_adb_reverse() {
   local adb_bin reverse_target_port reverse_output wsl_host relay_script
   adb_bin="$(find_adb)" || return 1
   "$adb_bin" get-state >/dev/null 2>&1 || return 1
+  ensure_chat_accessibility "$adb_bin"
   reverse_target_port="${PORT:-3000}"
   if [[ "$adb_bin" == *.exe ]]; then
     reverse_target_port="${ADB_RELAY_PORT:-3001}"
