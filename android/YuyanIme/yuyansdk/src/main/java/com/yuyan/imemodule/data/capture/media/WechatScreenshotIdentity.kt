@@ -2,6 +2,7 @@ package com.yuyan.imemodule.data.capture.media
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.os.SystemClock
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
@@ -30,16 +31,25 @@ internal data class ScreenshotConversationIdentity(
     val conversationType: ConversationType,
     val confidence: Double,
     val source: String,
+    val status: String = "pending",
+    val observedTitle: String? = null,
 )
 
 internal fun selectWechatChatTitle(
     lines: List<OcrTextLine>,
     imageWidth: Int,
     headerHeight: Int,
-): String? = lines.asSequence()
+): String? = selectWechatChatTitleLine(lines, imageWidth, headerHeight)?.text?.trim()
+
+internal fun selectWechatChatTitleLine(
+    lines: List<OcrTextLine>,
+    imageWidth: Int,
+    headerHeight: Int,
+): OcrTextLine? = lines.asSequence()
     .map { it to it.text.trim() }
     .filter { (line, text) ->
-        text.length in 1..80 && line.top < headerHeight && line.bottom > 0 &&
+        text.length in 1..80 && line.top >= headerHeight * 0.18 && line.bottom <= headerHeight &&
+            line.bottom - line.top >= headerHeight * 0.12 &&
             abs((line.left + line.right) / 2.0 - imageWidth / 2.0) <= imageWidth * 0.32 &&
             !isWechatHeaderNoise(text)
     }
@@ -47,11 +57,11 @@ internal fun selectWechatChatTitle(
         { abs((it.first.left + it.first.right) / 2.0 - imageWidth / 2.0) },
         { -((it.first.bottom - it.first.top).coerceAtLeast(0)) },
     ))
-    .map { it.second }
+    .map { it.first }
     .firstOrNull()
 
 private fun isWechatHeaderNoise(text: String): Boolean =
-    text in setOf("微信", "返回", "···", "...", "5G", "4G") ||
+    text in setOf("微信", "返回", "···", "...", "5G", "4G", "く", "〈", "〉", "<", ">", "‹", "›", "←", "→", "×") ||
         text.matches(Regex("^\\d{1,2}:\\d{2}$")) ||
         text.matches(Regex("^\\d{1,3}%$")) ||
         text.all { it.isDigit() || it in " %:·." }
@@ -72,7 +82,7 @@ internal fun screenshotConversationIdentity(
             externalKey = "title:$key",
             displayName = normalized,
             conversationType = if (isGroup) ConversationType.GROUP else ConversationType.UNKNOWN,
-            confidence = 0.9,
+            confidence = 0.55,
             source = "on_device_title_ocr",
         )
     }
@@ -87,24 +97,32 @@ internal fun screenshotConversationIdentity(
 }
 
 internal interface ScreenshotConversationIdentityResolver {
-    suspend fun resolve(asset: PendingAssetEntity): ScreenshotConversationIdentity
+    fun version(): Long = 0L
+    suspend fun resolve(asset: PendingAssetEntity, expectedVersion: Long = version()): ScreenshotConversationIdentity
+    fun reset() = Unit
 }
 
 internal class MlKitWechatScreenshotIdentityResolver : ScreenshotConversationIdentityResolver, Closeable {
+    private val stabilizer = WechatTitleStabilizer()
+    override fun reset() = stabilizer.reset()
+    override fun version(): Long = stabilizer.version()
+
     private val recognizer = TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
 
-    override suspend fun resolve(asset: PendingAssetEntity): ScreenshotConversationIdentity = withContext(Dispatchers.Default) {
+    override suspend fun resolve(asset: PendingAssetEntity, expectedVersion: Long): ScreenshotConversationIdentity = withContext(Dispatchers.Default) {
         val bitmap = BitmapFactory.decodeFile(asset.localPath)
-            ?: return@withContext screenshotConversationIdentity(null, asset.perceptualHash.orEmpty())
-        val headerHeight = (bitmap.width * 0.18).toInt().coerceIn(96, minOf(220, bitmap.height))
+            ?: return@withContext unresolvedWechatScreenshotIdentity()
+        val headerHeight = (bitmap.width * 0.18).toInt().coerceAtLeast(96).coerceAtMost(minOf(220, bitmap.height))
         val header = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, headerHeight)
-        bitmap.recycle()
+        if (bitmap !== header) bitmap.recycle()
         try {
-            val fallbackHash = differenceHash(header)
             val lines = recognize(header)
-            screenshotConversationIdentity(
-                selectWechatChatTitle(lines, header.width, header.height),
-                fallbackHash,
+            val title = selectWechatChatTitleLine(lines, header.width, header.height)
+            stabilizer.observe(
+                title = title?.text,
+                visualKey = title?.let { wechatTitlePixelSignature(header, it) },
+                nowMillis = SystemClock.elapsedRealtime(),
+                expectedVersion = expectedVersion,
             )
         } finally {
             header.recycle()

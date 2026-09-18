@@ -1,3 +1,4 @@
+import { savingFlags } from '../lib/deviceSaving.js';
 import { withAppNames } from '../lib/appNames.js';
 import { Router } from 'express';
 import type pg from 'pg';
@@ -118,18 +119,18 @@ export function createDashboardRouter(pool: pg.Pool): Router {
     }
   });
 
-  /** 时间线：按天输入量（字符数/事件数） */
+  /** 时间线：按北京时间自然日统计输入量，返回纯日期避免 pg 将 date 序列化为时间戳 */
   router.get('/timeline', async (req, res, next) => {
     try {
       const days = Math.min(Number(req.query.days ?? 30) || 30, 365);
       const result = await pool.query(
         `SELECT
-           date(occurred_at) AS day,
+           to_char(occurred_at AT TIME ZONE 'Asia/Shanghai', 'YYYY-MM-DD') AS day,
            COUNT(*) AS event_count,
            COALESCE(SUM(length(text)) FILTER (WHERE event_type IN ('commit','candidate_commit','paste','paste_inferred','external_insert','voice')), 0)::bigint AS input_chars
          FROM input_event
          WHERE user_id = $1 AND occurred_at >= $2
-         GROUP BY date(occurred_at)
+         GROUP BY day
          ORDER BY day ASC`,
         [res.locals.userId, daysAgo(days)],
       );
@@ -145,7 +146,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
       const days = Math.min(Number(req.query.days ?? 30) || 30, 365);
       const result = await pool.query(
         `SELECT
-           EXTRACT(HOUR FROM occurred_at)::int AS hour,
+           EXTRACT(HOUR FROM occurred_at AT TIME ZONE 'Asia/Shanghai')::int AS hour,
            COUNT(*) AS event_count,
            COALESCE(SUM(length(text)) FILTER (WHERE event_type IN ('commit','candidate_commit','paste','paste_inferred','external_insert','voice')), 0)::bigint AS input_chars
          FROM input_event
@@ -166,8 +167,8 @@ export function createDashboardRouter(pool: pg.Pool): Router {
       const days = Math.min(Number(req.query.days ?? 30) || 30, 365);
       const result = await pool.query(
         `SELECT
-           EXTRACT(ISODOW FROM occurred_at)::int AS dow,
-           EXTRACT(HOUR FROM occurred_at)::int AS hour,
+           EXTRACT(ISODOW FROM occurred_at AT TIME ZONE 'Asia/Shanghai')::int AS dow,
+           EXTRACT(HOUR FROM occurred_at AT TIME ZONE 'Asia/Shanghai')::int AS hour,
            COALESCE(SUM(length(text)) FILTER (WHERE event_type IN ('commit','candidate_commit','paste','paste_inferred','external_insert','voice')), 0)::bigint AS chars
          FROM input_event
          WHERE user_id = $1 AND occurred_at >= $2
@@ -433,11 +434,12 @@ export function createDashboardRouter(pool: pg.Pool): Router {
           [q, id, pageSize, (page - 1) * pageSize],
         ),
       ]);
+      const flags = await savingFlags(pool, result.rows.map(row => row.id));
       res.json({
         total: Number(count.rows[0]?.total ?? 0),
         page,
         page_size: pageSize,
-        users: result.rows,
+        users: result.rows.map(row => ({ ...row, save_uploads: flags.get(row.id) !== false })),
       });
     } catch (err) {
       next(err);

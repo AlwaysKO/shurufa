@@ -203,11 +203,19 @@ export const ORIGINAL_WEB07_ITEMS = [
   sourceType:'ai-original' as const,status:'trial-only' as const,publicationAllowed:false as const,
   ...(/^(man|line)-/.test(item.id)?{personOrigin:'China' as const,personGender:'male' as const,adult:true as const}:{}),
 }));
+export const ORIGINAL_WEB08_ITEMS = [
+  ...["beagle-favor","line-favor","clay-favor","man-favor"].map(id=>({id,caption:"麻烦你了"})),
+  ...["rabbit-coax","line-coax","clay-coax","man-coax"].map(id=>({id,caption:"撒娇"})),
+  ...["shiba-surrender","line-surrender","clay-surrender","man-surrender"].map(id=>({id,caption:"服了"})),
+].map(item=>({...item,masterFile:`masters/${item.id}.png`,
+  sourceType:'ai-original' as const,status:'trial-only' as const,publicationAllowed:false as const,
+  ...(/^(man|line)-/.test(item.id)?{personOrigin:'China' as const,personGender:'male' as const,adult:true as const}:{}),
+}));
 export const resolveReferenceMaster = resolveSceneRich12Master;
 
 function validateItem(value: unknown) {
   const item=value as Record<string,unknown>|null;
-  const fixed=[...REFERENCE_CHARACTER_ITEMS,...REFERENCE_CHARACTER_BATCH02_ITEMS,...ORIGINAL_CHARACTER_ITEMS,...ORIGINAL_CHARACTER_BATCH02_ITEMS,...ORIGINAL_ANIMAL_ITEMS,...ORIGINAL_ANIMAL_BATCH02_ITEMS,...ORIGINAL_LOOK_ITEMS,...ORIGINAL_RECEIVED_ITEMS,...ORIGINAL_SLEEPY_ITEMS,...ORIGINAL_SPEECHLESS_ITEMS,...ORIGINAL_GREAT_ITEMS,...ORIGINAL_HURT_ITEMS,...ORIGINAL_VOLUME_ITEMS,...ORIGINAL_VOLUME02_ITEMS,...ORIGINAL_VOLUME03_ITEMS,...ORIGINAL_VOLUME04_ITEMS,...ORIGINAL_VOLUME05_ITEMS,...ORIGINAL_VOLUME06_ITEMS,...ORIGINAL_VOLUME07_ITEMS,...ORIGINAL_VOLUME08_ITEMS,...ORIGINAL_VOLUME09_ITEMS,...ORIGINAL_VOLUME10_ITEMS,...ORIGINAL_VOLUME11_ITEMS,...ORIGINAL_WEB01_ITEMS,...ORIGINAL_WEB02_ITEMS,...ORIGINAL_WEB03_ITEMS,...ORIGINAL_WEB04_ITEMS,...ORIGINAL_WEB05_ITEMS,...ORIGINAL_WEB06_ITEMS,...ORIGINAL_WEB07_ITEMS].find(candidate=>candidate.id===item?.id);
+  const fixed=[...REFERENCE_CHARACTER_ITEMS,...REFERENCE_CHARACTER_BATCH02_ITEMS,...ORIGINAL_CHARACTER_ITEMS,...ORIGINAL_CHARACTER_BATCH02_ITEMS,...ORIGINAL_ANIMAL_ITEMS,...ORIGINAL_ANIMAL_BATCH02_ITEMS,...ORIGINAL_LOOK_ITEMS,...ORIGINAL_RECEIVED_ITEMS,...ORIGINAL_SLEEPY_ITEMS,...ORIGINAL_SPEECHLESS_ITEMS,...ORIGINAL_GREAT_ITEMS,...ORIGINAL_HURT_ITEMS,...ORIGINAL_VOLUME_ITEMS,...ORIGINAL_VOLUME02_ITEMS,...ORIGINAL_VOLUME03_ITEMS,...ORIGINAL_VOLUME04_ITEMS,...ORIGINAL_VOLUME05_ITEMS,...ORIGINAL_VOLUME06_ITEMS,...ORIGINAL_VOLUME07_ITEMS,...ORIGINAL_VOLUME08_ITEMS,...ORIGINAL_VOLUME09_ITEMS,...ORIGINAL_VOLUME10_ITEMS,...ORIGINAL_VOLUME11_ITEMS,...ORIGINAL_WEB01_ITEMS,...ORIGINAL_WEB02_ITEMS,...ORIGINAL_WEB03_ITEMS,...ORIGINAL_WEB04_ITEMS,...ORIGINAL_WEB05_ITEMS,...ORIGINAL_WEB06_ITEMS,...ORIGINAL_WEB07_ITEMS,...ORIGINAL_WEB08_ITEMS].find(candidate=>candidate.id===item?.id);
   if(!item || !fixed || item.caption!==fixed.caption || item.masterFile!==fixed.masterFile
     || item.sourceType!==fixed.sourceType || item.status!=='trial-only' || item.publicationAllowed!==false) {
     throw new Error('只接受固定清单中已确认参考形象的隔离动态试稿，不允许改为正式发布或伪造原创来源');

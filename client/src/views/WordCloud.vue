@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import * as echarts from 'echarts';
 import type { ECElementEvent } from 'echarts';
@@ -11,7 +11,9 @@ const days = ref<number | 'all'>(30);
 const phrases = ref<PhraseRow[]>([]);
 const loading = ref(false);
 const error = ref('');
+const chartEl = ref<HTMLDivElement | null>(null);
 let chart: echarts.ECharts | null = null;
+let requestId = 0;
 
 /** 词云数据：过滤长句，只保留 1~10 字的高频词 */
 const cloudWords = () =>
@@ -20,17 +22,36 @@ const cloudWords = () =>
     .slice(0, 100)
     .map((p) => ({ name: p.phrase, value: Number(p.use_count) }));
 
+function disposeChart() {
+  chart?.dispose();
+  chart = null;
+}
+
+function resizeChart() {
+  chart?.resize();
+}
+
 async function load() {
+  const id = ++requestId;
+  disposeChart();
   loading.value = true;
   error.value = '';
+  phrases.value = [];
   try {
     const data = await api.phrases('word', days.value, 100);
+    if (id !== requestId) return;
     phrases.value = data.phrases;
+    loading.value = false;
+    // v-if 在加载结束后才挂载容器，必须等待 Vue 完成 DOM 更新。
+    await nextTick();
+    if (id !== requestId) return;
     render();
   } catch (e) {
+    if (id !== requestId) return;
+    disposeChart();
     error.value = (e as Error).message;
   } finally {
-    loading.value = false;
+    if (id === requestId) loading.value = false;
   }
 }
 
@@ -40,7 +61,7 @@ function jumpToDetail(word: string) {
 }
 
 function render() {
-  const el = document.getElementById('wordcloud-chart');
+  const el = chartEl.value;
   if (!el) return;
   chart ??= echarts.init(el);
   const words = cloudWords();
@@ -82,7 +103,15 @@ function render() {
 const fmtTime = (s: string) => new Date(s).toLocaleString('zh-CN', { hour12: false });
 const totalCount = () => phrases.value.reduce((sum, p) => sum + Number(p.use_count), 0);
 
-onMounted(load);
+onMounted(() => {
+  window.addEventListener('resize', resizeChart);
+  void load();
+});
+onBeforeUnmount(() => {
+  ++requestId;
+  window.removeEventListener('resize', resizeChart);
+  disposeChart();
+});
 </script>
 
 <template>
@@ -97,9 +126,9 @@ onMounted(load);
   <div class="card">
     <h3>输入词云 <span class="count">Top {{ phrases.length }} · 共 {{ totalCount() }} 次</span></h3>
     <p v-if="loading" class="msg">加载中…</p>
-    <p v-else-if="error" class="msg err">{{ error }}</p>
+    <p v-else-if="error" class="msg err">加载失败：{{ error }} <button @click="load">重试</button></p>
     <p v-else-if="cloudWords().length === 0" class="msg">暂无数据，开始输入后这里会生成你的输入词云</p>
-    <div v-else id="wordcloud-chart" class="chart"></div>
+    <div v-else id="wordcloud-chart" ref="chartEl" class="chart"></div>
   </div>
 
   <div class="card">

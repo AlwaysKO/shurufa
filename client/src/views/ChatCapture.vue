@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { useConfirmation } from '../confirmation';
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import {
-  api,
+  api, currentUserId,
+  type ChatMessageAsset,
+  type ChatImageTarget,
   type ChatCaptureOverview,
   type ChatConversationRow,
   type ChatMessageRow,
@@ -33,7 +35,22 @@ const loading = ref(false);
 const error = ref('');
 const deleting = ref(false);
 const deletingAssetId = ref<number | null>(null);
-const previewImage = ref<{ src: string; alt: string } | null>(null);
+const bulkDeleting = ref(false);
+const confirming = ref(false);
+const mutationBusy = computed(() => deleting.value || deletingAssetId.value !== null || bulkDeleting.value || confirming.value);
+const selectedImageKeys = ref<string[]>([]);
+const deleteNotice = ref('');
+const previewImage = ref<(ChatImageTarget & { src: string; alt: string; ordinal?: number; total?: number }) | null>(null);
+const previewEl = ref<HTMLDivElement | null>(null);
+const previewLoading = ref(false);
+const previewError = ref('');
+const previewBoundary = ref<'next' | 'previous' | null>(null);
+let previewRequest = 0;
+let previousFocus: HTMLElement | null = null;
+let swipeStart: { id: number; x: number; y: number } | null = null;
+const previewScope = computed(() => JSON.stringify([currentUserId.value, platform.value, selected.value?.id]));
+const selectionContext = computed(() => JSON.stringify([previewScope.value, page.value, messageType.value]));
+watch(selectionContext, () => { clearImageSelection(); closeImagePreview(); }, { flush: 'sync' });
 
 const platformNames = { wechat: '微信', qq: 'QQ', douyin: '抖音' } as const;
 const directionNames = { incoming: '收到', outgoing: '发送', system: '系统' } as const;
@@ -43,6 +60,29 @@ const messageTypes = computed(() => [
 const visibleMessages = computed(() => messageType.value === 'all'
   ? messages.value
   : messages.value.filter((message) => message.message_type === messageType.value));
+
+const imageKey = (messageId: string, assetId: number) => `${messageId}:${assetId}`;
+const isImage = (asset: ChatMessageAsset) => asset.mime_type.startsWith('image/');
+const visibleImages = computed(() => {
+  const seen = new Set<string>();
+  return visibleMessages.value.flatMap(message => message.assets.filter(isImage).map(asset => ({
+    message_id: message.id, asset_id: asset.id,
+  }))).filter(image => {
+    const key = imageKey(image.message_id, image.asset_id);
+    if (seen.has(key)) return false;
+    seen.add(key); return true;
+  });
+});
+const selectedImages = computed(() => visibleImages.value.filter(image => selectedImageKeys.value.includes(imageKey(image.message_id, image.asset_id))));
+function clearImageSelection() { selectedImageKeys.value = []; }
+function selectPageImages() {
+  if (!loading.value && !mutationBusy.value) selectedImageKeys.value = visibleImages.value.map(image => imageKey(image.message_id, image.asset_id));
+}
+async function confirmAction(message: string) {
+  if (confirming.value) return false;
+  confirming.value = true;
+  try { return await askConfirmation(message); } finally { confirming.value = false; }
+}
 
 function formatTime(value: string | null): string {
   if (!value) return '-';
@@ -65,17 +105,81 @@ function messageDisplayName(message: ChatMessageRow): string {
   return message.sender_name || message.sender_key;
 }
 
-function openImagePreview(url: string, alt: string) {
-  previewImage.value = { src: scopedAssetUrl(url), alt };
+async function openImagePreview(message: ChatMessageRow, asset: ChatMessageAsset) {
+  if (loading.value || mutationBusy.value || !isImage(asset)) return;
+  ++previewRequest;
+  previewLoading.value = false; previewError.value = ''; previewBoundary.value = null;
+  previousFocus = typeof document === 'undefined' ? null : document.activeElement as HTMLElement | null;
+  previewImage.value = { message_id: message.id, asset_id: asset.id, src: scopedAssetUrl(asset.url), alt: message.text || message.message_type };
+  await nextTick();
+  previewEl.value?.focus();
 }
 
 function closeImagePreview() {
+  ++previewRequest;
   previewImage.value = null;
+  previewLoading.value = false; previewError.value = ''; previewBoundary.value = null;
+  swipeStart = null;
+  const focus = previousFocus;
+  previousFocus = null;
+  void nextTick(() => { if (focus?.isConnected) focus.focus(); });
+}
+
+async function navigateImage(direction: 'next' | 'previous') {
+  const current = previewImage.value, conversationId = selected.value?.id;
+  if (!current || !conversationId || previewLoading.value || previewBoundary.value === direction) return;
+  // 导航按钮马上会禁用；先把焦点留在弹层，避免浏览器将焦点退回body导致Esc失效。
+  previewEl.value?.focus();
+  const version = ++previewRequest, scope = previewScope.value;
+  previewLoading.value = true; previewError.value = '';
+  try {
+    const result = await api.chatAdjacentImage(conversationId, current.message_id, current.asset_id, direction);
+    if (disposed || version !== previewRequest || scope !== previewScope.value || !previewImage.value) return;
+    if (!result.image) {
+      previewBoundary.value = direction;
+      previewError.value = direction === 'next' ? '已到最后一张图片' : '已到第一张图片';
+      return;
+    }
+    const image = result.image;
+    previewImage.value = { ...image, src: scopedAssetUrl(image.url) };
+    previewBoundary.value = image.ordinal === 1 ? 'previous' : image.ordinal === image.total ? 'next' : null;
+  } catch (reason) {
+    if (!disposed && version === previewRequest) previewError.value = `切换失败，可重试：${(reason as Error).message}`;
+  } finally { if (version === previewRequest) previewLoading.value = false; }
+}
+
+function previewKeydown(event: KeyboardEvent) {
+  if (event.isComposing || event.repeat) return;
+  if (['Escape', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+    event.preventDefault(); event.stopPropagation();
+    if (event.key === 'Escape') closeImagePreview();
+    else void navigateImage(event.key === 'ArrowLeft' ? 'previous' : 'next');
+  } else if (event.key === 'Tab' && previewEl.value) {
+    const buttons = [...previewEl.value.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')];
+    const first = buttons[0], last = buttons[buttons.length - 1];
+    if (event.shiftKey && (document.activeElement === first || document.activeElement === previewEl.value)) {
+      event.preventDefault(); last?.focus();
+    } else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+  }
+}
+function startSwipe(event: PointerEvent) {
+  if (event.isPrimary === false || event.button !== 0) { swipeStart = null; return; }
+  previewEl.value?.focus();
+  (event.currentTarget as HTMLElement | null)?.setPointerCapture?.(event.pointerId);
+  swipeStart = { id: event.pointerId, x: event.clientX, y: event.clientY };
+}
+function endSwipe(event: PointerEvent) {
+  const start = swipeStart; swipeStart = null;
+  if (!start || start.id !== event.pointerId) return;
+  const dx = event.clientX - start.x, dy = event.clientY - start.y;
+  if (Math.abs(dx) >= 50 && Math.abs(dx) > Math.abs(dy) * 1.3) void navigateImage(dx < 0 ? 'next' : 'previous');
 }
 
 async function loadMessages() {
   const conversation = selected.value;
-  if (!conversation) return;
+  if (!conversation || disposed) return;
+  clearImageSelection();
+  closeImagePreview();
   const request = ++latestRequest;
   messageError.value = '';
   messages.value = [];
@@ -100,7 +204,7 @@ async function loadMessages() {
 }
 
 async function selectConversation(conversation: ChatConversationRow) {
-  if (deleting.value || deletingAssetId.value !== null) return;
+  if (mutationBusy.value) return;
   selected.value = conversation;
   error.value = '';
   page.value = 1;
@@ -110,20 +214,20 @@ async function selectConversation(conversation: ChatConversationRow) {
 }
 
 async function changePage(next: number) {
-  if (loading.value || deleting.value || deletingAssetId.value !== null) return;
+  if (loading.value || mutationBusy.value) return;
   page.value = Math.min(totalPages.value, Math.max(1, next));
   messageType.value = 'all';
   await loadMessages();
 }
 
 async function selectPlatform(next: ChatConversationRow['platform']) {
-  if (next === platform.value || deleting.value || deletingAssetId.value !== null) return;
+  if (next === platform.value || mutationBusy.value) return;
   platform.value = next;
   latestRequest += 1;
   selected.value = null;
   conversations.value = [];
   messages.value = [];
-  previewImage.value = null;
+  closeImagePreview();
   page.value = 1;
   total.value = 0;
   messageType.value = 'all';
@@ -159,10 +263,11 @@ async function load() {
 
 async function deleteSelectedConversation() {
   const conversation = selected.value;
-  if (!conversation || loading.value || deleting.value || deletingAssetId.value !== null) return;
+  if (!conversation || loading.value || mutationBusy.value) return;
+  const context = selectionContext.value;
   const name = conversation.display_name || conversation.external_key;
-  if (!(await askConfirmation(`确定删除“${name}”及其全部聊天记录吗？此操作不可恢复。`))) return;
-  if (loading.value || deleting.value || deletingAssetId.value !== null || disposed) return;
+  if (!(await confirmAction(`确定删除“${name}”及其全部聊天记录吗？此操作不可恢复。`))) return;
+  if (loading.value || mutationBusy.value || disposed || context !== selectionContext.value) return;
   deleting.value = true;
   error.value = '';
   try {
@@ -178,9 +283,10 @@ async function deleteSelectedConversation() {
 }
 
 async function deleteImage(message: ChatMessageRow, assetId: number) {
-  if (loading.value || deleting.value || deletingAssetId.value !== null) return;
-  if (!(await askConfirmation('确定删除这张聊天截图吗？此操作不可恢复。'))) return;
-  if (loading.value || deleting.value || deletingAssetId.value !== null || disposed) return;
+  if (loading.value || mutationBusy.value) return;
+  const context = selectionContext.value;
+  if (!(await confirmAction('确定删除这张聊天截图吗？此操作不可恢复。'))) return;
+  if (loading.value || mutationBusy.value || disposed || context !== selectionContext.value) return;
   deletingAssetId.value = assetId;
   error.value = '';
   try {
@@ -202,17 +308,47 @@ async function deleteImage(message: ChatMessageRow, assetId: number) {
   }
 }
 
+async function deleteSelectedImages() {
+  const conversation = selected.value;
+  if (!conversation || loading.value || mutationBusy.value || !selectedImages.value.length || disposed) return;
+  const images = selectedImages.value.map(image => ({ ...image }));
+  const context = selectionContext.value, version = latestRequest;
+  const selection = selectedImageKeys.value.join(',');
+  if (images.length > 1000) { error.value = '每批最多删除1000张图片，请减少选择后重试'; return; }
+  if (!(await confirmAction(`确定永久删除选中的 ${images.length} 张图片吗？\n仅删除当前会话中选中的图片，保留文字和未选图片。纯图片记录删空后会移除空记录。\n此操作不可恢复，仅影响当前后台，不删除手机上的图片。`))) return;
+  if (disposed || mutationBusy.value || loading.value || context !== selectionContext.value || version !== latestRequest || selection !== selectedImageKeys.value.join(',')) return;
+  bulkDeleting.value = true; error.value = ''; deleteNotice.value = '';
+  let completed = false;
+  try {
+    const result = await api.deleteChatImages({ confirm: 'DELETE', conversation_id: conversation.id, images });
+    completed = true;
+    if (disposed || context !== selectionContext.value) return;
+    deleteNotice.value = `已删除 ${result.deleted_images} 张图片${result.files_pending ? '；附件文件清理将在后台重试。' : ''}`;
+    const scope = previewScope.value;
+    await loadMessages();
+    const [overviewResult, conversationResult] = await Promise.all([
+      api.chatCaptureOverview(platform.value), api.chatConversations(1, 100, platform.value),
+    ]);
+    if (disposed || scope !== previewScope.value) return;
+    overview.value = overviewResult; conversations.value = conversationResult.conversations;
+    selected.value = conversations.value.find(item => item.id === conversation.id) ?? null;
+  } catch (reason) {
+    if (!disposed && context === selectionContext.value) error.value = `${completed ? '图片已删除，但统计刷新失败' : '删除图片失败'}：${(reason as Error).message}`;
+  } finally { bulkDeleting.value = false; }
+}
+
 onMounted(load);
-onBeforeUnmount(() => { disposed = true; latestRequest += 1; latestLoad += 1; });
+onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1; latestLoad += 1; });
 </script>
 
 <template>
+  <div :inert="previewImage ? true : undefined">
   <nav class="platform-tabs" role="tablist" aria-label="聊天采集 App">
     <button
       v-for="(name, key) in platformNames" :key="key"
       type="button" role="tab" :aria-selected="platform === key"
       :data-testid="`chat-tab-${key}`" :class="{ active: platform === key }"
-      :disabled="deleting || deletingAssetId !== null"
+      :disabled="mutationBusy"
       @click="selectPlatform(key)"
     >{{ name }}</button>
   </nav>
@@ -233,7 +369,7 @@ onBeforeUnmount(() => { disposed = true; latestRequest += 1; latestLoad += 1; })
           v-for="conversation in conversations"
           :key="conversation.id"
           class="conversation"
-          :disabled="deleting || deletingAssetId !== null"
+          :disabled="mutationBusy"
           :class="{ selected: selected?.id === conversation.id }"
           @click="selectConversation(conversation)"
         >
@@ -253,22 +389,29 @@ onBeforeUnmount(() => { disposed = true; latestRequest += 1; latestLoad += 1; })
           <span class="timeline-summary">共 {{ total }} 条 · 每页 {{ pageSize }} 条 · 采集时间倒序，最新在前</span>
         </div>
         <div class="timeline-actions">
-          <select v-model="messageType" aria-label="本页消息类型筛选" :disabled="loading">
+          <select v-model="messageType" aria-label="本页消息类型筛选" :disabled="loading || mutationBusy">
             <option value="all">本页全部类型</option>
             <option v-for="type in messageTypes" :key="type" :value="type">{{ type }}</option>
           </select>
           <button
             class="delete-button"
             type="button"
-            :disabled="!selected || loading || deleting || deletingAssetId !== null"
+            :disabled="!selected || loading || mutationBusy"
             @click="deleteSelectedConversation"
           >{{ deleting ? '删除中…' : '删除会话' }}</button>
         </div>
       </div>
 
+      <div class="image-selection-toolbar">
+        <button data-testid="chat-select-page" :disabled="loading || mutationBusy || !visibleImages.length" @click="selectPageImages">全选本页</button>
+        <button data-testid="chat-clear-selection" :disabled="mutationBusy || !selectedImageKeys.length" @click="clearImageSelection">全不选</button>
+        <span data-testid="chat-selection-count">已选 {{ selectedImages.length }} 张（仅本页筛选结果）</span>
+        <button class="delete-button" data-testid="chat-delete-selected" :disabled="loading || mutationBusy || !selectedImages.length" @click="deleteSelectedImages">{{ bulkDeleting ? '删除中…' : '删除选中图片' }}</button>
+      </div>
+      <p v-if="deleteNotice" class="delete-notice" role="status">{{ deleteNotice }}</p>
       <p v-if="messageError" class="error" role="alert">
         {{ messageError }}
-        <button type="button" data-testid="chat-retry" :disabled="loading" @click="loadMessages">重试</button>
+        <button type="button" data-testid="chat-retry" :disabled="loading || mutationBusy" @click="loadMessages">重试</button>
       </p>
       <p v-if="loading" class="empty">加载中…</p>
       <p v-else-if="!messageError && visibleMessages.length === 0" class="empty">暂无消息</p>
@@ -287,20 +430,24 @@ onBeforeUnmount(() => { disposed = true; latestRequest += 1; latestLoad += 1; })
           </div>
           <p v-if="message.text" class="message-text">{{ message.text }}</p>
           <div v-if="message.assets.length" class="media-grid">
-            <div v-for="asset in message.assets" :key="asset.id" class="media-item">
+            <div v-for="asset in message.assets" :key="asset.id + ':' + asset.role" class="media-item">
+              <label v-if="isImage(asset)" class="image-select">
+                <input v-model="selectedImageKeys" type="checkbox" :value="imageKey(message.id, asset.id)" :disabled="loading || mutationBusy"
+                  :data-testid="`select-chat-image-${message.id}-${asset.id}`" />选择此图片
+              </label>
               <button
                 class="media-preview-button"
                 type="button"
                 :data-testid="`open-chat-image-${asset.id}`"
                 :aria-label="`放大查看${message.text || message.message_type}`"
-                @click="openImagePreview(asset.url, message.text || message.message_type)"
+                @click="openImagePreview(message, asset)"
               >
                 <img :src="scopedAssetUrl(asset.url)" :alt="message.text || message.message_type" loading="lazy" />
               </button>
               <button
                 class="media-delete-button"
                 type="button"
-                :disabled="deleting || deletingAssetId !== null"
+                :disabled="mutationBusy"
                 :data-testid="`delete-chat-image-${asset.id}`"
                 aria-label="删除这张聊天截图"
                 @click="deleteImage(message, asset.id)"
@@ -311,15 +458,18 @@ onBeforeUnmount(() => { disposed = true; latestRequest += 1; latestLoad += 1; })
       </div>
       <nav v-if="selected" class="capture-pager" aria-label="聊天消息分页">
         <span>共 {{ total }} 条 · 每页 {{ pageSize }} 条</span>
-        <button type="button" data-testid="chat-page-prev" :disabled="page <= 1 || loading || deleting || deletingAssetId !== null" @click="changePage(page - 1)">上一页</button>
+        <button type="button" data-testid="chat-page-prev" :disabled="page <= 1 || loading || mutationBusy" @click="changePage(page - 1)">上一页</button>
         <span aria-live="polite">{{ page }} / {{ totalPages }}</span>
-        <button type="button" data-testid="chat-page-next" :disabled="page >= totalPages || loading || deleting || deletingAssetId !== null" @click="changePage(page + 1)">下一页</button>
+        <button type="button" data-testid="chat-page-next" :disabled="page >= totalPages || loading || mutationBusy" @click="changePage(page + 1)">下一页</button>
       </nav>
     </section>
   </div>
 
+  </div>
   <div
     v-if="previewImage"
+    ref="previewEl" tabindex="-1"
+    @keydown="previewKeydown"
     class="image-preview-overlay"
     role="dialog"
     aria-modal="true"
@@ -334,16 +484,31 @@ onBeforeUnmount(() => { disposed = true; latestRequest += 1; latestLoad += 1; })
       data-testid="close-chat-image-preview"
       @click="closeImagePreview"
     >×</button>
-    <img
-      class="image-preview-image"
-      :src="previewImage.src"
-      :alt="previewImage.alt"
-      data-testid="chat-image-preview-image"
-    />
+    <button class="image-preview-nav previous" data-testid="chat-image-prev" aria-label="上一张图片" :disabled="previewLoading || previewBoundary === 'previous'" @click="navigateImage('previous')">‹</button>
+    <figure class="image-preview-figure" data-testid="chat-image-swipe"
+      @pointerdown="startSwipe" @pointerup="endSwipe" @pointercancel="swipeStart = null">
+      <img class="image-preview-image" :src="previewImage.src" :alt="previewImage.alt" draggable="false" @dragstart.prevent data-testid="chat-image-preview-image" />
+      <figcaption class="image-preview-caption" aria-live="polite">
+        <span v-if="previewLoading">加载图片中…</span>
+        <span v-else-if="previewError">{{ previewError }}</span>
+        <span v-else-if="previewImage.ordinal">第 {{ previewImage.ordinal }} / {{ previewImage.total }} 张 · 当前会话，最新在前</span>
+        <span v-else>当前会话，最新在前 · 左右滑动或方向键切换</span>
+      </figcaption>
+    </figure>
+    <button class="image-preview-nav next" data-testid="chat-image-next" aria-label="下一张图片" :disabled="previewLoading || previewBoundary === 'next'" @click="navigateImage('next')">›</button>
   </div>
 </template>
 
 <style scoped>
+.image-selection-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0; color: #657083; font-size: 12px; }
+.image-selection-toolbar button { padding: 6px 10px; border: 1px solid #dfe4ea; border-radius: 6px; background: white; cursor: pointer; }
+.image-select { display: flex; gap: 6px; align-items: center; font-size: 12px; cursor: pointer; }
+.delete-notice { color: #23704b; font-size: 13px; }
+.image-preview-figure { margin: 0; min-width: 0; touch-action: pan-y pinch-zoom; user-select: none; }
+.image-preview-nav { position: fixed; top: 50%; z-index: 1; width: 42px; height: 52px; border: 0; border-radius: 8px; background: rgba(255,255,255,.9); font-size: 36px; cursor: pointer; transform: translateY(-50%); }
+.image-preview-nav.previous { left: 10px; } .image-preview-nav.next { right: 10px; }
+.image-preview-caption { position: fixed; bottom: 12px; left: 55px; right: 55px; text-align: center; color: white; font-size: 13px; pointer-events: none; }
+
 .platform-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
 .platform-tabs button { padding: 9px 24px; border: 1px solid #d5dbe5; border-radius: 8px; background: white; cursor: pointer; }
 .platform-tabs button.active { color: #fff; background: #2563eb; border-color: #2563eb; }
@@ -390,7 +555,7 @@ button:disabled { cursor: not-allowed; opacity: .5; }
 .capture-pager > span:first-child { margin-right: auto; }
 .capture-pager button, .error button { padding: 5px 10px; border: 1px solid #dfe4ea; border-radius: 6px; background: #fff; cursor: pointer; }
 .image-preview-overlay { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 32px; background: rgba(15, 18, 28, .82); }
-.image-preview-image { display: block; max-width: 92vw; max-height: 90vh; object-fit: contain; border-radius: 8px; box-shadow: 0 16px 48px rgba(0, 0, 0, .35); }
+.image-preview-image { display: block; max-width: 92vw; max-height: 82vh; object-fit: contain; border-radius: 8px; box-shadow: 0 16px 48px rgba(0, 0, 0, .35); }
 .image-preview-close { position: fixed; top: 18px; right: 22px; width: 42px; height: 42px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .92); color: #2f3542; font-size: 30px; line-height: 1; cursor: pointer; }
 .error { padding: 10px 14px; margin-bottom: 16px; border-radius: 6px; background: #fff0f0; color: #c0392b; }
 @media (max-width: 1000px) {

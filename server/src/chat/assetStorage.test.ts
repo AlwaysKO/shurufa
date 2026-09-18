@@ -20,6 +20,8 @@ function sha256(bytes: Buffer): string {
 
 beforeEach(async () => {
   const database = newDb();
+  // pg-mem不实现LOCK TABLE；真实并发锁行为另由deviceControls.postgres.test覆盖。
+  database.public.interceptQueries(sql => sql === 'LOCK TABLE media_asset IN ROW EXCLUSIVE MODE' ? [] : null);
   const adapter = database.adapters.createPg();
   pool = new adapter.Pool();
   await pool.query(readFileSync(

@@ -12,8 +12,7 @@ class ExpressionFlowController(
     private val sendController: ExpressionSendController,
     private val prepareAsset: suspend (ExpressionAsset, String) -> PreparedExpression,
     private val prepareCombination: suspend (EmojiCombination) -> PreparedExpression,
-    private val fallback: suspend (PreparedExpression, ExpressionSendResult) -> ExpressionSendResult =
-        { _, failure -> failure },
+    private val fallback: (suspend (PreparedExpression, ExpressionSendResult) -> ExpressionSendResult)? = null,
     private val timeoutMillis: Long = 30_000,
     private val onStage: (ExpressionSendStage) -> Unit = {},
 ) {
@@ -58,7 +57,9 @@ class ExpressionFlowController(
                 sendController.prepare(expression)
                 report(ExpressionSendStage.SENDING)
                 val directResult = sendController.confirm()
-                val result = if (directResult == ExpressionSendResult.Sent || directResult == ExpressionSendResult.WechatSubmitted) {
+                val result = if (directResult == ExpressionSendResult.Sent ||
+                    directResult == ExpressionSendResult.WechatSubmitted ||
+                    directResult == ExpressionSendResult.AppSubmitted || fallback == null) {
                     directResult
                 } else {
                     try {

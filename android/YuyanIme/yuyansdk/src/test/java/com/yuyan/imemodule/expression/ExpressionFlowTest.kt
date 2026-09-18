@@ -26,6 +26,19 @@ import org.junit.Assert.fail
 import org.junit.Test
 
 class ExpressionFlowTest {
+    @Test fun `没有显式保存兜底时发送失败不得报告正在保存`() = runBlocking {
+        val stages = mutableListOf<com.yuyan.imemodule.expression.send.ExpressionSendStage>()
+        val flow = ExpressionFlowController(
+            ExpressionSendController { ExpressionSendResult.UnsupportedTarget },
+            prepareAsset = { _, _ -> PreparedExpression(File("/tmp/no-save.gif"), "image/gif") },
+            prepareCombination = { error("unexpected") },
+            onStage = { stages += it },
+        )
+        assertEquals(ExpressionSendResult.UnsupportedTarget, flow.prepareAndSend(asset("no-save", "gif", emptyList()), "谢谢"))
+        assertEquals(listOf(com.yuyan.imemodule.expression.send.ExpressionSendStage.PREPARING,
+            com.yuyan.imemodule.expression.send.ExpressionSendStage.SENDING), stages)
+    }
+
     @org.junit.Test fun `准备挂起必须超时释放且可立即重试`() = kotlinx.coroutines.runBlocking {
         var stuck = true
         var sends = 0

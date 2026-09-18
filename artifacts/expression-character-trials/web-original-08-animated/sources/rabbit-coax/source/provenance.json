@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aabb085-041c-83ea-94d8-77db8505a2ef",
+  "sourceFileId": "file_000000009f048206b300b8ede371edf1",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "0402984e2df73df34e3128c29eb7017257d5caaf6dc6f65388be17cf5e629594",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T09:20:32.401648+00:00",
+  "generationObservedAt": "2026-09-17T09:20:32.401648+00:00",
+  "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+  "originalDownloadName": "rabbit-coax.png",
+  "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T09:21:03.380653+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

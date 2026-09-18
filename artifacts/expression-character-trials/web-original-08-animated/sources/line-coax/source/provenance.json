@@ -1,0 +1,25 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aabb102-6a2c-83e9-bffb-ecf4f020aebb",
+  "sourceFileId": "file_00000000e38c820699374171fbba0008",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "d25c5b32e002a11ff12b3aa64387ec67eb79a4a8c7db254f6e71895e795ab4d4",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T09:23:30.884959+00:00",
+  "generationObservedAt": "2026-09-17T09:23:30.884959+00:00",
+  "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+  "originalDownloadName": "line-coax.png",
+  "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T09:23:56.206268+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

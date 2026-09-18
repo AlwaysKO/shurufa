@@ -15,6 +15,34 @@ class ExpressionAssetResolverTest {
     private val bytes = "verified image".toByteArray()
     private val sha = MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
 
+    @Test fun `预览解析命中查询原件时不创建额外交付副本`() = runBlocking {
+        val cache = ExpressionCache(folder.root)
+        val original = java.io.File(cache.queryRoot, "originals/$sha").apply {
+            parentFile!!.mkdirs(); writeBytes(bytes)
+        }
+        val resolver = ExpressionAssetResolver(cache, { error("不应重新读内置") }) { _, _, _, _ -> error("不应重新下载") }
+        val resolved = resolver.resolve("v1", "remote/example.gif", sha, null)!!
+        assertEquals(original, resolved)
+        assertFalse(cache.file("v1", "remote/example.gif").exists())
+        assertArrayEquals(original.readBytes(), resolved.readBytes())
+    }
+
+    @Test fun `预览解析下载原件后保持有容量限制的缓存路径`() = runBlocking {
+        val cache = ExpressionCache(folder.root)
+        val original = java.io.File(cache.queryRoot, "originals/$sha")
+        var calls = 0
+        val resolver = ExpressionAssetResolver(cache, { throw FileNotFoundException() }) { _, _, _, _ ->
+            calls++
+            original.parentFile!!.mkdirs(); original.writeBytes(bytes); original
+        }
+        val resolved = resolver.resolve("v1", "remote/example.gif", sha, null)!!
+        assertEquals(original, resolved)
+        assertFalse(cache.file("v1", "remote/example.gif").exists())
+        assertArrayEquals(bytes, resolved.readBytes())
+        assertEquals(resolved, resolver.resolve("v1", "remote/example.gif", sha, null))
+        assertEquals(1, calls)
+    }
+
     @Test fun `缺URL时使用标准服务端路径且发送复用预览缓存`() = runBlocking {
         val cache = ExpressionCache(folder.root)
         var calls = 0

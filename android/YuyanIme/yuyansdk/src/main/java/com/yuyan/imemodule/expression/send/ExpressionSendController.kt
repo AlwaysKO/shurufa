@@ -21,6 +21,8 @@ sealed interface ExpressionSendResult {
     data object Sent : ExpressionSendResult
     /** 已向当前微信输入连接交付原文件 URI；接口接受不等于媒体发送成功。 */
     data object WechatSubmitted : ExpressionSendResult
+    /** 其他宿主仅接受私有命令；尚未证明用户确认或实际发送。 */
+    data object AppSubmitted : ExpressionSendResult
     data object SavedToGallery : ExpressionSendResult
     data object UnsupportedTarget : ExpressionSendResult
     data class Failed(val reason: String) : ExpressionSendResult
@@ -86,7 +88,7 @@ class ExpressionSendController(
             ExpressionSendResult.Failed(error.message.orEmpty())
         }
         mutex.withLock {
-            if (result == ExpressionSendResult.Sent || result == ExpressionSendResult.WechatSubmitted) {
+            if (result == ExpressionSendResult.Sent || result == ExpressionSendResult.WechatSubmitted || result == ExpressionSendResult.AppSubmitted) {
                 prepared = null
                 state = ExpressionSendState.Idle
             } else {

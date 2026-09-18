@@ -11,7 +11,14 @@ import com.yuyan.imemodule.data.capture.db.PendingMessageEntity
 import com.yuyan.imemodule.data.capture.db.SeenMessageEntity
 import com.yuyan.imemodule.data.capture.model.CapturedConversation
 import com.yuyan.imemodule.data.capture.model.CapturedMessage
+import com.yuyan.imemodule.data.capture.model.ChatDirection
+import com.yuyan.imemodule.data.capture.model.ChatMessageType
+import com.yuyan.imemodule.data.capture.model.ChatPlatform
 import com.yuyan.imemodule.data.capture.model.stableKeyOrNull
+import com.yuyan.imemodule.data.capture.media.ScreenshotConversationIdentity
+import com.yuyan.imemodule.data.capture.media.ConversationTitleStabilizer
+import com.yuyan.imemodule.data.capture.media.capturedTitlePixelSignature
+import com.yuyan.imemodule.data.capture.media.unresolvedWechatScreenshotIdentity
 import com.yuyan.imemodule.data.capture.media.MediaAssetCapturer
 import com.yuyan.imemodule.data.capture.media.MediaCaptureRequest
 import com.yuyan.imemodule.data.capture.net.PendingMessageUploadPayload
@@ -62,22 +69,36 @@ class CaptureCoordinator(
     private val mediaCapturer: MediaAssetCapturer? = null,
     private val captureAllowed: () -> Boolean = { true },
     private val onViewportParsed: (ParsedViewport) -> Unit = {},
+    private val titleSignature: (PendingAssetEntity) -> String? = ::capturedTitlePixelSignature,
 ) {
     val internalFailureCount = AtomicLong(0)
+    private val identityLock = Any()
+    private var identityGeneration = 0L
+    private var identityScope: String? = null
+    private var identityTracker: ConversationTitleStabilizer? = null
+    private val unresolvedFrames = linkedMapOf<String, ScreenshotConversationIdentity>()
 
-    suspend fun capture(packageName: String, snapshot: UiNodeSnapshot, windowId: Int? = null) {
-        if (!captureAllowed()) return
+    fun resetConversationIdentity() = synchronized(identityLock) {
+        identityGeneration++
+        identityScope = null
+        identityTracker = null
+        unresolvedFrames.clear()
+    }
+
+    suspend fun capture(packageName: String, snapshot: UiNodeSnapshot, windowId: Int? = null): Boolean {
+        if (!captureAllowed()) return false
         try {
-            val adapter = adapterForPackage(packageName) ?: return
-            if (adapter.packageName != packageName) return
+            val adapter = adapterForPackage(packageName) ?: return false
+            if (adapter.packageName != packageName) return false
             val result = adapter.parse(snapshot)
-            if (result !is ParseResult.Success) return
-            val conversation = result.viewport.conversation
-            val rawMessages = result.viewport.messages.filter { message ->
+            if (result !is ParseResult.Success) return false
+            var conversation = result.viewport.conversation
+            val identityVersion = synchronized(identityLock) { identityGeneration }
+            val titleBounds = result.viewport.titleBounds
+            var rawMessages = result.viewport.messages.filter { message ->
                 CollectionConsent.allowsText(message.text) &&
                     message.metadata.values.all { CollectionConsent.allowsText(it) }
             }
-            onViewportParsed(result.viewport.copy(messages = rawMessages))
             val mediaRequests = rawMessages.mapIndexedNotNull { index, message ->
                 if (!CollectionConsent.allowsText(message.text)) return@mapIndexedNotNull null
                 message.mediaBounds?.let { bounds ->
@@ -89,18 +110,56 @@ class CaptureCoordinator(
                     )
                 }
             }
-            val capturedAssets = if (mediaRequests.isNotEmpty() && windowId != null && mediaCapturer != null) {
+            val screenshotWithTitle = titleBounds != null && rawMessages.isNotEmpty() &&
+                rawMessages.all { it.metadata["capture_kind"] == "conversation_screenshot" }
+            val requests = if (screenshotWithTitle) mediaRequests + MediaCaptureRequest(-1, titleBounds!!) else mediaRequests
+            val capturedAssets = if (requests.isNotEmpty() && windowId != null && mediaCapturer != null) {
                 try {
-                    mediaCapturer.capture(windowId, snapshot.bounds, mediaRequests)
+                    mediaCapturer.capture(windowId, snapshot.bounds, requests)
                 } catch (_: Exception) {
                     emptyMap()
                 }
             } else {
                 emptyMap()
             }
-            enqueueParsed(conversation, rawMessages, capturedAssets)
+            if (screenshotWithTitle) {
+                val visualKey = capturedAssets[-1]?.let(titleSignature)
+                val identity = synchronized(identityLock) {
+                    if (identityVersion != identityGeneration) {
+                        unresolvedWechatScreenshotIdentity().let { it.copy(externalKey = it.externalKey.replace("screenshot-pending:", "capture-pending:")) }
+                    } else {
+                        val scope = "${conversation.platform.wireName}|${conversation.accountKey}|$windowId"
+                        if (identityScope != scope) {
+                            identityScope = scope
+                            unresolvedFrames.clear()
+                            identityTracker = ConversationTitleStabilizer(conversation.platform, conversation.accountKey, "accessibility_title")
+                        }
+                        val observed = identityTracker!!.observe(conversation.displayName, visualKey, clock())
+                        // 只在本次连续页面内复用完全相同的未知帧，导航后不据此认定同一联系人。
+                        if (observed.externalKey.startsWith("capture-pending:") && capturedAssets.isNotEmpty()) {
+                            val frameKey = scope + "|" + capturedAssets.toSortedMap().entries.joinToString("|") { "${it.key}:${it.value.sha256}" }
+                            unresolvedFrames.getOrPut(frameKey) { observed }.also {
+                                if (unresolvedFrames.size > 64) unresolvedFrames.remove(unresolvedFrames.keys.first())
+                            }
+                        } else observed
+                    }
+                }
+                conversation = conversation.copy(externalKey = identity.externalKey,
+                    displayName = identity.displayName, identityConfidence = identity.confidence)
+                rawMessages = rawMessages.map { it.copy(metadata = it.metadata + mapOf(
+                    "conversation_identity_status" to identity.status,
+                    "identity_unavailable" to (identity.status != "confirmed").toString(),
+                    "conversation_identity_source" to identity.source,
+                    "conversation_identity_observed_title" to identity.observedTitle.orEmpty(),
+                )) }
+            }
+            onViewportParsed(result.viewport.copy(conversation = conversation, messages = rawMessages))
+            val persisted = enqueueParsed(conversation, rawMessages, capturedAssets.filterKeys { it >= 0 })
+            return persisted != CapturePersistResult.FAILED && screenshotWithTitle && conversation.identityConfidence < 0.8 &&
+                conversation.externalKey.orEmpty().startsWith("capture-v3:")
         } catch (_: Exception) {
             internalFailureCount.incrementAndGet()
+            return false
         }
     }
 
@@ -120,7 +179,11 @@ class CaptureCoordinator(
         rawMessages: List<CapturedMessage>,
         capturedAssets: Map<Int, PendingAssetEntity>,
     ): CapturePersistResult {
-        if (!captureAllowed() || conversation.identityConfidence < MIN_IDENTITY_CONFIDENCE) return CapturePersistResult.FAILED
+        if (!captureAllowed()) return CapturePersistResult.FAILED
+        if (conversation.identityConfidence < MIN_IDENTITY_CONFIDENCE &&
+            !isIsolatedPendingScreenshot(conversation, rawMessages, capturedAssets) &&
+            !isPendingNotification(conversation, rawMessages) &&
+            !isPendingNotificationScreenshot(conversation, rawMessages, capturedAssets)) return CapturePersistResult.FAILED
         val conversationKey = conversation.stableKeyOrNull() ?: return CapturePersistResult.FAILED
         var insertedAny = false
         var persistableAny = false
@@ -149,6 +212,12 @@ class CaptureCoordinator(
                 )
             ) {
                 insertedAny = true
+            } else if (isConfirmedScreenshot(conversation, message)) {
+                // 复用原图片指纹重放，仅更新新会话的确认名。服务端先更新会话再去重，不新增图片。
+                // 使用独立的已见标识，确认补传有持久化重试且每个确认结果最多入队一次。
+                val confirmationKey = "identity:" + sha256("$fingerprint|${conversation.displayName}|${conversation.identityConfidence}".toByteArray(Charsets.UTF_8))
+                // 原图仍在队列时会自动等待；已上传时不要重新入队可能已清理的缓存文件。
+                if (store.enqueueIfNew(SeenMessageEntity(confirmationKey, capturedAt), pending, emptyList())) insertedAny = true
             }
         }
         if (insertedAny) wakeUploader()
@@ -157,6 +226,59 @@ class CaptureCoordinator(
             persistableAny -> CapturePersistResult.ALREADY_PERSISTED
             else -> CapturePersistResult.FAILED
         }
+    }
+
+    private fun isConfirmedScreenshot(conversation: CapturedConversation, message: CapturedMessage): Boolean =
+        conversation.identityConfidence >= 0.8 &&
+            (conversation.externalKey.orEmpty().startsWith("capture-v3:") || conversation.externalKey.orEmpty().startsWith("screenshot-v2:")) &&
+            message.direction == ChatDirection.SYSTEM && message.messageType == ChatMessageType.IMAGE &&
+            message.metadata["conversation_identity_status"] == "confirmed"
+
+    // 待确认例外只对新标识和对应平台的明确来源开放，不放宽任意低置信度数据。
+    private fun isIsolatedPendingScreenshot(
+        conversation: CapturedConversation,
+        messages: List<CapturedMessage>,
+        assets: Map<Int, PendingAssetEntity>,
+    ): Boolean {
+        val key = conversation.externalKey.orEmpty()
+        val oldWechat = conversation.platform == ChatPlatform.WECHAT && conversation.accountKey == "wechat-empty-tree" &&
+            key.matches(Regex("screenshot-(?:v2:[a-f0-9]{64}|pending:[a-f0-9-]{36})"))
+        val common = conversation.accountKey == "${conversation.platform.wireName}-local" &&
+            key.matches(Regex("capture-(?:v3:[a-f0-9]{64}|pending:[a-f0-9-]{36})"))
+        if (!oldWechat && !common) return false
+        val source = if (oldWechat) "wechat_empty_tree_screenshot" else "${conversation.platform.wireName}_screenshot"
+        return messages.isNotEmpty() && messages.withIndex().all { (index, message) ->
+            message.direction == ChatDirection.SYSTEM && message.messageType == ChatMessageType.IMAGE &&
+                message.text.isNullOrBlank() && assets[index] != null &&
+                message.metadata["capture_source"] == source && message.metadata["conversation_identity_status"] == "pending"
+        }
+    }
+
+    private fun isPendingNotification(conversation: CapturedConversation, messages: List<CapturedMessage>): Boolean =
+        conversation.accountKey == "notification" && conversation.externalKey.orEmpty().matches(Regex("notification-v2:pending:[a-f0-9]{64}")) &&
+            messages.isNotEmpty() && messages.all { message ->
+                message.direction == ChatDirection.INCOMING && !message.text.isNullOrBlank() &&
+                    message.metadata["capture_source"] == "notification" &&
+                    message.metadata["conversation_identity_status"] == "pending" &&
+                    !message.metadata["notification_key"].isNullOrBlank()
+            }
+
+    private fun isPendingNotificationScreenshot(
+        conversation: CapturedConversation, messages: List<CapturedMessage>, assets: Map<Int, PendingAssetEntity>,
+    ): Boolean {
+        val packageName = when (conversation.platform) {
+            ChatPlatform.WECHAT -> "com.tencent.mm"
+            ChatPlatform.DOUYIN -> "com.ss.android.ugc.aweme"
+            ChatPlatform.QQ -> "com.tencent.mobileqq"
+        }
+        return conversation.accountKey == "notification-screenshot" &&
+            conversation.externalKey.orEmpty().matches(Regex("notification-fallback-v2:[a-f0-9]{64}")) &&
+            messages.isNotEmpty() && messages.withIndex().all { (index, message) ->
+                assets[index] != null && message.messageType == ChatMessageType.IMAGE && message.direction == ChatDirection.INCOMING &&
+                    message.metadata["capture_source"] == "notification_screenshot_fallback" &&
+                    message.metadata["source_package"] == packageName &&
+                    message.metadata["conversation_identity_status"] == "pending" && !message.metadata["notification_key"].isNullOrBlank()
+            }
     }
 
     private fun pendingMessage(

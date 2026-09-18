@@ -51,6 +51,39 @@ class EmojiCombinationPickerTest {
         runCatching { activity.assets.open("expression/${it.fileName}").close() }.isFailure
     }
 
+    @Test fun `同URL的Emoji字节版本更新时必须重新加载而非复用旧绑定`() {
+        val base = catalog.document.emojiBases.first().copy(url = "https://example.invalid/emoji.webp")
+        picker.render(ExpressionCatalog(catalog.document.copy(emojiBases = listOf(base))))
+        val list = picker.findViewById<RecyclerView>(R.id.expression_emoji_list)
+        @Suppress("UNCHECKED_CAST")
+        val adapter = list.adapter as RecyclerView.Adapter<RecyclerView.ViewHolder>
+        val holder = adapter.createViewHolder(list, 0)
+        adapter.bindViewHolder(holder, 0)
+        val target = com.bumptech.glide.request.target.DrawableImageViewTarget(holder.itemView as ImageView)
+        val previous = target.request
+        assertNotNull(previous)
+        picker.render(ExpressionCatalog(catalog.document.copy(emojiBases = listOf(base.copy(sha256 = "b".repeat(64))))))
+        adapter.bindViewHolder(holder, 0)
+        assertNotSame(previous, target.request)
+    }
+
+    @Test fun `同目录重复渲染不再全量刷新基础Emoji`() {
+        val adapter = picker.findViewById<RecyclerView>(R.id.expression_emoji_list).adapter!!
+        var refreshes = 0
+        adapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
+            override fun onChanged() { refreshes++ }
+        })
+        repeat(10) { picker.render(catalog) }
+        assertEquals(0, refreshes)
+    }
+
+    @Test fun `展开Emoji使用纵向多列网格`() {
+        picker.setAvailableHeight((240 * activity.resources.displayMetrics.density).toInt())
+        val layout = picker.findViewById<RecyclerView>(R.id.expression_emoji_list).layoutManager as androidx.recyclerview.widget.GridLayoutManager
+        assertEquals(RecyclerView.VERTICAL, layout.orientation)
+        assertTrue(layout.spanCount >= 4)
+    }
+
     @Test fun `下载中禁发失败明确重试且真实交付后点击可发送`() {
         var deliver: ((File?) -> Unit)? = null
         var requests = 0

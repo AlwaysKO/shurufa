@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aabb3dd-f60c-83ea-8381-4fde12773b06",
+  "sourceFileId": "file_0000000003a08209a8f9c7db6e71936b",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "9cdd3cfdd3fd1dbbbe4260ded69afc212aec966940ccfe9c816cf82fa1b38d58",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T09:35:22.571862+00:00",
+  "generationObservedAt": "2026-09-17T09:35:22.571862+00:00",
+  "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+  "originalDownloadName": "clay-surrender.png",
+  "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T09:35:56.451373+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

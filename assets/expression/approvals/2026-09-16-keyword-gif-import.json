@@ -3721,6 +3721,126 @@
       "bytes": 35418
     },
     {
+      "id": "beagle-favor",
+      "sourceReport": "artifacts/expression-character-trials/web-original-08-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-08-animated/output/gifs/beagle-favor.gif",
+      "status": "imported",
+      "catalogId": "generated-2616c052030317438194d33d",
+      "keyword": "麻烦你了",
+      "sha256": "2616c052030317438194d33d8d3d0fdb9d88f5d165cac3c0d30f94a8cff53e86",
+      "bytes": 56893
+    },
+    {
+      "id": "line-favor",
+      "sourceReport": "artifacts/expression-character-trials/web-original-08-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-08-animated/output/gifs/line-favor.gif",
+      "status": "imported",
+      "catalogId": "generated-4215cd03dc8f3d50be85899f",
+      "keyword": "麻烦你了",
+      "sha256": "4215cd03dc8f3d50be85899f0270f7c73471bd7e05472507612630a8b6706c23",
+      "bytes": 76278
+    },
+    {
+      "id": "clay-favor",
+      "sourceReport": "artifacts/expression-character-trials/web-original-08-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-08-animated/output/gifs/clay-favor.gif",
+      "status": "imported",
+      "catalogId": "generated-e6e37ba36944dc135501d139",
+      "keyword": "麻烦你了",
+      "sha256": "e6e37ba36944dc135501d13925dffd916bb3a219c0110d7053549905461ea47f",
+      "bytes": 48825
+    },
+    {
+      "id": "man-favor",
+      "sourceReport": "artifacts/expression-character-trials/web-original-08-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-08-animated/output/gifs/man-favor.gif",
+      "status": "imported",
+      "catalogId": "generated-ffd54af89ec131f3066562eb",
+      "keyword": "麻烦你了",
+      "sha256": "ffd54af89ec131f3066562ebee30e9529c85bcc02c63a04fc3bc9938de42167b",
+      "bytes": 60672
+    },
+    {
+      "id": "rabbit-coax",
+      "sourceReport": "artifacts/expression-character-trials/web-original-08-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-08-animated/output/gifs/rabbit-coax.gif",
+      "status": "imported",
+      "catalogId": "generated-34db9237c5520c46320204fd",
+      "keyword": "撒娇",
+      "sha256": "34db9237c5520c46320204fdbd88d9b59ea0bd59183e73299f6ff35c674135bf",
+      "bytes": 68479
+    },
+    {
+      "id": "line-coax",
+      "sourceReport": "artifacts/expression-character-trials/web-original-08-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-08-animated/output/gifs/line-coax.gif",
+      "status": "imported",
+      "catalogId": "generated-ba76899f0fa1a3d7dbca19cb",
+      "keyword": "撒娇",
+      "sha256": "ba76899f0fa1a3d7dbca19cb84261bc65fd17604884f15323e2ed3b1b76b8fc5",
+      "bytes": 71463
+    },
+    {
+      "id": "clay-coax",
+      "sourceReport": "artifacts/expression-character-trials/web-original-08-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-08-animated/output/gifs/clay-coax.gif",
+      "status": "imported",
+      "catalogId": "generated-eea07d225d91a1b8a048d685",
+      "keyword": "撒娇",
+      "sha256": "eea07d225d91a1b8a048d685e07e521f7b188bb2681acb6a0734fa51c1674772",
+      "bytes": 43972
+    },
+    {
+      "id": "man-coax",
+      "sourceReport": "artifacts/expression-character-trials/web-original-08-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-08-animated/output/gifs/man-coax.gif",
+      "status": "imported",
+      "catalogId": "generated-6ad04fb744dcddd220a85c64",
+      "keyword": "撒娇",
+      "sha256": "6ad04fb744dcddd220a85c643ccdb3d3f535cee03c9888fa5589c4f555adc67f",
+      "bytes": 63541
+    },
+    {
+      "id": "shiba-surrender",
+      "sourceReport": "artifacts/expression-character-trials/web-original-08-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-08-animated/output/gifs/shiba-surrender.gif",
+      "status": "imported",
+      "catalogId": "generated-68e7d5578f5a043f91b9bd25",
+      "keyword": "服了",
+      "sha256": "68e7d5578f5a043f91b9bd259e0049e5d8a4c83c4dd1481233bb45058c515e0a",
+      "bytes": 50278
+    },
+    {
+      "id": "line-surrender",
+      "sourceReport": "artifacts/expression-character-trials/web-original-08-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-08-animated/output/gifs/line-surrender.gif",
+      "status": "imported",
+      "catalogId": "generated-ed867d6115a9989ca9b1062b",
+      "keyword": "服了",
+      "sha256": "ed867d6115a9989ca9b1062bc6c8c79df860eeb908e2be5790d3ecf1367649fd",
+      "bytes": 64329
+    },
+    {
+      "id": "clay-surrender",
+      "sourceReport": "artifacts/expression-character-trials/web-original-08-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-08-animated/output/gifs/clay-surrender.gif",
+      "status": "imported",
+      "catalogId": "generated-913ad13d15fc6a2f456f8a6e",
+      "keyword": "服了",
+      "sha256": "913ad13d15fc6a2f456f8a6ee9c8252d35e2b1434f72e8fd441d70b0835b51a2",
+      "bytes": 52964
+    },
+    {
+      "id": "man-surrender",
+      "sourceReport": "artifacts/expression-character-trials/web-original-08-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-08-animated/output/gifs/man-surrender.gif",
+      "status": "imported",
+      "catalogId": "generated-7fecfbf80c2741d78100be7f",
+      "keyword": "服了",
+      "sha256": "7fecfbf80c2741d78100be7fa130225accafd8afe2192f4a9af9d2c14fc6d82d",
+      "bytes": 58438
+    },
+    {
       "id": "thanks-nuotuan-bow",
       "sourceReport": "artifacts/expression-prototypes/report.json",
       "sourceGif": "artifacts/expression-prototypes/gifs/thanks-nuotuan-bow.gif",

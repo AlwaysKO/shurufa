@@ -28,9 +28,9 @@ async function mount(name: string, api: Record<string, any>) {
   const module = { exports: {} as { default: Vue.Component } };
   const require = (id: string) => {
     if (id === 'vue') return Vue;
-    if (id === '../confirmation') return { useConfirmation: () => async (message: string) => Boolean(globalThis.confirm?.(message)) };
+    if (id === '../confirmation') return { useConfirmation: () => async (message: string) => Boolean(await globalThis.confirm?.(message)) };
     if (id === 'vue-router') return { useRoute: () => ({ query: {} }) };
-    if (id === '../api') return { api, appName: (s: string) => s, deviceDetailLines: () => [], deviceLabel: () => '', eventTypeName: (s: string) => s, networkName: (s: string) => s };
+    if (id === '../api') return { api, currentUserId: Vue.ref('user-a'), appName: (s: string) => s, deviceDetailLines: () => [], deviceLabel: () => '', eventTypeName: (s: string) => s, networkName: (s: string) => s };
     if (id === '../data/phrasePresets') return presets;
     if (id.endsWith('.css')) return {};
     throw new Error(`Unexpected import: ${id}`);
@@ -216,8 +216,9 @@ it('切换模式正在加载时，旧行不可发起删除', async () => {
   const deleteActivity = vi.fn();
   const view = await mount('Activity', { events, deleteActivity, devices: async () => ({ devices: [] }) });
   view.find('mode-raw')!.props.onClick(); await settle();
-  expect(view.find('delete-activity-c')?.props.disabled).toBe(true);
-  view.find('delete-activity-c')!.props.onClick(); await settle();
+  expect(view.find('delete-activity-c')).toBeUndefined();
+  expect(view.text()).not.toContain('晚上九点见');
+  await settle();
   expect(confirm).not.toHaveBeenCalled(); expect(deleteActivity).not.toHaveBeenCalled();
   respond({ total: 1, items: [editGroup] }); await settle();
 });
@@ -250,4 +251,92 @@ it('批量清理保留DELETE校验，必须经自定义确认，取消不提交�
   await action.props.onClick(); await settle();
   expect(cleanup).toHaveBeenCalledTimes(1);
   expect(cleanup).toHaveBeenCalledWith({ confirm: 'DELETE', scope: 'events', from: undefined, to: undefined, package_name: undefined });
+});
+
+
+it('底层事件是临时原始视图，取消后恢复此前整段或原始模式', async () => {
+  const events = vi.fn().mockResolvedValue({ total: 0, items: [] });
+  const view = await mount('Activity', { events, devices: async () => ({ devices: [] }) });
+  const toggle = async (value: boolean) => { const checkbox = view.find('show-all')!; checkbox.props['onUpdate:modelValue'](value); checkbox.props.onChange(); await settle(); };
+  await toggle(true); expect(events.mock.calls.at(-1)![0]).toMatchObject({ all: true, grouped: false });
+  await toggle(false); expect(events.mock.calls.at(-1)![0]).toMatchObject({ all: false, grouped: true });
+  view.find('mode-raw')!.props.onClick(); await settle();
+  await toggle(true); await toggle(false);
+  expect(events.mock.calls.at(-1)![0]).toMatchObject({ all: false, grouped: false });
+});
+const batchRows = () => [editGroup, { ...editGroup, id: 'other', text_after: '第二段', edit_count: 1, edit_events: [{ ...editHistory[0], id: 'other' }] }];
+it('全选仅选择本页并显示数量，全不选清空且不发删除请求', async () => {
+  const deleteActivities = vi.fn();
+  const view = await mount('Activity', { deleteActivities, events: async () => ({ total: 45, items: batchRows() }), devices: async () => ({ devices: [] }) });
+  expect(view.find('delete-selected')!.props.disabled).toBe(true);
+  view.find('select-page')!.props.onClick(); await settle();
+  expect(view.find('selection-count')!.text).toContain('2');
+  expect(view.find('delete-selected')!.props.disabled).toBe(false);
+  view.find('clear-selection')!.props.onClick(); await settle();
+  expect(view.find('selection-count')!.text).toContain('0'); expect(view.find('delete-selected')!.props.disabled).toBe(true);
+  expect(deleteActivities).not.toHaveBeenCalled();
+});
+it('整段批量确认显示行数和原始条数，只发送选中行的完整快照', async () => {
+  const confirm = vi.fn().mockReturnValue(true); vi.stubGlobal('confirm', confirm);
+  const deleteActivities = vi.fn().mockResolvedValue({ deleted: 4 });
+  const events = vi.fn().mockResolvedValueOnce({ total: 2, items: batchRows() }).mockResolvedValue({ total: 0, items: [] });
+  const view = await mount('Activity', { deleteActivities, events, devices: async () => ({ devices: [] }) });
+  view.find('select-page')!.props.onClick(); await settle(); view.find('delete-selected')!.props.onClick(); await settle();
+  expect(confirm.mock.calls[0][0]).toContain('2 组'); expect(confirm.mock.calls[0][0]).toContain('4 条');
+  expect(deleteActivities).toHaveBeenCalledWith({ confirm: 'DELETE', mode: 'group', records: [
+    { id: 'c', event_ids: ['a','b','c'] }, { id: 'other', event_ids: ['other'] },
+  ] });
+  expect(events).toHaveBeenCalledTimes(2); expect(view.text()).toContain('已删除 4 条');
+});
+it('原始模式只删除勾选的行，取消确认保留选择，失败也不清空列表或选择', async () => {
+  const confirm = vi.fn().mockReturnValue(false); vi.stubGlobal('confirm', confirm);
+  const deleteActivities = vi.fn().mockRejectedValue(Error('记录已变化'));
+  const view = await mount('Activity', { deleteActivities, events: async () => ({ total: 2, items: batchRows() }), devices: async () => ({ devices: [] }) });
+  view.find('mode-raw')!.props.onClick(); await settle();
+  view.find('select-activity-c')!.props['onUpdate:modelValue'](['c']); await settle();
+  view.find('delete-selected')!.props.onClick(); await settle(); expect(deleteActivities).not.toHaveBeenCalled();
+  expect(view.find('selection-count')!.text).toContain('1');
+  confirm.mockReturnValue(true); view.find('delete-selected')!.props.onClick(); await settle();
+  expect(deleteActivities).toHaveBeenCalledWith({ confirm: 'DELETE', mode: 'single', records: [{ id: 'c', event_ids: ['c'] }] });
+  expect(view.find('selection-count')!.text).toContain('1'); expect(view.text()).toContain('记录已变化'); expect(view.find('select-activity-c')).toBeDefined();
+});
+it('翻页、切换模式、底层事件和修改筛选均清空选择，加载时旧行不可見', async () => {
+  const view = await mount('Activity', { events: async () => ({ total: 45, items: batchRows() }), devices: async () => ({ devices: [] }) });
+  const actions = [
+    () => view.all().find(n => n.tag === 'button' && n.text === '下一页')!.props.onClick(),
+    () => view.find('mode-raw')!.props.onClick(),
+    () => { const c = view.find('show-all')!; c.props['onUpdate:modelValue'](true); c.props.onChange(); },
+    () => view.all().find(n => n.tag === 'input' && n.props.type === 'search')!.props['onUpdate:modelValue']('新筛选'),
+  ];
+  for (const action of actions) {
+    view.find('select-page')!.props.onClick(); await settle(); expect(view.find('selection-count')!.text).toContain('2');
+    action(); await settle(); expect(view.find('selection-count')!.text).toContain('0');
+  }
+});
+it('批量确认期间切换范围使旧确认失效，不能把旧选择删到新列表', async () => {
+  let answer!: (value: boolean) => void;
+  vi.stubGlobal('confirm', vi.fn(() => new Promise(resolve => { answer = resolve; })));
+  const deleteActivities = vi.fn();
+  const view = await mount('Activity', { deleteActivities, events: async () => ({ total: 2, items: batchRows() }), devices: async () => ({ devices: [] }) });
+  view.find('select-page')!.props.onClick(); await settle(); view.find('delete-selected')!.props.onClick(); await settle();
+  view.find('mode-raw')!.props.onClick(); await settle(); answer(true); await settle();
+  expect(deleteActivities).not.toHaveBeenCalled();
+});
+it('批量删除进行中防止重复提交，失败保持选择可重试', async () => {
+  vi.stubGlobal('confirm', vi.fn().mockReturnValue(true)); let reject!: (e: Error) => void;
+  const deleteActivities = vi.fn(() => new Promise((_resolve, fail) => { reject = fail; }));
+  const view = await mount('Activity', { deleteActivities, events: async () => ({ total: 2, items: batchRows() }), devices: async () => ({ devices: [] }) });
+  view.find('select-page')!.props.onClick(); await settle();
+  const click = view.find('delete-selected')!.props.onClick; click(); click(); await settle();
+  expect(deleteActivities).toHaveBeenCalledOnce(); expect(view.find('delete-selected')!.props.disabled).toBe(true);
+  reject(Error('测试失败')); await settle(); expect(view.find('selection-count')!.text).toContain('2'); expect(view.find('delete-selected')!.props.disabled).toBe(false);
+});
+it('批量删除末页全部选中行后回到有效页并清空选择', async () => {
+  vi.stubGlobal('confirm', vi.fn().mockReturnValue(true));
+  const events = vi.fn().mockResolvedValueOnce({ total: 22, items: batchRows() }).mockResolvedValueOnce({ total: 22, items: batchRows() })
+    .mockResolvedValueOnce({ total: 20, items: [] }).mockResolvedValue({ total: 20, items: [editGroup] });
+  const view = await mount('Activity', { events, deleteActivities: async () => ({ deleted: 4 }), devices: async () => ({ devices: [] }) });
+  view.all().find(n => n.tag === 'button' && n.text === '下一页')!.props.onClick(); await settle();
+  view.find('select-page')!.props.onClick(); await settle(); view.find('delete-selected')!.props.onClick(); await settle();
+  expect(events.mock.calls.map(call => call[0].page)).toEqual([1,2,2,1]); expect(view.find('selection-count')!.text).toContain('0');
 });

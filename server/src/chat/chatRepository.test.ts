@@ -51,6 +51,51 @@ beforeEach(async () => {
 });
 
 describe('ingestCapturedMessages', () => {
+  it.each(['wechat', 'qq', 'douyin'] as const)('新版 %s 确认重放不重复图片且低置信度重试不降级名字', async (platform) => {
+    const pending = { ...conversation, platform, account_key: `${platform}-local`, external_key: `capture-v3:${'1'.repeat(64)}`, display_name: '待确认会话', identity_confidence: 0.55 };
+    const image = message({ message_type: 'image', text: undefined });
+    const first = await ingestCapturedMessages(pool, userId, deviceId, pending, [image]);
+    const confirm = await ingestCapturedMessages(pool, userId, deviceId, { ...pending, display_name: '确认名字', identity_confidence: 0.85, conversation_type: 'group' }, [{ ...image, id: crypto.randomUUID() }]);
+    expect(confirm).toMatchObject({ conversationId: first.conversationId, inserted: 0, duplicated: 1 });
+    await ingestCapturedMessages(pool, userId, deviceId, pending, [image]);
+    expect((await pool.query('SELECT display_name, conversation_type FROM chat_conversation')).rows[0]).toEqual({ display_name: '确认名字', conversation_type: 'group' });
+    expect((await pool.query('SELECT id FROM chat_message')).rowCount).toBe(1);
+  });
+
+  it('新截图标识先待确认后确认，迟到的待确认上传不能覆盖已确认名字', async () => {
+    const pending = { ...conversation, account_key: 'wechat-empty-tree', external_key: `screenshot-v2:${'a'.repeat(64)}`, display_name: '待确认会话 aaaaaaaa', identity_confidence: 0.55 };
+    const first = await ingestCapturedMessages(pool, userId, deviceId, pending, [message()]);
+    const confirmed = { ...pending, display_name: '联系人甲', identity_confidence: 0.85 };
+    const second = await ingestCapturedMessages(pool, userId, deviceId, confirmed, [message({ fingerprint: 'c'.repeat(64) })]);
+    await ingestCapturedMessages(pool, userId, deviceId, pending, [message({ fingerprint: 'd'.repeat(64) })]);
+    expect(first.conversationId).toBe(second.conversationId);
+    expect((await pool.query('SELECT display_name, identity_confidence FROM chat_conversation')).rows).toEqual([
+      { display_name: '联系人甲', identity_confidence: 0.85 },
+    ]);
+    expect((await pool.query('SELECT id FROM chat_message')).rowCount).toBe(3);
+  });
+
+  it('新识别不按近似名字合并，也不改动旧 title 标识的记录', async () => {
+    const legacy = { ...conversation, external_key: 'title:legacy', display_name: '联系人甲' };
+    await ingestCapturedMessages(pool, userId, deviceId, legacy, [message()]);
+    for (const [index, name] of ['联系人甲', '联系人申'].entries()) {
+      await ingestCapturedMessages(pool, userId, deviceId, {
+        ...conversation, external_key: `screenshot-v2:${String(index).repeat(64)}`, display_name: name,
+      }, [message({ fingerprint: String(index).repeat(64) })]);
+    }
+    expect((await pool.query('SELECT id FROM chat_conversation')).rowCount).toBe(3);
+    expect((await pool.query("SELECT display_name FROM chat_conversation WHERE external_key = 'title:legacy'")).rows[0].display_name).toBe('联系人甲');
+  });
+
+  it('相同新截图标识仍按用户、平台、账号分隔', async () => {
+    const external_key = `capture-v3:${'f'.repeat(64)}`;
+    await ingestCapturedMessages(pool, userId, deviceId, { ...conversation, external_key }, [message()]);
+    await ingestCapturedMessages(pool, crypto.randomUUID(), deviceId, { ...conversation, external_key }, [message()]);
+    await ingestCapturedMessages(pool, userId, deviceId, { ...conversation, external_key, platform: 'qq' }, [message()]);
+    await ingestCapturedMessages(pool, userId, deviceId, { ...conversation, external_key, account_key: 'another' }, [message({ fingerprint: 'c'.repeat(64) })]);
+    expect((await pool.query('SELECT id FROM chat_conversation')).rowCount).toBe(4);
+  });
+
   it('重复写入同一批消息时保持会话和消息幂等', async () => {
     const batch = [message()];
 

@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aabaf46-db88-83e9-a7f9-1aab46c8a0d9",
+  "sourceFileId": "file_00000000b4348209bccaa484d1d4e1d2",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "c57a6ae241011f73358e555084bca0507b3697949ea2b944ce8151b375605082",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T09:16:00.272945+00:00",
+  "generationObservedAt": "2026-09-17T09:16:00.272945+00:00",
+  "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+  "originalDownloadName": "clay-favor.png",
+  "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T09:16:19.676569+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

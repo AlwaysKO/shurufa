@@ -10,6 +10,7 @@ data class ForegroundChatCaptureRequest(
 
 internal val FOREGROUND_CHAT_CAPTURE_PACKAGES = setOf(
     "com.tencent.mm",
+    "com.tencent.mobileqq",
     "com.ss.android.ugc.aweme",
 )
 

@@ -51,6 +51,7 @@ class WeChatChatAdapter : ChatAppAdapter {
             ),
         ))
         return ParseResult.Success(ParsedViewport(
+            titleBounds = titleNode.bounds,
             conversation = CapturedConversation(
                 platform = ChatPlatform.WECHAT,
                 accountKey = "wechat-local",

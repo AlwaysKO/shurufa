@@ -12,6 +12,29 @@ class ChatEditorGateTest {
     private val gate = ChatEditorGate()
 
     @Test
+    fun `手动搜索资格只放行QQ抖音聊天文本不放行密码搜索等输入`() {
+        for (pkg in listOf("com.tencent.mobileqq", "com.ss.android.ugc.aweme")) {
+            assertTrue(gate.requiresManualSearch(pkg))
+            assertTrue(gate.allowsManualSearch(pkg, multilineEditor().apply {
+                androidx.core.view.inputmethod.EditorInfoCompat.setContentMimeTypes(this, emptyArray())
+            }))
+            assertFalse(gate.allowsManualSearch(pkg, null))
+            assertFalse(gate.allowsManualSearch(pkg, editor()))
+            assertFalse(gate.allowsManualSearch(pkg, multilineEditor().apply { imeOptions = EditorInfo.IME_ACTION_SEARCH }))
+            for (variation in listOf(InputType.TYPE_TEXT_VARIATION_PASSWORD,
+                InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD, InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD,
+                InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS, InputType.TYPE_TEXT_VARIATION_URI)) {
+                assertFalse(gate.allowsManualSearch(pkg, multilineEditor().apply {
+                    inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE or variation
+                }))
+            }
+        }
+        assertFalse(gate.requiresManualSearch("com.tencent.mm"))
+        assertFalse(gate.allowsManualSearch("com.tencent.mm", multilineEditor()))
+        assertFalse(gate.allowsManualSearch("com.android.settings", multilineEditor()))
+    }
+
+    @Test
     fun `聊天外观但不支持接收图片的输入框不推荐`() {
         val editor = multilineEditor().apply {
             androidx.core.view.inputmethod.EditorInfoCompat.setContentMimeTypes(this, emptyArray())

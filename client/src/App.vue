@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import ConfirmationDialog from './components/ConfirmationDialog.vue';
-import { cancelConfirmation, confirmation } from './confirmation';
+import { cancelConfirmation, confirmation, useConfirmation } from './confirmation';
 import { authenticated, logout, loginName } from './auth';
 import { useRoute } from 'vue-router';
 import { api, currentUserId, deviceLabel, setCurrentUserId, type DeviceRow } from './api';
 
 type NavGroup = { key: string; label: string; icon: string; items: Array<{ path: string; label: string }> };
 const route = useRoute();
-watch([() => route.fullPath, currentUserId, authenticated], cancelConfirmation, { flush: 'sync' });
+let userContextVersion = 0;
+watch([() => route.fullPath, currentUserId, authenticated], () => { userContextVersion++; cancelConfirmation(); }, { flush: 'sync' });
 const selectedUser = ref<DeviceRow | null>(null);
 const usersReady = ref(false);
 const initializationError = ref('');
@@ -19,6 +20,10 @@ const directoryPage = ref(1);
 const directoryQuery = ref('');
 const directoryLoading = ref(false);
 const directoryError = ref('');
+const directoryActionError = ref('');
+const directoryNotice = ref('');
+const userAction = ref('');
+const confirmUserAction = useConfirmation();
 const editingUser = ref<DeviceRow | null>(null);
 const editName = ref('');
 const editTags = ref('');
@@ -46,6 +51,7 @@ const navGroups: NavGroup[] = [
     { path: '/relationships', label: '关系记忆' },
   ] },
   { key: 'manage', label: '设备与数据', icon: '⚙', items: [
+    { path: '/expression-delivery', label: '图片发送配置' },
     { path: '/locations', label: '位置轨迹' }, { path: '/data', label: '数据管理' },
   ] },
 ];
@@ -106,23 +112,65 @@ async function loadDirectory(page = 1) {
   }
 }
 function openDirectory() {
-  directoryOpen.value = true; directoryQuery.value = ''; editingUser.value = null; editError.value = ''; void loadDirectory(1);
+  directoryOpen.value = true; directoryActionError.value = ''; directoryNotice.value = ''; directoryQuery.value = ''; editingUser.value = null; editError.value = ''; void loadDirectory(1);
 }
-function closeDirectory() { directoryOpen.value = false; directoryRequestId += 1; directoryLoading.value = false; }
+function closeDirectory() { cancelConfirmation(); directoryOpen.value = false; directoryRequestId += 1; directoryLoading.value = false; }
 function chooseUser(user: DeviceRow) { selectedUser.value = user; setCurrentUserId(user.id); closeDirectory(); }
 function editUser(user: DeviceRow) {
   editingUser.value = user; editName.value = user.dashboard_name ?? ''; editTags.value = user.tags ?? ''; editError.value = '';
 }
 async function saveUser() {
-  if (!editingUser.value || editSaving.value) return;
+  if (!editingUser.value || editSaving.value || userAction.value) return;
   editSaving.value = true; editError.value = '';
   try {
     const result = await api.updateUser(editingUser.value.id, { dashboard_name: editName.value, tags: editTags.value });
-    directoryUsers.value = directoryUsers.value.map((user) => user.id === result.user.id ? result.user : user);
-    if (selectedUser.value?.id === result.user.id) selectedUser.value = result.user;
+    directoryUsers.value = directoryUsers.value.map((user) => user.id === result.user.id ? { ...user, ...result.user } : user);
+    if (selectedUser.value?.id === result.user.id) selectedUser.value = { ...selectedUser.value, ...result.user };
     editingUser.value = null;
   } catch (error) { editError.value = error instanceof Error ? error.message : '保存失败'; }
   finally { editSaving.value = false; }
+}
+async function toggleSaving(user: DeviceRow) {
+  if (userAction.value || editSaving.value) return;
+  userAction.value = user.id; directoryActionError.value = ''; directoryNotice.value = '';
+  const version = userContextVersion;
+  const enabled = user.save_uploads === false;
+  try {
+    if (!enabled && !await confirmUserAction(`关闭「${deviceLabel(user)}」的上报保存？\n设备 ID：${user.id}\n\n关闭期间仍接收上报并返回成功，但不保存业务数据或图片附件。已确认丢弃的上报不会由服务器补回，已有数据不受影响。`, { title: '关闭上报保存', confirmText: '确认关闭' })) return;
+    if (!directoryOpen.value || !authenticated.value || version !== userContextVersion) return;
+    const result = await api.setUserSaving(user.id, enabled);
+    if (!authenticated.value || version !== userContextVersion) return;
+    directoryRequestId++; directoryLoading.value = false;
+    directoryUsers.value = directoryUsers.value.map(row => row.id === user.id ? { ...row, save_uploads: result.save_uploads } : row);
+    if (selectedUser.value?.id === user.id) selectedUser.value = { ...selectedUser.value, save_uploads: result.save_uploads };
+    directoryNotice.value = result.save_uploads ? '已开启，后续收到的上报正常保存。' : '已关闭，后续上报成功应答但不保存；已有数据未删除。';
+  } catch (error) {
+    if (authenticated.value && version === userContextVersion) directoryActionError.value = error instanceof Error ? error.message : '开关修改失败';
+  } finally { userAction.value = ''; }
+}
+async function deleteUser(user: DeviceRow) {
+  if (userAction.value || editSaving.value) return;
+  userAction.value = user.id; directoryActionError.value = ''; directoryNotice.value = '';
+  const version = userContextVersion;
+  try {
+    const accepted = await confirmUserAction(`永久删除「${deviceLabel(user)}」及当前后台数据？\n设备 ID：${user.id}\n\n包括输入/剪贴板行为、位置、聊天和专属附件、个人词句、统计及关系记录。其他手机和共享素材不受影响。\n\n仅保留保存开关配置（当前${user.save_uploads === false ? '关闭' : '开启'}），不删除手机本地数据、不封禁后续上报。此操作不可恢复。`, { title: '删除手机及当前数据', confirmText: '永久删除' });
+    if (!accepted || !directoryOpen.value || !authenticated.value || version !== userContextVersion) return;
+    const result = await api.deleteUser(user.id);
+    if (!authenticated.value || version !== userContextVersion) return;
+    directoryRequestId++;
+    if (editingUser.value?.id === user.id) editingUser.value = null;
+    directoryUsers.value = directoryUsers.value.filter(row => row.id !== user.id);
+    directoryTotal.value = Math.max(0, directoryTotal.value - 1);
+    const page = Math.min(directoryPage.value, Math.max(1, Math.ceil(directoryTotal.value / pageSize)));
+    if (currentUserId.value === user.id) {
+      initializationRequestId++; selectedUser.value = null; setCurrentUserId('');
+      await initializeUsers();
+    }
+    if (directoryOpen.value && authenticated.value) await loadDirectory(page);
+    directoryNotice.value = result.files_pending ? '手机及数据库记录已删除，部分附件清理暂未完成，后台会自动重试。' : '手机及当前数据已删除，保存开关配置保留；手机后续注册仍可重新出现。';
+  } catch (error) {
+    if (authenticated.value && version === userContextVersion) directoryActionError.value = error instanceof Error ? error.message : '删除失败';
+  } finally { userAction.value = ''; }
 }
 function subtitle(user: DeviceRow) {
   return user.tags?.trim() || [user.brand, user.model].filter(Boolean).join(' ') || user.id;
@@ -170,7 +218,7 @@ function seenAt(value: string) { return new Date(value).toLocaleString('zh-CN', 
     </main>
 
     <Teleport to="body">
-      <div v-if="directoryOpen" class="directory-mask" @click.self="closeDirectory">
+      <div v-if="directoryOpen" class="directory-mask" :inert="confirmation ? true : undefined" @click.self="closeDirectory">
         <section class="directory-dialog" role="dialog" aria-modal="true" aria-label="选择用户">
           <header class="directory-header">
             <div><h2>选择用户</h2><p>共 {{ directoryTotal }} 台设备，按最近活跃排序</p></div>
@@ -185,8 +233,10 @@ function seenAt(value: string) { return new Date(value).toLocaleString('zh-CN', 
             <input v-model="editName" maxlength="100" placeholder="用户名称，如：上海客服 025" />
             <input v-model="editTags" maxlength="500" placeholder="标签，如：上海、客服、VIP" />
             <span v-if="editError" class="edit-error">{{ editError }}</span>
-            <div><button type="button" @click="editingUser = null">取消</button><button type="submit" :disabled="editSaving">{{ editSaving ? '保存中…' : '保存' }}</button></div>
+            <div><button type="button" @click="editingUser = null">取消</button><button type="submit" :disabled="editSaving || !!userAction">{{ editSaving ? '保存中…' : '保存' }}</button></div>
           </form>
+          <p v-if="directoryActionError" class="directory-action-message error" role="alert">{{ directoryActionError }}</p>
+          <p v-if="directoryNotice" class="directory-action-message" role="status">{{ directoryNotice }}</p>
           <div v-if="directoryError" class="directory-state error">{{ directoryError }}</div>
           <div v-else-if="directoryLoading" class="directory-state">正在加载用户目录…</div>
           <div v-else-if="!directoryUsers.length" class="directory-state">没有找到匹配的用户</div>
@@ -197,7 +247,13 @@ function seenAt(value: string) { return new Date(value).toLocaleString('zh-CN', 
                 <span class="user-row-main"><strong>{{ deviceLabel(user) }}</strong><span>{{ subtitle(user) }}</span><code>{{ user.id }}</code></span>
                 <span class="user-row-meta"><span>{{ seenAt(user.last_seen_at) }}</span><b v-if="user.id === currentUserId">当前</b></span>
               </button>
-              <button type="button" class="edit-user" @click="editUser(user)">编辑</button>
+              <div class="user-actions">
+                <button type="button" role="switch" :aria-checked="user.save_uploads !== false" :aria-label="`${deviceLabel(user)} 保存上报数据`" class="saving-switch" :class="{ off: user.save_uploads === false }" :disabled="!!userAction || editSaving" @click="toggleSaving(user)">
+                  <span class="switch-track" aria-hidden="true"></span><span>保存上报数据：{{ user.save_uploads === false ? '关' : '开' }}</span>
+                </button>
+                <div><button type="button" class="edit-user" :disabled="!!userAction || editSaving" @click="editUser(user)">编辑</button>
+                <button type="button" class="delete-user" :disabled="!!userAction || editSaving" @click="deleteUser(user)">{{ userAction === user.id ? '处理中…' : '删除' }}</button></div>
+              </div>
             </div>
           </div>
           <footer class="directory-footer">
@@ -260,4 +316,13 @@ button, input { font: inherit; }
 .user-row-main { min-width:0; flex:1; display:flex; flex-direction:column; gap:3px; }.user-row-main strong { font-size:14px; }.user-row-main span { color:#697386; font-size:12px; }.user-row-main code { overflow:hidden; color:#a0a7b2; font-size:10px; text-overflow:ellipsis; }.user-row-meta { display:flex; flex-direction:column; align-items:flex-end; gap:6px; color:#a0a7b2; font-size:11px; }.user-row-meta b { padding:2px 7px; border-radius:10px; background:#4451e8; color:#fff; font-size:10px; }
 .directory-footer { display:flex; align-items:center; justify-content:space-between; padding:14px 24px; color:#7f8896; font-size:12px; }.directory-footer div { display:flex; gap:8px; }.directory-footer button { padding:7px 13px; }.directory-footer button:disabled { background:#dfe3eb; cursor:not-allowed; }
 @media(max-width:760px){.sidebar{width:190px}.content{padding:18px}.directory-mask{padding:10px}.user-row-meta{display:none}.edit-panel{grid-template-columns:1fr}.edit-panel-title,.edit-error{grid-column:1}}
+.user-actions { display:flex; flex-direction:column; align-items:flex-end; gap:8px; padding:10px; flex-shrink:0; }
+.user-actions .edit-user { margin-right:6px; }
+.saving-switch { display:flex; align-items:center; gap:7px; border:0; background:transparent; font-size:12px; color:#4251bd; cursor:pointer; }
+.switch-track { width:28px; height:16px; border-radius:10px; background:#5262d8; padding:2px; }
+.switch-track::after { content:''; display:block; width:12px; height:12px; border-radius:50%; background:#fff; transform:translateX(12px); }
+.saving-switch.off { color:#7a8492; }.saving-switch.off .switch-track { background:#acb3bf; }.saving-switch.off .switch-track::after { transform:none; }
+.delete-user { padding:6px 10px; border:1px solid #efc7c7; border-radius:6px; background:#fff; color:#c23b3b; cursor:pointer; font-size:11px; }
+.user-actions button:disabled { opacity:.5; cursor:wait; }.directory-action-message { padding:10px 24px; margin:0; font-size:13px; color:#367154; line-height:1.6; }.directory-action-message.error { color:#bd3939; }
+@media(max-width:560px){.user-row{flex-wrap:wrap}.user-select{flex-basis:100%}.user-actions{width:100%;flex-direction:row;justify-content:space-between;padding:0 10px 12px}.directory-action-message{padding:10px 16px}}
 </style>

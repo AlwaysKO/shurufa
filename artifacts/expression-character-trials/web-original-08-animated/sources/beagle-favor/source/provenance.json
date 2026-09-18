@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aabad4e-a2dc-83e9-bcdd-fbd1a70369f1",
+  "sourceFileId": "file_000000000798820985b6b20541bc7370",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "3ac360a6a32d37ac0a54f4de71164cf65de54be3af2c1f4b95e6e8e1457fd04b",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T09:06:31.257246+00:00",
+  "generationObservedAt": "2026-09-17T09:06:31.257246+00:00",
+  "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+  "originalDownloadName": "beagle-favor.png",
+  "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T09:07:37.534850+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

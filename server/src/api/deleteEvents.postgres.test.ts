@@ -156,6 +156,80 @@ test('删除中发生部分未执行时整个事务回滚，不留下半段记�
   await pool.query(`CREATE FUNCTION skip_test_delete() RETURNS trigger LANGUAGE plpgsql AS $$
     BEGIN IF OLD.id = '${ids[1]}'::uuid THEN RETURN NULL; END IF; RETURN OLD; END $$`);
   await pool.query('CREATE TRIGGER skip_test_delete BEFORE DELETE ON input_event FOR EACH ROW EXECUTE FUNCTION skip_test_delete()');
-  const res = await remove(ids[2], ids);
-  expect(res.status).toBe(500); expect(await remaining()).toEqual(ids.sort());
+  try {
+    const res = await remove(ids[2], ids);
+    expect(res.status).toBe(500); expect(await remaining()).toEqual(ids.sort());
+  } finally {
+    await pool.query('DROP TRIGGER skip_test_delete ON input_event; DROP FUNCTION skip_test_delete()');
+  }
+});
+
+
+const batch = (records: Array<{ id: string; event_ids: string[] }>, mode = 'group') => agent
+  .post(`/api/v1/dashboard/events/delete-batch?user_id=${A}`).send({ confirm: 'DELETE', mode, records });
+const record = (ids: string[]) => ({ id: ids[ids.length - 1], event_ids: ids });
+test('批量整段仅删选中完整组，其他用户、未选组和底层事件保留', async () => {
+  const first = await group(); const second = [await insert({ session_id: randomUUID() })];
+  const keep = [await insert({ session_id: randomUUID() }), await insert({ user_id: B }), await insert({ event_type: 'compose' })].sort();
+  const result = await batch([record(first), record(second)]);
+  expect(result.status).toBe(200); expect(result.body).toEqual({ deleted: 4 }); expect(await remaining()).toEqual(keep);
+});
+test('批量原始模式可以删组内选定操作及底层事件，不联动同组其余操作', async () => {
+  const ids = await group(); const raw = await insert({ event_type: 'compose' });
+  const result = await batch([record([ids[1]]), record([raw])], 'single');
+  expect(result.status).toBe(200); expect(result.body.deleted).toBe(2); expect(await remaining()).toEqual([ids[0],ids[2]].sort());
+});
+test('批量中任意组快照缺项、增加或混入其他组都整批拒绝', async () => {
+  const first = await group(); const second = [await insert({ session_id: randomUUID() })]; const before = await remaining();
+  expect((await batch([record(second), record(first.slice(1))])).status).toBe(409);
+  expect((await batch([{ id: first[0], event_ids: [first[0], second[0]] }, { id: first[2], event_ids: first.slice(1) }])).status).toBe(409);
+  expect(await remaining()).toEqual(before);
+  const added = await insert({ sequence_no: 4 });
+  expect((await batch([record(second), record(first)])).status).toBe(409); expect(await remaining()).toEqual([...before, added].sort());
+});
+test('批量包含其他用户或不存在的代表记录时不删除已验证的其他行', async () => {
+  const ids = await group(), foreign = await insert({ user_id: B }); const before = await remaining();
+  expect((await batch([record(ids), record([foreign])])).status).toBe(404);
+  expect((await batch([record(ids), record([randomUUID()])])).status).toBe(404);
+  expect(await remaining()).toEqual(before);
+});
+test('批量参数限制明确确认、1~20行、合法无重复ID、原始模式每行1条', async () => {
+  const ids = await group(); const records = [record(ids)]; const before = await remaining();
+  for (const body of [undefined, {}, { mode: 'group', records },
+    { confirm: 'DELETE', mode: 'all', records }, { confirm: 'DELETE', mode: 'group', records: [] },
+    { confirm: 'DELETE', mode: 'group', records: Array.from({ length: 21 }, () => record([randomUUID()])) },
+    { confirm: 'DELETE', mode: 'group', records: [null] },
+    { confirm: 'DELETE', mode: 'group', records: [record(['invalid'])] },
+    { confirm: 'DELETE', mode: 'group', records: [record(ids), record(ids)] },
+    { confirm: 'DELETE', mode: 'group', records: [{ id: ids[0], event_ids: [ids[0], ids[0]] }] },
+    { confirm: 'DELETE', mode: 'group', records: [{ id: ids[0], event_ids: [ids[1]] }] },
+    { confirm: 'DELETE', mode: 'single', records },
+    { confirm: 'DELETE', mode: 'group', records: [{ id: ids[0], event_ids: Array.from({ length: 10001 }, (_, i) => i ? randomUUID() : ids[0]) }] },
+  ]) {
+    const response = await agent.post(`/api/v1/dashboard/events/delete-batch?user_id=${A}`).send(body);
+    expect(response.status).toBe(400);
+  }
+  expect(await remaining()).toEqual(before);
+});
+test('批量删除未登录、无用户范围、跨站写入拒绝', async () => {
+  const id = await insert(); const body = { confirm: 'DELETE', mode: 'single', records: [record([id])] };
+  expect((await request(app).post(`/api/v1/dashboard/events/delete-batch?user_id=${A}`).send(body)).status).toBe(401);
+  expect((await agent.post('/api/v1/dashboard/events/delete-batch').send(body)).status).toBe(400);
+  expect((await agent.post(`/api/v1/dashboard/events/delete-batch?user_id=${A}`).set('Origin', 'https://other.invalid').send(body)).status).toBe(403);
+  expect(await remaining()).toEqual([id]);
+});
+test('批量DELETE中途数据库异常必须回滚整批，不能返回部分成功', async () => {
+  const ids = [await insert({ session_id: randomUUID() }), await insert({ session_id: randomUUID() })];
+  await pool.query(`CREATE FUNCTION fail_batch_delete() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
+    IF OLD.id = '${ids[1]}'::uuid THEN RAISE EXCEPTION 'isolated batch rollback test'; END IF; RETURN OLD; END $$;
+    CREATE TRIGGER fail_batch_delete BEFORE DELETE ON input_event FOR EACH ROW EXECUTE FUNCTION fail_batch_delete()`);
+  try {
+    expect((await batch(ids.map(id => record([id])), 'single')).status).toBe(500);
+    expect(await remaining()).toEqual([...ids].sort());
+  } finally { await pool.query('DROP TRIGGER fail_batch_delete ON input_event; DROP FUNCTION fail_batch_delete()'); }
+});
+test('重复提交相同批量不扩大删除范围，第二次明确失败', async () => {
+  const ids = await group(); const keep = await insert({ session_id: randomUUID() });
+  expect((await batch([record(ids)])).status).toBe(200);
+  expect((await batch([record(ids)])).status).toBe(404); expect(await remaining()).toEqual([keep]);
 });

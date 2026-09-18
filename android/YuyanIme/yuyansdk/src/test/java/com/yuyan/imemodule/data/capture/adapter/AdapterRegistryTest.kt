@@ -8,7 +8,8 @@ class AdapterRegistryTest {
     @Test
     fun wechatUsesScreenshotAdapterWithoutGuessingIndividualMessageDirection() {
         assertTrue(AdapterRegistry.forPackage("com.tencent.mm") is WeChatChatAdapter)
-        assertNull(AdapterRegistry.forPackage("com.tencent.mobileqq"))
-        assertNull(AdapterRegistry.forPackage("com.ss.android.ugc.aweme"))
+        assertTrue(AdapterRegistry.forPackage("com.tencent.mobileqq") is QqChatAdapter)
+        assertTrue(AdapterRegistry.forPackage("com.ss.android.ugc.aweme") is DouyinChatAdapter)
+        assertNull(AdapterRegistry.forPackage("com.example.unrelated"))
     }
 }

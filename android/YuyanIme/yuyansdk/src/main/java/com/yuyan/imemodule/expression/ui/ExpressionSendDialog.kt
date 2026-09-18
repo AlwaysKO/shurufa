@@ -88,6 +88,7 @@ class ExpressionSendDialog(
             when (val result = controller.confirm()) {
                 ExpressionSendResult.Sent,
                 ExpressionSendResult.SavedToGallery,
+                ExpressionSendResult.AppSubmitted,
                 -> dismiss()
                 ExpressionSendResult.UnsupportedTarget -> showFailure(context.getString(R.string.expression_chat_image_unsupported))
                 is ExpressionSendResult.Failed -> showFailure(

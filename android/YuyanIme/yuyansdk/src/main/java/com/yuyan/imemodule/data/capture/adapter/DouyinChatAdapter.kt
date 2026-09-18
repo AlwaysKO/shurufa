@@ -39,6 +39,7 @@ class DouyinChatAdapter : ChatAppAdapter {
         }
         val identity = Normalizer.normalize(displayName, Normalizer.Form.NFKC)
         return ParseResult.Success(ParsedViewport(
+            titleBounds = title.bounds,
             conversation = CapturedConversation(
                 platform = ChatPlatform.DOUYIN,
                 accountKey = "douyin-local",

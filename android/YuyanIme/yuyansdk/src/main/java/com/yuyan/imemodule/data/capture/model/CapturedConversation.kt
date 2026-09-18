@@ -24,6 +24,9 @@ data class CapturedConversation(
 fun CapturedConversation.stableKeyOrNull(): String? {
     val account = accountKey.trim().takeIf { it.isNotEmpty() } ?: return null
     val external = externalKey?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+    if (external.startsWith("capture-v3:") || external.startsWith("notification-v2:")) {
+        return listOf(platform.wireName, account, external).joinToString("|")
+    }
     return listOf(platform.wireName, account, conversationType.wireName, external)
         .joinToString("|")
 }

@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aabb1ae-894c-83ea-b3c8-b1a23259f9b7",
+  "sourceFileId": "file_00000000a67c81fb829ef3aa9003648f",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "398508226d15c394b121022aedd8ce3749ba0bd23fdb9a2a0165e47e0d15c16b",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T09:26:41.700290+00:00",
+  "generationObservedAt": "2026-09-17T09:26:41.700290+00:00",
+  "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+  "originalDownloadName": "clay-coax.png",
+  "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T09:27:03.880608+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

@@ -1,0 +1,609 @@
+{
+  "checkedAt": "2026-09-17T09:41:59.284604+00:00",
+  "batch": "web08",
+  "keywords": [
+    "麻烦你了",
+    "撒娇",
+    "服了"
+  ],
+  "newGifCount": 12,
+  "importedCount": 12,
+  "catalogBefore": 241,
+  "catalogAfter": 253,
+  "excludedHistoricalRecords": 15,
+  "sources": {
+    "checkedAt": "2026-09-17T09:40:30.545619+00:00",
+    "sourceCount": 12,
+    "uniqueDeletedConversations": 12,
+    "sources": [
+      {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aabb275-0070-83ea-b79f-616f89679f2a",
+        "sourceFileId": "file_000000003a388206a5f405098d88791b",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "a5e441610063a9df39545367c9becc771c83ca25de9f9fcfd024f5cc29068640",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T09:29:10.381898+00:00",
+        "generationObservedAt": "2026-09-17T09:29:10.381898+00:00",
+        "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+        "originalDownloadName": "man-coax.png",
+        "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-17T09:29:33.598240+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aabb085-041c-83ea-94d8-77db8505a2ef",
+        "sourceFileId": "file_000000009f048206b300b8ede371edf1",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "0402984e2df73df34e3128c29eb7017257d5caaf6dc6f65388be17cf5e629594",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T09:20:32.401648+00:00",
+        "generationObservedAt": "2026-09-17T09:20:32.401648+00:00",
+        "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+        "originalDownloadName": "rabbit-coax.png",
+        "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+        "deletedAt": "2026-09-17T09:21:03.380653+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aabb1ae-894c-83ea-b3c8-b1a23259f9b7",
+        "sourceFileId": "file_00000000a67c81fb829ef3aa9003648f",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "398508226d15c394b121022aedd8ce3749ba0bd23fdb9a2a0165e47e0d15c16b",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T09:26:41.700290+00:00",
+        "generationObservedAt": "2026-09-17T09:26:41.700290+00:00",
+        "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+        "originalDownloadName": "clay-coax.png",
+        "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+        "deletedAt": "2026-09-17T09:27:03.880608+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aabafe9-1cc0-83ea-83e6-c68aa7cd4d59",
+        "sourceFileId": "file_00000000113c81f58445215e4507866c",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "13901515d38ab06408f526ddf3492f42101ea1120b563da90080602bf5c422b4",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T09:18:37.832396+00:00",
+        "generationObservedAt": "2026-09-17T09:18:37.832396+00:00",
+        "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+        "originalDownloadName": "man-favor.png",
+        "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-17T09:18:56.781099+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aabb102-6a2c-83e9-bffb-ecf4f020aebb",
+        "sourceFileId": "file_00000000e38c820699374171fbba0008",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "d25c5b32e002a11ff12b3aa64387ec67eb79a4a8c7db254f6e71895e795ab4d4",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T09:23:30.884959+00:00",
+        "generationObservedAt": "2026-09-17T09:23:30.884959+00:00",
+        "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+        "originalDownloadName": "line-coax.png",
+        "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-17T09:23:56.206268+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aabaf46-db88-83e9-a7f9-1aab46c8a0d9",
+        "sourceFileId": "file_00000000b4348209bccaa484d1d4e1d2",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "c57a6ae241011f73358e555084bca0507b3697949ea2b944ce8151b375605082",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T09:16:00.272945+00:00",
+        "generationObservedAt": "2026-09-17T09:16:00.272945+00:00",
+        "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+        "originalDownloadName": "clay-favor.png",
+        "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+        "deletedAt": "2026-09-17T09:16:19.676569+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aabb36c-4b00-83ea-a2ee-30eca216f08f",
+        "sourceFileId": "file_0000000009888206a30e2ec51e85ede9",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "0f13df18c5dc30e3874d81b9860b1ea2dfde56118af9ba3925094a500dce2ee2",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T09:32:42.425553+00:00",
+        "generationObservedAt": "2026-09-17T09:32:42.425553+00:00",
+        "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+        "originalDownloadName": "line-surrender.png",
+        "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-17T09:33:15.289089+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aabb301-27c8-83ea-9777-eb553cb21df1",
+        "sourceFileId": "file_00000000be8082099e81f5a0b4498bc4",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "c6af5e27de94300ef7ba07e33074c143b48d6e88a780c68a867e74a81d78d9ed",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T09:30:46.456439+00:00",
+        "generationObservedAt": "2026-09-17T09:30:46.456439+00:00",
+        "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+        "originalDownloadName": "shiba-surrender.png",
+        "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+        "deletedAt": "2026-09-17T09:31:19.288965+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aabb480-ee04-83e9-9f85-642ebd878bbe",
+        "sourceFileId": "file_000000002c348209a5410035adf5370e",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "bc1144b125bfabb899e109e4ecdaf03ba0f3d6aa8d8ac9b3e526aad6fffafcbb",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T09:38:15.417771+00:00",
+        "generationObservedAt": "2026-09-17T09:38:15.417771+00:00",
+        "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+        "originalDownloadName": "man-surrender.png",
+        "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-17T09:38:45.114122+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aabb3dd-f60c-83ea-8381-4fde12773b06",
+        "sourceFileId": "file_0000000003a08209a8f9c7db6e71936b",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "9cdd3cfdd3fd1dbbbe4260ded69afc212aec966940ccfe9c816cf82fa1b38d58",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T09:35:22.571862+00:00",
+        "generationObservedAt": "2026-09-17T09:35:22.571862+00:00",
+        "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+        "originalDownloadName": "clay-surrender.png",
+        "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+        "deletedAt": "2026-09-17T09:35:56.451373+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aabad4e-a2dc-83e9-bcdd-fbd1a70369f1",
+        "sourceFileId": "file_000000000798820985b6b20541bc7370",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "3ac360a6a32d37ac0a54f4de71164cf65de54be3af2c1f4b95e6e8e1457fd04b",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T09:06:31.257246+00:00",
+        "generationObservedAt": "2026-09-17T09:06:31.257246+00:00",
+        "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+        "originalDownloadName": "beagle-favor.png",
+        "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+        "deletedAt": "2026-09-17T09:07:37.534850+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aabadde-e4e8-83e9-a146-1dac75b9f649",
+        "sourceFileId": "file_0000000049648207a5c858fa32c96d58",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "9f68bfd25f1e17c983f70fe09aeac261805eed6927a24ddd894f5685393a9336",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T09:12:28.624136+00:00",
+        "generationObservedAt": "2026-09-17T09:12:28.624136+00:00",
+        "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+        "originalDownloadName": "line-favor.png",
+        "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-17T09:12:58.563301+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      }
+    ]
+  },
+  "delivery": {
+    "checkedAt": "2026-09-17T09:39:27.227Z",
+    "recommendStatus": 200,
+    "verified": [
+      {
+        "id": "generated-2616c052030317438194d33d",
+        "keyword": "麻烦你了",
+        "url": "/uploads/expression/generated/generated-2616c052030317438194d33d.gif",
+        "http": 200,
+        "sha256": "2616c052030317438194d33d8d3d0fdb9d88f5d165cac3c0d30f94a8cff53e86",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 56893,
+        "loop": 0
+      },
+      {
+        "id": "generated-4215cd03dc8f3d50be85899f",
+        "keyword": "麻烦你了",
+        "url": "/uploads/expression/generated/generated-4215cd03dc8f3d50be85899f.gif",
+        "http": 200,
+        "sha256": "4215cd03dc8f3d50be85899f0270f7c73471bd7e05472507612630a8b6706c23",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 76278,
+        "loop": 0
+      },
+      {
+        "id": "generated-e6e37ba36944dc135501d139",
+        "keyword": "麻烦你了",
+        "url": "/uploads/expression/generated/generated-e6e37ba36944dc135501d139.gif",
+        "http": 200,
+        "sha256": "e6e37ba36944dc135501d13925dffd916bb3a219c0110d7053549905461ea47f",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 48825,
+        "loop": 0
+      },
+      {
+        "id": "generated-ffd54af89ec131f3066562eb",
+        "keyword": "麻烦你了",
+        "url": "/uploads/expression/generated/generated-ffd54af89ec131f3066562eb.gif",
+        "http": 200,
+        "sha256": "ffd54af89ec131f3066562ebee30e9529c85bcc02c63a04fc3bc9938de42167b",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 60672,
+        "loop": 0
+      },
+      {
+        "id": "generated-34db9237c5520c46320204fd",
+        "keyword": "撒娇",
+        "url": "/uploads/expression/generated/generated-34db9237c5520c46320204fd.gif",
+        "http": 200,
+        "sha256": "34db9237c5520c46320204fdbd88d9b59ea0bd59183e73299f6ff35c674135bf",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 68479,
+        "loop": 0
+      },
+      {
+        "id": "generated-ba76899f0fa1a3d7dbca19cb",
+        "keyword": "撒娇",
+        "url": "/uploads/expression/generated/generated-ba76899f0fa1a3d7dbca19cb.gif",
+        "http": 200,
+        "sha256": "ba76899f0fa1a3d7dbca19cb84261bc65fd17604884f15323e2ed3b1b76b8fc5",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 71463,
+        "loop": 0
+      },
+      {
+        "id": "generated-eea07d225d91a1b8a048d685",
+        "keyword": "撒娇",
+        "url": "/uploads/expression/generated/generated-eea07d225d91a1b8a048d685.gif",
+        "http": 200,
+        "sha256": "eea07d225d91a1b8a048d685e07e521f7b188bb2681acb6a0734fa51c1674772",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 43972,
+        "loop": 0
+      },
+      {
+        "id": "generated-6ad04fb744dcddd220a85c64",
+        "keyword": "撒娇",
+        "url": "/uploads/expression/generated/generated-6ad04fb744dcddd220a85c64.gif",
+        "http": 200,
+        "sha256": "6ad04fb744dcddd220a85c643ccdb3d3f535cee03c9888fa5589c4f555adc67f",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 63541,
+        "loop": 0
+      },
+      {
+        "id": "generated-68e7d5578f5a043f91b9bd25",
+        "keyword": "服了",
+        "url": "/uploads/expression/generated/generated-68e7d5578f5a043f91b9bd25.gif",
+        "http": 200,
+        "sha256": "68e7d5578f5a043f91b9bd259e0049e5d8a4c83c4dd1481233bb45058c515e0a",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 50278,
+        "loop": 0
+      },
+      {
+        "id": "generated-ed867d6115a9989ca9b1062b",
+        "keyword": "服了",
+        "url": "/uploads/expression/generated/generated-ed867d6115a9989ca9b1062b.gif",
+        "http": 200,
+        "sha256": "ed867d6115a9989ca9b1062bc6c8c79df860eeb908e2be5790d3ecf1367649fd",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 64329,
+        "loop": 0
+      },
+      {
+        "id": "generated-913ad13d15fc6a2f456f8a6e",
+        "keyword": "服了",
+        "url": "/uploads/expression/generated/generated-913ad13d15fc6a2f456f8a6e.gif",
+        "http": 200,
+        "sha256": "913ad13d15fc6a2f456f8a6ee9c8252d35e2b1434f72e8fd441d70b0835b51a2",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 52964,
+        "loop": 0
+      },
+      {
+        "id": "generated-7fecfbf80c2741d78100be7f",
+        "keyword": "服了",
+        "url": "/uploads/expression/generated/generated-7fecfbf80c2741d78100be7f.gif",
+        "http": 200,
+        "sha256": "7fecfbf80c2741d78100be7fa130225accafd8afe2192f4a9af9d2c14fc6d82d",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 58438,
+        "loop": 0
+      }
+    ]
+  },
+  "deletion": {
+    "checkedAt": "2026-09-17T09:39:45.072Z",
+    "testUser": "7ca92e82-0145-47a7-a1d4-16f99768d67c",
+    "deletedCount": 12,
+    "ids": [
+      "generated-2616c052030317438194d33d",
+      "generated-4215cd03dc8f3d50be85899f",
+      "generated-e6e37ba36944dc135501d139",
+      "generated-ffd54af89ec131f3066562eb",
+      "generated-34db9237c5520c46320204fd",
+      "generated-ba76899f0fa1a3d7dbca19cb",
+      "generated-eea07d225d91a1b8a048d685",
+      "generated-6ad04fb744dcddd220a85c64",
+      "generated-68e7d5578f5a043f91b9bd25",
+      "generated-ed867d6115a9989ca9b1062b",
+      "generated-913ad13d15fc6a2f456f8a6e",
+      "generated-7fecfbf80c2741d78100be7f"
+    ],
+    "deletionHides": true,
+    "reimportDoesNotRestore": true,
+    "realUserUnaffected": true,
+    "sourceFilesRetained": true,
+    "importer": "\n> shurufa-server@0.1.0 expression:import-keywords\n> tsx scripts/importKeywordGifs.ts --apply\n\n{\"applied\":true,\"imported\":253,\"alreadyPresent\":184,\"excluded\":15,\"report\":\"assets/expression/approvals/2026-09-16-keyword-gif-import.json\"}\n"
+  },
+  "ui": {
+    "checkedAt": "2026-09-17T09:20:22.607137+00:00",
+    "userId": "f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+    "groups": [
+      {
+        "keyword": "麻烦你了",
+        "count": 4,
+        "allDecoded240": true,
+        "deleteButtons": 4,
+        "screenshots": [
+          "artifacts/diagnostics/2026-09-17-web08/favor-0.png",
+          "artifacts/diagnostics/2026-09-17-web08/favor-1.png"
+        ],
+        "allFourImageRegionsChanged": true,
+        "visual": "全身字幕完整，连续后台截图神态姿势变化；非用户逐张认可"
+      },
+      {
+        "keyword": "撒娇",
+        "count": 4,
+        "allDecoded240": true,
+        "deleteButtons": 4,
+        "screenshots": [
+          "artifacts/diagnostics/2026-09-17-web08/coax-0.png",
+          "artifacts/diagnostics/2026-09-17-web08/coax-1.png"
+        ],
+        "allFourImageRegionsChanged": true,
+        "visual": "全身字幕完整，后台实际播放；非用户逐张认可"
+      },
+      {
+        "keyword": "服了",
+        "count": 4,
+        "allDecoded240": true,
+        "deleteButtons": 4,
+        "screenshots": [
+          "artifacts/diagnostics/2026-09-17-web08/surrender-0.png",
+          "artifacts/diagnostics/2026-09-17-web08/surrender-1.png"
+        ],
+        "allFourImageRegionsChanged": true,
+        "visual": "完整全身、字幕不挡肢体，后台连续截图全部区域变化；不是用户逐张认可"
+      }
+    ]
+  },
+  "inventory": {
+    "checkedAt": "2026-09-17T09:41:28.101Z",
+    "http": 200,
+    "groups": 315,
+    "empty": 213,
+    "assets": 501
+  },
+  "downloadCleanup": {
+    "checkedAt": "2026-09-17T09:40:53.692165+00:00",
+    "removedMatchingTaskDownloadCopies": [
+      {
+        "name": "beagle-favor.png",
+        "sha256": "3ac360a6a32d37ac0a54f4de71164cf65de54be3af2c1f4b95e6e8e1457fd04b"
+      },
+      {
+        "name": "clay-coax.png",
+        "sha256": "398508226d15c394b121022aedd8ce3749ba0bd23fdb9a2a0165e47e0d15c16b"
+      },
+      {
+        "name": "clay-favor.png",
+        "sha256": "c57a6ae241011f73358e555084bca0507b3697949ea2b944ce8151b375605082"
+      },
+      {
+        "name": "clay-surrender.png",
+        "sha256": "9cdd3cfdd3fd1dbbbe4260ded69afc212aec966940ccfe9c816cf82fa1b38d58"
+      },
+      {
+        "name": "line-coax.png",
+        "sha256": "d25c5b32e002a11ff12b3aa64387ec67eb79a4a8c7db254f6e71895e795ab4d4"
+      },
+      {
+        "name": "line-favor.png",
+        "sha256": "9f68bfd25f1e17c983f70fe09aeac261805eed6927a24ddd894f5685393a9336"
+      },
+      {
+        "name": "line-surrender.png",
+        "sha256": "0f13df18c5dc30e3874d81b9860b1ea2dfde56118af9ba3925094a500dce2ee2"
+      },
+      {
+        "name": "man-coax.png",
+        "sha256": "a5e441610063a9df39545367c9becc771c83ca25de9f9fcfd024f5cc29068640"
+      },
+      {
+        "name": "man-favor.png",
+        "sha256": "13901515d38ab06408f526ddf3492f42101ea1120b563da90080602bf5c422b4"
+      },
+      {
+        "name": "man-surrender.png",
+        "sha256": "bc1144b125bfabb899e109e4ecdaf03ba0f3d6aa8d8ac9b3e526aad6fffafcbb"
+      },
+      {
+        "name": "rabbit-coax.png",
+        "sha256": "0402984e2df73df34e3128c29eb7017257d5caaf6dc6f65388be17cf5e629594"
+      },
+      {
+        "name": "shiba-surrender.png",
+        "sha256": "c6af5e27de94300ef7ba07e33074c143b48d6e88a780c68a867e74a81d78d9ed"
+      }
+    ],
+    "count": 12,
+    "localSourcesRetained": true,
+    "browserDownloadBehavior": "default-confirmed-via-CDP"
+  },
+  "tests": {
+    "build": "passed",
+    "files": 11,
+    "passed": 83,
+    "startedAtLocal": "2026-09-17 17:09:00",
+    "durationSeconds": 81.39,
+    "localLog": "server/.runtime/web08-tests.log"
+  },
+  "independentReview": {
+    "code": "passed",
+    "sourceAndOriginalGifAuditCount": 12,
+    "blockingIssues": [],
+    "scope": "静态目视和原审计重跑，实际后台播放另有证据，不代表用户逐张观看认可"
+  },
+  "blockers": []
+}

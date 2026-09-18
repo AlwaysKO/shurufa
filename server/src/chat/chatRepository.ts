@@ -107,6 +107,7 @@ export async function ingestCapturedMessages(
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
+    // 新版会话的待确认重试可能晚到，不能把已确认名称降级；旧标识的更新规则保持不变。
     const conversationResult = await client.query<{ id: string | number }>(
       `INSERT INTO chat_conversation
         (user_id, platform, account_key, external_key, display_name,
@@ -114,9 +115,19 @@ export async function ingestCapturedMessages(
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        ON CONFLICT (user_id, platform, account_key, external_key)
        DO UPDATE SET
-         display_name = COALESCE(EXCLUDED.display_name, chat_conversation.display_name),
-         conversation_type = EXCLUDED.conversation_type,
-         identity_confidence = EXCLUDED.identity_confidence,
+         display_name = CASE WHEN (EXCLUDED.external_key LIKE 'screenshot-v2:%' OR EXCLUDED.external_key LIKE 'capture-v3:%'
+           OR EXCLUDED.external_key LIKE 'notification-v2:%')
+           AND chat_conversation.identity_confidence >= 0.8 AND EXCLUDED.identity_confidence < 0.8
+           THEN chat_conversation.display_name
+           ELSE COALESCE(EXCLUDED.display_name, chat_conversation.display_name) END,
+         conversation_type = CASE WHEN (EXCLUDED.external_key LIKE 'screenshot-v2:%' OR EXCLUDED.external_key LIKE 'capture-v3:%'
+           OR EXCLUDED.external_key LIKE 'notification-v2:%')
+           AND chat_conversation.identity_confidence >= 0.8 AND EXCLUDED.identity_confidence < 0.8
+           THEN chat_conversation.conversation_type ELSE EXCLUDED.conversation_type END,
+         identity_confidence = CASE WHEN (EXCLUDED.external_key LIKE 'screenshot-v2:%' OR EXCLUDED.external_key LIKE 'capture-v3:%'
+           OR EXCLUDED.external_key LIKE 'notification-v2:%')
+           AND chat_conversation.identity_confidence >= 0.8 AND EXCLUDED.identity_confidence < 0.8
+           THEN chat_conversation.identity_confidence ELSE EXCLUDED.identity_confidence END,
          last_seen_at = NOW()
        RETURNING id`,
       [

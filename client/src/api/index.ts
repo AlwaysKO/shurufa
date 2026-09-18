@@ -1,3 +1,4 @@
+import type { DeliveryRule, DeliveryState } from './expressionDelivery';
 /** 与后端 /api/v1/dashboard/* 对应的数据类型 */
 import { ref } from 'vue';
 import { dashboardFetch } from '../auth';
@@ -104,6 +105,7 @@ export interface ClipboardData {
 }
 
 export interface DeviceRow {
+  save_uploads?: boolean;
   id: string;
   dashboard_name: string | null;
   tags: string | null;
@@ -338,6 +340,14 @@ export interface ChatConversationRow {
   last_message_at: string | null;
 }
 
+export interface ChatImageTarget { message_id: string; asset_id: number }
+export interface ChatPreviewImage extends ChatImageTarget {
+  url: string; alt: string; captured_at: string; ordinal: number; total: number;
+}
+export interface ChatImageDeleteRequest {
+  confirm: 'DELETE'; conversation_id: number; images: ChatImageTarget[];
+}
+
 export interface ChatMessageAsset {
   id: number;
   sha256: string;
@@ -525,7 +535,52 @@ async function put<T>(url: string, body: unknown): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+/** 用户目录操作固定使用行ID，不依赖当前页面选中的另一台手机。 */
+async function deviceControl<T>(id: string, action: 'saving' | 'delete', body: unknown): Promise<T> {
+  const target = encodeURIComponent(id);
+  const response = await dashboardFetch(`/api/v1/dashboard/users/${target}/${action}?user_id=${target}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    const result = await response.json().catch(() => null);
+    throw new Error(typeof result?.error === 'string' ? result.error : `操作失败（${response.status}）`);
+  }
+  return response.json();
+}
+
+export interface ActivityBatchDeleteRequest {
+  confirm: 'DELETE';
+  mode: 'single' | 'group';
+  records: Array<{ id: string; event_ids: string[] }>;
+}
+
+// 保留发送配置的校验/版本冲突恢复说明，不改变其他接口错误约定。
+async function deliveryWrite(method: 'PUT' | 'POST', suffix: string, body: unknown): Promise<DeliveryState> {
+  const res = await dashboardFetch(withDashboardUser(`/api/v1/dashboard/settings/expression-delivery${suffix}`), {
+    method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(typeof data?.message === 'string' ? data.message : `发送配置请求失败：${res.status}`);
+  return data as DeliveryState;
+}
+
 export const api = {
+  expressionDelivery: () => get<DeliveryState>('/api/v1/dashboard/settings/expression-delivery'),
+  saveExpressionDelivery: (expectedRevision: number, rules: DeliveryRule[]) => deliveryWrite('PUT', '', { expectedRevision, rules }),
+  rollbackExpressionDelivery: (expectedRevision: number, revision: number) => deliveryWrite('POST', '/rollback', { expectedRevision, revision }),
+  deleteUser: (id: string) => deviceControl<{ deleted_device_id: string; files_pending: boolean }>(id, 'delete', { confirm: 'DELETE' }),
+  setUserSaving: (id: string, save_uploads: boolean) => deviceControl<{ id: string; save_uploads: boolean }>(id, 'saving', { save_uploads }),
+  deleteActivities: async (body: ActivityBatchDeleteRequest): Promise<{ deleted: number }> => {
+    const url = withDashboardUser('/api/v1/dashboard/events/delete-batch');
+    const response = await dashboardFetch(url, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      const detail = await response.json().catch(() => null) as { error?: string } | null;
+      throw new Error(detail?.error || `批量删除失败（${response.status}）`);
+    }
+    return response.json();
+  },
   deleteActivity: async (id: string, body: ActivityDeleteRequest): Promise<{ deleted: number }> => {
     const url = withDashboardUser(`/api/v1/dashboard/events/${encodeURIComponent(id)}/delete`);
     const response = await dashboardFetch(url, {
@@ -621,6 +676,18 @@ export const api = {
     get<{ total: number; page: number; page_size: number; messages: ChatMessageRow[] }>(
       `/api/v1/dashboard/chat/messages?conversation_id=${conversationId}&page=${page}&page_size=${pageSize}`,
     ),
+  chatAdjacentImage: (conversationId: number, messageId: string, assetId: number, direction: 'next' | 'previous') =>
+    get<{ image: ChatPreviewImage | null }>(`/api/v1/dashboard/chat/images/adjacent?conversation_id=${conversationId}&message_id=${encodeURIComponent(messageId)}&asset_id=${assetId}&direction=${direction}`),
+  deleteChatImages: async (body: ChatImageDeleteRequest): Promise<{ deleted_images: number; deleted_messages: number; files_pending: boolean }> => {
+    const response = await dashboardFetch(withDashboardUser('/api/v1/dashboard/chat/images/delete-batch'), {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      const detail = await response.json().catch(() => null);
+      throw new Error(typeof detail?.error === 'string' ? detail.error : `图片删除失败（${response.status}）`);
+    }
+    return response.json();
+  },
   deleteChatConversation: (conversationId: number) =>
     del(`/api/v1/dashboard/chat/conversations/${conversationId}`),
   deleteChatImage: (messageId: string, assetId: number) =>

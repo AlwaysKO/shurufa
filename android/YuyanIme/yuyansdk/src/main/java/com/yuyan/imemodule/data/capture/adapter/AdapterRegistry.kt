@@ -5,6 +5,7 @@ object AdapterRegistry {
     private val adapters: List<ChatAppAdapter> = listOf(
         WeChatChatAdapter(),
         DouyinChatAdapter(),
+        QqChatAdapter(),
     )
 
     fun forPackage(packageName: String): ChatAppAdapter? =

@@ -58,52 +58,65 @@ export async function storeAsset(
   input: StoreAssetInput,
 ): Promise<StoredAssetResult> {
   const { bytes, extension } = decodeAndValidate(input);
-  const existing = await pool.query<AssetRow>(
-    'SELECT id FROM media_asset WHERE user_id = $1 AND sha256 = $2',
-    [userId, input.sha256],
-  );
-  if (existing.rows[0]) {
-    return { id: Number(existing.rows[0].id), sha256: input.sha256, duplicated: true };
-  }
-
-  const relativePath = join('chat', input.sha256.slice(0, 2), `${input.sha256}.${extension}`);
-  const destination = join(process.cwd(), 'uploads', relativePath);
-  const directory = join(process.cwd(), 'uploads', 'chat', input.sha256.slice(0, 2));
-  const temporary = `${destination}.${randomUUID()}.tmp`;
-  await mkdir(directory, { recursive: true });
+  const db = await pool.connect();
   try {
-    await writeFile(temporary, bytes, { flag: 'wx' });
-    await rename(temporary, destination);
-  } finally {
-    await unlink(temporary).catch(() => {});
-  }
+    await db.query('BEGIN');
+    // 先取得写锁再触碰内容寻址文件，与设备删除的附件清理互斥。
+    await db.query('LOCK TABLE media_asset IN ROW EXCLUSIVE MODE');
+    const result = await storeLocked();
+    await db.query('COMMIT');
+    return result;
+  } catch (error) { await db.query('ROLLBACK').catch(() => {}); throw error; }
+  finally { db.release(); }
 
-  const inserted = await pool.query<AssetRow>(
-    `INSERT INTO media_asset
-       (user_id, sha256, perceptual_hash, mime_type, storage_path,
-        byte_size, width, height)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-     ON CONFLICT (user_id, sha256) DO NOTHING
-     RETURNING id`,
-    [
-      userId,
-      input.sha256,
-      input.perceptual_hash ?? null,
-      input.mime_type,
-      relativePath,
-      bytes.length,
-      input.width ?? null,
-      input.height ?? null,
-    ],
-  );
-  if (inserted.rows[0]) {
-    return { id: Number(inserted.rows[0].id), sha256: input.sha256, duplicated: false };
-  }
+  async function storeLocked(): Promise<StoredAssetResult> {
+    const existing = await db.query<AssetRow>(
+      'SELECT id FROM media_asset WHERE user_id = $1 AND sha256 = $2',
+      [userId, input.sha256],
+    );
+    if (existing.rows[0]) {
+      return { id: Number(existing.rows[0].id), sha256: input.sha256, duplicated: true };
+    }
 
-  const raced = await pool.query<AssetRow>(
-    'SELECT id FROM media_asset WHERE user_id = $1 AND sha256 = $2',
-    [userId, input.sha256],
-  );
-  if (!raced.rows[0]) throw new Error('asset insert did not return a row');
-  return { id: Number(raced.rows[0].id), sha256: input.sha256, duplicated: true };
+    const relativePath = join('chat', input.sha256.slice(0, 2), `${input.sha256}.${extension}`);
+    const destination = join(process.cwd(), 'uploads', relativePath);
+    const directory = join(process.cwd(), 'uploads', 'chat', input.sha256.slice(0, 2));
+    const temporary = `${destination}.${randomUUID()}.tmp`;
+    await mkdir(directory, { recursive: true });
+    try {
+      await writeFile(temporary, bytes, { flag: 'wx' });
+      await rename(temporary, destination);
+    } finally {
+      await unlink(temporary).catch(() => {});
+    }
+
+    const inserted = await db.query<AssetRow>(
+      `INSERT INTO media_asset
+         (user_id, sha256, perceptual_hash, mime_type, storage_path,
+          byte_size, width, height)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       ON CONFLICT (user_id, sha256) DO NOTHING
+       RETURNING id`,
+      [
+        userId,
+        input.sha256,
+        input.perceptual_hash ?? null,
+        input.mime_type,
+        relativePath,
+        bytes.length,
+        input.width ?? null,
+        input.height ?? null,
+      ],
+    );
+    if (inserted.rows[0]) {
+      return { id: Number(inserted.rows[0].id), sha256: input.sha256, duplicated: false };
+    }
+
+    const raced = await db.query<AssetRow>(
+      'SELECT id FROM media_asset WHERE user_id = $1 AND sha256 = $2',
+      [userId, input.sha256],
+    );
+    if (!raced.rows[0]) throw new Error('asset insert did not return a row');
+    return { id: Number(raced.rows[0].id), sha256: input.sha256, duplicated: true };
+  }
 }

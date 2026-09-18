@@ -12,6 +12,7 @@ interface ChatAppAdapter {
 data class ParsedViewport(
     val conversation: CapturedConversation,
     val messages: List<CapturedMessage>,
+    val titleBounds: com.yuyan.imemodule.data.capture.ui.IntRect? = null,
 )
 
 sealed interface ParseResult {

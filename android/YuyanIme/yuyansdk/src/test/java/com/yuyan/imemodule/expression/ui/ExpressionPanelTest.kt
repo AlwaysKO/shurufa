@@ -42,6 +42,20 @@ import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 class ExpressionPanelTest {
+    @Test fun `无推荐时三标签仍固定显示且展开有明确返回键盘按钮`() {
+        val panel = ExpressionPanel(context)
+        val state = ExpressionPanelState().apply {
+            beginQuery("机构", 1, manual = true)
+            applyResults(1, emptyList())
+            expand()
+        }
+        panel.render(state, catalog)
+        assertEquals(View.VISIBLE, panel.findViewById<View>(R.id.expression_tab_recommended).visibility)
+        val back = panel.findViewWithTag<TextView>("expression_return_keyboard")
+        assertNotNull("展开时有文字返回键盘入口", back)
+        assertEquals(View.VISIBLE, back.visibility)
+    }
+
     @Test fun `DIY标签相关优先且未知查询仍可选完整无字GIF池`() {
         val actualCatalog = ExpressionCatalog.fromAssets(context)
         val panel = ExpressionPanel(context)
@@ -66,7 +80,7 @@ class ExpressionPanelTest {
         assertEquals(View.GONE, panel.findViewById<View>(R.id.expression_empty_results).visibility)
     }
 
-    @Test fun `忙状态显示实际交付阶段而不是一直显示合成`() {
+    @Test fun `忙状态仅透明拦截点击且不再显示过程文字`() {
         val state = ExpressionPanelState().apply {
             beginQuery("机构", 1, manual = true)
             applyResults(1, emptyList())
@@ -75,8 +89,12 @@ class ExpressionPanelTest {
         }
         val panel = ExpressionPanel(context)
         panel.render(state, catalog)
-        assertEquals(context.getString(R.string.expression_sending_image),
-            panel.findViewById<TextView>(R.id.expression_preparing_overlay).text.toString())
+        val overlay = panel.findViewById<TextView>(R.id.expression_preparing_overlay)
+        assertEquals("", overlay.text.toString())
+        assertEquals(View.VISIBLE, overlay.visibility)
+        assertTrue(overlay.isClickable)
+        assertEquals(android.graphics.Color.TRANSPARENT,
+            (overlay.background as android.graphics.drawable.ColorDrawable).color)
         state.isPreparing = false
         panel.render(state, catalog)
         assertEquals(View.GONE, panel.findViewById<View>(R.id.expression_preparing_overlay).visibility)

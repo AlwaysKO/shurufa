@@ -4,17 +4,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/ll_symbols_emoji_type_item"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="@dimen/symbol_toolbar_height"
     android:layout_alignParentBottom="true"
     android:orientation="horizontal">
     <ImageView
         android:id="@+id/iv_symbols_emoji_type_return"
-        android:layout_width="40dp"
-        android:layout_height="30dp"
+        android:layout_width="@dimen/symbol_toolbar_item_width"
+        android:layout_height="@dimen/symbol_toolbar_height"
         android:layout_marginStart="15dp"
         android:layout_marginEnd="5dp"
         android:layout_gravity="center"
-        android:scaleType="centerInside"
+        android:scaleType="fitCenter"
+        android:padding="@dimen/symbol_toolbar_icon_padding"
         android:src="@drawable/ic_arrow_back_24"/>
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tab_symbols_emoji_type"
@@ -22,16 +23,18 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        app:tabMaxWidth="30dp"
+        app:tabMinWidth="@dimen/symbol_toolbar_item_width"
+        app:tabMaxWidth="@dimen/symbol_toolbar_item_width"
         app:tabIndicator="@null"
         app:tabMode="scrollable"/>
     <ImageView
         android:id="@+id/iv_symbols_emoji_type_delete"
-        android:layout_width="40dp"
-        android:layout_height="30dp"
+        android:layout_width="@dimen/symbol_toolbar_item_width"
+        android:layout_height="@dimen/symbol_toolbar_height"
         android:layout_marginStart="5dp"
         android:layout_marginEnd="15dp"
         android:layout_gravity="center"
-        android:scaleType="centerInside"
+        android:scaleType="fitCenter"
+        android:padding="@dimen/symbol_toolbar_icon_padding"
         android:src="@drawable/sdk_skb_key_delete_icon"/>
 </LinearLayout>

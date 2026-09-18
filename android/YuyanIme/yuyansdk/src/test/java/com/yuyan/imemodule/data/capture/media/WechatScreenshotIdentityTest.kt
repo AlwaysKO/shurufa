@@ -2,10 +2,21 @@ package com.yuyan.imemodule.data.capture.media
 
 import com.yuyan.imemodule.data.capture.model.ConversationType
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
 class WechatScreenshotIdentityTest {
+    @Test fun `navigation glyph and status bar are not conversation titles`() {
+        assertNull(selectWechatChatTitle(listOf(OcrTextLine("く", 440, 40, 480, 100)), 923, 160))
+        assertNull(selectWechatChatTitle(listOf(OcrTextLine("中国移动", 350, 2, 570, 25)), 923, 160))
+    }
+
+    @Test fun `single OCR reading is not treated as confirmed confidence`() {
+        assertTrue(screenshotConversationIdentity("文件伎输助手", "fallback").confidence < 0.8)
+    }
+
     @Test fun `centered title wins over status and menu text`() {
         val title = selectWechatChatTitle(
             lines = listOf(

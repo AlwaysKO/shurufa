@@ -1,0 +1,1558 @@
+{
+  "items": [
+    {
+      "id": "beagle-favor",
+      "sha256": "3ac360a6a32d37ac0a54f4de71164cf65de54be3af2c1f4b95e6e8e1457fd04b",
+      "scale": 0.74,
+      "baselines": [
+        328,
+        328,
+        328,
+        328,
+        329,
+        329,
+        329,
+        329,
+        328,
+        328,
+        328,
+        328
+      ],
+      "prompt": "请直接生成全新原创动画母图，不要只回复说明。\nONE PNG image only,4 columns x3 rows,12 equal SQUARE cells in chronological row-major order. Canvas1536x1152(cells384),or1448x1086(cells362),NOT1447x1087. Pure WHITE,no text/letters/numbers/grid lines/borders. In EVERY cell show the COMPLETE character including ears/hair,hands/paws,feet. Entire figure at most60% cell height,top20% and bottom20% white margin;same scale,camera and fixed foot baseline across all12. Body anchor stable.12 real DIFFERENT sequential poses,NOT cloned still pictures:1 setup,2-3 anticipation,4-6 develop,7-8 key comic emotion,9-11 gradual release,12 returns close to1. Gradual anatomical intermediate poses,no mirror,no extra limbs,no switching hands or sides. Stable identity,clothes,props. Original design,no celebrity,no known meme face or copyrighted character. Photoreal floppy-eared beagle sitting full body, both front paws always planted and hindquarters fixed, exactly four legs,no human hands. Starts bashful eyes down; head slowly dips and eyes peek up apologetically, ears hang relaxed; then tilts head slightly and raises inner brows in irresistible polite hopeful request. Peak closed-mouth sheepish puppy smile as if 'could you please help me?'. Neck straightens and gaze recovers in gradual stages. No paw waving,no body drift.\nGenerate this ONE12-cell chronological image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aabad4e-a2dc-83e9-bcdd-fbd1a70369f1",
+        "sourceFileId": "file_000000000798820985b6b20541bc7370",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "3ac360a6a32d37ac0a54f4de71164cf65de54be3af2c1f4b95e6e8e1457fd04b",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T09:06:31.257246+00:00",
+        "generationObservedAt": "2026-09-17T09:06:31.257246+00:00",
+        "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+        "originalDownloadName": "beagle-favor.png",
+        "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+        "deletedAt": "2026-09-17T09:07:37.534850+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 7,
+          "baseline": 328
+        },
+        {
+          "pose": 1,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 7,
+          "baseline": 328
+        },
+        {
+          "pose": 2,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 7,
+          "baseline": 328
+        },
+        {
+          "pose": 3,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 7,
+          "baseline": 328
+        },
+        {
+          "pose": 4,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 6,
+          "baseline": 329
+        },
+        {
+          "pose": 5,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 6,
+          "baseline": 329
+        },
+        {
+          "pose": 6,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 6,
+          "baseline": 329
+        },
+        {
+          "pose": 7,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 6,
+          "baseline": 329
+        },
+        {
+          "pose": 8,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 7,
+          "baseline": 328
+        },
+        {
+          "pose": 9,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 7,
+          "baseline": 328
+        },
+        {
+          "pose": 10,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 7,
+          "baseline": 328
+        },
+        {
+          "pose": 11,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 7,
+          "baseline": 328
+        }
+      ]
+    },
+    {
+      "id": "line-favor",
+      "sha256": "9f68bfd25f1e17c983f70fe09aeac261805eed6927a24ddd894f5685393a9336",
+      "scale": 0.74,
+      "baselines": [
+        319,
+        319,
+        319,
+        319,
+        318,
+        318,
+        318,
+        318,
+        318,
+        318,
+        318,
+        318
+      ],
+      "prompt": "请直接生成全新原创动画母图，不要只回复说明。\nONE PNG image only,4 columns x3 rows,12 equal SQUARE cells in chronological row-major order. Canvas1536x1152(cells384),or1448x1086(cells362),NOT1447x1087. Pure WHITE,no text/letters/numbers/grid lines/borders. In EVERY cell show the COMPLETE character including ears/hair,hands/paws,feet. Entire figure at most60% cell height,top20% and bottom20% white margin;same scale,camera and fixed foot baseline across all12. Body anchor stable.12 real DIFFERENT sequential poses,NOT cloned still pictures:1 setup,2-3 anticipation,4-6 develop,7-8 key comic emotion,9-11 gradual release,12 returns close to1. Gradual anatomical intermediate poses,no mirror,no extra limbs,no switching hands or sides. Stable identity,clothes,props. Original design,no celebrity,no known meme face or copyrighted character. Pure black-white minimal line drawing of original Chinese adult man age35,crewcut,round face,white short-sleeve shirt black trousers. Feet planted,left hand behind own back stays there. Right hand slowly extends with palm up in small requesting gesture,shoulders tuck slightly,head inclines,eyes blink then look up with comically hopeful raised brows and shy crooked smile. Peak a tiny pleading lean without shifting feet. Right hand retracts to side in genuine stages. Exactly2hands,no borrowed meme face.\nGenerate this ONE12-cell chronological image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aabadde-e4e8-83e9-a146-1dac75b9f649",
+        "sourceFileId": "file_0000000049648207a5c858fa32c96d58",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "9f68bfd25f1e17c983f70fe09aeac261805eed6927a24ddd894f5685393a9336",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T09:12:28.624136+00:00",
+        "generationObservedAt": "2026-09-17T09:12:28.624136+00:00",
+        "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+        "originalDownloadName": "line-favor.png",
+        "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-17T09:12:58.563301+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 14,
+          "baseline": 319
+        },
+        {
+          "pose": 1,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 14,
+          "baseline": 319
+        },
+        {
+          "pose": 2,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 14,
+          "baseline": 319
+        },
+        {
+          "pose": 3,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 14,
+          "baseline": 319
+        },
+        {
+          "pose": 4,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 14,
+          "baseline": 318
+        },
+        {
+          "pose": 5,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 14,
+          "baseline": 318
+        },
+        {
+          "pose": 6,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 14,
+          "baseline": 318
+        },
+        {
+          "pose": 7,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 14,
+          "baseline": 318
+        },
+        {
+          "pose": 8,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 14,
+          "baseline": 318
+        },
+        {
+          "pose": 9,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 14,
+          "baseline": 318
+        },
+        {
+          "pose": 10,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 14,
+          "baseline": 318
+        },
+        {
+          "pose": 11,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 14,
+          "baseline": 318
+        }
+      ]
+    },
+    {
+      "id": "clay-favor",
+      "sha256": "c57a6ae241011f73358e555084bca0507b3697949ea2b944ce8151b375605082",
+      "scale": 0.74,
+      "baselines": [
+        323,
+        323,
+        323,
+        323,
+        326,
+        326,
+        326,
+        326,
+        319,
+        319,
+        319,
+        319
+      ],
+      "prompt": "请直接生成全新原创动画母图，不要只回复说明。\nONE PNG image only,4 columns x3 rows,12 equal SQUARE cells in chronological row-major order. Canvas1536x1152(cells384),or1448x1086(cells362),NOT1447x1087. Pure WHITE,no text/letters/numbers/grid lines/borders. In EVERY cell show the COMPLETE character including ears/hair,hands/paws,feet. Entire figure at most60% cell height,top20% and bottom20% white margin;same scale,camera and fixed foot baseline across all12. Body anchor stable.12 real DIFFERENT sequential poses,NOT cloned still pictures:1 setup,2-3 anticipation,4-6 develop,7-8 key comic emotion,9-11 gradual release,12 returns close to1. Gradual anatomical intermediate poses,no mirror,no extra limbs,no switching hands or sides. Stable identity,clothes,props. Original design,no celebrity,no known meme face or copyrighted character. Original small apricot clay bear sitting with two hind feet forward,exactly2arms2legs,no props. Hands start near belly, slowly press palms together at chest politely, brows lift and head dips gently; peak one eye peeks open with adorable hopeful grin like begging a small favor. Hands separate slightly and lower in stages,eyes relax. Rounded three-digit paws, no duplicated arms. Both feet/body fixed. Not just generic smile: bashful anticipation to earnest request.\nGenerate this ONE12-cell chronological image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aabaf46-db88-83e9-a7f9-1aab46c8a0d9",
+        "sourceFileId": "file_00000000b4348209bccaa484d1d4e1d2",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "c57a6ae241011f73358e555084bca0507b3697949ea2b944ce8151b375605082",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T09:16:00.272945+00:00",
+        "generationObservedAt": "2026-09-17T09:16:00.272945+00:00",
+        "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+        "originalDownloadName": "clay-favor.png",
+        "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+        "deletedAt": "2026-09-17T09:16:19.676569+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 11,
+          "baseline": 323
+        },
+        {
+          "pose": 1,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 11,
+          "baseline": 323
+        },
+        {
+          "pose": 2,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 11,
+          "baseline": 323
+        },
+        {
+          "pose": 3,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 11,
+          "baseline": 323
+        },
+        {
+          "pose": 4,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 326
+        },
+        {
+          "pose": 5,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 326
+        },
+        {
+          "pose": 6,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 326
+        },
+        {
+          "pose": 7,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 326
+        },
+        {
+          "pose": 8,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 14,
+          "baseline": 319
+        },
+        {
+          "pose": 9,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 14,
+          "baseline": 319
+        },
+        {
+          "pose": 10,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 14,
+          "baseline": 319
+        },
+        {
+          "pose": 11,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 14,
+          "baseline": 319
+        }
+      ]
+    },
+    {
+      "id": "man-favor",
+      "sha256": "13901515d38ab06408f526ddf3492f42101ea1120b563da90080602bf5c422b4",
+      "scale": 0.69,
+      "baselines": [
+        327,
+        326,
+        327,
+        327,
+        326,
+        330,
+        330,
+        329,
+        328,
+        328,
+        328,
+        328
+      ],
+      "prompt": "请直接生成全新原创动画母图，不要只回复说明。\nONE PNG image only,4 columns x3 rows,12 equal SQUARE cells in chronological row-major order. Canvas1536x1152(cells384),or1448x1086(cells362),NOT1447x1087. Pure WHITE,no text/letters/numbers/grid lines/borders. In EVERY cell show the COMPLETE character including ears/hair,hands/paws,feet. Entire figure at most60% cell height,top20% and bottom20% white margin;same scale,camera and fixed foot baseline across all12. Body anchor stable.12 real DIFFERENT sequential poses,NOT cloned still pictures:1 setup,2-3 anticipation,4-6 develop,7-8 key comic emotion,9-11 gradual release,12 returns close to1. Gradual anatomical intermediate poses,no mirror,no extra limbs,no switching hands or sides. Stable identity,clothes,props. Original design,no celebrity,no known meme face or copyrighted character. LIVE-ACTION PHOTO of a fictional original Chinese adult man age38,normal7-head-tall proportions,real skin pores,short black hair,olive overshirt,dark pants white sneakers. NOT3D/cartoon/child. Feet fixed,left hand at side. Right palm turns upward then extends a little in a polite asking gesture; head inclines,one eyebrow lifts,awkward closed smile turns hopeful. Peak cheeky please-help-me expression,then palm retracts in anatomical stages. All fingertips and shoes visible,no celebrity resemblance.\nGenerate this ONE12-cell chronological image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aabafe9-1cc0-83ea-83e6-c68aa7cd4d59",
+        "sourceFileId": "file_00000000113c81f58445215e4507866c",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "13901515d38ab06408f526ddf3492f42101ea1120b563da90080602bf5c422b4",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T09:18:37.832396+00:00",
+        "generationObservedAt": "2026-09-17T09:18:37.832396+00:00",
+        "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+        "originalDownloadName": "man-favor.png",
+        "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-17T09:18:56.781099+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.6906077348066298,
+          "left": 56,
+          "top": 24,
+          "baseline": 327
+        },
+        {
+          "pose": 1,
+          "scale": 0.6906077348066298,
+          "left": 56,
+          "top": 25,
+          "baseline": 326
+        },
+        {
+          "pose": 2,
+          "scale": 0.6906077348066298,
+          "left": 56,
+          "top": 24,
+          "baseline": 327
+        },
+        {
+          "pose": 3,
+          "scale": 0.6906077348066298,
+          "left": 56,
+          "top": 24,
+          "baseline": 327
+        },
+        {
+          "pose": 4,
+          "scale": 0.6906077348066298,
+          "left": 56,
+          "top": 25,
+          "baseline": 326
+        },
+        {
+          "pose": 5,
+          "scale": 0.6906077348066298,
+          "left": 56,
+          "top": 22,
+          "baseline": 330
+        },
+        {
+          "pose": 6,
+          "scale": 0.6906077348066298,
+          "left": 56,
+          "top": 22,
+          "baseline": 330
+        },
+        {
+          "pose": 7,
+          "scale": 0.6906077348066298,
+          "left": 56,
+          "top": 23,
+          "baseline": 329
+        },
+        {
+          "pose": 8,
+          "scale": 0.6906077348066298,
+          "left": 56,
+          "top": 23,
+          "baseline": 328
+        },
+        {
+          "pose": 9,
+          "scale": 0.6906077348066298,
+          "left": 56,
+          "top": 23,
+          "baseline": 328
+        },
+        {
+          "pose": 10,
+          "scale": 0.6906077348066298,
+          "left": 56,
+          "top": 23,
+          "baseline": 328
+        },
+        {
+          "pose": 11,
+          "scale": 0.6906077348066298,
+          "left": 56,
+          "top": 23,
+          "baseline": 328
+        }
+      ]
+    },
+    {
+      "id": "rabbit-coax",
+      "sha256": "0402984e2df73df34e3128c29eb7017257d5caaf6dc6f65388be17cf5e629594",
+      "scale": 0.74,
+      "baselines": [
+        330,
+        330,
+        329,
+        330,
+        329,
+        331,
+        331,
+        331,
+        327,
+        327,
+        327,
+        327
+      ],
+      "prompt": "请直接生成全新原创动画母图，不要只回复说明。\nONE PNG image only,4 columns x3 rows,12 equal SQUARE cells in chronological row-major order. Canvas1536x1152(cells384),or1448x1086(cells362),NOT1447x1087. Pure WHITE,no text/letters/numbers/grid lines/borders. In EVERY cell show the COMPLETE character including ears/hair,hands/paws,feet. Entire figure at most60% cell height,top20% and bottom20% white margin;same scale,camera and fixed foot baseline across all12. Body anchor stable.12 real DIFFERENT sequential poses,NOT cloned still pictures:1 setup,2-3 anticipation,4-6 develop,7-8 key comic emotion,9-11 gradual release,12 returns close to1. Gradual anatomical intermediate poses,no mirror,no extra limbs,no switching hands or sides. Stable identity,clothes,props. Original design,no celebrity,no known meme face or copyrighted character. Photoreal cream lop rabbit sitting,all paws stay grounded,exactly4natural legs,no human hands. Small nose wiggles,eyelids soften,head dips shyly then tilts a little to one side,ears gently relax. Peak eyes looking up with comically sweet poutlike small mouth and cheek brushing OWN shoulder,as if asking to be spoiled. Uncurl neck and slowly return gaze. No floating hearts/props,only real animal face and neck acting. Entire ears,paws remain insidecell.\nGenerate this ONE12-cell chronological image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aabb085-041c-83ea-94d8-77db8505a2ef",
+        "sourceFileId": "file_000000009f048206b300b8ede371edf1",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "0402984e2df73df34e3128c29eb7017257d5caaf6dc6f65388be17cf5e629594",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T09:20:32.401648+00:00",
+        "generationObservedAt": "2026-09-17T09:20:32.401648+00:00",
+        "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+        "originalDownloadName": "rabbit-coax.png",
+        "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+        "deletedAt": "2026-09-17T09:21:03.380653+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 330
+        },
+        {
+          "pose": 1,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 330
+        },
+        {
+          "pose": 2,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 6,
+          "baseline": 329
+        },
+        {
+          "pose": 3,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 330
+        },
+        {
+          "pose": 4,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 6,
+          "baseline": 329
+        },
+        {
+          "pose": 5,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 331
+        },
+        {
+          "pose": 6,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 331
+        },
+        {
+          "pose": 7,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 5,
+          "baseline": 331
+        },
+        {
+          "pose": 8,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 327
+        },
+        {
+          "pose": 9,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 327
+        },
+        {
+          "pose": 10,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 327
+        },
+        {
+          "pose": 11,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 327
+        }
+      ]
+    },
+    {
+      "id": "line-coax",
+      "sha256": "d25c5b32e002a11ff12b3aa64387ec67eb79a4a8c7db254f6e71895e795ab4d4",
+      "scale": 0.71,
+      "baselines": [
+        333,
+        333,
+        333,
+        333,
+        333,
+        333,
+        333,
+        334,
+        331,
+        331,
+        332,
+        331
+      ],
+      "prompt": "请直接生成全新原创动画母图，不要只回复说明。\nONE PNG image only,4 columns x3 rows,12 equal SQUARE cells in chronological row-major order. Canvas1536x1152(cells384),or1448x1086(cells362),NOT1447x1087. Pure WHITE,no text/letters/numbers/grid lines/borders. In EVERY cell show the COMPLETE character including ears/hair,hands/paws,feet. Entire figure at most60% cell height,top20% and bottom20% white margin;same scale,camera and fixed foot baseline across all12. Body anchor stable.12 real DIFFERENT sequential poses,NOT cloned still pictures:1 setup,2-3 anticipation,4-6 develop,7-8 key comic emotion,9-11 gradual release,12 returns close to1. Gradual anatomical intermediate poses,no mirror,no extra limbs,no switching hands or sides. Stable identity,clothes,props. Original design,no celebrity,no known meme face or copyrighted character. Minimal pure black-white original Chinese adult man age30,short curly hair,slim full body,white sweater black pants. Fixed feet,left arm resting at side. Right fingertip rises to OWN cheek; lips form small playful pout,brows lift,head tilts,eyes blink then sideways peek with mischievous please-spoil-me grin. Peak exaggerated coy face,not sexual. Hand lowers gradually and neck straightens. Adult anatomy,notchild,no extra fingers or face contact artifacts.\nGenerate this ONE12-cell chronological image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aabb102-6a2c-83e9-bffb-ecf4f020aebb",
+        "sourceFileId": "file_00000000e38c820699374171fbba0008",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "d25c5b32e002a11ff12b3aa64387ec67eb79a4a8c7db254f6e71895e795ab4d4",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T09:23:30.884959+00:00",
+        "generationObservedAt": "2026-09-17T09:23:30.884959+00:00",
+        "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+        "originalDownloadName": "line-coax.png",
+        "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-17T09:23:56.206268+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 13,
+          "baseline": 333
+        },
+        {
+          "pose": 1,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 13,
+          "baseline": 333
+        },
+        {
+          "pose": 2,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 13,
+          "baseline": 333
+        },
+        {
+          "pose": 3,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 13,
+          "baseline": 333
+        },
+        {
+          "pose": 4,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 13,
+          "baseline": 333
+        },
+        {
+          "pose": 5,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 13,
+          "baseline": 333
+        },
+        {
+          "pose": 6,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 13,
+          "baseline": 333
+        },
+        {
+          "pose": 7,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 13,
+          "baseline": 334
+        },
+        {
+          "pose": 8,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 15,
+          "baseline": 331
+        },
+        {
+          "pose": 9,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 15,
+          "baseline": 331
+        },
+        {
+          "pose": 10,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 14,
+          "baseline": 332
+        },
+        {
+          "pose": 11,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 15,
+          "baseline": 331
+        }
+      ]
+    },
+    {
+      "id": "clay-coax",
+      "sha256": "398508226d15c394b121022aedd8ce3749ba0bd23fdb9a2a0165e47e0d15c16b",
+      "scale": 0.74,
+      "baselines": [
+        327,
+        327,
+        327,
+        327,
+        326,
+        326,
+        326,
+        325,
+        321,
+        321,
+        321,
+        323
+      ],
+      "prompt": "请直接生成全新原创动画母图，不要只回复说明。\nONE PNG image only,4 columns x3 rows,12 equal SQUARE cells in chronological row-major order. Canvas1536x1152(cells384),or1448x1086(cells362),NOT1447x1087. Pure WHITE,no text/letters/numbers/grid lines/borders. In EVERY cell show the COMPLETE character including ears/hair,hands/paws,feet. Entire figure at most60% cell height,top20% and bottom20% white margin;same scale,camera and fixed foot baseline across all12. Body anchor stable.12 real DIFFERENT sequential poses,NOT cloned still pictures:1 setup,2-3 anticipation,4-6 develop,7-8 key comic emotion,9-11 gradual release,12 returns close to1. Gradual anatomical intermediate poses,no mirror,no extra limbs,no switching hands or sides. Stable identity,clothes,props. Original design,no celebrity,no known meme face or copyrighted character. Original butter-yellow clay duckling full body standing on2fixed webbed feet,exactly2rounded wings,no hands. Wings start at sides, slowly tuck up gently against cheeks; eyes soften,beak makes cute tiny pout,head dips then tilts with a coy hopeful gaze. Peak tiny wink and puckered beak, then wings gradually lower and head returns. No extra wings/fingers,no wholebody bouncing. Fully visible head and webfeet,adorable humorous begging for attention.\nGenerate this ONE12-cell chronological image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aabb1ae-894c-83ea-b3c8-b1a23259f9b7",
+        "sourceFileId": "file_00000000a67c81fb829ef3aa9003648f",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "398508226d15c394b121022aedd8ce3749ba0bd23fdb9a2a0165e47e0d15c16b",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T09:26:41.700290+00:00",
+        "generationObservedAt": "2026-09-17T09:26:41.700290+00:00",
+        "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+        "originalDownloadName": "clay-coax.png",
+        "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+        "deletedAt": "2026-09-17T09:27:03.880608+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 327
+        },
+        {
+          "pose": 1,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 327
+        },
+        {
+          "pose": 2,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 327
+        },
+        {
+          "pose": 3,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 327
+        },
+        {
+          "pose": 4,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 326
+        },
+        {
+          "pose": 5,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 326
+        },
+        {
+          "pose": 6,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 8,
+          "baseline": 326
+        },
+        {
+          "pose": 7,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 9,
+          "baseline": 325
+        },
+        {
+          "pose": 8,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 12,
+          "baseline": 321
+        },
+        {
+          "pose": 9,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 12,
+          "baseline": 321
+        },
+        {
+          "pose": 10,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 12,
+          "baseline": 321
+        },
+        {
+          "pose": 11,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 11,
+          "baseline": 323
+        }
+      ]
+    },
+    {
+      "id": "man-coax",
+      "sha256": "a5e441610063a9df39545367c9becc771c83ca25de9f9fcfd024f5cc29068640",
+      "scale": 0.69,
+      "baselines": [
+        325,
+        325,
+        326,
+        326,
+        326,
+        327,
+        327,
+        327,
+        326,
+        328,
+        327,
+        328
+      ],
+      "prompt": "请直接生成全新原创动画母图，不要只回复说明。\nONE PNG image only,4 columns x3 rows,12 equal SQUARE cells in chronological row-major order. Canvas1536x1152(cells384),or1448x1086(cells362),NOT1447x1087. Pure WHITE,no text/letters/numbers/grid lines/borders. In EVERY cell show the COMPLETE character including ears/hair,hands/paws,feet. Entire figure at most60% cell height,top20% and bottom20% white margin;same scale,camera and fixed foot baseline across all12. Body anchor stable.12 real DIFFERENT sequential poses,NOT cloned still pictures:1 setup,2-3 anticipation,4-6 develop,7-8 key comic emotion,9-11 gradual release,12 returns close to1. Gradual anatomical intermediate poses,no mirror,no extra limbs,no switching hands or sides. Stable identity,clothes,props. Original design,no celebrity,no known meme face or copyrighted character. LIVE-ACTION photography,fictional original Chinese adult man age32,normal adult body proportions and natural skin,short messy black hair,lavender sweatshirt dark pants white shoes. NOT3D/cartoon/child,not celebrity. Full body anchored feet,left hand at waist. Right fingertip comes to own cheek,head tilts modestly,lips purse and one eyebrow lifts,then a small playful shameless grin slips out. Peak cute self-aware coy face,nonsexual. Hand lowers in gradual stages and expression returns. Do not enlarge eyes or head.\nGenerate this ONE12-cell chronological image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aabb275-0070-83ea-b79f-616f89679f2a",
+        "sourceFileId": "file_000000003a388206a5f405098d88791b",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "a5e441610063a9df39545367c9becc771c83ca25de9f9fcfd024f5cc29068640",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T09:29:10.381898+00:00",
+        "generationObservedAt": "2026-09-17T09:29:10.381898+00:00",
+        "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+        "originalDownloadName": "man-coax.png",
+        "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-17T09:29:33.598240+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.6906077348066298,
+          "left": 56,
+          "top": 25,
+          "baseline": 325
+        },
+        {
+          "pose": 1,
+          "scale": 0.6906077348066298,
+          "left": 56,
+          "top": 25,
+          "baseline": 325
+        },
+        {
+          "pose": 2,
+          "scale": 0.6906077348066298,
+          "left": 56,
+          "top": 25,
+          "baseline": 326
+        },
+        {
+          "pose": 3,
+          "scale": 0.6906077348066298,
+          "left": 56,
+          "top": 25,
+          "baseline": 326
+        },
+        {
+          "pose": 4,
+          "scale": 0.6906077348066298,
+          "left": 56,
+          "top": 25,
+          "baseline": 326
+        },
+        {
+          "pose": 5,
+          "scale": 0.6906077348066298,
+          "left": 56,
+          "top": 24,
+          "baseline": 327
+        },
+        {
+          "pose": 6,
+          "scale": 0.6906077348066298,
+          "left": 56,
+          "top": 24,
+          "baseline": 327
+        },
+        {
+          "pose": 7,
+          "scale": 0.6906077348066298,
+          "left": 56,
+          "top": 24,
+          "baseline": 327
+        },
+        {
+          "pose": 8,
+          "scale": 0.6906077348066298,
+          "left": 56,
+          "top": 25,
+          "baseline": 326
+        },
+        {
+          "pose": 9,
+          "scale": 0.6906077348066298,
+          "left": 56,
+          "top": 23,
+          "baseline": 328
+        },
+        {
+          "pose": 10,
+          "scale": 0.6906077348066298,
+          "left": 56,
+          "top": 24,
+          "baseline": 327
+        },
+        {
+          "pose": 11,
+          "scale": 0.6906077348066298,
+          "left": 56,
+          "top": 23,
+          "baseline": 328
+        }
+      ]
+    },
+    {
+      "id": "shiba-surrender",
+      "sha256": "c6af5e27de94300ef7ba07e33074c143b48d6e88a780c68a867e74a81d78d9ed",
+      "scale": 0.72,
+      "baselines": [
+        337,
+        337,
+        337,
+        337,
+        334,
+        334,
+        334,
+        334,
+        332,
+        332,
+        333,
+        335
+      ],
+      "prompt": "请直接生成全新原创动画母图，不要只回复说明。\nONE PNG image only,4 columns x3 rows,12 equal SQUARE cells in chronological row-major order. Canvas1536x1152(cells384),or1448x1086(cells362),NOT1447x1087. Pure WHITE,no text/letters/numbers/grid lines/borders. In EVERY cell show the COMPLETE character including ears/hair,hands/paws,feet. Entire figure at most60% cell height,top20% and bottom20% white margin;same scale,camera and fixed foot baseline across all12. Body anchor stable.12 real DIFFERENT sequential poses,NOT cloned still pictures:1 setup,2-3 anticipation,4-6 develop,7-8 key comic emotion,9-11 gradual release,12 returns close to1. Gradual anatomical intermediate poses,no mirror,no extra limbs,no switching hands or sides. Stable identity,clothes,props. Original design,no celebrity,no known meme face or copyrighted character. Photoreal sesame shiba sitting with two front paws planted and two hind legs natural,no hands. Alert gaze slowly slides sideways,eyelids sink halfway,ears rotate outward,head lowers a little as if utterly done. Peak long-suffering narrow-eyed side-eye and tiny mouth opening like sigh,then mouth closes and a slow blink before head recovers. Humorous resigned disbelief,not aggression. No paw gesturing,all four limbs intact and grounded.\nGenerate this ONE12-cell chronological image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aabb301-27c8-83ea-9777-eb553cb21df1",
+        "sourceFileId": "file_00000000be8082099e81f5a0b4498bc4",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "c6af5e27de94300ef7ba07e33074c143b48d6e88a780c68a867e74a81d78d9ed",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T09:30:46.456439+00:00",
+        "generationObservedAt": "2026-09-17T09:30:46.456439+00:00",
+        "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+        "originalDownloadName": "shiba-surrender.png",
+        "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+        "deletedAt": "2026-09-17T09:31:19.288965+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 7,
+          "baseline": 337
+        },
+        {
+          "pose": 1,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 7,
+          "baseline": 337
+        },
+        {
+          "pose": 2,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 7,
+          "baseline": 337
+        },
+        {
+          "pose": 3,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 7,
+          "baseline": 337
+        },
+        {
+          "pose": 4,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 9,
+          "baseline": 334
+        },
+        {
+          "pose": 5,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 9,
+          "baseline": 334
+        },
+        {
+          "pose": 6,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 9,
+          "baseline": 334
+        },
+        {
+          "pose": 7,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 9,
+          "baseline": 334
+        },
+        {
+          "pose": 8,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 10,
+          "baseline": 332
+        },
+        {
+          "pose": 9,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 10,
+          "baseline": 332
+        },
+        {
+          "pose": 10,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 10,
+          "baseline": 333
+        },
+        {
+          "pose": 11,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 8,
+          "baseline": 335
+        }
+      ]
+    },
+    {
+      "id": "line-surrender",
+      "sha256": "0f13df18c5dc30e3874d81b9860b1ea2dfde56118af9ba3925094a500dce2ee2",
+      "scale": 0.71,
+      "baselines": [
+        338,
+        338,
+        338,
+        338,
+        336,
+        336,
+        336,
+        336,
+        333,
+        333,
+        333,
+        333
+      ],
+      "prompt": "请直接生成全新原创动画母图，不要只回复说明。\nONE PNG image only,4 columns x3 rows,12 equal SQUARE cells in chronological row-major order. Canvas1536x1152(cells384),or1448x1086(cells362),NOT1447x1087. Pure WHITE,no text/letters/numbers/grid lines/borders. In EVERY cell show the COMPLETE character including ears/hair,hands/paws,feet. Entire figure at most60% cell height,top20% and bottom20% white margin;same scale,camera and fixed foot baseline across all12. Body anchor stable.12 real DIFFERENT sequential poses,NOT cloned still pictures:1 setup,2-3 anticipation,4-6 develop,7-8 key comic emotion,9-11 gradual release,12 returns close to1. Gradual anatomical intermediate poses,no mirror,no extra limbs,no switching hands or sides. Stable identity,clothes,props. Original design,no celebrity,no known meme face or copyrighted character. Pure black-white minimal original Chinese adult man age40,short flat-top hair,square face,full body plain white shirt black pants. Feet fixed,left hand stays on hip. Right hand rises toward forehead for ONE exasperated facepalm,eyes roll upward first,then palm rests above eyebrows,head dips slightly. Peak peeks sideways under hand with resigned crooked mouth as if 'I give up'. Palm lifts away then lowers through gradual stages. Right hand always same side,clear5fingers,no extra arms.\nGenerate this ONE12-cell chronological image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aabb36c-4b00-83ea-a2ee-30eca216f08f",
+        "sourceFileId": "file_0000000009888206a30e2ec51e85ede9",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "0f13df18c5dc30e3874d81b9860b1ea2dfde56118af9ba3925094a500dce2ee2",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T09:32:42.425553+00:00",
+        "generationObservedAt": "2026-09-17T09:32:42.425553+00:00",
+        "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+        "originalDownloadName": "line-surrender.png",
+        "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-17T09:33:15.289089+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 10,
+          "baseline": 338
+        },
+        {
+          "pose": 1,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 10,
+          "baseline": 338
+        },
+        {
+          "pose": 2,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 10,
+          "baseline": 338
+        },
+        {
+          "pose": 3,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 10,
+          "baseline": 338
+        },
+        {
+          "pose": 4,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 11,
+          "baseline": 336
+        },
+        {
+          "pose": 5,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 11,
+          "baseline": 336
+        },
+        {
+          "pose": 6,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 11,
+          "baseline": 336
+        },
+        {
+          "pose": 7,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 11,
+          "baseline": 336
+        },
+        {
+          "pose": 8,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 13,
+          "baseline": 333
+        },
+        {
+          "pose": 9,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 13,
+          "baseline": 333
+        },
+        {
+          "pose": 10,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 13,
+          "baseline": 333
+        },
+        {
+          "pose": 11,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 13,
+          "baseline": 333
+        }
+      ]
+    },
+    {
+      "id": "clay-surrender",
+      "sha256": "9cdd3cfdd3fd1dbbbe4260ded69afc212aec966940ccfe9c816cf82fa1b38d58",
+      "scale": 0.74,
+      "baselines": [
+        312,
+        312,
+        312,
+        312,
+        312,
+        312,
+        312,
+        312,
+        312,
+        312,
+        312,
+        312
+      ],
+      "prompt": "请直接生成全新原创动画母图，不要只回复说明。\nONE PNG image only,4 columns x3 rows,12 equal SQUARE cells in chronological row-major order. Canvas1536x1152(cells384),or1448x1086(cells362),NOT1447x1087. Pure WHITE,no text/letters/numbers/grid lines/borders. In EVERY cell show the COMPLETE character including ears/hair,hands/paws,feet. Entire figure at most60% cell height,top20% and bottom20% white margin;same scale,camera and fixed foot baseline across all12. Body anchor stable.12 real DIFFERENT sequential poses,NOT cloned still pictures:1 setup,2-3 anticipation,4-6 develop,7-8 key comic emotion,9-11 gradual release,12 returns close to1. Gradual anatomical intermediate poses,no mirror,no extra limbs,no switching hands or sides. Stable identity,clothes,props. Original design,no celebrity,no known meme face or copyrighted character. Original teal clay chameleon sitting full body,two hind feet forward,curled tail lies fixed on viewer-right. Exactly2arms2legs. Right palm slowly turns upward while left palm remains on belly; one large eye rolls upward,other gives side-eye,mouth flattens into long-suffering pout. Peak ridiculous asymmetrical resigned expression with head dipped as if conceding defeat,then eye direction and palm recover gradually. Three rounded digits each hand,no extra limbs,tail alwayssame side.\nGenerate this ONE12-cell chronological image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aabb3dd-f60c-83ea-8381-4fde12773b06",
+        "sourceFileId": "file_0000000003a08209a8f9c7db6e71936b",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "9cdd3cfdd3fd1dbbbe4260ded69afc212aec966940ccfe9c816cf82fa1b38d58",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T09:35:22.571862+00:00",
+        "generationObservedAt": "2026-09-17T09:35:22.571862+00:00",
+        "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+        "originalDownloadName": "clay-surrender.png",
+        "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+        "deletedAt": "2026-09-17T09:35:56.451373+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 19,
+          "baseline": 312
+        },
+        {
+          "pose": 1,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 19,
+          "baseline": 312
+        },
+        {
+          "pose": 2,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 19,
+          "baseline": 312
+        },
+        {
+          "pose": 3,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 19,
+          "baseline": 312
+        },
+        {
+          "pose": 4,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 19,
+          "baseline": 312
+        },
+        {
+          "pose": 5,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 19,
+          "baseline": 312
+        },
+        {
+          "pose": 6,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 19,
+          "baseline": 312
+        },
+        {
+          "pose": 7,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 19,
+          "baseline": 312
+        },
+        {
+          "pose": 8,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 19,
+          "baseline": 312
+        },
+        {
+          "pose": 9,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 19,
+          "baseline": 312
+        },
+        {
+          "pose": 10,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 19,
+          "baseline": 312
+        },
+        {
+          "pose": 11,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 19,
+          "baseline": 312
+        }
+      ]
+    },
+    {
+      "id": "man-surrender",
+      "sha256": "bc1144b125bfabb899e109e4ecdaf03ba0f3d6aa8d8ac9b3e526aad6fffafcbb",
+      "scale": 0.68,
+      "baselines": [
+        342,
+        342,
+        342,
+        342,
+        342,
+        342,
+        342,
+        342,
+        342,
+        342,
+        342,
+        342
+      ],
+      "prompt": "请直接生成全新原创动画母图，不要只回复说明。\nONE PNG image only,4 columns x3 rows,12 equal SQUARE cells in chronological row-major order. Canvas1536x1152(cells384),or1448x1086(cells362),NOT1447x1087. Pure WHITE,no text/letters/numbers/grid lines/borders. In EVERY cell show the COMPLETE character including ears/hair,hands/paws,feet. Entire figure at most60% cell height,top20% and bottom20% white margin;same scale,camera and fixed foot baseline across all12. Body anchor stable.12 real DIFFERENT sequential poses,NOT cloned still pictures:1 setup,2-3 anticipation,4-6 develop,7-8 key comic emotion,9-11 gradual release,12 returns close to1. Gradual anatomical intermediate poses,no mirror,no extra limbs,no switching hands or sides. Stable identity,clothes,props. Original design,no celebrity,no known meme face or copyrighted character. LIVE-ACTION photographic fictional original Chinese adult man age37,short black hair and slight stubble,navy polo shirt dark pants white shoes,normaladult anatomy,natural skin,NOT3D/cartoon/child. Both feet fixed,left hand unchanged at side. Right palm rises toward forehead while eyes look up incredulously,rests on forehead for one brief resigned facepalm. Peak one-eye sideways peek and crooked closed mouth,comic helplessness. Hand lifts away then lowers through12 genuine intermediate poses. Clear anatomy,no celebrity,no covering entire face everyframe.\nGenerate this ONE12-cell chronological image now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6aabb480-ee04-83e9-9f85-642ebd878bbe",
+        "sourceFileId": "file_000000002c348209a5410035adf5370e",
+        "requestedDate": "2026-09-17",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "bc1144b125bfabb899e109e4ecdaf03ba0f3d6aa8d8ac9b3e526aad6fffafcbb",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-17T09:38:15.417771+00:00",
+        "generationObservedAt": "2026-09-17T09:38:15.417771+00:00",
+        "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+        "originalDownloadName": "man-surrender.png",
+        "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-17T09:38:45.114122+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 17,
+          "baseline": 342
+        },
+        {
+          "pose": 1,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 17,
+          "baseline": 342
+        },
+        {
+          "pose": 2,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 17,
+          "baseline": 342
+        },
+        {
+          "pose": 3,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 17,
+          "baseline": 342
+        },
+        {
+          "pose": 4,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 17,
+          "baseline": 342
+        },
+        {
+          "pose": 5,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 17,
+          "baseline": 342
+        },
+        {
+          "pose": 6,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 17,
+          "baseline": 342
+        },
+        {
+          "pose": 7,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 17,
+          "baseline": 342
+        },
+        {
+          "pose": 8,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 17,
+          "baseline": 342
+        },
+        {
+          "pose": 9,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 17,
+          "baseline": 342
+        },
+        {
+          "pose": 10,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 17,
+          "baseline": 342
+        },
+        {
+          "pose": 11,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 17,
+          "baseline": 342
+        }
+      ]
+    }
+  ]
+}

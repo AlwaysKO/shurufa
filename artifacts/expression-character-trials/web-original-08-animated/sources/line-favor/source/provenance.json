@@ -1,0 +1,25 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aabadde-e4e8-83e9-a146-1dac75b9f649",
+  "sourceFileId": "file_0000000049648207a5c858fa32c96d58",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "9f68bfd25f1e17c983f70fe09aeac261805eed6927a24ddd894f5685393a9336",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T09:12:28.624136+00:00",
+  "generationObservedAt": "2026-09-17T09:12:28.624136+00:00",
+  "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+  "originalDownloadName": "line-favor.png",
+  "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T09:12:58.563301+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

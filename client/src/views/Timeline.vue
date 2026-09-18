@@ -1,20 +1,24 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 import * as echarts from 'echarts';
 import { api, type HeatmapCell } from '../api';
 
 const days = ref(30);
 const error = ref('');
 let chart: echarts.ECharts | null = null;
+let hourChart: echarts.ECharts | null = null;
+let disposed = false;
 let hmChart: echarts.ECharts | null = null;
 
 async function load() {
   try {
     const [tl, hr, hm] = await Promise.all([api.timeline(days.value), api.hours(days.value), api.heatmap(days.value)]);
+    if (disposed) return;
+    error.value = "";
     render(tl.timeline.map((p) => ({ day: p.day, chars: Number(p.input_chars), events: Number(p.event_count) })), hr.hours);
     renderHeatmap(hm.cells);
   } catch (e) {
-    error.value = (e as Error).message;
+    if (!disposed) error.value = (e as Error).message;
   }
 }
 
@@ -25,8 +29,12 @@ function render(timeline: Array<{ day: string; chars: number; events: number }>,
   chart.setOption({
     tooltip: { trigger: 'axis' },
     legend: { data: ['输入字符', '事件数'] },
-    grid: { left: 50, right: 50, top: 40, bottom: 30 },
-    xAxis: { type: 'category', data: timeline.map((p) => p.day.slice(5)), axisLabel: { rotate: 45 } },
+    grid: { left: 20, right: 20, top: 40, bottom: 20, containLabel: true },
+    // 后端返回北京时间自然日，保留完整日期供提示使用，横轴只显示月日。
+    xAxis: {
+      type: 'category', data: timeline.map((p) => p.day),
+      axisLabel: { rotate: 0, interval: 'auto', hideOverlap: true, margin: 12, formatter: (day: string) => day.slice(5, 10) },
+    },
     yAxis: [{ type: 'value', name: '字符' }, { type: 'value', name: '事件' }],
     series: [
       { name: '输入字符', type: 'bar', data: timeline.map((p) => p.chars), itemStyle: { color: '#3742fa' } },
@@ -36,9 +44,9 @@ function render(timeline: Array<{ day: string; chars: number; events: number }>,
 
   const el2 = document.getElementById('hour-chart');
   if (!el2) return;
-  const hc = echarts.getInstanceByDom(el2) ?? echarts.init(el2);
+  hourChart ??= echarts.init(el2);
   const full = Array.from({ length: 24 }, (_, h) => Number(hours.find((x) => x.hour === h)?.input_chars ?? 0));
-  hc.setOption({
+  hourChart.setOption({
     tooltip: { trigger: 'axis' },
     grid: { left: 50, right: 20, top: 20, bottom: 30 },
     xAxis: { type: 'category', data: full.map((_, h) => `${h}时`) },
@@ -83,10 +91,26 @@ function renderHeatmap(cells: HeatmapCell[]) {
   });
 }
 
-onMounted(load);
+function resizeCharts() {
+  chart?.resize();
+  hourChart?.resize();
+  hmChart?.resize();
+}
+onMounted(() => {
+  window.addEventListener('resize', resizeCharts);
+  void load();
+});
+onBeforeUnmount(() => {
+  disposed = true;
+  window.removeEventListener('resize', resizeCharts);
+  chart?.dispose();
+  hourChart?.dispose();
+  hmChart?.dispose();
+});
 </script>
 
 <template>
+  <p class="timezone-note">本页日期、小时和星期均按北京时间（UTC+8）统计。</p>
   <div class="filters">
     <button v-for="d in [7, 30, 90]" :key="d" :class="{ active: days === d }" @click="days = d; load()">{{ d }} 天</button>
   </div>
@@ -104,3 +128,7 @@ onMounted(load);
     <div id="heatmap-chart" class="chart"></div>
   </div>
 </template>
+
+<style scoped>
+.timezone-note { color: #57606f; font-size: 13px; margin: 0 0 12px; }
+</style>

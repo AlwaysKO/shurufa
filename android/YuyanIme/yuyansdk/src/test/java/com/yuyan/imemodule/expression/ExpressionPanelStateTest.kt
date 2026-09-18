@@ -7,14 +7,14 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ExpressionPanelStateTest {
-    @Test fun `已选推荐被更新为空时不能停留在隐藏标签`() {
+    @Test fun `固定三标签下已选推荐遇到迟到空结果仍保留用户选择`() {
         val state = ExpressionPanelState()
         state.beginQuery("谢谢", 1)
         state.applyResults(1, listOf(asset("thanks")))
         state.selectTab(ExpressionPanelTab.RECOMMENDED)
         state.applyResults(1, listOf(asset("blank").copy(type = "synthesis-template", format = "gif")))
         assertTrue(state.results.isEmpty())
-        assertEquals(ExpressionPanelTab.AI_SYNTHESIS, state.selectedTab)
+        assertEquals(ExpressionPanelTab.RECOMMENDED, state.selectedTab)
     }
 
     @Test fun `自动空回调后命中仍显示推荐且自动合成兜底可被成品替代`() {

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useConfirmation } from '../confirmation';
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { api, appName, deviceDetailLines, deviceLabel, eventTypeName, networkName, type ActivityItem, type DeviceRow } from '../api';
+import { api, currentUserId, appName, deviceDetailLines, deviceLabel, eventTypeName, networkName, type ActivityItem, type DeviceRow } from '../api';
 
 const askConfirmation = useConfirmation();
 
@@ -15,6 +15,9 @@ const error = ref('');
 const deleteError = ref('');
 const deleteMessage = ref('');
 const deletingId = ref<string | null>(null);
+const confirming = ref(false);
+const selectedIds = ref<string[]>([]);
+const deleteBusy = computed(() => confirming.value || deletingId.value !== null);
 let unmounted = false;
 
 const type = ref<'all' | 'text' | 'paste' | 'voice' | 'image' | 'delete'>('all');
@@ -24,12 +27,26 @@ const from = ref('');
 const to = ref('');
 const q = ref('');
 const showAll = ref(false);
-const grouped = ref(true);
+const preferredGrouped = ref(true);
+const grouped = computed(() => preferredGrouped.value && !showAll.value);
 const loading = ref(false);
 let latestRequest = 0;
+const contextKey = computed(() => JSON.stringify([
+  currentUserId.value, type.value, deviceId.value, days.value, from.value, to.value,
+  q.value, showAll.value, preferredGrouped.value, page.value,
+]));
+const selectedRows = computed(() => items.value.filter(item => selectedIds.value.includes(item.id)));
+function clearSelection() { selectedIds.value = []; }
+function selectPage() {
+  if (!loading.value && !error.value && !deleteBusy.value) selectedIds.value = items.value.map(item => item.id);
+}
+watch(contextKey, clearSelection, { flush: 'sync' });
 
 async function load(): Promise<void> {
+  if (unmounted) return;
   const request = ++latestRequest;
+  clearSelection();
+  items.value = [];
   loading.value = true;
   error.value = '';
   try {
@@ -67,12 +84,12 @@ function search() {
 }
 
 function changeMode(value: boolean) {
-  grouped.value = value && !showAll.value;
+  if (!showAll.value) preferredGrouped.value = value;
   search();
 }
 
 function changeUnderlyingEvents() {
-  if (showAll.value) grouped.value = false;
+  // 底层事件仅临时展示原始操作，不覆盖用户此前的显示方式。
   search();
 }
 
@@ -91,7 +108,7 @@ function resetFilters() {
   to.value = '';
   q.value = '';
   showAll.value = false;
-  grouped.value = true;
+  preferredGrouped.value = true;
   search();
 }
 
@@ -121,24 +138,45 @@ const summaryText = (item: ActivityItem) => hasCompleteEdit(item)
 
 const snapshotText = (value: string | null | undefined) => value == null ? '（未采集）' : value === '' ? '（空输入框）' : value;
 
-async function deleteRecord(item: ActivityItem) {
-  if (loading.value || deletingId.value || unmounted) return;
-  const mode = grouped.value && !showAll.value ? 'group' : 'single';
-  const ids = mode === 'group' && item.edit_events?.length ? item.edit_events.map(event => event.id) : [item.id];
-  const preview = summaryText(item).slice(0, 160);
-  const message = `确定永久删除${mode === 'group' ? '这段记录及其全部原始操作' : '这条原始操作'}吗？\n共 ${ids.length} 条原始记录。\n\n${preview}\n\n删除后无法撤销，仅影响当前后台，不联动手机或其他服务器副本。`;
-  if (!(await askConfirmation(message))) return;
-  if (loading.value || deletingId.value || unmounted) return;
-  deletingId.value = item.id;
+function deleteRecord(item: ActivityItem) { return deleteRecords([item], false); }
+function deleteSelected() { return deleteRecords(selectedRows.value, true); }
+
+async function deleteRecords(rows: ActivityItem[], bulk: boolean) {
+  if (loading.value || deleteBusy.value || unmounted || !rows.length) return;
+  const context = contextKey.value;
+  const request = latestRequest;
+  const selection = selectedIds.value.join(',');
+  const mode = grouped.value ? 'group' : 'single';
+  const records = rows.map(item => ({
+    id: item.id,
+    event_ids: mode === 'group' && item.edit_events?.length ? item.edit_events.map(event => event.id) : [item.id],
+  }));
+  const count = records.reduce((sum, record) => sum + record.event_ids.length, 0);
+  if (bulk && (records.length > pageSize || count > 10000)) {
+    deleteError.value = '选中范围过大，请减少选择后分批删除（每批最多20行、10000条原始记录）。';
+    return;
+  }
+  const subject = bulk ? `选中的 ${records.length} ${mode === 'group' ? '组完整编辑记录' : '条原始操作'}`
+    : mode === 'group' ? '这段记录及其全部原始操作' : '这条原始操作';
+  const preview = rows.slice(0, 3).map(item => summaryText(item).slice(0, 160)).join('\n');
+  const message = `确定永久删除${subject}吗？\n共 ${count} 条原始记录。\n\n${preview}\n\n删除后无法撤销，仅影响当前后台，不联动手机或其他服务器副本。`;
+  const current = () => !unmounted && request === latestRequest && context === contextKey.value;
+  confirming.value = true;
+  let accepted = false;
+  try { accepted = await askConfirmation(message); } finally { confirming.value = false; }
+  if (!accepted || !current() || loading.value || deletingId.value || (bulk && selection !== selectedIds.value.join(','))) return;
+  deletingId.value = bulk ? 'batch' : records[0].id;
   deleteError.value = '';
   deleteMessage.value = '';
   try {
-    const result = await api.deleteActivity(item.id, { confirm: 'DELETE', mode, event_ids: ids });
-    if (unmounted) return;
+    const result = bulk
+      ? await api.deleteActivities({ confirm: 'DELETE', mode, records })
+      : await api.deleteActivity(records[0].id, { confirm: 'DELETE', mode, event_ids: records[0].event_ids });
+    if (!current()) return;
     deleteMessage.value = `已删除 ${result.deleted} 条原始记录`;
     await load();
   } catch (error) {
-    if (!unmounted) deleteError.value = (error as Error).message;
+    if (current()) deleteError.value = (error as Error).message;
   } finally { deletingId.value = null; }
 }
 
@@ -197,13 +235,23 @@ onMounted(async () => {
     <label class="check"><input v-model="showAll" data-testid="show-all" type="checkbox" @change="changeUnderlyingEvents()" /> 显示底层事件（含按键/拼音组合）</label>
   </div>
 
+  <div class="selection-toolbar">
+    <button class="btn" data-testid="select-page" :disabled="loading || !!error || deleteBusy || !items.length" @click="selectPage">全选本页</button>
+    <button class="btn" data-testid="clear-selection" :disabled="deleteBusy || !selectedIds.length" @click="clearSelection">全不选</button>
+    <span data-testid="selection-count">已选 {{ selectedRows.length }} {{ grouped ? '组' : '条' }}（仅当前页）</span>
+    <button class="delete-record" data-testid="delete-selected" :disabled="loading || !!error || deleteBusy || !selectedRows.length" @click="deleteSelected">
+      {{ deletingId === 'batch' ? '删除中…' : '删除选中' }}
+    </button>
+  </div>
   <div v-if="deleteError" class="delete-notice delete-error" role="alert">删除失败：{{ deleteError }}</div>
   <div v-if="deleteMessage" class="delete-notice delete-success" role="status">{{ deleteMessage }}</div>
   <div v-if="error" class="empty">加载失败：{{ error }}</div>
   <div v-else class="card" style="padding: 0">
-    <table>
+    <div v-if="loading" class="empty" role="status">加载中…</div>
+    <table v-else>
       <thead>
         <tr>
+          <th style="width: 48px">选择</th>
           <th style="width: 160px">时间</th>
           <th style="width: 70px">类型</th>
           <th>内容</th>
@@ -217,6 +265,8 @@ onMounted(async () => {
       </thead>
       <tbody>
         <tr v-for="item in items" :key="item.id">
+          <td><input v-model="selectedIds" type="checkbox" :value="item.id" :disabled="deleteBusy"
+            :data-testid="`select-activity-${item.id}`" :aria-label="`选择${grouped ? '整段记录' : '原始操作'}：${summaryText(item).slice(0, 40)}`" /></td>
           <td style="white-space: nowrap">{{ fmtTime(item.occurred_at) }}</td>
           <td><span class="badge" :class="badge(item).cls">{{ badge(item).label }}</span></td>
           <td style="max-width: 420px; word-break: break-all">
@@ -259,7 +309,7 @@ onMounted(async () => {
           <td style="font-size: 12px; color: #57606f">{{ item.ip_location || (item.client_ip ? '暂未解析' : '-') }}</td>
           <td>
             <button class="delete-record" :data-testid="`delete-activity-${item.id}`"
-              :disabled="loading || deletingId !== null" @click="deleteRecord(item)">
+              :disabled="loading || deleteBusy" @click="deleteRecord(item)">
               {{ deletingId === item.id ? '删除中…' : grouped ? '删除整段' : '删除' }}
             </button>
           </td>
@@ -268,7 +318,7 @@ onMounted(async () => {
     </table>
     <div v-if="!items.length && !loading" class="empty">没有符合条件的行为记录</div>
 
-    <div class="pager">
+    <div v-if="!loading" class="pager">
       <span>共 {{ total }} {{ grouped ? '组' : '条' }} · 每页 {{ pageSize }} {{ grouped ? '组' : '条' }}</span>
       <button :disabled="page <= 1" @click="page--; load()">上一页</button>
       <span>{{ page }} / {{ totalPages }}</span>
@@ -278,6 +328,8 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.selection-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 13px; color: #57606f; }
+.selection-toolbar button:disabled { opacity: .5; cursor: not-allowed; }
 .delete-record { padding: 5px 10px; border: 1px solid #ffc9c9; border-radius: 5px; background: #fff5f5; color: #c0392b; cursor: pointer; white-space: nowrap; }
 .delete-record:disabled { opacity: 0.5; cursor: not-allowed; }
 .delete-notice { padding: 10px 14px; margin-bottom: 12px; border-radius: 6px; font-size: 13px; }

@@ -1,0 +1,42 @@
+{
+  "checkedAt": "2026-09-17T09:20:22.607137+00:00",
+  "userId": "f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+  "groups": [
+    {
+      "keyword": "麻烦你了",
+      "count": 4,
+      "allDecoded240": true,
+      "deleteButtons": 4,
+      "screenshots": [
+        "artifacts/diagnostics/2026-09-17-web08/favor-0.png",
+        "artifacts/diagnostics/2026-09-17-web08/favor-1.png"
+      ],
+      "allFourImageRegionsChanged": true,
+      "visual": "全身字幕完整，连续后台截图神态姿势变化；非用户逐张认可"
+    },
+    {
+      "keyword": "撒娇",
+      "count": 4,
+      "allDecoded240": true,
+      "deleteButtons": 4,
+      "screenshots": [
+        "artifacts/diagnostics/2026-09-17-web08/coax-0.png",
+        "artifacts/diagnostics/2026-09-17-web08/coax-1.png"
+      ],
+      "allFourImageRegionsChanged": true,
+      "visual": "全身字幕完整，后台实际播放；非用户逐张认可"
+    },
+    {
+      "keyword": "服了",
+      "count": 4,
+      "allDecoded240": true,
+      "deleteButtons": 4,
+      "screenshots": [
+        "artifacts/diagnostics/2026-09-17-web08/surrender-0.png",
+        "artifacts/diagnostics/2026-09-17-web08/surrender-1.png"
+      ],
+      "allFourImageRegionsChanged": true,
+      "visual": "完整全身、字幕不挡肢体，后台连续截图全部区域变化；不是用户逐张认可"
+    }
+  ]
+}

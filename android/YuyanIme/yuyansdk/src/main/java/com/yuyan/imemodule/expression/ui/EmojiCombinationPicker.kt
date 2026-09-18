@@ -42,6 +42,8 @@ class EmojiCombinationPicker @JvmOverloads constructor(
     private var readyCombination: EmojiCombination? = null
     private var readyFile: File? = null
     private var singleLayerMode = false
+    private var renderedBases: List<EmojiBase>? = null
+    private var bundledBaseHashes: Map<String, String> = emptyMap()
 
     var onCombinationMissing: ((EmojiCombination, (File?) -> Unit) -> Unit)? = null
     var onCombinationClick: ((EmojiCombination, File?) -> Unit)? = null
@@ -77,9 +79,18 @@ class EmojiCombinationPicker @JvmOverloads constructor(
         }
     }
 
+    /** 来自 InputView 已解析的 APK 目录，不额外读盘，也不把远端 URL 当作必须联网。 */
+    fun setBundledBases(bases: List<EmojiBase>) {
+        bundledBaseHashes = bases.associate { it.fileName to it.sha256 }
+    }
+
     fun render(catalog: ExpressionCatalog) {
         this.catalog = catalog
-        adapter.submitList(catalog.document.emojiBases.sortedBy(EmojiBase::sortOrder))
+        if (renderedBases != catalog.document.emojiBases) {
+            renderedBases = catalog.document.emojiBases
+            adapter.submitList(catalog.document.emojiBases.sortedBy(EmojiBase::sortOrder))
+        }
+        adapter.updateSelection(state.firstId)
         updateBackPresentation()
         title.text = when (state.step) {
             EmojiSelectionStep.FIRST -> context.getString(R.string.expression_emoji_choose_first)
@@ -145,8 +156,18 @@ class EmojiCombinationPicker @JvmOverloads constructor(
                 body.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, 0)
             }
         }
+        val grid = available >= minimum * 3
+        val columns = ((width.takeIf { it > 0 } ?: resources.displayMetrics.widthPixels) /
+            (56 * resources.displayMetrics.density)).toInt().coerceIn(4, 8)
+        val manager = list.layoutManager as GridLayoutManager
+        val nextOrientation = if (grid) RecyclerView.VERTICAL else RecyclerView.HORIZONTAL
+        val nextSpanCount = if (grid) columns else 1
+        if (manager.orientation != nextOrientation || manager.spanCount != nextSpanCount) {
+            manager.orientation = nextOrientation
+            manager.spanCount = nextSpanCount
+        }
         val previewSize = minOf(
-            (PREVIEW_SIZE_DP * resources.displayMetrics.density).roundToInt(),
+            ((if (grid) 144f else PREVIEW_SIZE_DP) * resources.displayMetrics.density).roundToInt(),
             (available - if (orientation == VERTICAL) minimum else 0).coerceAtLeast(minimum),
         )
         preview.layoutParams = preview.layoutParams.apply {
@@ -240,8 +261,11 @@ class EmojiCombinationPicker @JvmOverloads constructor(
         const val PREVIEW_SIZE_DP = 52f
     }
 
-    private fun assetSource(fileName: String, url: String?): String {
-        val path = url ?: fileName
+    private fun assetSource(base: EmojiBase): String {
+        if (bundledBaseHashes[base.fileName] == base.sha256) {
+            return "file:///android_asset/expression/${base.fileName}"
+        }
+        val path = base.url ?: base.fileName
         return when {
             path.startsWith("http://") || path.startsWith("https://") -> path
             path.startsWith("/") -> ServerConfig.baseUrl + path
@@ -253,10 +277,21 @@ class EmojiCombinationPicker @JvmOverloads constructor(
         private val onClick: (EmojiBase) -> Unit,
     ) : RecyclerView.Adapter<EmojiAdapter.Holder>() {
         private var items: List<EmojiBase> = emptyList()
+        private var selectedId: String? = null
 
         fun submitList(items: List<EmojiBase>) {
+            if (this.items == items) return
             this.items = items
             notifyDataSetChanged()
+        }
+
+        fun updateSelection(id: String?) {
+            if (selectedId == id) return
+            val previous = selectedId
+            selectedId = id
+            items.forEachIndexed { index, base ->
+                if (base.id == previous || base.id == id) notifyItemChanged(index, "selection")
+            }
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder = Holder(
@@ -268,13 +303,40 @@ class EmojiCombinationPicker @JvmOverloads constructor(
         )
 
         override fun onBindViewHolder(holder: Holder, position: Int) = holder.bind(items[position])
+        override fun onBindViewHolder(holder: Holder, position: Int, payloads: MutableList<Any>) {
+            if (payloads.isNotEmpty()) holder.updateSelection(items[position])
+            else holder.bind(items[position])
+        }
         override fun getItemCount(): Int = items.size
 
+        override fun onViewRecycled(holder: Holder) { holder.clear() }
+
         inner class Holder(private val image: ImageView) : RecyclerView.ViewHolder(image) {
+            private var boundSource: String? = null
+            private var boundSha256: String? = null
+
             fun bind(base: EmojiBase) {
-                Glide.with(image).load(assetSource(base.fileName, base.url)).fitCenter().into(image)
-                image.alpha = if (base.id == state.firstId) 0.65f else 1f
+                val source = assetSource(base)
+                if (source != boundSource || base.sha256 != boundSha256) {
+                    boundSource = source
+                    boundSha256 = base.sha256
+                    Glide.with(image).load(source)
+                        .signature(com.bumptech.glide.signature.ObjectKey(base.sha256))
+                        .fitCenter().dontAnimate().into(image)
+                }
+                image.contentDescription = base.name
+                updateSelection(base)
                 image.setOnClickListener { onClick(base) }
+            }
+
+            fun updateSelection(base: EmojiBase) {
+                image.alpha = if (base.id == selectedId) 0.65f else 1f
+            }
+
+            fun clear() {
+                boundSource = null
+                boundSha256 = null
+                Glide.with(image).clear(image)
             }
         }
     }

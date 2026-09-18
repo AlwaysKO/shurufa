@@ -14,7 +14,8 @@ enum class ExpressionCommitKind {
 /**
  * AI 斗图手动搜索的会话内决策与动作。
  *
- * 只保留本次输入会话最多 100 UTF-16 单位的上屏片段，不读取宿主编辑框或聊天历史。
+ * 只保留本次输入会话最多 100 UTF-16 单位的上屏片段。主动搜索且本地缺失时，
+ * 可由宿主边界提供有范围限制的当前编辑框文字；不读取聊天历史。
  */
 class ExpressionManualSearch(
     private val showMissingText: () -> Unit,
@@ -81,8 +82,13 @@ class ExpressionManualSearch(
     fun perform(
         activeComposingText: String?,
         panelLastQuery: String?,
+        currentEditorText: (() -> String?)? = null,
     ): ExpressionManualSearchDecision {
-        return when (val decision = resolve(activeComposingText, recentCommittedText, panelLastQuery)) {
+        val local = resolve(activeComposingText, recentCommittedText, panelLastQuery)
+        val resolved = if (local == ExpressionManualSearchDecision.MissingText) {
+            resolve(currentEditorText?.invoke(), null, null)
+        } else local
+        return when (val decision = resolved) {
             ExpressionManualSearchDecision.MissingText -> {
                 showMissingText()
                 decision

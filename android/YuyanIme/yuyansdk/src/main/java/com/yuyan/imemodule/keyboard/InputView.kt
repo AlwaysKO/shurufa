@@ -179,6 +179,9 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     private var expressionScope = newExpressionScope()
     private var relationshipReplyController = newRelationshipReplyController()
     private val chatEditorGate = ChatEditorGate()
+    private var expressionEditorPackage: String? = null
+    private val expressionManualOnly: Boolean
+        get() = chatEditorGate.requiresManualSearch(expressionEditorPackage)
     private var expressionPanelState = ExpressionPanelState(chatEditor = false)
     private lateinit var expressionPanel: ExpressionPanel
     private lateinit var expressionQueryCoordinator: ExpressionQueryCoordinator
@@ -186,6 +189,8 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     private var expressionUsageHint: TextView? = null
     private val dismissExpressionUsageHint = Runnable { hideExpressionUsageHint() }
     private var expressionPendingCommitLength = 0
+    private var expressionCompositionStart = -1
+    private var expressionCompositionEnd = -1
     private var expressionClearingInput = false
     internal var expressionComposingTextSource = ExpressionComposingTextSource.fromEngine()
     private val expressionInputTargetTracker = ExpressionInputTargetTracker()
@@ -267,6 +272,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         expressionPanelState.setAiStickerEnabled(aiStickerPreference.getValue())
         val localCatalog = runCatching { ExpressionCatalog.fromAssets(context) }.getOrNull()
         if (localCatalog != null) {
+            expressionPanel.setBundledEmojiBases(localCatalog.document.emojiBases)
             val cache = ExpressionCache(context.cacheDir)
             val sync = ExpressionSync(
                 client = OkHttpClient(),
@@ -307,15 +313,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 },
                 prepareAsset = { asset, query -> prepareAsset(sync, cache, renderer, asset, query) },
                 prepareCombination = { combination -> prepareCombination(sync, cache, combination) },
-                fallback = { expression, failure ->
-                    if (failure == ExpressionSendResult.AlreadySending) {
-                        failure
-                    } else if (contentSender.saveToGallery(expression)) {
-                        ExpressionSendResult.SavedToGallery
-                    } else {
-                        failure
-                    }
-                },
+                // 点击发送不授权改为保存相册；失败原样回传，保留输入和卡片。
             )
             expressionPanel.onAiStickerEnabledChange = { enabled ->
                 if (!enabled) setExpressionExpanded(false)
@@ -374,9 +372,10 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             }
             expressionPanel.onTabSelected = { tab ->
                 expressionPanelState.selectTab(tab)
-                expressionPanel.render(expressionPanelState, sync.currentCatalog())
+                setExpressionExpanded(tab != ExpressionPanelTab.RECOMMENDED)
             }
             expressionPanel.onExpandRequested = { setExpressionExpanded(true) }
+            expressionPanel.onReturnToKeyboard = { setExpressionExpanded(false) }
             expressionPanel.onAssetClick = { asset -> sendDirectly(asset) }
             expressionPanel.onEmojiCombinationClick = { combination, _ ->
                 sendDirectly(combination)
@@ -413,7 +412,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
     /** 仅真实键盘打开时检查轻量版本；开关斗图/连续输入复用本次会话。 */
     private fun refreshExpressionCatalogIfRecommendationsActive(sync: ExpressionSync) {
-        if (!expressionKeyboardWindowVisible || !expressionPanelState.aiStickerEnabled ||
+        if (expressionManualOnly || !expressionKeyboardWindowVisible || !expressionPanelState.aiStickerEnabled ||
             expressionPanelState.recommendationsPaused) return
         // 不把sync拥有的后台预取任务保存为UI可取消任务，关闭面板不浪费已开始下载。
         val checkRemoteVersion = !expressionWindowVersionRequested
@@ -527,7 +526,8 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                     expressionPreparationJob = null // 清结果不能取消当前已完成发送或交接的任务。
                     expressionQueryCoordinator.reset()
                     clearExpressionQuery()
-                } else if (result == ExpressionSendResult.SavedToGallery || result == ExpressionSendResult.WechatSubmitted) {
+                } else if (result == ExpressionSendResult.SavedToGallery || result == ExpressionSendResult.WechatSubmitted ||
+                    result == ExpressionSendResult.AppSubmitted) {
                     // 保存或仅交接不等于发送；卡片保留，允许同词再次主动触发。
                     expressionQueryCoordinator.reset()
                 }
@@ -579,7 +579,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         } finally {
             expressionClearingInput = false
         }
-        expressionPendingCommitLength = 0
+        resetExpressionSelectionTracking()
         expressionManualSearch.invalidateCommittedText()
         expressionSearchJob?.cancel()
         expressionSearchJob = null
@@ -594,8 +594,9 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         val message = when (result) {
             ExpressionSendResult.Sent,
             ExpressionSendResult.AlreadySending,
+            ExpressionSendResult.WechatSubmitted,
+            ExpressionSendResult.AppSubmitted,
             -> null
-            ExpressionSendResult.WechatSubmitted -> context.getString(R.string.expression_wechat_submitted)
             ExpressionSendResult.SavedToGallery -> context.getString(R.string.expression_saved_to_gallery)
             ExpressionSendResult.UnsupportedTarget -> context.getString(R.string.expression_target_image_unsupported)
             is ExpressionSendResult.Failed -> result.reason.ifBlank { context.getString(R.string.expression_image_send_failed) }
@@ -620,7 +621,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
     private fun searchExpressions(query: String) {
         val sync = expressionSync ?: return
-        if (!expressionPanelState.chatEditor || !expressionPanelState.aiStickerEnabled ||
+        if (expressionManualOnly || !expressionPanelState.chatEditor || !expressionPanelState.aiStickerEnabled ||
             expressionPanelState.recommendationsPaused
         ) return
         setExpressionExpanded(false)
@@ -692,7 +693,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         aiStickerPreference.setValue(true)
         expressionPanelState.setAiStickerEnabled(true)
         expressionPanelState.restoreRecommendations()
-        expressionPanelState.collapse()
+        setExpressionExpanded(false)
         expressionSync?.let {
             refreshExpressionCatalogIfRecommendationsActive(it)
             expressionPanel.render(expressionPanelState, it.currentCatalog())
@@ -709,13 +710,16 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         expressionPreviewJobs.cancel()
         expressionPreparationJob?.cancel()
         expressionPreparationJob = null
+        val previousTab = expressionPanelState.selectedTab.takeIf {
+            expressionManualQuery == query && expressionPanelState.query == query
+        }
         expressionManualQuery = query
         val requestId = ++expressionRequestId
         val recommendations = sync.currentCatalog().recommend(query).filter { it.type == "prebuilt" }
         expressionPanelState.beginQuery(query, requestId, manual = true)
         expressionPanelState.applyResults(requestId, recommendations)
-        expressionPanelState.selectTab(ExpressionPanelTab.AI_SYNTHESIS)
-        expressionPanel.render(expressionPanelState, sync.currentCatalog())
+        expressionPanelState.selectTab(previousTab ?: ExpressionPanelTab.AI_SYNTHESIS)
+        setExpressionExpanded(expressionPanelState.selectedTab != ExpressionPanelTab.RECOMMENDED)
         expressionSearchJob = sync.search(query, requestId, expressionPanelState::acceptResponse) { results ->
             // 推荐和合成仍分栏：未命中不得把底图伪装为推荐；搜索只懒取缺失原件。
             if (expressionPanelState.applyResults(requestId, results.filter { it.type == "prebuilt" })) {
@@ -737,7 +741,33 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 mSkbCandidatesBarView.getActiveCandNo(),
             ),
             panelLastQuery = expressionPanelState.query,
+            currentEditorText = ::readCurrentEditorTextForManualExpressionSearch,
         )
+    }
+
+    /** 仅用户主动斗图且本地会话已失效时读取当前编辑器，绝不读取无障碍聊天历史。 */
+    private fun readCurrentEditorTextForManualExpressionSearch(): String? {
+        if (!expressionInputSessionActive || !expressionPanelState.chatEditor) return null
+        val editor = service.currentInputEditorInfo ?: return null
+        if (editor.packageName != expressionEditorPackage ||
+            !(chatEditorGate.allows(editor.packageName, editor) ||
+                chatEditorGate.allowsManualSearch(editor.packageName, editor))) return null
+        val connection = service.currentInputConnection ?: return null
+        return runCatching {
+            val before = connection.getTextBeforeCursor(100, 0)?.toString()?.take(100) ?: return@runCatching null
+            // 光标前后 API 不包含选区；全选与部分选中都按完整当前编辑文字搜索。
+            // getSelectedText 没有长度参数，读取后立即截断，合计最多保留 100 个 UTF-16 单位。
+            val selected = if (before.length < 100) {
+                connection.getSelectedText(0)?.toString()?.take(100 - before.length).orEmpty()
+            } else ""
+            val remaining = 100 - before.length - selected.length
+            val after = if (remaining > 0) {
+                connection.getTextAfterCursor(remaining, 0)?.toString()?.take(remaining).orEmpty()
+            } else ""
+            if (service.currentInputConnection !== connection || service.currentInputEditorInfo !== editor) return@runCatching null
+            (before + selected + after).trimEnd { Character.isHighSurrogate(it) }
+                .trim().takeIf { it.isNotBlank() }
+        }.getOrNull()
     }
 
     private fun setExpressionExpanded(expanded: Boolean) {
@@ -745,11 +775,18 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         val candidates = mSkbRoot.findViewById<View>(R.id.candidates_bar)
         val keyboard = mSkbRoot.findViewById<View>(R.id.skb_input_keyboard_view)
         if (expanded) {
-            if (expressionPanelState.presentation == ExpressionPanelPresentation.EXPANDED) return
+            if (expressionPanelState.presentation == ExpressionPanelPresentation.EXPANDED) {
+                expressionPanel.render(expressionPanelState, sync.currentCatalog())
+                return
+            }
             expressionPanelState.expand()
             if (expressionPanelState.presentation != ExpressionPanelPresentation.EXPANDED) return
-            expressionKeyboardVisibility = candidates.visibility to keyboard.visibility
-            expressionPanel.setExpandedContentHeight(candidates.height + keyboard.height)
+            if (expressionKeyboardVisibility == null) {
+                expressionKeyboardVisibility = candidates.visibility to keyboard.visibility
+            }
+            expressionPanel.setExpandedContentHeight(
+                (candidates.height + keyboard.height - (44 * resources.displayMetrics.density).toInt()).coerceAtLeast(0),
+            )
             candidates.visibility = View.GONE
             keyboard.visibility = View.GONE
         } else {
@@ -1409,6 +1446,11 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         }
         expressionPendingCommitLength = (expressionPendingCommitLength.toLong() + text.length).coerceAtMost(10_000).toInt()
         expressionManualSearch.onHostCommitted(text, kind)?.let { query ->
+            if (expressionManualOnly) {
+                expressionQueryCoordinator.reset()
+                clearExpressionQuery()
+                return
+            }
             if (!expressionPanelState.recommendationsPaused && expressionPanelState.aiStickerEnabled) {
                 expressionQueryCoordinator.onCommitted(query)
             }
@@ -1416,7 +1458,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     }
 
     private fun notifyExpressionTextEdited() {
-        expressionPendingCommitLength = 0
+        resetExpressionSelectionTracking()
         expressionManualSearch.invalidateCommittedText()
         expressionQueryCoordinator.reset()
         clearExpressionQuery()
@@ -1783,12 +1825,13 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
     /** 输入连接/编辑器切换时的斗图会话边界，由 [onStartInputView] 调用。 */
     internal fun onExpressionInputTargetChanged(editorInfo: EditorInfo) {
+        expressionEditorPackage = editorInfo.packageName
         hideExpressionUsageHint()
         relationshipReplyController.stop()
         expressionManualQuery = null
         expressionComposingTextSource.clear()
         setExpressionExpanded(false)
-        expressionPendingCommitLength = 0
+        resetExpressionSelectionTracking()
         expressionManualSearch.resetSession()
         expressionQueryCoordinator.close()
         expressionQueryCoordinator = ExpressionQueryCoordinator(
@@ -1809,7 +1852,8 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         expressionPanelState.isPreparing = false
         expressionPanelState = ExpressionPanelState(
             aiStickerEnabled = getInstance().internal.aiStickerEnabled.getValue(),
-            chatEditor = chatEditorGate.allows(editorInfo.packageName, editorInfo),
+            chatEditor = chatEditorGate.allows(editorInfo.packageName, editorInfo) ||
+                chatEditorGate.allowsManualSearch(editorInfo.packageName, editorInfo),
         )
         expressionSync?.let { expressionPanel.render(expressionPanelState, it.currentCatalog()) }
     }
@@ -1838,7 +1882,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         expressionSync?.onKeyboardClosed()
         relationshipReplyController.stop()
         deactivateExpressionInputSession()
-        expressionPendingCommitLength = 0
+        resetExpressionSelectionTracking()
         expressionManualSearch.resetSession()
         expressionDownloadJob?.cancel()
         expressionDownloadJob = null
@@ -1850,27 +1894,47 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     private var selEnd = 0
     private var oldCandidatesEnd = 0
 
-    /** 仅根据本次提交和组合光标确认正常前进，不读取宿主编辑框内容。 */
-    internal fun onExpressionSelectionChanged(oldStart: Int, oldEnd: Int, newStart: Int, newEnd: Int, candidatesEnd: Int) {
+    private fun resetExpressionSelectionTracking() {
+        expressionPendingCommitLength = 0
+        expressionCompositionStart = -1
+        expressionCompositionEnd = -1
+    }
+
+    /** 仅用成功提交长度和宿主组合范围识别自身编辑，不读取聊天内容。 */
+    internal fun onExpressionSelectionChanged(oldStart: Int, oldEnd: Int, newStart: Int, newEnd: Int, candidatesEnd: Int, candidatesStart: Int = -1) {
         val moved = oldStart != newStart || oldEnd != newEnd
         val collapsed = oldStart == oldEnd && newStart == newEnd
         val advance = newStart - oldStart
-        val ownAdvance = collapsed && advance >= 0 && (
-            (expressionPendingCommitLength > 0 && advance == expressionPendingCommitLength) ||
-                (candidatesEnd >= 0 && newEnd == candidatesEnd)
+        // 拼音 ne 被一个汉字替换会回缩，不能当成用户手动移动而丢掉刚提交的查询。
+        val ownReplacement = collapsed && expressionPendingCommitLength > 0 &&
+            expressionCompositionStart >= 0 && expressionCompositionEnd > expressionCompositionStart &&
+            oldEnd == expressionCompositionEnd && candidatesEnd < 0 &&
+            newEnd.toLong() == expressionCompositionStart.toLong() + expressionPendingCommitLength
+        val ownAdvance = collapsed && (
+            (advance >= 0 && expressionPendingCommitLength > 0 && advance == expressionPendingCommitLength) ||
+                (advance >= 0 && candidatesEnd >= 0 && newEnd == candidatesEnd) || ownReplacement
             )
-        expressionPendingCommitLength = 0
+        // 无移动的重复通知可能先于真正的提交光标通知，不得提前消费 pending。
+        if (moved || ownReplacement) expressionPendingCommitLength = 0
         if (moved && !ownAdvance) {
             expressionManualSearch.invalidateCommittedText()
             expressionQueryCoordinator.reset()
             // 自己为发送清空输入会触发选区回调，不能取消已捕获素材的准备任务。
             if (!expressionClearingInput && expressionPreparationJob == null) clearExpressionQuery()
         }
+        if (collapsed && candidatesStart >= 0 && candidatesEnd > candidatesStart && newEnd == candidatesEnd) {
+            expressionCompositionStart = candidatesStart
+            expressionCompositionEnd = candidatesEnd
+        } else if (moved || ownReplacement || expressionPendingCommitLength == 0) {
+            // 待确认提交前的无移动负范围通知，也不能提前丢掉替换判定所需范围。
+            expressionCompositionStart = -1
+            expressionCompositionEnd = -1
+        }
     }
 
-    fun onUpdateSelection(oldSelStart: Int, oldSelEnd: Int, newSelStart: Int, newSelEnd: Int, candidatesEnd: Int) {
+    fun onUpdateSelection(oldSelStart: Int, oldSelEnd: Int, newSelStart: Int, newSelEnd: Int, candidatesEnd: Int, candidatesStart: Int = -1) {
         hideExpressionUsageHint()
-        onExpressionSelectionChanged(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesEnd)
+        onExpressionSelectionChanged(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesEnd, candidatesStart)
         selStart = newSelStart
         selEnd = newSelEnd
         if (InputModeSwitcher.isEnglish ) {

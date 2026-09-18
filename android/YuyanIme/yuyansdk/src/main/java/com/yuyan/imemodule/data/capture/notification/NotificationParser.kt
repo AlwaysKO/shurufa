@@ -2,6 +2,7 @@ package com.yuyan.imemodule.data.capture.notification
 
 import com.yuyan.imemodule.data.capture.normalizeCapturedText
 import com.yuyan.imemodule.data.capture.sha256
+import com.yuyan.imemodule.data.capture.media.normalizeConversationTitle
 import com.yuyan.imemodule.data.capture.model.CapturedConversation
 import com.yuyan.imemodule.data.capture.model.CapturedMessage
 import com.yuyan.imemodule.data.capture.model.ChatDirection
@@ -26,6 +27,9 @@ data class NotificationSnapshot(
     val summaryText: String? = null,
     val isMessagingStyle: Boolean = false,
     val sourceMessageTimestampMillis: Long? = null,
+    // 只接受系统已判定为会话的通知关联 shortcut；普通通知ID不等于联系人ID。
+    val stableConversationId: String? = null,
+    val profileKey: String = "local-profile",
 )
 
 data class ParsedNotification(
@@ -50,14 +54,15 @@ class NotificationParser {
         return when (snapshot.packageName) {
             WECHAT_PACKAGE -> title == "微信"
             DOUYIN_PACKAGE -> title == "抖音" && texts.any(DOUYIN_HIDDEN_MESSAGE::containsMatchIn)
+            QQ_PACKAGE -> title == "QQ" && texts.any(DOUYIN_HIDDEN_MESSAGE::containsMatchIn)
             else -> false
         }
     }
 
     fun requiresMediaScreenshotFallback(snapshot: NotificationSnapshot): Boolean {
-        if (snapshot.packageName != WECHAT_PACKAGE) return false
+        if (snapshot.packageName !in SCREENSHOT_FALLBACK_PACKAGES || shouldIgnore(snapshot)) return false
         val text = normalizeCapturedText(snapshot.text)
-        if (wechatCallMessageType(text) != null) return true
+        if (snapshot.packageName == WECHAT_PACKAGE && wechatCallMessageType(text) != null) return true
         if (snapshot.mediaUriReadable) return false
         return notificationMessageType(text) != ChatMessageType.TEXT
     }
@@ -75,11 +80,16 @@ class NotificationParser {
             ConversationType.DIRECT
         }
         val explicitSender = normalizeCapturedText(snapshot.senderName).takeIf(String::isNotEmpty)
-        val conversationTitle = if (snapshot.isMessagingStyle && title == "微信" && explicitSender != null) {
+        val candidateTitle = if (snapshot.isMessagingStyle && !snapshot.isGroupConversation &&
+            title in setOf("微信", "QQ", "抖音") && explicitSender != null) {
             explicitSender
         } else {
             title
         }
+        val conversationTitle = normalizeConversationTitle(candidateTitle, platform) ?: return null
+        val peerId = snapshot.stableConversationId?.trim()?.takeIf(String::isNotEmpty)
+        val confirmed = peerId != null
+        val confidence = if (confirmed) 0.9 else 0.55
         val (senderName, body) = if (snapshot.isGroupConversation && explicitSender != null) {
             explicitSender to rawText
         } else if (snapshot.isGroupConversation) {
@@ -92,7 +102,11 @@ class NotificationParser {
         val hasMedia = snapshot.mediaUri != null
         val metadata = buildMap {
             put("capture_source", "notification")
-            put("identity_confidence", NOTIFICATION_IDENTITY_CONFIDENCE.toString())
+            put("identity_confidence", confidence.toString())
+            put("conversation_identity_status", if (confirmed) "confirmed" else "pending")
+            put("identity_unavailable", (!confirmed).toString())
+            put("conversation_identity_source", if (confirmed) "notification_shortcut" else "notification_title_unverified")
+            put("conversation_identity_observed_title", conversationTitle)
             put("notification_key", snapshot.notificationKey)
             snapshot.sourceMessageTimestampMillis?.let { put("notification_message_timestamp", it.toString()) }
             if (hasMedia) {
@@ -100,8 +114,10 @@ class NotificationParser {
                 if (readableMediaUri == null) put("asset_capture_failed", "true")
             }
         }
-        val externalKey = "notification:" + sha256(
-            "${platform.wireName}|$conversationType|$conversationTitle".toByteArray(Charsets.UTF_8),
+        val identityParts = listOf(platform.wireName, snapshot.profileKey) +
+            if (confirmed) listOf("peer", peerId.orEmpty()) else listOf("pending", snapshot.notificationKey, conversationTitle)
+        val externalKey = "notification-v2:${if (confirmed) "peer" else "pending"}:" + sha256(
+            identityParts.joinToString("|") { "${it.length}:$it" }.toByteArray(Charsets.UTF_8),
         )
 
         return ParsedNotification(
@@ -109,9 +125,9 @@ class NotificationParser {
                 platform = platform,
                 accountKey = NOTIFICATION_ACCOUNT_KEY,
                 externalKey = externalKey,
-                displayName = conversationTitle,
+                displayName = if (confirmed) conversationTitle else "待确认通知（$conversationTitle）",
                 conversationType = conversationType,
-                identityConfidence = NOTIFICATION_IDENTITY_CONFIDENCE,
+                identityConfidence = confidence,
             ),
             message = CapturedMessage(
                 conversationKey = null,
@@ -173,10 +189,10 @@ class NotificationParser {
 
     private companion object {
         const val NOTIFICATION_ACCOUNT_KEY = "notification"
-        const val NOTIFICATION_IDENTITY_CONFIDENCE = 0.8
         const val WECHAT_PACKAGE = "com.tencent.mm"
+        const val QQ_PACKAGE = "com.tencent.mobileqq"
         const val DOUYIN_PACKAGE = "com.ss.android.ugc.aweme"
-        val SCREENSHOT_FALLBACK_PACKAGES = setOf(WECHAT_PACKAGE, DOUYIN_PACKAGE)
+        val SCREENSHOT_FALLBACK_PACKAGES = setOf(WECHAT_PACKAGE, QQ_PACKAGE, DOUYIN_PACKAGE)
         val WECHAT_DESKTOP_LOGIN = Regex("登录\\s*(Windows|Mac)\\s*微信", RegexOption.IGNORE_CASE)
         val DOUYIN_HIDDEN_MESSAGE = Regex("(收到|发来|发了|有).{0,12}(新消息|消息|私信)|\\d+\\s*条\\s*(新消息|私信)")
         val PLATFORM_BY_PACKAGE = mapOf(

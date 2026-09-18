@@ -80,6 +80,8 @@ class PassiveNotificationListener : NotificationListenerService() {
             summaryText = summaryText,
             isMessagingStyle = latestMessage != null,
             sourceMessageTimestampMillis = latestMessage?.timestamp,
+            stableConversationId = trustedConversationShortcut(notification),
+            profileKey = notification.user.toString(),
         )
         if (parser.shouldIgnore(preliminarySnapshot)) return
         if (parser.requiresScreenshotFallback(preliminarySnapshot)) {
@@ -130,6 +132,15 @@ class PassiveNotificationListener : NotificationListenerService() {
                 pendingAssetsByMessage = asset?.let { mapOf(0 to it) }.orEmpty(),
             )
         }
+    }
+
+    private fun trustedConversationShortcut(notification: StatusBarNotification): String? {
+        if (Build.VERSION.SDK_INT < 30) return null
+        return runCatching {
+            val ranking = Ranking()
+            if (!currentRanking.getRanking(notification.key, ranking) || !ranking.isConversation) null
+            else notification.notification.shortcutId?.takeIf { it.isNotBlank() }
+        }.getOrNull()
     }
 
     override fun onNotificationRemoved(

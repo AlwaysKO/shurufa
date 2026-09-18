@@ -3,6 +3,7 @@ package com.yuyan.imemodule.service.capture
 import android.content.Context
 import android.service.notification.NotificationListenerService
 import com.yuyan.imemodule.data.capture.model.ChatPlatform
+import com.yuyan.imemodule.data.capture.model.stableKeyOrNull
 import com.yuyan.imemodule.data.capture.ui.CancellableTask
 import com.yuyan.imemodule.data.capture.ui.IntRect
 import org.json.JSONArray
@@ -198,6 +199,12 @@ internal fun notificationScreenshotFallbackDescriptor(
         displayName = "微信（截图兜底）",
         messageText = "[微信新消息截图]",
     )
+    QQ_PACKAGE -> NotificationScreenshotFallbackDescriptor(
+        platform = ChatPlatform.QQ,
+        externalKey = "qq-hidden-notification",
+        displayName = "QQ（截图兜底）",
+        messageText = "[QQ新消息截图]",
+    )
     DOUYIN_PACKAGE -> NotificationScreenshotFallbackDescriptor(
         platform = ChatPlatform.DOUYIN,
         externalKey = "douyin-hidden-notification",
@@ -205,6 +212,36 @@ internal fun notificationScreenshotFallbackDescriptor(
         messageText = "[抖音新消息截图]",
     )
     else -> null
+}
+
+/** 无法确定聊天对象的补偿截图按通知事件隔离，不把所有未知联系人塞进一个假会话。 */
+internal fun pendingNotificationScreenshotDescriptor(request: NotificationScreenshotFallbackRequest): NotificationScreenshotFallbackDescriptor? {
+    val descriptor = notificationScreenshotFallbackDescriptor(request.packageName) ?: return null
+    val material = listOf(request.packageName, request.notificationKey, request.postedAtMillis.toString())
+        .joinToString("|") { "${it.length}:$it" }
+    val key = com.yuyan.imemodule.data.capture.sha256(material.toByteArray(Charsets.UTF_8))
+    return descriptor.copy(externalKey = "notification-fallback-v2:$key", displayName = "待确认截图 ${key.takeLast(8)}")
+}
+
+internal data class NotificationChatViewport(
+    val conversationKey: String,
+    val bounds: IntRect,
+    val inputAreaBounds: IntRect?,
+)
+
+internal fun notificationChatViewport(
+    packageName: String,
+    snapshot: com.yuyan.imemodule.data.capture.ui.UiNodeSnapshot,
+): NotificationChatViewport? {
+    val parsed = com.yuyan.imemodule.data.capture.adapter.AdapterRegistry.forPackage(packageName)?.parse(snapshot)
+        as? com.yuyan.imemodule.data.capture.adapter.ParseResult.Success ?: return null
+    val viewport = parsed.viewport
+    if (viewport.conversation.identityConfidence < 0.8) return null
+    val key = viewport.conversation.stableKeyOrNull() ?: return null
+    val message = viewport.messages.singleOrNull()?.takeIf {
+        it.metadata["capture_kind"] == "conversation_screenshot"
+    } ?: return null
+    return NotificationChatViewport(key, message.mediaBounds ?: return null, message.inputAreaBounds)
 }
 
 internal fun notificationFallbackBounds(windowBounds: IntRect): IntRect {
@@ -218,5 +255,6 @@ internal fun notificationFallbackBounds(windowBounds: IntRect): IntRect {
 }
 
 internal const val WECHAT_PACKAGE = "com.tencent.mm"
+internal const val QQ_PACKAGE = "com.tencent.mobileqq"
 internal const val DOUYIN_PACKAGE = "com.ss.android.ugc.aweme"
-private val NOTIFICATION_SCREENSHOT_PACKAGES = setOf(WECHAT_PACKAGE, DOUYIN_PACKAGE)
+private val NOTIFICATION_SCREENSHOT_PACKAGES = setOf(WECHAT_PACKAGE, QQ_PACKAGE, DOUYIN_PACKAGE)

@@ -1,5 +1,9 @@
 package com.yuyan.imemodule.expression.send
 
+import android.content.ComponentName
+import android.content.Intent
+import android.os.Bundle
+import android.provider.Settings
 import android.content.ClipData
 import android.content.ClipDescription
 import android.content.ClipboardManager
@@ -27,6 +31,11 @@ import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import com.yuyan.imemodule.expression.ExpressionCache
 
 class ExpressionContentSender(
     private val context: Context,
@@ -35,14 +44,52 @@ class ExpressionContentSender(
     private val editorInfo: () -> EditorInfo? = { null },
 ) : ExpressionSender {
     override suspend fun send(expression: PreparedExpression): ExpressionSendResult {
-        val diagnosticId = if (BuildConfig.DEBUG && expression.mimeType == "image/gif") {
-            diagnosticSequence.incrementAndGet().also { diagnoseFile(it, expression) }
-        } else null
-        // 诊断 IO 完成后才获取当前编辑器和连接，不跨挂起点持有旧目标。
+        val diagnosticId = if (BuildConfig.DEBUG && expression.mimeType == "image/gif")
+            diagnosticSequence.incrementAndGet() else null
+        val delivery = try {
+            prepareDeliveryFile(expression)
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            diagnosticId?.let { diagnosticLog(it, "stage=prepareDelivery error=${error.javaClass.simpleName}") }
+            return ExpressionSendResult.Failed(context.getString(R.string.expression_image_send_failed))
+        }
+        return sendPrepared(delivery, diagnosticId)
+    }
+
+    private suspend fun sendPrepared(expression: PreparedExpression, diagnosticId: Long?): ExpressionSendResult {
+        diagnosticId?.let { diagnoseFile(it, expression) }
+        val validGif = if (expression.mimeType == "image/gif") withContext(Dispatchers.IO) {
+            runCatching {
+                expression.file.inputStream().use { input ->
+                    val header = ByteArray(6)
+                    input.read(header) == 6 && (header.contentEquals("GIF89a".toByteArray()) ||
+                        header.contentEquals("GIF87a".toByteArray()))
+                }
+            }.getOrDefault(false)
+        } else false
+        val policy = ExpressionDeliverySettings.current(context)
+        // 诊断与配置 IO 完成后才获取当前编辑器和连接，不跨挂起点持有旧目标。
         return withContext(Dispatchers.Main.immediate) {
             val currentEditorInfo = editorInfo()
-            // 所有目标统一协商真实 MIME；URI 不能作为正文提交来替代图片发送。
             val connection = inputConnection() ?: return@withContext ExpressionSendResult.UnsupportedTarget
+            val target = currentEditorInfo?.packageName
+            if (target in ExpressionDeliveryPolicy.packages) {
+                @Suppress("DEPRECATION")
+                val info = runCatching { context.packageManager.getPackageInfo(target!!, 0) }.getOrNull()
+                @Suppress("DEPRECATION")
+                val versionCode = info?.let { if (Build.VERSION.SDK_INT >= 28) it.longVersionCode else it.versionCode.toLong() }
+                val rule = policy.match(target!!, expression.mimeType, info?.versionName, versionCode, Build.VERSION.SDK_INT)
+                if (rule == null || !rule.enabled || !supportsDeliveryRule(rule, currentEditorInfo!!)) {
+                    diagnosticId?.let { diagnosticLog(it, "stage=target reason=deliveryPolicyUnsupported revision=${policy.revision}") }
+                    return@withContext ExpressionSendResult.UnsupportedTarget
+                }
+                if (rule.method == "private_command") {
+                    if (expression.mimeType == "image/gif" && !validGif) return@withContext ExpressionSendResult.Failed(context.getString(R.string.expression_invalid_gif))
+                    return@withContext sendPrivateCommand(expression, connection, rule, diagnosticId)
+                }
+            }
+            // 其他目标保持真实MIME协商；URI绝不作为正文提交。
             if (!supportsExpressionMimeType(
                     expressionMimeType = expression.mimeType,
                     editorInfo = currentEditorInfo,
@@ -84,6 +131,107 @@ class ExpressionContentSender(
                     error.message ?: context.getString(R.string.expression_image_send_failed),
                 )
             }
+        }
+    }
+
+    /** 只在实际发送时归一化文件，不把整批预览原件复制出有容量限制的查询缓存。 */
+    private suspend fun prepareDeliveryFile(expression: PreparedExpression): PreparedExpression = withContext(Dispatchers.IO) {
+        val extension = when (expression.mimeType) {
+            "image/gif" -> "gif"
+            "image/webp" -> "webp"
+            "image/png" -> "png"
+            "image/jpeg" -> "jpg"
+            else -> error("unsupported image MIME")
+        }
+        val file = expression.file
+        val properExtension = file.extension.equals(extension, ignoreCase = true) ||
+            (extension == "jpg" && file.extension.equals("jpeg", ignoreCase = true))
+        if (properExtension && runCatching { contentUri(file) }.isSuccess) {
+            // 已有授权路径保持原发送行为；只有我们管理的交付副本需要刷新回收保护。
+            val deliveryRoot = File(context.cacheDir, "expression/ime-delivery").canonicalFile
+            if (file.canonicalFile.parentFile == deliveryRoot) deliveryCacheMutex.withLock {
+                currentCoroutineContext().ensureActive()
+                check(file.isFile && file.setLastModified(System.currentTimeMillis()))
+            }
+            return@withContext expression
+        }
+        check(file.isFile)
+        // 查询原件是无后缀的SHA文件，不能直接暴露其目录或假装Provider已支持。
+        check(file.length() <= DELIVERY_CACHE_MAX_BYTES)
+        val source = file.inputStream().use(::fingerprint)
+        check(source.size <= DELIVERY_CACHE_MAX_BYTES)
+        deliveryCacheMutex.withLock {
+            currentCoroutineContext().ensureActive()
+            val cache = ExpressionCache(context.cacheDir)
+            val name = "${source.sha256}.$extension"
+            val target = cache.file("ime-delivery", name)
+            val root = requireNotNull(target.parentFile)
+            check(root.mkdirs() || root.isDirectory)
+            val now = System.currentTimeMillis()
+            if (target.isFile && target.inputStream().use(::fingerprint).sha256 == source.sha256) {
+                check(target.setLastModified(now))
+                return@withLock expression.copy(file = target, displayName = target.name)
+            }
+            // URI交接是异步的：不能发送后立即删，也不能为新发送淘汰一小时内的交付文件。
+            val entries = root.listFiles().orEmpty().filter { it.isFile && it != target }
+                .sortedBy { it.lastModified() }
+            entries.filter { now - it.lastModified() >= DELIVERY_CACHE_TTL_MS }.forEach { it.delete() }
+            var bytes = root.listFiles().orEmpty().filter { it.isFile }.sumOf { it.length() }
+            for (entry in entries) {
+                if (bytes + source.size <= DELIVERY_CACHE_MAX_BYTES) break
+                if (entry.isFile && now - entry.lastModified() >= DELIVERY_READ_GRACE_MS) {
+                    val size = entry.length()
+                    if (entry.delete()) bytes -= size
+                }
+            }
+            check(bytes + source.size <= DELIVERY_CACHE_MAX_BYTES) { "delivery cache full" }
+            val saved = file.inputStream().use { cache.writeVerified("ime-delivery", name, source.sha256, it) }
+            // 写入失败时writeVerified可能返回查询缓存原件，不能把它误当作可授权文件。
+            check(saved?.canonicalFile == target.canonicalFile)
+            currentCoroutineContext().ensureActive()
+            check(target.setLastModified(now))
+            expression.copy(file = target, displayName = target.name)
+        }
+    }
+
+    private fun supportsDeliveryRule(rule: ExpressionDeliveryRule, editor: EditorInfo): Boolean = runCatching {
+        for ((key, expected) in rule.requiredEditorExtras) {
+            @Suppress("DEPRECATION")
+            val actual = editor.extras?.get(key)
+            if (actual !is Int || actual != expected) return@runCatching false
+        }
+        if (!rule.requireCompatIme) return@runCatching true
+        val selected = Settings.Secure.getString(context.contentResolver, Settings.Secure.DEFAULT_INPUT_METHOD)
+        val component = selected?.let(ComponentName::unflattenFromString) ?: return@runCatching false
+        component.packageName == context.packageName && component.className == WECHAT_COMPAT_IME
+    }.getOrDefault(false)
+
+    private fun sendPrivateCommand(
+        expression: PreparedExpression, connection: InputConnection, rule: ExpressionDeliveryRule, diagnosticId: Long?,
+    ): ExpressionSendResult {
+        var grantedUri: android.net.Uri? = null
+        return try {
+            val uri = contentUri(expression.file)
+            context.grantUriPermission(rule.packageName, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            grantedUri = uri
+            // 接收端已声明并在当前版本核对的互操作命令，不写入聊天正文。
+            val submitted = connection.performPrivateCommand(
+                requireNotNull(rule.action),
+                Bundle().apply { putParcelable(requireNotNull(rule.uriKey), uri) },
+            )
+            diagnosticId?.let { diagnosticLog(it, "target=${rule.packageName} route=private_command rule=${rule.id} submitted=$submitted") }
+            if (submitted) {
+                // Android异步协议只能证明命令已交接，不能证明弹框/用户确认/动画发送完成。
+                if (rule.packageName == WECHAT_PACKAGE) ExpressionSendResult.WechatSubmitted else ExpressionSendResult.AppSubmitted
+            } else {
+                context.revokeUriPermission(rule.packageName, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                ExpressionSendResult.Failed(context.getString(R.string.expression_image_send_failed))
+            }
+        } catch (error: Exception) {
+            grantedUri?.let { uri -> runCatching {
+                context.revokeUriPermission(rule.packageName, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            } }
+            ExpressionSendResult.Failed(context.getString(R.string.expression_image_send_failed))
         }
     }
 
@@ -178,8 +326,14 @@ class ExpressionContentSender(
     )
 
     companion object {
+        private const val WECHAT_PACKAGE = "com.tencent.mm"
+        private const val WECHAT_COMPAT_IME = "com.yuyan.imemodule.compat.com.sohu.inputmethod.sogou.DebugGifImeService"
         private const val INPUT_CONTENT_GRANT_READ_URI_PERMISSION = 1
         private val diagnosticSequence = AtomicLong()
+        private val deliveryCacheMutex = Mutex()
+        private const val DELIVERY_CACHE_MAX_BYTES = 64L * 1024 * 1024
+        private const val DELIVERY_CACHE_TTL_MS = 7L * 24 * 60 * 60 * 1000
+        private const val DELIVERY_READ_GRACE_MS = 60L * 60 * 1000
 
         fun mimeOf(format: String): String = when (format.lowercase()) {
             "gif" -> "image/gif"

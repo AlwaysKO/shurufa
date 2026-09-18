@@ -1,3 +1,4 @@
+import { startDeviceFileCleanup } from './lib/deleteDeviceData.js';
 import 'dotenv/config';
 import { createPool } from './db/migrate.js';
 import { createApp } from './app.js';
@@ -11,6 +12,7 @@ const app = createApp(pool);
 app.listen(port, () => {
   console.log(`[server] listening on http://localhost:${port}`);
   startAnalysisJob(pool);
+  startDeviceFileCleanup(pool);
 });
 
 // 优雅退出

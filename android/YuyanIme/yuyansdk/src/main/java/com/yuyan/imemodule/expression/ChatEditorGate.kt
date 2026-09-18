@@ -11,7 +11,24 @@ class ChatEditorGate(
     private val chatPackages: Set<String> = DEFAULT_CHAT_PACKAGES,
 ) {
     fun allows(packageName: String?, editorInfo: EditorInfo?): Boolean {
-        if (packageName !in chatPackages || editorInfo == null) return false
+        if (packageName !in chatPackages || !isChatTextEditor(editorInfo)) return false
+        editorInfo ?: return false
+        // 微信公众号评论等也可能是多行/SEND；沿用已有 Emoji 适配中的真实聊天标记。
+        if (packageName == "com.tencent.mm" &&
+            editorInfo.extras?.getBoolean(WECHAT_CHAT_EDITOR_KEY) != true) return false
+        return EditorInfoCompat.getContentMimeTypes(editorInfo).any { accepted ->
+            IMAGE_MIME_TYPES.any { ClipDescription.compareMimeTypes(it, accepted) }
+        }
+    }
+
+    fun requiresManualSearch(packageName: String?): Boolean = packageName in MANUAL_SEARCH_PACKAGES
+
+    /** 用户主动搜索与宿主接收图片能力分开判断；发送时仍由发送端检查。 */
+    fun allowsManualSearch(packageName: String?, editorInfo: EditorInfo?): Boolean =
+        requiresManualSearch(packageName) && isChatTextEditor(editorInfo)
+
+    private fun isChatTextEditor(editorInfo: EditorInfo?): Boolean {
+        if (editorInfo == null) return false
         if (editorInfo.inputType and InputType.TYPE_MASK_CLASS != InputType.TYPE_CLASS_TEXT) {
             return false
         }
@@ -22,16 +39,11 @@ class ChatEditorGate(
         val chatLike = editorInfo.inputType and InputType.TYPE_TEXT_FLAG_MULTI_LINE != 0 ||
             action == EditorInfo.IME_ACTION_SEND
         if (!chatLike) return false
-        // 微信公众号评论等也可能是多行/SEND；沿用已有 Emoji 适配中的真实聊天标记。
-        if (packageName == "com.tencent.mm" &&
-            editorInfo.extras?.getBoolean(WECHAT_CHAT_EDITOR_KEY) != true) return false
-        // 与图片发送端使用同一份编辑器 MIME 声明，不把“可以另存相册”当成可发送。
-        return EditorInfoCompat.getContentMimeTypes(editorInfo).any { accepted ->
-            IMAGE_MIME_TYPES.any { ClipDescription.compareMimeTypes(it, accepted) }
-        }
+        return true
     }
 
     private companion object {
+        val MANUAL_SEARCH_PACKAGES = setOf("com.tencent.mobileqq", "com.ss.android.ugc.aweme")
         val IMAGE_MIME_TYPES = listOf("image/gif", "image/png", "image/webp", "image/jpeg")
         val DEFAULT_CHAT_PACKAGES = setOf(
             "com.tencent.mm",

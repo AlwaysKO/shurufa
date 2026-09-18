@@ -1,0 +1,1319 @@
+{
+  "viewId": null,
+  "className": "android.widget.FrameLayout",
+  "text": null,
+  "contentDescription": null,
+  "bounds": {
+    "left": 0,
+    "top": 0,
+    "right": 1200,
+    "bottom": 2664
+  },
+  "children": [
+    {
+      "viewId": null,
+      "className": "android.widget.LinearLayout",
+      "text": null,
+      "contentDescription": null,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1200,
+        "bottom": 2664
+      },
+      "children": [
+        {
+          "viewId": "android:id/content",
+          "className": "android.widget.FrameLayout",
+          "text": null,
+          "contentDescription": null,
+          "bounds": {
+            "left": 0,
+            "top": 0,
+            "right": 1200,
+            "bottom": 2664
+          },
+          "children": [
+            {
+              "viewId": null,
+              "className": "android.view.ViewGroup",
+              "text": null,
+              "contentDescription": null,
+              "bounds": {
+                "left": 0,
+                "top": 0,
+                "right": 1200,
+                "bottom": 2664
+              },
+              "children": [
+                {
+                  "viewId": "com.tencent.mobileqq:id/qz0",
+                  "className": "android.widget.FrameLayout",
+                  "text": null,
+                  "contentDescription": null,
+                  "bounds": {
+                    "left": 0,
+                    "top": 0,
+                    "right": 1200,
+                    "bottom": 2664
+                  },
+                  "children": []
+                },
+                {
+                  "viewId": "com.tencent.mobileqq:id/qz3",
+                  "className": "android.widget.FrameLayout",
+                  "text": null,
+                  "contentDescription": null,
+                  "bounds": {
+                    "left": 0,
+                    "top": 0,
+                    "right": 1200,
+                    "bottom": 2664
+                  },
+                  "children": []
+                },
+                {
+                  "viewId": "com.tencent.mobileqq:id/qz2",
+                  "className": "android.widget.FrameLayout",
+                  "text": null,
+                  "contentDescription": null,
+                  "bounds": {
+                    "left": 0,
+                    "top": 0,
+                    "right": 1200,
+                    "bottom": 2664
+                  },
+                  "children": [
+                    {
+                      "viewId": null,
+                      "className": "android.widget.FrameLayout",
+                      "text": null,
+                      "contentDescription": null,
+                      "bounds": {
+                        "left": 0,
+                        "top": 0,
+                        "right": 1200,
+                        "bottom": 2664
+                      },
+                      "children": [
+                        {
+                          "viewId": "com.tencent.mobileqq:id/oao",
+                          "className": "android.widget.FrameLayout",
+                          "text": null,
+                          "contentDescription": null,
+                          "bounds": {
+                            "left": 0,
+                            "top": 0,
+                            "right": 1200,
+                            "bottom": 2664
+                          },
+                          "children": [
+                            {
+                              "viewId": null,
+                              "className": "android.widget.FrameLayout",
+                              "text": null,
+                              "contentDescription": null,
+                              "bounds": {
+                                "left": 0,
+                                "top": 0,
+                                "right": 1200,
+                                "bottom": 2664
+                              },
+                              "children": [
+                                {
+                                  "viewId": null,
+                                  "className": "android.widget.FrameLayout",
+                                  "text": null,
+                                  "contentDescription": null,
+                                  "bounds": {
+                                    "left": 0,
+                                    "top": 0,
+                                    "right": 1200,
+                                    "bottom": 2664
+                                  },
+                                  "children": [
+                                    {
+                                      "viewId": null,
+                                      "className": "android.widget.FrameLayout",
+                                      "text": null,
+                                      "contentDescription": null,
+                                      "bounds": {
+                                        "left": 0,
+                                        "top": 0,
+                                        "right": 1200,
+                                        "bottom": 2664
+                                      },
+                                      "children": [
+                                        {
+                                          "viewId": null,
+                                          "className": "android.widget.FrameLayout",
+                                          "text": null,
+                                          "contentDescription": null,
+                                          "bounds": {
+                                            "left": 0,
+                                            "top": 0,
+                                            "right": 1200,
+                                            "bottom": 2664
+                                          },
+                                          "children": [
+                                            {
+                                              "viewId": null,
+                                              "className": "android.widget.RelativeLayout",
+                                              "text": null,
+                                              "contentDescription": null,
+                                              "bounds": {
+                                                "left": 0,
+                                                "top": 0,
+                                                "right": 1200,
+                                                "bottom": 2664
+                                              },
+                                              "children": [
+                                                {
+                                                  "viewId": null,
+                                                  "className": "android.widget.FrameLayout",
+                                                  "text": null,
+                                                  "contentDescription": null,
+                                                  "bounds": {
+                                                    "left": 0,
+                                                    "top": 0,
+                                                    "right": 1200,
+                                                    "bottom": 1781
+                                                  },
+                                                  "children": [
+                                                    {
+                                                      "viewId": "com.tencent.mobileqq:id/mko",
+                                                      "className": "android.view.ViewGroup",
+                                                      "text": null,
+                                                      "contentDescription": null,
+                                                      "bounds": {
+                                                        "left": 0,
+                                                        "top": 0,
+                                                        "right": 1200,
+                                                        "bottom": 1781
+                                                      },
+                                                      "children": [
+                                                        {
+                                                          "viewId": null,
+                                                          "className": "android.widget.RelativeLayout",
+                                                          "text": null,
+                                                          "contentDescription": null,
+                                                          "bounds": {
+                                                            "left": 0,
+                                                            "top": 0,
+                                                            "right": 1200,
+                                                            "bottom": 1781
+                                                          },
+                                                          "children": []
+                                                        },
+                                                        {
+                                                          "viewId": null,
+                                                          "className": "android.widget.FrameLayout",
+                                                          "text": null,
+                                                          "contentDescription": null,
+                                                          "bounds": {
+                                                            "left": 0,
+                                                            "top": 276,
+                                                            "right": 1200,
+                                                            "bottom": 1781
+                                                          },
+                                                          "children": []
+                                                        },
+                                                        {
+                                                          "viewId": "com.tencent.mobileqq:id/mhx",
+                                                          "className": "android.view.ViewGroup",
+                                                          "text": null,
+                                                          "contentDescription": null,
+                                                          "bounds": {
+                                                            "left": 0,
+                                                            "top": 276,
+                                                            "right": 1200,
+                                                            "bottom": 1486
+                                                          },
+                                                          "children": []
+                                                        },
+                                                        {
+                                                          "viewId": "com.tencent.mobileqq:id/mn0",
+                                                          "className": "android.view.View",
+                                                          "text": null,
+                                                          "contentDescription": null,
+                                                          "bounds": {
+                                                            "left": 599,
+                                                            "top": 1483,
+                                                            "right": 602,
+                                                            "bottom": 1486
+                                                          },
+                                                          "children": []
+                                                        },
+                                                        {
+                                                          "viewId": "com.tencent.mobileqq:id/neq",
+                                                          "className": "android.widget.FrameLayout",
+                                                          "text": null,
+                                                          "contentDescription": null,
+                                                          "bounds": {
+                                                            "left": 0,
+                                                            "top": 1486,
+                                                            "right": 1200,
+                                                            "bottom": 1781
+                                                          },
+                                                          "children": [
+                                                            {
+                                                              "viewId": null,
+                                                              "className": "android.view.View",
+                                                              "text": null,
+                                                              "contentDescription": null,
+                                                              "bounds": {
+                                                                "left": 0,
+                                                                "top": 1486,
+                                                                "right": 1200,
+                                                                "bottom": 1781
+                                                              },
+                                                              "children": []
+                                                            }
+                                                          ]
+                                                        }
+                                                      ]
+                                                    },
+                                                    {
+                                                      "viewId": null,
+                                                      "className": "android.widget.RelativeLayout",
+                                                      "text": null,
+                                                      "contentDescription": null,
+                                                      "bounds": {
+                                                        "left": 0,
+                                                        "top": 0,
+                                                        "right": 1200,
+                                                        "bottom": 1781
+                                                      },
+                                                      "children": [
+                                                        {
+                                                          "viewId": "com.tencent.mobileqq:id/mh3",
+                                                          "className": "android.widget.RelativeLayout",
+                                                          "text": null,
+                                                          "contentDescription": null,
+                                                          "bounds": {
+                                                            "left": 0,
+                                                            "top": 0,
+                                                            "right": 1200,
+                                                            "bottom": 1781
+                                                          },
+                                                          "children": []
+                                                        },
+                                                        {
+                                                          "viewId": null,
+                                                          "className": "android.widget.FrameLayout",
+                                                          "text": null,
+                                                          "contentDescription": null,
+                                                          "bounds": {
+                                                            "left": 0,
+                                                            "top": 276,
+                                                            "right": 1200,
+                                                            "bottom": 1781
+                                                          },
+                                                          "children": []
+                                                        },
+                                                        {
+                                                          "viewId": "com.tencent.mobileqq:id/mh2",
+                                                          "className": "android.view.ViewGroup",
+                                                          "text": null,
+                                                          "contentDescription": null,
+                                                          "bounds": {
+                                                            "left": 0,
+                                                            "top": 276,
+                                                            "right": 1200,
+                                                            "bottom": 1486
+                                                          },
+                                                          "children": []
+                                                        },
+                                                        {
+                                                          "viewId": null,
+                                                          "className": "android.widget.FrameLayout",
+                                                          "text": null,
+                                                          "contentDescription": null,
+                                                          "bounds": {
+                                                            "left": 0,
+                                                            "top": 276,
+                                                            "right": 1200,
+                                                            "bottom": 1486
+                                                          },
+                                                          "children": []
+                                                        }
+                                                      ]
+                                                    },
+                                                    {
+                                                      "viewId": null,
+                                                      "className": "android.widget.FrameLayout",
+                                                      "text": null,
+                                                      "contentDescription": null,
+                                                      "bounds": {
+                                                        "left": 0,
+                                                        "top": 0,
+                                                        "right": 1200,
+                                                        "bottom": 1781
+                                                      },
+                                                      "children": [
+                                                        {
+                                                          "viewId": null,
+                                                          "className": "android.widget.FrameLayout",
+                                                          "text": null,
+                                                          "contentDescription": null,
+                                                          "bounds": {
+                                                            "left": 0,
+                                                            "top": 276,
+                                                            "right": 1200,
+                                                            "bottom": 1781
+                                                          },
+                                                          "children": [
+                                                            {
+                                                              "viewId": null,
+                                                              "className": "android.widget.FrameLayout",
+                                                              "text": null,
+                                                              "contentDescription": null,
+                                                              "bounds": {
+                                                                "left": 0,
+                                                                "top": 276,
+                                                                "right": 1200,
+                                                                "bottom": 1486
+                                                              },
+                                                              "children": [
+                                                                {
+                                                                  "viewId": null,
+                                                                  "className": "android.widget.FrameLayout",
+                                                                  "text": null,
+                                                                  "contentDescription": null,
+                                                                  "bounds": {
+                                                                    "left": 0,
+                                                                    "top": 276,
+                                                                    "right": 1200,
+                                                                    "bottom": 1486
+                                                                  },
+                                                                  "children": [
+                                                                    {
+                                                                      "viewId": null,
+                                                                      "className": "androidx.recyclerview.widget.RecyclerView",
+                                                                      "text": null,
+                                                                      "contentDescription": null,
+                                                                      "bounds": {
+                                                                        "left": 0,
+                                                                        "top": 276,
+                                                                        "right": 1200,
+                                                                        "bottom": 1486
+                                                                      },
+                                                                      "children": [
+                                                                        {
+                                                                          "viewId": "com.tencent.mobileqq:id/root",
+                                                                          "className": "android.view.ViewGroup",
+                                                                          "text": null,
+                                                                          "contentDescription": null,
+                                                                          "bounds": {
+                                                                            "left": 0,
+                                                                            "top": 276,
+                                                                            "right": 1200,
+                                                                            "bottom": 366
+                                                                          },
+                                                                          "children": [
+                                                                            {
+                                                                              "viewId": "com.tencent.mobileqq:id/p1r",
+                                                                              "className": "android.widget.LinearLayout",
+                                                                              "text": null,
+                                                                              "contentDescription": null,
+                                                                              "bounds": {
+                                                                                "left": 201,
+                                                                                "top": 276,
+                                                                                "right": 1044,
+                                                                                "bottom": 366
+                                                                              },
+                                                                              "children": [
+                                                                                {
+                                                                                  "viewId": "com.tencent.mobileqq:id/ml3",
+                                                                                  "className": "android.view.ViewGroup",
+                                                                                  "text": null,
+                                                                                  "contentDescription": "测试描述",
+                                                                                  "bounds": {
+                                                                                    "left": 201,
+                                                                                    "top": 276,
+                                                                                    "right": 1044,
+                                                                                    "bottom": 366
+                                                                                  },
+                                                                                  "children": [
+                                                                                    {
+                                                                                      "viewId": null,
+                                                                                      "className": "android.widget.LinearLayout",
+                                                                                      "text": null,
+                                                                                      "contentDescription": null,
+                                                                                      "bounds": {
+                                                                                        "left": 228,
+                                                                                        "top": 276,
+                                                                                        "right": 1017,
+                                                                                        "bottom": 297
+                                                                                      },
+                                                                                      "children": [
+                                                                                        {
+                                                                                          "viewId": null,
+                                                                                          "className": "android.widget.LinearLayout",
+                                                                                          "text": null,
+                                                                                          "contentDescription": null,
+                                                                                          "bounds": {
+                                                                                            "left": 264,
+                                                                                            "top": 276,
+                                                                                            "right": 981,
+                                                                                            "bottom": 297
+                                                                                          },
+                                                                                          "children": [
+                                                                                            {
+                                                                                              "viewId": null,
+                                                                                              "className": "android.widget.ImageView",
+                                                                                              "text": null,
+                                                                                              "contentDescription": null,
+                                                                                              "bounds": {
+                                                                                                "left": 264,
+                                                                                                "top": 276,
+                                                                                                "right": 300,
+                                                                                                "bottom": 282
+                                                                                              },
+                                                                                              "children": []
+                                                                                            },
+                                                                                            {
+                                                                                              "viewId": null,
+                                                                                              "className": "android.widget.TextView",
+                                                                                              "text": "测试文本",
+                                                                                              "contentDescription": null,
+                                                                                              "bounds": {
+                                                                                                "left": 312,
+                                                                                                "top": 276,
+                                                                                                "right": 981,
+                                                                                                "bottom": 297
+                                                                                              },
+                                                                                              "children": []
+                                                                                            }
+                                                                                          ]
+                                                                                        }
+                                                                                      ]
+                                                                                    }
+                                                                                  ]
+                                                                                }
+                                                                              ]
+                                                                            }
+                                                                          ]
+                                                                        },
+                                                                        {
+                                                                          "viewId": "com.tencent.mobileqq:id/root",
+                                                                          "className": "android.view.ViewGroup",
+                                                                          "text": null,
+                                                                          "contentDescription": null,
+                                                                          "bounds": {
+                                                                            "left": 0,
+                                                                            "top": 366,
+                                                                            "right": 1200,
+                                                                            "bottom": 1110
+                                                                          },
+                                                                          "children": [
+                                                                            {
+                                                                              "viewId": "com.tencent.mobileqq:id/p1r",
+                                                                              "className": "android.widget.LinearLayout",
+                                                                              "text": null,
+                                                                              "contentDescription": null,
+                                                                              "bounds": {
+                                                                                "left": 681,
+                                                                                "top": 366,
+                                                                                "right": 1044,
+                                                                                "bottom": 1110
+                                                                              },
+                                                                              "children": [
+                                                                                {
+                                                                                  "viewId": null,
+                                                                                  "className": "android.widget.RelativeLayout",
+                                                                                  "text": null,
+                                                                                  "contentDescription": null,
+                                                                                  "bounds": {
+                                                                                    "left": 681,
+                                                                                    "top": 366,
+                                                                                    "right": 1044,
+                                                                                    "bottom": 1110
+                                                                                  },
+                                                                                  "children": [
+                                                                                    {
+                                                                                      "viewId": "com.tencent.mobileqq:id/mkj",
+                                                                                      "className": "android.widget.ImageView",
+                                                                                      "text": null,
+                                                                                      "contentDescription": "测试描述",
+                                                                                      "bounds": {
+                                                                                        "left": 705,
+                                                                                        "top": 390,
+                                                                                        "right": 1020,
+                                                                                        "bottom": 1086
+                                                                                      },
+                                                                                      "children": []
+                                                                                    }
+                                                                                  ]
+                                                                                }
+                                                                              ]
+                                                                            },
+                                                                            {
+                                                                              "viewId": "com.tencent.mobileqq:id/wbc",
+                                                                              "className": "android.widget.FrameLayout",
+                                                                              "text": null,
+                                                                              "contentDescription": null,
+                                                                              "bounds": {
+                                                                                "left": 1044,
+                                                                                "top": 390,
+                                                                                "right": 1164,
+                                                                                "bottom": 510
+                                                                              },
+                                                                              "children": [
+                                                                                {
+                                                                                  "viewId": "com.tencent.mobileqq:id/mh_",
+                                                                                  "className": "android.widget.RelativeLayout",
+                                                                                  "text": null,
+                                                                                  "contentDescription": null,
+                                                                                  "bounds": {
+                                                                                    "left": 1044,
+                                                                                    "top": 390,
+                                                                                    "right": 1164,
+                                                                                    "bottom": 510
+                                                                                  },
+                                                                                  "children": [
+                                                                                    {
+                                                                                      "viewId": null,
+                                                                                      "className": "android.widget.FrameLayout",
+                                                                                      "text": null,
+                                                                                      "contentDescription": "测试描述",
+                                                                                      "bounds": {
+                                                                                        "left": 1044,
+                                                                                        "top": 390,
+                                                                                        "right": 1164,
+                                                                                        "bottom": 510
+                                                                                      },
+                                                                                      "children": [
+                                                                                        {
+                                                                                          "viewId": null,
+                                                                                          "className": "android.widget.ImageView",
+                                                                                          "text": null,
+                                                                                          "contentDescription": null,
+                                                                                          "bounds": {
+                                                                                            "left": 1044,
+                                                                                            "top": 390,
+                                                                                            "right": 1164,
+                                                                                            "bottom": 510
+                                                                                          },
+                                                                                          "children": []
+                                                                                        }
+                                                                                      ]
+                                                                                    }
+                                                                                  ]
+                                                                                }
+                                                                              ]
+                                                                            }
+                                                                          ]
+                                                                        },
+                                                                        {
+                                                                          "viewId": "com.tencent.mobileqq:id/root",
+                                                                          "className": "android.view.ViewGroup",
+                                                                          "text": null,
+                                                                          "contentDescription": null,
+                                                                          "bounds": {
+                                                                            "left": 0,
+                                                                            "top": 1110,
+                                                                            "right": 1200,
+                                                                            "bottom": 1460
+                                                                          },
+                                                                          "children": [
+                                                                            {
+                                                                              "viewId": "com.tencent.mobileqq:id/f24",
+                                                                              "className": "android.widget.FrameLayout",
+                                                                              "text": null,
+                                                                              "contentDescription": null,
+                                                                              "bounds": {
+                                                                                "left": 498,
+                                                                                "top": 1110,
+                                                                                "right": 702,
+                                                                                "bottom": 1219
+                                                                              },
+                                                                              "children": [
+                                                                                {
+                                                                                  "viewId": null,
+                                                                                  "className": "android.widget.TextView",
+                                                                                  "text": "测试文本",
+                                                                                  "contentDescription": "测试描述",
+                                                                                  "bounds": {
+                                                                                    "left": 498,
+                                                                                    "top": 1134,
+                                                                                    "right": 702,
+                                                                                    "bottom": 1183
+                                                                                  },
+                                                                                  "children": []
+                                                                                }
+                                                                              ]
+                                                                            },
+                                                                            {
+                                                                              "viewId": "com.tencent.mobileqq:id/p1r",
+                                                                              "className": "android.widget.LinearLayout",
+                                                                              "text": null,
+                                                                              "contentDescription": null,
+                                                                              "bounds": {
+                                                                                "left": 168,
+                                                                                "top": 1219,
+                                                                                "right": 1044,
+                                                                                "bottom": 1460
+                                                                              },
+                                                                              "children": [
+                                                                                {
+                                                                                  "viewId": null,
+                                                                                  "className": "android.view.ViewGroup",
+                                                                                  "text": null,
+                                                                                  "contentDescription": null,
+                                                                                  "bounds": {
+                                                                                    "left": 168,
+                                                                                    "top": 1219,
+                                                                                    "right": 1044,
+                                                                                    "bottom": 1460
+                                                                                  },
+                                                                                  "children": [
+                                                                                    {
+                                                                                      "viewId": null,
+                                                                                      "className": "android.widget.LinearLayout",
+                                                                                      "text": null,
+                                                                                      "contentDescription": null,
+                                                                                      "bounds": {
+                                                                                        "left": 168,
+                                                                                        "top": 1219,
+                                                                                        "right": 1044,
+                                                                                        "bottom": 1460
+                                                                                      },
+                                                                                      "children": [
+                                                                                        {
+                                                                                          "viewId": null,
+                                                                                          "className": "android.widget.LinearLayout",
+                                                                                          "text": null,
+                                                                                          "contentDescription": null,
+                                                                                          "bounds": {
+                                                                                            "left": 168,
+                                                                                            "top": 1219,
+                                                                                            "right": 1044,
+                                                                                            "bottom": 1460
+                                                                                          },
+                                                                                          "children": [
+                                                                                            {
+                                                                                              "viewId": "com.tencent.mobileqq:id/mjn",
+                                                                                              "className": "android.widget.TextView",
+                                                                                              "text": "测试文本",
+                                                                                              "contentDescription": null,
+                                                                                              "bounds": {
+                                                                                                "left": 168,
+                                                                                                "top": 1219,
+                                                                                                "right": 1044,
+                                                                                                "bottom": 1460
+                                                                                              },
+                                                                                              "children": []
+                                                                                            }
+                                                                                          ]
+                                                                                        }
+                                                                                      ]
+                                                                                    },
+                                                                                    {
+                                                                                      "viewId": null,
+                                                                                      "className": "android.view.View",
+                                                                                      "text": null,
+                                                                                      "contentDescription": null,
+                                                                                      "bounds": {
+                                                                                        "left": 168,
+                                                                                        "top": 1219,
+                                                                                        "right": 1044,
+                                                                                        "bottom": 1460
+                                                                                      },
+                                                                                      "children": []
+                                                                                    }
+                                                                                  ]
+                                                                                }
+                                                                              ]
+                                                                            },
+                                                                            {
+                                                                              "viewId": "com.tencent.mobileqq:id/wbc",
+                                                                              "className": "android.widget.FrameLayout",
+                                                                              "text": null,
+                                                                              "contentDescription": null,
+                                                                              "bounds": {
+                                                                                "left": 1044,
+                                                                                "top": 1243,
+                                                                                "right": 1164,
+                                                                                "bottom": 1363
+                                                                              },
+                                                                              "children": [
+                                                                                {
+                                                                                  "viewId": "com.tencent.mobileqq:id/mh_",
+                                                                                  "className": "android.widget.RelativeLayout",
+                                                                                  "text": null,
+                                                                                  "contentDescription": null,
+                                                                                  "bounds": {
+                                                                                    "left": 1044,
+                                                                                    "top": 1243,
+                                                                                    "right": 1164,
+                                                                                    "bottom": 1363
+                                                                                  },
+                                                                                  "children": [
+                                                                                    {
+                                                                                      "viewId": null,
+                                                                                      "className": "android.widget.FrameLayout",
+                                                                                      "text": null,
+                                                                                      "contentDescription": "测试描述",
+                                                                                      "bounds": {
+                                                                                        "left": 1044,
+                                                                                        "top": 1243,
+                                                                                        "right": 1164,
+                                                                                        "bottom": 1363
+                                                                                      },
+                                                                                      "children": [
+                                                                                        {
+                                                                                          "viewId": null,
+                                                                                          "className": "android.widget.ImageView",
+                                                                                          "text": null,
+                                                                                          "contentDescription": null,
+                                                                                          "bounds": {
+                                                                                            "left": 1044,
+                                                                                            "top": 1243,
+                                                                                            "right": 1164,
+                                                                                            "bottom": 1363
+                                                                                          },
+                                                                                          "children": []
+                                                                                        }
+                                                                                      ]
+                                                                                    }
+                                                                                  ]
+                                                                                }
+                                                                              ]
+                                                                            }
+                                                                          ]
+                                                                        }
+                                                                      ]
+                                                                    }
+                                                                  ]
+                                                                }
+                                                              ]
+                                                            }
+                                                          ]
+                                                        }
+                                                      ]
+                                                    },
+                                                    {
+                                                      "viewId": null,
+                                                      "className": "android.widget.FrameLayout",
+                                                      "text": null,
+                                                      "contentDescription": null,
+                                                      "bounds": {
+                                                        "left": 0,
+                                                        "top": 0,
+                                                        "right": 1200,
+                                                        "bottom": 1781
+                                                      },
+                                                      "children": [
+                                                        {
+                                                          "viewId": null,
+                                                          "className": "android.widget.FrameLayout",
+                                                          "text": null,
+                                                          "contentDescription": null,
+                                                          "bounds": {
+                                                            "left": 0,
+                                                            "top": 0,
+                                                            "right": 1200,
+                                                            "bottom": 276
+                                                          },
+                                                          "children": [
+                                                            {
+                                                              "viewId": "com.tencent.mobileqq:id/neu",
+                                                              "className": "android.widget.FrameLayout",
+                                                              "text": null,
+                                                              "contentDescription": null,
+                                                              "bounds": {
+                                                                "left": 0,
+                                                                "top": 0,
+                                                                "right": 1200,
+                                                                "bottom": 276
+                                                              },
+                                                              "children": [
+                                                                {
+                                                                  "viewId": null,
+                                                                  "className": "android.view.View",
+                                                                  "text": null,
+                                                                  "contentDescription": null,
+                                                                  "bounds": {
+                                                                    "left": 0,
+                                                                    "top": 0,
+                                                                    "right": 1200,
+                                                                    "bottom": 276
+                                                                  },
+                                                                  "children": []
+                                                                }
+                                                              ]
+                                                            },
+                                                            {
+                                                              "viewId": "com.tencent.mobileqq:id/jo9",
+                                                              "className": "android.widget.RelativeLayout",
+                                                              "text": null,
+                                                              "contentDescription": null,
+                                                              "bounds": {
+                                                                "left": 0,
+                                                                "top": 0,
+                                                                "right": 1200,
+                                                                "bottom": 276
+                                                              },
+                                                              "children": [
+                                                                {
+                                                                  "viewId": "com.tencent.mobileqq:id/3ec",
+                                                                  "className": "android.widget.RelativeLayout",
+                                                                  "text": null,
+                                                                  "contentDescription": null,
+                                                                  "bounds": {
+                                                                    "left": 0,
+                                                                    "top": 126,
+                                                                    "right": 1200,
+                                                                    "bottom": 276
+                                                                  },
+                                                                  "children": [
+                                                                    {
+                                                                      "viewId": "com.tencent.mobileqq:id/ivTitleBtnLeft",
+                                                                      "className": "android.widget.TextView",
+                                                                      "text": null,
+                                                                      "contentDescription": "测试描述",
+                                                                      "bounds": {
+                                                                        "left": 30,
+                                                                        "top": 165,
+                                                                        "right": 102,
+                                                                        "bottom": 237
+                                                                      },
+                                                                      "children": []
+                                                                    },
+                                                                    {
+                                                                      "viewId": "com.tencent.mobileqq:id/3cb",
+                                                                      "className": "android.widget.TextView",
+                                                                      "text": "测试好友",
+                                                                      "contentDescription": null,
+                                                                      "bounds": {
+                                                                        "left": 114,
+                                                                        "top": 149,
+                                                                        "right": 201,
+                                                                        "bottom": 217
+                                                                      },
+                                                                      "children": []
+                                                                    },
+                                                                    {
+                                                                      "viewId": "com.tencent.mobileqq:id/pry",
+                                                                      "className": "android.widget.ImageView",
+                                                                      "text": null,
+                                                                      "contentDescription": "测试描述",
+                                                                      "bounds": {
+                                                                        "left": 213,
+                                                                        "top": 159,
+                                                                        "right": 261,
+                                                                        "bottom": 207
+                                                                      },
+                                                                      "children": []
+                                                                    },
+                                                                    {
+                                                                      "viewId": "com.tencent.mobileqq:id/mam",
+                                                                      "className": "android.widget.ViewFlipper",
+                                                                      "text": null,
+                                                                      "contentDescription": null,
+                                                                      "bounds": {
+                                                                        "left": 114,
+                                                                        "top": 223,
+                                                                        "right": 531,
+                                                                        "bottom": 262
+                                                                      },
+                                                                      "children": [
+                                                                        {
+                                                                          "viewId": null,
+                                                                          "className": "android.widget.LinearLayout",
+                                                                          "text": null,
+                                                                          "contentDescription": null,
+                                                                          "bounds": {
+                                                                            "left": 114,
+                                                                            "top": 223,
+                                                                            "right": 531,
+                                                                            "bottom": 262
+                                                                          },
+                                                                          "children": [
+                                                                            {
+                                                                              "viewId": "com.tencent.mobileqq:id/j64",
+                                                                              "className": "android.widget.TextView",
+                                                                              "text": "测试文本",
+                                                                              "contentDescription": null,
+                                                                              "bounds": {
+                                                                                "left": 114,
+                                                                                "top": 223,
+                                                                                "right": 309,
+                                                                                "bottom": 262
+                                                                              },
+                                                                              "children": []
+                                                                            },
+                                                                            {
+                                                                              "viewId": null,
+                                                                              "className": "android.widget.TextView",
+                                                                              "text": "测试文本",
+                                                                              "contentDescription": null,
+                                                                              "bounds": {
+                                                                                "left": 309,
+                                                                                "top": 225,
+                                                                                "right": 336,
+                                                                                "bottom": 260
+                                                                              },
+                                                                              "children": []
+                                                                            },
+                                                                            {
+                                                                              "viewId": "com.tencent.mobileqq:id/2qc",
+                                                                              "className": "android.widget.TextView",
+                                                                              "text": "测试文本",
+                                                                              "contentDescription": null,
+                                                                              "bounds": {
+                                                                                "left": 336,
+                                                                                "top": 223,
+                                                                                "right": 531,
+                                                                                "bottom": 262
+                                                                              },
+                                                                              "children": []
+                                                                            }
+                                                                          ]
+                                                                        }
+                                                                      ]
+                                                                    },
+                                                                    {
+                                                                      "viewId": "com.tencent.mobileqq:id/19c",
+                                                                      "className": "android.widget.ImageView",
+                                                                      "text": null,
+                                                                      "contentDescription": "聊天设置",
+                                                                      "bounds": {
+                                                                        "left": 1080,
+                                                                        "top": 165,
+                                                                        "right": 1152,
+                                                                        "bottom": 237
+                                                                      },
+                                                                      "children": []
+                                                                    }
+                                                                  ]
+                                                                }
+                                                              ]
+                                                            }
+                                                          ]
+                                                        },
+                                                        {
+                                                          "viewId": null,
+                                                          "className": "android.widget.LinearLayout",
+                                                          "text": null,
+                                                          "contentDescription": null,
+                                                          "bounds": {
+                                                            "left": 0,
+                                                            "top": 276,
+                                                            "right": 1200,
+                                                            "bottom": 381
+                                                          },
+                                                          "children": []
+                                                        },
+                                                        {
+                                                          "viewId": null,
+                                                          "className": "android.widget.RelativeLayout",
+                                                          "text": null,
+                                                          "contentDescription": null,
+                                                          "bounds": {
+                                                            "left": 0,
+                                                            "top": 1486,
+                                                            "right": 1200,
+                                                            "bottom": 1649
+                                                          },
+                                                          "children": [
+                                                            {
+                                                              "viewId": null,
+                                                              "className": "android.widget.LinearLayout",
+                                                              "text": null,
+                                                              "contentDescription": null,
+                                                              "bounds": {
+                                                                "left": 0,
+                                                                "top": 1486,
+                                                                "right": 1200,
+                                                                "bottom": 1649
+                                                              },
+                                                              "children": [
+                                                                {
+                                                                  "viewId": null,
+                                                                  "className": "android.widget.ImageView",
+                                                                  "text": null,
+                                                                  "contentDescription": null,
+                                                                  "bounds": {
+                                                                    "left": 0,
+                                                                    "top": 1486,
+                                                                    "right": 1200,
+                                                                    "bottom": 1487
+                                                                  },
+                                                                  "children": []
+                                                                },
+                                                                {
+                                                                  "viewId": "com.tencent.mobileqq:id/dmj",
+                                                                  "className": "android.view.ViewGroup",
+                                                                  "text": null,
+                                                                  "contentDescription": null,
+                                                                  "bounds": {
+                                                                    "left": 0,
+                                                                    "top": 1487,
+                                                                    "right": 1200,
+                                                                    "bottom": 1649
+                                                                  },
+                                                                  "children": [
+                                                                    {
+                                                                      "viewId": "com.tencent.mobileqq:id/input",
+                                                                      "className": "android.widget.EditText",
+                                                                      "text": "测试文本",
+                                                                      "contentDescription": null,
+                                                                      "bounds": {
+                                                                        "left": 48,
+                                                                        "top": 1505,
+                                                                        "right": 900,
+                                                                        "bottom": 1631
+                                                                      },
+                                                                      "children": []
+                                                                    },
+                                                                    {
+                                                                      "viewId": "com.tencent.mobileqq:id/kd",
+                                                                      "className": "android.widget.LinearLayout",
+                                                                      "text": null,
+                                                                      "contentDescription": null,
+                                                                      "bounds": {
+                                                                        "left": 795,
+                                                                        "top": 1517,
+                                                                        "right": 885,
+                                                                        "bottom": 1619
+                                                                      },
+                                                                      "children": [
+                                                                        {
+                                                                          "viewId": "com.tencent.mobileqq:id/kc",
+                                                                          "className": "android.widget.ImageButton",
+                                                                          "text": null,
+                                                                          "contentDescription": "测试描述",
+                                                                          "bounds": {
+                                                                            "left": 795,
+                                                                            "top": 1517,
+                                                                            "right": 870,
+                                                                            "bottom": 1619
+                                                                          },
+                                                                          "children": []
+                                                                        }
+                                                                      ]
+                                                                    },
+                                                                    {
+                                                                      "viewId": "com.tencent.mobileqq:id/send_btn",
+                                                                      "className": "android.widget.Button",
+                                                                      "text": "发送",
+                                                                      "contentDescription": null,
+                                                                      "bounds": {
+                                                                        "left": 936,
+                                                                        "top": 1505,
+                                                                        "right": 1152,
+                                                                        "bottom": 1631
+                                                                      },
+                                                                      "children": []
+                                                                    }
+                                                                  ]
+                                                                }
+                                                              ]
+                                                            }
+                                                          ]
+                                                        },
+                                                        {
+                                                          "viewId": null,
+                                                          "className": "android.widget.LinearLayout",
+                                                          "text": null,
+                                                          "contentDescription": null,
+                                                          "bounds": {
+                                                            "left": 0,
+                                                            "top": 1649,
+                                                            "right": 1200,
+                                                            "bottom": 1781
+                                                          },
+                                                          "children": [
+                                                            {
+                                                              "viewId": null,
+                                                              "className": "android.widget.ImageView",
+                                                              "text": null,
+                                                              "contentDescription": "测试描述",
+                                                              "bounds": {
+                                                                "left": 0,
+                                                                "top": 1661,
+                                                                "right": 200,
+                                                                "bottom": 1745
+                                                              },
+                                                              "children": []
+                                                            },
+                                                            {
+                                                              "viewId": null,
+                                                              "className": "android.widget.ImageView",
+                                                              "text": null,
+                                                              "contentDescription": "测试描述",
+                                                              "bounds": {
+                                                                "left": 200,
+                                                                "top": 1649,
+                                                                "right": 400,
+                                                                "bottom": 1757
+                                                              },
+                                                              "children": []
+                                                            },
+                                                            {
+                                                              "viewId": null,
+                                                              "className": "android.widget.ImageView",
+                                                              "text": null,
+                                                              "contentDescription": "测试描述",
+                                                              "bounds": {
+                                                                "left": 400,
+                                                                "top": 1661,
+                                                                "right": 600,
+                                                                "bottom": 1745
+                                                              },
+                                                              "children": []
+                                                            },
+                                                            {
+                                                              "viewId": null,
+                                                              "className": "android.widget.FrameLayout",
+                                                              "text": null,
+                                                              "contentDescription": null,
+                                                              "bounds": {
+                                                                "left": 600,
+                                                                "top": 1661,
+                                                                "right": 800,
+                                                                "bottom": 1745
+                                                              },
+                                                              "children": [
+                                                                {
+                                                                  "viewId": null,
+                                                                  "className": "android.widget.ImageView",
+                                                                  "text": null,
+                                                                  "contentDescription": "测试描述",
+                                                                  "bounds": {
+                                                                    "left": 600,
+                                                                    "top": 1661,
+                                                                    "right": 800,
+                                                                    "bottom": 1745
+                                                                  },
+                                                                  "children": []
+                                                                }
+                                                              ]
+                                                            },
+                                                            {
+                                                              "viewId": null,
+                                                              "className": "android.widget.FrameLayout",
+                                                              "text": null,
+                                                              "contentDescription": null,
+                                                              "bounds": {
+                                                                "left": 800,
+                                                                "top": 1661,
+                                                                "right": 1000,
+                                                                "bottom": 1745
+                                                              },
+                                                              "children": [
+                                                                {
+                                                                  "viewId": null,
+                                                                  "className": "android.widget.ImageView",
+                                                                  "text": null,
+                                                                  "contentDescription": "测试描述",
+                                                                  "bounds": {
+                                                                    "left": 800,
+                                                                    "top": 1661,
+                                                                    "right": 1000,
+                                                                    "bottom": 1745
+                                                                  },
+                                                                  "children": []
+                                                                }
+                                                              ]
+                                                            },
+                                                            {
+                                                              "viewId": null,
+                                                              "className": "android.widget.FrameLayout",
+                                                              "text": null,
+                                                              "contentDescription": null,
+                                                              "bounds": {
+                                                                "left": 1000,
+                                                                "top": 1661,
+                                                                "right": 1200,
+                                                                "bottom": 1745
+                                                              },
+                                                              "children": [
+                                                                {
+                                                                  "viewId": null,
+                                                                  "className": "android.widget.ImageView",
+                                                                  "text": null,
+                                                                  "contentDescription": "测试描述",
+                                                                  "bounds": {
+                                                                    "left": 1000,
+                                                                    "top": 1661,
+                                                                    "right": 1200,
+                                                                    "bottom": 1745
+                                                                  },
+                                                                  "children": []
+                                                                }
+                                                              ]
+                                                            }
+                                                          ]
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "viewId": "com.tencent.mobileqq:id/r23",
+                                              "className": "android.widget.FrameLayout",
+                                              "text": null,
+                                              "contentDescription": null,
+                                              "bounds": {
+                                                "left": 0,
+                                                "top": 0,
+                                                "right": 1200,
+                                                "bottom": 2664
+                                              },
+                                              "children": [
+                                                {
+                                                  "viewId": null,
+                                                  "className": "android.widget.RelativeLayout",
+                                                  "text": null,
+                                                  "contentDescription": null,
+                                                  "bounds": {
+                                                    "left": 0,
+                                                    "top": 0,
+                                                    "right": 1200,
+                                                    "bottom": 2664
+                                                  },
+                                                  "children": [
+                                                    {
+                                                      "viewId": null,
+                                                      "className": "android.widget.FrameLayout",
+                                                      "text": null,
+                                                      "contentDescription": null,
+                                                      "bounds": {
+                                                        "left": 0,
+                                                        "top": 0,
+                                                        "right": 1200,
+                                                        "bottom": 2664
+                                                      },
+                                                      "children": []
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 底部表情/颜文字/符号分类工具栏：修改后重新打包安装即可预览。 -->
+    <!-- 整排高度、每个按钮宽度；建议至少 48dp，避免难以点击。 -->
+    <dimen name="symbol_toolbar_height">48dp</dimen>
+    <dimen name="symbol_toolbar_item_width">48dp</dimen>
+    <!-- 图标大小；请小于高度和按钮宽度，为边缘留出空间。 -->
+    <dimen name="symbol_toolbar_icon_size">32dp</dimen>
+    <dimen name="symbol_toolbar_icon_padding">8dp</dimen>
+</resources>

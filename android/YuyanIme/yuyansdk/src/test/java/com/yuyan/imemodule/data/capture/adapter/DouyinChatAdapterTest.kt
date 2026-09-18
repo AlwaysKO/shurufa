@@ -20,6 +20,18 @@ class DouyinChatAdapterTest {
         )),
     ))
 
+    @Test fun pendingCaptureAllowsTypingButRejectsAnotherConversationOrNonChat() {
+        val before = chat()
+        fun typing(node: UiNodeSnapshot): UiNodeSnapshot = node.copy(
+            text = if (node.viewId?.endsWith(":id/msg_et") == true) "正在回复的新文字" else node.text,
+            children = node.children.map(::typing),
+        )
+        val packageName = "com.ss.android.ugc.aweme"
+        assertTrue(com.yuyan.imemodule.service.capture.samePendingChat(packageName, before, typing(before)))
+        assertFalse(com.yuyan.imemodule.service.capture.samePendingChat(packageName, before, chat("另一会话")))
+        assertFalse(com.yuyan.imemodule.service.capture.samePendingChat(packageName, before, node("root")))
+    }
+
     @Test fun replaysSanitizedDeviceChatAndInboxTrees() {
         fun fixture(name: String) = javaClass.getResourceAsStream("/capture/$name")!!.bufferedReader().use {
             kotlinx.serialization.json.Json.decodeFromString<UiNodeSnapshot>(it.readText())
@@ -62,11 +74,16 @@ class DouyinChatAdapterTest {
             store = store,
             deviceId = { "00000000-0000-4000-8000-000000000001" },
             wakeUploader = { wakes++ },
+            clock = { 1000L },
+            titleSignature = { it.sha256 },
             mediaCapturer = com.yuyan.imemodule.data.capture.media.MediaAssetCapturer { _, _, requests ->
-                assertEquals(IntRect(0, 258, 1200, 1620), requests.single().bounds)
+                assertEquals(IntRect(0, 258, 1200, 1620), requests.single { it.messageIndex == 0 }.bounds)
                 mapOf(0 to com.yuyan.imemodule.data.capture.db.PendingAssetEntity(
                     sha256 = "a".repeat(64), localPath = "/test/douyin.webp", mimeType = "image/webp",
                     perceptualHash = null, width = 1200, height = 1362,
+                ), -1 to com.yuyan.imemodule.data.capture.db.PendingAssetEntity(
+                    sha256 = "b".repeat(64), localPath = "/test/title.png", mimeType = "image/png",
+                    perceptualHash = null, width = 176, height = 58,
                 ))
             },
         )
@@ -88,6 +105,6 @@ class DouyinChatAdapterTest {
         assertTrue(adapter.parse(node("root", children = listOf(node("msg_et", "评论")))) is ParseResult.Skip)
         assertTrue(adapter.parse(chat(title = "")) is ParseResult.Skip)
         assertTrue(adapter.parse(node("root", children = listOf(chat(), chat("另一人")))) is ParseResult.Skip)
-        assertNull(AdapterRegistry.forPackage("com.tencent.mobileqq"))
+        assertNotNull(AdapterRegistry.forPackage("com.tencent.mobileqq"))
     }
 }

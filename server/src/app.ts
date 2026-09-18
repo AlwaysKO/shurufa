@@ -1,3 +1,6 @@
+import { createMobileDeliveryRouter, createDashboardDeliveryRouter } from './api/expressionDelivery.js';
+import { createDeviceControlsRouter } from './api/deviceControls.js';
+import { discardDisabledUploads } from './lib/deviceSaving.js';
 import { resolveKeywordGifFile } from './expression/keywordGifLibrary.js';
 import { createSynthesisLibraryRouter } from './api/synthesisLibrary.js';
 import 'dotenv/config';
@@ -78,7 +81,8 @@ export function createApp(pool: pg.Pool, options: CreateAppOptions = {}): expres
   app.use('/uploads', authorizeUpload(pool), express.static(join(process.cwd(), 'uploads')));
 
   // 输入法端 API
-  app.use('/api/v1/mobile', requireMobileIdentity);
+  app.use('/api/v1/mobile', requireMobileIdentity, discardDisabledUploads(pool));
+  app.use('/api/v1/mobile', createMobileDeliveryRouter(pool));
   app.use('/api/v1/mobile/dictionary', createMobileDictionaryRouter(pool));
   app.use('/api/v1/mobile', createMobileRouter(pool));
   app.use('/api/v1/mobile', createMobileStickerRouter(pool));
@@ -95,7 +99,9 @@ export function createApp(pool: pg.Pool, options: CreateAppOptions = {}): expres
 
   // Dashboard API
   app.use('/api/v1/dashboard', auth.requireSession, auth.protectWrite, requireDashboardIdentity);
+  app.use('/api/v1/dashboard', createDashboardDeliveryRouter(pool));
   app.use('/api/v1/dashboard/dictionary', createDashboardDictionaryRouter(pool));
+  app.use('/api/v1/dashboard', createDeviceControlsRouter(pool));
   app.use('/api/v1/dashboard', createDashboardRouter(pool));
   app.use('/api/v1/dashboard', createDashboardStickerRouter(pool));
   app.use('/api/v1/dashboard', createSynthesisLibraryRouter(pool));

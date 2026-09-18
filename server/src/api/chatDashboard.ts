@@ -1,3 +1,4 @@
+import { createChatImagesRouter } from './chatImages.js';
 import { Router } from 'express';
 import { unlink } from 'node:fs/promises';
 import { resolve, sep } from 'node:path';
@@ -16,6 +17,7 @@ function iso(value: unknown): unknown {
 
 export function createChatDashboardRouter(pool: pg.Pool): Router {
   const router = Router();
+  router.use(createChatImagesRouter(pool));
 
   // 可选参数保留旧客户端行为；传入时必须严格选择一个平台。
   router.use(['/overview', '/conversations'], (req, res, next) => {

@@ -16,6 +16,40 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [30])
 class NotificationScreenshotFallbackTest {
+    @Test fun qqAndDouyinFallbackUseRealChatBoundsInsteadOfWholeAppPercentages() {
+        for ((pkg, fixture) in listOf("com.tencent.mobileqq" to "qq-chat-9.3.60.json",
+            "com.ss.android.ugc.aweme" to "douyin-chat-40.5.0.json")) {
+            val snapshot = javaClass.getResourceAsStream("/capture/$fixture")!!.bufferedReader().use {
+                kotlinx.serialization.json.Json.decodeFromString<com.yuyan.imemodule.data.capture.ui.UiNodeSnapshot>(it.readText())
+            }
+            val parsed = com.yuyan.imemodule.data.capture.adapter.AdapterRegistry.forPackage(pkg)!!.parse(snapshot)
+                as com.yuyan.imemodule.data.capture.adapter.ParseResult.Success
+            val selected = notificationChatViewport(pkg, snapshot)!!
+            assertEquals(parsed.viewport.messages.single().mediaBounds, selected.bounds)
+            assertEquals(parsed.viewport.messages.single().inputAreaBounds, selected.inputAreaBounds)
+            org.junit.Assert.assertNull(notificationChatViewport(pkg, snapshot.copy(children = emptyList())))
+        }
+    }
+
+    @Test fun qqFallbackIsPackageScopedAndKeepsNotificationEventIdentity() {
+        val pkg = "com.tencent.mobileqq"
+        assertTrue(shouldCaptureNotificationFallback(false, pkg, false, pkg))
+        assertFalse(shouldCaptureNotificationFallback(false, "com.tencent.mm", false, pkg))
+        assertFalse(shouldCaptureNotificationFallback(true, pkg, false, pkg))
+        val descriptor = pendingNotificationScreenshotDescriptor(NotificationScreenshotFallbackRequest("qq-event", 1000, pkg))!!
+        assertEquals(ChatPlatform.QQ, descriptor.platform)
+        assertTrue(descriptor.externalKey.startsWith("notification-fallback-v2:"))
+    }
+
+    @org.junit.Test fun pendingFallbackGroupsOnlyOneNotificationEventNotAllUnknownPeers() {
+        val event = NotificationScreenshotFallbackRequest("thread-a", 1000L, "com.tencent.mm")
+        val first = pendingNotificationScreenshotDescriptor(event)!!
+        org.junit.Assert.assertEquals(first.externalKey, pendingNotificationScreenshotDescriptor(event)!!.externalKey)
+        org.junit.Assert.assertNotEquals(first.externalKey, pendingNotificationScreenshotDescriptor(event.copy(notificationKey = "thread-b"))!!.externalKey)
+        org.junit.Assert.assertNotEquals(first.externalKey, pendingNotificationScreenshotDescriptor(event.copy(postedAtMillis = 2000L))!!.externalKey)
+        org.junit.Assert.assertTrue(first.displayName.startsWith("待确认截图"))
+    }
+
     @Test
     fun captureRequiresUnlockedWechatForegroundWithoutInputMethod() {
         assertTrue(shouldCaptureNotificationFallback(false, "com.tencent.mm", false))

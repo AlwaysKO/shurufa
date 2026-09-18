@@ -180,7 +180,7 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
             }
             true
         }
-        add(mLLSymbolType, lParams(matchParent, wrapContent){
+        add(mLLSymbolType, lParams(matchParent, resources.getDimensionPixelSize(R.dimen.symbol_toolbar_height)){
             bottomOfParent(0)
         })
         add(mVPSymbolsView, lParams(matchParent, matchParent){
@@ -238,11 +238,14 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
         TabLayoutMediator(tabLayout, mVPSymbolsView) { tab, position ->
             tab.view.background = null
             tab.setCustomView(ImageView(context).apply {
+                    val iconSize = resources.getDimensionPixelSize(R.dimen.symbol_toolbar_icon_size)
+                    layoutParams = LinearLayout.LayoutParams(iconSize, iconSize)
+                    scaleType = ImageView.ScaleType.FIT_CENTER
                 setImageDrawable(ContextCompat.getDrawable(context,data[position]).apply {
                     this?.setTint(activeTheme.keyTextColor)
                 })
             })
-            tab.view.setPadding(dp(5))
+            tab.view.setPadding(0)
         }.attach()
         mVPSymbolsView.currentItem = initialPage.coerceIn(0, data.lastIndex)
     }
@@ -278,11 +281,14 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
                 tab.view.background = null
                 val iconRes = if (position < data.size) data[position] else R.drawable.ic_menu_search
                 tab.setCustomView(ImageView(context).apply {
+                    val iconSize = resources.getDimensionPixelSize(R.dimen.symbol_toolbar_icon_size)
+                    layoutParams = LinearLayout.LayoutParams(iconSize, iconSize)
+                    scaleType = ImageView.ScaleType.FIT_CENTER
                     setImageDrawable(ContextCompat.getDrawable(context, iconRes).apply {
                         this?.setTint(activeTheme.keyTextColor)
                     })
                 })
-                tab.view.setPadding(dp(5))
+                tab.view.setPadding(0)
             }.attach()
             mVPSymbolsView.currentItem = 0
         } else {
@@ -293,11 +299,14 @@ class SymbolContainer(context: Context, inputView: InputView) : BaseContainer(co
             TabLayoutMediator(tabLayout, mVPSymbolsView) { tab, position ->
                 tab.view.background = null
                 tab.setCustomView(ImageView(context).apply {
+                    val iconSize = resources.getDimensionPixelSize(R.dimen.symbol_toolbar_icon_size)
+                    layoutParams = LinearLayout.LayoutParams(iconSize, iconSize)
+                    scaleType = ImageView.ScaleType.FIT_CENTER
                     setImageDrawable(ContextCompat.getDrawable(context,data[position]).apply {
                         this?.setTint(activeTheme.keyTextColor)
                     })
                 })
-                tab.view.setPadding(dp(5))
+                tab.view.setPadding(0)
             }.attach()
         }
     }

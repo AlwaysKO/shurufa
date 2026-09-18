@@ -39,10 +39,10 @@ async function mountChatCapture(overrides: Record<string, any> = {}) {
   const node = (tag = '', text = ''): Node => {
     const target = {
       tag, text, children: [], parent: null, props: {}, selectedIndex: -1,
-      addEventListener() {}, removeEventListener() {}, getRootNode: () => ({ activeElement: null }), tagName: tag.toUpperCase(),
+      focus() {}, addEventListener() {}, removeEventListener() {}, getRootNode: () => ({ activeElement: null }), tagName: tag.toUpperCase(),
     } as Node;
     Object.defineProperty(target, 'options', { get: () => target.children });
-    return target;
+    return Vue.markRaw(target);
   };
   function insert(child: Node, parent: Node, anchor?: Node | null) {
     child.parent = parent;
@@ -91,8 +91,8 @@ async function mountChatCapture(overrides: Record<string, any> = {}) {
   const module = { exports: {} as { default: Vue.Component } };
   const require = (name: string) => {
     if (name === 'vue') return Vue;
-    if (name === '../confirmation') return { useConfirmation: () => async (message: string) => Boolean(globalThis.window?.confirm?.(message)) };
-    if (name === '../api') return { api, scopedAssetUrl: (url: string) => `/scoped${url}` };
+    if (name === '../confirmation') return { useConfirmation: () => async (message: string) => Boolean(await globalThis.window?.confirm?.(message)) };
+    if (name === '../api') return { api, currentUserId: Vue.ref('user-a'), scopedAssetUrl: (url: string) => `/scoped${url}` };
     throw new Error(`Unexpected import: ${name}`);
   };
   const previousDocument = globalThis.document;
@@ -110,7 +110,7 @@ async function mountChatCapture(overrides: Record<string, any> = {}) {
   const all = (target: Node): Node[] => [target, ...target.children.flatMap(all)];
   const find = (id: string) => all(root).find((target) => target.props['data-testid'] === id);
   Object.assign(globalThis, { document: previousDocument, Document: previousDocumentConstructor, ShadowRoot: previousShadowRoot });
-  return { source, find, deletedImages, api, all: () => all(root), text: () => all(root).map(n => n.text).join(' ') };
+  return { source, find, deletedImages, api, unmount: () => app.unmount(), all: () => all(root), text: () => all(root).map(n => n.text).join(' ') };
 }
 
 it('点击聊天图片在本页弹窗预览并可关闭，不再生成新窗口链接', async () => {
@@ -155,7 +155,7 @@ const screenshot = (n: number) => ({
   sender_key: 'peer', sender_name: '对方', text: '聊天截图',
   captured_at: new Date(Date.UTC(2026, 8, 17, 0, n)).toISOString(), occurred_at: null,
   metadata: { capture_source: 'wechat_empty_tree_screenshot' },
-  assets: [{ id: n, url: `/uploads/chat/${n}.png` }],
+  assets: [{ id: n, mime_type: 'image/png', role: 'content', position: 0, url: `/uploads/chat/${n}.png` }],
 });
 
 it('几百条消息按服务端倒序分页，每页仅渲染24条并支持前后翻页', async () => {
@@ -246,7 +246,7 @@ it('首次会话尚在加载时切换，旧请求结束不能提前解除新会�
 
 it('混合消息保留文字和全部附件，本页类型筛选不会打乱顺序', async () => {
   const image = screenshot(3);
-  image.assets.push({ id: 4, url: '/uploads/chat/4.png' });
+  image.assets.push({ ...image.assets[0], id: 4, url: '/uploads/chat/4.png' });
   const view = await mountChatCapture({ chatMessages: async () => ({ total: 2, messages: [
     image, { ...screenshot(2), message_type: 'text', text: '保留文字内容', assets: [] },
   ] }) });
@@ -331,4 +331,97 @@ it('抖音聊天截图标签显示会话名和采集时间，不显示内部view
   }]})});
   expect(view.find('chat-image-label-douyin-image')!.text).toContain('对方');
   expect(view.find('chat-image-label-douyin-image')!.text).toContain('2026-09-17');
+});
+
+const nextImage = (n: number) => ({ image: { message_id: `message-${n}`, asset_id: n, url: `/uploads/chat/${n}.png`, alt: `图片${n}`, captured_at: '2026-09-18T00:00:00Z', ordinal: n, total: 30 } });
+it('放大后上一张下一张按会话锚点查询，跨越列表页且不改变当前列表页', async () => {
+  const chatAdjacentImage = vi.fn().mockResolvedValue(nextImage(9));
+  const view = await mountChatCapture({ chatAdjacentImage });
+  view.find('open-chat-image-8')!.props.onClick(); await settle();
+  view.find('chat-image-next')!.props.onClick(); await settle();
+  expect(chatAdjacentImage).toHaveBeenCalledWith(1, 'message-1', 8, 'next');
+  expect(view.find('chat-image-preview-image')!.props.src).toBe('/scoped/uploads/chat/9.png');
+  view.find('chat-image-prev')!.props.onClick(); await settle();
+  expect(chatAdjacentImage).toHaveBeenLastCalledWith(1, 'message-9', 9, 'previous');
+  expect(view.find('open-chat-image-8')).toBeDefined();
+});
+it('方向键和横向滑动都可翻图，竖向或短距离移动不误触，Esc关闭', async () => {
+  const chatAdjacentImage = vi.fn().mockResolvedValue(nextImage(9));const view = await mountChatCapture({ chatAdjacentImage });
+  view.find('open-chat-image-8')!.props.onClick(); await settle();
+  const key = (key: string) => ({ key, preventDefault: vi.fn(), stopPropagation: vi.fn(), isComposing: false, repeat: false });
+  view.find('chat-image-preview')!.props.onKeydown(key('ArrowRight')); await settle(); expect(chatAdjacentImage).toHaveBeenCalledTimes(1);
+  const surface = view.find('chat-image-swipe')!;
+  const point = (x:number,y:number) => ({ pointerId:1,clientX:x,clientY:y,button:0,isPrimary:true });
+  surface.props.onPointerdown(point(100,100));surface.props.onPointerup(point(95,200));await settle();expect(chatAdjacentImage).toHaveBeenCalledTimes(1);
+  surface.props.onPointerdown(point(180,100));surface.props.onPointerup(point(60,105));await settle();expect(chatAdjacentImage).toHaveBeenCalledTimes(2);
+  surface.props.onPointerdown(point(50,100));surface.props.onPointerup(point(160,100));await settle();expect(chatAdjacentImage.mock.calls.at(-1)![3]).toBe('previous');
+  view.find('chat-image-preview')!.props.onKeydown(key('Escape'));await settle();expect(view.find('chat-image-preview')).toBeUndefined();
+});
+it('浏览边界不循环，失败保留当前图并允许重试', async () => {
+  const chatAdjacentImage = vi.fn().mockRejectedValueOnce(Error('网络中断')).mockResolvedValue({ image:null });
+  const view = await mountChatCapture({ chatAdjacentImage });view.find('open-chat-image-8')!.props.onClick();await settle();
+  view.find('chat-image-next')!.props.onClick();await settle();expect(view.text()).toContain('网络中断');expect(view.find('chat-image-preview-image')!.props.src).toContain('screenshot.png');
+  view.find('chat-image-next')!.props.onClick();await settle();expect(view.find('chat-image-next')!.props.disabled).toBe(true);expect(view.text()).toContain('最后一张');
+});
+it('连续点击只请求一次，关闭后迟到响应不能重新打开预览', async () => {
+  let resolve!: (value: unknown) => void;const chatAdjacentImage = vi.fn(() => new Promise(r=>{resolve=r;}));
+  const view = await mountChatCapture({ chatAdjacentImage });view.find('open-chat-image-8')!.props.onClick();await settle();
+  const click=view.find('chat-image-next')!.props.onClick;click();click();await settle();expect(chatAdjacentImage).toHaveBeenCalledOnce();
+  view.find('close-chat-image-preview')!.props.onClick();await settle();resolve(nextImage(9));await settle();expect(view.find('chat-image-preview')).toBeUndefined();
+});
+it('全选只选当前筛选可见图片，支持一消息多图和共享图片不同消息，全不选清空', async () => {
+  const first=screenshot(1), second={...screenshot(2),message_type:'text',text:'保留文字',assets:[{...first.assets[0]}]};
+  first.assets.push({...first.assets[0],id:3,url:'/uploads/chat/3.png'});
+  const view=await mountChatCapture({chatMessages:async()=>({total:99,messages:[first,second]})});
+  view.find('chat-select-page')!.props.onClick();await settle();expect(view.find('chat-selection-count')!.text).toContain('3');
+  view.find('chat-clear-selection')!.props.onClick();await settle();expect(view.find('chat-delete-selected')!.props.disabled).toBe(true);
+  view.all().find(n=>n.tag==='select')!.props['onUpdate:modelValue']('image');await settle();
+  view.find('chat-select-page')!.props.onClick();await settle();expect(view.find('chat-selection-count')!.text).toContain('2');
+});
+it('批量取消不请求，失败保留选择和图片，确认发送精确关联而非整条消息', async () => {
+  const previous=globalThis.window;const confirm=vi.fn().mockReturnValue(false);globalThis.window={confirm} as unknown as Window & typeof globalThis;
+  try {
+    const deleteChatImages=vi.fn().mockRejectedValue(Error('记录已变化'));
+    const view=await mountChatCapture({deleteChatImages});view.find('chat-select-page')!.props.onClick();await settle();
+    view.find('chat-delete-selected')!.props.onClick();await settle();expect(deleteChatImages).not.toHaveBeenCalled();
+    confirm.mockReturnValue(true);view.find('chat-delete-selected')!.props.onClick();await settle();
+    expect(deleteChatImages).toHaveBeenCalledWith({confirm:'DELETE',conversation_id:1,images:[{message_id:'message-1',asset_id:8}]});
+    expect(confirm.mock.calls.at(-1)![0]).toContain('1 张');expect(view.find('chat-selection-count')!.text).toContain('1');expect(view.text()).toContain('记录已变化');expect(view.find('open-chat-image-8')).toBeDefined();
+  } finally{globalThis.window=previous;}
+});
+it('删除末页全部图片回到有效页，文件待重试提示不伪装事务失败', async()=>{
+  const previous=globalThis.window;globalThis.window={confirm:()=>true} as unknown as Window & typeof globalThis;
+  try{
+    const chatMessages=vi.fn().mockResolvedValueOnce({total:25,messages:[screenshot(1)]}).mockResolvedValueOnce({total:25,messages:[screenshot(25)]})
+      .mockResolvedValueOnce({total:24,messages:[]}).mockResolvedValue({total:24,messages:[screenshot(1)]});
+    const view=await mountChatCapture({chatMessages,deleteChatImages:async()=>({deleted_images:1,deleted_messages:1,files_pending:true})});
+    view.find('chat-page-next')!.props.onClick();await settle();view.find('chat-select-page')!.props.onClick();await settle();view.find('chat-delete-selected')!.props.onClick();await settle();
+    expect(chatMessages.mock.calls.map(c=>c[1])).toEqual([1,2,2,1]);expect(view.find('chat-selection-count')!.text).toContain('0');expect(view.text()).toContain('后台重试');
+  }finally{globalThis.window=previous;}
+});
+it('翻页、筛选和App切换清空选择并关闭预览，不保留隐藏选择',async()=>{
+  const view=await mountChatCapture({chatMessages:async()=>({total:25,messages:[screenshot(1)]})});
+  view.find('chat-select-page')!.props.onClick();await settle();view.find('open-chat-image-1')!.props.onClick();await settle();
+  view.all().find(n=>n.tag==='select')!.props['onUpdate:modelValue']('image');await settle();
+  expect(view.find('chat-selection-count')!.text).toContain('0');expect(view.find('chat-image-preview')).toBeUndefined();
+  view.find('chat-select-page')!.props.onClick();await settle();view.find('chat-page-next')!.props.onClick();await settle();expect(view.find('chat-selection-count')!.text).toContain('0');
+  view.find('chat-select-page')!.props.onClick();await settle();view.find('chat-tab-qq')!.props.onClick();await settle();expect(view.find('chat-selection-count')!.text).toContain('0');
+});
+it('确认期间筛选改变则取消旧批次，快速重复提交只有一次请求',async()=>{
+  const previous=globalThis.window;let answer!:(yes:boolean)=>void;const confirm=vi.fn(()=>new Promise<boolean>(r=>{answer=r;}));globalThis.window={confirm} as unknown as Window & typeof globalThis;
+  try{
+    const deleteChatImages=vi.fn().mockResolvedValue({deleted_images:1,files_pending:false});const view=await mountChatCapture({deleteChatImages});
+    view.find('chat-select-page')!.props.onClick();await settle();const click=view.find('chat-delete-selected')!.props.onClick;click();click();await settle();expect(confirm).toHaveBeenCalledOnce();
+    view.all().find(n=>n.tag==='select')!.props['onUpdate:modelValue']('image');await settle();answer(true);await settle();expect(deleteChatImages).not.toHaveBeenCalled();
+  }finally{globalThis.window=previous;}
+});
+
+it('图片已经删除但统计刷新失败时保留成功提示，不能误报整批删除失败',async()=>{
+ const previous=globalThis.window;globalThis.window={confirm:()=>true} as unknown as Window & typeof globalThis;
+ try{
+  const overview=vi.fn().mockResolvedValueOnce({conversation_count:1,message_count:1,media_count:1}).mockRejectedValueOnce(Error('统计网络错误'));
+  const view=await mountChatCapture({chatCaptureOverview:overview,deleteChatImages:async()=>({deleted_images:1,deleted_messages:1,files_pending:false})});
+  view.find('chat-select-page')!.props.onClick();await settle();view.find('chat-delete-selected')!.props.onClick();await settle();
+  expect(view.text()).toContain('已删除 1 张');expect(view.text()).toContain('刷新失败');expect(view.text()).not.toContain('删除图片失败');
+ }finally{globalThis.window=previous;}
 });

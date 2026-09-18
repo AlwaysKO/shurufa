@@ -81,7 +81,7 @@ class ExpressionPanelState(
         synthesisAvailable = results.any { it.type == "synthesis-template" }
         isContentVisible = aiStickerEnabled && !recommendationsHidden &&
             (manualQuery || synthesisAvailable || this.results.isNotEmpty())
-        if (this.results.isEmpty() && (manualQuery || synthesisAvailable) &&
+        if (!tabChosenByUser && this.results.isEmpty() && (manualQuery || synthesisAvailable) &&
             selectedTab == ExpressionPanelTab.RECOMMENDED) {
             selectedTab = ExpressionPanelTab.AI_SYNTHESIS
             tabChosenByUser = false
@@ -97,7 +97,7 @@ class ExpressionPanelState(
     }
 
     fun selectTab(tab: ExpressionPanelTab) {
-        if (!aiStickerEnabled || (tab == ExpressionPanelTab.RECOMMENDED && results.isEmpty())) return
+        if (!aiStickerEnabled) return
         tabChosenByUser = true
         selectedTab = tab
     }

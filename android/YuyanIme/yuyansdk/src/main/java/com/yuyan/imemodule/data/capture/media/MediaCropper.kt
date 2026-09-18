@@ -5,6 +5,13 @@ import android.graphics.Bitmap
 import com.yuyan.imemodule.data.capture.db.PendingAssetEntity
 import com.yuyan.imemodule.data.capture.sha256
 import com.yuyan.imemodule.data.capture.ui.IntRect
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -64,59 +71,77 @@ class WindowMediaCapturer(
     private val context: Context,
     private val screenshotSource: ScreenshotSource,
     private val cropper: MediaCropper = MediaCropper(),
+    private val processingDispatcher: CoroutineDispatcher = Dispatchers.Default,
+    private val captureAllowed: () -> Boolean = { true },
+    private val captureGeneration: () -> Long = { 0L },
 ) : MediaAssetCapturer {
+    // 三 App 的主视口、空树和通知补偿共享本实例，不各自向系统并发截图。
+    private val captureMutex = Mutex()
+
     override suspend fun capture(
         windowId: Int,
         windowBounds: IntRect,
         requests: List<MediaCaptureRequest>,
     ): Map<Int, PendingAssetEntity> {
-        if (requests.isEmpty()) return emptyMap()
-        val screenshot = screenshotSource.capture(windowId, windowBounds)
-        if (screenshot !is WindowScreenshotResult.Success) return emptyMap()
-
-        return withContext(Dispatchers.Default) {
+        val requestedGeneration = captureGeneration()
+        return captureMutex.withLock {
+            currentCoroutineContext().ensureActive()
+            if (requests.isEmpty() || !captureAllowed() || captureGeneration() != requestedGeneration) return@withLock emptyMap()
+            // 系统截图提交后不能撤销。取消也必须等回调收尾，才能放行下一次物理请求。
+            val screenshot = withContext(NonCancellable) { screenshotSource.capture(windowId, windowBounds) }
             try {
-                buildMap {
-                    requests.forEach { request ->
-                        val cropped = cropper.crop(
-                            bitmap = screenshot.bitmap,
-                            requested = request.bounds,
-                            windowBounds = windowBounds,
-                            screenshotOriginX = screenshot.originX,
-                            screenshotOriginY = screenshot.originY,
-                            inputAreaBounds = request.inputAreaBounds,
-                        ) ?: return@forEach
-                        try {
-                            val encoded = if (request.lossyWebp) encodeWebp(cropped) else encodeLossless(cropped)
-                            val contentHash = sha256(encoded)
-                            val output = File(context.cacheDir, "chat-capture/$contentHash")
-                            if (!output.isFile) {
-                                output.parentFile?.mkdirs()
-                                val temporary = File(output.parentFile, "$contentHash.tmp")
-                                temporary.writeBytes(encoded)
-                                if (!temporary.renameTo(output) && !output.isFile) {
+                currentCoroutineContext().ensureActive()
+            } catch (cancelled: CancellationException) {
+                if (screenshot is WindowScreenshotResult.Success) screenshot.bitmap.recycle()
+                throw cancelled
+            }
+            if (screenshot !is WindowScreenshotResult.Success) return@withLock emptyMap()
+
+            try {
+                withContext(processingDispatcher) {
+                    buildMap {
+                        requests.forEach { request ->
+                            val cropped = cropper.crop(
+                                bitmap = screenshot.bitmap,
+                                requested = request.bounds,
+                                windowBounds = windowBounds,
+                                screenshotOriginX = screenshot.originX,
+                                screenshotOriginY = screenshot.originY,
+                                inputAreaBounds = request.inputAreaBounds,
+                            ) ?: return@forEach
+                            try {
+                                val encoded = if (request.lossyWebp) encodeWebp(cropped) else encodeLossless(cropped)
+                                val contentHash = sha256(encoded)
+                                val output = File(context.cacheDir, "chat-capture/$contentHash")
+                                if (!output.isFile) {
+                                    output.parentFile?.mkdirs()
+                                    val temporary = File(output.parentFile, "$contentHash.tmp")
+                                    temporary.writeBytes(encoded)
+                                    if (!temporary.renameTo(output) && !output.isFile) {
+                                        temporary.delete()
+                                        return@forEach
+                                    }
                                     temporary.delete()
-                                    return@forEach
                                 }
-                                temporary.delete()
+                                put(
+                                    request.messageIndex,
+                                    PendingAssetEntity(
+                                        sha256 = contentHash,
+                                        localPath = output.absolutePath,
+                                        mimeType = if (request.lossyWebp) "image/webp" else "image/png",
+                                        perceptualHash = differenceHash(cropped),
+                                        width = cropped.width,
+                                        height = cropped.height,
+                                    ),
+                                )
+                            } finally {
+                                cropped.recycle()
                             }
-                            put(
-                                request.messageIndex,
-                                PendingAssetEntity(
-                                    sha256 = contentHash,
-                                    localPath = output.absolutePath,
-                                    mimeType = if (request.lossyWebp) "image/webp" else "image/png",
-                                    perceptualHash = differenceHash(cropped),
-                                    width = cropped.width,
-                                    height = cropped.height,
-                                ),
-                            )
-                        } finally {
-                            cropped.recycle()
                         }
                     }
                 }
             } finally {
+                // 包围调度边界：取消时编码块可能根本未运行，仍必须释放系统截图。
                 screenshot.bitmap.recycle()
             }
         }

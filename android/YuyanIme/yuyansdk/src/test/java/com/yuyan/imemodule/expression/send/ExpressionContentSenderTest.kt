@@ -65,10 +65,10 @@ class ExpressionContentSenderTest {
     }
 
     @Test
-    fun `微信声明 GIF 时经标准内容接口交付原始 MIME 字节与读授权`() = runSending {
+    fun `非微信声明 GIF 时经标准内容接口交付原始 MIME 字节与读授权`() = runSending {
         org.robolectric.Shadows.shadowOf(android.webkit.MimeTypeMap.getSingleton())
             .addExtensionMimeTypeMapping("gif", "image/gif")
-        val routed = route("com.tencent.mm", "image/gif", accepted = arrayOf("image/gif"))
+        val routed = route("test.receiver", "image/gif", accepted = arrayOf("image/gif"))
         assertEquals(ExpressionSendResult.Sent, routed.result)
         assertEquals(1, routed.commits)
         assertNoTextHandoff(routed)
@@ -82,8 +82,8 @@ class ExpressionContentSenderTest {
     }
 
     @Test
-    fun `微信拒绝标准 GIF 内容时不伪报成功或尝试 URI 正文`() = runSending {
-        val routed = route("com.tencent.mm", "image/gif", rejectContent = true)
+    fun `其他目标拒绝标准 GIF 内容时不伪报成功或尝试 URI 正文`() = runSending {
+        val routed = route("test.receiver", "image/gif", rejectContent = true)
         assertTrue(routed.result is ExpressionSendResult.Failed)
         assertEquals(1, routed.commits)
         assertNoTextHandoff(routed)
@@ -123,6 +123,7 @@ class ExpressionContentSenderTest {
         mime: String,
         rejectContent: Boolean = false,
         accepted: Array<String> = arrayOf("image/*"),
+        unshared: Boolean = false,
     ): Routed {
         val base = ApplicationProvider.getApplicationContext<Context>()
         var opened: android.content.Intent? = null
@@ -156,11 +157,24 @@ class ExpressionContentSenderTest {
             EditorInfoCompat.setContentMimeTypes(it, accepted)
         }
         val path = if (mime == "image/gif") "prebuilt/thanks-nuotuan-bow.gif" else "thumbnails/thanks-nuotuan-bow.webp"
-        val source = File(base.cacheDir, "expression/routing/$path")
+        val source = File(base.cacheDir, if (unshared) "expression-query/originals/test-webp-original" else "expression/routing/$path")
         source.parentFile!!.mkdirs()
         base.assets.open("expression/$path").use { source.writeBytes(it.readBytes()) }
         val sender = ExpressionContentSender(context, { connection }, { accepted }, { editor })
         return Routed(sender.send(PreparedExpression(source, mime)), opened, commits, source, text, grantedUri, content, contentFlags)
+    }
+
+    @Test
+    fun `远端无后缀WebP仍通过原有MIME协商发送原始字节`() = runSending {
+        org.robolectric.Shadows.shadowOf(android.webkit.MimeTypeMap.getSingleton())
+            .addExtensionMimeTypeMapping("webp", "image/webp")
+        val result = route("com.tencent.mobileqq", "image/webp", unshared = true)
+        assertEquals(ExpressionSendResult.Sent, result.result)
+        val uri = result.content!!.contentUri
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        assertEquals("image/webp", context.contentResolver.getType(uri))
+        assertArrayEquals(result.source.readBytes(), context.contentResolver.openInputStream(uri)!!.use { it.readBytes() })
+        assertEquals(null, result.intent)
     }
 
     @Test

@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-09-17T09:41:59.284604+00:00",
+  "reviewedIds": [
+    "beagle-favor",
+    "line-favor",
+    "clay-favor",
+    "man-favor",
+    "rabbit-coax",
+    "line-coax",
+    "clay-coax",
+    "man-coax",
+    "shiba-surrender",
+    "line-surrender",
+    "clay-surrender",
+    "man-surrender"
+  ],
+  "needsRework": [],
+  "rejectedSources": [],
+  "mainThread": "逐张母图目视，三组真实后台连续截图变化、完整全身及字幕检查",
+  "independentReviewer": "12张静态目视、原GIF审计复跑、SHA与framing一致，无阻塞",
+  "userApprovalBasis": "用户默认授权来源技术合格关键词成品入库，不是逐张观看认可"
+}

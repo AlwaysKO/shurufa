@@ -1,3 +1,4 @@
+import ExpressionDelivery from './views/ExpressionDelivery.vue';
 import { createApp } from 'vue';
 import { createRouter, createWebHistory } from 'vue-router';
 import App from './App.vue';
@@ -25,6 +26,7 @@ import Relationships from './views/Relationships.vue';
 const router = createRouter({
   history: createWebHistory(),
   routes: [
+    { path: '/expression-delivery', component: ExpressionDelivery, meta: { title: '图片发送配置' } },
     { path: '/login', component: Login, meta: { title: '登录' } },
     { path: '/', component: Overview, meta: { title: '输入总览' } },
     { path: '/timeline', component: Timeline, meta: { title: '输入时间线' } },

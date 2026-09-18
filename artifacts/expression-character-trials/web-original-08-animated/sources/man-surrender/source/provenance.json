@@ -1,0 +1,25 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aabb480-ee04-83e9-9f85-642ebd878bbe",
+  "sourceFileId": "file_000000002c348209a5410035adf5370e",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "bc1144b125bfabb899e109e4ecdaf03ba0f3d6aa8d8ac9b3e526aad6fffafcbb",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T09:38:15.417771+00:00",
+  "generationObservedAt": "2026-09-17T09:38:15.417771+00:00",
+  "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+  "originalDownloadName": "man-surrender.png",
+  "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-17T09:38:45.114122+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

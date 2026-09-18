@@ -18,6 +18,8 @@ const actualSha256 = createHash('sha256').update(bytes).digest('hex');
 
 beforeEach(async () => {
   const database = newDb();
+  // pg-mem不实现LOCK TABLE；真实并发锁行为另由deviceControls.postgres.test覆盖。
+  database.public.interceptQueries(sql => sql === 'LOCK TABLE media_asset IN ROW EXCLUSIVE MODE' ? [] : null);
   const adapter = database.adapters.createPg();
   pool = new adapter.Pool();
   await pool.query(readFileSync(

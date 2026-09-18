@@ -41,6 +41,7 @@ class ExpressionPanel @JvmOverloads constructor(
     private val emojiTab: TextView
     private val moreButton: ImageButton
     private val closeButton: ImageButton
+    private val returnToKeyboard: TextView
     private val enableButton: TextView
     val recommendationAction: TextView get() = enableButton
     var onRecommendationActionVisibilityChanged: (() -> Unit)? = null
@@ -78,6 +79,7 @@ class ExpressionPanel @JvmOverloads constructor(
     var onAnimationPreviewChange: ((Boolean) -> Unit)? = null
     var onClearCache: (() -> Unit)? = null
     var onExpandRequested: (() -> Unit)? = null
+    var onReturnToKeyboard: (() -> Unit)? = null
     var onTabSelected: ((ExpressionPanelTab) -> Unit)? = null
     var onAssetClick: ((ExpressionAsset) -> Unit)? = null
     var onEmojiCombinationMissing: ((com.yuyan.imemodule.expression.model.EmojiCombination, (java.io.File?) -> Unit) -> Unit)?
@@ -115,6 +117,8 @@ class ExpressionPanel @JvmOverloads constructor(
         content = findViewById(R.id.expression_content)
         moreButton = findViewById(R.id.expression_more)
         closeButton = findViewById(R.id.expression_close)
+        returnToKeyboard = findViewById(R.id.expression_return_keyboard)
+        returnToKeyboard.setOnClickListener { onReturnToKeyboard?.invoke() }
         enableButton = findViewById(R.id.expression_enable)
         recommendationSection = findViewById(R.id.expression_recommendation_section)
         toolRow = findViewById(R.id.expression_tool_row)
@@ -159,11 +163,8 @@ class ExpressionPanel @JvmOverloads constructor(
     }
 
     fun render(state: ExpressionPanelState, catalog: ExpressionCatalog) {
-        preparingOverlay.setText(when (state.preparationStage) {
-            com.yuyan.imemodule.expression.send.ExpressionSendStage.PREPARING -> R.string.expression_preparing_image
-            com.yuyan.imemodule.expression.send.ExpressionSendStage.SENDING -> R.string.expression_sending_image
-            com.yuyan.imemodule.expression.send.ExpressionSendStage.SAVING -> R.string.expression_saving_image
-        })
+        // 保留透明触摸拦截层防重复发送，不用过程文字覆盖/闪烁推荐图。
+        preparingOverlay.text = ""
         isPreparing = state.isPreparing
         preparingOverlay.visibility = if (isPreparing) View.VISIBLE else View.GONE
         aiStickerEnabled = state.aiStickerEnabled
@@ -185,7 +186,8 @@ class ExpressionPanel @JvmOverloads constructor(
                 else -> R.string.ai_sticker_search
             },
         )
-        recommendedTab.visibility = if (state.results.isNotEmpty()) View.VISIBLE else View.GONE
+        recommendedTab.visibility = View.VISIBLE
+        returnToKeyboard.visibility = if (isExpanded) View.VISIBLE else View.GONE
         recommendedTab.isSelected = state.selectedTab == ExpressionPanelTab.RECOMMENDED
         templatesTab.isSelected = state.selectedTab == ExpressionPanelTab.AI_SYNTHESIS
         emojiTab.isSelected = state.selectedTab == ExpressionPanelTab.EMOJI_SYNTHESIS
@@ -221,6 +223,9 @@ class ExpressionPanel @JvmOverloads constructor(
         adapter.submitList(items)
     }
 
+    fun setBundledEmojiBases(bases: List<com.yuyan.imemodule.expression.model.EmojiBase>) =
+        emojiPicker.setBundledBases(bases)
+
     fun resetEmojiSelection() = emojiPicker.reset()
 
     fun clearCallbacks() {
@@ -231,6 +236,7 @@ class ExpressionPanel @JvmOverloads constructor(
         onAnimationPreviewChange = null
         onClearCache = null
         onExpandRequested = null
+        onReturnToKeyboard = null
         onTabSelected = null
         onAssetClick = null
         onEmojiCombinationMissing = null
@@ -282,8 +288,9 @@ class ExpressionPanel @JvmOverloads constructor(
             reservedKeyboardHeightPx = reservedKeyboardHeightPx,
         )
         layoutMetrics = metrics
-        tabBar.layoutParams = tabBar.layoutParams.apply { height = metrics.tabRowHeightPx }
-        tabBar.visibility = if (metrics.tabRowHeightPx >= dp(MINIMUM_TOUCH_TARGET_DP)) {
+        val tabHeight = if (isExpanded) dp(44) else metrics.tabRowHeightPx
+        tabBar.layoutParams = tabBar.layoutParams.apply { height = tabHeight }
+        tabBar.visibility = if (tabHeight >= dp(MINIMUM_TOUCH_TARGET_DP)) {
             View.VISIBLE
         } else {
             View.GONE
@@ -306,7 +313,7 @@ class ExpressionPanel @JvmOverloads constructor(
         }
         actions.layoutParams = actions.layoutParams.apply {
             width = metrics.actionWidthPx
-            height = metrics.actionHeightPx
+            height = if (isExpanded) dp(40) else metrics.actionHeightPx
         }
         if (!isExpanded) {
             content.layoutParams = content.layoutParams.apply { height = metrics.contentHeightPx }
@@ -384,7 +391,7 @@ class ExpressionPanel @JvmOverloads constructor(
         setBackgroundColor(theme.keyboardColor)
         recommendationSection.setBackgroundColor(theme.keyboardColor)
         content.setBackgroundColor(theme.keyboardColor)
-        preparingOverlay.setBackgroundColor(theme.keyboardColor)
+        preparingOverlay.setBackgroundColor(android.graphics.Color.TRANSPARENT)
         preparingOverlay.setTextColor(theme.keyTextColor)
         toolRow.background = ColorDrawable(theme.keyboardColor)
         enableButton.text = SpannableString(context.getString(R.string.ai_sticker_search)).apply {
@@ -393,6 +400,8 @@ class ExpressionPanel @JvmOverloads constructor(
         }
         enableButton.background = AiDoutuBadgeDrawable(context, theme.keyBackgroundColor)
         actions.background = roundedBackground(theme.keyBackgroundColor, 16)
+        returnToKeyboard.setTextColor(theme.keyTextColor)
+        returnToKeyboard.setBackgroundColor(theme.keyBackgroundColor)
         listOf(moreButton, closeButton).forEach { button ->
             button.drawable?.mutate()?.setTint(theme.keyTextColor)
         }

@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6aabb301-27c8-83ea-9777-eb553cb21df1",
+  "sourceFileId": "file_00000000be8082099e81f5a0b4498bc4",
+  "requestedDate": "2026-09-17",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "c6af5e27de94300ef7ba07e33074c143b48d6e88a780c68a867e74a81d78d9ed",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-17T09:30:46.456439+00:00",
+  "generationObservedAt": "2026-09-17T09:30:46.456439+00:00",
+  "generationTimeBasis": "归档解码时确认生成完成，非服务端精确时间",
+  "originalDownloadName": "shiba-surrender.png",
+  "downloadMethod": "已登录网页fetch原图src字节，无canvas重绘",
+  "deletedAt": "2026-09-17T09:31:19.288965+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

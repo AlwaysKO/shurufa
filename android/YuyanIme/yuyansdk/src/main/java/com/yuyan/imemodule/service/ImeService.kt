@@ -67,6 +67,8 @@ import splitties.bitflags.hasFlag
  * Main class of the Pinyin input method. 输入法服务
  */
 open class ImeService : InputMethodService() {
+    private val deliverySettingsJob = kotlinx.coroutines.SupervisorJob()
+    private val deliverySettingsScope = CoroutineScope(deliverySettingsJob + Dispatchers.IO)
     private var isHardwareKeyboard = false
     private var isSoftKeyboard = false
     private lateinit var mInputView: InputView
@@ -421,6 +423,7 @@ open class ImeService : InputMethodService() {
     }
 
     override fun onDestroy() {
+        deliverySettingsJob.cancel()
         expressionBackCallbackController.clear()
         clearAllHostTextListeners()
         DataCollector.setInputActive(baseContext, false)
@@ -550,7 +553,7 @@ open class ImeService : InputMethodService() {
             }
             if (!composingForHistory && !voiceHasPartialText) observeHostEdit()
         }
-        if (isSoftKeyboard) mInputView.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesEnd)
+        if (isSoftKeyboard) mInputView.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesEnd, candidatesStart)
     }
 
     private val cursorAnchorPosition = FloatArray(2)
@@ -567,6 +570,7 @@ open class ImeService : InputMethodService() {
     }
 
     override fun onWindowShown() {
+        com.yuyan.imemodule.expression.send.ExpressionDeliverySettings.refresh(this, deliverySettingsScope)
         DataCollector.setInputActive(baseContext, true)
         if (isSoftKeyboard) mInputView.onWindowShown()
         super.onWindowShown()

@@ -347,7 +347,7 @@ class ExpressionManualSearchInputViewTest {
     }
 
     @Test
-    fun `干嘛未命中时手动AI只显示合成且谢谢命中仍可显示推荐`() {
+    fun `干嘛未命中时默认AI但三标签固定且谢谢命中可显示推荐`() {
         val inputView = realChatInputView()
         for (query in listOf("干嘛", "谢谢")) {
             inputView.expressionState().clear()
@@ -361,7 +361,7 @@ class ExpressionManualSearchInputViewTest {
             val tab = inputView.findViewById<TextView>(R.id.expression_tab_recommended)
             if (query == "干嘛") {
                 assertTrue(state.results.isEmpty())
-                assertEquals(View.GONE, tab.visibility)
+                assertEquals(View.VISIBLE, tab.visibility)
             } else {
                 assertTrue(state.results.isNotEmpty())
                 assertTrue(state.results.all { it.type == "prebuilt" })
@@ -395,7 +395,49 @@ class ExpressionManualSearchInputViewTest {
     }
 
     @Test
-    fun `清输入失败保留斗图候选允许重试`() {
+    fun `生产选图发送失败不得自动改为保存相册`() {
+        var galleryInsertions = 0
+        val provider = object : android.content.ContentProvider() {
+            override fun onCreate() = true
+            override fun insert(uri: android.net.Uri, values: android.content.ContentValues?): android.net.Uri? {
+                galleryInsertions++
+                return null
+            }
+            override fun query(uri: android.net.Uri, projection: Array<out String>?, selection: String?,
+                selectionArgs: Array<out String>?, sortOrder: String?): android.database.Cursor? = null
+            override fun getType(uri: android.net.Uri): String? = null
+            override fun delete(uri: android.net.Uri, selection: String?, selectionArgs: Array<out String>?) = 0
+            override fun update(uri: android.net.Uri, values: android.content.ContentValues?, selection: String?,
+                selectionArgs: Array<out String>?) = 0
+        }
+        org.robolectric.shadows.ShadowContentResolver.registerProviderInternal("media", provider)
+        try {
+            val inputView = realChatInputView() // 无宿主连接，真实发送器应明确返回不支持。
+            val catalog = ExpressionCatalog.fromAssets(context)
+            val asset = catalog.document.templates.first { it.fileName == "prebuilt/thanks-nuotuan-bow.gif" }
+            val state = inputView.expressionState().apply {
+                beginQuery("谢谢", 551)
+                applyResults(551, listOf(asset))
+            }
+            val panel = inputView.findViewById<ExpressionPanel>(R.id.expression_panel)
+            panel.render(state, catalog)
+            panel.onAssetClick!!.invoke(asset)
+            val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(20)
+            while (state.isPreparing && System.nanoTime() < deadline) {
+                Shadows.shadowOf(Looper.getMainLooper()).idle()
+                Thread.sleep(5)
+            }
+            assertFalse("发送失败应结束准备态", state.isPreparing)
+            assertEquals("点发送不是授权自动写入相册", 0, galleryInsertions)
+            assertEquals("谢谢", state.query)
+            assertEquals(listOf(asset), state.results)
+        } finally {
+            org.robolectric.shadows.ShadowContentResolver.reset()
+        }
+    }
+
+    @Test
+    fun `素材尚未准备时不清空组合且保留斗图候选`() {
         val inputView = realChatInputView()
         var compositionCleared = false
         inputView.expressionComposingTextSource = ExpressionComposingTextSource(
@@ -424,13 +466,10 @@ class ExpressionManualSearchInputViewTest {
 
         panel.onAssetClick?.invoke(asset)
 
-        assertTrue(compositionCleared)
+        assertFalse(compositionCleared)
         assertEquals("玻璃心", state.query)
         assertEquals(listOf(asset), state.results)
-        assertEquals(
-            context.getString(R.string.expression_clear_input_failed),
-            ShadowToast.getTextOfLatestToast(),
-        )
+        assertTrue(state.isPreparing)
     }
 
     @Test
@@ -599,6 +638,87 @@ class ExpressionManualSearchInputViewTest {
         assertEquals(context.getString(R.string.expression_manual_search_missing_text),
             inputView.findViewWithTag<TextView>("expression_usage_hint")?.text?.toString())
         assertNull(inputView.expressionState().query)
+    }
+
+    @Test
+    fun `所有发送阶段都不显示文字或遮盖原图`() {
+        val view = realChatInputView()
+        val panel = view.findViewById<ExpressionPanel>(R.id.expression_panel)
+        val state = view.expressionState().apply { isPreparing = true }
+        for (stage in com.yuyan.imemodule.expression.send.ExpressionSendStage.entries) {
+            state.preparationStage = stage
+            panel.render(state, ExpressionCatalog.fromAssets(context))
+            val overlay = panel.findViewById<TextView>(R.id.expression_preparing_overlay)
+            assertEquals("", overlay.text.toString())
+            assertEquals(android.graphics.Color.TRANSPARENT,
+                (overlay.background as android.graphics.drawable.ColorDrawable).color)
+            assertTrue(overlay.isClickable)
+        }
+    }
+
+    @Test
+    fun `拼音替换成呢导致光标回缩仍自动推荐然后呢`() {
+        AppPrefs.getInstance().internal.aiStickerEnabled.setValue(true)
+        val view = realChatInputView()
+        view.notifyExpressionTextCommitted("然后")
+        view.onExpressionSelectionChanged(0, 0, 2, 2, -1, -1)
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
+        assertEquals("然后", view.expressionState().query)
+        // 宿主组合区是 ne，选“呢”后光标由 4 变成 3，并不是用户移动光标。
+        view.onExpressionSelectionChanged(2, 2, 4, 4, 4, 2)
+        view.notifyExpressionTextCommitted("呢")
+        view.onExpressionSelectionChanged(4, 4, 3, 3, -1, -1)
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
+        assertEquals("然后呢", view.expressionState().query)
+        view.notifyExpressionTextCommitted("呀")
+        view.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+        assertEquals("然后呢呀", view.expressionState().query)
+    }
+
+    @Test
+    fun `提交回缩前的无移动负组合回调不能丢掉组合范围`() {
+        AppPrefs.getInstance().internal.aiStickerEnabled.setValue(true)
+        val view = realChatInputView()
+        view.notifyExpressionTextCommitted("然后")
+        view.onExpressionSelectionChanged(0, 0, 2, 2, -1)
+        view.onExpressionSelectionChanged(2, 2, 4, 4, 4, 2)
+        view.notifyExpressionTextCommitted("呢")
+        repeat(2) { view.onExpressionSelectionChanged(4, 4, 4, 4, -1) }
+        view.onExpressionSelectionChanged(4, 4, 3, 3, -1)
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
+        assertEquals("然后呢", view.expressionState().query)
+        // 替换确认后再手动回移，必须失效，而不能复用旧组合或 pending。
+        view.onExpressionSelectionChanged(3, 3, 2, 2, -1)
+        view.notifyExpressionTextCommitted("呀")
+        view.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+        assertEquals("呀", view.expressionState().query)
+    }
+
+    @Test
+    fun `新输入目标不能复用前一编辑器的组合范围`() {
+        AppPrefs.getInstance().internal.aiStickerEnabled.setValue(true)
+        val view = realChatInputView()
+        view.notifyExpressionTextCommitted("然后")
+        view.onExpressionSelectionChanged(0, 0, 2, 2, -1)
+        view.onExpressionSelectionChanged(2, 2, 4, 4, 4, 2)
+        view.onExpressionInputTargetChanged(chatEditorInfo().apply { fieldId = 893 })
+        view.notifyExpressionTextCommitted("呢")
+        view.onExpressionSelectionChanged(4, 4, 3, 3, -1)
+        view.notifyExpressionTextCommitted("呀")
+        view.onSettingsMenuClick(SkbMenuMode.AiDoutu)
+        assertEquals("呀", view.expressionState().query)
+    }
+
+    @Test
+    fun `重复无移动选区回调不吞掉待确认提交`() {
+        AppPrefs.getInstance().internal.aiStickerEnabled.setValue(true)
+        val view = realChatInputView()
+        view.notifyExpressionTextCommitted("然后")
+        view.onExpressionSelectionChanged(0, 0, 0, 0, -1)
+        view.onExpressionSelectionChanged(0, 0, 2, 2, -1)
+        view.notifyExpressionTextCommitted("呢")
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
+        assertEquals("然后呢", view.expressionState().query)
     }
 
     @Test
@@ -1523,7 +1643,7 @@ class ExpressionManualSearchInputViewTest {
     fun `准备期间同词再次提交取消旧准备并启动新查询`() = verifyPendingPreparation(cancel = "sameCommit")
 
     @Test
-    fun `微信原文件交接清除忙状态并提示不冒充发送成功`() = verifyPendingPreparation(share = true)
+    fun `微信原文件交接清除忙状态且不闪正常提示`() = verifyPendingPreparation(share = true)
 
     @Test
     fun `微信原文件交接后同词再次提交启动新查询`() = verifyPendingPreparation(share = true, repeatQuery = true)
@@ -1596,6 +1716,7 @@ class ExpressionManualSearchInputViewTest {
         assertEquals(ExpressionPanelTab.AI_SYNTHESIS, state.selectedTab)
         assertEquals(View.VISIBLE, panel.visibility)
         assertEquals(View.VISIBLE, panel.findViewById<View>(R.id.expression_preparing_overlay)?.visibility)
+        assertEquals("", panel.findViewById<TextView>(R.id.expression_preparing_overlay).text.toString())
         panel.onAssetClick?.invoke(asset)
         assertEquals(1, prepareCount)
         assertEquals(0, sent)
@@ -1662,7 +1783,7 @@ class ExpressionManualSearchInputViewTest {
         }
         assertEquals(1, sent)
         assertFalse(state.isPreparing)
-        if (share) assertEquals("已交给当前微信会话，请确认动图是否发出", ShadowToast.getTextOfLatestToast())
+        if (share) assertNull(ShadowToast.getTextOfLatestToast())
         if (save || share) {
             assertEquals("未确认发送不能删除输入", 0, clearCalls)
             assertEquals("谢谢", state.query)
@@ -1678,6 +1799,216 @@ class ExpressionManualSearchInputViewTest {
             Shadows.shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
             assertEquals(requestBefore + 1, inputView.expressionRequestId())
         }
+    }
+
+    @Test
+    fun `QQ输入不自动推荐但斗图按钮仍搜索`() {
+        assertManualOnlyChat("com.tencent.mobileqq")
+    }
+
+    @Test
+    fun `抖音输入不自动推荐但斗图按钮仍搜索`() {
+        assertManualOnlyChat("com.ss.android.ugc.aweme")
+    }
+
+    @Test
+    @Config(shadows = [LocalServerConfigShadow::class])
+    fun `QQ抖音即使支持图片也不因唤起或输入发起自动网络`() {
+        val server = MockWebServer().apply {
+            dispatcher = object : Dispatcher() {
+                override fun dispatch(request: RecordedRequest) = MockResponse().setResponseCode(404)
+            }
+            start()
+        }
+        try {
+            LocalServerConfigShadow.url = server.url("/").toString().trimEnd('/')
+            AppPrefs.getInstance().internal.aiStickerEnabled.setValue(true)
+            val inputView = realChatInputView()
+            for (pkg in listOf("com.tencent.mobileqq", "com.ss.android.ugc.aweme")) {
+                inputView.onExpressionInputTargetChanged(EditorInfo().apply {
+                    packageName = pkg
+                    inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
+                    imeOptions = EditorInfo.IME_ACTION_SEND
+                    androidx.core.view.inputmethod.EditorInfoCompat.setContentMimeTypes(this, arrayOf("image/gif"))
+                })
+                inputView.onWindowShown()
+                val before = inputView.expressionRequestId()
+                inputView.notifyExpressionTextCommitted("没有缓存的测试文字")
+                Shadows.shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
+                assertEquals("支持图片也必须禁止自动查询：$pkg", before, inputView.expressionRequestId())
+                repeat(50) {
+                    Shadows.shadowOf(Looper.getMainLooper()).idle()
+                    assertNull("没有主动点斗图不得联网：$pkg", server.takeRequest(10, TimeUnit.MILLISECONDS))
+                }
+                inputView.onExpressionWindowHidden()
+            }
+        } finally {
+            server.shutdown()
+        }
+    }
+
+    private fun assertManualOnlyChat(packageName: String) {
+        AppPrefs.getInstance().internal.aiStickerEnabled.setValue(true)
+        val inputView = realChatInputView()
+        inputView.onExpressionInputTargetChanged(EditorInfo().apply {
+            this.packageName = packageName
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
+            imeOptions = EditorInfo.IME_ACTION_SEND
+            // 手动搜索资格不等于宿主已经声明支持图片直发。
+        })
+        val before = inputView.expressionRequestId()
+        inputView.notifyExpressionTextCommitted("然后呢")
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
+        assertEquals(before, inputView.expressionRequestId())
+        assertFalse(inputView.expressionState().isRecommendationVisible)
+        inputView.searchExpressionsManually()
+        assertEquals("然后呢", inputView.expressionState().query)
+        assertTrue(inputView.expressionState().isRecommendationVisible)
+        val afterManual = inputView.expressionRequestId()
+        inputView.notifyExpressionTextCommitted("谢谢")
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
+        assertEquals(afterManual, inputView.expressionRequestId())
+        assertFalse("继续输入不得保留旧的手动推荐", inputView.expressionState().isRecommendationVisible)
+    }
+
+    @Test
+    fun `宿主保留文字但窗口会话清空后主动斗图恢复当前编辑框`() {
+        val inputView = realChatInputView()
+        val editor = chatEditorInfo()
+        inputView.onExpressionInputTargetChanged(editor)
+        val connection = object : android.view.inputmethod.BaseInputConnection(View(context), true) {
+            override fun getTextBeforeCursor(n: Int, flags: Int): CharSequence {
+                assertTrue("只允许有限当前编辑文本", n <= 100)
+                return "然后呢"
+            }
+            override fun getTextAfterCursor(n: Int, flags: Int): CharSequence = ""
+        }
+        org.robolectric.util.ReflectionHelpers.setField(services.last(), "mStartedInputConnection", connection)
+        org.robolectric.util.ReflectionHelpers.setField(services.last(), "mInputEditorInfo", editor)
+        inputView.onExpressionWindowHidden()
+        inputView.onExpressionInputViewStarted(editor, true, connection)
+        inputView.searchExpressionsManually()
+        assertEquals("然后呢", inputView.expressionState().query)
+        assertNull(inputView.findViewWithTag<View>("expression_usage_hint"))
+    }
+
+    @Test
+    fun `主动斗图不得读取密码编辑器或沿用跨目标文字`() {
+        val inputView = realChatInputView()
+        val editor = chatEditorInfo().apply { inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD }
+        inputView.onExpressionInputTargetChanged(editor)
+        var reads = 0
+        val connection = object : android.view.inputmethod.BaseInputConnection(View(context), true) {
+            override fun getTextBeforeCursor(n: Int, flags: Int): CharSequence { reads++; return "秘密" }
+        }
+        org.robolectric.util.ReflectionHelpers.setField(services.last(), "mStartedInputConnection", connection)
+        org.robolectric.util.ReflectionHelpers.setField(services.last(), "mInputEditorInfo", editor)
+        inputView.searchExpressionsManually()
+        assertEquals(0, reads)
+        assertNull(inputView.expressionState().query)
+    }
+
+    @Test
+    fun `快速切换三标签合成展开推荐收起且查询不丢失`() {
+        val inputView = realChatInputView()
+        attachAndLayout(inputView, 2400)
+        inputView.notifyExpressionTextCommitted("然后呢")
+        inputView.searchExpressionsManually()
+        val state = inputView.expressionState()
+        val asset = ExpressionCatalog.fromAssets(context).document.templates.first { it.type == "prebuilt" }
+        // 覆盖有推荐与合成共存的真实点击布局。
+        state.beginQuery("然后呢", 77, manual = true)
+        state.applyResults(77, listOf(asset))
+        inputView.findViewById<ExpressionPanel>(R.id.expression_panel).render(state, ExpressionCatalog.fromAssets(context))
+        repeat(5) {
+            inputView.findViewById<View>(R.id.expression_tab_templates).performClick()
+            assertEquals(ExpressionPanelPresentation.EXPANDED, state.presentation)
+            assertEquals(View.GONE, inputView.findViewById<View>(R.id.skb_input_keyboard_view).visibility)
+            inputView.findViewById<View>(R.id.expression_tab_emoji).performClick()
+            assertEquals(ExpressionPanelPresentation.EXPANDED, state.presentation)
+            assertEquals(View.VISIBLE, inputView.findViewById<View>(R.id.expression_emoji_picker).visibility)
+            inputView.findViewById<View>(R.id.expression_tab_recommended).performClick()
+            assertEquals(ExpressionPanelPresentation.COMPACT, state.presentation)
+            assertEquals(View.VISIBLE, inputView.findViewById<View>(R.id.skb_input_keyboard_view).visibility)
+            assertEquals("然后呢", state.query)
+        }
+        inputView.findViewById<View>(R.id.expression_tab_emoji).performClick()
+        inputView.findViewWithTag<View>("expression_return_keyboard").performClick()
+        assertEquals(ExpressionPanelPresentation.COMPACT, state.presentation)
+        assertEquals(View.VISIBLE, inputView.findViewById<View>(R.id.skb_input_keyboard_view).visibility)
+        assertEquals("然后呢", state.query)
+    }
+
+    @Test
+    fun `同查询目录更新不得抢回用户Emoji标签`() {
+        val inputView = realChatInputView()
+        inputView.notifyExpressionTextCommitted("然后呢")
+        inputView.searchExpressionsManually()
+        inputView.findViewById<View>(R.id.expression_tab_emoji).performClick()
+        InputView::class.java.getDeclaredMethod("showManualSynthesisTemplates", String::class.java).apply {
+            isAccessible = true
+            invoke(inputView, "然后呢")
+        }
+        assertEquals(ExpressionPanelTab.EMOJI_SYNTHESIS, inputView.expressionState().selectedTab)
+    }
+
+    @Test
+    fun `服务端附带URL的内置Emoji仍按相同SHA优先读APK而非联网`() {
+        val inputView = realChatInputView()
+        val picker = inputView.findViewById<EmojiCombinationPicker>(R.id.expression_emoji_picker)
+        val local = ExpressionCatalog.fromAssets(context)
+        val base = local.document.emojiBases.first()
+        picker.render(ExpressionCatalog(local.document.copy(
+            emojiBases = listOf(base.copy(url = "https://example.invalid/emoji.webp")),
+        )))
+        val list = picker.findViewById<RecyclerView>(R.id.expression_emoji_list)
+        @Suppress("UNCHECKED_CAST")
+        val adapter = list.adapter as RecyclerView.Adapter<RecyclerView.ViewHolder>
+        val holder = adapter.createViewHolder(list, 0)
+        adapter.bindViewHolder(holder, 0)
+        assertEquals("file:///android_asset/expression/${base.fileName}",
+            org.robolectric.util.ReflectionHelpers.getField<String>(holder, "boundSource"))
+    }
+
+    @Test
+    fun `SHA已变更的Emoji不能错误复用旧内置文件`() {
+        val inputView = realChatInputView()
+        val picker = inputView.findViewById<EmojiCombinationPicker>(R.id.expression_emoji_picker)
+        val local = ExpressionCatalog.fromAssets(context)
+        val base = local.document.emojiBases.first().copy(sha256 = "a".repeat(64), url = "https://example.invalid/new.webp")
+        picker.render(ExpressionCatalog(local.document.copy(emojiBases = listOf(base))))
+        val list = picker.findViewById<RecyclerView>(R.id.expression_emoji_list)
+        @Suppress("UNCHECKED_CAST")
+        val adapter = list.adapter as RecyclerView.Adapter<RecyclerView.ViewHolder>
+        val holder = adapter.createViewHolder(list, 0)
+        adapter.bindViewHolder(holder, 0)
+        assertEquals(base.url, org.robolectric.util.ReflectionHelpers.getField<String>(holder, "boundSource"))
+    }
+
+    @Test
+    fun `全选宿主文字后主动斗图仍能恢复整句查询`() {
+        assertManualEditorSelection("", "然后呢", "")
+    }
+
+    @Test
+    fun `部分选中宿主文字后主动斗图不得漏掉选区拼错查询`() {
+        assertManualEditorSelection("然", "后", "呢")
+    }
+
+    private fun assertManualEditorSelection(before: String, selected: String, after: String) {
+        val inputView = realChatInputView()
+        val editor = chatEditorInfo()
+        inputView.onExpressionInputTargetChanged(editor)
+        val connection = object : android.view.inputmethod.BaseInputConnection(View(context), true) {
+            override fun getTextBeforeCursor(n: Int, flags: Int): CharSequence = before
+            override fun getSelectedText(flags: Int): CharSequence = selected
+            override fun getTextAfterCursor(n: Int, flags: Int): CharSequence = after
+        }
+        org.robolectric.util.ReflectionHelpers.setField(services.last(), "mStartedInputConnection", connection)
+        org.robolectric.util.ReflectionHelpers.setField(services.last(), "mInputEditorInfo", editor)
+        inputView.searchExpressionsManually()
+        assertEquals("然后呢", inputView.expressionState().query)
+        assertNull(inputView.findViewWithTag<View>("expression_usage_hint"))
     }
 
     private fun realChatInputView(): InputView {

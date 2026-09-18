@@ -25,6 +25,26 @@ import kotlinx.coroutines.runBlocking
 @Config(sdk = [30])
 class NotificationParserTest {
     @Test
+    fun qqHiddenMessageWaitsForOpenButOrdinaryServiceNoticeDoesNot() {
+        val parser = NotificationParser()
+        val hidden = NotificationSnapshot("com.tencent.mobileqq", "qq-hidden", "QQ", "你收到了一条新消息", 1000)
+        assertTrue(parser.requiresScreenshotFallback(hidden))
+        assertNull(parser.parse(hidden))
+        org.junit.Assert.assertFalse(parser.requiresScreenshotFallback(hidden.copy(text = "正在后台运行")))
+    }
+
+    @Test
+    fun unreadableMediaUsesTheSameFallbackPolicyInAllThreeApps() {
+        val parser = NotificationParser()
+        for (pkg in listOf("com.tencent.mm", "com.tencent.mobileqq", "com.ss.android.ugc.aweme")) {
+            val image = NotificationSnapshot(pkg, "media", "测试好友", "[图片]", 1000)
+            assertTrue(pkg, parser.requiresMediaScreenshotFallback(image))
+            org.junit.Assert.assertFalse(parser.requiresMediaScreenshotFallback(image.copy(mediaUriReadable = true)))
+            org.junit.Assert.assertFalse(parser.requiresMediaScreenshotFallback(image.copy(text = "普通文字")))
+        }
+    }
+
+    @Test
     fun readableVideoThumbnailDoesNotChangeVideoIntoImage() {
         val parsed = NotificationParser().parse(
             NotificationSnapshot(
@@ -42,6 +62,30 @@ class NotificationParserTest {
         assertEquals("content://wechat/thumbnail", parsed?.mediaUri)
     }
     private val parser = NotificationParser()
+
+    @Test fun sameNamesInDifferentNotificationThreadsAreNotMerged() {
+        val first = snapshot("com.tencent.mobileqq", "张三", "你好").copy(notificationKey = "thread-a")
+        val second = first.copy(notificationKey = "thread-b")
+        org.junit.Assert.assertNotEquals(parser.parse(first)!!.conversation.externalKey, parser.parse(second)!!.conversation.externalKey)
+        assertEquals("pending", parser.parse(first)!!.message.metadata["conversation_identity_status"])
+    }
+
+    @Test fun trustedConversationShortcutIsIndependentOfDisplayNameAndProfileIsolated() {
+        val first = snapshot("com.tencent.mobileqq", "原名字", "你好", isMessagingStyle = true).copy(stableConversationId = "peer-1")
+        val renamed = first.copy(title = "新名字")
+        val other = first.copy(stableConversationId = "peer-2")
+        assertEquals(parser.parse(first)!!.conversation.externalKey, parser.parse(renamed)!!.conversation.externalKey)
+        org.junit.Assert.assertNotEquals(parser.parse(first)!!.conversation.externalKey, parser.parse(other)!!.conversation.externalKey)
+        org.junit.Assert.assertNotEquals(parser.parse(first)!!.conversation.externalKey, parser.parse(first.copy(profileKey = "work"))!!.conversation.externalKey)
+        assertEquals("confirmed", parser.parse(first)!!.message.metadata["conversation_identity_status"])
+        assertEquals("原名字", parser.parse(first)!!.conversation.displayName)
+    }
+
+    @Test fun genericAppSummaryIsNotAConversationName() {
+        assertNull(parser.parse(snapshot("com.tencent.mobileqq", "QQ", "3个联系人发来5条消息")))
+        assertNull(parser.parse(snapshot("com.ss.android.ugc.aweme", "抖音", "新消息", isMessagingStyle = true)))
+    }
+
 
     @Test
     fun parsesWechatQqAndDouyinTextNotifications() {
@@ -61,7 +105,7 @@ class NotificationParserTest {
 
             requireNotNull(parsed)
             assertEquals(platform, parsed.conversation.platform)
-            assertEquals("张三", parsed.conversation.displayName)
+            assertEquals("待确认通知（张三）", parsed.conversation.displayName)
             assertEquals(ConversationType.DIRECT, parsed.conversation.conversationType)
             assertEquals("你好", parsed.message.text)
             assertEquals(ChatMessageType.TEXT, parsed.message.messageType)
@@ -140,7 +184,7 @@ class NotificationParserTest {
         ))
 
         requireNotNull(parsed)
-        assertEquals("项目群", parsed.conversation.displayName)
+        assertEquals("待确认通知（项目群）", parsed.conversation.displayName)
         assertEquals(ConversationType.GROUP, parsed.conversation.conversationType)
         assertEquals("李四", parsed.message.senderName)
         assertEquals("收到", parsed.message.text)
@@ -178,14 +222,14 @@ class NotificationParserTest {
     }
 
     @Test
-    fun onlyHiddenWechatAggregateRequestsScreenshotFallback() {
+    fun hiddenAggregatesRequestFallbackWithoutTreatingNamedMessagesAsHidden() {
         assertTrue(parser.requiresScreenshotFallback(snapshot("com.tencent.mm", "微信", "1个联系人发来1条消息")))
         assertTrue(parser.requiresScreenshotFallback(snapshot("com.tencent.mm", "微信", "张三：你好", summaryText = "2个联系人给你发来了3条新消息。")))
         assertTrue(parser.requiresScreenshotFallback(snapshot("com.tencent.mm", "微信", "你收到了一条新消息！")))
         assertTrue(parser.requiresScreenshotFallback(snapshot("com.tencent.mm", "微信", "[有人@我]1个联系人发来1条消息")))
         assertTrue(parser.requiresScreenshotFallback(snapshot("com.tencent.mm", "微信", "龚林莉邀请你视频通话")))
         assertTrue(!parser.requiresScreenshotFallback(snapshot("com.tencent.mm", "张三", "你好")))
-        assertTrue(!parser.requiresScreenshotFallback(snapshot("com.tencent.mobileqq", "QQ", "1个联系人发来1条消息")))
+        assertTrue(parser.requiresScreenshotFallback(snapshot("com.tencent.mobileqq", "QQ", "1个联系人发来1条消息")))
     }
 
     @Test
@@ -201,7 +245,7 @@ class NotificationParserTest {
 
         assertTrue(!parser.requiresScreenshotFallback(snapshot))
         val parsed = parser.parse(snapshot)
-        assertEquals("张三", parsed?.conversation?.displayName)
+        assertEquals("待确认通知（张三）", parsed?.conversation?.displayName)
         assertEquals("张三", parsed?.message?.senderName)
         assertEquals("真实聊天内容", parsed?.message?.text)
     }

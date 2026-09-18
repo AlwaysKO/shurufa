@@ -301,5 +301,7 @@
 
     <string name="sticker_send_failed">表情包发送失败</string>
     <string name="sticker_saved_to_gallery">已保存到相册（YuyanStickers）</string>
-    <string name="expression_wechat_submitted">已交给当前微信会话，请确认动图是否发出</string>
+    <string name="expression_wechat_submitted">已请求微信处理动图，请在微信确认并检查发送结果</string>
+    <string name="expression_invalid_gif">动图文件无效，请重新选择</string>
+    <string name="expression_wechat_gif_handoff_failed">微信动图交接失败，请检查聊天后重试</string>
 </resources>

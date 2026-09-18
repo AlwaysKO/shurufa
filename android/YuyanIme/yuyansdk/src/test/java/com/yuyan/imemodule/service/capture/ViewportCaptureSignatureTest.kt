@@ -25,8 +25,8 @@ class ViewportCaptureSignatureTest {
     @Test
     fun otherAppsStillDeduplicateIdenticalAccessibilityTrees() {
         assertEquals(
-            viewportCaptureSignature("com.tencent.mobileqq", "same-tree", 1),
-            viewportCaptureSignature("com.tencent.mobileqq", "same-tree", 2),
+            viewportCaptureSignature("com.example.other", "same-tree", 1),
+            viewportCaptureSignature("com.example.other", "same-tree", 2),
         )
     }
 }

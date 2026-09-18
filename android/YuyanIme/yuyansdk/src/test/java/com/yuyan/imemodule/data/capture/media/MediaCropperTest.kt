@@ -5,7 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import androidx.test.core.app.ApplicationProvider
 import com.yuyan.imemodule.data.capture.ui.IntRect
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -18,6 +18,113 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [30])
 class MediaCropperTest {
+    @Test
+    fun queuedOldConversationCannotCaptureTheNextConversationInTheSameWindow() = runBlocking {
+        var generation = 1L
+        val release = CompletableDeferred<Unit>()
+        var screenshots = 0
+        val capturer = WindowMediaCapturer(ApplicationProvider.getApplicationContext(), ScreenshotSource { _, _ ->
+            screenshots++
+            release.await()
+            WindowScreenshotResult.Unsupported
+        }, captureGeneration = { generation })
+        suspend fun capture() = capturer.capture(1, IntRect(0, 0, 100, 100),
+            listOf(MediaCaptureRequest(0, IntRect(0, 0, 50, 50))))
+        val active = launch(start = CoroutineStart.UNDISPATCHED) { capture() }
+        val stale = launch(start = CoroutineStart.UNDISPATCHED) { capture() }
+        generation++
+        val fresh = launch(start = CoroutineStart.UNDISPATCHED) { capture() }
+        release.complete(Unit)
+        joinAll(active, stale, fresh)
+        assertEquals("旧排队请求取消，新会话首采不被取消", 2, screenshots)
+    }
+
+    @Test
+    fun queuedCaptureRechecksConsentAfterAcquiringSharedLock() = runBlocking {
+        var allowed = true
+        val release = CompletableDeferred<Unit>()
+        val entered = mutableListOf<Int>()
+        val capturer = WindowMediaCapturer(ApplicationProvider.getApplicationContext(), ScreenshotSource { id, _ ->
+            entered += id
+            release.await()
+            WindowScreenshotResult.Unsupported
+        }, captureAllowed = { allowed })
+        val jobs = (1..2).map { id -> launch(start = CoroutineStart.UNDISPATCHED) {
+            capturer.capture(id, IntRect(0, 0, 100, 100), listOf(MediaCaptureRequest(0, IntRect(0, 0, 50, 50))))
+        } }
+        allowed = false
+        release.complete(Unit)
+        jobs.joinAll()
+        assertEquals(listOf(1), entered)
+    }
+
+    @Test
+    fun cancellationBeforeEncodingDispatchRecyclesCapturedBitmap() = runBlocking {
+        val bitmap = solidBitmap(100, 100, Color.BLUE)
+        val cancelBeforeExecution = object : CoroutineDispatcher() {
+            override fun dispatch(context: kotlin.coroutines.CoroutineContext, block: Runnable) {
+                context[Job]!!.cancel()
+                block.run()
+            }
+        }
+        val capturer = WindowMediaCapturer(
+            ApplicationProvider.getApplicationContext(),
+            ScreenshotSource { _, _ -> WindowScreenshotResult.Success(bitmap, 0, 0) },
+            processingDispatcher = cancelBeforeExecution,
+        )
+        val task = launch {
+            capturer.capture(1, IntRect(0, 0, 100, 100), listOf(MediaCaptureRequest(0, IntRect(0, 0, 50, 50))))
+        }
+        task.join()
+        assertTrue(task.isCancelled)
+        assertTrue("取消发生在编码调度边界也必须释放原图", bitmap.isRecycled)
+    }
+
+    @Test
+    fun allScreenshotEntrypointsShareOnePhysicalCaptureAtATime() = runBlocking {
+        val release = CompletableDeferred<Unit>()
+        val entered = mutableListOf<Int>()
+        val capturer = WindowMediaCapturer(ApplicationProvider.getApplicationContext(), ScreenshotSource { id, _ ->
+            entered += id
+            release.await()
+            WindowScreenshotResult.Unsupported
+        })
+        val jobs = (1..3).map { id -> launch(start = CoroutineStart.UNDISPATCHED) {
+            capturer.capture(id, IntRect(0, 0, 100, 100), listOf(MediaCaptureRequest(0, IntRect(0, 0, 50, 50))))
+        } }
+        try {
+            assertEquals(listOf(1), entered)
+        } finally {
+            release.complete(Unit)
+            jobs.joinAll()
+        }
+        assertEquals(listOf(1, 2, 3), entered)
+    }
+
+    @Test
+    fun cancellationDoesNotReleasePhysicalCaptureBeforeItsCallback() = runBlocking {
+        val release = CompletableDeferred<Unit>()
+        val entered = mutableListOf<Int>()
+        val capturer = WindowMediaCapturer(ApplicationProvider.getApplicationContext(), ScreenshotSource { id, _ ->
+            entered += id
+            release.await()
+            WindowScreenshotResult.Unsupported
+        })
+        suspend fun capture(id: Int) = capturer.capture(id, IntRect(0, 0, 100, 100),
+            listOf(MediaCaptureRequest(0, IntRect(0, 0, 50, 50))))
+        val first = launch(start = CoroutineStart.UNDISPATCHED) { capture(1) }
+        first.cancel()
+        yield()
+        val second = launch(start = CoroutineStart.UNDISPATCHED) { capture(2) }
+        try {
+            assertEquals(listOf(1), entered)
+        } finally {
+            release.complete(Unit)
+            joinAll(first, second)
+        }
+        assertEquals(listOf(1, 2), entered)
+    }
+
     @Test
     fun multipleMediaRequestsShareOneWindowScreenshot() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
