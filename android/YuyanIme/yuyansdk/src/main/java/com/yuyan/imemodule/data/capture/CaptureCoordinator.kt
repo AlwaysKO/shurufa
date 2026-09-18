@@ -69,6 +69,7 @@ class CaptureCoordinator(
     private val mediaCapturer: MediaAssetCapturer? = null,
     private val captureAllowed: () -> Boolean = { true },
     private val onViewportParsed: (ParsedViewport) -> Unit = {},
+    private val identityStore: com.yuyan.imemodule.data.capture.media.ConversationIdentityStore = com.yuyan.imemodule.data.capture.media.MemoryConversationIdentityStore(),
     private val titleSignature: (PendingAssetEntity) -> String? = ::capturedTitlePixelSignature,
 ) {
     val internalFailureCount = AtomicLong(0)
@@ -122,6 +123,8 @@ class CaptureCoordinator(
             } else {
                 emptyMap()
             }
+            // 图片失败不能落一个没有附件的占位消息；让上层有限重试，而不是等下一次用户操作。
+            if (screenshotWithTitle && mediaRequests.any { capturedAssets[it.messageIndex] == null }) return true
             if (screenshotWithTitle) {
                 val visualKey = capturedAssets[-1]?.let(titleSignature)
                 val identity = synchronized(identityLock) {
@@ -132,7 +135,7 @@ class CaptureCoordinator(
                         if (identityScope != scope) {
                             identityScope = scope
                             unresolvedFrames.clear()
-                            identityTracker = ConversationTitleStabilizer(conversation.platform, conversation.accountKey, "accessibility_title")
+                            identityTracker = ConversationTitleStabilizer(conversation.platform, conversation.accountKey, "accessibility_title", identityStore = identityStore)
                         }
                         val observed = identityTracker!!.observe(conversation.displayName, visualKey, clock())
                         // 只在本次连续页面内复用完全相同的未知帧，导航后不据此认定同一联系人。
@@ -151,12 +154,12 @@ class CaptureCoordinator(
                     "identity_unavailable" to (identity.status != "confirmed").toString(),
                     "conversation_identity_source" to identity.source,
                     "conversation_identity_observed_title" to identity.observedTitle.orEmpty(),
+                    "conversation_identity_previous_key" to identity.previousKey.orEmpty(),
                 )) }
             }
             onViewportParsed(result.viewport.copy(conversation = conversation, messages = rawMessages))
             val persisted = enqueueParsed(conversation, rawMessages, capturedAssets.filterKeys { it >= 0 })
-            return persisted != CapturePersistResult.FAILED && screenshotWithTitle && conversation.identityConfidence < 0.8 &&
-                conversation.externalKey.orEmpty().startsWith("capture-v3:")
+            return screenshotWithTitle && (persisted == CapturePersistResult.FAILED || conversation.identityConfidence < 0.8)
         } catch (_: Exception) {
             internalFailureCount.incrementAndGet()
             return false
@@ -201,7 +204,16 @@ class CaptureCoordinator(
                     rawMessage.metadata
                 },
             )
-            val fingerprint = messageFingerprint(message) ?: continue
+            val previousKey = message.metadata["conversation_identity_previous_key"]?.takeIf {
+                isConfirmedScreenshot(conversation, message) && it.matches(Regex("(?:screenshot-v2|capture-v3):pending:[a-f0-9-]{36}"))
+            }
+            // 已保存的第一张确认重放必须使用原指纹；归属走新身份，但不能重复插图或等待已清理的原图。
+            val fingerprintMessage = if (previousKey == null) message else message.copy(
+                conversationKey = conversation.copy(externalKey = previousKey).stableKeyOrNull(),
+                senderKey = if (message.senderKey.startsWith("${conversation.externalKey}:"))
+                    previousKey + message.senderKey.removePrefix(conversation.externalKey.orEmpty()) else message.senderKey,
+            )
+            val fingerprint = messageFingerprint(fingerprintMessage) ?: continue
             persistableAny = true
             val capturedAt = clock()
             val pending = pendingMessage(conversation, message, fingerprint, capturedAt)
@@ -242,9 +254,9 @@ class CaptureCoordinator(
     ): Boolean {
         val key = conversation.externalKey.orEmpty()
         val oldWechat = conversation.platform == ChatPlatform.WECHAT && conversation.accountKey == "wechat-empty-tree" &&
-            key.matches(Regex("screenshot-(?:v2:[a-f0-9]{64}|pending:[a-f0-9-]{36})"))
+            key.matches(Regex("screenshot-(?:v2:(?:[a-f0-9]{64}|pending:[a-f0-9-]{36})|pending:[a-f0-9-]{36})"))
         val common = conversation.accountKey == "${conversation.platform.wireName}-local" &&
-            key.matches(Regex("capture-(?:v3:[a-f0-9]{64}|pending:[a-f0-9-]{36})"))
+            key.matches(Regex("capture-(?:v3:(?:[a-f0-9]{64}|pending:[a-f0-9-]{36})|pending:[a-f0-9-]{36})"))
         if (!oldWechat && !common) return false
         val source = if (oldWechat) "wechat_empty_tree_screenshot" else "${conversation.platform.wireName}_screenshot"
         return messages.isNotEmpty() && messages.withIndex().all { (index, message) ->

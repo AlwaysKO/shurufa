@@ -107,8 +107,9 @@ export async function ingestCapturedMessages(
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
+    await client.query('LOCK TABLE chat_conversation IN SHARE ROW EXCLUSIVE MODE');
     // 新版会话的待确认重试可能晚到，不能把已确认名称降级；旧标识的更新规则保持不变。
-    const conversationResult = await client.query<{ id: string | number }>(
+    const conversationResult = await client.query<{ id: string | number; merged_into_id: string | number | null }>(
       `INSERT INTO chat_conversation
         (user_id, platform, account_key, external_key, display_name,
          conversation_type, identity_confidence)
@@ -129,7 +130,7 @@ export async function ingestCapturedMessages(
            AND chat_conversation.identity_confidence >= 0.8 AND EXCLUDED.identity_confidence < 0.8
            THEN chat_conversation.identity_confidence ELSE EXCLUDED.identity_confidence END,
          last_seen_at = NOW()
-       RETURNING id`,
+       RETURNING id, merged_into_id`,
       [
         userId,
         conversation.platform,
@@ -140,7 +141,29 @@ export async function ingestCapturedMessages(
         conversation.identity_confidence,
       ],
     );
-    const conversationId = Number(conversationResult.rows[0].id);
+    const conversationId = Number(conversationResult.rows[0].merged_into_id ?? conversationResult.rows[0].id);
+
+    if (conversationResult.rows[0].merged_into_id) await client.query('UPDATE chat_conversation SET last_seen_at=NOW() WHERE id=$1 AND user_id=$2', [conversationId, userId]);
+
+    // 仅接续端侧同一次页面中产生的临时身份；不按名字、任意历史key或已确认身份自动合并。
+    if (conversation.identity_confidence >= 0.8 && /^(screenshot-v2|capture-v3):/.test(conversation.external_key)) {
+      const previousKeys = [...new Set(messages.filter(m => m.direction === 'system' && m.message_type === 'image' && m.metadata?.conversation_identity_status === 'confirmed')
+        .map(m => m.metadata?.conversation_identity_previous_key)
+        .filter((key): key is string => typeof key === 'string' && /^(screenshot-v2|capture-v3):pending:[a-f0-9-]{36}$/.test(key)))];
+      for (const key of previousKeys) {
+        if (key === conversation.external_key) continue;
+        const previous = (await client.query<{id:string; merged_into_id:string|null; identity_confidence:string}>(`INSERT INTO chat_conversation
+          (user_id,platform,account_key,external_key,display_name,conversation_type,identity_confidence,merged_into_id)
+          VALUES($1,$2,$3,$4,'待确认会话','unknown',0,$5)
+          ON CONFLICT(user_id,platform,account_key,external_key) DO UPDATE SET external_key=EXCLUDED.external_key
+          RETURNING id,merged_into_id,identity_confidence`, [userId,conversation.platform,conversation.account_key,key,conversationId])).rows[0];
+        if (Number(previous.id) === conversationId || Number(previous.identity_confidence) >= 0.8 || (previous.merged_into_id && Number(previous.merged_into_id) !== conversationId)) continue;
+        // pending本身可能已是一次人工合并的目标；确认时必须连同其所有来源一起展平。
+        await client.query(`UPDATE chat_message SET conversation_id=$1 WHERE user_id=$2 AND conversation_id IN
+          (SELECT id FROM chat_conversation WHERE user_id=$2 AND (id=$3 OR merged_into_id=$3))`, [conversationId,userId,previous.id]);
+        await client.query('UPDATE chat_conversation SET merged_into_id=$1 WHERE user_id=$2 AND (id=$3 OR merged_into_id=$3)', [conversationId,userId,previous.id]);
+      }
+    }
 
     const requiredAssets = uniqueAssetHashes(messages);
     const assetsByHash = await findAssets(client, userId, requiredAssets);
@@ -250,6 +273,8 @@ export async function ingestCapturedMessages(
     if (discarded === messages.length) {
       await client.query(
         `DELETE FROM chat_conversation WHERE id=$1 AND user_id=$2
+         AND merged_into_id IS NULL
+         AND NOT EXISTS (SELECT 1 FROM chat_conversation WHERE merged_into_id=$1)
          AND NOT EXISTS (SELECT 1 FROM chat_message WHERE conversation_id=$1)`,
         [conversationId, userId],
       );

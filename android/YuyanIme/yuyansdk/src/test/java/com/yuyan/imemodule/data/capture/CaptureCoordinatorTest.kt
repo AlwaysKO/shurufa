@@ -398,7 +398,7 @@ class CaptureCoordinatorTest {
             wakeUploader = {}, titleSignature = { null }, mediaCapturer = MediaAssetCapturer { _, _, _ ->
                 mapOf(0 to pendingAsset("body"), -1 to pendingAsset("a".repeat(64)))
             })
-        repeat(3) { org.junit.Assert.assertFalse(coordinator.capture(adapter.packageName, snapshot, 1)) }
+        repeat(3) { assertTrue(coordinator.capture(adapter.packageName, snapshot, 1)) }
         assertEquals(1, store.pending.size)
         coordinator.resetConversationIdentity()
         coordinator.capture(adapter.packageName, snapshot, 1)
@@ -408,6 +408,28 @@ class CaptureCoordinatorTest {
     @Test fun legacyScreenshotFingerprintFormatDoesNotChangeOnUpgrade() {
         val old = conversation.copy(externalKey = "screenshot-v2:" + "a".repeat(64), conversationType = ConversationType.GROUP)
         assertEquals("wechat|account|group|screenshot-v2:" + "a".repeat(64), old.stableKeyOrNull())
+    }
+
+    @Test fun recoveredScreenshotReplaysOriginalPendingFingerprint() = runBlocking {
+        val store = FakeStore()
+        val worker = coordinator(FakeAdapter(success()), store)
+        val key = "screenshot-v2:pending:00000000-0000-4000-8000-000000000001"
+        val old = conversation.copy(accountKey="wechat-empty-tree", externalKey=key, conversationType=ConversationType.UNKNOWN, identityConfidence=0.0)
+        val shot = CapturedMessage(conversationKey=null, senderKey="$key:viewport", direction=ChatDirection.SYSTEM, messageType=ChatMessageType.IMAGE,
+            metadata=mapOf("capture_source" to "wechat_empty_tree_screenshot", "conversation_identity_status" to "pending"))
+        assertEquals(CapturePersistResult.INSERTED,worker.captureParsed(old,listOf(shot),mapOf(0 to pendingAsset("image"))))
+        val known = old.copy(externalKey="screenshot-v2:"+"a".repeat(64),displayName="已知",identityConfidence=0.85)
+        worker.captureParsed(known,listOf(shot.copy(senderKey="${known.externalKey}:viewport",metadata=shot.metadata+mapOf("conversation_identity_status" to "confirmed","conversation_identity_previous_key" to key))),mapOf(0 to pendingAsset("image")))
+        assertEquals(2,store.pending.size)
+        assertEquals(store.pending.first().fingerprint,store.pending.last().fingerprint)
+    }
+
+    @Test fun screenshotFailureRequestsRetryWithoutQueuingEmptyPlaceholder() = runBlocking {
+        val store=FakeStore()
+        val shot=mediaMessage(IntRect(0,20,100,80)).copy(direction=ChatDirection.SYSTEM,metadata=mapOf("capture_source" to "qq_screenshot","capture_kind" to "conversation_screenshot"))
+        val adapter=FakeAdapter(ParseResult.Success(ParsedViewport(conversation.copy(platform=ChatPlatform.QQ,accountKey="qq-local"),listOf(shot),titleBounds=IntRect(0,0,100,20))))
+        val worker=coordinator(adapter,store,mediaCapturer=MediaAssetCapturer { _,_,_->emptyMap() })
+        assertTrue(worker.capture(adapter.packageName,snapshot,1));assertTrue(store.pending.isEmpty())
     }
 
     private fun coordinator(

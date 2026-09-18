@@ -425,3 +425,48 @@ it('图片已经删除但统计刷新失败时保留成功提示，不能误报�
   expect(view.text()).toContain('已删除 1 张');expect(view.text()).toContain('刷新失败');expect(view.text()).not.toContain('删除图片失败');
  }finally{globalThis.window=previous;}
 });
+
+const rememberedChat = (id:number, platform='wechat') => ({id,platform,account_key:'self',external_key:`peer-${id}`,display_name:`会话${id}`,conversation_type:'direct',identity_confidence:1,message_count:0});
+function fakeChatStorage(initial:Record<string,string>={}) { const data=new Map(Object.entries(initial)); vi.stubGlobal('localStorage',{getItem:(k:string)=>data.get(k)??null,setItem:(k:string,v:string)=>data.set(k,v)});return data; }
+afterEach(()=>vi.unstubAllGlobals());
+it('刷新恢复App和该App会话，而不是微信第一项',async()=>{
+ fakeChatStorage({'chat-capture-selection:user-a':JSON.stringify({platform:'qq',conversations:{qq:22}})});
+ const requests:number[]=[];
+ const view=await mountChatCapture({chatConversations:async()=>({total:2,conversations:[rememberedChat(21,'qq'),rememberedChat(22,'qq')]}),chatMessages:async(id:number)=>{requests.push(id);return{total:0,messages:[]};}});
+ expect(view.find('chat-tab-qq')!.props['aria-selected']).toBe(true);expect(requests).toEqual([22]);
+});
+it('不在首页的保存ID解析到合并目标',async()=>{
+ const data=fakeChatStorage({'chat-capture-selection:user-a':JSON.stringify({platform:'wechat',conversations:{wechat:200}})});
+ const requests:number[]=[];
+ const view=await mountChatCapture({resolveChatConversation:async()=>({conversation:rememberedChat(300)}),chatMessages:async(id:number)=>{requests.push(id);return{total:0,messages:[]};}});
+ expect(requests).toEqual([300]);expect(JSON.parse(data.get('chat-capture-selection:user-a')!).conversations.wechat).toBe(300);expect(view.text()).toContain('会话300');
+});
+it('不同App记住各自会话，重新加载仍保留',async()=>{
+ const data=fakeChatStorage();
+ const view=await mountChatCapture({chatConversations:async(_p:number,_s:number,app:string)=>({total:2,conversations:[rememberedChat(app==='qq'?11:1,app),rememberedChat(app==='qq'?12:2,app)]})});
+ await view.find('chat-conversation-2')!.props.onClick();await settle();await view.find('chat-tab-qq')!.props.onClick();await settle();await view.find('chat-conversation-12')!.props.onClick();await settle();await view.find('chat-tab-wechat')!.props.onClick();await settle();
+ expect(JSON.parse(data.get('chat-capture-selection:user-a')!).conversations).toEqual({wechat:2,qq:12});expect(view.text()).toContain('会话2');
+});
+it('手动合并经确认调用明确目标，随后跳转目标会话',async()=>{
+ fakeChatStorage();vi.stubGlobal('window',{confirm:vi.fn(()=>true)});const calls:any[]=[];
+ const view=await mountChatCapture({chatConversations:async()=>({total:2,conversations:[rememberedChat(1),rememberedChat(2)]}),mergeChatConversation:async(...args:any[])=>{calls.push(args);return{target_id:2};},resolveChatConversation:async()=>({conversation:rememberedChat(2)})});
+ await view.find('chat-open-merge')!.props.onClick();await settle();await view.find('chat-merge-target-2')!.props.onClick();await settle();expect(calls).toEqual([[1,2]]);
+ expect(view.find('chat-conversation-2')!.props.class).toContain('selected');
+});
+
+it('恢复会话网络错误不回退到第一项、不覆盖已记忆ID',async()=>{
+ const data=fakeChatStorage({'chat-capture-selection:user-a':JSON.stringify({platform:'qq',conversations:{qq:99}})});const requests:number[]=[];
+ const view=await mountChatCapture({resolveChatConversation:async()=>{throw Error('网络失败');},chatMessages:async(id:number)=>{requests.push(id);return{total:0,messages:[]};}});
+ expect(view.text()).toContain('网络失败');expect(requests).toEqual([]);expect(JSON.parse(data.get('chat-capture-selection:user-a')!).conversations.qq).toBe(99);
+});
+it('只有会话确实删除才回退，并修正保存的选择',async()=>{
+ const data=fakeChatStorage({'chat-capture-selection:user-a':JSON.stringify({platform:'wechat',conversations:{wechat:99}})});
+ await mountChatCapture({resolveChatConversation:async()=>({conversation:null})});expect(JSON.parse(data.get('chat-capture-selection:user-a')!).conversations.wechat).toBe(1);
+});
+
+it('切换App立即保存选择，加载中刷新也不会退回旧App或丢失该App会话',async()=>{
+ const data=fakeChatStorage({'chat-capture-selection:user-a':JSON.stringify({platform:'wechat',conversations:{wechat:1,qq:12}})});
+ const view=await mountChatCapture({chatConversations:async(_p:number,_s:number,app:string)=>app==='qq'?new Promise(()=>{}):({total:1,conversations:[rememberedChat(1)]})});
+ view.find('chat-tab-qq')!.props.onClick();
+ expect(JSON.parse(data.get('chat-capture-selection:user-a')!).platform).toBe('qq');expect(JSON.parse(data.get('chat-capture-selection:user-a')!).conversations.qq).toBe(12);
+});

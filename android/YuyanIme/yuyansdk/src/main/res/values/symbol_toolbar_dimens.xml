@@ -5,6 +5,6 @@
     <dimen name="symbol_toolbar_height">48dp</dimen>
     <dimen name="symbol_toolbar_item_width">48dp</dimen>
     <!-- 图标大小；请小于高度和按钮宽度，为边缘留出空间。 -->
-    <dimen name="symbol_toolbar_icon_size">32dp</dimen>
+    <dimen name="symbol_toolbar_icon_size">28dp</dimen>
     <dimen name="symbol_toolbar_icon_padding">8dp</dimen>
 </resources>

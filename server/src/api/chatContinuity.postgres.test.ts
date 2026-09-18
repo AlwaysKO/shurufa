@@ -74,3 +74,60 @@ test('合并同时上报不会留消息在隐藏会话',async()=>{
  const upload=()=>ingestCapturedMessages(pool,A,A,{platform:'wechat',account_key:source.account_key,external_key:source.external_key,conversation_type:'direct',identity_confidence:1},[{id:randomUUID(),fingerprint:randomUUID().replaceAll('-','').repeat(2),content_fingerprint:'b'.repeat(64),sender_key:'peer',direction:'incoming',message_type:'text',text:'并发',captured_at:'2026-09-18T00:00:00Z'}]);
  await Promise.all([upload(),merge(a,b),upload()]);expect((await pool.query('SELECT count(*) FROM chat_message WHERE conversation_id=$1',[a])).rows[0].count).toBe('0');expect((await pool.query('SELECT count(*) FROM chat_message WHERE conversation_id=$1',[b])).rows[0].count).toBe('2');
 });
+
+test('同一页面待确认恢复已知身份时迁移，迟到pending不复活独立分组',async()=>{
+ const pendingKey='screenshot-v2:pending:'+randomUUID(), targetKey='screenshot-v2:'+ 'c'.repeat(64);
+ const conv=(key:string,confidence:number)=>({platform:'wechat' as const,account_key:'local',external_key:key,display_name:confidence<0.8?'待确认':'已知',conversation_type:'direct' as const,identity_confidence:confidence});
+ const msg=(n:string)=>({id:randomUUID(),fingerprint:n.repeat(64),content_fingerprint:n.repeat(64),sender_key:'peer',direction:'system' as const,message_type:'image' as const,captured_at:'2026-09-18T00:00:00Z'});
+ const old=await ingestCapturedMessages(pool,A,A,conv(pendingKey,0.55),[msg('a')]);
+ const recovered=await ingestCapturedMessages(pool,A,A,conv(targetKey,0.85),[{...msg('b'),metadata:{conversation_identity_previous_key:pendingKey,conversation_identity_status:'confirmed'}}]);
+ await ingestCapturedMessages(pool,A,A,conv(pendingKey,0.55),[msg('d')]);
+ expect((await pool.query('SELECT conversation_id FROM chat_message')).rows.every(r=>Number(r.conversation_id)===recovered.conversationId)).toBe(true);
+ expect((await pool.query('SELECT merged_into_id FROM chat_conversation WHERE id=$1',[old.conversationId])).rows[0].merged_into_id).toBe(String(recovered.conversationId));
+});
+
+test('已合并的旧页面不能删除归属映射，删除目标才清除整组',async()=>{
+ const a=await conversation(),b=await conversation();await message(a);await merge(a,b);
+ expect((await agent.delete(`/api/v1/dashboard/chat/conversations/${a}?user_id=${A}`)).status).toBe(409);
+ expect((await pool.query('SELECT count(*) FROM chat_conversation')).rows[0].count).toBe('2');
+ expect((await agent.delete(`/api/v1/dashboard/chat/conversations/${b}?user_id=${A}`)).status).toBe(200);
+ expect((await pool.query('SELECT count(*) FROM chat_conversation')).rows[0].count).toBe('0');
+});
+test('附件关联和文字原样保留，目标名称和资料不被源覆盖',async()=>{
+ const a=await conversation(),b=await conversation();const mid=await message(a,{type:'text',text:'不能删除的原文'});
+ const asset=(await pool.query(`INSERT INTO media_asset(user_id,sha256,mime_type,storage_path,byte_size) VALUES($1,$2,'image/png','fixture.png',4) RETURNING id`,[A,'9'.repeat(64)])).rows[0].id;
+ await pool.query(`INSERT INTO chat_message_asset(message_id,asset_id,role,position) VALUES($1,$2,'content',0)`,[mid,asset]);
+ await merge(a,b);
+ expect((await pool.query('SELECT text FROM chat_message WHERE id=$1',[mid])).rows[0].text).toBe('不能删除的原文');
+ expect((await pool.query('SELECT asset_id FROM chat_message_asset WHERE message_id=$1',[mid])).rows[0].asset_id).toBe(asset);
+ expect((await pool.query('SELECT count(*) FROM media_asset')).rows[0].count).toBe('1');
+});
+
+test('普通文字和旧命名空间不能借确认字段自动合并待确认截图',async()=>{
+ const a=await conversation(),key='capture-v3:pending:'+randomUUID();await message(a);
+ await pool.query('UPDATE chat_conversation SET external_key=$1,identity_confidence=0.55 WHERE id=$2',[key,a]);
+ await ingestCapturedMessages(pool,A,A,{platform:'wechat',account_key:'self',external_key:'direct:peer',conversation_type:'direct',identity_confidence:1},[{id:randomUUID(),fingerprint:'e'.repeat(64),content_fingerprint:'f'.repeat(64),sender_key:'peer',direction:'incoming',message_type:'text',text:'普通文本',captured_at:'2026-09-18T00:00:00Z',metadata:{conversation_identity_previous_key:key,conversation_identity_status:'confirmed'}}]);
+ expect((await pool.query('SELECT merged_into_id FROM chat_conversation WHERE id=$1',[a])).rows[0].merged_into_id).toBeNull();
+ expect((await pool.query('SELECT count(*) FROM chat_message WHERE conversation_id=$1',[a])).rows[0].count).toBe('1');
+});
+
+async function pendingAndKnown() {
+ const p=await conversation(),c=await conversation(),pendingKey='capture-v3:pending:'+randomUUID(),knownKey='capture-v3:'+createHash('sha256').update(randomUUID()).digest('hex');
+ await pool.query('UPDATE chat_conversation SET external_key=$1,identity_confidence=0.55 WHERE id=$2',[pendingKey,p]);
+ await pool.query('UPDATE chat_conversation SET external_key=$1 WHERE id=$2',[knownKey,c]);
+ const confirm=()=>ingestCapturedMessages(pool,A,A,{platform:'wechat',account_key:'self',external_key:knownKey,conversation_type:'direct',identity_confidence:0.85},[{id:randomUUID(),fingerprint:createHash('sha256').update(randomUUID()).digest('hex'),content_fingerprint:'8'.repeat(64),sender_key:'peer',direction:'system',message_type:'image',captured_at:'2026-09-18T00:00:00Z',metadata:{conversation_identity_previous_key:pendingKey,conversation_identity_status:'confirmed'}}]);
+ return{p,c,pendingKey,knownKey,confirm};
+}
+test('手动A到pendingP后，P自动确认到C也展平A并迁移整个归属组',async()=>{
+ const a=await conversation(),{p,c,confirm}=await pendingAndKnown();const source=(await pool.query('SELECT * FROM chat_conversation WHERE id=$1',[a])).rows[0];await message(a);expect((await merge(a,p)).status).toBe(200);await confirm();
+ expect((await pool.query('SELECT merged_into_id FROM chat_conversation WHERE id IN ($1,$2)',[a,p])).rows.every(r=>Number(r.merged_into_id)===c)).toBe(true);
+ await ingestCapturedMessages(pool,A,A,{platform:'wechat',account_key:'self',external_key:source.external_key,conversation_type:'direct',identity_confidence:1},[{id:randomUUID(),fingerprint:'7'.repeat(64),content_fingerprint:'7'.repeat(64),sender_key:'peer',direction:'incoming',message_type:'text',text:'后续A上报',captured_at:'2026-09-18T00:00:00Z'}]);
+ expect((await pool.query('SELECT conversation_id FROM chat_message')).rows.every(r=>Number(r.conversation_id)===c)).toBe(true);
+ expect((await agent.get(`/api/v1/dashboard/chat/conversations/${a}/resolve?user_id=${A}`)).body.conversation.id).toBe(c);
+});
+test('已知C手动合并到pendingP后迟到确认不得让P指向自己',async()=>{
+ const {p,c,confirm}=await pendingAndKnown();await message(c);expect((await merge(c,p)).status).toBe(200);await confirm();
+ expect((await pool.query('SELECT merged_into_id FROM chat_conversation WHERE id=$1',[p])).rows[0].merged_into_id).toBeNull();
+ const list=await agent.get(`/api/v1/dashboard/chat/conversations?user_id=${A}`);expect(list.body.conversations.map((r:any)=>r.id)).toEqual([p]);
+ expect((await pool.query('SELECT conversation_id FROM chat_message')).rows.every(r=>Number(r.conversation_id)===p)).toBe(true);
+});

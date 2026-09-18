@@ -14,12 +14,14 @@ const userId = '00000000-0000-0000-0000-000000000001';
 
 beforeEach(async () => {
   const database = newDb();
+  database.public.interceptQueries(sql => sql.startsWith('LOCK TABLE ') ? [] : null);
   const adapter = database.adapters.createPg();
   pool = new adapter.Pool();
   await pool.query(readFileSync(
     new URL('../../migrations/007_chat_capture.sql', import.meta.url),
     'utf8',
   ));
+  await pool.query(readFileSync(new URL('../../migrations/022_chat_conversation_merge.sql', import.meta.url), 'utf8'));
   const conversation = await pool.query<{ id: number }>(`INSERT INTO chat_conversation
     (user_id, platform, account_key, external_key, display_name,
      conversation_type, identity_confidence)

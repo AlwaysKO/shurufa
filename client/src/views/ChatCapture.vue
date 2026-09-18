@@ -18,7 +18,25 @@ const overview = ref<ChatCaptureOverview>({
   message_count: 0,
   media_count: 0,
 });
-const platform = ref<ChatConversationRow['platform']>('wechat');
+type ChatPlatform = ChatConversationRow['platform'];
+type SavedSelection = { platform: ChatPlatform; conversations: Partial<Record<ChatPlatform, number>> };
+function readSelection(): SavedSelection {
+  try {
+    const saved = JSON.parse(globalThis.localStorage?.getItem(`chat-capture-selection:${currentUserId.value}`) || '{}');
+    const valid = ['wechat', 'qq', 'douyin'];
+    return { platform: valid.includes(saved.platform) ? saved.platform : 'wechat', conversations: Object.fromEntries(
+      Object.entries(saved.conversations || {}).filter(([key, id]) => valid.includes(key) && Number.isSafeInteger(id) && Number(id) > 0),
+    ) };
+  } catch { return { platform: 'wechat', conversations: {} }; }
+}
+let savedSelection = readSelection();
+const platform = ref<ChatPlatform>(savedSelection.platform);
+function rememberSelection() {
+  savedSelection.platform = platform.value;
+  if (selected.value) savedSelection.conversations[platform.value] = selected.value.id;
+  else delete savedSelection.conversations[platform.value];
+  try { globalThis.localStorage?.setItem(`chat-capture-selection:${currentUserId.value}`, JSON.stringify(savedSelection)); } catch { /* 存储被禁用不影响页面 */ }
+}
 let latestLoad = 0;
 const conversations = ref<ChatConversationRow[]>([]);
 const selected = ref<ChatConversationRow | null>(null);
@@ -37,7 +55,8 @@ const deleting = ref(false);
 const deletingAssetId = ref<number | null>(null);
 const bulkDeleting = ref(false);
 const confirming = ref(false);
-const mutationBusy = computed(() => deleting.value || deletingAssetId.value !== null || bulkDeleting.value || confirming.value);
+const merging = ref(false);
+const mutationBusy = computed(() => merging.value || deleting.value || deletingAssetId.value !== null || bulkDeleting.value || confirming.value);
 const selectedImageKeys = ref<string[]>([]);
 const deleteNotice = ref('');
 const previewImage = ref<(ChatImageTarget & { src: string; alt: string; ordinal?: number; total?: number }) | null>(null);
@@ -78,10 +97,10 @@ function clearImageSelection() { selectedImageKeys.value = []; }
 function selectPageImages() {
   if (!loading.value && !mutationBusy.value) selectedImageKeys.value = visibleImages.value.map(image => imageKey(image.message_id, image.asset_id));
 }
-async function confirmAction(message: string) {
+async function confirmAction(message: string, options?: {title: string; confirmText: string}) {
   if (confirming.value) return false;
   confirming.value = true;
-  try { return await askConfirmation(message); } finally { confirming.value = false; }
+  try { return await askConfirmation(message, options); } finally { confirming.value = false; }
 }
 
 function formatTime(value: string | null): string {
@@ -206,6 +225,7 @@ async function loadMessages() {
 async function selectConversation(conversation: ChatConversationRow) {
   if (mutationBusy.value) return;
   selected.value = conversation;
+  rememberSelection();
   error.value = '';
   page.value = 1;
   total.value = 0;
@@ -223,6 +243,8 @@ async function changePage(next: number) {
 async function selectPlatform(next: ChatConversationRow['platform']) {
   if (next === platform.value || mutationBusy.value) return;
   platform.value = next;
+  savedSelection.platform = next;
+  try { globalThis.localStorage?.setItem(`chat-capture-selection:${currentUserId.value}`, JSON.stringify(savedSelection)); } catch { /* 存储禁用时继续 */ }
   latestRequest += 1;
   selected.value = null;
   conversations.value = [];
@@ -248,7 +270,16 @@ async function load() {
     if (disposed || request !== latestLoad) return;
     overview.value = overviewResult;
     conversations.value = conversationResult.conversations;
-    selected.value = conversations.value[0] ?? null;
+    const rememberedId = selected.value?.id ?? savedSelection.conversations[platform.value];
+    let restored = conversations.value.find(item => item.id === rememberedId) ?? null;
+    if (rememberedId && !restored) {
+      restored = (await api.resolveChatConversation(rememberedId)).conversation;
+      if (disposed || request !== latestLoad) return;
+      if (restored && restored.platform !== platform.value) restored = null;
+      if (restored && !conversations.value.some(item => item.id === restored!.id)) conversations.value.unshift(restored);
+    }
+    selected.value = restored ?? conversations.value[0] ?? null;
+    rememberSelection();
     page.value = 1;
     total.value = 0;
     messageType.value = 'all';
@@ -273,6 +304,7 @@ async function deleteSelectedConversation() {
   try {
     await api.deleteChatConversation(conversation.id);
     selected.value = null;
+    rememberSelection();
     messages.value = [];
     await load();
   } catch (reason) {
@@ -337,6 +369,53 @@ async function deleteSelectedImages() {
   } finally { bulkDeleting.value = false; }
 }
 
+const mergeOpen = ref(false);
+const mergeQuery = ref('');
+const mergeTargets = ref<ChatConversationRow[]>([]);
+const mergePage = ref(1), mergeTotal = ref(0), mergeLoading = ref(false);
+const mergeError = ref('');
+let mergeRequest = 0;
+watch(previewScope, () => { mergeOpen.value = false; mergeRequest++; mergeTargets.value = []; });
+async function searchMergeTargets(next = 1) {
+  if (mutationBusy.value || !selected.value) return;
+  const token = ++mergeRequest, scope = previewScope.value;
+  mergeLoading.value = true; mergeError.value = ''; mergeTargets.value = [];
+  try {
+    const result = await api.chatConversations(next, 20, platform.value, mergeQuery.value);
+    if (disposed || token !== mergeRequest || scope !== previewScope.value) return;
+    mergeTargets.value = result.conversations.filter(item => item.id !== selected.value?.id);
+    mergeTotal.value = result.total; mergePage.value = next;
+  } catch (reason) { if (token === mergeRequest) mergeError.value = (reason as Error).message; }
+  finally { if (token === mergeRequest) mergeLoading.value = false; }
+}
+async function openMerge() {
+  if (mutationBusy.value || loading.value || !selected.value) return;
+  mergeOpen.value = true; mergeQuery.value = ''; await searchMergeTargets();
+}
+async function mergeInto(target: ChatConversationRow) {
+  const source = selected.value, scope = previewScope.value;
+  if (!source || mutationBusy.value || loading.value || mergeLoading.value) return;
+  if (!(await confirmAction(`将“${source.display_name || source.external_key}”合并到“${target.display_name || target.external_key}”？\n保留全部图片和文字；原会话后续上报也归入目标。`, {title: '确认合并会话', confirmText: '确认合并'}))) return;
+  if (disposed || scope !== previewScope.value || mutationBusy.value || loading.value) return;
+  merging.value = true; mergeError.value = '';
+  try {
+    const result = await api.mergeChatConversation(source.id, target.id);
+    if (disposed || scope !== previewScope.value) return;
+    selected.value = null;
+    savedSelection.conversations[platform.value] = result.target_id;
+    // 成功即持久化目标；即使后续刷新失败，也不会误报为合并失败。
+    try { globalThis.localStorage?.setItem(`chat-capture-selection:${currentUserId.value}`, JSON.stringify(savedSelection)); } catch { /* optional */ }
+    mergeOpen.value = false;
+    await load();
+  } catch (reason) { if (!disposed && scope === previewScope.value) mergeError.value = (reason as Error).message; }
+  finally { merging.value = false; }
+}
+watch(currentUserId, () => {
+  latestLoad++; latestRequest++; mergeRequest++;
+  selected.value = null; conversations.value = []; messages.value = [];
+  savedSelection = readSelection(); platform.value = savedSelection.platform;
+  void load();
+});
 onMounted(load);
 onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1; latestLoad += 1; });
 </script>
@@ -370,6 +449,7 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
           :key="conversation.id"
           class="conversation"
           :disabled="mutationBusy"
+          :data-testid="`chat-conversation-${conversation.id}`"
           :class="{ selected: selected?.id === conversation.id }"
           @click="selectConversation(conversation)"
         >
@@ -389,6 +469,7 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
           <span class="timeline-summary">共 {{ total }} 条 · 每页 {{ pageSize }} 条 · 采集时间倒序，最新在前</span>
         </div>
         <div class="timeline-actions">
+          <button data-testid="chat-open-merge" :disabled="!selected || loading || mutationBusy" @click="openMerge">合并到…</button>
           <select v-model="messageType" aria-label="本页消息类型筛选" :disabled="loading || mutationBusy">
             <option value="all">本页全部类型</option>
             <option v-for="type in messageTypes" :key="type" :value="type">{{ type }}</option>
@@ -402,6 +483,26 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
         </div>
       </div>
 
+      <section v-if="mergeOpen" class="merge-panel" aria-label="选择合并目标">
+        <h4>选择目标会话（同一手机、同一App）</h4>
+        <p>历史图片和文字不会删除；合并后原标识的新上报自动归入目标。</p>
+        <form @submit.prevent="searchMergeTargets(1)">
+          <input v-model="mergeQuery" aria-label="搜索目标会话" placeholder="搜索会话名称" :disabled="mutationBusy" />
+          <button :disabled="mutationBusy || mergeLoading">搜索</button>
+          <button type="button" :disabled="mutationBusy" @click="mergeOpen = false; mergeRequest++">取消</button>
+        </form>
+        <p v-if="mergeError" class="error-text" role="alert">{{ mergeError }}</p>
+        <p v-if="mergeLoading">正在加载目标会话…</p>
+        <button v-for="target in mergeTargets" :key="target.id" :data-testid="`chat-merge-target-${target.id}`" class="merge-target" :disabled="mutationBusy || mergeLoading" @click="mergeInto(target)">
+          {{ target.display_name || target.external_key }} · {{ target.message_count }} 条 · #{{ target.id }}
+        </button>
+        <p v-if="!mergeLoading && !mergeTargets.length">没有可选目标</p>
+        <div>
+          <button :disabled="mutationBusy || mergeLoading || mergePage <= 1" @click="searchMergeTargets(mergePage - 1)">上一页</button>
+          <span> {{ mergePage }} / {{ Math.max(1, Math.ceil(mergeTotal / 20)) }} </span>
+          <button :disabled="mutationBusy || mergeLoading || mergePage * 20 >= mergeTotal" @click="searchMergeTargets(mergePage + 1)">下一页</button>
+        </div>
+      </section>
       <div class="image-selection-toolbar">
         <button data-testid="chat-select-page" :disabled="loading || mutationBusy || !visibleImages.length" @click="selectPageImages">全选本页</button>
         <button data-testid="chat-clear-selection" :disabled="mutationBusy || !selectedImageKeys.length" @click="clearImageSelection">全不选</button>
@@ -500,6 +601,10 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
 </template>
 
 <style scoped>
+.merge-panel { padding: 14px; margin: 12px 0; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; }
+.merge-panel form { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.merge-panel input { min-width: 0; flex: 1; padding: 6px; }
+.merge-target { display: block; text-align: left; width: 100%; margin: 6px 0; padding: 8px; overflow-wrap: anywhere; }
 .image-selection-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0; color: #657083; font-size: 12px; }
 .image-selection-toolbar button { padding: 6px 10px; border: 1px solid #dfe4ea; border-radius: 6px; background: white; cursor: pointer; }
 .image-select { display: flex; gap: 6px; align-items: center; font-size: 12px; cursor: pointer; }

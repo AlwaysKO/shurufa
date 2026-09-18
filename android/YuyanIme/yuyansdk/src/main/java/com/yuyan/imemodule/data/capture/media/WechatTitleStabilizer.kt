@@ -5,8 +5,8 @@ import com.yuyan.imemodule.data.capture.model.ChatPlatform
 import com.yuyan.imemodule.data.capture.model.ConversationType
 import java.util.UUID
 
-internal class WechatTitleStabilizer : ConversationTitleStabilizer(
-    ChatPlatform.WECHAT, "wechat-empty-tree", "on_device_title_ocr", legacyWechat = true,
+internal class WechatTitleStabilizer(identityStore: ConversationIdentityStore = MemoryConversationIdentityStore()) : ConversationTitleStabilizer(
+    ChatPlatform.WECHAT, "wechat-empty-tree", "on_device_title_ocr", legacyWechat = true, identityStore = identityStore,
 )
 
 internal fun unresolvedWechatScreenshotIdentity(title: String? = null): ScreenshotConversationIdentity {
@@ -31,7 +31,7 @@ internal suspend fun confirmWechatScreenshotIdentity(
     repeat(2) {
         if (identity.status == "confirmed") return identity
         val next = observeNext() ?: return identity
-        if (next.externalKey != identity.externalKey) return identity
+        if (next.externalKey != identity.externalKey && next.previousKey != identity.externalKey) return identity
         identity = next
     }
     return identity

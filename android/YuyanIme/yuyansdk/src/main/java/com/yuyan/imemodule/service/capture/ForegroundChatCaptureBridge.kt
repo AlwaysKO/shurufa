@@ -44,13 +44,13 @@ internal fun shouldCaptureEmptyTreeWeChatOpen(
     if (eventType != AccessibilityEvent.TYPE_VIEW_CLICKED || activeTreeUsable || sourceTreeUsable) return false
     val text = visibleText.orEmpty().trim()
     if (className.isNullOrBlank() && !text.contains("转文字")) return false
-    return text.isWeChatCaptureAction() || EMPTY_TREE_CONVERSATION_ROW_TIME.matches(text)
+    return text.isWeChatCaptureAction() || isConversationRowClick(text)
 }
 
 internal fun emptyTreeWeChatCaptureDelays(visibleText: String?): List<Long> = when {
     visibleText.orEmpty().trim().contains("转文字") -> listOf(1_500L, 6_000L)
     visibleText.orEmpty().isWeChatCaptureAction() ||
-        EMPTY_TREE_CONVERSATION_ROW_TIME.matches(visibleText.orEmpty().trim()) -> listOf(700L)
+        isConversationRowClick(visibleText.orEmpty().trim()) -> listOf(0L, 350L, 900L)
     else -> emptyList()
 }
 
@@ -79,3 +79,14 @@ object ForegroundChatCaptureBridge {
         handler?.invoke(ForegroundChatCaptureRequest(packageName.orEmpty(), requestedAtMillis))
     }
 }
+
+/** 列表节点可能把联系人、时间和摘要放在同一个事件文本中；不能只接受纯时间。 */
+private fun isConversationRowClick(text: String): Boolean = text.split(Regex("\\s+")).any { EMPTY_TREE_CONVERSATION_ROW_TIME.matches(it) }
+
+/** 只重新检查页面树，真正截图仍须适配器确认聊天页；不扩大至其他App或非聊天页。 */
+internal fun foregroundChatProbeDelays(eventType: Int, className: String?): List<Long> =
+    if ((eventType == AccessibilityEvent.TYPE_VIEW_CLICKED && !className.orEmpty().endsWith("EditText")) ||
+        eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) listOf(0L, 350L, 900L) else emptyList()
+
+internal fun hasReadableChatContent(root: com.yuyan.imemodule.data.capture.ui.UiNodeSnapshot?): Boolean =
+    root != null && (!root.text.isNullOrBlank() || !root.contentDescription.isNullOrBlank() || root.children.any { hasReadableChatContent(it) })

@@ -97,9 +97,9 @@ test('数据库中途报错时整批回滚且任何图片文件均不删除',asy
 });
 test('文件清理失败保留持久化任务，恢复后重试，不误报数据库回滚',async()=>{
  const c=await conversation(),m=await message(c),a=await asset();await link(m,a.id);const dir=dirname(join(root,'uploads',a.path));await chmod(dir,0o500);
- try {const r=await remove(c,[target(m,a.id)]);expect(r.status).toBe(200);expect(r.body.files_pending).toBe(true);expect(await count('chat_message_asset')).toBe(0);expect(await count('runtime_setting')).toBe(1);expect(existsSync(join(root,'uploads',a.path))).toBe(true);}
+ try {const r=await remove(c,[target(m,a.id)]);expect(r.status).toBe(200);expect(r.body.files_pending).toBe(true);expect(await count('chat_message_asset')).toBe(0);expect(Number((await pool.query("SELECT count(*) FROM runtime_setting WHERE key LIKE 'device_delete_files:%'")).rows[0].count)).toBe(1);expect(existsSync(join(root,'uploads',a.path))).toBe(true);}
  finally{await chmod(dir,0o700);}
- await retryDeviceFileCleanup(pool);expect(await count('runtime_setting')).toBe(0);expect(existsSync(join(root,'uploads',a.path))).toBe(false);
+ await retryDeviceFileCleanup(pool);expect(Number((await pool.query("SELECT count(*) FROM runtime_setting WHERE key LIKE 'device_delete_files:%'")).rows[0].count)).toBe(0);expect(existsSync(join(root,'uploads',a.path))).toBe(false);
 });
 test('异常附件路径必须回滚，不删除路径之外的文件',async()=>{
  const c=await conversation(),m=await message(c),a=await asset();await link(m,a.id);await pool.query("UPDATE media_asset SET storage_path='../outside' WHERE id=$1",[a.id]);

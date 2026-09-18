@@ -129,6 +129,12 @@ class PassiveChatAccessibilityService : AccessibilityService() {
             activeTreeUsable = false,
             sourceTreeUsable = false,
         )
+        val probeGeneration = screenshotIdentityGeneration.get()
+        foregroundChatProbeDelays(event.eventType, event.className?.toString()).forEach { delayMillis ->
+            mainHandler.postDelayed({
+                if (screenshotIdentityGeneration.get() == probeGeneration) captureCurrentForegroundViewport(packageName)
+            }, delayMillis)
+        }
         if (!regularCapture && !possibleEmptyTreeCapture) return
         if (event.eventType == AccessibilityEvent.TYPE_VIEW_CLICKED) {
             mainHandler.postDelayed(
@@ -165,7 +171,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                 activeRoot?.let(::recycleRoot)
             }
             // 完整 activeRoot 可用时不再跨进程读取一遍 event.source。
-            val sourceSnapshot = if (!activeSnapshot.isUsableAccessibilitySnapshot()) {
+            val sourceSnapshot = if (!hasReadableChatContent(activeSnapshot)) {
                 val source = capturedEvent.source
                 try {
                     val sourcePackage = source?.packageName?.toString()?.takeIf { it.isNotBlank() }
@@ -178,13 +184,13 @@ class PassiveChatAccessibilityService : AccessibilityService() {
             // 真正离开窗口/切身份仍使结果失效，实际截图前再复核当前会话。
             if (!CollectionConsent.enabled(this@PassiveChatAccessibilityService) ||
                 screenshotIdentityGeneration.get() != identityGeneration) return@launch
-            val snapshot = preferredAccessibilitySnapshot(activeSnapshot, sourceSnapshot) ?: return@launch
+            val snapshot = preferredAccessibilitySnapshot(activeSnapshot, sourceSnapshot)
             if (shouldCaptureEmptyTreeWeChatOpen(
                     eventType = eventType,
                     className = eventClass,
                     visibleText = eventText,
-                    activeTreeUsable = activeSnapshot.isUsableAccessibilitySnapshot(),
-                    sourceTreeUsable = sourceSnapshot.isUsableAccessibilitySnapshot(),
+                    activeTreeUsable = hasReadableChatContent(activeSnapshot),
+                    sourceTreeUsable = hasReadableChatContent(sourceSnapshot),
                 )
             ) {
                 emptyTreeWeChatCaptureDelays(eventText).forEach { delayMillis ->
@@ -194,7 +200,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                 }
                 return@launch
             }
-            if (regularCapture) submitChatViewport(packageName, windowId, snapshot, generation)
+            if (regularCapture && snapshot != null) submitChatViewport(packageName, windowId, snapshot, generation)
         }.invokeOnCompletion {
             // 即使协程尚未启动就被取消，也必须归还我们持有的事件副本。
             @Suppress("DEPRECATION")
@@ -217,9 +223,13 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         )
         captureDatabase = database
         mediaCapturer = activeMediaCapturer
-        screenshotIdentityResolver = MlKitWechatScreenshotIdentityResolver()
+        val identityStore = com.yuyan.imemodule.data.capture.media.PreferenceConversationIdentityStore(
+            getSharedPreferences("chat-confirmed-identities", Context.MODE_PRIVATE),
+        )
+        screenshotIdentityResolver = MlKitWechatScreenshotIdentityResolver(identityStore)
         fallbackStore = NotificationScreenshotFallbackStore(applicationContext)
         coordinator = CaptureCoordinator(
+            identityStore = identityStore,
             adapterForPackage = AdapterRegistry::forPackage,
             store = RoomCaptureOutboxStore(database.captureDao()),
             deviceId = { DataCollector.deviceId(applicationContext) },
@@ -405,6 +415,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                     preferences.getString("last_title_identity_status", null) == "confirmed") return@withLock
                 val capturedAt = System.currentTimeMillis()
                 val firstIdentity = resolver?.resolve(asset, resolverVersion) ?: unresolvedWechatScreenshotIdentity()
+                if (!firstIdentity.isChatPage) return@withLock
                 suspend fun persist(identity: ScreenshotConversationIdentity): CapturePersistResult {
                     val result = coordinator?.captureParsed(
                         conversation = CapturedConversation(
@@ -427,6 +438,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                                 "conversation_identity_source" to identity.source,
                                 "conversation_identity_status" to identity.status,
                                 "conversation_identity_observed_title" to identity.observedTitle.orEmpty(),
+                                "conversation_identity_previous_key" to identity.previousKey.orEmpty(),
                             ),
                         )),
                         pendingAssetsByMessage = mapOf(0 to asset),
@@ -446,7 +458,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                         requests = listOf(MediaCaptureRequest(0, screenshotBounds, lossyWebp = true)),
                     )?.get(0) ?: return@persistScreenshotBeforeConfirmation null
                     if (!isCurrentScreenshotWindow(windowId, identityGeneration)) return@persistScreenshotBeforeConfirmation null
-                    resolver?.resolve(nextAsset, resolverVersion)
+                    resolver?.resolve(nextAsset, resolverVersion)?.takeIf { it.isChatPage }
                 }
 
             }

@@ -39,6 +39,7 @@ function message(overrides: Partial<CapturedMessageInput> = {}): CapturedMessage
 
 beforeEach(async () => {
   const database = newDb();
+  database.public.interceptQueries(sql => sql.startsWith('LOCK TABLE ') ? [] : null);
   const adapter = database.adapters.createPg();
   pool = new adapter.Pool();
   const sql = readFileSync(
@@ -46,6 +47,7 @@ beforeEach(async () => {
     'utf8',
   );
   await pool.query(sql);
+  await pool.query(readFileSync(new URL('../../migrations/022_chat_conversation_merge.sql', import.meta.url), 'utf8'));
   userId = crypto.randomUUID();
   deviceId = crypto.randomUUID();
 });

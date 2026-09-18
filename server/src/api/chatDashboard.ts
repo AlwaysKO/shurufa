@@ -1,3 +1,4 @@
+import { createChatConversationsRouter } from './chatConversations.js';
 import { createChatImagesRouter } from './chatImages.js';
 import { Router } from 'express';
 import { unlink } from 'node:fs/promises';
@@ -18,6 +19,7 @@ function iso(value: unknown): unknown {
 export function createChatDashboardRouter(pool: pg.Pool): Router {
   const router = Router();
   router.use(createChatImagesRouter(pool));
+  router.use(createChatConversationsRouter(pool));
 
   // 可选参数保留旧客户端行为；传入时必须严格选择一个平台。
   router.use(['/overview', '/conversations'], (req, res, next) => {
@@ -36,7 +38,7 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
       const params = platform === undefined ? [res.locals.userId] : [res.locals.userId, platform];
       const [conversations, messages, media] = await Promise.all([
         pool.query<{ count: string }>(
-          `SELECT COUNT(*) AS count FROM chat_conversation WHERE user_id = $1${filter}`,
+          `SELECT COUNT(*) AS count FROM chat_conversation WHERE user_id = $1 AND merged_into_id IS NULL${filter}`,
           params,
         ),
         pool.query<{ count: string }>(
@@ -69,9 +71,13 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
       const platform = req.query.platform as string | undefined;
       const filter = platform === undefined ? '' : ' AND platform = $2';
       const params = platform === undefined ? [res.locals.userId] : [res.locals.userId, platform];
+      const search = typeof req.query.q === 'string' ? req.query.q.trim().slice(0,100) : '';
+      const searchParam = `%${search.replace(/[\\%_]/g, '\\$&')}%`;
+      if (search) params.push(searchParam);
+      const searchFilter = search ? ` AND COALESCE(display_name,external_key) ILIKE $${params.length}` : '';
       const [totalResult, rowsResult] = await Promise.all([
         pool.query<{ count: string }>(
-          `SELECT COUNT(*) AS count FROM chat_conversation WHERE user_id = $1${filter}`,
+          `SELECT COUNT(*) AS count FROM chat_conversation WHERE user_id = $1 AND merged_into_id IS NULL${filter}${searchFilter}`,
           params,
         ),
         pool.query(
@@ -82,13 +88,13 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
              MAX(m.captured_at) AS last_message_at
            FROM chat_conversation c
            LEFT JOIN chat_message m ON m.conversation_id = c.id AND m.user_id = c.user_id
-           WHERE c.user_id = $1${platform === undefined ? '' : ' AND c.platform = $4'}
+           WHERE c.user_id = $1 AND c.merged_into_id IS NULL${platform === undefined ? '' : ' AND c.platform = $4'}${search ? ` AND COALESCE(c.display_name,c.external_key) ILIKE $${platform === undefined ? 4 : 5}` : ''}
            GROUP BY c.id, c.platform, c.account_key, c.external_key, c.display_name,
                     c.conversation_type, c.identity_confidence, c.first_seen_at,
                     c.last_seen_at
            ORDER BY c.last_seen_at DESC, c.id DESC
            LIMIT $2 OFFSET $3`,
-          platform === undefined ? [res.locals.userId, pageSize, offset] : [res.locals.userId, pageSize, offset, platform],
+          [res.locals.userId, pageSize, offset, ...(platform === undefined ? [] : [platform]), ...(search ? [searchParam] : [])],
         ),
       ]);
       res.json({
@@ -191,13 +197,18 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
     const deletedPaths: string[] = [];
     try {
       await client.query('BEGIN');
+      await client.query('LOCK TABLE chat_conversation IN SHARE ROW EXCLUSIVE MODE');
       const conversation = await client.query(
-        'SELECT id FROM chat_conversation WHERE id=$1 AND user_id=$2 FOR UPDATE',
+        'SELECT id, merged_into_id FROM chat_conversation WHERE id=$1 AND user_id=$2 FOR UPDATE',
         [conversationId, res.locals.userId],
       );
       if (conversation.rowCount === 0) {
         await client.query('ROLLBACK');
         return res.status(404).json({ error: 'conversation not found' });
+      }
+      if (conversation.rows[0].merged_into_id) {
+        await client.query('ROLLBACK');
+        return res.status(409).json({ error: '该会话已合并，请刷新后操作目标会话' });
       }
       const messageCount = await client.query<{ count: string }>(
         'SELECT COUNT(*) AS count FROM chat_message WHERE conversation_id=$1 AND user_id=$2',

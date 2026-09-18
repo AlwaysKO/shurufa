@@ -81,14 +81,14 @@ class WechatTitleStabilizerTest {
         assertEquals("pending", second.status)
     }
 
-    @Test fun `continuous same title survives pixel changes but navigation resets continuity`() {
+    @Test fun `continuous visual aliases survive navigation while temporary evidence resets`() {
         val tracker = WechatTitleStabilizer()
         tracker.observe("聚餐群(18)", pictureA, 1000)
         val first = tracker.observe("聚餐群(18)", pictureA, 1800)
         val next = tracker.observe("聚餐群(19)", pictureB, 2600)
         assertEquals(first.externalKey, next.externalKey)
         tracker.reset()
-        assertNotEquals(first.externalKey, tracker.observe("聚餐群(19)", pictureB, 3400).externalKey)
+        assertEquals(first.externalKey, tracker.observe("聚餐群(19)", pictureB, 3400).externalKey)
     }
 
     @Test fun `reprocessing immediately is not a second frame confirmation`() {
@@ -110,8 +110,8 @@ class WechatTitleStabilizerTest {
         val first = tracker.observe(null, null, 1800)
         val next = tracker.observe(null, null, 2600)
         assertEquals("pending", first.status)
-        assertNotEquals(first.externalKey, next.externalKey)
-        assertTrue(first.externalKey.startsWith("screenshot-pending:"))
+        assertEquals(first.externalKey, next.externalKey)
+        assertTrue(first.externalKey.startsWith("screenshot-v2:pending:"))
     }
 
     @Test fun `identity is independent of the first OCR spelling and survives tracker restart`() {

@@ -668,10 +668,26 @@ export const api = {
     patch<{ ok: boolean }>(`/api/v1/dashboard/user-phrases/${id}`, { content }),
   deleteUserPhrase: (id: number) => del(`/api/v1/dashboard/user-phrases/${id}`),
   chatCaptureOverview: (platform?: ChatConversationRow['platform']) => get<ChatCaptureOverview>(`/api/v1/dashboard/chat/overview${platform ? `?platform=${platform}` : ''}`),
-  chatConversations: (page = 1, pageSize = 100, platform?: ChatConversationRow['platform']) =>
+  chatConversations: (page = 1, pageSize = 100, platform?: ChatConversationRow['platform'], query = '') =>
     get<{ total: number; page: number; page_size: number; conversations: ChatConversationRow[] }>(
-      `/api/v1/dashboard/chat/conversations?page=${page}&page_size=${pageSize}${platform ? `&platform=${platform}` : ''}`,
+      `/api/v1/dashboard/chat/conversations?page=${page}&page_size=${pageSize}${platform ? `&platform=${platform}` : ''}${query ? `&q=${encodeURIComponent(query)}` : ''}`,
     ),
+  resolveChatConversation: async (id: number): Promise<{ conversation: ChatConversationRow | null }> => {
+    const response = await dashboardFetch(withDashboardUser(`/api/v1/dashboard/chat/conversations/${id}/resolve`));
+    if (response.status === 404) return { conversation: null };
+    if (!response.ok) throw new Error(`会话恢复失败（${response.status}）`);
+    return response.json();
+  },
+  mergeChatConversation: async (source: number, target: number): Promise<{ target_id: number; moved_messages: number }> => {
+    const response = await dashboardFetch(withDashboardUser(`/api/v1/dashboard/chat/conversations/${source}/merge`), {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirm: 'MERGE', target_id: target }),
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => null);
+      throw new Error(body?.error || `合并失败（${response.status}）`);
+    }
+    return response.json();
+  },
   chatMessages: (conversationId: number, page = 1, pageSize = 100) =>
     get<{ total: number; page: number; page_size: number; messages: ChatMessageRow[] }>(
       `/api/v1/dashboard/chat/messages?conversation_id=${conversationId}&page=${page}&page_size=${pageSize}`,

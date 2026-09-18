@@ -66,4 +66,11 @@ class WechatScreenshotIdentityTest {
             screenshotConversationIdentity(null, "header-b").externalKey,
         )
     }
+    @Test fun listPageMustNotBePersistedByImmediateOpeningProbe() {
+        val lines=listOf(OcrTextLine("微信",430,50,650,100),OcrTextLine("联系人",250,150,480,200))
+        org.junit.Assert.assertFalse(isWechatScreenshotChatPage(lines,1080,220))
+        org.junit.Assert.assertFalse(isWechatScreenshotChatPage(emptyList(),1080,220))
+        org.junit.Assert.assertTrue(isWechatScreenshotChatPage(listOf(OcrTextLine("工作群",430,50,650,100)),1080,220))
+        org.junit.Assert.assertTrue(isWechatScreenshotChatPage(listOf(OcrTextLine("〈",10,50,40,100),OcrTextLine("···",990,50,1050,100)),1080,220))
+    }
 }

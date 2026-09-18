@@ -20,12 +20,14 @@ beforeEach(async () => {
   const database = newDb();
   // pg-mem不实现LOCK TABLE；真实并发锁行为另由deviceControls.postgres.test覆盖。
   database.public.interceptQueries(sql => sql === 'LOCK TABLE media_asset IN ROW EXCLUSIVE MODE' ? [] : null);
+  database.public.interceptQueries(sql => sql.startsWith('LOCK TABLE ') ? [] : null);
   const adapter = database.adapters.createPg();
   pool = new adapter.Pool();
   await pool.query(readFileSync(
     new URL('../../migrations/007_chat_capture.sql', import.meta.url),
     'utf8',
   ));
+  await pool.query(readFileSync(new URL('../../migrations/022_chat_conversation_merge.sql', import.meta.url), 'utf8'));
   root = await mkdtemp(join(tmpdir(), 'chat-api-'));
   vi.spyOn(process, 'cwd').mockReturnValue(root);
 });
