@@ -1,3 +1,4 @@
+import { pendingConversation } from './chatPending.js';
 import { Router } from 'express';
 import type pg from 'pg';
 
@@ -13,7 +14,7 @@ export function createChatConversationsRouter(pool: pg.Pool): Router {
     const id = validId(req.params.id);
     if (!id) return res.status(400).json({ error: '会话标识无效' });
     try {
-      const result = await pool.query(`SELECT c.*, COUNT(m.id) AS message_count, MAX(m.captured_at) AS last_message_at
+      const result = await pool.query(`SELECT c.*, (${pendingConversation()}) AS is_pending_source, COUNT(m.id) AS message_count, MAX(m.captured_at) AS last_message_at
         FROM chat_conversation source
         JOIN chat_conversation c ON c.id=COALESCE(source.merged_into_id,source.id) AND c.user_id=source.user_id
         LEFT JOIN chat_message m ON m.conversation_id=c.id AND m.user_id=c.user_id

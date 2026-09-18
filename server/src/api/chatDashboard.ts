@@ -1,4 +1,5 @@
-import { createChatPendingRouter, pendingScope, pendingMessageScope } from './chatPending.js';
+import { createChatGroupDeletionRouter } from './chatGroupDeletion.js';
+import { createChatPendingRouter, chatConversationScope } from './chatPending.js';
 import { createChatConversationsRouter } from './chatConversations.js';
 import { createChatImagesRouter } from './chatImages.js';
 import { Router } from 'express';
@@ -20,6 +21,7 @@ function iso(value: unknown): unknown {
 export function createChatDashboardRouter(pool: pg.Pool): Router {
   const router = Router();
   router.use(createChatPendingRouter(pool));
+  router.use(createChatGroupDeletionRouter(pool));
   router.use(createChatImagesRouter(pool));
   router.use(createChatConversationsRouter(pool));
 
@@ -121,18 +123,15 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
   router.get('/messages', async (req, res, next) => {
     try {
       const conversationId = Number(req.query.conversation_id);
-      const grouped = pendingScope(conversationId, req.query.platform);
-      const scopeValue = grouped ? req.query.platform : conversationId;
-      const scopeFilter = grouped ? pendingMessageScope('$1', '$2') : 'conversation_id = $2';
-      if (!grouped && (!Number.isSafeInteger(conversationId) || conversationId <= 0)) {
-        return res.status(400).json({ error: 'conversation_id is invalid' });
-      }
+      const scope = chatConversationScope(res.locals.userId, conversationId, req.query.platform, req.query.group_name);
+      if (!scope) return res.status(400).json({ error: '会话范围无效' });
+      const scopeFilter = `conversation_id IN (SELECT c.id FROM chat_conversation c WHERE ${scope.sql})`;
       const { page, pageSize, offset } = pagination(req.query as Record<string, unknown>);
       const [totalResult, rowsResult] = await Promise.all([
         pool.query<{ count: string }>(
           `SELECT COUNT(*) AS count FROM chat_message
            WHERE user_id = $1 AND ${scopeFilter}`,
-          [res.locals.userId, scopeValue],
+          scope.params,
         ),
         pool.query(
           `SELECT id, conversation_id, platform, direction, message_type, sender_key, sender_name,
@@ -141,8 +140,8 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
            FROM chat_message
            WHERE user_id = $1 AND ${scopeFilter}
            ORDER BY captured_at DESC, id DESC
-           LIMIT $3 OFFSET $4`,
-          [res.locals.userId, scopeValue, pageSize, offset],
+           LIMIT $${scope.params.length+1} OFFSET $${scope.params.length+2}`,
+          [...scope.params, pageSize, offset],
         ),
       ]);
 

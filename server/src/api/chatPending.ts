@@ -2,13 +2,14 @@ import { Router } from 'express';
 import type pg from 'pg';
 
 export const chatPlatforms = ['wechat', 'qq', 'douyin'];
-/** 虚拟入口，绝不把不同来源写成同一个联系人。已确认/人工合并的来源不再进入此集合。 */
+/** 占位名称本身也是未确认标志；不能因旧数据的confidence偏高而漏掉随机后缀标签。 */
 export function pendingConversation(alias = 'c'): string {
-  return `${alias}.merged_into_id IS NULL AND ${alias}.identity_confidence < 0.8 AND (
-    ${alias}.external_key LIKE 'screenshot-v2:%' OR ${alias}.external_key LIKE 'capture-v3:%'
-    OR ${alias}.external_key LIKE 'screenshot-pending:%' OR ${alias}.external_key LIKE 'capture-pending:%'
-    OR ${alias}.external_key LIKE 'notification-v2:%' OR ${alias}.external_key LIKE 'header:%'
-    OR COALESCE(${alias}.display_name,'') LIKE '待确认%')`;
+  return `${alias}.merged_into_id IS NULL AND (
+    btrim(COALESCE(${alias}.display_name,'')) LIKE '待确认%'
+    OR (${alias}.identity_confidence < 0.8 AND (
+      ${alias}.external_key LIKE 'screenshot-v2:%' OR ${alias}.external_key LIKE 'capture-v3:%'
+      OR ${alias}.external_key LIKE 'screenshot-pending:%' OR ${alias}.external_key LIKE 'capture-pending:%'
+      OR ${alias}.external_key LIKE 'notification-v2:%' OR ${alias}.external_key LIKE 'header:%')))`;
 }
 export function pendingScope(id: number, platform: unknown): platform is string {
   return id === -1 && typeof platform === 'string' && chatPlatforms.includes(platform);
@@ -18,37 +19,71 @@ export function pendingMessageScope(userParam: string, platformParam: string): s
     AND c.platform=${platformParam} AND ${pendingConversation()})`;
 }
 
+/** 读取/预览/批量图片删除共用同一范围；组名只是展示范围，不改写真实来源。 */
+export function chatConversationScope(userId: string, id: number, platform: unknown, name: unknown) {
+  if (!Number.isSafeInteger(id)) return null;
+  if (name !== undefined) {
+    if (id <= 0 || typeof name !== 'string' || !name.length || name.length > 500 ||
+        typeof platform !== 'string' || !chatPlatforms.includes(platform)) return null;
+    return { sql: `c.user_id=$1 AND c.platform=$3 AND c.merged_into_id IS NULL
+        AND NOT (${pendingConversation()}) AND btrim(c.display_name)=$2`, params: [userId, name, platform], mode: 'name' as const };
+  }
+  if (pendingScope(id, platform)) return {
+    sql: `c.user_id=$1 AND c.platform=$2 AND ${pendingConversation()}`, params: [userId, platform], mode: 'pending' as const,
+  };
+  return id > 0 ? { sql: 'c.user_id=$1 AND c.id=$2', params: [userId, id], mode: 'source' as const } : null;
+}
+
 export function createChatPendingRouter(pool: pg.Pool): Router {
   const router = Router();
   router.get('/conversations', async (req, res, next) => {
-    if (req.query.group_pending !== 'true') return next();
+    const groupNames = req.query.group_names === 'true';
+    if (req.query.group_pending !== 'true' && !groupNames) return next();
     const platform = req.query.platform;
     if (typeof platform !== 'string' || !chatPlatforms.includes(platform)) {
       res.status(400).json({ error: '分组查询必须指定platform' }); return;
     }
+    const exactName = req.query.name;
+    if (exactName !== undefined && (!groupNames || typeof exactName !== 'string' || !exactName.length || exactName.length > 500)) {
+      res.status(400).json({ error: '分组名称无效' }); return;
+    }
     const page = Math.max(1, Math.trunc(Number(req.query.page) || 1));
     const pageSize = Math.min(100, Math.max(1, Math.trunc(Number(req.query.page_size) || 20)));
     const search = typeof req.query.q === 'string' ? req.query.q.trim().slice(0,100) : '';
-    const params = [res.locals.userId, platform, `%${search.replace(/[\\%_]/g, '\\$&')}%`];
+    const params: unknown[] = [res.locals.userId, platform, `%${search.replace(/[\\%_]/g, '\\$&')}%`];
+    if (exactName !== undefined) params.push(exactName);
     try {
       const scope = `c.user_id=$1 AND c.platform=$2 AND c.merged_into_id IS NULL`;
       const pending = pendingConversation();
-      const known = `${scope} AND NOT (${pending}) AND COALESCE(c.display_name,c.external_key) ILIKE $3`;
+      const known = `${scope} AND NOT (${pending}) AND COALESCE(c.display_name,c.external_key) ILIKE $3${exactName === undefined ? '' : ' AND btrim(c.display_name)=$4'}`;
+      // 空名称保留各自来源；不能把所有缺名称记录误当同一个已知联系人。
+      const groupingKey = groupNames ? `COALESCE('name:' || NULLIF(btrim(c.display_name),''), 'id:' || c.id::text)` : 'c.id::text';
       const [summary, count] = await Promise.all([
         pool.query(`SELECT COUNT(DISTINCT c.id) AS sources,COUNT(m.id) AS message_count,
           MIN(c.first_seen_at) AS first_seen_at,MAX(c.last_seen_at) AS last_seen_at,MAX(m.captured_at) AS last_message_at
           FROM chat_conversation c LEFT JOIN chat_message m ON m.conversation_id=c.id AND m.user_id=c.user_id
           WHERE ${scope} AND ${pending}`, params.slice(0,2)),
-        pool.query(`SELECT COUNT(*) AS count FROM chat_conversation c WHERE ${known}`, params),
+        pool.query(`SELECT COUNT(DISTINCT ${groupingKey}) AS count FROM chat_conversation c WHERE ${known}`, params),
       ]);
-      // 搜索/合并目标时不返回虚拟联系人；正文为空的pending不制造空标签。
-      const bucket = !search && Number(summary.rows[0].message_count) > 0 ? 1 : 0;
+      const bucket = !search && exactName === undefined && Number(summary.rows[0].message_count) > 0 ? 1 : 0;
       const offset = Math.max(0, (page-1)*pageSize-bucket);
       const limit = pageSize - (page === 1 ? bucket : 0);
-      const result = await pool.query(`SELECT c.*,COUNT(m.id) AS message_count,MAX(m.captured_at) AS last_message_at
+      const result = await pool.query(`WITH sources AS (
+        SELECT c.*, ${groupingKey} AS grouping_key, COUNT(m.id) AS message_count, MAX(m.captured_at) AS last_message_at
         FROM chat_conversation c LEFT JOIN chat_message m ON m.conversation_id=c.id AND m.user_id=c.user_id
-        WHERE ${known} GROUP BY c.id ORDER BY c.last_seen_at DESC,c.id DESC LIMIT $4 OFFSET $5`, [...params,limit,offset]);
-      const conversations = result.rows.map(row=>({...row,id:Number(row.id),identity_confidence:Number(row.identity_confidence),message_count:Number(row.message_count)}));
+        WHERE ${known} GROUP BY c.id
+      ), groups AS (
+        SELECT MIN(id) AS id,ARRAY_AGG(id ORDER BY id) AS source_ids,COUNT(*) AS source_count,
+          SUM(message_count) AS message_count,MAX(last_message_at) AS last_message_at,
+          MIN(first_seen_at) AS first_seen_at,MAX(last_seen_at) AS last_seen_at
+        FROM sources GROUP BY grouping_key
+      ) SELECT c.*,
+        ${groupNames ? "NULLIF(btrim(c.display_name),'')" : 'NULL::text'} AS group_name,
+        ${groupNames ? "COALESCE(NULLIF(btrim(c.display_name),''),c.display_name)" : 'c.display_name'} AS display_name,g.*
+        FROM groups g JOIN chat_conversation c ON c.id=g.id
+        ORDER BY g.last_seen_at DESC,g.id DESC LIMIT $${params.length+1} OFFSET $${params.length+2}`, [...params,limit,offset]);
+      const conversations = result.rows.map(row=>({...row,id:Number(row.id),identity_confidence:Number(row.identity_confidence),message_count:Number(row.message_count),
+        source_count:Number(row.source_count),source_ids:row.source_ids.map(Number),is_name_group:groupNames && row.group_name !== null}));
       if (page === 1 && bucket) conversations.unshift({ ...summary.rows[0], id:-1, platform, account_key:'',external_key:'pending-collection',
         display_name:'待确认会话',conversation_type:'unknown',identity_confidence:0,message_count:Number(summary.rows[0].message_count),is_pending_group:true });
       res.json({total:Number(count.rows[0].count)+bucket,page,page_size:pageSize,conversations});

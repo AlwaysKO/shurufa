@@ -284,7 +284,7 @@ it('三个App标签按平台请求，切换清空旧消息和预览', async () =
   expect(view.find('chat-tab-douyin')).toBeDefined();
   view.find('open-chat-image-8')!.props.onClick(); await settle();
   view.find('chat-tab-qq')!.props.onClick(); await settle();
-  expect(list).toHaveBeenLastCalledWith(1, 100, 'qq', '', true);
+  expect(list).toHaveBeenLastCalledWith(1, 100, 'qq', '', true, true);
   expect(view.find('chat-image-preview')).toBeUndefined();
   expect(view.find('open-chat-image-8')).toBeUndefined();
   view.find('chat-tab-douyin')!.props.onClick(); await settle();
@@ -478,7 +478,7 @@ it('待确认统一入口刷新保留，读取跨来源图片但不能整组误�
  const chatMessages=vi.fn().mockResolvedValue({total:2,messages:[{...screenshot(8),conversation_id:81},{...screenshot(9),conversation_id:82}]});
  const view=await mountChatCapture({chatConversations,chatMessages});
  expect(chatMessages.mock.calls[0]).toEqual([-1,1,24,'wechat']);
- expect(chatConversations.mock.calls[0]).toEqual([1,100,'wechat','',true]);
+ expect(chatConversations.mock.calls[0]).toEqual([1,100,'wechat','',true,true]);
  expect(view.find('chat-open-merge')!.props.disabled).toBe(true);
  expect(view.find('chat-delete-conversation')!.props.disabled).toBe(true);
  expect(view.find('chat-confirm-source-message-8')).toBeDefined();
@@ -509,4 +509,79 @@ it('刷新旧的待确认来源选择只恢复汇总入口，不重新插入独�
  const bucket={...rememberedChat(-1),display_name:'待确认会话',identity_confidence:0,is_pending_group:true};
  const view=await mountChatCapture({chatConversations:async()=>({total:1,conversations:[bucket]}),resolveChatConversation:async()=>({conversation:{...rememberedChat(81),display_name:'识别中的名字',external_key:'screenshot-v2:pending:old',identity_confidence:.55}})});
  expect(view.find('chat-conversation-81')).toBeUndefined();expect(view.find('chat-conversation--1')!.props.class).toContain('selected');
+});
+
+const namedGroup=(id:number,name:string,source_ids:number[])=>({...rememberedChat(id),display_name:name,group_name:name,is_name_group:true,source_ids,source_count:source_ids.length});
+it('同名会话请求整组消息和图片，而不是只读取代表ID',async()=>{
+ fakeChatStorage();const group=namedGroup(11,'同名联系人',[11,12]);
+ const chatMessages=vi.fn().mockResolvedValue({total:2,messages:[{...screenshot(8),conversation_id:12}]});
+ const chatAdjacentImage=vi.fn().mockResolvedValue({image:null});
+ const view=await mountChatCapture({chatConversations:async()=>({total:1,conversations:[group]}),chatMessages,chatAdjacentImage});
+ expect(chatMessages).toHaveBeenCalledWith(11,1,24,'wechat','同名联系人');
+ view.find('open-chat-image-8')!.props.onClick();await settle();view.find('chat-image-next')!.props.onClick();await settle();
+ expect(chatAdjacentImage).toHaveBeenCalledWith(11,'message-8',8,'next','wechat','同名联系人');
+ expect(view.find('chat-open-merge')!.props.disabled).toBe(true);
+ expect(view.find('chat-confirm-source-message-8')).toBeDefined();
+});
+it('旧同名来源选中状态恢复到展示组，不把来源重新插成重复标签',async()=>{
+ fakeChatStorage({'chat-capture-selection:user-a':JSON.stringify({platform:'wechat',conversations:{wechat:12}})});
+ const group=namedGroup(11,'同名联系人',[11,12]);
+ const view=await mountChatCapture({chatConversations:async()=>({total:1,conversations:[group]}),resolveChatConversation:async()=>({conversation:{...rememberedChat(12),display_name:'同名联系人',is_pending_source:false}})});
+ expect(view.find('chat-conversation-12')).toBeUndefined();expect(view.find('chat-conversation-11')!.props.class).toContain('selected');
+});
+it('代表来源删除后刷新仍可按组名恢复，不跳回首项',async()=>{
+ fakeChatStorage({'chat-capture-selection:user-a':JSON.stringify({platform:'wechat',conversations:{wechat:11},groups:{wechat:'同名联系人'}})});
+ const group=namedGroup(12,'同名联系人',[12,13]);const chatMessages=vi.fn().mockResolvedValue({total:0,messages:[]});
+ await mountChatCapture({chatConversations:async()=>({total:2,conversations:[namedGroup(1,'首项',[1]),group]}),chatMessages});
+ expect(chatMessages).toHaveBeenCalledWith(12,1,24,'wechat','同名联系人');
+});
+it('删除同名会话组提交明确来源快照，不把代表ID当整组删除',async()=>{
+ fakeChatStorage();const previous=globalThis.window;globalThis.window={confirm:()=>true} as unknown as Window & typeof globalThis;
+ try{const group=namedGroup(11,'同名联系人',[11,12]);const deleteChatConversation=vi.fn();const deleteChatConversationGroup=vi.fn().mockResolvedValue({deleted_sources:2});
+ const view=await mountChatCapture({chatConversations:async()=>({total:1,conversations:[group]}),deleteChatConversation,deleteChatConversationGroup});
+ view.find('chat-delete-conversation')!.props.onClick();await settle();
+ expect(deleteChatConversation).not.toHaveBeenCalled();expect(deleteChatConversationGroup).toHaveBeenCalledWith({confirm:'DELETE',platform:'wechat',group_name:'同名联系人',source_ids:[11,12]});
+ }finally{globalThis.window=previous;}
+});
+it('同名组批量图片删除带组名范围，并保留明确图片列表',async()=>{
+ fakeChatStorage();const previous=globalThis.window;globalThis.window={confirm:()=>true} as unknown as Window & typeof globalThis;
+ try{const group=namedGroup(11,'同名联系人',[11,12]);const deleteChatImages=vi.fn().mockResolvedValue({deleted_images:2});
+ const view=await mountChatCapture({chatConversations:async()=>({total:1,conversations:[group]}),chatMessages:async()=>({total:2,messages:[{...screenshot(8),conversation_id:11},{...screenshot(9),conversation_id:12}]}),deleteChatImages});
+ view.find('chat-select-page')!.props.onClick();await settle();view.find('chat-delete-selected')!.props.onClick();await settle();
+ expect(deleteChatImages).toHaveBeenCalledWith({confirm:'DELETE',conversation_id:11,platform:'wechat',group_name:'同名联系人',images:[{message_id:'message-8',asset_id:8},{message_id:'message-9',asset_id:9}]});
+ }finally{globalThis.window=previous;}
+});
+it('同名组不在首页时按组名精确恢复，不回退到代表来源标签',async()=>{
+ fakeChatStorage({'chat-capture-selection:user-a':JSON.stringify({platform:'wechat',conversations:{wechat:11},groups:{wechat:'同名联系人'}})});
+ const group=namedGroup(12,'同名联系人',[12,13]);const chatConversationGroup=vi.fn().mockResolvedValue({conversation:group});
+ const view=await mountChatCapture({chatConversations:async()=>({total:101,conversations:[namedGroup(1,'首项',[1])]}),chatConversationGroup});
+ expect(chatConversationGroup).toHaveBeenCalledWith('wechat','同名联系人');expect(view.find('chat-conversation-12')!.props.class).toContain('selected');
+});
+it('同名组逐来源合并只提交该图真实来源，并保存目标组名',async()=>{
+ fakeChatStorage();const previous=globalThis.window;globalThis.window={confirm:()=>true} as unknown as Window & typeof globalThis;
+ try{const group=namedGroup(11,'同名联系人',[11,12]),target=namedGroup(20,'目标联系人',[20,21]);const mergeChatConversation=vi.fn().mockResolvedValue({target_id:20});
+ const view=await mountChatCapture({chatConversations:async()=>({total:2,conversations:[group,target]}),chatMessages:async()=>({total:1,messages:[{...screenshot(8),conversation_id:12}]}),resolveChatConversation:async()=>({conversation:{...rememberedChat(12),display_name:'同名联系人',is_pending_source:false}}),mergeChatConversation});
+ view.find('chat-confirm-source-message-8')!.props.onClick();await settle();expect(view.find('chat-merge-target-11')).toBeUndefined();
+ view.find('chat-merge-target-20')!.props.onClick();await settle();expect(mergeChatConversation).toHaveBeenCalledWith(12,20);
+ expect(JSON.parse(localStorage.getItem('chat-capture-selection:user-a')!).groups.wechat).toBe('目标联系人');
+ }finally{globalThis.window=previous;}
+});
+it('高置信度但仍占位的待确认来源允许确认且面板不显示随机后缀',async()=>{
+ fakeChatStorage();const bucket={...rememberedChat(-1),display_name:'待确认会话',is_pending_group:true};
+ const view=await mountChatCapture({chatConversations:async()=>({total:2,conversations:[bucket,namedGroup(20,'目标',[20])]}),chatMessages:async()=>({total:1,messages:[{...screenshot(8),conversation_id:81}]}),resolveChatConversation:async()=>({conversation:{...rememberedChat(81),display_name:'待确认会话-SECRET_SUFFIX',identity_confidence:.85,is_pending_source:true}})});
+ view.find('chat-confirm-source-message-8')!.props.onClick();await settle();expect(view.find('chat-merge-target-20')).toBeDefined();expect(view.text()).not.toContain('SECRET_SUFFIX');
+});
+it('首页之外的同名组删图后仍保留选中和组名，不残留无归属消息面板',async()=>{
+ fakeChatStorage({'chat-capture-selection:user-a':JSON.stringify({platform:'wechat',conversations:{wechat:11},groups:{wechat:'同名联系人'}})});
+ const previous=globalThis.window;globalThis.window={confirm:()=>true} as unknown as Window & typeof globalThis;
+ try{const group=namedGroup(11,'同名联系人',[11,12]);const chatConversationGroup=vi.fn().mockResolvedValue({conversation:group});
+ const view=await mountChatCapture({chatConversations:async()=>({total:101,conversations:[namedGroup(1,'首项',[1])]}),chatConversationGroup,chatMessages:async()=>({total:1,messages:[{...screenshot(8),conversation_id:12}]}),deleteChatImages:async()=>({deleted_images:1})});
+ view.find('chat-select-page')!.props.onClick();await settle();view.find('chat-delete-selected')!.props.onClick();await settle();
+ expect(view.find('chat-conversation-11')?.props.class).toContain('selected');expect(chatConversationGroup).toHaveBeenCalledTimes(2);expect(view.text()).toContain('同名联系人');
+ }finally{globalThis.window=previous;}
+});
+it('名称组快照只有单来源但消息读到新来源时，仍提供逐来源归属且禁用整组合并',async()=>{
+ fakeChatStorage();const group=namedGroup(11,'同名联系人',[11]);
+ const view=await mountChatCapture({chatConversations:async()=>({total:1,conversations:[group]}),chatMessages:async()=>({total:1,messages:[{...screenshot(8),conversation_id:12}]})});
+ expect(view.find('chat-confirm-source-message-8')).toBeDefined();expect(view.find('chat-open-merge')!.props.disabled).toBe(true);
 });
