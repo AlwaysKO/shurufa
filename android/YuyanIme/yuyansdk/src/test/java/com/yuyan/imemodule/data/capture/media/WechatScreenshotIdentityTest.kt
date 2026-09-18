@@ -8,6 +8,24 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
 class WechatScreenshotIdentityTest {
+    @Test fun windowScopedScreenshotKeepsChatHeaderBeforePageClassification() {
+        val window = com.yuyan.imemodule.data.capture.ui.IntRect(0, 90, 1080, 2200)
+        val crop = com.yuyan.imemodule.service.capture.emptyTreeScreenshotBounds(window, 1500)
+        assertEquals("窗口截图已经有自己的原点，不应再裁掉80px标题", window.top, crop.top)
+        assertEquals(1500, crop.bottom)
+        val offset = crop.top - window.top
+        val title = OcrTextLine("文件传输助手", 350, 50 - offset, 730, 100 - offset)
+        assertTrue(isWechatScreenshotChatPage(listOf(title), 1080, 194))
+        assertEquals("文件传输助手", selectWechatChatTitle(listOf(title), 1080, 194))
+        val listTitle = OcrTextLine("微信", 460, 50 - offset, 620, 100 - offset)
+        org.junit.Assert.assertFalse(isWechatScreenshotChatPage(listOf(listTitle), 1080, 194))
+    }
+
+    @Test fun fullChatWindowWithoutKeyboardKeepsTopAndBottom() {
+        val window = com.yuyan.imemodule.data.capture.ui.IntRect(20, 90, 1100, 2200)
+        assertEquals(window, com.yuyan.imemodule.service.capture.emptyTreeScreenshotBounds(window, null))
+    }
+
     @Test fun `navigation glyph and status bar are not conversation titles`() {
         assertNull(selectWechatChatTitle(listOf(OcrTextLine("く", 440, 40, 480, 100)), 923, 160))
         assertNull(selectWechatChatTitle(listOf(OcrTextLine("中国移动", 350, 2, 570, 25)), 923, 160))

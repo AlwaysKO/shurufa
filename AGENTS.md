@@ -69,3 +69,12 @@
 - 复制后核对源文件和交付文件 SHA256、APK 签名，最终回复明确唯一推荐文件的 Windows 完整路径、版本、验证范围与未验收项。未通过必要验证的包不得标为已验收交付；Run 临时安装包不能代替可分享的 APK。
 - 历史 APK 不擅自删除。其他机器不能访问该 Windows 目录时明确报告交付缺口，不声称已复制；APK仍遵循Git忽略规则，不随源码提交。
 - 来源：2026-09-18 用户“每次开发好，打一个包放在 E:\Projects\shurufa-android\apk，用日期和版本号命名……以后其他会话打包都遵循”。适用范围仅 shurufa APK 交付，不授权自动安装、Git 提交或推送。
+
+## 固定原签名与后续打包（2026-09-18 用户最终修订）
+
+- 用户最终取消新密钥迁移，要求所有后续Android Studio打包沿用此前成功安装的旧证书；本条取代同日“使用新miaoyan密钥并轮换”的方案。
+- 本机 E:\Projects\shurufa-android\miaoyan.jks 已替换为原 C:\Users\ES-11013\.android\debug.keystore 的完全相同副本；新建的不同证书已单独备份，不得再用于日常构建。固定别名androiddebugkey，密码仅保留本机私有配置，不进源码/记忆。
+- 固定证书SHA256：a4626fa45c451154093333af3dbc3c6e1a3c7ba783eae399ea4786b5457b1287。由 tools/signing-delivery.gradle 对debug/release APK统一签名并校验，不生成/使用签名轮换链，缺配置或证书不符则拒绝交付。
+- 普通assemble和IDE Run均使用原签名；Run的testOnly包不交付。分享包自动复制到既定E盘目录，文件名为 shurufa-YYYY-MM-DD-v<versionName>-<versionCode>-<debug或release>-<短SHA>.apk，以此补充前述命名规则。
+- 不得卸载/清除数据解决签名冲突。相同签名不代表所有手机必定能装，仍需核对包名、版本、Android版本/ABI及系统限制；debug/release不共享应用数据。若设备已实际迁移到新证书，另行核对，不能强制回退旧签名。
+- 来源：用户确认旧签名988f16db包安装成功，明确“把新建的密钥替换成之前的，不换签名密钥；以后Android Studio都用这个”。使用说明以 android/YuyanIme/tools/SIGNING.md 为准。此次未操作手机、未提交或推送Git。

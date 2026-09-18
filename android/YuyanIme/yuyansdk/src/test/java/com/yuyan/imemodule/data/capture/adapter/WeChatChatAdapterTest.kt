@@ -55,6 +55,16 @@ class WeChatChatAdapterTest {
         assertTrue(adapter.parse(root) is ParseResult.Skip)
     }
 
+    @Test fun voiceModeIsAChatWithoutAnEditText() {
+        val tree = chatTree("阿明", emptyList())
+        val voice = tree.copy(children = tree.children.map {
+            if (it.className == "android.widget.EditText") it.copy(viewId = null, className = "android.widget.Button", text = "按住 说话") else it
+        })
+        val result = adapter.parse(voice) as ParseResult.Success
+        assertEquals("阿明", result.viewport.conversation.displayName)
+        assertEquals(IntRect(0, 130, 1080, 1650), result.viewport.messages.single().mediaBounds)
+    }
+
     private fun chatTree(title: String, messages: List<UiNodeSnapshot>) = UiNodeSnapshot(
         null, "root", null, null, IntRect(0, 0, 1080, 1920), listOf(
             node("com.tencent.mm:id/chatting_title", title, 180, 50, 850, 130),

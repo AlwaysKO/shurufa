@@ -131,3 +131,52 @@ test('已知C手动合并到pendingP后迟到确认不得让P指向自己',async
  const list=await agent.get(`/api/v1/dashboard/chat/conversations?user_id=${A}`);expect(list.body.conversations.map((r:any)=>r.id)).toEqual([p]);
  expect((await pool.query('SELECT conversation_id FROM chat_message')).rows.every(r=>Number(r.conversation_id)===p)).toBe(true);
 });
+
+test('待确认集中展示但保留来源，已确认和跨手机App不混入',async()=>{
+ const p=await conversation(), q=await conversation(), known=await conversation(), foreign=await conversation('wechat',B), douyin=await conversation('douyin');
+ for(const id of [p,q,foreign,douyin]) await pool.query("UPDATE chat_conversation SET identity_confidence=0.55,display_name='待确认会话',external_key=$2 WHERE id=$1",[id,'screenshot-v2:pending:'+randomUUID()]);
+ const first=await message(p,{time:'2026-09-18T03:00:00Z'}),second=await message(q,{time:'2026-09-18T02:00:00Z'});
+ await message(known);await message(foreign,{user:B});await message(douyin);
+ const list=await agent.get(`/api/v1/dashboard/chat/conversations?user_id=${A}&platform=wechat&group_pending=true`);
+ expect(list.status).toBe(200);expect(list.body.total).toBe(2);
+ expect(list.body.conversations.map((c:any)=>c.id)).toEqual([-1,known]);
+ expect(list.body.conversations[0]).toMatchObject({display_name:'待确认会话',message_count:2});
+ const page=await agent.get(`/api/v1/dashboard/chat/messages?user_id=${A}&conversation_id=-1&platform=wechat&page_size=1`);
+ expect(page.status).toBe(200);expect(page.body.total).toBe(2);expect(page.body.messages[0]).toMatchObject({id:first,conversation_id:p});
+ const next=await agent.get(`/api/v1/dashboard/chat/messages?user_id=${A}&conversation_id=-1&platform=wechat&page_size=1&page=2`);
+ expect(next.body.messages[0].id).toBe(second);
+ expect((await agent.get(`/api/v1/dashboard/chat/messages?user_id=${A}&conversation_id=-1`)).status).toBe(400);
+ await pool.query("UPDATE chat_conversation SET identity_confidence=.85,display_name='已确认' WHERE id=$1",[p]);
+ const after=await agent.get(`/api/v1/dashboard/chat/messages?user_id=${A}&conversation_id=-1&platform=wechat`);
+ expect(after.body.total).toBe(1);expect(after.body.messages[0].id).toBe(second);
+ expect((await pool.query('SELECT COUNT(*) FROM chat_conversation')).rows[0].count).toBe('5');
+});
+
+test('待确认集合导航与批量删除仅作用于明确图片，确认后移出即整批拒绝',async()=>{
+ const p=await conversation(),q=await conversation(),known=await conversation();
+ for(const id of [p,q])await pool.query("UPDATE chat_conversation SET identity_confidence=.55,display_name='待确认会话' WHERE id=$1",[id]);
+ async function picture(c:number,time:string){const m=await message(c,{time});const hash=createHash('sha256').update(m).digest('hex');
+  const a=Number((await pool.query("INSERT INTO media_asset(user_id,sha256,mime_type,storage_path,byte_size) VALUES($1,$2,'image/png',$3,4) RETURNING id",[A,hash,`chat/${hash.slice(0,2)}/${hash}.png`])).rows[0].id);
+  await pool.query("INSERT INTO chat_message_asset(message_id,asset_id,position,role) VALUES($1,$2,0,'content')",[m,a]);return {message_id:m,asset_id:a};}
+ const a=await picture(p,'2026-09-18T03:00:00Z'),b=await picture(q,'2026-09-18T02:00:00Z'),c=await picture(known,'2026-09-18T01:00:00Z');
+ const nav=await agent.get('/api/v1/dashboard/chat/images/adjacent').query({user_id:A,conversation_id:-1,platform:'wechat',...a,direction:'next'});
+ expect(nav.status).toBe(200);expect(nav.body.image).toMatchObject({...b,total:2});
+ const remove=(images:any[])=>agent.post(`/api/v1/dashboard/chat/images/delete-batch?user_id=${A}`).send({confirm:'DELETE',conversation_id:-1,platform:'wechat',images});
+ expect((await remove([a,c])).status).toBe(409);expect((await pool.query('SELECT COUNT(*) FROM chat_message_asset')).rows[0].count).toBe('3');
+ await pool.query('UPDATE chat_conversation SET identity_confidence=.85 WHERE id=$1',[q]);
+ expect((await remove([a,b])).status).toBe(409);
+ const deleted=await remove([a]);expect(deleted.status, JSON.stringify(deleted.body)).toBe(200);expect(deleted.body.deleted_images).toBe(1);
+ expect((await pool.query('SELECT COUNT(*) FROM chat_message_asset')).rows[0].count).toBe('2');
+});
+
+test('待确认虚拟入口分页不重复，旧接口保持真实来源，模糊搜索不返回虚拟联系人',async()=>{
+ const p=await conversation(),a=await conversation(),b=await conversation();
+ await pool.query("UPDATE chat_conversation SET identity_confidence=.55,display_name='待确认会话' WHERE id=$1",[p]);await message(p);
+ const get=(query:string)=>agent.get(`/api/v1/dashboard/chat/conversations?user_id=${A}&platform=wechat&${query}`);
+ const pages=[];for(let page=1;page<=3;page++)pages.push((await get(`group_pending=true&page_size=1&page=${page}`)).body);
+ expect(pages.map(p=>p.total)).toEqual([3,3,3]);expect(pages[0].conversations[0].id).toBe(-1);
+ expect(new Set(pages.flatMap(p=>p.conversations.map((r:any)=>r.id)))).toEqual(new Set([-1,a,b]));
+ expect((await get('')).body.conversations.map((r:any)=>r.id)).toContain(p);
+ expect((await get('group_pending=true&q=待确认')).body.conversations).toEqual([]);
+ expect((await agent.get(`/api/v1/dashboard/chat/conversations?user_id=${A}&group_pending=true`)).status).toBe(400);
+});

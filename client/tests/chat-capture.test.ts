@@ -284,7 +284,7 @@ it('三个App标签按平台请求，切换清空旧消息和预览', async () =
   expect(view.find('chat-tab-douyin')).toBeDefined();
   view.find('open-chat-image-8')!.props.onClick(); await settle();
   view.find('chat-tab-qq')!.props.onClick(); await settle();
-  expect(list).toHaveBeenLastCalledWith(1, 100, 'qq');
+  expect(list).toHaveBeenLastCalledWith(1, 100, 'qq', '', true);
   expect(view.find('chat-image-preview')).toBeUndefined();
   expect(view.find('open-chat-image-8')).toBeUndefined();
   view.find('chat-tab-douyin')!.props.onClick(); await settle();
@@ -469,4 +469,44 @@ it('切换App立即保存选择，加载中刷新也不会退回旧App或丢失�
  const view=await mountChatCapture({chatConversations:async(_p:number,_s:number,app:string)=>app==='qq'?new Promise(()=>{}):({total:1,conversations:[rememberedChat(1)]})});
  view.find('chat-tab-qq')!.props.onClick();
  expect(JSON.parse(data.get('chat-capture-selection:user-a')!).platform).toBe('qq');expect(JSON.parse(data.get('chat-capture-selection:user-a')!).conversations.qq).toBe(12);
+});
+
+it('待确认统一入口刷新保留，读取跨来源图片但不能整组误合并或删除',async()=>{
+ fakeChatStorage({'chat-capture-selection:user-a':JSON.stringify({platform:'wechat',conversations:{wechat:-1}})});
+ const bucket={...rememberedChat(-1),display_name:'待确认会话',identity_confidence:0,is_pending_group:true,message_count:2};
+ const chatConversations=vi.fn().mockResolvedValue({total:2,conversations:[rememberedChat(1),bucket]});
+ const chatMessages=vi.fn().mockResolvedValue({total:2,messages:[{...screenshot(8),conversation_id:81},{...screenshot(9),conversation_id:82}]});
+ const view=await mountChatCapture({chatConversations,chatMessages});
+ expect(chatMessages.mock.calls[0]).toEqual([-1,1,24,'wechat']);
+ expect(chatConversations.mock.calls[0]).toEqual([1,100,'wechat','',true]);
+ expect(view.find('chat-open-merge')!.props.disabled).toBe(true);
+ expect(view.find('chat-delete-conversation')!.props.disabled).toBe(true);
+ expect(view.find('chat-confirm-source-message-8')).toBeDefined();
+ expect(view.find('chat-conversation-81')).toBeUndefined();
+});
+
+it('待确认中只合并点击图片的真实来源，不把整个集合发给合并接口',async()=>{
+ fakeChatStorage();const previous=globalThis.window;globalThis.window={confirm:()=>true} as unknown as Window & typeof globalThis;
+ try{
+  const bucket={...rememberedChat(-1),display_name:'待确认会话',identity_confidence:0,is_pending_group:true};
+  const target=rememberedChat(2);const mergeChatConversation=vi.fn().mockResolvedValue({target_id:2,moved_messages:1});
+  const view=await mountChatCapture({chatConversations:async()=>({total:2,conversations:[bucket,target]}),
+   chatMessages:async()=>({total:1,messages:[{...screenshot(8),conversation_id:81}]}),
+   resolveChatConversation:async()=>({conversation:{...rememberedChat(81),identity_confidence:.55}}),mergeChatConversation});
+  view.find('chat-confirm-source-message-8')!.props.onClick();await settle();
+  view.find('chat-merge-target-2')!.props.onClick();await settle();
+  expect(mergeChatConversation).toHaveBeenCalledExactlyOnceWith(81,2);
+ }finally{globalThis.window=previous;}
+});
+it('来源已确认时拒绝从旧待确认卡片再次合并',async()=>{
+ fakeChatStorage();const bucket={...rememberedChat(-1),display_name:'待确认会话',identity_confidence:0,is_pending_group:true};
+ const view=await mountChatCapture({chatConversations:async()=>({total:1,conversations:[bucket]}),chatMessages:async()=>({total:1,messages:[{...screenshot(8),conversation_id:81}]}),resolveChatConversation:async()=>({conversation:rememberedChat(81)})});
+ view.find('chat-confirm-source-message-8')!.props.onClick();await settle();
+ expect(view.text()).toContain('已确认或已合并');expect(view.find('chat-merge-target-81')).toBeUndefined();
+});
+it('刷新旧的待确认来源选择只恢复汇总入口，不重新插入独立标签',async()=>{
+ fakeChatStorage({'chat-capture-selection:user-a':JSON.stringify({platform:'wechat',conversations:{wechat:81}})});
+ const bucket={...rememberedChat(-1),display_name:'待确认会话',identity_confidence:0,is_pending_group:true};
+ const view=await mountChatCapture({chatConversations:async()=>({total:1,conversations:[bucket]}),resolveChatConversation:async()=>({conversation:{...rememberedChat(81),display_name:'识别中的名字',external_key:'screenshot-v2:pending:old',identity_confidence:.55}})});
+ expect(view.find('chat-conversation-81')).toBeUndefined();expect(view.find('chat-conversation--1')!.props.class).toContain('selected');
 });

@@ -1,3 +1,4 @@
+import { pendingConversation, pendingScope, pendingMessageScope } from './chatPending.js';
 import { Router } from 'express';
 import type pg from 'pg';
 import { cleanDeviceFiles, DeviceDeletionError, queueUploadFileCleanup } from '../lib/deleteDeviceData.js';
@@ -11,7 +12,8 @@ export function createChatImagesRouter(pool: pg.Pool): Router {
   router.get('/images/adjacent', async (req, res, next) => {
     const conversationId = Number(req.query.conversation_id), assetId = Number(req.query.asset_id);
     const messageId = req.query.message_id, direction = req.query.direction;
-    if (!positiveId(conversationId) || !positiveId(assetId) || !validUuid(messageId)
+    const grouped = pendingScope(conversationId, req.query.platform);
+    if ((!positiveId(conversationId) && !grouped) || !positiveId(assetId) || !validUuid(messageId)
       || (direction !== 'next' && direction !== 'previous')) {
       res.status(400).json({ error: '图片浏览参数无效' }); return;
     }
@@ -22,7 +24,7 @@ export function createChatImagesRouter(pool: pg.Pool): Router {
         JOIN chat_conversation c ON c.id=m.conversation_id AND c.user_id=m.user_id
         JOIN chat_message_asset ma ON ma.message_id=m.id
         JOIN media_asset a ON a.id=ma.asset_id AND a.user_id=m.user_id
-        WHERE m.user_id=$1 AND m.conversation_id=$2 AND a.mime_type LIKE 'image/%'
+        WHERE m.user_id=$1 AND ${grouped ? pendingMessageScope('$1', '$2') : 'm.conversation_id=$2'} AND a.mime_type LIKE 'image/%'
         GROUP BY m.id, a.id
       ), ordered AS (
         SELECT *, ROW_NUMBER() OVER (ORDER BY captured_at DESC, message_id DESC, position ASC, asset_id ASC) AS ordinal,
@@ -31,7 +33,7 @@ export function createChatImagesRouter(pool: pg.Pool): Router {
         SELECT ordinal FROM ordered WHERE message_id=$3 AND asset_id=$4
       ) SELECT EXISTS(SELECT 1 FROM anchor) AS found,
         (SELECT row_to_json(candidate) FROM ordered candidate WHERE ordinal=(SELECT ordinal FROM anchor)+$5) AS image`,
-      [res.locals.userId, conversationId, messageId, assetId, direction === 'next' ? 1 : -1]);
+      [res.locals.userId, grouped ? req.query.platform : conversationId, messageId, assetId, direction === 'next' ? 1 : -1]);
       const row = result.rows[0];
       if (!row.found) { res.status(404).json({ error: '当前图片不存在或已删除，请刷新列表' }); return; }
       const image = row.image;
@@ -45,7 +47,8 @@ export function createChatImagesRouter(pool: pg.Pool): Router {
 
   router.post('/images/delete-batch', async (req, res, next) => {
     const body = req.body, userId = res.locals.userId;
-    if (body?.confirm !== 'DELETE' || !validUuid(userId) || !positiveId(body?.conversation_id)
+    const grouped = pendingScope(body?.conversation_id, body?.platform);
+    if (body?.confirm !== 'DELETE' || !validUuid(userId) || (!positiveId(body?.conversation_id) && !grouped)
       || !Array.isArray(body?.images) || !body.images.length || body.images.length > 1000
       || !body.images.every((image: any) => validUuid(image?.message_id) && positiveId(image?.asset_id))) {
       res.status(400).json({ error: '批量图片删除参数无效（每批最多1000张）' }); return;
@@ -64,19 +67,20 @@ export function createChatImagesRouter(pool: pg.Pool): Router {
         // 与上传的 media_asset 写锁及设备删除保持同一加锁顺序。
         // 否则同内容上传可能在删除提交前读到即将失效的旧附件ID。
         await db.query('LOCK TABLE chat_conversation, chat_message, chat_message_asset, media_asset IN SHARE ROW EXCLUSIVE MODE');
-        const conversation = await db.query('SELECT id FROM chat_conversation WHERE id=$1 AND user_id=$2 FOR UPDATE', [body.conversation_id, userId]);
+        const conversation = await db.query(`SELECT c.id FROM chat_conversation c WHERE c.user_id=$2 AND ${grouped ? `c.platform=$1 AND ${pendingConversation()}` : 'c.id=$1'} ORDER BY c.id FOR UPDATE`, [grouped ? body.platform : body.conversation_id, userId]);
+        const conversationIds = conversation.rows.map(row => Number(row.id));
         if (!conversation.rowCount) {
           await db.query('ROLLBACK'); res.status(404).json({ error: '会话不存在，未删除任何图片' }); return;
         }
         const messageIds = [...new Set(images.map(image => image.message_id))];
-        await db.query(`SELECT id FROM chat_message WHERE conversation_id=$1 AND user_id=$2 AND id=ANY($3::uuid[]) ORDER BY id FOR UPDATE`, [body.conversation_id, userId, messageIds]);
+        await db.query(`SELECT id FROM chat_message WHERE conversation_id=ANY($1::bigint[]) AND user_id=$2 AND id=ANY($3::uuid[]) ORDER BY id FOR UPDATE`, [conversationIds, userId, messageIds]);
         const links = await db.query<{ message_id: string; asset_id: string }>(`SELECT ma.message_id, ma.asset_id
           FROM chat_message_asset ma JOIN chat_message m ON m.id=ma.message_id
           JOIN media_asset a ON a.id=ma.asset_id
           JOIN jsonb_to_recordset($3::jsonb) AS selected(message_id uuid, asset_id bigint)
             ON selected.message_id=ma.message_id AND selected.asset_id=ma.asset_id
-          WHERE m.conversation_id=$1 AND m.user_id=$2 AND a.user_id=$2 AND a.mime_type LIKE 'image/%'
-          ORDER BY ma.asset_id, ma.message_id, ma.role FOR UPDATE OF ma, a`, [body.conversation_id, userId, JSON.stringify(images)]);
+          WHERE m.conversation_id=ANY($1::bigint[]) AND m.user_id=$2 AND a.user_id=$2 AND a.mime_type LIKE 'image/%'
+          ORDER BY ma.asset_id, ma.message_id, ma.role FOR UPDATE OF ma, a`, [conversationIds, userId, JSON.stringify(images)]);
         const actual = new Set(links.rows.map(row => `${row.message_id}:${row.asset_id}`));
         if (actual.size !== expected.size || [...expected].some(key => !actual.has(key))) {
           await db.query('ROLLBACK'); res.status(409).json({ error: '部分图片已变化或不属于当前会话，整批未删除，请刷新后重新选择' }); return;
@@ -85,9 +89,9 @@ export function createChatImagesRouter(pool: pg.Pool): Router {
           WHERE ma.message_id=selected.message_id AND ma.asset_id=selected.asset_id`, [JSON.stringify(images)]);
         if (removed.rowCount !== links.rowCount) throw Error('Chat image deletion count mismatch');
         // 仅清理删空的纯图片占位消息；真实文字及任何未选择的附件都保留。
-        const messages = await db.query(`DELETE FROM chat_message m WHERE m.user_id=$1 AND m.conversation_id=$2 AND m.id=ANY($3::uuid[])
+        const messages = await db.query(`DELETE FROM chat_message m WHERE m.user_id=$1 AND m.conversation_id=ANY($2::bigint[]) AND m.id=ANY($3::uuid[])
           AND m.message_type='image' AND COALESCE(m.text,'') IN ('','图片','截图')
-          AND NOT EXISTS (SELECT 1 FROM chat_message_asset ma WHERE ma.message_id=m.id)`, [userId, body.conversation_id, messageIds]);
+          AND NOT EXISTS (SELECT 1 FROM chat_message_asset ma WHERE ma.message_id=m.id)`, [userId, conversationIds, messageIds]);
         deletedMessages = messages.rowCount ?? 0;
         const assets = await db.query<{ storage_path: string }>(`DELETE FROM media_asset a WHERE a.user_id=$1 AND a.id=ANY($2::bigint[])
           AND NOT EXISTS (SELECT 1 FROM chat_message_asset ma WHERE ma.asset_id=a.id) RETURNING storage_path`, [userId, [...new Set(images.map(image => image.asset_id))]]);

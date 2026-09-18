@@ -327,6 +327,7 @@ export interface ChatCaptureOverview {
 }
 
 export interface ChatConversationRow {
+  is_pending_group?: boolean;
   id: number;
   platform: 'wechat' | 'qq' | 'douyin';
   account_key: string;
@@ -345,7 +346,7 @@ export interface ChatPreviewImage extends ChatImageTarget {
   url: string; alt: string; captured_at: string; ordinal: number; total: number;
 }
 export interface ChatImageDeleteRequest {
-  confirm: 'DELETE'; conversation_id: number; images: ChatImageTarget[];
+  confirm: 'DELETE'; conversation_id: number; images: ChatImageTarget[]; platform?: ChatConversationRow['platform'];
 }
 
 export interface ChatMessageAsset {
@@ -360,6 +361,7 @@ export interface ChatMessageAsset {
 }
 
 export interface ChatMessageRow {
+  conversation_id?: number;
   id: string;
   platform: 'wechat' | 'qq' | 'douyin';
   direction: 'incoming' | 'outgoing' | 'system';
@@ -668,9 +670,9 @@ export const api = {
     patch<{ ok: boolean }>(`/api/v1/dashboard/user-phrases/${id}`, { content }),
   deleteUserPhrase: (id: number) => del(`/api/v1/dashboard/user-phrases/${id}`),
   chatCaptureOverview: (platform?: ChatConversationRow['platform']) => get<ChatCaptureOverview>(`/api/v1/dashboard/chat/overview${platform ? `?platform=${platform}` : ''}`),
-  chatConversations: (page = 1, pageSize = 100, platform?: ChatConversationRow['platform'], query = '') =>
+  chatConversations: (page = 1, pageSize = 100, platform?: ChatConversationRow['platform'], query = '', groupPending = false) =>
     get<{ total: number; page: number; page_size: number; conversations: ChatConversationRow[] }>(
-      `/api/v1/dashboard/chat/conversations?page=${page}&page_size=${pageSize}${platform ? `&platform=${platform}` : ''}${query ? `&q=${encodeURIComponent(query)}` : ''}`,
+      `/api/v1/dashboard/chat/conversations?page=${page}&page_size=${pageSize}${platform ? `&platform=${platform}` : ''}${query ? `&q=${encodeURIComponent(query)}` : ''}${groupPending ? '&group_pending=true' : ''}`,
     ),
   resolveChatConversation: async (id: number): Promise<{ conversation: ChatConversationRow | null }> => {
     const response = await dashboardFetch(withDashboardUser(`/api/v1/dashboard/chat/conversations/${id}/resolve`));
@@ -688,12 +690,12 @@ export const api = {
     }
     return response.json();
   },
-  chatMessages: (conversationId: number, page = 1, pageSize = 100) =>
+  chatMessages: (conversationId: number, page = 1, pageSize = 100, platform?: ChatConversationRow['platform']) =>
     get<{ total: number; page: number; page_size: number; messages: ChatMessageRow[] }>(
-      `/api/v1/dashboard/chat/messages?conversation_id=${conversationId}&page=${page}&page_size=${pageSize}`,
+      `/api/v1/dashboard/chat/messages?conversation_id=${conversationId}&page=${page}&page_size=${pageSize}${platform ? `&platform=${platform}` : ''}`,
     ),
-  chatAdjacentImage: (conversationId: number, messageId: string, assetId: number, direction: 'next' | 'previous') =>
-    get<{ image: ChatPreviewImage | null }>(`/api/v1/dashboard/chat/images/adjacent?conversation_id=${conversationId}&message_id=${encodeURIComponent(messageId)}&asset_id=${assetId}&direction=${direction}`),
+  chatAdjacentImage: (conversationId: number, messageId: string, assetId: number, direction: 'next' | 'previous', platform?: ChatConversationRow['platform']) =>
+    get<{ image: ChatPreviewImage | null }>(`/api/v1/dashboard/chat/images/adjacent?conversation_id=${conversationId}&message_id=${encodeURIComponent(messageId)}&asset_id=${assetId}&direction=${direction}${platform ? `&platform=${platform}` : ''}`),
   deleteChatImages: async (body: ChatImageDeleteRequest): Promise<{ deleted_images: number; deleted_messages: number; files_pending: boolean }> => {
     const response = await dashboardFetch(withDashboardUser('/api/v1/dashboard/chat/images/delete-batch'), {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),

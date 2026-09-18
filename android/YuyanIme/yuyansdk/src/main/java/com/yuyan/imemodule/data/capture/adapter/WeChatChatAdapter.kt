@@ -14,7 +14,7 @@ class WeChatChatAdapter : ChatAppAdapter {
 
     override fun parse(root: UiNodeSnapshot): ParseResult {
         val nodes = root.flatten()
-        val input = nodes.filter { it.isChatInput() }.maxByOrNull { it.bounds.top }
+        val input = nodes.filter { it.isChatInput() || (it.visibleText()?.replace(" ", "") == "按住说话" && it.bounds.top > root.bounds.top + (root.bounds.bottom - root.bounds.top) / 2) }.maxByOrNull { it.bounds.top }
             ?: return ParseResult.Skip(SkipReason.UNSUPPORTED_PAGE)
         val titleNode = nodes.filter { it.isTitleCandidate(root.bounds.bottom) }
             .sortedWith(compareByDescending<UiNodeSnapshot> { it.viewId.orEmpty().contains("title", true) }

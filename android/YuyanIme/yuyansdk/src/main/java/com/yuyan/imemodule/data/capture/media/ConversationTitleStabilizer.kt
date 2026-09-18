@@ -12,6 +12,7 @@ internal open class ConversationTitleStabilizer(
     private val source: String,
     private val legacyWechat: Boolean = false,
     private val identityStore: ConversationIdentityStore = MemoryConversationIdentityStore(),
+    private val tolerateUnreadableFrame: Boolean = false,
 ) {
     private data class State(
         val key: String,
@@ -21,7 +22,7 @@ internal open class ConversationTitleStabilizer(
         var votedAt: Long,
         var observedAt: Long,
         var confirmed: ScreenshotConversationIdentity? = null,
-        val previousKey: String? = null,
+        var previousKey: String? = null,
     )
     private var state: State? = null
     private var generation = 0L
@@ -47,7 +48,9 @@ internal open class ConversationTitleStabilizer(
             return identity(previous, title)
         }
         if (normalized == null || normalized.contains("…") || normalized.contains("...") || visualKey == null || !visualKey.matches(Regex("[a-f0-9]{64}"))) {
-            state = null
+            // 短暂空标题不抹掉首帧证据；未知图片仍单独待确认，绝不借用旧联系人名字。
+            // 只为微信开启，QQ原识别行为不变；导航reset仍立即清空全部状态。
+            if (!tolerateUnreadableFrame || previous == null || nowMillis - previous.observedAt > 2_000L) state = null
             if (pendingKey == null || nowMillis - pendingAt !in 0..CONTINUITY_MILLIS) {
                 pendingKey = (if (legacyWechat) "screenshot-v2:" else "capture-v3:") + "pending:" + java.util.UUID.randomUUID()
             }
@@ -56,12 +59,12 @@ internal open class ConversationTitleStabilizer(
         }
         val candidate = if (legacyWechat) screenshotConversationIdentity(normalized, "").copy(source = source)
             else ScreenshotConversationIdentity("", normalized, ConversationType.UNKNOWN, 0.55, source)
+        val recoverKey = pendingKey?.takeIf { nowMillis - pendingAt in 0..CONTINUITY_MILLIS }
         val continuous = previous != null && (
             previous.visualKey == visualKey ||
-                canonicalTitle(previous.candidate.displayName) == canonicalTitle(candidate.displayName)
+                (recoverKey == null && canonicalTitle(previous.candidate.displayName) == canonicalTitle(candidate.displayName))
             )
         val known = identityStore.find(scope, visualKey)
-        val recoverKey = pendingKey?.takeIf { nowMillis - pendingAt in 0..CONTINUITY_MILLIS }
         val current = if (continuous) previous!! else State(
             // 新命名空间与历史 title:<名字哈希> 隔离，不修改、迁移或合并旧记录。
             key = known?.key ?: recoverKey ?: if (legacyWechat) "screenshot-v2:$visualKey" else
@@ -74,6 +77,10 @@ internal open class ConversationTitleStabilizer(
             confirmed = known?.let { candidate.copy(displayName = it.name, conversationType = ConversationType.entries.firstOrNull { type -> type.wireName == it.type } ?: candidate.conversationType) },
             previousKey = recoverKey?.takeIf { known != null && it != known.key },
         ).also { state = it }
+        if (tolerateUnreadableFrame && continuous && recoverKey != null && recoverKey != current.key) {
+            // 空标题首图已以P保存；精确字形恢复A后必须携带P，服务端才能接回同一来源。
+            current.previousKey = recoverKey
+        }
         if (canonicalTitle(current.candidate.displayName) != canonicalTitle(candidate.displayName)) {
             current.candidate = candidate
             current.votes = 0

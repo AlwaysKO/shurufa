@@ -109,3 +109,6 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation project(':yuyansdk')
 }
+
+// 统一普通构建、IDE Run和手动签名包的原签名，并交付可分享APK。
+apply from: rootProject.file('tools/signing-delivery.gradle')

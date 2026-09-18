@@ -120,7 +120,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
             event.text?.joinToString(" "),
             event.contentDescription?.toString(),
         ).joinToString(" ")
-        if (shouldResetScreenshotIdentity(packageName, event.eventType, eventText)) resetScreenshotIdentity()
+        if (shouldResetScreenshotIdentity(packageName, event.eventType, eventText, event.className?.toString())) resetScreenshotIdentity()
         val regularCapture = shouldCaptureForegroundChatEvent(event.eventType, event.className?.toString(), eventText)
         val possibleEmptyTreeCapture = shouldCaptureEmptyTreeWeChatOpen(
             eventType = event.eventType,
@@ -158,7 +158,9 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         backgroundScope.launch {
             if (!CollectionConsent.enabled(this@PassiveChatAccessibilityService) ||
                 snapshotGeneration.get() != generation ||
-                screenshotIdentityGeneration.get() != identityGeneration) return@launch
+                screenshotIdentityGeneration.get() != identityGeneration) {
+                return@launch
+            }
             val activeRoot = rootInActiveWindow
             val activeSnapshot = try {
                 // 排队期间已离开窗口时，不能用旧事件读取新 App/会话。
@@ -208,7 +210,9 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         }
     }
 
-    override fun onInterrupt() = resetScreenshotIdentity()
+    override fun onInterrupt() {
+        resetScreenshotIdentity()
+    }
 
     override fun onServiceConnected() {
         super.onServiceConnected()
@@ -304,7 +308,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         }
         debouncer.submit(
             windowId,
-            viewportCaptureSignature(packageName, snapshot.stableTreeSignature(), generation),
+            viewportCaptureSignature(packageName, snapshot.stableTreeSignature(), generation, confirmationAttempt),
             StableViewport(packageName, windowId, snapshot, confirmationAttempt),
             contextKey = key,
         )
@@ -325,7 +329,9 @@ class PassiveChatAccessibilityService : AccessibilityService() {
             } finally {
                 recycleRoot(root)
             } ?: return@launch
-            if (!samePendingChat(viewport.packageName, viewport.snapshot, current)) return@launch
+            if (!samePendingChat(viewport.packageName, viewport.snapshot, current)) {
+                return@launch
+            }
             val activeCoordinator = coordinator ?: return@launch
             if (!CollectionConsent.enabled(this@PassiveChatAccessibilityService) ||
                 screenshotIdentityGeneration.get() != identityGeneration) return@launch
@@ -342,17 +348,27 @@ class PassiveChatAccessibilityService : AccessibilityService() {
 
     private fun captureCurrentForegroundViewport(expectedPackage: String, confirmationAttempt: Int = 0) {
         if (!CollectionConsent.enabled(this) || !isForegroundChatCapturePackage(expectedPackage)) return
-        val generation = snapshotGeneration.incrementAndGet()
+        val generation = snapshotGeneration.get()
         val identityGeneration = screenshotIdentityGeneration.get()
         backgroundScope.launch {
             if (!CollectionConsent.enabled(this@PassiveChatAccessibilityService) ||
-                snapshotGeneration.get() != generation ||
-                screenshotIdentityGeneration.get() != identityGeneration) return@launch
+                screenshotIdentityGeneration.get() != identityGeneration) {
+                return@launch
+            }
             val root = rootInActiveWindow ?: return@launch
             try {
                 val packageName = root.packageName?.toString()
-                if (packageName != expectedPackage) return@launch
-                val snapshot = treeReader.read(root) ?: return@launch
+                if (packageName != expectedPackage) {
+                    return@launch
+                }
+                val snapshot = treeReader.read(root)
+                if (packageName == WECHAT_PACKAGE && !hasReadableChatContent(snapshot)) {
+                    mainHandler.post {
+                        if (screenshotIdentityGeneration.get() == identityGeneration) captureEmptyTreeWeChatScreenshot()
+                    }
+                    return@launch
+                }
+                if (snapshot == null) return@launch
                 val windowId = root.windowId
                 if (!CollectionConsent.enabled(this@PassiveChatAccessibilityService) ||
                     screenshotIdentityGeneration.get() != identityGeneration) return@launch
@@ -397,7 +413,9 @@ class PassiveChatAccessibilityService : AccessibilityService() {
             .filter { it > windowBounds.top }
             .minOrNull()
         val screenshotBounds = emptyTreeScreenshotBounds(windowBounds, inputMethodTop)
-        if (screenshotBounds.right <= screenshotBounds.left || screenshotBounds.bottom - screenshotBounds.top < 400) return
+        if (screenshotBounds.right <= screenshotBounds.left || screenshotBounds.bottom - screenshotBounds.top < 400) {
+            return
+        }
 
         val identityGeneration = screenshotIdentityGeneration.get()
         backgroundScope.launch {
@@ -412,10 +430,14 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                 )?.get(0) ?: return@withLock
                 val preferences = getSharedPreferences(FALLBACK_PREFERENCES, Context.MODE_PRIVATE)
                 if (preferences.getString(LAST_EMPTY_TREE_SCREENSHOT_SHA, null) == asset.sha256 &&
-                    preferences.getString("last_title_identity_status", null) == "confirmed") return@withLock
+                    preferences.getString("last_title_identity_status", null) == "confirmed") {
+                    return@withLock
+                }
                 val capturedAt = System.currentTimeMillis()
                 val firstIdentity = resolver?.resolve(asset, resolverVersion) ?: unresolvedWechatScreenshotIdentity()
-                if (!firstIdentity.isChatPage) return@withLock
+                if (!firstIdentity.isChatPage) {
+                    return@withLock
+                }
                 suspend fun persist(identity: ScreenshotConversationIdentity): CapturePersistResult {
                     val result = coordinator?.captureParsed(
                         conversation = CapturedConversation(
@@ -447,6 +469,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                         preferences.edit().putString(LAST_EMPTY_TREE_SCREENSHOT_SHA, asset.sha256)
                             .putString("last_title_identity_status", identity.status).apply()
                     }
+
                     return result
                 }
                 persistScreenshotBeforeConfirmation(firstIdentity, ::persist) {
@@ -656,15 +679,17 @@ class PassiveChatAccessibilityService : AccessibilityService() {
 
 internal fun emptyTreeScreenshotBounds(windowBounds: IntRect, inputMethodTop: Int?): IntRect = IntRect(
     left = windowBounds.left,
-    top = windowBounds.top + 80,
+    top = windowBounds.top,
     right = windowBounds.right,
     // 空树设备无法定位微信输入栏。没有系统键盘时保留完整窗口，避免截断最后一条消息。
-    bottom = inputMethodTop?.coerceAtMost(windowBounds.bottom) ?: windowBounds.bottom,
+    bottom = inputMethodTop?.takeIf { it > windowBounds.top && it < windowBounds.bottom } ?: windowBounds.bottom,
 )
 
-internal fun viewportCaptureSignature(packageName: String, treeSignature: String, eventGeneration: Long): String =
+internal fun viewportCaptureSignature(packageName: String, treeSignature: String, eventGeneration: Long, confirmationAttempt: Int = 0): String =
     if (isForegroundChatCapturePackage(packageName))
-        "$treeSignature:$eventGeneration" else treeSignature
+        "$treeSignature:$eventGeneration" +
+            if (packageName != "com.tencent.mobileqq" && confirmationAttempt > 0) ":confirm:$confirmationAttempt" else ""
+    else treeSignature
 
 internal fun samePendingChat(packageName: String, previous: UiNodeSnapshot, current: UiNodeSnapshot): Boolean {
     val adapter = AdapterRegistry.forPackage(packageName) ?: return false

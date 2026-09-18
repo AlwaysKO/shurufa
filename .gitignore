@@ -172,3 +172,6 @@ test-results/
 
 # 本机 SDK 环境检查依赖仓库外脚本，不属于可移植项目测试。
 /android/YuyanIme/tools/test_sdk_environment.py
+
+# 本机签名私有配置不得提交。
+**/miaoyan-signing.properties

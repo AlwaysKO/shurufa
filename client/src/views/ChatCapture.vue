@@ -25,7 +25,7 @@ function readSelection(): SavedSelection {
     const saved = JSON.parse(globalThis.localStorage?.getItem(`chat-capture-selection:${currentUserId.value}`) || '{}');
     const valid = ['wechat', 'qq', 'douyin'];
     return { platform: valid.includes(saved.platform) ? saved.platform : 'wechat', conversations: Object.fromEntries(
-      Object.entries(saved.conversations || {}).filter(([key, id]) => valid.includes(key) && Number.isSafeInteger(id) && Number(id) > 0),
+      Object.entries(saved.conversations || {}).filter(([key, id]) => valid.includes(key) && Number.isSafeInteger(id) && (Number(id) > 0 || id === -1)),
     ) };
   } catch { return { platform: 'wechat', conversations: {} }; }
 }
@@ -40,6 +40,7 @@ function rememberSelection() {
 let latestLoad = 0;
 const conversations = ref<ChatConversationRow[]>([]);
 const selected = ref<ChatConversationRow | null>(null);
+const pendingGroup = computed(() => selected.value?.id === -1);
 const messages = ref<ChatMessageRow[]>([]);
 const messageType = ref('all');
 const page = ref(1);
@@ -152,7 +153,7 @@ async function navigateImage(direction: 'next' | 'previous') {
   const version = ++previewRequest, scope = previewScope.value;
   previewLoading.value = true; previewError.value = '';
   try {
-    const result = await api.chatAdjacentImage(conversationId, current.message_id, current.asset_id, direction);
+    const result = await api.chatAdjacentImage(conversationId, current.message_id, current.asset_id, direction, ...(pendingGroup.value ? [platform.value] as const : []));
     if (disposed || version !== previewRequest || scope !== previewScope.value || !previewImage.value) return;
     if (!result.image) {
       previewBoundary.value = direction;
@@ -205,7 +206,7 @@ async function loadMessages() {
   loading.value = true;
   try {
     // 服务端先按 captured_at DESC、id DESC 排序，再分页；不对当前页单独排序。
-    const result = await api.chatMessages(conversation.id, page.value, pageSize);
+    const result = await api.chatMessages(conversation.id, page.value, pageSize, ...(pendingGroup.value ? [platform.value] as const : []));
     if (disposed || request !== latestRequest) return;
     total.value = result.total;
     if (page.value > totalPages.value) {
@@ -265,17 +266,22 @@ async function load() {
   try {
     const [overviewResult, conversationResult] = await Promise.all([
       api.chatCaptureOverview(platform.value),
-      api.chatConversations(1, 100, platform.value),
+      api.chatConversations(1, 100, platform.value, '', true),
     ]);
     if (disposed || request !== latestLoad) return;
     overview.value = overviewResult;
     conversations.value = conversationResult.conversations;
     const rememberedId = selected.value?.id ?? savedSelection.conversations[platform.value];
     let restored = conversations.value.find(item => item.id === rememberedId) ?? null;
-    if (rememberedId && !restored) {
+    if (rememberedId && rememberedId > 0 && !restored) {
       restored = (await api.resolveChatConversation(rememberedId)).conversation;
       if (disposed || request !== latestLoad) return;
       if (restored && restored.platform !== platform.value) restored = null;
+      if (restored && restored.identity_confidence < 0.8 && (
+          /^(?:screenshot-v2:|capture-v3:|screenshot-pending:|capture-pending:|notification-v2:|header:)/.test(restored.external_key) ||
+          /^(?:待确认|微信会话)/.test(restored.display_name || ''))) {
+        restored = conversations.value.find(item => item.id === -1) ?? null;
+      }
       if (restored && !conversations.value.some(item => item.id === restored!.id)) conversations.value.unshift(restored);
     }
     selected.value = restored ?? conversations.value[0] ?? null;
@@ -294,7 +300,7 @@ async function load() {
 
 async function deleteSelectedConversation() {
   const conversation = selected.value;
-  if (!conversation || loading.value || mutationBusy.value) return;
+  if (!conversation || pendingGroup.value || loading.value || mutationBusy.value) return;
   const context = selectionContext.value;
   const name = conversation.display_name || conversation.external_key;
   if (!(await confirmAction(`确定删除“${name}”及其全部聊天记录吗？此操作不可恢复。`))) return;
@@ -327,7 +333,7 @@ async function deleteImage(message: ChatMessageRow, assetId: number) {
     if (conversation) await loadMessages();
     const [overviewResult, conversationResult] = await Promise.all([
       api.chatCaptureOverview(platform.value),
-      api.chatConversations(1, 100, platform.value),
+      api.chatConversations(1, 100, platform.value, '', true),
     ]);
     if (disposed) return;
     overview.value = overviewResult;
@@ -352,14 +358,14 @@ async function deleteSelectedImages() {
   bulkDeleting.value = true; error.value = ''; deleteNotice.value = '';
   let completed = false;
   try {
-    const result = await api.deleteChatImages({ confirm: 'DELETE', conversation_id: conversation.id, images });
+    const result = await api.deleteChatImages({ confirm: 'DELETE', conversation_id: conversation.id, images, ...(pendingGroup.value ? { platform: platform.value } : {}) });
     completed = true;
     if (disposed || context !== selectionContext.value) return;
     deleteNotice.value = `已删除 ${result.deleted_images} 张图片${result.files_pending ? '；附件文件清理将在后台重试。' : ''}`;
     const scope = previewScope.value;
     await loadMessages();
     const [overviewResult, conversationResult] = await Promise.all([
-      api.chatCaptureOverview(platform.value), api.chatConversations(1, 100, platform.value),
+      api.chatCaptureOverview(platform.value), api.chatConversations(1, 100, platform.value, '', true),
     ]);
     if (disposed || scope !== previewScope.value) return;
     overview.value = overviewResult; conversations.value = conversationResult.conversations;
@@ -370,6 +376,7 @@ async function deleteSelectedImages() {
 }
 
 const mergeOpen = ref(false);
+const mergeSource = ref<ChatConversationRow | null>(null);
 const mergeQuery = ref('');
 const mergeTargets = ref<ChatConversationRow[]>([]);
 const mergePage = ref(1), mergeTotal = ref(0), mergeLoading = ref(false);
@@ -381,19 +388,34 @@ async function searchMergeTargets(next = 1) {
   const token = ++mergeRequest, scope = previewScope.value;
   mergeLoading.value = true; mergeError.value = ''; mergeTargets.value = [];
   try {
-    const result = await api.chatConversations(next, 20, platform.value, mergeQuery.value);
+    const result = await api.chatConversations(next, 20, platform.value, mergeQuery.value, true);
     if (disposed || token !== mergeRequest || scope !== previewScope.value) return;
-    mergeTargets.value = result.conversations.filter(item => item.id !== selected.value?.id);
+    mergeTargets.value = result.conversations.filter(item => item.id > 0 && item.id !== mergeSource.value?.id);
     mergeTotal.value = result.total; mergePage.value = next;
   } catch (reason) { if (token === mergeRequest) mergeError.value = (reason as Error).message; }
   finally { if (token === mergeRequest) mergeLoading.value = false; }
 }
 async function openMerge() {
-  if (mutationBusy.value || loading.value || !selected.value) return;
+  if (mutationBusy.value || loading.value || !selected.value || pendingGroup.value) return;
+  mergeSource.value = selected.value;
   mergeOpen.value = true; mergeQuery.value = ''; await searchMergeTargets();
 }
+async function confirmSource(message: ChatMessageRow) {
+  if (!pendingGroup.value || !message.conversation_id || mutationBusy.value || loading.value) return;
+  const scope = previewScope.value;
+  loading.value = true;
+  try {
+    const result = await api.resolveChatConversation(message.conversation_id);
+    if (disposed || scope !== previewScope.value) return;
+    if (!result.conversation || result.conversation.platform !== platform.value ||
+        result.conversation.id !== message.conversation_id || result.conversation.identity_confidence >= 0.8) throw Error('此来源已确认或已合并，请刷新后查看');
+    mergeSource.value = result.conversation;
+    mergeOpen.value = true; mergeQuery.value = ''; await searchMergeTargets();
+  } catch (reason) { if (scope === previewScope.value) error.value = (reason as Error).message; }
+  finally { if (scope === previewScope.value) loading.value = false; }
+}
 async function mergeInto(target: ChatConversationRow) {
-  const source = selected.value, scope = previewScope.value;
+  const source = mergeSource.value, scope = previewScope.value;
   if (!source || mutationBusy.value || loading.value || mergeLoading.value) return;
   if (!(await confirmAction(`将“${source.display_name || source.external_key}”合并到“${target.display_name || target.external_key}”？\n保留全部图片和文字；原会话后续上报也归入目标。`, {title: '确认合并会话', confirmText: '确认合并'}))) return;
   if (disposed || scope !== previewScope.value || mutationBusy.value || loading.value) return;
@@ -469,23 +491,25 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
           <span class="timeline-summary">共 {{ total }} 条 · 每页 {{ pageSize }} 条 · 采集时间倒序，最新在前</span>
         </div>
         <div class="timeline-actions">
-          <button data-testid="chat-open-merge" :disabled="!selected || loading || mutationBusy" @click="openMerge">合并到…</button>
+          <button data-testid="chat-open-merge" :disabled="!selected || pendingGroup || loading || mutationBusy" @click="openMerge">合并到…</button>
           <select v-model="messageType" aria-label="本页消息类型筛选" :disabled="loading || mutationBusy">
             <option value="all">本页全部类型</option>
             <option v-for="type in messageTypes" :key="type" :value="type">{{ type }}</option>
           </select>
           <button
             class="delete-button"
+            data-testid="chat-delete-conversation"
             type="button"
-            :disabled="!selected || loading || mutationBusy"
+            :disabled="!selected || pendingGroup || loading || mutationBusy"
             @click="deleteSelectedConversation"
           >{{ deleting ? '删除中…' : '删除会话' }}</button>
         </div>
       </div>
 
+      <p v-if="pendingGroup" class="timeline-summary">未确认图片集中显示，来源仍独立保留。可逐来源确认归属，或选择图片删除；不会整组误合并。</p>
       <section v-if="mergeOpen" class="merge-panel" aria-label="选择合并目标">
         <h4>选择目标会话（同一手机、同一App）</h4>
-        <p>历史图片和文字不会删除；合并后原标识的新上报自动归入目标。</p>
+        <p>当前来源：{{ mergeSource?.display_name }}（#{{ mergeSource?.id }}）。仅此来源的历史图片和文字归入目标，后续该来源上报也归入目标。</p>
         <form @submit.prevent="searchMergeTargets(1)">
           <input v-model="mergeQuery" aria-label="搜索目标会话" placeholder="搜索会话名称" :disabled="mutationBusy" />
           <button :disabled="mutationBusy || mergeLoading">搜索</button>
@@ -524,6 +548,7 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
           :class="[message.direction, { 'has-media': message.assets.length > 0 }]"
         >
           <div class="message-head">
+            <button v-if="pendingGroup && message.conversation_id" :data-testid="`chat-confirm-source-${message.id}`" :disabled="loading || mutationBusy" @click="confirmSource(message)">确认此来源归属 #{{ message.conversation_id }}</button>
             <span :data-testid="`chat-image-label-${message.id}`">{{ messageDisplayName(message) }}</span>
             <span class="badge">{{ directionNames[message.direction] }}</span>
             <span class="badge">{{ message.message_type }}</span>

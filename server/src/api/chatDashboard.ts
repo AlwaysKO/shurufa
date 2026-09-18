@@ -1,3 +1,4 @@
+import { createChatPendingRouter, pendingScope, pendingMessageScope } from './chatPending.js';
 import { createChatConversationsRouter } from './chatConversations.js';
 import { createChatImagesRouter } from './chatImages.js';
 import { Router } from 'express';
@@ -18,6 +19,7 @@ function iso(value: unknown): unknown {
 
 export function createChatDashboardRouter(pool: pg.Pool): Router {
   const router = Router();
+  router.use(createChatPendingRouter(pool));
   router.use(createChatImagesRouter(pool));
   router.use(createChatConversationsRouter(pool));
 
@@ -119,25 +121,28 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
   router.get('/messages', async (req, res, next) => {
     try {
       const conversationId = Number(req.query.conversation_id);
-      if (!Number.isSafeInteger(conversationId) || conversationId <= 0) {
+      const grouped = pendingScope(conversationId, req.query.platform);
+      const scopeValue = grouped ? req.query.platform : conversationId;
+      const scopeFilter = grouped ? pendingMessageScope('$1', '$2') : 'conversation_id = $2';
+      if (!grouped && (!Number.isSafeInteger(conversationId) || conversationId <= 0)) {
         return res.status(400).json({ error: 'conversation_id is invalid' });
       }
       const { page, pageSize, offset } = pagination(req.query as Record<string, unknown>);
       const [totalResult, rowsResult] = await Promise.all([
         pool.query<{ count: string }>(
           `SELECT COUNT(*) AS count FROM chat_message
-           WHERE user_id = $1 AND conversation_id = $2`,
-          [res.locals.userId, conversationId],
+           WHERE user_id = $1 AND ${scopeFilter}`,
+          [res.locals.userId, scopeValue],
         ),
         pool.query(
-          `SELECT id, platform, direction, message_type, sender_key, sender_name,
+          `SELECT id, conversation_id, platform, direction, message_type, sender_key, sender_name,
                   text, displayed_time, occurred_at, captured_at, sequence_hint,
                   metadata
            FROM chat_message
-           WHERE user_id = $1 AND conversation_id = $2
+           WHERE user_id = $1 AND ${scopeFilter}
            ORDER BY captured_at DESC, id DESC
            LIMIT $3 OFFSET $4`,
-          [res.locals.userId, conversationId, pageSize, offset],
+          [res.locals.userId, scopeValue, pageSize, offset],
         ),
       ]);
 
@@ -177,6 +182,7 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
         page_size: pageSize,
         messages: rowsResult.rows.map((row) => ({
           ...row,
+          conversation_id: Number(row.conversation_id),
           occurred_at: iso(row.occurred_at),
           captured_at: iso(row.captured_at),
           sequence_hint: row.sequence_hint === null ? null : Number(row.sequence_hint),

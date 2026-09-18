@@ -1,0 +1,127 @@
+import groovy.json.JsonSlurper
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+import java.security.MessageDigest
+
+// 统一使用已安装旧版的签名，防止 IDE 向导注入其他密钥导致覆盖安装失败。
+// 密码仅从本机配置载入，交给子进程环境变量，不进入命令行/源码/日志。
+def oldFingerprint = 'a4626fa45c451154093333af3dbc3c6e1a3c7ba783eae399ea4786b5457b1287'
+def windows = System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')
+def localPath = { String value ->
+    if (!value) throw new GradleException('签名配置缺少文件路径')
+    value = value.replace((char) 92, (char) 47)
+    if (!windows && value ==~ '^[A-Za-z]:/.*') {
+        return new File('/mnt/' + value[0].toLowerCase(Locale.ROOT) + value.substring(2))
+    }
+    return rootProject.file(value)
+}
+def loadProperties = { File file ->
+    if (!file.isFile()) throw new GradleException("缺少本机签名配置：${file}；见 tools/SIGNING.md。不能临时生成其他密钥。")
+    def props = new Properties()
+    file.withInputStream { props.load(it) }
+    return props
+}
+def oldPropertiesFile = rootProject.file('keystore/keystore.properties')
+def signingConfiguration = {
+    def props = loadProperties(oldPropertiesFile)
+    ['storeFile', 'storePassword', 'keyAlias', 'keyPassword'].each { key ->
+        if (!props.getProperty(key)) throw new GradleException("本机签名配置缺少 ${key}，未执行签名")
+    }
+    if (!localPath(props.getProperty('storeFile')).isFile()) throw new GradleException('签名密钥文件不存在')
+    return props
+}
+def runSigner = { List<String> arguments, Map<String, String> environment ->
+    def jar = new File(android.sdkDirectory, "build-tools/${android.buildToolsVersion}/lib/apksigner.jar")
+    def javaExe = new File(System.getProperty('java.home'), windows ? 'bin/java.exe' : 'bin/java')
+    def builder = new ProcessBuilder(([javaExe.absolutePath, '-jar', jar.absolutePath] + arguments).collect { it.toString() })
+    builder.environment().putAll(environment)
+    builder.redirectErrorStream(true)
+    def process = builder.start()
+    def output = process.inputStream.getText('UTF-8')
+    if (process.waitFor() != 0) {
+        // 不打印完整子进程输出，避免异常时泄露私有配置。
+        throw new GradleException('APK 签名/校验失败，未交付APK；请核对本机密钥、别名、密码和授权链')
+    }
+    return output
+}
+def validateSigner = { File apk, int api, String expected ->
+    def output = runSigner(['verify', '--min-sdk-version', "${api}", '--max-sdk-version', "${api}",
+                            '--print-certs', apk.absolutePath], [:])
+    def fingerprints = output.readLines().findAll { it.contains('certificate SHA-256 digest:') }
+            .collect { it.split(': ', 2)[1].trim() }
+    if (fingerprints != [expected]) throw new GradleException("API ${api} 签名身份不符合预期，未交付APK")
+}
+afterEvaluate {
+    ['OfflineDebug', 'OfflineRelease'].each { variant ->
+        def packageTask = tasks.named("package${variant}")
+        packageTask.configure { task ->
+            // 强制重新签名，避免 IDE 注入其他签名或增量任务复用错误签名。
+            outputs.upToDateWhen { false }
+            doFirst { signingConfiguration() }
+            doLast {
+                def config = signingConfiguration()
+                def env = [
+                    SHURUFA_OLD_STORE_PASS: config.getProperty('storePassword'),
+                    SHURUFA_OLD_KEY_PASS: config.getProperty('keyPassword')
+                ]
+                def signerArgs = { Properties props, String prefix ->
+                    ['--ks', localPath(props.getProperty('storeFile')).absolutePath,
+                     '--ks-key-alias', props.getProperty('keyAlias'),
+                     '--ks-pass', "env:SHURUFA_${prefix}_STORE_PASS",
+                     '--key-pass', "env:SHURUFA_${prefix}_KEY_PASS"]
+                }
+                def apks = task.outputDirectory.get().asFile.listFiles().findAll { it.name.endsWith('.apk') }
+                if (apks.size() != 1) throw new GradleException('预期单一完整APK，停止签名')
+                def apk = apks.first()
+                def signed = new File(task.temporaryDir, 'rotated.apk')
+                signed.parentFile.mkdirs()
+                runSigner(['sign', '--v3-signing-enabled', 'true', '--v4-signing-enabled', 'false',
+                           '--out', signed.absolutePath] + signerArgs(config, 'OLD') + [apk.absolutePath], env)
+                validateSigner(signed, 23, oldFingerprint)
+                validateSigner(signed, 28, oldFingerprint)
+                validateSigner(signed, 36, oldFingerprint)
+                Files.move(signed.toPath(), apk.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                // v4 与 APK 字节绑定；不能让 IDE 使用 AGP 重签前遗留的侧车文件。
+                Files.deleteIfExists(new File(apk.absolutePath + '.idsig').toPath())
+                logger.lifecycle('APK 已统一为原签名，API23/28/36证书核验通过。')
+            }
+        }
+        tasks.named("assemble${variant}").configure {
+            doLast {
+                // Run 包保留 IDE 行为，但禁止将 testOnly 包复制为分享成品。
+                if (providers.gradleProperty('android.injected.testOnly').getOrElse('false').toBoolean()) {
+                    logger.lifecycle('IDE testOnly 包：跳过分享APK交付。')
+                    return
+                }
+                def dir = packageTask.get().outputDirectory.get().asFile
+                def meta = new JsonSlurper().parse(new File(dir, 'output-metadata.json'))
+                if (meta.elements.size() != 1) throw new GradleException('预期单一APK元数据')
+                def element = meta.elements.first()
+                def apk = new File(dir, element.outputFile as String)
+                def aapt = new File(android.sdkDirectory, "build-tools/${android.buildToolsVersion}/" + (windows ? 'aapt.exe' : 'aapt'))
+                def inspect = new ProcessBuilder(aapt.absolutePath, 'dump', 'xmltree', apk.absolutePath, 'AndroidManifest.xml')
+                        .redirectErrorStream(true).start()
+                def manifest = inspect.inputStream.getText('UTF-8')
+                if (inspect.waitFor() != 0) throw new GradleException('无法检查APK安装限制，停止交付')
+                if (manifest.contains('android:testOnly')) {
+                    logger.lifecycle('实际APK含testOnly属性：跳过分享APK交付。')
+                    return
+                }
+                def digest = MessageDigest.getInstance('SHA-256')
+                apk.withInputStream { input ->
+                    byte[] buffer = new byte[1024 * 1024]
+                    int count
+                    while ((count = input.read(buffer)) != -1) digest.update(buffer, 0, count)
+                }
+                def sha = digest.digest().encodeHex().toString()
+                def destination = localPath('E:/Projects/shurufa-android/apk')
+                if (!destination.isDirectory()) throw new GradleException('固定交付目录不可用，APK已构建但未完成交付')
+                def date = new Date().format('yyyy-MM-dd', TimeZone.getTimeZone('GMT+8'))
+                def mode = variant.endsWith('Debug') ? 'debug' : 'release'
+                def target = new File(destination, "shurufa-${date}-v${element.versionName}-${element.versionCode}-${mode}-${sha.take(8)}.apk")
+                Files.copy(apk.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                logger.lifecycle("可分享APK：${target}")
+            }
+        }
+    }
+}
