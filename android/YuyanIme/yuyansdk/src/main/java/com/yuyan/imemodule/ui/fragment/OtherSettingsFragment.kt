@@ -12,6 +12,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.preference.EditTextPreference
+import androidx.preference.Preference
 import androidx.preference.PreferenceScreen
 import androidx.preference.SwitchPreferenceCompat
 import com.yuyan.imemodule.R
@@ -19,6 +20,7 @@ import com.yuyan.imemodule.application.Launcher
 import com.yuyan.imemodule.data.collect.CollectionConsent
 import com.yuyan.imemodule.data.collect.CollectionConsentDialog
 import com.yuyan.imemodule.data.collect.DataCollector
+import com.yuyan.imemodule.data.capture.adapter.DouyinCaptureDiagnostics
 import com.yuyan.imemodule.manager.UserDataManager
 import com.yuyan.imemodule.prefs.AppPrefs
 import com.yuyan.imemodule.ui.activity.LauncherActivity
@@ -106,6 +108,21 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
 
     override fun onPreferenceUiCreated(screen: PreferenceScreen) {
         val ctx = requireContext()
+        screen.addPreference(Preference(ctx).apply {
+            title = "抖音识别诊断"
+            summary = "在手机上查看最近一次页面识别状态；不含聊天内容"
+            setOnPreferenceClickListener {
+                val last = DouyinCaptureDiagnostics(ctx).read()
+                val status = last?.let {
+                    "最近状态：${it.status.label}\n记录时间：${java.text.DateFormat.getDateTimeInstance().format(java.util.Date(it.observedAt))}"
+                } ?: "尚无识别记录。请确认个人数据同步和系统无障碍服务已开启，再进入抖音私信聊天页。"
+                val consent = if (CollectionConsent.enabled(ctx)) "开启" else "关闭"
+                AlertDialog.Builder(ctx).setTitle("抖音识别诊断")
+                    .setMessage("个人数据同步：$consent\n$status\n\n此状态仅说明页面识别，不代表截图或上传成功。最近记录可能来自已退出的页面；不保存标题、正文或截图。")
+                    .setPositiveButton(android.R.string.ok, null).show()
+                true
+            }
+        })
         screen.addPreference(SwitchPreferenceCompat(ctx).apply {
             key = CollectionConsent.KEY
             setDefaultValue(false)

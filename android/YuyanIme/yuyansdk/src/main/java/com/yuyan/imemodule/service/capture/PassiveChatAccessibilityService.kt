@@ -21,6 +21,8 @@ import com.yuyan.imemodule.data.capture.RoomCaptureOutboxStore
 import com.yuyan.imemodule.data.capture.adapter.ParseResult
 import com.yuyan.imemodule.data.capture.model.stableKeyOrNull
 import com.yuyan.imemodule.data.capture.adapter.AdapterRegistry
+import com.yuyan.imemodule.data.capture.adapter.DouyinChatAdapter
+import com.yuyan.imemodule.data.capture.adapter.DouyinCaptureDiagnostics
 import com.yuyan.imemodule.data.capture.db.CaptureDatabase
 import com.yuyan.imemodule.data.capture.media.WindowMediaCapturer
 import com.yuyan.imemodule.data.capture.media.WindowScreenshotter
@@ -62,6 +64,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
  * 只读被动采集入口。仅解析稳定视口，并按需截取窗口中的媒体区域，不操作 UI。
  */
 class PassiveChatAccessibilityService : AccessibilityService() {
+    private val douyinDiagnostics by lazy { DouyinCaptureDiagnostics(this) }
     private val backgroundDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     private val backgroundScope = CoroutineScope(SupervisorJob() + backgroundDispatcher)
     private val treeReader = AccessibilityTreeReader()
@@ -298,7 +301,11 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     }
 
     private fun submitChatViewport(packageName: String, windowId: Int, snapshot: UiNodeSnapshot, generation: Long, confirmationAttempt: Int = 0) {
-        val parsed = AdapterRegistry.forPackage(packageName)?.parse(snapshot) as? ParseResult.Success
+        val adapter = AdapterRegistry.forPackage(packageName)
+        val result = if (adapter is DouyinChatAdapter) {
+            adapter.inspect(snapshot).also { douyinDiagnostics.record(it.status) }.result
+        } else adapter?.parse(snapshot)
+        val parsed = result as? ParseResult.Success
         val conversation = parsed?.viewport?.conversation
         val key = conversation?.stableKeyOrNull()
         if (key == null || conversation.identityConfidence < 0.8) {
