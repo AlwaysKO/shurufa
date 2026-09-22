@@ -49,6 +49,22 @@ internal object OfflineT9Candidates {
         select(code, native).firstPage
 
     fun select(code: String, native: List<String> = emptyList(), nativeComments: List<String>? = null): CandidateSelection {
+        if (code.length in 1..2 && code.all { it in '2'..'9' }) {
+            val history = try { store?.learned(code).orEmpty().associateBy { it.text } }
+                catch (_: Exception) { emptyMap() }
+            val now = System.currentTimeMillis()
+            // 不调用会去重/注入历史项的通用rank，逐项保留原生索引和同字异读。
+            val ranked = native.mapIndexed { index, text -> RankedCandidate(text, nativeComments?.getOrNull(index).orEmpty(), index) }
+                .sortedWith(compareByDescending<RankedCandidate> {
+                    PersonalCandidateRanker.recentSelection(history[it.text]?.lastUsed, now)
+                }.thenByDescending {
+                    val index = requireNotNull(it.nativeIndex)
+                    val choice = history[it.text]
+                    (if (index == 0) 2.0 else 1.0 / (index + 1)) +
+                        (choice?.let { h -> PersonalCandidateRanker.decay(h.weight, h.lastUsed, now) } ?: 0.0)
+                })
+            return CandidateSelection(ranked, native.size)
+        }
         val numeric = code.length in 3..30 && code.all { it in '2'..'9' }
         val letters = code.length in 2..30 && code.all { it in 'a'..'z' }
         if (!numeric && !letters) return CandidateSelection(
@@ -73,7 +89,7 @@ internal object OfflineT9Candidates {
             if (hanCount <= 1) return true
             if (mainDictionary?.containsText(text) == true || domainDictionary?.containsText(text) == true) return true
             if (personalWords.any { it.text == text && PersonalWordReading.normalize(text, reading) == it.pinyin }) return true
-            val codes = T9Spelling.completionCodes(reading)
+            val codes = T9Spelling.completionCodes(reading, minLength = 3)
             return selectedByText[text].orEmpty().any { record ->
                 record.code == code || (code in codes && record.code in codes)
             }
@@ -83,7 +99,8 @@ internal object OfflineT9Candidates {
         val rejected = mutableSetOf<String>()
         val accepted = mutableSetOf<String>()
         fun lookup(dictionary: T9Lexicon?): List<T9Candidate> = if (numeric) {
-            dictionary?.query(code, includeTexts = retainedTexts) { text, allowed ->
+            // 多个高频同码词不能把完整日常词裁掉；仍是固定上限，学习词可越过上限召回。
+            dictionary?.query(code, limit = 32, includeTexts = retainedTexts) { text, allowed ->
                 if (allowed) accepted.add(text) else rejected.add(text)
             }.orEmpty()
         } else dictionary?.queryPinyin(code).orEmpty()
@@ -161,13 +178,17 @@ internal object OfflineT9Candidates {
                 whole + exact + partial + publicWhole + nativeSentences + segmentPrefixes
             }
         } else if (numeric) {
-            // 三键保留原生首项先验，合法词典补全紧随其后，不能被百条单字挤到末尾。
-            original.take(1) + local + original.drop(1)
+            // 精确单音节保留原生字序，其余优先采用词典词频，而非无条件保留原生首项。
+            val singleSyllables = original.filter {
+                it.text.codePointCount(0, it.text.length) == 1 &&
+                    T9Lexicon.digits(it.pinyin.trim().replace('ü', 'v')) == code
+            }
+            singleSyllables + local + original
         } else original + local
         val validTexts = base.mapTo(hashSetOf()) { it.text }
         val compatibleReadings = (allLocalReadings.map { RankedCandidate(it.text, it.pinyin) } + original + nativeSentences)
             .groupBy { it.text }.mapValues { (_, readings) ->
-                readings.map { T9Spelling.completionCodes(it.pinyin) }.distinct()
+                readings.map { T9Spelling.completionCodes(it.pinyin, minLength = 3) }.distinct()
             }
         val now = System.currentTimeMillis()
         val learned = history.filter { record ->
@@ -180,7 +201,8 @@ internal object OfflineT9Candidates {
         }.groupBy { it.choice.text }.map { (text, records) ->
             ChoiceEvidence(text, records.sumOf {
                 PersonalCandidateRanker.decay(it.choice.weight, it.choice.lastUsed, now)
-            }, now)
+            }, now, lastSelectedAt = if (numeric)
+                records.filter { it.code == code }.maxOfOrNull { it.choice.lastUsed } else null)
         }
         // 明确手工词只在原拼写边界内获得基础先验，不写假点击，不改变锁音原生链。
         val preferred = try { store?.personalWords(code, preferredOnly = true).orEmpty() } catch (_: Exception) { emptyList() }
@@ -199,12 +221,15 @@ internal object OfflineT9Candidates {
             try { store?.learned(code).orEmpty().associateBy { it.text } }
             catch (_: Exception) { emptyMap() }
         }
-        val ranked = native.withIndex().sortedByDescending { (index, candidate) ->
+        val ranked = native.withIndex().sortedWith(compareByDescending<IndexedValue<RankedCandidate>> { (index, candidate) ->
+            val choice = history[codes[index]]?.get(candidate.text)?.takeIf { it.count > 0 }
+            PersonalCandidateRanker.recentSelection(choice?.lastUsed, now)
+        }.thenByDescending { (index, candidate) ->
             val prior = if (index == 0) 2.0 else 1.0 / (index + 1)
             val choice = history[codes[index]]?.get(candidate.text)
             prior + if (choice != null && choice.count > 0)
                 PersonalCandidateRanker.decay(choice.weight, choice.lastUsed, now) else 0.0
-        }.map { it.value }
+        }).map { it.value }
         return CandidateSelection(ranked, nativeCount)
     }
 

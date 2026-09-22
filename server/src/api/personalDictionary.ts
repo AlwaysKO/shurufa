@@ -17,7 +17,7 @@ function entry(value: unknown): Entry {
   const v = value as Entry;
   if (!safeText(v.text) || !integer(v.count) || !integer(v.last_used) || typeof v.weight !== 'number' || !Number.isFinite(v.weight) || v.weight < 0 || v.weight > v.count || !['selection','system_dictionary'].includes(v.source)) throw new HttpError(400,'invalid entry');
   if (v.kind === 'choice') {
-    if (v.source !== 'selection' || v.pinyin !== '' || typeof v.code !== 'string' || !/^(?:[a-z]{2,30}|[2-9]{3,30})$/.test(v.code) || v.count < 1 || v.last_used < 1) throw new HttpError(400,'invalid choice');
+    if (v.source !== 'selection' || v.pinyin !== '' || typeof v.code !== 'string' || !/^(?:[a-z]{2,30}|[2-9]{1,30})$/.test(v.code) || v.count < 1 || v.last_used < 1) throw new HttpError(400,'invalid choice');
   } else if (v.kind === 'word') {
     if (v.code !== '' || typeof v.pinyin !== 'string' || v.pinyin.length > 210 || (v.pinyin !== '' && (!/^[a-z]+(?: [a-z]+)*$/.test(v.pinyin) || v.pinyin.split(' ').length !== v.text.length)) || v.count !== 0 || v.weight !== 0 || v.last_used !== 0) throw new HttpError(400,'invalid word');
   } else throw new HttpError(400,'invalid kind');
@@ -53,10 +53,10 @@ async function authenticate(db: Db, req: Request, id: string) {
 }
 async function snapshot(db: Db, group: string) {
   const devices = (await db.query('SELECT device_id FROM dictionary_device WHERE group_id=$1 ORDER BY device_id',[group])).rows.map(r => r.device_id);
-  const rows = (await db.query(`SELECT e.device_id,e.entry_key,e.payload FROM dictionary_entry e
+  const rows = (await db.query(`SELECT e.device_id,e.entry_key,e.sequence,e.payload FROM dictionary_entry e
     JOIN dictionary_device d ON e.device_id=d.device_id WHERE d.group_id=$1 ORDER BY e.device_id,e.entry_key LIMIT 100001`,[group])).rows;
   if (rows.length > 100000) throw new HttpError(413,'词库过大，未下发截断数据');
-  const entries = rows.map(r => ({device_id:r.device_id,...r.payload}));
+  const entries = rows.map(r => ({device_id:r.device_id,version:Number(r.sequence),...r.payload}));
   const policies = (await db.query('SELECT text,status FROM dictionary_policy WHERE group_id=$1 ORDER BY text',[group])).rows;
   const revision = hash(JSON.stringify({group,devices,entries,policies}));
   return {group_id:group,revision,entries,policies};
@@ -90,6 +90,8 @@ export function createMobileDictionaryRouter(pool: pg.Pool): Router {
     const id = res.locals.userId, token = req.get('X-Dictionary-Token');
     const restores=req.body?.restore_enabled ?? true;
     const additions=req.body?.additions_supported ?? false;
+    const habits=req.body?.habits_supported ?? false;
+    if(typeof habits!=='boolean') throw new HttpError(400,'invalid habits capability');
     if(typeof additions!=='boolean') throw new HttpError(400,'invalid additions capability');
     if(typeof restores!=='boolean') throw new HttpError(400,'invalid restore mode');
     if (!token || !/^[0-9a-f]{64}$/.test(token)) throw new HttpError(401,'dictionary credential required');
@@ -102,7 +104,8 @@ export function createMobileDictionaryRouter(pool: pg.Pool): Router {
     }
     await db.query('UPDATE dictionary_device SET restore_enabled=$2 WHERE device_id=$1',[id,restores]);
     await db.query('UPDATE dictionary_device SET additions_supported=$2 WHERE device_id=$1',[id,additions]);
-    return {ok:true,has_report:registered.last_report_at != null,additions_supported:true};
+    await db.query('UPDATE dictionary_device SET habits_supported=$2 WHERE device_id=$1',[id,habits]);
+    return {ok:true,has_report:registered.last_report_at != null,additions_supported:true,habits_supported:true};
   }));
   r.get('/additions',transaction(pool,async(db,req,res)=>{
     const id=res.locals.userId,d=await authenticate(db,req,id);
@@ -128,6 +131,34 @@ export function createMobileDictionaryRouter(pool: pg.Pool): Router {
       const row=(await db.query('SELECT delivered FROM dictionary_addition WHERE device_id=$1 AND cursor=$2',[id,cursor])).rows[0];
       if(!row?.delivered || cursor>Number(d.additions_delivered)) throw new HttpError(409,'cursor was not delivered');
       if(cursor>Number(d.additions_ack)) await db.query('UPDATE dictionary_device SET additions_ack=$2,additions_applied_at=NOW() WHERE device_id=$1',[id,cursor]);
+    }
+    return {ok:true};
+  }));
+  r.get('/habits',transaction(pool,async(db,req,res)=>{
+    const id=res.locals.userId,d=await authenticate(db,req,id);
+    if(!d.habits_supported) throw new HttpError(409,'请升级输入法以接收真实习惯');
+    const raw=req.query.after ?? '0';
+    if(typeof raw!=='string' || !/^\d+$/.test(raw) || !integer(Number(raw))) throw new HttpError(400,'invalid cursor');
+    const after=Number(raw);
+    if(after>Number(d.habits_delivered)) throw new HttpError(409,'cursor was not delivered','dictionary_cursor_reset');
+    const rows=(await db.query('SELECT cursor,source_device_id,version,payload FROM dictionary_habit WHERE device_id=$1 AND cursor>$2 ORDER BY cursor LIMIT 501',[id,after])).rows;
+    const entries=rows.slice(0,500).map(row=>({...row.payload,device_id:row.source_device_id,version:Number(row.version),cursor:Number(row.cursor)}));
+    const cursor=entries.at(-1)?.cursor ?? after;
+    if(!integer(cursor) || entries.some(e=>!integer(e.version))) throw new HttpError(413,'cursor capacity exceeded');
+    if(entries.length) {
+      await db.query('UPDATE dictionary_habit SET delivered=TRUE WHERE device_id=$1 AND cursor>$2 AND cursor<=$3',[id,after,cursor]);
+      await db.query('UPDATE dictionary_device SET habits_delivered=GREATEST(habits_delivered,$2) WHERE device_id=$1',[id,cursor]);
+    }
+    return {entries,cursor,has_more:rows.length>500};
+  }));
+  r.post('/habits/ack',transaction(pool,async(db,req,res)=>{
+    const id=res.locals.userId,d=await authenticate(db,req,id),cursor=req.body?.cursor;
+    if(!d.habits_supported) throw new HttpError(409,'请升级输入法以接收真实习惯');
+    if(!integer(cursor)) throw new HttpError(400,'invalid cursor');
+    if(cursor!==Number(d.habits_ack)) {
+      const row=(await db.query('SELECT delivered FROM dictionary_habit WHERE device_id=$1 AND cursor=$2',[id,cursor])).rows[0];
+      if(!row?.delivered || cursor>Number(d.habits_delivered)) throw new HttpError(409,'cursor was not delivered');
+      if(cursor>Number(d.habits_ack)) await db.query('UPDATE dictionary_device SET habits_ack=$2,habits_applied_at=NOW() WHERE device_id=$1',[id,cursor]);
     }
     return {ok:true};
   }));
@@ -162,9 +193,10 @@ export function createDashboardDictionaryRouter(pool: pg.Pool): Router {
   const r = Router();
   r.get('/devices',transaction(pool,async(db,_req,res) => {
     const d = await device(db,res.locals.userId), current = await snapshot(db,d.group_id);
-    const rows = (await db.query(`SELECT s.device_id,s.group_id,s.last_report_at,s.applied_at,s.applied_revision,s.migration_status,s.imported,s.restore_enabled,s.additions_supported,s.additions_ack,s.additions_applied_at,
+    const rows = (await db.query(`SELECT s.device_id,s.group_id,s.last_report_at,s.applied_at,s.applied_revision,s.migration_status,s.imported,s.restore_enabled,s.additions_supported,s.additions_ack,s.additions_applied_at,s.habits_supported,s.habits_ack,s.habits_applied_at,
       d.name,d.model,d.brand,d.dashboard_name FROM dictionary_device s JOIN device d ON d.id=s.device_id ORDER BY s.device_id`)).rows;
     for(const row of rows) row.additions_pending=Number((await db.query('SELECT COUNT(*) AS n FROM dictionary_addition WHERE device_id=$1 AND cursor>$2',[row.device_id,row.additions_ack])).rows[0].n);
+    for(const row of rows) row.habits_pending=Number((await db.query('SELECT COUNT(*) AS n FROM dictionary_habit WHERE device_id=$1 AND cursor>$2',[row.device_id,row.habits_ack])).rows[0].n);
     return {group_id:d.group_id,devices:rows.map(row => ({...row,in_group:row.group_id===d.group_id,synced:row.restore_enabled && row.group_id===d.group_id && row.applied_revision===current.revision}))};
   }));
   r.get('/entries',transaction(pool,async(db,req,res) => {
@@ -195,8 +227,10 @@ export function createDashboardDictionaryRouter(pool: pg.Pool): Router {
     await dashboardEntries(db,d.group_id,{}); // 容量溢出时事务回滚。
     return {ok:true,created:!!result.rowCount};
   }));
-  r.post('/sync',transaction(pool,async(db,req,res)=>{
-    const {device_ids,texts,all,filter}=req.body ?? {};
+  r.post(['/sync','/sync-all'],transaction(pool,async(db,req,res)=>{
+    const syncAll=req.path==='/sync-all';
+    if(syncAll && (req.body?.texts!==undefined || req.body?.filter!==undefined || req.body?.all!==undefined)) throw new HttpError(400,'全量同步不接受筛选');
+    const {device_ids,texts,all,filter}=syncAll ? {...req.body,all:true} : req.body ?? {};
     if(!Array.isArray(device_ids) || !device_ids.length || device_ids.length>500 || !device_ids.every(id=>typeof id==='string' && uuid.test(id))) throw new HttpError(400,'请选择目标手机');
     if(all!==undefined && all!==true) throw new HttpError(400,'invalid selection');
     if(all===true ? texts!==undefined : !Array.isArray(texts) || !texts.length || texts.length>500 || !texts.every(chinese)) throw new HttpError(400,'请选择词语或全部筛选结果');
@@ -235,7 +269,25 @@ export function createDashboardDictionaryRouter(pool: pg.Pool): Router {
         }
       }
     }
-    return {ok:true,words:words.size,queued,skipped:[...requested].filter(text=>!eligibleTexts.has(text)).length,devices:targets.length};
+    let habitsQueued=0;
+    const habits=syncAll ? rows.filter(e=>e.kind==='choice' && e.status==='enabled') : [];
+    for(const target of targets) {
+      const blocked=new Set((await db.query("SELECT text FROM dictionary_policy WHERE group_id=$1 AND status<>'enabled'",[target.group_id])).rows.map(p=>p.text));
+      for(const habit of habits) {
+        if(blocked.has(habit.text)) continue;
+        const old=(await db.query('SELECT version FROM dictionary_habit WHERE device_id=$1 AND source_device_id=$2 AND code=$3 AND text=$4',[target.device_id,habit.device_id,habit.code,habit.text])).rows[0];
+        const version=Number((habit as typeof habit & {version:number}).version);
+        if(!integer(version) || version<1) throw new HttpError(400,'invalid source version');
+        if(old && Number(old.version)>=version) continue;
+        await db.query(`INSERT INTO dictionary_habit(device_id,source_device_id,code,text,version,payload) VALUES($1,$2,$3,$4,$5,$6)
+          ON CONFLICT(device_id,source_device_id,code,text) DO UPDATE SET version=EXCLUDED.version,payload=EXCLUDED.payload,cursor=nextval('dictionary_habit_cursor'),delivered=FALSE`,
+          [target.device_id,habit.device_id,habit.code,habit.text,version,JSON.stringify(entry(habit))]);
+        habitsQueued++;
+      }
+      const total=Number((await db.query('SELECT COUNT(*) AS n FROM dictionary_habit WHERE device_id=$1',[target.device_id])).rows[0].n);
+      if(total>100000) throw new HttpError(413,'目标习惯追加容量超限');
+    }
+    return {ok:true,...(syncAll ? {habits:habits.length,habits_queued:habitsQueued} : {}),words:words.size,queued,skipped:[...requested].filter(text=>!eligibleTexts.has(text)).length,devices:targets.length};
   }));
   r.post('/bind',transaction(pool,async(db,req,res) => {
     const id=req.body?.device_id;

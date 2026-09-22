@@ -534,4 +534,21 @@ class CaptureCoordinatorTest {
             return true
         }
     }
+    @Test fun truncatedScreenshotIsPersistedWithoutRelaxingOtherLowConfidenceInputs() = runBlocking {
+        val store=FakeStore();val coordinator=coordinator(FakeAdapter(success()),store)
+        val partial=conversation.copy(accountKey="wechat-empty-tree",
+            externalKey="screenshot-v2:truncated:11111111-1111-1111-1111-111111111111",
+            displayName="测试…店（名称被截断）",identityConfidence=.55)
+        val image=CapturedMessage(conversationKey=null,senderKey="viewport",direction=ChatDirection.SYSTEM,
+            messageType=ChatMessageType.IMAGE,metadata=mapOf("capture_source" to "wechat_empty_tree_screenshot",
+                "conversation_identity_status" to "truncated","conversation_identity_source" to "on_device_title_ocr"))
+        val assets=mapOf(0 to pendingAsset("truncated-image"))
+        assertEquals(CapturePersistResult.INSERTED,coordinator.captureParsed(partial,listOf(image),assets))
+        assertTrue(store.pending.single().payloadJson.contains("名称被截断"))
+        assertEquals(CapturePersistResult.FAILED,coordinator.captureParsed(partial,listOf(image)))
+        assertEquals(CapturePersistResult.FAILED,coordinator.captureParsed(partial,listOf(image.copy(text="不允许正文")),assets))
+        assertEquals(CapturePersistResult.FAILED,coordinator.captureParsed(partial.copy(platform=ChatPlatform.QQ),listOf(image),assets))
+        assertEquals(CapturePersistResult.FAILED,coordinator.captureParsed(partial.copy(externalKey="peer"),listOf(image),assets))
+        assertEquals(CapturePersistResult.FAILED,coordinator.captureParsed(partial,listOf(image.copy(metadata=emptyMap())),assets))
+    }
 }

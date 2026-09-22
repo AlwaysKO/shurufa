@@ -7,6 +7,7 @@ import com.yuyan.imemodule.data.capture.db.PendingAssetEntity
 import com.yuyan.imemodule.data.capture.db.PendingMessageEntity
 import com.yuyan.imemodule.data.collect.CollectionConsent
 import com.yuyan.imemodule.data.collect.DataCollector
+import com.yuyan.imemodule.data.collect.ImageUploadRuntime
 import com.yuyan.imemodule.data.collect.ServerConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -38,6 +39,7 @@ class CaptureUploader(
     private val dao: CaptureDao,
     private val api: CaptureApi,
     private val assetFile: (sha256: String) -> File,
+    private val beginPreparation: () -> java.io.Closeable? = { java.io.Closeable {} },
 ) {
     val internalFailureCount = AtomicLong(0)
 
@@ -46,11 +48,15 @@ class CaptureUploader(
         var failures = 0
 
         for (asset in dao.dueAssets(now, MAX_ASSET_BATCH)) {
+            // 在 CaptureApi 读取文件及 Base64 编码前领取共享许可；暂停不记失败。
+            val preparation = beginPreparation() ?: continue
             processed += 1
             val uploaded = try {
                 api.uploadAsset(asset)
             } catch (_: Exception) {
                 false
+            } finally {
+                preparation.close()
             }
             if (uploaded) {
                 dao.deletePendingAsset(asset.sha256)
@@ -117,7 +123,7 @@ class CaptureUploader(
     companion object {
         private const val MAX_ASSET_BATCH = 200
         private const val MAX_MESSAGE_BATCH = 200
-        private const val IDLE_DELAY_MILLIS = 30_000L
+        private const val IDLE_DELAY_MILLIS = 3_000L
         private const val ACTIVE_DELAY_MILLIS = 1_000L
         private val startLock = Any()
         private var uploadJob: Job? = null
@@ -139,6 +145,7 @@ class CaptureUploader(
                         DataCollector.enqueueRawReport(appContext, path, body)
                     }),
                     assetFile = { hash -> File(appContext.cacheDir, "chat-capture/$hash") },
+                    beginPreparation = { ImageUploadRuntime.beginPreparation() },
                 )
                 uploadJob = CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
                     while (isActive) {

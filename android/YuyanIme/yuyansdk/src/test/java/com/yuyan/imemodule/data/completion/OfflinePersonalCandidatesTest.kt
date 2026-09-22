@@ -33,6 +33,23 @@ class OfflinePersonalCandidatesTest {
         closeStore()
         context.deleteDatabase("local_input.db")
     }
+    @Test fun `一两键学习只提升当前原生候选并保留重复字索引与分页`() {
+        for (code in listOf("3", "62")) {
+            OfflineT9Candidates.learn(code, "的")
+            repeat(5) { OfflineT9Candidates.learn(code, "不存在") }
+            val result = OfflineT9Candidates.select(code, listOf("得", "的", "的"), listOf("de", "de", "di"))
+            assertEquals(listOf("的", "的", "得"), result.firstPage.map { it.text })
+            assertEquals(listOf(1, 2, 0), result.firstPage.map { it.nativeIndex })
+            assertEquals(3, result.firstPage.size)
+        }
+        assertEquals(listOf("得", "的"), OfflineT9Candidates.select("4", listOf("得", "的")).firstPage.map { it.text })
+        val db = LocalInputStore(context)
+        try {
+            assertEquals(1L, db.learned("3").first { it.text == "的" }.count)
+            assertTrue(db.dictionaryExport().any { it.code == "62" && it.text == "的" })
+        } finally { db.close() }
+    }
+
     @Test fun `分段学习后的鲮在锁音原生列表内提升且不注入其他历史词`() {
         val tracker = T9CommitTracker()
         repeat(3) {
@@ -75,12 +92,67 @@ class OfflinePersonalCandidatesTest {
         } finally { db.close() }
     }
 
+    @Test fun `兼容完整码的最近时间不冒充三键同码改选`() {
+        val db = LocalInputStore(context)
+        try {
+            db.learn("966", "我哦", pinyin = "wo o")
+            db.writableDatabase.execSQL("UPDATE learned_input SET last_used=last_used-60000 WHERE text='我哦'")
+            repeat(8) { db.learn("96636", "我们", pinyin = "wo men") }
+            repeat(2) {
+                assertEquals("我哦", OfflineT9Candidates.select("966", listOf("我哦", "我们"),
+                    listOf("wo o", "wo men")).firstPage.first().text)
+            }
+            assertEquals(1L, db.learned("966").single().count)
+            assertEquals(8L, db.learned("96636").single().count)
+        } finally { db.close() }
+    }
+
+    @Test fun `锁音最近改选胜过高频旧项且同字异读索引分别保留`() {
+        val db = LocalInputStore(context)
+        try {
+            repeat(8) { db.learn("9464", "星", pinyin = "xing") }
+            db.writableDatabase.execSQL("UPDATE learned_input SET last_used=last_used-60000 WHERE text='星'")
+            db.learn("9464", "行", pinyin = "xing")
+        } finally { db.close() }
+        val native = listOf(RankedCandidate("星", "xing", 0), RankedCandidate("行", "hang", 3),
+            RankedCandidate("行", "xing", 7))
+        val result = OfflineT9Candidates.rankNative(native, 8)
+        assertEquals(7, result.firstPage.first().nativeIndex)
+        assertEquals(3, result.firstPage.size)
+        assertEquals(listOf(0), result.appendNativePage(listOf("型"), "", listOf("xing")))
+        assertEquals(8, result.at(3)?.nativeIndex)
+    }
+
+    @Test fun `同码最近改选胜过旧高频首项并在重开后保持`() {
+        val db = LocalInputStore(context)
+        try {
+            repeat(4) { db.learn("966", "我哦", pinyin = "wo o") }
+            db.writableDatabase.execSQL("UPDATE learned_input SET last_used=last_used-60000 WHERE text='我哦'")
+            db.learn("966", "我们", pinyin = "wo men")
+        } finally { db.close() }
+        closeStore()
+        OfflineT9Candidates.init(context)
+        val result = OfflineT9Candidates.select("966", listOf("我哦", "我们"), listOf("wo o", "wo men"))
+        assertEquals("我们", result.firstPage.first().text)
+        assertEquals(1, result.firstPage.first().nativeIndex)
+    }
+
+    @Test fun `完整码学习可在合法三键末音节补全使用且不复制次数`() {
+        repeat(5) { OfflineT9Candidates.learn("96636", "我们", "wo men") }
+        val db = LocalInputStore(context)
+        try {
+            assertTrue(db.relatedLearned("966").any { it.code == "96636" && it.choice.text == "我们" })
+            assertTrue(db.learned("966").isEmpty())
+        } finally { db.close() }
+        assertEquals("我们", OfflineT9Candidates.select("966", listOf("我哦"), listOf("wo o")).firstPage.first().text)
+    }
+
     @Test fun `三键补回的常用词不应被原生一百个单字挤出前排`() {
         val native = listOf("我哦") + (0 until 99).map { (0x4e00 + it).toChar().toString() }
         val comments = listOf("wo o") + List(99) { "wo" }
         val result = OfflineT9Candidates.select("966", native, comments).firstPage
         assertTrue(result.indexOfFirst { it.text == "我们" } in 0..7)
-        assertEquals("我哦", result.first().text) // 保留三键原生首项先验，不硬改默认字。
+        assertEquals("我们", result.first().text) // 常用词优先，不按文字拉黑其他合法候选。
     }
 
     @Test fun `三键wo加m可独立召回我们而不依赖原生首屏`() {
@@ -205,11 +277,12 @@ class OfflinePersonalCandidatesTest {
         assertEquals(listOf(1), result.appendNativePage(listOf("总额而😀", "😀"), "9664337", listOf("zong'e'er", "")))
     }
 
-    @Test fun `用得上低频整词优先且首屏后页都拒绝总额而拼接`() {
+    @Test fun `可信同码整词按词频排序且首屏后页都拒绝总额而拼接`() {
         val code = "9664337"
         val selection = OfflineT9Candidates.select(code,
             listOf("总额而", "总额", "用"), listOf("zong'e'er", "zong'e", "yong"))
-        assertEquals("用得上", selection.firstPage.first().text)
+        assertEquals("用的是", selection.firstPage.first().text) // 新公共词源中更常用的同码表达。
+        assertTrue(selection.firstPage.any { it.text == "用得上" })
         assertFalse(selection.firstPage.any { it.text == "总额而" })
         assertEquals(1, selection.firstPage.first { it.text == "总额" }.nativeIndex)
         assertEquals(listOf(1, 2), selection.appendNativePage(
@@ -327,7 +400,7 @@ class OfflinePersonalCandidatesTest {
         assertFalse(OfflineT9Candidates.select("963", emptyList(), emptyList()).firstPage.any { it.text == "怎么" })
     }
 
-    @Test fun `短码选择也影响完整码但不跨入三键或字母输入`() {
+    @Test fun `短码选择影响合法三键与完整码但不跨入字母输入`() {
         for (name in listOf("lexicon", "domains")) {
             OfflineT9Candidates::class.java.getDeclaredField(name).apply { isAccessible = true }
                 .set(OfflineT9Candidates, T9Lexicon.parse("需求\txu qiu\t1\n许求\txu qiu\t1000\n".reader()))
@@ -337,7 +410,7 @@ class OfflinePersonalCandidatesTest {
         assertEquals("许求", OfflineT9Candidates.select("98748", native, comments).firstPage.first().text)
         repeat(3) { OfflineT9Candidates.learn("9874", "需求") }
         assertEquals("需求", OfflineT9Candidates.select("98748", native, comments).firstPage.first().text)
-        assertEquals("许求", OfflineT9Candidates.select("987", native, comments).firstPage.first().text)
+        assertEquals("需求", OfflineT9Candidates.select("987", native, comments).firstPage.first().text)
         assertEquals("许求", OfflineT9Candidates.select("xuqiu", native, comments).firstPage.first().text)
     }
 
@@ -371,24 +444,25 @@ class OfflinePersonalCandidatesTest {
         assertEquals("充电宝", OfflineT9Candidates.select("2466434262", native, comments).firstPage.first().text)
     }
 
-    @Test fun `首屏八条之外的合法学习词仍可召回并在重启后成为首选`() {
-        val words = (0..11).joinToString("\n") { "测试${'甲' + it}\tchong dian bao\t${1000 - it}" } + "\n充电\tchong dian\t100"
+    @Test fun `首屏三十二条之外的合法学习词仍可召回并在重启后成为首选`() {
+        val words = (0..35).joinToString("\n") { "测试${'甲' + it}\tchong dian bao\t${1000 - it}" } + "\n充电\tchong dian\t100"
         OfflineT9Candidates::class.java.getDeclaredField("lexicon").apply { isAccessible = true }
             .set(OfflineT9Candidates, T9Lexicon.parse(words.reader()))
         OfflineT9Candidates::class.java.getDeclaredField("domains").apply { isAccessible = true }
             .set(OfflineT9Candidates, T9Lexicon.parse("".reader()))
+        val learnedText = "测试${'甲' + 35}"
         val code = "2466434262"
-        assertFalse(OfflineT9Candidates.select(code, emptyList(), emptyList()).firstPage.any { it.text == "测试甽" })
-        repeat(3) { OfflineT9Candidates.learn(code, "测试甽") }
+        assertFalse(OfflineT9Candidates.select(code, emptyList(), emptyList()).firstPage.any { it.text == learnedText })
+        repeat(3) { OfflineT9Candidates.learn(code, learnedText) }
         closeStore()
         OfflineT9Candidates.init(context)
         val result = OfflineT9Candidates.select(code, emptyList(), emptyList()).firstPage
-        assertEquals("测试甽", result.first().text)
+        assertEquals(learnedText, result.first().text)
         assertEquals("chong dian bao", result.first().pinyin)
         assertNull(result.first().nativeIndex)
         val withNative = OfflineT9Candidates.select(code,
-            listOf("冲屌啊", "测试甽"), listOf("chong'diao'a", "chong'dian'bao"))
-        assertEquals("测试甽", withNative.firstPage.first().text)
+            listOf("冲屌啊", learnedText), listOf("chong'diao'a", "chong'dian'bao"))
+        assertEquals(learnedText, withNative.firstPage.first().text)
         assertEquals(1, withNative.firstPage.first().nativeIndex)
         assertEquals(listOf(0), withNative.appendNativePage(listOf("充电"), code, listOf("chong'dian")))
         assertEquals(2, withNative.at(withNative.firstPage.size)?.nativeIndex)
@@ -468,11 +542,13 @@ class OfflinePersonalCandidatesTest {
         assertEquals(1, first.nativeIndex)
         assertEquals(1, OfflineT9Candidates.query("xuq", native).count { it.text == "需求" })
     }
-    @Test fun `九宫格短码保留原生默认并按自身习惯学习`() {
+    @Test fun `九宫格短码常用词优先且一次明确改选就生效`() {
         val native = listOf("续期", "需求")
+        val before = OfflineT9Candidates.query("987", native).map { it.text }
+        assertTrue(before.containsAll(listOf("需求", "续期")))
+        assertTrue(before.indexOf("需求") < before.indexOf("续期"))
+        OfflineT9Candidates.learn("987", "续期")
         assertEquals("续期", OfflineT9Candidates.query("987", native).first().text)
-        repeat(3) { OfflineT9Candidates.learn("987", "需求") }
-        assertEquals("需求", OfflineT9Candidates.query("987", native).first().text)
         assertEquals("续期", OfflineT9Candidates.query("xuq", native).first().text)
         assertEquals("后", OfflineT9Candidates.query("468", listOf("后", "候")).first().text)
     }

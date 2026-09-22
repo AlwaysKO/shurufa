@@ -24,6 +24,8 @@ internal open class ConversationTitleStabilizer(
         var confirmed: ScreenshotConversationIdentity? = null,
         var previousKey: String? = null,
     )
+    private data class TruncatedState(val key: String, val visualKey: String?, val observedAt: Long)
+    private var truncatedState: TruncatedState? = null
     private var state: State? = null
     private var generation = 0L
     private var pendingKey: String? = null
@@ -31,7 +33,7 @@ internal open class ConversationTitleStabilizer(
     private val scope = "${platform.wireName}|$accountKey|$source"
 
     @Synchronized fun version(): Long = generation
-    @Synchronized fun reset() { generation++; state = null; pendingKey = null }
+    @Synchronized fun reset() { generation++; state = null; pendingKey = null; truncatedState = null }
 
     @Synchronized fun observe(
         title: String?,
@@ -45,6 +47,7 @@ internal open class ConversationTitleStabilizer(
             ?.takeIf { it.key.startsWith("screenshot-v2:wechat-page:") } else null
         val fixedPage = if (legacyWechat) canonicalWechatPageTitle(title) ?: knownPage?.name else null
         if (fixedPage != null) {
+            truncatedState = null
             val fixedKey = "screenshot-v2:wechat-page:" + sha256(fixedPage.toByteArray(Charsets.UTF_8))
             // 已保存的首帧在同一精确字形确认后原位升级，不能换key让它永远留在待确认。
             val firstKey = state?.takeIf { it.confirmed == null && it.visualKey == visualKey &&
@@ -64,6 +67,20 @@ internal open class ConversationTitleStabilizer(
         }
         val previous = state?.takeIf { nowMillis - it.observedAt in 0..CONTINUITY_MILLIS }
         val normalized = normalizeConversationTitle(title, platform)
+        if (legacyWechat && normalized != null && (normalized.contains("…") || normalized.contains("..."))) {
+            // 截断显示名不是完整身份：只在连续页面内用同一原始像素接续，不存全局映射。
+            state = null
+            pendingKey = null
+            val pixels = visualKey?.takeIf { it.matches(Regex("[a-f0-9]{64}")) }
+            val key = truncatedState?.takeIf { pixels != null && it.visualKey == pixels &&
+                nowMillis - it.observedAt in 0..CONTINUITY_MILLIS }?.key
+                ?: "screenshot-v2:truncated:${java.util.UUID.randomUUID()}"
+            truncatedState = TruncatedState(key, pixels, nowMillis)
+            val visible = screenshotConversationIdentity(normalized.replace(Regex("\\.{3,}"), "…"), "")
+            return visible.copy(externalKey = key, displayName = visible.displayName + "（名称被截断）",
+                confidence = 0.55, status = "truncated", observedTitle = normalized, previousKey = null)
+        }
+        truncatedState = null
         if (normalized == null && isTransientConversationTitle(title) && previous != null) {
             // 正在输入/在线不是联系人改名，不能投票或确认，也不能跨导航复用。
             previous.observedAt = nowMillis
@@ -84,7 +101,7 @@ internal open class ConversationTitleStabilizer(
         val recoverKey = pendingKey?.takeIf { nowMillis - pendingAt in 0..CONTINUITY_MILLIS }
         val continuous = previous != null && (
             previous.visualKey == visualKey ||
-                (recoverKey == null && canonicalTitle(previous.candidate.displayName) == canonicalTitle(candidate.displayName))
+                (!legacyWechat && recoverKey == null && canonicalTitle(previous.candidate.displayName) == canonicalTitle(candidate.displayName))
             )
         val known = identityStore.find(scope, visualKey)
         val current = if (continuous) previous!! else State(

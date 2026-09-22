@@ -29,6 +29,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -84,7 +86,7 @@ object DataCollector {
     private val dictionarySyncs = java.util.concurrent.ConcurrentHashMap<DictionarySyncTarget, PersonalDictionarySync>()
     @Volatile private var appContext: Context? = null
     private var networkRegistered = false
-    private val flushing = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+    private val deliveryTasks = TargetDeliveryTasks()
     private val lastAttempt = java.util.concurrent.ConcurrentHashMap<String, Long>()
     private var wakeJob: Job? = null
 
@@ -134,7 +136,8 @@ object DataCollector {
         if (flushJob == null) {
             flushJob = scope.launch {
                 while (true) {
-                    delay(FLUSH_INTERVAL_MS)
+                    // 积压期间小步检查，停打后及时恢复；空队列仍沿用30秒周期。
+                    delay(if (CollectionConsent.enabled(app) && eventStore?.hasPendingImages() == true) 3_000L else FLUSH_INTERVAL_MS)
                     flushEvents()
                 }
             }
@@ -202,6 +205,8 @@ object DataCollector {
             deviceJson = json.encodeToString(DeviceInfo.serializer(), info),
             onlineTarget = { ServerConfig.baseUrl },
             allowed = { kind -> CollectionConsent.enabled(context) && (kind != "location" || locationTrackingEnabled) },
+            maxImageBytes = { target -> ImageUploadRuntime.maxImageBytes(context, target) },
+            tryStartImage = { target, bytes -> ImageUploadRuntime.tryStartImage(context, target, bytes) },
         )
         requestSync()
     }
@@ -268,30 +273,40 @@ object DataCollector {
         }
         val targets = (ServerConfig.eventTargets + eventStore?.targets().orEmpty() + eventStore?.reportTargets().orEmpty()).distinct()
         val targetGate = collectorTargetGate(app, onlineTarget)
-        targets.forEach { target ->
-            if (!flushing.add(target)) return@forEach
-            launch(Dispatchers.IO) {
-                try {
-                    if (!targetGate.canUpload(target)) return@launch
-                    val now = android.os.SystemClock.elapsedRealtime()
-                    if (now < (lastAttempt[target] ?: 0L)) return@launch
-                    val ok = uploader.flush(target)
-                    val plan = dictionarySyncTargets(ServerConfig.eventTargets, ServerConfig.baseUrl, ServerConfig.dictionaryAuthorityUrl)
-                        .firstOrNull { it.url == target }
-                    if (plan != null && CollectionConsent.enabled(app)) {
-                        val sync = dictionarySyncs.getOrPut(plan) {
-                            PersonalDictionarySync(store(app), app.getSharedPreferences("personal_dictionary_sync_v1", 0), http,
-                                deviceId(app), plan.url, { CollectionConsent.enabled(app) }, {
-                                    val migration = app.getSharedPreferences("system_dictionary_migration_v1", 0)
-                                    migration.getString("status", "not_attempted")!! to migration.getInt("imported", 0)
-                                }, restoreFromTarget = plan.restoreFromTarget, statePrefix = plan.statePrefix)
-                        }
-                        if (!sync.run()) Log.w(TAG, "个人词库尚未同步确认，保留本机记录（目标：$target）")
-                    }
-                    lastAttempt[target] = android.os.SystemClock.elapsedRealtime() + if (ok) 5_000 else FLUSH_INTERVAL_MS
-                    if (!ok) Log.w(TAG, "同步未确认，保留手机待传数据")
-                } finally { flushing.remove(target) }
+        deliveryTasks.run(
+            targets,
+            onBusy = { ReportingTrace.record(ReportingStage.BUSY, it == onlineTarget) },
+            onFailure = { target, _ ->
+                lastAttempt[target] = android.os.SystemClock.elapsedRealtime() + FLUSH_INTERVAL_MS
+                ReportingTrace.record(ReportingStage.DELIVERY_ERROR, target == onlineTarget)
+            },
+        ) { target ->
+            if (!targetGate.canUpload(target)) return@run
+            val now = android.os.SystemClock.elapsedRealtime()
+            if (now < (lastAttempt[target] ?: 0L)) {
+                ReportingTrace.record(ReportingStage.BACKOFF, target == onlineTarget)
+                return@run
             }
+            ReportingTrace.record(ReportingStage.FLUSH_START, target == onlineTarget)
+            val taskContext = currentCoroutineContext()
+            val ok = uploader.drain(target,
+                beforeBatch = { taskContext.ensureActive() },
+                beforeRequest = { taskContext.ensureActive() })
+            ReportingTrace.record(ReportingStage.FLUSH_END, target == onlineTarget, flag = ok)
+            val plan = dictionarySyncTargets(ServerConfig.eventTargets, ServerConfig.baseUrl, ServerConfig.dictionaryAuthorityUrl)
+                .firstOrNull { it.url == target }
+            if (plan != null && CollectionConsent.enabled(app)) {
+                val sync = dictionarySyncs.getOrPut(plan) {
+                    PersonalDictionarySync(store(app), app.getSharedPreferences("personal_dictionary_sync_v1", 0), http,
+                        deviceId(app), plan.url, { CollectionConsent.enabled(app) }, {
+                            val migration = app.getSharedPreferences("system_dictionary_migration_v1", 0)
+                            migration.getString("status", "not_attempted")!! to migration.getInt("imported", 0)
+                        }, restoreFromTarget = plan.restoreFromTarget, statePrefix = plan.statePrefix)
+                }
+                if (!sync.run()) Log.w(TAG, "个人词库尚未同步确认，保留本机记录（目标：$target）")
+            }
+            lastAttempt[target] = android.os.SystemClock.elapsedRealtime() + if (ok) 5_000 else FLUSH_INTERVAL_MS
+            if (!ok) Log.w(TAG, "同步未确认，保留手机待传数据")
         }
     }
 

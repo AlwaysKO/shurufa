@@ -35,6 +35,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.get
 import androidx.core.view.postDelayed
 import com.yuyan.imemodule.R
+import com.yuyan.imemodule.data.collect.ImageUploadRuntime
 import com.yuyan.imemodule.application.CustomConstant
 import com.yuyan.imemodule.callback.CandidateViewListener
 import com.yuyan.imemodule.callback.IResponseKeyEvent
@@ -160,6 +161,16 @@ private val RELATIONSHIP_REPLY_COMMENTS = setOf(RELATIONSHIP_REPLY_COMMENT, RELA
 
 @SuppressLint("ViewConstructor")
 class InputView(context: Context, private val service: ImeService) : LifecycleRelativeLayout(context), IResponseKeyEvent {
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        ImageUploadRuntime.noteTouch(event.actionMasked, this)
+        val handled = super.dispatchTouchEvent(event)
+        if (!handled && event.actionMasked == MotionEvent.ACTION_DOWN) {
+            ImageUploadRuntime.noteTouch(MotionEvent.ACTION_CANCEL, this)
+        }
+        return handled
+    }
+
     private val appPrefs = getInstance()
     private val clipboardItemTimeout = appPrefs.clipboard.clipboardItemTimeout.getValue()
     private var chinesePrediction = true
@@ -1638,6 +1649,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     }
 
     override fun onDetachedFromWindow() {
+        ImageUploadRuntime.noteTouch(MotionEvent.ACTION_CANCEL, this)
         disposeExpressionResources()
         super.onDetachedFromWindow()
     }

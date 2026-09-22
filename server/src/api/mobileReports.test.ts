@@ -62,3 +62,12 @@ it('手机时钟回拨后更高累计次数的快照仍可推进',async()=>{
  await send(3,3000); expect((await send(4,1000)).status).toBe(200);
  expect((await pool.query('SELECT count FROM personal_candidate_usage')).rows[0].count).toBe(4);
 });
+
+it('一两键个人选择允许上报且重复回执不累计',async()=>{
+ for(const code of ['3','62']) {
+  const report={id:crypto.randomUUID(),kind:'personal_choice',payload:{code,text:'的',count:1,weight:1,last_used:1000}};
+  expect((await request(app).post('/reports').send(report)).status).toBe(200);
+  expect((await request(app).post('/reports').send(report)).status).toBe(200);
+ }
+ expect((await pool.query('SELECT count FROM personal_candidate_usage')).rows.map((r:any)=>r.count)).toEqual([1,1]);
+});

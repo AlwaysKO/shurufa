@@ -1,0 +1,25 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6ab23bb2-993c-83ea-854b-6f85316b83f4",
+  "sourceFileId": "file_0000000022688206b24c8ec999e39c4f",
+  "requestedDate": "2026-09-22",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "61b51e124845a46f33d3f7dcd145cc23c6b39b6a37a5cba3d625d815d6843491",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-22T08:33:40.574077+00:00",
+  "generationObservedAt": "2026-09-22T08:33:40.574077+00:00",
+  "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+  "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+  "originalDownloadName": "man-listen.png",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-22T08:37:02.868865+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

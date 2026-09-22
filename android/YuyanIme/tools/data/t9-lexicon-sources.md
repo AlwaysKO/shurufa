@@ -32,3 +32,25 @@ writeFileSync('yuyansdk/src/main/assets/completion/chinese_domains.tsv',
   buildLexicon(words.map(x=>x+' 100 n').join('\n')));
 JS
 ```
+
+## 2026-09-22 AOSP 日常输入补充（当前生成方式）
+
+- 新增来源：[AOSP PinyinIME](https://android.googlesource.com/platform/packages/inputmethods/PinyinIME/+/49aebad1c1cfbbcaa9288ffed5161e79e57c3679/jni/data/rawdict_utf16_65105_freq.txt)，固定提交 `49aebad1c1cfbbcaa9288ffed5161e79e57c3679`。
+- 原始 UTF-16 文件 SHA256：`408700f28a56091fa07f3b849a0f134fbfc71e6b2ae9b3f52973a5b076f599ff`。原文压缩存于 `tools/data/aosp/rawdict_utf16_65105_freq.txt.gz`，解压后哈希必须一致。
+- 原始 NOTICE 声明 Copyright 2009 Android Open Source Project、Apache-2.0；完整文件保存 `tools/data/aosp/NOTICE`，随 APK 为 `completion/aosp-dictionary-NOTICE.txt`。这里依据上游许可声明，不宣称逐词独立授权审计。
+- 原格式为词语、浮点公共词频、GBK标记、逐字拼音。第三列不是次数；按同提交 `jni/share/dictbuilder.cpp` 的默认规则仅取标记0。
+- 本项目于2026-09-22修改：筛选2–6汉字、音节数一致及源频率≥200，控制低频词补充范围（阈值不等同日常词分类）；去除“曝光/pu guang”“补给/bu gei”已知错误读音，其余合理多音词按词语+拼音保留，不猜测所有单字组合。
+- 两套词频不相加。按22,075个重叠词的最大读音频率比例中位数0.5041338885424145校准AOSP公共频率；同词优先保留AOSP提供的整词拼音，原库未被收录的词保留。
+- 采用30,168个AOSP词、30,242个读音，新增8,093个不同词。合并产物139,027行，仍为 `completion/t9_lexicon.tsv.gzip`。这些不是个人词库记录，不上报、不计点击。
+- 词库较旧，不承诺覆盖网络新词或全部聊天短句；42项日常样本覆盖由28提升到33。没有引入白霜/雾凇混源数据，也未开启拼音纠错。后台手动录词继续用于个人表达。
+
+完整重新生成：
+
+```bash
+# 先按上方固定jieba源生成独立基线，不能把已合并产物再次当基线。
+node android/YuyanIme/tools/generate_t9_lexicon.mjs /tmp/jieba-dict.txt /tmp/jieba-baseline.tsv.gzip
+node android/YuyanIme/tools/merge_daily_lexicon.mjs /tmp/jieba-baseline.tsv.gzip \
+  android/YuyanIme/tools/data/aosp/rawdict_utf16_65105_freq.txt.gz \
+  android/YuyanIme/yuyansdk/src/main/assets/completion/t9_lexicon.tsv.gzip
+node --test android/YuyanIme/tools/generate_t9_lexicon.test.mjs android/YuyanIme/tools/daily_lexicon.test.mjs
+```

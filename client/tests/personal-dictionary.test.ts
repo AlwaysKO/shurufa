@@ -171,3 +171,41 @@ it('查询失败后旧页内容不可选中或发送，重试成功再恢复',as
   expect(view.find('select-page')!.props.disabled).toBe(true);expect(view.find('select-all')!.props.disabled).toBe(true);expect(view.find('sync-selected')!.props.disabled).toBe(true);
   click(view,'select-page');click(view,'sync-selected');await settle();expect(api.sync).not.toHaveBeenCalled();
 });
+
+it('一键同步全部习惯和手工词只需选手机，不受筛选分页或勾选词影响',async()=>{
+  const api={...mockApi(),syncAll:vi.fn().mockResolvedValue({ok:true,words:20,queued:2,skipped:0,devices:1,habits:10,habits_queued:3})};
+  const view=await mount('PersonalDictionary',api);
+  expect(view.find('sync-all-habits')).toBeDefined();
+  expect(view.find('sync-all-habits')!.props.disabled).toBe(true);
+  update(view,'search','不存在的筛选');await settle();
+  check(view,'target-new');await settle();
+  expect(view.find('sync-all-habits')!.props.disabled).toBe(false);
+  click(view,'sync-all-habits');await settle();
+  expect(api.syncAll).toHaveBeenCalledWith({device_ids:['new']});
+  expect(api.sync).not.toHaveBeenCalled();expect(api.bind).not.toHaveBeenCalled();
+  expect(view.text()).toContain('10 条真实习惯');
+  expect(view.text()).toContain('等待手机确认');
+  expect(view.text()).not.toContain('全部习惯已应用');
+});
+it('习惯和词条独立展示接收状态，旧手机不能冒称已支持习惯',async()=>{
+  const api=mockApi();api.devices.mockResolvedValue({devices:[
+    {...devices[0],additions_supported:true,additions_pending:0,additions_applied_at:'2026-09-22T00:00:00Z',habits_supported:true,habits_pending:3,habits_applied_at:null},
+    {...devices[1],additions_supported:true,additions_pending:0,habits_supported:false},
+  ]});
+  const view=await mount('PersonalDictionary',api);
+  expect(view.text()).toContain('习惯待应用：3 条');
+  expect(view.text()).toContain('需升级：尚未支持习惯接收');
+  expect(view.text()).not.toContain('全部习惯已应用');
+});
+it('一键同步请求中阻止重复点击，失败可重试且不清手机选择',async()=>{
+  let reject!:(reason:Error)=>void;
+  const api={...mockApi(),syncAll:vi.fn(()=>new Promise((_resolve,r)=>{reject=r;}))};
+  const view=await mount('PersonalDictionary',api);check(view,'target-new');await settle();
+  expect(view.find('sync-all-habits')).toBeDefined();
+  click(view,'sync-all-habits');click(view,'sync-all-habits');await settle();
+  expect(api.syncAll).toHaveBeenCalledTimes(1);expect(view.find('sync-all-habits')!.props.disabled).toBe(true);
+  reject(new Error('习惯同步网络失败'));await settle();
+  expect(view.text()).toContain('习惯同步网络失败');
+  expect(view.find('target-new')!.props.checked).toBe(true);
+  expect(view.find('sync-all-habits')!.props.disabled).toBe(false);
+});

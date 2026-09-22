@@ -1,0 +1,301 @@
+{
+  "groups": [
+    {
+      "keyword": "真有你的",
+      "count": 4,
+      "allDecoded240": true,
+      "deleteButtons": 4,
+      "rects": [
+        {
+          "src": "/uploads/expression/generated/generated-31674ee4ea1f499eaf679030.gif?user_id=f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+          "w": 240,
+          "h": 240,
+          "rect": {
+            "x": 570.5,
+            "y": 401.171875,
+            "width": 196.328125,
+            "height": 196.328125,
+            "top": 401.171875,
+            "right": 766.828125,
+            "bottom": 597.5,
+            "left": 570.5
+          }
+        },
+        {
+          "src": "/uploads/expression/generated/generated-0f89a252d181a3eb236369dd.gif?user_id=f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+          "w": 240,
+          "h": 240,
+          "rect": {
+            "x": 784.828125,
+            "y": 401.171875,
+            "width": 196.328125,
+            "height": 196.328125,
+            "top": 401.171875,
+            "right": 981.15625,
+            "bottom": 597.5,
+            "left": 784.828125
+          }
+        },
+        {
+          "src": "/uploads/expression/generated/generated-3cb71f71c6bf4342276373ea.gif?user_id=f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+          "w": 240,
+          "h": 240,
+          "rect": {
+            "x": 999.15625,
+            "y": 401.171875,
+            "width": 196.328125,
+            "height": 196.328125,
+            "top": 401.171875,
+            "right": 1195.484375,
+            "bottom": 597.5,
+            "left": 999.15625
+          }
+        },
+        {
+          "src": "/uploads/expression/generated/generated-19bc1028d22444d9f302c700.gif?user_id=f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+          "w": 240,
+          "h": 240,
+          "rect": {
+            "x": 1213.484375,
+            "y": 401.171875,
+            "width": 196.34375,
+            "height": 196.34375,
+            "top": 401.171875,
+            "right": 1409.828125,
+            "bottom": 597.515625,
+            "left": 1213.484375
+          }
+        }
+      ],
+      "changedBounds": [
+        [
+          65,
+          26,
+          148,
+          134
+        ],
+        [
+          36,
+          18,
+          159,
+          141
+        ],
+        [
+          54,
+          24,
+          148,
+          134
+        ],
+        [
+          39,
+          20,
+          158,
+          141
+        ]
+      ],
+      "screenshots": [
+        "artifacts/diagnostics/2026-09-22-web09/clever-0.png",
+        "artifacts/diagnostics/2026-09-22-web09/clever-1.png"
+      ],
+      "checkedAt": "2026-09-22T07:48:27.567342+00:00"
+    },
+    {
+      "keyword": "救命",
+      "count": 4,
+      "allDecoded240": true,
+      "deleteButtons": 4,
+      "rects": [
+        {
+          "src": "/uploads/expression/generated/generated-22dec834dadad90bee139813.gif?user_id=f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+          "w": 240,
+          "h": 240,
+          "rect": {
+            "x": 570.5,
+            "y": 401.171875,
+            "width": 196.328125,
+            "height": 196.328125,
+            "top": 401.171875,
+            "right": 766.828125,
+            "bottom": 597.5,
+            "left": 570.5
+          }
+        },
+        {
+          "src": "/uploads/expression/generated/generated-a2ecf50ad389eef2522ac369.gif?user_id=f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+          "w": 240,
+          "h": 240,
+          "rect": {
+            "x": 784.828125,
+            "y": 401.171875,
+            "width": 196.328125,
+            "height": 196.328125,
+            "top": 401.171875,
+            "right": 981.15625,
+            "bottom": 597.5,
+            "left": 784.828125
+          }
+        },
+        {
+          "src": "/uploads/expression/generated/generated-57efa859f6a36ae3ec723806.gif?user_id=f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+          "w": 240,
+          "h": 240,
+          "rect": {
+            "x": 999.15625,
+            "y": 401.171875,
+            "width": 196.328125,
+            "height": 196.328125,
+            "top": 401.171875,
+            "right": 1195.484375,
+            "bottom": 597.5,
+            "left": 999.15625
+          }
+        },
+        {
+          "src": "/uploads/expression/generated/generated-e246bffae16593303a612bd0.gif?user_id=f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+          "w": 240,
+          "h": 240,
+          "rect": {
+            "x": 1213.484375,
+            "y": 401.171875,
+            "width": 196.34375,
+            "height": 196.34375,
+            "top": 401.171875,
+            "right": 1409.828125,
+            "bottom": 597.515625,
+            "left": 1213.484375
+          }
+        }
+      ],
+      "changedBounds": [
+        [
+          35,
+          20,
+          162,
+          147
+        ],
+        [
+          38,
+          18,
+          158,
+          141
+        ],
+        [
+          37,
+          17,
+          162,
+          137
+        ],
+        [
+          39,
+          19,
+          158,
+          140
+        ]
+      ],
+      "screenshots": [
+        "artifacts/diagnostics/2026-09-22-web09/help-0.png",
+        "artifacts/diagnostics/2026-09-22-web09/help-1.png"
+      ],
+      "checkedAt": "2026-09-22T08:02:25.632252+00:00"
+    },
+    {
+      "keyword": "说来听听",
+      "count": 4,
+      "allDecoded240": true,
+      "deleteButtons": 4,
+      "rects": [
+        {
+          "src": "/uploads/expression/generated/generated-7b92d639d07e4b16fe71439a.gif?user_id=f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+          "w": 240,
+          "h": 240,
+          "rect": {
+            "x": 570.5,
+            "y": 401.171875,
+            "width": 196.328125,
+            "height": 196.328125,
+            "top": 401.171875,
+            "right": 766.828125,
+            "bottom": 597.5,
+            "left": 570.5
+          }
+        },
+        {
+          "src": "/uploads/expression/generated/generated-fd75f884248f6d654fd90e48.gif?user_id=f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+          "w": 240,
+          "h": 240,
+          "rect": {
+            "x": 784.828125,
+            "y": 401.171875,
+            "width": 196.328125,
+            "height": 196.328125,
+            "top": 401.171875,
+            "right": 981.15625,
+            "bottom": 597.5,
+            "left": 784.828125
+          }
+        },
+        {
+          "src": "/uploads/expression/generated/generated-64bc3914d9a4b7fc7b09b5c9.gif?user_id=f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+          "w": 240,
+          "h": 240,
+          "rect": {
+            "x": 999.15625,
+            "y": 401.171875,
+            "width": 196.328125,
+            "height": 196.328125,
+            "top": 401.171875,
+            "right": 1195.484375,
+            "bottom": 597.5,
+            "left": 999.15625
+          }
+        },
+        {
+          "src": "/uploads/expression/generated/generated-b1ed366cbf73fef7ff5b4c04.gif?user_id=f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+          "w": 240,
+          "h": 240,
+          "rect": {
+            "x": 1213.484375,
+            "y": 401.171875,
+            "width": 196.34375,
+            "height": 196.34375,
+            "top": 401.171875,
+            "right": 1409.828125,
+            "bottom": 597.515625,
+            "left": 1213.484375
+          }
+        }
+      ],
+      "changedBounds": [
+        [
+          35,
+          19,
+          162,
+          147
+        ],
+        [
+          36,
+          20,
+          159,
+          149
+        ],
+        [
+          33,
+          17,
+          163,
+          148
+        ],
+        [
+          38,
+          20,
+          158,
+          141
+        ]
+      ],
+      "screenshots": [
+        "artifacts/diagnostics/2026-09-22-web09/listen-0.png",
+        "artifacts/diagnostics/2026-09-22-web09/listen-1.png"
+      ],
+      "checkedAt": "2026-09-22T08:48:19.478668+00:00"
+    }
+  ]
+}

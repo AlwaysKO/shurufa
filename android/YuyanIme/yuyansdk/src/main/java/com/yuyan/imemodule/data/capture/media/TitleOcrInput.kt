@@ -11,6 +11,7 @@ import kotlin.math.roundToInt
 
 /** 单次截图请求持有的原始顶部像素，不持有整图、不落盘、不跨会话缓存。 */
 class TitleOcrInput(private val captureTopPx: Int = 0, private val captureHeightPx: Int? = null) : Closeable {
+    internal val hasExactTitleBand: Boolean get() = captureHeightPx != null
     private var header: Bitmap? = null
     private var closed = false
 

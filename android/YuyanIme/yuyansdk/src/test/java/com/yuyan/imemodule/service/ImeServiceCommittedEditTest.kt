@@ -239,6 +239,38 @@ class ImeServiceCommittedEditTest {
         assertNull(last.textAfter)
     }
 
+    @Test fun 两条提交入口立即同码换词只取消本笔临时奖励() = withService { service, connection, db ->
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val offline = com.yuyan.imemodule.data.completion.OfflineT9Candidates
+        val storeField = offline::class.java.getDeclaredField("store").apply { isAccessible = true }
+        (storeField.get(offline) as? LocalInputStore)?.close()
+        storeField.set(offline, null)
+        offline.init(context)
+        val tracker = com.yuyan.inputmethod.RimeEngine::class.java.getDeclaredField("t9CommitTracker").run {
+            isAccessible = true; get(com.yuyan.inputmethod.RimeEngine) as com.yuyan.imemodule.data.completion.T9CommitTracker
+        }
+        try {
+            db.learn("3264542", "房价")
+            for (cursorEntry in listOf(false, true)) {
+                tracker.selected("3264542", "房价", "fang jia")
+                if (cursorEntry) service.commitText("房价", 1) else service.commitText("房价")
+                assertEquals(2L, db.learned("3264542").first { it.text == "房价" }.count)
+                assertEquals(1L, db.dictionaryExport().first { it.kind == "choice" && it.text == "房价" }.count)
+                service.deleteSurroundingText(1)
+                service.deleteSurroundingText(1)
+                tracker.selected("3264542", "放假", "fang jia")
+                if (cursorEntry) service.commitText("放假", 1) else service.commitText("放假")
+                assertEquals(1L, db.learned("3264542").first { it.text == "房价" }.count)
+                assertFalse(db.pendingReports(com.yuyan.imemodule.data.collect.ServerConfig.eventTargets.first()).any { it.kind == "personal_choice" })
+                // 在旧词后继续输入，验证中间位置同样受连续快照约束。
+                service.commitText("呀")
+            }
+        } finally {
+            tracker.clear()
+            (storeField.get(offline) as? LocalInputStore)?.close(); storeField.set(offline, null)
+        }
+    }
+
     private fun rows(db: LocalInputStore) = db.targets().firstOrNull()?.let { db.pending(it) }.orEmpty()
     private fun withService(test: (EditTestService, EditTestConnection, LocalInputStore) -> Unit) {
         val context = ApplicationProvider.getApplicationContext<Context>()

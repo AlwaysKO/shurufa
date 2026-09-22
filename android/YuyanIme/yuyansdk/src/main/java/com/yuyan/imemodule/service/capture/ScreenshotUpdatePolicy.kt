@@ -28,6 +28,7 @@ internal class ScreenshotUpdatePolicy {
         // 确认重放持有首帧图像，却可能携带第二帧标题；不能拼接成不存在的保存记录。
         lastSaved = if (sameFrameConfirmed) content(identity, titleHash, bodyHash) else null
     }
+    fun observeTitle(window: Int, generation: Long, status: String) = Unit
     @Synchronized fun confirm(window: Int, generation: Long) {
         val scope = ScreenshotScope(window, generation)
         if (scope != confirmed) lastSaved = null

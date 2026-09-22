@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6ab23785-9f3c-83ea-bae7-2bd4710efd8b",
+  "sourceFileId": "file_00000000437c81f897975047d056d702",
+  "requestedDate": "2026-09-22",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "1bf5b50e002a7c9f171745564af00a598d0f14d327d6bc3d9e19aa610544d8b3",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-22T08:19:25.884294+00:00",
+  "generationObservedAt": "2026-09-22T08:19:25.884294+00:00",
+  "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+  "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+  "originalDownloadName": "clay-listen.png",
+  "deletedAt": "2026-09-22T08:22:25.672661+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

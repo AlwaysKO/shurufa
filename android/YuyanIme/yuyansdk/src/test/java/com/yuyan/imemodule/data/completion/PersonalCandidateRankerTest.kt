@@ -5,6 +5,30 @@ import org.junit.Test
 
 class PersonalCandidateRankerTest {
     private val base = listOf(RankedCandidate("续期", nativeIndex = 0), RankedCandidate("需求", nativeIndex = 1))
+    @Test fun `最近明确改选优于高频旧词且保留原生索引`() {
+        val now = 100000L
+        val history = listOf(ChoiceEvidence("续期", 40.0, now - 1000, now - 1000),
+            ChoiceEvidence("需求", 1.0, now, now))
+        val result = PersonalCandidateRanker.rank(base, history, now)
+        assertEquals("需求", result.first().text)
+        assertEquals(1, result.first().nativeIndex)
+    }
+
+    @Test fun `近期窗口过后恢复衰减频率且未来时间不能置顶`() {
+        val selected = 100000L
+        val history = listOf(ChoiceEvidence("续期", 40.0, selected - 1000, selected - 1000),
+            ChoiceEvidence("需求", 1.0, selected, selected))
+        val later = selected + PersonalCandidateRanker.RECENT_CHOICE_MS + 1
+        assertEquals("续期", PersonalCandidateRanker.rank(base, history, later).first().text)
+        assertEquals(Long.MIN_VALUE, PersonalCandidateRanker.recentSelection(later + 1, later))
+        assertEquals(Long.MIN_VALUE, PersonalCandidateRanker.recentSelection(null, later))
+    }
+
+    @Test fun `同毫秒的真实选择按原权重稳定排序而非列表偶然顺序`() {
+        val history = listOf(ChoiceEvidence("续期", 8.0, 100, 100), ChoiceEvidence("需求", 1.0, 100, 100))
+        assertEquals("续期", PersonalCandidateRanker.rank(base, history, 100).first().text)
+    }
+
     @Test fun `首屏无可见词时预取后续页的首项使用真实原生索引`() {
         val selection = CandidateSelection(emptyList(), 2)
         assertTrue(selection.appendNativePage(listOf("美国最高法院"), "649439").isEmpty())

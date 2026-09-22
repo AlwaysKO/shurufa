@@ -77,4 +77,20 @@ class WechatPendingRecoveryTest {
         assertEquals("pending", other.status)
     }
 
+    @Test fun `corrected reading with stable nickname pixels upgrades the saved first frame`() = runBlocking {
+        val tracker = WechatTitleStabilizer()
+        val key = "a".repeat(64)
+        val first = tracker.observe("测试群a(18)", key, 1000)
+        val saved = mutableListOf<ScreenshotConversationIdentity>()
+        var calls = 0
+        val result = persistScreenshotBeforeConfirmation(first, { saved += it; CapturePersistResult.INSERTED }) {
+            calls++
+            tracker.observe("测试群(19)", key, 1000L + 800 * calls)
+        }
+        assertEquals(2, calls)
+        assertEquals("confirmed", result.status)
+        assertEquals(first.externalKey, result.externalKey)
+        assertEquals("测试群", result.displayName)
+        assertEquals(listOf("pending", "confirmed"), saved.map { it.status })
+    }
 }

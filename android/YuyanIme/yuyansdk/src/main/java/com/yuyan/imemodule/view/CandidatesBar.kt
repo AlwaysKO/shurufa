@@ -11,6 +11,7 @@ import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.HapticFeedbackConstants
 import android.view.KeyEvent
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.HorizontalScrollView
@@ -25,6 +26,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.OnScrollListener
 import com.yuyan.imemodule.R
+import com.yuyan.imemodule.data.collect.ImageUploadRuntime
 import com.yuyan.imemodule.adapter.CandidatesBarAdapter
 import com.yuyan.imemodule.adapter.CandidatesMenuAdapter
 import com.yuyan.imemodule.callback.CandidateViewListener
@@ -132,6 +134,20 @@ internal fun toolbarPressBackground(): StateListDrawable = StateListDrawable().a
  * 候选词集装箱
  */
 class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(context, attrs) {
+    override fun onDetachedFromWindow() {
+        ImageUploadRuntime.noteTouch(MotionEvent.ACTION_CANCEL, this)
+        super.onDetachedFromWindow()
+    }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        ImageUploadRuntime.noteTouch(event.actionMasked, this)
+        val handled = super.dispatchTouchEvent(event)
+        if (!handled && event.actionMasked == MotionEvent.ACTION_DOWN) {
+            ImageUploadRuntime.noteTouch(MotionEvent.ACTION_CANCEL, this)
+        }
+        return handled
+    }
+
 
     companion object {
         // 只调候选上方拼音；1.3 = 比原字号大 30%。

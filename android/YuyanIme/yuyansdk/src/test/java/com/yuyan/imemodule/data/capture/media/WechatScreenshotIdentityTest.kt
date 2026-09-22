@@ -119,4 +119,7 @@ class WechatScreenshotIdentityTest {
         org.junit.Assert.assertTrue(isWechatScreenshotChatPage(listOf(OcrTextLine("工作群",430,50,650,100)),1080,220))
         org.junit.Assert.assertTrue(isWechatScreenshotChatPage(listOf(OcrTextLine("〈",10,50,40,100),OcrTextLine("···",990,50,1050,100)),1080,220))
     }
+    @Test fun `detached group count must never become the title`() {
+        assertNull(selectWechatChatTitle(listOf(OcrTextLine("(279)", 500, 48, 650, 96)),1200,144))
+    }
 }

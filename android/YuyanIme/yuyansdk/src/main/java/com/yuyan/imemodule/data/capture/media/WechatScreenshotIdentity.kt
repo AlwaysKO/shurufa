@@ -23,7 +23,10 @@ internal data class OcrTextLine(
     val top: Int,
     val right: Int,
     val bottom: Int,
+    val symbols: List<OcrTextSymbol> = emptyList(),
 )
+
+internal data class OcrTextSymbol(val text: String, val left: Int, val top: Int, val right: Int, val bottom: Int)
 
 internal data class ScreenshotConversationIdentity(
     val externalKey: String,
@@ -71,6 +74,7 @@ private fun isWechatHeaderNoise(text: String): Boolean =
     text in setOf("返回", "···", "...", "5G", "4G", "く", "〈", "〉", "<", ">", "‹", "›", "←", "→", "×") ||
         text.matches(Regex("^\\d{1,2}:\\d{2}$")) ||
         text.matches(Regex("^\\d{1,3}%$")) ||
+        text.matches(Regex("^[（(]\\s*\\d+\\s*[）)]$")) ||
         text.all { it.isDigit() || it in " %:·." }
 
 /** 首次立即探测也可能仍停留在列表；无聊天页证据时只重试，不保存成待确认截图。 */
@@ -132,22 +136,32 @@ internal class MlKitWechatScreenshotIdentityResolver(identityStore: Conversation
     override suspend fun resolve(asset: PendingAssetEntity, expectedVersion: Long, titleInput: TitleOcrInput?): ScreenshotConversationIdentity = withContext(Dispatchers.Default) {
         val header = (if (titleInput != null) titleInput.takeOrDecode(asset.localPath) else decodeTitleHeader(asset.localPath))
             ?: return@withContext unresolvedWechatScreenshotIdentity().copy(isChatPage = false)
+        var prepared: Bitmap? = null
         try {
-            val lines = awaitTitleOcrCompletion { recognize(header) }
-            val title = selectWechatChatTitleLine(lines, header.width, header.height)
-            if (!isWechatScreenshotChatPage(lines, header.width, header.height)) {
-                return@withContext stabilizer.observe(title?.text, title?.let { wechatTitlePixelSignature(header, it) },
-                    SystemClock.elapsedRealtime(), expectedVersion).copy(isChatPage = false)
+            val exactBand = titleInput?.hasExactTitleBand == true
+            if (exactBand) prepared = prepareWechatTitleHeader(header)
+            val lines = awaitTitleOcrCompletion { recognize(prepared ?: header) }
+            val title = selectWechatChatTitleLine(lines, header.width, header.height)?.let {
+                if (exactBand) restoreWechatTitleEllipsis(header, it) else it
+            }
+            // 清洗后无标题时，原始导航只用于判断页面，不把受控件污染的文字拿来确认姓名。
+            val pageLines = if (prepared != null && title == null)
+                awaitTitleOcrCompletion { recognize(header) } else lines
+            val evidence = title?.let { if (exactBand) wechatTitleEvidenceBounds(header, it) else it }
+            val visualKey = evidence?.let {
+                if (exactBand) wechatNicknamePixelSignature(header, it) else wechatTitlePixelSignature(header, it)
             }
             stabilizer.observe(
                 title = title?.text,
-                visualKey = title?.let { wechatTitlePixelSignature(header, it) },
+                visualKey = visualKey,
                 nowMillis = SystemClock.elapsedRealtime(),
                 expectedVersion = expectedVersion,
-            ).copy(exactTitleHash = title?.let {
-                exactPixelHash(header, IntRect(it.left, it.top, it.right, it.bottom))
-            })
+            ).copy(
+                isChatPage = isWechatScreenshotChatPage(pageLines, header.width, header.height),
+                exactTitleHash = evidence?.let { exactPixelHash(header, IntRect(it.left, it.top, it.right, it.bottom)) },
+            )
         } finally {
+            prepared?.recycle()
             header.recycle()
         }
     }
@@ -158,7 +172,12 @@ internal class MlKitWechatScreenshotIdentityResolver(identityStore: Conversation
                 if (continuation.isActive) continuation.resume(result.textBlocks.flatMap { block ->
                     block.lines.mapNotNull { line ->
                         line.boundingBox?.let { bounds ->
-                            OcrTextLine(line.text, bounds.left, bounds.top, bounds.right, bounds.bottom)
+                            OcrTextLine(line.text, bounds.left, bounds.top, bounds.right, bounds.bottom,
+                                line.elements.flatMap { it.symbols }.mapNotNull { symbol ->
+                                    symbol.boundingBox?.let { box ->
+                                        OcrTextSymbol(symbol.text, box.left, box.top, box.right, box.bottom)
+                                    }
+                                })
                         }
                     }
                 })

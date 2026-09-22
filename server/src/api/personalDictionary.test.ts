@@ -32,6 +32,8 @@ beforeEach(async () => {
   if(existsSync(rolePath)) await pool.query(readFileSync(rolePath,'utf8'));
   const additionsPath=new URL('../../migrations/023_dictionary_additions.sql',import.meta.url);
   if(existsSync(additionsPath)) await pool.query(readFileSync(additionsPath,'utf8'));
+  const habitsPath=new URL('../../migrations/025_dictionary_habits.sql',import.meta.url);
+  if(existsSync(habitsPath)) await pool.query(readFileSync(habitsPath,'utf8'));
   app = createApp(pool);
 });
 afterEach(async () => {
@@ -293,4 +295,68 @@ describe('指定手机纯加法词库', () => {
     expect((await mobile(A,'post','/additions/ack').send({cursor:123})).body.code).toBeUndefined();
   });
 
+});
+
+describe('真实习惯增量投递',()=>{
+  it('全量同步独立投递真实来源且重复按钮和旧上报不制造次数',async()=>{
+    await mobile(A,'post','/register').send({habits_supported:true});
+    await mobile(B,'post','/register').send({habits_supported:true});
+    await upload(A,[choice(),word],2);
+    const admin=await dash();
+    const sync=()=>admin.post(`/api/v1/dashboard/dictionary/sync-all?user_id=${A}`).send({device_ids:[B]});
+    const first=await sync();expect(first.status).toBe(200);
+    expect(first.body).toMatchObject({habits:1,habits_queued:1,words:1});
+    expect((await sync()).body.habits_queued).toBe(0);
+    expect((await mobile(A,'get','/habits?after=0')).body.entries).toEqual([]);
+    const page=(await mobile(B,'get','/habits?after=0')).body;
+    expect(page.entries[0]).toMatchObject({...choice(),device_id:A,version:2});
+    expect((await mobile(B,'post','/habits/ack').send({cursor:page.cursor+1})).status).toBe(409);
+    expect((await mobile(B,'post','/habits/ack').send({cursor:page.cursor})).status).toBe(200);
+    await upload(A,[choice('充电宝',1)],1);
+    expect((await sync()).body.habits_queued).toBe(0);
+    await upload(A,[choice('充电宝',5)],3);
+    expect((await sync()).body.habits_queued).toBe(1);
+    expect((await mobile(B,'get',`/habits?after=${page.cursor}`)).body.entries[0].count).toBe(5);
+  });
+  it.runIf(Boolean(databaseUrl))('习惯分页和确认只属于目标设备，迁移重复不清数据',async()=>{
+    for(const id of [A,B]) await mobile(id,'post','/register').send({habits_supported:true});
+    const values:Array<unknown>=[];
+    const tuples=Array.from({length:501},(_,i)=>{
+      const text='词'+String.fromCharCode(0x4e00+i),v=choice(text);
+      const start=values.length;values.push(B,A,v.code,text,1,JSON.stringify(v));
+      return '('+Array.from({length:6},(_,j)=>'$'+(start+j+1)).join(',')+')';
+    });
+    await pool.query('INSERT INTO dictionary_habit(device_id,source_device_id,code,text,version,payload) VALUES '+tuples.join(','),values);
+    await pool.query(readFileSync(new URL('../../migrations/025_dictionary_habits.sql',import.meta.url),'utf8'));
+    const first=(await mobile(B,'get','/habits?after=0')).body;
+    expect(first.entries).toHaveLength(500);expect(first.has_more).toBe(true);
+    expect((await mobile(A,'post','/habits/ack').send({cursor:first.cursor})).status).toBe(409);
+    expect((await mobile(B,'get',`/habits?after=${first.cursor+1}`)).body.code).toBe('dictionary_cursor_reset');
+    expect((await mobile(B,'post','/habits/ack').send({cursor:first.cursor})).status).toBe(200);
+    const second=(await mobile(B,'get',`/habits?after=${first.cursor}`)).body;
+    expect(second.entries).toHaveLength(1);expect(second.has_more).toBe(false);
+    expect((await mobile(B,'post','/habits/ack').send({cursor:second.cursor})).status).toBe(200);
+    expect((await mobile(B,'post','/habits/ack').send({cursor:first.cursor})).status).toBe(200);
+    expect(Number((await pool.query('SELECT habits_ack FROM dictionary_device WHERE device_id=$1',[B])).rows[0].habits_ack)).toBe(second.cursor);
+  });
+  it('旧手机不声明习惯能力不能伪确认且敏感和停用词不得投递',async()=>{
+    await mobile(A,'post','/register').send({habits_supported:true});
+    await mobile(B,'post','/register').send({});await upload(A);
+    const admin=await dash();
+    expect((await admin.post(`/api/v1/dashboard/dictionary/sync-all?user_id=${A}`).send({device_ids:[B]})).status).toBe(200);
+    expect((await mobile(B,'get','/habits?after=0')).status).toBe(409);
+    expect((await mobile(B,'post','/habits/ack').send({cursor:0})).status).toBe(409);
+    const devices=(await admin.get(`/api/v1/dashboard/dictionary/devices?user_id=${A}`)).body.devices;
+    expect(devices.find((d:any)=>d.device_id===B)).toMatchObject({habits_supported:false,habits_pending:1});
+    expect((await upload(A,[choice('验证码')],4)).status).toBe(400);
+  });
+});
+
+it('一两键选择备份保留编码并重复上报不增次数',async()=>{
+ await mobile(A,'post','/register').send({});
+ const entries=['3','62'].map(code=>({...choice('的',1),code}));
+ expect((await upload(A,entries)).status).toBe(200);
+ expect((await upload(A,entries)).status).toBe(200);
+ const snapshot=(await mobile(A,'get','')).body;
+ expect(snapshot.entries.map((e:any)=>[e.code,e.count]).sort()).toEqual([['3',1],['62',1]]);
 });

@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6ab22fe2-60a8-83ea-a3ed-a0f19c5c5951",
+  "sourceFileId": "file_00000000c62081f58ab4c7fe3f643243",
+  "requestedDate": "2026-09-22",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "1da5856bc9b44336db5d82aefae68ed89d24d9f4781d92c266a433368389069c",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-22T07:48:36.450855+00:00",
+  "generationObservedAt": "2026-09-22T07:48:36.450855+00:00",
+  "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+  "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+  "originalDownloadName": "fox-listen.png",
+  "deletedAt": "2026-09-22T07:54:14.600160+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

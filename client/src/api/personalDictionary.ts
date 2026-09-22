@@ -5,6 +5,7 @@ export interface DictionaryDevice {
   device_id: string; group_id: string; name: string; model: string; brand: string; dashboard_name: string;
   in_group: boolean; synced: boolean; restore_enabled?: boolean; last_report_at: string | null; applied_at: string | null;
   migration_status: string; imported: number;
+  habits_supported?: boolean; habits_pending?: number; habits_applied_at?: string | null;
   additions_supported?: boolean; additions_pending?: number; additions_applied_at?: string | null;
 }
 export interface DictionaryEntry {
@@ -31,6 +32,7 @@ export const dictionaryApi = {
   entries: (query: {device_id?:string;q?:string;status?:string;page:number;view?:string}) => call<{entries:DictionaryEntry[];total:number;total_words?:number;page:number}>('entries',query),
   addWord: (word: {text:string;pinyin:string}) => call<{ok:true;created:boolean}>('words',{},word),
   sync: (request:DictionarySyncRequest) => call<{ok:true;words:number;queued:number;skipped:number;devices:number}>('sync',{},request),
+  syncAll: (request: {device_ids: string[]}) => call<{ok:true;words:number;queued:number;skipped:number;devices:number;habits:number;habits_queued:number}>('sync-all',{},request),
   bind: (device_id:string) => call('bind',{}, {device_id}),
   decisions: (texts:string[],status:DictionaryStatus) => call('decisions',{}, {texts,status}),
 };

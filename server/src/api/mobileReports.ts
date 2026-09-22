@@ -21,7 +21,7 @@ function validPayload(kind: unknown, p: Record<string, unknown>): boolean {
     case 'phrase_use':
       return text(p.content);
     case 'personal_choice':
-      return text(p.code, 30) && /^(?:[a-z]{2,30}|[2-9]{3,30})$/.test(p.code) &&
+      return text(p.code, 30) && /^(?:[a-z]{2,30}|[2-9]{1,30})$/.test(p.code) &&
         text(p.text, 30) && /^[\u4e00-\u9fff]+$/.test(p.text) &&
         finite(p.count) && Number.isSafeInteger(p.count) && p.count > 0 &&
         finite(p.weight) && p.weight > 0 && finite(p.last_used) &&

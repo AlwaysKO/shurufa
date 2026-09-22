@@ -1,0 +1,25 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6ab22cd3-4a14-83e9-9f75-401d6c1d9ff4",
+  "sourceFileId": "file_00000000722481f9a184ff5f3674c6dc",
+  "requestedDate": "2026-09-22",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "510abd4f071629e2ee904006492c963583635020b422fdacaccd2816d44d8b90",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-22T07:29:01.696632+00:00",
+  "generationObservedAt": "2026-09-22T07:29:01.696632+00:00",
+  "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+  "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+  "originalDownloadName": "man-help.png",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-22T07:32:01.461331+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

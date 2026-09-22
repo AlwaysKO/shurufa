@@ -83,6 +83,18 @@ async function syncSelected() {
     await load();
   } catch(e) {if(alive) error.value=(e as Error).message;} finally {if(alive) busy.value=false;}
 }
+async function syncAllHabits() {
+  if(busy.value || loading.value || !loaded.value || !targets.value.length) return;
+  const ids=[...targets.value];
+  const targetNames=ids.map(id=>`${deviceName(id)} · ${id.slice(-8)}`).join('、');
+  const needsUpgrade=devices.value.some(d=>ids.includes(d.device_id) && (!d.additions_supported || !d.habits_supported));
+  busy.value=true;error.value='';notice.value='';
+  try {
+    const result=await dictionaryApi.syncAll({device_ids:ids});if(!alive) return;
+    notice.value=`已处理全部个人词库：${result.words} 个词与读音、${result.habits} 条真实习惯，新增词语投递 ${result.queued} 条、习惯投递 ${result.habits_queued} 条，跳过 ${result.skipped} 个不支持的词。目标：${targetNames}。不覆盖已有词，不重复增加选词次数；等待手机确认。${needsUpgrade ? '部分目标手机需升级后才能接收全部内容。' : ''}`;
+    await load();
+  } catch(e) {if(alive) error.value=(e as Error).message;} finally {if(alive) busy.value=false;}
+}
 async function bind(d:DictionaryDevice) {
   if(busy.value || !canManage.value || d.restore_enabled === false || !(await askConfirmation(`将「${label(d)} · ${d.device_id.slice(-8)}」所属的个人词库与当前词库合并？其已绑定手机也会一起加入，原始上报来源保留，已有停用/删除规则优先。请确认都是你要共享词库的手机。`, { title: '确认合并个人词库', confirmText: '确认合并' }))) return;
   if (!alive || busy.value || !canManage.value) return;
@@ -102,7 +114,7 @@ onMounted(()=>load(1)); onBeforeUnmount(()=>{alive=false;generation++;});
 </script>
 <template>
   <div class="content-library dictionary-page">
-    <header class="library-intro"><div><span class="eyebrow">PERSONAL DICTIONARY</span><h2>个人词库与换机同步</h2><p>添加想打的词与拼音，增量同步到指定手机。本站、线上和手机已有词取并集，不因某端词少而删除手机词语。</p></div></header>
+    <header class="library-intro"><div><span class="eyebrow">PERSONAL DICTIONARY</span><h2>个人词库与换机同步</h2><p>添加想打的词与拼音，将已保存的真实选词习惯和词语一键增量同步到指定手机。本站、线上和手机已有词取并集，不因某端词少而删除手机词语。</p></div></header>
     <p v-if="error" class="library-notice error" role="alert">{{ error }} <button class="library-button small" :disabled="busy||loading" @click="load()">刷新列表</button></p>
     <p v-if="notice" class="library-notice success" role="status">{{ notice }}</p>
     <section class="library-panel">
@@ -114,12 +126,18 @@ onMounted(()=>load(1)); onBeforeUnmount(()=>{alive=false;generation++;});
       </form>
     </section>
     <section class="library-panel">
-      <h3>选择接收词语的手机</h3><p>可选多台手机，不需要先绑定。新手机注册个人词库同步后才会出现；旧版本可以排队，但须升级才能接收增量词语。系统词典不等于其他输入法的私有词库。</p>
+      <h3>选择接收词语和习惯的手机</h3><p>可选多台手机，不需要先绑定。新手机注册个人词库同步后才会出现；旧版本可以排队，但须升级才能接收增量词语。系统词典不等于其他输入法的私有词库。</p>
+      <div class="batch-actions">
+        <button class="library-button primary" data-testid="sync-all-habits" :disabled="busy||loading||!loaded||!targets.length" @click="syncAllHabits">一键同步全部习惯和词语到所选 {{ targets.length }} 台手机</button>
+      </div>
+      <p>同步当前个人词库中全部启用的已保存习惯、已知读音和手工词，不受下方搜索、分页或勾选影响；不会自动绑定手机。手机需开启个人数据同步并联网接收。</p>
       <div class="device-grid">
         <article v-for="d in devices" :key="d.device_id" class="device-card" :class="{chosen:targets.includes(d.device_id)}">
           <label class="target-label"><input type="checkbox" :data-testid="`target-${d.device_id}`" :checked="targets.includes(d.device_id)" :disabled="busy||loading" @change="toggleTarget(d.device_id,($event.target as HTMLInputElement).checked)"><strong>{{ label(d) }}</strong></label>
           <small>{{ [d.brand,d.model].filter(Boolean).join(' ') }}</small><small>{{ d.device_id }}</small>
           <p>{{ d.additions_supported ? '支持增量接收' : '需升级：尚未支持增量接收' }}<br>待应用：{{ d.additions_pending ?? 0 }} 条<br>增量应用确认：{{ date(d.additions_applied_at) }}</p>
+          <p>{{ d.habits_supported ? '支持真实习惯接收' : '需升级：尚未支持习惯接收' }}<br>习惯待应用：{{ d.habits_pending ?? 0 }} 条<br>习惯应用确认：{{ date(d.habits_applied_at) }}</p>
+          <p v-if="d.additions_supported && d.habits_supported && d.additions_pending === 0 && d.habits_pending === 0 && d.additions_applied_at && d.habits_applied_at">手机已确认当前词语与习惯投递；实际候选效果请在手机检查。</p>
           <details><summary>原始备份与管理状态</summary>
             <p>{{ d.restore_enabled === false ? '仅备份：本站不下发管理决策，但可增量添加词语' : d.in_group ? (d.synced ? '手机已确认应用管理决策' : '等待手机同步') : '未绑定此词库' }}</p>
             <p>最近上报：{{ date(d.last_report_at) }}<br>管理应用确认：{{ date(d.applied_at) }}</p>
@@ -134,7 +152,7 @@ onMounted(()=>load(1)); onBeforeUnmount(()=>{alive=false;generation++;});
     <section class="library-panel">
       <p v-if="devices.length && !canManage" class="library-notice">本站为这些手机的词库备份端，支持新增与增量同步；停用、删除和换机绑定仍请在主后台操作。</p>
       <h3>{{ view==='merged' ? '合并后的个人词库' : deviceId ? deviceName(deviceId)+'的上报明细' : '共享个人词库 · 各来源明细' }}</h3>
-      <p>同词多种编码或来源不等于重复加权。真实选词次数仅来自点击记录，非点击记录显示“—”；合并权重不能相加当作次数。“未记录”读音的词将跳过下发。</p>
+      <p>同词多种编码或来源不等于重复加权。真实选词次数仅来自点击记录，非点击记录显示“—”；合并权重不能相加当作次数。“未记录”读音不能新增拼音词条，但已有合法输入码的真实习惯可通过一键同步恢复，不猜测读音。</p>
       <form class="library-row" @submit.prevent="load(1)">
         <button class="library-button" type="button" :disabled="busy||loading" @click="filterDevice('')">全部来源（含后台添加）</button>
         <input v-model="q" data-testid="search" class="library-input" aria-label="搜索个人词语" placeholder="搜索词语或拼音" :disabled="busy">

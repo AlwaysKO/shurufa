@@ -19,6 +19,44 @@ class PersonalDictionarySyncTest {
     private val context=ApplicationProvider.getApplicationContext<Context>()
     private val json=Json { encodeDefaults=true }
     private fun body(entries:List<DictionaryRecord> = emptyList())=json.encodeToString(DictionarySnapshot.serializer(),DictionarySnapshot("group","b".repeat(64),entries,emptyList()))
+    @Test fun `习惯页落盘后才确认失败重放不重复次数游标独立`() {
+        val server=MockWebServer();server.start()
+        try {
+            LocalInputStore(context,"habit-sync-${UUID.randomUUID()}.db").withStore { store ->
+                val prefs=context.getSharedPreferences("test-${UUID.randomUUID()}",0)
+                val sync=PersonalDictionarySync(store,prefs,OkHttpClient(),"new",server.url("/").toString(),{true},{"complete" to 0},restoreFromTarget=false)
+                val record=DictionaryRecord("choice","我们","966","","selection",3,3.0,1000,"old",5)
+                fun queue(ack:Int) {
+                    server.enqueue(MockResponse().setBody("{\"ok\":true,\"has_report\":true,\"habits_supported\":true}"))
+                    if(server.requestCount==0) server.enqueue(MockResponse().setBody("{\"ok\":true}"))
+                    server.enqueue(MockResponse().setBody(json.encodeToString(DictionaryHabits.serializer(),DictionaryHabits(listOf(DictionaryHabit(7,record)),7,false))))
+                    server.enqueue(MockResponse().setResponseCode(ack).setBody("{\"ok\":true}"))
+                }
+                queue(503);assertFalse(sync.run())
+                assertEquals(3L,store.learned("966").single().count)
+                assertEquals(0L,store.dictionaryHabitCursor(server.url("/").toString().trimEnd('/')+"/api/v1/mobile/dictionary#new"))
+                queue(200);assertTrue(sync.run())
+                assertEquals(3L,store.learned("966").single().count)
+                assertTrue(store.dictionaryExport().isEmpty())
+                val paths=(1..server.requestCount).map {server.takeRequest().path}
+                assertEquals(2,paths.count {it=="/api/v1/mobile/dictionary/habits?after=0"})
+                assertEquals(2,paths.count {it=="/api/v1/mobile/dictionary/habits/ack"})
+            }
+        } finally {server.shutdown()}
+    }
+    @Test fun `坏习惯页和越界游标不确认`() {
+        val server=MockWebServer();server.start()
+        try {
+            LocalInputStore(context,"habit-invalid-${UUID.randomUUID()}.db").withStore {store ->
+                val sync=PersonalDictionarySync(store,context.getSharedPreferences("test-${UUID.randomUUID()}",0),OkHttpClient(),"new",server.url("/").toString(),{true},{"complete" to 0},restoreFromTarget=false)
+                server.enqueue(MockResponse().setBody("{\"ok\":true,\"habits_supported\":true}"))
+                server.enqueue(MockResponse().setBody("{\"ok\":true}"))
+                server.enqueue(MockResponse().setBody("{\"entries\":[],\"cursor\":5,\"has_more\":false}"))
+                assertFalse(sync.run());assertEquals(3,server.requestCount)
+                assertTrue(store.dictionaryExport().isEmpty())
+            }
+        } finally {server.shutdown()}
+    }
     @Test fun `先上报本机后事务恢复最后确认且关闭开关不联网`() = runBlocking {
         val server=MockWebServer();server.start()
         LocalInputStore(context,"sync-${UUID.randomUUID()}.db").withStore { store ->

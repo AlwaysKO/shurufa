@@ -106,4 +106,16 @@ class ScreenshotUpdatePolicyTest {
         policy.clear()
         assertFalse(policy.accepts(10, 3, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED))
     }
+    @Test fun readableTruncatedTitleAllowsLateContentButNeverCrossesNavigation() {
+        val policy=ScreenshotUpdatePolicy()
+        policy.observeTitle(10,3,"pending")
+        assertFalse(policy.accepts(10,3,AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED))
+        policy.observeTitle(10,3,"truncated")
+        assertTrue(policy.accepts(10,3,AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED))
+        assertFalse(policy.accepts(11,3,AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED))
+        policy.recordSavedContent(ScreenshotScope(10,3),"partial","title","body",CapturePersistResult.INSERTED,true)
+        assertTrue(policy.isSavedContent(ScreenshotScope(10,3),"partial","title","body"))
+        policy.clear()
+        assertFalse(policy.accepts(10,3,AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED))
+    }
 }

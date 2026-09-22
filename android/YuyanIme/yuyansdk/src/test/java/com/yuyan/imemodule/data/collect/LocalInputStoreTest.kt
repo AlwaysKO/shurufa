@@ -144,16 +144,17 @@ class LocalInputStoreTest {
         } finally { store.close(); context.deleteDatabase(name) }
     }
 
-    @Test fun `相关历史保留来源编码且查询不复制计数或污染三码字母码`() {
+    @Test fun `相关历史保留来源编码且三键补全查询不复制计数或污染字母码`() {
         val name = "test-${UUID.randomUUID()}.db"
         val store = LocalInputStore(context, name)
         try {
             for (code in listOf("9366", "93663", "936632", "936", "zenme", "987")) store.learn(code, "怎么")
             repeat(2) {
                 val records = store.relatedLearned("9366")
-                assertEquals(setOf("9366", "93663", "936632"), records.map { it.code }.toSet())
+                // 2026-09-22三键合法补全已加入候选层；查询返回来源，仍不复制学习次数。
+                assertEquals(setOf("936", "9366", "93663", "936632"), records.map { it.code }.toSet())
                 assertTrue(records.all { it.choice.count == 1L })
-                assertEquals(setOf("936"), store.relatedLearned("936").map { it.code }.toSet())
+                assertEquals(setOf("936", "9366", "93663", "936632"), store.relatedLearned("936").map { it.code }.toSet())
                 assertEquals(setOf("zenme"), store.relatedLearned("zenme").map { it.code }.toSet())
             }
             assertEquals(1L, store.learned("93663").single().count)

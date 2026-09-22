@@ -113,7 +113,7 @@ class DictionaryAdditionsTest {
                 store.writableDatabase.version=7
             }
             LocalInputStore(context,name).withStore { store ->
-                assertEquals(8,store.writableDatabase.version)
+                assertEquals(9,store.writableDatabase.version)
                 store.writableDatabase.execSQL("DELETE FROM dictionary_remote_word")
                 assertEquals("旧词",store.personalWords("54824").single().text)
                 val word=DictionaryAddition(1,"泰鲮","tai ling")

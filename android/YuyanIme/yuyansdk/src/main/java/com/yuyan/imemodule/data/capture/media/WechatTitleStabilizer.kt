@@ -29,7 +29,7 @@ internal suspend fun confirmWechatScreenshotIdentity(
 ): ScreenshotConversationIdentity {
     var identity = first
     repeat(2) {
-        if (identity.status == "confirmed") return identity
+        if (identity.status == "confirmed" || identity.status == "truncated") return identity
         val next = observeNext() ?: return identity
         // 一帧空标题不是切换联系人；允许用剩余一次机会重看，首图已落盘。
         // 可读的不同标题、导航失效或退出仍立即停止，不能跨会话补名字。

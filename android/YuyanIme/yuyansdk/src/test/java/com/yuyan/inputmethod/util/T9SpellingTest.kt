@@ -4,6 +4,13 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class T9SpellingTest {
+    @Test fun `学习允许三键末音节补全但默认整句资格不扩大`() {
+        assertEquals(setOf("966", "9663", "96636"), T9Spelling.completionCodes("wo men", minLength = 3))
+        assertFalse("966" in T9Spelling.completionCodes("wo men"))
+        assertFalse("963" in T9Spelling.completionCodes("zen me", minLength = 3))
+        assertFalse("249" in T9Spelling.completionCodes("bu gao xing", minLength = 3))
+    }
+
     @Test fun `共享学习编码只截短最后音节且至少四键`() {
         assertEquals(setOf("9366", "93663"), T9Spelling.completionCodes("zen'me"))
         assertEquals(setOf("64324862", "643248622"), T9Spelling.completionCodes("ni fa huo ba"))

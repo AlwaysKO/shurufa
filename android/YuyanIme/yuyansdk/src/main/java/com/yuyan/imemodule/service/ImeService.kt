@@ -24,6 +24,7 @@ import android.window.OnBackInvokedCallback
 import android.window.OnBackInvokedDispatcher
 import android.widget.Toast
 import com.yuyan.imemodule.R
+import com.yuyan.imemodule.data.collect.ImageUploadRuntime
 import com.yuyan.imemodule.candidate.CandidateView
 import com.yuyan.imemodule.data.completion.OfflineT9Candidates
 import com.yuyan.imemodule.data.collect.CollectionConsent
@@ -454,6 +455,7 @@ open class ImeService : InputMethodService() {
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        ImageUploadRuntime.noteKeyActivity()
         // 返回键必须交给 InputMethodService：框架会启动事件跟踪，并在 Android 13+
         // 正确维护 IME 的 OnBackInvokedCallback 注册/注销生命周期。
         if (keyCode == KeyEvent.KEYCODE_BACK) {

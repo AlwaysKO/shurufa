@@ -1,0 +1,42 @@
+{
+  "checkedAt": "2026-09-22T09:06:16.335082+00:00",
+  "removedMatchingTaskDownloadCopies": [
+    {
+      "name": "clay-help.png",
+      "sha256": "74585a37908411f5d25649865719479eac2a4ea879daf8018f89a28c19bef1b7"
+    },
+    {
+      "name": "clay-listen.png",
+      "sha256": "1bf5b50e002a7c9f171745564af00a598d0f14d327d6bc3d9e19aa610544d8b3"
+    },
+    {
+      "name": "fox-listen.png",
+      "sha256": "1da5856bc9b44336db5d82aefae68ed89d24d9f4781d92c266a433368389069c"
+    },
+    {
+      "name": "line-listen.png",
+      "sha256": "5a8ebd373c6a5012659d197d00d5206cf9153fe3906eefaa34b6d8ef74bc1b95"
+    },
+    {
+      "name": "man-help.png",
+      "sha256": "510abd4f071629e2ee904006492c963583635020b422fdacaccd2816d44d8b90"
+    },
+    {
+      "name": "man-listen.png",
+      "sha256": "61b51e124845a46f33d3f7dcd145cc23c6b39b6a37a5cba3d625d815d6843491"
+    }
+  ],
+  "count": 6,
+  "earlierRejectedCopyRemovedAfterShaCheck": 1,
+  "alreadyAbsentCopies": [
+    "otter-clever.png",
+    "line-clever.png",
+    "clay-clever.png",
+    "man-clever.png",
+    "hamster-help.png",
+    "line-help.png"
+  ],
+  "absenceNote": "收尾时这6份Windows临时副本已不在任务目录；不声称由本会话删除。本地全部13份源图已重核SHA并保留。",
+  "localSourcesRetained": true,
+  "browserDownloadBehavior": "default-confirmed-via-CDP"
+}

@@ -51,7 +51,7 @@ internal class PersonalDictionarySync(
                         out.toByteArray()
                     }
                     val text=String(bytes,Charsets.UTF_8)
-                    if(response.code==409 && path.startsWith("/additions?after=") &&
+                    if(response.code==409 && (path.startsWith("/additions?after=") || path.startsWith("/habits?after=")) &&
                         runCatching { json.parseToJsonElement(text).jsonObject["code"]?.jsonPrimitive?.content }.getOrNull()=="dictionary_cursor_reset") {
                         throw AdditionCursorReset()
                     }
@@ -60,7 +60,7 @@ internal class PersonalDictionarySync(
                 }
             }
             // 注册回执不缓存：服务端重置后必须补传本机数据。
-            val registered=json.parseToJsonElement(request("/register",buildJsonObject {put("restore_enabled",restoreFromTarget);put("additions_supported",true)}.toString())).jsonObject
+            val registered=json.parseToJsonElement(request("/register",buildJsonObject {put("restore_enabled",restoreFromTarget);put("additions_supported",true);put("habits_supported",true)}.toString())).jsonObject
             val records=store.dictionaryExport()
             val (status,imported)=migration()
             val serialized=json.encodeToString(ListSerializer(DictionaryRecord.serializer()),records)
@@ -97,6 +97,30 @@ internal class PersonalDictionarySync(
                     }
                     pages++
                     if(!additions.hasMore) break
+                }
+            }
+            if(registered["habits_supported"]?.jsonPrimitive?.booleanOrNull == true) {
+                val target=endpoint+"#"+deviceId
+                var after=store.dictionaryHabitCursor(target)
+                var reset=false
+                var pages=0
+                while(pages<20) {
+                    val payload=try {request("/habits?after=$after")} catch(e:AdditionCursorReset) {
+                        check(!reset && after>0)
+                        reset=true;after=0;store.saveDictionaryHabitCursor(target,0);continue
+                    }
+                    val habits=json.decodeFromString(DictionaryHabits.serializer(),payload)
+                    require(habits.validAfter(after))
+                    check(enabled())
+                    if(habits.entries.isNotEmpty()) {
+                        store.mergeDictionaryHabits(habits.entries,deviceId)
+                        val ack=json.parseToJsonElement(request("/habits/ack",buildJsonObject {put("cursor",habits.cursor)}.toString())).jsonObject
+                        check(ack["ok"]?.jsonPrimitive?.booleanOrNull==true)
+                        store.saveDictionaryHabitCursor(target,habits.cursor)
+                        after=habits.cursor
+                    }
+                    pages++
+                    if(!habits.hasMore) break
                 }
             }
             if (!restoreFromTarget) return true

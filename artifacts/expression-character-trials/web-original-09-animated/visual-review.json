@@ -1,0 +1,33 @@
+{
+  "checkedAt": "2026-09-22T09:10:51.462349+00:00",
+  "reviewedIds": [
+    "otter-clever",
+    "line-clever",
+    "clay-clever",
+    "man-clever",
+    "hamster-help",
+    "line-help",
+    "clay-help",
+    "man-help",
+    "fox-listen",
+    "line-listen",
+    "clay-listen",
+    "man-listen"
+  ],
+  "needsRework": [],
+  "rejectedSources": [
+    {
+      "path": "rejected/clay-help-v1",
+      "reason": "章鱼触腕数量遮叠难核实，后段开心弱化求援语义",
+      "replacement": "sources/clay-help/source"
+    }
+  ],
+  "actualStyleNotes": {
+    "otter-clever": "拟真毛发的拟人化水獭",
+    "line-clever": "彩色漫画，非提示期望的纯黑白",
+    "clay-clever": "绒毛3D浣熊，非明显黏土",
+    "clay-help": "绒毛3D猫，非明显黏土"
+  },
+  "continuityNote": "line-help末段落手后重新举手衔接较快；真实后台可播放，未裁肢或伪造过渡，保留实际表演差异",
+  "approvalBasis": "用户来源技术合格关键词默认入库授权；不是用户逐张审美认可"
+}

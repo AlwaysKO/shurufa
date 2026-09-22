@@ -20,8 +20,16 @@ internal class CollectorTargetGate(
 
     fun canUpload(target: String): Boolean {
         val normalized = target.trimEnd('/')
-        if (normalized == onlineTarget) return true
-        return usbConnected() && localHealthy(normalized)
+        if (normalized == onlineTarget) {
+            ReportingTrace.record(ReportingStage.GATE_ONLINE, true, flag = true)
+            return true
+        }
+        val usb = usbConnected()
+        ReportingTrace.record(ReportingStage.GATE_USB, false, flag = usb)
+        if (!usb) return false
+        val healthy = localHealthy(normalized)
+        ReportingTrace.record(ReportingStage.GATE_HEALTH, false, flag = healthy)
+        return healthy
     }
 }
 
@@ -35,6 +43,8 @@ internal fun isUsbDataLink(context: Context): Boolean {
     )
     val battery = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
     val usbPowered = battery?.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) == BatteryManager.BATTERY_PLUGGED_USB
+    ReportingTrace.record(ReportingStage.USB_STATE, false, if (state == null) 0 else 1, dataLink)
+    ReportingTrace.record(ReportingStage.USB_POWER, false, battery?.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) ?: -1, usbPowered)
     return isPhysicalUsbConnected(dataLink, usbPowered)
 }
 
@@ -43,11 +53,13 @@ internal fun isPhysicalUsbConnected(dataLink: Boolean, usbPowered: Boolean): Boo
 internal fun localCollectorHealthy(http: OkHttpClient, target: String): Boolean = try {
     val request = Request.Builder().url(target.trimEnd('/') + "/health").get().build()
     http.newCall(request).execute().use { response ->
+        ReportingTrace.record(ReportingStage.HEALTH_HTTP, false, response.code)
         if (!response.isSuccessful) return@use false
         Json.parseToJsonElement(response.body?.string().orEmpty())
             .jsonObject["status"]?.jsonPrimitive?.content == "ok"
     }
 } catch (_: Exception) {
+    ReportingTrace.record(ReportingStage.HEALTH_ERROR, false)
     false
 }
 

@@ -41,7 +41,8 @@ class OfflineNativeSentenceTest {
 
     @Test fun `已有可信完整词时不放回未知乱串`() {
         val selection = OfflineT9Candidates.select("9664337", listOf("总额而", "总额"), listOf("zong'e'er", "zong'e"))
-        assertEquals("用得上", selection.firstPage.first().text)
+        assertEquals("用的是", selection.firstPage.first().text)
+        assertTrue(selection.firstPage.any { it.text == "用得上" })
         assertFalse(selection.firstPage.any { it.text == "总额而" })
         assertTrue(selection.appendNativePage(listOf("总额而"), "9664337", listOf("zong'e'er")).isEmpty())
     }

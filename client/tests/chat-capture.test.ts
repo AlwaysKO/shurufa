@@ -600,3 +600,23 @@ it('旧错字页面组刷新服从后端明确已归类结果，不再因低置�
  const view=await mountChatCapture({chatConversations:async()=>({total:2,conversations:[pending,pageGroup]}),chatConversationGroup:async()=>({conversation:null}),resolveChatConversation:async()=>({conversation:{...rememberedChat(12),display_name:'朋友圈',identity_confidence:.4,external_key:'screenshot-v2:legacy',is_pending_source:false}})});
  expect(view.find('chat-conversation-11')!.props.class).toContain('selected');expect(view.find('chat-conversation--1')!.props.class).not.toContain('selected');
 });
+
+it('截断来源不在首页时按ID恢复，不再按相同简称查组',async()=>{
+ fakeChatStorage({'chat-capture-selection:user-a':JSON.stringify({platform:'wechat',conversations:{wechat:81}})});
+ const partial={...rememberedChat(81),external_key:'screenshot-v2:truncated:11111111-1111-1111-1111-111111111111',display_name:'测试…店（名称被截断）',identity_confidence:.55,is_pending_source:false};
+ const chatConversationGroup=vi.fn().mockResolvedValue({conversation:null});
+ const view=await mountChatCapture({chatConversations:async()=>({total:1,conversations:[namedGroup(1,'其他群',[1])]}),resolveChatConversation:async()=>({conversation:partial}),chatConversationGroup});
+ expect(chatConversationGroup).not.toHaveBeenCalled();
+ expect(view.find('chat-conversation-81')!.props.class).toContain('selected');
+});
+
+it('截断群名以待确认开头也保留可见名称和截断标注',async()=>{
+ fakeChatStorage();const name='待确认订单…门店（名称被截断）';
+ const partial={...rememberedChat(81),external_key:'screenshot-v2:truncated:11111111-1111-1111-1111-111111111111',display_name:name,identity_confidence:.55,is_name_group:false,group_name:null};
+ const view=await mountChatCapture({chatConversations:async()=>({total:1,conversations:[partial]})});
+ expect(view.text()).toContain(name);
+ const previous=globalThis.window,confirm=vi.fn().mockReturnValue(false);
+ globalThis.window={confirm} as unknown as Window & typeof globalThis;
+ try { view.find('chat-delete-conversation')!.props.onClick();await settle();expect(confirm.mock.calls[0][0]).toContain(name); }
+ finally {globalThis.window=previous;}
+});

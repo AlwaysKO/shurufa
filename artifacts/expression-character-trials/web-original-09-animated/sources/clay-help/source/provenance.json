@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6ab226ee-bf30-83ea-8291-c53ff40ea26f",
+  "sourceFileId": "file_0000000082048206b9d79fa4f5f79a71",
+  "requestedDate": "2026-09-22",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "74585a37908411f5d25649865719479eac2a4ea879daf8018f89a28c19bef1b7",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-22T07:05:11.770783+00:00",
+  "generationObservedAt": "2026-09-22T07:05:11.770783+00:00",
+  "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+  "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+  "originalDownloadName": "clay-help.png",
+  "deletedAt": "2026-09-22T07:18:58.147903+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

@@ -3,12 +3,18 @@ package com.yuyan.imemodule.data.completion
 import kotlin.math.pow
 import com.yuyan.inputmethod.util.T9Spelling
 
-internal data class ChoiceEvidence(val text: String, val weight: Double, val updatedAt: Long)
+internal data class ChoiceEvidence(val text: String, val weight: Double, val updatedAt: Long, val lastSelectedAt: Long? = null)
 internal data class RankedCandidate(val text: String, val pinyin: String = "", val nativeIndex: Int? = null)
 
-/** 编码内平滑选择概率：基础先验 + 衰减选中次数。公共分母不影响排名。 */
+/** 编码内平滑选择概率：近期明确选择优先，其余按基础先验 + 衰减选中次数。 */
 internal object PersonalCandidateRanker {
     const val HALF_LIFE_MS = 14L * 24 * 60 * 60 * 1000
+    const val RECENT_CHOICE_MS = 24L * 60 * 60 * 1000
+
+    /** 只接收真实同码选择时间，不能拿聚合权重的计算时间冒充最近选词。 */
+    fun recentSelection(lastSelectedAt: Long?, now: Long): Long =
+        lastSelectedAt?.takeIf { now >= it && now - it <= RECENT_CHOICE_MS } ?: Long.MIN_VALUE
+
     fun decay(weight: Double, updatedAt: Long, now: Long): Double =
         weight * 0.5.pow((now - updatedAt).coerceAtLeast(0).toDouble() / HALF_LIFE_MS)
 
@@ -24,14 +30,17 @@ internal object PersonalCandidateRanker {
         val baseSize = unique.size
         history.forEach { unique.putIfAbsent(it.text, RankedCandidate(it.text)) }
         val evidence = history.associate { it.text to decay(it.weight, it.updatedAt, now) }
-        return unique.values.withIndex().sortedByDescending { (index, candidate) ->
+        val recent = history.associate { it.text to recentSelection(it.lastSelectedAt, now) }
+        return unique.values.withIndex().sortedWith(compareByDescending<IndexedValue<RankedCandidate>> {
+            recent[it.value.text] ?: Long.MIN_VALUE
+        }.thenByDescending { (index, candidate) ->
             val prior = when {
                 index == 0 && baseSize > 0 -> 2.0
                 index < baseSize -> 1.0 / (index + 1)
                 else -> 0.0
             }
             prior + (evidence[candidate.text] ?: 0.0)
-        }.map { it.value }
+        }).map { it.value }
     }
 }
 

@@ -4,6 +4,15 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class T9CommitTrackerTest {
+    @Test fun `三键末音节补全提交保留我们读音和实际输入码`() {
+        val tracker = T9CommitTracker()
+        tracker.segment("966", "我们", "wo men", "我们")
+        val selected = tracker.consumeSelection("我们", true)
+        assertEquals("966", selected?.code)
+        assertEquals("wo men", selected?.pinyin)
+        assertNull(tracker.consumeSelection("我们", true))
+    }
+
     @Test fun `锁音还原的整码不能覆盖之前明确选中的段`() {
         val tracker = T9CommitTracker()
         tracker.segment("8245464", "泰", "tai", null)

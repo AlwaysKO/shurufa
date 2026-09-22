@@ -290,3 +290,29 @@ test('微信OCR固定页面的旧错字标签集中展示，不改原始数据�
  const resolved=await agent.get(`/api/v1/dashboard/chat/conversations/${ids[1]}/resolve`).query({user_id:A});expect(resolved.body.conversation.display_name).toBe('朋友圈');
  expect((await pool.query('SELECT display_name FROM chat_conversation WHERE id=$1',[ids[1]])).rows[0].display_name).toBe('朋友屠');
 });
+
+test('截断简称独立显示且不参与待确认桶或按同名读取删除',async()=>{
+ const ids=[await conversation(),await conversation()];const name='测试…店5337（名称被截断）';
+ for(const id of ids){await pool.query("UPDATE chat_conversation SET external_key=$2,display_name=$3,identity_confidence=.55 WHERE id=$1",[id,'screenshot-v2:truncated:'+randomUUID(),name]);await message(id);}
+ const list=await agent.get(`/api/v1/dashboard/chat/conversations?user_id=${A}&platform=wechat&group_names=true&group_pending=true`);
+ expect(list.status).toBe(200);expect(list.body.total).toBe(2);
+ expect(list.body.conversations.map((c:any)=>c.id).sort()).toEqual([...ids].sort());
+ for(const c of list.body.conversations){expect(c).toMatchObject({display_name:name,group_name:null,is_name_group:false,source_count:1,message_count:1});}
+ const resolved=await agent.get(`/api/v1/dashboard/chat/conversations/${ids[0]}/resolve?user_id=${A}`);
+ expect(resolved.body.conversation).toMatchObject({display_name:name,is_pending_source:false});
+ const single=await agent.get(`/api/v1/dashboard/chat/messages?user_id=${A}&conversation_id=${ids[0]}`);
+ expect(single.body.total).toBe(1);expect(single.body.messages[0].conversation_id).toBe(ids[0]);
+ const grouped=await agent.get(`/api/v1/dashboard/chat/messages?user_id=${A}&conversation_id=${ids[0]}&platform=wechat&group_name=${encodeURIComponent(name)}`);
+ expect(grouped.status).toBe(200);expect(grouped.body.total).toBe(0);
+ const deletion=await agent.post(`/api/v1/dashboard/chat/conversation-groups/delete?user_id=${A}`).send({platform:'wechat',group_name:name,source_ids:ids,confirm:'DELETE'});
+ expect(deletion.status).toBe(409);expect((await pool.query('SELECT COUNT(*) FROM chat_message')).rows[0].count).toBe('2');
+});
+
+test('截断群名真实以待确认开头仍显示其可见名称',async()=>{
+ const id=await conversation(),name='待确认订单…门店（名称被截断）';
+ await pool.query('UPDATE chat_conversation SET external_key=$2,display_name=$3,identity_confidence=.55 WHERE id=$1',[id,'screenshot-v2:truncated:'+randomUUID(),name]);await message(id);
+ const list=await agent.get(`/api/v1/dashboard/chat/conversations?user_id=${A}&platform=wechat&group_names=true&group_pending=true`);
+ expect(list.body.conversations).toHaveLength(1);expect(list.body.conversations[0]).toMatchObject({id,display_name:name,is_name_group:false});
+ const resolved=await agent.get(`/api/v1/dashboard/chat/conversations/${id}/resolve?user_id=${A}`);
+ expect(resolved.body.conversation.is_pending_source).toBe(false);
+});

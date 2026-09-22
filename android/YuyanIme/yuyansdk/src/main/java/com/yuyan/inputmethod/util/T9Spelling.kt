@@ -6,8 +6,8 @@ import com.yuyan.imemodule.data.completion.T9Lexicon
 internal object T9Spelling {
     private val readingPattern = Regex("[a-zü]+(?:[' ]+[a-zü]+)*")
 
-    /** 学习只能在同一读音的完整码与末音节前缀间共享；不含三键短码或内部简拼。 */
-    fun completionCodes(reading: String): Set<String> {
+    /** 学习只能在同一读音的完整码与末音节前缀间共享；默认不含三键；学习可显式允许三键，但仍排除内部简拼。 */
+    fun completionCodes(reading: String, minLength: Int = 4): Set<String> {
         val normalized = reading.trim().lowercase()
         if (!readingPattern.matches(normalized)) return emptySet()
         val syllables = normalized.replace('ü', 'v').split(Regex("[' ]+"))
@@ -15,7 +15,7 @@ internal object T9Spelling {
         val prefix = T9Lexicon.digits(syllables.dropLast(1).joinToString(""))
         val last = T9Lexicon.digits(syllables.last())
         return (1..last.length).map { prefix + last.take(it) }
-            .filter { it.length in 4..30 }.toSet()
+            .filter { it.length in minLength..30 }.toSet()
     }
 
     private val unresolvedKeys = Regex("[2-9]+")

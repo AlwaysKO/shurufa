@@ -1,0 +1,905 @@
+{
+  "checkedAt": "2026-09-22T09:10:51.462349+00:00",
+  "batch": "web09",
+  "keywords": [
+    "真有你的",
+    "救命",
+    "说来听听"
+  ],
+  "newGifCount": 12,
+  "importedCount": 12,
+  "catalogBefore": 253,
+  "catalogAfter": 265,
+  "historicalExcludedRecords": 15,
+  "sources": {
+    "checkedAt": "2026-09-22T08:54:52.517182+00:00",
+    "sourceCount": 13,
+    "acceptedCount": 12,
+    "rejectedCount": 1,
+    "uniqueDeletedConversations": 13,
+    "sources": [
+      {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6ab22cd3-4a14-83e9-9f75-401d6c1d9ff4",
+        "sourceFileId": "file_00000000722481f9a184ff5f3674c6dc",
+        "requestedDate": "2026-09-22",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "510abd4f071629e2ee904006492c963583635020b422fdacaccd2816d44d8b90",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-22T07:29:01.696632+00:00",
+        "generationObservedAt": "2026-09-22T07:29:01.696632+00:00",
+        "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+        "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+        "originalDownloadName": "man-help.png",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-22T07:32:01.461331+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6ab21e39-7ad4-83ea-8e66-b5d48f0d1866",
+        "sourceFileId": "file_00000000127082069e604450d87ac7da",
+        "requestedDate": "2026-09-22",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "0312c54a5967b7d1c73bd7480307a15a5e73bca4c75b466bf8bdd377ccc7c299",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-22T06:23:36.454073+00:00",
+        "generationObservedAt": "2026-09-22T06:23:36.454073+00:00",
+        "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+        "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+        "originalDownloadName": "man-clever.png",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-22T06:26:48.585811+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6ab21d81-c1bc-83ea-a15d-7b0fde2b2226",
+        "sourceFileId": "file_00000000fa3c820998d6a67e8b19d47a",
+        "requestedDate": "2026-09-22",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "f7f0da54348f03fb76e545ef9a85597a5180ddfaa3f1bc932606cd37713ff038",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-22T06:15:13.435533+00:00",
+        "generationObservedAt": "2026-09-22T06:15:13.435533+00:00",
+        "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+        "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+        "originalDownloadName": "clay-clever.png",
+        "deletedAt": "2026-09-22T06:16:40.621181+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6ab21a62-7818-83e9-8525-3378bc48d945",
+        "sourceFileId": "file_00000000612c8206a72e3c12b806c06a",
+        "requestedDate": "2026-09-22",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "f87873cadaa2fc1ac98b90aa2d8ec2a14432341f4507d71a999a3a3f7b5d3e87",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-22T06:02:30.599249+00:00",
+        "generationObservedAt": "2026-09-22T06:02:30.599249+00:00",
+        "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+        "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+        "originalDownloadName": "otter-clever.png",
+        "deletedAt": "2026-09-22T06:03:59.701401+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6ab226ee-bf30-83ea-8291-c53ff40ea26f",
+        "sourceFileId": "file_0000000082048206b9d79fa4f5f79a71",
+        "requestedDate": "2026-09-22",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "74585a37908411f5d25649865719479eac2a4ea879daf8018f89a28c19bef1b7",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-22T07:05:11.770783+00:00",
+        "generationObservedAt": "2026-09-22T07:05:11.770783+00:00",
+        "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+        "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+        "originalDownloadName": "clay-help.png",
+        "deletedAt": "2026-09-22T07:18:58.147903+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6ab23bb2-993c-83ea-854b-6f85316b83f4",
+        "sourceFileId": "file_0000000022688206b24c8ec999e39c4f",
+        "requestedDate": "2026-09-22",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "61b51e124845a46f33d3f7dcd145cc23c6b39b6a37a5cba3d625d815d6843491",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-22T08:33:40.574077+00:00",
+        "generationObservedAt": "2026-09-22T08:33:40.574077+00:00",
+        "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+        "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+        "originalDownloadName": "man-listen.png",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-22T08:37:02.868865+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6ab23785-9f3c-83ea-bae7-2bd4710efd8b",
+        "sourceFileId": "file_00000000437c81f897975047d056d702",
+        "requestedDate": "2026-09-22",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "1bf5b50e002a7c9f171745564af00a598d0f14d327d6bc3d9e19aa610544d8b3",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-22T08:19:25.884294+00:00",
+        "generationObservedAt": "2026-09-22T08:19:25.884294+00:00",
+        "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+        "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+        "originalDownloadName": "clay-listen.png",
+        "deletedAt": "2026-09-22T08:22:25.672661+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6ab23519-6a48-83ea-a7cc-7d740ee40ffa",
+        "sourceFileId": "file_000000001948822fa06d256e4f7eba7e",
+        "requestedDate": "2026-09-22",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "5a8ebd373c6a5012659d197d00d5206cf9153fe3906eefaa34b6d8ef74bc1b95",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-22T08:02:36.719022+00:00",
+        "generationObservedAt": "2026-09-22T08:02:36.719022+00:00",
+        "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+        "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+        "originalDownloadName": "line-listen.png",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-22T08:04:36.529889+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6ab22fe2-60a8-83ea-a3ed-a0f19c5c5951",
+        "sourceFileId": "file_00000000c62081f58ab4c7fe3f643243",
+        "requestedDate": "2026-09-22",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "1da5856bc9b44336db5d82aefae68ed89d24d9f4781d92c266a433368389069c",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-22T07:48:36.450855+00:00",
+        "generationObservedAt": "2026-09-22T07:48:36.450855+00:00",
+        "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+        "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+        "originalDownloadName": "fox-listen.png",
+        "deletedAt": "2026-09-22T07:54:14.600160+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6ab22099-22bc-83e9-9cc9-12fac4b64c21",
+        "sourceFileId": "file_00000000a7c481f8a76665091229c88a",
+        "requestedDate": "2026-09-22",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "70c68176b5d746f4268a17f3c29ab7006c3e638991ab77682e9e1f5cf92d15ae",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-22T06:30:35.856669+00:00",
+        "generationObservedAt": "2026-09-22T06:30:35.856669+00:00",
+        "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+        "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+        "originalDownloadName": "hamster-help.png",
+        "deletedAt": "2026-09-22T06:31:05.896568+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6ab2219a-bfbc-83ea-881a-669ded233375",
+        "sourceFileId": "file_0000000085b881f888cad4ad112f66a9",
+        "requestedDate": "2026-09-22",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "9cf04bdc8f84f7bd2d4ddd50933098f9725d00a1c394ce353295d1e999e897c0",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-22T06:40:03.937500+00:00",
+        "generationObservedAt": "2026-09-22T06:40:03.937500+00:00",
+        "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+        "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+        "originalDownloadName": "line-help.png",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-22T06:42:13.295105+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6ab21b40-8658-83e9-b3f9-67b9681e6ea3",
+        "sourceFileId": "file_0000000007c481fd853cac65f0783f19",
+        "requestedDate": "2026-09-22",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "5be73629843583b4efcada45de7278d9942c3149f31ff8cb98cc5fb278c2d988",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-22T06:10:30.453852+00:00",
+        "generationObservedAt": "2026-09-22T06:10:30.453852+00:00",
+        "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+        "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+        "originalDownloadName": "line-clever.png",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-22T06:13:36.910906+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6ab22439-e2e8-83ea-b82a-02ac0dcf95b2",
+        "sourceFileId": "file_0000000006908211ac41bf35ea2fa409",
+        "requestedDate": "2026-09-22",
+        "status": "rejected",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "43f0e878ed7747c30454ce67c5865b6fc6d8c061840092ab41c79afc40808a83",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-22T06:48:50.862834+00:00",
+        "generationObservedAt": "2026-09-22T06:48:50.862834+00:00",
+        "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+        "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+        "originalDownloadName": "clay-help.png",
+        "rejectionReason": "章鱼落地触腕遮叠，无法稳定核实八肢；中后段开心眨眼招手弱化求援语义，重新设计四肢角色",
+        "deletedAt": "2026-09-22T06:53:48.220220+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      }
+    ]
+  },
+  "delivery": {
+    "checkedAt": "2026-09-22T08:43:46.469Z",
+    "recommendStatus": 200,
+    "verified": [
+      {
+        "id": "generated-31674ee4ea1f499eaf679030",
+        "keyword": "真有你的",
+        "url": "/uploads/expression/generated/generated-31674ee4ea1f499eaf679030.gif",
+        "http": 200,
+        "sha256": "31674ee4ea1f499eaf67903070b9ae4bf0a72dcdea5451c637a46ac4dd091dfc",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 53785,
+        "loop": 0
+      },
+      {
+        "id": "generated-0f89a252d181a3eb236369dd",
+        "keyword": "真有你的",
+        "url": "/uploads/expression/generated/generated-0f89a252d181a3eb236369dd.gif",
+        "http": 200,
+        "sha256": "0f89a252d181a3eb236369ddb1541d02be62e1b4eb67e3e65a770562f5701c07",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 60723,
+        "loop": 0
+      },
+      {
+        "id": "generated-3cb71f71c6bf4342276373ea",
+        "keyword": "真有你的",
+        "url": "/uploads/expression/generated/generated-3cb71f71c6bf4342276373ea.gif",
+        "http": 200,
+        "sha256": "3cb71f71c6bf4342276373eac1c8034e92b1adeb21f0c1aa2e5ebb6d97faf139",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 55661,
+        "loop": 0
+      },
+      {
+        "id": "generated-19bc1028d22444d9f302c700",
+        "keyword": "真有你的",
+        "url": "/uploads/expression/generated/generated-19bc1028d22444d9f302c700.gif",
+        "http": 200,
+        "sha256": "19bc1028d22444d9f302c7004541e9e81b1f5a29f783b2d9728a6200ef0e427f",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 59448,
+        "loop": 0
+      },
+      {
+        "id": "generated-22dec834dadad90bee139813",
+        "keyword": "救命",
+        "url": "/uploads/expression/generated/generated-22dec834dadad90bee139813.gif",
+        "http": 200,
+        "sha256": "22dec834dadad90bee139813daf0440fdb2b504126f8e705358f1b0182e9bca2",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 62042,
+        "loop": 0
+      },
+      {
+        "id": "generated-a2ecf50ad389eef2522ac369",
+        "keyword": "救命",
+        "url": "/uploads/expression/generated/generated-a2ecf50ad389eef2522ac369.gif",
+        "http": 200,
+        "sha256": "a2ecf50ad389eef2522ac3695753a9f608133503c3a030384569aea6c15b0332",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 72042,
+        "loop": 0
+      },
+      {
+        "id": "generated-57efa859f6a36ae3ec723806",
+        "keyword": "救命",
+        "url": "/uploads/expression/generated/generated-57efa859f6a36ae3ec723806.gif",
+        "http": 200,
+        "sha256": "57efa859f6a36ae3ec7238067ab1355881e57dced03ad0a32eb65de70a318796",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 52429,
+        "loop": 0
+      },
+      {
+        "id": "generated-e246bffae16593303a612bd0",
+        "keyword": "救命",
+        "url": "/uploads/expression/generated/generated-e246bffae16593303a612bd0.gif",
+        "http": 200,
+        "sha256": "e246bffae16593303a612bd0be5eaba333376e52bf35f4542a5cf6ce69a0e201",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 60848,
+        "loop": 0
+      },
+      {
+        "id": "generated-7b92d639d07e4b16fe71439a",
+        "keyword": "说来听听",
+        "url": "/uploads/expression/generated/generated-7b92d639d07e4b16fe71439a.gif",
+        "http": 200,
+        "sha256": "7b92d639d07e4b16fe71439a51a28c4073986293fa16a46c88c3da298912268c",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 72975,
+        "loop": 0
+      },
+      {
+        "id": "generated-fd75f884248f6d654fd90e48",
+        "keyword": "说来听听",
+        "url": "/uploads/expression/generated/generated-fd75f884248f6d654fd90e48.gif",
+        "http": 200,
+        "sha256": "fd75f884248f6d654fd90e4809c8e2acf2c325168734ba92fc71e4ffe185a838",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 64018,
+        "loop": 0
+      },
+      {
+        "id": "generated-64bc3914d9a4b7fc7b09b5c9",
+        "keyword": "说来听听",
+        "url": "/uploads/expression/generated/generated-64bc3914d9a4b7fc7b09b5c9.gif",
+        "http": 200,
+        "sha256": "64bc3914d9a4b7fc7b09b5c9362d7132ad237509b10d8f4df61f050b77ea9f14",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 65496,
+        "loop": 0
+      },
+      {
+        "id": "generated-b1ed366cbf73fef7ff5b4c04",
+        "keyword": "说来听听",
+        "url": "/uploads/expression/generated/generated-b1ed366cbf73fef7ff5b4c04.gif",
+        "http": 200,
+        "sha256": "b1ed366cbf73fef7ff5b4c041481e9e7c011f88ad5671f385ef4a55698aa6806",
+        "width": 240,
+        "height": 240,
+        "frames": 20,
+        "durationMs": 4000,
+        "bytes": 33315,
+        "loop": 0
+      }
+    ]
+  },
+  "deletion": {
+    "checkedAt": "2026-09-22T08:44:06.557Z",
+    "testUser": "5ed65de6-7969-4b5a-9fe3-6ad20d2162f9",
+    "deletedCount": 12,
+    "ids": [
+      "generated-31674ee4ea1f499eaf679030",
+      "generated-0f89a252d181a3eb236369dd",
+      "generated-3cb71f71c6bf4342276373ea",
+      "generated-19bc1028d22444d9f302c700",
+      "generated-22dec834dadad90bee139813",
+      "generated-a2ecf50ad389eef2522ac369",
+      "generated-57efa859f6a36ae3ec723806",
+      "generated-e246bffae16593303a612bd0",
+      "generated-7b92d639d07e4b16fe71439a",
+      "generated-fd75f884248f6d654fd90e48",
+      "generated-64bc3914d9a4b7fc7b09b5c9",
+      "generated-b1ed366cbf73fef7ff5b4c04"
+    ],
+    "deletionHides": true,
+    "reimportDoesNotRestore": true,
+    "realUserUnaffected": true,
+    "sourceFilesRetained": true,
+    "importer": "\n> shurufa-server@0.1.0 expression:import-keywords\n> tsx scripts/importKeywordGifs.ts --apply\n\n{\"applied\":true,\"imported\":265,\"alreadyPresent\":184,\"excluded\":15,\"report\":\"assets/expression/approvals/2026-09-16-keyword-gif-import.json\"}\n"
+  },
+  "ui": {
+    "groups": [
+      {
+        "keyword": "真有你的",
+        "count": 4,
+        "allDecoded240": true,
+        "deleteButtons": 4,
+        "rects": [
+          {
+            "src": "/uploads/expression/generated/generated-31674ee4ea1f499eaf679030.gif?user_id=f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+            "w": 240,
+            "h": 240,
+            "rect": {
+              "x": 570.5,
+              "y": 401.171875,
+              "width": 196.328125,
+              "height": 196.328125,
+              "top": 401.171875,
+              "right": 766.828125,
+              "bottom": 597.5,
+              "left": 570.5
+            }
+          },
+          {
+            "src": "/uploads/expression/generated/generated-0f89a252d181a3eb236369dd.gif?user_id=f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+            "w": 240,
+            "h": 240,
+            "rect": {
+              "x": 784.828125,
+              "y": 401.171875,
+              "width": 196.328125,
+              "height": 196.328125,
+              "top": 401.171875,
+              "right": 981.15625,
+              "bottom": 597.5,
+              "left": 784.828125
+            }
+          },
+          {
+            "src": "/uploads/expression/generated/generated-3cb71f71c6bf4342276373ea.gif?user_id=f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+            "w": 240,
+            "h": 240,
+            "rect": {
+              "x": 999.15625,
+              "y": 401.171875,
+              "width": 196.328125,
+              "height": 196.328125,
+              "top": 401.171875,
+              "right": 1195.484375,
+              "bottom": 597.5,
+              "left": 999.15625
+            }
+          },
+          {
+            "src": "/uploads/expression/generated/generated-19bc1028d22444d9f302c700.gif?user_id=f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+            "w": 240,
+            "h": 240,
+            "rect": {
+              "x": 1213.484375,
+              "y": 401.171875,
+              "width": 196.34375,
+              "height": 196.34375,
+              "top": 401.171875,
+              "right": 1409.828125,
+              "bottom": 597.515625,
+              "left": 1213.484375
+            }
+          }
+        ],
+        "changedBounds": [
+          [
+            65,
+            26,
+            148,
+            134
+          ],
+          [
+            36,
+            18,
+            159,
+            141
+          ],
+          [
+            54,
+            24,
+            148,
+            134
+          ],
+          [
+            39,
+            20,
+            158,
+            141
+          ]
+        ],
+        "screenshots": [
+          "artifacts/diagnostics/2026-09-22-web09/clever-0.png",
+          "artifacts/diagnostics/2026-09-22-web09/clever-1.png"
+        ],
+        "checkedAt": "2026-09-22T07:48:27.567342+00:00"
+      },
+      {
+        "keyword": "救命",
+        "count": 4,
+        "allDecoded240": true,
+        "deleteButtons": 4,
+        "rects": [
+          {
+            "src": "/uploads/expression/generated/generated-22dec834dadad90bee139813.gif?user_id=f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+            "w": 240,
+            "h": 240,
+            "rect": {
+              "x": 570.5,
+              "y": 401.171875,
+              "width": 196.328125,
+              "height": 196.328125,
+              "top": 401.171875,
+              "right": 766.828125,
+              "bottom": 597.5,
+              "left": 570.5
+            }
+          },
+          {
+            "src": "/uploads/expression/generated/generated-a2ecf50ad389eef2522ac369.gif?user_id=f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+            "w": 240,
+            "h": 240,
+            "rect": {
+              "x": 784.828125,
+              "y": 401.171875,
+              "width": 196.328125,
+              "height": 196.328125,
+              "top": 401.171875,
+              "right": 981.15625,
+              "bottom": 597.5,
+              "left": 784.828125
+            }
+          },
+          {
+            "src": "/uploads/expression/generated/generated-57efa859f6a36ae3ec723806.gif?user_id=f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+            "w": 240,
+            "h": 240,
+            "rect": {
+              "x": 999.15625,
+              "y": 401.171875,
+              "width": 196.328125,
+              "height": 196.328125,
+              "top": 401.171875,
+              "right": 1195.484375,
+              "bottom": 597.5,
+              "left": 999.15625
+            }
+          },
+          {
+            "src": "/uploads/expression/generated/generated-e246bffae16593303a612bd0.gif?user_id=f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+            "w": 240,
+            "h": 240,
+            "rect": {
+              "x": 1213.484375,
+              "y": 401.171875,
+              "width": 196.34375,
+              "height": 196.34375,
+              "top": 401.171875,
+              "right": 1409.828125,
+              "bottom": 597.515625,
+              "left": 1213.484375
+            }
+          }
+        ],
+        "changedBounds": [
+          [
+            35,
+            20,
+            162,
+            147
+          ],
+          [
+            38,
+            18,
+            158,
+            141
+          ],
+          [
+            37,
+            17,
+            162,
+            137
+          ],
+          [
+            39,
+            19,
+            158,
+            140
+          ]
+        ],
+        "screenshots": [
+          "artifacts/diagnostics/2026-09-22-web09/help-0.png",
+          "artifacts/diagnostics/2026-09-22-web09/help-1.png"
+        ],
+        "checkedAt": "2026-09-22T08:02:25.632252+00:00"
+      },
+      {
+        "keyword": "说来听听",
+        "count": 4,
+        "allDecoded240": true,
+        "deleteButtons": 4,
+        "rects": [
+          {
+            "src": "/uploads/expression/generated/generated-7b92d639d07e4b16fe71439a.gif?user_id=f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+            "w": 240,
+            "h": 240,
+            "rect": {
+              "x": 570.5,
+              "y": 401.171875,
+              "width": 196.328125,
+              "height": 196.328125,
+              "top": 401.171875,
+              "right": 766.828125,
+              "bottom": 597.5,
+              "left": 570.5
+            }
+          },
+          {
+            "src": "/uploads/expression/generated/generated-fd75f884248f6d654fd90e48.gif?user_id=f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+            "w": 240,
+            "h": 240,
+            "rect": {
+              "x": 784.828125,
+              "y": 401.171875,
+              "width": 196.328125,
+              "height": 196.328125,
+              "top": 401.171875,
+              "right": 981.15625,
+              "bottom": 597.5,
+              "left": 784.828125
+            }
+          },
+          {
+            "src": "/uploads/expression/generated/generated-64bc3914d9a4b7fc7b09b5c9.gif?user_id=f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+            "w": 240,
+            "h": 240,
+            "rect": {
+              "x": 999.15625,
+              "y": 401.171875,
+              "width": 196.328125,
+              "height": 196.328125,
+              "top": 401.171875,
+              "right": 1195.484375,
+              "bottom": 597.5,
+              "left": 999.15625
+            }
+          },
+          {
+            "src": "/uploads/expression/generated/generated-b1ed366cbf73fef7ff5b4c04.gif?user_id=f2f7d3ee-4d9f-4b24-b2e1-c7fd6ad7605b",
+            "w": 240,
+            "h": 240,
+            "rect": {
+              "x": 1213.484375,
+              "y": 401.171875,
+              "width": 196.34375,
+              "height": 196.34375,
+              "top": 401.171875,
+              "right": 1409.828125,
+              "bottom": 597.515625,
+              "left": 1213.484375
+            }
+          }
+        ],
+        "changedBounds": [
+          [
+            35,
+            19,
+            162,
+            147
+          ],
+          [
+            36,
+            20,
+            159,
+            149
+          ],
+          [
+            33,
+            17,
+            163,
+            148
+          ],
+          [
+            38,
+            20,
+            158,
+            141
+          ]
+        ],
+        "screenshots": [
+          "artifacts/diagnostics/2026-09-22-web09/listen-0.png",
+          "artifacts/diagnostics/2026-09-22-web09/listen-1.png"
+        ],
+        "checkedAt": "2026-09-22T08:48:19.478668+00:00"
+      }
+    ]
+  },
+  "inventory": {
+    "checkedAt": "2026-09-22T08:54:51.776Z",
+    "http": 200,
+    "groups": 322,
+    "empty": 210,
+    "assets": 519,
+    "batchGroups": [
+      {
+        "keyword": "说来听听",
+        "count": 4,
+        "aliases": [
+          "说来听听"
+        ]
+      },
+      {
+        "keyword": "真有你的",
+        "count": 4,
+        "aliases": [
+          "真有你的"
+        ]
+      },
+      {
+        "keyword": "救命",
+        "count": 4,
+        "aliases": [
+          "救命"
+        ]
+      }
+    ]
+  },
+  "downloadCleanup": {
+    "checkedAt": "2026-09-22T09:06:16.335082+00:00",
+    "removedMatchingTaskDownloadCopies": [
+      {
+        "name": "clay-help.png",
+        "sha256": "74585a37908411f5d25649865719479eac2a4ea879daf8018f89a28c19bef1b7"
+      },
+      {
+        "name": "clay-listen.png",
+        "sha256": "1bf5b50e002a7c9f171745564af00a598d0f14d327d6bc3d9e19aa610544d8b3"
+      },
+      {
+        "name": "fox-listen.png",
+        "sha256": "1da5856bc9b44336db5d82aefae68ed89d24d9f4781d92c266a433368389069c"
+      },
+      {
+        "name": "line-listen.png",
+        "sha256": "5a8ebd373c6a5012659d197d00d5206cf9153fe3906eefaa34b6d8ef74bc1b95"
+      },
+      {
+        "name": "man-help.png",
+        "sha256": "510abd4f071629e2ee904006492c963583635020b422fdacaccd2816d44d8b90"
+      },
+      {
+        "name": "man-listen.png",
+        "sha256": "61b51e124845a46f33d3f7dcd145cc23c6b39b6a37a5cba3d625d815d6843491"
+      }
+    ],
+    "count": 6,
+    "earlierRejectedCopyRemovedAfterShaCheck": 1,
+    "alreadyAbsentCopies": [
+      "otter-clever.png",
+      "line-clever.png",
+      "clay-clever.png",
+      "man-clever.png",
+      "hamster-help.png",
+      "line-help.png"
+    ],
+    "absenceNote": "收尾时这6份Windows临时副本已不在任务目录；不声称由本会话删除。本地全部13份源图已重核SHA并保留。",
+    "localSourcesRetained": true,
+    "browserDownloadBehavior": "default-confirmed-via-CDP"
+  },
+  "tests": {
+    "build": "passed",
+    "finalFiles": 6,
+    "finalPassed": 83,
+    "finalStartedLocal": "2026-09-22 16:41:04",
+    "finalDurationSeconds": 102.19,
+    "oldBatchFiles": 6,
+    "oldBatchPassed": 12,
+    "initialGreenPassed": 74,
+    "note": "测试期间其他会话也在修改项目，终验以新鲜结果为准"
+  },
+  "independentReview": {
+    "code": "passed",
+    "sourceAndOriginalAuditCount": 12,
+    "blockingIssues": [],
+    "scope": "静态目视和原GIF审计，实际后台播放另验，不代表用户逐张认可"
+  },
+  "blockers": []
+}

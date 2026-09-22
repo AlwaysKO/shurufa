@@ -122,14 +122,14 @@ class WechatTitleStabilizerTest {
         assertEquals("pending", second.status)
     }
 
-    @Test fun `continuous visual aliases survive navigation while temporary evidence resets`() {
+    @Test fun `count excluded nickname evidence survives navigation while temporary evidence resets`() {
         val tracker = WechatTitleStabilizer()
         tracker.observe("聚餐群(18)", pictureA, 1000)
         val first = tracker.observe("聚餐群(18)", pictureA, 1800)
-        val next = tracker.observe("聚餐群(19)", pictureB, 2600)
+        val next = tracker.observe("聚餐群(19)", pictureA, 2600)
         assertEquals(first.externalKey, next.externalKey)
         tracker.reset()
-        assertEquals(first.externalKey, tracker.observe("聚餐群(19)", pictureB, 3400).externalKey)
+        assertEquals(first.externalKey, tracker.observe("聚餐群(19)", pictureA, 3400).externalKey)
     }
 
     @Test fun `reprocessing immediately is not a second frame confirmation`() {
@@ -160,5 +160,13 @@ class WechatTitleStabilizerTest {
         val second = WechatTitleStabilizer().observe("王彥兵", pictureA, 1000)
         assertEquals(first.externalKey, second.externalKey)
         assertTrue(first.externalKey.startsWith("screenshot-v2:"))
+    }
+    @Test fun `same cleaned display name with different original emoji must not merge`() {
+        val tracker = WechatTitleStabilizer()
+        tracker.observe("测试群(18)", pictureA, 1000)
+        val first = tracker.observe("测试群(18)", pictureA, 1800)
+        val otherEmoji = tracker.observe("测试群(18)", pictureB, 2600)
+        assertNotEquals(first.externalKey, otherEmoji.externalKey)
+        assertEquals("pending", otherEmoji.status)
     }
 }
