@@ -728,6 +728,16 @@ export const api = {
   },
   deleteChatConversation: (conversationId: number) =>
     del(`/api/v1/dashboard/chat/conversations/${conversationId}`),
+  deleteChatConversations: async (body: { confirm: 'DELETE'; platform: ChatConversationRow['platform']; conversations: Array<{ id: number } | { group_name: string; source_ids: number[] }> }) => {
+    const response = await dashboardFetch(withDashboardUser('/api/v1/dashboard/chat/conversations/delete-batch'), {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      const detail = await response.json().catch(() => null);
+      throw new Error(typeof detail?.error === 'string' ? detail.error : `会话批量删除失败（${response.status}）`);
+    }
+    return response.json() as Promise<{ deleted_conversations: number; deleted_sources: number; deleted_messages: number; files_pending: boolean }>;
+  },
   deleteChatImage: (messageId: string, assetId: number) =>
     del(`/api/v1/dashboard/chat/messages/${encodeURIComponent(messageId)}/assets/${assetId}`),
   relationships: (page = 1, pageSize = 100) =>

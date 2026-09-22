@@ -88,11 +88,12 @@ async function mountChatCapture(overrides: Record<string, any> = {}) {
     },
   };
   Object.assign(api, overrides);
+  const currentUserId = Vue.ref('user-a');
   const module = { exports: {} as { default: Vue.Component } };
   const require = (name: string) => {
     if (name === 'vue') return Vue;
     if (name === '../confirmation') return { useConfirmation: () => async (message: string) => Boolean(await globalThis.window?.confirm?.(message)) };
-    if (name === '../api') return { api, currentUserId: Vue.ref('user-a'), scopedAssetUrl: (url: string) => `/scoped${url}` };
+    if (name === '../api') return { api, currentUserId, scopedAssetUrl: (url: string) => `/scoped${url}` };
     throw new Error(`Unexpected import: ${name}`);
   };
   const previousDocument = globalThis.document;
@@ -110,7 +111,7 @@ async function mountChatCapture(overrides: Record<string, any> = {}) {
   const all = (target: Node): Node[] => [target, ...target.children.flatMap(all)];
   const find = (id: string) => all(root).find((target) => target.props['data-testid'] === id);
   Object.assign(globalThis, { document: previousDocument, Document: previousDocumentConstructor, ShadowRoot: previousShadowRoot });
-  return { source, find, deletedImages, api, unmount: () => app.unmount(), all: () => all(root), text: () => all(root).map(n => n.text).join(' ') };
+  return { source, find, deletedImages, api, currentUserId, unmount: () => app.unmount(), all: () => all(root), text: () => all(root).map(n => n.text).join(' ') };
 }
 
 it('点击聊天图片在本页弹窗预览并可关闭，不再生成新窗口链接', async () => {
@@ -619,4 +620,106 @@ it('截断群名以待确认开头也保留可见名称和截断标注',async()=
  globalThis.window={confirm} as unknown as Window & typeof globalThis;
  try { view.find('chat-delete-conversation')!.props.onClick();await settle();expect(confirm.mock.calls[0][0]).toContain(name); }
  finally {globalThis.window=previous;}
+});
+
+
+it('会话批量删除默认不选中，全选当前列表排除待确认桶，取消不会请求', async () => {
+ fakeChatStorage(); const previous=globalThis.window; const confirm=vi.fn().mockReturnValue(false);
+ globalThis.window={confirm} as unknown as Window & typeof globalThis;
+ try {
+  const deleteChatConversations=vi.fn();
+  const view=await mountChatCapture({chatConversations:async()=>({total:3,conversations:[namedGroup(11,'甲',[11,12]),rememberedChat(20),{...rememberedChat(-1),is_pending_group:true}]}),deleteChatConversations});
+  expect(view.find('chat-delete-selected-conversations')?.props.disabled).toBe(true);
+  expect(view.find('chat-select-conversation--1')?.props.disabled).toBe(true);
+  view.find('chat-select-listed-conversations')!.props.onClick(); await settle();
+  view.find('chat-delete-selected-conversations')!.props.onClick(); await settle();
+  expect(confirm).toHaveBeenCalledOnce(); expect(confirm.mock.calls[0][0]).toContain('2 个会话');
+  expect(deleteChatConversations).not.toHaveBeenCalled();
+ } finally { globalThis.window=previous; }
+});
+it('批量删除只发送勾选会话及同名组明确快照，成功后保留未删除的当前会话', async () => {
+ fakeChatStorage(); const previous=globalThis.window; globalThis.window={confirm:()=>true} as unknown as Window & typeof globalThis;
+ try {
+  const group=namedGroup(11,'甲',[11,12]),other=rememberedChat(20); let deleted=false;
+  const deleteChatConversations=vi.fn(async()=>{deleted=true;return{deleted_conversations:1,deleted_sources:2,deleted_messages:2,files_pending:true};});
+  const view=await mountChatCapture({chatConversations:async()=>({total:deleted?1:2,conversations:deleted?[other]:[other,group]}),deleteChatConversations});
+  view.find('chat-select-conversation-11')!.props.onChange({target:{checked:true}}); await settle();
+  view.find('chat-delete-selected-conversations')!.props.onClick(); await settle();
+  expect(deleteChatConversations).toHaveBeenCalledExactlyOnceWith({confirm:'DELETE',platform:'wechat',conversations:[{group_name:'甲',source_ids:[11,12]}]});
+  expect(view.find('chat-conversation-20')?.props.class).toContain('selected');
+  expect(view.text()).toContain('已删除 1 个会话');expect(view.text()).toContain('后台重试');
+  expect(view.find('chat-delete-selected-conversations')?.props.disabled).toBe(true);
+ } finally { globalThis.window=previous; }
+});
+it('切换App清空批量勾选，切换手机使待确认操作失效', async () => {
+ fakeChatStorage();const previous=globalThis.window;let answer!:(v:boolean)=>void;
+ globalThis.window={confirm:()=>new Promise<boolean>(resolve=>{answer=resolve;})} as unknown as Window & typeof globalThis;
+ try {
+  const deleteChatConversations=vi.fn();const view=await mountChatCapture({deleteChatConversations});
+  view.find('chat-select-listed-conversations')!.props.onClick();await settle();
+  view.find('chat-tab-qq')!.props.onClick();await settle();expect(view.find('chat-delete-selected-conversations')!.props.disabled).toBe(true);
+  view.find('chat-select-listed-conversations')!.props.onClick();await settle();
+  view.find('chat-delete-selected-conversations')!.props.onClick();await settle();
+  view.currentUserId.value='user-b';await settle();answer(true);await settle();
+  expect(deleteChatConversations).not.toHaveBeenCalled();
+ } finally {globalThis.window=previous;}
+});
+it('批量删除失败保留勾选且说明整批未删除', async()=>{
+ fakeChatStorage();const previous=globalThis.window;globalThis.window={confirm:()=>true} as unknown as Window & typeof globalThis;
+ try{
+  const view=await mountChatCapture({deleteChatConversations:async()=>{throw Error('来源已变化，整批未删除');}});
+  view.find('chat-select-listed-conversations')!.props.onClick();await settle();view.find('chat-delete-selected-conversations')!.props.onClick();await settle();
+  expect(view.text()).toContain('来源已变化，整批未删除');expect(view.find('chat-select-conversation-1')!.props.checked).toBe(true);
+ }finally{globalThis.window=previous;}
+});
+it('批量删除请求完成后不污染已切换手机的新页面',async()=>{
+ fakeChatStorage();const previous=globalThis.window;globalThis.window={confirm:()=>true} as unknown as Window & typeof globalThis;
+ try{
+  let finish!:(value:any)=>void;
+  const view=await mountChatCapture({deleteChatConversations:()=>new Promise(resolve=>{finish=resolve;})});
+  view.find('chat-select-listed-conversations')!.props.onClick();await settle();view.find('chat-delete-selected-conversations')!.props.onClick();await settle();
+  view.currentUserId.value='user-b';await settle();finish({deleted_conversations:1,deleted_sources:1,files_pending:false});await settle();
+  expect(view.find('chat-conversation-1')).toBeDefined();expect(view.text()).not.toContain('已删除 1 个会话');
+ }finally{globalThis.window=previous;}
+});
+
+
+it('清空选择不会改变当前查看的会话，成功删除当前会话后切到剩余项',async()=>{
+ fakeChatStorage();const previous=globalThis.window;globalThis.window={confirm:()=>true} as unknown as Window & typeof globalThis;
+ try{
+  const first=rememberedChat(1),second=rememberedChat(2);let deleted=false;
+  const view=await mountChatCapture({chatConversations:async()=>({total:deleted?1:2,conversations:deleted?[second]:[first,second]}),deleteChatConversations:async()=>{deleted=true;return{deleted_conversations:1,files_pending:false};}});
+  view.find('chat-select-listed-conversations')!.props.onClick();await settle();view.find('chat-clear-conversation-selection')!.props.onClick();await settle();
+  expect(view.find('chat-delete-selected-conversations')!.props.disabled).toBe(true);expect(view.find('chat-conversation-1')!.props.class).toContain('selected');
+  view.find('chat-select-conversation-1')!.props.onChange({target:{checked:true}});await settle();view.find('chat-delete-selected-conversations')!.props.onClick();await settle();
+  expect(view.find('chat-conversation-1')).toBeUndefined();expect(view.find('chat-conversation-2')!.props.class).toContain('selected');
+ }finally{globalThis.window=previous;}
+});
+it('确认期间手机切走再切回仍使旧批量操作失效',async()=>{
+ fakeChatStorage();const previous=globalThis.window;let answer!:(v:boolean)=>void;
+ globalThis.window={confirm:()=>new Promise<boolean>(resolve=>{answer=resolve;})} as unknown as Window & typeof globalThis;
+ try{
+  const deleteChatConversations=vi.fn();const view=await mountChatCapture({deleteChatConversations});
+  view.find('chat-select-listed-conversations')!.props.onClick();await settle();view.find('chat-delete-selected-conversations')!.props.onClick();await settle();
+  view.currentUserId.value='user-b';view.currentUserId.value='user-a';await settle();answer(true);await settle();
+  expect(deleteChatConversations).not.toHaveBeenCalled();
+ }finally{globalThis.window=previous;}
+});
+it('空列表和仅待确认桶不允许全选或批量删除',async()=>{
+ fakeChatStorage();for(const conversations of [[],[{...rememberedChat(-1),is_pending_group:true}]]){
+  const view=await mountChatCapture({chatConversations:async()=>({total:conversations.length,conversations})});
+  expect(view.find('chat-select-listed-conversations')!.props.disabled).toBe(true);expect(view.find('chat-delete-selected-conversations')!.props.disabled).toBe(true);
+ }
+});
+it('全选当前列表包含恢复的首页外会话，确认期间禁止切App和重复提交',async()=>{
+ fakeChatStorage({'chat-capture-selection:user-a':JSON.stringify({platform:'wechat',conversations:{wechat:200}})});
+ const previous=globalThis.window;let answer!:(v:boolean)=>void;const confirm=vi.fn(()=>new Promise<boolean>(resolve=>{answer=resolve;}));
+ globalThis.window={confirm} as unknown as Window & typeof globalThis;
+ try{
+  const view=await mountChatCapture({resolveChatConversation:async()=>({conversation:rememberedChat(200)})});
+  view.find('chat-select-listed-conversations')!.props.onClick();await settle();expect(view.find('chat-select-conversation-200')!.props.checked).toBe(true);
+  view.find('chat-delete-selected-conversations')!.props.onClick();await settle();
+  expect(confirm.mock.calls[0][0]).toContain('2 个会话');expect(view.find('chat-tab-qq')!.props.disabled).toBe(true);
+  view.find('chat-delete-selected-conversations')!.props.onClick();await settle();expect(confirm).toHaveBeenCalledOnce();answer(false);await settle();
+ }finally{globalThis.window=previous;}
 });

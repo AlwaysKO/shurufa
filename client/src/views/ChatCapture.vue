@@ -82,11 +82,34 @@ const error = ref('');
 const deleting = ref(false);
 const deletingAssetId = ref<number | null>(null);
 const bulkDeleting = ref(false);
+const deletingConversations = ref(false);
 const confirming = ref(false);
 const merging = ref(false);
-const mutationBusy = computed(() => merging.value || deleting.value || deletingAssetId.value !== null || bulkDeleting.value || confirming.value);
+const mutationBusy = computed(() => merging.value || deleting.value || deletingAssetId.value !== null || bulkDeleting.value || deletingConversations.value || confirming.value);
 const selectedImageKeys = ref<string[]>([]);
 const deleteNotice = ref('');
+const selectedConversationIds = ref<number[]>([]);
+const selectableConversations = computed(() => conversations.value.filter(item => item.id > 0 && !item.is_pending_group));
+const selectedConversations = computed(() => selectableConversations.value.filter(item => selectedConversationIds.value.includes(item.id)));
+let conversationScopeVersion = 0;
+watch([currentUserId, platform], () => {
+  conversationScopeVersion++;
+  selectedConversationIds.value = [];
+  deleteNotice.value = '';
+}, { flush: 'sync' });
+watch(conversations, () => {
+  const visibleIds = new Set(selectableConversations.value.map(item => item.id));
+  selectedConversationIds.value = selectedConversationIds.value.filter(id => visibleIds.has(id));
+});
+function selectListedConversations() {
+  if (!loading.value && !mutationBusy.value) selectedConversationIds.value = selectableConversations.value.map(item => item.id);
+}
+function toggleConversationSelection(conversation: ChatConversationRow, checked: boolean) {
+  if (loading.value || mutationBusy.value || conversation.id <= 0 || conversation.is_pending_group) return;
+  selectedConversationIds.value = checked
+    ? [...new Set([...selectedConversationIds.value, conversation.id])]
+    : selectedConversationIds.value.filter(id => id !== conversation.id);
+}
 const previewImage = ref<(ChatImageTarget & { src: string; alt: string; ordinal?: number; total?: number }) | null>(null);
 const previewEl = ref<HTMLDivElement | null>(null);
 const previewLoading = ref(false);
@@ -368,6 +391,37 @@ async function deleteSelectedConversation() {
   }
 }
 
+async function deleteSelectedConversations() {
+  if (loading.value || mutationBusy.value || !selectedConversations.value.length) return;
+  const version = conversationScopeVersion, listVersion = latestLoad, app = platform.value;
+  const targets = selectedConversations.value.map(conversation => ({ ...conversation, source_ids: [...(conversation.source_ids ?? [])] }));
+  const messageCount = targets.reduce((sum, conversation) => sum + conversation.message_count, 0);
+  const names = targets.map(conversation => `“${displayName(conversation)}”`).join('、');
+  if (!(await confirmAction(`确定删除选中的 ${targets.length} 个会话及其全部聊天记录吗？所选会话当前共 ${messageCount} 条消息。\n${names}\n同名会话包含列表中已显示的全部来源，关联关系资料也会删除。此操作不可恢复。`,
+    { title: '批量删除会话', confirmText: `删除 ${targets.length} 个会话` }))) return;
+  if (disposed || version !== conversationScopeVersion || listVersion !== latestLoad || loading.value || mutationBusy.value) return;
+  deletingConversations.value = true;
+  error.value = ''; deleteNotice.value = '';
+  try {
+    const result = await api.deleteChatConversations({ confirm: 'DELETE', platform: app, conversations: targets.map(conversation =>
+      conversation.is_name_group && conversation.group_name
+        ? { group_name: conversation.group_name, source_ids: conversation.source_ids }
+        : { id: conversation.id }) });
+    if (disposed || version !== conversationScopeVersion) return;
+    selectedConversationIds.value = [];
+    if (targets.some(conversation => conversation.id === selected.value?.id)) {
+      selected.value = null;
+      rememberSelection();
+      messages.value = [];
+    }
+    await load();
+    if (disposed || version !== conversationScopeVersion) return;
+    deleteNotice.value = `已删除 ${result.deleted_conversations} 个会话${result.files_pending ? '；附件文件清理将在后台重试。' : '。'}`;
+  } catch (reason) {
+    if (!disposed && version === conversationScopeVersion) error.value = `批量删除会话失败：${(reason as Error).message}`;
+  } finally { deletingConversations.value = false; }
+}
+
 // 列表只有首页；不能因当前组未出现在前100项中，就把已恢复的选中组丢掉。
 async function refreshAfterImageDeletion(conversation: ChatConversationRow | null, scope: string) {
   if (disposed || scope !== previewScope.value) return;
@@ -521,11 +575,21 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
   <div class="capture-layout">
     <section class="card conversation-panel">
       <h3>会话列表</h3>
+      <div class="conversation-bulk-actions">
+        <span class="timeline-summary" role="status">已选 {{ selectedConversations.length }} 个会话</span>
+        <button type="button" class="capture-action" data-testid="chat-select-listed-conversations" :disabled="loading || mutationBusy || !selectableConversations.length" @click="selectListedConversations">全选当前列表</button>
+        <button type="button" class="capture-action" data-testid="chat-clear-conversation-selection" :disabled="loading || mutationBusy || !selectedConversations.length" @click="selectedConversationIds = []">清空选择</button>
+        <button type="button" class="delete-button" data-testid="chat-delete-selected-conversations" :disabled="loading || mutationBusy || !selectedConversations.length" @click="deleteSelectedConversations">{{ deletingConversations ? '删除中…' : '删除选中会话' }}</button>
+      </div>
       <div class="conversation-list">
         <p v-if="conversations.length === 0" class="empty">暂无采集会话</p>
+        <div v-for="conversation in conversations" :key="conversation.id" class="conversation-row">
+        <input type="checkbox" class="conversation-checkbox" :aria-label="`选择会话：${displayName(conversation)}`"
+          :data-testid="`chat-select-conversation-${conversation.id}`"
+          :checked="selectedConversationIds.includes(conversation.id)"
+          :disabled="loading || mutationBusy || conversation.id <= 0 || conversation.is_pending_group === true"
+          @change="toggleConversationSelection(conversation, ($event.target as HTMLInputElement).checked)" />
         <button
-          v-for="conversation in conversations"
-          :key="conversation.id"
           class="conversation"
           :disabled="mutationBusy"
           :data-testid="`chat-conversation-${conversation.id}`"
@@ -538,6 +602,7 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
           </span>
           <span class="conversation-time">{{ formatTime(conversation.last_message_at) }}</span>
         </button>
+        </div>
       </div>
     </section>
 
@@ -718,6 +783,12 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
 .conversation-panel, .timeline-panel { min-width: 0; padding: 14px; margin-bottom: 0; }
 .conversation-panel { position: sticky; top: 12px; }
 .conversation-list { max-height: calc(100vh - 170px); overflow-y: auto; }
+.conversation-bulk-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.conversation-bulk-actions .timeline-summary { width: 100%; }
+.conversation-bulk-actions button { font-size: 12px; padding: 5px 7px; }
+.conversation-row { display: flex; align-items: center; gap: 4px; }
+.conversation-checkbox { flex: none; width: 16px; height: 16px; margin: 0 2px; cursor: pointer; }
+.conversation-row .conversation { min-width: 0; flex: 1; }
 .conversation { width: 100%; display: grid; gap: 3px; padding: 9px 10px; border: 0; border-bottom: 1px solid #f1f2f6; background: transparent; text-align: left; cursor: pointer; }
 .conversation:hover, .conversation.selected { background: #f1f3ff; }
 .conversation.selected { box-shadow: inset 3px 0 #3742fa; }

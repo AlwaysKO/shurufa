@@ -42,3 +42,17 @@ it('同名显示组的API编码精确名字，读取和删除保持同一范围'
  expect(fetch.mock.calls[4][0]).toBe('/api/v1/dashboard/chat/conversation-groups/delete?user_id=user-a');expect(JSON.parse(fetch.mock.calls[4][1].body)).toEqual(body);
  fetch.mockResolvedValueOnce(new Response(JSON.stringify({error:'来源已变化'}),{status:409}));await expect(api.deleteChatConversationGroup(body)).rejects.toThrow('来源已变化');
 });
+
+
+it('会话批量删除一次发送明确快照和当前手机，保留409及非JSON错误说明',async()=>{
+ const body={confirm:'DELETE' as const,platform:'wechat' as const,conversations:[{id:20},{group_name:'甲 & 乙',source_ids:[11,12]}]};
+ const result={deleted_conversations:2,deleted_sources:3,deleted_messages:4,files_pending:false};
+ const fetch=vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(result)))
+  .mockResolvedValueOnce(new Response(JSON.stringify({error:'来源已变化，整批未删除'}),{status:409}))
+  .mockResolvedValueOnce(new Response('upstream failure',{status:502}));
+ const api=loadApi(fetch);expect(await api.deleteChatConversations(body)).toEqual(result);
+ expect(fetch.mock.calls[0][0]).toBe('/api/v1/dashboard/chat/conversations/delete-batch?user_id=user-a');
+ expect(fetch.mock.calls[0][1].method).toBe('POST');expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual(body);
+ await expect(api.deleteChatConversations(body)).rejects.toThrow('整批未删除');
+ await expect(api.deleteChatConversations(body)).rejects.toThrow('502');
+});

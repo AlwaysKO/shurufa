@@ -316,3 +316,63 @@ test('截断群名真实以待确认开头仍显示其可见名称',async()=>{
  const resolved=await agent.get(`/api/v1/dashboard/chat/conversations/${id}/resolve?user_id=${A}`);
  expect(resolved.body.conversation.is_pending_source).toBe(false);
 });
+
+
+const batchRemove=(conversations:any[],platform='wechat',user=A,confirm='DELETE')=>agent.post('/api/v1/dashboard/chat/conversations/delete-batch').query({user_id:user}).send({confirm,platform,conversations});
+test('批量会话删除在一个事务中处理同名组和独立来源，保留未选择会话及共享图片',async()=>{
+ const a=await conversation(),b=await conversation(),single=await conversation(),other=await conversation();
+ for(const id of [a,b])await pool.query("UPDATE chat_conversation SET display_name='同名' WHERE id=$1",[id]);
+ const shared=await groupPicture(a);await groupPicture(b);await message(single);const remaining=await message(other);
+ await pool.query("INSERT INTO chat_message_asset(message_id,asset_id,position,role) VALUES($1,$2,0,'content')",[remaining,shared.asset_id]);
+ const result=await batchRemove([{group_name:'同名',source_ids:[a,b]},{id:single}]);
+ expect(result.status,JSON.stringify(result.body)).toBe(200);expect(result.body).toMatchObject({deleted_conversations:2,deleted_sources:3,deleted_messages:3});
+ expect((await pool.query('SELECT id FROM chat_conversation')).rows.map(r=>Number(r.id))).toEqual([other]);
+ expect((await pool.query('SELECT id FROM media_asset WHERE id=$1',[shared.asset_id])).rowCount).toBe(1);
+});
+test('批量会话删除对非法重复和重叠来源拒绝且不修改任何数据',async()=>{
+ const a=await conversation();await message(a);
+ for(const entries of [[],[{id:-1}],[{id:0}],[{id:'1'}],[{id:a},{id:a}],[{group_name:'同名',source_ids:[a,a]}],[{group_name:'同名',source_ids:[a]},{id:a}],[{id:a,group_name:'同名',source_ids:[a]}],Array.from({length:102},(_,i)=>({id:i+1})),[{group_name:'同名',source_ids:Array.from({length:1001},(_,i)=>i+1)}]]){
+  expect((await batchRemove(entries)).status,JSON.stringify(entries).slice(0,100)).toBe(400);
+ }
+ expect((await batchRemove([{id:a}],'wechat',A,'')).status).toBe(400);
+ expect((await batchRemove([{id:a}],'bad')).status).toBe(400);
+ expect((await pool.query('SELECT count(*) FROM chat_message')).rows[0].count).toBe('1');
+});
+test('任一选中会话跨用户App或已合并，整批会话删除回滚',async()=>{
+ const a=await conversation(),foreign=await conversation('wechat',B),qq=await conversation('qq'),source=await conversation(),target=await conversation();
+ await message(a);await message(foreign,{user:B});await message(qq);await merge(source,target);
+ for(const id of [foreign,qq,source,999999])expect((await batchRemove([{id:a},{id}])).status).toBe(409);
+ expect((await batchRemove([{id:a}],'wechat',B)).status).toBe(409);
+ expect((await pool.query('SELECT count(*) FROM chat_message')).rows[0].count).toBe('3');
+});
+test('一个同名组来源新增或改名时，其他选中会话也不能先删除',async()=>{
+ const a=await conversation(),b=await conversation(),single=await conversation();
+ for(const id of [a,b]){await pool.query("UPDATE chat_conversation SET display_name='同名' WHERE id=$1",[id]);await message(id);}await message(single);
+ expect((await batchRemove([{id:single},{group_name:'同名',source_ids:[a]}])).status).toBe(409);
+ await pool.query("UPDATE chat_conversation SET display_name='改名' WHERE id=$1",[b]);
+ expect((await batchRemove([{id:single},{group_name:'同名',source_ids:[a,b]}])).status).toBe(409);
+ expect((await pool.query('SELECT count(*) FROM chat_message')).rows[0].count).toBe('3');
+});
+
+
+test('批量会话删除清理独占文件，保留其他手机引用的同路径文件和关联会话数据',async()=>{
+ const a=await conversation(),b=await conversation(),other=await conversation();const first=await groupPicture(a),second=await groupPicture(b);await message(other);
+ const firstRow=(await pool.query('SELECT * FROM media_asset WHERE id=$1',[first.asset_id])).rows[0],secondRow=(await pool.query('SELECT * FROM media_asset WHERE id=$1',[second.asset_id])).rows[0];
+ for(const row of [firstRow,secondRow]){const file=join(root,'uploads',row.storage_path);await mkdir(dirname(file),{recursive:true});await writeFile(file,'fixture');}
+ await pool.query('INSERT INTO media_asset(user_id,sha256,mime_type,storage_path,byte_size) VALUES($1,$2,$3,$4,$5)',[B,secondRow.sha256,secondRow.mime_type,secondRow.storage_path,secondRow.byte_size]);
+ for(const id of [a,b,other])await pool.query('INSERT INTO relationship_profile(user_id,conversation_id) VALUES($1,$2)',[A,id]);
+ const result=await batchRemove([{id:a},{id:b}]);expect(result.status).toBe(200);expect(result.body.files_pending).toBe(false);
+ expect(existsSync(join(root,'uploads',firstRow.storage_path))).toBe(false);
+ expect(readFileSync(join(root,'uploads',secondRow.storage_path),'utf8')).toBe('fixture');
+ expect((await pool.query('SELECT conversation_id FROM relationship_profile')).rows.map(r=>Number(r.conversation_id))).toEqual([other]);
+});
+test('同名组批量删除禁止混入其他手机App来源和待确认汇总，重复组名不能拆分提交',async()=>{
+ const a=await conversation(),b=await conversation('qq'),foreign=await conversation('wechat',B),pending=await conversation();
+ for(const id of [a,b,foreign])await pool.query("UPDATE chat_conversation SET display_name='同名' WHERE id=$1",[id]);
+ await pool.query("UPDATE chat_conversation SET display_name='待确认会话' WHERE id=$1",[pending]);
+ for(const id of [a,b,pending])await message(id);await message(foreign,{user:B});
+ for(const ids of [[a,b],[a,foreign],[pending]])expect((await batchRemove([{group_name:'同名',source_ids:ids}])).status).toBe(409);
+ expect((await batchRemove([{id:pending}])).status).toBe(409);
+ expect((await batchRemove([{group_name:'同名',source_ids:[a]},{group_name:'同名',source_ids:[b]}])).status).toBe(400);
+ expect((await pool.query('SELECT count(*) FROM chat_message')).rows[0].count).toBe('4');
+});
