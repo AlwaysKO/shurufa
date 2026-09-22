@@ -1,5 +1,6 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import type pg from 'pg';
+import { polyphonic } from 'pinyin-pro';
 import { createHash } from 'node:crypto';
 
 const hash = (value: string) => createHash('sha256').update(value).digest('hex');
@@ -10,7 +11,7 @@ const integer = (v: unknown): v is number => typeof v === 'number' && Number.isS
 type Status = 'enabled' | 'disabled' | 'deleted';
 type Entry = {kind: 'word'|'choice'; text: string; code: string; pinyin: string; source: string; count: number; weight: number; last_used: number};
 type Db = pg.PoolClient;
-class HttpError extends Error { constructor(readonly status: number, message: string) { super(message); } }
+class HttpError extends Error { constructor(readonly status: number, message: string, readonly code?: string) { super(message); } }
 function entry(value: unknown): Entry {
   if (!value || typeof value !== 'object') throw new HttpError(400,'invalid entry');
   const v = value as Entry;
@@ -34,7 +35,7 @@ function transaction(pool: pg.Pool, fn: (db: Db, req: Request, res: Response) =>
       await db.query('COMMIT'); res.json(result);
     } catch (error) {
       if (db) await db.query('ROLLBACK').catch(() => {});
-      if (error instanceof HttpError) res.status(error.status).json({error:error.message}); else next(error);
+      if (error instanceof HttpError) res.status(error.status).json({error:error.message,...(error.code ? {code:error.code} : {})}); else next(error);
     } finally { db?.release(); }
   };
 }
@@ -60,11 +61,36 @@ async function snapshot(db: Db, group: string) {
   const revision = hash(JSON.stringify({group,devices,entries,policies}));
   return {group_id:group,revision,entries,policies};
 }
+// 校验每个汉字的真实读音，接受多音字及 ü/v，内部统一为无声调空格拼音。
+function normalizedPinyin(text: unknown, value: unknown): string | null {
+  if (!safeText(text) || typeof value !== 'string' || value.length > 210) return null;
+  const normalized=value.trim().toLowerCase().replaceAll('ü','v').replace(/\s+/g,' ');
+  if (!/^[a-z]+(?: [a-z]+)*$/.test(normalized)) return null;
+  const syllables=normalized.split(' ');
+  const readings=polyphonic(text,{type:'array',toneType:'none'});
+  if (syllables.length!==text.length || !readings.every((values,i)=>values.some(v=>v.replaceAll('ü','v')===syllables[i]))) return null;
+  return normalized;
+}
+async function dashboardEntries(db: Db, group: string, filter: {device_id?:unknown,q?:unknown,status?:unknown}) {
+  const data=await snapshot(db,group);
+  const manual=(await db.query('SELECT text,pinyin FROM dictionary_dashboard_word WHERE group_id=$1 ORDER BY text,pinyin LIMIT 100001',[group])).rows;
+  if(data.entries.length+manual.length>100000) throw new HttpError(413,'词库过大，未下发截断数据');
+  const id=filter.device_id;
+  if(id && (typeof id!=='string' || !uuid.test(id) || (await device(db,id)).group_id!==group)) throw new HttpError(403,'设备不属于此个人词库');
+  if(filter.status && !['enabled','disabled','deleted'].includes(String(filter.status))) throw new HttpError(400,'invalid status');
+  const q=typeof filter.q==='string' ? filter.q.slice(0,100) : '';
+  const policies=new Map(data.policies.map(p=>[p.text,p.status]));
+  return [...data.entries,...manual.map(v=>({...v,device_id:'',kind:'word',source:'dashboard',code:'',count:0,weight:0,last_used:0}))]
+    .map(e=>({...e,status:policies.get(e.text) ?? 'enabled'}))
+    .filter(e=>(!id || e.device_id===id) && (!q || e.text.includes(q) || e.pinyin.includes(q)) && (!filter.status || e.status===filter.status));
+}
 export function createMobileDictionaryRouter(pool: pg.Pool): Router {
   const r = Router();
   r.post('/register',transaction(pool,async(db,req,res) => {
     const id = res.locals.userId, token = req.get('X-Dictionary-Token');
     const restores=req.body?.restore_enabled ?? true;
+    const additions=req.body?.additions_supported ?? false;
+    if(typeof additions!=='boolean') throw new HttpError(400,'invalid additions capability');
     if(typeof restores!=='boolean') throw new HttpError(400,'invalid restore mode');
     if (!token || !/^[0-9a-f]{64}$/.test(token)) throw new HttpError(401,'dictionary credential required');
     if (!(await db.query('SELECT id FROM device WHERE id=$1',[id])).rowCount) throw new HttpError(409,'请先注册设备');
@@ -75,7 +101,35 @@ export function createMobileDictionaryRouter(pool: pg.Pool): Router {
       await db.query('UPDATE dictionary_device SET applied_revision=NULL WHERE device_id=$1',[id]);
     }
     await db.query('UPDATE dictionary_device SET restore_enabled=$2 WHERE device_id=$1',[id,restores]);
-    return {ok:true,has_report:registered.last_report_at != null};
+    await db.query('UPDATE dictionary_device SET additions_supported=$2 WHERE device_id=$1',[id,additions]);
+    return {ok:true,has_report:registered.last_report_at != null,additions_supported:true};
+  }));
+  r.get('/additions',transaction(pool,async(db,req,res)=>{
+    const id=res.locals.userId,d=await authenticate(db,req,id);
+    const raw=req.query.after ?? '0';
+    if(typeof raw!=='string' || !/^\d+$/.test(raw) || !integer(Number(raw))) throw new HttpError(400,'invalid cursor');
+    const after=Number(raw);
+    if(after>Number(d.additions_delivered)) throw new HttpError(409,'cursor was not delivered','dictionary_cursor_reset');
+    const rows=(await db.query('SELECT cursor,text,pinyin,preferred FROM dictionary_addition WHERE device_id=$1 AND cursor>$2 ORDER BY cursor LIMIT 501',[id,after])).rows;
+    const entries=rows.slice(0,500).map(row=>({...row,cursor:Number(row.cursor)}));
+    const cursor=entries.at(-1)?.cursor ?? after;
+    if(!integer(cursor)) throw new HttpError(413,'cursor capacity exceeded');
+    if(entries.length) {
+      await db.query('UPDATE dictionary_addition SET delivered=TRUE WHERE device_id=$1 AND cursor>$2 AND cursor<=$3',[id,after,cursor]);
+      await db.query('UPDATE dictionary_device SET additions_delivered=GREATEST(additions_delivered,$2) WHERE device_id=$1',[id,cursor]);
+    }
+    return {entries,cursor,has_more:rows.length>500};
+  }));
+  r.post('/additions/ack',transaction(pool,async(db,req,res)=>{
+    const id=res.locals.userId,d=await authenticate(db,req,id),cursor=req.body?.cursor;
+    if(!integer(cursor)) throw new HttpError(400,'invalid cursor');
+    // 重复确认不会回退；不能用其他设备更小的游标冒充已接收。
+    if(cursor!==Number(d.additions_ack)) {
+      const row=(await db.query('SELECT delivered FROM dictionary_addition WHERE device_id=$1 AND cursor=$2',[id,cursor])).rows[0];
+      if(!row?.delivered || cursor>Number(d.additions_delivered)) throw new HttpError(409,'cursor was not delivered');
+      if(cursor>Number(d.additions_ack)) await db.query('UPDATE dictionary_device SET additions_ack=$2,additions_applied_at=NOW() WHERE device_id=$1',[id,cursor]);
+    }
+    return {ok:true};
   }));
   r.post('/report',transaction(pool,async(db,req,res) => {
     const id = res.locals.userId; await authenticate(db,req,id);
@@ -108,32 +162,80 @@ export function createDashboardDictionaryRouter(pool: pg.Pool): Router {
   const r = Router();
   r.get('/devices',transaction(pool,async(db,_req,res) => {
     const d = await device(db,res.locals.userId), current = await snapshot(db,d.group_id);
-    const rows = (await db.query(`SELECT s.device_id,s.group_id,s.last_report_at,s.applied_at,s.applied_revision,s.migration_status,s.imported,s.restore_enabled,
+    const rows = (await db.query(`SELECT s.device_id,s.group_id,s.last_report_at,s.applied_at,s.applied_revision,s.migration_status,s.imported,s.restore_enabled,s.additions_supported,s.additions_ack,s.additions_applied_at,
       d.name,d.model,d.brand,d.dashboard_name FROM dictionary_device s JOIN device d ON d.id=s.device_id ORDER BY s.device_id`)).rows;
+    for(const row of rows) row.additions_pending=Number((await db.query('SELECT COUNT(*) AS n FROM dictionary_addition WHERE device_id=$1 AND cursor>$2',[row.device_id,row.additions_ack])).rows[0].n);
     return {group_id:d.group_id,devices:rows.map(row => ({...row,in_group:row.group_id===d.group_id,synced:row.restore_enabled && row.group_id===d.group_id && row.applied_revision===current.revision}))};
   }));
   r.get('/entries',transaction(pool,async(db,req,res) => {
-    const d = await device(db,res.locals.userId), data = await snapshot(db,d.group_id);
-    const id = req.query.device_id;
-    if (id && (typeof id !== 'string' || !uuid.test(id) || (await device(db,id)).group_id !== d.group_id)) throw new HttpError(403,'设备不属于此个人词库');
-    const q = typeof req.query.q==='string' ? req.query.q.slice(0,100) : '';
-    const policies = new Map(data.policies.map(p => [p.text,p.status]));
-    let all = data.entries.map(e => ({...e,status:policies.get(e.text) ?? 'enabled'})).filter(e => (!id || e.device_id===id) && (!q || e.text.includes(q) || e.pinyin.includes(q)) && (!req.query.status || e.status===req.query.status));
+    const d = await device(db,res.locals.userId);
+    let all = await dashboardEntries(db,d.group_id,req.query);
+    const totalWords=new Set(all.map(e=>e.text)).size;
     if (req.query.view === 'merged') {
       const grouped = new Map<string, typeof all>();
       all.forEach(e => grouped.set(e.text,[...(grouped.get(e.text) ?? []),e]));
       all = [...grouped.values()].map(values => {
         const choices=values.filter(e => e.kind==='choice');
         const at=Math.max(0,...choices.map(e => e.last_used));
-        return {...values[0],kind:'merged',device_id:'',device_ids:[...new Set(values.map(e=>e.device_id))].sort(),
+        return {...values[0],kind:'merged',device_id:'',device_ids:[...new Set(values.map(e=>e.device_id).filter(Boolean))].sort(),
           pinyin:[...new Set(values.map(e=>e.pinyin).filter(Boolean))].join(' / '),
           code:[...new Set(values.map(e=>e.code).filter(Boolean))].join(' / '),source:'merged',
+          sources:[...new Set(values.map(e=>e.source))].sort(),has_choices:choices.length>0,
           count:choices.reduce((n,e)=>n+e.count,0),
           weight:choices.reduce((n,e)=>n+e.weight*Math.pow(0.5,(at-e.last_used)/(14*24*60*60*1000)),0),last_used:at};
       });
     }
     const page = Math.max(1,Math.min(100000,Math.floor(Number(req.query.page)||1))), size=50;
-    return {total:all.length,page,page_size:size,entries:all.slice((page-1)*size,page*size)};
+    return {total:all.length,total_words:totalWords,page,page_size:size,entries:all.slice((page-1)*size,page*size)};
+  }));
+  r.post('/words',transaction(pool,async(db,req,res)=>{
+    const d=await device(db,res.locals.userId),text=req.body?.text,pinyin=normalizedPinyin(text,req.body?.pinyin);
+    if(!pinyin) throw new HttpError(400,'请输入汉字及逐字匹配的拼音（空格分隔、无声调）');
+    const result=await db.query('INSERT INTO dictionary_dashboard_word(group_id,text,pinyin) VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[d.group_id,text,pinyin]);
+    await dashboardEntries(db,d.group_id,{}); // 容量溢出时事务回滚。
+    return {ok:true,created:!!result.rowCount};
+  }));
+  r.post('/sync',transaction(pool,async(db,req,res)=>{
+    const {device_ids,texts,all,filter}=req.body ?? {};
+    if(!Array.isArray(device_ids) || !device_ids.length || device_ids.length>500 || !device_ids.every(id=>typeof id==='string' && uuid.test(id))) throw new HttpError(400,'请选择目标手机');
+    if(all!==undefined && all!==true) throw new HttpError(400,'invalid selection');
+    if(all===true ? texts!==undefined : !Array.isArray(texts) || !texts.length || texts.length>500 || !texts.every(chinese)) throw new HttpError(400,'请选择词语或全部筛选结果');
+    if(filter!==undefined && (!filter || typeof filter!=='object' || Array.isArray(filter))) throw new HttpError(400,'invalid filter');
+    const d=await device(db,res.locals.userId);
+    const targets=await Promise.all([...new Set<string>(device_ids)].map(id=>device(db,id)));
+    const selected=all===true ? null : new Set<string>(texts);
+    const rows=(await dashboardEntries(db,d.group_id,filter ?? {})).filter(e=>!selected || selected.has(e.text));
+    const requested=new Set<string>(selected ?? rows.map(e=>e.text));
+    const words=new Map<string,{text:string,pinyin:string,preferred:boolean}>();
+    for(const row of rows) {
+      const pinyin=normalizedPinyin(row.text,row.pinyin);
+      if(row.status!=='enabled' || !pinyin) continue;
+      const key=JSON.stringify([row.text,pinyin]),old=words.get(key);
+      words.set(key,{text:row.text,pinyin,preferred:old?.preferred===true || row.source==='dashboard'});
+    }
+    const eligibleTexts=new Set<string>();
+    let queued=0;
+    for(const target of targets) {
+      const blocked=new Set((await db.query("SELECT text FROM dictionary_policy WHERE group_id=$1 AND status<>'enabled'",[target.group_id])).rows.map(p=>p.text));
+      const existing=(await db.query('SELECT text,pinyin,preferred FROM dictionary_addition WHERE device_id=$1',[target.device_id])).rows;
+      const known=new Map(existing.map(e=>[JSON.stringify([e.text,e.pinyin]),e.preferred]));
+      let added=0;
+      for(const [key,word] of words) {
+        if(blocked.has(word.text)) continue;
+        eligibleTexts.add(word.text);
+        if(known.has(key)) {
+          if(word.preferred && !known.get(key)) {
+            await db.query("UPDATE dictionary_addition SET preferred=TRUE,cursor=nextval('dictionary_addition_cursor'),delivered=FALSE WHERE device_id=$1 AND text=$2 AND pinyin=$3",[target.device_id,word.text,word.pinyin]);
+            queued++;
+          }
+        } else {
+          if(existing.length+ ++added>100000) throw new HttpError(413,'目标词库追加容量超限');
+          await db.query('INSERT INTO dictionary_addition(device_id,text,pinyin,preferred) VALUES($1,$2,$3,$4)',[target.device_id,word.text,word.pinyin,word.preferred]);
+          queued++;
+        }
+      }
+    }
+    return {ok:true,words:words.size,queued,skipped:[...requested].filter(text=>!eligibleTexts.has(text)).length,devices:targets.length};
   }));
   r.post('/bind',transaction(pool,async(db,req,res) => {
     const id=req.body?.device_id;
@@ -148,8 +250,10 @@ export function createDashboardDictionaryRouter(pool: pg.Pool): Router {
       if (!old || severity[p.status as Status]>severity[old.status as Status]) await db.query(`INSERT INTO dictionary_policy(group_id,text,status) VALUES($1,$2,$3)
         ON CONFLICT(group_id,text) DO UPDATE SET status=EXCLUDED.status,updated_at=NOW()`,[current.group_id,p.text,p.status]);
     }
+    await db.query(`INSERT INTO dictionary_dashboard_word(group_id,text,pinyin)
+      SELECT $1,text,pinyin FROM dictionary_dashboard_word WHERE group_id=$2 ON CONFLICT DO NOTHING`,[current.group_id,incoming.group_id]);
     await db.query('UPDATE dictionary_device SET group_id=$1,applied_revision=NULL WHERE group_id=$2',[current.group_id,incoming.group_id]);
-    await snapshot(db,current.group_id); // 超限时整个绑定回滚，不建立无法恢复的分组。
+    await dashboardEntries(db,current.group_id,{}); // 超限时整个绑定回滚，不建立无法恢复的分组。
     return {ok:true};
   }));
   r.post('/decisions',transaction(pool,async(db,req,res) => {

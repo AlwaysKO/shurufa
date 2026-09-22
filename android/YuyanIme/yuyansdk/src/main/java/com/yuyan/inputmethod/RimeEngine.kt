@@ -31,10 +31,10 @@ object RimeEngine {
         ?: nativeCandidateMetadata.at(index - customPhraseSize)
     private val t9CommitTracker = T9CommitTracker()
 
-    private fun learningCode(): String {
+    private fun learningCode(forCommit: Boolean = false): String {
         if (InputModeSwitcher.isEnglish || AppPrefs.getInstance().input.chineseFanTi.getValue()) return ""
         return when (Rime.getCurrentRimeSchema()) {
-            CustomConstant.SCHEMA_ZH_T9 -> keyRecordStack.unlockedT9Digits()
+            CustomConstant.SCHEMA_ZH_T9 -> if (forCommit) keyRecordStack.compositionT9Digits() else keyRecordStack.unlockedT9Digits()
             CustomConstant.SCHEMA_ZH_QWERTY -> keyRecordStack.unlockedPinyin()
             else -> ""
         }
@@ -110,7 +110,7 @@ object RimeEngine {
     }
 
     fun selectCandidate(index: Int): String? {
-        val code = learningCode()
+        val code = learningCode(forCommit = true)
         val selected = candidateForSelection(index)
         if (selected != null && selected.nativeIndex == null) {
             reset()
@@ -160,7 +160,7 @@ object RimeEngine {
     }
 
     fun selectPinyin(index: Int) {
-        t9CommitTracker.clear()
+        // 锁音不改原始按键；保留明确选中的段，最终仍须整词/读音/编码三者一致。
         val pinyinKey = keyRecordStack.pushPinyinSelectAction(pinyins[index]) ?: return
         Rime.replaceKey(pinyinKey.posInInput, pinyinKey.t9Keys().length, pinyinKey.pinyin())
         updateCandidatesOrCommitText()
@@ -303,7 +303,7 @@ object RimeEngine {
         val code = learningCode()
         pinyins = when (rimeSchema) {
             CustomConstant.SCHEMA_ZH_T9 -> {
-                T9PinYinUtils.t9KeyToPinyin(if (code.isNotEmpty()) code.map { "ADGJMPTW"[it - '2'] }.joinToString("") else compositionText.split('\'').firstOrNull { part -> part.isNotEmpty() && part.all { it.isUpperCase() } } ?: "")
+                T9PinYinUtils.t9KeyToPinyin(if (code.isNotEmpty()) code.map { "ADGJMPTW"[it - '2'] }.joinToString("") else compositionText)
             }
             CustomConstant.SCHEMA_ZH_DOUBLE_LX17 -> {
                 LX17PinYinUtils.lx17KeyToPinyin(compositionText.split('\'').firstOrNull { part -> part.isNotEmpty() && part.all { it.isUpperCase() } } ?: "")
@@ -312,9 +312,13 @@ object RimeEngine {
                 emptyArray()
             }
         }
-        personalCandidates = if (code.isNotEmpty()) {
-            OfflineT9Candidates.select(code, candidates.map { it.text }, candidates.map { it.comment })
-        } else null
+        personalCandidates = when {
+            code.isNotEmpty() -> OfflineT9Candidates.select(code, candidates.map { it.text }, candidates.map { it.comment })
+            rimeSchema == CustomConstant.SCHEMA_ZH_T9 && !keyRecordStack.isEmpty() &&
+                !InputModeSwitcher.isEnglish && !AppPrefs.getInstance().input.chineseFanTi.getValue() ->
+                OfflineT9Candidates.rankNative(nativeCandidateMetadata.firstPage, candidates.size)
+            else -> null
+        }
         personalCandidates?.let { selection ->
             showCandidates = showCandidates.take(customPhraseSize) + selection.firstPage.map {
                 it.nativeIndex?.let { index -> candidates[index] } ?: CandidateListItem("本地", it.text)
@@ -322,11 +326,16 @@ object RimeEngine {
                 getNextPageCandidates().asList()
             }
             val first = selection.firstPage.firstOrNull()
-            composition = if (rimeSchema == CustomConstant.SCHEMA_ZH_T9) {
-                val reading = first?.pinyin?.takeIf { it.isNotBlank() }
-                    ?: showCandidates.drop(customPhraseSize).firstOrNull()?.comment.orEmpty()
-                T9Spelling.preedit(code, reading) ?: code
-            } else first?.pinyin?.takeIf { it.isNotBlank() }?.replace(' ', '\'') ?: composition
+            if (code.isNotEmpty()) {
+                composition = if (rimeSchema == CustomConstant.SCHEMA_ZH_T9) {
+                    val reading = first?.pinyin?.takeIf { it.isNotBlank() }
+                        ?: showCandidates.drop(customPhraseSize).firstOrNull()?.comment.orEmpty()
+                    T9Spelling.preedit(code, reading) ?: code
+                } else first?.pinyin?.takeIf { it.isNotBlank() }?.replace(' ', '\'') ?: composition
+            } else {
+                // 保留原生已选前缀，余段读音跟随个人重排后的首项。
+                composition = getCurrentComposition(showCandidates.drop(customPhraseSize))
+            }
         }
         showComposition = composition
         preCommitText = ""

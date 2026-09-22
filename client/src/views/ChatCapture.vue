@@ -56,9 +56,23 @@ function displayName(conversation: ChatConversationRow | null) {
 const messages = ref<ChatMessageRow[]>([]);
 const messageType = ref('all');
 const page = ref(1);
-const pageSize = 24;
+const pageSize = 20;
 const total = ref(0);
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize)));
+const pageJump = ref<number | string>(1);
+watch(page, value => { pageJump.value = value; });
+const validPageJump = computed(() => Number.isSafeInteger(Number(pageJump.value)) && Number(pageJump.value) >= 1);
+const pageLinks = computed(() => {
+  const values = new Set([1, totalPages.value]);
+  for (let n = Math.max(1, page.value - 2); n <= Math.min(totalPages.value, page.value + 2); n++) values.add(n);
+  const links: Array<number | string> = []; let previous = 0;
+  for (const n of [...values].sort((a,b) => a-b)) {
+    if (previous && n - previous > 1) links.push(`gap-${previous}`);
+    links.push(n); previous = n;
+  }
+  return links;
+});
+function jumpToPage() { if (validPageJump.value) void changePage(Number(pageJump.value)); }
 const messageError = ref('');
 let latestRequest = 0;
 let disposed = false;
@@ -247,7 +261,7 @@ async function selectConversation(conversation: ChatConversationRow) {
 }
 
 async function changePage(next: number) {
-  if (loading.value || mutationBusy.value) return;
+  if (loading.value || mutationBusy.value || !Number.isSafeInteger(next)) return;
   page.value = Math.min(totalPages.value, Math.max(1, next));
   messageType.value = 'all';
   await loadMessages();
@@ -296,9 +310,10 @@ async function load() {
       restored = (await api.resolveChatConversation(rememberedId)).conversation;
       if (disposed || request !== latestLoad) return;
       if (restored && restored.platform !== platform.value) restored = null;
-      if (restored && (restored.is_pending_source || restored.display_name?.startsWith('待确认') || (restored.identity_confidence < 0.8 && (
+      const legacyPending = restored && (restored.display_name?.startsWith('待确认') || (restored.identity_confidence < 0.8 && (
           /^(?:screenshot-v2:|capture-v3:|screenshot-pending:|capture-pending:|notification-v2:|header:)/.test(restored.external_key) ||
-          /^(?:微信会话)/.test(restored.display_name || ''))))) {
+          /^(?:微信会话)/.test(restored.display_name || ''))));
+      if (restored && (restored.is_pending_source ?? legacyPending)) {
         restored = conversations.value.find(item => item.id === -1) ?? null;
       } else if (restored?.display_name?.trim()) {
         const name = restored.display_name.trim();
@@ -529,10 +544,10 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
       <div class="timeline-header">
         <div class="timeline-title">
           <h3>{{ selected?.display_name || selected?.external_key || '消息时间线' }}</h3>
-          <span class="timeline-summary">共 {{ total }} 条 · 每页 {{ pageSize }} 条 · 采集时间倒序，最新在前</span>
+          <span class="timeline-summary">共 {{ total }} 项 · 每页 {{ pageSize }} 项（图片逐张分页） · 采集时间倒序，最新在前</span>
         </div>
         <div class="timeline-actions">
-          <button data-testid="chat-open-merge" :disabled="!selected || pendingGroup || multipleSources || loading || mutationBusy" @click="openMerge">合并到…</button>
+          <button class="capture-action" data-testid="chat-open-merge" :disabled="!selected || pendingGroup || multipleSources || loading || mutationBusy" @click="openMerge">合并到…</button>
           <select v-model="messageType" aria-label="本页消息类型筛选" :disabled="loading || mutationBusy">
             <option value="all">本页全部类型</option>
             <option v-for="type in messageTypes" :key="type" :value="type">{{ type }}</option>
@@ -554,19 +569,19 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
         <p>当前来源：{{ displayName(mergeSource) }}（#{{ mergeSource?.id }}）。仅此来源的历史图片和文字归入目标，后续该来源上报也归入目标。</p>
         <form @submit.prevent="searchMergeTargets(1)">
           <input v-model="mergeQuery" aria-label="搜索目标会话" placeholder="搜索会话名称" :disabled="mutationBusy" />
-          <button :disabled="mutationBusy || mergeLoading">搜索</button>
-          <button type="button" :disabled="mutationBusy" @click="mergeOpen = false; mergeRequest++">取消</button>
+          <button class="capture-action" :disabled="mutationBusy || mergeLoading">搜索</button>
+          <button class="capture-action" type="button" :disabled="mutationBusy" @click="mergeOpen = false; mergeRequest++">取消</button>
         </form>
         <p v-if="mergeError" class="error-text" role="alert">{{ mergeError }}</p>
         <p v-if="mergeLoading">正在加载目标会话…</p>
-        <button v-for="target in mergeTargets" :key="target.id" :data-testid="`chat-merge-target-${target.id}`" class="merge-target" :disabled="mutationBusy || mergeLoading" @click="mergeInto(target)">
+        <button v-for="target in mergeTargets" :key="target.id" :data-testid="`chat-merge-target-${target.id}`" class="capture-action merge-target" :disabled="mutationBusy || mergeLoading" @click="mergeInto(target)">
           {{ target.display_name || target.external_key }} · {{ target.message_count }} 条 · #{{ target.id }}
         </button>
         <p v-if="!mergeLoading && !mergeTargets.length">没有可选目标</p>
         <div>
-          <button :disabled="mutationBusy || mergeLoading || mergePage <= 1" @click="searchMergeTargets(mergePage - 1)">上一页</button>
+          <button class="capture-action" :disabled="mutationBusy || mergeLoading || mergePage <= 1" @click="searchMergeTargets(mergePage - 1)">上一页</button>
           <span> {{ mergePage }} / {{ Math.max(1, Math.ceil(mergeTotal / 20)) }} </span>
-          <button :disabled="mutationBusy || mergeLoading || mergePage * 20 >= mergeTotal" @click="searchMergeTargets(mergePage + 1)">下一页</button>
+          <button class="capture-action" :disabled="mutationBusy || mergeLoading || mergePage * 20 >= mergeTotal" @click="searchMergeTargets(mergePage + 1)">下一页</button>
         </div>
       </section>
       <div class="image-selection-toolbar">
@@ -585,12 +600,12 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
       <div v-else-if="!messageError" class="timeline" data-testid="chat-gallery">
         <article
           v-for="message in visibleMessages"
-          :key="message.id"
+          :key="`${message.id}:${message.assets[0]?.id ?? 'text'}`"
           class="message"
           :class="[message.direction, { 'has-media': message.assets.length > 0 }]"
         >
           <div class="message-head">
-            <button v-if="(pendingGroup || multipleSources) && message.conversation_id" :data-testid="`chat-confirm-source-${message.id}`" :disabled="loading || mutationBusy" @click="confirmSource(message)">确认此来源归属 #{{ message.conversation_id }}</button>
+            <button class="capture-action capture-source-action" v-if="(pendingGroup || multipleSources) && message.conversation_id" :data-testid="`chat-confirm-source-${message.id}`" :disabled="loading || mutationBusy" @click="confirmSource(message)">确认此来源归属 #{{ message.conversation_id }}</button>
             <span :data-testid="`chat-image-label-${message.id}`">{{ messageDisplayName(message) }}</span>
             <span class="badge">{{ directionNames[message.direction] }}</span>
             <span class="badge">{{ message.message_type }}</span>
@@ -625,10 +640,18 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
         </article>
       </div>
       <nav v-if="selected" class="capture-pager" aria-label="聊天消息分页">
-        <span>共 {{ total }} 条 · 每页 {{ pageSize }} 条</span>
+        <span>共 {{ total }} 项 · 每页 {{ pageSize }} 项（图片逐张分页）</span>
+        <button type="button" data-testid="chat-page-first" :disabled="page <= 1 || loading || mutationBusy" @click="changePage(1)">首页</button>
         <button type="button" data-testid="chat-page-prev" :disabled="page <= 1 || loading || mutationBusy" @click="changePage(page - 1)">上一页</button>
+        <template v-for="link in pageLinks" :key="link">
+          <button v-if="typeof link === 'number'" type="button" :data-testid="`chat-page-${link}`" :aria-label="`第${link}页`" :aria-current="page === link ? 'page' : undefined" :class="{ active: page === link }" :disabled="loading || mutationBusy" @click="changePage(link)">{{ link }}</button>
+          <span v-else class="pager-gap" aria-hidden="true">…</span>
+        </template>
         <span aria-live="polite">{{ page }} / {{ totalPages }}</span>
         <button type="button" data-testid="chat-page-next" :disabled="page >= totalPages || loading || mutationBusy" @click="changePage(page + 1)">下一页</button>
+        <button type="button" data-testid="chat-page-last" :disabled="page >= totalPages || loading || mutationBusy" @click="changePage(totalPages)">末页</button>
+        <label class="page-jump">跳至 <input :value="pageJump" @input="pageJump = ($event.target as HTMLInputElement).value" data-testid="chat-page-jump-input" type="number" min="1" :max="totalPages" aria-label="跳转页码" :disabled="loading || mutationBusy" @keydown.enter.prevent="jumpToPage" /> 页</label>
+        <button type="button" data-testid="chat-page-jump" :disabled="!validPageJump || loading || mutationBusy" @click="jumpToPage">跳转</button>
       </nav>
     </section>
   </div>
@@ -671,7 +694,7 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
 .merge-panel { padding: 14px; margin: 12px 0; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; }
 .merge-panel form { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
 .merge-panel input { min-width: 0; flex: 1; padding: 6px; }
-.merge-target { display: block; text-align: left; width: 100%; margin: 6px 0; padding: 8px; overflow-wrap: anywhere; }
+.merge-target { justify-content: flex-start; display: block; text-align: left; width: 100%; margin: 6px 0; padding: 8px; overflow-wrap: anywhere; }
 .image-selection-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0; color: #657083; font-size: 12px; }
 .image-selection-toolbar button { padding: 6px 10px; border: 1px solid #dfe4ea; border-radius: 6px; background: white; cursor: pointer; }
 .image-select { display: flex; gap: 6px; align-items: center; font-size: 12px; cursor: pointer; }
@@ -705,23 +728,31 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
 .timeline-summary { color: #747d8c; font-size: 12px; }
 .timeline-header select { max-width: 100%; padding: 6px 8px; border: 1px solid #dfe4ea; border-radius: 6px; background: #fff; }
 .timeline-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.capture-action { display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 7px 11px; border: 1px solid #cbd1ff; border-radius: 6px; background: #f2f4ff; color: #3742fa; font: inherit; font-size: 13px; line-height: 1.4; cursor: pointer; transition: background .15s, border-color .15s; }
+.capture-action:hover:not(:disabled) { background: #e5e9ff; border-color: #8792ff; }
+.capture-action:focus-visible, .capture-pager button:focus-visible { outline: 2px solid #3742fa; outline-offset: 2px; }
+.capture-source-action { width: 100%; justify-content: flex-start; padding: 5px 8px; font-size: 12px; overflow-wrap: anywhere; }
+.capture-pager button.active { background: #3742fa; border-color: #3742fa; color: #fff; }
+.page-jump { display: inline-flex; align-items: center; gap: 5px; }
+.page-jump input { width: 64px; min-width: 0; padding: 5px 7px; border: 1px solid #dfe4ea; border-radius: 6px; }
+.pager-gap { padding: 0 2px; }
 .delete-button { padding: 7px 10px; border: 1px solid #ff6b81; border-radius: 6px; background: #fff; color: #c0392b; cursor: pointer; }
 .delete-button:hover:not(:disabled) { background: #fff0f2; }
 button:disabled { cursor: not-allowed; opacity: .5; }
-.timeline { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr)); align-items: start; gap: 10px; }
+.timeline { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: start; gap: 10px; }
 .message { min-width: 0; padding: 10px; border: 1px solid #e9ecf2; border-radius: 8px; background: #f8f9fc; }
 .message:not(.has-media) { grid-column: 1 / -1; }
 .message.outgoing { background: #f1f3ff; }
 .message.system { background: #fffcf5; }
 .message-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; color: #747d8c; font-size: 12px; overflow-wrap: anywhere; }
-.message-head > span:first-child { width: 100%; color: #2f3542; }
+.message-head > span:first-of-type { width: 100%; color: #2f3542; }
 .message-head time { font-size: 11px; }
 .badge { padding: 1px 5px; border-radius: 4px; background: rgba(55, 66, 250, .08); color: #3742fa; }
 .message-text { margin: 6px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.5; }
 .media-grid { display: grid; gap: 8px; margin-top: 8px; }
 .media-item { display: grid; min-width: 0; gap: 5px; }
 .media-preview-button { width: 100%; padding: 0; border: 0; border-radius: 6px; background: #edf0f5; cursor: zoom-in; }
-.media-grid img { display: block; width: 100%; height: 220px; object-fit: contain; border-radius: 6px; }
+.media-grid img { display: block; width: 100%; height: auto; aspect-ratio: 9 / 16; max-height: 360px; object-fit: contain; border-radius: 6px; }
 .media-delete-button { justify-self: end; padding: 3px 7px; border: 1px solid #ff6b81; border-radius: 5px; background: #fff; color: #c0392b; cursor: pointer; font-size: 12px; }
 .capture-pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 14px; color: #747d8c; font-size: 13px; }
 .capture-pager > span:first-child { margin-right: auto; }
@@ -730,12 +761,17 @@ button:disabled { cursor: not-allowed; opacity: .5; }
 .image-preview-image { display: block; max-width: 92vw; max-height: 82vh; object-fit: contain; border-radius: 8px; box-shadow: 0 16px 48px rgba(0, 0, 0, .35); }
 .image-preview-close { position: fixed; top: 18px; right: 22px; width: 42px; height: 42px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .92); color: #2f3542; font-size: 30px; line-height: 1; cursor: pointer; }
 .error { padding: 10px 14px; margin-bottom: 16px; border-radius: 6px; background: #fff0f0; color: #c0392b; }
+@media (max-width: 1200px) { .timeline { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media (max-width: 1000px) {
+  .timeline { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .capture-layout { grid-template-columns: 1fr; }
   .conversation-panel { position: static; }
   .conversation-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr)); max-height: 150px; }
 }
 @media (max-width: 600px) {
+  .timeline { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .capture-pager { gap: 5px; }
+  .capture-pager > span:first-child { width: 100%; }
   .capture-stats .stat { flex-wrap: wrap; gap: 2px 6px; padding: 8px; }
   .capture-stats .label { font-size: 11px; }
   .conversation-panel, .timeline-panel { padding: 10px; }

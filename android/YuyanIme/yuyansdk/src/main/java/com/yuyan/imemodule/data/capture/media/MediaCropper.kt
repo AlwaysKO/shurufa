@@ -21,6 +21,7 @@ data class MediaCaptureRequest(
     val bounds: IntRect,
     val inputAreaBounds: IntRect? = null,
     val lossyWebp: Boolean = false,
+    val titleOcrInput: TitleOcrInput? = null,
 )
 
 class MediaCropper(private val minimumSide: Int = 16) {
@@ -110,6 +111,7 @@ class WindowMediaCapturer(
                                 inputAreaBounds = request.inputAreaBounds,
                             ) ?: return@forEach
                             try {
+                                request.titleOcrInput?.captureFrom(cropped)
                                 val encoded = if (request.lossyWebp) encodeWebp(cropped) else encodeLossless(cropped)
                                 val contentHash = sha256(encoded)
                                 val output = File(context.cacheDir, "chat-capture/$contentHash")

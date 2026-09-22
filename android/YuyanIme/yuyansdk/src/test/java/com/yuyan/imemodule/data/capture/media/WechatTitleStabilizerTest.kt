@@ -31,11 +31,52 @@ class WechatTitleStabilizerTest {
             calls++
             tracker.observe("王彦兵", "a".repeat(64), 1000L + calls * 800)
         }
-        assertEquals(2, calls)
+        assertEquals(1, calls)
         assertEquals("王彦兵", result.displayName)
         assertEquals(first.externalKey, result.externalKey)
         confirmWechatScreenshotIdentity(result) { error("confirmed identity does not require additional screenshot") }
         Unit
+    }
+
+    @Test fun fixedPagesUseCanonicalIdentityWithoutWaitingForAnotherScreenshot() {
+        for ((names, expected) in listOf(listOf("朋友圈", "朋友屠", "用友殿", "田友殿") to "朋友圈", listOf("微信", "微佳", "微信(12)") to "微信")) {
+            val identities = names.mapIndexed { index, name -> WechatTitleStabilizer().observe(name, index.toString().repeat(64), 1000) }
+            assertEquals(1, identities.map { it.externalKey }.distinct().size)
+            identities.forEach { assertEquals(expected, it.displayName); assertEquals("confirmed", it.status) }
+        }
+    }
+    @Test fun typingPunctuationNeverCreatesContactAndKeepsCurrentIdentity() {
+        val tracker = WechatTitleStabilizer()
+        tracker.observe("联系人", pictureA, 1000)
+        val known = tracker.observe("联系人", pictureA, 1800)
+        for (text in listOf("对方正在输入…", "对方 正在输入：", "对方正在输入中...", "对方正在输入•••")) {
+            val status = tracker.observe(text, pictureB, 2600)
+            assertEquals(text, known.externalKey, status.externalKey); assertEquals("联系人", status.displayName)
+        }
+        tracker.reset()
+        assertEquals("pending",tracker.observe("对方正在输入：",pictureB,3400).status)
+        assertTrue(tracker.observe("对方正在输入：",pictureB,4200).displayName.startsWith("待确认"))
+    }
+    @Test fun exactSamePixelsAcrossIndependentFramesCanConfirmDespiteOneOcrCharacterJitter() {
+        val tracker = WechatTitleStabilizer()
+        tracker.observe("王彥兵", pictureA, 1000)
+        assertEquals("confirmed",tracker.observe("王彦兵",pictureA,1800).status)
+        // 不相似的文字仍需重新确认，即使错误地给了相同视觉指纹。
+        assertEquals("pending",WechatTitleStabilizer().let { it.observe("甲甲甲",pictureA,1000);it.observe("乙乙乙",pictureA,1800) }.status)
+    }
+
+    @Test fun fixedPageVisualEvidenceSurvivesNewOcrSpellingWithoutFuzzyMatchingOtherPixels() {
+        val store=MemoryConversationIdentityStore()
+        val first=WechatTitleStabilizer(store).observe("朋友圈",pictureA,1000)
+        val later=WechatTitleStabilizer(store).observe("朋反圏",pictureA,1800)
+        assertEquals("朋友圈",later.displayName);assertEquals(first.externalKey,later.externalKey)
+        assertEquals("pending",WechatTitleStabilizer(store).observe("朋反圏",pictureB,1800).status)
+    }
+    @Test fun pendingFirstPictureIsConfirmedInPlaceWhenSamePixelsResolveToFixedPage() {
+        val tracker=WechatTitleStabilizer()
+        val first=tracker.observe("朋反圈",pictureA,1000)
+        val fixed=tracker.observe("朋友圈",pictureA,1800)
+        assertEquals(first.externalKey,fixed.externalKey);assertEquals("confirmed",fixed.status);assertEquals("朋友圈",fixed.displayName)
     }
 
     private val pictureA = "a".repeat(64)

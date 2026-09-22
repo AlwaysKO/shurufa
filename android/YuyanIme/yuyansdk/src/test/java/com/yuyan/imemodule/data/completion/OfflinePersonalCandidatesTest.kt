@@ -33,6 +33,62 @@ class OfflinePersonalCandidatesTest {
         closeStore()
         context.deleteDatabase("local_input.db")
     }
+    @Test fun `分段学习后的鲮在锁音原生列表内提升且不注入其他历史词`() {
+        val tracker = T9CommitTracker()
+        repeat(3) {
+            tracker.segment("8245464", "泰", "tai", null)
+            tracker.segment("", "鲮", "ling", "泰鲮")
+            OfflineT9Candidates.learn(requireNotNull(tracker.consumeSelection("泰鲮", true)))
+        }
+        repeat(8) { OfflineT9Candidates.learn("5464", "京", "jing") }
+        val native = listOf(RankedCandidate("令", "ling", 0), RankedCandidate("鲮", "ling", 25))
+        val selected = OfflineT9Candidates.rankNative(native, 100)
+        assertEquals(listOf("鲮", "令"), selected.firstPage.map { it.text })
+        assertEquals(25, selected.at(0)?.nativeIndex)
+        assertEquals(listOf(0), selected.appendNativePage(listOf("另"), "", listOf("ling")))
+        assertEquals(100, selected.at(2)?.nativeIndex)
+        closeStore()
+        OfflineT9Candidates.init(context)
+        assertEquals("泰鲮", OfflineT9Candidates.select("8245464", emptyList(), emptyList()).firstPage.first().text)
+        assertEquals("鲮", OfflineT9Candidates.rankNative(native, 100).firstPage.first().text)
+    }
+
+    @Test fun `锁音重排按每条实际读音取证不混入同字异读记录`() {
+        repeat(8) { OfflineT9Candidates.learn("9464", "行", "xing") }
+        val native = listOf(RankedCandidate("航", "hang", 0), RankedCandidate("行", "hang", 1))
+        assertEquals(native, OfflineT9Candidates.rankNative(native, 2).firstPage)
+        // 即使某页同字有两种读音，原生索引和各自读音也不应去重混合。
+        val mixed = native + RankedCandidate("行", "xing", 2)
+        assertEquals(2, OfflineT9Candidates.rankNative(mixed, 3).firstPage.first().nativeIndex)
+        assertEquals(3, OfflineT9Candidates.rankNative(mixed, 3).firstPage.size)
+    }
+
+    @Test fun `一次整词选择不伪造逐字点击`() {
+        val tracker = T9CommitTracker()
+        tracker.segment("8245464", "泰鲮", "tai ling", "泰鲮")
+        OfflineT9Candidates.learn(requireNotNull(tracker.consumeSelection("泰鲮", true)))
+        val db = LocalInputStore(context)
+        try {
+            assertEquals(1L, db.learned("8245464").single().count)
+            assertTrue(db.learned("824").isEmpty())
+            assertTrue(db.learned("5464").isEmpty())
+        } finally { db.close() }
+    }
+
+    @Test fun `三键补回的常用词不应被原生一百个单字挤出前排`() {
+        val native = listOf("我哦") + (0 until 99).map { (0x4e00 + it).toChar().toString() }
+        val comments = listOf("wo o") + List(99) { "wo" }
+        val result = OfflineT9Candidates.select("966", native, comments).firstPage
+        assertTrue(result.indexOfFirst { it.text == "我们" } in 0..7)
+        assertEquals("我哦", result.first().text) // 保留三键原生首项先验，不硬改默认字。
+    }
+
+    @Test fun `三键wo加m可独立召回我们而不依赖原生首屏`() {
+        val result = OfflineT9Candidates.select("966", listOf("我哦", "我"), listOf("wo o", "wo"))
+        assertTrue(result.firstPage.any { it.text == "我们" && it.pinyin == "wo men" })
+        // wo o 同样匹配966；本任务保证我们可召回，不新增文字黑名单。
+    }
+
     @Test fun `词性歧义的本饿不能进入首屏和后页`() {
         val result = OfflineT9Candidates.select("2363", listOf("本饿", "本"), listOf("ben e", "ben"))
         assertFalse(result.firstPage.any { it.text == "本饿" })

@@ -711,7 +711,7 @@ export const api = {
   },
   chatMessages: (conversationId: number, page = 1, pageSize = 100, platform?: ChatConversationRow['platform'], groupName?: string) =>
     get<{ total: number; page: number; page_size: number; messages: ChatMessageRow[] }>(
-      `/api/v1/dashboard/chat/messages?conversation_id=${conversationId}&page=${page}&page_size=${pageSize}${platform ? `&platform=${platform}` : ''}${groupName !== undefined ? `&group_name=${encodeURIComponent(groupName)}` : ''}`,
+      `/api/v1/dashboard/chat/messages?gallery=true&conversation_id=${conversationId}&page=${page}&page_size=${pageSize}${platform ? `&platform=${platform}` : ''}${groupName !== undefined ? `&group_name=${encodeURIComponent(groupName)}` : ''}`,
     ),
   chatAdjacentImage: (conversationId: number, messageId: string, assetId: number, direction: 'next' | 'previous', platform?: ChatConversationRow['platform'], groupName?: string) =>
     get<{ image: ChatPreviewImage | null }>(`/api/v1/dashboard/chat/images/adjacent?conversation_id=${conversationId}&message_id=${encodeURIComponent(messageId)}&asset_id=${assetId}&direction=${direction}${platform ? `&platform=${platform}` : ''}${groupName !== undefined ? `&group_name=${encodeURIComponent(groupName)}` : ''}`),

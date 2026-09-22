@@ -50,6 +50,7 @@ const devices = [
 function mockApi() { return {
   devices: vi.fn().mockResolvedValue({ devices }),
   entries: vi.fn().mockResolvedValue({ total: 51, page: 1, entries: [{device_id:'old',text:'充电宝',kind:'choice',source:'selection',code:'2466434262',pinyin:'',count:3,weight:2.7,last_used:1000,status:'enabled'}] }),
+  addWord: vi.fn().mockResolvedValue({ok:true,created:true}), sync: vi.fn().mockResolvedValue({ok:true,words:1,queued:1,skipped:0,devices:1}),
   bind: vi.fn().mockResolvedValue({ok:true}), decisions: vi.fn().mockResolvedValue({ok:true}),
 }; }
 it('展示原始来源、未知拼音、等待手机确认，支持按设备查询和分页', async () => {
@@ -78,4 +79,95 @@ it('镜像展示上报而不显示等待应用或允许无效管理操作',async
   expect(view.text()).not.toContain('等待手机同步');
   expect(view.find('delete-0')!.props.disabled).toBe(true);
   expect(view.find('bind-new')!.props.disabled).toBe(true);
+});
+
+function update(view: Awaited<ReturnType<typeof mount>>, id: string, value: string) {
+  view.find(id)!.props['onUpdate:modelValue'](value);
+}
+function click(view: Awaited<ReturnType<typeof mount>>, id: string) { view.find(id)!.props.onClick(); }
+function check(view: Awaited<ReturnType<typeof mount>>, id: string, checked = true) { view.find(id)!.props.onChange({target:{checked}}); }
+it('默认合并查看，字段分列，所有按钮采用已有统一样式', async () => {
+  const api=mockApi(); const view=await mount('PersonalDictionary',api);
+  expect(api.entries.mock.calls[0][0].view).toBe('merged');
+  const headers=view.all().filter(n=>n.tag==='th').map(n=>n.text);
+  expect(headers).toEqual(['选择','词语','状态','手机','来源','拼音','输入码','真实选词次数','原始权重','最近使用','管理']);
+  expect(view.all().filter(n=>n.tag==='button').every(n=>String(n.props.class).includes('library-button'))).toBe(true);
+});
+it('备份端也可手工添加并向指定未绑定手机纯加法同步，不调用绑定', async () => {
+  const api=mockApi(); api.devices.mockResolvedValue({devices:devices.map(d=>({...d,restore_enabled:false,additions_supported:false,additions_pending:0}))});
+  const view=await mount('PersonalDictionary',api);
+  update(view,'new-word',' 泰鲮 '); update(view,'new-pinyin','tai ling');
+  view.find('add-form')!.props.onSubmit({preventDefault(){}}); await settle();
+  expect(api.addWord).toHaveBeenCalledWith({text:'泰鲮',pinyin:'tai ling'});
+  check(view,'target-new'); await settle(); click(view,'sync-selected'); await settle();
+  expect(api.sync).toHaveBeenCalledWith({device_ids:['new'],texts:['泰鲮']});
+  expect(api.bind).not.toHaveBeenCalled();
+  expect(view.text()).toContain('等待手机确认'); expect(view.text()).toContain('需升级');
+  expect(view.find('delete-0')!.props.disabled).toBe(true);
+});
+it('当前页全选按词去重，全不选彻底清除',async()=>{
+  const api=mockApi();const first=(await api.entries()).entries[0];api.entries.mockResolvedValue({entries:[first,{...first,source:'rime'}],total:2,page:1});
+  const view=await mount('PersonalDictionary',api);check(view,'target-old');click(view,'select-page');await settle();
+  expect(view.text()).toContain('已选 1 词');click(view,'sync-selected');await settle();
+  expect(api.sync).toHaveBeenLastCalledWith({device_ids:['old'],texts:['充电宝']});
+  click(view,'select-none');await settle();expect(view.find('sync-selected')!.props.disabled).toBe(true);
+});
+it('全部筛选结果跨页保留，通过筛选快照而非当前页列表同步，筛选变化清理',async()=>{
+  const api=mockApi();const view=await mount('PersonalDictionary',api);
+  update(view,'search','充电');await settle();check(view,'target-old');click(view,'select-all');await settle();
+  click(view,'next-page');await settle();click(view,'sync-selected');await settle();
+  expect(api.sync).toHaveBeenCalledWith({device_ids:['old'],all:true,filter:{q:'充电'}});
+  update(view,'search','泰鲮');await settle();
+  expect(view.find('sync-selected')!.props.disabled).toBe(true);
+  click(view,'select-page');await settle();update(view,'status-filter','disabled');await settle();
+  expect(view.find('sync-selected')!.props.disabled).toBe(true);
+});
+it('添加和同步失败显示错误，不冒充应用成功，不清除可重试选择',async()=>{
+  const api=mockApi();api.addWord.mockRejectedValue(new Error('拼音不匹配'));
+  const view=await mount('PersonalDictionary',api);update(view,'new-word','泰鲮');update(view,'new-pinyin','tai wo');
+  view.find('add-form')!.props.onSubmit({preventDefault(){}});await settle();
+  expect(view.text()).toContain('拼音不匹配');expect(view.text()).not.toContain('已添加');
+  api.sync.mockRejectedValue(new Error('网络失败'));check(view,'target-old');click(view,'select-page');await settle();click(view,'sync-selected');await settle();
+  expect(view.text()).toContain('网络失败');expect(view.text()).not.toContain('已排队');expect(view.find('sync-selected')!.props.disabled).toBe(false);
+});
+it('同步请求期间锁定目标与选择，重复点击不会重复发送',async()=>{
+  const api=mockApi();let resolve!: (v:any)=>void;api.sync.mockImplementation(()=>new Promise(r=>{resolve=r;}));
+  const view=await mount('PersonalDictionary',api);check(view,'target-old');click(view,'select-page');await settle();click(view,'sync-selected');await settle();
+  expect(view.find('target-new')!.props.disabled).toBe(true);expect(view.find('select-none')!.props.disabled).toBe(true);
+  check(view,'target-new');click(view,'sync-selected');expect(api.sync).toHaveBeenCalledTimes(1);
+  resolve({ok:true,words:1,queued:1,skipped:0,devices:1});await settle();
+  expect(api.sync).toHaveBeenCalledWith({device_ids:['old'],texts:['充电宝']});
+});
+it('较慢的旧筛选结果不能覆盖新筛选，也不能启用错误的全选',async()=>{
+  const api=mockApi();const view=await mount('PersonalDictionary',api);let resolve!:(v:any)=>void;
+  api.entries.mockImplementationOnce(()=>new Promise(r=>{resolve=r;}));update(view,'search','旧查询');await settle();
+  expect(view.find('select-all')!.props.disabled).toBe(true);
+  api.entries.mockResolvedValue({entries:[],total:0,page:1});update(view,'search','新查询');await settle();
+  resolve({entries:[{text:'错误旧结果'}],total:1,page:1});await settle();expect(view.text()).not.toContain('错误旧结果');
+  expect(view.find('select-all')!.props.disabled).toBe(true);
+});
+it('合并后的纯手工词不伪装手机、点击次数或多种来源',async()=>{
+  const api=mockApi();api.entries.mockResolvedValue({entries:[{device_id:'',device_ids:[],kind:'merged',text:'泰鲮',pinyin:'tai ling',code:'',source:'merged',sources:['dashboard'],has_choices:false,count:0,weight:0,last_used:0,status:'enabled'}],total:1,total_words:1,page:1});
+  const view=await mount('PersonalDictionary',api);
+  const row=view.all().find(n=>n.tag==='tbody')!.children.find(n=>n.tag==='tr')!;
+  const values=row.children.filter(n=>n.tag==='td').map(n=>n.text);
+  expect(values[3]).toBe('—（后台添加）');expect(values[4]).toBe('后台手动添加');expect(values[7]).toBe('—（非点击记录）');
+});
+it('合并视图非后台来源的手机信息缺失不应冒充后台添加',async()=>{
+  const api=mockApi();api.entries.mockResolvedValue({entries:[{device_id:'',device_ids:[],kind:'merged',text:'充电宝',pinyin:'chong dian bao',code:'',source:'merged',sources:['selection'],has_choices:true,count:2,weight:1,last_used:0,status:'enabled'}],total:1,page:1});
+  const view=await mount('PersonalDictionary',api);
+  expect(view.text()).toContain('手机来源未记录');expect(view.text()).not.toContain('—（后台添加）');
+});
+it('卸载后旧添加响应不再加载当前手机词库',async()=>{
+  const api=mockApi();let resolve!:(v:any)=>void;api.addWord.mockImplementation(()=>new Promise(r=>{resolve=r;}));
+  const view=await mount('PersonalDictionary',api);update(view,'new-word','泰鲮');update(view,'new-pinyin','tai ling');
+  view.find('add-form')!.props.onSubmit({preventDefault(){}});await settle();
+  mounted.pop()!.unmount();const count=api.entries.mock.calls.length;
+  resolve({ok:true,created:true});await settle();expect(api.entries).toHaveBeenCalledTimes(count);
+});
+it('查询失败后旧页内容不可选中或发送，重试成功再恢复',async()=>{
+  const api=mockApi();const view=await mount('PersonalDictionary',api);check(view,'target-old');click(view,'select-page');await settle();
+  api.entries.mockRejectedValueOnce(new Error('查询失败'));update(view,'search','新词');await settle();
+  expect(view.find('select-page')!.props.disabled).toBe(true);expect(view.find('select-all')!.props.disabled).toBe(true);expect(view.find('sync-selected')!.props.disabled).toBe(true);
+  click(view,'select-page');click(view,'sync-selected');await settle();expect(api.sync).not.toHaveBeenCalled();
 });

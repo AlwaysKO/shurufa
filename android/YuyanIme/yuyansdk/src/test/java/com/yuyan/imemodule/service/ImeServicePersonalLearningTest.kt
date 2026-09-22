@@ -56,7 +56,21 @@ class ImeServicePersonalLearningTest {
                     // 重复回调没有新的选择证据，不增加次数。
                     if (cursorEntry) service.commitText("真的吗", 1, record) else service.commitText("真的吗", record)
                     assertEquals(expected, db.learned("94363362").firstOrNull()?.count ?: 0L)
+                    // 给明确点选的“真的”记次数，不把它拆成两次单字选择。
+                    assertEquals(expected, db.learned("943633").firstOrNull { it.text == "真的" }?.count ?: 0L)
+                    assertTrue(db.learned("9436").none { it.text == "真" })
                 }
+            }
+            YuyanEmojiCompat.mEditorInfo = EditorInfo().apply {
+                inputType = InputType.TYPE_CLASS_TEXT
+                imeOptions = EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING
+            }
+            for (cursorEntry in listOf(false, true)) {
+                tracker.segment("94363362", "真的", "zhen de", null)
+                tracker.segment("", "吗", "ma", "真的吗")
+                if (cursorEntry) service.commitText("真的吗", 1) else service.commitText("真的吗")
+                assertEquals(expected, db.learned("94363362").single().count)
+                assertEquals(expected, db.learned("943633").single { it.text == "真的" }.count)
             }
             assertEquals("zhen de ma", db.personalWords("94363362").single().pinyin)
             assertTrue(db.reportTargets().isEmpty())

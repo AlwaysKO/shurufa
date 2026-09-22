@@ -16,7 +16,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import java.security.MessageDigest
 import java.security.SecureRandom
 
-/** 当前目标独立上传；只有主控目标可恢复与确认，备份目标绝不覆盖手机决策。调用方在 IO 线程运行。 */
+/** 当前目标独立上传；只有主控目标可恢复与确认，备份目标绝不覆盖手机决策；两端均可纯追加词语。调用方在 IO 线程运行。 */
 internal class PersonalDictionarySync(
     private val store: LocalInputStore,
     private val prefs: SharedPreferences,
@@ -28,6 +28,7 @@ internal class PersonalDictionarySync(
     private val restoreFromTarget: Boolean = true,
     private val statePrefix: String = "",
 ) {
+    private class AdditionCursorReset : Exception()
     private val endpoint=baseUrl.trimEnd('/')+"/api/v1/mobile/dictionary"
     private val json=Json { ignoreUnknownKeys=true; encodeDefaults=true }
     private val mediaType="application/json; charset=utf-8".toMediaType()
@@ -41,7 +42,6 @@ internal class PersonalDictionarySync(
                 val builder=Request.Builder().url(endpoint+path).header("X-Device-Id",deviceId).header("X-Dictionary-Token",token)
                 if(body!=null) builder.post(body.toRequestBody(mediaType))
                 return http.newCall(builder.build()).execute().use { response ->
-                    check(response.isSuccessful) { "dictionary HTTP ${response.code}" }
                     val payload=response.body ?: error("empty dictionary response")
                     check(payload.contentLength() <= 32L*1024*1024) { "dictionary response too large" }
                     // 同时限制 chunked 响应，不能只相信 Content-Length。
@@ -50,11 +50,17 @@ internal class PersonalDictionarySync(
                         while(true) {val n=input.read(buffer);if(n<0) break;check(out.size()+n<=32*1024*1024);out.write(buffer,0,n)}
                         out.toByteArray()
                     }
-                    String(bytes,Charsets.UTF_8)
+                    val text=String(bytes,Charsets.UTF_8)
+                    if(response.code==409 && path.startsWith("/additions?after=") &&
+                        runCatching { json.parseToJsonElement(text).jsonObject["code"]?.jsonPrimitive?.content }.getOrNull()=="dictionary_cursor_reset") {
+                        throw AdditionCursorReset()
+                    }
+                    check(response.isSuccessful) { "dictionary HTTP ${response.code}" }
+                    text
                 }
             }
             // 注册回执不缓存：服务端重置后必须补传本机数据。
-            val registered=json.parseToJsonElement(request("/register",buildJsonObject {put("restore_enabled",restoreFromTarget)}.toString())).jsonObject
+            val registered=json.parseToJsonElement(request("/register",buildJsonObject {put("restore_enabled",restoreFromTarget);put("additions_supported",true)}.toString())).jsonObject
             val records=store.dictionaryExport()
             val (status,imported)=migration()
             val serialized=json.encodeToString(ListSerializer(DictionaryRecord.serializer()),records)
@@ -67,6 +73,31 @@ internal class PersonalDictionarySync(
                 val batches=records.chunked(500).ifEmpty { listOf(emptyList()) }
                 batches.forEach { batch -> request("/report",json.encodeToString(DictionaryReport.serializer(),DictionaryReport(sequence,batch,status,imported))) }
                 check(prefs.edit().putString(statePrefix+"uploaded_hash",fingerprint).putLong(statePrefix+"uploaded_at",System.currentTimeMillis()).commit())
+            }
+            if(registered["additions_supported"]?.jsonPrimitive?.booleanOrNull == true) {
+                val target=endpoint+"#"+deviceId
+                var after=store.dictionaryAdditionCursor(target)
+                var reset=false
+                var pages=0
+                while(pages<20) {
+                    val payload=try { request("/additions?after=$after") } catch(e:AdditionCursorReset) {
+                        check(!reset && after>0)
+                        // 服务器明确要求重放时仅复位本目标游标，绝不清词或修改另一端状态。
+                        reset=true;after=0;store.saveDictionaryAdditionCursor(target,0);continue
+                    }
+                    val additions=json.decodeFromString(DictionaryAdditions.serializer(),payload)
+                    require(additions.validAfter(after))
+                    check(enabled())
+                    if(additions.entries.isNotEmpty()) {
+                        store.mergeDictionaryAdditions(additions.entries)
+                        val ack=json.parseToJsonElement(request("/additions/ack",buildJsonObject {put("cursor",additions.cursor)}.toString())).jsonObject
+                        check(ack["ok"]?.jsonPrimitive?.booleanOrNull==true)
+                        store.saveDictionaryAdditionCursor(target,additions.cursor)
+                        after=additions.cursor
+                    }
+                    pages++
+                    if(!additions.hasMore) break
+                }
             }
             if (!restoreFromTarget) return true
             val snapshot=json.decodeFromString(DictionarySnapshot.serializer(),request(""))

@@ -31,3 +31,22 @@ internal data class DictionaryRecord(
     val sequence: Long, val entries: List<DictionaryRecord>,
     @SerialName("migration_status") val migrationStatus: String, val imported: Int,
 )
+
+/** 纯追加记录不携带学习次数或删除策略；手工偏好与真实点击证据分开。 */
+@Serializable internal data class DictionaryAddition(
+    val cursor: Long, val text: String, val pinyin: String, val preferred: Boolean = false,
+) {
+    fun valid(): Boolean = cursor in 1..9_007_199_254_740_991L &&
+        pinyin.length in 1..210 && PersonalWordReading.normalize(text,pinyin) == pinyin &&
+        CollectionConsent.allowsText(text)
+}
+@Serializable internal data class DictionaryAdditions(
+    val entries: List<DictionaryAddition>, val cursor: Long,
+    @SerialName("has_more") val hasMore: Boolean,
+) {
+    fun validAfter(after: Long): Boolean = entries.size <= 500 && entries.all { it.valid() } &&
+        (entries.isNotEmpty() || !hasMore) &&
+        entries.zipWithNext().all { (a,b) -> a.cursor < b.cursor } &&
+        (entries.firstOrNull()?.cursor?.let { it > after } ?: true) &&
+        cursor == (entries.lastOrNull()?.cursor ?: after)
+}

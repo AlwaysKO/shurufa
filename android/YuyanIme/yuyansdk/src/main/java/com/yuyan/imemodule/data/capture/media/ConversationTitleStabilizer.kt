@@ -41,10 +41,32 @@ internal open class ConversationTitleStabilizer(
     ): ScreenshotConversationIdentity {
         // OCR 在后台运行，导航/锁屏之后才返回的结果不得污染新页面的状态。
         if (expectedVersion != generation) return unresolved()
+        val knownPage = if (legacyWechat && visualKey != null) identityStore.find(scope, visualKey)
+            ?.takeIf { it.key.startsWith("screenshot-v2:wechat-page:") } else null
+        val fixedPage = if (legacyWechat) canonicalWechatPageTitle(title) ?: knownPage?.name else null
+        if (fixedPage != null) {
+            val fixedKey = "screenshot-v2:wechat-page:" + sha256(fixedPage.toByteArray(Charsets.UTF_8))
+            // 已保存的首帧在同一精确字形确认后原位升级，不能换key让它永远留在待确认。
+            val firstKey = state?.takeIf { it.confirmed == null && it.visualKey == visualKey &&
+                nowMillis - it.observedAt in 0..CONTINUITY_MILLIS }?.key
+                ?: pendingKey?.takeIf { nowMillis - pendingAt in 0..CONTINUITY_MILLIS }
+            if (visualKey != null && visualKey.matches(Regex("[a-f0-9]{64}"))) {
+                identityStore.save(scope, visualKey, StoredConversationIdentity(fixedKey, fixedPage, ConversationType.UNKNOWN.wireName))
+            }
+            state = null
+            pendingKey = null
+            return ScreenshotConversationIdentity(
+                externalKey = firstKey ?: fixedKey,
+                displayName = fixedPage, conversationType = ConversationType.UNKNOWN, confidence = 0.95,
+                source = "wechat_page_title", status = "confirmed", observedTitle = title,
+                isChatPage = fixedPage != "发现",
+            )
+        }
         val previous = state?.takeIf { nowMillis - it.observedAt in 0..CONTINUITY_MILLIS }
         val normalized = normalizeConversationTitle(title, platform)
         if (normalized == null && isTransientConversationTitle(title) && previous != null) {
             // 正在输入/在线不是联系人改名，不能投票或确认，也不能跨导航复用。
+            previous.observedAt = nowMillis
             return identity(previous, title)
         }
         if (normalized == null || normalized.contains("…") || normalized.contains("...") || visualKey == null || !visualKey.matches(Regex("[a-f0-9]{64}"))) {
@@ -81,9 +103,12 @@ internal open class ConversationTitleStabilizer(
             // 空标题首图已以P保存；精确字形恢复A后必须携带P，服务端才能接回同一来源。
             current.previousKey = recoverKey
         }
+        val previousTitle = current.candidate.displayName
         if (canonicalTitle(current.candidate.displayName) != canonicalTitle(candidate.displayName)) {
             current.candidate = candidate
-            current.votes = 0
+            // 两个独立时刻的精确同字形 + 仅一个OCR字符抖动可继续确认；不同字形仍不相似合并。
+            if (!legacyWechat || current.confirmed != null || previous?.visualKey != visualKey ||
+                !singleGlyphReadingDifference(previousTitle, candidate.displayName)) current.votes = 0
         }
         if (nowMillis - current.votedAt >= MIN_FRAME_INTERVAL_MILLIS) {
             current.votes++
@@ -115,6 +140,11 @@ internal open class ConversationTitleStabilizer(
             observedTitle = observedTitle,
             previousKey = current.previousKey,
         )
+    }
+
+    private fun singleGlyphReadingDifference(a: String, b: String): Boolean {
+        val left = canonicalTitle(a); val right = canonicalTitle(b)
+        return left.length == right.length && left.length >= 2 && left.indices.count { left[it] != right[it] } == 1
     }
 
     private fun canonicalTitle(value: String): String =

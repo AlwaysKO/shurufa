@@ -23,6 +23,28 @@ class KeyRecordStack {
         return digits.toString()
     }
 
+    /** 仅供最终学习校验：锁音还原为等价按键，不据此开放整码本地候选。 */
+    fun compositionT9Digits(): String {
+        val keys = StringBuilder()
+        for (record in keyRecords) {
+            when (record) {
+                is InputKey.T9Key -> keys.append(record.toString())
+                is InputKey.PinyinKey -> {
+                    val restored = T9PinYinUtils.pinyin2Key(record.pinyin().trimEnd('\''))
+                    if (restored.isEmpty()) return ""
+                    keys.append(restored)
+                }
+                InputKey.SelectCandidateAction, InputKey.SelectPinyinAction -> Unit
+                else -> return "" // 显式分词、字母或未知操作不猜完整码。
+            }
+        }
+        return keys.map { key ->
+            val index = "ADGJMPTW".indexOf(key)
+            if (index < 0) return ""
+            (index + 2).digitToChar()
+        }.joinToString("")
+    }
+
     fun unlockedPinyin(): String {
         if (keyRecords.isEmpty() || keyRecords.any { it !is InputKey.QwertKey }) return ""
         return keyRecords.joinToString("").takeIf { code -> code.all { it in 'a'..'z' } } ?: ""
@@ -122,7 +144,7 @@ class KeyRecordStack {
         if (keyRecords.lastOrNull() == InputKey.SelectPinyinAction) {
             keyRecords.removeLastOrNull()
         }
-        keyRecords.add(InputKey.DefaultAction)
+        keyRecords.add(InputKey.SelectCandidateAction)
     }
 
     fun restorePinyinToT9Key(pinyinKey: InputKey.PinyinKey? = null): InputKey.PinyinKey? {
@@ -156,6 +178,8 @@ interface InputKey {
     class Apostrophe(val dummy: Boolean = false) : InputKey
 
     object DefaultAction : InputKey
+
+    object SelectCandidateAction : InputKey
 
     object SelectPinyinAction : InputKey
     class T9Key(private val keyChar: Char, var consumed: Boolean = false) : InputKey {

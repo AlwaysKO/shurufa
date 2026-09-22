@@ -19,19 +19,24 @@ internal data class CodedLearnedInput(val code: String, val choice: LearnedInput
 
 /** 独立数据库，不迁移或清空既有 Rime 用户库和剪贴板库。 */
 internal class LocalInputStore(context: Context, name: String = "local_input.db", private val now: () -> Long = System::currentTimeMillis) :
-    SQLiteOpenHelper(context.applicationContext, name, null, 7) {
+    SQLiteOpenHelper(context.applicationContext, name, null, 8) {
     private val json = Json { ignoreUnknownKeys = true }
     override fun onCreate(db: SQLiteDatabase) {
         createReportTables(db)
         createPersonalWords(db)
         createDictionarySyncTables(db)
+        createDictionaryAdditionTables(db)
         db.execSQL("CREATE TABLE pending_event (id TEXT PRIMARY KEY NOT NULL, payload TEXT NOT NULL)")
         db.execSQL("CREATE TABLE event_target (event_id TEXT NOT NULL, target TEXT NOT NULL, PRIMARY KEY(event_id,target))")
         db.execSQL("CREATE INDEX event_target_url ON event_target(target)")
         db.execSQL("CREATE TABLE learned_input (code TEXT NOT NULL, text TEXT NOT NULL, count INTEGER NOT NULL, last_used INTEGER NOT NULL, weight REAL NOT NULL DEFAULT 0, PRIMARY KEY(code,text))")
     }
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        if (oldVersion < 5) createDictionarySyncTables(db)
+        if (oldVersion < 8) {
+            // IF NOT EXISTS 同时兼容只含部分旧业务表的历史库。
+            createDictionarySyncTables(db)
+            createDictionaryAdditionTables(db)
+        }
         if (oldVersion < 4) createPersonalWords(db)
         if (oldVersion < 3) createReportTables(db)
         if (oldVersion < 6 && !hasColumn(db, "pending_report", "online_confirmed_at")) {
@@ -48,6 +53,7 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
                 arrayOf(now(), LEGACY_ONLINE_TARGET),
             )
         }
+        if (oldVersion < 8) retainRemoteWords(db)
         if (oldVersion < 2) {
             db.execSQL("ALTER TABLE learned_input ADD COLUMN weight REAL NOT NULL DEFAULT 0")
             db.execSQL("UPDATE learned_input SET weight=count")
@@ -273,16 +279,54 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
         return true
     }
 
-    @Synchronized fun personalWords(code: String): List<T9Candidate> {
+    @Synchronized fun personalWords(code: String, preferredOnly: Boolean = false): List<T9Candidate> {
         if (code.length !in 3..30 || code.any { it !in '2'..'9' }) return emptyList()
+        val sources = if (preferredOnly) "SELECT text,pinyin,full_code FROM dictionary_added_word WHERE preferred=1"
+            else "SELECT text,pinyin,full_code FROM personal_word UNION ALL SELECT text,pinyin,full_code FROM dictionary_remote_word UNION ALL SELECT text,pinyin,full_code FROM dictionary_added_word"
         return readableDatabase.rawQuery(
-            "SELECT DISTINCT text,pinyin FROM (SELECT text,pinyin,full_code FROM personal_word UNION ALL SELECT text,pinyin,full_code FROM dictionary_remote_word) WHERE full_code GLOB ? AND text NOT IN (SELECT text FROM dictionary_policy WHERE status!='enabled') ORDER BY text,pinyin", arrayOf("$code*"),
+            "SELECT DISTINCT text,pinyin FROM ($sources) WHERE full_code GLOB ? AND text NOT IN (SELECT text FROM dictionary_policy WHERE status!='enabled') ORDER BY text,pinyin", arrayOf("$code*"),
         ).use { c -> buildList {
             while (c.moveToNext()) {
                 val reading = c.getString(1)
                 if (PersonalWordReading.matches(code, reading)) add(T9Candidate(c.getString(0), reading))
             }
         } }
+    }
+
+    private fun createDictionaryAdditionTables(db: SQLiteDatabase) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS dictionary_added_word (text TEXT NOT NULL,pinyin TEXT NOT NULL,full_code TEXT NOT NULL,preferred INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(text,pinyin))")
+        db.execSQL("CREATE INDEX IF NOT EXISTS dictionary_added_word_code ON dictionary_added_word(full_code)")
+        db.execSQL("CREATE TABLE IF NOT EXISTS dictionary_addition_cursor (target TEXT PRIMARY KEY NOT NULL,cursor INTEGER NOT NULL)")
+    }
+
+    /** 旧换机恢复词也算手机已有词；仅固化读音，不复制来源次数。 */
+    private fun retainRemoteWords(db: SQLiteDatabase) {
+        db.execSQL("INSERT OR IGNORE INTO dictionary_added_word(text,pinyin,full_code,preferred) SELECT text,pinyin,full_code,0 FROM dictionary_remote_word WHERE pinyin!=''")
+    }
+
+    /** 独立并集层，旧快照替换、另一后台小集合均不能删除。坏批全拒绝。 */
+    @Synchronized fun mergeDictionaryAdditions(entries: List<DictionaryAddition>) {
+        require(entries.size <= 500 && entries.all { it.valid() })
+        val db=writableDatabase
+        db.beginTransaction()
+        try {
+            entries.forEach { e ->
+                db.execSQL("INSERT OR IGNORE INTO dictionary_added_word(text,pinyin,full_code,preferred) VALUES(?,?,?,?)",
+                    arrayOf<Any>(e.text,e.pinyin,T9Lexicon.digits(e.pinyin.replace(" ","")),if(e.preferred) 1 else 0))
+                if(e.preferred) db.execSQL("UPDATE dictionary_added_word SET preferred=1 WHERE text=? AND pinyin=?",arrayOf(e.text,e.pinyin))
+            }
+            db.setTransactionSuccessful()
+        } finally { db.endTransaction() }
+    }
+
+    /** 游标与词表同库：数据库重建后从0重放，不受旧Preferences影响。 */
+    @Synchronized fun dictionaryAdditionCursor(target: String): Long = readableDatabase.rawQuery(
+        "SELECT cursor FROM dictionary_addition_cursor WHERE target=?",arrayOf(target),
+    ).use { if(it.moveToFirst()) it.getLong(0) else 0L }
+
+    @Synchronized fun saveDictionaryAdditionCursor(target: String, cursor: Long) {
+        require(cursor in 0..9_007_199_254_740_991L)
+        writableDatabase.execSQL("INSERT OR REPLACE INTO dictionary_addition_cursor(target,cursor) VALUES(?,?)",arrayOf<Any>(target,cursor))
     }
 
     private fun createDictionarySyncTables(db: SQLiteDatabase) {
@@ -303,7 +347,7 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
         }
     }.filter { it.valid() }
 
-    /** 完整快照先校验再事务替换，失败不清空已恢复词库。删除决策独立于原始记录。 */
+    /** 次数快照替换避免重复加权；已有词保留并集，策略仅显式变更，缺项不删词/复活。 */
     @Synchronized fun applyDictionarySnapshot(snapshot: DictionarySnapshot, selfDeviceId: String) {
         require(snapshot.revision.matches(Regex("[a-f0-9]{64}")))
         require(snapshot.entries.size <= 100_000 && snapshot.entries.all { it.deviceId.isNotEmpty() && it.valid() })
@@ -311,8 +355,9 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
         val db=writableDatabase
         db.beginTransaction()
         try {
-            db.delete("dictionary_remote_word",null,null); db.delete("dictionary_remote_choice",null,null); db.delete("dictionary_policy",null,null)
-            snapshot.policies.forEach { p -> db.insertOrThrow("dictionary_policy",null,ContentValues().apply { put("text",p.text);put("status",p.status) }) }
+            retainRemoteWords(db)
+            db.delete("dictionary_remote_word",null,null); db.delete("dictionary_remote_choice",null,null)
+            snapshot.policies.forEach { p -> db.insertWithOnConflict("dictionary_policy",null,ContentValues().apply { put("text",p.text);put("status",p.status) },SQLiteDatabase.CONFLICT_REPLACE) }
             snapshot.entries.filter { it.deviceId!=selfDeviceId }.forEach { e ->
                 val values=ContentValues().apply { put("device_id",e.deviceId);put("text",e.text) }
                 if(e.kind=="choice") {

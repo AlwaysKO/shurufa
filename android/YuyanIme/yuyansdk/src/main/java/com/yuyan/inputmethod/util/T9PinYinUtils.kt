@@ -292,12 +292,14 @@ object T9PinYinUtils {
         return paths[0]!!.text
     }
 
-    /** 获取T9键码对应的拼音组合。 */
+    private val pendingKeys = Regex("[A-Z]+")
+
+    /** 获取当前未锁定段的拼音；原生已选汉字和剩余键之间不一定带分隔符。 */
     fun t9KeyToPinyin(t9Sequence: String?): Array<String> {
         if (t9Sequence.isNullOrEmpty()) {
             return emptyArray()
         }
-        val t9NumString = if (t9Sequence.length > 6) t9Sequence.substring(0, 6) else t9Sequence
+        val t9NumString = pendingKeys.find(t9Sequence)?.value?.take(6) ?: return emptyArray()
         val pinyin = ArrayList<String>(5)
         for (length in t9NumString.length downTo 1) {
             val prefix = t9NumString.substring(0, length)
@@ -305,7 +307,7 @@ object T9PinYinUtils {
                 pinyin.add(value)
             }
         }
-        return pinyin.joinToString(",") { it }.split(",").toTypedArray()
+        return pinyin.flatMap { it.split(",") }.toTypedArray()
     }
 
 

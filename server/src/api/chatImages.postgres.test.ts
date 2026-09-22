@@ -124,3 +124,24 @@ test('删除和同内容并发上传串行，上传不能拿到即将删除的�
  const result=await deletion;expect(result.status).toBe(200);
  const stored=await upload!;expect(stored.id).not.toBe(a.id);expect((await pool.query('SELECT id FROM media_asset WHERE id=$1',[stored.id])).rowCount).toBe(1);expect(existsSync(join(root,'uploads',a.path))).toBe(true);
 });
+
+test('图库按图片而非消息分页，多附件不突破每页20张、缩略图去重且保留文字',async()=>{
+ const c=await conversation(),m=await message(c);const ids=[];
+ for(let i=0;i<23;i++){const a=await asset();ids.push(a.id);await link(m,a.id,i);if(i===0)await link(m,a.id,i,'thumbnail');}
+ const text=await message(c,{type:'text',text:'不能丢失的文字',time:'2026-09-17T00:00:00Z'});
+ const get=(page:number)=>agent.get('/api/v1/dashboard/chat/messages').query({user_id:A,conversation_id:c,page,page_size:20,gallery:true});
+ const first=await get(1);expect(first.status).toBe(200);expect(first.body.total).toBe(24);expect(first.body.messages).toHaveLength(20);
+ expect(first.body.messages.flatMap((m:any)=>m.assets.map((a:any)=>a.id))).toEqual(ids.slice(0,20));
+ const second=await get(2);expect(second.body.messages).toHaveLength(4);expect(second.body.messages.flatMap((m:any)=>m.assets.map((a:any)=>a.id))).toEqual(ids.slice(20));expect(second.body.messages[3].id).toBe(text);
+ const foreign=await agent.get('/api/v1/dashboard/chat/messages').query({user_id:B,conversation_id:c,gallery:true});expect(foreign.body.total).toBe(0);
+ const old=await agent.get('/api/v1/dashboard/chat/messages').query({user_id:A,conversation_id:c});expect(old.body.total).toBe(2);expect(old.body.messages[0].assets).toHaveLength(24);
+});
+
+test('图库混合附件保留非图片项，过滤跨用户附件且图片导航不计非图片',async()=>{
+ const c=await conversation(),m=await message(c),picture=await asset(),video=await asset(),foreign=await asset(B);
+ await pool.query("UPDATE media_asset SET mime_type='video/mp4' WHERE id=ANY($1::bigint[])",[[video.id,foreign.id]]);
+ await link(m,picture.id,0);await link(m,video.id,1);await link(m,foreign.id,2);
+ const get=(page:number)=>agent.get('/api/v1/dashboard/chat/messages').query({user_id:A,conversation_id:c,gallery:true,page,page_size:1});
+ const first=await get(1),second=await get(2);expect(first.status).toBe(200);expect(first.body.total).toBe(2);expect(first.body.messages[0].assets.map((a:any)=>a.id)).toEqual([picture.id]);expect(second.body.messages[0].assets.map((a:any)=>a.id)).toEqual([video.id]);
+ expect((await adjacent(c,m,picture.id)).body.image).toBeNull();
+});

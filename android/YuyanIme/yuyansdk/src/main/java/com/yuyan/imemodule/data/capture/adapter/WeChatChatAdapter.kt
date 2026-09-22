@@ -14,6 +14,9 @@ class WeChatChatAdapter : ChatAppAdapter {
 
     override fun parse(root: UiNodeSnapshot): ParseResult {
         val nodes = root.flatten()
+        // 朋友圈评论/发现搜索也有EditText，不能把“有输入框”当成聊天页身份。
+        val explicitChat = nodes.any { it.viewId.orEmpty().containsAny("chatting_title", "chatting_content_et", "chat_input") }
+        if (!explicitChat) fixedPageTitle(root, nodes)?.let { return parseFixedPage(root, it) }
         val input = nodes.filter { it.isChatInput() || (it.visibleText()?.replace(" ", "") == "按住说话" && it.bounds.top > root.bounds.top + (root.bounds.bottom - root.bounds.top) / 2) }.maxByOrNull { it.bounds.top }
             ?: return ParseResult.Skip(SkipReason.UNSUPPORTED_PAGE)
         val titleNode = nodes.filter { it.isTitleCandidate(root.bounds.bottom) }
@@ -61,6 +64,31 @@ class WeChatChatAdapter : ChatAppAdapter {
                 identityConfidence = if (titleNode.viewId.orEmpty().contains("title", true)) 0.92 else 0.82,
             ),
             messages = messages,
+        ))
+    }
+
+    /** 固定页面不要求聊天输入框；仅在顶部有明确已知标题时采集，发现页仍跳过。 */
+    private fun fixedPageTitle(root: UiNodeSnapshot, nodes: List<UiNodeSnapshot>): String? {
+        val title = nodes.filter { it.children.isEmpty() && it.bounds.top >= root.bounds.top &&
+            it.bounds.bottom <= root.bounds.top + (root.bounds.right - root.bounds.left) * 0.22 &&
+            !it.visibleText().isNullOrBlank() && it.visibleText() !in CONTROL_TEXT &&
+            !TIME_PATTERN.matches(it.visibleText().orEmpty()) }
+            .sortedWith(compareByDescending<UiNodeSnapshot> { it.viewId.orEmpty().contains("title", true) }
+                .thenBy { kotlin.math.abs((it.bounds.left + it.bounds.right) / 2.0 - (root.bounds.left + root.bounds.right) / 2.0) })
+            .firstOrNull()
+        return com.yuyan.imemodule.data.capture.media.canonicalWechatPageTitle(title?.visibleText())
+    }
+
+    private fun parseFixedPage(root: UiNodeSnapshot, title: String): ParseResult {
+        if (title == "发现") return ParseResult.Skip(SkipReason.UNSUPPORTED_PAGE)
+        val identity = com.yuyan.imemodule.data.capture.media.WechatTitleStabilizer().observe(title, null, 0)
+        return ParseResult.Success(ParsedViewport(
+            conversation = CapturedConversation(ChatPlatform.WECHAT, "wechat-empty-tree", identity.externalKey,
+                title, ConversationType.UNKNOWN, identity.confidence),
+            messages = listOf(CapturedMessage(conversationKey = null, senderKey = "${identity.externalKey}:viewport",
+                direction = ChatDirection.SYSTEM, messageType = ChatMessageType.IMAGE, viewportIndex = 0,
+                mediaBounds = root.bounds, metadata = mapOf("capture_source" to "wechat_page_screenshot",
+                    "capture_kind" to "conversation_screenshot", "conversation_identity_status" to "confirmed"))),
         ))
     }
 

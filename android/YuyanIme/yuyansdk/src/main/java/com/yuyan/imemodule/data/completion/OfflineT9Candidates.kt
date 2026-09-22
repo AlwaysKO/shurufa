@@ -83,7 +83,7 @@ internal object OfflineT9Candidates {
         val rejected = mutableSetOf<String>()
         val accepted = mutableSetOf<String>()
         fun lookup(dictionary: T9Lexicon?): List<T9Candidate> = if (numeric) {
-            dictionary?.query(code, allowAbbreviations = code.length >= 4, includeTexts = retainedTexts) { text, allowed ->
+            dictionary?.query(code, includeTexts = retainedTexts) { text, allowed ->
                 if (allowed) accepted.add(text) else rejected.add(text)
             }.orEmpty()
         } else dictionary?.queryPinyin(code).orEmpty()
@@ -160,6 +160,9 @@ internal object OfflineT9Candidates {
             } else {
                 whole + exact + partial + publicWhole + nativeSentences + segmentPrefixes
             }
+        } else if (numeric) {
+            // 三键保留原生首项先验，合法词典补全紧随其后，不能被百条单字挤到末尾。
+            original.take(1) + local + original.drop(1)
         } else original + local
         val validTexts = base.mapTo(hashSetOf()) { it.text }
         val compatibleReadings = (allLocalReadings.map { RankedCandidate(it.text, it.pinyin) } + original + nativeSentences)
@@ -179,9 +182,43 @@ internal object OfflineT9Candidates {
                 PersonalCandidateRanker.decay(it.choice.weight, it.choice.lastUsed, now)
             }, now)
         }
-        val ranked = PersonalCandidateRanker.rank(base, learned, now)
+        // 明确手工词只在原拼写边界内获得基础先验，不写假点击，不改变锁音原生链。
+        val preferred = try { store?.personalWords(code, preferredOnly = true).orEmpty() } catch (_: Exception) { emptyList() }
+        val ranked = PersonalCandidateRanker.rank(preferred.map { RankedCandidate(it.text,it.pinyin) } + base, learned, now)
         return CandidateSelection(ranked, native.size, rejected.toSet()) { text, reading ->
             trusted(text, reading) || nativeWhole(text, reading)
+        }
+    }
+
+    /** 锁音/分段只重排原生现有项：不注入、过滤或按文字合并不同读音的原生索引。 */
+    fun rankNative(native: List<RankedCandidate>, nativeCount: Int): CandidateSelection {
+        val readings = native.map { PersonalWordReading.normalize(it.text, it.pinyin) }
+        val codes = readings.map { it?.let { reading -> T9Lexicon.digits(reading.replace(" ", "")) } }
+        val now = System.currentTimeMillis()
+        val history = codes.filterNotNull().distinct().associateWith { code ->
+            try { store?.learned(code).orEmpty().associateBy { it.text } }
+            catch (_: Exception) { emptyMap() }
+        }
+        val ranked = native.withIndex().sortedByDescending { (index, candidate) ->
+            val prior = if (index == 0) 2.0 else 1.0 / (index + 1)
+            val choice = history[codes[index]]?.get(candidate.text)
+            prior + if (choice != null && choice.count > 0)
+                PersonalCandidateRanker.decay(choice.weight, choice.lastUsed, now) else 0.0
+        }.map { it.value }
+        return CandidateSelection(ranked, nativeCount)
+    }
+
+    /** 调用方已确认宿主成功及隐私资格；整词和实际选中的段只交接一次。 */
+    fun learn(selection: T9CommitSelection) {
+        learn(selection.code, selection.text, selection.pinyin)
+        if (selection.parts.size > 1 &&
+            selection.parts.joinToString("") { it.text } == selection.text &&
+            selection.parts.joinToString(" ") { it.pinyin } == selection.pinyin &&
+            PersonalWordReading.matches(selection.code, selection.pinyin)) {
+            selection.parts.forEach { part ->
+                val reading = PersonalWordReading.normalize(part.text, part.pinyin) ?: return@forEach
+                learn(T9Lexicon.digits(reading.replace(" ", "")), part.text, reading)
+            }
         }
     }
 

@@ -2,11 +2,20 @@ import { Router } from 'express';
 import type pg from 'pg';
 
 export const chatPlatforms = ['wechat', 'qq', 'douyin'];
+/** 历史OCR固定页面别名仅作用于微信截图来源；不改库、不模糊合并真实联系人。 */
+export function conversationGroupName(alias = 'c'): string {
+  const name = `btrim(${alias}.display_name)`;
+  return `(CASE WHEN ${alias}.platform='wechat' AND ${alias}.account_key='wechat-empty-tree' THEN
+    CASE WHEN ${name} IN ('朋友圈','朋友屠','用友殿','田友殿') THEN '朋友圈'
+      WHEN ${name} IN ('微信','微佳') OR ${name} ~ '^微信[（(][0-9]+[）)]$' THEN '微信'
+      WHEN ${name} IN ('发现','发机') THEN '发现' ELSE ${name} END
+    ELSE ${name} END)`;
+}
 /** 占位名称本身也是未确认标志；不能因旧数据的confidence偏高而漏掉随机后缀标签。 */
 export function pendingConversation(alias = 'c'): string {
   return `${alias}.merged_into_id IS NULL AND (
     btrim(COALESCE(${alias}.display_name,'')) LIKE '待确认%'
-    OR (${alias}.identity_confidence < 0.8 AND (
+    OR (${alias}.identity_confidence < 0.8 AND NOT (${alias}.platform='wechat' AND ${alias}.account_key='wechat-empty-tree' AND COALESCE(${conversationGroupName(alias)},'') IN ('朋友圈','微信','发现')) AND (
       ${alias}.external_key LIKE 'screenshot-v2:%' OR ${alias}.external_key LIKE 'capture-v3:%'
       OR ${alias}.external_key LIKE 'screenshot-pending:%' OR ${alias}.external_key LIKE 'capture-pending:%'
       OR ${alias}.external_key LIKE 'notification-v2:%' OR ${alias}.external_key LIKE 'header:%')))`;
@@ -26,7 +35,7 @@ export function chatConversationScope(userId: string, id: number, platform: unkn
     if (id <= 0 || typeof name !== 'string' || !name.length || name.length > 500 ||
         typeof platform !== 'string' || !chatPlatforms.includes(platform)) return null;
     return { sql: `c.user_id=$1 AND c.platform=$3 AND c.merged_into_id IS NULL
-        AND NOT (${pendingConversation()}) AND btrim(c.display_name)=$2`, params: [userId, name, platform], mode: 'name' as const };
+        AND NOT (${pendingConversation()}) AND ${conversationGroupName()}=$2`, params: [userId, name, platform], mode: 'name' as const };
   }
   if (pendingScope(id, platform)) return {
     sql: `c.user_id=$1 AND c.platform=$2 AND ${pendingConversation()}`, params: [userId, platform], mode: 'pending' as const,
@@ -55,9 +64,9 @@ export function createChatPendingRouter(pool: pg.Pool): Router {
     try {
       const scope = `c.user_id=$1 AND c.platform=$2 AND c.merged_into_id IS NULL`;
       const pending = pendingConversation();
-      const known = `${scope} AND NOT (${pending}) AND COALESCE(c.display_name,c.external_key) ILIKE $3${exactName === undefined ? '' : ' AND btrim(c.display_name)=$4'}`;
+      const known = `${scope} AND NOT (${pending}) AND COALESCE(${groupNames ? conversationGroupName() : 'c.display_name'},c.external_key) ILIKE $3${exactName === undefined ? '' : ` AND ${conversationGroupName()}=$4`}`;
       // 空名称保留各自来源；不能把所有缺名称记录误当同一个已知联系人。
-      const groupingKey = groupNames ? `COALESCE('name:' || NULLIF(btrim(c.display_name),''), 'id:' || c.id::text)` : 'c.id::text';
+      const groupingKey = groupNames ? `COALESCE('name:' || NULLIF(${conversationGroupName()},''), 'id:' || c.id::text)` : 'c.id::text';
       const [summary, count] = await Promise.all([
         pool.query(`SELECT COUNT(DISTINCT c.id) AS sources,COUNT(m.id) AS message_count,
           MIN(c.first_seen_at) AS first_seen_at,MAX(c.last_seen_at) AS last_seen_at,MAX(m.captured_at) AS last_message_at
@@ -78,8 +87,8 @@ export function createChatPendingRouter(pool: pg.Pool): Router {
           MIN(first_seen_at) AS first_seen_at,MAX(last_seen_at) AS last_seen_at
         FROM sources GROUP BY grouping_key
       ) SELECT c.*,
-        ${groupNames ? "NULLIF(btrim(c.display_name),'')" : 'NULL::text'} AS group_name,
-        ${groupNames ? "COALESCE(NULLIF(btrim(c.display_name),''),c.display_name)" : 'c.display_name'} AS display_name,g.*
+        ${groupNames ? `NULLIF(${conversationGroupName()},'')` : 'NULL::text'} AS group_name,
+        ${groupNames ? `COALESCE(NULLIF(${conversationGroupName()},''),c.display_name)` : 'c.display_name'} AS display_name,g.*
         FROM groups g JOIN chat_conversation c ON c.id=g.id
         ORDER BY g.last_seen_at DESC,g.id DESC LIMIT $${params.length+1} OFFSET $${params.length+2}`, [...params,limit,offset]);
       const conversations = result.rows.map(row=>({...row,id:Number(row.id),identity_confidence:Number(row.identity_confidence),message_count:Number(row.message_count),

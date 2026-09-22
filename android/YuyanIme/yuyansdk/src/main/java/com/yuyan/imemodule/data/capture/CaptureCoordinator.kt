@@ -124,7 +124,8 @@ class CaptureCoordinator(
                 emptyMap()
             }
             // 图片失败不能落一个没有附件的占位消息；让上层有限重试，而不是等下一次用户操作。
-            if (screenshotWithTitle && mediaRequests.any { capturedAssets[it.messageIndex] == null }) return true
+            if (rawMessages.all { it.metadata["capture_kind"] == "conversation_screenshot" } &&
+                mediaRequests.any { capturedAssets[it.messageIndex] == null }) return true
             if (screenshotWithTitle) {
                 val visualKey = capturedAssets[-1]?.let(titleSignature)
                 val identity = synchronized(identityLock) {

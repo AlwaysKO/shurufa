@@ -127,26 +127,34 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
       if (!scope) return res.status(400).json({ error: '会话范围无效' });
       const scopeFilter = `conversation_id IN (SELECT c.id FROM chat_conversation c WHERE ${scope.sql})`;
       const { page, pageSize, offset } = pagination(req.query as Record<string, unknown>);
+      const gallery = req.query.gallery === 'true';
+      // 一条消息可能有多张图；先展开图片关联再分页。纯文字/非图片消息保留一项，不丢内容。
+      const prefix = gallery ? `WITH gallery_rows AS (
+        SELECT m.*, pictures.asset_id AS gallery_asset_id, pictures.position AS gallery_position
+        FROM chat_message m JOIN chat_conversation c ON c.id=m.conversation_id AND c.user_id=m.user_id
+        LEFT JOIN LATERAL (
+          SELECT a.id AS asset_id, MIN(ma.position) AS position FROM chat_message_asset ma
+          JOIN media_asset a ON a.id=ma.asset_id AND a.user_id=m.user_id
+          WHERE ma.message_id=m.id AND a.mime_type LIKE 'image/%' GROUP BY a.id
+          UNION ALL SELECT NULL::bigint, NULL::integer WHERE EXISTS (
+            SELECT 1 FROM chat_message_asset ma JOIN media_asset a ON a.id=ma.asset_id AND a.user_id=m.user_id
+            WHERE ma.message_id=m.id AND a.mime_type NOT LIKE 'image/%'
+          )
+        ) pictures ON true WHERE ${scope.sql}
+      ) ` : '';
+      const from = gallery ? 'gallery_rows' : 'chat_message';
       const [totalResult, rowsResult] = await Promise.all([
-        pool.query<{ count: string }>(
-          `SELECT COUNT(*) AS count FROM chat_message
-           WHERE user_id = $1 AND ${scopeFilter}`,
-          scope.params,
-        ),
-        pool.query(
-          `SELECT id, conversation_id, platform, direction, message_type, sender_key, sender_name,
-                  text, displayed_time, occurred_at, captured_at, sequence_hint,
-                  metadata
-           FROM chat_message
-           WHERE user_id = $1 AND ${scopeFilter}
-           ORDER BY captured_at DESC, id DESC
-           LIMIT $${scope.params.length+1} OFFSET $${scope.params.length+2}`,
-          [...scope.params, pageSize, offset],
-        ),
+        pool.query<{ count: string }>(`${prefix}SELECT COUNT(*) AS count FROM ${from}
+          WHERE user_id=$1 AND ${scopeFilter}`, scope.params),
+        pool.query(`${prefix}SELECT id, conversation_id, platform, direction, message_type, sender_key, sender_name,
+          text, displayed_time, occurred_at, captured_at, sequence_hint, metadata${gallery ? ',gallery_asset_id' : ''}
+          FROM ${from} WHERE user_id=$1 AND ${scopeFilter} ORDER BY captured_at DESC,id DESC
+          ${gallery ? ',gallery_position ASC,gallery_asset_id ASC' : ''}
+          LIMIT $${scope.params.length+1} OFFSET $${scope.params.length+2}`, [...scope.params,pageSize,offset]),
       ]);
 
-      const messageIds = rowsResult.rows.map((row) => String(row.id));
-      const assetsByMessage = new Map<string, unknown[]>();
+      const messageIds = [...new Set(rowsResult.rows.map((row) => String(row.id)))];
+      const assetsByMessage = new Map<string, Array<{ id: number; mime_type: string; [key: string]: unknown }>>();
       if (messageIds.length > 0) {
         const placeholders = messageIds.map((_, index) => `$${index + 1}`).join(', ');
         const assets = await pool.query(
@@ -154,9 +162,9 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
                   a.mime_type, a.storage_path, a.width, a.height
            FROM chat_message_asset ma
            JOIN media_asset a ON a.id = ma.asset_id
-           WHERE ma.message_id IN (${placeholders})
+           WHERE ma.message_id IN (${placeholders}) AND a.user_id=$${messageIds.length+1}
            ORDER BY ma.position ASC`,
-          messageIds,
+          [...messageIds, res.locals.userId],
         );
         for (const asset of assets.rows) {
           const messageId = String(asset.message_id);
@@ -185,7 +193,10 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
           occurred_at: iso(row.occurred_at),
           captured_at: iso(row.captured_at),
           sequence_hint: row.sequence_hint === null ? null : Number(row.sequence_hint),
-          assets: assetsByMessage.get(String(row.id)) ?? [],
+          assets: (assetsByMessage.get(String(row.id)) ?? []).filter((asset, index, all) => !gallery || (
+            (row.gallery_asset_id == null ? !asset.mime_type.startsWith('image/') : asset.id === Number(row.gallery_asset_id)) &&
+            all.findIndex(item => item.id === asset.id) === index
+          )),
         })),
       });
     } catch (error) {

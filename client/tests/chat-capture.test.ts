@@ -158,20 +158,20 @@ const screenshot = (n: number) => ({
   assets: [{ id: n, mime_type: 'image/png', role: 'content', position: 0, url: `/uploads/chat/${n}.png` }],
 });
 
-it('几百条消息按服务端倒序分页，每页仅渲染24条并支持前后翻页', async () => {
+it('几百条消息按服务端倒序分页，每页仅渲染20条并支持前后翻页', async () => {
   const rows = Array.from({ length: 301 }, (_, i) => screenshot(301 - i));
   const chatMessages = vi.fn(async (_id, page, size) => ({ total: rows.length, messages: rows.slice((page - 1) * size, page * size) }));
   const view = await mountChatCapture({ chatMessages });
-  expect(chatMessages).toHaveBeenLastCalledWith(1, 1, 24);
-  expect(view.all().filter(n => n.tag === 'article')).toHaveLength(24);
+  expect(chatMessages).toHaveBeenLastCalledWith(1, 1, 20);
+  expect(view.all().filter(n => n.tag === 'article')).toHaveLength(20);
   expect(view.find('open-chat-image-301')).toBeDefined();
-  expect(view.find('open-chat-image-277')).toBeUndefined();
-  expect(view.text()).toContain('1 / 13');
+  expect(view.find('open-chat-image-281')).toBeUndefined();
+  expect(view.text()).toContain('1 / 16');
   expect(view.text()).toContain('最新在前');
   expect(view.find('chat-page-prev')!.props.disabled).toBe(true);
   view.find('chat-page-next')!.props.onClick(); await settle();
-  expect(chatMessages).toHaveBeenLastCalledWith(1, 2, 24);
-  expect(view.find('open-chat-image-277')).toBeDefined();
+  expect(chatMessages).toHaveBeenLastCalledWith(1, 2, 20);
+  expect(view.find('open-chat-image-281')).toBeDefined();
   expect(view.find('open-chat-image-301')).toBeUndefined();
   view.find('chat-page-prev')!.props.onClick(); await settle();
   expect(view.find('open-chat-image-301')).toBeDefined();
@@ -179,7 +179,7 @@ it('几百条消息按服务端倒序分页，每页仅渲染24条并支持前�
 
 it('切换会话回到第一页，较慢的旧会话响应不会覆盖当前内容', async () => {
   let resolveOld!: (result: any) => void;
-  const chatMessages = vi.fn().mockResolvedValueOnce({ total: 25, messages: [screenshot(25)] })
+  const chatMessages = vi.fn().mockResolvedValueOnce({ total: 21, messages: [screenshot(21)] })
     .mockImplementationOnce(() => new Promise(resolve => { resolveOld = resolve; }))
     .mockResolvedValueOnce({ total: 1, messages: [screenshot(99)] });
   const view = await mountChatCapture({ chatMessages, chatConversations: async () => ({ total: 2, conversations: [
@@ -187,18 +187,18 @@ it('切换会话回到第一页，较慢的旧会话响应不会覆盖当前内�
   ] }) });
   view.find('chat-page-next')!.props.onClick(); await settle();
   view.all().find(n => n.tag === 'button' && n.children.some(c => c.text === '另一会话'))!.props.onClick(); await settle();
-  expect(chatMessages).toHaveBeenLastCalledWith(2, 1, 24);
-  resolveOld({ total: 25, messages: [screenshot(1)] }); await settle();
+  expect(chatMessages).toHaveBeenLastCalledWith(2, 1, 20);
+  resolveOld({ total: 21, messages: [screenshot(1)] }); await settle();
   expect(view.find('open-chat-image-99')).toBeDefined();
   expect(view.find('open-chat-image-1')).toBeUndefined();
   expect(view.text()).toContain('1 / 1');
 });
 
 it('删除末页最后一张图片后回到有效页，取消删除不请求接口', async () => {
-  const chatMessages = vi.fn().mockResolvedValueOnce({ total: 25, messages: [screenshot(25)] })
-    .mockResolvedValueOnce({ total: 25, messages: [screenshot(1)] })
-    .mockResolvedValueOnce({ total: 24, messages: [] })
-    .mockResolvedValueOnce({ total: 24, messages: [screenshot(25)] });
+  const chatMessages = vi.fn().mockResolvedValueOnce({ total: 21, messages: [screenshot(21)] })
+    .mockResolvedValueOnce({ total: 21, messages: [screenshot(1)] })
+    .mockResolvedValueOnce({ total: 20, messages: [] })
+    .mockResolvedValueOnce({ total: 20, messages: [screenshot(21)] });
   const view = await mountChatCapture({ chatMessages });
   view.find('chat-page-next')!.props.onClick(); await settle();
   const previousWindow = globalThis.window;
@@ -209,22 +209,22 @@ it('删除末页最后一张图片后回到有效页，取消删除不请求接�
     globalThis.window = { confirm: () => true } as Window & typeof globalThis;
     view.find('delete-chat-image-1')!.props.onClick(); await settle();
     expect(view.deletedImages).toEqual([['message-1', 1]]);
-    expect(chatMessages.mock.calls.slice(-2)).toEqual([[1, 2, 24], [1, 1, 24]]);
-    expect(view.find('open-chat-image-25')).toBeDefined();
+    expect(chatMessages.mock.calls.slice(-2)).toEqual([[1, 2, 20], [1, 1, 20]]);
+    expect(view.find('open-chat-image-21')).toBeDefined();
     expect(view.text()).toContain('1 / 1');
   } finally { globalThis.window = previousWindow; }
 });
 
 it('翻页失败不残留上一页内容，提供重试且保留当前页码', async () => {
-  const chatMessages = vi.fn().mockResolvedValueOnce({ total: 25, messages: [screenshot(25)] })
+  const chatMessages = vi.fn().mockResolvedValueOnce({ total: 21, messages: [screenshot(21)] })
     .mockRejectedValueOnce(new Error('网络异常'))
-    .mockResolvedValueOnce({ total: 25, messages: [screenshot(1)] });
+    .mockResolvedValueOnce({ total: 21, messages: [screenshot(1)] });
   const view = await mountChatCapture({ chatMessages });
   view.find('chat-page-next')!.props.onClick(); await settle();
   expect(view.text()).toContain('网络异常');
-  expect(view.find('open-chat-image-25')).toBeUndefined();
+  expect(view.find('open-chat-image-21')).toBeUndefined();
   view.find('chat-retry')!.props.onClick(); await settle();
-  expect(chatMessages).toHaveBeenLastCalledWith(1, 2, 24);
+  expect(chatMessages).toHaveBeenLastCalledWith(1, 2, 20);
   expect(view.find('open-chat-image-1')).toBeDefined();
 });
 
@@ -392,15 +392,15 @@ it('批量取消不请求，失败保留选择和图片，确认发送精确关�
 it('删除末页全部图片回到有效页，文件待重试提示不伪装事务失败', async()=>{
   const previous=globalThis.window;globalThis.window={confirm:()=>true} as unknown as Window & typeof globalThis;
   try{
-    const chatMessages=vi.fn().mockResolvedValueOnce({total:25,messages:[screenshot(1)]}).mockResolvedValueOnce({total:25,messages:[screenshot(25)]})
-      .mockResolvedValueOnce({total:24,messages:[]}).mockResolvedValue({total:24,messages:[screenshot(1)]});
+    const chatMessages=vi.fn().mockResolvedValueOnce({total:21,messages:[screenshot(1)]}).mockResolvedValueOnce({total:21,messages:[screenshot(21)]})
+      .mockResolvedValueOnce({total:20,messages:[]}).mockResolvedValue({total:20,messages:[screenshot(1)]});
     const view=await mountChatCapture({chatMessages,deleteChatImages:async()=>({deleted_images:1,deleted_messages:1,files_pending:true})});
     view.find('chat-page-next')!.props.onClick();await settle();view.find('chat-select-page')!.props.onClick();await settle();view.find('chat-delete-selected')!.props.onClick();await settle();
     expect(chatMessages.mock.calls.map(c=>c[1])).toEqual([1,2,2,1]);expect(view.find('chat-selection-count')!.text).toContain('0');expect(view.text()).toContain('后台重试');
   }finally{globalThis.window=previous;}
 });
 it('翻页、筛选和App切换清空选择并关闭预览，不保留隐藏选择',async()=>{
-  const view=await mountChatCapture({chatMessages:async()=>({total:25,messages:[screenshot(1)]})});
+  const view=await mountChatCapture({chatMessages:async()=>({total:21,messages:[screenshot(1)]})});
   view.find('chat-select-page')!.props.onClick();await settle();view.find('open-chat-image-1')!.props.onClick();await settle();
   view.all().find(n=>n.tag==='select')!.props['onUpdate:modelValue']('image');await settle();
   expect(view.find('chat-selection-count')!.text).toContain('0');expect(view.find('chat-image-preview')).toBeUndefined();
@@ -477,7 +477,7 @@ it('待确认统一入口刷新保留，读取跨来源图片但不能整组误�
  const chatConversations=vi.fn().mockResolvedValue({total:2,conversations:[rememberedChat(1),bucket]});
  const chatMessages=vi.fn().mockResolvedValue({total:2,messages:[{...screenshot(8),conversation_id:81},{...screenshot(9),conversation_id:82}]});
  const view=await mountChatCapture({chatConversations,chatMessages});
- expect(chatMessages.mock.calls[0]).toEqual([-1,1,24,'wechat']);
+ expect(chatMessages.mock.calls[0]).toEqual([-1,1,20,'wechat']);
  expect(chatConversations.mock.calls[0]).toEqual([1,100,'wechat','',true,true]);
  expect(view.find('chat-open-merge')!.props.disabled).toBe(true);
  expect(view.find('chat-delete-conversation')!.props.disabled).toBe(true);
@@ -517,7 +517,7 @@ it('同名会话请求整组消息和图片，而不是只读取代表ID',async(
  const chatMessages=vi.fn().mockResolvedValue({total:2,messages:[{...screenshot(8),conversation_id:12}]});
  const chatAdjacentImage=vi.fn().mockResolvedValue({image:null});
  const view=await mountChatCapture({chatConversations:async()=>({total:1,conversations:[group]}),chatMessages,chatAdjacentImage});
- expect(chatMessages).toHaveBeenCalledWith(11,1,24,'wechat','同名联系人');
+ expect(chatMessages).toHaveBeenCalledWith(11,1,20,'wechat','同名联系人');
  view.find('open-chat-image-8')!.props.onClick();await settle();view.find('chat-image-next')!.props.onClick();await settle();
  expect(chatAdjacentImage).toHaveBeenCalledWith(11,'message-8',8,'next','wechat','同名联系人');
  expect(view.find('chat-open-merge')!.props.disabled).toBe(true);
@@ -533,7 +533,7 @@ it('代表来源删除后刷新仍可按组名恢复，不跳回首项',async()=
  fakeChatStorage({'chat-capture-selection:user-a':JSON.stringify({platform:'wechat',conversations:{wechat:11},groups:{wechat:'同名联系人'}})});
  const group=namedGroup(12,'同名联系人',[12,13]);const chatMessages=vi.fn().mockResolvedValue({total:0,messages:[]});
  await mountChatCapture({chatConversations:async()=>({total:2,conversations:[namedGroup(1,'首项',[1]),group]}),chatMessages});
- expect(chatMessages).toHaveBeenCalledWith(12,1,24,'wechat','同名联系人');
+ expect(chatMessages).toHaveBeenCalledWith(12,1,20,'wechat','同名联系人');
 });
 it('删除同名会话组提交明确来源快照，不把代表ID当整组删除',async()=>{
  fakeChatStorage();const previous=globalThis.window;globalThis.window={confirm:()=>true} as unknown as Window & typeof globalThis;
@@ -584,4 +584,19 @@ it('名称组快照只有单来源但消息读到新来源时，仍提供逐来�
  fakeChatStorage();const group=namedGroup(11,'同名联系人',[11]);
  const view=await mountChatCapture({chatConversations:async()=>({total:1,conversations:[group]}),chatMessages:async()=>({total:1,messages:[{...screenshot(8),conversation_id:12}]})});
  expect(view.find('chat-confirm-source-message-8')).toBeDefined();expect(view.find('chat-open-merge')!.props.disabled).toBe(true);
+});
+it('图库分页提供数字页码、首末页与跳页，五列布局和归属按钮具有专用样式',async()=>{
+ fakeChatStorage();const chatMessages=vi.fn(async(_id,page,size)=>({total:301,messages:[screenshot(page)]}));
+ const view=await mountChatCapture({chatMessages});expect(view.find('chat-page-first')).toBeDefined();expect(view.find('chat-page-2')).toBeDefined();
+ view.find('chat-page-2')!.props.onClick();await settle();expect(chatMessages).toHaveBeenLastCalledWith(1,2,20);
+ view.find('chat-page-last')!.props.onClick();await settle();expect(chatMessages).toHaveBeenLastCalledWith(1,16,20);expect(view.find('chat-page-last')!.props.disabled).toBe(true);
+ view.find('chat-page-jump-input')!.props.onInput({target:{value:'5'}});await settle();view.find('chat-page-jump')!.props.onClick();await settle();expect(chatMessages).toHaveBeenLastCalledWith(1,5,20);
+ view.find('chat-page-first')!.props.onClick();await settle();expect(chatMessages).toHaveBeenLastCalledWith(1,1,20);
+ expect(view.source).toContain('repeat(5, minmax(0, 1fr))');expect(view.find('chat-open-merge')!.props.class).toContain('capture-action');expect(view.source).toContain('.capture-action');
+});
+it('旧错字页面组刷新服从后端明确已归类结果，不再因低置信度退回待确认',async()=>{
+ fakeChatStorage({'chat-capture-selection:user-a':JSON.stringify({platform:'wechat',conversations:{wechat:12},groups:{wechat:'朋友屠'}})});
+ const pageGroup=namedGroup(11,'朋友圈',[11,12]),pending={...rememberedChat(-1),is_pending_group:true,display_name:'待确认会话'};
+ const view=await mountChatCapture({chatConversations:async()=>({total:2,conversations:[pending,pageGroup]}),chatConversationGroup:async()=>({conversation:null}),resolveChatConversation:async()=>({conversation:{...rememberedChat(12),display_name:'朋友圈',identity_confidence:.4,external_key:'screenshot-v2:legacy',is_pending_source:false}})});
+ expect(view.find('chat-conversation-11')!.props.class).toContain('selected');expect(view.find('chat-conversation--1')!.props.class).not.toContain('selected');
 });

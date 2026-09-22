@@ -4,6 +4,24 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class T9CommitTrackerTest {
+    @Test fun `锁音还原的整码不能覆盖之前明确选中的段`() {
+        val tracker = T9CommitTracker()
+        tracker.segment("8245464", "泰", "tai", null)
+        tracker.segment("8245464", "鲮", "ling", "泰鲮")
+        val result = tracker.consumeSelection("泰鲮", true)
+        assertEquals("8245464", result?.code)
+        assertEquals("tai ling", result?.pinyin)
+    }
+
+    @Test fun `错误读音和只选后半词不得误学成整码`() {
+        val tracker = T9CommitTracker()
+        tracker.segment("8245464", "泰", "ta", null)
+        tracker.segment("", "鲮", "ling", "泰鲮")
+        assertNull(tracker.consumeSelection("泰鲮", true))
+        tracker.segment("8245464", "鲮", "ling", "泰鲮")
+        assertNull(tracker.consumeSelection("泰鲮", true))
+    }
+
     @Test fun `分段选词保存最初编码与整句读音`() {
         val tracker = T9CommitTracker()
         tracker.segment("94363362", "真的", "zhen'de", null)

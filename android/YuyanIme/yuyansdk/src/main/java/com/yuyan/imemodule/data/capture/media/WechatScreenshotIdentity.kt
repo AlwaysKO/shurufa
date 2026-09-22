@@ -1,7 +1,6 @@
 package com.yuyan.imemodule.data.capture.media
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.SystemClock
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
@@ -63,17 +62,17 @@ internal fun selectWechatChatTitleLine(
     .firstOrNull()
 
 private fun isWechatHeaderNoise(text: String): Boolean =
-    text in setOf("微信", "返回", "···", "...", "5G", "4G", "く", "〈", "〉", "<", ">", "‹", "›", "←", "→", "×") ||
+    text in setOf("返回", "···", "...", "5G", "4G", "く", "〈", "〉", "<", ">", "‹", "›", "←", "→", "×") ||
         text.matches(Regex("^\\d{1,2}:\\d{2}$")) ||
         text.matches(Regex("^\\d{1,3}%$")) ||
         text.all { it.isDigit() || it in " %:·." }
 
 /** 首次立即探测也可能仍停留在列表；无聊天页证据时只重试，不保存成待确认截图。 */
 internal fun isWechatScreenshotChatPage(lines: List<OcrTextLine>, width: Int, headerHeight: Int): Boolean {
-    val nonChatTitles = setOf("微信", "通讯录", "发现", "我", "搜索", "设置", "聊天信息", "朋友圈", "新的朋友", "群聊")
     val header = lines.filter { it.top >= headerHeight * 0.18 && it.bottom <= headerHeight }
-    if (header.any { it.text.trim() in nonChatTitles && it.top < headerHeight * 0.65 &&
-            abs((it.left + it.right) / 2.0 - width / 2.0) < width * 0.3 }) return false
+    // 用户只排除发现页。按主标题识别，不能因为正文出现“发现”而丢掉聊天截图。
+    val title = selectWechatChatTitleLine(lines, width, headerHeight)
+    if (canonicalWechatPageTitle(title?.text) == "发现") return false
     if (selectWechatChatTitleLine(lines, width, headerHeight) != null) return true
     // 标题暂时不可读，但返回和右上角菜单同时存在时仍可保留待确认首张。
     val back = header.any { it.right < width * 0.22 && it.text.trim() in setOf("返回", "〈", "く", "<", "‹", "←") }
@@ -113,7 +112,7 @@ internal fun screenshotConversationIdentity(
 
 internal interface ScreenshotConversationIdentityResolver {
     fun version(): Long = 0L
-    suspend fun resolve(asset: PendingAssetEntity, expectedVersion: Long = version()): ScreenshotConversationIdentity
+    suspend fun resolve(asset: PendingAssetEntity, expectedVersion: Long = version(), titleInput: TitleOcrInput? = null): ScreenshotConversationIdentity
     fun reset() = Unit
 }
 
@@ -124,18 +123,16 @@ internal class MlKitWechatScreenshotIdentityResolver(identityStore: Conversation
 
     private val recognizer = TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
 
-    override suspend fun resolve(asset: PendingAssetEntity, expectedVersion: Long): ScreenshotConversationIdentity = withContext(Dispatchers.Default) {
-        val bitmap = BitmapFactory.decodeFile(asset.localPath)
+    override suspend fun resolve(asset: PendingAssetEntity, expectedVersion: Long, titleInput: TitleOcrInput?): ScreenshotConversationIdentity = withContext(Dispatchers.Default) {
+        val header = (if (titleInput != null) titleInput.takeOrDecode(asset.localPath) else decodeTitleHeader(asset.localPath))
             ?: return@withContext unresolvedWechatScreenshotIdentity().copy(isChatPage = false)
-        val headerHeight = (bitmap.width * 0.18).toInt().coerceAtLeast(96).coerceAtMost(minOf(220, bitmap.height))
-        val header = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, headerHeight)
-        if (bitmap !== header) bitmap.recycle()
         try {
-            val lines = recognize(header)
-            if (!isWechatScreenshotChatPage(lines, header.width, header.height)) {
-                return@withContext unresolvedWechatScreenshotIdentity().copy(isChatPage = false)
-            }
+            val lines = awaitTitleOcrCompletion { recognize(header) }
             val title = selectWechatChatTitleLine(lines, header.width, header.height)
+            if (!isWechatScreenshotChatPage(lines, header.width, header.height)) {
+                return@withContext stabilizer.observe(title?.text, title?.let { wechatTitlePixelSignature(header, it) },
+                    SystemClock.elapsedRealtime(), expectedVersion).copy(isChatPage = false)
+            }
             stabilizer.observe(
                 title = title?.text,
                 visualKey = title?.let { wechatTitlePixelSignature(header, it) },

@@ -3,6 +3,7 @@ package com.yuyan.imemodule.data.capture.adapter
 import com.yuyan.imemodule.data.capture.model.ChatDirection
 import com.yuyan.imemodule.data.capture.model.ChatMessageType
 import com.yuyan.imemodule.data.capture.model.ConversationType
+import com.yuyan.imemodule.data.capture.model.stableKeyOrNull
 import com.yuyan.imemodule.data.capture.ui.IntRect
 import com.yuyan.imemodule.data.capture.ui.UiNodeSnapshot
 import org.junit.Assert.assertEquals
@@ -51,7 +52,7 @@ class WeChatChatAdapterTest {
 
     @Test
     fun skipsPagesWithoutAnUnambiguousTitleAndInput() {
-        val root = group(node(null, "微信", 20, 40, 200, 120))
+        val root = group(node(null, "", 20, 40, 200, 120))
         assertTrue(adapter.parse(root) is ParseResult.Skip)
     }
 
@@ -63,6 +64,35 @@ class WeChatChatAdapterTest {
         val result = adapter.parse(voice) as ParseResult.Success
         assertEquals("阿明", result.viewport.conversation.displayName)
         assertEquals(IntRect(0, 130, 1080, 1650), result.viewport.messages.single().mediaBounds)
+    }
+
+    @Test fun fixedPagesWithReadableTreesAreAlsoCapturedWithoutAnInputBox() {
+        for ((name, expected) in listOf("微信" to "微信", "微佳" to "微信", "朋友圈" to "朋友圈", "朋友屠" to "朋友圈")) {
+            val root = group(node("com.tencent.mm:id/title",name,180,50,850,130))
+            val result = adapter.parse(root) as ParseResult.Success
+            assertEquals(expected, result.viewport.conversation.displayName)
+            assertEquals(root.bounds, result.viewport.messages.single().mediaBounds)
+        }
+        assertTrue(adapter.parse(group(node("com.tencent.mm:id/title","发机",180,50,850,130))) is ParseResult.Skip)
+        assertTrue(adapter.parse(group(node(null,"朋友圈",180,800,850,930))) is ParseResult.Skip)
+    }
+    @Test fun typingStateDuringScreenshotWaitDoesNotCancelCurrentChatButAnotherPersonDoes() {
+        val original=chatTree("阿明",emptyList())
+        assertTrue(com.yuyan.imemodule.service.capture.samePendingChat("com.tencent.mm",original,chatTree("对方正在输入：",emptyList())))
+        org.junit.Assert.assertFalse(com.yuyan.imemodule.service.capture.samePendingChat("com.tencent.mm",original,chatTree("阿亮",emptyList())))
+    }
+
+    @Test fun momentsCommentInputKeepsFixedPageIdentityAndDiscoverySearchIsExcluded() {
+        val before=group(node("com.tencent.mm:id/title","朋友圈",180,50,850,130))
+        val commenting=before.copy(children=before.children + node("com.tencent.mm:id/sns_comment","",80,1650,850,1760,"android.widget.EditText"))
+        val a=(adapter.parse(before) as ParseResult.Success).viewport.conversation
+        val b=(adapter.parse(commenting) as ParseResult.Success).viewport.conversation
+        assertEquals(a.stableKeyOrNull(),b.stableKeyOrNull());assertEquals("wechat-empty-tree",b.accountKey)
+        assertTrue(com.yuyan.imemodule.service.capture.samePendingChat("com.tencent.mm",before,commenting))
+        val discovery=commenting.copy(children=commenting.children.map { if(it.text=="朋友圈") it.copy(text="发现") else it })
+        assertTrue(adapter.parse(discovery) is ParseResult.Skip)
+        // 明确的聊天控件不被同名页面规则抢走。
+        assertEquals("wechat-local",(adapter.parse(chatTree("朋友圈",emptyList())) as ParseResult.Success).viewport.conversation.accountKey)
     }
 
     private fun chatTree(title: String, messages: List<UiNodeSnapshot>) = UiNodeSnapshot(

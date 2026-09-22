@@ -10,6 +10,24 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28])
 class T9RawInputTest {
+    @Test fun `锁音和选字只为最终学习保留等价整码不开放本地候选`() {
+        val stack = KeyRecordStack()
+        @Suppress("UNCHECKED_CAST")
+        val records = KeyRecordStack::class.java.getDeclaredField("keyRecords").run {
+            isAccessible = true; get(stack) as MutableList<InputKey>
+        }
+        records.add(InputKey.PinyinKey("tai"))
+        "JGMG".forEach { records.add(InputKey.T9Key(it)) }
+        stack.pushCandidateSelectAction()
+        assertEquals("", stack.unlockedT9Digits())
+        assertEquals("8245464", stack.compositionT9Digits())
+        records.add(InputKey.Apostrophe())
+        assertEquals("", stack.compositionT9Digits())
+        records.removeAt(records.lastIndex)
+        records.add(InputKey.DefaultAction)
+        assertEquals("", stack.compositionT9Digits())
+    }
+
     @Test fun `未分段九宫格记录还原原始数字且删除同步`() {
         val stack = KeyRecordStack()
         for (key in listOf(KeyEvent.KEYCODE_G, KeyEvent.KEYCODE_M, KeyEvent.KEYCODE_T, KeyEvent.KEYCODE_W, KeyEvent.KEYCODE_T, KeyEvent.KEYCODE_A, KeyEvent.KEYCODE_M, KeyEvent.KEYCODE_A)) {

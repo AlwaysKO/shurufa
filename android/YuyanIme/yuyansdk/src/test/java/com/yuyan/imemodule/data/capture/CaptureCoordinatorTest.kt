@@ -424,6 +424,14 @@ class CaptureCoordinatorTest {
         assertEquals(store.pending.first().fingerprint,store.pending.last().fingerprint)
     }
 
+    @Test fun fixedPageWithoutTitleCropAlsoRetriesMissingImageInsteadOfQueuingEmptyRecord() = runBlocking {
+        val store=FakeStore()
+        val shot=mediaMessage(IntRect(0,0,100,100)).copy(direction=ChatDirection.SYSTEM,metadata=mapOf("capture_source" to "wechat_page_screenshot","capture_kind" to "conversation_screenshot"))
+        val adapter=FakeAdapter(ParseResult.Success(ParsedViewport(conversation.copy(accountKey="wechat-empty-tree",displayName="朋友圈"),listOf(shot))))
+        val worker=coordinator(adapter,store,mediaCapturer=MediaAssetCapturer { _,_,_->emptyMap() })
+        assertTrue(worker.capture(adapter.packageName,snapshot,1));assertTrue(store.pending.isEmpty())
+    }
+
     @Test fun screenshotFailureRequestsRetryWithoutQueuingEmptyPlaceholder() = runBlocking {
         val store=FakeStore()
         val shot=mediaMessage(IntRect(0,20,100,80)).copy(direction=ChatDirection.SYSTEM,metadata=mapOf("capture_source" to "qq_screenshot","capture_kind" to "conversation_screenshot"))

@@ -816,7 +816,7 @@ open class ImeService : InputMethodService() {
             voiceHasPartialText = false
         }
         if (committed && recordEvent && learnAllowed) {
-            if (inputCode != null) OfflineT9Candidates.learn(inputCode, text, inputSelection.pinyin)
+            if (inputSelection != null) OfflineT9Candidates.learn(inputSelection)
             recordHostEdit(before, "commit", text, source = "candidate", inputCode = inputCode,
                 after = if (unverifiedComposition) null else readCommittedText())
         }
@@ -848,7 +848,7 @@ open class ImeService : InputMethodService() {
             voiceHasPartialText = false
         }
         if (committed && recordEvent && learnAllowed) {
-            if (inputCode != null) OfflineT9Candidates.learn(inputCode, text, inputSelection.pinyin)
+            if (inputSelection != null) OfflineT9Candidates.learn(inputSelection)
             recordHostEdit(before, "commit", text, source = "candidate", inputCode = inputCode,
                 after = if (unverifiedComposition) null else readCommittedText())
         }

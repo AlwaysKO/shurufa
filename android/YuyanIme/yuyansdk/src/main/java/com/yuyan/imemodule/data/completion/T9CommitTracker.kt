@@ -1,6 +1,10 @@
 package com.yuyan.imemodule.data.completion
 
-internal data class T9CommitSelection(val code: String, val text: String, val pinyin: String = "")
+internal data class T9SelectedPart(val text: String, val pinyin: String)
+internal data class T9CommitSelection(
+    val code: String, val text: String, val pinyin: String = "",
+    val parts: List<T9SelectedPart> = emptyList(),
+)
 
 /** 分段选择保留原始码；最终宿主成功上屏才由调用方持久化，一次性消费。 */
 internal class T9CommitTracker {
@@ -14,7 +18,11 @@ internal class T9CommitTracker {
 
     fun segment(code: String, text: String, pinyin: String, committed: String?) {
         pending = null
-        if (code.isNotEmpty()) segments = T9CommitSelection(code, "")
+        if (segments == null && code.isNotEmpty()) segments = T9CommitSelection(code, "")
+        if (code.isNotEmpty() && segments?.code != code) {
+            clear()
+            return
+        }
         val previous = segments ?: return
         val reading = PersonalWordReading.normalize(text, pinyin)
         if (reading == null) {
@@ -24,7 +32,8 @@ internal class T9CommitTracker {
             return
         }
         val combined = previous.copy(text = previous.text + text,
-            pinyin = listOf(previous.pinyin, reading).filter { it.isNotEmpty() }.joinToString(" "))
+            pinyin = listOf(previous.pinyin, reading).filter { it.isNotEmpty() }.joinToString(" "),
+            parts = previous.parts + T9SelectedPart(text, reading))
         if (committed == null) {
             segments = combined
         } else {

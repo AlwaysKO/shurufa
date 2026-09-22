@@ -30,6 +30,8 @@ beforeEach(async () => {
   if (existsSync(path)) await pool.query(readFileSync(path,'utf8'));
   const rolePath=new URL('../../migrations/017_dictionary_target_role.sql',import.meta.url);
   if(existsSync(rolePath)) await pool.query(readFileSync(rolePath,'utf8'));
+  const additionsPath=new URL('../../migrations/023_dictionary_additions.sql',import.meta.url);
+  if(existsSync(additionsPath)) await pool.query(readFileSync(additionsPath,'utf8'));
   app = createApp(pool);
 });
 afterEach(async () => {
@@ -63,7 +65,7 @@ describe('个人词库后台绑定与同步', () => {
     const admin=await dash();await admin.post(`/api/v1/dashboard/dictionary/bind?user_id=${A}`).send({device_id:B});
     const result=await admin.get(`/api/v1/dashboard/dictionary/entries?user_id=${A}&view=merged`);
     expect(result.body.total).toBe(1);
-    expect(result.body.entries[0]).toMatchObject({text:'充电宝',count:5,pinyin:'chong dian bao',device_ids:[A,B]});
+    expect(result.body.entries[0]).toMatchObject({text:'充电宝',count:5,pinyin:'chong dian bao',device_ids:[A,B],sources:['selection'],has_choices:true});
   });
   it('绑定合并时删除决策不能被目标启用覆盖', async () => {
     for(const id of [A,B]) { await mobile(id,'post','/register').send({}); await upload(id); }
@@ -136,4 +138,159 @@ describe('个人词库后台绑定与同步', () => {
     expect((await upload(A,[choice('密码')])).status).toBe(400);
     expect((await upload(A,[{...choice(),code:93663 as any}])).status).toBe(400);
   });
+});
+
+describe('指定手机纯加法词库', () => {
+  const endpoint = (path: string) => `/api/v1/dashboard/dictionary${path}?user_id=${A}`;
+  const setup = async () => {
+    await mobile(A,'post','/register').send({restore_enabled:false,additions_supported:true});
+    await mobile(B,'post','/register').send({});
+    return dash();
+  };
+  it('备份后台可规范化手工添加，不伪造来源次数并拒绝错读音', async () => {
+    const admin=await setup();
+    expect((await admin.post(endpoint('/words')).send({text:'泰鲮',pinyin:' TAI  LING '})).body).toEqual({ok:true,created:true});
+    expect((await admin.post(endpoint('/words')).send({text:'泰鲮',pinyin:'tai ling'})).body).toEqual({ok:true,created:false});
+    for(const pinyin of ['tai long','foo bar','tai']) expect((await admin.post(endpoint('/words')).send({text:'泰鲮',pinyin})).status).toBe(400);
+    const entries=(await admin.get(endpoint('/entries'))).body.entries;
+    expect(entries).toHaveLength(1);
+    expect(entries[0]).toMatchObject({device_id:'',kind:'word',source:'dashboard',count:0,weight:0,pinyin:'tai ling'});
+    expect((await mobile(A,'get','')).body.entries).toEqual([]);
+    expect((await admin.post(endpoint('/decisions')).send({texts:['泰鲮'],status:'deleted'})).status).toBe(409);
+  });
+  it('跨组只追加指定手机，重复排队不加次数，旧端显示待升级', async () => {
+    const admin=await setup();
+    await admin.post(endpoint('/words')).send({text:'泰鲮',pinyin:'tai ling'});
+    const payload={device_ids:[B],texts:['泰鲮']};
+    expect((await admin.post(endpoint('/sync')).send(payload)).body).toEqual({ok:true,words:1,queued:1,skipped:0,devices:1});
+    expect((await admin.post(endpoint('/sync')).send(payload)).body.queued).toBe(0);
+    expect((await mobile(A,'get','/additions?after=0')).body.entries).toEqual([]);
+    const received=(await mobile(B,'get','/additions?after=0')).body;
+    expect(received.entries).toEqual([{cursor:received.cursor,text:'泰鲮',pinyin:'tai ling',preferred:true}]);
+    expect(received.has_more).toBe(false);
+    const devices=(await admin.get(endpoint('/devices'))).body.devices;
+    expect(devices.find((d:any)=>d.device_id===B)).toMatchObject({in_group:false,additions_supported:false,additions_pending:1,additions_applied_at:null});
+    expect((await pool.query('SELECT * FROM dictionary_entry')).rows).toHaveLength(0);
+  });
+  it('游标确认只允许已下发给当前手机的批次，幂等单调且鉴权不放松', async () => {
+    const admin=await setup();
+    expect((await mobile(B,'post','/register').send({additions_supported:true})).body.additions_supported).toBe(true);
+    await admin.post(endpoint('/words')).send({text:'泰鲮',pinyin:'tai ling'});
+    await admin.post(endpoint('/sync')).send({device_ids:[B],all:true});
+    expect((await mobile(B,'post','/additions/ack').send({cursor:1})).status).toBe(409);
+    const batch=(await mobile(B,'get','/additions?after=0')).body;
+    expect((await mobile(A,'post','/additions/ack').send({cursor:batch.cursor})).status).toBe(409);
+    expect((await mobile(B,'post','/additions/ack').send({cursor:batch.cursor+1})).status).toBe(409);
+    for(let i=0;i<2;i++) expect((await mobile(B,'post','/additions/ack').send({cursor:batch.cursor})).status).toBe(200);
+    expect((await mobile(B,'get',`/additions?after=${batch.cursor}`)).body).toEqual({entries:[],cursor:batch.cursor,has_more:false});
+    const target=(await admin.get(endpoint('/devices'))).body.devices.find((d:any)=>d.device_id===B);
+    expect(target.additions_pending).toBe(0); expect(target.additions_applied_at).not.toBeNull();
+    for(const after of ['-1','1.5','9007199254740992','abc']) expect((await mobile(B,'get',`/additions?after=${after}`)).status).toBe(400);
+    expect((await request(app).get('/api/v1/mobile/dictionary/additions?after=0').set('X-Device-Id',B)).status).toBe(401);
+  });
+  it('全部匹配跨页同步，过滤不泄漏其他组或下发无读音/停用词', async () => {
+    const admin=await setup();
+    const {pinyin}=await import('pinyin-pro');
+    const texts=Array.from({length:55},(_,i)=>'词'+String.fromCharCode(0x4e00+i));
+    const values=texts.map(text=>({...word,text,pinyin:pinyin(text,{toneType:'none'})}));
+    await upload(A,values);
+    await upload(A,[choice('怎么')],2);
+    await pool.query("INSERT INTO dictionary_policy(group_id,text,status) VALUES($1,$2,'disabled')",[A,texts[0]]);
+    expect((await admin.get(endpoint('/entries'))).body.entries).toHaveLength(50);
+    const result=await admin.post(endpoint('/sync')).send({device_ids:[B],all:true});
+    expect(result.body).toMatchObject({words:54,queued:54,skipped:2});
+    expect((await mobile(B,'get','/additions?after=0')).body.entries).toHaveLength(54);
+    expect((await admin.post(endpoint('/sync')).send({device_ids:[B],all:true,filter:{device_id:B}})).status).toBe(403);
+    expect((await admin.post(endpoint('/sync')).send({device_ids:[B],all:true,texts:['词一']})).status).toBe(400);
+  });
+  it('目标停用规则不能被追加复活，后台词绑定后仍可见',async()=>{
+    const admin=await setup();
+    await admin.post(endpoint('/words')).send({text:'泰鲮',pinyin:'tai ling'});
+    await pool.query("INSERT INTO dictionary_policy(group_id,text,status) VALUES($1,$2,'disabled')",[B,'泰鲮']);
+    expect((await admin.post(endpoint('/sync')).send({device_ids:[B],all:true})).body).toMatchObject({queued:0,skipped:1});
+    await mobile(A,'post','/register').send({restore_enabled:true});
+    await admin.post(`/api/v1/dashboard/dictionary/bind?user_id=${B}`).send({device_id:A});
+    expect((await admin.get(`/api/v1/dashboard/dictionary/entries?user_id=${B}`)).body.entries[0]).toMatchObject({text:'泰鲮',source:'dashboard',status:'disabled'});
+  });
+  it('普通手机来源不优先，手工确认后重投递但不重复词条',async()=>{
+    const admin=await setup(); await upload(A,[word]);
+    const payload={device_ids:[B],all:true};
+    await admin.post(endpoint('/sync')).send(payload);
+    const initial=(await mobile(B,'get','/additions?after=0')).body;
+    expect(initial.entries[0].preferred).toBe(false);
+    await mobile(B,'post','/additions/ack').send({cursor:initial.cursor});
+    await admin.post(endpoint('/words')).send({text:word.text,pinyin:word.pinyin});
+    expect((await admin.post(endpoint('/sync')).send(payload)).body.queued).toBe(1);
+    const promoted=(await mobile(B,'get',`/additions?after=${initial.cursor}`)).body;
+    expect(promoted.cursor).toBeGreaterThan(initial.cursor);
+    expect(promoted.entries).toEqual([{cursor:promoted.cursor,text:word.text,pinyin:word.pinyin,preferred:true}]);
+    expect((await admin.post(endpoint('/sync')).send(payload)).body.queued).toBe(0);
+    expect((await pool.query('SELECT * FROM dictionary_addition')).rows).toHaveLength(1);
+  });
+  it('每批最多500条，后续页只确认真实下发且不截掉剩余项',async()=>{
+    const admin=await setup();
+    for(let i=0;i<501;i++) await pool.query('INSERT INTO dictionary_addition(device_id,text,pinyin) VALUES($1,$2,$3)',[B,'词'+String.fromCharCode(0x4e00+i),'ci yi']);
+    const first=(await mobile(B,'get','/additions?after=0')).body;
+    expect(first.entries).toHaveLength(500); expect(first.has_more).toBe(true);
+    const last=(await pool.query('SELECT cursor FROM dictionary_addition WHERE device_id=$1 ORDER BY cursor DESC LIMIT 1',[B])).rows[0];
+    expect((await mobile(B,'post','/additions/ack').send({cursor:Number(last.cursor)})).status).toBe(409);
+    expect((await mobile(B,'get',`/additions?after=${last.cursor}`)).status).toBe(409);
+    await mobile(B,'post','/additions/ack').send({cursor:first.cursor});
+    const second=(await mobile(B,'get',`/additions?after=${first.cursor}`)).body;
+    expect(second.entries).toHaveLength(1); expect(second.has_more).toBe(false);
+    await mobile(B,'post','/additions/ack').send({cursor:second.cursor});
+    expect((await admin.get(endpoint('/devices'))).body.devices.find((d:any)=>d.device_id===B).additions_pending).toBe(0);
+  });
+  it('拒绝超过500条选择、无目标和未注册手机，保留已排队记录',async()=>{
+    const admin=await setup();
+    await admin.post(endpoint('/words')).send({text:'泰鲮',pinyin:'tai ling'});
+    for(const body of [{device_ids:[],all:true},{device_ids:[B],texts:Array(501).fill('泰鲮')},{device_ids:[B],all:false},{device_ids:[B],all:true,filter:[]}]) {
+      expect((await admin.post(endpoint('/sync')).send(body)).status).toBe(400);
+    }
+    expect((await admin.post(endpoint('/sync')).send({device_ids:['00000000-0000-4000-8000-00000000000c'],all:true})).status).toBe(404);
+    await admin.post(endpoint('/sync')).send({device_ids:[B],all:true});
+    await admin.post(endpoint('/sync')).send({device_ids:[B],all:true,filter:{q:'不存在'}});
+    expect((await mobile(B,'get','/additions?after=0')).body.entries).toHaveLength(1);
+  });
+  it.runIf(Boolean(databaseUrl))('真实事务：容量溢出回滚全部目标与序号变更，023重复迁移不丢词',async()=>{
+    const admin=await setup();
+    await admin.post(endpoint('/words')).send({text:'泰鲮',pinyin:'tai ling'});
+    await pool.query("INSERT INTO dictionary_addition(device_id,text,pinyin) SELECT $1,'保留'||n,'bao liu' FROM generate_series(1,100000) n",[B]);
+    expect((await admin.post(endpoint('/sync')).send({device_ids:[A,B],all:true})).status).toBe(413);
+    expect((await pool.query('SELECT COUNT(*) AS n FROM dictionary_addition WHERE device_id=$1',[A])).rows[0].n).toBe('0');
+    expect((await pool.query('SELECT COUNT(*) AS n FROM dictionary_addition WHERE device_id=$1',[B])).rows[0].n).toBe('100000');
+    await pool.query(readFileSync(new URL('../../migrations/023_dictionary_additions.sql',import.meta.url),'utf8'));
+    expect((await admin.get(endpoint('/entries'))).body.entries[0].text).toBe('泰鲮');
+  });
+
+  it('较小游标也不能冒充其他设备的已下发确认',async()=>{
+    const admin=await setup();
+    await admin.post(endpoint('/words')).send({text:'泰鲮',pinyin:'tai ling'});
+    await admin.post(endpoint('/sync')).send({device_ids:[A,B],all:true});
+    const first=(await mobile(A,'get','/additions?after=0')).body;
+    const second=(await mobile(B,'get','/additions?after=0')).body;
+    await mobile(B,'post','/additions/ack').send({cursor:second.cursor});
+    expect((await mobile(B,'post','/additions/ack').send({cursor:first.cursor})).status).toBe(409);
+  });
+
+  it('纯手工合并行保留来源且不宣称存在选词次数',async()=>{
+    const admin=await setup();
+    await admin.post(endpoint('/words')).send({text:'泰鲮',pinyin:'tai ling'});
+    const merged=(await admin.get(endpoint('/entries')+'&view=merged')).body.entries[0];
+    expect(merged).toMatchObject({sources:['dashboard'],has_choices:false,count:0});
+  });
+  it('全部目标都禁用才算策略跳过，重复已发送不算跳过',async()=>{
+    const admin=await setup();
+    await admin.post(endpoint('/words')).send({text:'泰鲮',pinyin:'tai ling'});
+    await pool.query("INSERT INTO dictionary_policy(group_id,text,status) VALUES($1,$2,'disabled')",[B,'泰鲮']);
+    for(const queued of [1,0]) expect((await admin.post(endpoint('/sync')).send({device_ids:[A,B],all:true})).body).toMatchObject({queued,skipped:0});
+  });
+  it('下载游标不属于当前服务端进度时提供专用复位代码',async()=>{
+    await setup();
+    const response=await mobile(A,'get','/additions?after=123');
+    expect(response.status).toBe(409);
+    expect(response.body.code).toBe('dictionary_cursor_reset');
+    expect((await mobile(A,'post','/additions/ack').send({cursor:123})).body.code).toBeUndefined();
+  });
+
 });

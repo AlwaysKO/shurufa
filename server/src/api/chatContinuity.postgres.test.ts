@@ -280,3 +280,13 @@ test('名称组删除对新增来源及跨用户App伪造快照整批拒绝，�
  expect((await pool.query('SELECT id FROM media_asset WHERE id=$1',[second.asset_id])).rowCount).toBe(0);expect(readFileSync(sharedPath,'utf8')).toBe('shared-across-users');
  expect((await pool.query('SELECT count(*) FROM chat_message')).rows[0].count).toBe('3');
 });
+
+test('微信OCR固定页面的旧错字标签集中展示，不改原始数据也不合并同名真实联系人',async()=>{
+ const ids=[];for(const name of ['朋友圈','朋友屠','用友殿','田友殿']){const c=await conversation();ids.push(c);await pool.query("UPDATE chat_conversation SET account_key='wechat-empty-tree',display_name=$2 WHERE id=$1",[c,name]);await message(c);}
+ const peer=await conversation();await pool.query("UPDATE chat_conversation SET display_name='朋友屠' WHERE id=$1",[peer]);await message(peer);
+ const list=await agent.get('/api/v1/dashboard/chat/conversations').query({user_id:A,platform:'wechat',group_names:true});
+ expect(list.status).toBe(200);expect(list.body.conversations).toHaveLength(2);expect(list.body.conversations.find((r:any)=>r.group_name==='朋友圈')).toMatchObject({message_count:4,source_ids:ids});
+ const messages=await agent.get('/api/v1/dashboard/chat/messages').query({user_id:A,platform:'wechat',conversation_id:ids[0],group_name:'朋友圈'});expect(messages.body.total).toBe(4);
+ const resolved=await agent.get(`/api/v1/dashboard/chat/conversations/${ids[1]}/resolve`).query({user_id:A});expect(resolved.body.conversation.display_name).toBe('朋友圈');
+ expect((await pool.query('SELECT display_name FROM chat_conversation WHERE id=$1',[ids[1]])).rows[0].display_name).toBe('朋友屠');
+});

@@ -28,6 +28,7 @@ import com.yuyan.imemodule.data.capture.media.WindowMediaCapturer
 import com.yuyan.imemodule.data.capture.media.WindowScreenshotter
 import com.yuyan.imemodule.data.capture.media.MediaCaptureRequest
 import com.yuyan.imemodule.data.capture.media.MlKitWechatScreenshotIdentityResolver
+import com.yuyan.imemodule.data.capture.media.TitleOcrInput
 import com.yuyan.imemodule.data.capture.media.ScreenshotConversationIdentityResolver
 import com.yuyan.imemodule.data.capture.media.unresolvedWechatScreenshotIdentity
 import com.yuyan.imemodule.data.capture.media.persistScreenshotBeforeConfirmation
@@ -427,70 +428,73 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         val identityGeneration = screenshotIdentityGeneration.get()
         backgroundScope.launch {
             emptyTreeCaptureMutex.withLock {
-                if (!isCurrentScreenshotWindow(windowId, identityGeneration)) return@withLock
-                val resolver = screenshotIdentityResolver
-                val resolverVersion = resolver?.version() ?: 0L
-                val asset = mediaCapturer?.capture(
-                    windowId = windowId,
-                    windowBounds = windowBounds,
-                    requests = listOf(MediaCaptureRequest(0, screenshotBounds, lossyWebp = true)),
-                )?.get(0) ?: return@withLock
-                val preferences = getSharedPreferences(FALLBACK_PREFERENCES, Context.MODE_PRIVATE)
-                if (preferences.getString(LAST_EMPTY_TREE_SCREENSHOT_SHA, null) == asset.sha256 &&
-                    preferences.getString("last_title_identity_status", null) == "confirmed") {
-                    return@withLock
-                }
-                val capturedAt = System.currentTimeMillis()
-                val firstIdentity = resolver?.resolve(asset, resolverVersion) ?: unresolvedWechatScreenshotIdentity()
-                if (!firstIdentity.isChatPage) {
-                    return@withLock
-                }
-                suspend fun persist(identity: ScreenshotConversationIdentity): CapturePersistResult {
-                    val result = coordinator?.captureParsed(
-                        conversation = CapturedConversation(
-                            platform = ChatPlatform.WECHAT,
-                            accountKey = "wechat-empty-tree",
-                            externalKey = identity.externalKey,
-                            displayName = identity.displayName,
-                            conversationType = firstIdentity.conversationType,
-                            identityConfidence = identity.confidence,
-                        ),
-                        messages = listOf(CapturedMessage(
-                            conversationKey = null,
-                            senderKey = "${identity.externalKey}:viewport",
-                            direction = ChatDirection.SYSTEM,
-                            messageType = ChatMessageType.IMAGE,
-                            occurredAt = isoTimestamp(capturedAt),
-                            metadata = mapOf(
-                                "capture_source" to "wechat_empty_tree_screenshot",
-                                "identity_unavailable" to (identity.status != "confirmed").toString(),
-                                "conversation_identity_source" to identity.source,
-                                "conversation_identity_status" to identity.status,
-                                "conversation_identity_observed_title" to identity.observedTitle.orEmpty(),
-                                "conversation_identity_previous_key" to identity.previousKey.orEmpty(),
-                            ),
-                        )),
-                        pendingAssetsByMessage = mapOf(0 to asset),
-                    ) ?: CapturePersistResult.FAILED
-                    if (result != CapturePersistResult.FAILED) {
-                        preferences.edit().putString(LAST_EMPTY_TREE_SCREENSHOT_SHA, asset.sha256)
-                            .putString("last_title_identity_status", identity.status).apply()
-                    }
-
-                    return result
-                }
-                persistScreenshotBeforeConfirmation(firstIdentity, ::persist) {
-                    delay(800)
-                    if (!isCurrentScreenshotWindow(windowId, identityGeneration)) return@persistScreenshotBeforeConfirmation null
-                    val nextAsset = mediaCapturer?.capture(
+                TitleOcrInput().use { titleInput ->
+                    if (!isCurrentScreenshotWindow(windowId, identityGeneration)) return@withLock
+                    val resolver = screenshotIdentityResolver
+                    val resolverVersion = resolver?.version() ?: 0L
+                    val asset = mediaCapturer?.capture(
                         windowId = windowId,
                         windowBounds = windowBounds,
-                        requests = listOf(MediaCaptureRequest(0, screenshotBounds, lossyWebp = true)),
-                    )?.get(0) ?: return@persistScreenshotBeforeConfirmation null
-                    if (!isCurrentScreenshotWindow(windowId, identityGeneration)) return@persistScreenshotBeforeConfirmation null
-                    resolver?.resolve(nextAsset, resolverVersion)?.takeIf { it.isChatPage }
-                }
+                        requests = listOf(MediaCaptureRequest(0, screenshotBounds, lossyWebp = true, titleOcrInput = titleInput)),
+                    )?.get(0) ?: return@withLock
+                    val preferences = getSharedPreferences(FALLBACK_PREFERENCES, Context.MODE_PRIVATE)
+                    if (preferences.getString(LAST_EMPTY_TREE_SCREENSHOT_SHA, null) == asset.sha256 &&
+                        preferences.getString("last_title_identity_status", null) == "confirmed") {
+                        return@withLock
+                    }
+                    val capturedAt = System.currentTimeMillis()
+                    val firstIdentity = resolver?.resolve(asset, resolverVersion, titleInput) ?: unresolvedWechatScreenshotIdentity()
+                    if (!firstIdentity.isChatPage) {
+                        return@withLock
+                    }
+                    suspend fun persist(identity: ScreenshotConversationIdentity): CapturePersistResult {
+                        val result = coordinator?.captureParsed(
+                            conversation = CapturedConversation(
+                                platform = ChatPlatform.WECHAT,
+                                accountKey = "wechat-empty-tree",
+                                externalKey = identity.externalKey,
+                                displayName = identity.displayName,
+                                conversationType = firstIdentity.conversationType,
+                                identityConfidence = identity.confidence,
+                            ),
+                            messages = listOf(CapturedMessage(
+                                conversationKey = null,
+                                senderKey = "${identity.externalKey}:viewport",
+                                direction = ChatDirection.SYSTEM,
+                                messageType = ChatMessageType.IMAGE,
+                                occurredAt = isoTimestamp(capturedAt),
+                                metadata = mapOf(
+                                    "capture_source" to "wechat_empty_tree_screenshot",
+                                    "identity_unavailable" to (identity.status != "confirmed").toString(),
+                                    "conversation_identity_source" to identity.source,
+                                    "conversation_identity_status" to identity.status,
+                                    "conversation_identity_observed_title" to identity.observedTitle.orEmpty(),
+                                    "conversation_identity_previous_key" to identity.previousKey.orEmpty(),
+                                ),
+                            )),
+                            pendingAssetsByMessage = mapOf(0 to asset),
+                        ) ?: CapturePersistResult.FAILED
+                        if (result != CapturePersistResult.FAILED) {
+                            preferences.edit().putString(LAST_EMPTY_TREE_SCREENSHOT_SHA, asset.sha256)
+                                .putString("last_title_identity_status", identity.status).apply()
+                        }
 
+                        return result
+                    }
+                    persistScreenshotBeforeConfirmation(firstIdentity, ::persist) {
+                        delay(800)
+                        if (!isCurrentScreenshotWindow(windowId, identityGeneration)) return@persistScreenshotBeforeConfirmation null
+                        TitleOcrInput().use { confirmationInput ->
+                            val nextAsset = mediaCapturer?.capture(
+                                windowId = windowId,
+                                windowBounds = windowBounds,
+                                requests = listOf(MediaCaptureRequest(0, screenshotBounds, lossyWebp = true, titleOcrInput = confirmationInput)),
+                            )?.get(0) ?: return@persistScreenshotBeforeConfirmation null
+                            if (!isCurrentScreenshotWindow(windowId, identityGeneration)) return@persistScreenshotBeforeConfirmation null
+                            resolver?.resolve(nextAsset, resolverVersion, confirmationInput)?.takeIf { it.isChatPage }
+                        }
+                    }
+                }
             }
         }
     }
@@ -703,5 +707,10 @@ internal fun samePendingChat(packageName: String, previous: UiNodeSnapshot, curr
     val before = (adapter.parse(previous) as? ParseResult.Success)?.viewport?.conversation ?: return false
     val after = (adapter.parse(current) as? ParseResult.Success)?.viewport?.conversation ?: return false
     val key = before.stableKeyOrNull() ?: return false
-    return before.identityConfidence >= 0.8 && after.identityConfidence >= 0.8 && key == after.stableKeyOrNull()
+    // 调用方已校验导航代次与窗口；标题暂时变为输入状态不等于换联系人。
+    val typingTransition = packageName == "com.tencent.mm" &&
+        !com.yuyan.imemodule.data.capture.media.isTransientConversationTitle(before.displayName) &&
+        com.yuyan.imemodule.data.capture.media.isTransientConversationTitle(after.displayName)
+    return before.identityConfidence >= 0.8 && after.identityConfidence >= 0.8 &&
+        (key == after.stableKeyOrNull() || typingTransition)
 }
