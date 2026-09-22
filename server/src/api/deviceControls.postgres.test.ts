@@ -149,6 +149,7 @@ test("删除覆盖全部个人业务表、附件关联和分析游标，系统�
  await insert("phrase_stat",{phrase:"词"});await insert("completion_candidate",{prefix:"词",completion:"语"});
  await insert("user_phrase",{content:"常用语"});await insert("sticker",{keywords:"测试",file_name:user+".gif",format:"gif"});
  await insert("sticker_keyword",{keyword:"测试"});
+ await insert("sticker_group_settings",{keyword:"测试",aliases:JSON.stringify(["别名"]),asset_order:JSON.stringify([])});
  await insert("synthesis_asset",{id:randomUUID(),name:"底图",file_name:user+".gif",sha256:hash,width:1,height:1,text_safe_area:{},layout:{},source_statement:"测试",no_text_confirmed:true,rights_confirmed:true});
  await insert("mobile_report_receipt",{report_id:randomUUID(),payload_hash:hash});
  await insert("personal_candidate_usage",{code:"ci",text:"词",count:1,weight:1,last_used:1});
@@ -229,4 +230,12 @@ test("手机缓存注册状态时，删除后下一条上报仍可恢复目录�
   expect(await count('input_event')).toBe(enabled?1:0);
   const directory=await agent.get('/api/v1/dashboard/users?id='+A);expect(directory.body.users[0].save_uploads).toBe(enabled);
  }
+});
+
+test('关键词组并发争用同一说法仅一组成功，避免手机一次匹配两组', async()=>{
+ await pool.query("INSERT INTO sticker_keyword(user_id,keyword) VALUES($1,'并发甲'),($1,'并发乙')",[A]);
+ const responses=await Promise.all(['并发甲','并发乙'].map(keyword=>agent.patch(`/api/v1/dashboard/sticker-groups/${encodeURIComponent(keyword)}?user_id=${A}`).send({aliases:['共同说法']})));
+ expect(responses.map(r=>r.status).sort()).toEqual([200,409]);
+ const rows=(await pool.query('SELECT aliases FROM sticker_group_settings WHERE user_id=$1',[A])).rows;
+ expect(rows.filter(row=>row.aliases?.includes('共同说法'))).toHaveLength(1);
 });

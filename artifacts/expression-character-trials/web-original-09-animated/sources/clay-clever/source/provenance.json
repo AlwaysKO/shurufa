@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6ab21d81-c1bc-83ea-a15d-7b0fde2b2226",
+  "sourceFileId": "file_00000000fa3c820998d6a67e8b19d47a",
+  "requestedDate": "2026-09-22",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "f7f0da54348f03fb76e545ef9a85597a5180ddfaa3f1bc932606cd37713ff038",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-22T06:15:13.435533+00:00",
+  "generationObservedAt": "2026-09-22T06:15:13.435533+00:00",
+  "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+  "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+  "originalDownloadName": "clay-clever.png",
+  "deletedAt": "2026-09-22T06:16:40.621181+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

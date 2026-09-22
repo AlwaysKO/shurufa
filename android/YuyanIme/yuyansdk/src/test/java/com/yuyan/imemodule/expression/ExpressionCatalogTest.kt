@@ -25,16 +25,16 @@ class ExpressionCatalogTest {
         assertEquals(emptyList<String>(), catalog.synthesisTemplates(" ").map { it.id })
     }
 
-    @Test fun `未命中成品且有明确玩笑语气才自动展示广覆盖GIF池`() {
+    @Test fun `手动搜索未命中成品且有明确玩笑语气时展示广覆盖GIF池`() {
         val blank = asset("blank", keywords = listOf("开心")).copy(format = "gif",
             textSafeArea = com.yuyan.imemodule.expression.model.ExpressionTextSafeArea(0, 0, 200, 80),
             layout = com.yuyan.imemodule.expression.model.ExpressionTextLayout(18, 40, "#ffffff", "#000000", 2, "center", 2))
         val catalog = ExpressionCatalog(document(assets = listOf(blank)))
         listOf("你可真是个人才", "我直接原地裂开", "给你颁个奖吧").forEach {
-            assertEquals(it, listOf("blank"), catalog.recommend(it).map { it.id })
+            assertEquals(it, listOf("blank"), catalog.search(it).map { it.id })
         }
         listOf("项目会议", "机构", "不要嘲讽别人", "文件已经发送").forEach {
-            assertEquals(it, emptyList<String>(), catalog.recommend(it).map { it.id })
+            assertEquals(it, emptyList<String>(), catalog.search(it).map { it.id })
         }
     }
 
@@ -50,7 +50,7 @@ class ExpressionCatalogTest {
         )
         val catalog = ExpressionCatalog(document)
 
-        val results = catalog.recommend(" 放箭 ")
+        val results = catalog.search(" 放箭 ")
 
         assertEquals(listOf("exact-high", "exact-low"), results.map { it.id })
         assertEquals(listOf("prebuilt", "prebuilt"), results.map { it.type })
@@ -67,7 +67,7 @@ class ExpressionCatalogTest {
             asset("gif-cold", type = "prebuilt", embeddedText = "测试词").copy(format = "gif"),
             asset("gif-hot", type = "prebuilt", embeddedText = "测试词", heat = 2).copy(format = "gif"),
         )))
-        assertEquals(listOf("gif-hot", "gif-cold", "static-hot"), catalog.recommend("测试词").map { it.id })
+        assertEquals(listOf("gif-hot", "gif-cold", "static-hot"), catalog.search("测试词").map { it.id })
     }
 
     @Test
@@ -82,7 +82,7 @@ class ExpressionCatalogTest {
             ),
         )
 
-        val results = catalog.recommend("今天的云像棉花糖", limit = 1)
+        val results = catalog.search("今天的云像棉花糖", limit = 1)
 
         assertEquals(listOf("hot"), results.map { it.id })
         assertEquals(listOf("synthesis-template"), results.map { it.type })
@@ -102,7 +102,7 @@ class ExpressionCatalogTest {
 
         assertEquals(
             listOf("glass-heart"),
-            catalog.recommend("玻璃心").map { it.id },
+            catalog.search("玻璃心").map { it.id },
         )
     }
 
@@ -112,9 +112,9 @@ class ExpressionCatalogTest {
             document(assets = (0..7).map { asset("tpl-$it") }),
         )
 
-        val first = catalog.recommend("机构").map { it.id }
+        val first = catalog.search("机构").map { it.id }
         assertEquals(emptyList<String>(), first)
-        assertEquals(emptyList<String>(), catalog.recommend("乙词").map { it.id })
+        assertEquals(emptyList<String>(), catalog.search("乙词").map { it.id })
     }
 
     @Test

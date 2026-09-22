@@ -8,6 +8,7 @@ import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
 import com.yuyan.imemodule.data.capture.db.PendingAssetEntity
 import com.yuyan.imemodule.data.capture.model.ConversationType
 import com.yuyan.imemodule.data.capture.sha256
+import com.yuyan.imemodule.data.capture.ui.IntRect
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -34,6 +35,8 @@ internal data class ScreenshotConversationIdentity(
     val observedTitle: String? = null,
     val previousKey: String? = null,
     val isChatPage: Boolean = true,
+    // 本帧原始标题文字像素的精确摘要，不写入身份映射或上传正文。
+    val exactTitleHash: String? = null,
 )
 
 internal fun selectWechatChatTitle(
@@ -52,7 +55,10 @@ internal fun selectWechatChatTitleLine(
         text.length in 1..80 && line.top >= headerHeight * 0.18 && line.bottom <= headerHeight &&
             line.bottom - line.top >= headerHeight * 0.12 &&
             abs((line.left + line.right) / 2.0 - imageWidth / 2.0) <= imageWidth * 0.32 &&
-            !isWechatHeaderNoise(text)
+            !isWechatHeaderNoise(text) &&
+            // 旧资产回退仍可能含系统栏：时钟带图标不能成为会话名；不误伤居中含时间的姓名。
+            !(line.top < headerHeight * 0.5 && line.right < imageWidth * 0.35 &&
+                Regex("^\\d{1,2}:\\d{2}(?:\\s|$)").containsMatchIn(text))
     }
     .sortedWith(compareBy<Pair<OcrTextLine, String>>(
         { abs((it.first.left + it.first.right) / 2.0 - imageWidth / 2.0) },
@@ -138,7 +144,9 @@ internal class MlKitWechatScreenshotIdentityResolver(identityStore: Conversation
                 visualKey = title?.let { wechatTitlePixelSignature(header, it) },
                 nowMillis = SystemClock.elapsedRealtime(),
                 expectedVersion = expectedVersion,
-            )
+            ).copy(exactTitleHash = title?.let {
+                exactPixelHash(header, IntRect(it.left, it.top, it.right, it.bottom))
+            })
         } finally {
             header.recycle()
         }

@@ -18,12 +18,16 @@ beforeEach(async () => {
   const db = newDb();
   db.public.registerFunction({ name: 'trim', args: [DataType.text], returns: DataType.text, implementation: (s: string) => s.trim() });
   db.public.registerFunction({ name: 'length', args: [DataType.text], returns: DataType.integer, implementation: (s: string) => s.length });
+  db.public.registerFunction({name:'hashtext',args:[DataType.text],returns:DataType.integer,implementation:()=>1});
+  db.public.registerFunction({name:'pg_advisory_xact_lock',args:[DataType.integer],returns:DataType.integer,implementation:()=>1});
   pool = new (db.adapters.createPg().Pool)();
   await pool.query(readFileSync(new URL('../../migrations/005_sticker.sql', import.meta.url), 'utf8'));
   // pg-mem 不支持 regexp_split_to_table；迁移回填与幂等另在真实 PostgreSQL 事务中验证。
   const migration = new URL('../../migrations/015_sticker_keywords.sql', import.meta.url);
   await pool.query(readFileSync(migration, 'utf8').split('-- 兼容历史')[0]);
   await pool.query(readFileSync(new URL('../../migrations/019_keyword_gif_removal.sql', import.meta.url), 'utf8'));
+  await pool.query(readFileSync(new URL('../../migrations/018_synthesis_library.sql', import.meta.url), 'utf8'));
+  await pool.query(readFileSync(new URL('../../migrations/024_sticker_group_settings.sql', import.meta.url), 'utf8'));
   root = await mkdtemp(join(tmpdir(), 'sticker-library-'));
   await mkdir(join(root, 'server/.runtime/expression-assets/prebuilt'), { recursive: true });
   await mkdir(join(root, 'assets/expression/query'), { recursive: true });
@@ -44,7 +48,7 @@ it('完整列出运行库和规划空词，个人图片按关键词拆分且不�
   const res = await agent.get(`/api/v1/dashboard/sticker-library?user_id=${A}`);
   expect(res.status).toBe(200);
   expect(res.body.groups.map((g: any) => g.keyword).sort()).toEqual(['你好', '您好', '晚安', '问候'].sort());
-  expect(res.body.groups.find((g: any) => g.keyword === '你好').assets.map((s: any) => s.source)).toEqual(['system', 'personal']);
+  expect(res.body.groups.find((g: any) => g.keyword === '你好').assets.map((s: any) => s.source)).toEqual(['personal', 'system']);
   expect(res.body.groups.find((g: any) => g.keyword === '晚安')).toMatchObject({ planned: true, assets: [] });
 });
 it('新增关键词无需图片，重复请求幂等，用户隔离', async () => {
@@ -109,7 +113,7 @@ it('同义词与用户确认的完整说法归同组，多标签图片只出现�
   expect(play.aliases).toEqual(expect.arrayContaining(['打你', '揍你', '扁你', '我来打你了', '过来打我啊']));
   expect(play.confirmedAliases).toEqual(expect.arrayContaining(['扁你', '我来打你了', '过来打我啊']));
   expect(play.assets).toHaveLength(2);
-  expect(play.assets.map((a: any) => a.source)).toEqual(['system', 'personal']);
+  expect(play.assets.map((a: any) => a.source)).toEqual(['personal', 'system']);
   expect(res.body.groups.some((g: any) => ['打你','揍你','扁你','我来打你了'].includes(g.keyword))).toBe(false);
   expect(res.body.groups.find((g: any) => g.keyword === '开心').assets.map((a: any) => a.id)).toEqual(['happy']);
   expect(res.body.groups.find((g: any) => g.keyword === '难过').assets.map((a: any) => a.id)).toEqual(['sad']);
@@ -121,4 +125,104 @@ it('未定义同义关系的关键词保持独立，不靠字面子串猜测', a
   const res = await agent.get(`/api/v1/dashboard/sticker-library?user_id=${A}`);
   expect(res.body.groups.find((g: any) => g.keyword === '打闹')?.aliases).toContain('打你');
   expect(res.body.groups.find((g: any) => g.keyword === '我打你电话')?.aliases).toEqual(['我打你电话']);
+});
+
+it('默认个人上传优先，拖拽顺序保存后优先于来源，另一个用户不受影响', async () => {
+  const row = await pool.query(`INSERT INTO sticker(user_id,keywords,file_name,format) VALUES($1,'你好','mine.gif','gif') RETURNING id`, [A]);
+  const id = row.rows[0].id;
+  const url = `/api/v1/dashboard/sticker-library?user_id=${A}`;
+  let library = (await agent.get(url)).body;
+  expect(library.groups.find((g: any) => g.keyword === '你好').assets.map((a: any) => a.source)).toEqual(['personal', 'system']);
+  const saved = await agent.patch(`/api/v1/dashboard/sticker-groups/${encodeURIComponent('你好')}?user_id=${A}`)
+    .send({ assetOrder: ['system:hello', `personal:${id}`] });
+  expect(saved.status).toBe(200);
+  library = (await agent.get(url)).body;
+  expect(library.groups.find((g: any) => g.keyword === '你好').assets.map((a: any) => a.source)).toEqual(['system', 'personal']);
+  const other = (await agent.get(`/api/v1/dashboard/sticker-library?user_id=${B}`)).body;
+  expect(other.groups.find((g: any) => g.keyword === '你好').assets).toHaveLength(1);
+});
+it('同组说法可替换和清空，删除旧说法不丢图、不被原标签补回', async () => {
+  const url = `/api/v1/dashboard/sticker-groups/${encodeURIComponent('你好')}?user_id=${A}`;
+  expect((await agent.patch(url).send({ aliases: ['  嗨你好！ ', '见到你真好'] })).status).toBe(200);
+  let library = (await agent.get(`/api/v1/dashboard/sticker-library?user_id=${A}`)).body;
+  expect(library.groups.find((g: any) => g.keyword === '你好')).toMatchObject({ aliases: ['嗨你好', '见到你真好'], assets: [expect.objectContaining({ id: 'hello' })] });
+  expect((await agent.patch(url).send({ aliases: [] })).status).toBe(200);
+  library = (await agent.get(`/api/v1/dashboard/sticker-library?user_id=${A}`)).body;
+  expect(library.groups.find((g: any) => g.keyword === '你好').aliases).toEqual([]);
+  const other = (await agent.get(`/api/v1/dashboard/sticker-library?user_id=${B}`)).body;
+  expect(other.groups.find((g: any) => g.keyword === '你好').aliases).toEqual(['你好']);
+});
+it('拒绝重复、越权或非本组排序、冲突别名，失败不覆盖已保存设置', async () => {
+  const url = `/api/v1/dashboard/sticker-groups/${encodeURIComponent('你好')}?user_id=${A}`;
+  for (const payload of [{assetOrder:['personal:999']}, {assetOrder:['system:hello','system:hello']}, {assetOrder:[]}, {aliases:['晚安']}, {aliases:['  ']}, {aliases:['你好','你好！']}, {aliases:'abc'}, {}]) {
+    expect([400, 409]).toContain((await agent.patch(url).send(payload)).status);
+  }
+  expect((await agent.patch(`/api/v1/dashboard/sticker-groups/不存在?user_id=${A}`).send({aliases:['新']})).status).toBe(404);
+  expect((await agent.get(`/api/v1/dashboard/sticker-library?user_id=${A}`)).body.groups.find((g: any) => g.keyword === '你好').aliases).toEqual(['你好']);
+});
+
+it('完整目录同步别名与顺序，版本随设置变化，自动推荐无子串回退而手动搜索保留', async () => {
+  await writeFile(join(root, 'server/.runtime/expression-assets/catalog.json'), JSON.stringify({version:'v1', emojiBases:[], emojiCombinations:[], templates:[
+    {id:'praise',type:'prebuilt',keywords:['赞'],embeddedText:'赞',fileName:'prebuilt/praise.gif',format:'gif',width:240,height:240,sha256:'a'.repeat(64),heat:99},
+  ]}));
+  const personal = await pool.query(`INSERT INTO sticker(user_id,keywords,file_name,format,sha256) VALUES($1,'点赞','mine.gif','gif',$2) RETURNING id`, [A, 'b'.repeat(64)]);
+  const id = personal.rows[0].id;
+  const mobile = (path: string) => request(app).get(`/api/v1/mobile/expressions/${path}`).set('X-Device-Id', A);
+  const before = await mobile('catalog');
+  expect(before.status).toBe(200);
+  expect(before.body.recommendationGroups.find((g: any) => g.keyword === '赞')).toMatchObject({aliases:['赞','点赞','给你点赞','太棒了'],assetIds:[`sticker-${id}`,'praise']});
+  const recommend = async (q: string, mode='automatic') => (await mobile(`recommend?q=${encodeURIComponent(q)}&mode=${mode}`)).body.results.map((a:any)=>a.id);
+  expect(await recommend(' 给你点赞！ ')).toEqual([`sticker-${id}`, 'praise']);
+  expect(await recommend('这是中华人民赞扬的美德')).toEqual([]);
+  expect(await recommend('这么长一段话最后才说给你点赞')).toEqual([]);
+  expect(await recommend('给你，点赞')).toEqual([]);
+  const patch = `/api/v1/dashboard/sticker-groups/${encodeURIComponent('赞')}?user_id=${A}`;
+  expect((await agent.patch(patch).send({aliases:['夸夸你'],assetOrder:['system:praise',`personal:${id}`]})).status).toBe(200);
+  const after = await mobile('catalog');
+  expect(after.body.version).not.toBe(before.body.version);
+  expect(after.body.recommendationGroups.find((g:any)=>g.keyword==='赞')).toEqual({keyword:'赞',aliases:['夸夸你'],assetIds:['praise',`sticker-${id}`]});
+  expect(await recommend('给你点赞')).toEqual([]);
+  expect(await recommend('赞')).toEqual([]); // 删除后不能由 embeddedText 或默认组恢复
+  expect(await recommend('夸夸你')).toEqual(['praise',`sticker-${id}`]);
+  expect(await recommend('夸夸你','manual')).toEqual(['praise',`sticker-${id}`]);
+  expect(await recommend('点赞','manual')).toContain(`sticker-${id}`);
+  const other = await request(app).get('/api/v1/mobile/expressions/catalog').set('X-Device-Id', B);
+  expect(other.body.recommendationGroups.find((g:any)=>g.keyword==='赞').aliases).toContain('给你点赞');
+});
+it('组上传使用稳定组标识，新增/清空别名后仍归原组而不制造别名空组', async () => {
+  const patch = `/api/v1/dashboard/sticker-groups/${encodeURIComponent('你好')}?user_id=${A}`;
+  await agent.patch(patch).send({aliases:['新招呼']});
+  const upload = await agent.post(`/api/v1/dashboard/stickers?user_id=${A}`).send({
+    group_keyword:'你好', keywords:'新招呼', filename:'tiny.gif',
+    file_base64:'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+  });
+  expect(upload.status).toBe(201);
+  const library = (await agent.get(`/api/v1/dashboard/sticker-library?user_id=${A}`)).body;
+  expect(library.groups.find((g:any)=>g.keyword==='你好').assets).toHaveLength(2);
+  expect(library.groups.some((g:any)=>g.keyword==='新招呼')).toBe(false);
+});
+it('新建关键词按同一归一化规则检查已有组别名，不制造重复匹配组',async()=>{
+ await agent.patch(`/api/v1/dashboard/sticker-groups/${encodeURIComponent('你好')}?user_id=${A}`).send({aliases:['测试说法']});
+ const created=await agent.post(`/api/v1/dashboard/sticker-keywords?user_id=${A}`).send({keyword:'测试说法！'});
+ expect(created.status).toBe(201);expect(created.body.keyword).toBe('你好');
+ const groups=(await agent.get(`/api/v1/dashboard/sticker-library?user_id=${A}`)).body.groups;
+ expect(groups.some((g:any)=>g.keyword==='测试说法！')).toBe(false);
+});
+it('移动个人表情搜索也使用编辑后的组说法和个人图片顺序',async()=>{
+ const rows=await pool.query(`INSERT INTO sticker(user_id,keywords,file_name,format) VALUES($1,'你好','a.gif','gif'),($1,'你好','b.gif','gif') RETURNING id`,[A]);
+ const [a,b]=rows.rows.map(row=>row.id);
+ await agent.patch(`/api/v1/dashboard/sticker-groups/${encodeURIComponent('你好')}?user_id=${A}`).send({aliases:['新问候'],assetOrder:[`personal:${a}`,'system:hello',`personal:${b}`]});
+ const found=await request(app).get('/api/v1/mobile/stickers?q='+encodeURIComponent('新问候')).set('X-Device-Id',A);
+ expect(found.status).toBe(200);expect(found.body.stickers.map((item:any)=>Number(item.id))).toEqual([a,b]);
+});
+it('现有太棒了成品归入赞组，给你点赞正例实际有可用原图而非空规划词',async()=>{
+ await writeFile(join(root,'server/.runtime/expression-assets/catalog.json'),JSON.stringify({templates:[{id:'great',keywords:['太棒了'],fileName:'prebuilt/great.gif',format:'gif',width:240,height:240}]}));
+ const groups=(await agent.get(`/api/v1/dashboard/sticker-library?user_id=${A}`)).body.groups;
+ expect(groups.find((g:any)=>g.keyword==='赞')).toMatchObject({aliases:expect.arrayContaining(['给你点赞','太棒了']),assets:[expect.objectContaining({id:'great'})]});
+});
+it('手动精确命中空图组时保持空结果，不回退匹配其他组',async()=>{
+ await writeFile(join(root,'server/.runtime/expression-assets/catalog.json'),JSON.stringify({version:'empty-test',emojiBases:[],emojiCombinations:[],templates:[{id:'hello',type:'prebuilt',keywords:['你好'],embeddedText:'你好',fileName:'prebuilt/hello.gif',format:'gif',width:240,height:240,sha256:'a'.repeat(64)}]}));
+ expect((await agent.patch(`/api/v1/dashboard/sticker-groups/${encodeURIComponent('晚安')}?user_id=${A}`).send({aliases:['今天你好']})).status).toBe(200);
+ const res=await request(app).get('/api/v1/mobile/expressions/recommend?q='+encodeURIComponent('今天你好')+'&mode=manual').set('X-Device-Id',A);
+ expect(res.status).toBe(200);expect(res.body.results).toEqual([]);
 });

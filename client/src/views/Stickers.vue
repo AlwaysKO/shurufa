@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useConfirmation } from '../confirmation';
 import { computed, onMounted, ref, watch } from 'vue';
-import { api, scopedAssetUrl, type LibrarySticker, type StickerLibrary } from '../api';
+import { api, scopedAssetUrl, type LibrarySticker, type StickerLibrary, type StickerKeywordGroup } from '../api';
 import './content-library.css';
 
 const askConfirmation = useConfirmation();
@@ -28,11 +28,76 @@ const currentPage = ref(1);
 const pageInput = ref('');
 const pageError = ref('');
 const filteredGroups = computed(() => library.value.groups.filter(g =>
-  g.aliases.some(alias => alias.includes(q.value.trim())) && (filter.value === 'all' || (filter.value === 'filled' ? g.assets.length > 0 : !g.assets.length))));
+  (g.keyword.includes(q.value.trim()) || g.aliases.some(alias => alias.includes(q.value.trim()))) && (filter.value === 'all' || (filter.value === 'filled' ? g.assets.length > 0 : !g.assets.length))));
 const pageCount = computed(() => Math.max(1, Math.ceil(filteredGroups.value.length / PAGE_SIZE)));
 const pageStart = computed(() => (currentPage.value - 1) * PAGE_SIZE);
 const pagedGroups = computed(() => filteredGroups.value.slice(pageStart.value, pageStart.value + PAGE_SIZE));
 const activeGroup = computed(() => pagedGroups.value.find(g => g.keyword === selectedKeyword.value) ?? pagedGroups.value[0]);
+const orderDraft = ref<string[] | null>(null);
+const dragging = ref<string | null>(null);
+const editingAliases = ref(false);
+const aliasDraft = ref<string[]>([]);
+const assetKey = (asset: LibrarySticker) => `${asset.source}:${asset.id}`;
+const orderedAssets = computed(() => {
+  const assets = activeGroup.value?.assets ?? [];
+  if (!orderDraft.value) return assets;
+  const byKey = new Map(assets.map(asset => [assetKey(asset), asset]));
+  const known = new Set(orderDraft.value);
+  return [...orderDraft.value.map(key => byKey.get(key)).filter((asset): asset is LibrarySticker => !!asset),
+    ...assets.filter(asset => !known.has(assetKey(asset)))];
+});
+const orderDirty = computed(() => orderDraft.value !== null &&
+  JSON.stringify(orderedAssets.value.map(assetKey)) !== JSON.stringify(activeGroup.value?.assets.map(assetKey)));
+watch(() => activeGroup.value?.keyword, () => {
+  orderDraft.value = null; dragging.value = null; editingAliases.value = false; aliasDraft.value = [];
+});
+function replaceGroup(group: StickerKeywordGroup) {
+  const index = library.value.groups.findIndex(item => item.keyword === group.keyword);
+  if (index >= 0) library.value.groups[index] = group;
+}
+function moveAsset(from: string, to: string) {
+  if (busy.value || loading.value || from === to) return;
+  const keys = orderedAssets.value.map(assetKey), start = keys.indexOf(from), end = keys.indexOf(to);
+  if (start < 0 || end < 0) return;
+  keys.splice(start, 1); keys.splice(end, 0, from); orderDraft.value = keys;
+}
+function dragStart(event: DragEvent, asset: LibrarySticker) {
+  if (busy.value || loading.value) { event.preventDefault(); return; }
+  dragging.value = assetKey(asset);
+  if (event.dataTransfer) { event.dataTransfer.setData('text/plain', dragging.value); event.dataTransfer.effectAllowed = 'move'; }
+}
+function dropAsset(asset: LibrarySticker) {
+  if (dragging.value) moveAsset(dragging.value, assetKey(asset));
+  dragging.value = null;
+}
+async function saveOrder() {
+  if (busy.value || loading.value || !activeGroup.value || !orderDirty.value) return;
+  const keyword = activeGroup.value.keyword, assetOrder = orderedAssets.value.map(assetKey);
+  busy.value = true; err.value = ''; msg.value = '';
+  try {
+    const { group } = await api.updateStickerGroup(keyword, { assetOrder });
+    replaceGroup(group);
+    if (activeGroup.value?.keyword === keyword) orderDraft.value = null;
+    msg.value = '图片顺序已保存；手机下次打开键盘检查更新后生效。';
+  } catch (error) { err.value = `排序保存失败：${(error as Error).message}`; }
+  finally { busy.value = false; }
+}
+function startAliases() {
+  if (busy.value || loading.value || !activeGroup.value) return;
+  aliasDraft.value = [...activeGroup.value.aliases]; editingAliases.value = true; err.value = '';
+}
+async function saveAliases() {
+  if (busy.value || loading.value || !activeGroup.value) return;
+  const keyword = activeGroup.value.keyword, aliases = [...aliasDraft.value];
+  busy.value = true; err.value = ''; msg.value = '';
+  try {
+    const { group } = await api.updateStickerGroup(keyword, { aliases });
+    replaceGroup(group);
+    if (activeGroup.value?.keyword === keyword) editingAliases.value = false;
+    msg.value = '同组说法已保存并纳入手机同步；自动推荐只匹配完整说法。';
+  } catch (error) { err.value = `说法保存失败：${(error as Error).message}`; }
+  finally { busy.value = false; }
+}
 watch([q, filter], () => { currentPage.value = 1; pageInput.value = ''; pageError.value = ''; editingId.value = null; }, { flush: 'sync' });
 watch(pageCount, count => { if (currentPage.value > count) currentPage.value = count; }, { flush: 'sync' });
 function goToPage(page: number) {
@@ -68,12 +133,12 @@ async function addKeyword() {
   if (existing) { revealKeyword(existing.keyword); msg.value = `“${keyword}”属于“${existing.keyword}”组，已为你打开，可直接上传图片。`; err.value = ''; newKeyword.value = ''; return; }
   busy.value = true; msg.value = ''; err.value = '';
   try {
-    await api.addStickerKeyword(keyword);
+    const saved = await api.addStickerKeyword(keyword);
     // 独立创建空组，无需图片；更新本地状态避免成功后刷新失败造成重复提交。
-    library.value.groups.unshift({ keyword, aliases: [keyword], confirmedAliases: [], category: '自定义', planned: false, custom: true, assets: [] });
+    if (!library.value.groups.some(group => group.keyword === saved.keyword)) library.value.groups.unshift({ keyword: saved.keyword, aliases: [saved.keyword], confirmedAliases: [], category: '自定义', planned: false, custom: true, assets: [] });
     await load();
-    revealKeyword(keyword); newKeyword.value = '';
-    msg.value = `已新增关键词“${keyword}”，可以现在上传，也可以稍后补图。`;
+    revealKeyword(saved.keyword); newKeyword.value = '';
+    msg.value = saved.keyword === keyword ? `已新增关键词“${keyword}”，可以现在上传，也可以稍后补图。` : `已打开“${saved.keyword}”组；相同说法不重复建组。`;
   } catch (e) { err.value = `新增失败：${(e as Error).message}`; }
   finally { busy.value = false; }
 }
@@ -108,7 +173,7 @@ async function uploadFile(event: Event) {
     const { width, height } = await readImageSize(file);
     const bytes = new Uint8Array(await file.arrayBuffer()); let binary = '';
     for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-    await api.uploadSticker({ file_base64: btoa(binary), filename: file.name, keywords, width, height });
+    await api.uploadSticker({ file_base64: btoa(binary), filename: file.name, keywords, group_keyword: keyword, width, height });
     msg.value = `已上传到“${keyword}”组 · ${width} × ${height}，同组说法共用这张表情。`;
     await load();
     revealKeyword(keyword);
@@ -196,13 +261,26 @@ onMounted(load);
           </div>
           <input ref="fileInput" data-testid="group-upload-input" class="hidden-upload" type="file" accept=".gif,.png,.jpg,.jpeg,.webp" :aria-label="`上传表情到${activeGroup.keyword}`" @change="uploadFile" @cancel="uploadTarget = null" />
           <div data-testid="group-aliases" class="semantic-aliases">
-            <div class="alias-heading"><strong>同组说法</strong><span>{{ activeGroup.aliases.length }} 种说法 · 共用下方 {{ activeGroup.assets.length }} 张表情</span></div>
-            <div class="alias-tags"><span v-for="alias in activeGroup.aliases" :key="alias" class="library-badge" :class="{ confirmed: activeGroup.confirmedAliases.includes(alias) }" :title="activeGroup.confirmedAliases.includes(alias) ? '本次确认的后台组内说法，未改系统推荐规则' : undefined">{{ alias }}</span></div>
-            <p>上传到此组会自动带上这些说法作为关键词，不会重复保存图片。<template v-if="activeGroup.confirmedAliases.length">蓝色标签为本次确认的后台说法，不代表系统推荐规则已更新。</template></p>
+            <div class="alias-heading"><strong>同组说法</strong><span>{{ activeGroup.aliases.length }} 种说法 · 共用下方 {{ activeGroup.assets.length }} 张表情</span><button v-if="!editingAliases" data-testid="edit-group-aliases" class="text-button" :disabled="busy || loading" @click="startAliases">编辑说法</button></div>
+            <div v-if="editingAliases" class="alias-editor">
+              <div v-for="(_alias, index) in aliasDraft" :key="index" class="library-row">
+                <input v-model="aliasDraft[index]" :data-testid="`group-alias-input-${index}`" class="library-input" :aria-label="`第 ${index + 1} 条同组说法`" maxlength="100" :disabled="busy" />
+                <button :data-testid="`remove-group-alias-${index}`" class="text-button danger" :disabled="busy" @click="aliasDraft.splice(index, 1)">删除说法</button>
+              </div>
+              <div class="library-actions"><button data-testid="add-group-alias" class="text-button" :disabled="busy || aliasDraft.length >= 100" @click="aliasDraft.push('')">＋ 新增说法</button><button data-testid="save-group-aliases" class="library-button primary" :disabled="busy || loading" @click="saveAliases">保存说法</button><button class="text-button" :disabled="busy" @click="editingAliases = false">取消</button></div>
+              <p>每条填写一个完整说法；清空后本组不再自动推荐，图片仍保留。</p>
+            </div>
+            <div v-else class="alias-tags"><span v-for="alias in activeGroup.aliases" :key="alias" class="library-badge">{{ alias }}</span><span v-if="!activeGroup.aliases.length">暂无匹配说法</span></div>
+            <p>完整输入匹配任一说法才自动推荐，不按句中关键词匹配。增删改保存后同步手机，不修改原图。</p>
           </div>
           <div v-if="!activeGroup.assets.length" data-testid="empty-keyword" class="library-empty"><span class="empty-mark" aria-hidden="true">☺</span><strong>“{{ activeGroup.keyword }}”还没有表情</strong><p>关键词已在这里，上传一张 GIF 就能补充到这一组。</p><button class="library-button" :disabled="busy || loading" @click="chooseUpload">选择图片上传</button></div>
-          <div v-else class="sticker-grid">
-            <article v-for="asset in activeGroup.assets" :key="`${asset.source}:${asset.id}`" class="sticker-cell">
+          <div v-if="activeGroup.assets.length" class="sticker-order-toolbar">
+            <span>拖动排序手柄调整顺序，也可用前移/后移。默认个人上传在前。</span>
+            <div class="library-actions"><button data-testid="save-sticker-order" class="library-button primary" :disabled="busy || loading || !orderDirty" @click="saveOrder">保存排序</button><button class="text-button" :disabled="busy || !orderDirty" @click="orderDraft = null">取消排序</button></div>
+          </div>
+          <div v-if="activeGroup.assets.length" class="sticker-grid">
+            <article v-for="(asset, index) in orderedAssets" :key="assetKey(asset)" :data-testid="`sticker-cell-${assetKey(asset)}`" class="sticker-cell" :class="{ dragging: dragging === assetKey(asset) }" @dragover.prevent @drop.prevent="dropAsset(asset)">
+              <div class="sticker-sort-actions"><button :data-testid="`drag-sticker-${assetKey(asset)}`" class="text-button drag-handle" :draggable="!busy && !loading" :disabled="busy || loading" aria-label="拖动排列图片" @dragstart="dragStart($event, asset)" @dragend="dragging = null">⠿ 排序</button><button class="text-button" :disabled="busy || loading || index === 0" aria-label="图片前移" @click="moveAsset(assetKey(asset), assetKey(orderedAssets[index - 1]!))">前移</button><button class="text-button" :disabled="busy || loading || index === orderedAssets.length - 1" aria-label="图片后移" @click="moveAsset(assetKey(asset), assetKey(orderedAssets[index + 1]!))">后移</button></div>
               <div class="sticker-preview"><span v-if="failedImages.has(`${asset.source}:${asset.id}`)" class="library-badge">图片加载失败</span><img v-else :src="scopedAssetUrl(asset.url)" :alt="asset.keywords.join('、')" loading="lazy" @error="imageFailed(asset)" /><span class="sticker-format">{{ asset.format.toUpperCase() }}</span></div>
               <div class="sticker-meta">
                 <span class="library-badge" :class="{ personal: asset.source === 'personal' }">{{ asset.source === 'system' ? '系统素材' : '个人上传' }}</span>
@@ -213,7 +291,7 @@ onMounted(load);
               </div>
             </article>
           </div>
-          <p class="upload-hint">支持 GIF / PNG / JPG / WebP，单张不超过 5 MB。上传后归入“{{ activeGroup.keyword }}”语义组并关联上面的说法，用于当前用户的斗图搜索与手机关键词推荐；手机下次打开键盘检查更新后补充，不修改系统素材。空关键词组不触发图片推荐，规划词不等于已启用全部语义扩展；未发布试稿不在这里展示。</p>
+          <p class="upload-hint">支持 GIF / PNG / JPG / WebP，单张不超过 5 MB。上传后归入“{{ activeGroup.keyword }}”语义组并使用已保存的同组说法，用于当前用户的斗图搜索与手机关键词推荐；手机下次打开键盘检查更新后补充，不修改系统素材。空关键词组不触发图片推荐，规划词不等于已启用全部语义扩展；未发布试稿不在这里展示。</p>
         </template>
         <div v-else class="library-empty"><strong>{{ q || filter !== 'all' ? '没有匹配的关键词' : '从第一个关键词开始' }}</strong><p>调整左侧筛选，或在上方新增关键词。</p></div>
       </section>

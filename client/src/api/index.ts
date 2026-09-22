@@ -653,13 +653,14 @@ export const api = {
   uploadSynthesisAsset: (body: SynthesisUpload) => post<{ asset: SynthesisAsset; duplicate: boolean }>('/api/v1/dashboard/synthesis-library', body),
   deleteSynthesisAsset: (id: string) => del(`/api/v1/dashboard/synthesis-library/${encodeURIComponent(id)}`),
   stickerLibrary: () => get<StickerLibrary>('/api/v1/dashboard/sticker-library'),
+  updateStickerGroup: (keyword: string, payload: { aliases?: string[]; assetOrder?: string[] }) => patch<{ group: StickerKeywordGroup }>(`/api/v1/dashboard/sticker-groups/${encodeURIComponent(keyword)}`, payload),
   addStickerKeyword: (keyword: string) => post<{ keyword: string }>('/api/v1/dashboard/sticker-keywords', { keyword }),
   stickers: (q = '') => {
     const p = new URLSearchParams();
     if (q) p.set('q', q);
     return get<StickerPage>(`/api/v1/dashboard/stickers?${p.toString()}`);
   },
-  uploadSticker: (body: { file_base64: string; filename: string; keywords: string; width?: number; height?: number }) =>
+  uploadSticker: (body: { file_base64: string; filename: string; keywords: string; group_keyword?: string; width?: number; height?: number }) =>
     post<StickerRow>(`/api/v1/dashboard/stickers`, body),
   updateStickerKeywords: (id: number, keywords: string) =>
     patch<{ ok: boolean }>(`/api/v1/dashboard/stickers/${id}`, { keywords }),

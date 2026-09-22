@@ -3841,6 +3841,66 @@
       "bytes": 58438
     },
     {
+      "id": "otter-clever",
+      "sourceReport": "artifacts/expression-character-trials/web-original-09-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-09-animated/output/gifs/otter-clever.gif",
+      "status": "imported",
+      "catalogId": "generated-31674ee4ea1f499eaf679030",
+      "keyword": "真有你的",
+      "sha256": "31674ee4ea1f499eaf67903070b9ae4bf0a72dcdea5451c637a46ac4dd091dfc",
+      "bytes": 53785
+    },
+    {
+      "id": "line-clever",
+      "sourceReport": "artifacts/expression-character-trials/web-original-09-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-09-animated/output/gifs/line-clever.gif",
+      "status": "imported",
+      "catalogId": "generated-0f89a252d181a3eb236369dd",
+      "keyword": "真有你的",
+      "sha256": "0f89a252d181a3eb236369ddb1541d02be62e1b4eb67e3e65a770562f5701c07",
+      "bytes": 60723
+    },
+    {
+      "id": "clay-clever",
+      "sourceReport": "artifacts/expression-character-trials/web-original-09-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-09-animated/output/gifs/clay-clever.gif",
+      "status": "imported",
+      "catalogId": "generated-3cb71f71c6bf4342276373ea",
+      "keyword": "真有你的",
+      "sha256": "3cb71f71c6bf4342276373eac1c8034e92b1adeb21f0c1aa2e5ebb6d97faf139",
+      "bytes": 55661
+    },
+    {
+      "id": "man-clever",
+      "sourceReport": "artifacts/expression-character-trials/web-original-09-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-09-animated/output/gifs/man-clever.gif",
+      "status": "imported",
+      "catalogId": "generated-19bc1028d22444d9f302c700",
+      "keyword": "真有你的",
+      "sha256": "19bc1028d22444d9f302c7004541e9e81b1f5a29f783b2d9728a6200ef0e427f",
+      "bytes": 59448
+    },
+    {
+      "id": "hamster-help",
+      "sourceReport": "artifacts/expression-character-trials/web-original-09-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-09-animated/output/gifs/hamster-help.gif",
+      "status": "imported",
+      "catalogId": "generated-22dec834dadad90bee139813",
+      "keyword": "救命",
+      "sha256": "22dec834dadad90bee139813daf0440fdb2b504126f8e705358f1b0182e9bca2",
+      "bytes": 62042
+    },
+    {
+      "id": "line-help",
+      "sourceReport": "artifacts/expression-character-trials/web-original-09-animated/output/report.json",
+      "sourceGif": "artifacts/expression-character-trials/web-original-09-animated/output/gifs/line-help.gif",
+      "status": "imported",
+      "catalogId": "generated-a2ecf50ad389eef2522ac369",
+      "keyword": "救命",
+      "sha256": "a2ecf50ad389eef2522ac3695753a9f608133503c3a030384569aea6c15b0332",
+      "bytes": 72042
+    },
+    {
       "id": "thanks-nuotuan-bow",
       "sourceReport": "artifacts/expression-prototypes/report.json",
       "sourceGif": "artifacts/expression-prototypes/gifs/thanks-nuotuan-bow.gif",

@@ -16,6 +16,8 @@ class ChatCaptureLifecycleConfigTest {
         RuntimeEnvironment.getApplication().resources.getXml(R.xml.passive_chat_accessibility_service).use { xml ->
             while (xml.eventType != XmlPullParser.START_TAG) xml.next()
             val ns = "http://schemas.android.com/apk/res/android"
+            assertTrue(xml.getAttributeIntValue(ns, "accessibilityEventTypes", 0) and
+                android.view.accessibility.AccessibilityEvent.TYPE_VIEW_SCROLLED != 0)
             assertNull(xml.getAttributeValue(ns, "packageNames"))
             assertEquals(0, xml.getAttributeIntValue(ns, "notificationTimeout", -1))
         }

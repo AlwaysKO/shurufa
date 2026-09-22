@@ -19,6 +19,20 @@ import org.robolectric.annotation.Config
 @Config(sdk = [30])
 class MediaCropperTest {
     @Test
+    fun scrollStartingDuringSystemCaptureRejectsAndRecyclesOldFrame() = runBlocking {
+        var generation = 1L
+        val bitmap = solidBitmap(100, 100, Color.BLUE)
+        val capturer = WindowMediaCapturer(ApplicationProvider.getApplicationContext(), ScreenshotSource { _, _ ->
+            generation++ // 系统请求已提交后出现滚动，旧画面不能交给持久化。
+            WindowScreenshotResult.Success(bitmap, 0, 0)
+        }, captureGeneration = { generation })
+        val assets = capturer.capture(1, IntRect(0, 0, 100, 100),
+            listOf(MediaCaptureRequest(0, IntRect(0, 0, 50, 50))))
+        assertTrue(assets.isEmpty())
+        assertTrue(bitmap.isRecycled)
+    }
+
+    @Test
     fun queuedOldConversationCannotCaptureTheNextConversationInTheSameWindow() = runBlocking {
         var generation = 1L
         val release = CompletableDeferred<Unit>()

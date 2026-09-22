@@ -1,0 +1,25 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6ab21e39-7ad4-83ea-8e66-b5d48f0d1866",
+  "sourceFileId": "file_00000000127082069e604450d87ac7da",
+  "requestedDate": "2026-09-22",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "0312c54a5967b7d1c73bd7480307a15a5e73bca4c75b466bf8bdd377ccc7c299",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-22T06:23:36.454073+00:00",
+  "generationObservedAt": "2026-09-22T06:23:36.454073+00:00",
+  "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+  "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+  "originalDownloadName": "man-clever.png",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-22T06:26:48.585811+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

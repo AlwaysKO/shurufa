@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6ab22099-22bc-83e9-9cc9-12fac4b64c21",
+  "sourceFileId": "file_00000000a7c481f8a76665091229c88a",
+  "requestedDate": "2026-09-22",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "70c68176b5d746f4268a17f3c29ab7006c3e638991ab77682e9e1f5cf92d15ae",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-22T06:30:35.856669+00:00",
+  "generationObservedAt": "2026-09-22T06:30:35.856669+00:00",
+  "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+  "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+  "originalDownloadName": "hamster-help.png",
+  "deletedAt": "2026-09-22T06:31:05.896568+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

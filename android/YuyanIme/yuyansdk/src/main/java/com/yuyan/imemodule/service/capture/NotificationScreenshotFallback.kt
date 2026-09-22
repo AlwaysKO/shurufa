@@ -244,15 +244,8 @@ internal fun notificationChatViewport(
     return NotificationChatViewport(key, message.mediaBounds ?: return null, message.inputAreaBounds)
 }
 
-internal fun notificationFallbackBounds(windowBounds: IntRect): IntRect {
-    val height = windowBounds.bottom - windowBounds.top
-    return IntRect(
-        left = windowBounds.left,
-        top = windowBounds.top + height * 3 / 100,
-        right = windowBounds.right,
-        bottom = windowBounds.top + height * 90 / 100,
-    )
-}
+internal fun notificationFallbackBounds(windowBounds: IntRect, statusBarBottom: Int = 0): IntRect =
+    emptyTreeScreenshotBounds(windowBounds, inputMethodTop = null, statusBarBottom = statusBarBottom)
 
 internal const val WECHAT_PACKAGE = "com.tencent.mm"
 internal const val QQ_PACKAGE = "com.tencent.mobileqq"

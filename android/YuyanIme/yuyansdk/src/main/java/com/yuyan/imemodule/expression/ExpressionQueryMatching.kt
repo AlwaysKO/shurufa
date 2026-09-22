@@ -6,7 +6,13 @@ internal object ExpressionQueryMatching {
     fun normalize(value: String): String = value.lowercase()
         .replace(Regex("[\\x09-\\x0D\\p{Z}\\uFEFF\\p{P}\\p{S}]+"), "")
 
-    private val groups = listOf(
+    /** 自动推荐只去首尾空白和句末标点，不折叠大小写、内部文字或符号。 */
+    fun normalizeAutomatic(value: String): String = value
+        .replace(Regex("^[\\x09-\\x0D\\p{Z}\\uFEFF]+|[\\x09-\\x0D\\p{Z}\\uFEFF]+$"), "")
+        .replace(Regex("[\\x09-\\x0D\\p{Z}\\uFEFF\\p{P}]+$"), "")
+
+    val groups = listOf(
+        listOf("赞", "点赞", "给你点赞", "太棒了"),
         listOf("谢谢", "感谢", "多谢", "感激"),
         listOf("打闹", "玩闹", "打你", "打我", "揍你", "揍我", "捶你", "捶我"),
         listOf("追赶", "抓你", "抓我", "追你", "追我", "捉你", "捉我"),

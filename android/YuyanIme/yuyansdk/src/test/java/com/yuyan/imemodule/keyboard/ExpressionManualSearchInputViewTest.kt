@@ -660,12 +660,15 @@ class ExpressionManualSearchInputViewTest {
     fun `拼音替换成呢导致光标回缩仍自动推荐然后呢`() {
         AppPrefs.getInstance().internal.aiStickerEnabled.setValue(true)
         val view = realChatInputView()
+        var fullText = "然后"
+        installAutomaticEditorSnapshot(view) { fullText }
         view.notifyExpressionTextCommitted("然后")
         view.onExpressionSelectionChanged(0, 0, 2, 2, -1, -1)
         Shadows.shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
         assertEquals("然后", view.expressionState().query)
         // 宿主组合区是 ne，选“呢”后光标由 4 变成 3，并不是用户移动光标。
         view.onExpressionSelectionChanged(2, 2, 4, 4, 4, 2)
+        fullText = "然后呢"
         view.notifyExpressionTextCommitted("呢")
         view.onExpressionSelectionChanged(4, 4, 3, 3, -1, -1)
         Shadows.shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
@@ -679,9 +682,12 @@ class ExpressionManualSearchInputViewTest {
     fun `提交回缩前的无移动负组合回调不能丢掉组合范围`() {
         AppPrefs.getInstance().internal.aiStickerEnabled.setValue(true)
         val view = realChatInputView()
+        var fullText = "然后"
+        installAutomaticEditorSnapshot(view) { fullText }
         view.notifyExpressionTextCommitted("然后")
         view.onExpressionSelectionChanged(0, 0, 2, 2, -1)
         view.onExpressionSelectionChanged(2, 2, 4, 4, 4, 2)
+        fullText = "然后呢"
         view.notifyExpressionTextCommitted("呢")
         repeat(2) { view.onExpressionSelectionChanged(4, 4, 4, 4, -1) }
         view.onExpressionSelectionChanged(4, 4, 3, 3, -1)
@@ -713,9 +719,12 @@ class ExpressionManualSearchInputViewTest {
     fun `重复无移动选区回调不吞掉待确认提交`() {
         AppPrefs.getInstance().internal.aiStickerEnabled.setValue(true)
         val view = realChatInputView()
+        var fullText = "然后"
+        installAutomaticEditorSnapshot(view) { fullText }
         view.notifyExpressionTextCommitted("然后")
         view.onExpressionSelectionChanged(0, 0, 0, 0, -1)
         view.onExpressionSelectionChanged(0, 0, 2, 2, -1)
+        fullText = "然后呢"
         view.notifyExpressionTextCommitted("呢")
         Shadows.shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
         assertEquals("然后呢", view.expressionState().query)
@@ -958,10 +967,13 @@ class ExpressionManualSearchInputViewTest {
         root.removeView(inputView)
         root.addView(inputView)
         inputView.onExpressionInputViewStarted(chatEditorInfo(), restarting = false, connectionIdentity = Any())
+        var fullText = "重新连接"
+        installAutomaticEditorSnapshot(inputView) { fullText }
         inputView.notifyExpressionTextCommitted("重新连接")
         inputView.onSettingsMenuClick(SkbMenuMode.AiDoutu)
 
         assertEquals("重新连接", inputView.expressionState().query)
+        fullText = "重新连接自动推荐"
         inputView.notifyExpressionTextCommitted("自动推荐")
         Shadows.shadowOf(Looper.getMainLooper()).idleFor(250, TimeUnit.MILLISECONDS)
         assertEquals("重新连接自动推荐", inputView.expressionState().query)
@@ -1676,6 +1688,9 @@ class ExpressionManualSearchInputViewTest {
             }
         }
         org.robolectric.util.ReflectionHelpers.setField(services.last(), "mStartedInputConnection", connection)
+        val editor = chatEditorInfo()
+        org.robolectric.util.ReflectionHelpers.setField(services.last(), "mInputEditorInfo", editor)
+        inputView.onExpressionInputViewStarted(editor, false, connection)
         val coordinator = InputView::class.java.getDeclaredField("expressionQueryCoordinator").apply { isAccessible = true }.get(inputView)
         coordinator.javaClass.getDeclaredField("currentQuery").apply { isAccessible = true; set(coordinator, "谢谢") }
         val asset = ExpressionCatalog.fromAssets(context).document.templates.first { it.type == "synthesis-template" }
@@ -2009,6 +2024,113 @@ class ExpressionManualSearchInputViewTest {
         inputView.searchExpressionsManually()
         assertEquals("然后呢", inputView.expressionState().query)
         assertNull(inputView.findViewWithTag<View>("expression_usage_hint"))
+    }
+
+    @Test
+    fun `自动查询使用宿主整句而不是最后上屏片段`() {
+        AppPrefs.getInstance().internal.aiStickerEnabled.setValue(true)
+        val inputView = realChatInputView()
+        val editor = chatEditorInfo()
+        val connection = object : android.view.inputmethod.BaseInputConnection(View(context), true) {
+            override fun getExtractedText(request: android.view.inputmethod.ExtractedTextRequest?, flags: Int) =
+                android.view.inputmethod.ExtractedText().apply {
+                    text = "这是中华人民赞扬的美德"
+                    startOffset = 0; partialStartOffset = -1; partialEndOffset = -1
+                    selectionStart = 6; selectionEnd = 6
+                }
+        }
+        org.robolectric.util.ReflectionHelpers.setField(services.last(), "mStartedInputConnection", connection)
+        org.robolectric.util.ReflectionHelpers.setField(services.last(), "mInputEditorInfo", editor)
+        inputView.onExpressionInputViewStarted(editor, false, connection)
+        inputView.notifyExpressionTextCommitted("赞")
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
+        assertEquals("这是中华人民赞扬的美德", inputView.expressionState().query)
+        assertTrue(inputView.expressionState().results.isEmpty())
+    }
+
+    @Test
+    fun `宿主全文不可读时不得回退最近片段自动推荐`() {
+        AppPrefs.getInstance().internal.aiStickerEnabled.setValue(true)
+        val inputView = realChatInputView()
+        inputView.notifyExpressionTextCommitted("赞")
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
+        assertNull(inputView.expressionState().query)
+    }
+
+    @Test
+    fun `自动全文拒绝截断部分更新及宿主读取异常`() {
+        AppPrefs.getInstance().internal.aiStickerEnabled.setValue(true)
+        for (mode in listOf("offset", "partial", "exception", "null")) {
+            val inputView = realChatInputView()
+            val editor = chatEditorInfo()
+            val connection = object : android.view.inputmethod.BaseInputConnection(View(context), true) {
+                override fun getExtractedText(request: android.view.inputmethod.ExtractedTextRequest?, flags: Int): android.view.inputmethod.ExtractedText? {
+                    if (mode == "exception") throw IllegalStateException("host unavailable")
+                    if (mode == "null") return null
+                    return android.view.inputmethod.ExtractedText().apply {
+                        text = "赞"; startOffset = if (mode == "offset") 500 else 0
+                        partialStartOffset = if (mode == "partial") 0 else -1; partialEndOffset = -1
+                        selectionStart = 1; selectionEnd = 1
+                    }
+                }
+            }
+            org.robolectric.util.ReflectionHelpers.setField(services.last(), "mStartedInputConnection", connection)
+            org.robolectric.util.ReflectionHelpers.setField(services.last(), "mInputEditorInfo", editor)
+            inputView.onExpressionInputViewStarted(editor, false, connection)
+            inputView.notifyExpressionTextCommitted("赞")
+            Shadows.shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
+            assertNull(mode, inputView.expressionState().query)
+        }
+    }
+
+    @Test
+    fun `异步预览返回前宿主整句已改变不得显示旧推荐`() {
+        AppPrefs.getInstance().internal.aiStickerEnabled.setValue(true)
+        val inputView = realChatInputView()
+        val editor = chatEditorInfo()
+        var reads = 0
+        val connection = object : android.view.inputmethod.BaseInputConnection(View(context), true) {
+            override fun getExtractedText(request: android.view.inputmethod.ExtractedTextRequest?, flags: Int) =
+                android.view.inputmethod.ExtractedText().apply {
+                    // 前两次分别是提交和防抖发布；随后模拟宿主自行换文、没有选区回调。
+                    text = if (++reads <= 2) "谢谢" else "这是一段不该匹配的很长文字谢谢"
+                    startOffset = 0; partialStartOffset = -1; partialEndOffset = -1
+                    selectionStart = 2; selectionEnd = 2
+                }
+        }
+        org.robolectric.util.ReflectionHelpers.setField(services.last(), "mStartedInputConnection", connection)
+        org.robolectric.util.ReflectionHelpers.setField(services.last(), "mInputEditorInfo", editor)
+        inputView.onExpressionInputViewStarted(editor, false, connection)
+        inputView.notifyExpressionTextCommitted("谢谢")
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
+        repeat(30) { Thread.sleep(10); Shadows.shadowOf(Looper.getMainLooper()).idle() }
+        assertTrue("结果发布前必须再核对宿主全文", reads >= 3)
+        assertNull(inputView.expressionState().query)
+        assertTrue(inputView.expressionState().results.isEmpty())
+    }
+
+    @Test
+    fun `完整说法带首尾空格仍触发自动查询`() {
+        AppPrefs.getInstance().internal.aiStickerEnabled.setValue(true)
+        val inputView = realChatInputView()
+        installAutomaticEditorSnapshot(inputView) { " 给你点赞 " }
+        inputView.notifyExpressionTextCommitted("给你点赞")
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
+        assertEquals("给你点赞", inputView.expressionState().query)
+    }
+
+    private fun installAutomaticEditorSnapshot(inputView: InputView, text: () -> String) {
+        val editor = chatEditorInfo()
+        val connection = object : android.view.inputmethod.BaseInputConnection(View(context), true) {
+            override fun getExtractedText(request: android.view.inputmethod.ExtractedTextRequest?, flags: Int) =
+                android.view.inputmethod.ExtractedText().apply {
+                    this.text = text(); startOffset = 0; partialStartOffset = -1; partialEndOffset = -1
+                    selectionStart = this.text.length; selectionEnd = this.text.length
+                }
+        }
+        org.robolectric.util.ReflectionHelpers.setField(services.last(), "mStartedInputConnection", connection)
+        org.robolectric.util.ReflectionHelpers.setField(services.last(), "mInputEditorInfo", editor)
+        inputView.onExpressionInputViewStarted(editor, false, connection)
     }
 
     private fun realChatInputView(): InputView {

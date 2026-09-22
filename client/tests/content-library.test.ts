@@ -278,3 +278,79 @@ it('AI底图安全区至少14px容纳一个最小字及描边，边界可上传'
  await view.find('synthesis-form')!.props.onSubmit({preventDefault(){}});await settle();
  expect(upload).toHaveBeenCalledOnce();
 });
+
+function editableLibrary() {
+  return { systemCount:1,personalCount:1,warnings:[],groups:[
+    {keyword:'赞',aliases:['赞','给你点赞'],confirmedAliases:[],category:'其他',planned:false,custom:false,assets:[
+      {id:7,source:'personal',url:'/mine.gif',format:'gif',keywords:['赞'],width:1,height:1,useCount:0},
+      {id:'praise',source:'system',url:'/praise.gif',format:'gif',keywords:['赞'],width:1,height:1,useCount:null},
+    ]},
+    {keyword:'空组',aliases:['空组'],confirmedAliases:[],category:'其他',planned:false,custom:true,assets:[]},
+  ]};
+}
+it('组内拖放只修改草稿，保存发送完整顺序并保留失败草稿', async () => {
+  const data = editableLibrary(); const update = vi.fn().mockRejectedValueOnce(new Error('保存断网')).mockImplementation(async (_keyword, patch) => {
+    const group = data.groups[0]!; group.assets.reverse(); return {group};
+  });
+  const view = await mount('Stickers', {stickerLibrary:vi.fn(async()=>structuredClone(data)),updateStickerGroup:update});
+  expect(view.find('save-sticker-order')).toBeDefined();
+  view.find('drag-sticker-personal:7')!.props.onDragstart({dataTransfer:{setData(){},effectAllowed:''}}); await settle();
+  view.find('sticker-cell-system:praise')!.props.onDrop({preventDefault(){}}); await settle();
+  expect(update).not.toHaveBeenCalled();
+  const order = () => view.all().filter(n=>String(n.props['data-testid']??'').startsWith('sticker-cell-')).map(n=>n.props['data-testid']);
+  expect(order()).toEqual(['sticker-cell-system:praise','sticker-cell-personal:7']);
+  await view.find('save-sticker-order')!.props.onClick(); await settle();
+  expect(update).toHaveBeenLastCalledWith('赞',{assetOrder:['system:praise','personal:7']});
+  expect(view.text()).toContain('保存断网'); expect(view.find('save-sticker-order')!.props.disabled).toBe(false);
+  await view.find('save-sticker-order')!.props.onClick(); await settle();
+  expect(view.find('save-sticker-order')!.props.disabled).toBe(true);
+  expect(order()).toEqual(['sticker-cell-system:praise','sticker-cell-personal:7']);
+});
+it('同组说法可编辑、删除、新增，失败保留草稿，成功显示服务器结果', async () => {
+  const data=editableLibrary(); const update=vi.fn().mockRejectedValueOnce(new Error('冲突说法')).mockImplementation(async (_k, patch)=>({group:{...data.groups[0],aliases:patch.aliases}}));
+  const view=await mount('Stickers',{stickerLibrary:vi.fn(async()=>structuredClone(data)),updateStickerGroup:update});
+  expect(view.find('edit-group-aliases')).toBeDefined();
+  view.find('edit-group-aliases')!.props.onClick(); await settle();
+  view.find('group-alias-input-0')!.props['onUpdate:modelValue']('夸夸你');
+  view.find('remove-group-alias-1')!.props.onClick(); await settle();
+  view.find('add-group-alias')!.props.onClick(); await settle();
+  view.find('group-alias-input-1')!.props['onUpdate:modelValue']('真棒');
+  await view.find('save-group-aliases')!.props.onClick(); await settle();
+  expect(update).toHaveBeenLastCalledWith('赞',{aliases:['夸夸你','真棒']});
+  expect(view.text()).toContain('冲突说法'); expect(view.find('group-alias-input-0')).toBeDefined();
+  await view.find('save-group-aliases')!.props.onClick(); await settle();
+  expect(view.find('group-alias-input-0')).toBeUndefined(); expect(view.text()).toContain('夸夸你');
+});
+it('切换组丢弃未保存排序和说法，不能误保存到下一组', async () => {
+  const update=vi.fn(); const view=await mount('Stickers',{stickerLibrary:vi.fn(async()=>editableLibrary()),updateStickerGroup:update});
+  expect(view.find('edit-group-aliases')).toBeDefined();
+  view.find('edit-group-aliases')!.props.onClick(); await settle();
+  view.find('keyword-空组')!.props.onClick(); await settle();
+  expect(view.find('group-alias-input-0')).toBeUndefined(); expect(update).not.toHaveBeenCalled();
+});
+it('拖拽草稿期间同组上传新图仍显示，并把新图纳入最终保存顺序', async()=>{
+ const data=editableLibrary(); const update=vi.fn(async()=>({group:data.groups[0]}));
+ const upload=vi.fn(async()=>{data.groups[0]!.assets.push({...data.groups[0]!.assets[0]!,id:8});return {};});
+ const view=await mount('Stickers',{stickerLibrary:vi.fn(async()=>structuredClone(data)),uploadSticker:upload,updateStickerGroup:update});
+ view.find('drag-sticker-personal:7')!.props.onDragstart({dataTransfer:{setData(){},effectAllowed:''}});
+ view.find('sticker-cell-system:praise')!.props.onDrop({preventDefault(){}});await settle();
+ vi.stubGlobal('Image',class {naturalWidth=1;naturalHeight=1;onload:(()=>void)|null=null;set src(_s:string){this.onload?.();}});
+ await view.find('group-upload-input')!.props.onChange({target:{files:[new File(['GIF89a'],'new.gif',{type:'image/gif'})],value:'new.gif'}});await settle();
+ expect(view.find('sticker-cell-personal:8')).toBeDefined();
+ await view.find('save-sticker-order')!.props.onClick();await settle();
+ expect(update).toHaveBeenLastCalledWith('赞',{assetOrder:['system:praise','personal:7','personal:8']});
+});
+it('排序草稿期间删除同组图片剔除失效ID，不影响剩余顺序',async()=>{
+ const data=editableLibrary();data.groups[0]!.assets.push({...data.groups[0]!.assets[0]!,id:8});
+ const update=vi.fn(async()=>({group:data.groups[0]}));
+ const remove=vi.fn(async()=>{data.groups[0]!.assets=data.groups[0]!.assets.filter(asset=>asset.id!==7);return {};});
+ vi.stubGlobal('confirm',()=>true);
+ const view=await mount('Stickers',{stickerLibrary:vi.fn(async()=>structuredClone(data)),deleteSticker:remove,updateStickerGroup:update});
+ view.find('drag-sticker-personal:7')!.props.onDragstart({dataTransfer:{setData(){},effectAllowed:''}});
+ view.find('sticker-cell-system:praise')!.props.onDrop({preventDefault(){}});await settle();
+ await view.find('delete-sticker-7')!.props.onClick();await settle();
+ expect(view.find('sticker-cell-personal:7')).toBeUndefined();
+ // 删除后原始剩余顺序恰好相同，不再保存冗余或失效ID。
+ expect(view.find('save-sticker-order')!.props.disabled).toBe(true);
+ expect(update).not.toHaveBeenCalled();
+});

@@ -36,12 +36,12 @@ class ExpressionQueryMatchingTest {
         for (case in cases) {
             val row = case.jsonObject
             val query = row.getValue("query").jsonPrimitive.content
-            val results = catalog.recommend(query)
+            val results = catalog.search(query)
             row.getValue("first").jsonPrimitive.contentOrNull?.let { assertEquals(query, it, results.firstOrNull()?.id) }
             for (blocked in row.getValue("forbidden").jsonArray) assertFalse(query, results.any { it.id == blocked.jsonPrimitive.content })
             results.forEach { assertEquals(query, it.id, it.embeddedText) }
             val templates = ExpressionCatalog(catalog.document.copy(templates = assets.map { it.copy(type = "synthesis-template", embeddedText = null) }))
-            val fallback = templates.recommend(query)
+            val fallback = templates.search(query)
             if (query.startsWith("不") || query.startsWith("别")) for (blocked in row.getValue("forbidden").jsonArray) assertFalse("template: $query", fallback.any { it.id == blocked.jsonPrimitive.content })
         }
     }

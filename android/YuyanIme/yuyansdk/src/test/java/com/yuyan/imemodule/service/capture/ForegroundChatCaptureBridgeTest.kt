@@ -21,7 +21,7 @@ class ForegroundChatCaptureBridgeTest {
             AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED,
             "android.widget.EditText",
         ))
-        assertFalse(shouldCaptureForegroundChatEvent(
+        assertTrue(shouldCaptureForegroundChatEvent(
             AccessibilityEvent.TYPE_VIEW_SCROLLED,
             "androidx.recyclerview.widget.RecyclerView",
         ))

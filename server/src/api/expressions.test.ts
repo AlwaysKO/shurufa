@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { newDb } from 'pg-mem';
+import { newDb, DataType } from 'pg-mem';
 import type pg from 'pg';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -88,13 +88,15 @@ const catalog: GeneratedExpressionCatalog = {
 
 beforeEach(async () => {
   const database = newDb();
+  database.public.registerFunction({name:'trim',args:[DataType.text],returns:DataType.text,implementation:(s:string)=>s.trim()});
+  database.public.registerFunction({name:'length',args:[DataType.text],returns:DataType.integer,implementation:(s:string)=>s.length});
   const adapter = database.adapters.createPg();
   pool = new adapter.Pool();
   await pool.query(readFileSync(
     new URL('../../migrations/011_expression_assets.sql', import.meta.url),
     'utf8',
   ));
-  for (const file of ['005_sticker.sql', '018_synthesis_library.sql', '019_keyword_gif_removal.sql']) await pool.query(readFileSync(new URL(`../../migrations/${file}`, import.meta.url), 'utf8'));
+  for (const file of ['005_sticker.sql', '018_synthesis_library.sql', '019_keyword_gif_removal.sql', '015_sticker_keywords.sql', '024_sticker_group_settings.sql']) await pool.query(readFileSync(new URL(`../../migrations/${file}`, import.meta.url), 'utf8').split('-- 兼容历史')[0]);
   root = await mkdtemp(join(tmpdir(), 'expressions-api-'));
   vi.spyOn(process, 'cwd').mockReturnValue(root);
   const runtimeRoot = join(root, '.runtime', 'expression-assets');
@@ -113,7 +115,7 @@ afterEach(async () => {
 });
 
 describe('mobile expression API', () => {
-  it.each(['你好', '早安', '晚安', '好的', '对不起'])('已验收新词 %s 仅返回八张原 GIF，前四内置且不外搜', async (word) => {
+  it.each(['你好', '早安', '晚安', '好的', '对不起'])('已验收新词 %s 原 GIF 保持组内顺序并共享同组素材，不外搜', async (word) => {
     const production = JSON.parse(readFileSync(
       new URL('../../../android/YuyanIme/yuyansdk/src/main/assets/expression/catalog.json', import.meta.url), 'utf8',
     )) as GeneratedExpressionCatalog;
@@ -125,11 +127,11 @@ describe('mobile expression API', () => {
     expect(response.status).toBe(200);
     const expected = production.templates.filter((item) => item.format === 'gif' && item.embeddedText === word);
     expect(expected).toHaveLength(8);
-    expect(response.body.results).toEqual(expected.map((item) => ({
+    expect(response.body.results.slice(0, 8)).toEqual(expected.map((item) => ({
       ...item, version: item.sha256, url: `/uploads/expression/${item.fileName}`,
       thumbnail_url: `/uploads/expression/${item.thumbnailFileName}`,
     })));
-    expect(response.body.results.map((item: { distribution: string }) => item.distribution))
+    expect(response.body.results.slice(0, 8).map((item: { distribution: string }) => item.distribution))
       .toEqual([...Array(4).fill('bundled'), ...Array(4).fill('remote')]);
     expect(remote.search).not.toHaveBeenCalled();
   });
@@ -154,15 +156,15 @@ describe('mobile expression API', () => {
     expect(unchanged.status).toBe(304);
   });
 
-  it('常用词返回 4 张含完整文字的预制原图且 GIF 优先于高热度静态图', async () => {
+  it('常用词返回组内预制原图并保持后台顺序，不再被 GIF 或热度重排', async () => {
     const response = await request(createApp(pool))
       .get('/api/v1/mobile/expressions/recommend?q=你好')
       .set('X-Device-Id', USER_A);
 
     expect(response.status).toBe(200);
     expect(response.body.results.map((item: { id: string }) => item.id))
-      .toEqual(['hello-2', 'hello-hot', 'hello-3', 'hello-4']);
-    expect(response.body.results[0]).toMatchObject({
+      .toEqual(['hello-hot', 'hello-2', 'hello-3', 'hello-4']);
+    expect(response.body.results[1]).toMatchObject({
       type: 'prebuilt',
       embeddedText: '你好',
       sourceType: 'ai-original',

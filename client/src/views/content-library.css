@@ -143,3 +143,13 @@
 .content-library .alias-tags .library-badge { background:#fff; border:1px solid #e3e8f2; color:#62718d; font-size:12px; padding:5px 9px; white-space:normal; overflow-wrap:anywhere; }
 .content-library .alias-tags .library-badge.confirmed { color:#5261d8; border-color:#ced6ff; background:#f0f3ff; }
 .content-library .semantic-aliases>p { margin-top:12px; font-size:11px; line-height:1.8; color:#8c98ad; }
+
+/* 关键词组设置：排序与说法草稿均须显式保存。 */
+.sticker-order-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin: 16px 0; font-size: 13px; color: #64748b; }
+.sticker-sort-actions { display: flex; align-items: center; gap: 8px; padding: 6px 10px; flex-wrap: wrap; }
+.drag-handle { cursor: grab; }
+.drag-handle:active { cursor: grabbing; }
+.sticker-cell.dragging { opacity: .5; outline: 2px dashed #64748b; }
+.alias-editor { display: grid; gap: 10px; margin: 12px 0; }
+.alias-editor .library-row .library-input { min-width: 0; }
+.alias-editor .library-row .text-button { flex-shrink: 0; }

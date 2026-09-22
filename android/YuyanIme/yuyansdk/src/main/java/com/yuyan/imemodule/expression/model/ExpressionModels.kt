@@ -81,6 +81,13 @@ data class EmojiCombination(
 )
 
 @Serializable
+data class ExpressionRecommendationGroup(
+    val keyword: String,
+    val aliases: List<String> = emptyList(),
+    val assetIds: List<String> = emptyList(),
+)
+
+@Serializable
 data class ExpressionCatalogDocument(
     val version: String,
     val templates: List<ExpressionAsset>,
@@ -88,4 +95,6 @@ data class ExpressionCatalogDocument(
     val emojiCombinations: List<EmojiCombination>,
     val retiredTemplateIds: List<String> = emptyList(),
     val complete: Boolean = false,
+    /** null/缺省仅兼容旧目录；空数组是权威清空，不能回退关键词。 */
+    val recommendationGroups: List<ExpressionRecommendationGroup>? = null,
 )

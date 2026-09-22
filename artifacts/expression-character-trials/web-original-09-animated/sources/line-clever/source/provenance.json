@@ -1,0 +1,25 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6ab21b40-8658-83e9-b3f9-67b9681e6ea3",
+  "sourceFileId": "file_0000000007c481fd853cac65f0783f19",
+  "requestedDate": "2026-09-22",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "5be73629843583b4efcada45de7278d9942c3149f31ff8cb98cc5fb278c2d988",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-22T06:10:30.453852+00:00",
+  "generationObservedAt": "2026-09-22T06:10:30.453852+00:00",
+  "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+  "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+  "originalDownloadName": "line-clever.png",
+  "personOrigin": "China",
+  "personGender": "male",
+  "adult": true,
+  "deletedAt": "2026-09-22T06:13:36.910906+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

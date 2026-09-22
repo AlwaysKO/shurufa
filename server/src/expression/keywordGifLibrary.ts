@@ -39,7 +39,7 @@ export async function resolveKeywordGifFile(id: string, format: 'gif' | 'webp'):
   if (!/^(artifacts|server\/images)\//.test(path) || ![resolve(root, 'artifacts') + sep, resolve(root, 'server/images') + sep].some(prefix => file.startsWith(prefix)) || !file.endsWith('.' + format)) throw new Error('关键词GIF来源路径越界');
   return file;
 }
-export async function removedKeywordGifHashes(pool: pg.Pool, userId: string): Promise<Set<string>> {
+export async function removedKeywordGifHashes(pool: Pick<pg.Pool, 'query'>, userId: string): Promise<Set<string>> {
   const result = await pool.query<{ sha256: string }>('SELECT sha256 FROM keyword_gif_removal WHERE user_id = $1 ORDER BY sha256', [userId]);
   return new Set(result.rows.map(row => row.sha256));
 }

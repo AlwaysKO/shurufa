@@ -6832,6 +6832,168 @@
         "date": "2026-09-16",
         "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
       }
+    },
+    {
+      "id": "generated-31674ee4ea1f499eaf679030",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "31674ee4ea1f499eaf67903070b9ae4bf0a72dcdea5451c637a46ac4dd091dfc",
+      "sha256": "31674ee4ea1f499eaf67903070b9ae4bf0a72dcdea5451c637a46ac4dd091dfc",
+      "fileName": "generated/generated-31674ee4ea1f499eaf679030.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "真有你的"
+      ],
+      "emotions": [],
+      "embeddedText": "真有你的",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-09-animated/output/gifs/otter-clever.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-09-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-0f89a252d181a3eb236369dd",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "0f89a252d181a3eb236369ddb1541d02be62e1b4eb67e3e65a770562f5701c07",
+      "sha256": "0f89a252d181a3eb236369ddb1541d02be62e1b4eb67e3e65a770562f5701c07",
+      "fileName": "generated/generated-0f89a252d181a3eb236369dd.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "真有你的"
+      ],
+      "emotions": [],
+      "embeddedText": "真有你的",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-09-animated/output/gifs/line-clever.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-09-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-3cb71f71c6bf4342276373ea",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "3cb71f71c6bf4342276373eac1c8034e92b1adeb21f0c1aa2e5ebb6d97faf139",
+      "sha256": "3cb71f71c6bf4342276373eac1c8034e92b1adeb21f0c1aa2e5ebb6d97faf139",
+      "fileName": "generated/generated-3cb71f71c6bf4342276373ea.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "真有你的"
+      ],
+      "emotions": [],
+      "embeddedText": "真有你的",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-09-animated/output/gifs/clay-clever.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-09-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-19bc1028d22444d9f302c700",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "19bc1028d22444d9f302c7004541e9e81b1f5a29f783b2d9728a6200ef0e427f",
+      "sha256": "19bc1028d22444d9f302c7004541e9e81b1f5a29f783b2d9728a6200ef0e427f",
+      "fileName": "generated/generated-19bc1028d22444d9f302c700.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "真有你的"
+      ],
+      "emotions": [],
+      "embeddedText": "真有你的",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-09-animated/output/gifs/man-clever.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-09-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-22dec834dadad90bee139813",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "22dec834dadad90bee139813daf0440fdb2b504126f8e705358f1b0182e9bca2",
+      "sha256": "22dec834dadad90bee139813daf0440fdb2b504126f8e705358f1b0182e9bca2",
+      "fileName": "generated/generated-22dec834dadad90bee139813.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "救命"
+      ],
+      "emotions": [],
+      "embeddedText": "救命",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-09-animated/output/gifs/hamster-help.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-09-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
+    },
+    {
+      "id": "generated-a2ecf50ad389eef2522ac369",
+      "type": "prebuilt",
+      "format": "gif",
+      "sourceType": "ai-original",
+      "distribution": "remote",
+      "version": "a2ecf50ad389eef2522ac3695753a9f608133503c3a030384569aea6c15b0332",
+      "sha256": "a2ecf50ad389eef2522ac3695753a9f608133503c3a030384569aea6c15b0332",
+      "fileName": "generated/generated-a2ecf50ad389eef2522ac369.gif",
+      "thumbnailFileName": null,
+      "width": 240,
+      "height": 240,
+      "keywords": [
+        "救命"
+      ],
+      "emotions": [],
+      "embeddedText": "救命",
+      "textSafeArea": null,
+      "layout": null,
+      "heat": 0,
+      "sourceGif": "artifacts/expression-character-trials/web-original-09-animated/output/gifs/line-help.gif",
+      "sourceReport": "artifacts/expression-character-trials/web-original-09-animated/output/report.json",
+      "approval": {
+        "date": "2026-09-16",
+        "basis": "用户明确此前所有合格关键词成品入库，并授权后续默认通过；不是逐张观看证明"
+      }
     }
   ]
 }

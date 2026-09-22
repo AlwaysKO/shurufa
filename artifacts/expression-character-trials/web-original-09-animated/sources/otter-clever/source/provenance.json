@@ -1,0 +1,22 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6ab21a62-7818-83e9-8525-3378bc48d945",
+  "sourceFileId": "file_00000000612c8206a72e3c12b806c06a",
+  "requestedDate": "2026-09-22",
+  "status": "downloaded-decodable",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "f87873cadaa2fc1ac98b90aa2d8ec2a14432341f4507d71a999a3a3f7b5d3e87",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-22T06:02:30.599249+00:00",
+  "generationObservedAt": "2026-09-22T06:02:30.599249+00:00",
+  "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+  "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+  "originalDownloadName": "otter-clever.png",
+  "deletedAt": "2026-09-22T06:03:59.701401+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

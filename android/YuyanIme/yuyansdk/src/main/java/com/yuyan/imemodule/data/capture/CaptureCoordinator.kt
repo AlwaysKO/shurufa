@@ -70,6 +70,7 @@ class CaptureCoordinator(
     private val captureAllowed: () -> Boolean = { true },
     private val onViewportParsed: (ParsedViewport) -> Unit = {},
     private val identityStore: com.yuyan.imemodule.data.capture.media.ConversationIdentityStore = com.yuyan.imemodule.data.capture.media.MemoryConversationIdentityStore(),
+    private val captureGeneration: () -> Long = { 0L },
     private val titleSignature: (PendingAssetEntity) -> String? = ::capturedTitlePixelSignature,
 ) {
     val internalFailureCount = AtomicLong(0)
@@ -88,6 +89,7 @@ class CaptureCoordinator(
 
     suspend fun capture(packageName: String, snapshot: UiNodeSnapshot, windowId: Int? = null): Boolean {
         if (!captureAllowed()) return false
+        val captureToken = captureGeneration()
         try {
             val adapter = adapterForPackage(packageName) ?: return false
             if (adapter.packageName != packageName) return false
@@ -123,6 +125,7 @@ class CaptureCoordinator(
             } else {
                 emptyMap()
             }
+            if (!captureAllowed() || captureGeneration() != captureToken) return false
             // 图片失败不能落一个没有附件的占位消息；让上层有限重试，而不是等下一次用户操作。
             if (rawMessages.all { it.metadata["capture_kind"] == "conversation_screenshot" } &&
                 mediaRequests.any { capturedAssets[it.messageIndex] == null }) return true
@@ -159,10 +162,12 @@ class CaptureCoordinator(
                 )) }
             }
             onViewportParsed(result.viewport.copy(conversation = conversation, messages = rawMessages))
-            val persisted = enqueueParsed(conversation, rawMessages, capturedAssets.filterKeys { it >= 0 })
+            val persisted = enqueueParsed(conversation, rawMessages, capturedAssets.filterKeys { it >= 0 }, captureToken)
+            CaptureTrace.record(CaptureStage.PERSIST_RESULT, value = persisted.ordinal, layer = CaptureLayer.COORDINATOR)
             return screenshotWithTitle && (persisted == CapturePersistResult.FAILED || conversation.identityConfidence < 0.8)
         } catch (_: Exception) {
             internalFailureCount.incrementAndGet()
+            CaptureTrace.record(CaptureStage.PIPELINE_FAILED, layer = CaptureLayer.COORDINATOR)
             return false
         }
     }
@@ -171,10 +176,14 @@ class CaptureCoordinator(
         conversation: CapturedConversation,
         messages: List<CapturedMessage>,
         pendingAssetsByMessage: Map<Int, PendingAssetEntity> = emptyMap(),
+        captureToken: Long = captureGeneration(),
     ): CapturePersistResult = try {
-            enqueueParsed(conversation, messages, pendingAssetsByMessage)
+            enqueueParsed(conversation, messages, pendingAssetsByMessage, captureToken).also {
+                CaptureTrace.record(CaptureStage.PERSIST_RESULT, value = it.ordinal, layer = CaptureLayer.COORDINATOR)
+            }
         } catch (_: Exception) {
             internalFailureCount.incrementAndGet()
+            CaptureTrace.record(CaptureStage.PIPELINE_FAILED, layer = CaptureLayer.COORDINATOR)
             CapturePersistResult.FAILED
         }
 
@@ -182,8 +191,9 @@ class CaptureCoordinator(
         conversation: CapturedConversation,
         rawMessages: List<CapturedMessage>,
         capturedAssets: Map<Int, PendingAssetEntity>,
+        captureToken: Long = captureGeneration(),
     ): CapturePersistResult {
-        if (!captureAllowed()) return CapturePersistResult.FAILED
+        if (!captureAllowed() || captureGeneration() != captureToken) return CapturePersistResult.FAILED
         if (conversation.identityConfidence < MIN_IDENTITY_CONFIDENCE &&
             !isIsolatedPendingScreenshot(conversation, rawMessages, capturedAssets) &&
             !isPendingNotification(conversation, rawMessages) &&
@@ -192,7 +202,7 @@ class CaptureCoordinator(
         var insertedAny = false
         var persistableAny = false
         for ((index, rawMessage) in rawMessages.withIndex()) {
-            if (!captureAllowed()) return CapturePersistResult.FAILED
+            if (!captureAllowed() || captureGeneration() != captureToken) return CapturePersistResult.FAILED
             if (!CollectionConsent.allowsText(rawMessage.text) || rawMessage.metadata.values.any { !CollectionConsent.allowsText(it) }) continue
             val asset = capturedAssets[index]
             val message = rawMessage.copy(

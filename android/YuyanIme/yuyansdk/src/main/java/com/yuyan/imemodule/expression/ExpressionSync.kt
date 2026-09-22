@@ -194,14 +194,16 @@ class ExpressionSync(
         query: String,
         requestId: Long,
         acceptResponse: (Long) -> Boolean,
+        automatic: Boolean = false,
         onResult: (List<ExpressionAsset>) -> Unit,
     ): Job = scope.launch {
-        val normalized = ExpressionQueryMatching.normalize(query)
-        if (normalized.isEmpty() || normalized.length > 100) return@launch
-        if (catalog.document.complete) {
-            val candidates = catalog.recommend(query)
+        val normalized = if (automatic) ExpressionQueryMatching.normalizeAutomatic(query) else ExpressionQueryMatching.normalize(query)
+        if (normalized.isEmpty() || (!automatic && normalized.length > 100)) return@launch
+        val snapshot = catalog
+        if (automatic || snapshot.document.complete || snapshot.document.recommendationGroups != null) {
+            val candidates = if (automatic) snapshot.recommend(query) else snapshot.search(query)
             val local = withContext(Dispatchers.IO) { candidates.mapNotNull(::localAsset) }
-            if (acceptResponse(requestId)) onResult(local.filter(::stillCurrent))
+            if (catalog === snapshot && acceptResponse(requestId)) onResult(local.filter(::stillCurrent))
             // 独立于订阅者，快速输入取消旧搜索时仍完成已启动的SHA原件预取。
             val prefetch = scope.async(Dispatchers.IO) {
                 for (asset in candidates) if (stillCurrent(asset) && localAsset(asset) == null) {
@@ -211,7 +213,7 @@ class ExpressionSync(
                 candidates.mapNotNull(::localAsset)
             }
             val loaded = prefetch.await()
-            if (acceptResponse(requestId)) onResult(loaded.filter(::stillCurrent))
+            if (catalog === snapshot && acceptResponse(requestId)) onResult(loaded.filter(::stillCurrent))
             return@launch
         }
         val (entry, local, complete) = withContext(Dispatchers.IO) {
@@ -221,18 +223,18 @@ class ExpressionSync(
                 .mapNotNull(::localAsset)
             Triple(entry, local, entry != null && queryCache.fresh(entry) && cached.all { localAsset(it) != null })
         }
-        if (!acceptResponse(requestId)) return@launch
+        if (catalog !== snapshot || !acceptResponse(requestId)) return@launch
         onResult(local.map(::withBundledThumbnail))
         if (complete) return@launch
         val work = startQuery(normalized, entry) ?: return@launch
         // 只取消订阅者，不取消 sibling 预取。owner scope 销毁仍取消所有任务。
-        work.result.await()?.takeIf { acceptResponse(requestId) }
+        work.result.await()?.takeIf { catalog === snapshot && acceptResponse(requestId) }
             ?.map(::withBundledThumbnail)?.let(onResult)
     }
 
     private fun rank(query: String, assets: List<ExpressionAsset>): List<ExpressionAsset> =
         ExpressionCatalog(ExpressionCatalogDocument(catalog.document.version, assets, emptyList(), emptyList(), catalog.document.retiredTemplateIds))
-            .recommend(query)
+            .search(query)
 
     private fun stillCurrent(asset: ExpressionAsset): Boolean = catalog.document.templates.any {
         it.id == asset.id && it.sha256 == asset.sha256 && it.id !in catalog.document.retiredTemplateIds

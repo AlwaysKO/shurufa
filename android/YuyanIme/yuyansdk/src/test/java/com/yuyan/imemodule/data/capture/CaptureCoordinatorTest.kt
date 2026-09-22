@@ -33,6 +33,32 @@ class CaptureCoordinatorTest {
         identityConfidence = 0.95,
     )
 
+    @Test
+    fun parsedScreenshotMustKeepItsOriginalTokenAfterScrollingStops() = runBlocking {
+        val store = FakeStore()
+        val worker = CaptureCoordinator(store = store, deviceId = { "device" }, wakeUploader = {},
+            captureGeneration = { 2L })
+        assertEquals(CapturePersistResult.FAILED, worker.captureParsed(conversation,
+            listOf(message("normal", "18:30")), captureToken = 1L))
+        assertTrue(store.pending.isEmpty())
+    }
+
+    @Test
+    fun oldFrameCannotPersistAfterScrollStartedAndAlreadyStopped() = runBlocking {
+        var generation = 1L
+        val adapter = FakeAdapter(success(mediaMessage(IntRect(10, 10, 70, 70))))
+        val store = FakeStore()
+        val worker = CaptureCoordinator(adapterForPackage = { adapter }, store = store,
+            deviceId = { "device" }, wakeUploader = {}, captureGeneration = { generation },
+            mediaCapturer = MediaAssetCapturer { _, _, _ ->
+                generation++ // 返回时已恢复允许采集，但该图片属于滚动前的旧请求。
+                mapOf(0 to pendingAsset("stale"))
+            })
+        worker.capture(adapter.packageName, snapshot, 7)
+        assertTrue(store.pending.isEmpty())
+        assertTrue(store.assets.isEmpty())
+    }
+
     @Test fun qqNotificationScreenshotUsesSamePendingIsolationAndDedupRules() = runBlocking {
         val store = FakeStore()
         val coordinator = coordinator(FakeAdapter(success()), store)

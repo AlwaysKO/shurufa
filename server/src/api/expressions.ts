@@ -1,3 +1,4 @@
+import { normalizeRecommendationPhrase, recommendationIds, type RecommendationGroup } from '../expression/recommendationGroups.js';
 import { expressionSnapshot, publicExpressionAsset } from './expressionSnapshot.js';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -45,10 +46,11 @@ function publicAsset(asset: ExpressionAsset): Record<string, unknown> {
   };
 }
 
-function publicCatalog(catalog: GeneratedExpressionCatalog): Record<string, unknown> {
+function publicCatalog(catalog: GeneratedExpressionCatalog & { recommendationGroups?: RecommendationGroup[] }): Record<string, unknown> {
   return {
     version: catalog.version,
     complete: true,
+    recommendationGroups: catalog.recommendationGroups ?? [],
     retiredTemplateIds: catalog.retiredTemplateIds ?? [],
     templates: catalog.templates.map(publicAsset),
     emojiBases: catalog.emojiBases.map((item) => ({
@@ -146,7 +148,11 @@ export function createMobileExpressionRouter(
         return;
       }
       const catalog = await expressionSnapshot(pool, res.locals.userId);
-      const localResults = rankExpressionAssets(catalog.templates, query).slice(0, 20);
+      const ids = recommendationIds(catalog.recommendationGroups, query);
+      const byId = new Map(catalog.templates.map(asset => [asset.id, asset]));
+      const exact = ids.map(id => byId.get(id)).filter((asset): asset is ExpressionAsset => !!asset);
+      const matchedGroup = catalog.recommendationGroups.some(group => group.aliases.some(alias => normalizeRecommendationPhrase(alias) === normalizeRecommendationPhrase(query)));
+      const localResults = (req.query.mode === 'automatic' || matchedGroup ? exact : rankExpressionAssets(catalog.templates, query)).slice(0, 20);
       // Use system catalog plus this owner’s private uploads only. Owner declarations are not
       // independently verified licenses; never send queries to unvetted external providers.
       const results = localResults.map(publicAsset);

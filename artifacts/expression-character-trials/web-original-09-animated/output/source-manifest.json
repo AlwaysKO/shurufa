@@ -1,0 +1,781 @@
+{
+  "items": [
+    {
+      "id": "otter-clever",
+      "sha256": "f87873cadaa2fc1ac98b90aa2d8ec2a14432341f4507d71a999a3a3f7b5d3e87",
+      "scale": 0.74,
+      "baselines": [
+        323,
+        323,
+        323,
+        323,
+        323,
+        323,
+        323,
+        323,
+        323,
+        323,
+        323,
+        323
+      ],
+      "prompt": "Generate ONE original animation master sprite sheet, FOUR columns x THREE rows =12 sequential full-body poses, row-major. Landscape 4:3 image, ideally1536x1152 or1448x1086 so cells are SQUARE. Pure white background, no text,letters,numbers,grid lines,borders. COMPLETE character including hair/ears,hands/paws,feet in EVERY cell. Figure at most60% cell height with top20% and bottom20% white space. SAME scale,camera,body anchor and foot baseline across12 cells.12 genuinely different consecutive anatomical poses:1setup,2-3anticipation,4-6develop,7-8key comic expression,9-11gradual release,12near start. No mirrored poses, no switching hands/sides, no extra limbs, no copied static pose. Stable identity/clothes/props. Original character, no celebrities or known meme/IP. A photorealistic small otter sitting upright, two hind feet grounded, exactly two forepaws. Skeptical side-eye first, then lift its RIGHT forepaw to its cheek as if impressed by someone's cheeky idea; peak asymmetric delighted open-mouth grin and raised brow; slowly lower paw and recover. Other forepaw fixed on belly. No human fingers. Generate this ONE12-cell chronological animation master now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6ab21a62-7818-83e9-8525-3378bc48d945",
+        "sourceFileId": "file_00000000612c8206a72e3c12b806c06a",
+        "requestedDate": "2026-09-22",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "f87873cadaa2fc1ac98b90aa2d8ec2a14432341f4507d71a999a3a3f7b5d3e87",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-22T06:02:30.599249+00:00",
+        "generationObservedAt": "2026-09-22T06:02:30.599249+00:00",
+        "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+        "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+        "originalDownloadName": "otter-clever.png",
+        "deletedAt": "2026-09-22T06:03:59.701401+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 11,
+          "baseline": 323
+        },
+        {
+          "pose": 1,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 11,
+          "baseline": 323
+        },
+        {
+          "pose": 2,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 11,
+          "baseline": 323
+        },
+        {
+          "pose": 3,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 11,
+          "baseline": 323
+        },
+        {
+          "pose": 4,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 11,
+          "baseline": 323
+        },
+        {
+          "pose": 5,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 11,
+          "baseline": 323
+        },
+        {
+          "pose": 6,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 11,
+          "baseline": 323
+        },
+        {
+          "pose": 7,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 11,
+          "baseline": 323
+        },
+        {
+          "pose": 8,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 11,
+          "baseline": 323
+        },
+        {
+          "pose": 9,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 11,
+          "baseline": 323
+        },
+        {
+          "pose": 10,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 11,
+          "baseline": 323
+        },
+        {
+          "pose": 11,
+          "scale": 0.7403314917127072,
+          "left": 47,
+          "top": 11,
+          "baseline": 323
+        }
+      ]
+    },
+    {
+      "id": "line-clever",
+      "sha256": "5be73629843583b4efcada45de7278d9942c3149f31ff8cb98cc5fb278c2d988",
+      "scale": 0.7,
+      "baselines": [
+        334,
+        334,
+        334,
+        334,
+        334,
+        334,
+        335,
+        335,
+        334,
+        334,
+        334,
+        334
+      ],
+      "prompt": "Generate ONE original animation master sprite sheet, FOUR columns x THREE rows =12 sequential full-body poses, row-major. Landscape 4:3 image, ideally1536x1152 or1448x1086 so cells are SQUARE. Pure white background, no text,letters,numbers,grid lines,borders. COMPLETE character including hair/ears,hands/paws,feet in EVERY cell. Figure at most60% cell height with top20% and bottom20% white space. SAME scale,camera,body anchor and foot baseline across12 cells.12 genuinely different consecutive anatomical poses:1setup,2-3anticipation,4-6develop,7-8key comic expression,9-11gradual release,12near start. No mirrored poses, no switching hands/sides, no extra limbs, no copied static pose. Stable identity/clothes/props. Original character, no celebrities or known meme/IP. Minimal bold black-and-white caricature of ORIGINAL Chinese adult man age38, broad jaw, short spiky hair, plain shirt and trousers. Left hand on hip fixed; right hand rises gradually into thumbs-up while suspicious side-eye becomes crooked amused grin. Peak lean head back slightly and exaggerated one raised eyebrow like 'you cheeky genius'; lower hand gradually. Complete body. Generate this ONE12-cell chronological animation master now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6ab21b40-8658-83e9-b3f9-67b9681e6ea3",
+        "sourceFileId": "file_0000000007c481fd853cac65f0783f19",
+        "requestedDate": "2026-09-22",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "5be73629843583b4efcada45de7278d9942c3149f31ff8cb98cc5fb278c2d988",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-22T06:10:30.453852+00:00",
+        "generationObservedAt": "2026-09-22T06:10:30.453852+00:00",
+        "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+        "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+        "originalDownloadName": "line-clever.png",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-22T06:13:36.910906+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.6988950276243094,
+          "left": 54,
+          "top": 16,
+          "baseline": 334
+        },
+        {
+          "pose": 1,
+          "scale": 0.6988950276243094,
+          "left": 54,
+          "top": 16,
+          "baseline": 334
+        },
+        {
+          "pose": 2,
+          "scale": 0.6988950276243094,
+          "left": 54,
+          "top": 16,
+          "baseline": 334
+        },
+        {
+          "pose": 3,
+          "scale": 0.6988950276243094,
+          "left": 54,
+          "top": 16,
+          "baseline": 334
+        },
+        {
+          "pose": 4,
+          "scale": 0.6988950276243094,
+          "left": 54,
+          "top": 16,
+          "baseline": 334
+        },
+        {
+          "pose": 5,
+          "scale": 0.6988950276243094,
+          "left": 54,
+          "top": 16,
+          "baseline": 334
+        },
+        {
+          "pose": 6,
+          "scale": 0.6988950276243094,
+          "left": 54,
+          "top": 16,
+          "baseline": 335
+        },
+        {
+          "pose": 7,
+          "scale": 0.6988950276243094,
+          "left": 54,
+          "top": 16,
+          "baseline": 335
+        },
+        {
+          "pose": 8,
+          "scale": 0.6988950276243094,
+          "left": 54,
+          "top": 16,
+          "baseline": 334
+        },
+        {
+          "pose": 9,
+          "scale": 0.6988950276243094,
+          "left": 54,
+          "top": 16,
+          "baseline": 334
+        },
+        {
+          "pose": 10,
+          "scale": 0.6988950276243094,
+          "left": 54,
+          "top": 16,
+          "baseline": 334
+        },
+        {
+          "pose": 11,
+          "scale": 0.6988950276243094,
+          "left": 54,
+          "top": 16,
+          "baseline": 334
+        }
+      ]
+    },
+    {
+      "id": "clay-clever",
+      "sha256": "f7f0da54348f03fb76e545ef9a85597a5180ddfaa3f1bc932606cd37713ff038",
+      "scale": 0.71,
+      "baselines": [
+        324,
+        324,
+        324,
+        324,
+        324,
+        324,
+        324,
+        324,
+        321,
+        321,
+        321,
+        321
+      ],
+      "prompt": "Generate ONE original animation master sprite sheet, FOUR columns x THREE rows =12 sequential full-body poses, row-major. Landscape 4:3 image, ideally1536x1152 or1448x1086 so cells are SQUARE. Pure white background, no text,letters,numbers,grid lines,borders. COMPLETE character including hair/ears,hands/paws,feet in EVERY cell. Figure at most60% cell height with top20% and bottom20% white space. SAME scale,camera,body anchor and foot baseline across12 cells.12 genuinely different consecutive anatomical poses:1setup,2-3anticipation,4-6develop,7-8key comic expression,9-11gradual release,12near start. No mirrored poses, no switching hands/sides, no extra limbs, no copied static pose. Stable identity/clothes/props. Original character, no celebrities or known meme/IP. Original clay purple raccoon with striped tail always viewer-right, two arms and two hind legs, seated feet grounded. Right paw slowly touches chin, then turns palm upward as if admiring a sneaky trick; crooked mischievous grin, one eyelid lowered. Left paw remains on belly. Small head tilt, gradual release, no new props. Generate this ONE12-cell chronological animation master now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6ab21d81-c1bc-83ea-a15d-7b0fde2b2226",
+        "sourceFileId": "file_00000000fa3c820998d6a67e8b19d47a",
+        "requestedDate": "2026-09-22",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "f7f0da54348f03fb76e545ef9a85597a5180ddfaa3f1bc932606cd37713ff038",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-22T06:15:13.435533+00:00",
+        "generationObservedAt": "2026-09-22T06:15:13.435533+00:00",
+        "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+        "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+        "originalDownloadName": "clay-clever.png",
+        "deletedAt": "2026-09-22T06:16:40.621181+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 20,
+          "baseline": 324
+        },
+        {
+          "pose": 1,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 20,
+          "baseline": 324
+        },
+        {
+          "pose": 2,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 20,
+          "baseline": 324
+        },
+        {
+          "pose": 3,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 20,
+          "baseline": 324
+        },
+        {
+          "pose": 4,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 20,
+          "baseline": 324
+        },
+        {
+          "pose": 5,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 20,
+          "baseline": 324
+        },
+        {
+          "pose": 6,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 20,
+          "baseline": 324
+        },
+        {
+          "pose": 7,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 20,
+          "baseline": 324
+        },
+        {
+          "pose": 8,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 22,
+          "baseline": 321
+        },
+        {
+          "pose": 9,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 22,
+          "baseline": 321
+        },
+        {
+          "pose": 10,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 22,
+          "baseline": 321
+        },
+        {
+          "pose": 11,
+          "scale": 0.7099447513812155,
+          "left": 52,
+          "top": 22,
+          "baseline": 321
+        }
+      ]
+    },
+    {
+      "id": "man-clever",
+      "sha256": "0312c54a5967b7d1c73bd7480307a15a5e73bca4c75b466bf8bdd377ccc7c299",
+      "scale": 0.68,
+      "baselines": [
+        335,
+        335,
+        335,
+        335,
+        336,
+        336,
+        335,
+        336,
+        336,
+        336,
+        336,
+        336
+      ],
+      "prompt": "Generate ONE original animation master sprite sheet, FOUR columns x THREE rows =12 sequential full-body poses, row-major. Landscape 4:3 image, ideally1536x1152 or1448x1086 so cells are SQUARE. Pure white background, no text,letters,numbers,grid lines,borders. COMPLETE character including hair/ears,hands/paws,feet in EVERY cell. Figure at most60% cell height with top20% and bottom20% white space. SAME scale,camera,body anchor and foot baseline across12 cells.12 genuinely different consecutive anatomical poses:1setup,2-3anticipation,4-6develop,7-8key comic expression,9-11gradual release,12near start. No mirrored poses, no switching hands/sides, no extra limbs, no copied static pose. Stable identity/clothes/props. Original character, no celebrities or known meme/IP. LIVE ACTION PHOTO of ORIGINAL Chinese adult man age40, distinctive round face and short hair, rust-brown polo and dark trousers, white shoes. NOT illustration, NOT 3D, NOT child. Left hand on hip fixed; right hand raises a thumbs-up, side-eye and pursed lips turn to a lopsided amused grin, head tilts slightly back, then hand lowers. Playfully impressed not generic polite smile. Generate this ONE12-cell chronological animation master now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6ab21e39-7ad4-83ea-8e66-b5d48f0d1866",
+        "sourceFileId": "file_00000000127082069e604450d87ac7da",
+        "requestedDate": "2026-09-22",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "0312c54a5967b7d1c73bd7480307a15a5e73bca4c75b466bf8bdd377ccc7c299",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-22T06:23:36.454073+00:00",
+        "generationObservedAt": "2026-09-22T06:23:36.454073+00:00",
+        "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+        "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+        "originalDownloadName": "man-clever.png",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-22T06:26:48.585811+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 22,
+          "baseline": 335
+        },
+        {
+          "pose": 1,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 22,
+          "baseline": 335
+        },
+        {
+          "pose": 2,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 22,
+          "baseline": 335
+        },
+        {
+          "pose": 3,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 22,
+          "baseline": 335
+        },
+        {
+          "pose": 4,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 21,
+          "baseline": 336
+        },
+        {
+          "pose": 5,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 21,
+          "baseline": 336
+        },
+        {
+          "pose": 6,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 22,
+          "baseline": 335
+        },
+        {
+          "pose": 7,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 21,
+          "baseline": 336
+        },
+        {
+          "pose": 8,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 21,
+          "baseline": 336
+        },
+        {
+          "pose": 9,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 21,
+          "baseline": 336
+        },
+        {
+          "pose": 10,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 21,
+          "baseline": 336
+        },
+        {
+          "pose": 11,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 21,
+          "baseline": 336
+        }
+      ]
+    },
+    {
+      "id": "hamster-help",
+      "sha256": "70c68176b5d746f4268a17f3c29ab7006c3e638991ab77682e9e1f5cf92d15ae",
+      "scale": 0.72,
+      "baselines": [
+        321,
+        321,
+        321,
+        323,
+        321,
+        321,
+        320,
+        320,
+        320,
+        320,
+        319,
+        319
+      ],
+      "prompt": "Generate ONE original animation master sprite sheet, FOUR columns x THREE rows =12 sequential full-body poses, row-major. Landscape 4:3 image, ideally1536x1152 or1448x1086 so cells are SQUARE. Pure white background, no text,letters,numbers,grid lines,borders. COMPLETE character including hair/ears,hands/paws,feet in EVERY cell. Figure at most60% cell height with top20% and bottom20% white space. SAME scale,camera,body anchor and foot baseline across12 cells.12 genuinely different consecutive anatomical poses:1setup,2-3anticipation,4-6develop,7-8key comic expression,9-11gradual release,12near start. No mirrored poses, no switching hands/sides, no extra limbs, no copied static pose. Stable identity/clothes/props. Original character, no celebrities or known meme/IP. Photorealistic chubby golden hamster sitting upright, two hind feet grounded and tiny two front paws. Eyes first widen, mouth makes tiny gasp; both front paws gradually lift beside cheeks, then one paw lifts slightly higher as desperate comical plea, exaggerated startled eyes; paws slowly lower. No human hands, no injury, no danger, no props. Generate this ONE12-cell chronological animation master now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6ab22099-22bc-83e9-9cc9-12fac4b64c21",
+        "sourceFileId": "file_00000000a7c481f8a76665091229c88a",
+        "requestedDate": "2026-09-22",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "70c68176b5d746f4268a17f3c29ab7006c3e638991ab77682e9e1f5cf92d15ae",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-22T06:30:35.856669+00:00",
+        "generationObservedAt": "2026-09-22T06:30:35.856669+00:00",
+        "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+        "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+        "originalDownloadName": "hamster-help.png",
+        "deletedAt": "2026-09-22T06:31:05.896568+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 18,
+          "baseline": 321
+        },
+        {
+          "pose": 1,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 18,
+          "baseline": 321
+        },
+        {
+          "pose": 2,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 18,
+          "baseline": 321
+        },
+        {
+          "pose": 3,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 17,
+          "baseline": 323
+        },
+        {
+          "pose": 4,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 18,
+          "baseline": 321
+        },
+        {
+          "pose": 5,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 18,
+          "baseline": 321
+        },
+        {
+          "pose": 6,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 19,
+          "baseline": 320
+        },
+        {
+          "pose": 7,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 19,
+          "baseline": 320
+        },
+        {
+          "pose": 8,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 19,
+          "baseline": 320
+        },
+        {
+          "pose": 9,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 19,
+          "baseline": 320
+        },
+        {
+          "pose": 10,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 20,
+          "baseline": 319
+        },
+        {
+          "pose": 11,
+          "scale": 0.7209944751381215,
+          "left": 50,
+          "top": 20,
+          "baseline": 319
+        }
+      ]
+    },
+    {
+      "id": "line-help",
+      "sha256": "9cf04bdc8f84f7bd2d4ddd50933098f9725d00a1c394ce353295d1e999e897c0",
+      "scale": 0.68,
+      "baselines": [
+        342,
+        342,
+        342,
+        342,
+        335,
+        335,
+        335,
+        335,
+        335,
+        335,
+        335,
+        335
+      ],
+      "prompt": "Generate ONE original animation master sprite sheet, FOUR columns x THREE rows =12 sequential full-body poses, row-major. Landscape 4:3 image, ideally1536x1152 or1448x1086 so cells are SQUARE. Pure white background, no text,letters,numbers,grid lines,borders. COMPLETE character including hair/ears,hands/paws,feet in EVERY cell. Figure at most60% cell height with top20% and bottom20% white space. SAME scale,camera,body anchor and foot baseline across12 cells.12 genuinely different consecutive anatomical poses:1setup,2-3anticipation,4-6develop,7-8key comic expression,9-11gradual release,12near start. No mirrored poses, no switching hands/sides, no extra limbs, no copied static pose. Stable identity/clothes/props. Original character, no celebrities or known meme/IP. Minimal bold black-and-white caricature of ORIGINAL Chinese adult man age35, narrow face, short messy hair, striped shirt and trousers. Left hand fixed over chest; right hand raises beside head palm outward in a small pleading wave. Eyebrows arch, cheeks tense, wide-eyed open mouth like 'help, this is too much'; fingers together, two arms only; gradually lowers hand, exhales. Generate this ONE12-cell chronological animation master now.\n",
+      "provenance": {
+        "sourceType": "ai-original",
+        "sourceConversation": "https://chatgpt.com/c/6ab2219a-bfbc-83ea-881a-669ded233375",
+        "sourceFileId": "file_0000000085b881f888cad4ad112f66a9",
+        "requestedDate": "2026-09-22",
+        "status": "downloaded-decodable",
+        "deletion": "confirmed-in-web-ui",
+        "sha256": "9cf04bdc8f84f7bd2d4ddd50933098f9725d00a1c394ce353295d1e999e897c0",
+        "width": 1448,
+        "height": 1086,
+        "downloadedAt": "2026-09-22T06:40:03.937500+00:00",
+        "generationObservedAt": "2026-09-22T06:40:03.937500+00:00",
+        "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+        "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+        "originalDownloadName": "line-help.png",
+        "personOrigin": "China",
+        "personGender": "male",
+        "adult": true,
+        "deletedAt": "2026-09-22T06:42:13.295105+00:00",
+        "deletionEvidence": {
+          "returnedTo": "https://chatgpt.com/",
+          "conversationLinkAbsent": true,
+          "confirmationDialogAbsent": true
+        }
+      },
+      "transforms": [
+        {
+          "pose": 0,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 17,
+          "baseline": 342
+        },
+        {
+          "pose": 1,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 17,
+          "baseline": 342
+        },
+        {
+          "pose": 2,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 17,
+          "baseline": 342
+        },
+        {
+          "pose": 3,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 17,
+          "baseline": 342
+        },
+        {
+          "pose": 4,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 22,
+          "baseline": 335
+        },
+        {
+          "pose": 5,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 22,
+          "baseline": 335
+        },
+        {
+          "pose": 6,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 22,
+          "baseline": 335
+        },
+        {
+          "pose": 7,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 22,
+          "baseline": 335
+        },
+        {
+          "pose": 8,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 22,
+          "baseline": 335
+        },
+        {
+          "pose": 9,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 22,
+          "baseline": 335
+        },
+        {
+          "pose": 10,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 22,
+          "baseline": 335
+        },
+        {
+          "pose": 11,
+          "scale": 0.6795580110497238,
+          "left": 58,
+          "top": 22,
+          "baseline": 335
+        }
+      ]
+    }
+  ]
+}

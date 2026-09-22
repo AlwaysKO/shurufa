@@ -1,3 +1,4 @@
+import { loadStickerLibrary } from './stickerLibrary.js';
 import { readKeywordGifCatalog, mergeKeywordGifCatalog, removedKeywordGifHashes } from '../expression/keywordGifLibrary.js';
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
@@ -23,7 +24,12 @@ export async function expressionSnapshot(pool: pg.Pool, userId: string) {
     const uploadedSynthesis = synthesis.rows.map(synthesisRowAsset).filter(asset => !synthesisHashes.has(asset.sha256));
     const removed = await removedKeywordGifHashes(pool, userId);
     const templates = [...system.templates.filter(asset => asset.type !== 'prebuilt' || !removed.has(asset.sha256)), ...personal, ...uploadedSynthesis];
+    const library = await loadStickerLibrary(pool, userId);
+    const availableIds = new Set(templates.filter(asset => asset.type === 'prebuilt').map(asset => asset.id));
+    const recommendationGroups = library.groups.map(group => ({ keyword: group.keyword, aliases: group.aliases,
+        assetIds: group.assets.map(asset => asset.source === 'personal' ? `sticker-${asset.id}` : String(asset.id)).filter(id => availableIds.has(id)),
+    }));
     // Hash only catalog/DB metadata, never a GIF. Usage counters deliberately excluded.
-    const version = createHash('sha256').update(JSON.stringify({ userId, removed: [...removed], system, stickers: stickers.rows, synthesis: synthesis.rows.map(({ created_at, ...row }) => row) })).digest('hex');
-    return { ...system, version, complete: true, templates, retiredTemplateIds: system.retiredTemplateIds ?? [] };
+    const version = createHash('sha256').update(JSON.stringify({ userId, recommendationGroups, removed: [...removed], system, stickers: stickers.rows, synthesis: synthesis.rows.map(({ created_at, ...row }) => row) })).digest('hex');
+    return { ...system, version, complete: true, templates, recommendationGroups, retiredTemplateIds: system.retiredTemplateIds ?? [] };
 }

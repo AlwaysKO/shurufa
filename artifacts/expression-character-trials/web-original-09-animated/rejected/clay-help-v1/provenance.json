@@ -1,0 +1,23 @@
+{
+  "sourceType": "ai-original",
+  "sourceConversation": "https://chatgpt.com/c/6ab22439-e2e8-83ea-b82a-02ac0dcf95b2",
+  "sourceFileId": "file_0000000006908211ac41bf35ea2fa409",
+  "requestedDate": "2026-09-22",
+  "status": "rejected",
+  "deletion": "confirmed-in-web-ui",
+  "sha256": "43f0e878ed7747c30454ce67c5865b6fc6d8c061840092ab41c79afc40808a83",
+  "width": 1448,
+  "height": 1086,
+  "downloadedAt": "2026-09-22T06:48:50.862834+00:00",
+  "generationObservedAt": "2026-09-22T06:48:50.862834+00:00",
+  "generationTimeBasis": "归档时确认生成完成，非服务端精确时间",
+  "downloadMethod": "已登录网页fetch原图字节，无canvas重绘",
+  "originalDownloadName": "clay-help.png",
+  "rejectionReason": "章鱼落地触腕遮叠，无法稳定核实八肢；中后段开心眨眼招手弱化求援语义，重新设计四肢角色",
+  "deletedAt": "2026-09-22T06:53:48.220220+00:00",
+  "deletionEvidence": {
+    "returnedTo": "https://chatgpt.com/",
+    "conversationLinkAbsent": true,
+    "confirmationDialogAbsent": true
+  }
+}

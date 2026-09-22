@@ -7,6 +7,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import java.io.Closeable
+import kotlin.math.roundToInt
 
 /** 单次截图请求持有的原始顶部像素，不持有整图、不落盘、不跨会话缓存。 */
 class TitleOcrInput(private val captureTopPx: Int = 0, private val captureHeightPx: Int? = null) : Closeable {
@@ -17,7 +18,10 @@ class TitleOcrInput(private val captureTopPx: Int = 0, private val captureHeight
         if (closed) return
         header?.recycle()
         header = null
-        val cropped = Bitmap.createBitmap(source, 0, 0, source.width, titleHeaderHeight(source.width, source.height))
+        val top = captureTopPx.coerceAtLeast(0)
+        val height = (captureHeightPx ?: titleHeaderHeight(source.width, source.height)).coerceAtMost(source.height - top)
+        if (top >= source.height || height <= 0) return
+        val cropped = Bitmap.createBitmap(source, 0, top, source.width, height)
         header = if (cropped === source) source.copy(Bitmap.Config.ARGB_8888, false) else cropped
     }
 
@@ -26,7 +30,7 @@ class TitleOcrInput(private val captureTopPx: Int = 0, private val captureHeight
         if (closed) return null
         val captured = header
         header = null
-        return captured ?: decodeTitleHeader(path)
+        return captured ?: decodeTitleHeader(path, captureTopPx, captureHeightPx)
     }
 
     @Synchronized override fun close() {
@@ -40,11 +44,14 @@ internal fun titleHeaderHeight(width: Int, height: Int): Int =
     (width * 0.18).toInt().coerceIn(96, 220).coerceAtMost(height)
 
 /** 无原始输入时保留已验证的旧文件回退；正常两次截图均直接移交原始顶部。 */
-internal fun decodeTitleHeader(path: String): Bitmap? {
+internal fun decodeTitleHeader(path: String, captureTopPx: Int = 0, captureHeightPx: Int? = null): Bitmap? {
     val bitmap = BitmapFactory.decodeFile(path) ?: return null
     var header: Bitmap? = null
     try {
-        header = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, titleHeaderHeight(bitmap.width, bitmap.height))
+        val top = captureTopPx.coerceAtLeast(0)
+        val height = (captureHeightPx ?: titleHeaderHeight(bitmap.width, bitmap.height)).coerceAtMost(bitmap.height - top)
+        if (top >= bitmap.height || height <= 0) return null
+        header = Bitmap.createBitmap(bitmap, 0, top, bitmap.width, height)
         return header
     } finally {
         if (header !== bitmap) bitmap.recycle()
@@ -59,4 +66,6 @@ internal suspend fun <T> awaitTitleOcrCompletion(block: suspend () -> T): T {
 }
 
 internal data class WechatTitleBand(val top:Int,val height:Int)
-internal fun wechatTitleBand(statusBarBottom:Int,screenshotTop:Int,density:Float):WechatTitleBand = WechatTitleBand(0,216)
+/** 微信标题栏布局适配：系统状态栏之后约 44dp，不是三 App 通用裁切值。 */
+internal fun wechatTitleBand(statusBarBottom:Int,screenshotTop:Int,density:Float):WechatTitleBand =
+    WechatTitleBand((statusBarBottom - screenshotTop).coerceAtLeast(0), (44f * density).roundToInt().coerceAtLeast(1))

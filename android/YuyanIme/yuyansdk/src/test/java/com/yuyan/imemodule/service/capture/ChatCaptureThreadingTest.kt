@@ -50,6 +50,37 @@ class ChatCaptureThreadingTest {
     }
 
     @Test
+    fun threeAppsShareScrollGateAndNavigationClearsIt() {
+        for (pkg in FOREGROUND_CHAT_CAPTURE_PACKAGES) {
+            val service = Robolectric.buildService(PassiveChatAccessibilityService::class.java).create().get()
+            CollectionConsent.setEnabled(service, true)
+            val gate = ScrollCaptureGate(com.yuyan.imemodule.data.capture.ui.DebounceScheduler { _, _ ->
+                com.yuyan.imemodule.data.capture.ui.CancellableTask {}
+            }) {}
+            val field = PassiveChatAccessibilityService::class.java.getDeclaredField("scrollGate").apply { isAccessible = true }
+            field.set(service, gate)
+            val generation = PassiveChatAccessibilityService::class.java.getDeclaredField("captureRequestGeneration").apply { isAccessible = true }
+            val token = generation.get(service) as AtomicLong
+            val before = token.get()
+            val scroll = AccessibilityEvent.obtain(AccessibilityEvent.TYPE_VIEW_SCROLLED).apply { packageName = pkg }
+            val content = AccessibilityEvent.obtain(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED).apply { packageName = pkg }
+            try {
+                service.onAccessibilityEvent(scroll)
+                assertTrue("滚动须使在途截图失效：$pkg", token.get() > before)
+                assertTrue(gate.isScrolling())
+                service.onAccessibilityEvent(content)
+                assertTrue("普通内容事件不能提前解除滚动：$pkg", gate.isScrolling())
+                service.onInterrupt()
+                assertFalse(gate.isScrolling())
+            } finally {
+                CollectionConsent.setEnabled(service, false)
+                service.onDestroy()
+                scroll.recycle(); content.recycle()
+            }
+        }
+    }
+
+    @Test
     fun `根包名未知时不能提前截断荣耀空树回退`() {
         NodeShadow.read = CountDownLatch(1)
         val service = Robolectric.buildService(PassiveChatAccessibilityService::class.java).create().get()

@@ -28,7 +28,7 @@ internal fun shouldCaptureForegroundChatEvent(
     className: String?,
     visibleText: String? = null,
 ): Boolean = when (eventType) {
-    AccessibilityEvent.TYPE_VIEW_SCROLLED -> false
+    AccessibilityEvent.TYPE_VIEW_SCROLLED -> true
     AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED -> !className.orEmpty().endsWith("EditText")
     AccessibilityEvent.TYPE_VIEW_CLICKED -> visibleText.orEmpty().isWeChatCaptureAction()
     else -> true

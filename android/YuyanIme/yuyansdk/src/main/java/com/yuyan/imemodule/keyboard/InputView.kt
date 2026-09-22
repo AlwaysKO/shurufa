@@ -619,11 +619,15 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         expressionSync?.let { expressionPanel.render(expressionPanelState, it.currentCatalog()) }
     }
 
-    private fun searchExpressions(query: String) {
+    private fun searchExpressions(scheduledQuery: String) {
         val sync = expressionSync ?: return
         if (expressionManualOnly || !expressionPanelState.chatEditor || !expressionPanelState.aiStickerEnabled ||
             expressionPanelState.recommendationsPaused
         ) return
+        // 防抖期间宿主可能编辑/移动光标；发布前重新核对完整输入，绝不使用上屏片段兜底。
+        val query = readCurrentEditorTextForAutomaticRecommendation()
+        if (query == null) { expressionQueryCoordinator.reset(); clearExpressionQuery(); return }
+        if (query.trim() != scheduledQuery) { expressionQueryCoordinator.onCommitted(query); return }
         setExpressionExpanded(false)
         if (expressionPreparationJob != null) clearExpressionQuery()
         val requestId = ++expressionRequestId
@@ -632,14 +636,24 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         expressionPanelState.beginQuery(query, requestId, manual = expressionManualQuery == query)
         expressionPanel.render(expressionPanelState, sync.currentCatalog())
         expressionSearchJob?.cancel()
+        val catalogVersion = sync.currentCatalog().document.version
         expressionSearchJob = sync.search(
             query = query,
             requestId = requestId,
             acceptResponse = expressionPanelState::acceptResponse,
+            automatic = true,
         ) { results ->
             val preview = expressionScope.launch(start = kotlinx.coroutines.CoroutineStart.LAZY) {
                 val resolved = expressionRecommendationResolver.resolveRecommendations(results, query)
-                if (expressionPanelState.applyResults(requestId, resolved)) {
+                if (!expressionPanelState.acceptResponse(requestId)) return@launch
+                // 下载/解码期间宿主也可能自行改文（甚至长度与光标不变）。
+                if (readCurrentEditorTextForAutomaticRecommendation() != query) {
+                    expressionQueryCoordinator.reset()
+                    clearExpressionQuery()
+                    return@launch
+                }
+                if (catalogVersion == sync.currentCatalog().document.version &&
+                    expressionPanelState.applyResults(requestId, resolved)) {
                     expressionPanel.render(expressionPanelState, sync.currentCatalog())
                 }
             }
@@ -715,7 +729,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         }
         expressionManualQuery = query
         val requestId = ++expressionRequestId
-        val recommendations = sync.currentCatalog().recommend(query).filter { it.type == "prebuilt" }
+        val recommendations = sync.currentCatalog().search(query).filter { it.type == "prebuilt" }
         expressionPanelState.beginQuery(query, requestId, manual = true)
         expressionPanelState.applyResults(requestId, recommendations)
         expressionPanelState.selectTab(previousTab ?: ExpressionPanelTab.AI_SYNTHESIS)
@@ -743,6 +757,24 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             panelLastQuery = expressionPanelState.query,
             currentEditorText = ::readCurrentEditorTextForManualExpressionSearch,
         )
+    }
+
+    /** 自动推荐必须读取完整当前编辑框；不支持全文/返回局部快照时宁可不推荐。 */
+    private fun readCurrentEditorTextForAutomaticRecommendation(): String? {
+        if (!expressionInputSessionActive || !expressionPanelState.chatEditor || expressionManualOnly) return null
+        val editor = service.currentInputEditorInfo ?: return null
+        if (editor.packageName != expressionEditorPackage || !chatEditorGate.allows(editor.packageName, editor)) return null
+        val connection = service.currentInputConnection ?: return null
+        return runCatching {
+            val snapshot = connection.getExtractedText(android.view.inputmethod.ExtractedTextRequest(), 0)
+                ?: return@runCatching null
+            // startOffset 非零代表只拿到尾段；partial* 代表增量，均不能冒充全句。
+            if (snapshot.startOffset != 0 || snapshot.partialStartOffset != -1 || snapshot.partialEndOffset != -1) return@runCatching null
+            val text = snapshot.text?.toString() ?: return@runCatching null
+            if (snapshot.selectionStart !in 0..text.length || snapshot.selectionEnd !in 0..text.length) return@runCatching null
+            if (service.currentInputConnection !== connection || service.currentInputEditorInfo !== editor) return@runCatching null
+            text.takeIf { it.isNotBlank() }
+        }.getOrNull()
     }
 
     /** 仅用户主动斗图且本地会话已失效时读取当前编辑器，绝不读取无障碍聊天历史。 */
@@ -1445,15 +1477,18 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             clearExpressionQuery()
         }
         expressionPendingCommitLength = (expressionPendingCommitLength.toLong() + text.length).coerceAtMost(10_000).toInt()
-        expressionManualSearch.onHostCommitted(text, kind)?.let { query ->
-            if (expressionManualOnly) {
+        expressionManualSearch.onHostCommitted(text, kind)
+        if (expressionManualOnly) {
+            expressionQueryCoordinator.reset()
+            clearExpressionQuery()
+            return
+        }
+        if (!expressionPanelState.recommendationsPaused && expressionPanelState.aiStickerEnabled) {
+            val query = readCurrentEditorTextForAutomaticRecommendation()
+            if (query == null) {
                 expressionQueryCoordinator.reset()
                 clearExpressionQuery()
-                return
-            }
-            if (!expressionPanelState.recommendationsPaused && expressionPanelState.aiStickerEnabled) {
-                expressionQueryCoordinator.onCommitted(query)
-            }
+            } else expressionQueryCoordinator.onCommitted(query)
         }
     }
 

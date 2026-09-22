@@ -1,3 +1,4 @@
+import { normalizeRecommendationPhrase } from '../expression/recommendationGroups.js';
 import { systemExpressionCatalog } from './expressionSnapshot.js';
 import sharp from 'sharp';
 import { Router } from 'express';
@@ -6,7 +7,7 @@ import type pg from 'pg';
 import { mkdirSync, writeFileSync, unlinkSync, existsSync } from 'node:fs';
 import { join, extname } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
-import { loadStickerLibrary, rememberStickerKeywords } from './stickerLibrary.js';
+import { loadStickerLibrary, rememberStickerKeywords, updateStickerGroup, createStickerKeyword, StickerGroupError } from './stickerLibrary.js';
 
 
 /** 表情包文件存储目录（server/uploads/stickers），由 app.ts 挂载为 /uploads 静态路径 */
@@ -32,7 +33,18 @@ export function createMobileStickerRouter(pool: pg.Pool): Router {
   router.get('/stickers', async (req, res, next) => {
     try {
       const q = String(req.query.q ?? '').trim();
-      const limit = Math.min(Number(req.query.limit ?? 60), 200);
+      const requestedLimit = Number(req.query.limit ?? 60);
+      const limit = Number.isInteger(requestedLimit) && requestedLimit > 0 ? Math.min(requestedLimit, 200) : 60;
+      if (q) {
+        const normalized = normalizeRecommendationPhrase(q);
+        const group = (await loadStickerLibrary(pool, res.locals.userId)).groups.find(group =>
+          group.aliases.some(alias => normalizeRecommendationPhrase(alias) === normalized));
+        if (group) {
+          const stickers = group.assets.filter(asset => asset.source === 'personal').slice(0, limit)
+            .map(({ id, url, format, width, height }) => ({ id, url, format, width, height }));
+          return res.json({ total: stickers.length, stickers });
+        }
+      }
       const result = await pool.query(
         `SELECT id, file_name, format, width, height, use_count
          FROM sticker
@@ -80,6 +92,14 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
     catch (error) { next(error); }
   });
 
+  router.patch('/sticker-groups/:keyword', async (req, res, next) => {
+    try { res.json({ group: await updateStickerGroup(pool, res.locals.userId, req.params.keyword, req.body) }); }
+    catch (error) {
+      if (error instanceof StickerGroupError) return res.status(error.status).json({ error: error.message });
+      next(error);
+    }
+  });
+
   // 系统成品只删除当前用户的可见引用，保留原文件与来源证据。
   router.delete('/system-stickers/:id', async (req, res, next) => {
     try {
@@ -98,9 +118,12 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
       if (!keyword || keyword.length > 100 || /[,，\r\n]/.test(keyword)) {
         return res.status(400).json({ error: '请填写单个关键词（1～100字，不含逗号或换行）' });
       }
-      await rememberStickerKeywords(pool, res.locals.userId, keyword);
-      res.status(201).json({ keyword });
-    } catch (error) { next(error); }
+      const saved = await createStickerKeyword(pool, res.locals.userId, keyword);
+      res.status(201).json({ keyword: saved });
+    } catch (error) {
+      if (error instanceof StickerGroupError) return res.status(error.status).json({ error: error.message });
+      next(error);
+    }
   });
 
   /** 表情包管理列表（含关键词/使用次数/上传时间） */
@@ -133,7 +156,7 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
   /** 上传表情包（JSON base64，避免引入 multipart 依赖；图片建议 < 5MB） */
   router.post('/stickers', async (req, res, next) => {
     try {
-      const body = req.body as { file_base64?: string; filename?: string; keywords?: string; width?: number; height?: number };
+      const body = req.body as { file_base64?: string; filename?: string; keywords?: string; group_keyword?: string; width?: number; height?: number };
       if (!body?.file_base64 || !body?.filename) {
         return res.status(400).json({ error: 'file_base64 and filename required' });
       }
@@ -150,7 +173,13 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
         const detected = dimensions.format === 'jpeg' ? 'jpg' : dimensions.format;
         if (detected !== format) return res.status(400).json({ error: 'image format does not match filename' });
       } catch { return res.status(400).json({ error: 'invalid image' }); }
-      const keywords = String(body.keywords ?? '').trim();
+      let keywords = String(body.keywords ?? '').trim();
+      if (body.group_keyword !== undefined) {
+        const group = (await loadStickerLibrary(pool, res.locals.userId)).groups.find(item => item.keyword === body.group_keyword);
+        if (!group) return res.status(400).json({ error: '关键词组不存在，请刷新后重试' });
+        // 归属与可编辑的匹配说法分离，删除/新增说法不会制造重复组或丢图。
+        keywords = group.keyword;
+      }
       if (!keywords) return res.status(400).json({ error: 'keywords required' });
 
       mkdirSync(stickerDirectory(), { recursive: true });

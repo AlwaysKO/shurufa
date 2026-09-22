@@ -87,10 +87,10 @@ class NotificationScreenshotFallbackTest {
     }
 
     @Test
-    fun captureBoundsExcludeStatusAndComposerAreas() {
+    fun fallbackUsesKnownSystemInsetWithoutGuessingAwayLastMessages() {
         assertEquals(
-            IntRect(0, 30, 1000, 900),
-            notificationFallbackBounds(IntRect(0, 0, 1000, 1000)),
+            IntRect(0, 30, 1000, 1000),
+            notificationFallbackBounds(IntRect(0, 0, 1000, 1000), 30),
         )
     }
 

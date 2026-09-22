@@ -11,7 +11,7 @@ const CLEANUP_PREFIX = 'device_delete_files:';
 // 显式业务表清单；禁止按数据库发现的任意表自动扩大删除范围。
 const USER_TABLES = ['relationship_ai_reply_session', 'relationship_ai_call', 'relationship_ai_profile', 'relationship_profile',
   'chat_message', 'chat_conversation', 'media_asset', 'input_event', 'location_track', 'phrase_stat', 'completion_candidate',
-  'user_phrase', 'sticker', 'sticker_keyword', 'synthesis_asset', 'mobile_report_receipt', 'personal_candidate_usage',
+  'user_phrase', 'sticker', 'sticker_keyword', 'sticker_group_settings', 'synthesis_asset', 'mobile_report_receipt', 'personal_candidate_usage',
   'completion_feedback_usage', 'sticker_file_usage', 'expression_asset_usage', 'keyword_gif_removal'];
 const LOCK_TABLES = [...USER_TABLES, 'device', 'input_session', 'chat_message_asset', 'dictionary_device', 'dictionary_entry', 'dictionary_policy', 'analysis_state'].sort();
 

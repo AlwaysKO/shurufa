@@ -1,5 +1,8 @@
 package com.yuyan.imemodule.data.capture.media
 
+import com.yuyan.imemodule.data.capture.CaptureLayer
+import com.yuyan.imemodule.data.capture.CaptureTrace
+import com.yuyan.imemodule.data.capture.CaptureStage
 import android.content.Context
 import android.graphics.Bitmap
 import com.yuyan.imemodule.data.capture.db.PendingAssetEntity
@@ -22,6 +25,8 @@ data class MediaCaptureRequest(
     val inputAreaBounds: IntRect? = null,
     val lossyWebp: Boolean = false,
     val titleOcrInput: TitleOcrInput? = null,
+    val wechatInputBarDensity: Float? = null,
+    val contentInput: ScreenshotContentInput? = null,
 )
 
 class MediaCropper(private val minimumSide: Int = 16) {
@@ -87,7 +92,11 @@ class WindowMediaCapturer(
         val requestedGeneration = captureGeneration()
         return captureMutex.withLock {
             currentCoroutineContext().ensureActive()
-            if (requests.isEmpty() || !captureAllowed() || captureGeneration() != requestedGeneration) return@withLock emptyMap()
+            if (requests.isEmpty() || !captureAllowed() || captureGeneration() != requestedGeneration) {
+                CaptureTrace.record(CaptureStage.REQUEST_CANCELLED, windowId, requestedGeneration, layer = CaptureLayer.MEDIA)
+                return@withLock emptyMap()
+            }
+            CaptureTrace.record(CaptureStage.SYSTEM_REQUEST, windowId, requestedGeneration, requests.size, layer = CaptureLayer.MEDIA)
             // 系统截图提交后不能撤销。取消也必须等回调收尾，才能放行下一次物理请求。
             val screenshot = withContext(NonCancellable) { screenshotSource.capture(windowId, windowBounds) }
             try {
@@ -96,13 +105,15 @@ class WindowMediaCapturer(
                 if (screenshot is WindowScreenshotResult.Success) screenshot.bitmap.recycle()
                 throw cancelled
             }
+            CaptureTrace.record(CaptureStage.SYSTEM_READY, windowId, requestedGeneration, flag = screenshot is WindowScreenshotResult.Success, layer = CaptureLayer.MEDIA)
             if (screenshot !is WindowScreenshotResult.Success) return@withLock emptyMap()
 
             try {
+                if (!captureAllowed() || captureGeneration() != requestedGeneration) return@withLock emptyMap()
                 withContext(processingDispatcher) {
                     buildMap {
                         requests.forEach { request ->
-                            val cropped = cropper.crop(
+                            val originalCrop = cropper.crop(
                                 bitmap = screenshot.bitmap,
                                 requested = request.bounds,
                                 windowBounds = windowBounds,
@@ -110,8 +121,15 @@ class WindowMediaCapturer(
                                 screenshotOriginY = screenshot.originY,
                                 inputAreaBounds = request.inputAreaBounds,
                             ) ?: return@forEach
+                            var cropped = originalCrop
                             try {
-                                request.titleOcrInput?.captureFrom(cropped)
+                                request.titleOcrInput?.captureFrom(originalCrop)
+                                request.wechatInputBarDensity?.let { density ->
+                                    wechatInputBarTop(originalCrop, density)?.let { top ->
+                                        cropped = Bitmap.createBitmap(originalCrop, 0, 0, originalCrop.width, top)
+                                    }
+                                }
+                                request.contentInput?.captureFrom(cropped)
                                 val encoded = if (request.lossyWebp) encodeWebp(cropped) else encodeLossless(cropped)
                                 val contentHash = sha256(encoded)
                                 val output = File(context.cacheDir, "chat-capture/$contentHash")
@@ -125,6 +143,7 @@ class WindowMediaCapturer(
                                     }
                                     temporary.delete()
                                 }
+                                CaptureTrace.record(CaptureStage.ASSET_READY, windowId, requestedGeneration, request.messageIndex, layer = CaptureLayer.MEDIA)
                                 put(
                                     request.messageIndex,
                                     PendingAssetEntity(
@@ -138,10 +157,11 @@ class WindowMediaCapturer(
                                 )
                             } finally {
                                 cropped.recycle()
+                                if (originalCrop !== cropped) originalCrop.recycle()
                             }
                         }
                     }
-                }
+                }.takeIf { captureAllowed() && captureGeneration() == requestedGeneration } ?: emptyMap()
             } finally {
                 // 包围调度边界：取消时编码块可能根本未运行，仍必须释放系统截图。
                 screenshot.bitmap.recycle()

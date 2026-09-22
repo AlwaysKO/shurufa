@@ -39,6 +39,50 @@ class ExpressionVersionSyncTest {
         sync.search("干嘛", 1, { true }) { result = it }.join()
         return result
     }
+    @Test fun `目录排序变更后旧异步搜索不得再次发布`() = runBlocking {
+        val first = asset("first").copy(distribution = "bundled", url = null)
+        val second = asset("second").copy(distribution = "bundled", url = null)
+        val sync = sync(initial = document("apk", listOf(first, second)))
+        server.enqueue(MockResponse().setBody(Json.encodeToString(document("v2", listOf(second, first)))))
+        var callbacks = 0
+        sync.search("干嘛", 1, { true }) {
+            callbacks++
+            if (callbacks == 1) runBlocking { sync.refreshCatalog() }
+        }.join()
+        assertEquals("目录切换后旧批次不得再覆盖新顺序", 1, callbacks)
+    }
+
+    @Test fun `自动查询不使用旧查询缓存召回已删除说法`() = runBlocking {
+        val bundled = asset().copy(distribution = "bundled", url = null)
+        val cache = ExpressionCache(root)
+        val baseUrl = server.url("").toString().trimEnd('/')
+        ExpressionQueryCache(cache).write(baseUrl, "干嘛", listOf(ExpressionQueryCache.Item(bundled, "owner-upload")))
+        val initial = document("apk", listOf(bundled)).copy(
+            recommendationGroups = listOf(com.yuyan.imemodule.expression.model.ExpressionRecommendationGroup(
+                "干嘛", listOf("你好"), listOf(bundled.id))),
+        )
+        val sync = sync(initial = initial)
+        val seen = mutableListOf<ExpressionAsset>()
+        sync.search("干嘛", 1, { true }, automatic = true) { seen += it }.join()
+        assertTrue(seen.isEmpty())
+        assertEquals(0, server.requestCount)
+        sync.search("你好", 2, { true }, automatic = true) { seen += it }.join()
+        assertTrue(seen.isNotEmpty())
+    }
+
+    @Test fun `完整配置的长说法不受旧手动查询100字上限拦截`() = runBlocking {
+        val phrase = "完整说法".repeat(30)
+        val bundled = asset().copy(distribution = "bundled", url = null)
+        val initial = document("apk", listOf(bundled)).copy(
+            recommendationGroups = listOf(com.yuyan.imemodule.expression.model.ExpressionRecommendationGroup(
+                "长说法", listOf(phrase), listOf(bundled.id))),
+        )
+        val results = mutableListOf<ExpressionAsset>()
+        sync(initial = initial).search(phrase, 1, { true }, automatic = true) { results += it }.join()
+        assertTrue(results.isNotEmpty())
+        assertEquals(0, server.requestCount)
+    }
+
     @Test fun `系统带字精确命中不能遮蔽个人同词关键词图`() {
         val system = asset("system").copy(sourceType = "ai-original", embeddedText = "干嘛")
         val personal = asset("personal")

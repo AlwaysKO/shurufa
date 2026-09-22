@@ -10,7 +10,36 @@ import kotlinx.serialization.json.Json
 class ExpressionCatalog(
     val document: ExpressionCatalogDocument,
 ) {
+    /** 自动推荐只接受完整配置说法；不能由图片旧关键词复活删除的说法。 */
     fun recommend(query: String, limit: Int = 20): List<ExpressionAsset> {
+        val normalized = ExpressionQueryMatching.normalizeAutomatic(query)
+        if (normalized.isEmpty() || limit <= 0) return emptyList()
+        configuredRecommendation(normalized, limit)?.let { return it }
+        // 只有没有组元数据的旧 APK/旧服务端目录才允许内置精确别名兼容。
+        val aliases = ExpressionQueryMatching.groups.firstOrNull { normalized in it }.orEmpty() + normalized
+        return document.templates.filter { asset ->
+            asset.id !in document.retiredTemplateIds && asset.type == "prebuilt" &&
+                (asset.keywords + listOfNotNull(asset.embeddedText)).any {
+                    ExpressionQueryMatching.normalizeAutomatic(it) in aliases
+                }
+        }.sortedWith(compareByDescending<ExpressionAsset> { it.sourceType == "owner-upload" }
+            .thenByDescending { it.format == "gif" }.thenByDescending { it.heat }).take(limit)
+    }
+
+    private fun configuredRecommendation(query: String, limit: Int): List<ExpressionAsset>? {
+        val groups = document.recommendationGroups ?: return null
+        val assets = document.templates.filterNot { it.id in document.retiredTemplateIds }.associateBy { it.id }
+        return groups.filter { group -> group.aliases.any { ExpressionQueryMatching.normalizeAutomatic(it) == query } }
+            .flatMap { it.assetIds }.distinct().mapNotNull(assets::get).take(limit)
+    }
+
+    /** 用户主动搜索保留宽松召回；精确命中组时仍以后台顺序为准。 */
+    fun search(query: String, limit: Int = 20): List<ExpressionAsset> {
+        val exact = ExpressionQueryMatching.normalizeAutomatic(query)
+        val groups = document.recommendationGroups
+        if (groups != null && groups.any { group -> group.aliases.any { ExpressionQueryMatching.normalizeAutomatic(it) == exact } }) {
+            return configuredRecommendation(exact, limit.coerceAtLeast(0)).orEmpty()
+        }
         val normalizedQuery = ExpressionQueryMatching.normalize(query)
         if (normalizedQuery.isEmpty() || limit <= 0) return emptyList()
         val indexed = document.templates
@@ -70,7 +99,6 @@ class ExpressionCatalog(
         }.sortedByDescending { ExpressionQueryMatching.score(text, it.keywords) }
     }
 
-    fun search(query: String): List<ExpressionAsset> = recommend(query)
 
     private fun rank(assets: List<RankedAsset>, limit: Int): List<ExpressionAsset> =
         assets
@@ -90,6 +118,7 @@ class ExpressionCatalog(
     } else ExpressionCatalog(
         ExpressionCatalogDocument(
             version = remote.version,
+            recommendationGroups = remote.recommendationGroups ?: document.recommendationGroups,
             templates = mergeBy(document.templates, remote.templates) { it.id }
                 .filterNot { it.id in document.retiredTemplateIds || it.id in remote.retiredTemplateIds },
             retiredTemplateIds = (document.retiredTemplateIds + remote.retiredTemplateIds).distinct(),
