@@ -67,6 +67,7 @@ object DataCollector {
     private const val KEY_LAST_LOCATION_TIME = "collector_last_location_time"
     private const val KEY_LAST_LOCATION_UPLOADED_AT = "collector_last_location_uploaded_at"
     private const val FLUSH_INTERVAL_MS = 30_000L
+    private const val IMAGE_POLL_INTERVAL_MS = 1_000L
     private const val LOCATION_INTERVAL_MS = 60_000L
     private const val LOCATION_MIN_DISTANCE_M = 10f
     private const val LOCAL_CHAT_RETENTION_MS = 7L * 24 * 60 * 60 * 1000
@@ -87,7 +88,7 @@ object DataCollector {
     @Volatile private var appContext: Context? = null
     private var networkRegistered = false
     private val deliveryTasks = TargetDeliveryTasks()
-    private val lastAttempt = java.util.concurrent.ConcurrentHashMap<String, Long>()
+    private val retryGate = ReportRetryGate()
     private var wakeJob: Job? = null
 
     @Synchronized private fun store(context: Context): LocalInputStore =
@@ -135,10 +136,18 @@ object DataCollector {
         registerNetworkWake(app)
         if (flushJob == null) {
             flushJob = scope.launch {
+                var regularDue = android.os.SystemClock.elapsedRealtime() + FLUSH_INTERVAL_MS
                 while (true) {
-                    // 积压期间小步检查，停打后及时恢复；空队列仍沿用30秒周期。
-                    delay(if (CollectionConsent.enabled(app) && eventStore?.hasPendingImages() == true) 3_000L else FLUSH_INTERVAL_MS)
-                    flushEvents()
+                    val imagesPending = CollectionConsent.enabled(app) && eventStore?.hasPendingImages() == true
+                    delay(if (imagesPending) IMAGE_POLL_INTERVAL_MS else FLUSH_INTERVAL_MS)
+                    val now = android.os.SystemClock.elapsedRealtime()
+                    if (now >= regularDue) {
+                        regularDue = now + FLUSH_INTERVAL_MS
+                        flushEvents()
+                    } else if (imagesPending && ImageUploadRuntime.isInputIdle()) {
+                        // 3秒空闲资格后的下一次小步检查；不连带提高词库同步频率。
+                        flushEvents(syncDictionary = false)
+                    }
                 }
             }
         }
@@ -205,6 +214,7 @@ object DataCollector {
             deviceJson = json.encodeToString(DeviceInfo.serializer(), info),
             onlineTarget = { ServerConfig.baseUrl },
             allowed = { kind -> CollectionConsent.enabled(context) && (kind != "location" || locationTrackingEnabled) },
+            beginImageRead = { ImageUploadRuntime.beginPreparation() },
             maxImageBytes = { target -> ImageUploadRuntime.maxImageBytes(context, target) },
             tryStartImage = { target, bytes -> ImageUploadRuntime.tryStartImage(context, target, bytes) },
         )
@@ -257,9 +267,9 @@ object DataCollector {
         }
     }
 
-    private fun flushEvents() { scope.launch { flushNow() } }
+    private fun flushEvents(syncDictionary: Boolean = true) { scope.launch { flushNow(syncDictionary) } }
 
-    suspend fun flushNow() = coroutineScope {
+    suspend fun flushNow(syncDictionary: Boolean = true) = coroutineScope {
         val uploader = delivery ?: return@coroutineScope
         val app = appContext ?: return@coroutineScope
         if (!CollectionConsent.enabled(app)) {
@@ -272,21 +282,23 @@ object DataCollector {
             it.pruneExpiredLocalChatReports(onlineTarget, LOCAL_CHAT_RETENTION_MS)
         }
         val targets = (ServerConfig.eventTargets + eventStore?.targets().orEmpty() + eventStore?.reportTargets().orEmpty()).distinct()
+        if (syncDictionary) targets.forEach(retryGate::requestRegular)
         val targetGate = collectorTargetGate(app, onlineTarget)
         deliveryTasks.run(
             targets,
             onBusy = { ReportingTrace.record(ReportingStage.BUSY, it == onlineTarget) },
             onFailure = { target, _ ->
-                lastAttempt[target] = android.os.SystemClock.elapsedRealtime() + FLUSH_INTERVAL_MS
+                retryGate.record(target, android.os.SystemClock.elapsedRealtime() + FLUSH_INTERVAL_MS, failed = true)
                 ReportingTrace.record(ReportingStage.DELIVERY_ERROR, target == onlineTarget)
             },
         ) { target ->
-            if (!targetGate.canUpload(target)) return@run
             val now = android.os.SystemClock.elapsedRealtime()
-            if (now < (lastAttempt[target] ?: 0L)) {
+            val regularSync = retryGate.regularPending(target)
+            if (retryGate.blocks(target, now, regularSync)) {
                 ReportingTrace.record(ReportingStage.BACKOFF, target == onlineTarget)
                 return@run
             }
+            if (!targetGate.canUpload(target)) return@run
             ReportingTrace.record(ReportingStage.FLUSH_START, target == onlineTarget)
             val taskContext = currentCoroutineContext()
             val ok = uploader.drain(target,
@@ -295,7 +307,7 @@ object DataCollector {
             ReportingTrace.record(ReportingStage.FLUSH_END, target == onlineTarget, flag = ok)
             val plan = dictionarySyncTargets(ServerConfig.eventTargets, ServerConfig.baseUrl, ServerConfig.dictionaryAuthorityUrl)
                 .firstOrNull { it.url == target }
-            if (plan != null && CollectionConsent.enabled(app)) {
+            if (regularSync && plan != null && CollectionConsent.enabled(app)) {
                 val sync = dictionarySyncs.getOrPut(plan) {
                     PersonalDictionarySync(store(app), app.getSharedPreferences("personal_dictionary_sync_v1", 0), http,
                         deviceId(app), plan.url, { CollectionConsent.enabled(app) }, {
@@ -305,7 +317,10 @@ object DataCollector {
                 }
                 if (!sync.run()) Log.w(TAG, "个人词库尚未同步确认，保留本机记录（目标：$target）")
             }
-            lastAttempt[target] = android.os.SystemClock.elapsedRealtime() + if (ok) 5_000 else FLUSH_INTERVAL_MS
+            val retryDelay = if (ok && eventStore?.hasPendingImages() == true) IMAGE_POLL_INTERVAL_MS
+                else if (ok) 5_000L else FLUSH_INTERVAL_MS
+            retryGate.record(target, android.os.SystemClock.elapsedRealtime() + retryDelay,
+                failed = !ok, regularCompleted = regularSync)
             if (!ok) Log.w(TAG, "同步未确认，保留手机待传数据")
         }
     }

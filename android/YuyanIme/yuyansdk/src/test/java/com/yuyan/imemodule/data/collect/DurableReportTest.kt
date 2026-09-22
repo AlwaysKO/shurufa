@@ -90,7 +90,7 @@ class DurableReportTest {
    repeat(20) { store.enqueueReport(PendingReport("normal$it","personal_choice","{}"),listOf("a")) }
    store.enqueueReport(PendingReport("message","chat_messages","{}"),listOf("a"))
    store.enqueueReport(PendingReport("asset","chat_asset","{}"),listOf("a"))
-   assertEquals(listOf("chat_asset","chat_messages"),store.pendingReports("a",limit=2).map { it.kind })
+   assertEquals(listOf("chat_messages","chat_asset"),store.pendingReports("a",limit=2).map { it.kind })
   }; ctx.deleteDatabase(name)
  }
 }

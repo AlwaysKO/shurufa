@@ -70,7 +70,9 @@ class ImageReportQueueTest {
         val ctx = ApplicationProvider.getApplicationContext<Context>()
         val name = "image-upgrade-${UUID.randomUUID()}.db"
         val hash = "a".repeat(64)
-        LocalInputStore(ctx, name).use { store ->
+        val original = LocalInputStore(ctx, name)
+        try {
+            val store = original
             store.enqueueReport(asset("a", hash), listOf("local"))
             store.enqueueReport(message("m", hash), listOf("local"))
             store.writableDatabase.apply {
@@ -79,12 +81,13 @@ class ImageReportQueueTest {
                 execSQL("DROP TABLE report_image_dependency")
                 version = 9
             }
-        }
-        try { LocalInputStore(ctx, name).use { store ->
+        } finally { original.close() }
+        val store = LocalInputStore(ctx, name)
+        try {
             assertEquals(listOf("a"), store.pendingReports("local").map { it.id })
             store.acknowledgeReports("local", listOf("a"))
             assertEquals(listOf("m"), store.pendingReports("local").map { it.id })
-        } } finally { ctx.deleteDatabase(name) }
+        } finally { store.close(); ctx.deleteDatabase(name) }
     }
 
     @Test fun derivedMetadataIsRemovedOnlyWhenAllTargetsAcknowledge() = fixture { store ->
@@ -108,5 +111,14 @@ class ImageReportQueueTest {
         })
         assertEquals(listOf("a"), reports.map { it.id })
         assertEquals(2, store.pendingReports("local").size)
+    }
+
+    @Test fun busyImagePermitDoesNotReadImagesOrBlockOrdinaryReports() = fixture { store ->
+        repeat(25) { store.enqueueReport(asset("a$it", "a".repeat(64)), listOf("local")) }
+        store.enqueueReport(PendingReport("text", "personal_choice", "{}"), listOf("local"))
+        assertEquals(listOf("text"), store.pendingReports("local", beginImageRead = { null }).map { it.id })
+        store.readableDatabase.rawQuery("SELECT COUNT(*) FROM pending_report", null).use {
+            assertTrue(it.moveToFirst()); assertEquals(26, it.getInt(0))
+        }
     }
 }

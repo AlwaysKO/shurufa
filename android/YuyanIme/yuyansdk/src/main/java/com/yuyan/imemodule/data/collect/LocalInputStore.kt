@@ -166,13 +166,18 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
     @Synchronized fun pendingReports(
         target: String, limit: Int = 20, includeLocation: Boolean = true,
         maxImageBytes: () -> Long = { Long.MAX_VALUE },
+        beginImageRead: () -> java.io.Closeable? = { java.io.Closeable {} },
     ): List<PendingReport> {
         val budget = maxImageBytes().coerceAtLeast(0)
         val db = writableDatabase
         // 有界迁移旧队列；暂停期间不读取旧图，未索引依赖保守等待。
-        ReportImageIndex.indexPending(db, target, budget > 0) { id, length -> readReportPayload(id, length) }
-        return db.rawQuery(
-            """SELECT r.id,r.kind,LENGTH(r.payload),m.payload_bytes
+        val imagePermit = if (budget > 0) beginImageRead() else null
+        return try {
+            ReportImageIndex.indexPending(db, target, imagePermit != null) { id, length -> readReportPayload(id, length) }
+            // 无许可必须在LIMIT之前排除图片，不能让前20张图遮蔽普通报告。
+            val queryBudget = if (imagePermit != null) budget else 0L
+            db.rawQuery(
+            """SELECT r.id,r.kind,CASE WHEN r.kind='chat_asset' THEN 0 ELSE LENGTH(r.payload) END,m.payload_bytes
                FROM pending_report r JOIN report_target t ON t.report_id=r.id
                LEFT JOIN report_image_meta m ON m.report_id=r.id
                WHERE t.target=? AND (?='1' OR r.kind!='location')
@@ -187,19 +192,25 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
                      SELECT 1 FROM pending_report a JOIN report_target at ON at.report_id=a.id
                      LEFT JOIN report_image_meta am ON am.report_id=a.id
                      WHERE a.kind='chat_asset' AND at.target=t.target
-                       AND (am.report_id IS NULL OR am.asset_sha256 IS NULL))))
+                       AND (am.report_id IS NULL OR am.asset_sha256 IS NULL)
+                       AND EXISTS (SELECT 1 FROM report_image_dependency ud WHERE ud.report_id=r.id))))
                ORDER BY t.attempted_at,
                  CASE r.kind WHEN 'chat_messages' THEN 0 WHEN 'chat_asset' THEN 1 ELSE 2 END,r.rowid LIMIT ?""",
-            arrayOf(target, if (includeLocation) "1" else "0", budget.toString(), budget.toString(), limit.coerceIn(1,20).toString()),
+            arrayOf(target, if (includeLocation) "1" else "0", queryBudget.toString(), queryBudget.toString(), limit.coerceIn(1,20).toString()),
         ).use { c -> buildList {
             var characters = 0L
             var imageBytes = 0L
             while (c.moveToNext()) {
-                val length = c.getInt(2)
+                var length = c.getInt(2)
                 val kind = c.getString(1)
                 if (kind == "chat_asset") {
                     val bytes = c.getLong(3)
+                    // 已持有本批读取许可，但用户可能重新打字，逐图再核对资格。
                     if (bytes > maxImageBytes().coerceAtLeast(0) - imageBytes) continue
+                    if (isNotEmpty() && characters + bytes > 262_144) break
+                    length = db.rawQuery("SELECT LENGTH(payload) FROM pending_report WHERE id=?", arrayOf(c.getString(0))).use {
+                        check(it.moveToFirst()) { "Missing durable report" }; it.getInt(0)
+                    }
                     imageBytes += bytes
                 }
                 if (isNotEmpty() && characters + length > 262_144) break
@@ -207,6 +218,7 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
                 characters += length
             }
         } }
+        } finally { imagePermit?.close() }
     }
 
     // CursorWindow cannot hold a multi-megabyte Base64 row. Read bounded SQLite text slices.
