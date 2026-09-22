@@ -6,11 +6,12 @@ import './content-library.css';
 const askConfirmation = useConfirmation();
 
 const devices = ref<DictionaryDevice[]>([]), rows = ref<DictionaryEntry[]>([]);
-const total = ref(0), totalWords = ref<number>(), page = ref(1), deviceId = ref(''), q = ref(''), status = ref('');
+const total = ref(0), totalWords = ref<number>(), page = ref(1), deviceId = ref(''), q = ref(''), status = ref('enabled');
 const view = ref('merged');
 const selected = ref<string[]>([]), targets = ref<string[]>([]), allSelected = ref(false);
 const busy = ref(false), loading = ref(false), loaded = ref(false), error = ref(''), notice = ref('');
 const newWord = ref(''), newPinyin = ref('');
+const resultsPanel = ref<HTMLElement|null>(null);
 let generation = 0, alive = true;
 const canManage = computed(() => devices.value.some(d => d.in_group) && devices.value.filter(d => d.in_group).every(d => d.restore_enabled !== false));
 const pageCount = computed(() => Math.max(1,Math.ceil(total.value/50)));
@@ -42,12 +43,14 @@ function toggleTarget(id:string,checked:boolean) {
   if(busy.value || loading.value) return;
   notice.value='';targets.value=checked ? [...new Set([...targets.value,id])] : targets.value.filter(t=>t!==id);
 }
-async function load(targetPage=page.value) {
+async function load(targetPage=page.value): Promise<boolean|undefined> {
   if(!alive) return;
   const version=++generation; loading.value=true; loaded.value=false; error.value='';
   try {
     const [directory,result]=await Promise.all([dictionaryApi.devices(),dictionaryApi.entries({...filter(),page:targetPage,view:view.value})]);
     if(version!==generation || !alive) return false;
+    const lastPage=Math.max(1,Math.ceil(result.total/50));
+    if(targetPage>lastPage) return await load(lastPage);
     devices.value=directory.devices; rows.value=result.entries; total.value=result.total; totalWords.value=result.total_words; page.value=targetPage;
     targets.value=targets.value.filter(id=>directory.devices.some(d=>d.device_id===id));loaded.value=true;return true;
   } catch(e) { if(version===generation && alive) error.value=(e as Error).message; return false; }
@@ -62,12 +65,19 @@ async function addWord() {
   busy.value=true;error.value='';notice.value='';
   try {
     const result=await dictionaryApi.addWord({text,pinyin});if(!alive) return;
-    deviceId.value='';q.value=text;status.value='';view.value='merged';
+    deviceId.value='';q.value=text;status.value='enabled';view.value='merged';
     await nextTick();
-    const refreshed=await load(1);if(!alive) return;
-    if(refreshed) selected.value=[text];
+    let refreshed=await load(1);if(!alive) return;
+    if(refreshed && !rows.value.some(r=>r.text===text)) {
+      status.value='';await nextTick();refreshed=await load(1);if(!alive) return;
+    }
+    const savedRow=refreshed ? rows.value.find(r=>r.text===text) : undefined;
+    const visible=!!savedRow;
+    if(visible) selected.value=[text];
     newWord.value='';newPinyin.value='';
-    notice.value=`${result.created ? '已添加' : '词语已存在'}于本站词库${refreshed ? '并选中' : '，列表刷新失败，请重试查询'}；请选择目标手机，再点击增量同步。尚未发送到手机。`;
+    const nextStep=savedRow && savedRow.status!=='enabled' ? `仍为${statuses[savedRow.status]}，须先在主后台恢复后再同步。` : '请选择目标手机，再点击增量同步。';
+    notice.value=`「${text}」${result.created ? '已添加' : '已存在'}于本站词库${visible ? '并选中' : '，列表未显示该词，请重试查询'}；${nextStep}尚未发送到手机。`;
+    if(refreshed) {await nextTick();resultsPanel.value?.scrollIntoView?.({behavior:'smooth',block:'start'});}
   } catch(e) {if(alive) error.value=(e as Error).message;} finally {if(alive) busy.value=false;}
 }
 async function syncSelected() {
@@ -107,7 +117,7 @@ async function decide(texts:string[],value:DictionaryStatus) {
   if(value!=='enabled' && !(await askConfirmation(`${statuses[value]}这 ${texts.length} 个词的个人学习与加权？绑定手机同步后生效，原始上报明细保留；不会屏蔽公共词库中的同名词。`, { title: value === 'deleted' ? '确认删除个人词语' : '确认停用个人词语', confirmText: value === 'deleted' ? '确认删除' : '确认停用' }))) return;
   if (!alive || busy.value || !canManage.value) return;
   busy.value=true;error.value='';notice.value='';
-  try {await dictionaryApi.decisions([...new Set(texts)],value);if(!alive) return;notice.value='决策已保存，等待手机确认应用。';clearSelection();await load();}
+  try {await dictionaryApi.decisions([...new Set(texts)],value);if(!alive) return;notice.value=`${value==='enabled' ? '已恢复' : value==='disabled' ? '已停用' : '已删除'} ${new Set(texts).size} 个词${value==='deleted' ? '，可切换“已删除”状态查看或恢复' : ''}；等待手机确认应用。`;clearSelection();await load();}
   catch(e) {if(alive) error.value=(e as Error).message;} finally {if(alive) busy.value=false;}
 }
 onMounted(()=>load(1)); onBeforeUnmount(()=>{alive=false;generation++;});
@@ -149,8 +159,9 @@ onMounted(()=>load(1)); onBeforeUnmount(()=>{alive=false;generation++;});
       </div>
       <p v-if="!devices.length">{{ loading ? '正在加载手机…' : '暂无已注册手机，暂时不能下发。' }}</p>
     </section>
-    <section class="library-panel">
+    <section ref="resultsPanel" class="library-panel">
       <p v-if="devices.length && !canManage" class="library-notice">本站为这些手机的词库备份端，支持新增与增量同步；停用、删除和换机绑定仍请在主后台操作。</p>
+      <p>默认显示启用词，后台手工添加的词优先展示；删除记录可切换“已删除”查看或恢复。</p>
       <h3>{{ view==='merged' ? '合并后的个人词库' : deviceId ? deviceName(deviceId)+'的上报明细' : '共享个人词库 · 各来源明细' }}</h3>
       <p>同词多种编码或来源不等于重复加权。真实选词次数仅来自点击记录，非点击记录显示“—”；合并权重不能相加当作次数。“未记录”读音不能新增拼音词条，但已有合法输入码的真实习惯可通过一键同步恢复，不猜测读音。</p>
       <form class="library-row" @submit.prevent="load(1)">

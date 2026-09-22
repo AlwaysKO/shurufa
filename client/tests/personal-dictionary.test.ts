@@ -95,6 +95,7 @@ it('默认合并查看，字段分列，所有按钮采用已有统一样式', a
 });
 it('备份端也可手工添加并向指定未绑定手机纯加法同步，不调用绑定', async () => {
   const api=mockApi(); api.devices.mockResolvedValue({devices:devices.map(d=>({...d,restore_enabled:false,additions_supported:false,additions_pending:0}))});
+  const entry=(await api.entries()).entries[0];api.entries.mockResolvedValue({entries:[{...entry,text:'泰鲮'}],total:1,page:1});
   const view=await mount('PersonalDictionary',api);
   update(view,'new-word',' 泰鲮 '); update(view,'new-pinyin','tai ling');
   view.find('add-form')!.props.onSubmit({preventDefault(){}}); await settle();
@@ -116,7 +117,7 @@ it('全部筛选结果跨页保留，通过筛选快照而非当前页列表同�
   const api=mockApi();const view=await mount('PersonalDictionary',api);
   update(view,'search','充电');await settle();check(view,'target-old');click(view,'select-all');await settle();
   click(view,'next-page');await settle();click(view,'sync-selected');await settle();
-  expect(api.sync).toHaveBeenCalledWith({device_ids:['old'],all:true,filter:{q:'充电'}});
+  expect(api.sync).toHaveBeenCalledWith({device_ids:['old'],all:true,filter:{q:'充电',status:'enabled'}});
   update(view,'search','泰鲮');await settle();
   expect(view.find('sync-selected')!.props.disabled).toBe(true);
   click(view,'select-page');await settle();update(view,'status-filter','disabled');await settle();
@@ -208,4 +209,50 @@ it('一键同步请求中阻止重复点击，失败可重试且不清手机选�
   expect(view.text()).toContain('习惯同步网络失败');
   expect(view.find('target-new')!.props.checked).toBe(true);
   expect(view.find('sync-all-habits')!.props.disabled).toBe(false);
+});
+
+it('默认只查询启用词，新增后回到启用列表并明确显示保存的词语',async()=>{
+  const api=mockApi();const entry=(await api.entries()).entries[0];
+  api.entries.mockResolvedValue({entries:[{...entry,text:'也正常'}],total:1,page:1});
+  const view=await mount('PersonalDictionary',api);
+  expect(api.entries.mock.calls.at(-1)?.[0]).toMatchObject({status:'enabled'});
+  update(view,'status-filter','deleted');await settle();
+  update(view,'new-word','也正常');update(view,'new-pinyin','ye zheng chang');
+  view.find('add-form')!.props.onSubmit({preventDefault(){}});await settle();
+  expect(api.entries.mock.calls.at(-1)?.[0]).toMatchObject({q:'也正常',status:'enabled',page:1});
+  expect(view.text()).toContain('「也正常」');
+});
+it('删除末页最后一词后回到有效页，已删除词可通过状态筛选查看并恢复',async()=>{
+  const api=mockApi();vi.stubGlobal('confirm',vi.fn().mockReturnValue(true));
+  let deleted=false;
+  const entry=(await api.entries()).entries[0];
+  api.entries.mockImplementation(async(f:any)=>{
+    if(f.status==='deleted') return {entries:deleted?[{...entry,status:'deleted'}]:[],total:deleted?1:0};
+    return {entries:deleted && f.page===2?[]:[entry],total:deleted?50:51};
+  });
+  api.decisions.mockImplementation(async(_texts:any,status:string)=>{deleted=status==='deleted';return {ok:true};});
+  const view=await mount('PersonalDictionary',api);click(view,'next-page');await settle();
+  click(view,'delete-0');await settle();
+  expect(api.entries.mock.calls.at(-1)?.[0]).toMatchObject({status:'enabled',page:1});
+  expect(view.text()).toContain('已删除');
+  update(view,'status-filter','deleted');await settle();
+  expect(view.text()).toContain('充电宝');
+  const restore=view.all().find(n=>n.tag==='button' && n.text==='保留/恢复')!;
+  restore.props.onClick();await settle();
+  expect(api.decisions).toHaveBeenLastCalledWith(['充电宝'],'enabled');
+  expect(view.text()).not.toContain('充电宝');
+});
+it.each(['deleted','disabled'])('重新添加 %s 同名词时展示其原状态，不冒充恢复或选中不可见词',async(status)=>{
+  const api=mockApi();api.addWord.mockResolvedValue({ok:true,created:false});
+  const entry=(await api.entries()).entries[0];
+  api.entries.mockImplementation(async(f:any)=>({entries:f.status==='enabled'?[]:[{...entry,text:'也正常',status}],total:f.status==='enabled'?0:1}));
+  const view=await mount('PersonalDictionary',api);
+  update(view,'new-word','也正常');update(view,'new-pinyin','ye zheng chang');
+  view.find('add-form')!.props.onSubmit({preventDefault(){}});await settle();
+  expect(view.text()).toContain('已删除');
+  expect(view.text()).toContain('已选 1 词');
+  expect(view.all().filter(n=>n.tag==='td').map(n=>n.text)).toContain(status==='deleted'?'已删除':'停用');
+  expect(view.text()).toContain('须先在主后台恢复后再同步');
+  expect(api.entries.mock.calls.at(-1)?.[0].status).toBeUndefined();
+  expect(api.decisions).not.toHaveBeenCalled();
 });

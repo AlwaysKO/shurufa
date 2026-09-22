@@ -210,6 +210,8 @@ export function createDashboardDictionaryRouter(pool: pg.Pool): Router {
   r.get('/entries',transaction(pool,async(db,req,res) => {
     const d = await device(db,res.locals.userId);
     let all = await dashboardEntries(db,d.group_id,req.query);
+    // 仅调整后台展示顺序，手工确认的词不再埋在手机原始上报的后续页。
+    all.sort((a,b)=>Number(b.source==='dashboard')-Number(a.source==='dashboard'));
     const totalWords=new Set(all.map(e=>e.text)).size;
     if (req.query.view === 'merged') {
       const grouped = new Map<string, typeof all>();

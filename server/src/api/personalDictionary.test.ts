@@ -150,6 +150,23 @@ describe('指定手机纯加法词库', () => {
     await mobile(B,'post','/register').send({});
     return dash();
   };
+  it('后台新增词在刷新后的首页优先展示，合并来源和手机筛选保持正确', async () => {
+    const admin=await setup();
+    const values=Array.from({length:55},(_,i)=>({...word,text:'词'+String.fromCharCode(0x4e00+i),pinyin:'ci yi'}));
+    await upload(A,values);
+    expect((await admin.post(endpoint('/words')).send({text:'也正常',pinyin:'ye zheng chang'})).status).toBe(200);
+    for(const view of ['merged','raw']) {
+      const result=await admin.get(endpoint('/entries')+'&view='+view);
+      expect(result.body.total).toBe(56);
+      expect(result.body.entries[0]).toMatchObject({text:'也正常',pinyin:'ye zheng chang',status:'enabled'});
+    }
+    await upload(A,[{...word,text:'也正常',pinyin:'ye zheng chang'},choice('也正常',2)],2);
+    const merged=(await admin.get(endpoint('/entries')+'&view=merged')).body.entries[0];
+    expect(merged).toMatchObject({text:'也正常',count:2,device_ids:[A],sources:['dashboard','selection']});
+    const raw=(await admin.get(endpoint('/entries')+'&device_id='+A)).body.entries;
+    expect(raw.every((e:any)=>e.device_id===A && e.source!=='dashboard')).toBe(true);
+    expect((await admin.get('/api/v1/dashboard/dictionary/entries?user_id='+B)).body.total).toBe(0);
+  });
   it('备份后台可规范化手工添加，不伪造来源次数并拒绝错读音', async () => {
     const admin=await setup();
     expect((await admin.post(endpoint('/words')).send({text:'泰鲮',pinyin:' TAI  LING '})).body).toEqual({ok:true,created:true});
