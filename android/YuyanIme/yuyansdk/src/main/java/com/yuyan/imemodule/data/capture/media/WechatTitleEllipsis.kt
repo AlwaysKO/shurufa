@@ -60,7 +60,12 @@ private fun hasThreeBaselineDots(header: Bitmap, symbol: OcrTextSymbol): Boolean
             dot.width in maxOf(2,(height*.06).toInt())..maxOf(3,(height*.25).toInt()) &&
             dot.height in maxOf(2,(height*.06).toInt())..maxOf(3,(height*.25).toInt()) &&
             dot.width.toDouble()/dot.height in .5..1.8 && write >= dot.width*dot.height*.45 &&
-            y0 >= height*.5 && y1 >= height*.65) dots += dot
+            y0 >= height*.5 && y1 >= height*.65) {
+            dots += dot
+        } else if (x0 > 0 && x1 < width && write >= maxOf(4, (height * height * .01).toInt())) {
+            // 实测相邻汉字裁片会贴左右边；框内显著的其他笔画则不构成三点证据。
+            return false
+        }
     }
     if(dots.size!=3) return false
     val ordered=dots.sortedBy { it.left }

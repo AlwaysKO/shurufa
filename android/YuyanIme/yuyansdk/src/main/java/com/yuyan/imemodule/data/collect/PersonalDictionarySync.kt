@@ -60,7 +60,7 @@ internal class PersonalDictionarySync(
                 }
             }
             // 注册回执不缓存：服务端重置后必须补传本机数据。
-            val registered=json.parseToJsonElement(request("/register",buildJsonObject {put("restore_enabled",restoreFromTarget);put("additions_supported",true);put("habits_supported",true)}.toString())).jsonObject
+            val registered=json.parseToJsonElement(request("/register",buildJsonObject {put("restore_enabled",restoreFromTarget);put("additions_supported",true);put("habits_supported",true);put("short_codes_supported",true)}.toString())).jsonObject
             val records=store.dictionaryExport()
             val (status,imported)=migration()
             val serialized=json.encodeToString(ListSerializer(DictionaryRecord.serializer()),records)
@@ -100,7 +100,8 @@ internal class PersonalDictionarySync(
                 }
             }
             if(registered["habits_supported"]?.jsonPrimitive?.booleanOrNull == true) {
-                val target=endpoint+"#"+deviceId
+                // 升级短码能力后重放一次，避免旧客户端跳过的短码落在旧游标之前；按来源版本去重。
+                val target=endpoint+"#"+deviceId+"#short-code-v1"
                 var after=store.dictionaryHabitCursor(target)
                 var reset=false
                 var pages=0

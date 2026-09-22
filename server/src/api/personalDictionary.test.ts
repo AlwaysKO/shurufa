@@ -34,6 +34,7 @@ beforeEach(async () => {
   if(existsSync(additionsPath)) await pool.query(readFileSync(additionsPath,'utf8'));
   const habitsPath=new URL('../../migrations/025_dictionary_habits.sql',import.meta.url);
   if(existsSync(habitsPath)) await pool.query(readFileSync(habitsPath,'utf8'));
+  await pool.query(readFileSync(new URL('../../migrations/026_dictionary_short_codes.sql',import.meta.url),'utf8'));
   app = createApp(pool);
 });
 afterEach(async () => {
@@ -353,10 +354,30 @@ describe('真实习惯增量投递',()=>{
 });
 
 it('一两键选择备份保留编码并重复上报不增次数',async()=>{
- await mobile(A,'post','/register').send({});
+ await mobile(A,'post','/register').send({short_codes_supported:true});
  const entries=['3','62'].map(code=>({...choice('的',1),code}));
  expect((await upload(A,entries)).status).toBe(200);
  expect((await upload(A,entries)).status).toBe(200);
  const snapshot=(await mobile(A,'get','')).body;
  expect(snapshot.entries.map((e:any)=>[e.code,e.count]).sort()).toEqual([['3',1],['62',1]]);
+});
+it('旧手机过滤短码但可正常确认快照和习惯，新版升级后可重放短码',async()=>{
+ await mobile(A,'post','/register').send({short_codes_supported:true,habits_supported:true});
+ await mobile(B,'post','/register').send({habits_supported:true});
+ const short={...choice('的',1),code:'3'};
+ await upload(A,[short,choice()]);
+ const admin=await dash();
+ await admin.post(`/api/v1/dashboard/dictionary/bind?user_id=${A}`).send({device_id:B});
+ const legacy=(await mobile(B,'get','')).body;
+ expect(legacy.entries.some((e:any)=>e.code==='3')).toBe(false);
+ expect((await mobile(B,'post','/ack').send({revision:legacy.revision})).status).toBe(200);
+ expect((await admin.get(`/api/v1/dashboard/dictionary/devices?user_id=${A}`)).body.devices.find((d:any)=>d.device_id===B).synced).toBe(true);
+ await pool.query('INSERT INTO dictionary_habit(device_id,source_device_id,code,text,version,payload) VALUES($1,$2,$3,$4,$5,$6)',[B,A,'3','的',1,JSON.stringify(short)]);
+ await pool.query('INSERT INTO dictionary_habit(device_id,source_device_id,code,text,version,payload) VALUES($1,$2,$3,$4,$5,$6)',[B,A,choice().code,choice().text,1,JSON.stringify(choice())]);
+ const oldPage=(await mobile(B,'get','/habits?after=0')).body;
+ expect(oldPage.entries.map((e:any)=>e.code)).toEqual([choice().code]);
+ expect((await mobile(B,'post','/habits/ack').send({cursor:oldPage.cursor})).status).toBe(200);
+ await mobile(B,'post','/register').send({short_codes_supported:true,habits_supported:true});
+ expect((await mobile(B,'get','')).body.entries.some((e:any)=>e.code==='3')).toBe(true);
+ expect((await mobile(B,'get','/habits?after=0')).body.entries.map((e:any)=>e.code)).toEqual(['3',choice().code]);
 });

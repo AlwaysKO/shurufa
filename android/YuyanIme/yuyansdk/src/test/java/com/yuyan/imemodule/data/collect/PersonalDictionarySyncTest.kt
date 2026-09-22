@@ -25,7 +25,9 @@ class PersonalDictionarySyncTest {
             LocalInputStore(context,"habit-sync-${UUID.randomUUID()}.db").withStore { store ->
                 val prefs=context.getSharedPreferences("test-${UUID.randomUUID()}",0)
                 val sync=PersonalDictionarySync(store,prefs,OkHttpClient(),"new",server.url("/").toString(),{true},{"complete" to 0},restoreFromTarget=false)
-                val record=DictionaryRecord("choice","我们","966","","selection",3,3.0,1000,"old",5)
+                val legacyTarget=server.url("/").toString().trimEnd('/')+"/api/v1/mobile/dictionary#new"
+                store.saveDictionaryHabitCursor(legacyTarget,99)
+                val record=DictionaryRecord("choice","的","3","","selection",3,3.0,1000,"old",5)
                 fun queue(ack:Int) {
                     server.enqueue(MockResponse().setBody("{\"ok\":true,\"has_report\":true,\"habits_supported\":true}"))
                     if(server.requestCount==0) server.enqueue(MockResponse().setBody("{\"ok\":true}"))
@@ -33,11 +35,13 @@ class PersonalDictionarySyncTest {
                     server.enqueue(MockResponse().setResponseCode(ack).setBody("{\"ok\":true}"))
                 }
                 queue(503);assertFalse(sync.run())
-                assertEquals(3L,store.learned("966").single().count)
-                assertEquals(0L,store.dictionaryHabitCursor(server.url("/").toString().trimEnd('/')+"/api/v1/mobile/dictionary#new"))
+                assertEquals(3L,store.learned("3").single().count)
+                assertEquals(99L,store.dictionaryHabitCursor(legacyTarget))
+                assertEquals(0L,store.dictionaryHabitCursor(legacyTarget+"#short-code-v1"))
                 queue(200);assertTrue(sync.run())
-                assertEquals(3L,store.learned("966").single().count)
+                assertEquals(3L,store.learned("3").single().count)
                 assertTrue(store.dictionaryExport().isEmpty())
+                assertEquals(7L,store.dictionaryHabitCursor(legacyTarget+"#short-code-v1"))
                 val paths=(1..server.requestCount).map {server.takeRequest().path}
                 assertEquals(2,paths.count {it=="/api/v1/mobile/dictionary/habits?after=0"})
                 assertEquals(2,paths.count {it=="/api/v1/mobile/dictionary/habits/ack"})

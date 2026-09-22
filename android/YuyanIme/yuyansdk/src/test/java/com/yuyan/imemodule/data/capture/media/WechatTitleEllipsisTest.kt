@@ -58,4 +58,12 @@ class WechatTitleEllipsisTest {
         for(y in 45..64) for(x in 204..218) bitmap.setPixel(x,y,Color.BLACK)
         assertEquals(line,restoreWechatTitleEllipsis(bitmap,line));bitmap.recycle()
     }
+    @Test fun neighboringCharacterClippedAtSymbolEdgeDoesNotHideThreeDots() {
+        val bitmap=sample(3)
+        // 与实测“店”的裁片一致：显著笔画贴 symbol 右边，不在三点内部。
+        for(y in 45..78) for(x in 222..224) bitmap.setPixel(x,y,Color.BLACK)
+        assertEquals("测试…店5337(135)",restoreWechatTitleEllipsis(bitmap,line).text)
+        bitmap.recycle()
+    }
+
 }

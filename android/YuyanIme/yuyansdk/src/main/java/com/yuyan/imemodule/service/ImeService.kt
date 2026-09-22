@@ -27,6 +27,8 @@ import com.yuyan.imemodule.R
 import com.yuyan.imemodule.data.collect.ImageUploadRuntime
 import com.yuyan.imemodule.candidate.CandidateView
 import com.yuyan.imemodule.data.completion.OfflineT9Candidates
+import com.yuyan.imemodule.data.completion.CorrectionLearningTracker
+import com.yuyan.imemodule.data.completion.T9CommitSelection
 import com.yuyan.imemodule.data.collect.CollectionConsent
 import com.yuyan.imemodule.data.completion.canLearnInput
 import com.yuyan.inputmethod.RimeEngine
@@ -100,6 +102,24 @@ open class ImeService : InputMethodService() {
     private var hostTextCommitListener: ((String, ExpressionCommitKind) -> Unit)? = null
     private var hostTextEditListener: (() -> Unit)? = null
     private val committedEdits = CommittedEditTracker()
+    private val correctionLearning = CorrectionLearningTracker()
+    private fun resetEditTracking() { committedEdits.reset(); correctionLearning.reset() }
+
+    private fun learnCommittedSelection(selection: T9CommitSelection?, before: String?, after: String?) {
+        if (selection == null) { correctionLearning.reset(); return }
+        val trackable = selection.code.length in 1..30 && selection.code.all { it in '2'..'9' } &&
+            CorrectionLearningTracker.canTrack(selection.text, before, after)
+        val reward = if (trackable) java.util.UUID.randomUUID().toString() else null
+        // 严格纠错用单调时钟；SQLite用墙钟存储选择时间。时钟异常宁可无法撤销，也不放宽真实纠错时限。
+        // 必须先取消旧奖励再暂存新奖励（暂存会清算到期项）。
+        correctionLearning.commit(selection.code, selection.text, before, after, reward, SystemClock.elapsedRealtime())
+            ?.let(OfflineT9Candidates::cancelLearning)
+        if (reward == null) OfflineT9Candidates.learn(selection)
+        else if (OfflineT9Candidates.learnTemporarily(selection, reward) == null) {
+            correctionLearning.reset()
+            OfflineT9Candidates.learn(selection)
+        }
+    }
     private var composingForHistory = false
     private var historyComposingText: String? = null
 
@@ -112,7 +132,7 @@ open class ImeService : InputMethodService() {
         CollectionConsent.enabled(this) && CollectionConsent.allowsEditor(YuyanEmojiCompat.mEditorInfo)
 
     private fun readCommittedText(connection: InputConnection? = currentInputConnection): String? {
-        if (!historyAllowed()) { committedEdits.reset(); return null }
+        if (!historyAllowed()) { resetEditTracking(); return null }
         return runCatching {
             committedSnapshot(connection?.getExtractedText(ExtractedTextRequest().apply {
                 flags = InputConnection.GET_TEXT_WITH_STYLES
@@ -132,9 +152,11 @@ open class ImeService : InputMethodService() {
     ) {
         if (!historyAllowed() || !CollectionConsent.allowsText(fallbackText) ||
             !CollectionConsent.allowsText(before) || !CollectionConsent.allowsText(after)) {
-            committedEdits.reset()
+            resetEditTracking()
             return
         }
+        if (eventType == "delete" && source == "key") correctionLearning.delete(before, after, SystemClock.elapsedRealtime())
+        else if (eventType != "commit" || source != "candidate") correctionLearning.reset()
         // 某些宿主会延迟提供更新快照；不能因此丢掉已接受的提交。
         val unchangedCommit = before != null && before == after &&
             eventType in setOf("commit", "voice", "paste") && !fallbackText.isNullOrEmpty()
@@ -151,15 +173,15 @@ open class ImeService : InputMethodService() {
                     put("edit_protocol", 1)
                     put("snapshot_complete", edit.complete)
                     put("text_truncated", (text?.length ?: 0) > 5000)
-                })) committedEdits.reset()
+                })) resetEditTracking()
     }
 
     /** 宿主菜单/清空等异步变化：只有已跟踪的输入框和可读快照才记录，不读取其他聊天。 */
     private fun observeHostEdit() {
-        if (!historyAllowed()) { committedEdits.reset(); return }
+        if (!historyAllowed()) { resetEditTracking(); return }
         if (composingForHistory || voiceHasPartialText) return
         val before = committedEdits.lastText ?: return
-        val after = readCommittedText() ?: run { committedEdits.reset(); return }
+        val after = readCommittedText() ?: run { resetEditTracking(); return }
         if (before != after) recordHostEdit(before,
             if (after.length < before.length) "external_delete" else "external_insert",
             source = "host_change", after = after)
@@ -220,7 +242,7 @@ open class ImeService : InputMethodService() {
     }
 
     override fun onStartInput(editorInfo: EditorInfo?, restarting: Boolean) {
-        committedEdits.reset()
+        resetEditTracking()
         clearHistoryComposition()
         if (activeVoiceSession != null) cancelVoiceInput()
         YuyanEmojiCompat.setEditorInfo(editorInfo)
@@ -579,7 +601,7 @@ open class ImeService : InputMethodService() {
     }
 
     override fun onFinishInput() {
-        committedEdits.reset()
+        resetEditTracking()
         clearHistoryComposition()
         cancelVoiceInput()
         YuyanEmojiCompat.setEditorInfo(null)
@@ -657,7 +679,7 @@ open class ImeService : InputMethodService() {
                 request = { ForegroundChatCaptureBridge.request(it.packageName, it.requestedAtMillis) },
             )
             observeHostEdit()
-            committedEdits.reset()
+            resetEditTracking()
             hostTextEditListener?.invoke()
         }
         return sent
@@ -750,6 +772,7 @@ open class ImeService : InputMethodService() {
             sendCombinationKeyEventsAndReport(keyEventCode, alt, ctrl, shift)
         }
         if (sent) {
+            if (keyEventCode != KeyEvent.KEYCODE_DEL && keyEventCode != KeyEvent.KEYCODE_FORWARD_DEL) correctionLearning.reset()
             if ((keyEventCode == KeyEvent.KEYCODE_DEL || keyEventCode == KeyEvent.KEYCODE_FORWARD_DEL) &&
                 (!wasComposing || before != null)) {
                 val after = readCommittedText()
@@ -818,11 +841,11 @@ open class ImeService : InputMethodService() {
             voiceHasPartialText = false
         }
         if (committed && recordEvent && learnAllowed) {
-            if (inputSelection != null) OfflineT9Candidates.learn(inputSelection)
-            recordHostEdit(before, "commit", text, source = "candidate", inputCode = inputCode,
-                after = if (unverifiedComposition) null else readCommittedText())
+            val after = if (unverifiedComposition) null else readCommittedText()
+            learnCommittedSelection(inputSelection, before, after)
+            recordHostEdit(before, "commit", text, source = "candidate", inputCode = inputCode, after = after)
         }
-        if (committed && (!recordEvent || !learnAllowed)) committedEdits.reset()
+        if (committed && (!recordEvent || !learnAllowed)) resetEditTracking()
         if (committed && text.hasLineBreak()) hostTextEditListener?.invoke()
         return committed
     }
@@ -850,11 +873,11 @@ open class ImeService : InputMethodService() {
             voiceHasPartialText = false
         }
         if (committed && recordEvent && learnAllowed) {
-            if (inputSelection != null) OfflineT9Candidates.learn(inputSelection)
-            recordHostEdit(before, "commit", text, source = "candidate", inputCode = inputCode,
-                after = if (unverifiedComposition) null else readCommittedText())
+            val after = if (unverifiedComposition) null else readCommittedText()
+            learnCommittedSelection(inputSelection, before, after)
+            recordHostEdit(before, "commit", text, source = "candidate", inputCode = inputCode, after = after)
         }
-        if (committed && (!recordEvent || !learnAllowed)) committedEdits.reset()
+        if (committed && (!recordEvent || !learnAllowed)) resetEditTracking()
         if (committed && text.hasLineBreak()) hostTextEditListener?.invoke()
     }
 
@@ -910,7 +933,7 @@ open class ImeService : InputMethodService() {
                 request = { ForegroundChatCaptureBridge.request(it.packageName, it.requestedAtMillis) },
             )
             observeHostEdit()
-            committedEdits.reset()
+            resetEditTracking()
             hostTextEditListener?.invoke()
         }
         return performed
@@ -931,6 +954,7 @@ open class ImeService : InputMethodService() {
 
     fun setSelection(start: Int, end: Int) {
         if (currentInputConnection?.setSelection(start, end) == true) {
+            correctionLearning.reset()
             hostTextEditListener?.invoke()
         }
     }

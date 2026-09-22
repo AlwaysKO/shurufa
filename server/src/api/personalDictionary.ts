@@ -51,12 +51,13 @@ async function authenticate(db: Db, req: Request, id: string) {
   if (row.token_hash !== hash(token)) throw new HttpError(401,'dictionary credential mismatch');
   return row;
 }
-async function snapshot(db: Db, group: string) {
+async function snapshot(db: Db, group: string, shortCodes = true) {
   const devices = (await db.query('SELECT device_id FROM dictionary_device WHERE group_id=$1 ORDER BY device_id',[group])).rows.map(r => r.device_id);
   const rows = (await db.query(`SELECT e.device_id,e.entry_key,e.sequence,e.payload FROM dictionary_entry e
     JOIN dictionary_device d ON e.device_id=d.device_id WHERE d.group_id=$1 ORDER BY e.device_id,e.entry_key LIMIT 100001`,[group])).rows;
   if (rows.length > 100000) throw new HttpError(413,'词库过大，未下发截断数据');
-  const entries = rows.map(r => ({device_id:r.device_id,version:Number(r.sequence),...r.payload}));
+  const entries = rows.map(r => ({device_id:r.device_id,version:Number(r.sequence),...r.payload}))
+    .filter(e => shortCodes || e.kind !== 'choice' || !/^[2-9]{1,2}$/.test(e.code));
   const policies = (await db.query('SELECT text,status FROM dictionary_policy WHERE group_id=$1 ORDER BY text',[group])).rows;
   const revision = hash(JSON.stringify({group,devices,entries,policies}));
   return {group_id:group,revision,entries,policies};
@@ -91,6 +92,8 @@ export function createMobileDictionaryRouter(pool: pg.Pool): Router {
     const restores=req.body?.restore_enabled ?? true;
     const additions=req.body?.additions_supported ?? false;
     const habits=req.body?.habits_supported ?? false;
+    const shortCodes=req.body?.short_codes_supported ?? false;
+    if(typeof shortCodes!=='boolean') throw new HttpError(400,'invalid short code capability');
     if(typeof habits!=='boolean') throw new HttpError(400,'invalid habits capability');
     if(typeof additions!=='boolean') throw new HttpError(400,'invalid additions capability');
     if(typeof restores!=='boolean') throw new HttpError(400,'invalid restore mode');
@@ -99,13 +102,14 @@ export function createMobileDictionaryRouter(pool: pg.Pool): Router {
     await db.query(`INSERT INTO dictionary_device(device_id,group_id,token_hash) VALUES($1,$1,$2) ON CONFLICT DO NOTHING`,[id,hash(token)]);
     const registered = await authenticate(db,req,id);
     // 主控角色变化后必须重新应用并确认，不能沿用切换前的确认版本。
-    if (registered.restore_enabled !== restores) {
+    if (registered.restore_enabled !== restores || registered.short_codes_supported !== shortCodes) {
       await db.query('UPDATE dictionary_device SET applied_revision=NULL WHERE device_id=$1',[id]);
     }
     await db.query('UPDATE dictionary_device SET restore_enabled=$2 WHERE device_id=$1',[id,restores]);
     await db.query('UPDATE dictionary_device SET additions_supported=$2 WHERE device_id=$1',[id,additions]);
     await db.query('UPDATE dictionary_device SET habits_supported=$2 WHERE device_id=$1',[id,habits]);
-    return {ok:true,has_report:registered.last_report_at != null,additions_supported:true,habits_supported:true};
+    await db.query('UPDATE dictionary_device SET short_codes_supported=$2 WHERE device_id=$1',[id,shortCodes]);
+    return {ok:true,has_report:registered.last_report_at != null,additions_supported:true,habits_supported:true,short_codes_supported:true};
   }));
   r.get('/additions',transaction(pool,async(db,req,res)=>{
     const id=res.locals.userId,d=await authenticate(db,req,id);
@@ -141,7 +145,8 @@ export function createMobileDictionaryRouter(pool: pg.Pool): Router {
     if(typeof raw!=='string' || !/^\d+$/.test(raw) || !integer(Number(raw))) throw new HttpError(400,'invalid cursor');
     const after=Number(raw);
     if(after>Number(d.habits_delivered)) throw new HttpError(409,'cursor was not delivered','dictionary_cursor_reset');
-    const rows=(await db.query('SELECT cursor,source_device_id,version,payload FROM dictionary_habit WHERE device_id=$1 AND cursor>$2 ORDER BY cursor LIMIT 501',[id,after])).rows;
+    const rows=(await db.query(`SELECT cursor,source_device_id,version,payload FROM dictionary_habit WHERE device_id=$1 AND cursor>$2
+      ${d.short_codes_supported ? '' : "AND (code LIKE '___%' OR code>='a')"} ORDER BY cursor LIMIT 501`,[id,after])).rows;
     const entries=rows.slice(0,500).map(row=>({...row.payload,device_id:row.source_device_id,version:Number(row.version),cursor:Number(row.cursor)}));
     const cursor=entries.at(-1)?.cursor ?? after;
     if(!integer(cursor) || entries.some(e=>!integer(e.version))) throw new HttpError(413,'cursor capacity exceeded');
@@ -179,10 +184,13 @@ export function createMobileDictionaryRouter(pool: pg.Pool): Router {
     await db.query('UPDATE dictionary_device SET last_report_at=NOW(),migration_status=$2,imported=$3 WHERE device_id=$1',[id,migration_status,imported]);
     return {ok:true};
   }));
-  r.get('/',transaction(pool,async(db,req,res) => snapshot(db,(await authenticate(db,req,res.locals.userId)).group_id)));
+  r.get('/',transaction(pool,async(db,req,res) => {
+    const d=await authenticate(db,req,res.locals.userId);
+    return snapshot(db,d.group_id,d.short_codes_supported);
+  }));
   r.post('/ack',transaction(pool,async(db,req,res) => {
     const id = res.locals.userId, d = await authenticate(db,req,id);
-    const current = await snapshot(db,d.group_id);
+    const current = await snapshot(db,d.group_id,d.short_codes_supported);
     if (req.body?.revision !== current.revision) throw new HttpError(409,'词库已更新，请重新同步');
     await db.query('UPDATE dictionary_device SET applied_revision=$2,applied_at=NOW() WHERE device_id=$1',[id,current.revision]);
     return {ok:true};
@@ -192,12 +200,12 @@ export function createMobileDictionaryRouter(pool: pg.Pool): Router {
 export function createDashboardDictionaryRouter(pool: pg.Pool): Router {
   const r = Router();
   r.get('/devices',transaction(pool,async(db,_req,res) => {
-    const d = await device(db,res.locals.userId), current = await snapshot(db,d.group_id);
-    const rows = (await db.query(`SELECT s.device_id,s.group_id,s.last_report_at,s.applied_at,s.applied_revision,s.migration_status,s.imported,s.restore_enabled,s.additions_supported,s.additions_ack,s.additions_applied_at,s.habits_supported,s.habits_ack,s.habits_applied_at,
+    const d = await device(db,res.locals.userId), current = await snapshot(db,d.group_id), legacy = await snapshot(db,d.group_id,false);
+    const rows = (await db.query(`SELECT s.device_id,s.group_id,s.last_report_at,s.applied_at,s.applied_revision,s.migration_status,s.imported,s.restore_enabled,s.short_codes_supported,s.additions_supported,s.additions_ack,s.additions_applied_at,s.habits_supported,s.habits_ack,s.habits_applied_at,
       d.name,d.model,d.brand,d.dashboard_name FROM dictionary_device s JOIN device d ON d.id=s.device_id ORDER BY s.device_id`)).rows;
     for(const row of rows) row.additions_pending=Number((await db.query('SELECT COUNT(*) AS n FROM dictionary_addition WHERE device_id=$1 AND cursor>$2',[row.device_id,row.additions_ack])).rows[0].n);
     for(const row of rows) row.habits_pending=Number((await db.query('SELECT COUNT(*) AS n FROM dictionary_habit WHERE device_id=$1 AND cursor>$2',[row.device_id,row.habits_ack])).rows[0].n);
-    return {group_id:d.group_id,devices:rows.map(row => ({...row,in_group:row.group_id===d.group_id,synced:row.restore_enabled && row.group_id===d.group_id && row.applied_revision===current.revision}))};
+    return {group_id:d.group_id,devices:rows.map(row => ({...row,in_group:row.group_id===d.group_id,synced:row.restore_enabled && row.group_id===d.group_id && row.applied_revision===(row.short_codes_supported ? current.revision : legacy.revision)}))};
   }));
   r.get('/entries',transaction(pool,async(db,req,res) => {
     const d = await device(db,res.locals.userId);

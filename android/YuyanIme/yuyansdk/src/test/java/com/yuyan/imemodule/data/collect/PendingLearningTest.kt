@@ -60,13 +60,48 @@ class PendingLearningTest {
         val name = "pending-${UUID.randomUUID()}.db"
         val db = LocalInputStore(context, name, now = { 1000 })
         try {
-            db.learn("326", "房", pinyin = "fang")
+            db.learn("3264", "房", pinyin = "fang")
             db.stageLearning("receipt", listOf(PendingChoice("3264542", "房价", "fang jia"),
                 PendingChoice("3264", "房", "fang"), PendingChoice("542", "价", "jia")), emptyList())
             assertTrue(db.cancelLearning("receipt"))
             assertTrue(db.learned("3264542").isEmpty())
-            assertEquals(1L, db.learned("326").single().count)
+            assertEquals(1L, db.learned("3264").single().count)
             assertTrue(db.personalWords("3264").any { it.text == "房" })
         } finally { db.close(); context.deleteDatabase(name) }
     }
+    @Test fun `结算失败整体回滚且另一存储实例重试只入队一次`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val name = "pending-${UUID.randomUUID()}.db"
+        var now = 1000L
+        val db = LocalInputStore(context, name, now = { now })
+        val other = LocalInputStore(context, name, now = { now })
+        try {
+            db.stageLearning("receipt", listOf(PendingChoice("3", "的")), listOf("https://example.test"))
+            db.writableDatabase.execSQL("CREATE TRIGGER fail_report BEFORE INSERT ON pending_report BEGIN SELECT RAISE(ABORT, 'test failure'); END")
+            now = 18001
+            assertTrue(runCatching { other.settleLearning() }.isFailure)
+            db.readableDatabase.rawQuery("SELECT COUNT(*) FROM learned_input", null).use { it.moveToFirst(); assertEquals(0, it.getInt(0)) }
+            db.readableDatabase.rawQuery("SELECT COUNT(*) FROM pending_learning", null).use { it.moveToFirst(); assertEquals(1, it.getInt(0)) }
+            db.writableDatabase.execSQL("DROP TRIGGER fail_report")
+            other.settleLearning(); db.settleLearning()
+            assertEquals(1L, db.learned("3").single().count)
+            assertEquals(1, db.pendingReports("https://example.test").size)
+        } finally { other.close(); db.close(); context.deleteDatabase(name) }
+    }
+
+    @Test fun `延迟确认不覆盖较新的正式选择时间也不增加第二次奖励`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val name = "pending-${UUID.randomUUID()}.db"
+        var now = 1000L
+        val db = LocalInputStore(context, name, now = { now })
+        try {
+            db.stageLearning("receipt", listOf(PendingChoice("3", "的")), emptyList())
+            now = 2000; db.learn("3", "的")
+            now = 18001; db.settleLearning()
+            assertEquals(2L, db.learned("3").single().count)
+            assertEquals(2000L, db.dictionaryExport().single().lastUsed)
+            assertTrue(db.dictionaryExport().single().weight <= 2.0)
+        } finally { db.close(); context.deleteDatabase(name) }
+    }
+
 }

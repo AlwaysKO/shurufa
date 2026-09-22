@@ -5,6 +5,9 @@ import com.yuyan.imemodule.data.capture.CapturePersistResult
 
 internal data class ScreenshotScope(val window: Int, val generation: Long)
 
+internal fun isReadableScreenshotTitleStatus(status: String?): Boolean =
+    status == "confirmed" || status == "truncated"
+
 internal class ScreenshotUpdatePolicy {
     private var confirmed: ScreenshotScope? = null
     private var pendingScrollResume: ScreenshotScope? = null
@@ -28,7 +31,10 @@ internal class ScreenshotUpdatePolicy {
         // 确认重放持有首帧图像，却可能携带第二帧标题；不能拼接成不存在的保存记录。
         lastSaved = if (sameFrameConfirmed) content(identity, titleHash, bodyHash) else null
     }
-    fun observeTitle(window: Int, generation: Long, status: String) = Unit
+    fun observeTitle(window: Int, generation: Long, status: String) {
+        if (isReadableScreenshotTitleStatus(status)) confirm(window, generation)
+    }
+    // 这里只确认当前页面可继续检查内容，不提升截断标题的身份置信度。
     @Synchronized fun confirm(window: Int, generation: Long) {
         val scope = ScreenshotScope(window, generation)
         if (scope != confirmed) lastSaved = null

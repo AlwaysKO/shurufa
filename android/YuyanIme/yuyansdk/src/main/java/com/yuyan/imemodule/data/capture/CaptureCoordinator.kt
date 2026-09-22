@@ -196,6 +196,7 @@ class CaptureCoordinator(
         if (!captureAllowed() || captureGeneration() != captureToken) return CapturePersistResult.FAILED
         if (conversation.identityConfidence < MIN_IDENTITY_CONFIDENCE &&
             !isIsolatedPendingScreenshot(conversation, rawMessages, capturedAssets) &&
+            !isIsolatedTruncatedScreenshot(conversation, rawMessages, capturedAssets) &&
             !isPendingNotification(conversation, rawMessages) &&
             !isPendingNotificationScreenshot(conversation, rawMessages, capturedAssets)) return CapturePersistResult.FAILED
         val conversationKey = conversation.stableKeyOrNull() ?: return CapturePersistResult.FAILED
@@ -256,6 +257,21 @@ class CaptureCoordinator(
             (conversation.externalKey.orEmpty().startsWith("capture-v3:") || conversation.externalKey.orEmpty().startsWith("screenshot-v2:")) &&
             message.direction == ChatDirection.SYSTEM && message.messageType == ChatMessageType.IMAGE &&
             message.metadata["conversation_identity_status"] == "confirmed"
+
+    /** 可读截断名仍是低置信度身份，只保留严格微信空树截图，不放行文字或其他来源。 */
+    private fun isIsolatedTruncatedScreenshot(
+        conversation: CapturedConversation,
+        messages: List<CapturedMessage>,
+        assets: Map<Int, PendingAssetEntity>,
+    ): Boolean = conversation.platform == ChatPlatform.WECHAT && conversation.accountKey == "wechat-empty-tree" &&
+        conversation.externalKey.orEmpty().matches(Regex("screenshot-v2:truncated:[a-f0-9-]{36}")) &&
+        messages.isNotEmpty() && messages.withIndex().all { (index, message) ->
+            message.direction == ChatDirection.SYSTEM && message.messageType == ChatMessageType.IMAGE &&
+                message.text.isNullOrBlank() && assets[index] != null &&
+                message.metadata["capture_source"] == "wechat_empty_tree_screenshot" &&
+                message.metadata["conversation_identity_source"] == "on_device_title_ocr" &&
+                message.metadata["conversation_identity_status"] == "truncated"
+        }
 
     // 待确认例外只对新标识和对应平台的明确来源开放，不放宽任意低置信度数据。
     private fun isIsolatedPendingScreenshot(

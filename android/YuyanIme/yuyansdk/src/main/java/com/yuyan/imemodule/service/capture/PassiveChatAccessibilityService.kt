@@ -562,7 +562,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                     val preferences = getSharedPreferences(FALLBACK_PREFERENCES, Context.MODE_PRIVATE)
                     if (screenshotUpdates.hasSavedContent(screenshotScope) &&
                         preferences.getString(LAST_EMPTY_TREE_SCREENSHOT_SHA, null) == asset.sha256 &&
-                        preferences.getString("last_title_identity_status", null) == "confirmed") {
+                        isReadableScreenshotTitleStatus(preferences.getString("last_title_identity_status", null))) {
                         CaptureTrace.record(CaptureStage.DUPLICATE, windowId, identityGeneration)
                         return@withLock
                     }
@@ -575,14 +575,14 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                         screenshotUpdates.rejectScrollResume(screenshotScope)
                         return@withLock
                     }
-                    if (firstIdentity.status == "confirmed" && screenshotUpdates.isSavedContent(
+                    if (isReadableScreenshotTitleStatus(firstIdentity.status) && screenshotUpdates.isSavedContent(
                             screenshotScope, firstIdentity.externalKey, firstIdentity.exactTitleHash, contentInput.sha256)) {
                         CaptureTrace.record(CaptureStage.CONTENT_DUPLICATE, windowId, identityGeneration)
                         return@withLock
                     }
                     suspend fun persist(identity: ScreenshotConversationIdentity): CapturePersistResult {
                         if (!isCurrentScreenshotWindow(windowId, identityGeneration, captureToken)) return CapturePersistResult.FAILED
-                        if (identity.status == "confirmed") screenshotUpdates.confirm(windowId, identityGeneration)
+                        screenshotUpdates.observeTitle(windowId, identityGeneration, identity.status)
                         val result = coordinator?.captureParsed(
                             conversation = CapturedConversation(
                                 platform = ChatPlatform.WECHAT,
@@ -614,7 +614,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                         if (result != CapturePersistResult.FAILED) {
                             screenshotUpdates.recordSavedContent(screenshotScope, firstIdentity.externalKey,
                                 firstIdentity.exactTitleHash, contentInput.sha256, result,
-                                sameFrameConfirmed = identity === firstIdentity && firstIdentity.status == "confirmed")
+                                sameFrameConfirmed = identity === firstIdentity && isReadableScreenshotTitleStatus(firstIdentity.status))
                             preferences.edit().putString(LAST_EMPTY_TREE_SCREENSHOT_SHA, asset.sha256)
                                 .putString("last_title_identity_status", identity.status).apply()
                         }

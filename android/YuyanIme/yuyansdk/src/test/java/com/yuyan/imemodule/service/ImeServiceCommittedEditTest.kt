@@ -256,11 +256,19 @@ class ImeServiceCommittedEditTest {
                 if (cursorEntry) service.commitText("房价", 1) else service.commitText("房价")
                 assertEquals(2L, db.learned("3264542").first { it.text == "房价" }.count)
                 assertEquals(1L, db.dictionaryExport().first { it.kind == "choice" && it.text == "房价" }.count)
-                service.deleteSurroundingText(1)
-                service.deleteSurroundingText(1)
+                if (cursorEntry) {
+                    service.hostKeyEventSender = { connection.deleteSurroundingText(1, 0) }
+                    repeat(2) { assertTrue(service.sendEditingKeyEventAndReport(android.view.KeyEvent.KEYCODE_DEL)) }
+                } else {
+                    service.deleteSurroundingText(1)
+                    service.deleteSurroundingText(1)
+                }
                 tracker.selected("3264542", "放假", "fang jia")
                 if (cursorEntry) service.commitText("放假", 1) else service.commitText("放假")
                 assertEquals(1L, db.learned("3264542").first { it.text == "房价" }.count)
+                val next = offline.select("3264542", listOf("房价", "放假"), listOf("fang jia", "fang jia"))
+                assertEquals("放假", next.firstPage.first().text)
+                assertEquals(1, next.firstPage.first().nativeIndex)
                 assertFalse(db.pendingReports(com.yuyan.imemodule.data.collect.ServerConfig.eventTargets.first()).any { it.kind == "personal_choice" })
                 // 在旧词后继续输入，验证中间位置同样受连续快照约束。
                 service.commitText("呀")

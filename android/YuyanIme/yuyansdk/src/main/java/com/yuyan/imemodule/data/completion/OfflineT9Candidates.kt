@@ -3,6 +3,9 @@ package com.yuyan.imemodule.data.completion
 import com.yuyan.inputmethod.util.T9Spelling
 import android.content.Context
 import android.util.Log
+import android.os.Handler
+import android.os.Looper
+import com.yuyan.imemodule.data.collect.PendingChoice
 import com.yuyan.imemodule.data.collect.LocalInputStore
 import com.yuyan.imemodule.data.collect.CollectionConsent
 import com.yuyan.imemodule.data.collect.DataCollector
@@ -21,6 +24,9 @@ internal object OfflineT9Candidates {
     fun init(context: Context) {
         appContext = context.applicationContext
         if (store == null) store = LocalInputStore(context)
+        // 上次进程结束时未结算的奖励仍在SQLite中；旧定时器丢失不等于丢学习。
+        store?.settleLearning()
+        scheduleLearningSettlement()
         if (!publicPhrasesAttempted) {
             publicPhrasesAttempted = true
             try { publicPhrases = PublicPhraseIndex.load(context) }
@@ -233,18 +239,55 @@ internal object OfflineT9Candidates {
         return CandidateSelection(ranked, nativeCount)
     }
 
-    /** 调用方已确认宿主成功及隐私资格；整词和实际选中的段只交接一次。 */
-    fun learn(selection: T9CommitSelection) {
-        learn(selection.code, selection.text, selection.pinyin)
+    private fun learningChoices(selection: T9CommitSelection): List<PendingChoice> = buildList {
+        add(PendingChoice(selection.code, selection.text, selection.pinyin))
         if (selection.parts.size > 1 &&
             selection.parts.joinToString("") { it.text } == selection.text &&
             selection.parts.joinToString(" ") { it.pinyin } == selection.pinyin &&
             PersonalWordReading.matches(selection.code, selection.pinyin)) {
             selection.parts.forEach { part ->
                 val reading = PersonalWordReading.normalize(part.text, part.pinyin) ?: return@forEach
-                learn(T9Lexicon.digits(reading.replace(" ", "")), part.text, reading)
+                add(PendingChoice(T9Lexicon.digits(reading.replace(" ", "")), part.text, reading))
             }
         }
+    }
+
+    /** 调用方已确认宿主成功及隐私资格；整词和实际选中的段只交接一次。 */
+    fun learn(selection: T9CommitSelection) {
+        learningChoices(selection).forEach { learn(it.code, it.text, it.pinyin) }
+    }
+
+    /** 本机即时排序可见，17秒严格观察窗内不出现在任何上传/备份里。 */
+    fun learnTemporarily(selection: T9CommitSelection, id: String): String? {
+        val current = store ?: return null
+        return try {
+            val upload = appContext?.let { CollectionConsent.enabled(it) } == true &&
+                CollectionConsent.allowsEditor(YuyanEmojiCompat.mEditorInfo) && CollectionConsent.allowsText(selection.text)
+            current.stageLearning(id, learningChoices(selection), if (upload) ServerConfig.eventTargets else emptyList())
+            scheduleLearningSettlement()
+            id
+        } catch (error: Exception) {
+            Log.w("OfflineT9", "临时学习保存失败", error)
+            null
+        }
+    }
+
+    fun cancelLearning(id: String) {
+        try { store?.cancelLearning(id) }
+        catch (error: Exception) { Log.w("OfflineT9", "临时学习撤销失败", error) }
+    }
+
+    private fun scheduleLearningSettlement() {
+        val current = store ?: return
+        // 捕获实例避免旧会话定时器触碰重建后的数据库；事务负责重复调用幂等。
+        Handler(Looper.getMainLooper()).postDelayed({
+            if (store === current) {
+                try {
+                    current.settleLearning()
+                    if (appContext?.let { CollectionConsent.enabled(it) } == true) DataCollector.requestSync()
+                } catch (error: Exception) { Log.w("OfflineT9", "临时学习结算失败，下次重试", error) }
+            }
+        }, CorrectionLearningTracker.REWARD_WINDOW_MS + 1)
     }
 
     @JvmOverloads fun learn(code: String, text: String, pinyin: String = "") {
