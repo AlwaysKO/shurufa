@@ -125,7 +125,7 @@ export async function importStickerBundle(pool: pg.Pool, root = process.cwd()): 
     for (const setting of data.settings) {
       const group = library.groups.find(g => g.keyword === setting.keyword);
       if (!group) continue;
-      const occupied = new Set(library.groups.filter(g => g.keyword !== group.keyword).flatMap(g => [g.keyword,...g.aliases]).map(normalizeRecommendationPhrase));
+      const occupied = new Set(library.groups.filter(g => g.keyword !== group.keyword).flatMap(g => g.aliases).map(normalizeRecommendationPhrase));
       if (group.aliases.some(alias => occupied.has(normalizeRecommendationPhrase(alias)))) throw new Error(`图库说法归属冲突：${group.keyword}，请先调整另一组的同组说法`);
     }
     for (const s of data.removals) await db.query('INSERT INTO keyword_gif_removal(user_id,sha256,asset_id) VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[OWNER,s.sha256,s.assetId]);

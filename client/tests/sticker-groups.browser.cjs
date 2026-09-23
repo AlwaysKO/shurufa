@@ -22,6 +22,7 @@ const group = {keyword:'赞',aliases:['赞','给你点赞'],confirmedAliases:[],
    else if(path==='/api/v1/dashboard/sticker-library')body={groups:[group],systemCount:1,personalCount:1,warnings:[]};
    else if(path.startsWith('/api/v1/dashboard/sticker-groups/')&&request.method()==='PATCH'){
     const patch=request.postDataJSON();
+    if(patch.aliases?.includes('翻白眼'))return route.fulfill({status:409,json:{error:'说法“翻白眼”已属于关键词组“翻白眼”，请先从原组移除'}});
     if(patch.assetOrder)group.assets=patch.assetOrder.map(key=>group.assets.find(a=>`${a.source}:${a.id}`===key));
     if(patch.aliases)group.aliases=patch.aliases;
     body={group};
@@ -42,6 +43,11 @@ const group = {keyword:'赞',aliases:['赞','给你点赞'],confirmedAliases:[],
   await page.getByTestId('drag-sticker-system:praise').waitFor();
   assert.equal(await page.locator('.sticker-cell').first().getAttribute('data-testid'),'sticker-cell-system:praise');
   await page.getByTestId('edit-group-aliases').click();
+  await page.getByTestId('group-alias-input-0').fill('翻白眼');
+  await page.getByTestId('save-group-aliases').click();
+  await page.getByText('说法保存失败：说法“翻白眼”已属于关键词组“翻白眼”，请先从原组移除').waitFor({timeout:5000});
+  assert.equal(await page.getByTestId('group-alias-input-0').inputValue(),'翻白眼');
+  assert.deepEqual(group.aliases,['赞','给你点赞']);
   await page.getByTestId('group-alias-input-0').fill('夸夸你');
   await page.getByTestId('remove-group-alias-1').click();
   await page.getByTestId('add-group-alias').click();
@@ -57,6 +63,6 @@ const group = {keyword:'赞',aliases:['赞','给你点赞'],confirmedAliases:[],
   assert.equal(await page.getByTestId('save-sticker-order').isEnabled(),true);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth <= window.innerWidth),true);
   assert.deepEqual(errors,[]);
-  console.log('PASS: 原生拖放、保存/刷新、说法增删改、390px窄屏、触屏替代按钮；隔离 HTTP 夹具');
+  console.log('PASS: 原生拖放、保存/刷新、说法增删改、409具体提示及草稿保留、390px窄屏、触屏替代按钮；隔离 HTTP 夹具');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

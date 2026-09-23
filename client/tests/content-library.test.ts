@@ -85,6 +85,19 @@ it('组内选择文件立即上传且自动携带该词，公共图片没有删�
   await view.find('group-upload-input')!.props.onChange({ target: input }); await settle();
   expect(upload).toHaveBeenCalledWith(expect.objectContaining({ filename: 'hello.gif', keywords: '晚安', width: 240 }));
 });
+it('原组说法转给其他组后，上传完成仍打开精确原组而不跳到说法所在组', async () => {
+  const data = structuredClone(library);
+  data.groups[0]!.aliases = ['你好', '晚安'];
+  data.groups[1]!.aliases = [];
+  const upload = vi.fn().mockResolvedValue({ id: 1 });
+  const view = await mount('Stickers', { stickerLibrary: vi.fn().mockResolvedValue(data), uploadSticker: upload });
+  view.find('keyword-晚安')!.props.onClick(); await settle();
+  vi.stubGlobal('Image', class { naturalWidth = 240; naturalHeight = 240; onload: (() => void) | null = null; set src(_s: string) { this.onload?.(); } });
+  await view.find('group-upload-input')!.props.onChange({ target: { files: [new File(['GIF89a'], 'night.gif')], value: 'night.gif' } });
+  await settle();
+  expect(upload).toHaveBeenCalledWith(expect.objectContaining({ group_keyword: '晚安' }));
+  expect(view.find('keyword-晚安')!.props['aria-current']).toBe('true');
+});
 it('词库加载失败显示重试，不伪装成空表情库', async () => {
   const view = await mount('Stickers', { stickerLibrary: vi.fn().mockRejectedValue(new Error('离线')) });
   expect(view.text()).toContain('离线'); expect(view.find('retry-library')).toBeDefined();

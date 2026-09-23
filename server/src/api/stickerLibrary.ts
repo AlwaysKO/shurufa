@@ -187,9 +187,10 @@ async function updateLockedGroup(pool: Pick<pg.Pool, 'query'>, _userId: string, 
     if (aliases.some(value => !value || value.length > 100 || /[,，\r\n]/u.test(value)) || new Set(aliases).size !== aliases.length) {
       throw new StickerGroupError(400, '说法须为1～100字，不含逗号或换行，且不能重复');
     }
-    const others = new Set(library.groups.filter(item => item.keyword !== keyword)
-      .flatMap(item => [item.keyword, ...item.aliases]).map(normalizeRecommendationPhrase));
-    if (aliases.some(alias => others.has(alias))) throw new StickerGroupError(409, '说法已属于其他关键词组，请先从原组移除');
+    const others = new Map(library.groups.filter(item => item.keyword !== keyword)
+      .flatMap(item => item.aliases.map(alias => [normalizeRecommendationPhrase(alias), item.keyword] as const)));
+    const conflict = aliases.find(alias => others.has(alias));
+    if (conflict) throw new StickerGroupError(409, `说法“${conflict}”已属于关键词组“${others.get(conflict)}”，请先从原组移除`);
   }
   let order: string[] | undefined;
   if ('assetOrder' in body) {

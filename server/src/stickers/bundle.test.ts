@@ -82,6 +82,21 @@ it('导入拒绝线上另一分组已占用的匹配说法',async()=>{
   await expect(importStickerBundle(dest,root)).rejects.toThrow(/说法.*冲突/);
 });
 
+it('说法从同名原组转出后，导出清单可导入新数据库且不会恢复原组说法', async () => {
+  const origin = await source();
+  await origin.query('UPDATE sticker_group_settings SET aliases=$1 WHERE keyword=$2', [JSON.stringify([]), '来砍我']);
+  await origin.query('INSERT INTO sticker_group_settings(user_id,keyword,aliases) VALUES($1,$2,$3)',
+    [OWNER, '空关键词', JSON.stringify(['来砍我'])]);
+  await exportStickerBundle(origin, root);
+  const dest = await database();
+  await importStickerBundle(dest, root);
+  await importStickerBundle(dest, root);
+  expect((await dest.query('SELECT keyword,aliases FROM sticker_group_settings ORDER BY keyword')).rows).toEqual([
+    { keyword: '来砍我', aliases: [] }, { keyword: '空关键词', aliases: ['来砍我'] },
+  ]);
+  expect((await dest.query('SELECT keywords FROM sticker')).rows).toEqual([{ keywords: '来砍我' }]);
+});
+
 it('拉取的新清单尚未导入时，旧数据库不能导出覆盖它',async()=>{
   const origin=await source();await exportStickerBundle(origin,root);
   const path=join(root,'data/sticker-library.json'),data=JSON.parse(await readFile(path,'utf8'));data.keywords.push('另一台电脑的新词');

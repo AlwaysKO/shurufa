@@ -163,6 +163,34 @@ it('拒绝重复、越权或非本组排序、冲突别名，失败不覆盖已�
   expect((await agent.get(`/api/v1/dashboard/sticker-library?user_id=${A}`)).body.groups.find((g: any) => g.keyword === '你好').aliases).toEqual(['你好']);
 });
 
+it('冲突响应指出归一化后的具体说法及其所属关键词组', async () => {
+  const url = `/api/v1/dashboard/sticker-groups/${encodeURIComponent('你好')}?user_id=${A}`;
+  const response = await agent.patch(url).send({ aliases: [' 晚安！ '] });
+  expect(response.status).toBe(409);
+  expect(response.body.error).toBe('说法“晚安”已属于关键词组“晚安”，请先从原组移除');
+  const groups = (await agent.get(`/api/v1/dashboard/sticker-library?user_id=${A}`)).body.groups;
+  expect(groups.find((g: any) => g.keyword === '你好').aliases).toEqual(['你好']);
+});
+
+it('原组删除与组名相同的说法后，其他组可使用该说法且原组标识保留', async () => {
+  const rows = await pool.query(`INSERT INTO sticker(user_id,keywords,file_name,format) VALUES
+    ($1,'你好','hello.gif','gif'),($1,'晚安','night.gif','gif') RETURNING id`, [OWNER]);
+  const [hello, night] = rows.rows.map(row => row.id);
+  const target = `/api/v1/dashboard/sticker-groups/${encodeURIComponent('你好')}?user_id=${A}`;
+  const source = `/api/v1/dashboard/sticker-groups/${encodeURIComponent('晚安')}?user_id=${A}`;
+  expect((await agent.patch(source).send({ aliases: [] })).status).toBe(200);
+  const saved = await agent.patch(target).send({ aliases: ['你好', '晚安'] });
+  expect(saved.status).toBe(200);
+  expect(saved.body.group.aliases).toEqual(['你好', '晚安']);
+  const groups = (await agent.get(`/api/v1/dashboard/sticker-library?user_id=${A}`)).body.groups;
+  expect(groups.find((g: any) => g.keyword === '晚安').aliases).toEqual([]);
+  expect(groups.find((g: any) => g.keyword === '晚安').assets.map((a: any) => a.id)).toEqual([night]);
+  expect(groups.filter((g: any) => g.aliases.includes('晚安')).map((g: any) => g.keyword)).toEqual(['你好']);
+  const found = await request(app).get('/api/v1/mobile/stickers?q=' + encodeURIComponent('晚安')).set('X-Device-Id', A);
+  expect(found.status).toBe(200);
+  expect(found.body.stickers.map((item: any) => Number(item.id))).toEqual([hello]);
+});
+
 it('完整目录同步别名与顺序，版本随设置变化，自动推荐无子串回退而手动搜索保留', async () => {
   await writeFile(join(root, 'server/.runtime/expression-assets/catalog.json'), JSON.stringify({version:'v1', emojiBases:[], emojiCombinations:[], templates:[
     {id:'praise',type:'prebuilt',keywords:['赞'],embeddedText:'赞',fileName:'prebuilt/praise.gif',format:'gif',width:240,height:240,sha256:'a'.repeat(64),heat:99},

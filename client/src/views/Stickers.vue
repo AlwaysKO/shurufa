@@ -114,7 +114,7 @@ function jumpToPage() {
 }
 function revealKeyword(keyword: string) {
   q.value = ''; filter.value = 'all';
-  const index = library.value.groups.findIndex(g => g.keyword === keyword || g.aliases.includes(keyword));
+  const index = library.value.groups.findIndex(g => g.keyword === keyword);
   goToPage(index < 0 ? 1 : Math.floor(index / PAGE_SIZE) + 1);
   selectedKeyword.value = library.value.groups[index]?.keyword ?? keyword;
 }

@@ -511,7 +511,10 @@ async function patch<T>(url: string, body: unknown): Promise<T> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(`API ${url} failed: ${res.status}`);
+  if (!res.ok) {
+    const detail = await res.json().catch(() => null);
+    throw new Error(typeof detail?.error === 'string' && detail.error.trim() ? detail.error : `API ${url} failed: ${res.status}`);
+  }
   return res.json() as Promise<T>;
 }
 
