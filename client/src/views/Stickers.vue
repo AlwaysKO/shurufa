@@ -11,6 +11,7 @@ const loading = ref(false);
 const loaded = ref(false);
 const loadError = ref('');
 const busy = ref(false);
+const uploadProgress = ref<number | null>(null);
 const msg = ref('');
 const err = ref('');
 const q = ref('');
@@ -18,7 +19,7 @@ const filter = ref('all');
 const selectedKeyword = ref('');
 const newKeyword = ref('');
 const fileInput = ref<HTMLInputElement | null>(null);
-const uploadTarget = ref<{ keyword: string; keywords: string } | null>(null);
+const uploadTarget = ref<{ keyword: string } | null>(null);
 const editingId = ref<number | null>(null);
 const editingKeywords = ref('');
 const failedImages = ref(new Set<string>());
@@ -55,6 +56,15 @@ watch(() => activeGroup.value?.keyword, () => {
 function replaceGroup(group: StickerKeywordGroup) {
   const index = library.value.groups.findIndex(item => item.keyword === group.keyword);
   if (index >= 0) library.value.groups[index] = group;
+  else library.value.groups.unshift(group);
+  const assets = new Set(library.value.groups.flatMap(item => item.assets.map(assetKey)));
+  library.value.personalCount = [...assets].filter(key => key.startsWith('personal:')).length;
+  library.value.systemCount = [...assets].filter(key => key.startsWith('system:')).length;
+}
+function previewUrl(asset: LibrarySticker) {
+  const url = scopedAssetUrl(asset.url);
+  return asset.sha256 && url.startsWith('/uploads/')
+    ? `${url}${url.includes('?') ? '&' : '?'}v=${encodeURIComponent(asset.sha256)}` : url;
 }
 function moveAsset(from: string, to: string) {
   if (busy.value || loading.value || from === to) return;
@@ -137,23 +147,15 @@ async function addKeyword(source: 'new' | 'search' = 'new') {
     const saved = await api.addStickerKeyword(keyword);
     // 独立创建空组，无需图片；更新本地状态避免成功后刷新失败造成重复提交。
     if (!library.value.groups.some(group => group.keyword === saved.keyword)) library.value.groups.unshift({ keyword: saved.keyword, aliases: [saved.keyword], confirmedAliases: [], category: '自定义', planned: false, custom: true, assets: [] });
-    await load();
+    if (saved.group) replaceGroup(saved.group);
     revealKeyword(saved.keyword); if (source === 'new') newKeyword.value = '';
     msg.value = saved.keyword === keyword ? `已新增关键词“${keyword}”，可以现在上传，也可以稍后补图。` : `已打开“${saved.keyword}”组；相同说法不重复建组。`;
   } catch (e) { err.value = `新增失败：${(e as Error).message}`; }
   finally { busy.value = false; }
 }
-function readImageSize(file: File): Promise<{ width: number; height: number }> {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file); const img = new Image();
-    img.onload = () => { URL.revokeObjectURL(url); resolve({ width: img.naturalWidth, height: img.naturalHeight }); };
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('无法读取图片，请检查文件是否损坏')); };
-    img.src = url;
-  });
-}
 function chooseUpload() {
   if (busy.value || !activeGroup.value) return;
-  uploadTarget.value = { keyword: activeGroup.value.keyword, keywords: activeGroup.value.aliases.join(',') };
+  uploadTarget.value = { keyword: activeGroup.value.keyword };
   fileInput.value?.click();
 }
 async function uploadFile(event: Event) {
@@ -161,25 +163,29 @@ async function uploadFile(event: Event) {
   const file = input.files?.[0];
   if (!file || busy.value) return;
   // 文件选择前锁定词；即使选择文件期间切换搜索/分组也不会错传。
-  const target = uploadTarget.value ?? (activeGroup.value ? { keyword: activeGroup.value.keyword, keywords: activeGroup.value.aliases.join(',') } : null);
+  const target = uploadTarget.value ?? (activeGroup.value ? { keyword: activeGroup.value.keyword } : null);
   uploadTarget.value = null;
   if (!target) return;
-  const { keyword, keywords } = target;
+  const { keyword } = target;
   err.value = ''; msg.value = '';
   if (!/\.(gif|png|jpe?g|webp)$/i.test(file.name) || !file.size || file.size > 5 * 1024 * 1024) {
     err.value = '请选择 GIF / PNG / JPG / WebP 图片，单张不超过 5 MB，不能是空文件。'; input.value = ''; return;
   }
   busy.value = true;
   try {
-    const { width, height } = await readImageSize(file);
-    const bytes = new Uint8Array(await file.arrayBuffer()); let binary = '';
-    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-    await api.uploadSticker({ file_base64: btoa(binary), filename: file.name, keywords, group_keyword: keyword, width, height });
-    msg.value = `已上传到“${keyword}”组 · ${width} × ${height}，同组说法共用这张表情。`;
-    await load();
+    uploadProgress.value = 0;
+    const saved = await api.uploadStickerFile(file, keyword, percent => { uploadProgress.value = percent; });
+    if (saved.group) replaceGroup(saved.group);
+    else {
+      const group = library.value.groups.find(item => item.keyword === keyword);
+      if (group) replaceGroup({ ...group, assets: [
+        { ...saved, source: 'personal', keywords: [keyword], useCount: Number(saved.useCount) }, ...group.assets,
+      ] });
+    }
+    msg.value = `已上传到“${keyword}”组 · ${saved.width} × ${saved.height}，同组说法共用这张表情。`;
     revealKeyword(keyword);
   } catch (e) { err.value = `上传失败：${(e as Error).message}`; }
-  finally { input.value = ''; busy.value = false; }
+  finally { input.value = ''; uploadProgress.value = null; busy.value = false; }
 }
 function selectKeyword(keyword: string) { selectedKeyword.value = keyword; editingId.value = null; }
 async function removeGroup() {
@@ -238,6 +244,7 @@ onMounted(load);
         <button data-testid="add-keyword" class="library-button primary" :disabled="busy || loading || !loaded || !newKeyword.trim()" type="button" @click="addKeyword()">＋ 新增关键词</button>
       </form>
     </section>
+    <p v-if="uploadProgress !== null" class="library-notice" role="status" data-testid="upload-progress">{{ uploadProgress < 100 ? `正在上传 ${uploadProgress}%` : '文件已传输，正在保存…' }}</p>
     <p v-if="msg" class="library-notice success" role="status">{{ msg }}</p>
     <p v-if="err" class="library-notice error" role="alert">{{ err }}</p>
     <div v-if="loadError" class="library-notice error" role="alert">{{ loadError }}<button data-testid="retry-library" class="text-button" :disabled="loading" @click="load">重新加载</button></div>
@@ -303,7 +310,7 @@ onMounted(load);
           <div v-if="activeGroup.assets.length" class="sticker-grid">
             <article v-for="(asset, index) in orderedAssets" :key="assetKey(asset)" :data-testid="`sticker-cell-${assetKey(asset)}`" class="sticker-cell" :class="{ dragging: dragging === assetKey(asset) }" @dragover.prevent @drop.prevent="dropAsset(asset)">
               <div class="sticker-sort-actions"><button :data-testid="`drag-sticker-${assetKey(asset)}`" class="text-button drag-handle" :draggable="!busy && !loading" :disabled="busy || loading" aria-label="拖动排列图片" @dragstart="dragStart($event, asset)" @dragend="dragging = null">⠿ 排序</button><button class="text-button" :disabled="busy || loading || index === 0" aria-label="图片前移" @click="moveAsset(assetKey(asset), assetKey(orderedAssets[index - 1]!))">前移</button><button class="text-button" :disabled="busy || loading || index === orderedAssets.length - 1" aria-label="图片后移" @click="moveAsset(assetKey(asset), assetKey(orderedAssets[index + 1]!))">后移</button></div>
-              <div class="sticker-preview"><span v-if="failedImages.has(`${asset.source}:${asset.id}`)" class="library-badge">图片加载失败</span><img v-else :src="scopedAssetUrl(asset.url)" :alt="asset.keywords.join('、')" loading="lazy" @error="imageFailed(asset)" /><span class="sticker-format">{{ asset.format.toUpperCase() }}</span></div>
+              <div class="sticker-preview"><span v-if="failedImages.has(`${asset.source}:${asset.id}`)" class="library-badge">图片加载失败</span><img v-else :src="previewUrl(asset)" :alt="asset.keywords.join('、')" loading="lazy" @error="imageFailed(asset)" /><span class="sticker-format">{{ asset.format.toUpperCase() }}</span></div>
               <div class="sticker-meta">
                 <span class="library-badge" :class="{ personal: asset.source === 'personal' }">{{ asset.source === 'system' ? '系统素材' : '公共上传' }}</span>
                 <template v-if="asset.source === 'personal' && editingId === Number(asset.id)"><input v-model="editingKeywords" class="library-input" aria-label="图片关键词，多个用逗号分隔" @keyup.enter="saveEdit(asset)" /><div class="library-actions"><button class="text-button" :disabled="busy" @click="saveEdit(asset)">保存</button><button class="text-button" :disabled="busy" @click="editingId = null">取消</button></div></template>

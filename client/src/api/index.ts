@@ -1,7 +1,7 @@
 import type { DeliveryRule, DeliveryState } from './expressionDelivery';
 /** 与后端 /api/v1/dashboard/* 对应的数据类型 */
 import { ref } from 'vue';
-import { dashboardFetch } from '../auth';
+import { dashboardFetch, dashboardUpload } from '../auth';
 
 const USER_STORAGE_KEY = 'shurufa_dashboard_user_id';
 export const currentUserId = ref(localStorage.getItem(USER_STORAGE_KEY) ?? '');
@@ -280,6 +280,7 @@ export interface SynthesisUpload {
 }
 
 export interface LibrarySticker {
+  sha256?: string;
   id: string | number;
   source: 'system' | 'personal';
   keywords: string[];
@@ -694,7 +695,7 @@ export const api = {
     return response.json() as Promise<{keyword: string; files_pending: boolean}>;
   },
   updateStickerGroup: (keyword: string, payload: { aliases?: string[]; assetOrder?: string[] }) => patch<{ group: StickerKeywordGroup }>(`/api/v1/dashboard/sticker-groups/${encodeURIComponent(keyword)}`, payload),
-  addStickerKeyword: (keyword: string) => post<{ keyword: string }>('/api/v1/dashboard/sticker-keywords', { keyword }),
+  addStickerKeyword: (keyword: string) => post<{ keyword: string; group?: StickerKeywordGroup }>('/api/v1/dashboard/sticker-keywords', { keyword }),
   stickers: (q = '') => {
     const p = new URLSearchParams();
     if (q) p.set('q', q);
@@ -702,6 +703,15 @@ export const api = {
   },
   uploadSticker: (body: { file_base64: string; filename: string; keywords: string; group_keyword?: string; width?: number; height?: number }) =>
     post<StickerRow>(`/api/v1/dashboard/stickers`, body),
+  uploadStickerFile: async (file: File, keyword: string, onProgress: (percent: number) => void) => {
+    const query = new URLSearchParams({ filename: file.name, group_keyword: keyword });
+    const response = await dashboardUpload(withDashboardUser(`/api/v1/dashboard/stickers?${query}`), file, onProgress);
+    if (!response.ok) {
+      const detail = await response.json().catch(() => null);
+      throw new Error(typeof detail?.error === 'string' ? detail.error : `上传失败（${response.status}）`);
+    }
+    return response.json() as Promise<StickerRow & { group?: StickerKeywordGroup }>;
+  },
   updateStickerKeywords: (id: number, keywords: string) =>
     patch<{ ok: boolean }>(`/api/v1/dashboard/stickers/${id}`, { keywords }),
   deleteSystemSticker: (id: string) => del(`/api/v1/dashboard/system-stickers/${encodeURIComponent(id)}`),

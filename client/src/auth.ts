@@ -14,6 +14,30 @@ export async function dashboardFetch(url: string, options: RequestInit = {}): Pr
   }
   return response;
 }
+/** 原文件上传，不在主线程生成Base64；进度仅表示已传输字节，响应成功后才算保存。 */
+export function dashboardUpload(url: string, file: File, onProgress: (percent: number) => void): Promise<Response> {
+  const epoch = authEpoch;
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', url);
+    xhr.timeout = 120_000;
+    xhr.setRequestHeader('X-Dashboard-Request', '1');
+    xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+    xhr.upload.onprogress = event => {
+      if (event.lengthComputable) onProgress(Math.round(event.loaded / event.total * 100));
+    };
+    xhr.onload = () => {
+      if (xhr.status === 401 && epoch === authEpoch) {
+        authEpoch++; authenticated.value = false; loginName.value = ''; onExpired?.();
+      }
+      resolve(new Response(xhr.responseText, { status: xhr.status }));
+    };
+    xhr.onerror = () => reject(new Error('上传连接中断，请刷新核对是否已保存后再重试'));
+    xhr.ontimeout = () => reject(new Error('上传超时，请刷新核对是否已保存后再重试'));
+    xhr.onabort = () => reject(new Error('上传已取消'));
+    xhr.send(file);
+  });
+}
 export async function checkSession(): Promise<boolean> {
   const epoch = authEpoch;
   try {

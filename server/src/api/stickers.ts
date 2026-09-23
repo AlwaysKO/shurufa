@@ -4,10 +4,12 @@ import { SHARED_STICKER_OWNER } from '../stickers/shared.js';
 import { normalizeRecommendationPhrase } from '../expression/recommendationGroups.js';
 import { systemExpressionCatalog } from './expressionSnapshot.js';
 import sharp from 'sharp';
-import { Router } from 'express';
+import { Router, raw } from 'express';
+import compression from 'compression';
+import { mkdir, writeFile } from 'node:fs/promises';
 import type express from 'express';
 import type pg from 'pg';
-import { mkdirSync, writeFileSync, unlinkSync, existsSync } from 'node:fs';
+import { unlinkSync, existsSync } from 'node:fs';
 import { join, extname } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { loadStickerLibrary, splitStickerKeywords, rememberStickerKeywords, updateStickerGroup, createStickerKeyword, StickerGroupError, withGroupLock, assertStickerKeywordsActive } from './stickerLibrary.js';
@@ -89,6 +91,15 @@ export function createMobileStickerRouter(pool: pg.Pool): Router {
 
 export function createDashboardStickerRouter(pool: pg.Pool): Router {
   const router = Router();
+  router.use((req, res, next) => {
+    if (!/^\/(?:sticker|system-sticker)/.test(req.path)) return next();
+    const started = performance.now(), json = res.json;
+    res.json = function (body) {
+      res.set('Server-Timing', `app;dur=${(performance.now() - started).toFixed(1)}`);
+      return json.call(this, body);
+    };
+    next();
+  });
 
   router.post('/sticker-groups/:keyword/delete', async (req, res, next) => {
     try {
@@ -101,7 +112,7 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
     }
   });
 
-  router.get('/sticker-library', async (_req, res, next) => {
+  router.get('/sticker-library', compression({ level: 4 }), async (_req, res, next) => {
     try { res.json(await loadStickerLibrary(pool, SHARED_STICKER_OWNER)); }
     catch (error) { next(error); }
   });
@@ -141,7 +152,8 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
       }
       const saved = await createStickerKeyword(pool, SHARED_STICKER_OWNER, keyword);
       await publishStickerBundle(pool);
-      res.status(201).json({ keyword: saved });
+      const group = (await loadStickerLibrary(pool, SHARED_STICKER_OWNER)).groups.find(item => item.keyword === saved);
+      res.status(201).json({ keyword: saved, group });
     } catch (error) {
       if (error instanceof StickerGroupError) return res.status(error.status).json({ error: error.message });
       next(error);
@@ -175,17 +187,24 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
     }
   });
 
-  /** 上传表情包（JSON base64，避免引入 multipart 依赖；图片建议 < 5MB） */
-  router.post('/stickers', async (req, res, next) => {
+  /** 网页直接传原文件；保留JSON base64入口兼容已有客户端。 */
+  router.post('/stickers', (req, res, next) => {
+    raw({ type: 'application/octet-stream', limit: '10mb' })(req, res, error => {
+      if (error?.type === 'entity.too.large') { res.status(413).json({ error: '图片超过10MB限制' }); return; }
+      if (error) { next(error); return; }
+      next();
+    });
+  }, async (req, res, next) => {
     try {
-      const body = req.body as { file_base64?: string; filename?: string; keywords?: string; group_keyword?: string; width?: number; height?: number };
-      if (!body?.file_base64 || !body?.filename) {
+      const binary = Buffer.isBuffer(req.body);
+      const body = (binary ? req.query : req.body) as { file_base64?: string; filename?: string; keywords?: string; group_keyword?: string; width?: number; height?: number };
+      if ((!binary && !body?.file_base64) || typeof body?.filename !== 'string' || !body.filename) {
         return res.status(400).json({ error: 'file_base64 and filename required' });
       }
       const ext = extname(body.filename).toLowerCase();
       const format = ALLOWED_FORMAT[ext];
       if (!format) return res.status(400).json({ error: `unsupported format: ${ext}` });
-      const buffer = Buffer.from(body.file_base64, 'base64');
+      const buffer: Buffer = binary ? req.body : Buffer.from(body.file_base64!, 'base64');
       if (buffer.length === 0 || buffer.length > 10 * 1024 * 1024) {
         return res.status(400).json({ error: 'file size must be 0 ~ 10MB' });
       }
@@ -211,8 +230,8 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
             throw new StickerGroupError(400, '关键词须为1～100字，不含换行；多个关键词用逗号分隔');
           }
           await assertStickerKeywordsActive(db, keywords);
-          mkdirSync(stickerDirectory(), { recursive: true });
-          writeFileSync(join(stickerDirectory(), fileName), buffer);
+          await mkdir(stickerDirectory(), { recursive: true });
+          await writeFile(join(stickerDirectory(), fileName), buffer);
           const result = await db.query(
             `INSERT INTO sticker (user_id, keywords, file_name, format, width, height, sha256)
              VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -227,7 +246,10 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
         throw error;
       }
       await publishStickerBundle(pool);
+      const group = body.group_keyword === undefined ? undefined :
+        (await loadStickerLibrary(pool, SHARED_STICKER_OWNER)).groups.find(item => item.keyword === body.group_keyword);
       res.status(201).json({
+        group,
         id: row.id,
         keywords: row.keywords,
         url: stickerUrl(row.file_name as string),

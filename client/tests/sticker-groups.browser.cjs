@@ -10,7 +10,9 @@ const group = {keyword:'赞',aliases:['赞','给你点赞'],confirmedAliases:[],
 ]};
 let deleted = false, deleteCalls = 0;
 const createdGroups = [];
-let createCalls = 0;
+let createCalls = 0, libraryCalls = 0, uploadCalls = 0;
+let releaseUpload;
+const uploadedBytes=Buffer.from(image.split(',')[1],'base64');
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE,args:['--no-sandbox']});
  try {
@@ -22,11 +24,23 @@ let createCalls = 0;
    let body={};
    if(path==='/api/v1/auth/session')body={username:'browser-fixture'};
    else if(path==='/api/v1/dashboard/users')body={users:[{id:'00000000-0000-4000-8000-00000000000a',dashboard_name:'隔离交互验收'}],total:1};
-   else if(path==='/api/v1/dashboard/sticker-library')body={groups:[...(deleted?[]:[group]),...createdGroups],systemCount:deleted?0:1,personalCount:deleted?0:1,warnings:[]};
+   else if(path==='/api/v1/dashboard/sticker-library'){libraryCalls++;body={groups:[...(deleted?[]:[group]),...createdGroups],systemCount:deleted?0:1,personalCount:deleted?0:1,warnings:[]};}
    else if(path==='/api/v1/dashboard/sticker-keywords'&&request.method()==='POST'){
     const {keyword}=request.postDataJSON();createCalls++;
     createdGroups.push({keyword,aliases:[keyword],confirmedAliases:[],category:'自定义',planned:false,custom:true,assets:[]});
-    body={keyword};
+    body={keyword,group:createdGroups.at(-1)};
+   }
+   else if(path==='/api/v1/dashboard/stickers'&&request.method()==='POST'){
+    uploadCalls++;
+    assert.equal(request.headers()['content-type'],'application/octet-stream');
+    assert.equal(request.headers()['x-dashboard-request'],'1');
+    assert.deepEqual(request.postDataBuffer(),uploadedBytes);
+    assert.equal(new URL(request.url()).searchParams.get('group_keyword'),'眼神');
+    if(uploadCalls>1)return route.fulfill({status:409,json:{error:'关键词组已删除，请刷新'}});
+    await new Promise(resolve=>{releaseUpload=resolve;});
+    const target=createdGroups.find(item=>item.keyword==='眼神');
+    const asset={id:99,source:'personal',url:image,format:'gif',keywords:['眼神'],width:1,height:1,useCount:0};
+    target.assets.unshift(asset);body={...asset,keywords:'眼神',group:target};
    }
    else if(path.endsWith('/delete')&&path.startsWith('/api/v1/dashboard/sticker-groups/')){
     assert.deepEqual(request.postDataJSON(),{confirm:'DELETE',aliases:group.aliases,assetKeys:group.assets.map(a=>`${a.source}:${a.id}`)});
@@ -91,12 +105,27 @@ let createCalls = 0;
   await page.getByRole('searchbox',{name:'搜索关键词'}).fill('眼神');
   await page.getByRole('button',{name:'＋ 新增词组「眼神」',exact:true}).waitFor();
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth <= window.innerWidth),true);
+  const beforeCreateLoads=libraryCalls;
   await page.getByTestId('add-search-keyword').click();
   await page.getByTestId('keyword-眼神').waitFor();
   assert.equal(await page.getByTestId('keyword-眼神').getAttribute('aria-current'),'true');
   assert.equal(await page.getByTestId('new-keyword').inputValue(),'未提交草稿');
   assert.equal(await page.getByRole('searchbox',{name:'搜索关键词'}).inputValue(),'');
-  assert.equal(createCalls,1);
+  assert.equal(createCalls,1);assert.equal(libraryCalls,beforeCreateLoads);
+  const beforeUploadLoads=libraryCalls;
+  await page.getByTestId('group-upload-input').setInputFiles({name:'原图.gif',mimeType:'image/gif',buffer:uploadedBytes});
+  await page.getByTestId('upload-progress').waitFor();
+  assert.equal(await page.getByTestId('group-upload-button').isDisabled(),true);
+  for(let i=0;!releaseUpload&&i<500;i++)await new Promise(resolve=>setTimeout(resolve,10));
+  assert.ok(releaseUpload);releaseUpload();
+  await page.getByTestId('sticker-cell-personal:99').waitFor();
+  await page.getByText('已上传到“眼神”组 · 1 × 1，同组说法共用这张表情。',{exact:true}).waitFor();
+  assert.equal(libraryCalls,beforeUploadLoads);assert.equal(uploadCalls,1);
+  assert.equal(await page.getByTestId('upload-progress').count(),0);
+  await page.getByTestId('group-upload-input').setInputFiles({name:'原图.gif',mimeType:'image/gif',buffer:uploadedBytes});
+  await page.getByText('上传失败：关键词组已删除，请刷新',{exact:true}).waitFor();
+  assert.equal(await page.getByTestId('sticker-cell-personal:99').count(),1);
+  assert.equal(libraryCalls,beforeUploadLoads);assert.equal(await page.getByTestId('group-upload-button').isEnabled(),true);
   await page.reload();await page.getByTestId('keyword-眼神').waitFor();
   assert.deepEqual(errors,[]);
   console.log('PASS: 原生拖放、保存/刷新、说法增删改、409提示、390px窄屏、删除确认/取消/刷新不复活、搜索建组/已有说法定位/保留草稿；隔离 HTTP 夹具');

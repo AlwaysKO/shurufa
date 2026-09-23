@@ -379,3 +379,50 @@ it('上传或修改图片拒绝超长关键词，失败不把坏关键词写入�
   expect((await agent.patch('/api/v1/dashboard/stickers/'+row.rows[0].id).send({keywords:input.keywords})).status).toBe(400);
   expect((await pool.query('SELECT keyword FROM sticker_keyword')).rows).toEqual([]);
 });
+
+it('原图二进制上传返回完整词组，并只缓存鉴权成功的推荐素材',async()=>{
+  const gif=Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7','base64');
+  const added=await agent.post('/api/v1/dashboard/sticker-keywords').send({keyword:'原图上传'});
+  expect(added.status).toBe(201);expect(added.body.group).toMatchObject({keyword:'原图上传',assets:[]});
+  await agent.patch('/api/v1/dashboard/sticker-groups/原图上传').send({aliases:['原图上传','另一说法']});
+  const uploaded=await agent.post('/api/v1/dashboard/stickers').query({filename:'原图.gif',group_keyword:'原图上传'}).set('Content-Type','application/octet-stream').send(gif);
+  expect(uploaded.status).toBe(201);expect(uploaded.body).toMatchObject({width:1,height:1});
+  expect(uploaded.body.group.aliases).toEqual(['原图上传','另一说法']);
+  expect(uploaded.body.group.assets).toHaveLength(1);
+  const url=uploaded.body.group.assets[0].url;
+  const fetched=await agent.get(url).query({user_id:A});
+  expect(fetched.status).toBe(200);expect(fetched.body).toEqual(gif);
+  expect(fetched.headers['cache-control']).toBe('private, max-age=86400');expect(fetched.headers.vary).toContain('Cookie');
+  const anonymous=await request(app).get(url).query({user_id:A});
+  expect(anonymous.status).toBe(401);expect(anonymous.headers['cache-control']).toContain('no-store');
+  const missing=await agent.get('/uploads/stickers/missing.gif').query({user_id:A});
+  expect(missing.status).toBe(404);expect(missing.headers['cache-control']).toContain('no-store');
+});
+it('二进制上传保留鉴权、来源、格式、词组和体积校验',async()=>{
+  const gif=Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7','base64');
+  const url='/api/v1/dashboard/stickers?filename=test.gif&group_keyword='+encodeURIComponent('你好');
+  expect((await request(app).post(url).set('Content-Type','application/octet-stream').send(gif)).status).toBe(401);
+  expect((await agent.post(url).set('Origin','https://evil.invalid').set('Content-Type','application/octet-stream').send(gif)).status).toBe(403);
+  expect((await agent.post(url).set('Content-Type','application/octet-stream').send(Buffer.from('invalid'))).status).toBe(400);
+  expect((await agent.post(url.replace('test.gif','test.png')).set('Content-Type','application/octet-stream').send(gif)).status).toBe(400);
+  expect((await agent.post('/api/v1/dashboard/stickers').query({filename:'test.gif',group_keyword:'不存在'}).set('Content-Type','application/octet-stream').send(gif)).status).toBe(400);
+  expect((await agent.post(url).set('Content-Type','application/octet-stream').send(Buffer.alloc(10*1024*1024+1))).status).toBe(413);
+  expect((await pool.query('SELECT * FROM sticker')).rows).toHaveLength(0);
+});
+it('图库响应压缩不改变内容，系统推荐图允许浏览器私有缓存',async()=>{
+  for(let i=0;i<25;i++)await pool.query('INSERT INTO sticker_keyword(user_id,keyword) VALUES($1,$2)',[OWNER,`压缩测试词${i}`]);
+  const plain=await agent.get('/api/v1/dashboard/sticker-library').set('Accept-Encoding','identity');
+  const gzip=await agent.get('/api/v1/dashboard/sticker-library').set('Accept-Encoding','gzip');
+  expect(gzip.headers['content-encoding']).toBe('gzip');expect(gzip.body).toEqual(plain.body);
+  expect(gzip.headers['server-timing']).toMatch(/app;dur=\d/);expect(gzip.headers['cache-control']).toContain('no-store');
+  const asset=await agent.get('/uploads/expression/prebuilt/hello.gif').query({user_id:A});
+  expect(asset.status).toBe(200);expect(asset.headers['cache-control']).toBe('private, max-age=86400');
+});
+it('聊天附件仍不缓存并按所属用户鉴权',async()=>{
+  await pool.query('CREATE TABLE media_asset(user_id uuid,storage_path text)');
+  await pool.query('INSERT INTO media_asset(user_id,storage_path) VALUES($1,$2)',[A,'chat/synthetic.gif']);
+  await mkdir(join(root,'server/uploads/chat'),{recursive:true});await writeFile(join(root,'server/uploads/chat/synthetic.gif'),'GIF89a');
+  const own=await agent.get('/uploads/chat/synthetic.gif').query({user_id:A});
+  expect(own.status).toBe(200);expect(own.headers['cache-control']).toContain('no-store');
+  expect((await agent.get('/uploads/chat/synthetic.gif').query({user_id:B})).status).toBe(404);
+});

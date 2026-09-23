@@ -109,3 +109,23 @@ it('登出期间返回的用户初始化响应不得回填用户或本地选择'
   finish({ users: [{ id: 'old-user' }] }); await pending;
   expect(selected.value).toBeNull(); expect(persist).not.toHaveBeenCalled(); expect(ready.value).toBe(false);
 });
+
+it('原图上传报告进度但收到响应才完成，401和超时正确处理',async()=>{
+  const {vi}=await import('../../server/node_modules/vitest/dist/index.js');
+  const auth=await import('../src/auth');let xhr:any;
+  class UploadRequest {
+    upload:any={};status=200;responseText='{}';headers:Record<string,string>={};
+    open=vi.fn();send=vi.fn();constructor(){xhr=this;}
+    setRequestHeader(key:string,value:string){this.headers[key]=value;}
+  }
+  vi.stubGlobal('XMLHttpRequest',UploadRequest);
+  try{
+    const file=new File(['original'],'image.gif',{type:'image/gif'}),progress=vi.fn();let done=false;
+    const pending=auth.dashboardUpload('/upload',file,progress).then(response=>{done=true;return response;});
+    expect(xhr.send).toHaveBeenCalledWith(file);expect(xhr.headers).toMatchObject({'Content-Type':'application/octet-stream','X-Dashboard-Request':'1'});
+    xhr.upload.onprogress({lengthComputable:true,loaded:70,total:100});xhr.upload.onprogress({lengthComputable:true,loaded:100,total:100});
+    expect(progress.mock.calls).toEqual([[70],[100]]);expect(done).toBe(false);
+    auth.authenticated.value=true;xhr.status=401;xhr.onload();expect((await pending).status).toBe(401);expect(auth.authenticated.value).toBe(false);
+    const timed=auth.dashboardUpload('/upload',file,progress);xhr.ontimeout();await expect(timed).rejects.toThrow('核对是否已保存');
+  }finally{vi.unstubAllGlobals();}
+});

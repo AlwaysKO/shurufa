@@ -7,7 +7,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { mkdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
 import type pg from 'pg';
 import { createMobileDictionaryRouter, createDashboardDictionaryRouter } from './api/personalDictionary.js';
 import { createMobileRouter } from './api/mobile.js';
@@ -32,6 +32,12 @@ import {
   createMobileRelationshipAiRouter,
   createRelationshipAiDashboardRouter,
 } from './api/relationshipAi.js';
+
+// 仅公共推荐素材允许浏览器私有缓存；聊天/合成附件继续沿用各自鉴权和缓存边界。
+const recommendationCache = (res: import('node:http').ServerResponse) => {
+  res.setHeader('Cache-Control', 'private, max-age=86400');
+  res.setHeader('Vary', 'Cookie, X-Device-Id');
+};
 
 export interface CreateAppOptions {
   remoteExpressionSearch?: RemoteExpressionSearch | null;
@@ -73,12 +79,15 @@ export function createApp(pool: pg.Pool, options: CreateAppOptions = {}): expres
       try {
         const file = await resolveKeywordGifFile(match[1], match[2] as 'gif' | 'webp');
         if (!file) { res.sendStatus(404); return; }
+        recommendationCache(res);
         res.sendFile(file, error => { if (error) next(error); });
       } catch (error) { next(error); }
     },
-    express.static(expressionAssetRoot()),
+    express.static(expressionAssetRoot(), { setHeaders: recommendationCache }),
   );
-  app.use('/uploads', authorizeUpload(pool), express.static(join(process.cwd(), 'uploads')));
+  app.use('/uploads', authorizeUpload(pool), express.static(join(process.cwd(), 'uploads'), {
+    setHeaders: (res, file) => { if (dirname(file) === stickerDir) recommendationCache(res); },
+  }));
 
   // 输入法端 API
   app.use('/api/v1/mobile', requireMobileIdentity, discardDisabledUploads(pool));
