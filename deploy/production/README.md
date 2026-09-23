@@ -1,7 +1,7 @@
 # 生产环境自动部署
 
 本目录归档 `/home/ubuntu/shurufa-deploy` 当前使用的部署脚本及配套配置（2026-09-16），属于原有 `AlwaysKO/shurufa` 仓库。
-脚本和配置保留线上版本原样；这里只新增 Git 归档，不更改 systemd 或运行目录。
+2026-09-23：deploy.sh 新增公共关键词推荐图库的原图校验与数据导入。仓库中的其他配置仍为线上快照，实际运行目录需单独安装更新。
 
 ## 文件
 
@@ -28,7 +28,7 @@ systemd 在开机后约 30 秒开始检查，此后在上次任务结束 60 秒�
 推送到 main（包括仅修改文档或本目录）会触发现有自动部署；其他分支不会。
 构建完成后脚本会将源码工作目录 `git reset --hard` 到所部署提交，因此不要在生产源码目录保留未提交修改。
 
-当前脚本从 Git 导出 `server`、`client`、`assets`，再按 `approved-keyword-gifs.json` 补齐清单引用的成品 GIF，不导出制作原图。上传目录始终指向共享存储。本目录不会自动同步到 `/home/ubuntu/shurufa-deploy`。
+当前脚本从 Git 导出 `server`、`client`、`assets`，再按 `approved-keyword-gifs.json` 补齐清单引用的成品 GIF，不导出制作原图。公共推荐图库另外根据 `server/data/sticker-library.json` 从本次提交提取上传原图；迁移后事务导入关键词、匹配说法和图片顺序。上传目录始终指向共享存储。本目录不会自动同步到 `/home/ubuntu/shurufa-deploy`。
 以后修改本目录的部署逻辑，需要另外在维护时段将审核后的文件安装到运行目录；服务配置变更还需要 systemd 重新加载。
 本目录不是本地开发启动脚本，路径、端口和权限均针对现有服务器。
 
@@ -59,3 +59,5 @@ sudo systemctl start shurufa-deploy.service
 ```
 
 本地查看：执行 `git fetch origin` 后切换到包含本目录的分支，打开 `deploy/production/`。合并到 main 后可在 main 上通过 `git pull --ff-only origin main` 获取。
+
+公共推荐图库的本地编辑、Git钩子和新服务器恢复步骤见 [SHARED_STICKER_SYNC.md](../../docs/SHARED_STICKER_SYNC.md)。

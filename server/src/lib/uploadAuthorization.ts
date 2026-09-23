@@ -17,8 +17,8 @@ export function authorizeUpload(pool: pg.Pool) {
         ? await pool.query('SELECT 1 FROM synthesis_asset WHERE user_id = $1 AND file_name = $2', [userId, relativePath.slice('synthesis/'.length)])
         : relativePath.startsWith('stickers/')
         ? await pool.query(
-          'SELECT 1 FROM sticker WHERE user_id = $1 AND file_name = $2',
-          [userId, relativePath.slice('stickers/'.length)],
+          'SELECT 1 FROM sticker WHERE file_name = $1',
+          [relativePath.slice('stickers/'.length)],
         )
         : await pool.query(
           'SELECT 1 FROM media_asset WHERE user_id = $1 AND storage_path = $2',

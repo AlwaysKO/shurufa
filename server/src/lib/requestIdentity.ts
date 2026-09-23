@@ -1,3 +1,4 @@
+import { SHARED_STICKER_OWNER } from '../stickers/shared.js';
 import type { NextFunction, Request, Response } from 'express';
 
 // 兼容历史 DEFAULT_USER_ID（版本位为 0）以及 Android 新生成的标准 v4 UUID。
@@ -44,6 +45,11 @@ export function requireMobileIdentity(req: Request, res: Response, next: NextFun
 }
 
 export function requireDashboardIdentity(req: Request, res: Response, next: NextFunction): void {
+  if (/^\/(sticker-library|sticker-keywords|sticker-groups|stickers|system-stickers)(\/|$)/.test(req.path)) {
+    res.locals.userId = SHARED_STICKER_OWNER;
+    next();
+    return;
+  }
   // 分页用户目录用于进入后台后选择用户，GET 本身不能依赖已选中的用户。
   if (req.method === 'GET' && req.path === '/users') {
     next();

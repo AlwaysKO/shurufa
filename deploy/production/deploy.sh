@@ -16,7 +16,7 @@ fi
 release="$base/releases/$(date -u +%Y%m%dT%H%M%S)-${sha:0:12}"
 mkdir -p "$release"
 echo "Building $sha in $release"
-# Runtime uploads must never come from the release archive.
+# Runtime uploads are shared. Only manifest-listed recommendation GIFs are staged separately.
 git -C "$repo" archive "$sha" server client assets | tar --exclude='server/uploads' -x -C "$release"
 python3 "$config/stage-keyword-gifs.py" "$repo" "$sha" "$release"
 printf '%s\n' "$sha" > "$release/REVISION"
@@ -26,6 +26,9 @@ cd "$release/server"
 npm ci --no-audit --no-fund
 npm run build
 npm run expression:generate
+if [[ -f scripts/stage-sticker-bundle.mjs ]]; then
+  node scripts/stage-sticker-bundle.mjs "$repo" "$sha" "$base/shared/uploads"
+fi
 cd "$release/client"
 npm ci --no-audit --no-fund
 npm run build
@@ -37,6 +40,9 @@ pg_dump -Fc -f "$base/backups/$(basename "$release").dump"
 umask 0022
 cd "$release/server"
 node "$config/migrate.mjs"
+if [[ -f scripts/stage-sticker-bundle.mjs ]]; then
+  node dist/stickers/cli.js import
+fi
 previous=$(readlink -f "$base/current" || true)
 ln -s "$release" "$base/current.next"
 mv -Tf "$base/current.next" "$base/current"

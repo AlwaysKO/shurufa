@@ -1,0 +1,71 @@
+# 公共关键词推荐图库同步
+
+从本次改动开始，“关键词推荐图”的上传图片、关键词、同组说法、排序及隐藏的系统图记录由所有设备共享。个人词库、聊天附件和合成模板沿用各自的设备归属规则。
+
+## 本地编辑与推送
+
+1. 启动后台后在 `/stickers` 添加关键词、上传图片或修改说法/顺序。无需选定手机；同一服务上的所有手机读取同一份推荐图库。
+2. 源码目录的后台保存成功后，自动导出 `server/data/sticker-library.json`，其中引用 `server/uploads/stickers/` 的原始图片。原图不转码，GIF保留原始字节。
+3. 正常 `git commit`。安装钩子后，提交前会自动暂存清单及清单引用的图片，不暂存其他业务文件。钩子不自动创建提交。
+4. `git push origin main`。推送钩子检查提交包含完整清单和正确哈希的图片；有尚未提交的图库修改会阻止推送并提示先提交。现有线上定时部署服务约每分钟检查 main，构建完成后自动导入。
+5. 手机下一次打开键盘检查目录更新后可获取新推荐。后台新增成功、Git提交成功与线上部署成功是不同阶段；本地保存不会立即改写线上。
+
+执行 `cd server && npm ci` 会安装项目 `.githooks`。已有自定义钩子时不会覆盖，需在现有 pre-commit / pre-push 分别调用：
+
+```sh
+node server/scripts/sticker-git-hook.mjs commit
+node server/scripts/sticker-git-hook.mjs push
+```
+
+应从仓库根目录调用；pre-push 必须把 Git 提供的标准输入传给脚本。使用 `--no-verify` 会跳过客户端保障，部署端仍校验清单原图完整性。
+
+## 新服务器恢复
+
+克隆包含本改动、图库清单和图片的提交，准备 Node22、PostgreSQL 和数据库连接环境变量，然后：
+
+```sh
+cd server
+npm ci
+npm run migrate
+npm run expression:generate
+npm run build
+npm start
+```
+
+`migrate` 在表结构迁移后自动导入清单。已有数据库用新增迁移合并历史推荐图库的公共配置，不清空图片或历史设备配置；图片保留历史归属字段以兼容旧版回退，新版统一按公共图片读取。新数据库无需原电脑或旧服务器数据库备份。
+
+手工导出/导入命令（需要先配置当前数据库连接）：
+
+```sh
+npm run stickers:export
+npm run stickers:import
+```
+
+## 生产部署
+
+`deploy/production/deploy.sh` 在构建后，从**本次提交**提取清单列出的原图，验证SHA256、拒绝缺图和同名不同内容，再复制到共享上传目录。备份数据库、执行迁移后，运行 `node dist/stickers/cli.js import`，最后切换服务版本。
+
+该目录是脚本归档。现有服务器实际运行 `/home/ubuntu/shurufa-deploy/deploy.sh`，首次启用须安装更新后的脚本；未来普通图库修改无需再次改脚本。服务器代码发布目录没有 `.git`，不会将线上后台编辑反向推送到Git。
+
+## 数据规则与排错
+
+- Git拉取的新清单若还没有导入本机数据库，后台归档/手动导出会拒绝覆盖；先执行 `npm run stickers:import` 后重试。提交钩子只收集文件，不用旧数据库重新生成清单。
+- 首次导入同名组时合并已有说法和排序，NULL不清空线上配置；后续清单变化才应用明确字段更新。跨组说法冲突会回滚整次导入，须先调整冲突组。
+- 文件名是图片的可移植身份，数据库数字ID由目标服务器分配；排序中的图片引用随导入自动映射。
+- 导入为增量合并：保留线上独有的关键词和图片，保留使用次数；同一清单重复部署不会重置线上后续编辑。清单中实际变更的图片元数据或分组设置才会更新。
+- 本地删除某张上传图不表示删除线上独有或已有记录；本轮以新增及更新同步为目标，需要下线的已有图片应在目标后台删除。隐藏系统图记录随清单同步。
+- 线上后台新增数据保存在生产数据库和共享上传目录；不自动回写开发者仓库。需归档线上新增内容时，在具有生产数据及图片的受控源码副本导出并正常提交。
+- 原图有Git记录但没有关键词清单，无法还原关键词关联；没有元数据的历史文件不会被猜测发布。
+- 缺图/哈希不符会中断导出或部署；修复文件后重新导出提交。若后台提示归档失败，数据库操作可能已成功，请先刷新核对，再执行导出，避免重复上传。
+- 历史图片归属和各设备原分组行保留，旧版本回退仍能读取原有数据；本次新导入的公共图片需要新版公共接口。首次上线前仍保留数据库备份。
+
+## 验证
+
+```sh
+cd server
+npx vitest run src/stickers/bundle.test.ts src/api/stickerLibrary.test.ts src/api/synthesisLibrary.test.ts src/api/keywordGifLibrary.test.ts src/api/mobileReports.test.ts src/lib/dashboardAuth.test.ts
+node --test scripts/sticker-deployment.test.mjs
+npm run build
+```
+
+`src/stickers/bundle.postgres.test.ts` 在带专用标识的独立 PostgreSQL 测试实例中验证真实事务、历史迁移和 JSONB 幂等行为，默认跳过，不连接业务数据库。

@@ -16,7 +16,10 @@
     "expression:import-keywords": "tsx scripts/importKeywordGifs.ts --apply",
     "expression:prototype": "tsx scripts/render-expression-prototypes.ts",
     "test": "vitest run src",
-    "test:watch": "vitest src"
+    "test:watch": "vitest src",
+    "stickers:export": "tsx src/stickers/cli.ts export",
+    "stickers:import": "tsx src/stickers/cli.ts import",
+    "prepare": "node scripts/install-sticker-hooks.mjs"
   },
   "dependencies": {
     "cors": "^2.8.5",

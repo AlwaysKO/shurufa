@@ -1,0 +1,58 @@
+import { readFileSync, realpathSync, readdirSync } from 'node:fs';
+import { mkdir, writeFile, readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import pg from 'pg';
+import { expect, it } from 'vitest';
+import { createHash, randomUUID } from 'node:crypto';
+import { deleteDeviceData } from '../lib/deleteDeviceData.js';
+import { exportStickerBundle, importStickerBundle } from './bundle.js';
+import { SHARED_STICKER_OWNER as OWNER } from './shared.js';
+const cluster=process.env.STICKER_SYNC_TEST_CLUSTER;
+if(cluster && (!cluster.startsWith('/tmp/shurufa-sticker-test.') || readFileSync(join(cluster,'test-instance-only'),'utf8')!=='sticker-sync-only')) throw Error('非独立测试实例');
+const test=cluster?it:it.skip;
+test('真实PostgreSQL迁移历史归属、空库恢复和JSONB重排后重复部署均正确',async()=>{
+  const schema = 'test_'+randomUUID().replaceAll('-','');
+  const pool=new pg.Pool({host:join(cluster!,'socket'),port:5433,user:'sticker_test',database:'sticker_sync_test',options:`-c search_path=${schema}`});
+  try {
+    expect(realpathSync((await pool.query("SELECT current_setting('data_directory') AS dir")).rows[0].dir)).toBe(realpathSync(join(cluster!,'data')));
+    await pool.query(`CREATE SCHEMA ${schema}`);
+    const root=join(cluster!,schema); await mkdir(join(root,'uploads/stickers'),{recursive:true});
+    const gif=Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7','base64');
+    await writeFile(join(root,'uploads/stickers/legacy.gif'),gif);
+    for(const name of readdirSync(new URL('../../migrations/',import.meta.url)).filter(n=>n.endsWith('.sql')&&n<'027').sort()) await pool.query(readFileSync(new URL('../../migrations/'+name,import.meta.url),'utf8'));
+    const old='00000000-0000-4000-8000-000000000001',sha=createHash('sha256').update(gif).digest('hex');
+    await pool.query("INSERT INTO sticker(user_id,keywords,file_name,format,sha256) VALUES($1,'来砍我','legacy.gif','gif',$2)",[old,sha]);
+    await pool.query("INSERT INTO sticker_keyword(user_id,keyword) VALUES($1,'来砍我')",[old]);
+    await pool.query("INSERT INTO sticker_group_settings(user_id,keyword,aliases,asset_order) VALUES($1,'来砍我',$2,$3)",[old,JSON.stringify(['来砍我啊']),JSON.stringify(['personal:1'])]);
+    await pool.query("INSERT INTO sticker_group_settings(user_id,keyword,aliases,asset_order) VALUES($1,'来砍我',$2,$3)",['00000000-0000-4000-8000-000000000002',JSON.stringify(['历史另一个说法']),JSON.stringify(['system:legacy'])]);
+    const migration=readFileSync(new URL('../../migrations/027_shared_sticker_library.sql',import.meta.url),'utf8');
+    await pool.query(migration); await pool.query(migration);
+    expect((await pool.query('SELECT user_id FROM sticker')).rows[0].user_id).toBe(old);
+    await pool.query("INSERT INTO device(id,name) VALUES($1,'原上传手机')",[old]);
+    await deleteDeviceData(pool,old);
+    expect((await pool.query('SELECT count(*) FROM sticker')).rows[0].count).toBe('1');
+    expect((await pool.query('SELECT aliases FROM sticker_group_settings WHERE user_id=$1',[OWNER])).rows[0].aliases).toEqual(['来砍我啊','历史另一个说法']);
+    expect((await pool.query('SELECT count(*) FROM sticker_group_settings')).rows[0].count).toBe('3');
+    await exportStickerBundle(pool,root);
+    await pool.query('TRUNCATE sticker,sticker_keyword,sticker_group_settings,sticker_bundle_import RESTART IDENTITY');
+    await pool.query("INSERT INTO sticker(user_id,keywords,file_name,format) VALUES($1,'线上独有','other.gif','gif')",[OWNER]);
+    await importStickerBundle(pool,root);
+    expect((await pool.query('SELECT asset_order FROM sticker_group_settings')).rows[0].asset_order).toEqual(['personal:2','system:legacy']);
+    await pool.query("UPDATE sticker SET keywords='在线修改',use_count=12 WHERE file_name='legacy.gif'");
+    await importStickerBundle(pool,root);
+    expect((await pool.query("SELECT keywords,use_count FROM sticker WHERE file_name='legacy.gif'")).rows[0]).toEqual({keywords:'在线修改',use_count:'12'});
+    // 空别名数组必须保留，NULL排序不能变成空数组。
+    const file=join(root,'data/sticker-library.json'), data=JSON.parse(await readFile(file,'utf8'));
+    data.settings[0].aliases=[]; data.settings[0].assetOrder=null;
+    await writeFile(file,JSON.stringify(data)); await importStickerBundle(pool,root);
+    expect((await pool.query('SELECT aliases,asset_order FROM sticker_group_settings')).rows[0]).toEqual({aliases:[],asset_order:null});
+    expect((await pool.query('SELECT count(*) FROM sticker')).rows[0].count).toBe('2');
+    await pool.query("INSERT INTO sticker_group_settings(user_id,keyword,aliases) VALUES($1,'其他组',$2)",[OWNER,JSON.stringify(['冲突说法'])]);
+    data.settings[0].aliases=['冲突说法'];
+    data.stickers.push({...data.stickers[0],fileName:'new.gif'});
+    await writeFile(join(root,'uploads/stickers/new.gif'),gif); await writeFile(file,JSON.stringify(data));
+    await expect(importStickerBundle(pool,root)).rejects.toThrow(/说法.*冲突/);
+    expect((await pool.query('SELECT count(*) FROM sticker')).rows[0].count).toBe('2');
+    expect((await pool.query('SELECT aliases FROM sticker_group_settings WHERE keyword=$1',['来砍我'])).rows[0].aliases).toEqual([]);
+  } finally {await pool.end();}
+});

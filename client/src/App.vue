@@ -210,7 +210,7 @@ function seenAt(value: string) { return new Date(value).toLocaleString('zh-CN', 
     </aside>
     <main class="content">
       <h1 class="page-title">{{ route.meta.title }}</h1>
-      <RouterView v-if="usersReady && currentUserId && selectedUser" :key="`${route.fullPath}:${currentUserId}`" />
+      <RouterView v-if="usersReady && (route.path === '/stickers' || (currentUserId && selectedUser))" :key="`${route.fullPath}:${currentUserId}`" />
       <div v-else-if="usersReady && initializationError" class="card empty load-error">
         <p>用户目录加载失败，请检查后台服务。</p><button type="button" @click="initializeUsers">重试</button>
       </div>

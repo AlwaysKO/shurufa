@@ -111,7 +111,7 @@ export function createMobileReportRouter(pool: pg.Pool): Router {
             `INSERT INTO sticker_file_usage(user_id,file_name,use_count) VALUES($1,$2,1)
              ON CONFLICT(user_id,file_name) DO UPDATE SET use_count=sticker_file_usage.use_count+1`, [user, p.file_name],
           );
-          await client.query('UPDATE sticker SET use_count=use_count+1 WHERE user_id=$1 AND file_name=$2', [user, p.file_name]);
+          await client.query('UPDATE sticker SET use_count=use_count+1 WHERE file_name=$1', [p.file_name]);
           break;
       }
       await client.query('COMMIT');

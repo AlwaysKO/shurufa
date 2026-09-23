@@ -192,7 +192,7 @@ async function saveEdit(asset: LibrarySticker) {
   finally { busy.value = false; }
 }
 async function remove(asset: LibrarySticker) {
-  if (busy.value || !(await askConfirmation('删除这张表情？它将从当前用户的所有关联关键词和推荐结果中移除，关键词保留。'))) return;
+  if (busy.value || !(await askConfirmation('删除这张表情？它将从公共图库的所有关联关键词和推荐结果中移除，关键词保留。'))) return;
   if (busy.value || loading.value) return;
   busy.value = true; msg.value = ''; err.value = '';
   try { if (asset.source === 'system') await api.deleteSystemSticker(String(asset.id)); else await api.deleteSticker(Number(asset.id)); msg.value = '图片已删除，关键词已保留'; await load(); }
@@ -207,13 +207,13 @@ onMounted(load);
   <div class="content-library sticker-page">
     <header class="library-intro">
       <div class="intro-mark sticker-mark" aria-hidden="true">☺</div>
-      <div><span class="eyebrow">EXPRESSION LIBRARY</span><h2>多种说法，共用一组表情</h2><p>按意思归组，同义词、近义词和已确认的句式共用表情，不必重复上传。</p></div>
+      <div><span class="eyebrow">EXPRESSION LIBRARY</span><h2>多种说法，共用一组表情</h2><p>所有设备共享关键词和推荐图。按意思归组，同组说法共用表情，不必重复上传。</p></div>
     </header>
     <div class="library-stats" aria-label="表情库统计">
       <div class="library-stat"><span>全部语义组</span><strong>{{ loaded ? library.groups.length : '—' }}</strong></div>
       <div class="library-stat"><span>已有表情的组</span><strong>{{ loaded ? groupsWithImages : '—' }}</strong></div>
       <div class="library-stat"><span>系统表情</span><strong>{{ loaded ? library.systemCount : '—' }}</strong></div>
-      <div class="library-stat"><span>我的上传</span><strong>{{ loaded ? library.personalCount : '—' }}</strong></div>
+      <div class="library-stat"><span>公共上传</span><strong>{{ loaded ? library.personalCount : '—' }}</strong></div>
     </div>
     <section class="library-panel compose-panel">
       <div class="section-heading"><div><h3>新增关键词</h3><p>只建词，不必同时上传图片。已有关键词请在下方选中后直接上传。</p></div><span class="library-badge">支持空关键词分组</span></div>
@@ -256,7 +256,7 @@ onMounted(load);
       <section class="library-panel keyword-gallery">
         <template v-if="activeGroup">
           <div class="section-heading">
-            <div><div class="keyword-heading"><h3>{{ activeGroup.keyword }}</h3><span class="library-badge">{{ activeGroup.category }}</span><span v-if="activeGroup.planned" class="library-badge">规划词</span></div><p>{{ activeGroup.assets.length }} 张表情 · 系统 {{ activeGroup.assets.filter(a => a.source === 'system').length }} / 个人 {{ activeGroup.assets.filter(a => a.source === 'personal').length }}</p></div>
+            <div><div class="keyword-heading"><h3>{{ activeGroup.keyword }}</h3><span class="library-badge">{{ activeGroup.category }}</span><span v-if="activeGroup.planned" class="library-badge">规划词</span></div><p>{{ activeGroup.assets.length }} 张表情 · 系统 {{ activeGroup.assets.filter(a => a.source === 'system').length }} / 上传 {{ activeGroup.assets.filter(a => a.source === 'personal').length }}</p></div>
             <button data-testid="group-upload-button" class="library-button primary" :disabled="busy || loading" @click="chooseUpload">{{ busy ? '处理中…' : '＋ 上传到此组' }}</button>
           </div>
           <input ref="fileInput" data-testid="group-upload-input" class="hidden-upload" type="file" accept=".gif,.png,.jpg,.jpeg,.webp" :aria-label="`上传表情到${activeGroup.keyword}`" @change="uploadFile" @cancel="uploadTarget = null" />
@@ -275,7 +275,7 @@ onMounted(load);
           </div>
           <div v-if="!activeGroup.assets.length" data-testid="empty-keyword" class="library-empty"><span class="empty-mark" aria-hidden="true">☺</span><strong>“{{ activeGroup.keyword }}”还没有表情</strong><p>关键词已在这里，上传一张 GIF 就能补充到这一组。</p><button class="library-button" :disabled="busy || loading" @click="chooseUpload">选择图片上传</button></div>
           <div v-if="activeGroup.assets.length" class="sticker-order-toolbar">
-            <span>拖动排序手柄调整顺序，也可用前移/后移。默认个人上传在前。</span>
+            <span>拖动排序手柄调整顺序，也可用前移/后移。默认上传图片在前。</span>
             <div class="library-actions"><button data-testid="save-sticker-order" class="library-button primary" :disabled="busy || loading || !orderDirty" @click="saveOrder">保存排序</button><button class="text-button" :disabled="busy || !orderDirty" @click="orderDraft = null">取消排序</button></div>
           </div>
           <div v-if="activeGroup.assets.length" class="sticker-grid">
@@ -283,7 +283,7 @@ onMounted(load);
               <div class="sticker-sort-actions"><button :data-testid="`drag-sticker-${assetKey(asset)}`" class="text-button drag-handle" :draggable="!busy && !loading" :disabled="busy || loading" aria-label="拖动排列图片" @dragstart="dragStart($event, asset)" @dragend="dragging = null">⠿ 排序</button><button class="text-button" :disabled="busy || loading || index === 0" aria-label="图片前移" @click="moveAsset(assetKey(asset), assetKey(orderedAssets[index - 1]!))">前移</button><button class="text-button" :disabled="busy || loading || index === orderedAssets.length - 1" aria-label="图片后移" @click="moveAsset(assetKey(asset), assetKey(orderedAssets[index + 1]!))">后移</button></div>
               <div class="sticker-preview"><span v-if="failedImages.has(`${asset.source}:${asset.id}`)" class="library-badge">图片加载失败</span><img v-else :src="scopedAssetUrl(asset.url)" :alt="asset.keywords.join('、')" loading="lazy" @error="imageFailed(asset)" /><span class="sticker-format">{{ asset.format.toUpperCase() }}</span></div>
               <div class="sticker-meta">
-                <span class="library-badge" :class="{ personal: asset.source === 'personal' }">{{ asset.source === 'system' ? '系统素材' : '个人上传' }}</span>
+                <span class="library-badge" :class="{ personal: asset.source === 'personal' }">{{ asset.source === 'system' ? '系统素材' : '公共上传' }}</span>
                 <template v-if="asset.source === 'personal' && editingId === Number(asset.id)"><input v-model="editingKeywords" class="library-input" aria-label="图片关键词，多个用逗号分隔" @keyup.enter="saveEdit(asset)" /><div class="library-actions"><button class="text-button" :disabled="busy" @click="saveEdit(asset)">保存</button><button class="text-button" :disabled="busy" @click="editingId = null">取消</button></div></template>
                 <p v-else class="sticker-tags">{{ asset.keywords.join(' · ') }}</p>
                 <small>{{ asset.width && asset.height ? `${asset.width} × ${asset.height}` : '尺寸未知' }}<template v-if="asset.source === 'personal'"> · 使用 {{ asset.useCount }} 次</template></small>
@@ -291,7 +291,7 @@ onMounted(load);
               </div>
             </article>
           </div>
-          <p class="upload-hint">支持 GIF / PNG / JPG / WebP，单张不超过 5 MB。上传后归入“{{ activeGroup.keyword }}”语义组并使用已保存的同组说法，用于当前用户的斗图搜索与手机关键词推荐；手机下次打开键盘检查更新后补充，不修改系统素材。空关键词组不触发图片推荐，规划词不等于已启用全部语义扩展；未发布试稿不在这里展示。</p>
+          <p class="upload-hint">支持 GIF / PNG / JPG / WebP，单张不超过 5 MB。上传后归入“{{ activeGroup.keyword }}”语义组并使用已保存的同组说法，用于所有设备的斗图搜索与手机关键词推荐；手机下次打开键盘检查更新后补充，不修改系统素材。空关键词组不触发图片推荐，规划词不等于已启用全部语义扩展；未发布试稿不在这里展示。</p>
         </template>
         <div v-else class="library-empty"><strong>{{ q || filter !== 'all' ? '没有匹配的关键词' : '从第一个关键词开始' }}</strong><p>调整左侧筛选，或在上方新增关键词。</p></div>
       </section>

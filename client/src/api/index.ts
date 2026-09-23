@@ -13,9 +13,11 @@ export function setCurrentUserId(userId: string): void {
 }
 
 export function scopedAssetUrl(url: string): string {
-  if (!url.startsWith('/uploads/') || !currentUserId.value) return url;
+  if (!url.startsWith('/uploads/')) return url;
+  const userId = currentUserId.value || (/^\/uploads\/(stickers|expression)\//.test(url) ? '00000000-0000-4000-8000-000000000000' : '');
+  if (!userId) return url;
   const parsed = new URL(url, window.location.origin);
-  parsed.searchParams.set('user_id', currentUserId.value);
+  parsed.searchParams.set('user_id', userId);
   return `${parsed.pathname}${parsed.search}`;
 }
 

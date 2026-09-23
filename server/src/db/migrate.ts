@@ -1,3 +1,4 @@
+import { importStickerBundle } from '../stickers/bundle.js';
 import 'dotenv/config';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -33,6 +34,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const pool = createPool();
   try {
     await migrate(pool);
+    await importStickerBundle(pool);
     console.log('[migrate] done');
   } finally {
     await pool.end();

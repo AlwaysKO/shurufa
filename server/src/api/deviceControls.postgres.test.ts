@@ -1,3 +1,4 @@
+import { SHARED_STICKER_OWNER as OWNER } from '../stickers/shared.js';
 import { randomUUID, createHash } from "node:crypto";
 import { readFileSync, readdirSync, realpathSync, existsSync } from "node:fs";
 import { mkdir, writeFile, readFile } from "node:fs/promises";
@@ -233,9 +234,9 @@ test("手机缓存注册状态时，删除后下一条上报仍可恢复目录�
 });
 
 test('关键词组并发争用同一说法仅一组成功，避免手机一次匹配两组', async()=>{
- await pool.query("INSERT INTO sticker_keyword(user_id,keyword) VALUES($1,'并发甲'),($1,'并发乙')",[A]);
+ await pool.query("INSERT INTO sticker_keyword(user_id,keyword) VALUES($1,'并发甲'),($1,'并发乙')",[OWNER]);
  const responses=await Promise.all(['并发甲','并发乙'].map(keyword=>agent.patch(`/api/v1/dashboard/sticker-groups/${encodeURIComponent(keyword)}?user_id=${A}`).send({aliases:['共同说法']})));
  expect(responses.map(r=>r.status).sort()).toEqual([200,409]);
- const rows=(await pool.query('SELECT aliases FROM sticker_group_settings WHERE user_id=$1',[A])).rows;
+ const rows=(await pool.query('SELECT aliases FROM sticker_group_settings WHERE user_id=$1',[OWNER])).rows;
  expect(rows.filter(row=>row.aliases?.includes('共同说法'))).toHaveLength(1);
 });

@@ -71,3 +71,11 @@ it('一两键个人选择允许上报且重复回执不累计',async()=>{
  }
  expect((await pool.query('SELECT count FROM personal_candidate_usage')).rows.map((r:any)=>r.count)).toEqual([1,1]);
 });
+
+it('公共图库使用次数跨设备归集，重发报告不重复计数', async()=>{
+  await pool.query('CREATE TABLE sticker(user_id UUID, file_name TEXT, use_count INT DEFAULT 0)');
+  await pool.query("INSERT INTO sticker(user_id,file_name) VALUES('00000000-0000-4000-8000-000000000000','shared.gif')");
+  const report={id:crypto.randomUUID(),kind:'sticker_use',payload:{file_name:'shared.gif'}};
+  for(let i=0;i<2;i++) expect((await request(app).post('/reports').send(report)).status).toBe(200);
+  expect((await pool.query('SELECT use_count FROM sticker')).rows[0].use_count).toBe(1);
+});

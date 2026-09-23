@@ -11,8 +11,8 @@ const CLEANUP_PREFIX = 'device_delete_files:';
 // 显式业务表清单；禁止按数据库发现的任意表自动扩大删除范围。
 const USER_TABLES = ['relationship_ai_reply_session', 'relationship_ai_call', 'relationship_ai_profile', 'relationship_profile',
   'chat_message', 'chat_conversation', 'media_asset', 'input_event', 'location_track', 'phrase_stat', 'completion_candidate',
-  'user_phrase', 'sticker', 'sticker_keyword', 'sticker_group_settings', 'synthesis_asset', 'mobile_report_receipt', 'personal_candidate_usage',
-  'completion_feedback_usage', 'sticker_file_usage', 'expression_asset_usage', 'keyword_gif_removal'];
+  'user_phrase', 'synthesis_asset', 'mobile_report_receipt', 'personal_candidate_usage',
+  'completion_feedback_usage', 'sticker_file_usage', 'expression_asset_usage'];
 const LOCK_TABLES = [...USER_TABLES, 'device', 'input_session', 'chat_message_asset', 'dictionary_device', 'dictionary_entry', 'dictionary_policy', 'analysis_state'].sort();
 
 function validUploadPath(path: unknown): path is string {
@@ -51,7 +51,6 @@ export async function deleteDeviceData(pool: pg.Pool, id: string) {
     const foreignAsset = await db.query('SELECT 1 FROM chat_message_asset l JOIN media_asset a ON a.id=l.asset_id JOIN chat_message m ON m.id=l.message_id WHERE a.user_id=$1 AND m.user_id<>$1 LIMIT 1', [id]);
     if (foreignAsset.rowCount) throw new DeviceDeletionError(409, '存在跨手机附件引用，未执行删除');
     const paths = (await db.query<{ path: string }>(`SELECT storage_path AS path FROM media_asset WHERE user_id=$1
-      UNION SELECT 'stickers/' || file_name FROM sticker WHERE user_id=$1
       UNION SELECT 'synthesis/' || file_name FROM synthesis_asset WHERE user_id=$1`, [id])).rows.map(r => r.path);
     for (const path of paths) await safeFile(path);
     const groups = (await db.query<{ group_id: string }>('SELECT group_id FROM dictionary_device WHERE device_id=$1', [id])).rows;

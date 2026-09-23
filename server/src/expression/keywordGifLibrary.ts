@@ -1,3 +1,4 @@
+import { SHARED_STICKER_OWNER } from '../stickers/shared.js';
 import { readFile, realpath } from 'node:fs/promises';
 import { resolve, sep } from 'node:path';
 import type pg from 'pg';
@@ -9,9 +10,9 @@ export interface KeywordGifAsset extends ExpressionAsset {
   sourceReport: string;
   approval: { date: string; basis: string };
 }
-export async function readKeywordGifCatalog(): Promise<KeywordGifAsset[]> {
+export async function readKeywordGifCatalog(serverRoot = process.cwd()): Promise<KeywordGifAsset[]> {
   try {
-    const data = JSON.parse(await readFile(resolve(process.cwd(), '../assets/expression/approved-keyword-gifs.json'), 'utf8'));
+    const data = JSON.parse(await readFile(resolve(serverRoot, '../assets/expression/approved-keyword-gifs.json'), 'utf8'));
     if (!Array.isArray(data.items)) throw new Error('关键词GIF清单格式错误');
     return data.items;
   } catch (error) {
@@ -40,7 +41,7 @@ export async function resolveKeywordGifFile(id: string, format: 'gif' | 'webp'):
   return file;
 }
 export async function removedKeywordGifHashes(pool: Pick<pg.Pool, 'query'>, userId: string): Promise<Set<string>> {
-  const result = await pool.query<{ sha256: string }>('SELECT sha256 FROM keyword_gif_removal WHERE user_id = $1 ORDER BY sha256', [userId]);
+  const result = await pool.query<{ sha256: string }>('SELECT sha256 FROM keyword_gif_removal WHERE user_id = $1 ORDER BY sha256', [SHARED_STICKER_OWNER]);
   return new Set(result.rows.map(row => row.sha256));
 }
 export function keywordGifExclusion(item: { id: string; sourceType?: string; issues?: unknown[]; publicationAllowed?: boolean }, review: { needsRework?: string[] }, manifest: { items?: { id: string; visualTriage?: string }[] }): string | null {

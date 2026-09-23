@@ -1,8 +1,8 @@
+import { SHARED_STICKER_OWNER } from '../stickers/shared.js';
 import { readKeywordGifCatalog, mergeKeywordGifCatalog, removedKeywordGifHashes } from '../expression/keywordGifLibrary.js';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type pg from 'pg';
-import { expressionAssetRoot } from './expressions.js';
 import type { ExpressionAsset } from '../types/expression.js';
 import { normalizeRecommendationPhrase } from '../expression/recommendationGroups.js';
 import { expressionSynonymGroups } from '../expression/queryMatching.js';
@@ -11,10 +11,10 @@ export function splitStickerKeywords(value: string): string[] {
   return [...new Set(value.split(/[,，]/).map(word => word.trim()).filter(Boolean))];
 }
 
-export async function rememberStickerKeywords(pool: Pick<pg.Pool, 'query'>, userId: string, keywords: string): Promise<void> {
+export async function rememberStickerKeywords(pool: Pick<pg.Pool, 'query'>, _userId: string, keywords: string): Promise<void> {
   for (const keyword of splitStickerKeywords(keywords)) {
     await pool.query(`INSERT INTO sticker_keyword(user_id, keyword) VALUES($1, $2)
-      ON CONFLICT (user_id, keyword) DO NOTHING`, [userId, keyword]);
+      ON CONFLICT (user_id, keyword) DO NOTHING`, [SHARED_STICKER_OWNER, keyword]);
   }
 }
 
@@ -72,7 +72,7 @@ function mergeSemanticGroups(rawGroups: KeywordGroup[]): SemanticKeywordGroup[] 
   return [...merged.values()];
 }
 
-export async function loadStickerLibrary(pool: Pick<pg.Pool, 'query'>, userId: string) {
+export async function loadStickerLibrary(pool: Pick<pg.Pool, 'query'>, _userId: string, serverRoot = process.cwd()) {
   const warnings: string[] = [];
   async function readOptional<T>(path: string, fallback: T, message: string): Promise<T> {
     try { return JSON.parse(await readFile(path, 'utf8')) as T; }
@@ -82,14 +82,14 @@ export async function loadStickerLibrary(pool: Pick<pg.Pool, 'query'>, userId: s
     }
   }
   const [catalog, coverage, custom, personal, settings] = await Promise.all([
-    readOptional<{ templates: ExpressionAsset[] }>(join(expressionAssetRoot(), 'catalog.json'), { templates: [] }, '运行表情库未安装；当前只展示词表与个人上传。'),
+    readOptional<{ templates: ExpressionAsset[] }>(join(serverRoot, '.runtime/expression-assets/catalog.json'), { templates: [] }, '运行表情库未安装；当前只展示词表与公共上传。'),
     // 仅用草案展示规划词，不读取 existingAssets，不启用草案别名/匹配或发布素材。
-    readOptional<{ keywords: { keyword: string; category: string }[] }>(join(process.cwd(), '../assets/expression/query/keyword-coverage.draft.json'), { keywords: [] }, '规划词表未安装；当前只展示运行库与个人关键词。'),
-    await pool.query<{ keyword: string }>('SELECT keyword FROM sticker_keyword WHERE user_id = $1 ORDER BY created_at, keyword', [userId]),
+    readOptional<{ keywords: { keyword: string; category: string }[] }>(join(serverRoot, '../assets/expression/query/keyword-coverage.draft.json'), { keywords: [] }, '规划词表未安装；当前只展示运行库与公共关键词。'),
+    await pool.query<{ keyword: string }>('SELECT keyword FROM sticker_keyword WHERE user_id = $1 ORDER BY created_at, keyword', [SHARED_STICKER_OWNER]),
     await pool.query<{ id: string; keywords: string; file_name: string; format: string; width: number | null; height: number | null; use_count: string }>(
-      'SELECT id, keywords, file_name, format, width, height, use_count FROM sticker WHERE user_id = $1 ORDER BY id DESC', [userId]),
+      'SELECT id, keywords, file_name, format, width, height, use_count FROM sticker ORDER BY id DESC'),
     await pool.query<{ keyword: string; aliases: string[] | null; asset_order: string[] | null }>(
-      'SELECT keyword, aliases, asset_order FROM sticker_group_settings WHERE user_id = $1 ORDER BY keyword', [userId]),
+      'SELECT keyword, aliases, asset_order FROM sticker_group_settings WHERE user_id = $1 ORDER BY keyword', [SHARED_STICKER_OWNER]),
   ]);
   const groups = new Map<string, KeywordGroup>();
   function group(keyword: string): KeywordGroup {
@@ -100,8 +100,8 @@ export async function loadStickerLibrary(pool: Pick<pg.Pool, 'query'>, userId: s
   for (const item of custom.rows) group(item.keyword).custom = true;
   for (const item of settings.rows) group(item.keyword);
   let systemCount = 0;
-  const removed = await removedKeywordGifHashes(pool, userId);
-  for (const asset of mergeKeywordGifCatalog(catalog.templates, await readKeywordGifCatalog())) {
+  const removed = await removedKeywordGifHashes(pool, SHARED_STICKER_OWNER);
+  for (const asset of mergeKeywordGifCatalog(catalog.templates, await readKeywordGifCatalog(serverRoot))) {
     if (asset.type === 'synthesis-template' || !asset.keywords.length) continue;
     for (const keyword of asset.keywords) group(keyword);
     if (removed.has(asset.sha256)) continue;
@@ -125,7 +125,7 @@ export async function loadStickerLibrary(pool: Pick<pg.Pool, 'query'>, userId: s
       group.aliases = setting.aliases;
       group.confirmedAliases = setting.aliases;
     }
-    // 默认个人图在前；保存过的顺序优先，新图不破坏已保存的相对顺序。
+    // 默认上传图在前；保存过的顺序优先，新图不破坏已保存的相对顺序。
     const positions = new Map((setting?.asset_order ?? []).map((key, index) => [key, index]));
     group.assets.sort((a, b) => {
       const ai = positions.get(stickerAssetKey(a)), bi = positions.get(stickerAssetKey(b));
@@ -143,12 +143,12 @@ export class StickerGroupError extends Error {
   constructor(public status: number, message: string) { super(message); }
 }
 
-/** 同一用户的说法检查与写入串行执行，阻止跨组并发创建相同匹配说法。 */
-async function withGroupLock<T>(pool: pg.Pool, userId: string, action: (db: Pick<pg.Pool, 'query'>) => Promise<T>): Promise<T> {
+/** 公共图库的说法检查与写入串行执行，阻止跨组并发创建相同匹配说法。 */
+async function withGroupLock<T>(pool: pg.Pool, _userId: string, action: (db: Pick<pg.Pool, 'query'>) => Promise<T>): Promise<T> {
   const db = await pool.connect();
   try {
     await db.query('BEGIN');
-    await db.query('SELECT pg_advisory_xact_lock(hashtext($1))', [`sticker-groups:${userId}`]);
+    await db.query('SELECT pg_advisory_xact_lock(hashtext($1))', [`sticker-groups:${SHARED_STICKER_OWNER}`]);
     const result = await action(db);
     await db.query('COMMIT');
     return result;
@@ -156,26 +156,26 @@ async function withGroupLock<T>(pool: pg.Pool, userId: string, action: (db: Pick
   finally { db.release(); }
 }
 
-export async function createStickerKeyword(pool: pg.Pool, userId: string, value: string): Promise<string> {
+export async function createStickerKeyword(pool: pg.Pool, _userId: string, value: string): Promise<string> {
   const keyword = normalizeRecommendationPhrase(value);
   if (!keyword) throw new StickerGroupError(400, '关键词不能仅含标点或空白');
-  return withGroupLock(pool, userId, async db => {
-    const library = await loadStickerLibrary(db, userId);
+  return withGroupLock(pool, SHARED_STICKER_OWNER, async db => {
+    const library = await loadStickerLibrary(db, SHARED_STICKER_OWNER);
     const existing = library.groups.find(group => [group.keyword, ...group.aliases].some(alias => normalizeRecommendationPhrase(alias) === keyword));
     if (existing) return existing.keyword;
-    await rememberStickerKeywords(db, userId, keyword);
+    await rememberStickerKeywords(db, SHARED_STICKER_OWNER, keyword);
     return keyword;
   });
 }
 
-export async function updateStickerGroup(pool: pg.Pool, userId: string, keyword: string, input: unknown) {
-  return withGroupLock(pool, userId, db => updateLockedGroup(db, userId, keyword, input));
+export async function updateStickerGroup(pool: pg.Pool, _userId: string, keyword: string, input: unknown) {
+  return withGroupLock(pool, SHARED_STICKER_OWNER, db => updateLockedGroup(db, SHARED_STICKER_OWNER, keyword, input));
 }
 
-async function updateLockedGroup(pool: Pick<pg.Pool, 'query'>, userId: string, keyword: string, input: unknown) {
+async function updateLockedGroup(pool: Pick<pg.Pool, 'query'>, _userId: string, keyword: string, input: unknown) {
   const body = input as { aliases?: unknown; assetOrder?: unknown } | null;
   if (!body || typeof body !== 'object' || Array.isArray(body) || (!('aliases' in body) && !('assetOrder' in body))) throw new StickerGroupError(400, '请提供同组说法或图片顺序');
-  const library = await loadStickerLibrary(pool, userId);
+  const library = await loadStickerLibrary(pool, SHARED_STICKER_OWNER);
   const group = library.groups.find(item => item.keyword === keyword);
   if (!group) throw new StickerGroupError(404, '关键词组不存在');
   let aliases: string[] | undefined;
@@ -205,6 +205,6 @@ async function updateLockedGroup(pool: Pick<pg.Pool, 'query'>, userId: string, k
     ON CONFLICT (user_id, keyword) DO UPDATE SET
       aliases = COALESCE(EXCLUDED.aliases, sticker_group_settings.aliases),
       asset_order = COALESCE(EXCLUDED.asset_order, sticker_group_settings.asset_order)`,
-    [userId, keyword, aliases === undefined ? null : JSON.stringify(aliases), order === undefined ? null : JSON.stringify(order)]);
-  return (await loadStickerLibrary(pool, userId)).groups.find(item => item.keyword === keyword)!;
+    [SHARED_STICKER_OWNER, keyword, aliases === undefined ? null : JSON.stringify(aliases), order === undefined ? null : JSON.stringify(order)]);
+  return (await loadStickerLibrary(pool, SHARED_STICKER_OWNER)).groups.find(item => item.keyword === keyword)!;
 }

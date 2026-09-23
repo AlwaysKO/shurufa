@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "keywords": [
+    "来砍我"
+  ],
+  "stickers": [
+    {
+      "fileName": "4ec490dd-2e3e-4d7a-9985-461eef5032b2.gif",
+      "keywords": "来砍我",
+      "format": "gif",
+      "width": 163,
+      "height": 50,
+      "sha256": "2d9f9af116e456aaad7666ed510f60d7d48afb52a70433402f17b3e2d0595232"
+    }
+  ],
+  "settings": [
+    {
+      "keyword": "来砍我",
+      "aliases": [
+        "来砍我",
+        "来砍我啊"
+      ],
+      "assetOrder": null
+    }
+  ],
+  "removals": []
+}
