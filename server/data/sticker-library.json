@@ -1,7 +1,9 @@
 {
   "version": 1,
   "keywords": [
-    "来砍我"
+    "嘚瑟",
+    "来砍我",
+    "白眼"
   ],
   "stickers": [
     {
@@ -11,6 +13,22 @@
       "width": 163,
       "height": 50,
       "sha256": "2d9f9af116e456aaad7666ed510f60d7d48afb52a70433402f17b3e2d0595232"
+    },
+    {
+      "fileName": "eef4ebba-b2b8-482f-bc28-1d1765b86e34.png",
+      "keywords": "嘚瑟",
+      "format": "png",
+      "width": 198,
+      "height": 198,
+      "sha256": "a889b88ae30c2c209f586fa52ae409f12d22119f61a4287269cb98819177c9f4"
+    },
+    {
+      "fileName": "f3d62618-fa87-450b-827c-ef72245c2927.gif",
+      "keywords": "白眼",
+      "format": "gif",
+      "width": 291,
+      "height": 227,
+      "sha256": "030968037d9807101f30f609f745e5ae71aa0db45067b63e86e6e2308262e650"
     }
   ],
   "settings": [

@@ -2,6 +2,7 @@ package com.yuyan.imemodule.service.capture
 
 import com.yuyan.imemodule.data.capture.CaptureTrace
 import com.yuyan.imemodule.data.capture.CaptureStage
+import com.yuyan.imemodule.expression.send.WechatExpressionConfirmation
 import android.accessibilityservice.AccessibilityService
 import android.app.KeyguardManager
 import android.content.Context
@@ -66,7 +67,7 @@ import com.yuyan.imemodule.data.capture.model.ChatDirection
 import kotlinx.coroutines.suspendCancellableCoroutine
 
 /**
- * 只读被动采集入口。仅解析稳定视口，并按需截取窗口中的媒体区域，不操作 UI。
+ * 聊天采集保持只读。图片确认观察独立于采集，仅按用户发送操作清理本次原输入。
  */
 class PassiveChatAccessibilityService : AccessibilityService() {
     private val douyinDiagnostics by lazy { DouyinCaptureDiagnostics(this) }
@@ -148,6 +149,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
+        WechatExpressionConfirmation.event(event)
         if (!CollectionConsent.enabled(this)) {
             resetScreenshotIdentity()
             debouncer.close()
@@ -298,11 +300,13 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() {
+        WechatExpressionConfirmation.cancel()
         resetScreenshotIdentity()
     }
 
     override fun onServiceConnected() {
         super.onServiceConnected()
+        WechatExpressionConfirmation.connect(this)
         CaptureTrace.record(CaptureStage.CONNECTED)
         val database = CaptureDatabase.create(applicationContext)
         val activeChatContextStore = ActiveChatContextStore(applicationContext)
@@ -366,6 +370,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     }
 
     override fun onDestroy() {
+        WechatExpressionConfirmation.disconnect(this)
         destroyed = true
         resetScreenshotIdentity()
         snapshotGeneration.incrementAndGet()

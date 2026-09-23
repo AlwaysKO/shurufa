@@ -210,10 +210,13 @@ class ExpressionContentSender(
         expression: PreparedExpression, connection: InputConnection, rule: ExpressionDeliveryRule, diagnosticId: Long?,
     ): ExpressionSendResult {
         var grantedUri: android.net.Uri? = null
+        var confirmation: Long? = null
         return try {
             val uri = contentUri(expression.file)
             context.grantUriPermission(rule.packageName, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
             grantedUri = uri
+            // 在弹框抢走焦点前绑定原编辑节点；交接本身不会清空输入。
+            if (rule.packageName == WECHAT_PACKAGE) confirmation = WechatExpressionConfirmation.arm(connection)
             // 接收端已声明并在当前版本核对的互操作命令，不写入聊天正文。
             val submitted = connection.performPrivateCommand(
                 requireNotNull(rule.action),
@@ -224,10 +227,12 @@ class ExpressionContentSender(
                 // Android异步协议只能证明命令已交接，不能证明弹框/用户确认/动画发送完成。
                 if (rule.packageName == WECHAT_PACKAGE) ExpressionSendResult.WechatSubmitted else ExpressionSendResult.AppSubmitted
             } else {
+                confirmation?.let(WechatExpressionConfirmation::cancel)
                 context.revokeUriPermission(rule.packageName, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 ExpressionSendResult.Failed(context.getString(R.string.expression_image_send_failed))
             }
         } catch (error: Exception) {
+            confirmation?.let(WechatExpressionConfirmation::cancel)
             grantedUri?.let { uri -> runCatching {
                 context.revokeUriPermission(rule.packageName, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
             } }
