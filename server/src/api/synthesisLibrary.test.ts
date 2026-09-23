@@ -25,7 +25,7 @@ it('关键词个人图进入完整推荐目录，不捏造来源和文字，元�
 it('与系统SHA重复时不建立个人副本，并过滤推荐用途', async () => { const sha = (await import('node:crypto')).createHash('sha256').update(gif).digest('hex'); const sys = { id: 'blank-system', type: 'synthesis-template', format: 'gif', version: 'v1', fileName: 'templates/a.gif', thumbnailFileName: null, sha256: sha, width: 240, height: 240, keywords: ['干嘛'], emotions: [], embeddedText: null, textSafeArea: body().textSafeArea, layout: body().layout, heat: 0 }; await writeFile(join(root, '.runtime/expression-assets/catalog.json'), JSON.stringify({ version: 'sys2', templates: [sys], emojiBases: [], emojiCombinations: [] })); const upload = await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send(body()); expect(upload.status).toBe(200); expect(upload.body).toMatchObject({ duplicate: true, asset: { id: 'blank-system', source: 'system', deletable: false } }); expect((await pool.query('SELECT * FROM synthesis_asset')).rows).toHaveLength(0); });
 it('版本不随使用计数改变、随系统目录改变；版本接口没有GIF读取依赖', async () => { await pool.query("INSERT INTO sticker(user_id,keywords,file_name,format,sha256) VALUES($1,'你好','does-not-exist.gif','gif',$2)", [OWNER, 'a'.repeat(64)]); const get = () => request(app).get('/api/v1/mobile/expressions/versions').set('X-Device-Id', A); const initial = await get(); await pool.query('UPDATE sticker SET use_count=42'); expect((await get()).body).toEqual(initial.body); await writeFile(join(root, '.runtime/expression-assets/catalog.json'), JSON.stringify({ version: 'changed', templates: [], emojiBases: [], emojiCombinations: [] })); expect((await get()).body.version).not.toBe(initial.body.version); });
 it('未登录与缺少CSRF保护头不能上传', async () => { expect((await request(app).post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send(body())).status).toBe(401); });
-it('拒绝静态GIF和非240尺寸，字节不变的重复上传不改变版本', async () => { const sharp = (await import('sharp')).default; const png = await sharp({ create: { width: 240, height: 240, channels: 4, background: 'white' } }).gif().toBuffer(); expect((await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send({ ...body(), file_base64: png.toString('base64') })).status).toBe(400); await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send(body()); const path = '/api/v1/mobile/expressions/versions'; const before = (await request(app).get(path).set('X-Device-Id', A)).body; await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send(body()); expect((await request(app).get(path).set('X-Device-Id', A)).body).toEqual(before); });
+it('接受静态GIF，字节不变的重复上传不改变版本', async () => { const sharp = (await import('sharp')).default; const png = await sharp({ create: { width: 240, height: 240, channels: 4, background: 'white' } }).gif().toBuffer(); expect((await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send({ ...body(), file_base64: png.toString('base64') })).status).toBe(201); await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send(body()); const path = '/api/v1/mobile/expressions/versions'; const before = (await request(app).get(path).set('X-Device-Id', A)).body; await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send(body()); expect((await request(app).get(path).set('X-Device-Id', A)).body).toEqual(before); });
 it('推荐上传计算真实SHA与尺寸，拒绝扩展名伪造，手机立即获得关键词', async () => { const invalid = await agent.post(`/api/v1/dashboard/stickers?user_id=${A}`).send({ filename: 'bad.gif', file_base64: Buffer.from('not an image').toString('base64'), keywords: '坏图' }); expect(invalid.status).toBe(400); const uploaded = await agent.post(`/api/v1/dashboard/stickers?user_id=${A}`).send({ filename: 'ok.gif', file_base64: gif.toString('base64'), keywords: '干嘛', width: 9999, height: 9999 }); expect(uploaded.status).toBe(201); const snap = (await request(app).get('/api/v1/mobile/expressions/catalog').set('X-Device-Id', A)).body; expect(snap.templates[0]).toMatchObject({ width: 240, height: 240, keywords: ['干嘛'] }); expect(snap.templates[0].sha256).toMatch(/^[a-f0-9]{64}$/); });
 it('后续系统图库吸收同SHA个人底图时完整目录仍只下发一次', async () => {
  const uploaded=await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send(body());
@@ -120,4 +120,38 @@ it('底图记录删除成功但文件清理失败时返回成功及待清理标�
  const deleted=await agent.delete(`/api/v1/dashboard/synthesis-library/${asset.id}?user_id=${A}`);
  expect(deleted.status).toBe(200);expect(deleted.body).toMatchObject({ok:true,files_pending:true});
  expect((await pool.query('SELECT * FROM synthesis_asset')).rows).toHaveLength(0);
+});
+it('原文件上传接受非方形大图、静态PNG，并按真实尺寸更新目录和文字区域',async()=>{
+ const sharp=(await import('sharp')).default;
+ const {randomBytes}=await import('node:crypto');
+ const bytes=await sharp(randomBytes(600*300*3),{raw:{width:600,height:300,channels:3}}).png().toBuffer();
+ expect(bytes.length).toBeGreaterThan(250*1024);
+ const metadata={...body(),coordinateWidth:240,coordinateHeight:240};delete (metadata as any).file_base64;
+ const result=await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).set('X-Upload-Metadata',Buffer.from(JSON.stringify(metadata)).toString('base64')).set('Content-Type','application/octet-stream').send(bytes);
+ expect(result.status).toBe(201);const asset=result.body.asset;
+ expect(asset).toMatchObject({format:'png',width:600,height:300,textSafeArea:{x:15,y:238,width:570,height:55}});
+ expect((await request(app).get(asset.url).set('X-Device-Id',A)).body).toEqual(bytes);
+ const replacement=await sharp({create:{width:480,height:480,channels:3,background:'red'}}).gif().toBuffer();
+ const updated=await agent.patch(`/api/v1/dashboard/synthesis-library/${asset.id}?user_id=${A}`).set('X-Upload-Metadata',Buffer.from(JSON.stringify({...metadata,coordinateWidth:600,coordinateHeight:300,textSafeArea:asset.textSafeArea})).toString('base64')).set('Content-Type','application/octet-stream').send(replacement);
+ expect(updated.status).toBe(200);expect(updated.body.asset).toMatchObject({format:'gif',width:480,height:480});
+ const catalog=await request(app).get('/api/v1/mobile/expressions/catalog').set('X-Device-Id',A);
+ expect(catalog.body.templates.find((a:any)=>a.id===asset.id)).toMatchObject({width:480,height:480,format:'gif'});
+});
+it('超过100帧的GIF保留全部原始字节',async()=>{
+ const sharp=(await import('sharp')).default;
+ const {randomBytes}=await import('node:crypto');
+ const bytes=await sharp(randomBytes(24*24*101*3),{raw:{width:24,height:24*101,channels:3,pageHeight:24}}).gif({delay:Array(101).fill(50)}).toBuffer();
+ const result=await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send({...body(),file_base64:bytes.toString('base64'),textSafeArea:{x:0,y:0,width:24,height:24}});
+ expect(result.status).toBe(201);expect(result.body.asset).toMatchObject({width:24,height:24});
+ expect((await request(app).get(result.body.asset.url).set('X-Device-Id',A)).body).toEqual(bytes);
+});
+it('动态WebP转换为GIF后仍保留多帧和节奏',async()=>{
+ const sharp=(await import('sharp')).default;
+ const bytes=await sharp(gif,{animated:true}).webp({lossless:true}).toBuffer();
+ const before=await sharp(bytes,{animated:true}).metadata();
+ const result=await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send({...body(),file_base64:bytes.toString('base64')});
+ expect(result.status).toBe(201);expect(result.body.asset.format).toBe('gif');
+ const image=await request(app).get(result.body.asset.url).set('X-Device-Id',A);
+ const after=await sharp(image.body,{animated:true}).metadata();
+ expect(after.pages).toBe(before.pages);expect(after.delay).toEqual(before.delay);
 });

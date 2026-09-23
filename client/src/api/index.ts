@@ -674,6 +674,14 @@ export const api = {
     }
     return res.json();
   },
+  uploadSynthesisFile: async (file: File, metadata: Omit<SynthesisUpload, 'file_base64' | 'filename'> & {coordinateWidth: number; coordinateHeight: number}, onProgress: (percent: number) => void, id?: string) => {
+    const response = await dashboardUpload(withDashboardUser(`/api/v1/dashboard/synthesis-library${id ? `/${encodeURIComponent(id)}` : ''}`), file, onProgress, id ? 'PATCH' : 'POST', metadata);
+    if (!response.ok) {
+      const detail = await response.json().catch(() => null);
+      throw new Error(detail?.error || `上传失败（${response.status}）`);
+    }
+    return response.json() as Promise<{asset: SynthesisAsset; duplicate?: boolean; files_pending?: boolean}>;
+  },
   updateSynthesisAsset: (id: string, body: Omit<SynthesisUpload, 'file_base64' | 'filename'> & Partial<Pick<SynthesisUpload, 'file_base64' | 'filename'>>) => patch<{ asset: SynthesisAsset; files_pending?: boolean }>(`/api/v1/dashboard/synthesis-library/${encodeURIComponent(id)}`, body),
   deleteSynthesisAsset: async (id: string): Promise<{ ok: boolean; files_pending?: boolean }> => {
     const url = withDashboardUser(`/api/v1/dashboard/synthesis-library/${encodeURIComponent(id)}`);

@@ -15,7 +15,7 @@ export function publicExpressionAsset(asset: ExpressionAsset) {
     return { ...asset, version: asset.sha256, url: uploaded ? `/uploads/${asset.fileName}` : `/uploads/expression/${asset.fileName}`, thumbnail_url: asset.thumbnailFileName ? `/uploads/expression/${asset.thumbnailFileName}` : null };
 }
 export function synthesisRowAsset(row: any): ExpressionAsset {
-    return { id: `synthesis-${row.id}`, type: 'synthesis-template', format: 'gif', sourceType: 'owner-upload', distribution: 'remote', version: row.sha256, sha256: row.sha256, fileName: `synthesis/${row.file_name}`, thumbnailFileName: null, width: row.width, height: row.height, keywords: [], emotions: [], embeddedText: null, textSafeArea: row.text_safe_area, layout: row.layout, heat: 0 };
+    return { id: `synthesis-${row.id}`, type: 'synthesis-template', format: row.file_name.split('.').pop(), sourceType: 'owner-upload', distribution: 'remote', version: row.sha256, sha256: row.sha256, fileName: `synthesis/${row.file_name}`, thumbnailFileName: null, width: row.width, height: row.height, keywords: [], emotions: [], embeddedText: null, textSafeArea: row.text_safe_area, layout: row.layout, heat: 0 };
 }
 export async function expressionSnapshot(pool: pg.Pool, userId: string) {
     const [system, stickers, synthesis] = await Promise.all([systemExpressionCatalog(), pool.query('SELECT id, keywords, file_name, format, width, height, sha256 FROM sticker ORDER BY id'), pool.query('SELECT * FROM synthesis_asset WHERE user_id = $1 ORDER BY id', [userId])]);

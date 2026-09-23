@@ -19,7 +19,7 @@ import kotlinx.coroutines.withContext
 
 class GifTemplateRenderer(
     private val staticRenderer: StaticTemplateRenderer = StaticTemplateRenderer(),
-    private val maxFrames: Int = 120,
+    private val maxFrames: Int = Int.MAX_VALUE,
     private val maxTotalPixels: Long = 24_000_000,
 ) {
     suspend fun render(

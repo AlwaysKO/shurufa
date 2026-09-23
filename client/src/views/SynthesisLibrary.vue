@@ -8,6 +8,9 @@ const askConfirmation = useConfirmation();
 const assets = ref<SynthesisAsset[]>([]);
 const loading = ref(false); const loaded = ref(false); const busy = ref(false);
 const loadError = ref(''); const error = ref(''); const message = ref('');
+const uploadProgress = ref<number | null>(null);
+const canvasWidth = computed(() => editing.value?.width ?? 240);
+const canvasHeight = computed(() => editing.value?.height ?? 240);
 const name = ref(''); const sourceStatement = ref('');
 const editing = ref<SynthesisAsset | null>(null);
 const editor = ref<HTMLElement | null>(null);
@@ -55,21 +58,21 @@ async function chooseFile(event: Event) {
   const input = event.target as HTMLInputElement;
   const picked = input.files?.[0]; if (!picked) return;
   error.value = ''; message.value = ''; file.value = null; clearPreview();
-  if (!/\.gif$/i.test(picked.name) || !picked.size || picked.size > 250 * 1024) {
-    error.value = '请选择非空动态 GIF，240 × 240，单张不超过 250 KB。'; input.value = ''; return;
+  if (!/\.(gif|png|jpe?g|webp)$/i.test(picked.name) || !picked.size || picked.size > 10 * 1024 * 1024) {
+    error.value = '请选择 GIF、PNG、JPG 或 WebP 图片；上传通道单文件容量为 10 MiB。'; input.value = ''; return;
   }
   file.value = picked; preview.value = URL.createObjectURL(picked);
   if (!editing.value) {
-    name.value = picked.name.replace(/\.gif$/i, '').slice(0, 100) || '未命名底图';
+    name.value = picked.name.replace(/\.[^.]+$/, '').slice(0, 100) || '未命名底图';
     await upload();
   } else void nextTick(() => editor.value?.scrollIntoView?.({ behavior: 'smooth', block: 'start' }));
 }
 async function upload() {
   if (busy.value || disposed) return;
   error.value = ''; message.value = '';
-  if ((!editing.value && !file.value) || !name.value.trim()) { error.value = '请选择 GIF 并填写底图名称。'; return; }
-  if (!Object.values(safeArea).every(Number.isInteger) || safeArea.x < 0 || safeArea.y < 0 || safeArea.width <= 0 || safeArea.height <= 0 || safeArea.x + safeArea.width > 240 || safeArea.y + safeArea.height > 240) {
-    error.value = '文字安全区必须为整数、宽高大于零，且不能超出 240 × 240 画布。'; return;
+  if ((!editing.value && !file.value) || !name.value.trim()) { error.value = '请选择图片并填写底图名称。'; return; }
+  if (!Object.values(safeArea).every(Number.isInteger) || safeArea.x < 0 || safeArea.y < 0 || safeArea.width <= 0 || safeArea.height <= 0 || safeArea.x + safeArea.width > canvasWidth.value || safeArea.y + safeArea.height > canvasHeight.value) {
+    error.value = '文字安全区必须为整数、宽高大于零，且不能超出底图画布。'; return;
   }
   const layout = editing.value?.layout ?? defaultLayout;
   const minimum = layout.minFontSize + 2 * layout.strokeWidth;
@@ -77,28 +80,26 @@ async function upload() {
   busy.value = true;
   try {
     const body = { name: name.value.trim(), sourceStatement: sourceStatement.value.trim(), textSafeArea: { ...safeArea }, layout: { ...layout } };
-    let image: { file_base64: string; filename: string } | undefined;
+    let uploaded: {asset: SynthesisAsset; duplicate?: boolean; files_pending?: boolean} | undefined;
     if (file.value) {
-      const picked = file.value; const bytes = new Uint8Array(await picked.arrayBuffer()); let binary = '';
-      if (disposed) return;
-      for (const byte of bytes) binary += String.fromCharCode(byte);
-      image = { file_base64: btoa(binary), filename: picked.name };
+      uploadProgress.value = 0;
+      uploaded = await api.uploadSynthesisFile(file.value, { ...body, coordinateWidth: canvasWidth.value, coordinateHeight: canvasHeight.value }, percent => { uploadProgress.value = percent; }, editing.value?.id);
     }
     if (editing.value) {
-      const result = await api.updateSynthesisAsset(editing.value.id, { ...body, ...image });
+      const result = uploaded ?? await api.updateSynthesisAsset(editing.value.id, body);
       if (disposed) return;
       assets.value = assets.value.map(a => a.id === result.asset.id ? result.asset : a);
       failed.value.delete(result.asset.id);
       message.value = result.files_pending ? '底图已更新，旧文件清理待重试。' : '底图已更新。';
     } else {
-      const result = await api.uploadSynthesisAsset({ ...body, ...image! });
+      const result = uploaded!;
       if (disposed) return;
       if (!assets.value.some(a => a.id === result.asset.id)) assets.value.unshift(result.asset);
-      message.value = result.duplicate ? '相同 GIF 已存在，未重复保存。' : '底图已上传入库，可在下方编辑名称和文字区域。';
+      message.value = result.duplicate ? '相同图片已存在，未重复保存。' : '底图已上传入库，可在下方编辑名称和文字区域。';
     }
-    resetForm(); await load();
+    ++loadSequence; loading.value = false; resetForm();
   } catch (e) { error.value = `${editing.value ? '保存' : '上传'}失败：${(e as Error).message}`; }
-  finally { busy.value = false; }
+  finally { busy.value = false; uploadProgress.value = null; }
 }
 function selectAll() { if (!busy.value && !loading.value) selected.value = new Set(manageableAssets.value.map(a => a.id)); }
 function clearSelection() { if (!busy.value && !loading.value) selected.value.clear(); }
@@ -129,7 +130,7 @@ async function removeAssets(targets: SynthesisAsset[]) {
     removed += errors.length - remaining.length;
     if (removed) message.value = `已删除 ${removed} 张底图。${cleanupPending ? `${cleanupPending} 张旧文件清理未完成。` : ''}`;
     if (remaining.length) error.value = `${remaining.length} 张删除失败，已保留勾选，可重试。${remaining.map(({ asset, reason }) => `${asset.name}：${reason}`).join('；')}`;
-  } finally { busy.value = false; }
+  } finally { busy.value = false; uploadProgress.value = null; }
 }
 onMounted(load);
 </script>
@@ -137,9 +138,9 @@ onMounted(load);
 <template>
   <div class="content-library synthesis-page">
     <header class="library-intro synthesis-heading"><div><span class="eyebrow">AI SYNTHESIS LIBRARY</span><h2>AI 合成底图库</h2><p>上传后直接入库，随时调整名称和文字区域。</p></div><button class="library-button primary" :disabled="busy" @click="chooseUpload"><span aria-hidden="true">＋</span> 上传底图</button></header>
-    <input ref="fileInput" data-testid="synthesis-file" class="hidden-upload" type="file" accept=".gif,image/gif" @change="chooseFile" />
-    <div class="synthesis-tip"><span>动态 GIF · 240 × 240 · 单张不超过 250 KB</span><span>系统底图只读，个人上传用于当前选中用户。</span></div>
-    <p v-if="busy" class="library-notice" role="status">正在处理，请稍候…</p>
+    <input ref="fileInput" data-testid="synthesis-file" class="hidden-upload" type="file" accept=".gif,.png,.jpg,.jpeg,.webp" @change="chooseFile" />
+    <div class="synthesis-tip"><span>GIF / PNG / JPG / WebP · 保留原图尺寸和动画</span><span>系统底图只读，个人上传用于当前选中用户。</span></div>
+    <p v-if="busy" class="library-notice" role="status">{{ uploadProgress === null ? '正在保存，请稍候…' : uploadProgress < 100 ? `正在上传 ${uploadProgress}%` : '文件已传输，正在保存…' }}</p>
     <p v-if="message" class="library-notice success" role="status">{{ message }}</p>
     <div v-if="error" class="library-notice error" role="alert">{{ error }}<button v-if="file && !editing" data-testid="retry-synthesis-upload" class="library-button small" :disabled="busy" @click="upload">重试上传</button></div>
     <div v-if="loadError" class="library-notice error" role="alert">{{ loadError }}<button data-testid="retry-synthesis" class="library-button small" :disabled="loading || busy" @click="load">重新加载</button></div>
@@ -150,8 +151,8 @@ onMounted(load);
           <div class="synthesis-edit-grid"><div class="synthesis-edit-fields">
             <label>底图名称<input v-model="name" data-testid="synthesis-name" class="library-input" maxlength="100" /></label>
             <label>来源说明（选填）<input v-model="sourceStatement" data-testid="synthesis-source" class="library-input" maxlength="1000" placeholder="可填写素材来源" /></label>
-            <div><strong>文字区域（像素）</strong><p class="synthesis-hint">蓝框为叠字范围，不会印入原图。</p><div class="safe-fields"><label v-for="field in fields" :key="field.key">{{ field.label }}<input v-model.number="safeArea[field.key]" :data-testid="`safe-${field.key}`" class="library-input" type="number" min="0" max="240" step="1" /></label></div></div>
-          </div><div class="synthesis-preview-column"><div class="safe-preview" aria-label="GIF 与文字区域预览"><img :src="preview || scopedAssetUrl(editing.url)" alt="底图动态预览" /><div class="safe-overlay" :style="{ left: `${safeArea.x / 2.4}%`, top: `${safeArea.y / 2.4}%`, width: `${safeArea.width / 2.4}%`, height: `${safeArea.height / 2.4}%` }">文字区域</div></div><button class="library-button" type="button" @click="fileInput?.click()">替换图片</button><span v-if="file" class="synthesis-hint">已选择：{{ file.name }}</span></div></div>
+            <div><strong>文字区域（像素）</strong><p class="synthesis-hint">蓝框为叠字范围，不会印入原图。</p><div class="safe-fields"><label v-for="field in fields" :key="field.key">{{ field.label }}<input v-model.number="safeArea[field.key]" :data-testid="`safe-${field.key}`" class="library-input" type="number" min="0"  :max="Math.max(canvasWidth, canvasHeight)" step="1" /></label></div></div>
+          </div><div class="synthesis-preview-column"><div class="safe-preview" :style="{ aspectRatio: `${canvasWidth} / ${canvasHeight}` }" aria-label="GIF 与文字区域预览"><img :src="preview || scopedAssetUrl(editing.url)" alt="底图动态预览" /><div class="safe-overlay" :style="{ left: `${safeArea.x / canvasWidth * 100}%`, top: `${safeArea.y / canvasHeight * 100}%`, width: `${safeArea.width / canvasWidth * 100}%`, height: `${safeArea.height / canvasHeight * 100}%` }">文字区域</div></div><button class="library-button" type="button" @click="fileInput?.click()">替换图片</button><span v-if="file" class="synthesis-hint">已选择：{{ file.name }}</span></div></div>
           <div class="library-actions"><button data-testid="save-synthesis" class="library-button primary" type="submit" :disabled="busy || !name.trim()">保存修改</button><button class="library-button" type="button" :disabled="busy" @click="resetForm">取消</button></div>
         </fieldset>
       </form>
@@ -163,7 +164,7 @@ onMounted(load);
       <div v-else-if="loaded && !assets.length" class="library-empty"><strong>还没有底图</strong><p>选择一张 GIF，上传后即可在这里管理。</p><button class="library-button primary" :disabled="busy" @click="chooseUpload">＋ 上传第一张底图</button></div>
       <div class="sticker-grid synthesis-grid">
         <article v-for="asset in assets" :key="asset.id" :data-testid="`synthesis-card-${asset.id}`" class="sticker-cell" :class="{ selected: selected.has(asset.id) }">
-          <div class="sticker-preview"><span v-if="failed.has(asset.id)">图片加载失败，请刷新重试</span><img v-else :src="scopedAssetUrl(asset.url)" :alt="asset.name" loading="lazy" @error="failed.add(asset.id)" /><label v-if="manageable(asset)" class="synthesis-select"><input :data-testid="`select-synthesis-${asset.id}`" type="checkbox" :aria-label="`选择 ${asset.name}`" :checked="selected.has(asset.id)" :disabled="busy || loading" @change="toggleSelection(asset.id)" /></label><span class="synthesis-format">GIF</span></div>
+          <div class="sticker-preview"><span v-if="failed.has(asset.id)">图片加载失败，请刷新重试</span><img v-else :src="scopedAssetUrl(asset.url)" :alt="asset.name" loading="lazy" @error="failed.add(asset.id)" /><label v-if="manageable(asset)" class="synthesis-select"><input :data-testid="`select-synthesis-${asset.id}`" type="checkbox" :aria-label="`选择 ${asset.name}`" :checked="selected.has(asset.id)" :disabled="busy || loading" @change="toggleSelection(asset.id)" /></label><span class="synthesis-format">{{ asset.format.toUpperCase() }}</span></div>
           <div class="sticker-meta"><strong>{{ asset.name }}</strong><p><span class="library-badge" :class="{ personal: manageable(asset) }">{{ asset.source === 'system' ? '系统底图 · 只读' : '个人底图' }}</span></p><small>{{ asset.width }} × {{ asset.height }} · 文字区 {{ asset.textSafeArea.width }} × {{ asset.textSafeArea.height }}</small><div v-if="manageable(asset)" class="synthesis-card-actions"><button :data-testid="`edit-synthesis-${asset.id}`" class="library-button small" :disabled="busy || loading" @click="startEdit(asset)">编辑</button><button :data-testid="`replace-synthesis-${asset.id}`" class="library-button small" :disabled="busy || loading" @click="startEdit(asset, true)">替换</button><button :data-testid="`delete-synthesis-${asset.id}`" class="library-button small danger" :disabled="busy || loading" @click="removeAssets([asset])">删除</button></div></div>
         </article>
       </div>

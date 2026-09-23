@@ -67,35 +67,34 @@ const library = { systemCount: 1, personalCount: 0, warnings: [], groups: [
 ] };
 it('完整词表显示空组，新增词不上传文件，切换关键词可查看已有表情', async () => {
   const add = vi.fn().mockResolvedValue({ keyword: '测试' }); const upload = vi.fn();
-  const view = await mount('Stickers', { stickerLibrary: vi.fn().mockResolvedValue(library), addStickerKeyword: add, uploadSticker: upload });
+  const view = await mount('Stickers', { stickerLibrary: vi.fn().mockResolvedValue(structuredClone(library)), addStickerKeyword: add, uploadStickerFile: upload });
   expect(view.find('keyword-晚安')).toBeDefined();
   view.find('keyword-晚安')!.props.onClick(); await settle(); expect(view.find('empty-keyword')).toBeDefined();
   view.find('new-keyword')!.props['onUpdate:modelValue']('测试');
   await view.find('add-keyword')!.props.onClick(); await settle();
   expect(add).toHaveBeenCalledWith('测试'); expect(upload).not.toHaveBeenCalled();
 });
-it('组内选择文件立即上传且自动携带该词，公共图片没有删除按钮', async () => {
-  const upload = vi.fn().mockResolvedValue({});
-  const view = await mount('Stickers', { stickerLibrary: vi.fn().mockResolvedValue(library), uploadSticker: upload });
-  expect(view.find('delete-sticker-hello')).toBeUndefined();
+it('组内选择文件直接上传原文件且自动携带该词', async () => {
+  const upload = vi.fn().mockResolvedValue({id:99,format:'gif',url:'/test.gif',width:240,height:240,useCount:0});
+  const view = await mount('Stickers', { stickerLibrary: vi.fn().mockResolvedValue(structuredClone(library)), uploadStickerFile: upload });
   expect(view.find('keyword-晚安')).toBeDefined(); view.find('keyword-晚安')!.props.onClick(); await settle();
   vi.stubGlobal('Image', class { naturalWidth = 240; naturalHeight = 240; onload: (() => void) | null = null; set src(_s: string) { this.onload?.(); } });
   const file = new File(['GIF89a'], 'hello.gif', { type: 'image/gif' });
   const input = { files: [file], value: 'hello.gif' };
   await view.find('group-upload-input')!.props.onChange({ target: input }); await settle();
-  expect(upload).toHaveBeenCalledWith(expect.objectContaining({ filename: 'hello.gif', keywords: '晚安', width: 240 }));
+  expect(upload).toHaveBeenCalledWith(expect.any(File), '晚安', expect.any(Function));
 });
 it('原组说法转给其他组后，上传完成仍打开精确原组而不跳到说法所在组', async () => {
   const data = structuredClone(library);
   data.groups[0]!.aliases = ['你好', '晚安'];
   data.groups[1]!.aliases = [];
-  const upload = vi.fn().mockResolvedValue({ id: 1 });
-  const view = await mount('Stickers', { stickerLibrary: vi.fn().mockResolvedValue(data), uploadSticker: upload });
+  const upload = vi.fn().mockResolvedValue({ id: 1,format:'gif',url:'/test.gif',width:240,height:240,useCount:0 });
+  const view = await mount('Stickers', { stickerLibrary: vi.fn().mockResolvedValue(data), uploadStickerFile: upload });
   view.find('keyword-晚安')!.props.onClick(); await settle();
   vi.stubGlobal('Image', class { naturalWidth = 240; naturalHeight = 240; onload: (() => void) | null = null; set src(_s: string) { this.onload?.(); } });
   await view.find('group-upload-input')!.props.onChange({ target: { files: [new File(['GIF89a'], 'night.gif')], value: 'night.gif' } });
   await settle();
-  expect(upload).toHaveBeenCalledWith(expect.objectContaining({ group_keyword: '晚安' }));
+  expect(upload).toHaveBeenCalledWith(expect.any(File), '晚安', expect.any(Function));
   expect(view.find('keyword-晚安')!.props['aria-current']).toBe('true');
 });
 it('删除关键词先确认组名及图片范围，取消不请求，确认后刷新移除该组', async () => {
@@ -129,7 +128,7 @@ it('词库加载失败显示重试，不伪装成空表情库', async () => {
 });
 it('非法文件和超限文件不上传，上传失败保留当前关键词并提示错误', async () => {
   const upload = vi.fn().mockRejectedValue(new Error('网络中断'));
-  const view = await mount('Stickers', { stickerLibrary: vi.fn().mockResolvedValue(library), uploadSticker: upload });
+  const view = await mount('Stickers', { stickerLibrary: vi.fn().mockResolvedValue(structuredClone(library)), uploadStickerFile: upload });
   view.find('keyword-晚安')!.props.onClick(); await settle();
   const onChange = view.find('group-upload-input')!.props.onChange;
   for (const file of [new File(['bad'], 'bad.txt'), new File([], 'empty.gif'), { name: 'huge.gif', size: 5 * 1024 * 1024 + 1 }]) {
@@ -141,7 +140,7 @@ it('非法文件和超限文件不上传，上传失败保留当前关键词并�
   expect(view.text()).toContain('网络中断'); expect(view.find('keyword-晚安')!.props['aria-current']).toBe('true');
 });
 it('搜索和待补图筛选不把系统图片串到空关键词', async () => {
-  const view = await mount('Stickers', { stickerLibrary: vi.fn().mockResolvedValue(library) });
+  const view = await mount('Stickers', { stickerLibrary: vi.fn().mockResolvedValue(structuredClone(library)) });
   const search = view.all().find(n => n.props['aria-label'] === '搜索关键词')!;
   search.props['onUpdate:modelValue']('晚安'); await settle();
   expect(view.find('keyword-你好')).toBeUndefined(); expect(view.find('keyword-晚安')).toBeDefined();
@@ -244,8 +243,8 @@ it('搜索别名定位语义组，新增已有别名跳到所在页而不重复�
   const data = pagedLibrary(10);
   const aliases = ['打闹', '打你', '揍你', '扁你', '我来打你了', '过来打我啊'];
   data.groups.push({ keyword: '打闹', aliases, confirmedAliases: ['扁你', '我来打你了', '过来打我啊'], category: '动作', planned: true, custom: false, assets: [] });
-  const add = vi.fn(); const upload = vi.fn().mockResolvedValue({});
-  const view = await mount('Stickers', { stickerLibrary: vi.fn().mockResolvedValue(data), addStickerKeyword: add, uploadSticker: upload });
+  const add = vi.fn(); const upload = vi.fn().mockResolvedValue({id:99,format:'gif',url:'/test.gif',width:240,height:240,useCount:0});
+  const view = await mount('Stickers', { stickerLibrary: vi.fn().mockResolvedValue(data), addStickerKeyword: add, uploadStickerFile: upload });
   view.find('new-keyword')!.props['onUpdate:modelValue']('扁你');
   await view.find('add-keyword')!.props.onClick(); await settle();
   expect(add).not.toHaveBeenCalled(); expect(view.find('keyword-打闹')).toBeDefined();
@@ -258,7 +257,7 @@ it('搜索别名定位语义组，新增已有别名跳到所在页而不重复�
   search.props['onUpdate:modelValue'](''); await settle();
   view.find('first-keyword-page')!.props.onClick(); await settle();
   await view.find('group-upload-input')!.props.onChange({ target: { files: [new File(['GIF89a'], 'group.gif')], value: 'group.gif' } });
-  await settle(); expect(upload).toHaveBeenCalledWith(expect.objectContaining({ keywords: aliases.join(',') }));
+  await settle(); expect(upload).toHaveBeenCalledWith(expect.any(File), '打闹', expect.any(Function));
   expect(view.find('keyword-打闹')!.props['aria-current']).toBe('true');
 });
 it('有表情筛选的尾页数量缩减后，刷新自动收敛到有效页', async () => {
@@ -276,12 +275,12 @@ it('有表情筛选的尾页数量缩减后，刷新自动收敛到有效页', a
   expect(view.find('keyword-词11')).toBeDefined(); expect(view.find('keyword-词25')).toBeUndefined();
   expect(view.find('last-keyword-page')!.props.disabled).toBe(true);
 });
-it('新增成功但刷新失败时保留新分组，重复输入不重复提交', async () => {
+it('新增成功不再刷新全库，重复输入不重复提交', async () => {
   const add = vi.fn().mockResolvedValue({ keyword: '新增成功' });
-  const view = await mount('Stickers', { stickerLibrary: vi.fn().mockResolvedValueOnce(library).mockRejectedValueOnce(new Error('刷新离线')), addStickerKeyword: add });
+  const view = await mount('Stickers', { stickerLibrary: vi.fn().mockResolvedValueOnce(structuredClone(library)).mockRejectedValueOnce(new Error('刷新离线')), addStickerKeyword: add });
   view.find('new-keyword')!.props['onUpdate:modelValue']('新增成功');
   await view.find('add-keyword')!.props.onClick(); await settle();
-  expect(view.find('keyword-新增成功')).toBeDefined(); expect(view.text()).toContain('刷新离线');
+  expect(view.find('keyword-新增成功')).toBeDefined(); expect(view.text()).not.toContain('刷新离线');
   view.find('new-keyword')!.props['onUpdate:modelValue']('新增成功');
   await view.find('add-keyword')!.props.onClick(); await settle();
   expect(add).toHaveBeenCalledTimes(1);
@@ -297,36 +296,38 @@ it('AI底图库独立加载，系统只读，个人删除须确认', async () =>
 });
 it('选择GIF直接入库，无确认勾选或来源必填，文件名作为名称', async () => {
  const upload=vi.fn().mockResolvedValue({asset:synthesisAsset,duplicate:true});
- const view=await mount('SynthesisLibrary',{synthesisLibrary:vi.fn().mockResolvedValue({assets:[]}),uploadSynthesisAsset:upload});
+ const view=await mount('SynthesisLibrary',{synthesisLibrary:vi.fn().mockResolvedValue({assets:[]}),uploadSynthesisFile:upload});
  expect(view.find('synthesis-no-text')).toBeUndefined();expect(view.find('synthesis-rights')).toBeUndefined();
  await view.find('synthesis-file')!.props.onChange({target:{files:[new File(['GIF89a'],'眼神.gif')],value:''}});await settle();
- expect(upload).toHaveBeenCalledWith(expect.objectContaining({name:'眼神',filename:'眼神.gif'}));
- expect(upload.mock.calls[0][0]).not.toHaveProperty('noTextConfirmed');expect(upload.mock.calls[0][0]).not.toHaveProperty('rightsConfirmed');
+ expect(upload).toHaveBeenCalledWith(expect.any(File), expect.objectContaining({name:'眼神'}), expect.any(Function), undefined);
+ expect(upload.mock.calls[0][1]).not.toHaveProperty('noTextConfirmed');expect(upload.mock.calls[0][1]).not.toHaveProperty('rightsConfirmed');
  expect(view.text()).toContain('已存在');
 });
-it('AI底图拒绝非GIF、空文件、超限文件', async () => {
- const upload=vi.fn();const view=await mount('SynthesisLibrary',{synthesisLibrary:vi.fn().mockResolvedValue({assets:[]}),uploadSynthesisAsset:upload});
- for(const file of [new File(['x'],'x.png'),new File([],'x.gif'),{name:'x.gif',size:256001}]){
-  await view.find('synthesis-file')!.props.onChange({target:{files:[file],value:''}});await settle();expect(view.text()).toContain('250');
+it('AI底图拒绝不支持格式、空文件和超出传输容量文件', async () => {
+ const upload=vi.fn();const view=await mount('SynthesisLibrary',{synthesisLibrary:vi.fn().mockResolvedValue({assets:[]}),uploadSynthesisFile:upload});
+ for(const file of [new File(['x'],'x.txt'),new File([],'x.gif'),{name:'x.gif',size:10*1024*1024+1}]){
+  await view.find('synthesis-file')!.props.onChange({target:{files:[file],value:''}});await settle();expect(view.text()).toContain('10 MiB');
  }
  expect(upload).not.toHaveBeenCalled();
 });
 it('AI底图库加载失败可重试，自动上传失败保留文件重试', async () => {
  const list=vi.fn().mockRejectedValueOnce(new Error('离线')).mockResolvedValue({assets:[]});
  const upload=vi.fn().mockRejectedValueOnce(new Error('网络中断')).mockResolvedValue({asset:synthesisAsset,duplicate:false});
- const view=await mount('SynthesisLibrary',{synthesisLibrary:list,uploadSynthesisAsset:upload});
+ const view=await mount('SynthesisLibrary',{synthesisLibrary:list,uploadSynthesisFile:upload});
  expect(view.text()).toContain('离线');await view.find('retry-synthesis')!.props.onClick();await settle();
  await view.find('synthesis-file')!.props.onChange({target:{files:[new File(['GIF89a'],'保留我.gif')],value:''}});await settle();
  expect(view.text()).toContain('网络中断');expect(view.find('retry-synthesis-upload')).toBeDefined();
  await view.find('retry-synthesis-upload')!.props.onClick();await settle();expect(upload).toHaveBeenCalledTimes(2);
- expect(upload.mock.calls[1][0].name).toBe('保留我');
+ expect(upload.mock.calls[1][1].name).toBe('保留我');
 });
-it('切换用户卸载页面后，尚在读文件的自动上传不得写入新用户', async () => {
- const upload=vi.fn();const view=await mount('SynthesisLibrary',{synthesisLibrary:vi.fn().mockResolvedValue({assets:[]}),uploadSynthesisAsset:upload});
- const file=new File(['GIF89a'],'a.gif');let finish!:(value:ArrayBuffer)=>void;
- vi.spyOn(file,'arrayBuffer').mockImplementation(()=>new Promise(resolve=>{finish=resolve}));
- const pending=view.find('synthesis-file')!.props.onChange({target:{files:[file],value:''}});
- view.unmount();finish(new ArrayBuffer(6));await pending;expect(upload).not.toHaveBeenCalled();
+it('切换用户卸载页面后，旧上传响应不更新已卸载底图库', async () => {
+ let finish!:(value:any)=>void;
+ const upload=vi.fn(()=>new Promise(resolve=>{finish=resolve}));
+ const list=vi.fn().mockResolvedValue({assets:[]});
+ const view=await mount('SynthesisLibrary',{synthesisLibrary:list,uploadSynthesisFile:upload});
+ const pending=view.find('synthesis-file')!.props.onChange({target:{files:[new File(['GIF89a'],'a.gif')],value:''}});
+ view.unmount();finish({asset:synthesisAsset,duplicate:false});await pending;
+ expect(upload).toHaveBeenCalledTimes(1);expect(list).toHaveBeenCalledTimes(1);
 });
 
 function editableLibrary() {
@@ -380,8 +381,8 @@ it('切换组丢弃未保存排序和说法，不能误保存到下一组', asyn
 });
 it('拖拽草稿期间同组上传新图仍显示，并把新图纳入最终保存顺序', async()=>{
  const data=editableLibrary(); const update=vi.fn(async()=>({group:data.groups[0]}));
- const upload=vi.fn(async()=>{data.groups[0]!.assets.push({...data.groups[0]!.assets[0]!,id:8});return {};});
- const view=await mount('Stickers',{stickerLibrary:vi.fn(async()=>structuredClone(data)),uploadSticker:upload,updateStickerGroup:update});
+ const upload=vi.fn(async()=>{data.groups[0]!.assets.push({...data.groups[0]!.assets[0]!,id:8});return {group:structuredClone(data.groups[0]),width:240,height:240};});
+ const view=await mount('Stickers',{stickerLibrary:vi.fn(async()=>structuredClone(data)),uploadStickerFile:upload,updateStickerGroup:update});
  view.find('drag-sticker-personal:7')!.props.onDragstart({dataTransfer:{setData(){},effectAllowed:''}});
  view.find('sticker-cell-system:praise')!.props.onDrop({preventDefault(){}});await settle();
  vi.stubGlobal('Image',class {naturalWidth=1;naturalHeight=1;onload:(()=>void)|null=null;set src(_s:string){this.onload?.();}});
@@ -449,7 +450,7 @@ it('底图批量删除切换用户卸载后停止后续请求', async () => {
 it('较早的底图库刷新晚返回不能覆盖刚上传的图片', async () => {
  let finish!:(value:any)=>void;
  const list=vi.fn().mockResolvedValueOnce({assets:[]}).mockImplementationOnce(()=>new Promise(resolve=>{finish=resolve})).mockResolvedValue({assets:[synthesisAsset]});
- const view=await mount('SynthesisLibrary',{synthesisLibrary:list,uploadSynthesisAsset:vi.fn().mockResolvedValue({asset:synthesisAsset,duplicate:false})});
+ const view=await mount('SynthesisLibrary',{synthesisLibrary:list,uploadSynthesisFile:vi.fn().mockResolvedValue({asset:synthesisAsset,duplicate:false})});
  const pending=view.all().find(n=>n.tag==='button'&&n.text==='刷新列表')!.props.onClick();await settle();
  await view.find('synthesis-file')!.props.onChange({target:{files:[new File(['GIF89a'],'a.gif')],value:''}});await settle();
  expect(view.find('synthesis-card-blank-test')).toBeDefined();

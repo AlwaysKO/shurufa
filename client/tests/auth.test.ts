@@ -119,13 +119,19 @@ it('原图上传报告进度但收到响应才完成，401和超时正确处理'
     setRequestHeader(key:string,value:string){this.headers[key]=value;}
   }
   vi.stubGlobal('XMLHttpRequest',UploadRequest);
+  const telemetry=vi.fn().mockResolvedValue(new Response('{}'));vi.stubGlobal('fetch',telemetry);
   try{
     const file=new File(['original'],'image.gif',{type:'image/gif'}),progress=vi.fn();let done=false;
-    const pending=auth.dashboardUpload('/upload',file,progress).then(response=>{done=true;return response;});
+    const pending=auth.dashboardUpload('/api/v1/dashboard/stickers?user_id=test-user',file,progress,'PATCH',{name:'中文底图'}).then(response=>{done=true;return response;});
+    expect(xhr.open).toHaveBeenCalledWith('PATCH','/api/v1/dashboard/stickers?user_id=test-user');
+    expect(JSON.parse(Buffer.from(xhr.headers['X-Upload-Metadata'],'base64').toString())).toEqual({name:'中文底图'});
+    expect(xhr.headers['X-Upload-Id']).toMatch(/^[a-f0-9-]{36}$/);
     expect(xhr.send).toHaveBeenCalledWith(file);expect(xhr.headers).toMatchObject({'Content-Type':'application/octet-stream','X-Dashboard-Request':'1'});
     xhr.upload.onprogress({lengthComputable:true,loaded:70,total:100});xhr.upload.onprogress({lengthComputable:true,loaded:100,total:100});
     expect(progress.mock.calls).toEqual([[70],[100]]);expect(done).toBe(false);
     auth.authenticated.value=true;xhr.status=401;xhr.onload();expect((await pending).status).toBe(401);expect(auth.authenticated.value).toBe(false);
+    expect(telemetry.mock.calls[0][0]).toBe('/api/v1/dashboard/upload-diagnostics?user_id=test-user');
+    expect(JSON.parse(telemetry.mock.calls[0][1].body)).toMatchObject({id:xhr.headers['X-Upload-Id'],kind:'sticker',outcome:'load',bytes:file.size,status:401});
     const timed=auth.dashboardUpload('/upload',file,progress);xhr.ontimeout();await expect(timed).rejects.toThrow('核对是否已保存');
   }finally{vi.unstubAllGlobals();}
 });

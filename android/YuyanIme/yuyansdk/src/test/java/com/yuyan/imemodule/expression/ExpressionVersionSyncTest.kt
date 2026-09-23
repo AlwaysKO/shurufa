@@ -262,14 +262,14 @@ class ExpressionVersionSyncTest {
         assertEquals(2, server.requestCount)
     }
 
-    @Test fun `合成GIF未知内容长度仍执行250KiB流式上限`() = runBlocking {
+    @Test fun `合成GIF未知内容长度允许超过旧250KiB门槛`() = runBlocking {
         val large = ByteArray(250 * 1024 + 1) { 42 }
         val digest = MessageDigest.getInstance("SHA-256").digest(large).joinToString("") { "%02x".format(it) }
         val value = asset().copy(type = "synthesis-template", sha256 = digest, version = digest)
         val sync = sync(initial = document("apk", listOf(value)))
         server.enqueue(MockResponse().setChunkedBody(okio.Buffer().write(large), 1024))
-        assertNull(sync.download(digest, value.fileName, requireNotNull(value.url), digest))
-        assertNull(ExpressionCache(root).validFile(digest, value.fileName, digest))
+        assertNotNull(sync.download(digest, value.fileName, requireNotNull(value.url), digest))
+        assertNotNull(ExpressionCache(root).validFile(digest, value.fileName, digest))
         assertEquals(1, server.requestCount)
     }
 

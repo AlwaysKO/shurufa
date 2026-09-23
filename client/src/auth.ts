@@ -15,7 +15,7 @@ export async function dashboardFetch(url: string, options: RequestInit = {}): Pr
   return response;
 }
 /** 原文件上传，不在主线程生成Base64；进度仅表示已传输字节，响应成功后才算保存。 */
-export function dashboardUpload(url: string, file: File, onProgress: (percent: number) => void, method = 'POST'): Promise<Response> {
+export function dashboardUpload(url: string, file: File, onProgress: (percent: number) => void, method = 'POST', metadata?: unknown): Promise<Response> {
   const epoch = authEpoch;
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -33,6 +33,7 @@ export function dashboardUpload(url: string, file: File, onProgress: (percent: n
     xhr.setRequestHeader('X-Dashboard-Request', '1');
     xhr.setRequestHeader('X-Upload-Id', id);
     xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+    if (metadata) xhr.setRequestHeader('X-Upload-Metadata', btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(metadata)))));
     xhr.upload.onprogress = event => {
       if (event.lengthComputable) onProgress(Math.round(event.loaded / event.total * 100));
     };

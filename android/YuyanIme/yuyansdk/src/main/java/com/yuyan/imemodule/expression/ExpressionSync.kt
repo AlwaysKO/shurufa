@@ -443,9 +443,7 @@ class ExpressionSync(
                             networkClient.newCall(request).awaitBody { response ->
                                 check(response.isSuccessful)
                                 val body = response.body ?: return@awaitBody null
-                                val limit = if (catalog.document.complete && catalog.document.templates.any {
-                                    it.sha256 == sha256 && it.type == "synthesis-template"
-                                }) 250L * 1024 else queryCache.maxAssetBytes
+                                val limit = queryCache.maxAssetBytes
                                 check(body.contentLength() <= limit)
                                 queryCache.writeOriginal(sha256, body.byteStream(), limit, allowCacheEviction)
                             }

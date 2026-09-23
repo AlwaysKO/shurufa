@@ -8,7 +8,7 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
 class ExpressionCatalogTest {
-    @Test fun `手动模板池覆盖所有无字可编辑GIF且相关优先`() {
+    @Test fun `手动模板池覆盖动态和静态无字底图且相关优先`() {
         val layout = com.yuyan.imemodule.expression.model.ExpressionTextLayout(18, 40, "#ffffff", "#000000", 2, "center", 2)
         val area = com.yuyan.imemodule.expression.model.ExpressionTextSafeArea(0, 0, 200, 80)
         val blank = asset("happy", keywords = listOf("开心")).copy(format = "gif", textSafeArea = area, layout = layout)
@@ -20,8 +20,8 @@ class ExpressionCatalogTest {
             blank.copy(id = "no-layout", layout = null),
             blank.copy(id = "prebuilt", type = "prebuilt"),
         )))
-        assertEquals(listOf("tease", "happy"), catalog.synthesisTemplates("调侃").map { it.id })
-        assertEquals(setOf("happy", "tease"), catalog.synthesisTemplates("机构").map { it.id }.toSet())
+        assertEquals(listOf("tease", "happy", "static"), catalog.synthesisTemplates("调侃").map { it.id })
+        assertEquals(setOf("happy", "tease", "static"), catalog.synthesisTemplates("机构").map { it.id }.toSet())
         assertEquals(emptyList<String>(), catalog.synthesisTemplates(" ").map { it.id })
     }
 

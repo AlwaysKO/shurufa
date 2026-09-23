@@ -14,7 +14,7 @@ internal class ExpressionQueryCache(
     private val cache: ExpressionCache,
     private val maxQueries: Int = 128,
     private val maxBytes: Long = 64L * 1024 * 1024,
-    val maxAssetBytes: Long = 2L * 1024 * 1024,
+    val maxAssetBytes: Long = 10L * 1024 * 1024,
     private val ttlMs: Long = 7L * 24 * 60 * 60 * 1000,
     private val now: () -> Long = System::currentTimeMillis,
 ) {

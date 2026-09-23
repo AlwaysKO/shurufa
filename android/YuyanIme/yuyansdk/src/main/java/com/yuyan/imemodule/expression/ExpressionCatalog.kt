@@ -89,12 +89,12 @@ class ExpressionCatalog(
             .map { it.ranked.asset }
     }
 
-    /** 手动 DIY 展示全部无字可编辑 GIF；相关项前置，不用查询词过滤掉其他情绪。 */
+    /** 手动 DIY 展示全部无字可编辑底图；相关项前置，不用查询词过滤掉其他情绪。 */
     fun synthesisTemplates(query: String): List<ExpressionAsset> {
         val text = ExpressionQueryMatching.normalize(query)
         if (text.isEmpty()) return emptyList()
         return document.templates.filter {
-            it.id !in document.retiredTemplateIds && it.type == "synthesis-template" && it.format == "gif" && it.embeddedText.isNullOrBlank() &&
+            it.id !in document.retiredTemplateIds && it.type == "synthesis-template" && it.embeddedText.isNullOrBlank() &&
                 it.textSafeArea != null && it.layout != null
         }.sortedByDescending { ExpressionQueryMatching.score(text, it.keywords) }
     }
