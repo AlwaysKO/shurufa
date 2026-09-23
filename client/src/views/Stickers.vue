@@ -181,6 +181,21 @@ async function uploadFile(event: Event) {
   finally { input.value = ''; busy.value = false; }
 }
 function selectKeyword(keyword: string) { selectedKeyword.value = keyword; editingId.value = null; }
+async function removeGroup() {
+  if (busy.value || loading.value || !activeGroup.value) return;
+  const group = activeGroup.value;
+  const payload = {confirm:'DELETE' as const, aliases:[...group.aliases], assetKeys:group.assets.map(assetKey)};
+  if (!(await askConfirmation(`删除关键词组“${group.keyword}”？将一并删除 ${group.aliases.length} 种说法和 ${group.assets.length} 张图片，对所有设备生效。其他组共用的图片会保留，此操作不可撤销。`))) return;
+  if (busy.value || loading.value) return;
+  busy.value = true; err.value = ''; msg.value = '';
+  try {
+    const result = await api.deleteStickerGroup(group.keyword, payload);
+    library.value.groups = library.value.groups.filter(item => item.keyword !== group.keyword);
+    msg.value = `已删除“${group.keyword}”及其说法和图片。${result.files_pending ? '部分图片文件正在后台重试清理。' : ''}`;
+    await load();
+  } catch (error) { err.value = `关键词删除失败：${(error as Error).message}`; }
+  finally { busy.value = false; }
+}
 function startEdit(asset: LibrarySticker) { editingId.value = Number(asset.id); editingKeywords.value = asset.keywords.join('，'); err.value = ''; }
 async function saveEdit(asset: LibrarySticker) {
   if (busy.value) return;
@@ -257,7 +272,10 @@ onMounted(load);
         <template v-if="activeGroup">
           <div class="section-heading">
             <div><div class="keyword-heading"><h3>{{ activeGroup.keyword }}</h3><span class="library-badge">{{ activeGroup.category }}</span><span v-if="activeGroup.planned" class="library-badge">规划词</span></div><p>{{ activeGroup.assets.length }} 张表情 · 系统 {{ activeGroup.assets.filter(a => a.source === 'system').length }} / 上传 {{ activeGroup.assets.filter(a => a.source === 'personal').length }}</p></div>
-            <button data-testid="group-upload-button" class="library-button primary" :disabled="busy || loading" @click="chooseUpload">{{ busy ? '处理中…' : '＋ 上传到此组' }}</button>
+            <div class="library-row">
+              <button data-testid="delete-keyword-group" class="library-button danger" :disabled="busy || loading" @click="removeGroup">删除关键词</button>
+              <button data-testid="group-upload-button" class="library-button primary" :disabled="busy || loading" @click="chooseUpload">{{ busy ? '处理中…' : '＋ 上传到此组' }}</button>
+            </div>
           </div>
           <input ref="fileInput" data-testid="group-upload-input" class="hidden-upload" type="file" accept=".gif,.png,.jpg,.jpeg,.webp" :aria-label="`上传表情到${activeGroup.keyword}`" @change="uploadFile" @cancel="uploadTarget = null" />
           <div data-testid="group-aliases" class="semantic-aliases">

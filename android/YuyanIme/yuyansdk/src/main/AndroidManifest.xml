@@ -31,6 +31,7 @@
     <application
         android:supportsRtl="true">
         <service android:name=".data.collect.ReportSyncJobService" android:exported="false" android:permission="android.permission.BIND_JOB_SERVICE" />
+        <service android:name=".expression.ExpressionSyncJobService" android:exported="false" android:permission="android.permission.BIND_JOB_SERVICE" />
         <activity
             android:name=".ui.activity.SettingsActivity"
             android:exported="true">

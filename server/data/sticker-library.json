@@ -39,7 +39,21 @@
         "来砍我啊"
       ],
       "assetOrder": null
+    },
+    {
+      "keyword": "白眼",
+      "aliases": [
+        "白眼",
+        "翻白眼"
+      ],
+      "assetOrder": null
     }
   ],
-  "removals": []
+  "removals": [],
+  "deletedGroups": [
+    {
+      "keyword": "翻白眼",
+      "revision": "275d5f11-9809-4372-ada4-4a9b395ea9ce"
+    }
+  ]
 }

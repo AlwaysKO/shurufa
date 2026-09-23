@@ -58,7 +58,14 @@ internal class ExpressionQueryCache(
     }
 
     /** 有界流式复制，不能把远端整个图片加载到内存。失败不替换既有有效原件。 */
-    fun writeOriginal(sha256: String, input: InputStream, byteLimit: Long = maxAssetBytes): File? {
+    internal fun hasRoomForBackgroundOriginal(): Boolean = synchronized(diskLock) {
+        val used = originals.listFiles().orEmpty().filter { SHA_PATTERN.matches(it.name) }.sumOf { it.length() }
+        // 在发起请求前为最大单图留足空间，满库时不循环请求/驱逐。
+        maxBytes - used >= maxAssetBytes
+    }
+
+    fun writeOriginal(sha256: String, input: InputStream, byteLimit: Long = maxAssetBytes,
+                      allowEviction: Boolean = true): File? {
         if (!SHA_PATTERN.matches(sha256)) { input.close(); return null }
         synchronized(diskLock) { check(originals.mkdirs() || originals.isDirectory) }
         val part = File.createTempFile("original-", ".part", originals)
@@ -86,6 +93,7 @@ internal class ExpressionQueryCache(
                     .filter { SHA_PATTERN.matches(it.name) && it.name != sha256 }
                     .sortedBy { it.lastModified() }
                 var total = others.sumOf { it.length() } + length
+                if (!allowEviction && total > maxBytes) return@synchronized null
                 for (old in others) {
                     if (total <= maxBytes) break
                     val size = old.length()

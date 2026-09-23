@@ -70,6 +70,21 @@ class ExpressionQueryCacheTest {
         file.writeText("damaged")
         assertNull(storage.validFile("v2", "new.gif", sha(bytes)))
     }
+
+    @Test fun `后台写入遇到并发占满预算保留已有原件而前台仍可淘汰`() {
+        val storage = ExpressionCache(root)
+        val cache = ExpressionQueryCache(storage, maxBytes = 6, maxAssetBytes = 4)
+        val a = "aaa".toByteArray(); val b = "bbb".toByteArray(); val c = "ccc".toByteArray()
+        assertTrue(cache.hasRoomForBackgroundOriginal())
+        val first = requireNotNull(cache.writeOriginal(sha(a), a.inputStream()))
+        val second = requireNotNull(cache.writeOriginal(sha(b), b.inputStream()))
+        assertFalse(cache.hasRoomForBackgroundOriginal())
+        assertNull(cache.writeOriginal(sha(c), c.inputStream(), allowEviction = false))
+        assertTrue(first.isFile)
+        assertTrue(second.isFile)
+        assertNotNull(cache.writeOriginal(sha(c), c.inputStream()))
+        assertEquals(6L, File(storage.queryRoot, "originals").listFiles()!!.sumOf { it.length() })
+    }
     @Test fun `远端版本不允许点目录绕过缓存根目录`() {
         val cache = ExpressionCache(root)
         for (version in listOf(".", "..")) {

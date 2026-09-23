@@ -39,3 +39,17 @@ it('正常保存说法返回更新后的组', async () => {
   const api = loadApi(vi.fn().mockResolvedValue(new Response(JSON.stringify(result))));
   expect(await api.updateStickerGroup('白眼', { aliases: result.group.aliases })).toEqual(result);
 });
+
+it('删除关键词发送精确组名和确认快照，保留冲突说明与清理状态', async () => {
+  const body = {confirm:'DELETE' as const, aliases:['白眼','翻白眼'], assetKeys:['personal:3']};
+  const fetch = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({keyword:'白眼',files_pending:true})))
+    .mockResolvedValueOnce(new Response(JSON.stringify({error:'组内图片已变化，请刷新'}),{status:409}))
+    .mockResolvedValueOnce(new Response('upstream unavailable',{status:502}));
+  const api = loadApi(fetch);
+  expect(await api.deleteStickerGroup('白眼',body)).toEqual({keyword:'白眼',files_pending:true});
+  const [url, options] = fetch.mock.calls[0];
+  expect(url).toBe('/api/v1/dashboard/sticker-groups/%E7%99%BD%E7%9C%BC/delete?user_id=user-a');
+  expect(options.method).toBe('POST'); expect(JSON.parse(options.body)).toEqual(body);
+  await expect(api.deleteStickerGroup('白眼',body)).rejects.toThrow('组内图片已变化');
+  await expect(api.deleteStickerGroup('白眼',body)).rejects.toThrow('502');
+});

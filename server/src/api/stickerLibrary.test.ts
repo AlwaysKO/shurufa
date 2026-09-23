@@ -17,6 +17,8 @@ let agent: Awaited<ReturnType<typeof authenticatedRequest>>;
 let app: ReturnType<typeof createApp>;
 beforeEach(async () => {
   const db = newDb();
+  // pg-mem 不模拟表锁；真实事务及附件清理在 PostgreSQL 回归中验证。
+  db.public.interceptQueries(sql => /^LOCK TABLE /i.test(sql) ? [] : null);
   db.public.registerFunction({ name: 'trim', args: [DataType.text], returns: DataType.text, implementation: (s: string) => s.trim() });
   db.public.registerFunction({ name: 'length', args: [DataType.text], returns: DataType.integer, implementation: (s: string) => s.length });
   db.public.registerFunction({name:'hashtext',args:[DataType.text],returns:DataType.integer,implementation:()=>1});
@@ -29,6 +31,8 @@ beforeEach(async () => {
   await pool.query(readFileSync(new URL('../../migrations/019_keyword_gif_removal.sql', import.meta.url), 'utf8'));
   await pool.query(readFileSync(new URL('../../migrations/018_synthesis_library.sql', import.meta.url), 'utf8'));
   await pool.query(readFileSync(new URL('../../migrations/024_sticker_group_settings.sql', import.meta.url), 'utf8'));
+  await pool.query(readFileSync(new URL('../../migrations/028_sticker_group_deletion.sql', import.meta.url), 'utf8'));
+  await pool.query(readFileSync(new URL('../../migrations/020_runtime_settings.sql', import.meta.url), 'utf8'));
   await pool.query('CREATE TABLE sticker_bundle_import(singleton BOOLEAN PRIMARY KEY, manifest JSONB NOT NULL)');
   root = await mkdtemp(join(tmpdir(), 'sticker-library-'));
   await mkdir(join(root, 'server/.runtime/expression-assets/prebuilt'), { recursive: true });
@@ -44,6 +48,81 @@ beforeEach(async () => {
   app = createApp(pool); agent = await authenticatedRequest(app);
 });
 afterEach(async () => { vi.restoreAllMocks(); await pool.end(); if (root) await rm(root, { recursive: true, force: true }); });
+async function deleteGroup(keyword: string) {
+  const library = await agent.get('/api/v1/dashboard/sticker-library');
+  const group = library.body.groups.find((g: any) => g.keyword === keyword);
+  return agent.post(`/api/v1/dashboard/sticker-groups/${encodeURIComponent(keyword)}/delete`).send({
+    confirm: 'DELETE', aliases: group.aliases, assetKeys: group.assets.map((a: any) => `${a.source}:${a.id}`),
+  });
+}
+it('删除规划关键词及说法，刷新不复活；允许主动重新添加', async () => {
+  expect((await deleteGroup('晚安')).status).toBe(200);
+  let library = await agent.get('/api/v1/dashboard/sticker-library');
+  expect(library.body.groups.some((g: any) => g.keyword === '晚安')).toBe(false);
+  expect((await agent.patch('/api/v1/dashboard/sticker-groups/晚安').send({aliases:['晚安']})).status).toBe(404);
+  expect((await agent.post('/api/v1/dashboard/sticker-keywords').send({keyword:'晚安'})).status).toBe(201);
+  library = await agent.get('/api/v1/dashboard/sticker-library');
+  expect(library.body.groups.find((g: any) => g.keyword === '晚安').aliases).toEqual(['晚安']);
+});
+it('删除组必须登录、明确确认且组内说法与图片未变化', async () => {
+  const url = '/api/v1/dashboard/sticker-groups/晚安/delete';
+  expect((await request(app).post(url).send({confirm:'DELETE',aliases:['晚安'],assetKeys:[]})).status).toBe(401);
+  expect((await agent.post(url).send({})).status).toBe(400);
+  expect((await agent.post(url).send({confirm:'DELETE',aliases:[],assetKeys:[]})).status).toBe(409);
+  expect((await agent.post(url).send({confirm:'DELETE',aliases:['晚安'],assetKeys:['personal:99']})).status).toBe(409);
+  expect((await agent.post('/api/v1/dashboard/sticker-groups/不存在/delete').send({confirm:'DELETE',aliases:[],assetKeys:[]})).status).toBe(404);
+  expect((await agent.get('/api/v1/dashboard/sticker-library')).body.groups.some((g: any) => g.keyword === '晚安')).toBe(true);
+});
+it('删除组移除独占上传，共用图片保留其他关键词，文件进入提交后清理', async () => {
+  await pool.query(`INSERT INTO sticker(user_id,keywords,file_name,format) VALUES
+    ($1,'晚安','night.gif','gif'),($1,'晚安,你好','shared.gif','gif')`, [OWNER]);
+  expect((await deleteGroup('晚安')).status).toBe(200);
+  expect((await pool.query('SELECT keywords,file_name FROM sticker')).rows).toEqual([{keywords:'你好',file_name:'shared.gif'}]);
+  expect((await agent.get('/api/v1/dashboard/sticker-library')).body.groups.some((g: any) => g.keyword === '晚安')).toBe(false);
+  expect((await agent.get('/api/v1/dashboard/sticker-library')).body.groups.find((g: any) => g.keyword === '你好').assets).toHaveLength(2);
+});
+it('删除默认同义组覆盖原始标签；删除空原组不删除已转用的同名说法', async () => {
+  await pool.query(`INSERT INTO sticker(user_id,keywords,file_name,format) VALUES($1,'打你,揍你','play.gif','gif')`, [OWNER]);
+  expect((await deleteGroup('打闹')).status).toBe(200);
+  expect((await pool.query('SELECT * FROM sticker')).rows).toEqual([]);
+  expect((await agent.get('/api/v1/dashboard/sticker-library')).body.groups.some((g: any) => g.keyword === '打闹')).toBe(false);
+  await agent.patch('/api/v1/dashboard/sticker-groups/晚安').send({aliases:[]});
+  await agent.patch('/api/v1/dashboard/sticker-groups/你好').send({aliases:['你好','晚安']});
+  expect((await deleteGroup('晚安')).status).toBe(200);
+  expect((await agent.get('/api/v1/dashboard/sticker-library')).body.groups.find((g: any) => g.keyword === '你好').aliases).toEqual(['你好','晚安']);
+});
+it('删除系统图片组后手机目录和手动自动推荐均无独占图片，合成模板保留', async () => {
+  await writeFile(join(root,'server/.runtime/expression-assets/catalog.json'), JSON.stringify({emojiBases:[],emojiCombinations:[],templates:[
+    {id:'night',type:'prebuilt',keywords:['晚安'],embeddedText:'晚安',fileName:'prebuilt/night.gif',format:'gif',sha256:'a'.repeat(64)},
+    {id:'template',type:'synthesis-template',keywords:[],fileName:'template.gif',format:'gif',sha256:'b'.repeat(64)},
+  ]}));
+  expect((await deleteGroup('晚安')).status).toBe(200);
+  const catalog = await request(app).get('/api/v1/mobile/expressions/catalog').set('X-Device-Id',A);
+  expect(catalog.body.templates.map((a: any) => a.id)).toEqual(['template']);
+  for (const mode of ['manual','automatic']) {
+    const result = await request(app).get('/api/v1/mobile/expressions/recommend?q='+encodeURIComponent('晚安')+'&mode='+mode).set('X-Device-Id',A);
+    expect(result.body.results).toEqual([]);
+  }
+  await agent.post('/api/v1/dashboard/sticker-keywords').send({keyword:'晚安'});
+  expect((await agent.get('/api/v1/dashboard/sticker-library')).body.groups.find((g: any) => g.keyword === '晚安').assets).toEqual([]);
+});
+it('已删除组拒绝上传和修改图片标签，不能绕过主动重新添加', async () => {
+  await deleteGroup('晚安');
+  const input={keywords:'晚安',filename:'tiny.gif',file_base64:'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'};
+  expect((await agent.post('/api/v1/dashboard/stickers').send(input)).status).toBe(409);
+  const row=await pool.query("INSERT INTO sticker(user_id,keywords,file_name,format) VALUES($1,'你好','hello.gif','gif') RETURNING id",[OWNER]);
+  expect((await agent.patch('/api/v1/dashboard/stickers/'+row.rows[0].id).send({keywords:'晚安'})).status).toBe(409);
+  expect((await pool.query('SELECT keywords FROM sticker')).rows).toEqual([{keywords:'你好'}]);
+});
+it('重建默认组不抢回已转用的说法', async () => {
+  await pool.query("INSERT INTO sticker_keyword(user_id,keyword) VALUES($1,'打闹')",[OWNER]);
+  await deleteGroup('打闹');
+  expect((await agent.patch('/api/v1/dashboard/sticker-groups/你好').send({aliases:['你好','打你']})).status).toBe(200);
+  expect((await agent.post('/api/v1/dashboard/sticker-keywords').send({keyword:'打闹'})).status).toBe(201);
+  const groups=(await agent.get('/api/v1/dashboard/sticker-library')).body.groups;
+  expect(groups.filter((g: any)=>g.aliases.includes('打你')).map((g: any)=>g.keyword)).toEqual(['你好']);
+  expect(groups.find((g: any)=>g.keyword==='打闹').aliases).toEqual(['打闹']);
+});
 it('完整列出运行库和规划空词，公共上传按关键词拆分', async () => {
   await pool.query(`INSERT INTO sticker(user_id,keywords,file_name,format) VALUES
     ($1,'你好，问候,你好','mine.gif','gif')`, [OWNER]);

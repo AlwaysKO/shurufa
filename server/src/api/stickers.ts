@@ -1,4 +1,5 @@
 import { publishStickerBundle } from '../stickers/bundle.js';
+import { deleteStickerGroup } from '../stickers/deleteGroup.js';
 import { SHARED_STICKER_OWNER } from '../stickers/shared.js';
 import { normalizeRecommendationPhrase } from '../expression/recommendationGroups.js';
 import { systemExpressionCatalog } from './expressionSnapshot.js';
@@ -9,7 +10,7 @@ import type pg from 'pg';
 import { mkdirSync, writeFileSync, unlinkSync, existsSync } from 'node:fs';
 import { join, extname } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
-import { loadStickerLibrary, splitStickerKeywords, rememberStickerKeywords, updateStickerGroup, createStickerKeyword, StickerGroupError } from './stickerLibrary.js';
+import { loadStickerLibrary, splitStickerKeywords, rememberStickerKeywords, updateStickerGroup, createStickerKeyword, StickerGroupError, withGroupLock, assertStickerKeywordsActive } from './stickerLibrary.js';
 
 
 /** 表情包文件存储目录（server/uploads/stickers），由 app.ts 挂载为 /uploads 静态路径 */
@@ -89,6 +90,17 @@ export function createMobileStickerRouter(pool: pg.Pool): Router {
 export function createDashboardStickerRouter(pool: pg.Pool): Router {
   const router = Router();
 
+  router.post('/sticker-groups/:keyword/delete', async (req, res, next) => {
+    try {
+      const result = await deleteStickerGroup(pool, req.params.keyword, req.body);
+      await publishStickerBundle(pool);
+      res.json(result);
+    } catch (error) {
+      if (error instanceof StickerGroupError) return res.status(error.status).json({ error: error.message });
+      next(error);
+    }
+  });
+
   router.get('/sticker-library', async (_req, res, next) => {
     try { res.json(await loadStickerLibrary(pool, SHARED_STICKER_OWNER)); }
     catch (error) { next(error); }
@@ -111,9 +123,11 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
     try {
       const asset = (await systemExpressionCatalog()).templates.find(item => item.id === req.params.id && item.type !== 'synthesis-template');
       if (!asset || !/^[a-f0-9]{64}$/.test(asset.sha256)) return res.status(404).json({ error: 'not found' });
-      await rememberStickerKeywords(pool, SHARED_STICKER_OWNER, asset.keywords.join(','));
-      await pool.query(`INSERT INTO keyword_gif_removal (user_id, sha256, asset_id) VALUES ($1,$2,$3)
-        ON CONFLICT (user_id, sha256) DO NOTHING`, [SHARED_STICKER_OWNER, asset.sha256, asset.id]);
+      await withGroupLock(pool, SHARED_STICKER_OWNER, async db => {
+        await rememberStickerKeywords(db, SHARED_STICKER_OWNER, asset.keywords.join(','));
+        await db.query(`INSERT INTO keyword_gif_removal (user_id, sha256, asset_id) VALUES ($1,$2,$3)
+          ON CONFLICT (user_id, sha256) DO NOTHING`, [SHARED_STICKER_OWNER, asset.sha256, asset.id]);
+      });
       await publishStickerBundle(pool);
       res.json({ ok: true });
     } catch (error) { next(error); }
@@ -181,28 +195,38 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
         const detected = dimensions.format === 'jpeg' ? 'jpg' : dimensions.format;
         if (detected !== format) return res.status(400).json({ error: 'image format does not match filename' });
       } catch { return res.status(400).json({ error: 'invalid image' }); }
-      let keywords = String(body.keywords ?? '').trim();
-      if (body.group_keyword !== undefined) {
-        const group = (await loadStickerLibrary(pool, SHARED_STICKER_OWNER)).groups.find(item => item.keyword === body.group_keyword);
-        if (!group) return res.status(400).json({ error: '关键词组不存在，请刷新后重试' });
-        // 归属与可编辑的匹配说法分离，删除/新增说法不会制造重复组或丢图。
-        keywords = group.keyword;
-      }
-      if (!splitStickerKeywords(keywords).length || splitStickerKeywords(keywords).some(word => word.length > 100 || /[\r\n]/.test(word))) return res.status(400).json({ error: '关键词须为1～100字，不含换行；多个关键词用逗号分隔' });
-
-      mkdirSync(stickerDirectory(), { recursive: true });
       const fileName = `${randomUUID()}${ext}`;
-      writeFileSync(join(stickerDirectory(), fileName), buffer);
-
-      const result = await pool.query(
-        `INSERT INTO sticker (user_id, keywords, file_name, format, width, height, sha256)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
-         RETURNING id, keywords, file_name, format, width, height, use_count, created_at`,
-        [SHARED_STICKER_OWNER, keywords, fileName, format, dimensions.width ?? null, dimensions.pageHeight ?? dimensions.height ?? null, createHash('sha256').update(buffer).digest('hex')],
-      );
-      await rememberStickerKeywords(pool, SHARED_STICKER_OWNER, keywords);
+      let row: Record<string, unknown>;
+      try {
+        row = await withGroupLock(pool, SHARED_STICKER_OWNER, async db => {
+          let keywords = String(body.keywords ?? '').trim();
+          if (body.group_keyword !== undefined) {
+            if (typeof body.group_keyword !== 'string') throw new StickerGroupError(400, '关键词组格式不正确');
+            await assertStickerKeywordsActive(db, body.group_keyword);
+            const group = (await loadStickerLibrary(db, SHARED_STICKER_OWNER)).groups.find(item => item.keyword === body.group_keyword);
+            if (!group) throw new StickerGroupError(400, '关键词组不存在，请刷新后重试');
+            keywords = group.keyword;
+          }
+          if (!splitStickerKeywords(keywords).length || splitStickerKeywords(keywords).some(word => word.length > 100 || /[\r\n]/.test(word))) {
+            throw new StickerGroupError(400, '关键词须为1～100字，不含换行；多个关键词用逗号分隔');
+          }
+          await assertStickerKeywordsActive(db, keywords);
+          mkdirSync(stickerDirectory(), { recursive: true });
+          writeFileSync(join(stickerDirectory(), fileName), buffer);
+          const result = await db.query(
+            `INSERT INTO sticker (user_id, keywords, file_name, format, width, height, sha256)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)
+             RETURNING id, keywords, file_name, format, width, height, use_count, created_at`,
+            [SHARED_STICKER_OWNER, keywords, fileName, format, dimensions.width ?? null, dimensions.pageHeight ?? dimensions.height ?? null, createHash('sha256').update(buffer).digest('hex')],
+          );
+          await rememberStickerKeywords(db, SHARED_STICKER_OWNER, keywords);
+          return result.rows[0];
+        });
+      } catch (error) {
+        if (existsSync(join(stickerDirectory(), fileName))) unlinkSync(join(stickerDirectory(), fileName));
+        throw error;
+      }
       await publishStickerBundle(pool);
-      const row = result.rows[0] as Record<string, unknown>;
       res.status(201).json({
         id: row.id,
         keywords: row.keywords,
@@ -214,6 +238,7 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
         createdAt: row.created_at,
       });
     } catch (err) {
+      if (err instanceof StickerGroupError) return res.status(err.status).json({error:err.message});
       next(err);
     }
   });
@@ -225,17 +250,17 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
       const keywords = String((req.body as { keywords?: string })?.keywords ?? '').trim();
       if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: 'invalid id' });
       if (!splitStickerKeywords(keywords).length || splitStickerKeywords(keywords).some(word => word.length > 100 || /[\r\n]/.test(word))) return res.status(400).json({ error: '关键词须为1～100字，不含换行；多个关键词用逗号分隔' });
-      const existing = await pool.query<{ keywords: string }>(
-        'SELECT keywords FROM sticker WHERE id = $1', [id]);
-      if (!existing.rows.length) return res.status(404).json({ error: 'not found' });
-      await rememberStickerKeywords(pool, SHARED_STICKER_OWNER, `${existing.rows[0].keywords},${keywords}`);
-      await pool.query(`UPDATE sticker SET keywords = $1 WHERE id = $2`, [
-        keywords,
-        id,
-      ]);
+      await withGroupLock(pool, SHARED_STICKER_OWNER, async db => {
+        await assertStickerKeywordsActive(db, keywords);
+        const existing = await db.query<{ keywords: string }>('SELECT keywords FROM sticker WHERE id = $1', [id]);
+        if (!existing.rows.length) throw new StickerGroupError(404, '图片不存在或已删除，请刷新');
+        await rememberStickerKeywords(db, SHARED_STICKER_OWNER, `${existing.rows[0].keywords},${keywords}`);
+        await db.query('UPDATE sticker SET keywords=$1 WHERE id=$2', [keywords,id]);
+      });
       await publishStickerBundle(pool);
       res.json({ ok: true });
     } catch (err) {
+      if (err instanceof StickerGroupError) return res.status(err.status).json({error:err.message});
       next(err);
     }
   });
@@ -245,21 +270,19 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
     try {
       const id = Number(req.params.id);
       if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: 'invalid id' });
-      const existing = await pool.query<{ keywords: string }>(
-        'SELECT keywords FROM sticker WHERE id = $1', [id]);
-      if (!existing.rows.length) return res.status(404).json({ error: 'not found' });
-      await rememberStickerKeywords(pool, SHARED_STICKER_OWNER, existing.rows[0].keywords);
-      const result = await pool.query(
-        `DELETE FROM sticker WHERE id = $1 RETURNING file_name`,
-        [id],
-      );
-      if (result.rowCount === 0) return res.status(404).json({ error: 'not found' });
-      const fileName = (result.rows[0] as { file_name: string }).file_name;
+      const fileName = await withGroupLock(pool, SHARED_STICKER_OWNER, async db => {
+        const existing = await db.query<{keywords: string}>('SELECT keywords FROM sticker WHERE id=$1',[id]);
+        if (!existing.rows.length) throw new StickerGroupError(404, '图片不存在或已删除，请刷新');
+        await rememberStickerKeywords(db, SHARED_STICKER_OWNER, existing.rows[0].keywords);
+        const result = await db.query<{file_name: string}>('DELETE FROM sticker WHERE id=$1 RETURNING file_name',[id]);
+        return result.rows[0].file_name;
+      });
       const filePath = join(stickerDirectory(), fileName);
       if (existsSync(filePath)) unlinkSync(filePath); // 文件已缺失时忽略，不影响删除
       await publishStickerBundle(pool);
       res.json({ ok: true });
     } catch (err) {
+      if (err instanceof StickerGroupError) return res.status(err.status).json({error:err.message});
       next(err);
     }
   });

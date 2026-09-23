@@ -4,13 +4,15 @@ import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile, rename, realpath } from 'node:fs/promises';
 import { join, dirname, sep } from 'node:path';
 import type pg from 'pg';
-import { loadStickerLibrary, splitStickerKeywords } from '../api/stickerLibrary.js';
+import { loadStickerLibrary, splitStickerKeywords, stickerGroupKeyword } from '../api/stickerLibrary.js';
+import { deleteStickerGroupInTransaction, type StickerGroupDeletion } from './deleteGroup.js';
+import { cleanDeviceFiles } from '../lib/deleteDeviceData.js';
 import { normalizeRecommendationPhrase } from '../expression/recommendationGroups.js';
 import { SHARED_STICKER_OWNER as OWNER } from './shared.js';
 
 type Sticker = { fileName: string; keywords: string; format: string; width: number | null; height: number | null; sha256: string };
 type Setting = { keyword: string; aliases: string[] | null; assetOrder: string[] | null };
-export type StickerBundle = { version: 1; keywords: string[]; stickers: Sticker[]; settings: Setting[]; removals: { sha256: string; assetId: string }[] };
+export type StickerBundle = { version: 1; keywords: string[]; stickers: Sticker[]; settings: Setting[]; removals: { sha256: string; assetId: string }[]; deletedGroups?: StickerGroupDeletion[] };
 const manifestPath = (root: string) => join(root, 'data/sticker-library.json');
 const same = (a: unknown, b: unknown) => isDeepStrictEqual(a,b);
 const hash = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex');
@@ -39,6 +41,17 @@ export async function validateStickerBundle(value: unknown, root: string): Promi
     groups.add(s.keyword);
   }
   if (data.removals.some(s => !s || !/^[a-f0-9]{64}$/.test(s.sha256) || typeof s.assetId !== 'string')) throw new Error('图库隐藏记录非法');
+  if (data.deletedGroups !== undefined) {
+    const active = new Set([...data.keywords, ...data.settings.map(s => s.keyword), ...data.stickers.flatMap(s => splitStickerKeywords(s.keywords))].map(stickerGroupKeyword));
+    const deleted = new Set<string>();
+    if (!Array.isArray(data.deletedGroups)) throw new Error('图库组删除记录非法');
+    for (const item of data.deletedGroups) {
+      if (!item || !words([item.keyword]) || item.keyword !== stickerGroupKeyword(item.keyword)
+        || !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(item.revision)
+        || deleted.has(item.keyword) || active.has(item.keyword)) throw new Error('图库组删除记录非法或与活动组冲突');
+      deleted.add(item.keyword);
+    }
+  }
   return data;
 }
 
@@ -52,10 +65,11 @@ export async function exportStickerBundle(pool: pg.Pool, root = process.cwd()): 
     const keywords = (await db.query('SELECT keyword FROM sticker_keyword WHERE user_id=$1 ORDER BY keyword', [OWNER])).rows;
     const settings = (await db.query('SELECT keyword,aliases,asset_order FROM sticker_group_settings WHERE user_id=$1 ORDER BY keyword', [OWNER])).rows;
     const removals = (await db.query('SELECT sha256,asset_id FROM keyword_gif_removal WHERE user_id=$1 ORDER BY sha256', [OWNER])).rows;
+    const deletedGroups = (await db.query<StickerGroupDeletion>('SELECT keyword,revision FROM sticker_group_deletion ORDER BY keyword')).rows;
     data = { version: 1, keywords: [...new Set<string>([...keywords.map(s => s.keyword), ...stickers.flatMap(s => String(s.keywords).split(/[,，]/).map(v => v.trim()).filter(Boolean))])].sort(),
       stickers: stickers.map(s => ({fileName:s.file_name,keywords:s.keywords,format:s.format,width:s.width,height:s.height,sha256:s.sha256})),
       settings: settings.map(s => ({keyword:s.keyword,aliases:s.aliases,assetOrder:s.asset_order === null ? null : s.asset_order.flatMap((key:string) => key.startsWith('personal:') ? (ids.has(key.slice(9)) ? [`file:${ids.get(key.slice(9))}`] : []) : [key])})),
-      removals: removals.map(s => ({sha256:s.sha256,assetId:s.asset_id})) };
+      removals: removals.map(s => ({sha256:s.sha256,assetId:s.asset_id})), deletedGroups };
     await db.query('COMMIT');
   } catch (error) { await db.query('ROLLBACK'); throw error; }
   finally { db.release(); }
@@ -80,19 +94,29 @@ export async function importStickerBundle(pool: pg.Pool, root = process.cwd()): 
   catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return; throw error; }
   const data = await validateStickerBundle(JSON.parse(text),root);
   const db = await pool.connect();
+  const cleanups: string[] = [];
   try {
     await db.query('BEGIN');
     // 与分组编辑共用事务锁，多个部署进程不会交错导入。
     await db.query('SELECT pg_advisory_xact_lock(hashtext($1))',[`sticker-groups:${OWNER}`]);
     const previous = (await db.query('SELECT manifest FROM sticker_bundle_import WHERE singleton=TRUE')).rows[0]?.manifest as StickerBundle | undefined;
     if (same(previous,data)) { await db.query('COMMIT'); return; }
+    if (data.deletedGroups !== undefined) {
+      for (const old of previous?.deletedGroups ?? []) if (!data.deletedGroups.some(item => item.keyword === old.keyword)) {
+        await db.query('DELETE FROM sticker_group_deletion WHERE keyword=$1 AND revision=$2', [old.keyword, old.revision]);
+      }
+    }
+    const deleted = new Set((await db.query<{keyword: string}>('SELECT keyword FROM sticker_group_deletion')).rows.map(row => row.keyword));
+    const activeKeywords = (value: string) => splitStickerKeywords(value).filter(word => !deleted.has(stickerGroupKeyword(word)));
     const ids = new Map<string,string>();
     for (const s of data.stickers) {
+      const importedKeywords = activeKeywords(s.keywords);
+      if (!importedKeywords.length) continue;
       const old = previous?.stickers.find(item => item.fileName === s.fileName);
       let row = (await db.query('SELECT id,sha256,keywords,format,width,height FROM sticker WHERE file_name=$1 FOR UPDATE',[s.fileName])).rows[0];
       if (row && row.sha256 && row.sha256 !== s.sha256) throw new Error(`同名图片内容冲突：${s.fileName}`);
       if (!same(old,s)) {
-        const keywords = !old && row ? [...new Set([...splitStickerKeywords(row.keywords),...splitStickerKeywords(s.keywords)])].join(',') : s.keywords;
+        const keywords = !old && row ? [...new Set([...activeKeywords(row.keywords),...importedKeywords])].join(',') : importedKeywords.join(',');
         const change = (key: 'keywords'|'format'|'width'|'height') => old ? !same(old[key],s[key]) : key === 'keywords' || row?.[key] == null;
         row = (await db.query(`INSERT INTO sticker(user_id,keywords,file_name,format,width,height,sha256) VALUES($1,$2,$3,$4,$5,$6,$7)
           ON CONFLICT(file_name) DO UPDATE SET keywords=CASE WHEN $8 THEN EXCLUDED.keywords ELSE sticker.keywords END,
@@ -103,8 +127,11 @@ export async function importStickerBundle(pool: pg.Pool, root = process.cwd()): 
       }
       if (row) ids.set(s.fileName,String(row.id));
     }
-    for (const keyword of data.keywords) await db.query('INSERT INTO sticker_keyword(user_id,keyword) VALUES($1,$2) ON CONFLICT DO NOTHING',[OWNER,keyword]);
+    for (const keyword of data.keywords) if (!deleted.has(stickerGroupKeyword(keyword))) {
+      await db.query('INSERT INTO sticker_keyword(user_id,keyword) VALUES($1,$2) ON CONFLICT DO NOTHING',[OWNER,keyword]);
+    }
     for (const s of data.settings) {
+      if (deleted.has(stickerGroupKeyword(s.keyword))) continue;
       const old = previous?.settings.find(item => item.keyword === s.keyword);
       if (same(old,s)) continue;
       let order = s.assetOrder?.flatMap(key => key.startsWith('file:') ? (ids.has(key.slice(5)) ? [`personal:${ids.get(key.slice(5))}`] : []) : [key]) ?? null;
@@ -121,6 +148,11 @@ export async function importStickerBundle(pool: pg.Pool, root = process.cwd()): 
         asset_order=CASE WHEN $6 THEN EXCLUDED.asset_order ELSE sticker_group_settings.asset_order END`,
         [OWNER,s.keyword,aliases === null ? null : JSON.stringify(aliases),order === null ? null : JSON.stringify(order),!old || !same(old.aliases,s.aliases),!old || !same(old.assetOrder,s.assetOrder)]);
     }
+    for (const deletion of data.deletedGroups ?? []) {
+      if (same(previous?.deletedGroups?.find(item => item.keyword === deletion.keyword), deletion)) continue;
+      const cleanup = await deleteStickerGroupInTransaction(db, deletion, root);
+      if (cleanup) cleanups.push(cleanup);
+    }
     const library = await loadStickerLibrary(db,OWNER,root);
     for (const setting of data.settings) {
       const group = library.groups.find(g => g.keyword === setting.keyword);
@@ -133,6 +165,7 @@ export async function importStickerBundle(pool: pg.Pool, root = process.cwd()): 
     await db.query('COMMIT');
   } catch (error) { await db.query('ROLLBACK'); throw error; }
   finally { db.release(); }
+  for (const key of cleanups) await cleanDeviceFiles(pool, key);
 }
 
 let exportQueue: Promise<void> = Promise.resolve();

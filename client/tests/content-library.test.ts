@@ -98,6 +98,31 @@ it('原组说法转给其他组后，上传完成仍打开精确原组而不跳�
   expect(upload).toHaveBeenCalledWith(expect.objectContaining({ group_keyword: '晚安' }));
   expect(view.find('keyword-晚安')!.props['aria-current']).toBe('true');
 });
+it('删除关键词先确认组名及图片范围，取消不请求，确认后刷新移除该组', async () => {
+  const data = structuredClone(library);
+  const remove = vi.fn(async () => { data.groups = data.groups.filter(g => g.keyword !== '你好'); return {keyword:'你好',files_pending:false}; });
+  const confirm = vi.fn().mockReturnValueOnce(false).mockReturnValueOnce(true);
+  vi.stubGlobal('confirm',confirm);
+  const view = await mount('Stickers',{stickerLibrary:vi.fn(async()=>structuredClone(data)),deleteStickerGroup:remove});
+  view.find('keyword-你好')!.props.onClick(); await settle();
+  expect(view.find('delete-keyword-group')).toBeDefined();
+  await view.find('delete-keyword-group')!.props.onClick(); await settle();
+  expect(remove).not.toHaveBeenCalled();
+  expect(confirm.mock.calls[0][0]).toContain('你好'); expect(confirm.mock.calls[0][0]).toContain('1 张图片');
+  await view.find('delete-keyword-group')!.props.onClick(); await settle();
+  expect(remove).toHaveBeenCalledWith('你好',{confirm:'DELETE',aliases:['你好'],assetKeys:['system:hello']});
+  expect(view.find('keyword-你好')).toBeUndefined(); expect(view.find('keyword-晚安')).toBeDefined();
+  expect(view.text()).toContain('已删除');
+});
+it('关键词删除失败保留列表并显示原因，不能伪报成功', async () => {
+  vi.stubGlobal('confirm',()=>true);
+  const view = await mount('Stickers',{stickerLibrary:vi.fn().mockResolvedValue(structuredClone(library)),deleteStickerGroup:vi.fn().mockRejectedValue(new Error('组内图片已变化'))});
+  view.find('keyword-你好')!.props.onClick(); await settle();
+  expect(view.find('delete-keyword-group')).toBeDefined();
+  await view.find('delete-keyword-group')!.props.onClick(); await settle();
+  expect(view.find('keyword-你好')).toBeDefined();
+  expect(view.text()).toContain('组内图片已变化'); expect(view.text()).not.toContain('已删除');
+});
 it('词库加载失败显示重试，不伪装成空表情库', async () => {
   const view = await mount('Stickers', { stickerLibrary: vi.fn().mockRejectedValue(new Error('离线')) });
   expect(view.text()).toContain('离线'); expect(view.find('retry-library')).toBeDefined();

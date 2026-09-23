@@ -11,6 +11,7 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import android.util.AttributeSet
+import android.view.Gravity
 import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -429,10 +430,10 @@ class ExpressionPanel @JvmOverloads constructor(
 
     private fun tabBackground(selected: Boolean, accent: Int): android.graphics.drawable.Drawable {
         if (!selected) return ColorDrawable(Color.TRANSPARENT)
-        val metrics = layoutMetrics
-        val height = metrics?.tabRowHeightPx ?: dp(36)
-        return LayerDrawable(arrayOf(ColorDrawable(Color.TRANSPARENT), ColorDrawable(accent))).apply {
-            setLayerInset(1, 0, (height - dp(2)).coerceAtLeast(0), 0, 0)
+        return LayerDrawable(arrayOf(roundedBackground(accent, 1))).apply {
+            setLayerSize(0, dp(28), dp(2))
+            setLayerGravity(0, Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL)
+            setLayerInset(0, 0, 0, 0, dp(3))
         }
     }
 

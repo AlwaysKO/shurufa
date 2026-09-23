@@ -12,9 +12,18 @@ export function splitStickerKeywords(value: string): string[] {
 }
 
 export async function rememberStickerKeywords(pool: Pick<pg.Pool, 'query'>, _userId: string, keywords: string): Promise<void> {
+  const deleted = new Set((await pool.query<{keyword: string}>('SELECT keyword FROM sticker_group_deletion')).rows.map(row => row.keyword));
   for (const keyword of splitStickerKeywords(keywords)) {
+    if (deleted.has(stickerGroupKeyword(keyword))) continue;
     await pool.query(`INSERT INTO sticker_keyword(user_id, keyword) VALUES($1, $2)
       ON CONFLICT (user_id, keyword) DO NOTHING`, [SHARED_STICKER_OWNER, keyword]);
+  }
+}
+
+export async function assertStickerKeywordsActive(pool: Pick<pg.Pool, 'query'>, keywords: string): Promise<void> {
+  const deleted = new Set((await pool.query<{keyword: string}>('SELECT keyword FROM sticker_group_deletion')).rows.map(row => row.keyword));
+  if (splitStickerKeywords(keywords).some(word => deleted.has(stickerGroupKeyword(word)))) {
+    throw new StickerGroupError(409, '关键词组已删除，请先重新添加关键词再上传或修改图片');
   }
 }
 
@@ -27,6 +36,7 @@ export interface LibraryAsset {
   width: number | null;
   height: number | null;
   useCount: number | null;
+  sha256?: string;
 }
 interface KeywordGroup {
   keyword: string;
@@ -44,13 +54,14 @@ export interface SemanticKeywordGroup extends KeywordGroup {
 // 来源：2026-09-15 用户明确要求以下说法在后台共用“打闹”组。
 // 2026-09-22：默认分组现作为可覆盖的推荐说法下发，不启用整份语义草案。
 const confirmedPlayAliases = ['扁你', '我来打你了', '过来打我啊'];
-function mergeSemanticGroups(rawGroups: KeywordGroup[]): SemanticKeywordGroup[] {
-  const definitions = [...expressionSynonymGroups, ['赞', '点赞', '给你点赞', '太棒了']].map(words => ({
+const definitions = [...expressionSynonymGroups, ['赞', '点赞', '给你点赞', '太棒了']].map(words => ({
     keyword: words[0],
     aliases: [...words, ...(words[0] === '打闹' ? confirmedPlayAliases : [])],
     confirmedAliases: words[0] === '打闹' ? [...confirmedPlayAliases] : [],
   }));
-  const byAlias = new Map(definitions.flatMap(def => def.aliases.map(alias => [alias, def] as const)));
+const byAlias = new Map(definitions.flatMap(def => def.aliases.map(alias => [alias, def] as const)));
+export function stickerGroupKeyword(keyword: string): string { return byAlias.get(keyword)?.keyword ?? keyword; }
+function mergeSemanticGroups(rawGroups: KeywordGroup[]): SemanticKeywordGroup[] {
   const merged = new Map<string, SemanticKeywordGroup>();
   const seenAssets = new Map<string, Set<string>>();
   for (const raw of rawGroups) {
@@ -72,7 +83,7 @@ function mergeSemanticGroups(rawGroups: KeywordGroup[]): SemanticKeywordGroup[] 
   return [...merged.values()];
 }
 
-export async function loadStickerLibrary(pool: Pick<pg.Pool, 'query'>, _userId: string, serverRoot = process.cwd()) {
+export async function loadStickerLibrary(pool: Pick<pg.Pool, 'query'>, _userId: string, serverRoot = process.cwd(), includeDeleted = false) {
   const warnings: string[] = [];
   async function readOptional<T>(path: string, fallback: T, message: string): Promise<T> {
     try { return JSON.parse(await readFile(path, 'utf8')) as T; }
@@ -81,7 +92,7 @@ export async function loadStickerLibrary(pool: Pick<pg.Pool, 'query'>, _userId: 
       warnings.push(message); return fallback;
     }
   }
-  const [catalog, coverage, custom, personal, settings] = await Promise.all([
+  const [catalog, coverage, custom, personal, settings, deletions] = await Promise.all([
     readOptional<{ templates: ExpressionAsset[] }>(join(serverRoot, '.runtime/expression-assets/catalog.json'), { templates: [] }, '运行表情库未安装；当前只展示词表与公共上传。'),
     // 仅用草案展示规划词，不读取 existingAssets，不启用草案别名/匹配或发布素材。
     readOptional<{ keywords: { keyword: string; category: string }[] }>(join(serverRoot, '../assets/expression/query/keyword-coverage.draft.json'), { keywords: [] }, '规划词表未安装；当前只展示运行库与公共关键词。'),
@@ -90,6 +101,7 @@ export async function loadStickerLibrary(pool: Pick<pg.Pool, 'query'>, _userId: 
       'SELECT id, keywords, file_name, format, width, height, use_count FROM sticker ORDER BY id DESC'),
     await pool.query<{ keyword: string; aliases: string[] | null; asset_order: string[] | null }>(
       'SELECT keyword, aliases, asset_order FROM sticker_group_settings WHERE user_id = $1 ORDER BY keyword', [SHARED_STICKER_OWNER]),
+    pool.query<{ keyword: string }>('SELECT keyword FROM sticker_group_deletion'),
   ]);
   const groups = new Map<string, KeywordGroup>();
   function group(keyword: string): KeywordGroup {
@@ -99,17 +111,15 @@ export async function loadStickerLibrary(pool: Pick<pg.Pool, 'query'>, _userId: 
   for (const item of coverage.keywords) Object.assign(group(item.keyword), { category: item.category, planned: true });
   for (const item of custom.rows) group(item.keyword).custom = true;
   for (const item of settings.rows) group(item.keyword);
-  let systemCount = 0;
   const removed = await removedKeywordGifHashes(pool, SHARED_STICKER_OWNER);
   for (const asset of mergeKeywordGifCatalog(catalog.templates, await readKeywordGifCatalog(serverRoot))) {
     if (asset.type === 'synthesis-template' || !asset.keywords.length) continue;
     for (const keyword of asset.keywords) group(keyword);
     if (removed.has(asset.sha256)) continue;
-    systemCount++;
     for (const keyword of new Set(asset.keywords)) {
       group(keyword).assets.push({ id: asset.id, source: 'system', keywords: asset.keywords,
         url: `/uploads/expression/${asset.fileName}`, format: asset.format,
-        width: asset.width, height: asset.height, useCount: null });
+        width: asset.width, height: asset.height, useCount: null, sha256: asset.sha256 });
     }
   }
   for (const asset of personal.rows) {
@@ -118,7 +128,8 @@ export async function loadStickerLibrary(pool: Pick<pg.Pool, 'query'>, _userId: 
       url: `/uploads/stickers/${asset.file_name}`, format: asset.format,
       width: asset.width, height: asset.height, useCount: Number(asset.use_count) });
   }
-  const merged = mergeSemanticGroups([...groups.values()]);
+  const deleted = new Set(deletions.rows.map(row => row.keyword));
+  const merged = mergeSemanticGroups([...groups.values()]).filter(group => includeDeleted || !deleted.has(group.keyword));
   for (const group of merged) {
     const setting = settings.rows.find(item => item.keyword === group.keyword);
     if (setting?.aliases != null) {
@@ -133,7 +144,9 @@ export async function loadStickerLibrary(pool: Pick<pg.Pool, 'query'>, _userId: 
       return Number(b.source === 'personal') - Number(a.source === 'personal');
     });
   }
-  return { groups: merged, systemCount, personalCount: personal.rows.length, warnings };
+  const activeAssets = new Set(merged.flatMap(group => group.assets.map(stickerAssetKey)));
+  return { groups: merged, systemCount: [...activeAssets].filter(key => key.startsWith('system:')).length,
+    personalCount: [...activeAssets].filter(key => key.startsWith('personal:')).length, warnings };
 }
 
 
@@ -144,7 +157,7 @@ export class StickerGroupError extends Error {
 }
 
 /** 公共图库的说法检查与写入串行执行，阻止跨组并发创建相同匹配说法。 */
-async function withGroupLock<T>(pool: pg.Pool, _userId: string, action: (db: Pick<pg.Pool, 'query'>) => Promise<T>): Promise<T> {
+export async function withGroupLock<T>(pool: pg.Pool, _userId: string, action: (db: pg.PoolClient) => Promise<T>): Promise<T> {
   const db = await pool.connect();
   try {
     await db.query('BEGIN');
@@ -163,8 +176,14 @@ export async function createStickerKeyword(pool: pg.Pool, _userId: string, value
     const library = await loadStickerLibrary(db, SHARED_STICKER_OWNER);
     const existing = library.groups.find(group => [group.keyword, ...group.aliases].some(alias => normalizeRecommendationPhrase(alias) === keyword));
     if (existing) return existing.keyword;
-    await rememberStickerKeywords(db, SHARED_STICKER_OWNER, keyword);
-    return keyword;
+    const canonical = stickerGroupKeyword(keyword);
+    const restored = await db.query('DELETE FROM sticker_group_deletion WHERE keyword=$1 RETURNING keyword', [canonical]);
+    if (restored.rowCount) {
+      await db.query(`INSERT INTO sticker_group_settings(user_id,keyword,aliases) VALUES($1,$2,$3)
+        ON CONFLICT(user_id,keyword) DO UPDATE SET aliases=EXCLUDED.aliases`, [SHARED_STICKER_OWNER, canonical, JSON.stringify([keyword])]);
+    }
+    await rememberStickerKeywords(db, SHARED_STICKER_OWNER, canonical);
+    return canonical;
   });
 }
 

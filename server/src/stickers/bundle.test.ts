@@ -7,6 +7,7 @@ import { newDb, DataType } from 'pg-mem';
 import type pg from 'pg';
 import { beforeEach, afterEach, expect, it } from 'vitest';
 import { exportStickerBundle, importStickerBundle } from './bundle.js';
+import { deleteStickerGroupInTransaction } from './deleteGroup.js';
 import { SHARED_STICKER_OWNER as OWNER } from './shared.js';
 let root: string;
 let pools: pg.Pool[];
@@ -14,12 +15,13 @@ const gif = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA
 const sha = createHash('sha256').update(gif).digest('hex');
 async function database() {
   const db = newDb();
+  db.public.interceptQueries(sql => /^LOCK TABLE /i.test(sql) ? [] : null);
   db.public.registerFunction({name:'trim',args:[DataType.text],returns:DataType.text,implementation:(s:string)=>s.trim()});
   db.public.registerFunction({name:'length',args:[DataType.text],returns:DataType.integer,implementation:(s:string)=>s.length});
   db.public.registerFunction({name:'hashtext',args:[DataType.text],returns:DataType.integer,implementation:()=>1});
   db.public.registerFunction({name:'pg_advisory_xact_lock',args:[DataType.integer],returns:DataType.integer,implementation:()=>1});
   const pool = new (db.adapters.createPg().Pool)() as pg.Pool; pools.push(pool);
-  for (const name of ['005_sticker','015_sticker_keywords','018_synthesis_library','019_keyword_gif_removal','024_sticker_group_settings']) {
+  for (const name of ['005_sticker','015_sticker_keywords','018_synthesis_library','019_keyword_gif_removal','024_sticker_group_settings','028_sticker_group_deletion','020_runtime_settings']) {
     await pool.query(readFileSync(new URL(`../../migrations/${name}.sql`,import.meta.url),'utf8').split('-- 兼容历史')[0]);
   }
   await pool.query('CREATE TABLE sticker_bundle_import(singleton BOOLEAN PRIMARY KEY, manifest JSONB NOT NULL)');
@@ -80,6 +82,72 @@ it('导入拒绝线上另一分组已占用的匹配说法',async()=>{
   const dest=await database();
   await dest.query('INSERT INTO sticker_group_settings(user_id,keyword,aliases,asset_order) VALUES($1,$2,$3,NULL)',[OWNER,'其他组',JSON.stringify(['来砍我啊'])]);
   await expect(importStickerBundle(dest,root)).rejects.toThrow(/说法.*冲突/);
+});
+
+it('关键词组删除记录随清单同步，已有库清理图片，新库不复活，重复导入不重复删除', async () => {
+  const origin = await source();
+  await exportStickerBundle(origin,root);
+  const dest = await database();
+  await importStickerBundle(dest,root);
+  const db = await origin.connect();
+  try {
+    await deleteStickerGroupInTransaction(db,{keyword:'来砍我',revision:'00000000-0000-4000-8000-00000000000a'},root);
+  } finally { db.release(); }
+  await exportStickerBundle(origin,root);
+  const data = JSON.parse(await readFile(join(root,'data/sticker-library.json'),'utf8'));
+  expect(data.deletedGroups).toEqual([{keyword:'来砍我',revision:'00000000-0000-4000-8000-00000000000a'}]);
+  expect(data.stickers).toEqual([]);
+  await importStickerBundle(dest,root);
+  expect((await dest.query('SELECT * FROM sticker')).rows).toEqual([]);
+  expect((await dest.query('SELECT * FROM sticker_group_settings')).rows).toEqual([]);
+  const fresh = await database();
+  await importStickerBundle(fresh,root);
+  expect((await fresh.query('SELECT keyword FROM sticker_group_deletion')).rows).toEqual([{keyword:'来砍我'}]);
+  await dest.query("DELETE FROM sticker_group_deletion WHERE keyword='来砍我'");
+  await dest.query("INSERT INTO sticker_keyword(user_id,keyword) VALUES($1,'来砍我')",[OWNER]);
+  await importStickerBundle(dest,root);
+  expect((await dest.query('SELECT * FROM sticker_group_deletion')).rows).toEqual([]);
+  expect((await dest.query('SELECT keyword FROM sticker_keyword ORDER BY keyword')).rows).toEqual([{keyword:'来砍我'},{keyword:'空关键词'}]);
+});
+
+it('旧格式清单不隐式撤销删除，新清单明确重新添加时才恢复关键词', async () => {
+  const origin = await source();
+  await exportStickerBundle(origin,root);
+  const path = join(root,'data/sticker-library.json');
+  const data = JSON.parse(await readFile(path,'utf8'));
+  delete data.deletedGroups;
+  await writeFile(path,JSON.stringify(data));
+  const dest = await database();
+  await dest.query('INSERT INTO sticker_group_deletion(keyword,revision) VALUES($1,$2)', ['另一个已删组','00000000-0000-4000-8000-00000000000a']);
+  await importStickerBundle(dest,root);
+  expect((await dest.query('SELECT keyword FROM sticker_group_deletion')).rows).toEqual([{keyword:'另一个已删组'}]);
+});
+
+it('目标本地删组后导入源端无关更新不复活关键词或图片，后续仍可导出', async () => {
+  const origin=await source();
+  await exportStickerBundle(origin,root);
+  const dest=await database();
+  await importStickerBundle(dest,root);
+  const db=await dest.connect();
+  try {await deleteStickerGroupInTransaction(db,{keyword:'来砍我',revision:'00000000-0000-4000-8000-00000000000a'},root);}
+  finally {db.release();}
+  await origin.query("INSERT INTO sticker_keyword(user_id,keyword) VALUES($1,'另一个新词')",[OWNER]);
+  await origin.query('UPDATE sticker SET width=2');
+  await exportStickerBundle(origin,root);
+  await importStickerBundle(dest,root);
+  expect((await dest.query("SELECT keyword FROM sticker_keyword WHERE keyword='来砍我'")).rows).toEqual([]);
+  expect((await dest.query('SELECT * FROM sticker')).rows).toEqual([]);
+  await expect(exportStickerBundle(dest,root)).resolves.toBeUndefined();
+});
+
+it('拒绝非法或同时声明为活动组的删除记录', async () => {
+  await exportStickerBundle(await source(),root);
+  const path = join(root,'data/sticker-library.json');
+  const original = JSON.parse(await readFile(path,'utf8'));
+  for (const deletedGroups of [[{keyword:'空关键词',revision:'bad'}], [{keyword:'来砍我',revision:'00000000-0000-4000-8000-00000000000a'}]]) {
+    await writeFile(path,JSON.stringify({...original,deletedGroups}));
+    await expect(importStickerBundle(await database(),root)).rejects.toThrow(/删除记录/);
+  }
 });
 
 it('说法从同名原组转出后，导出清单可导入新数据库且不会恢复原组说法', async () => {

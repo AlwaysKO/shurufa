@@ -41,7 +41,7 @@ source .runtime/macos/android-env.sh
 
 签名使用项目根目录 `/Users/pj/project/shurufa/miaoyan.jks`，私有配置保存在 `android/YuyanIme/keystore/keystore.properties`；均被 Git 忽略。已核对原证书 SHA256：`a4626fa45c451154093333af3dbc3c6e1a3c7ba783eae399ea4786b5457b1287`。密钥与密码不要提交 Git。
 
-本机调试包的 API 地址为 `http://127.0.0.1:3000`，由 `~/.gradle/init.d/shurufa-local.gradle` 仅对当前工程 Debug 构建配置，Release 和其他工程不受影响。后台本机启动入口 `.runtime/macos/dev-server.ts` 关闭移动端线上地址发现，其他请求使用原 API 实现；因此模拟器测试数据留在本机。不要把该本地联调 APK 当作线上发布包。
+常规 Debug / Release 构建的查询 API 使用线上 `https://my.dog8ball.com`。仅需本地隔离联调时，显式传入 `-PshurufaLocalApi=true`，本机 `~/.gradle/init.d/shurufa-local.gradle` 才将当前工程 Debug 地址改为 `http://127.0.0.1:3000`，Release 和其他工程不受影响。后台本机启动入口 `.runtime/macos/dev-server.ts` 关闭移动端线上地址发现，其他请求使用原 API 实现；因此显式启用此配置的模拟器测试数据留在本机。不要把该本地联调 APK 当作线上发布包。2026-09-23 真机排查证实此前自动覆盖地址会导致手机无法取得线上推荐图，已改为显式启用。
 
 设备连接后通过 `adb -s <设备序列号> reverse tcp:3000 tcp:3000` 建立本机上报通道。
 

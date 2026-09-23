@@ -7,7 +7,6 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -52,7 +51,8 @@ class ExpressionSync(
         .mapNotNull { asset -> asset.thumbnailFileName?.let { asset.id to it } }.toMap()
 
     private val catalogStore = ExpressionCatalogStore(catalogDirectory, baseUrl, deviceId, initialCatalog.document.version)
-    private val refreshMutex = Mutex()
+    internal val backgroundSyncKey: String get() = catalogStore.key
+    private val refreshMutex = catalogStore.refreshMutex
     private val keyboardLock = Any()
     private var keyboardSession: Job? = null
 
@@ -76,12 +76,18 @@ class ExpressionSync(
         keyboardSession ?: scope.launch(start = CoroutineStart.LAZY) {
             // 离线重启也先显示已落盘的个人底图，不等待版本接口超时；此阶段绝不下载。
             withContext(Dispatchers.IO) {
+                if (refreshMutex.tryLock()) {
+                    try { reloadPersistedCatalog() } finally { refreshMutex.unlock() }
+                }
                 catalog.document.templates.filter { it.type == "synthesis-template" && !matchesBundled(it) }
                     .forEach(::localAsset)
             }
             onChanged()
-            if (checkRemoteVersion) refreshMutex.withLock {
-                checkVersion()
+            if (checkRemoteVersion) {
+                refreshMutex.withLock {
+                    reloadPersistedCatalog()
+                    checkVersion()
+                }
                 onChanged()
             }
             // 合成池无关键词门禁，提前补齐新底图；不预取全推荐库，推荐原件按匹配懒取。
@@ -103,17 +109,66 @@ class ExpressionSync(
         keyboardSession = null
     }
 
-    private suspend fun checkVersion() = withContext(Dispatchers.IO) {
+    /** 半小时后台探测只读取版本，不下载目录或原件。 */
+    suspend fun remoteVersion(): String? = withContext(Dispatchers.IO) {
         try {
             val request = Request.Builder().url("${baseUrl.trimEnd('/')}/api/v1/mobile/expressions/versions")
                 .header("X-Device-Id", deviceId).build()
-            val version = networkClient.newCall(request).awaitBody { response ->
+            networkClient.newCall(request).awaitBody { response ->
                 check(response.isSuccessful)
                 json.decodeFromString<VersionResponse>(readMetadata(response, 4096)).version
             }
-            if (version != catalog.document.version) refreshCatalog()
         } catch (cancelled: CancellationException) { throw cancelled }
-        catch (_: Exception) { /* 持久目录离线可用，不降级为每词联网。 */ }
+        catch (_: Exception) { null }
+    }
+
+    private suspend fun checkVersion(): Boolean {
+        val version = remoteVersion() ?: return false
+        return if (version != catalog.document.version) refreshCatalogLocked()?.document?.version == version else true
+    }
+
+    suspend fun backgroundSyncNeeded(version: String): Boolean = withContext(Dispatchers.IO) {
+        refreshMutex.withLock { reloadPersistedCatalog() }
+        if (catalog.document.version != version || !catalog.document.complete) return@withContext true
+        queryCache.hasRoomForBackgroundOriginal() && backgroundCandidates().any { localAsset(it) == null }
+    }
+
+    private fun backgroundCandidates(): List<ExpressionAsset> {
+        val snapshot = catalog.document
+        val ids = snapshot.recommendationGroups?.filter { it.aliases.isNotEmpty() }
+            ?.flatMap { it.assetIds }?.toSet()
+        return snapshot.templates.filter {
+            it.type == "prebuilt" && (ids?.contains(it.id) ?: it.keywords.isNotEmpty())
+        }.distinctBy { it.sha256 }
+    }
+
+    /** Wi-Fi 任务复用探测版本；上轮缺件即使版本未变也继续补齐，单轮有界。 */
+    suspend fun syncInBackground(maxDownloads: Int = 24, expectedVersion: String? = null): Boolean = withContext(Dispatchers.IO) {
+        require(maxDownloads > 0)
+        val updated = refreshMutex.withLock {
+            reloadPersistedCatalog()
+            when {
+                expectedVersion == null -> checkVersion()
+                expectedVersion == catalog.document.version && catalog.document.complete -> true
+                else -> {
+                    refreshCatalogLocked() ?: throw IOException("background catalog update failed")
+                    true
+                }
+            }
+        }
+        if (!updated || !catalog.document.complete) return@withContext false
+        val candidates = backgroundCandidates()
+        var attempts = 0
+        var complete = true
+        for (asset in candidates) {
+            if (!stillCurrent(asset) || localAsset(asset) != null) continue
+            if (attempts++ >= maxDownloads) return@withContext false
+            if (!queryCache.hasRoomForBackgroundOriginal()) return@withContext false
+            if (download(asset.version, asset.fileName,
+                    asset.url ?: "/uploads/expression/${asset.fileName}", asset.sha256,
+                    allowCacheEviction = false) == null) complete = false
+        }
+        complete
     }
 
     private fun readMetadata(response: Response, limit: Int): String {
@@ -134,6 +189,13 @@ class ExpressionSync(
 
 
     suspend fun refreshCatalog(): ExpressionCatalog = withContext(Dispatchers.IO) {
+        refreshMutex.withLock {
+            reloadPersistedCatalog()
+            refreshCatalogLocked() ?: catalog
+        }
+    }
+
+    private suspend fun refreshCatalogLocked(): ExpressionCatalog? = withContext(Dispatchers.IO) {
         try {
             val url = "$baseUrl/api/v1/mobile/expressions/catalog"
                 .toHttpUrl()
@@ -144,22 +206,23 @@ class ExpressionSync(
                 .url(url)
                 .header("X-Device-Id", deviceId)
                 .build()
-            networkClient.newCall(request).awaitBody { response ->
-                if (response.code == 304) return@awaitBody catalog
+            val remote = networkClient.newCall(request).awaitBody { response ->
+                if (response.code == 304) return@awaitBody null
                 check(response.isSuccessful) { "catalog request failed: ${response.code}" }
-                val remote = json.decodeFromString<ExpressionCatalogDocument>(
+                json.decodeFromString<ExpressionCatalogDocument>(
                     readMetadata(response, ExpressionCatalogStore.MAX_BYTES),
                 )
-                check(!catalog.document.complete || remote.complete) { "incomplete catalog cannot replace an authoritative snapshot" }
-                val accepted = if (remote.complete) sanitizeSnapshot(remote) else remote
-                if (accepted.complete) catalogStore.write(accepted)
-                catalog = catalog.merge(accepted)
-                catalog
-            }
+            } ?: return@withContext catalog
+            // 发布留在持锁协程内；被取消的 OkHttp 回调不能继续覆盖新目录。
+            check(!catalog.document.complete || remote.complete) { "incomplete catalog cannot replace an authoritative snapshot" }
+            val accepted = if (remote.complete) sanitizeSnapshot(remote) else remote
+            if (accepted.complete) catalogStore.write(accepted)
+            catalog = catalog.merge(accepted)
+            catalog
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (_: Exception) {
-            catalog
+            null
         }
     }
 
@@ -175,8 +238,14 @@ class ExpressionSync(
     private class QueryWork(val result: CompletableDeferred<List<ExpressionAsset>?>)
 
     init {
+        reloadPersistedCatalog()
+    }
+
+    private fun reloadPersistedCatalog() {
         catalogStore.read()?.let { saved ->
-            runCatching { sanitizeSnapshot(saved) }.getOrNull()?.let { catalog = ExpressionCatalog(it) }
+            if (saved.version != catalog.document.version) {
+                runCatching { sanitizeSnapshot(saved) }.getOrNull()?.let { catalog = ExpressionCatalog(it) }
+            }
         }
     }
 
@@ -357,6 +426,7 @@ class ExpressionSync(
         relativePath: String,
         url: String,
         sha256: String,
+        allowCacheEviction: Boolean = true,
     ): File? = withContext(Dispatchers.IO) {
         runCatching { cache.validFile(version, relativePath, sha256) }.getOrNull()?.let { return@withContext it }
         if (!sameOrigin(url) || !ExpressionQueryCache.SHA_PATTERN.matches(sha256)) return@withContext null
@@ -377,7 +447,7 @@ class ExpressionSync(
                                     it.sha256 == sha256 && it.type == "synthesis-template"
                                 }) 250L * 1024 else queryCache.maxAssetBytes
                                 check(body.contentLength() <= limit)
-                                queryCache.writeOriginal(sha256, body.byteStream(), limit)
+                                queryCache.writeOriginal(sha256, body.byteStream(), limit, allowCacheEviction)
                             }
                         }
                     } catch (cancelled: CancellationException) {

@@ -8,6 +8,7 @@ const group = {keyword:'赞',aliases:['赞','给你点赞'],confirmedAliases:[],
  {id:7,source:'personal',url:image,format:'gif',keywords:['赞'],width:1,height:1,useCount:0},
  {id:'praise',source:'system',url:image,format:'gif',keywords:['赞'],width:1,height:1,useCount:null},
 ]};
+let deleted = false, deleteCalls = 0;
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE,args:['--no-sandbox']});
  try {
@@ -19,7 +20,11 @@ const group = {keyword:'赞',aliases:['赞','给你点赞'],confirmedAliases:[],
    let body={};
    if(path==='/api/v1/auth/session')body={username:'browser-fixture'};
    else if(path==='/api/v1/dashboard/users')body={users:[{id:'00000000-0000-4000-8000-00000000000a',dashboard_name:'隔离交互验收'}],total:1};
-   else if(path==='/api/v1/dashboard/sticker-library')body={groups:[group],systemCount:1,personalCount:1,warnings:[]};
+   else if(path==='/api/v1/dashboard/sticker-library')body={groups:deleted?[]:[group],systemCount:deleted?0:1,personalCount:deleted?0:1,warnings:[]};
+   else if(path.endsWith('/delete')&&path.startsWith('/api/v1/dashboard/sticker-groups/')){
+    assert.deepEqual(request.postDataJSON(),{confirm:'DELETE',aliases:group.aliases,assetKeys:group.assets.map(a=>`${a.source}:${a.id}`)});
+    deleteCalls++;deleted=true;body={keyword:group.keyword,files_pending:false};
+   }
    else if(path.startsWith('/api/v1/dashboard/sticker-groups/')&&request.method()==='PATCH'){
     const patch=request.postDataJSON();
     if(patch.aliases?.includes('翻白眼'))return route.fulfill({status:409,json:{error:'说法“翻白眼”已属于关键词组“翻白眼”，请先从原组移除'}});
@@ -62,7 +67,16 @@ const group = {keyword:'赞',aliases:['赞','给你点赞'],confirmedAliases:[],
   await page.getByRole('button',{name:'图片后移',exact:true}).first().click();
   assert.equal(await page.getByTestId('save-sticker-order').isEnabled(),true);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth <= window.innerWidth),true);
+  await page.getByTestId('delete-keyword-group').click();
+  await page.getByTestId('confirmation-dialog').waitFor();
+  assert.match(await page.getByTestId('confirmation-dialog').innerText(),/2 张图片/);
+  await page.getByTestId('confirmation-cancel').click();assert.equal(deleteCalls,0);
+  await page.getByTestId('delete-keyword-group').click();
+  await page.getByTestId('confirmation-accept').click();
+  await page.getByText('已删除“赞”及其说法和图片。',{exact:true}).waitFor();
+  assert.equal(deleteCalls,1);assert.equal(await page.locator('.sticker-cell').count(),0);
+  await page.reload();await page.getByText('没有匹配的关键词',{exact:true}).waitFor();
   assert.deepEqual(errors,[]);
-  console.log('PASS: 原生拖放、保存/刷新、说法增删改、409具体提示及草稿保留、390px窄屏、触屏替代按钮；隔离 HTTP 夹具');
+  console.log('PASS: 原生拖放、保存/刷新、说法增删改、409提示、390px窄屏、删除确认/取消/刷新不复活；隔离 HTTP 夹具');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

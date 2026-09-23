@@ -23,8 +23,10 @@ export async function expressionSnapshot(pool: pg.Pool, userId: string) {
     const synthesisHashes = new Set(system.templates.filter(asset => asset.type === 'synthesis-template').map(asset => asset.sha256));
     const uploadedSynthesis = synthesis.rows.map(synthesisRowAsset).filter(asset => !synthesisHashes.has(asset.sha256));
     const removed = await removedKeywordGifHashes(pool, userId);
-    const templates = [...system.templates.filter(asset => asset.type !== 'prebuilt' || !removed.has(asset.sha256)), ...personal, ...uploadedSynthesis];
     const library = await loadStickerLibrary(pool, userId);
+    const visibleIds = new Set(library.groups.flatMap(group => group.assets.map(asset => asset.source === 'personal' ? `sticker-${asset.id}` : String(asset.id))));
+    const templates = [...system.templates.filter(asset => asset.type !== 'prebuilt' || (!removed.has(asset.sha256) && visibleIds.has(asset.id))),
+      ...personal.filter(asset => visibleIds.has(asset.id)), ...uploadedSynthesis];
     const availableIds = new Set(templates.filter(asset => asset.type === 'prebuilt').map(asset => asset.id));
     const recommendationGroups = library.groups.map(group => ({ keyword: group.keyword, aliases: group.aliases,
         assetIds: group.assets.map(asset => asset.source === 'personal' ? `sticker-${asset.id}` : String(asset.id)).filter(id => availableIds.has(id)),

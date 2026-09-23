@@ -658,6 +658,15 @@ export const api = {
   uploadSynthesisAsset: (body: SynthesisUpload) => post<{ asset: SynthesisAsset; duplicate: boolean }>('/api/v1/dashboard/synthesis-library', body),
   deleteSynthesisAsset: (id: string) => del(`/api/v1/dashboard/synthesis-library/${encodeURIComponent(id)}`),
   stickerLibrary: () => get<StickerLibrary>('/api/v1/dashboard/sticker-library'),
+  deleteStickerGroup: async (keyword: string, body: {confirm: 'DELETE'; aliases: string[]; assetKeys: string[]}) => {
+    const url = withDashboardUser(`/api/v1/dashboard/sticker-groups/${encodeURIComponent(keyword)}/delete`);
+    const response = await dashboardFetch(url, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if (!response.ok) {
+      const detail = await response.json().catch(() => null);
+      throw new Error(typeof detail?.error === 'string' ? detail.error : `删除失败（${response.status}）`);
+    }
+    return response.json() as Promise<{keyword: string; files_pending: boolean}>;
+  },
   updateStickerGroup: (keyword: string, payload: { aliases?: string[]; assetOrder?: string[] }) => patch<{ group: StickerKeywordGroup }>(`/api/v1/dashboard/sticker-groups/${encodeURIComponent(keyword)}`, payload),
   addStickerKeyword: (keyword: string) => post<{ keyword: string }>('/api/v1/dashboard/sticker-keywords', { keyword }),
   stickers: (q = '') => {
