@@ -4,6 +4,8 @@ internal data class T9SelectedPart(val text: String, val pinyin: String)
 internal data class T9CommitSelection(
     val code: String, val text: String, val pinyin: String = "",
     val parts: List<T9SelectedPart> = emptyList(),
+    val diagnostics: List<CandidateCommitDiagnostic> = emptyList(),
+    val diagnosticSelectionCount: Int = 0,
 )
 
 /** 分段选择保留原始码；最终宿主成功上屏才由调用方持久化，一次性消费。 */
@@ -11,12 +13,13 @@ internal class T9CommitTracker {
     private var pending: T9CommitSelection? = null
     private var segments: T9CommitSelection? = null
 
-    fun selected(code: String, text: String, pinyin: String = "") {
+    fun selected(code: String, text: String, pinyin: String = "", diagnostic: CandidateCommitDiagnostic? = null) {
         clear()
-        pending = code.takeIf { it.isNotEmpty() }?.let { T9CommitSelection(it, text, pinyin) }
+        pending = code.takeIf { it.isNotEmpty() }?.let { T9CommitSelection(it, text, pinyin,
+            diagnostics = listOfNotNull(diagnostic), diagnosticSelectionCount = if (diagnostic == null) 0 else 1) }
     }
 
-    fun segment(code: String, text: String, pinyin: String, committed: String?) {
+    fun segment(code: String, text: String, pinyin: String, committed: String?, diagnostic: CandidateCommitDiagnostic? = null) {
         pending = null
         if (segments == null && code.isNotEmpty()) segments = T9CommitSelection(code, "")
         if (code.isNotEmpty() && segments?.code != code) {
@@ -28,18 +31,20 @@ internal class T9CommitTracker {
         if (reading == null) {
             clear()
             // 保留旧全键/无读音整词的同码学习，不用它推断九宫格读音。
-            if (committed == text && code.isNotEmpty()) selected(code, text)
+            if (committed == text && code.isNotEmpty()) selected(code, text, diagnostic = diagnostic)
             return
         }
         val combined = previous.copy(text = previous.text + text,
             pinyin = listOf(previous.pinyin, reading).filter { it.isNotEmpty() }.joinToString(" "),
-            parts = previous.parts + T9SelectedPart(text, reading))
+            parts = previous.parts + T9SelectedPart(text, reading),
+            diagnostics = (previous.diagnostics + listOfNotNull(diagnostic)).take(CandidateCommitDiagnostic.MAX_SEGMENTS),
+            diagnosticSelectionCount = previous.diagnosticSelectionCount + if (diagnostic == null) 0 else 1)
         if (committed == null) {
             segments = combined
         } else {
             clear()
             if (committed == combined.text && PersonalWordReading.matches(combined.code, combined.pinyin)) pending = combined
-            else if (committed == text && code.isNotEmpty()) selected(code, text)
+            else if (committed == text && code.isNotEmpty()) selected(code, text, diagnostic = diagnostic)
         }
     }
 

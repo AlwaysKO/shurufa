@@ -11,6 +11,38 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28])
 class WechatTitleRegionTest {
+    @Test fun preparedTitleIsEnlargedAndAllRecognitionBoxesReturnToOriginalCoordinates() = kotlinx.coroutines.runBlocking {
+        val header = image()
+        var input: Bitmap? = null
+        val line = OcrTextLine("煌家112Lucky王", 370, 96, 1380, 192,
+            listOf(OcrTextSymbol("Lucky", 900, 100, 1250, 190)))
+        try {
+            val result = recognizePreparedWechatTitleHeader(header) { enlarged ->
+                input = enlarged
+                assertEquals(2400, enlarged.width)
+                assertEquals(288, enlarged.height)
+                listOf(line)
+            }.single()
+            assertEquals(OcrTextLine("煌家112Lucky王", 185, 48, 690, 96,
+                listOf(OcrTextSymbol("Lucky", 450, 50, 625, 95))), result)
+            assertTrue(input!!.isRecycled)
+            assertFalse(header.isRecycled)
+        } finally { header.recycle() }
+    }
+
+    @Test fun enlargedHeaderIsReleasedWhenRecognitionFails() = kotlinx.coroutines.runBlocking {
+        val header = image()
+        var input: Bitmap? = null
+        try {
+            try {
+                recognizePreparedWechatTitleHeader(header) { input = it; error("recognition failed") }
+                fail("expected recognition failure")
+            } catch (_: IllegalStateException) { }
+            assertTrue(input!!.isRecycled)
+            assertFalse(header.isRecycled)
+        } finally { header.recycle() }
+    }
+
     private fun image(dark: Boolean = false): Bitmap = Bitmap.createBitmap(1200, 144, Bitmap.Config.ARGB_8888).apply {
         eraseColor(if (dark) Color.rgb(25,25,25) else Color.rgb(237,237,237))
         val ink = if (dark) Color.WHITE else Color.BLACK

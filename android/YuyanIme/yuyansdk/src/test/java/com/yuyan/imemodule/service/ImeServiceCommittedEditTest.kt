@@ -23,6 +23,8 @@ import com.yuyan.imemodule.data.collect.CollectionConsent
 import com.yuyan.imemodule.data.collect.DataCollector
 import com.yuyan.imemodule.data.collect.LocalInputStore
 import com.yuyan.imemodule.data.emojicon.YuyanEmojiCompat
+import com.yuyan.imemodule.data.completion.*
+import kotlinx.serialization.json.*
 import com.yuyan.imemodule.prefs.AppPrefs
 import org.junit.Assert.*
 import org.junit.Test
@@ -277,6 +279,74 @@ class ImeServiceCommittedEditTest {
             tracker.clear()
             (storeField.get(offline) as? LocalInputStore)?.close(); storeField.set(offline, null)
         }
+    }
+
+    @Test fun 两条上屏入口尾部同音纠正保留前段并记录撤销结果() = withService { service, connection, db ->
+        val offline = OfflineT9Candidates
+        val sf = offline::class.java.getDeclaredField("store").apply { isAccessible = true }
+        (sf.get(offline) as? LocalInputStore)?.close(); sf.set(offline, null)
+        offline.init(service)
+        val tracker = com.yuyan.inputmethod.RimeEngine::class.java.getDeclaredField("t9CommitTracker").run {
+            isAccessible = true; get(com.yuyan.inputmethod.RimeEngine) as T9CommitTracker
+        }
+        try {
+            for (cursor in listOf(false, true)) {
+                tracker.segment("526744", "老", "lao", null)
+                tracker.segment("", "是", "shi", "老是")
+                if (cursor) service.commitText("老是", 1) else service.commitText("老是")
+                service.deleteSurroundingText(1)
+                service.setComposingText("shi")
+                tracker.selected("744", "师", "shi")
+                if (cursor) service.commitText("师", 1) else service.commitText("师")
+                assertTrue(db.learned("526744").none { it.text == "老是" })
+                assertTrue(db.learned("744").none { it.text == "是" })
+                assertEquals(if (cursor) 2L else 1L, db.learned("526").single { it.text == "老" }.count)
+                val correction = rows(db).last().metadata!!.getValue("learning").jsonObject.getValue("correction").jsonObject
+                assertEquals("suffix_same_reading", correction.getValue("kind").jsonPrimitive.content)
+                assertTrue(correction.getValue("applied").jsonPrimitive.boolean)
+                assertEquals(1, correction.getValue("retained_parts").jsonPrimitive.int)
+                service.commitText("呀")
+            }
+        } finally { tracker.clear(); (sf.get(offline) as? LocalInputStore)?.close(); sf.set(offline, null) }
+    }
+
+    @Test fun 候选证据随成功上屏入队且失败密码关闭采集不泄漏() = withService { service, connection, db ->
+        val tracker = com.yuyan.inputmethod.RimeEngine::class.java.getDeclaredField("t9CommitTracker").run {
+            isAccessible = true; get(com.yuyan.inputmethod.RimeEngine) as T9CommitTracker
+        }
+        val item = CandidateDiagnosticItem(2, "兼职", "jian zhi", 3, "native")
+        val diagnostic = CandidateCommitDiagnostic("5426944", listOf(item), item)
+        try {
+            for (cursor in listOf(false, true)) {
+                tracker.selected("5426944", "兼职", "jian zhi", diagnostic)
+                if (cursor) service.commitText("兼职", 1) else service.commitText("兼职")
+                val metadata = rows(db).last().metadata!!
+                val evidence = metadata.getValue("candidate_diagnostic").jsonObject
+                assertEquals(1, evidence.getValue("protocol").jsonPrimitive.int)
+                assertEquals(1, evidence.getValue("selection_count").jsonPrimitive.int)
+                assertEquals("5426944", evidence.getValue("selections").jsonArray.single().jsonObject.getValue("code").jsonPrimitive.content)
+                assertEquals(2, evidence.getValue("selections").jsonArray.single().jsonObject.getValue("selected").jsonObject.getValue("index").jsonPrimitive.int)
+                assertTrue(metadata.getValue("app_version").jsonPrimitive.content.isNotBlank())
+            }
+            val count = rows(db).size
+            connection.success = false
+            tracker.selected("5426944", "兼职", "jian zhi", diagnostic)
+            service.commitText("兼职")
+            assertEquals(count, rows(db).size)
+            connection.success = true
+            service.commitText("普通文本")
+            assertFalse(rows(db).last().metadata!!.containsKey("candidate_diagnostic"))
+            for (restricted in listOf("password", "no_learning", "disabled")) {
+                YuyanEmojiCompat.mEditorInfo!!.inputType = InputType.TYPE_CLASS_TEXT
+                YuyanEmojiCompat.mEditorInfo!!.imeOptions = 0
+                if (restricted == "password") YuyanEmojiCompat.mEditorInfo!!.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                if (restricted == "no_learning") YuyanEmojiCompat.mEditorInfo!!.imeOptions = EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING
+                if (restricted == "disabled") CollectionConsent.setEnabled(service, false)
+                tracker.selected("5426944", "兼职", "jian zhi", diagnostic)
+                service.commitText("兼职")
+                assertEquals(count + 1, rows(db).size)
+            }
+        } finally { tracker.clear() }
     }
 
     private fun rows(db: LocalInputStore) = db.targets().firstOrNull()?.let { db.pending(it) }.orEmpty()

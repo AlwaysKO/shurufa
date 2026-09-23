@@ -6,6 +6,7 @@ import { Router } from 'express';
 import { unlink } from 'node:fs/promises';
 import { resolve, sep } from 'node:path';
 import type pg from 'pg';
+import { pendingMessageDiagnostics } from './chatPendingDiagnostics.js';
 
 
 function pagination(query: Record<string, unknown>): { page: number; pageSize: number; offset: number } {
@@ -183,12 +184,15 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
         }
       }
 
+      const diagnostics = scope.mode === 'pending'
+        ? await pendingMessageDiagnostics(pool, res.locals.userId, rowsResult.rows) : new Map();
       res.json({
         total: Number(totalResult.rows[0]?.count ?? 0),
         page,
         page_size: pageSize,
         messages: rowsResult.rows.map((row) => ({
           ...row,
+          ...(diagnostics.has(String(row.id)) ? { pending_diagnostic: diagnostics.get(String(row.id)) } : {}),
           conversation_id: Number(row.conversation_id),
           occurred_at: iso(row.occurred_at),
           captured_at: iso(row.captured_at),

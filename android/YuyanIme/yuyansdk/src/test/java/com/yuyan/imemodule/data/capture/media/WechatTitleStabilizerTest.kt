@@ -5,6 +5,22 @@ import org.junit.Test
 import kotlinx.coroutines.runBlocking
 
 class WechatTitleStabilizerTest {
+    @Test fun cachedWrongNameMustBeReconfirmedAgainstCurrentReadingWithoutChangingIdentity() {
+        val store = MemoryConversationIdentityStore()
+        val old = WechatTitleStabilizer(store)
+        old.observe("煌家112LLucy王", pictureA, 1000)
+        val wrong = old.observe("煌家112LLucy王", pictureA, 1800)
+        val fresh = WechatTitleStabilizer(store)
+        val first = fresh.observe("煌家112Lucky王😀", pictureA, 2600)
+        assertEquals("pending", first.status)
+        assertEquals(wrong.externalKey, first.externalKey)
+        val corrected = fresh.observe("煌家112Lucky王😀", pictureA, 3400)
+        assertEquals("煌家112Lucky王", corrected.displayName)
+        assertEquals("confirmed", corrected.status)
+        assertEquals(wrong.externalKey, corrected.externalKey)
+        assertEquals("煌家112Lucky王", WechatTitleStabilizer(store).observe("煌家112Lucky王😀", pictureA, 4200).displayName)
+    }
+
     @Test fun `late OCR after reset cannot contaminate another contact`() {
         val tracker = WechatTitleStabilizer()
         val oldVersion = tracker.version()
@@ -31,7 +47,7 @@ class WechatTitleStabilizerTest {
             calls++
             tracker.observe("王彦兵", "a".repeat(64), 1000L + calls * 800)
         }
-        assertEquals(1, calls)
+        assertEquals(2, calls)
         assertEquals("王彦兵", result.displayName)
         assertEquals(first.externalKey, result.externalKey)
         confirmWechatScreenshotIdentity(result) { error("confirmed identity does not require additional screenshot") }
@@ -49,7 +65,8 @@ class WechatTitleStabilizerTest {
         val tracker = WechatTitleStabilizer()
         tracker.observe("联系人", pictureA, 1000)
         val known = tracker.observe("联系人", pictureA, 1800)
-        for (text in listOf("对方正在输入…", "对方 正在输入：", "对方正在输入中...", "对方正在输入•••")) {
+        for (text in listOf("对方正在输入", "对方正在输入.", "对方正在输入..8", "对方正在输入xyz",
+            "对方正在输入…", "对方 正在输入：", "对方正在输入中...", "对方正在输入•••")) {
             val status = tracker.observe(text, pictureB, 2600)
             assertEquals(text, known.externalKey, status.externalKey); assertEquals("联系人", status.displayName)
         }
@@ -57,12 +74,28 @@ class WechatTitleStabilizerTest {
         assertEquals("pending",tracker.observe("对方正在输入：",pictureB,3400).status)
         assertTrue(tracker.observe("对方正在输入：",pictureB,4200).displayName.startsWith("待确认"))
     }
-    @Test fun exactSamePixelsAcrossIndependentFramesCanConfirmDespiteOneOcrCharacterJitter() {
+    @Test fun typingPrefixNeverBecomesAConfirmedContactOnFirstEntry() {
+        for (text in listOf("对方正在输入", "对方正在输入.", "对方正在输入..8", " 对方 正在输入..8 ")) {
+            val tracker = WechatTitleStabilizer()
+            tracker.observe(text, pictureB, 1000)
+            val next = tracker.observe(text, pictureB, 1800)
+            assertEquals(text, "pending", next.status)
+            assertTrue(next.displayName.startsWith("待确认"))
+        }
+        assertEquals("讨论对方正在输入", normalizeConversationTitle("讨论对方正在输入", com.yuyan.imemodule.data.capture.model.ChatPlatform.WECHAT))
+    }
+    @Test fun differingOcrCharactersRequireAnotherMatchingReadingBeforeConfirmation() {
         val tracker = WechatTitleStabilizer()
-        tracker.observe("王彥兵", pictureA, 1000)
-        assertEquals("confirmed",tracker.observe("王彦兵",pictureA,1800).status)
-        // 不相似的文字仍需重新确认，即使错误地给了相同视觉指纹。
-        assertEquals("pending",WechatTitleStabilizer().let { it.observe("甲甲甲",pictureA,1000);it.observe("乙乙乙",pictureA,1800) }.status)
+        val first = tracker.observe("煌家11211cy王e", pictureA, 1000)
+        val conflict = tracker.observe("煌家11211cy王c", pictureA, 1800)
+        assertEquals("pending", conflict.status)
+        assertEquals(first.externalKey, conflict.externalKey)
+        val correct = tracker.observe("煌家112Lucky王😀", pictureA, 2600)
+        assertEquals("pending", correct.status)
+        val confirmed = tracker.observe("煌家112Lucky王😀", pictureA, 3400)
+        assertEquals("confirmed", confirmed.status)
+        assertEquals("煌家112Lucky王", confirmed.displayName)
+        assertEquals(first.externalKey, confirmed.externalKey)
     }
 
     @Test fun fixedPageVisualEvidenceSurvivesNewOcrSpellingWithoutFuzzyMatchingOtherPixels() {

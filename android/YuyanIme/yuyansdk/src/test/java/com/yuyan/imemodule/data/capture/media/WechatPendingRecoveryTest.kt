@@ -6,6 +6,35 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class WechatPendingRecoveryTest {
+    @Test fun typingFirstFrameIsNeverSavedOrReplayedWithLaterNormalTitle() = runBlocking {
+        for (title in listOf("对方正在输入", "对方正在输入.", "对方正在输入..8")) {
+            for (known in listOf(false, true)) {
+                val tracker = WechatTitleStabilizer()
+                if (known) {
+                    tracker.observe("联系人", "a".repeat(64), 1000)
+                    tracker.observe("联系人", "a".repeat(64), 1800)
+                }
+                val first = tracker.observe(title, "b".repeat(64), 2600)
+                var saves = 0
+                var confirmations = 0
+                persistScreenshotBeforeConfirmation(first, { saves++; CapturePersistResult.INSERTED }) {
+                    confirmations++
+                    tracker.observe("联系人", "a".repeat(64), 3400)
+                }
+                assertEquals(title, 0, saves)
+                assertEquals(title, 0, confirmations)
+            }
+        }
+    }
+
+    @Test fun typingConfirmationCannotReplayOrRenameANormalFirstFrame() = runBlocking {
+        val first = WechatTitleStabilizer().observe("联系人", "a".repeat(64), 1000)
+        val saved = mutableListOf<ScreenshotConversationIdentity>()
+        persistScreenshotBeforeConfirmation(first, { saved += it; CapturePersistResult.INSERTED }) {
+            first.copy(status = "confirmed", displayName = "联系人", observedTitle = "对方正在输入..8")
+        }
+        assertEquals(listOf(first), saved)
+    }
     @Test fun `unreadable middle frame does not strand first image confirmation`() = runBlocking {
         val tracker = WechatTitleStabilizer()
         val first = tracker.observe("联系人甲", "a".repeat(64), 1000)

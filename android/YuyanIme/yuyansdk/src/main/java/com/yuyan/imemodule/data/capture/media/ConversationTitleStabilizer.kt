@@ -113,19 +113,19 @@ internal open class ConversationTitleStabilizer(
             votes = 0,
             votedAt = nowMillis - MIN_FRAME_INTERVAL_MILLIS,
             observedAt = nowMillis,
-            confirmed = known?.let { candidate.copy(displayName = it.name, conversationType = ConversationType.entries.firstOrNull { type -> type.wireName == it.type } ?: candidate.conversationType) },
+            confirmed = known?.takeIf {
+                !legacyWechat || canonicalTitle(stripWechatTitleDecoration(it.name)) == canonicalTitle(candidate.displayName)
+            }?.let { candidate.copy(displayName = if (legacyWechat) candidate.displayName else it.name, conversationType = ConversationType.entries.firstOrNull { type -> type.wireName == it.type } ?: candidate.conversationType) },
             previousKey = recoverKey?.takeIf { known != null && it != known.key },
         ).also { state = it }
         if (tolerateUnreadableFrame && continuous && recoverKey != null && recoverKey != current.key) {
             // 空标题首图已以P保存；精确字形恢复A后必须携带P，服务端才能接回同一来源。
             current.previousKey = recoverKey
         }
-        val previousTitle = current.candidate.displayName
         if (canonicalTitle(current.candidate.displayName) != canonicalTitle(candidate.displayName)) {
             current.candidate = candidate
-            // 两个独立时刻的精确同字形 + 仅一个OCR字符抖动可继续确认；不同字形仍不相似合并。
-            if (!legacyWechat || current.confirmed != null || previous?.visualKey != visualKey ||
-                !singleGlyphReadingDifference(previousTitle, candidate.displayName)) current.votes = 0
+            // 像素相同只证明同一标题，不能证明任意一个冲突读法正确。
+            current.votes = 0
         }
         if (nowMillis - current.votedAt >= MIN_FRAME_INTERVAL_MILLIS) {
             current.votes++
@@ -157,11 +157,6 @@ internal open class ConversationTitleStabilizer(
             observedTitle = observedTitle,
             previousKey = current.previousKey,
         )
-    }
-
-    private fun singleGlyphReadingDifference(a: String, b: String): Boolean {
-        val left = canonicalTitle(a); val right = canonicalTitle(b)
-        return left.length == right.length && left.length >= 2 && left.indices.count { left[it] != right[it] } == 1
     }
 
     private fun canonicalTitle(value: String): String =

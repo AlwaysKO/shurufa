@@ -79,6 +79,8 @@
 .content-library .keyword-option.active { background:#eef1ff; border-color:#e0e5ff; color:var(--lib-accent); font-weight:600; }
 .content-library .keyword-option.active small { color:#7f8ac5; }
 .content-library .sidebar-footer { margin-top:12px; padding:12px 4px 0; border-top:1px solid #eef1f5; font-size:11px; color:#9ca5b5; }
+.content-library .keyword-search-empty { display:grid; gap:12px; grid-column:1 / -1; min-width:0; }
+.content-library .keyword-search-empty .library-button { white-space:normal; overflow-wrap:anywhere; min-width:0; }
 .content-library .keyword-heading { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
 .content-library .keyword-heading h3 { font-size:23px; margin:0; overflow-wrap:anywhere; }
 .content-library .keyword-gallery .section-heading { padding-bottom:20px; border-bottom:1px solid #edf0f5; }

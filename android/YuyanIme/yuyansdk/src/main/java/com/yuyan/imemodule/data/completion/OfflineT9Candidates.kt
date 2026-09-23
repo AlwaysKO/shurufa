@@ -318,6 +318,16 @@ internal object OfflineT9Candidates {
         catch (error: Exception) { Log.w("OfflineT9", "临时学习撤销失败", error) }
     }
 
+    fun correctLearning(correction: LearningCorrection): Boolean = try {
+        val retained = correction.retainedParts.map { part ->
+            PendingChoice(T9Lexicon.digits(part.pinyin.replace(" ", "")), part.text, part.pinyin)
+        }
+        store?.restrictLearning(correction.rewardId, retained) == true
+    } catch (error: Exception) {
+        Log.w("OfflineT9", "局部学习撤销失败", error)
+        false
+    }
+
     private fun scheduleLearningSettlement() {
         val current = store ?: return
         // 捕获实例避免旧会话定时器触碰重建后的数据库；事务负责重复调用幂等。

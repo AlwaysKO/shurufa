@@ -8,6 +8,18 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
 class WechatScreenshotIdentityTest {
+    @Test fun trailingDecorationsDoNotEnterMixedChineseLatinAndNumberNames() {
+        for (suffix in listOf("😀", "ℹ️", "🎉✨", "★☆♡", "®™✓", "👩‍💻", "1️⃣", "🇨🇳", "\u200d\ufe0f")) {
+            assertEquals(suffix, "煌家112Lucky王", screenshotConversationIdentity("煌家112Lucky王" + suffix, "fallback").displayName)
+        }
+        assertEquals("项目A12", screenshotConversationIdentity("项目A12😀(28)", "fallback").displayName)
+        assertEquals("A Lucky 112", screenshotConversationIdentity("A Lucky 112★", "fallback").displayName)
+        assertEquals("张三（项目A）", screenshotConversationIdentity("张三（项目A）😀", "fallback").displayName)
+        assertEquals("姓名（𠮷）", screenshotConversationIdentity("姓名（𠮷）😀", "fallback").displayName)
+        assertEquals("甲·乙_A-12", screenshotConversationIdentity("甲·乙_A-12✓", "fallback").displayName)
+        assertEquals("长名称…", screenshotConversationIdentity("长名称…😀", "fallback").displayName)
+    }
+
     @Test fun clippedContactMustNotTurnStatusClockAndIconsIntoAContact() {
         assertNull(selectWechatChatTitle(listOf(
             OcrTextLine("09:49 ◆e",82,52,374,96),
@@ -88,7 +100,7 @@ class WechatScreenshotIdentityTest {
         val noisy = screenshotConversationIdentity("一起加油！噢力给！(6)8", "fallback-a")
         val clean = screenshotConversationIdentity("一起加油!噢力给!", "fallback-b")
 
-        assertEquals("一起加油！噢力给！", noisy.displayName)
+        assertEquals("一起加油！噢力给", noisy.displayName)
         assertEquals(clean.externalKey, noisy.externalKey)
         assertEquals(ConversationType.GROUP, noisy.conversationType)
     }

@@ -16,6 +16,19 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [30])
 class NotificationScreenshotFallbackTest {
+    @Test fun typingTitleCannotUseTheNotificationPathWithoutTitleOcr() {
+        fun snapshot(title: String) = com.yuyan.imemodule.data.capture.ui.UiNodeSnapshot(
+            null, "root", null, null, IntRect(0, 0, 1080, 1920), listOf(
+                com.yuyan.imemodule.data.capture.ui.UiNodeSnapshot("com.tencent.mm:id/chatting_title",
+                    "android.widget.TextView", title, null, IntRect(180, 50, 850, 130), emptyList()),
+                com.yuyan.imemodule.data.capture.ui.UiNodeSnapshot("com.tencent.mm:id/chatting_content_et",
+                    "android.widget.EditText", null, null, IntRect(80, 1650, 850, 1760), emptyList()),
+            ))
+        for (title in listOf("对方正在输入", "对方正在输入.", "对方正在输入..8")) {
+            assertEquals(null, notificationChatViewport("com.tencent.mm", snapshot(title)))
+        }
+        assertTrue(notificationChatViewport("com.tencent.mm", snapshot("联系人")) != null)
+    }
     @Test fun qqAndDouyinFallbackUseRealChatBoundsInsteadOfWholeAppPercentages() {
         for ((pkg, fixture) in listOf("com.tencent.mobileqq" to "qq-chat-9.3.60.json",
             "com.ss.android.ugc.aweme" to "douyin-chat-40.5.0.json")) {

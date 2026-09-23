@@ -23,6 +23,83 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CaptureCoordinatorTest {
+    @Test fun typingTitleSkipsPhysicalCaptureAndNormalTitleResumes() = runBlocking {
+        val store = FakeStore()
+        val adapter = FakeAdapter(success(mediaMessage(IntRect(0, 0, 80, 80))))
+        var captures = 0
+        val worker = coordinator(adapter, store, MediaAssetCapturer { _, _, _ ->
+            captures++
+            mapOf(0 to pendingAsset("normal"))
+        })
+        for (title in listOf("对方正在输入", "对方正在输入.", "对方正在输入..8")) {
+            adapter.result = ParseResult.Success(ParsedViewport(conversation.copy(displayName = title),
+                listOf(mediaMessage(IntRect(0, 0, 80, 80)))))
+            worker.capture(adapter.packageName, snapshot, 1)
+        }
+        assertEquals(0, captures)
+        assertTrue(store.pending.isEmpty())
+        adapter.result = success(mediaMessage(IntRect(0, 0, 80, 80)))
+        worker.capture(adapter.packageName, snapshot, 1)
+        assertEquals(1, captures)
+        assertEquals(1, store.pending.size)
+    }
+
+    @Test fun typingObservedTitleCannotEnqueueAnImageUnderCachedOrPendingName() = runBlocking {
+        val store = FakeStore()
+        var wakes = 0
+        val worker = coordinator(FakeAdapter(success()), store) { wakes++ }
+        for (title in listOf("对方正在输入", "对方正在输入.", "对方正在输入..8")) {
+            val shot = mediaMessage(IntRect(0, 0, 80, 80)).copy(metadata =
+                mapOf("conversation_identity_observed_title" to title))
+            assertEquals(CapturePersistResult.FAILED, worker.captureParsed(conversation, listOf(shot), mapOf(0 to pendingAsset(title))))
+            assertEquals(CapturePersistResult.FAILED, worker.captureParsed(conversation.copy(displayName = title),
+                listOf(shot.copy(metadata = emptyMap())), mapOf(0 to pendingAsset(title))))
+        }
+        assertTrue(store.pending.isEmpty()); assertTrue(store.assets.isEmpty()); assertTrue(store.seen.isEmpty())
+        assertEquals(0, wakes)
+        // 普通聊天正文提及该状态不被过滤。
+        assertEquals(CapturePersistResult.INSERTED, worker.captureParsed(conversation,
+            listOf(message("对方正在输入..8", "18:30"))))
+    }
+    @Test fun confirmedListDeduplicatesAcrossEntriesAndCoordinatorRestartWithoutIdentityReplay() = runBlocking {
+        val store = FakeStore()
+        fun worker() = coordinator(FakeAdapter(success()), store)
+        val page = conversation.copy(accountKey = "wechat-empty-tree", externalKey = "screenshot-v2:wechat-page:test",
+            displayName = "微信", conversationType = ConversationType.UNKNOWN)
+        fun shot(source: String, hash: String = "a".repeat(64)) = CapturedMessage(
+            conversationKey = null, senderKey = "entry:$source", direction = ChatDirection.SYSTEM,
+            messageType = ChatMessageType.IMAGE, metadata = mapOf(
+                "capture_source" to source, "capture_kind" to "conversation_screenshot",
+                "conversation_identity_status" to "confirmed", "conversation_identity_source" to "wechat_page_title",
+                "wechat_list_content_sha256" to hash))
+        assertEquals(CapturePersistResult.INSERTED, worker().captureParsed(page,
+            listOf(shot("wechat_page_screenshot")), mapOf(0 to pendingAsset("with-dot"))))
+        assertEquals(CapturePersistResult.ALREADY_PERSISTED, worker().captureParsed(page,
+            listOf(shot("wechat_empty_tree_screenshot")), mapOf(0 to pendingAsset("without-dot"))))
+        assertEquals(CapturePersistResult.ALREADY_PERSISTED, worker().captureParsed(page,
+            listOf(shot("notification_screenshot_fallback").copy(direction = ChatDirection.INCOMING,
+                text = "[微信新消息截图]", displayedTime = "18:31")), mapOf(0 to pendingAsset("notification"))))
+        assertEquals(1, store.pending.size)
+        assertEquals(setOf("with-dot"), store.assets.keys)
+        assertTrue(store.pending.single().requiredAssetHashesJson.contains("with-dot"))
+        assertEquals(CapturePersistResult.INSERTED, worker().captureParsed(page,
+            listOf(shot("wechat_page_screenshot", "b".repeat(64))), mapOf(0 to pendingAsset("changed-row"))))
+        assertEquals(2, store.pending.size)
+    }
+
+    @Test fun listCandidateCannotDeduplicateChatOrUnconfirmedImages() = runBlocking {
+        for (name in listOf("联系人", "微信")) {
+            val store = FakeStore()
+            val worker = coordinator(FakeAdapter(success()), store)
+            val shot = mediaMessage(IntRect(0, 0, 100, 80)).copy(metadata = mapOf(
+                "capture_source" to "wechat_screenshot", "conversation_identity_status" to "pending",
+                "wechat_list_content_sha256" to "a".repeat(64)))
+            worker.captureParsed(conversation.copy(displayName = name), listOf(shot), mapOf(0 to pendingAsset("one")))
+            worker.captureParsed(conversation.copy(displayName = name), listOf(shot), mapOf(0 to pendingAsset("two")))
+            assertEquals(2, store.pending.size)
+        }
+    }
+
     private val snapshot = UiNodeSnapshot(null, "root", null, null, IntRect(0, 0, 100, 100), emptyList())
     private val conversation = CapturedConversation(
         platform = ChatPlatform.WECHAT,

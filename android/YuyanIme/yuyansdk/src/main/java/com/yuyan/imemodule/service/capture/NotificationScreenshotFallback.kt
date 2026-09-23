@@ -227,6 +227,7 @@ internal data class NotificationChatViewport(
     val conversationKey: String,
     val bounds: IntRect,
     val inputAreaBounds: IntRect?,
+    val isWechatConversationList: Boolean = false,
 )
 
 internal fun notificationChatViewport(
@@ -236,12 +237,15 @@ internal fun notificationChatViewport(
     val parsed = com.yuyan.imemodule.data.capture.adapter.AdapterRegistry.forPackage(packageName)?.parse(snapshot)
         as? com.yuyan.imemodule.data.capture.adapter.ParseResult.Success ?: return null
     val viewport = parsed.viewport
+    if (com.yuyan.imemodule.data.capture.media.isPeerTypingConversationTitle(viewport.conversation.displayName)) return null
     if (viewport.conversation.identityConfidence < 0.8) return null
     val key = viewport.conversation.stableKeyOrNull() ?: return null
     val message = viewport.messages.singleOrNull()?.takeIf {
         it.metadata["capture_kind"] == "conversation_screenshot"
     } ?: return null
-    return NotificationChatViewport(key, message.mediaBounds ?: return null, message.inputAreaBounds)
+    return NotificationChatViewport(key, message.mediaBounds ?: return null, message.inputAreaBounds,
+        isWechatConversationList = packageName == WECHAT_PACKAGE && viewport.conversation.displayName == "微信" &&
+            message.metadata["capture_source"] == "wechat_page_screenshot")
 }
 
 internal fun notificationFallbackBounds(windowBounds: IntRect, statusBarBottom: Int = 0): IntRect =

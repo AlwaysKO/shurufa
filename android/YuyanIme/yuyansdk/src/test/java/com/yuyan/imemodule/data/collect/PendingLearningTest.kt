@@ -104,4 +104,32 @@ class PendingLearningTest {
         } finally { db.close(); context.deleteDatabase(name) }
     }
 
+    @Test fun `局部纠错只保留原奖励子集且重复分段不多保留`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val name = "partial-${UUID.randomUUID()}.db"
+        var now = 1000L
+        val db = LocalInputStore(context, name, now = { now })
+        val keep = PendingChoice("526", "老", "lao")
+        val wrong = PendingChoice("744", "是", "shi")
+        fun restrict(id: String, choices: List<PendingChoice>): Boolean = LocalInputStore::class.java
+            .getDeclaredMethod("restrictLearning", String::class.java, List::class.java)
+            .invoke(db, id, choices) as Boolean
+        try {
+            db.learn("744", "是")
+            db.stageLearning("receipt", listOf(PendingChoice("526526744", "老老是", "lao lao shi"), keep, keep, wrong), emptyList())
+            assertTrue(restrict("receipt", listOf(keep)))
+            assertFalse(restrict("receipt", listOf(keep)))
+            assertEquals(1L, db.learned("526").single().count)
+            assertEquals(1L, db.learned("744").single().count)
+            assertTrue(db.learned("526526744").isEmpty())
+            assertFalse(restrict("receipt", listOf(PendingChoice("222", "新", "xin"))))
+            assertEquals(1L, db.learned("526").single().count)
+            now = 18001
+            db.settleLearning()
+            assertFalse(restrict("receipt", emptyList()))
+            assertEquals(1L, db.learned("526").single().count)
+            assertEquals(1000L, db.dictionaryExport().first { it.code == "526" }.lastUsed)
+        } finally { db.close(); context.deleteDatabase(name) }
+    }
+
 }

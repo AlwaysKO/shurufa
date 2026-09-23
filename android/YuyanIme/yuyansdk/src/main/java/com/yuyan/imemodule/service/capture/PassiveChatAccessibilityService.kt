@@ -32,11 +32,15 @@ import com.yuyan.imemodule.data.capture.media.WindowScreenshotter
 import com.yuyan.imemodule.data.capture.media.MediaCaptureRequest
 import com.yuyan.imemodule.data.capture.media.MlKitWechatScreenshotIdentityResolver
 import com.yuyan.imemodule.data.capture.media.TitleOcrInput
+import com.yuyan.imemodule.data.capture.isWechatConversationList
+import com.yuyan.imemodule.data.capture.wechatListMetadata
+import com.yuyan.imemodule.data.capture.wechatListConversation
 import com.yuyan.imemodule.data.capture.media.ScreenshotContentInput
 import com.yuyan.imemodule.data.capture.media.wechatTitleBand
 import com.yuyan.imemodule.data.capture.media.ScreenshotConversationIdentityResolver
 import com.yuyan.imemodule.data.capture.media.unresolvedWechatScreenshotIdentity
 import com.yuyan.imemodule.data.capture.media.persistScreenshotBeforeConfirmation
+import com.yuyan.imemodule.data.capture.media.isPeerTypingConversationTitle
 import com.yuyan.imemodule.data.capture.media.ScreenshotConversationIdentity
 import com.yuyan.imemodule.data.capture.net.CaptureUploader
 import com.yuyan.imemodule.data.capture.model.CapturedConversation
@@ -333,6 +337,10 @@ class PassiveChatAccessibilityService : AccessibilityService() {
             wakeUploader = CaptureUploader::wake,
             captureAllowed = { CollectionConsent.enabled(applicationContext) && !scrollGate.isScrolling() },
             mediaCapturer = activeMediaCapturer,
+            wechatListContentInput = { bounds ->
+                val band = wechatTitleBand(systemStatusBarBottom(), bounds.top, resources.displayMetrics.density)
+                ScreenshotContentInput(band.top + band.height, detectWechatList = true)
+            },
             onViewportParsed = { viewport ->
                 val incoming = viewport.messages.lastOrNull { it.direction == ChatDirection.INCOMING && !it.text.isNullOrBlank() }
                 if (incoming == null) {
@@ -553,7 +561,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                     if (!isCurrentScreenshotWindow(windowId, identityGeneration, captureToken)) return@withLock
                     val resolver = screenshotIdentityResolver
                     val resolverVersion = resolver?.version() ?: 0L
-                    val contentInput = ScreenshotContentInput(titleBand.top + titleBand.height)
+                    val contentInput = ScreenshotContentInput(titleBand.top + titleBand.height, detectWechatList = true)
                     val asset = mediaCapturer?.capture(
                         windowId = windowId,
                         windowBounds = windowBounds,
@@ -565,7 +573,8 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                     if (!isCurrentScreenshotWindow(windowId, identityGeneration, captureToken)) return@withLock
                     CaptureTrace.record(CaptureStage.ASSET_READY, windowId, identityGeneration)
                     val preferences = getSharedPreferences(FALLBACK_PREFERENCES, Context.MODE_PRIVATE)
-                    if (screenshotUpdates.hasSavedContent(screenshotScope) &&
+                    // 列表候选使用原始像素指纹；有损编码相同不能证明细小正文变化不存在。
+                    if (contentInput.wechatListSha256 == null && screenshotUpdates.hasSavedContent(screenshotScope) &&
                         preferences.getString(LAST_EMPTY_TREE_SCREENSHOT_SHA, null) == asset.sha256 &&
                         isReadableScreenshotTitleStatus(preferences.getString("last_title_identity_status", null))) {
                         CaptureTrace.record(CaptureStage.DUPLICATE, windowId, identityGeneration)
@@ -580,11 +589,17 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                         screenshotUpdates.rejectScrollResume(screenshotScope)
                         return@withLock
                     }
+                    if (isPeerTypingConversationTitle(firstIdentity.observedTitle) || isPeerTypingConversationTitle(firstIdentity.displayName)) {
+                        // 首次进入就遇到输入状态时仍等后续标题恢复，但本帧不保存、不确认重放。
+                        screenshotUpdates.observeTitle(windowId, identityGeneration, "typing")
+                        return@withLock
+                    }
                     if (isReadableScreenshotTitleStatus(firstIdentity.status) && screenshotUpdates.isSavedContent(
                             screenshotScope, firstIdentity.externalKey, firstIdentity.exactTitleHash, contentInput.sha256)) {
                         CaptureTrace.record(CaptureStage.CONTENT_DUPLICATE, windowId, identityGeneration)
                         return@withLock
                     }
+                    val listMetadata = wechatListMetadata(firstIdentity.isWechatConversationList(), contentInput.wechatListSha256)
                     suspend fun persist(identity: ScreenshotConversationIdentity): CapturePersistResult {
                         if (!isCurrentScreenshotWindow(windowId, identityGeneration, captureToken)) return CapturePersistResult.FAILED
                         screenshotUpdates.observeTitle(windowId, identityGeneration, identity.status)
@@ -610,7 +625,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                                     "conversation_identity_status" to identity.status,
                                     "conversation_identity_observed_title" to identity.observedTitle.orEmpty(),
                                     "conversation_identity_previous_key" to identity.previousKey.orEmpty(),
-                                ),
+                                ) + listMetadata,
                             )),
                             pendingAssetsByMessage = mapOf(0 to asset),
                             captureToken = captureToken,
@@ -667,22 +682,41 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                 }
                 val captureToken = captureRequestGeneration.get()
                 val target = currentFallbackTarget(request) ?: return@withLock
-                val asset = mediaCapturer?.capture(
-                    windowId = target.windowId,
-                    windowBounds = target.windowBounds,
-                    requests = listOf(
-                        MediaCaptureRequest(
-                            messageIndex = 0,
-                            bounds = target.chatViewport?.bounds ?: notificationFallbackBounds(target.windowBounds, systemStatusBarBottom()),
-                            inputAreaBounds = target.chatViewport?.inputAreaBounds,
-                            lossyWebp = true,
-                            wechatInputBarDensity = resources.displayMetrics.density.takeIf {
-                                request.packageName == WECHAT_PACKAGE && target.chatViewport == null
-                            },
+                val resolverVersion = screenshotIdentityResolver?.version()
+                val screenshotBounds = target.chatViewport?.bounds ?: notificationFallbackBounds(target.windowBounds, systemStatusBarBottom())
+                val wechatEmptyTree = request.packageName == WECHAT_PACKAGE && target.chatViewport == null
+                val band = wechatTitleBand(systemStatusBarBottom(), screenshotBounds.top, resources.displayMetrics.density)
+                val titleInput = if (wechatEmptyTree) TitleOcrInput(band.top, band.height) else null
+                val contentInput = if (wechatEmptyTree || target.chatViewport?.isWechatConversationList == true)
+                    ScreenshotContentInput(band.top + band.height, detectWechatList = true) else null
+                val (asset, frameIdentity) = titleInput.use { input ->
+                    val captured = mediaCapturer?.capture(
+                        windowId = target.windowId,
+                        windowBounds = target.windowBounds,
+                        requests = listOf(
+                            MediaCaptureRequest(
+                                messageIndex = 0,
+                                bounds = screenshotBounds,
+                                inputAreaBounds = target.chatViewport?.inputAreaBounds,
+                                lossyWebp = true,
+                                titleOcrInput = input,
+                                wechatInputBarDensity = resources.displayMetrics.density.takeIf { wechatEmptyTree },
+                                contentInput = contentInput,
+                            ),
                         ),
-                    ),
-                )?.get(0)
+                    )?.get(0)
+                    // 仅识别原始标题栏，不能把顶部正文当成输入状态，也不借“待确认截图”绕过过滤。
+                    val title = if (captured != null && input != null) {
+                        screenshotIdentityResolver?.resolve(captured, resolverVersion ?: 0L, input)
+                    } else null
+                    captured to title
+                }
                 if (asset == null) {
+                    scheduleFallbackRetry(request)
+                    return@withLock
+                }
+                val observedTitle = frameIdentity?.observedTitle
+                if (isPeerTypingConversationTitle(observedTitle) || isPeerTypingConversationTitle(frameIdentity?.displayName)) {
                     scheduleFallbackRetry(request)
                     return@withLock
                 }
@@ -697,14 +731,16 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                 } else {
                     "$LAST_SCREENSHOT_SHA:${request.packageName}"
                 }
-                if (preferences.getString(screenshotShaKey, null) == asset.sha256 &&
+                if (contentInput?.wechatListSha256 == null && preferences.getString(screenshotShaKey, null) == asset.sha256 &&
                     preferences.getString("$screenshotShaKey:identity", null) == descriptor.externalKey) {
                     completeFallback(request)
                     return@withLock
                 }
 
+                val listMetadata = wechatListMetadata(target.chatViewport?.isWechatConversationList == true ||
+                    frameIdentity?.isWechatConversationList() == true, contentInput?.wechatListSha256)
                 val persistResult = coordinator?.captureParsed(
-                    conversation = CapturedConversation(
+                    conversation = if (listMetadata.isNotEmpty()) wechatListConversation else CapturedConversation(
                         platform = descriptor.platform,
                         accountKey = "notification-screenshot",
                         externalKey = descriptor.externalKey,
@@ -725,10 +761,11 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                                 "capture_source" to "notification_screenshot_fallback",
                                 "conversation_identity_status" to "pending",
                                 "conversation_identity_source" to "notification_screenshot_unverified",
+                                "conversation_identity_observed_title" to observedTitle.orEmpty(),
                                 "notification_key" to request.notificationKey,
                                 "source_package" to request.packageName,
-                                "identity_unavailable" to "true",
-                            ),
+                                "identity_unavailable" to listMetadata.isEmpty().toString(),
+                            ) + listMetadata,
                         ),
                     ),
                     pendingAssetsByMessage = mapOf(0 to asset),
@@ -797,6 +834,12 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                 return@post
             }
             val snapshot = treeReader.read(root)
+            val parsed = snapshot?.let { AdapterRegistry.forPackage(request.packageName)?.parse(it) } as? ParseResult.Success
+            if (isPeerTypingConversationTitle(parsed?.viewport?.conversation?.displayName)) {
+                recycleRoot(root)
+                continuation.resume(null)
+                return@post
+            }
             val chatViewport = snapshot?.let { notificationChatViewport(request.packageName, it) }
             // QQ/抖音有页面树时必须确认聊天页，不能把消息列表/短视频页面当作聊天截图。
             // 微信空树继续保留既有补偿路径；可识别页面同样使用真实聊天区边界。

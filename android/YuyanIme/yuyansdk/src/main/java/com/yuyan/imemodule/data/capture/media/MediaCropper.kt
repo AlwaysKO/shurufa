@@ -129,7 +129,7 @@ class WindowMediaCapturer(
                                         cropped = Bitmap.createBitmap(originalCrop, 0, 0, originalCrop.width, top)
                                     }
                                 }
-                                request.contentInput?.captureFrom(cropped)
+                                request.contentInput?.captureFrom(cropped, context.resources.displayMetrics.density)
                                 val encoded = if (request.lossyWebp) encodeWebp(cropped) else encodeLossless(cropped)
                                 val contentHash = sha256(encoded)
                                 val output = File(context.cacheDir, "chat-capture/$contentHash")

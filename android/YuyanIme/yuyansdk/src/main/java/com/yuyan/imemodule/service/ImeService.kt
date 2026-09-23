@@ -64,6 +64,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import kotlinx.serialization.json.JsonObject
+import com.yuyan.imemodule.data.completion.diagnosticJson
 import splitties.bitflags.hasFlag
 
 /**
@@ -105,19 +107,30 @@ open class ImeService : InputMethodService() {
     private val correctionLearning = CorrectionLearningTracker()
     private fun resetEditTracking() { committedEdits.reset(); correctionLearning.reset() }
 
-    private fun learnCommittedSelection(selection: T9CommitSelection?, before: String?, after: String?) {
-        if (selection == null) { correctionLearning.reset(); return }
+    private fun learnCommittedSelection(selection: T9CommitSelection?, before: String?, after: String?): JsonObject? {
+        if (selection == null) { correctionLearning.reset(); return null }
         val trackable = selection.code.length in 1..30 && selection.code.all { it in '2'..'9' } &&
             CorrectionLearningTracker.canTrack(selection.text, before, after)
         val reward = if (trackable) java.util.UUID.randomUUID().toString() else null
-        // 严格纠错用单调时钟；SQLite用墙钟存储选择时间。时钟异常宁可无法撤销，也不放宽真实纠错时限。
-        // 必须先取消旧奖励再暂存新奖励（暂存会清算到期项）。
-        correctionLearning.commit(selection.code, selection.text, before, after, reward, SystemClock.elapsedRealtime())
-            ?.let(OfflineT9Candidates::cancelLearning)
-        if (reward == null) OfflineT9Candidates.learn(selection)
-        else if (OfflineT9Candidates.learnTemporarily(selection, reward) == null) {
+        // 先撤销/限制旧奖励，再暂存新奖励，避免边界结算抢先；不扣历史学习。
+        val correction = correctionLearning.commitSelection(selection, before, after, reward, SystemClock.elapsedRealtime())
+        val applied = correction?.let(OfflineT9Candidates::correctLearning) == true
+        val staged = reward != null && OfflineT9Candidates.learnTemporarily(selection, reward) != null
+        if (!staged) {
             correctionLearning.reset()
             OfflineT9Candidates.learn(selection)
+        }
+        return buildJsonObject {
+            put("temporary", staged)
+            if (staged) put("reward_id", reward)
+            correction?.let {
+                put("correction", buildJsonObject {
+                    put("reward_id", it.rewardId)
+                    put("kind", it.kind)
+                    put("applied", applied)
+                    put("retained_parts", if (applied) it.retainedParts.size else 0)
+                })
+            }
         }
     }
     private var composingForHistory = false
@@ -149,6 +162,8 @@ open class ImeService : InputMethodService() {
         source: String = "keyboard",
         inputCode: String? = null,
         after: String? = readCommittedText(),
+        selection: T9CommitSelection? = null,
+        learning: JsonObject? = null,
     ) {
         if (!historyAllowed() || !CollectionConsent.allowsText(fallbackText) ||
             !CollectionConsent.allowsText(before) || !CollectionConsent.allowsText(after)) {
@@ -173,6 +188,11 @@ open class ImeService : InputMethodService() {
                     put("edit_protocol", 1)
                     put("snapshot_complete", edit.complete)
                     put("text_truncated", (text?.length ?: 0) > 5000)
+                    learning?.let { put("learning", it) }
+                    selection?.diagnosticJson()?.let {
+                        put("candidate_diagnostic", it)
+                        put("app_version", runCatching { packageManager.getPackageInfo(packageName, 0).versionName }.getOrNull() ?: "unknown")
+                    }
                 })) resetEditTracking()
     }
 
@@ -842,8 +862,9 @@ open class ImeService : InputMethodService() {
         }
         if (committed && recordEvent && learnAllowed) {
             val after = if (unverifiedComposition) null else readCommittedText()
-            learnCommittedSelection(inputSelection, before, after)
-            recordHostEdit(before, "commit", text, source = "candidate", inputCode = inputCode, after = after)
+            val learning = learnCommittedSelection(inputSelection, before, after)
+            recordHostEdit(before, "commit", text, source = "candidate", inputCode = inputCode, after = after,
+                selection = inputSelection, learning = learning)
         }
         if (committed && (!recordEvent || !learnAllowed)) resetEditTracking()
         if (committed && text.hasLineBreak()) hostTextEditListener?.invoke()
@@ -874,8 +895,9 @@ open class ImeService : InputMethodService() {
         }
         if (committed && recordEvent && learnAllowed) {
             val after = if (unverifiedComposition) null else readCommittedText()
-            learnCommittedSelection(inputSelection, before, after)
-            recordHostEdit(before, "commit", text, source = "candidate", inputCode = inputCode, after = after)
+            val learning = learnCommittedSelection(inputSelection, before, after)
+            recordHostEdit(before, "commit", text, source = "candidate", inputCode = inputCode, after = after,
+                selection = inputSelection, learning = learning)
         }
         if (committed && (!recordEvent || !learnAllowed)) resetEditTracking()
         if (committed && text.hasLineBreak()) hostTextEditListener?.invoke()

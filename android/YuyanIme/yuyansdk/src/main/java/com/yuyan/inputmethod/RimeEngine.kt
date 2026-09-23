@@ -7,6 +7,8 @@ import com.yuyan.imemodule.data.completion.OfflineT9Candidates
 import com.yuyan.imemodule.data.completion.CandidateSelection
 import com.yuyan.imemodule.data.completion.RankedCandidate
 import com.yuyan.imemodule.data.completion.InputSpellingMatch
+import com.yuyan.imemodule.data.completion.CandidateCommitDiagnostic
+import com.yuyan.imemodule.data.completion.CandidateDiagnosticItem
 import com.yuyan.imemodule.data.completion.T9CommitTracker
 import com.yuyan.imemodule.data.completion.CompletionSync
 import com.yuyan.imemodule.data.completion.OfflineAssociationCompletion
@@ -110,27 +112,66 @@ object RimeEngine {
         updateCandidatesOrCommitText()
     }
 
+    /** 只拷贝本次展示列表和已缓存元数据，禁止为诊断重新查询或排序候选。 */
+    internal fun captureCandidateDiagnostic(index: Int, code: String): CandidateCommitDiagnostic {
+        fun item(position: Int): CandidateDiagnosticItem {
+            val visible = showCandidates.getOrNull(position)
+            val metadata = candidateForSelection(position)
+            val text = visible?.text ?: metadata?.text.orEmpty()
+            val reading = metadata?.pinyin?.takeIf { it.isNotBlank() }
+                ?: if (position < customPhraseSize) "" else visible?.comment.orEmpty()
+            val redacted = !com.yuyan.imemodule.data.collect.CollectionConsent.allowsText(text) ||
+                !com.yuyan.imemodule.data.collect.CollectionConsent.allowsText(reading)
+            return CandidateDiagnosticItem(
+                index = position,
+                text = if (redacted) "" else text.take(CandidateCommitDiagnostic.MAX_TEXT),
+                pinyin = if (redacted) "" else reading.take(CandidateCommitDiagnostic.MAX_PINYIN),
+                redacted = redacted,
+                nativeIndex = metadata?.nativeIndex,
+                source = when {
+                    position < customPhraseSize -> "custom"
+                    metadata?.nativeIndex != null -> "native"
+                    metadata != null -> "supplemental"
+                    else -> "unknown"
+                },
+            )
+        }
+        return CandidateCommitDiagnostic(
+            code = code.take(CandidateCommitDiagnostic.MAX_CODE),
+            candidates = showCandidates.indices.take(CandidateCommitDiagnostic.MAX_CANDIDATES).map(::item),
+            selected = item(index),
+        )
+    }
+
     fun selectCandidate(index: Int): String? {
         val code = learningCode(forCommit = true)
         val selected = candidateForSelection(index)
         if (selected?.inputMatch?.let { it.code != code } == true) {
+            t9CommitTracker.clear()
             updateCandidatesOrCommitText()
             return null
         }
+        val diagnostic = captureCandidateDiagnostic(index, code)
         if (selected != null && selected.nativeIndex == null) {
             reset()
             preCommitText = selected.text
-            t9CommitTracker.selected(code, selected.text, selected.pinyin)
+            t9CommitTracker.selected(code, selected.text, selected.pinyin, diagnostic)
             return preCommitText
         }
         val indexReal = selected?.nativeIndex ?: (index - customPhraseSize)
-        if (indexReal < 0) return null
+        if (indexReal < 0) {
+            t9CommitTracker.clear()
+            return null
+        }
         val chosenText = selected?.text?.takeIf { it.isNotEmpty() } ?: showCandidates.getOrNull(index)?.text.orEmpty()
         val chosenReading = selected?.pinyin?.takeIf { it.isNotEmpty() } ?: showCandidates.getOrNull(index)?.comment.orEmpty()
-        Rime.selectCandidate(indexReal)
+        if (!Rime.selectCandidate(indexReal)) {
+            t9CommitTracker.clear()
+            return null
+        }
         keyRecordStack.pushCandidateSelectAction()
         val committed = updateCandidatesOrCommitText()
-        t9CommitTracker.segment(code, chosenText, chosenReading, committed)
+        t9CommitTracker.segment(code, chosenText, chosenReading, committed, diagnostic)
         return committed
     }
 

@@ -123,3 +123,23 @@ internal fun wechatNicknamePixelSignature(header: Bitmap, bounds: OcrTextLine): 
     // 去掉外围空白后逐行计算精确 RGBA，不持有整图或额外的全图字节数组。
     return exactPixelHash(header, com.yuyan.imemodule.data.capture.ui.IntRect(left,top,right,bottom))
 }
+
+internal suspend fun recognizePreparedWechatTitleHeader(
+    header: Bitmap,
+    recognize: suspend (Bitmap) -> List<OcrTextLine>,
+): List<OcrTextLine> {
+    // 仅放大小标题带；昵称证据和省略号检查始终使用原始像素。
+    val scale = if (header.width <= 1600 && header.height <= 256) 2 else 1
+    if (scale == 1) return awaitTitleOcrCompletion { recognize(header) }
+    val enlarged = Bitmap.createScaledBitmap(header, header.width * scale, header.height * scale, true)
+    try {
+        return awaitTitleOcrCompletion { recognize(enlarged) }.map { line ->
+            line.copy(left = line.left / scale, top = line.top / scale,
+                right = (line.right + scale - 1) / scale, bottom = (line.bottom + scale - 1) / scale,
+                symbols = line.symbols.map { symbol ->
+                    symbol.copy(left = symbol.left / scale, top = symbol.top / scale,
+                        right = (symbol.right + scale - 1) / scale, bottom = (symbol.bottom + scale - 1) / scale)
+                })
+        }
+    } finally { enlarged.recycle() }
+}

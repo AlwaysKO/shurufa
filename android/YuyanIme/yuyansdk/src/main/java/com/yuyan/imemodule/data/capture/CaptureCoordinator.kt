@@ -1,5 +1,9 @@
 package com.yuyan.imemodule.data.capture
 
+import com.yuyan.imemodule.data.capture.media.ScreenshotContentInput
+import com.yuyan.imemodule.data.capture.ui.IntRect
+import com.yuyan.imemodule.data.capture.media.isPeerTypingConversationTitle
+
 import com.yuyan.imemodule.data.collect.CollectionConsent
 import com.yuyan.imemodule.data.capture.adapter.AdapterRegistry
 import com.yuyan.imemodule.data.capture.adapter.ChatAppAdapter
@@ -71,6 +75,7 @@ class CaptureCoordinator(
     private val onViewportParsed: (ParsedViewport) -> Unit = {},
     private val identityStore: com.yuyan.imemodule.data.capture.media.ConversationIdentityStore = com.yuyan.imemodule.data.capture.media.MemoryConversationIdentityStore(),
     private val captureGeneration: () -> Long = { 0L },
+    private val wechatListContentInput: (IntRect) -> ScreenshotContentInput? = { null },
     private val titleSignature: (PendingAssetEntity) -> String? = ::capturedTitlePixelSignature,
 ) {
     val internalFailureCount = AtomicLong(0)
@@ -96,12 +101,17 @@ class CaptureCoordinator(
             val result = adapter.parse(snapshot)
             if (result !is ParseResult.Success) return false
             var conversation = result.viewport.conversation
+            if (isPeerTypingConversationTitle(conversation.displayName)) return false
             val identityVersion = synchronized(identityLock) { identityGeneration }
             val titleBounds = result.viewport.titleBounds
             var rawMessages = result.viewport.messages.filter { message ->
                 CollectionConsent.allowsText(message.text) &&
                     message.metadata.values.all { CollectionConsent.allowsText(it) }
             }
+            val listInputs = mutableMapOf<Int, ScreenshotContentInput>()
+            val knownList = conversation.platform == ChatPlatform.WECHAT && conversation.displayName == "微信" &&
+                conversation.identityConfidence >= 0.8 && titleBounds == null &&
+                rawMessages.all { it.metadata["capture_source"] == "wechat_page_screenshot" }
             val mediaRequests = rawMessages.mapIndexedNotNull { index, message ->
                 if (!CollectionConsent.allowsText(message.text)) return@mapIndexedNotNull null
                 message.mediaBounds?.let { bounds ->
@@ -110,6 +120,7 @@ class CaptureCoordinator(
                         bounds,
                         message.inputAreaBounds,
                         lossyWebp = message.metadata["capture_kind"] == "conversation_screenshot",
+                        contentInput = if (knownList) wechatListContentInput(bounds)?.also { listInputs[index] = it } else null,
                     )
                 }
             }
@@ -161,6 +172,9 @@ class CaptureCoordinator(
                     "conversation_identity_previous_key" to identity.previousKey.orEmpty(),
                 )) }
             }
+            rawMessages = rawMessages.mapIndexed { index, message ->
+                message.copy(metadata = message.metadata + wechatListMetadata(knownList, listInputs[index]?.wechatListSha256))
+            }
             onViewportParsed(result.viewport.copy(conversation = conversation, messages = rawMessages))
             val persisted = enqueueParsed(conversation, rawMessages, capturedAssets.filterKeys { it >= 0 }, captureToken)
             CaptureTrace.record(CaptureStage.PERSIST_RESULT, value = persisted.ordinal, layer = CaptureLayer.COORDINATOR)
@@ -194,6 +208,7 @@ class CaptureCoordinator(
         captureToken: Long = captureGeneration(),
     ): CapturePersistResult {
         if (!captureAllowed() || captureGeneration() != captureToken) return CapturePersistResult.FAILED
+        if (isPeerTypingConversationTitle(conversation.displayName)) return CapturePersistResult.FAILED
         if (conversation.identityConfidence < MIN_IDENTITY_CONFIDENCE &&
             !isIsolatedPendingScreenshot(conversation, rawMessages, capturedAssets) &&
             !isIsolatedTruncatedScreenshot(conversation, rawMessages, capturedAssets) &&
@@ -204,10 +219,18 @@ class CaptureCoordinator(
         var persistableAny = false
         for ((index, rawMessage) in rawMessages.withIndex()) {
             if (!captureAllowed() || captureGeneration() != captureToken) return CapturePersistResult.FAILED
+            if (isPeerTypingConversationTitle(rawMessage.metadata["conversation_identity_observed_title"])) continue
             if (!CollectionConsent.allowsText(rawMessage.text) || rawMessage.metadata.values.any { !CollectionConsent.allowsText(it) }) continue
             val asset = capturedAssets[index]
-            val message = rawMessage.copy(
-                conversationKey = conversationKey,
+            val listHash = verifiedWechatListHash(conversation, rawMessage)?.takeIf { asset != null }
+            val targetConversation = if (listHash != null) wechatListConversation else conversation
+            val normalized = if (listHash == null) rawMessage else rawMessage.copy(
+                senderKey = "${wechatListConversation.externalKey}:viewport", senderName = null,
+                direction = ChatDirection.SYSTEM, text = null, displayedTime = null,
+                previousContentFingerprint = null, nextContentFingerprint = null, sameContentOrdinal = 0,
+            )
+            val message = normalized.copy(
+                conversationKey = if (listHash == null) conversationKey else targetConversation.stableKeyOrNull(),
                 assetSha256 = if (asset == null) rawMessage.assetSha256 else
                     (rawMessage.assetSha256 + asset.sha256).distinct(),
                 metadata = if (rawMessage.mediaBounds != null && asset == null) {
@@ -217,6 +240,7 @@ class CaptureCoordinator(
                 },
             )
             val previousKey = message.metadata["conversation_identity_previous_key"]?.takeIf {
+                listHash == null &&
                 isConfirmedScreenshot(conversation, message) && it.matches(Regex("(?:screenshot-v2|capture-v3):pending:[a-f0-9-]{36}"))
             }
             // 已保存的第一张确认重放必须使用原指纹；归属走新身份，但不能重复插图或等待已清理的原图。
@@ -225,10 +249,14 @@ class CaptureCoordinator(
                 senderKey = if (message.senderKey.startsWith("${conversation.externalKey}:"))
                     previousKey + message.senderKey.removePrefix(conversation.externalKey.orEmpty()) else message.senderKey,
             )
-            val fingerprint = messageFingerprint(fingerprintMessage) ?: continue
+            // 只替换指纹材料，上传附件始终保留原图的真实 SHA。
+            val fingerprintInput = if (listHash == null) fingerprintMessage else fingerprintMessage.copy(
+                assetSha256 = listOf("wechat-list-v1:$listHash"),
+            )
+            val fingerprint = messageFingerprint(fingerprintInput) ?: continue
             persistableAny = true
             val capturedAt = clock()
-            val pending = pendingMessage(conversation, message, fingerprint, capturedAt)
+            val pending = pendingMessage(targetConversation, message, fingerprint, capturedAt, contentFingerprint(fingerprintInput))
             if (store.enqueueIfNew(
                     SeenMessageEntity(fingerprint, capturedAt),
                     pending,
@@ -236,7 +264,7 @@ class CaptureCoordinator(
                 )
             ) {
                 insertedAny = true
-            } else if (isConfirmedScreenshot(conversation, message)) {
+            } else if (listHash == null && isConfirmedScreenshot(conversation, message)) {
                 // 复用原图片指纹重放，仅更新新会话的确认名。服务端先更新会话再去重，不新增图片。
                 // 使用独立的已见标识，确认补传有持久化重试且每个确认结果最多入队一次。
                 val confirmationKey = "identity:" + sha256("$fingerprint|${conversation.displayName}|${conversation.identityConfidence}".toByteArray(Charsets.UTF_8))
@@ -325,9 +353,9 @@ class CaptureCoordinator(
         message: CapturedMessage,
         fingerprint: String,
         capturedAt: Long,
+        contentFingerprint: String = contentFingerprint(message),
     ): PendingMessageEntity {
         val id = UUID.randomUUID().toString()
-        val contentFingerprint = contentFingerprint(message)
         val messageJson = buildJsonObject {
             put("id", id)
             put("fingerprint", fingerprint)

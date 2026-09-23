@@ -94,11 +94,11 @@ internal fun screenshotConversationIdentity(
     recognizedTitle: String?,
     fallbackHeaderHash: String,
 ): ScreenshotConversationIdentity {
-    val raw = recognizedTitle?.trim()?.replace(Regex("\\s+"), " ").orEmpty()
+    val raw = stripWechatTitleDecoration(recognizedTitle?.trim()?.replace(Regex("\\s+"), " ").orEmpty())
     // 荣耀截图中微信群人数偶尔被 OCR 拆成“(6)8”；尾部孤立数字同群人数一起丢弃。
     val groupSuffix = Regex("[（(]\\s*\\d+\\s*[）)](?:\\s*[A-Za-z0-9]{1,2})?$")
     val isGroup = groupSuffix.containsMatchIn(raw)
-    val normalized = raw.replace(groupSuffix, "").trim().takeIf { it.isNotEmpty() }
+    val normalized = stripWechatTitleDecoration(raw.replace(groupSuffix, "").trim()).takeIf { it.isNotEmpty() }
     if (normalized != null) {
         val stableTitle = Normalizer.normalize(normalized, Normalizer.Form.NFKC).lowercase()
         val key = sha256(stableTitle.toByteArray(Charsets.UTF_8))
@@ -140,7 +140,8 @@ internal class MlKitWechatScreenshotIdentityResolver(identityStore: Conversation
         try {
             val exactBand = titleInput?.hasExactTitleBand == true
             if (exactBand) prepared = prepareWechatTitleHeader(header)
-            val lines = awaitTitleOcrCompletion { recognize(prepared ?: header) }
+            val lines = if (prepared != null) recognizePreparedWechatTitleHeader(prepared, ::recognize)
+                else awaitTitleOcrCompletion { recognize(header) }
             val title = selectWechatChatTitleLine(lines, header.width, header.height)?.let {
                 if (exactBand) restoreWechatTitleEllipsis(header, it) else it
             }

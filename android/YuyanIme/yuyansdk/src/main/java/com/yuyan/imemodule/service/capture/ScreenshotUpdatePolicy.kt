@@ -32,7 +32,8 @@ internal class ScreenshotUpdatePolicy {
         lastSaved = if (sameFrameConfirmed) content(identity, titleHash, bodyHash) else null
     }
     fun observeTitle(window: Int, generation: Long, status: String) {
-        if (isReadableScreenshotTitleStatus(status)) confirm(window, generation)
+        // 输入状态能证明仍在聊天页，但不代表有可保存的联系人名或正文证据。
+        if (status == "typing" || isReadableScreenshotTitleStatus(status)) confirm(window, generation)
     }
     // 这里只确认当前页面可继续检查内容，不提升截断标题的身份置信度。
     @Synchronized fun confirm(window: Int, generation: Long) {

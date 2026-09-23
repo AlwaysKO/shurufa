@@ -21,6 +21,9 @@ type Node = {
 const mounted: Vue.App[] = [];
 afterEach(() => mounted.splice(0).forEach((app) => app.unmount()));
 
+const statisticValues = (view: { all: () => Node[] }) =>
+  view.all().filter(node => node.props.class === 'num').map(node => Number(node.text));
+
 async function settle() {
   for (let index = 0; index < 12; index += 1) {
     await Promise.resolve();
@@ -722,4 +725,150 @@ it('全选当前列表包含恢复的首页外会话，确认期间禁止切App�
   expect(confirm.mock.calls[0][0]).toContain('2 个会话');expect(view.find('chat-tab-qq')!.props.disabled).toBe(true);
   view.find('chat-delete-selected-conversations')!.props.onClick();await settle();expect(confirm).toHaveBeenCalledOnce();answer(false);await settle();
  }finally{globalThis.window=previous;}
+});
+
+it('会话统计与分组列表总数一致，不使用原始来源数或当前页长度', async () => {
+  fakeChatStorage();
+  const view = await mountChatCapture({
+    chatCaptureOverview: async () => ({ conversation_count: 705, message_count: 900, media_count: 800 }),
+    chatConversations: async () => ({ total: 123, conversations: [namedGroup(1, '同名联系人', [1, 2, 3])] }),
+  });
+  expect(statisticValues(view)).toEqual([123, 900, 800]);
+});
+
+it('切换平台后会话统计使用对应列表的分组总数', async () => {
+  fakeChatStorage();
+  const view = await mountChatCapture({
+    chatCaptureOverview: async () => ({ conversation_count: 705, message_count: 0, media_count: 0 }),
+    chatConversations: async (_page: number, _size: number, platform: string) => ({
+      total: platform === 'wechat' ? 123 : 0, conversations: [],
+    }),
+  });
+  view.find('chat-tab-qq')!.props.onClick(); await settle();
+  expect(statisticValues(view)).toEqual([0, 0, 0]);
+});
+
+it.each(['single', 'bulk'])('删除会话后立即刷新分组总数（%s）', async mode => {
+  fakeChatStorage();
+  const previous = globalThis.window;
+  globalThis.window = { confirm: () => true } as unknown as Window & typeof globalThis;
+  try {
+    let deleted = false;
+    const remove = async () => { deleted = true; return { deleted_conversations: 1 }; };
+    const view = await mountChatCapture({
+      chatCaptureOverview: async () => ({ conversation_count: deleted ? 702 : 705, message_count: 8, media_count: 7 }),
+      chatConversations: async () => ({ total: deleted ? 0 : 1, conversations: deleted ? [] : [namedGroup(1, '同名联系人', [1, 2, 3])] }),
+      deleteChatConversationGroup: remove, deleteChatConversations: remove,
+    });
+    if (mode === 'bulk') {
+      view.find('chat-select-listed-conversations')!.props.onClick(); await settle();
+      view.find('chat-delete-selected-conversations')!.props.onClick();
+    } else view.find('chat-delete-conversation')!.props.onClick();
+    await settle();
+    expect(deleted).toBe(true);
+    expect(statisticValues(view)).toEqual([0, 8, 7]);
+  } finally { globalThis.window = previous; }
+});
+
+it('删除最后待确认图片后统计跟随列表移除待确认桶', async () => {
+  fakeChatStorage();
+  const previous = globalThis.window;
+  globalThis.window = { confirm: () => true } as unknown as Window & typeof globalThis;
+  try {
+    let deleted = false;
+    const view = await mountChatCapture({
+      chatCaptureOverview: async () => ({ conversation_count: 705, message_count: deleted ? 0 : 1, media_count: deleted ? 0 : 1 }),
+      chatConversations: async () => ({ total: deleted ? 0 : 1, conversations: deleted ? [] : [{ ...rememberedChat(-1), is_pending_group: true }] }),
+      deleteChatImages: async () => { deleted = true; return { deleted_images: 1 }; },
+    });
+    view.find('chat-select-page')!.props.onClick(); await settle();
+    view.find('chat-delete-selected')!.props.onClick(); await settle();
+    expect(deleted).toBe(true);
+    expect(statisticValues(view)).toEqual([0, 0, 0]);
+  } finally { globalThis.window = previous; }
+});
+
+it.each([
+  ['title_unreadable', null, '未读到标题'],
+  ['title_unconfirmed', '新联系人', '读到标题，尚未确认'],
+  ['non_chat_page', '发现', '非聊天页面'],
+])('待确认图片显示具体原因与观测标题（%s）', async (reason, observedTitle, label) => {
+  fakeChatStorage();
+  const view = await mountChatCapture({
+    chatConversations: async () => ({ total: 1, conversations: [{ ...rememberedChat(-1), is_pending_group: true }] }),
+    chatMessages: async () => ({ total: 1, messages: [{ ...screenshot(8), conversation_id: 12, pending_diagnostic: {
+      reason, observed_title: observedTitle, identity_status: 'pending', identity_source: 'on_device_title_ocr', suggested_conversations: [],
+    } }] }),
+  });
+  expect(view.text()).toContain(label);
+  expect(view.text()).toContain(observedTitle ? `观测标题：${observedTitle}` : '观测标题：未读到');
+  expect(view.find('chat-confirm-source-message-8')).toBeDefined();
+});
+
+it('疑似已有会话展示全部精确同名建议，仍由用户逐来源选择确认', async () => {
+  fakeChatStorage();
+  const mergeChatConversation = vi.fn();
+  const list = vi.fn(async () => ({ total: 1, conversations: [{ ...rememberedChat(-1), is_pending_group: true }] }));
+  const view = await mountChatCapture({
+    chatConversations: list, mergeChatConversation,
+    resolveChatConversation: async () => ({ conversation: { ...rememberedChat(12), is_pending_source: true, identity_confidence: .55 } }),
+    chatMessages: async () => ({ total: 1, messages: [{ ...screenshot(8), conversation_id: 12, pending_diagnostic: {
+      reason: 'possible_existing_conversation', observed_title: '王小明', identity_status: 'pending', identity_source: 'on_device_title_ocr',
+      suggested_conversations: [{ id: 20, display_name: '王小明' }, { id: 21, display_name: '王小明' }],
+    } }] }),
+  });
+  expect(view.text()).toContain('疑似已有会话');
+  expect(view.text()).toContain('王小明 #20'); expect(view.text()).toContain('王小明 #21');
+  expect(view.text()).toContain('仅名称相同，请核对截图后选择归属');
+  expect(mergeChatConversation).not.toHaveBeenCalled();
+  view.find('chat-confirm-source-message-8')!.props.onClick(); await settle();
+  expect(list).toHaveBeenLastCalledWith(1, 20, 'wechat', '王小明', true, true);
+  expect(mergeChatConversation).not.toHaveBeenCalled();
+});
+
+it('同名建议可逐个选择真实目标ID，取消确认不会合并', async () => {
+  fakeChatStorage();
+  const previous = globalThis.window, confirm = vi.fn(() => false);
+  globalThis.window = { confirm } as unknown as Window & typeof globalThis;
+  try {
+    const mergeChatConversation = vi.fn();
+    const resolve = vi.fn(async (id: number) => ({ conversation: { ...rememberedChat(id), account_key: 'self', display_name: id === 12 ? '待确认会话' : '王小明', is_pending_source: id === 12, identity_confidence: id === 12 ? .55 : .95 } }));
+    const view = await mountChatCapture({
+      mergeChatConversation, resolveChatConversation: resolve,
+      chatConversations: async () => ({ total: 1, conversations: [{ ...rememberedChat(-1), is_pending_group: true }] }),
+      chatMessages: async () => ({ total: 1, messages: [{ ...screenshot(8), conversation_id: 12, pending_diagnostic: {
+        reason: 'possible_existing_conversation', observed_title: '王小明', suggested_conversations: [{ id: 20, display_name: '王小明' }, { id: 21, display_name: '王小明' }],
+      } }] }),
+    });
+    view.find('chat-suggested-target-message-8-21')!.props.onClick(); await settle();
+    expect(resolve).toHaveBeenCalledWith(12); expect(resolve).toHaveBeenCalledWith(21);
+    expect(resolve).not.toHaveBeenCalledWith(20);
+    expect(confirm).toHaveBeenCalledOnce(); expect(mergeChatConversation).not.toHaveBeenCalled();
+  } finally { globalThis.window = previous; }
+});
+
+it.each([false, true])('建议归属必须重新校验，确认仅移动当前真实来源（目标变更：%s）', async changed => {
+  fakeChatStorage();
+  const previous = globalThis.window, confirm = vi.fn(() => true);
+  globalThis.window = { confirm } as unknown as Window & typeof globalThis;
+  try {
+    const mergeChatConversation = vi.fn(async () => ({ target_id: 21 }));
+    const resolve = vi.fn(async (id: number) => ({ conversation: {
+      ...rememberedChat(id), account_key: id === 21 && changed ? 'changed-account' : 'self',
+      display_name: id === 12 ? '待确认会话' : '王小明', is_pending_source: id === 12, identity_confidence: id === 12 ? .55 : .95,
+    } }));
+    const view = await mountChatCapture({
+      mergeChatConversation, resolveChatConversation: resolve,
+      chatConversations: async () => ({ total: 1, conversations: [{ ...rememberedChat(-1), is_pending_group: true }] }),
+      chatConversationGroup: async () => ({ conversation: namedGroup(21, '王小明', [21]) }),
+      chatMessages: async () => ({ total: 1, messages: [{ ...screenshot(8), conversation_id: 12, pending_diagnostic: {
+        reason: 'possible_existing_conversation', observed_title: '王小明', suggested_conversations: [{ id: 21, display_name: '王小明' }],
+      } }] }),
+    });
+    view.find('chat-suggested-target-message-8-21')!.props.onClick(); await settle();
+    if (changed) {
+      expect(confirm).not.toHaveBeenCalled(); expect(mergeChatConversation).not.toHaveBeenCalled();
+      expect(view.text()).toContain('来源或建议归属已变化');
+    } else expect(mergeChatConversation).toHaveBeenCalledExactlyOnceWith(12, 21);
+  } finally { globalThis.window = previous; }
 });

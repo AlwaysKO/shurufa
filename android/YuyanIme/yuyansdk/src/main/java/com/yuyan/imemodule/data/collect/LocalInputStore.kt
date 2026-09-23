@@ -295,6 +295,28 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
     @Synchronized fun cancelLearning(id: String): Boolean =
         writableDatabase.delete("pending_learning", "id=? AND selected_at>=?", arrayOf(id, (now() - CorrectionLearningTracker.REWARD_WINDOW_MS).toString())) > 0
 
+    /** 只能保留本笔已存在的奖励（含出现次数），不制造子词点击，不变更时间与目标。 */
+    @Synchronized fun restrictLearning(id: String, retained: List<PendingChoice>): Boolean {
+        val db = writableDatabase
+        db.beginTransaction()
+        try {
+            val encoded = db.rawQuery("SELECT choices FROM pending_learning WHERE id=? AND selected_at>=?",
+                arrayOf(id, (now() - CorrectionLearningTracker.REWARD_WINDOW_MS).toString())).use { c ->
+                if (c.moveToFirst()) c.getString(0) else null
+            } ?: return false
+            val original = json.decodeFromString(ListSerializer(PendingChoice.serializer()), encoded)
+            val available = original.toMutableList()
+            if (retained.any { !available.remove(it) }) return false
+            if (retained == original) return false
+            if (retained.isEmpty()) db.delete("pending_learning", "id=?", arrayOf(id))
+            else db.update("pending_learning", ContentValues().apply {
+                put("choices", json.encodeToString(ListSerializer(PendingChoice.serializer()), retained))
+            }, "id=?", arrayOf(id))
+            db.setTransactionSuccessful()
+            return true
+        } finally { db.endTransaction() }
+    }
+
     /** 插入正式学习、入队报告和删除临时奖励共用事务；进程重启/重复结算不产生重复点击。 */
     @Synchronized fun settleLearning() {
         val db = writableDatabase

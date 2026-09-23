@@ -124,6 +124,10 @@ watch(selectionContext, () => { clearImageSelection(); closeImagePreview(); }, {
 
 const platformNames = { wechat: '微信', qq: 'QQ', douyin: '抖音' } as const;
 const directionNames = { incoming: '收到', outgoing: '发送', system: '系统' } as const;
+const pendingReasonNames = {
+  title_unreadable: '未读到标题', title_unconfirmed: '读到标题，尚未确认',
+  possible_existing_conversation: '疑似已有会话', non_chat_page: '非聊天页面',
+} as const;
 const messageTypes = computed(() => [
   ...new Set(messages.value.map((message) => message.message_type)),
 ]);
@@ -319,7 +323,8 @@ async function load() {
       api.chatConversations(1, 100, platform.value, '', true, true),
     ]);
     if (disposed || request !== latestLoad) return;
-    overview.value = overviewResult;
+    // 会话按列表的同名/待确认分组统计，不能混用底层来源数或当前页条数。
+    overview.value = { ...overviewResult, conversation_count: conversationResult.total };
     conversations.value = conversationResult.conversations;
     const rememberedId = selected.value?.id ?? savedSelection.conversations[platform.value];
     const rememberedName = selected.value?.group_name ?? savedSelection.groups[platform.value];
@@ -438,7 +443,8 @@ async function refreshAfterImageDeletion(conversation: ChatConversationRow | nul
     if (disposed || scope !== previewScope.value) return;
     if (restored) rows.unshift(restored);
   }
-  overview.value = overviewResult; conversations.value = rows; selected.value = restored;
+  overview.value = { ...overviewResult, conversation_count: conversationResult.total };
+  conversations.value = rows; selected.value = restored;
   rememberSelection();
   if (restored) await loadMessages();
   else { messages.value = []; total.value = 0; page.value = 1; }
@@ -519,7 +525,7 @@ async function confirmSource(message: ChatMessageRow) {
     if (!result.conversation || result.conversation.platform !== platform.value ||
         result.conversation.id !== message.conversation_id || (pendingGroup.value && !result.conversation.is_pending_source && !result.conversation.display_name?.startsWith('待确认') && result.conversation.identity_confidence >= 0.8)) throw Error('此来源已确认或已合并，请刷新后查看');
     mergeSource.value = result.conversation;
-    mergeOpen.value = true; mergeQuery.value = ''; await searchMergeTargets();
+    mergeOpen.value = true; mergeQuery.value = message.pending_diagnostic?.observed_title ?? ''; await searchMergeTargets();
   } catch (reason) { if (scope === previewScope.value) error.value = (reason as Error).message; }
   finally { if (scope === previewScope.value) loading.value = false; }
 }
@@ -542,6 +548,30 @@ async function mergeInto(target: ChatConversationRow) {
     await load();
   } catch (reason) { if (!disposed && scope === previewScope.value) mergeError.value = (reason as Error).message; }
   finally { merging.value = false; }
+}
+async function chooseSuggestedSource(message: ChatMessageRow, targetId: number) {
+  if (!pendingGroup.value || !message.conversation_id || loading.value || mutationBusy.value) return;
+  const scope = previewScope.value;
+  loading.value = true;
+  let target: ChatConversationRow | null = null;
+  try {
+    const [sourceResult, targetResult] = await Promise.all([
+      api.resolveChatConversation(message.conversation_id), api.resolveChatConversation(targetId),
+    ]);
+    if (disposed || scope !== previewScope.value) return;
+    const source = sourceResult.conversation, candidate = targetResult.conversation;
+    if (!source || !candidate || source.id !== message.conversation_id || !source.is_pending_source ||
+        candidate.id !== targetId || candidate.is_pending_source || candidate.identity_confidence < .8 ||
+        source.platform !== platform.value || candidate.platform !== source.platform || candidate.account_key !== source.account_key) {
+      throw Error('来源或建议归属已变化，请刷新后重新选择');
+    }
+    mergeSource.value = source;
+    mergeOpen.value = true;
+    target = candidate;
+  } catch (reason) {
+    if (scope === previewScope.value) error.value = (reason as Error).message;
+  } finally { if (scope === previewScope.value) loading.value = false; }
+  if (target && !disposed && scope === previewScope.value) await mergeInto(target);
 }
 watch(currentUserId, () => {
   latestLoad++; latestRequest++; mergeRequest++;
@@ -677,6 +707,18 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
             <span class="badge">{{ message.message_type }}</span>
             <time :datetime="message.captured_at" title="采集时间">{{ formatTime(message.captured_at) }}</time>
           </div>
+          <div v-if="pendingGroup && message.pending_diagnostic" class="pending-diagnostic">
+            <strong>{{ pendingReasonNames[message.pending_diagnostic.reason] }}</strong>
+            <p>观测标题：{{ message.pending_diagnostic.observed_title || '未读到' }}</p>
+            <template v-if="message.pending_diagnostic.suggested_conversations.length">
+              <p>仅名称相同，请核对截图后选择归属：</p>
+              <button v-for="candidate in message.pending_diagnostic.suggested_conversations" :key="candidate.id"
+                class="capture-action" :data-testid="`chat-suggested-target-${message.id}-${candidate.id}`"
+                :disabled="loading || mutationBusy" @click="chooseSuggestedSource(message, candidate.id)">
+                {{ candidate.display_name }} #{{ candidate.id }} · 选择此归属
+              </button>
+            </template>
+          </div>
           <p v-if="message.text" class="message-text">{{ message.text }}</p>
           <div v-if="message.assets.length" class="media-grid">
             <div v-for="asset in message.assets" :key="asset.id + ':' + asset.role" class="media-item">
@@ -757,6 +799,9 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
 </template>
 
 <style scoped>
+.pending-diagnostic { width: 100%; padding: 8px; background: #f6f7fb; border-radius: 6px; font-size: 12px; overflow-wrap: anywhere; }
+.pending-diagnostic p { margin: 5px 0; }
+.pending-diagnostic button { margin: 3px 6px 3px 0; }
 .merge-panel { padding: 14px; margin: 12px 0; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; }
 .merge-panel form { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
 .merge-panel input { min-width: 0; flex: 1; padding: 6px; }

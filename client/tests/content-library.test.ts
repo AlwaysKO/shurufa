@@ -157,6 +157,56 @@ function pagedLibrary(count = 25) {
     category: '测试', planned: false, custom: true, assets: [],
   })) };
 }
+it('搜索无结果可直接建组并选中，不覆盖上方新增草稿', async () => {
+  const data = structuredClone(library);
+  const add = vi.fn(async (keyword: string) => {
+    data.groups.push({ keyword, aliases: [keyword], confirmedAliases: [], category: '自定义', planned: false, custom: true, assets: [] });
+    return { keyword };
+  });
+  const view = await mount('Stickers', { stickerLibrary: vi.fn(async () => structuredClone(data)), addStickerKeyword: add });
+  view.find('new-keyword')!.props['onUpdate:modelValue']('尚未提交的草稿');
+  const search = view.all().find(n => n.props['aria-label'] === '搜索关键词')!;
+  search.props['onUpdate:modelValue']('  眼神  '); await settle();
+  expect(view.find('add-search-keyword')).toBeDefined();
+  expect(view.text()).toContain('新增词组「眼神」');
+  await view.find('add-search-keyword')!.props.onClick(); await settle();
+  expect(add).toHaveBeenCalledExactlyOnceWith('眼神');
+  expect(view.find('keyword-眼神')!.props['aria-current']).toBe('true');
+  expect(view.find('empty-keyword')).toBeDefined();
+  expect(search.value).toBe('');
+  expect(view.find('new-keyword')!.value).toBe('尚未提交的草稿');
+});
+it('搜索词是被筛选隐藏的已有说法时直接打开所属组', async () => {
+  const data = structuredClone(library); data.groups.find(g => g.keyword === '你好')!.aliases.push('您好');
+  const add = vi.fn();
+  const view = await mount('Stickers', { stickerLibrary: vi.fn().mockResolvedValue(data), addStickerKeyword: add });
+  view.all().find(n => n.tag === 'button' && n.text === '待补图')!.props.onClick();
+  view.all().find(n => n.props['aria-label'] === '搜索关键词')!.props['onUpdate:modelValue']('您好'); await settle();
+  expect(view.find('add-search-keyword')).toBeDefined();
+  expect(view.text()).toContain('打开已有词组');
+  await view.find('add-search-keyword')!.props.onClick(); await settle();
+  expect(add).not.toHaveBeenCalled();
+  expect(view.find('keyword-你好')!.props['aria-current']).toBe('true');
+});
+it('搜索新增失败保留原词可重试，空白搜索不显示新增入口', async () => {
+  const add = vi.fn().mockRejectedValue(new Error('网络中断'));
+  const view = await mount('Stickers', { stickerLibrary: vi.fn().mockResolvedValue({ ...library, groups: [] }), addStickerKeyword: add });
+  const search = view.all().find(n => n.props['aria-label'] === '搜索关键词')!;
+  search.props['onUpdate:modelValue']('   '); await settle();
+  expect(view.find('add-search-keyword')).toBeUndefined();
+  search.props['onUpdate:modelValue']('眼神'); await settle();
+  expect(view.find('add-search-keyword')).toBeDefined();
+  await view.find('add-search-keyword')!.props.onClick(); await settle();
+  expect(view.text()).toContain('新增失败：网络中断');
+  expect(search.value).toBe('眼神');
+  expect(view.find('add-search-keyword')!.props.disabled).toBe(false);
+  for (const invalid of ['眼神,嘚瑟', '词'.repeat(101)]) {
+    search.props['onUpdate:modelValue'](invalid); await settle();
+    await view.find('add-search-keyword')!.props.onClick(); await settle();
+    expect(view.text()).toContain('请输入单个关键词');
+  }
+  expect(add).toHaveBeenCalledTimes(1);
+});
 it('每页10组，可前后翻页、首末页与跳页，非法跳页保持当前页', async () => {
   const view = await mount('Stickers', { stickerLibrary: vi.fn().mockResolvedValue(pagedLibrary()) });
   const keywordButtons = () => view.all().filter(n => n.tag === 'button' && n.props['data-testid']?.startsWith('keyword-'));

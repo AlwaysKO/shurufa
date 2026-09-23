@@ -368,6 +368,13 @@ export interface ChatMessageAsset {
 }
 
 export interface ChatMessageRow {
+  pending_diagnostic?: {
+    reason: 'title_unreadable' | 'title_unconfirmed' | 'possible_existing_conversation' | 'non_chat_page';
+    observed_title: string | null;
+    identity_status: string | null;
+    identity_source: string | null;
+    suggested_conversations: Array<{ id: number; display_name: string }>;
+  };
   conversation_id?: number;
   id: string;
   platform: 'wechat' | 'qq' | 'douyin';

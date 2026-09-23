@@ -29,6 +29,7 @@ const pageInput = ref('');
 const pageError = ref('');
 const filteredGroups = computed(() => library.value.groups.filter(g =>
   (g.keyword.includes(q.value.trim()) || g.aliases.some(alias => alias.includes(q.value.trim()))) && (filter.value === 'all' || (filter.value === 'filled' ? g.assets.length > 0 : !g.assets.length))));
+const searchExistingGroup = computed(() => library.value.groups.find(g => g.keyword === q.value.trim() || g.aliases.includes(q.value.trim())));
 const pageCount = computed(() => Math.max(1, Math.ceil(filteredGroups.value.length / PAGE_SIZE)));
 const pageStart = computed(() => (currentPage.value - 1) * PAGE_SIZE);
 const pagedGroups = computed(() => filteredGroups.value.slice(pageStart.value, pageStart.value + PAGE_SIZE));
@@ -125,19 +126,19 @@ async function load() {
   catch (e) { loadError.value = `词库加载失败：${(e as Error).message}`; }
   finally { loading.value = false; }
 }
-async function addKeyword() {
-  if (busy.value) return;
-  const keyword = newKeyword.value.trim();
+async function addKeyword(source: 'new' | 'search' = 'new') {
+  if (busy.value || loading.value || !loaded.value) return;
+  const keyword = (source === 'search' ? q.value : newKeyword.value).trim();
   if (!keyword || keyword.length > 100 || /[,，\r\n]/.test(keyword)) { err.value = '请输入单个关键词（1～100 字，不含逗号或换行）'; return; }
   const existing = library.value.groups.find(g => g.keyword === keyword || g.aliases.includes(keyword));
-  if (existing) { revealKeyword(existing.keyword); msg.value = `“${keyword}”属于“${existing.keyword}”组，已为你打开，可直接上传图片。`; err.value = ''; newKeyword.value = ''; return; }
+  if (existing) { revealKeyword(existing.keyword); msg.value = `“${keyword}”属于“${existing.keyword}”组，已为你打开，可直接上传图片。`; err.value = ''; if (source === 'new') newKeyword.value = ''; return; }
   busy.value = true; msg.value = ''; err.value = '';
   try {
     const saved = await api.addStickerKeyword(keyword);
     // 独立创建空组，无需图片；更新本地状态避免成功后刷新失败造成重复提交。
     if (!library.value.groups.some(group => group.keyword === saved.keyword)) library.value.groups.unshift({ keyword: saved.keyword, aliases: [saved.keyword], confirmedAliases: [], category: '自定义', planned: false, custom: true, assets: [] });
     await load();
-    revealKeyword(saved.keyword); newKeyword.value = '';
+    revealKeyword(saved.keyword); if (source === 'new') newKeyword.value = '';
     msg.value = saved.keyword === keyword ? `已新增关键词“${keyword}”，可以现在上传，也可以稍后补图。` : `已打开“${saved.keyword}”组；相同说法不重复建组。`;
   } catch (e) { err.value = `新增失败：${(e as Error).message}`; }
   finally { busy.value = false; }
@@ -232,9 +233,9 @@ onMounted(load);
     </div>
     <section class="library-panel compose-panel">
       <div class="section-heading"><div><h3>新增关键词</h3><p>只建词，不必同时上传图片。已有关键词请在下方选中后直接上传。</p></div><span class="library-badge">支持空关键词分组</span></div>
-      <form class="library-row" @submit.prevent="addKeyword">
+      <form class="library-row" @submit.prevent="addKeyword()">
         <input v-model="newKeyword" data-testid="new-keyword" class="library-input" aria-label="新关键词" maxlength="100" placeholder="输入一个新关键词，例如：开饭啦" />
-        <button data-testid="add-keyword" class="library-button primary" :disabled="busy || loading || !loaded || !newKeyword.trim()" type="button" @click="addKeyword">＋ 新增关键词</button>
+        <button data-testid="add-keyword" class="library-button primary" :disabled="busy || loading || !loaded || !newKeyword.trim()" type="button" @click="addKeyword()">＋ 新增关键词</button>
       </form>
     </section>
     <p v-if="msg" class="library-notice success" role="status">{{ msg }}</p>
@@ -251,7 +252,10 @@ onMounted(load);
         </div>
         <nav class="keyword-list" aria-label="选择关键词">
           <button v-for="group in pagedGroups" :key="group.keyword" :data-testid="`keyword-${group.keyword}`" class="keyword-option" :class="{ active: activeGroup?.keyword === group.keyword }" :aria-current="activeGroup?.keyword === group.keyword ? 'true' : undefined" @click="selectKeyword(group.keyword)"><span class="keyword-label">{{ group.keyword }}<em v-if="group.aliases.length > 1">{{ group.aliases.length }} 种说法共用</em></span><small>{{ group.assets.length ? `${group.assets.length} 张` : '待补图' }}</small></button>
-          <p v-if="!filteredGroups.length" class="sidebar-footer">没有匹配的关键词</p>
+          <div v-if="!filteredGroups.length" class="sidebar-footer keyword-search-empty">
+            <p>没有匹配的关键词</p>
+            <button v-if="q.trim()" data-testid="add-search-keyword" class="library-button primary" type="button" :disabled="busy || loading" @click="addKeyword('search')">{{ searchExistingGroup ? `打开已有词组「${searchExistingGroup.keyword}」` : `＋ 新增词组「${q.trim()}」` }}</button>
+          </div>
         </nav>
         <div class="keyword-pagination" aria-label="关键词分页">
           <p class="page-summary" aria-live="polite">共 {{ filteredGroups.length }} 组 · 每页 10 组<br />第 {{ filteredGroups.length ? currentPage : 0 }} / {{ filteredGroups.length ? pageCount : 0 }} 页<span v-if="filteredGroups.length"> · {{ pageStart + 1 }}–{{ Math.min(pageStart + PAGE_SIZE, filteredGroups.length) }} 组</span></p>
@@ -311,7 +315,7 @@ onMounted(load);
           </div>
           <p class="upload-hint">支持 GIF / PNG / JPG / WebP，单张不超过 5 MB。上传后归入“{{ activeGroup.keyword }}”语义组并使用已保存的同组说法，用于所有设备的斗图搜索与手机关键词推荐；手机下次打开键盘检查更新后补充，不修改系统素材。空关键词组不触发图片推荐，规划词不等于已启用全部语义扩展；未发布试稿不在这里展示。</p>
         </template>
-        <div v-else class="library-empty"><strong>{{ q || filter !== 'all' ? '没有匹配的关键词' : '从第一个关键词开始' }}</strong><p>调整左侧筛选，或在上方新增关键词。</p></div>
+        <div v-else class="library-empty"><strong>{{ q || filter !== 'all' ? '没有匹配的关键词' : '从第一个关键词开始' }}</strong><p>{{ q.trim() ? '可点击关键词库中的按钮新增或打开词组，再添加说法和图片。' : '调整左侧筛选，或在上方新增关键词。' }}</p></div>
       </section>
     </div>
   </div>

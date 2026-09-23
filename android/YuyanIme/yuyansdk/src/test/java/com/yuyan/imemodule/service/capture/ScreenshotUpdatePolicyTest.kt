@@ -6,6 +6,19 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class ScreenshotUpdatePolicyTest {
+    @Test fun firstTypingFrameAllowsTitleRecoveryWithoutMarkingAnythingSaved() {
+        val policy = ScreenshotUpdatePolicy()
+        val scope = ScreenshotScope(10, 3)
+        policy.observeTitle(10, 3, "typing")
+        assertTrue(policy.accepts(10, 3, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED))
+        assertFalse(policy.hasSavedContent(scope))
+        assertFalse(isReadableScreenshotTitleStatus("typing"))
+        policy.observeTitle(10, 3, "confirmed")
+        policy.recordSavedContent(scope, "peer", "title", "body", CapturePersistResult.INSERTED, true)
+        assertTrue(policy.hasSavedContent(scope))
+        policy.clear()
+        assertFalse(policy.accepts(10, 3, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED))
+    }
     @Test fun scrollingAloneNeverGrantsUnknownPageCaptureEligibility() {
         val policy = ScreenshotUpdatePolicy()
         val scope = ScreenshotScope(1, 1)

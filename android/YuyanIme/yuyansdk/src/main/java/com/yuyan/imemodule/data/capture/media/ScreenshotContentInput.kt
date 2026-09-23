@@ -4,10 +4,17 @@ import android.graphics.Bitmap
 import com.yuyan.imemodule.data.capture.ui.IntRect
 
 /** 单次媒体请求的精确内容摘要；不持有图像，不读取文字。 */
-class ScreenshotContentInput(private val bodyTopPx: Int) {
+class ScreenshotContentInput(private val bodyTopPx: Int, private val detectWechatList: Boolean = false) {
     var sha256: String? = null
         private set
-    fun captureFrom(bitmap: Bitmap) { sha256 = exactPixelHash(bitmap, IntRect(0, bodyTopPx, bitmap.width, bitmap.height)) }
+    var wechatListSha256: String? = null
+        private set
+    fun captureFrom(bitmap: Bitmap, density: Float = 1f) {
+        sha256 = exactPixelHash(bitmap, IntRect(0, bodyTopPx, bitmap.width, bitmap.height))
+        wechatListSha256 = if (detectWechatList) wechatListNavigationTop(bitmap, density)?.let {
+            exactPixelHash(bitmap, IntRect(0, bodyTopPx, bitmap.width, it))
+        } else null
+    }
 }
 
 internal fun exactPixelHash(bitmap: Bitmap, bounds: IntRect): String? {
