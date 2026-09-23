@@ -18,3 +18,10 @@
 - 精确重复消息保留来源追踪与上传 fingerprint 收据，展示、统计、预览和图片删除共用可见性规则。禁止客户端伪造恢复、重复、删除标记。
 - Android 43 类、290 项采集回归通过；真实通知入口覆盖编辑页、网页、输入状态及 OCR 已拒绝页面。服务端及前端最终验证记录保存在本地 .runtime/pending-chat-recovery/。
 - 线上只读样本核对与逐条建议保存在 .runtime/pending-chat-recovery/history-review.md；未执行线上写入或整桶合并。
+
+## 最终交付验证
+
+- Android：43 类 290 项通过。服务端回填隔离 PostgreSQL：37 项；API 连续性/待确认/删除隔离 PostgreSQL：39 项；图片接口隔离 PostgreSQL：14 项；相关前后端组件/API：104 项，均通过。服务端及脚本 TypeScript、前端 vue-tsc 和 diff 检查通过。
+- 线上只读全量审核结果一致：目标手机 660 条待确认消息，无满足严格同次归属条件的自动回填建议。跨次同图人工建议单独保留，不更改历史归属。SQL 根据 EXPLAIN 修正匹配 CTE 内联重复计算，已在 15 秒限制内完成线上只读查询。
+- 已生成 `apk/shurufa-2026-09-23-v20260923.21-2026092321-debug-4600f02f.apk`，SHA256 `4600f02f78c0da42e38282237baa56d782e94886d7c551a3b72bbe433a83fa52`；源文件与交付文件一致，原证书验证通过，非 testOnly，未安装手机。
+- macOS 当前不能访问 Windows E 盘，未复制到 Windows 固定交付目录。后台/服务端逻辑不包含在 APK 内，须随服务端部署生效；本次未执行线上历史写入或 Git 推送。

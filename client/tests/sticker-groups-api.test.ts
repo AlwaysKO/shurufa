@@ -63,3 +63,14 @@ it('底图删除读取清理状态并携带当前用户，失败保留服务端�
  expect(fetch.mock.calls[0][1].method).toBe('DELETE');
  await expect(api.deleteSynthesisAsset('synthesis-test')).rejects.toThrow('暂时无法删除');
 });
+
+it('AI底图上传400显示服务端具体校验原因，无说明时保留状态码', async () => {
+ const fetch=vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({error:'仅接受240×240多帧GIF（2～100帧）'}),{status:400}))
+  .mockResolvedValueOnce(new Response('upstream unavailable',{status:502}));
+ const api=loadApi(fetch);
+ const body={file_base64:'R0lGODlh',filename:'test.gif',name:'test',textSafeArea:{x:6,y:190,width:228,height:44},layout:{minFontSize:12,maxFontSize:24,textColor:'#222222',strokeColor:'#ffffff',strokeWidth:1,alignment:'center' as const,maxLines:2}};
+ await expect(api.uploadSynthesisAsset(body)).rejects.toThrow('仅接受240×240多帧GIF（2～100帧）');
+ expect(fetch.mock.calls[0][0]).toBe('/api/v1/dashboard/synthesis-library?user_id=user-a');
+ expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual(body);
+ await expect(api.uploadSynthesisAsset(body)).rejects.toThrow('502');
+});

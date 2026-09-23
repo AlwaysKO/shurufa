@@ -64,7 +64,8 @@ WITH pending_ids AS MATERIALIZED (
     AND btrim(display_name) NOT LIKE '待确认%' AND external_key NOT LIKE 'screenshot-v2:truncated:%'
     AND metadata->>'conversation_identity_status'='confirmed'
     AND metadata->>'conversation_identity_source' IN ('on_device_title_ocr','accessibility_title','wechat_page_title')
-), matches AS (
+-- 候选数估计偏低时，内联 matches 会把相同匹配对子在外层每行重算。
+), matches AS MATERIALIZED (
   SELECT p.id AS message_id,p.conversation_id AS source_id,c.conversation_id AS target_id,c.id AS evidence_id,
     CASE WHEN p.metadata ? 'screenshot_capture_id' THEN 'capture_id'
       WHEN p.captured_at=c.captured_at THEN 'captured_at' ELSE 'legacy_occurred_at' END AS evidence

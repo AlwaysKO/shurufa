@@ -664,7 +664,15 @@ export const api = {
   updateCollectorSetting: (collectorBaseUrl: string) =>
     put<{ ok: boolean; collector_base_url: string }>('/api/v1/dashboard/settings/collector', { collector_base_url: collectorBaseUrl }),
   synthesisLibrary: () => get<{ assets: SynthesisAsset[]; total: number }>('/api/v1/dashboard/synthesis-library'),
-  uploadSynthesisAsset: (body: SynthesisUpload) => post<{ asset: SynthesisAsset; duplicate: boolean }>('/api/v1/dashboard/synthesis-library', body),
+  uploadSynthesisAsset: async (body: SynthesisUpload): Promise<{ asset: SynthesisAsset; duplicate: boolean }> => {
+    const url = withDashboardUser('/api/v1/dashboard/synthesis-library');
+    const res = await dashboardFetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if (!res.ok) {
+      const detail = await res.json().catch(() => null);
+      throw new Error(typeof detail?.error === 'string' && detail.error.trim() ? detail.error : `API ${url} failed: ${res.status}`);
+    }
+    return res.json();
+  },
   updateSynthesisAsset: (id: string, body: Omit<SynthesisUpload, 'file_base64' | 'filename'> & Partial<Pick<SynthesisUpload, 'file_base64' | 'filename'>>) => patch<{ asset: SynthesisAsset; files_pending?: boolean }>(`/api/v1/dashboard/synthesis-library/${encodeURIComponent(id)}`, body),
   deleteSynthesisAsset: async (id: string): Promise<{ ok: boolean; files_pending?: boolean }> => {
     const url = withDashboardUser(`/api/v1/dashboard/synthesis-library/${encodeURIComponent(id)}`);
