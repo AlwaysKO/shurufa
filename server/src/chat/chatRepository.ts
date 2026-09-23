@@ -1,4 +1,5 @@
 import type pg from 'pg';
+import { isScreenshotCapture, recordScreenshotConfirmations, recoverPendingScreenshots } from './pendingScreenshotRecovery.js';
 import type {
   CapturedConversationInput,
   CapturedMessageInput,
@@ -81,16 +82,18 @@ async function findExistingFingerprints(
   userId: string,
   platform: CapturedConversationInput['platform'],
   messages: CapturedMessageInput[],
-): Promise<Set<string>> {
+): Promise<{ fingerprints: Set<string>; deleted: Set<string> }> {
   const fingerprints = [...new Set(messages.map((message) => message.fingerprint))];
-  if (fingerprints.length === 0) return new Set();
+  if (fingerprints.length === 0) return { fingerprints: new Set(), deleted: new Set() };
   const placeholders = fingerprints.map((_, index) => `$${index + 3}`).join(', ');
-  const result = await client.query<{ fingerprint: string }>(
-    `SELECT fingerprint FROM chat_message
+  const result = await client.query<{ fingerprint: string; screenshot_deleted?: string; screenshot_assets_deleted?: string }>(
+    `SELECT fingerprint, metadata->>'screenshot_deleted' AS screenshot_deleted,
+      metadata->>'screenshot_assets_deleted' AS screenshot_assets_deleted FROM chat_message
      WHERE user_id = $1 AND platform = $2 AND fingerprint IN (${placeholders})`,
     [userId, platform, ...fingerprints],
   );
-  return new Set(result.rows.map((row) => row.fingerprint));
+  return { fingerprints: new Set(result.rows.map(row => row.fingerprint)),
+    deleted: new Set(result.rows.filter(row => row.screenshot_deleted === 'true' || row.screenshot_assets_deleted === 'true').map(row => row.fingerprint)) };
 }
 
 export async function ingestCapturedMessages(
@@ -145,9 +148,13 @@ export async function ingestCapturedMessages(
 
     if (conversationResult.rows[0].merged_into_id) await client.query('UPDATE chat_conversation SET last_seen_at=NOW() WHERE id=$1 AND user_id=$2', [conversationId, userId]);
 
+    const existing = await findExistingFingerprints(client, userId, conversation.platform, messages);
+    const existingFingerprints = existing.fingerprints;
+    const activeMessages = messages.filter(message => !existing.deleted.has(message.fingerprint));
+
     // 仅接续端侧同一次页面中产生的临时身份；不按名字、任意历史key或已确认身份自动合并。
     if (conversation.identity_confidence >= 0.8 && /^(screenshot-v2|capture-v3):/.test(conversation.external_key)) {
-      const previousKeys = [...new Set(messages.filter(m => m.direction === 'system' && m.message_type === 'image' && m.metadata?.conversation_identity_status === 'confirmed')
+      const previousKeys = [...new Set(activeMessages.filter(m => m.direction === 'system' && m.message_type === 'image' && m.metadata?.conversation_identity_status === 'confirmed')
         .map(m => m.metadata?.conversation_identity_previous_key)
         .filter((key): key is string => typeof key === 'string' && /^(screenshot-v2|capture-v3):pending:[a-f0-9-]{36}$/.test(key)))];
       for (const key of previousKeys) {
@@ -165,17 +172,11 @@ export async function ingestCapturedMessages(
       }
     }
 
-    const requiredAssets = uniqueAssetHashes(messages);
+    const requiredAssets = uniqueAssetHashes(activeMessages);
     const assetsByHash = await findAssets(client, userId, requiredAssets);
     const missingAssets = requiredAssets.filter((sha256) => !assetsByHash.has(sha256));
     const missingSet = new Set(missingAssets);
-    const existingFingerprints = await findExistingFingerprints(
-      client,
-      userId,
-      conversation.platform,
-      messages,
-    );
-    const callStateMessages = messages.filter((message) => isWechatCallState(conversation, message));
+    const callStateMessages = activeMessages.filter((message) => isWechatCallState(conversation, message));
     const callStateTimes = callStateMessages.map((message) => Date.parse(message.captured_at)).filter(Number.isFinite);
     const recentCallStates: RecentCallState[] = [];
     if (callStateTimes.length > 0) {
@@ -200,6 +201,7 @@ export async function ingestCapturedMessages(
     let duplicated = 0;
     let discarded = 0;
     for (const message of messages) {
+      if (existing.deleted.has(message.fingerprint)) { duplicated += 1; continue; }
       const messageAssets = [...new Set(message.asset_sha256 ?? [])];
       if (messageAssets.some((sha256) => missingSet.has(sha256))) continue;
       if (isUnusableWechatNotification(conversation, message)) {
@@ -243,7 +245,8 @@ export async function ingestCapturedMessages(
           message.occurred_at ?? null,
           message.captured_at,
           message.sequence_hint ?? null,
-          JSON.stringify(message.metadata ?? {}),
+          JSON.stringify(Object.fromEntries(Object.entries(message.metadata ?? {}).filter(([key]) =>
+            !['screenshot_identity_recovery', 'screenshot_confirmation_evidence', 'screenshot_manual_confirmation', 'screenshot_duplicate_of', 'screenshot_deleted', 'screenshot_assets_deleted'].includes(key)))),
         ],
       );
 
@@ -268,6 +271,18 @@ export async function ingestCapturedMessages(
           [message.id, assetsByHash.get(sha256), position],
         );
       }
+    }
+
+    const screenshots = activeMessages.filter(message => isScreenshotCapture(message)
+      && message.asset_sha256?.length && !message.asset_sha256.some(sha => missingSet.has(sha)));
+    if (screenshots.length) {
+      const scope = { userId, deviceId, platform: conversation.platform, accountKey: conversation.account_key,
+        capturedAt: screenshots.map(m => m.captured_at),
+        occurredAt: screenshots.flatMap(m => m.occurred_at ? [m.occurred_at] : []),
+        captureIds: screenshots.flatMap(m => typeof m.metadata?.screenshot_capture_id === 'string' ? [m.metadata.screenshot_capture_id] : []),
+      };
+      const loaded = await recordScreenshotConfirmations(client, scope, conversationId, conversation, screenshots);
+      await recoverPendingScreenshots(client, scope, loaded);
     }
 
     if (discarded === messages.length) {

@@ -8,6 +8,7 @@ export interface PendingDiagnostic {
   observed_title: string | null;
   identity_status: string | null;
   identity_source: string | null;
+  non_chat_evidence?: 'metadata' | 'title_only';
   suggested_conversations: Array<{ id: number; display_name: string }>;
 }
 const text = (value: unknown) => typeof value === 'string' && value.trim() ? value.trim().slice(0, 500) : null;
@@ -40,8 +41,11 @@ export async function pendingMessageDiagnostics(pool: pg.Pool, userId: string, m
       candidate.platform === source.platform && candidate.account_key === source.account_key &&
       candidate.display_name === title && String(candidate.id) !== String(source.id),
     ).map(candidate => ({ id: Number(candidate.id), display_name: candidate.display_name }));
+    const suspectedPage = !nonChat && !suggestions.length && source.platform === 'wechat' &&
+      title !== null && ['编辑标签', '登录验证', '付款', '支付完成'].includes(title);
     result.set(String(message.id), {
-      reason: nonChat ? 'non_chat_page' : !title ? 'title_unreadable' : suggestions.length ? 'possible_existing_conversation' : 'title_unconfirmed',
+      reason: nonChat || suspectedPage ? 'non_chat_page' : !title ? 'title_unreadable' : suggestions.length ? 'possible_existing_conversation' : 'title_unconfirmed',
+      ...(nonChat || suspectedPage ? { non_chat_evidence: nonChat ? 'metadata' as const : 'title_only' as const } : {}),
       observed_title: title,
       identity_status: text(metadata.conversation_identity_status),
       identity_source: identitySource,

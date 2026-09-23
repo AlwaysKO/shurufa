@@ -106,6 +106,31 @@ class WechatTitleRegionTest {
         assertEquals(signature,wechatNicknamePixelSignature(changed,nextBounds))
         first.recycle(); changed.recycle()
     }
+    @Test fun separatedDimControlAfterGroupCountDoesNotChangeNicknameEvidence() {
+        val header = image()
+        val clean = OcrTextLine("一路江湖(210)",185,48,866,96, listOf(
+            OcrTextSymbol("一路江湖",185,48,690,96), OcrTextSymbol("(",770,48,775,96),
+            OcrTextSymbol("210)",790,48,866,96)))
+        // 模拟右侧灰色静音控件被读成汉字；不是删除任意中文尾字。
+        for (y in 48..95) for (x in 900..946) header.setPixel(x,y,Color.rgb(155,155,155))
+        val noisy = clean.copy(text="一路江湖(210)应",right=947,
+            symbols=clean.symbols + OcrTextSymbol("应",900,48,947,96))
+        val first = wechatTitleEvidenceBounds(header,clean)!!
+        val second = wechatTitleEvidenceBounds(header,noisy)!!
+        assertEquals("一路江湖(210)",second.text)
+        assertEquals(wechatNicknamePixelSignature(header,first),wechatNicknamePixelSignature(header,second))
+        val overlapping = noisy.copy(symbols = noisy.symbols.map { symbol ->
+            if (symbol.text == "210)") symbol.copy(right=902) else symbol
+        })
+        assertEquals("一路江湖(210)", wechatTitleEvidenceBounds(header,overlapping)!!.text)
+        // 同样位置的正常深色汉字是昵称内容，不能靠括号或距离删除。
+        for (y in 48..95) for (x in 900..946) header.setPixel(x,y,Color.BLACK)
+        val realName = wechatTitleEvidenceBounds(header,noisy)!!
+        assertEquals("一路江湖(210)应",realName.text)
+        assertTrue(realName.right > 947)
+        header.recycle()
+    }
+
     @Test fun originalEmojiAndSingleGlyphDifferencesRemainDistinctIdentityEvidence() {
         val first = image()
         val line = OcrTextLine("小组(279)",185,46,866,103, listOf(

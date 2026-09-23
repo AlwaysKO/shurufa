@@ -6,6 +6,7 @@ import com.yuyan.imemodule.expression.send.WechatExpressionConfirmation
 import android.accessibilityservice.AccessibilityService
 import android.app.KeyguardManager
 import android.content.Context
+import com.yuyan.imemodule.data.capture.media.isWechatNonChatTree
 import android.graphics.Rect
 import android.os.Handler
 import android.os.Looper
@@ -262,6 +263,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
             CaptureTrace.record(CaptureStage.TREE, windowId, identityGeneration,
                 (if (hasReadableChatContent(activeSnapshot)) 1 else 0) + (if (hasReadableChatContent(sourceSnapshot)) 2 else 0))
             val snapshot = preferredAccessibilitySnapshot(activeSnapshot, sourceSnapshot)
+            if (packageName == WECHAT_PACKAGE && snapshot != null && isWechatNonChatTree(snapshot)) return@launch
             if (shouldCaptureEmptyTreeWeChatOpen(
                     eventType = eventType,
                     className = eventClass,
@@ -472,6 +474,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                 }
                 val scrollScope = ScreenshotScope(root.windowId, identityGeneration)
                 val snapshot = treeReader.read(root)
+                if (packageName == WECHAT_PACKAGE && snapshot != null && isWechatNonChatTree(snapshot)) return@launch
                 CaptureTrace.record(CaptureStage.TREE, root.windowId, identityGeneration, value = if (hasReadableChatContent(snapshot)) 1 else 0, flag = true)
                 if (packageName == WECHAT_PACKAGE && !hasReadableChatContent(snapshot)) {
                     if (!scrollResumeOnly) screenshotUpdates.allowScrollResume(scrollScope)
@@ -581,6 +584,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                         return@withLock
                     }
                     val capturedAt = System.currentTimeMillis()
+                    val screenshotCaptureId = java.util.UUID.randomUUID().toString()
                     val firstIdentity = resolver?.resolve(asset, resolverVersion, titleInput) ?: unresolvedWechatScreenshotIdentity()
                     if (!isCurrentScreenshotWindow(windowId, identityGeneration, captureToken)) return@withLock
                     CaptureTrace.record(if (firstIdentity.isChatPage) CaptureStage.IDENTITY_READY else CaptureStage.IDENTITY_REJECTED,
@@ -620,6 +624,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                                 occurredAt = isoTimestamp(capturedAt),
                                 metadata = mapOf(
                                     "capture_source" to "wechat_empty_tree_screenshot",
+                                    "screenshot_capture_id" to screenshotCaptureId,
                                     "identity_unavailable" to (identity.status != "confirmed").toString(),
                                     "conversation_identity_source" to identity.source,
                                     "conversation_identity_status" to identity.status,
@@ -716,7 +721,8 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                     return@withLock
                 }
                 val observedTitle = frameIdentity?.observedTitle
-                if (isPeerTypingConversationTitle(observedTitle) || isPeerTypingConversationTitle(frameIdentity?.displayName)) {
+                if (frameIdentity?.isChatPage == false || isPeerTypingConversationTitle(observedTitle) ||
+                    isPeerTypingConversationTitle(frameIdentity?.displayName)) {
                     scheduleFallbackRetry(request)
                     return@withLock
                 }
@@ -834,6 +840,11 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                 return@post
             }
             val snapshot = treeReader.read(root)
+            if (request.packageName == WECHAT_PACKAGE && snapshot != null && isWechatNonChatTree(snapshot)) {
+                recycleRoot(root)
+                continuation.resume(null)
+                return@post
+            }
             val parsed = snapshot?.let { AdapterRegistry.forPackage(request.packageName)?.parse(it) } as? ParseResult.Success
             if (isPeerTypingConversationTitle(parsed?.viewport?.conversation?.displayName)) {
                 recycleRoot(root)

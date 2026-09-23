@@ -708,7 +708,7 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
             <time :datetime="message.captured_at" title="采集时间">{{ formatTime(message.captured_at) }}</time>
           </div>
           <div v-if="pendingGroup && message.pending_diagnostic" class="pending-diagnostic">
-            <strong>{{ pendingReasonNames[message.pending_diagnostic.reason] }}</strong>
+            <strong>{{ message.pending_diagnostic.non_chat_evidence === 'title_only' ? '疑似非聊天页面，请看图确认' : pendingReasonNames[message.pending_diagnostic.reason] }}</strong>
             <p>观测标题：{{ message.pending_diagnostic.observed_title || '未读到' }}</p>
             <template v-if="message.pending_diagnostic.suggested_conversations.length">
               <p>仅名称相同，请核对截图后选择归属：</p>

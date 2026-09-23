@@ -1,3 +1,4 @@
+import { visibleChatMessage } from '../chat/chatMessageVisibility.js';
 import { Router } from 'express';
 import type pg from 'pg';
 
@@ -74,7 +75,7 @@ export function createChatPendingRouter(pool: pg.Pool): Router {
       const [summary, count] = await Promise.all([
         pool.query(`SELECT COUNT(DISTINCT c.id) AS sources,COUNT(m.id) AS message_count,
           MIN(c.first_seen_at) AS first_seen_at,MAX(c.last_seen_at) AS last_seen_at,MAX(m.captured_at) AS last_message_at
-          FROM chat_conversation c LEFT JOIN chat_message m ON m.conversation_id=c.id AND m.user_id=c.user_id
+          FROM chat_conversation c LEFT JOIN chat_message m ON m.conversation_id=c.id AND m.user_id=c.user_id AND ${visibleChatMessage()}
           WHERE ${scope} AND ${pending}`, params.slice(0,2)),
         pool.query(`SELECT COUNT(DISTINCT ${groupingKey}) AS count FROM chat_conversation c WHERE ${known}`, params),
       ]);
@@ -83,7 +84,7 @@ export function createChatPendingRouter(pool: pg.Pool): Router {
       const limit = pageSize - (page === 1 ? bucket : 0);
       const result = await pool.query(`WITH sources AS (
         SELECT c.*, ${groupingKey} AS grouping_key, COUNT(m.id) AS message_count, MAX(m.captured_at) AS last_message_at
-        FROM chat_conversation c LEFT JOIN chat_message m ON m.conversation_id=c.id AND m.user_id=c.user_id
+        FROM chat_conversation c LEFT JOIN chat_message m ON m.conversation_id=c.id AND m.user_id=c.user_id AND ${visibleChatMessage()}
         WHERE ${known} GROUP BY c.id
       ), groups AS (
         SELECT MIN(id) AS id,ARRAY_AGG(id ORDER BY id) AS source_ids,COUNT(*) AS source_count,

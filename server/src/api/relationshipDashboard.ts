@@ -1,3 +1,4 @@
+import { visibleChatMessage } from '../chat/chatMessageVisibility.js';
 import { Router } from 'express';
 import type pg from 'pg';
 import {
@@ -55,7 +56,7 @@ export function createRelationshipDashboardRouter(pool: pg.Pool): Router {
            LEFT JOIN relationship_profile r
              ON r.user_id = c.user_id AND r.conversation_id = c.id
            LEFT JOIN chat_message m
-             ON m.user_id = c.user_id AND m.conversation_id = c.id
+             ON m.user_id = c.user_id AND m.conversation_id = c.id AND ${visibleChatMessage()}
            WHERE c.user_id = $1
            GROUP BY c.id, c.platform, c.account_key, c.external_key,
                     c.display_name, c.conversation_type, c.last_seen_at,

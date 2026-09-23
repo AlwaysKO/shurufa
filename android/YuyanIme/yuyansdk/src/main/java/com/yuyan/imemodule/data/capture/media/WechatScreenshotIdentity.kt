@@ -146,19 +146,21 @@ internal class MlKitWechatScreenshotIdentityResolver(identityStore: Conversation
                 if (exactBand) restoreWechatTitleEllipsis(header, it) else it
             }
             // 清洗后无标题时，原始导航只用于判断页面，不把受控件污染的文字拿来确认姓名。
-            val pageLines = if (prepared != null && title == null)
-                awaitTitleOcrCompletion { recognize(header) } else lines
+            val pageLines = if (exactBand) awaitTitleOcrCompletion { recognize(header) } else lines
+            if (exactBand && isWechatNonChatHeader(header, pageLines)) {
+                return@withContext unresolvedWechatScreenshotIdentity(title?.text).copy(isChatPage = false)
+            }
             val evidence = title?.let { if (exactBand) wechatTitleEvidenceBounds(header, it) else it }
             val visualKey = evidence?.let {
                 if (exactBand) wechatNicknamePixelSignature(header, it) else wechatTitlePixelSignature(header, it)
             }
             stabilizer.observe(
-                title = title?.text,
+                title = evidence?.text ?: title?.text,
                 visualKey = visualKey,
                 nowMillis = SystemClock.elapsedRealtime(),
                 expectedVersion = expectedVersion,
             ).copy(
-                isChatPage = isWechatScreenshotChatPage(pageLines, header.width, header.height),
+                isChatPage = isWechatScreenshotChatPage(if (title != null) lines else pageLines, header.width, header.height),
                 exactTitleHash = evidence?.let { exactPixelHash(header, IntRect(it.left, it.top, it.right, it.bottom)) },
             )
         } finally {

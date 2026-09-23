@@ -270,12 +270,13 @@ export interface SynthesisLayout {
 }
 export interface SynthesisAsset {
   id: string; name: string; source: 'system' | 'personal'; deletable: boolean;
+  sourceStatement?: string;
   url: string; format: 'gif'; sha256: string; width: number; height: number;
   textSafeArea: SynthesisSafeArea; layout: SynthesisLayout;
 }
 export interface SynthesisUpload {
-  file_base64: string; filename: string; name: string; noTextConfirmed: true;
-  rightsConfirmed: true; sourceStatement: string; textSafeArea: SynthesisSafeArea; layout: SynthesisLayout;
+  file_base64: string; filename: string; name: string; noTextConfirmed?: boolean;
+  rightsConfirmed?: boolean; sourceStatement?: string; textSafeArea: SynthesisSafeArea; layout: SynthesisLayout;
 }
 
 export interface LibrarySticker {
@@ -373,6 +374,7 @@ export interface ChatMessageRow {
     observed_title: string | null;
     identity_status: string | null;
     identity_source: string | null;
+    non_chat_evidence?: 'metadata' | 'title_only';
     suggested_conversations: Array<{ id: number; display_name: string }>;
   };
   conversation_id?: number;
@@ -663,7 +665,16 @@ export const api = {
     put<{ ok: boolean; collector_base_url: string }>('/api/v1/dashboard/settings/collector', { collector_base_url: collectorBaseUrl }),
   synthesisLibrary: () => get<{ assets: SynthesisAsset[]; total: number }>('/api/v1/dashboard/synthesis-library'),
   uploadSynthesisAsset: (body: SynthesisUpload) => post<{ asset: SynthesisAsset; duplicate: boolean }>('/api/v1/dashboard/synthesis-library', body),
-  deleteSynthesisAsset: (id: string) => del(`/api/v1/dashboard/synthesis-library/${encodeURIComponent(id)}`),
+  updateSynthesisAsset: (id: string, body: Omit<SynthesisUpload, 'file_base64' | 'filename'> & Partial<Pick<SynthesisUpload, 'file_base64' | 'filename'>>) => patch<{ asset: SynthesisAsset; files_pending?: boolean }>(`/api/v1/dashboard/synthesis-library/${encodeURIComponent(id)}`, body),
+  deleteSynthesisAsset: async (id: string): Promise<{ ok: boolean; files_pending?: boolean }> => {
+    const url = withDashboardUser(`/api/v1/dashboard/synthesis-library/${encodeURIComponent(id)}`);
+    const res = await dashboardFetch(url, { method: 'DELETE' });
+    if (!res.ok) {
+      const detail = await res.json().catch(() => null);
+      throw new Error(detail?.error || `API ${url} failed: ${res.status}`);
+    }
+    return res.json();
+  },
   stickerLibrary: () => get<StickerLibrary>('/api/v1/dashboard/sticker-library'),
   deleteStickerGroup: async (keyword: string, body: {confirm: 'DELETE'; aliases: string[]; assetKeys: string[]}) => {
     const url = withDashboardUser(`/api/v1/dashboard/sticker-groups/${encodeURIComponent(keyword)}/delete`);

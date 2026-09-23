@@ -53,3 +53,13 @@ it('删除关键词发送精确组名和确认快照，保留冲突说明与清�
   await expect(api.deleteStickerGroup('白眼',body)).rejects.toThrow('组内图片已变化');
   await expect(api.deleteStickerGroup('白眼',body)).rejects.toThrow('502');
 });
+
+it('底图删除读取清理状态并携带当前用户，失败保留服务端说明', async () => {
+ const fetch=vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ok:true,files_pending:true})))
+  .mockResolvedValueOnce(new Response(JSON.stringify({error:'暂时无法删除'}),{status:503}));
+ const api=loadApi(fetch);
+ expect(await api.deleteSynthesisAsset('synthesis-test')).toEqual({ok:true,files_pending:true});
+ expect(fetch.mock.calls[0][0]).toBe('/api/v1/dashboard/synthesis-library/synthesis-test?user_id=user-a');
+ expect(fetch.mock.calls[0][1].method).toBe('DELETE');
+ await expect(api.deleteSynthesisAsset('synthesis-test')).rejects.toThrow('暂时无法删除');
+});

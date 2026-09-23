@@ -1,112 +1,170 @@
 <script setup lang="ts">
 import { useConfirmation } from '../confirmation';
-import { onMounted, onBeforeUnmount, reactive, ref } from 'vue';
-import { api, scopedAssetUrl, type SynthesisAsset } from '../api';
+import { computed, nextTick, onMounted, onBeforeUnmount, reactive, ref } from 'vue';
+import { api, scopedAssetUrl, type SynthesisAsset, type SynthesisLayout } from '../api';
 import './content-library.css';
 
 const askConfirmation = useConfirmation();
-
 const assets = ref<SynthesisAsset[]>([]);
 const loading = ref(false); const loaded = ref(false); const busy = ref(false);
 const loadError = ref(''); const error = ref(''); const message = ref('');
 const name = ref(''); const sourceStatement = ref('');
-const noTextConfirmed = ref(false); const rightsConfirmed = ref(false);
+const editing = ref<SynthesisAsset | null>(null);
+const editor = ref<HTMLElement | null>(null);
 const file = ref<File | null>(null); const fileInput = ref<HTMLInputElement | null>(null);
 const preview = ref(''); const failed = ref(new Set<string>());
-const safeArea = reactive({ x: 6, y: 190, width: 228, height: 44 });
+const selected = ref(new Set<string>());
+const manageable = (asset: SynthesisAsset) => asset.deletable && asset.source === 'personal';
+const manageableAssets = computed(() => assets.value.filter(manageable));
+const defaultArea = { x: 6, y: 190, width: 228, height: 44 };
+const defaultLayout: SynthesisLayout = { minFontSize: 12, maxFontSize: 24, textColor: '#222222', strokeColor: '#ffffff', strokeWidth: 1, alignment: 'center', maxLines: 2 };
+const safeArea = reactive({ ...defaultArea });
 const fields = [{ key: 'x', label: '左侧 X' }, { key: 'y', label: '顶部 Y' }, { key: 'width', label: '宽度' }, { key: 'height', label: '高度' }] as const;
 function clearPreview() { if (preview.value) URL.revokeObjectURL(preview.value); preview.value = ''; }
 let disposed = false;
+let loadSequence = 0;
 onBeforeUnmount(() => { disposed = true; clearPreview(); });
 async function load() {
+  const sequence = ++loadSequence;
   loading.value = true; loadError.value = '';
-  try { assets.value = (await api.synthesisLibrary()).assets; loaded.value = true; failed.value.clear(); }
-  catch (e) { loadError.value = `底图库加载失败：${(e as Error).message}`; }
-  finally { loading.value = false; }
+  try {
+    const result = await api.synthesisLibrary(); if (disposed || sequence !== loadSequence) return;
+    assets.value = result.assets; loaded.value = true; failed.value.clear();
+    selected.value = new Set([...selected.value].filter(id => assets.value.some(a => a.id === id && manageable(a))));
+  } catch (e) { if (!disposed && sequence === loadSequence) loadError.value = `底图库加载失败：${(e as Error).message}`; }
+  finally { if (sequence === loadSequence) loading.value = false; }
 }
-function chooseFile(event: Event) {
+function resetForm() {
+  editing.value = null; file.value = null; clearPreview();
+  if (fileInput.value) fileInput.value.value = '';
+  name.value = ''; sourceStatement.value = ''; Object.assign(safeArea, defaultArea);
+}
+function startEdit(asset: SynthesisAsset, replace = false) {
+  if (busy.value || loading.value || !manageable(asset)) return;
+  resetForm(); editing.value = asset; name.value = asset.name; sourceStatement.value = asset.sourceStatement ?? '';
+  Object.assign(safeArea, asset.textSafeArea); error.value = ''; message.value = '';
+  if (replace) fileInput.value?.click();
+  else void nextTick(() => editor.value?.scrollIntoView?.({ behavior: 'smooth', block: 'start' }));
+}
+function chooseUpload() {
+  if (busy.value) return;
+  resetForm(); fileInput.value?.click();
+}
+async function chooseFile(event: Event) {
   if (busy.value) return;
   const input = event.target as HTMLInputElement;
-  const selected = input.files?.[0]; if (!selected) return;
+  const picked = input.files?.[0]; if (!picked) return;
   error.value = ''; message.value = ''; file.value = null; clearPreview();
-  noTextConfirmed.value = false; rightsConfirmed.value = false;
-  if (!/\.gif$/i.test(selected.name) || !selected.size || selected.size > 250 * 1024) {
+  if (!/\.gif$/i.test(picked.name) || !picked.size || picked.size > 250 * 1024) {
     error.value = '请选择非空动态 GIF，240 × 240，单张不超过 250 KB。'; input.value = ''; return;
   }
-  file.value = selected; preview.value = URL.createObjectURL(selected);
-  if (!name.value.trim()) name.value = selected.name.replace(/\.gif$/i, '').slice(0, 100);
+  file.value = picked; preview.value = URL.createObjectURL(picked);
+  if (!editing.value) {
+    name.value = picked.name.replace(/\.gif$/i, '').slice(0, 100) || '未命名底图';
+    await upload();
+  } else void nextTick(() => editor.value?.scrollIntoView?.({ behavior: 'smooth', block: 'start' }));
 }
 async function upload() {
-  if (busy.value) return;
+  if (busy.value || disposed) return;
   error.value = ''; message.value = '';
-  if (!file.value || !name.value.trim() || !sourceStatement.value.trim() || !noTextConfirmed.value || !rightsConfirmed.value) {
-    error.value = '请选择 GIF、填写名称和来源，并确认无字及合法使用权限。'; return;
-  }
+  if ((!editing.value && !file.value) || !name.value.trim()) { error.value = '请选择 GIF 并填写底图名称。'; return; }
   if (!Object.values(safeArea).every(Number.isInteger) || safeArea.x < 0 || safeArea.y < 0 || safeArea.width <= 0 || safeArea.height <= 0 || safeArea.x + safeArea.width > 240 || safeArea.y + safeArea.height > 240) {
     error.value = '文字安全区必须为整数、宽高大于零，且不能超出 240 × 240 画布。'; return;
   }
-  if (safeArea.width < 14 || safeArea.height < 14) {
-    error.value = '文字安全区宽高必须至少 14 像素，以容纳一个最小字及描边。'; return;
-  }
+  const layout = editing.value?.layout ?? defaultLayout;
+  const minimum = layout.minFontSize + 2 * layout.strokeWidth;
+  if (safeArea.width < minimum || safeArea.height < minimum) { error.value = `文字安全区宽高必须至少 ${minimum} 像素，以容纳一个最小字及描边。`; return; }
   busy.value = true;
   try {
-    const bytes = new Uint8Array(await file.value.arrayBuffer()); let binary = '';
-    if (disposed) return; // 切换当前用户后不将旧表单上传到新用户。
-    for (const byte of bytes) binary += String.fromCharCode(byte);
-    const result = await api.uploadSynthesisAsset({ file_base64: btoa(binary), filename: file.value.name,
-      name: name.value.trim(), sourceStatement: sourceStatement.value.trim(), noTextConfirmed: true, rightsConfirmed: true,
-      textSafeArea: { ...safeArea }, layout: { minFontSize: 12, maxFontSize: 24, textColor: '#222222', strokeColor: '#ffffff', strokeWidth: 1, alignment: 'center', maxLines: 2 } });
-    message.value = result.duplicate ? '相同 GIF 已存在，未重复保存。' : '已加入 AI 合成底图库；手机下次打开键盘检查更新后可补充，不进入关键词推荐图。';
-    file.value = null; clearPreview(); if (fileInput.value) fileInput.value.value = '';
-    name.value = ''; sourceStatement.value = ''; noTextConfirmed.value = false; rightsConfirmed.value = false;
-    await load();
-  } catch (e) { error.value = `上传失败：${(e as Error).message}`; }
+    const body = { name: name.value.trim(), sourceStatement: sourceStatement.value.trim(), textSafeArea: { ...safeArea }, layout: { ...layout } };
+    let image: { file_base64: string; filename: string } | undefined;
+    if (file.value) {
+      const picked = file.value; const bytes = new Uint8Array(await picked.arrayBuffer()); let binary = '';
+      if (disposed) return;
+      for (const byte of bytes) binary += String.fromCharCode(byte);
+      image = { file_base64: btoa(binary), filename: picked.name };
+    }
+    if (editing.value) {
+      const result = await api.updateSynthesisAsset(editing.value.id, { ...body, ...image });
+      if (disposed) return;
+      assets.value = assets.value.map(a => a.id === result.asset.id ? result.asset : a);
+      failed.value.delete(result.asset.id);
+      message.value = result.files_pending ? '底图已更新，旧文件清理待重试。' : '底图已更新。';
+    } else {
+      const result = await api.uploadSynthesisAsset({ ...body, ...image! });
+      if (disposed) return;
+      if (!assets.value.some(a => a.id === result.asset.id)) assets.value.unshift(result.asset);
+      message.value = result.duplicate ? '相同 GIF 已存在，未重复保存。' : '底图已上传入库，可在下方编辑名称和文字区域。';
+    }
+    resetForm(); await load();
+  } catch (e) { error.value = `${editing.value ? '保存' : '上传'}失败：${(e as Error).message}`; }
   finally { busy.value = false; }
 }
-async function remove(asset: SynthesisAsset) {
-  if (busy.value || !asset.deletable || asset.source !== 'personal' || !(await askConfirmation(`删除“${asset.name}”这张 AI 合成底图？不会删除关键词推荐图。手机下次检查更新后移除。`))) return;
+function selectAll() { if (!busy.value && !loading.value) selected.value = new Set(manageableAssets.value.map(a => a.id)); }
+function clearSelection() { if (!busy.value && !loading.value) selected.value.clear(); }
+function toggleSelection(id: string) {
   if (busy.value || loading.value) return;
+  if (selected.value.has(id)) selected.value.delete(id); else selected.value.add(id);
+}
+async function removeAssets(targets: SynthesisAsset[]) {
+  const rows = targets.filter(manageable);
+  if (busy.value || loading.value || !rows.length) return;
+  const label = rows.length === 1 ? `“${rows[0]!.name}”这张` : `选中的 ${rows.length} 张`;
+  if (!(await askConfirmation(`删除${label} AI 合成底图？手机下次检查更新后移除，关键词推荐图不受影响。`))) return;
+  if (disposed || busy.value || loading.value) return;
   busy.value = true; error.value = ''; message.value = '';
-  try { await api.deleteSynthesisAsset(asset.id); message.value = '底图已删除，关键词推荐图库不受影响。'; await load(); }
-  catch (e) { error.value = `删除失败：${(e as Error).message}`; }
-  finally { busy.value = false; }
+  let removed = 0; let cleanupPending = 0; const errors: { asset: SynthesisAsset; reason: string }[] = [];
+  try {
+    for (const asset of rows) {
+      if (disposed) return;
+      try {
+        const result = await api.deleteSynthesisAsset(asset.id); if (disposed) return;
+        if (result.files_pending) cleanupPending++;
+        assets.value = assets.value.filter(a => a.id !== asset.id); selected.value.delete(asset.id); removed++;
+        if (editing.value?.id === asset.id) resetForm();
+      } catch (e) { selected.value.add(asset.id); errors.push({ asset, reason: (e as Error).message }); }
+    }
+    if (errors.length) { await load(); if (disposed) return; }
+    const remaining = errors.filter(({ asset }) => assets.value.some(a => a.id === asset.id));
+    removed += errors.length - remaining.length;
+    if (removed) message.value = `已删除 ${removed} 张底图。${cleanupPending ? `${cleanupPending} 张旧文件清理未完成。` : ''}`;
+    if (remaining.length) error.value = `${remaining.length} 张删除失败，已保留勾选，可重试。${remaining.map(({ asset, reason }) => `${asset.name}：${reason}`).join('；')}`;
+  } finally { busy.value = false; }
 }
 onMounted(load);
 </script>
 
 <template>
   <div class="content-library synthesis-page">
-    <header class="library-intro"><div><span class="eyebrow">AI SYNTHESIS LIBRARY</span><h2>无字底图，配上自己的话</h2><p>此库仅用于 AI 文字合成，与关键词推荐图库分开。系统素材只读，个人上传仅对当前选中用户生效。</p></div></header>
-    <section class="library-panel">
-      <div class="section-heading"><div><h3>上传无字动态 GIF</h3><p>240 × 240，最多 250 KB，必须有真实动画。按文件 SHA 去重；名称不同也不会重复入库。</p></div></div>
+    <header class="library-intro synthesis-heading"><div><span class="eyebrow">AI SYNTHESIS LIBRARY</span><h2>AI 合成底图库</h2><p>上传后直接入库，随时调整名称和文字区域。</p></div><button class="library-button primary" :disabled="busy" @click="chooseUpload"><span aria-hidden="true">＋</span> 上传底图</button></header>
+    <input ref="fileInput" data-testid="synthesis-file" class="hidden-upload" type="file" accept=".gif,image/gif" @change="chooseFile" />
+    <div class="synthesis-tip"><span>动态 GIF · 240 × 240 · 单张不超过 250 KB</span><span>系统底图只读，个人上传用于当前选中用户。</span></div>
+    <p v-if="busy" class="library-notice" role="status">正在处理，请稍候…</p>
+    <p v-if="message" class="library-notice success" role="status">{{ message }}</p>
+    <div v-if="error" class="library-notice error" role="alert">{{ error }}<button v-if="file && !editing" data-testid="retry-synthesis-upload" class="library-button small" :disabled="busy" @click="upload">重试上传</button></div>
+    <div v-if="loadError" class="library-notice error" role="alert">{{ loadError }}<button data-testid="retry-synthesis" class="library-button small" :disabled="loading || busy" @click="load">重新加载</button></div>
+    <section v-if="editing" ref="editor" class="library-panel synthesis-editor">
+      <div class="section-heading"><div><h3>编辑底图</h3><p>可修改资料或替换 GIF，点击保存后生效。</p></div><button data-testid="cancel-synthesis-edit" class="library-button" :disabled="busy" @click="resetForm">取消编辑</button></div>
       <form data-testid="synthesis-form" @submit.prevent="upload">
         <fieldset :disabled="busy" class="upload-fields">
-          <label>GIF 文件<input ref="fileInput" data-testid="synthesis-file" type="file" accept=".gif,image/gif" @change="chooseFile" /></label>
-          <label>底图名称<input v-model="name" data-testid="synthesis-name" class="library-input" maxlength="100" placeholder="例如：熊猫滑稽扭舞" /></label>
-          <label>来源与许可说明<input v-model="sourceStatement" data-testid="synthesis-source" class="library-input" maxlength="1000" placeholder="原创说明，或授权方、许可范围及依据" /></label>
-          <div class="safe-area-editor">
-            <div><strong>文字安全区（像素）</strong><p class="upload-hint">默认留底部两行。调整蓝框避开角色；框只是叠字范围，不会印入 GIF。</p>
-              <div class="safe-fields"><label v-for="field in fields" :key="field.key">{{ field.label }}<input v-model.number="safeArea[field.key]" :data-testid="`safe-${field.key}`" class="library-input" type="number" min="0" max="240" step="1" /></label></div>
-            </div>
-            <div class="safe-preview" aria-label="GIF 与文字安全区预览"><img v-if="preview" :src="preview" alt="待上传 GIF 动态预览" /><span v-else>选择 GIF 后预览</span><div class="safe-overlay" :style="{ left: `${safeArea.x / 2.4}%`, top: `${safeArea.y / 2.4}%`, width: `${safeArea.width / 2.4}%`, height: `${safeArea.height / 2.4}%` }">文字区域</div></div>
-          </div>
-          <label class="confirmation"><input v-model="noTextConfirmed" data-testid="synthesis-no-text" type="checkbox" />我已检查整段动画，没有预印文字，并留有可叠字空间。</label>
-          <label class="confirmation"><input v-model="rightsConfirmed" data-testid="synthesis-rights" type="checkbox" />我拥有此素材用于产品合成与分发的合法权限；此声明不代表平台独立核验。</label>
-          <button class="library-button primary" type="submit" :disabled="busy || !file || !name.trim() || !sourceStatement.trim() || !noTextConfirmed || !rightsConfirmed">{{ busy ? '处理中…' : '加入 AI 合成底图库' }}</button>
+          <div class="synthesis-edit-grid"><div class="synthesis-edit-fields">
+            <label>底图名称<input v-model="name" data-testid="synthesis-name" class="library-input" maxlength="100" /></label>
+            <label>来源说明（选填）<input v-model="sourceStatement" data-testid="synthesis-source" class="library-input" maxlength="1000" placeholder="可填写素材来源" /></label>
+            <div><strong>文字区域（像素）</strong><p class="synthesis-hint">蓝框为叠字范围，不会印入原图。</p><div class="safe-fields"><label v-for="field in fields" :key="field.key">{{ field.label }}<input v-model.number="safeArea[field.key]" :data-testid="`safe-${field.key}`" class="library-input" type="number" min="0" max="240" step="1" /></label></div></div>
+          </div><div class="synthesis-preview-column"><div class="safe-preview" aria-label="GIF 与文字区域预览"><img :src="preview || scopedAssetUrl(editing.url)" alt="底图动态预览" /><div class="safe-overlay" :style="{ left: `${safeArea.x / 2.4}%`, top: `${safeArea.y / 2.4}%`, width: `${safeArea.width / 2.4}%`, height: `${safeArea.height / 2.4}%` }">文字区域</div></div><button class="library-button" type="button" @click="fileInput?.click()">替换图片</button><span v-if="file" class="synthesis-hint">已选择：{{ file.name }}</span></div></div>
+          <div class="library-actions"><button data-testid="save-synthesis" class="library-button primary" type="submit" :disabled="busy || !name.trim()">保存修改</button><button class="library-button" type="button" :disabled="busy" @click="resetForm">取消</button></div>
         </fieldset>
       </form>
     </section>
-    <p v-if="message" class="library-notice success" role="status">{{ message }}</p>
-    <p v-if="error" class="library-notice error" role="alert">{{ error }}</p>
-    <div v-if="loadError" class="library-notice error" role="alert">{{ loadError }}<button data-testid="retry-synthesis" class="text-button" :disabled="loading || busy" @click="load">重试</button></div>
     <section class="library-panel">
-      <div class="section-heading"><h3>AI 合成底图 · {{ loaded ? assets.length : '—' }} 张</h3><button class="library-button" :disabled="loading || busy" @click="load">刷新</button></div>
+      <div class="section-heading"><div><h3>全部底图 <span class="library-badge">{{ loaded ? assets.length : '—' }}</span></h3><p>勾选图片后可批量删除个人底图。</p></div><button class="library-button" :disabled="loading || busy" @click="load">刷新列表</button></div>
+      <div class="synthesis-selection-bar"><div class="library-actions"><button data-testid="select-all-synthesis" class="library-button small" :disabled="busy || loading || !manageableAssets.length || selected.size === manageableAssets.length" @click="selectAll">全选</button><button data-testid="clear-synthesis-selection" class="library-button small" :disabled="busy || loading || !selected.size" @click="clearSelection">全不选</button><span class="selection-count" aria-live="polite">已选 {{ selected.size }} 张</span></div><button data-testid="delete-selected-synthesis" class="library-button danger" :disabled="busy || loading || !selected.size" @click="removeAssets(assets.filter(a => selected.has(a.id)))">删除所选<span v-if="selected.size">（{{ selected.size }}）</span></button></div>
       <p v-if="loading && !loaded" role="status">正在加载底图库…</p>
-      <p v-else-if="loaded && !assets.length" class="library-empty">暂无底图，请上传合格的无字动态 GIF。</p>
-      <div class="sticker-grid">
-        <article v-for="asset in assets" :key="asset.id" class="sticker-cell">
-          <div class="sticker-preview"><span v-if="failed.has(asset.id)">图片加载失败，请刷新重试</span><img v-else :src="scopedAssetUrl(asset.url)" :alt="asset.name" loading="lazy" @error="failed.add(asset.id)" /></div>
-          <div class="sticker-meta"><strong>{{ asset.name }}</strong><p><span class="library-badge">{{ asset.source === 'system' ? '系统底图 · 只读' : '个人无字底图' }}</span></p><small>{{ asset.width }} × {{ asset.height }} · GIF</small><p class="upload-hint">文字区：{{ asset.textSafeArea.x }}, {{ asset.textSafeArea.y }} / {{ asset.textSafeArea.width }} × {{ asset.textSafeArea.height }}</p><button v-if="asset.deletable && asset.source === 'personal'" :data-testid="`delete-synthesis-${asset.id}`" class="text-button danger" :disabled="busy || loading" @click="remove(asset)">删除底图</button></div>
+      <div v-else-if="loaded && !assets.length" class="library-empty"><strong>还没有底图</strong><p>选择一张 GIF，上传后即可在这里管理。</p><button class="library-button primary" :disabled="busy" @click="chooseUpload">＋ 上传第一张底图</button></div>
+      <div class="sticker-grid synthesis-grid">
+        <article v-for="asset in assets" :key="asset.id" :data-testid="`synthesis-card-${asset.id}`" class="sticker-cell" :class="{ selected: selected.has(asset.id) }">
+          <div class="sticker-preview"><span v-if="failed.has(asset.id)">图片加载失败，请刷新重试</span><img v-else :src="scopedAssetUrl(asset.url)" :alt="asset.name" loading="lazy" @error="failed.add(asset.id)" /><label v-if="manageable(asset)" class="synthesis-select"><input :data-testid="`select-synthesis-${asset.id}`" type="checkbox" :aria-label="`选择 ${asset.name}`" :checked="selected.has(asset.id)" :disabled="busy || loading" @change="toggleSelection(asset.id)" /></label><span class="synthesis-format">GIF</span></div>
+          <div class="sticker-meta"><strong>{{ asset.name }}</strong><p><span class="library-badge" :class="{ personal: manageable(asset) }">{{ asset.source === 'system' ? '系统底图 · 只读' : '个人底图' }}</span></p><small>{{ asset.width }} × {{ asset.height }} · 文字区 {{ asset.textSafeArea.width }} × {{ asset.textSafeArea.height }}</small><div v-if="manageable(asset)" class="synthesis-card-actions"><button :data-testid="`edit-synthesis-${asset.id}`" class="library-button small" :disabled="busy || loading" @click="startEdit(asset)">编辑</button><button :data-testid="`replace-synthesis-${asset.id}`" class="library-button small" :disabled="busy || loading" @click="startEdit(asset, true)">替换</button><button :data-testid="`delete-synthesis-${asset.id}`" class="library-button small danger" :disabled="busy || loading" @click="removeAssets([asset])">删除</button></div></div>
         </article>
       </div>
     </section>
@@ -114,16 +172,35 @@ onMounted(load);
 </template>
 
 <style scoped>
-.upload-fields { border:0; padding:0; display:grid; gap:18px; min-width:0; }
-.upload-fields > label:not(.confirmation) { display:grid; gap:8px; }
-.confirmation { display:flex; align-items:flex-start; gap:9px; line-height:1.7; }
-.confirmation input { margin-top:5px; }
-.safe-area-editor { display:flex; flex-wrap:wrap; gap:24px; align-items:center; }
-.safe-fields { display:grid; grid-template-columns:repeat(4,minmax(50px,100px)); gap:10px; margin-top:12px; }
-.safe-fields label { display:grid; gap:6px; }
-.safe-preview { width:240px; height:240px; position:relative; overflow:hidden; display:grid; place-items:center; background:#f5f5ef; border:1px solid #dce1ef; flex-shrink:0; }
+.synthesis-heading { justify-content:space-between; flex-wrap:wrap; }
+.synthesis-page .library-button { display:inline-flex; align-items:center; justify-content:center; gap:6px; border-radius:9px; font-weight:500; }
+.synthesis-page .library-button.danger { color:#b94f58; border-color:#f0d9dc; background:#fff6f6; }
+.synthesis-page .library-button.danger:hover:not(:disabled) { background:#ffe9eb; border-color:#e9b8bd; }
+.synthesis-tip { display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; color:#8490a4; font-size:12px; margin-bottom:22px; line-height:1.7; }
+.synthesis-page .library-panel { margin-bottom:20px; }
+.synthesis-selection-bar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; padding:14px; margin-bottom:20px; border:1px solid #e8ecf5; border-radius:12px; background:#f8f9fd; }
+.selection-count { color:#8490a4; font-size:12px; margin-left:4px; }
+.synthesis-grid { grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); }
+.synthesis-grid .sticker-cell { transition:border-color .15s,box-shadow .15s; }
+.synthesis-grid .sticker-cell.selected { border-color:#7784e4; box-shadow:0 0 0 2px #5261d81a; }
+.synthesis-grid .sticker-meta>strong { display:block; overflow-wrap:anywhere; margin-bottom:8px; }
+.synthesis-card-actions { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin-top:14px; }
+.synthesis-card-actions .library-button { padding:7px 4px; }
+.synthesis-select { position:absolute; top:10px; left:10px; display:grid; place-items:center; padding:7px; background:#fffffff0; border-radius:8px; cursor:pointer; }
+.synthesis-select input { width:18px; height:18px; margin:0; accent-color:#5261d8; cursor:pointer; }
+.synthesis-format { position:absolute; bottom:10px; right:10px; padding:3px 7px; border-radius:5px; background:#ffffffdd; color:#8490a4; font-size:10px; }
+.upload-fields { border:0; padding:0; display:grid; gap:20px; min-width:0; }
+.synthesis-editor { scroll-margin-top:20px; }
+.synthesis-edit-grid { display:flex; flex-wrap:wrap; gap:28px; align-items:start; }
+.synthesis-edit-fields { flex:1; min-width:0; display:grid; gap:18px; }
+.synthesis-edit-fields>label { display:grid; gap:8px; }
+.synthesis-hint { color:#8490a4; font-size:12px; line-height:1.7; overflow-wrap:anywhere; }
+.safe-fields { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-top:12px; }
+.safe-fields label { display:grid; gap:6px; font-size:12px; }
+.safe-fields .library-input { min-width:0; }
+.synthesis-preview-column { display:grid; gap:12px; max-width:100%; }
+.safe-preview { width:240px; max-width:100%; aspect-ratio:1; position:relative; overflow:hidden; display:grid; place-items:center; background:#f5f5ef; border:1px solid #dce1ef; border-radius:10px; }
 .safe-preview img { width:100%; height:100%; object-fit:contain; }
 .safe-overlay { position:absolute; box-sizing:border-box; display:grid; place-items:center; border:1px dashed #5261d8; background:#5261d822; color:#34419a; font-size:12px; pointer-events:none; }
-.synthesis-page .library-panel { margin-bottom:20px; }
-.upload-fields > button { justify-self:start; }
+@media(max-width:760px) { .synthesis-grid { grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); } .synthesis-edit-fields { flex-basis:100%; } .synthesis-selection-bar { padding:10px; } }
 </style>

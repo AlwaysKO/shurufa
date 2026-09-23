@@ -1,3 +1,4 @@
+import { visibleChatMessage } from '../chat/chatMessageVisibility.js';
 import { Router } from 'express';
 import type pg from 'pg';
 import { chatConversationScope, chatPlatforms, pendingConversation } from './chatPending.js';
@@ -48,7 +49,7 @@ export function createChatGroupDeletionRouter(pool: pg.Pool): Router {
             res.status(409).json({ error: '会话来源已变化或不属于当前手机和App，整批未删除，请刷新后重新选择' }); return;
           }
         }
-        deletedMessages = Number((await db.query('SELECT COUNT(*) AS count FROM chat_message WHERE user_id=$1 AND conversation_id=ANY($2::bigint[])', [userId, ids])).rows[0].count);
+        deletedMessages = Number((await db.query(`SELECT COUNT(*) AS count FROM chat_message m WHERE user_id=$1 AND conversation_id=ANY($2::bigint[]) AND ${visibleChatMessage()}`, [userId, ids])).rows[0].count);
         const assets = await db.query(`SELECT DISTINCT a.id FROM media_asset a JOIN chat_message_asset ma ON ma.asset_id=a.id
           JOIN chat_message m ON m.id=ma.message_id WHERE m.user_id=$1 AND a.user_id=$1 AND m.conversation_id=ANY($2::bigint[])`, [userId, ids]);
         const deleted = await db.query('DELETE FROM chat_conversation WHERE user_id=$1 AND id=ANY($2::bigint[]) RETURNING id', [userId, ids]);
@@ -87,7 +88,7 @@ export function createChatGroupDeletionRouter(pool: pg.Pool): Router {
         if (actual.size !== ids.length || !ids.every(id => actual.has(id))) {
           await db.query('ROLLBACK'); res.status(409).json({ error: '会话来源已变化，整组未删除，请刷新后重新确认' }); return;
         }
-        deletedMessages = Number((await db.query('SELECT COUNT(*) AS count FROM chat_message WHERE user_id=$1 AND conversation_id=ANY($2::bigint[])', [userId, ids])).rows[0].count);
+        deletedMessages = Number((await db.query(`SELECT COUNT(*) AS count FROM chat_message m WHERE user_id=$1 AND conversation_id=ANY($2::bigint[]) AND ${visibleChatMessage()}`, [userId, ids])).rows[0].count);
         const assets = await db.query(`SELECT DISTINCT a.id FROM media_asset a JOIN chat_message_asset ma ON ma.asset_id=a.id
           JOIN chat_message m ON m.id=ma.message_id WHERE m.user_id=$1 AND a.user_id=$1 AND m.conversation_id=ANY($2::bigint[])`, [userId, ids]);
         const deleted = await db.query('DELETE FROM chat_conversation WHERE user_id=$1 AND id=ANY($2::bigint[]) RETURNING id', [userId, ids]);

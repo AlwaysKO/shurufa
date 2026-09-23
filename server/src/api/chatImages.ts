@@ -1,3 +1,5 @@
+import { visibleChatMessage } from '../chat/chatMessageVisibility.js';
+import { expandScreenshotDeletion, tombstoneDeletedScreenshots } from '../chat/screenshotDeletion.js';
 import { chatConversationScope } from './chatPending.js';
 import { Router } from 'express';
 import type pg from 'pg';
@@ -24,7 +26,7 @@ export function createChatImagesRouter(pool: pg.Pool): Router {
         JOIN chat_conversation c ON c.id=m.conversation_id AND c.user_id=m.user_id
         JOIN chat_message_asset ma ON ma.message_id=m.id
         JOIN media_asset a ON a.id=ma.asset_id AND a.user_id=m.user_id
-        WHERE ${scope.sql} AND a.mime_type LIKE 'image/%'
+        WHERE ${scope.sql} AND ${visibleChatMessage()} AND a.mime_type LIKE 'image/%'
         GROUP BY m.id, a.id
       ), ordered AS (
         SELECT *, ROW_NUMBER() OVER (ORDER BY captured_at DESC, message_id DESC, position ASC, asset_id ASC) AS ordinal,
@@ -79,19 +81,22 @@ export function createChatImagesRouter(pool: pg.Pool): Router {
           JOIN media_asset a ON a.id=ma.asset_id
           JOIN jsonb_to_recordset($3::jsonb) AS selected(message_id uuid, asset_id bigint)
             ON selected.message_id=ma.message_id AND selected.asset_id=ma.asset_id
-          WHERE m.conversation_id=ANY($1::bigint[]) AND m.user_id=$2 AND a.user_id=$2 AND a.mime_type LIKE 'image/%'
+          WHERE m.conversation_id=ANY($1::bigint[]) AND m.user_id=$2 AND a.user_id=$2 AND ${visibleChatMessage()} AND a.mime_type LIKE 'image/%'
           ORDER BY ma.asset_id, ma.message_id, ma.role FOR UPDATE OF ma, a`, [conversationIds, userId, JSON.stringify(images)]);
         const actual = new Set(links.rows.map(row => `${row.message_id}:${row.asset_id}`));
         if (actual.size !== expected.size || [...expected].some(key => !actual.has(key))) {
           await db.query('ROLLBACK'); res.status(409).json({ error: '部分图片已变化或不属于当前会话，整批未删除，请刷新后重新选择' }); return;
         }
+        const expanded = await expandScreenshotDeletion(db, userId, images);
         const removed = await db.query(`DELETE FROM chat_message_asset ma USING jsonb_to_recordset($1::jsonb) AS selected(message_id uuid, asset_id bigint)
-          WHERE ma.message_id=selected.message_id AND ma.asset_id=selected.asset_id`, [JSON.stringify(images)]);
-        if (removed.rowCount !== links.rowCount) throw Error('Chat image deletion count mismatch');
+          WHERE ma.message_id=selected.message_id AND ma.asset_id=selected.asset_id`, [JSON.stringify(expanded.images)]);
+        if ((removed.rowCount ?? 0) < (links.rowCount ?? 0) || (!expanded.receiptIds.length && removed.rowCount !== links.rowCount)) throw Error('Chat image deletion count mismatch');
+        await tombstoneDeletedScreenshots(db, userId, expanded.receiptIds);
         // 仅清理删空的纯图片占位消息；真实文字及任何未选择的附件都保留。
         const messages = await db.query(`DELETE FROM chat_message m WHERE m.user_id=$1 AND m.conversation_id=ANY($2::bigint[]) AND m.id=ANY($3::uuid[])
           AND m.message_type='image' AND COALESCE(m.text,'') IN ('','图片','截图')
-          AND NOT EXISTS (SELECT 1 FROM chat_message_asset ma WHERE ma.message_id=m.id)`, [userId, conversationIds, messageIds]);
+          AND NOT (m.id=ANY($4::uuid[]))
+          AND NOT EXISTS (SELECT 1 FROM chat_message_asset ma WHERE ma.message_id=m.id)`, [userId, conversationIds, messageIds, expanded.receiptIds]);
         deletedMessages = messages.rowCount ?? 0;
         const assets = await db.query<{ storage_path: string }>(`DELETE FROM media_asset a WHERE a.user_id=$1 AND a.id=ANY($2::bigint[])
           AND NOT EXISTS (SELECT 1 FROM chat_message_asset ma WHERE ma.asset_id=a.id) RETURNING storage_path`, [userId, [...new Set(images.map(image => image.asset_id))]]);

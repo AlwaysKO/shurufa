@@ -70,6 +70,7 @@ private fun colorDistance(a: Int, b: Int): Int = maxOf(abs(Color.red(a)-Color.re
 
 /** 显示去掉装饰，身份仍保留原始昵称字形/Emoji；不让 OCR 行框和群人数改变键。 */
 internal fun wechatTitleEvidenceBounds(header: Bitmap, title: OcrTextLine): OcrTextLine? {
+    val title = withoutSeparatedWechatTitleControl(header, title)
     val width = header.width
     val height = header.height
     if (height < 8 || width < height * 5) return null
@@ -83,7 +84,7 @@ internal fun wechatTitleEvidenceBounds(header: Bitmap, title: OcrTextLine): OcrT
     }
     if (!blankColumn(left)) return null // 不用裁掉半个字的证据确认身份。
     var right = width - left
-    val suffix = Regex("[（(]\\s*\\d+\\s*[）)]$")
+    val suffix = Regex("[（(]\\s*\\d+\\s*[）)](?:\\s*[A-Za-z0-9]{1,2})?$")
     if (suffix.containsMatchIn(title.text.trim())) {
         val symbols = title.symbols
         val compact = symbols.joinToString("") { it.text.filterNot(Char::isWhitespace) }
@@ -102,6 +103,51 @@ internal fun wechatTitleEvidenceBounds(header: Bitmap, title: OcrTextLine): OcrT
         if (!blankColumn(right)) return null
     } else if (!blankColumn(right)) return null
     return title.copy(left = left, top = top, right = right, bottom = bottom)
+}
+
+/** 数字人数后的孤立灰色控件须有字框和原始对比度证据，不能删除正常中文尾字。 */
+private fun withoutSeparatedWechatTitleControl(header: Bitmap, title: OcrTextLine): OcrTextLine {
+    val match = Regex("[（(]\\s*\\d+\\s*[）)]").findAll(title.text).lastOrNull() ?: return title
+    val tail = title.text.substring(match.range.last + 1).trim()
+    if (tail.isEmpty() || tail.length > 2) return title
+    val compact = title.symbols.joinToString("") { it.text.filterNot(Char::isWhitespace) }
+    if (compact != title.text.filterNot(Char::isWhitespace)) return title
+    val trailer = title.symbols.takeLastWhile { symbol ->
+        symbol.text.isNotBlank() && symbol.text.none { it == ')' || it == '）' } &&
+            tail.contains(symbol.text.trim())
+    }
+    if (trailer.isEmpty() || trailer.joinToString("") { it.text.trim() } != tail) return title
+    val preceding = title.symbols.dropLast(trailer.size).lastOrNull() ?: return title
+    val background = header.getPixel(header.width / 2, 0)
+    // OCR 的相邻符号框会重叠；只用原图实际空白列判定控件分隔。
+    var gap = 0
+    var longestGap = 0
+    val scanTop = minOf(preceding.top, trailer.minOf { it.top }).coerceAtLeast(0)
+    val scanBottom = maxOf(preceding.bottom, trailer.maxOf { it.bottom }).coerceAtMost(header.height)
+    val scanLeft = ((preceding.left + preceding.right) / 2).coerceAtLeast(0)
+    val scanRight = ((trailer.first().left + trailer.first().right) / 2).coerceAtMost(header.width)
+    for (x in scanLeft until scanRight) {
+        val blank = (scanTop until scanBottom).all { colorDistance(header.getPixel(x, it), background) <= 20 }
+        gap = if (blank) gap + 1 else 0
+        longestGap = maxOf(longestGap, gap)
+    }
+    if (longestGap < header.height * .08) return title
+    fun contrast(symbols: List<OcrTextSymbol>): Int = symbols.maxOfOrNull { symbol ->
+        var peak = 0
+        for (y in symbol.top.coerceAtLeast(0) until symbol.bottom.coerceAtMost(header.height)) {
+            for (x in symbol.left.coerceAtLeast(0) until symbol.right.coerceAtMost(header.width)) {
+                val pixel = header.getPixel(x, y)
+                if (chroma(pixel) > 30) return -1 // 彩色昵称/主题不猜控件。
+                peak = maxOf(peak, colorDistance(pixel, background))
+            }
+        }
+        peak
+    } ?: 0
+    val textContrast = contrast(listOf(preceding))
+    val controlContrast = contrast(trailer)
+    if (textContrast < 80 || controlContrast < 20 || controlContrast > textContrast * .70) return title
+    return title.copy(text = title.text.substring(0, match.range.last + 1).trim(),
+        right = preceding.right, symbols = title.symbols.dropLast(trailer.size))
 }
 
 internal fun wechatNicknamePixelSignature(header: Bitmap, bounds: OcrTextLine): String? {

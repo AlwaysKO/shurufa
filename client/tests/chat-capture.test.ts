@@ -872,3 +872,16 @@ it.each([false, true])('建议归属必须重新校验，确认仅移动当前�
     } else expect(mergeChatConversation).toHaveBeenCalledExactlyOnceWith(12, 21);
   } finally { globalThis.window = previous; }
 });
+
+it('仅历史标题推测的非聊天页面明确标为疑似，保留人工确认入口', async () => {
+  fakeChatStorage();
+  const view = await mountChatCapture({
+    chatConversations: async () => ({ total: 1, conversations: [{ ...rememberedChat(-1), is_pending_group: true }] }),
+    chatMessages: async () => ({ total: 1, messages: [{ ...screenshot(8), conversation_id: 12, pending_diagnostic: {
+      reason: 'non_chat_page', non_chat_evidence: 'title_only', observed_title: '付款', suggested_conversations: [],
+    } }] }),
+  });
+  expect(view.text()).toContain('疑似非聊天页面，请看图确认');
+  expect(view.find('chat-confirm-source-message-8')).toBeDefined();
+  expect(view.find('chat-confirm-source-message-8')!.props.disabled).toBe(false);
+});

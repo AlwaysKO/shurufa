@@ -95,6 +95,31 @@ class WeChatChatAdapterTest {
         assertEquals("wechat-local",(adapter.parse(chatTree("朋友圈",emptyList())) as ParseResult.Success).viewport.conversation.accountKey)
     }
 
+    @Test fun rejectsLabelEditorEvenWhenItHasTitleAndEditText() {
+        val root = group(
+            node("com.tencent.mm:id/title", "编辑标签", 340, 50, 720, 130),
+            node(null, "完成", 910, 40, 1040, 135, "android.widget.Button"),
+            node(null, "亲情", 40, 450, 540, 560, "android.widget.EditText"),
+        )
+        assertTrue(adapter.parse(root) is ParseResult.Skip)
+    }
+
+    @Test fun rejectsWebFormWithoutExplicitChatControls() {
+        val root = group(
+            node("com.tencent.mm:id/title", "登录验证", 340, 50, 720, 130),
+            UiNodeSnapshot(null, "android.webkit.WebView", null, null, IntRect(0, 150, 1080, 1920),
+                listOf(node(null, "", 100, 1100, 900, 1220, "android.widget.EditText"))),
+        )
+        assertTrue(adapter.parse(root) is ParseResult.Skip)
+    }
+
+    @Test fun pageNamesAndEmbeddedWebContentDoNotBlacklistRealContacts() {
+        for (title in listOf("登录验证", "付款", "编辑标签", "完成")) {
+            val tree = chatTree(title, listOf(node(null, null, 80, 300, 750, 900, "android.webkit.WebView")))
+            assertEquals(title, (adapter.parse(tree) as ParseResult.Success).viewport.conversation.displayName)
+        }
+    }
+
     private fun chatTree(title: String, messages: List<UiNodeSnapshot>) = UiNodeSnapshot(
         null, "root", null, null, IntRect(0, 0, 1080, 1920), listOf(
             node("com.tencent.mm:id/chatting_title", title, 180, 50, 850, 130),

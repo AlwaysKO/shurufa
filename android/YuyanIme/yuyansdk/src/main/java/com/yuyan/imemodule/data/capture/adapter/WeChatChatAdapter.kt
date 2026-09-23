@@ -13,6 +13,7 @@ class WeChatChatAdapter : ChatAppAdapter {
     override val packageName: String = WECHAT_PACKAGE
 
     override fun parse(root: UiNodeSnapshot): ParseResult {
+        if (com.yuyan.imemodule.data.capture.media.isWechatNonChatTree(root)) return ParseResult.Skip(SkipReason.UNSUPPORTED_PAGE)
         val nodes = root.flatten()
         // 朋友圈评论/发现搜索也有EditText，不能把“有输入框”当成聊天页身份。
         val explicitChat = nodes.any { it.viewId.orEmpty().containsAny("chatting_title", "chatting_content_et", "chat_input") }

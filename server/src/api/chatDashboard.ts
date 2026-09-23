@@ -6,6 +6,8 @@ import { Router } from 'express';
 import { unlink } from 'node:fs/promises';
 import { resolve, sep } from 'node:path';
 import type pg from 'pg';
+import { visibleChatMessage } from '../chat/chatMessageVisibility.js';
+import { expandScreenshotDeletion, tombstoneDeletedScreenshots } from '../chat/screenshotDeletion.js';
 import { pendingMessageDiagnostics } from './chatPendingDiagnostics.js';
 
 
@@ -47,7 +49,7 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
           params,
         ),
         pool.query<{ count: string }>(
-          `SELECT COUNT(*) AS count FROM chat_message WHERE user_id = $1${filter}`,
+          `SELECT COUNT(*) AS count FROM chat_message m WHERE user_id = $1${filter} AND ${visibleChatMessage()}`,
           params,
         ),
         pool.query<{ count: string }>(
@@ -56,7 +58,7 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
             : `SELECT COUNT(DISTINCT a.id) AS count FROM media_asset a
                JOIN chat_message_asset ma ON ma.asset_id = a.id
                JOIN chat_message m ON m.id = ma.message_id
-               WHERE a.user_id = $1 AND m.user_id = $1 AND m.platform = $2`,
+               WHERE a.user_id = $1 AND m.user_id = $1 AND m.platform = $2 AND ${visibleChatMessage()}`,
           params,
         ),
       ]);
@@ -92,7 +94,7 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
              c.last_seen_at, COUNT(m.id) AS message_count,
              MAX(m.captured_at) AS last_message_at
            FROM chat_conversation c
-           LEFT JOIN chat_message m ON m.conversation_id = c.id AND m.user_id = c.user_id
+           LEFT JOIN chat_message m ON m.conversation_id = c.id AND m.user_id = c.user_id AND ${visibleChatMessage()}
            WHERE c.user_id = $1 AND c.merged_into_id IS NULL${platform === undefined ? '' : ' AND c.platform = $4'}${search ? ` AND COALESCE(c.display_name,c.external_key) ILIKE $${platform === undefined ? 4 : 5}` : ''}
            GROUP BY c.id, c.platform, c.account_key, c.external_key, c.display_name,
                     c.conversation_type, c.identity_confidence, c.first_seen_at,
@@ -141,15 +143,16 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
             SELECT 1 FROM chat_message_asset ma JOIN media_asset a ON a.id=ma.asset_id AND a.user_id=m.user_id
             WHERE ma.message_id=m.id AND a.mime_type NOT LIKE 'image/%'
           )
-        ) pictures ON true WHERE ${scope.sql}
+        ) pictures ON true WHERE ${scope.sql} AND ${visibleChatMessage()}
       ) ` : '';
       const from = gallery ? 'gallery_rows' : 'chat_message';
+      const visible = visibleChatMessage(from);
       const [totalResult, rowsResult] = await Promise.all([
         pool.query<{ count: string }>(`${prefix}SELECT COUNT(*) AS count FROM ${from}
-          WHERE user_id=$1 AND ${scopeFilter}`, scope.params),
+          WHERE user_id=$1 AND ${scopeFilter} AND ${visible}`, scope.params),
         pool.query(`${prefix}SELECT id, conversation_id, platform, direction, message_type, sender_key, sender_name,
           text, displayed_time, occurred_at, captured_at, sequence_hint, metadata${gallery ? ',gallery_asset_id' : ''}
-          FROM ${from} WHERE user_id=$1 AND ${scopeFilter} ORDER BY captured_at DESC,id DESC
+          FROM ${from} WHERE user_id=$1 AND ${scopeFilter} AND ${visible} ORDER BY captured_at DESC,id DESC
           ${gallery ? ',gallery_position ASC,gallery_asset_id ASC' : ''}
           LIMIT $${scope.params.length+1} OFFSET $${scope.params.length+2}`, [...scope.params,pageSize,offset]),
       ]);
@@ -231,7 +234,7 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
         return res.status(409).json({ error: '该会话已合并，请刷新后操作目标会话' });
       }
       const messageCount = await client.query<{ count: string }>(
-        'SELECT COUNT(*) AS count FROM chat_message WHERE conversation_id=$1 AND user_id=$2',
+        `SELECT COUNT(*) AS count FROM chat_message m WHERE conversation_id=$1 AND user_id=$2 AND ${visibleChatMessage()}`,
         [conversationId, res.locals.userId],
       );
       const candidateAssets = await client.query<{ id: string | number }>(
@@ -273,7 +276,7 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
   });
 
   router.delete('/messages/:messageId/assets/:assetId', async (req, res, next) => {
-    const messageId = req.params.messageId;
+    const messageId = req.params.messageId.toLowerCase();
     const assetId = Number(req.params.assetId);
     if (!messageId || !Number.isSafeInteger(assetId) || assetId <= 0) {
       return res.status(400).json({ error: 'message_id or asset_id is invalid' });
@@ -282,11 +285,12 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
     let deletedPath: string | null = null;
     try {
       await client.query('BEGIN');
+      await client.query('LOCK TABLE chat_conversation, chat_message, chat_message_asset, media_asset IN SHARE ROW EXCLUSIVE MODE');
       const association = await client.query(
         `SELECT ma.message_id FROM chat_message_asset ma
          JOIN chat_message m ON m.id=ma.message_id
          JOIN media_asset a ON a.id=ma.asset_id
-         WHERE ma.message_id=$1 AND ma.asset_id=$2 AND m.user_id=$3 AND a.user_id=$3
+         WHERE ma.message_id=$1 AND ma.asset_id=$2 AND m.user_id=$3 AND a.user_id=$3 AND ${visibleChatMessage()}
          FOR UPDATE`,
         [messageId, assetId, res.locals.userId],
       );
@@ -294,15 +298,15 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
         await client.query('ROLLBACK');
         return res.status(404).json({ error: 'message image not found' });
       }
-      await client.query(
-        'DELETE FROM chat_message_asset WHERE message_id=$1 AND asset_id=$2',
-        [messageId, assetId],
-      );
+      const expanded = await expandScreenshotDeletion(client, res.locals.userId, [{ message_id: messageId, asset_id: assetId }]);
+      const deletionIds = [...new Set(expanded.images.map(image => image.message_id))];
+      await client.query(`DELETE FROM chat_message_asset WHERE message_id IN (${deletionIds.map((_, i) => `$${i + 1}`).join(',')}) AND asset_id=$${deletionIds.length + 1}`, [...deletionIds, assetId]);
+      await tombstoneDeletedScreenshots(client, res.locals.userId, expanded.receiptIds);
       const remainingMessageAssets = await client.query(
         'SELECT 1 FROM chat_message_asset WHERE message_id=$1 LIMIT 1',
         [messageId],
       );
-      const deletedMessage = remainingMessageAssets.rowCount === 0
+      const deletedMessage = remainingMessageAssets.rowCount === 0 && !expanded.receiptIds.includes(messageId)
         ? await client.query(
           `DELETE FROM chat_message
            WHERE id=$1 AND user_id=$2 AND message_type='image'

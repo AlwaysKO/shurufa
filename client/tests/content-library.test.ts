@@ -295,76 +295,38 @@ it('AI底图库独立加载，系统只读，个人删除须确认', async () =>
   vi.stubGlobal('confirm', () => false); await view.find('delete-synthesis-blank-test')!.props.onClick(); expect(remove).not.toHaveBeenCalled();
   vi.stubGlobal('confirm', () => true); await view.find('delete-synthesis-blank-test')!.props.onClick(); expect(remove).toHaveBeenCalledWith('blank-test');
 });
-it('AI底图未确认无字与授权不能上传，成功显示去重反馈且不传关键词', async () => {
-  const upload = vi.fn().mockResolvedValue({ asset: synthesisAsset, duplicate: true });
-  const view = await mount('SynthesisLibrary', { synthesisLibrary: vi.fn().mockResolvedValue({ assets: [], total: 0 }), uploadSynthesisAsset: upload });
-  view.find('synthesis-name')!.props['onUpdate:modelValue']('测试');
-  view.find('synthesis-source')!.props['onUpdate:modelValue']('本人原创');
-  await view.find('synthesis-file')!.props.onChange({ target: { files: [new File(['GIF89a'], 'a.gif')], value: '' } });
-  await view.find('synthesis-form')!.props.onSubmit({ preventDefault() {} }); expect(upload).not.toHaveBeenCalled();
-  view.find('synthesis-no-text')!.props['onUpdate:modelValue'](true);
-  view.find('synthesis-rights')!.props['onUpdate:modelValue'](true);
-  await view.find('synthesis-form')!.props.onSubmit({ preventDefault() {} }); await settle();
-  expect(upload).toHaveBeenCalledWith(expect.objectContaining({ noTextConfirmed: true, rightsConfirmed: true, sourceStatement: '本人原创', textSafeArea: { x: 6, y: 190, width: 228, height: 44 } }));
-  expect(upload.mock.calls[0][0]).not.toHaveProperty('keywords'); expect(view.text()).toContain('已存在');
+it('选择GIF直接入库，无确认勾选或来源必填，文件名作为名称', async () => {
+ const upload=vi.fn().mockResolvedValue({asset:synthesisAsset,duplicate:true});
+ const view=await mount('SynthesisLibrary',{synthesisLibrary:vi.fn().mockResolvedValue({assets:[]}),uploadSynthesisAsset:upload});
+ expect(view.find('synthesis-no-text')).toBeUndefined();expect(view.find('synthesis-rights')).toBeUndefined();
+ await view.find('synthesis-file')!.props.onChange({target:{files:[new File(['GIF89a'],'眼神.gif')],value:''}});await settle();
+ expect(upload).toHaveBeenCalledWith(expect.objectContaining({name:'眼神',filename:'眼神.gif'}));
+ expect(upload.mock.calls[0][0]).not.toHaveProperty('noTextConfirmed');expect(upload.mock.calls[0][0]).not.toHaveProperty('rightsConfirmed');
+ expect(view.text()).toContain('已存在');
 });
-it('AI底图拒绝非GIF、空文件、超限文件与越界安全区', async () => {
-  const upload = vi.fn();
-  const view = await mount('SynthesisLibrary', { synthesisLibrary: vi.fn().mockResolvedValue({ assets: [], total: 0 }), uploadSynthesisAsset: upload });
-  for (const file of [new File(['x'], 'x.png'), new File([], 'x.gif'), { name: 'x.gif', size: 256001 }]) {
-    await view.find('synthesis-file')!.props.onChange({ target: { files: [file], value: '' } }); await settle();
-    expect(view.text()).toContain('250');
-  }
-  view.find('synthesis-name')!.props['onUpdate:modelValue']('测试'); view.find('synthesis-source')!.props['onUpdate:modelValue']('本人原创');
-  view.find('synthesis-no-text')!.props['onUpdate:modelValue'](true); view.find('synthesis-rights')!.props['onUpdate:modelValue'](true);
-  await view.find('synthesis-file')!.props.onChange({ target: { files: [new File(['GIF89a'], 'a.gif')], value: '' } });
-  view.find('synthesis-no-text')!.props['onUpdate:modelValue'](true); view.find('synthesis-rights')!.props['onUpdate:modelValue'](true);
-  view.find('safe-x')!.props['onUpdate:modelValue'](239);
-  await view.find('synthesis-form')!.props.onSubmit({ preventDefault() {} }); await settle();
-  expect(upload).not.toHaveBeenCalled(); expect(view.text()).toContain('不能超出 240');
-});
-it('AI底图库加载失败显示重试，上传失败保留表单', async () => {
-  const list = vi.fn().mockRejectedValueOnce(new Error('离线')).mockResolvedValue({ assets: [], total: 0 });
-  const view = await mount('SynthesisLibrary', { synthesisLibrary: list, uploadSynthesisAsset: vi.fn().mockRejectedValue(new Error('文件无动画')) });
-  expect(view.text()).toContain('离线'); await view.find('retry-synthesis')!.props.onClick(); await settle();
-  view.find('synthesis-name')!.props['onUpdate:modelValue']('保留我'); view.find('synthesis-source')!.props['onUpdate:modelValue']('本人原创');
-  view.find('synthesis-no-text')!.props['onUpdate:modelValue'](true); view.find('synthesis-rights')!.props['onUpdate:modelValue'](true);
-  await view.find('synthesis-file')!.props.onChange({ target: { files: [new File(['GIF89a'], 'a.gif')], value: '' } });
-  view.find('synthesis-no-text')!.props['onUpdate:modelValue'](true); view.find('synthesis-rights')!.props['onUpdate:modelValue'](true);
-  await view.find('synthesis-form')!.props.onSubmit({ preventDefault() {} }); await settle();
-  expect(view.text()).toContain('文件无动画'); expect(view.find('synthesis-name')!.value).toBe('保留我');
-});
-
-it('切换用户卸载页面后，尚在读文件的上传不得写入新用户', async () => {
-  const upload = vi.fn();
-  const view = await mount('SynthesisLibrary', { synthesisLibrary: vi.fn().mockResolvedValue({ assets: [], total: 0 }), uploadSynthesisAsset: upload });
-  const file = new File(['GIF89a'], 'a.gif'); let finish!: (value: ArrayBuffer) => void;
-  vi.spyOn(file, 'arrayBuffer').mockImplementation(() => new Promise(resolve => { finish = resolve; }));
-  await view.find('synthesis-file')!.props.onChange({ target: { files: [file], value: '' } });
-  view.find('synthesis-source')!.props['onUpdate:modelValue']('本人原创');
-  view.find('synthesis-no-text')!.props['onUpdate:modelValue'](true); view.find('synthesis-rights')!.props['onUpdate:modelValue'](true);
-  const pending = view.find('synthesis-form')!.props.onSubmit({ preventDefault() {} });
-  view.unmount(); finish(new ArrayBuffer(6)); await pending;
-  expect(upload).not.toHaveBeenCalled();
-});
-
-it('AI底图安全区至少14px容纳一个最小字及描边，边界可上传', async () => {
- const upload=vi.fn().mockResolvedValue({duplicate:false});
- const view=await mount('SynthesisLibrary',{synthesisLibrary:vi.fn().mockResolvedValue({assets:[],total:0}),uploadSynthesisAsset:upload});
- await view.find('synthesis-file')!.props.onChange({target:{files:[new File(['GIF89a'],'a.gif')],value:''}});
- view.find('synthesis-source')!.props['onUpdate:modelValue']('本人原创');
- view.find('synthesis-no-text')!.props['onUpdate:modelValue'](true);
- view.find('synthesis-rights')!.props['onUpdate:modelValue'](true);
- for(const [width,height] of [[13,14],[14,13],[1,1]]){
-  view.find('safe-width')!.props['onUpdate:modelValue'](width);
-  view.find('safe-height')!.props['onUpdate:modelValue'](height);
-  await view.find('synthesis-form')!.props.onSubmit({preventDefault(){}});await settle();
-  expect(upload).not.toHaveBeenCalled();expect(view.text()).toContain('至少 14');
+it('AI底图拒绝非GIF、空文件、超限文件', async () => {
+ const upload=vi.fn();const view=await mount('SynthesisLibrary',{synthesisLibrary:vi.fn().mockResolvedValue({assets:[]}),uploadSynthesisAsset:upload});
+ for(const file of [new File(['x'],'x.png'),new File([],'x.gif'),{name:'x.gif',size:256001}]){
+  await view.find('synthesis-file')!.props.onChange({target:{files:[file],value:''}});await settle();expect(view.text()).toContain('250');
  }
- view.find('safe-width')!.props['onUpdate:modelValue'](14);
- view.find('safe-height')!.props['onUpdate:modelValue'](14);
- await view.find('synthesis-form')!.props.onSubmit({preventDefault(){}});await settle();
- expect(upload).toHaveBeenCalledOnce();
+ expect(upload).not.toHaveBeenCalled();
+});
+it('AI底图库加载失败可重试，自动上传失败保留文件重试', async () => {
+ const list=vi.fn().mockRejectedValueOnce(new Error('离线')).mockResolvedValue({assets:[]});
+ const upload=vi.fn().mockRejectedValueOnce(new Error('网络中断')).mockResolvedValue({asset:synthesisAsset,duplicate:false});
+ const view=await mount('SynthesisLibrary',{synthesisLibrary:list,uploadSynthesisAsset:upload});
+ expect(view.text()).toContain('离线');await view.find('retry-synthesis')!.props.onClick();await settle();
+ await view.find('synthesis-file')!.props.onChange({target:{files:[new File(['GIF89a'],'保留我.gif')],value:''}});await settle();
+ expect(view.text()).toContain('网络中断');expect(view.find('retry-synthesis-upload')).toBeDefined();
+ await view.find('retry-synthesis-upload')!.props.onClick();await settle();expect(upload).toHaveBeenCalledTimes(2);
+ expect(upload.mock.calls[1][0].name).toBe('保留我');
+});
+it('切换用户卸载页面后，尚在读文件的自动上传不得写入新用户', async () => {
+ const upload=vi.fn();const view=await mount('SynthesisLibrary',{synthesisLibrary:vi.fn().mockResolvedValue({assets:[]}),uploadSynthesisAsset:upload});
+ const file=new File(['GIF89a'],'a.gif');let finish!:(value:ArrayBuffer)=>void;
+ vi.spyOn(file,'arrayBuffer').mockImplementation(()=>new Promise(resolve=>{finish=resolve}));
+ const pending=view.find('synthesis-file')!.props.onChange({target:{files:[file],value:''}});
+ view.unmount();finish(new ArrayBuffer(6));await pending;expect(upload).not.toHaveBeenCalled();
 });
 
 function editableLibrary() {
@@ -441,4 +403,64 @@ it('排序草稿期间删除同组图片剔除失效ID，不影响剩余顺序',
  // 删除后原始剩余顺序恰好相同，不再保存冗余或失效ID。
  expect(view.find('save-sticker-order')!.props.disabled).toBe(true);
  expect(update).not.toHaveBeenCalled();
+});
+
+it('底图全选和全不选仅选择可管理图片，批量删除取消不请求且失败可重试', async () => {
+ const mine={...synthesisAsset,id:'mine'},other={...synthesisAsset,id:'other'},system={...synthesisAsset,id:'system',source:'system',deletable:false};
+ const remove=vi.fn().mockResolvedValueOnce({ok:true}).mockRejectedValueOnce(new Error('网络中断'));
+ const view=await mount('SynthesisLibrary',{synthesisLibrary:vi.fn().mockResolvedValue({assets:[mine,other,system]}),deleteSynthesisAsset:remove});
+ expect(view.find('select-all-synthesis')).toBeDefined();
+ view.find('select-all-synthesis')!.props.onClick();await settle();
+ expect(view.text()).toContain('已选 2 张');expect(view.find('select-synthesis-system')).toBeUndefined();
+ view.find('clear-synthesis-selection')!.props.onClick();await settle();
+ expect(view.find('delete-selected-synthesis')!.props.disabled).toBe(true);
+ view.find('select-all-synthesis')!.props.onClick();await settle();
+ vi.stubGlobal('confirm',()=>false);await view.find('delete-selected-synthesis')!.props.onClick();expect(remove).not.toHaveBeenCalled();
+ vi.stubGlobal('confirm',()=>true);await view.find('delete-selected-synthesis')!.props.onClick();await settle();
+ expect(remove.mock.calls.map(c=>c[0])).toEqual(['mine','other']);
+ expect(view.text()).toContain('已删除 1 张');expect(view.text()).toContain('1 张删除失败');expect(view.text()).toContain('已选 1 张');
+});
+it('底图编辑回填资料，无需重传GIF，保存失败保留草稿', async () => {
+ const asset={...synthesisAsset,sourceStatement:'原创',layout:{minFontSize:12,maxFontSize:24,textColor:'#222222',strokeColor:'#ffffff',strokeWidth:1,alignment:'center',maxLines:2}};
+ const update=vi.fn().mockRejectedValueOnce(new Error('保存中断')).mockResolvedValue({asset:{...asset,name:'新名称'}});
+ const view=await mount('SynthesisLibrary',{synthesisLibrary:vi.fn().mockResolvedValue({assets:[asset]}),updateSynthesisAsset:update});
+ expect(view.find('edit-synthesis-blank-test')).toBeDefined();
+ view.find('edit-synthesis-blank-test')!.props.onClick();await settle();
+ expect(view.find('synthesis-name')!.value).toBe('测试底图');
+ view.find('synthesis-name')!.props['onUpdate:modelValue']('新名称');
+ await view.find('synthesis-form')!.props.onSubmit({preventDefault(){}});await settle();
+ expect(update).toHaveBeenCalledWith(asset.id,expect.objectContaining({name:'新名称',sourceStatement:'原创',textSafeArea:asset.textSafeArea,layout:asset.layout}));
+ expect(update.mock.calls[0][1]).not.toHaveProperty('file_base64');
+ expect(view.text()).toContain('保存中断');expect(view.find('synthesis-name')!.value).toBe('新名称');
+ await view.find('synthesis-form')!.props.onSubmit({preventDefault(){}});await settle();
+ expect(view.find('cancel-synthesis-edit')).toBeUndefined();expect(view.text()).toContain('底图已更新');
+});
+it('底图批量删除切换用户卸载后停止后续请求', async () => {
+ let finish!:()=>void;
+ const remove=vi.fn(()=>new Promise<void>(resolve=>{finish=resolve}));
+ const view=await mount('SynthesisLibrary',{synthesisLibrary:vi.fn().mockResolvedValue({assets:[synthesisAsset,{...synthesisAsset,id:'second'}]}),deleteSynthesisAsset:remove});
+ expect(view.find('select-all-synthesis')).toBeDefined();
+ view.find('select-all-synthesis')!.props.onClick();await settle();vi.stubGlobal('confirm',()=>true);
+ const pending=view.find('delete-selected-synthesis')!.props.onClick();await settle();
+ view.unmount();finish();await pending;
+ expect(remove).toHaveBeenCalledTimes(1);
+});
+
+it('较早的底图库刷新晚返回不能覆盖刚上传的图片', async () => {
+ let finish!:(value:any)=>void;
+ const list=vi.fn().mockResolvedValueOnce({assets:[]}).mockImplementationOnce(()=>new Promise(resolve=>{finish=resolve})).mockResolvedValue({assets:[synthesisAsset]});
+ const view=await mount('SynthesisLibrary',{synthesisLibrary:list,uploadSynthesisAsset:vi.fn().mockResolvedValue({asset:synthesisAsset,duplicate:false})});
+ const pending=view.all().find(n=>n.tag==='button'&&n.text==='刷新列表')!.props.onClick();await settle();
+ await view.find('synthesis-file')!.props.onChange({target:{files:[new File(['GIF89a'],'a.gif')],value:''}});await settle();
+ expect(view.find('synthesis-card-blank-test')).toBeDefined();
+ finish({assets:[]});await pending;await settle();
+ expect(view.find('synthesis-card-blank-test')).toBeDefined();
+});
+it('删除响应丢失但刷新确认已删除时移除失效勾选', async () => {
+ const list=vi.fn().mockResolvedValueOnce({assets:[synthesisAsset]}).mockResolvedValue({assets:[]});
+ const view=await mount('SynthesisLibrary',{synthesisLibrary:list,deleteSynthesisAsset:vi.fn().mockRejectedValue(new Error('响应丢失'))});
+ view.find('select-all-synthesis')!.props.onClick();await settle();vi.stubGlobal('confirm',()=>true);
+ await view.find('delete-selected-synthesis')!.props.onClick();await settle();
+ expect(view.find('synthesis-card-blank-test')).toBeUndefined();expect(view.text()).toContain('已选 0 张');expect(view.text()).toContain('已删除 1 张');
+ expect(view.text()).not.toContain('删除失败');
 });
