@@ -7,6 +7,10 @@ offline_associations.tsv.gzip 中的日常用语种子由本项目整理。
 https://github.com/chinese-poetry/chinese-poetry
 固定上游提交：b8594f81a89752241442f2ce267d6f66f96704ee
 使用范围：《古文观止》《唐诗三百首》《宋词三百首》《诗经》《千家诗》。
+input_completion.t9idx 的固定表达筛选另外使用《全唐诗》中的李白作品；
+准确源文件、提交和校验和见 input-completion-sources.json。
+该索引的词条、原始读音与词频来自 Rime-ice，来源声明及许可证保留在
+public-phrase-sources/；新增行政地名自动注音采用最低先验，不代表原始词频。
 
 上游项目采用 MIT License：
 

@@ -4,7 +4,10 @@ import kotlin.math.pow
 import com.yuyan.inputmethod.util.T9Spelling
 
 internal data class ChoiceEvidence(val text: String, val weight: Double, val updatedAt: Long, val lastSelectedAt: Long? = null)
-internal data class RankedCandidate(val text: String, val pinyin: String = "", val nativeIndex: Int? = null)
+internal data class RankedCandidate(
+    val text: String, val pinyin: String = "", val nativeIndex: Int? = null,
+    val inputMatch: InputSpellingMatch? = null,
+)
 
 /** 编码内平滑选择概率：近期明确选择优先，其余按基础先验 + 衰减选中次数。 */
 internal object PersonalCandidateRanker {
@@ -25,6 +28,7 @@ internal object PersonalCandidateRanker {
             unique[candidate.text] = if (previous == null) candidate else previous.copy(
                 nativeIndex = previous.nativeIndex ?: candidate.nativeIndex,
                 pinyin = previous.pinyin.ifBlank { candidate.pinyin },
+                inputMatch = previous.inputMatch ?: candidate.inputMatch,
             )
         }
         val baseSize = unique.size
@@ -48,6 +52,7 @@ internal object PersonalCandidateRanker {
 internal class CandidateSelection(
     val firstPage: List<RankedCandidate>, private val nativeCount: Int,
     private val excludedTexts: Set<String> = emptySet(),
+    private val extraMatch: (String, String) -> InputSpellingMatch? = { _, _ -> null },
     private val acceptNative: (String, String) -> Boolean = { _, _ -> true },
 ) {
     private val followingPages = mutableListOf<RankedCandidate>()
@@ -55,12 +60,16 @@ internal class CandidateSelection(
 
     fun appendNativePage(texts: List<String>, code: String, comments: List<String>? = null): List<Int> {
         val visible = texts.indices.filter {
-            isT9CandidateAllowed(code, texts[it]) && acceptNative(texts[it], comments?.getOrNull(it).orEmpty()) &&
+            val match = extraMatch(texts[it], comments?.getOrNull(it).orEmpty())
+            (match != null || isT9CandidateAllowed(code, texts[it])) && acceptNative(texts[it], comments?.getOrNull(it).orEmpty()) &&
+                (match != null ||
                 (comments?.getOrNull(it)?.let { reading -> T9Spelling.allows(code, texts[it], reading) }
-                    ?: if (comments == null) texts[it] !in excludedTexts else T9Spelling.allows(code, texts[it], ""))
+                    ?: if (comments == null) texts[it] !in excludedTexts else T9Spelling.allows(code, texts[it], "")))
         }
         visible.forEach { index ->
-            followingPages.add(RankedCandidate(texts[index], comments?.getOrNull(index).orEmpty(), nativeIndex = nextNativeIndex + index))
+            val reading = comments?.getOrNull(index).orEmpty()
+            followingPages.add(RankedCandidate(texts[index], reading, nativeIndex = nextNativeIndex + index,
+                inputMatch = extraMatch(texts[index], reading)))
         }
         nextNativeIndex += texts.size
         return visible

@@ -19,6 +19,8 @@ internal object OfflineT9Candidates {
     @Volatile private var domains: T9Lexicon? = null
     @Volatile private var publicPhrases: PublicPhraseIndex? = null
     @Volatile private var publicPhrasesAttempted = false
+    @Volatile private var inputCompletions: InputCompletionIndex? = null
+    @Volatile private var inputCompletionsAttempted = false
     @Volatile private var store: LocalInputStore? = null
 
     fun init(context: Context) {
@@ -31,6 +33,11 @@ internal object OfflineT9Candidates {
             publicPhrasesAttempted = true
             try { publicPhrases = PublicPhraseIndex.load(context) }
             catch (error: Exception) { Log.w("OfflineT9", "公开词条索引不可用，保留既有过滤", error) }
+        }
+        if (!inputCompletionsAttempted) {
+            inputCompletionsAttempted = true
+            try { inputCompletions = InputCompletionIndex.load(context) }
+            catch (error: Exception) { Log.w("OfflineT9", "简拼补全索引不可用，保留既有输入", error) }
         }
         if (lexicon != null) return
         try {
@@ -78,6 +85,12 @@ internal object OfflineT9Candidates {
         )
         val history = try { store?.relatedLearned(code).orEmpty() } catch (_: Exception) { emptyList() }
         val personalWords = try { store?.personalWords(code).orEmpty() } catch (_: Exception) { emptyList() }
+        val completions = inputCompletions?.query(code).orEmpty()
+        val extraReadings = (completions + personalWords).mapNotNull { word ->
+            InputSpellingMatch.match(code, word.pinyin)?.let { (word.text to word.pinyin) to it }
+        }.toMap()
+        fun extraMatch(text: String, reading: String): InputSpellingMatch? =
+            extraReadings[text to PersonalWordReading.normalize(text, reading)]
         val retainedTexts = history.mapTo(hashSetOf()) { it.choice.text }.apply { addAll(native) }
         val selectedByText = history.filter { it.choice.count > 0 }.groupBy { it.choice.text }
         val mainDictionary = lexicon
@@ -101,7 +114,7 @@ internal object OfflineT9Candidates {
             }
         }
         fun trusted(text: String, reading: String): Boolean =
-            locallyTrusted(text, reading) || publicPhrases?.contains(text) == true
+            locallyTrusted(text, reading) || publicPhrases?.contains(text) == true || extraMatch(text, reading) != null
         val rejected = mutableSetOf<String>()
         val accepted = mutableSetOf<String>()
         fun lookup(dictionary: T9Lexicon?): List<T9Candidate> = if (numeric) {
@@ -113,25 +126,29 @@ internal object OfflineT9Candidates {
         val dictionaryWords = lookup(mainDictionary)
         val domainWords = lookup(domainDictionary)
         val allLocalReadings = dictionaryWords + domainWords + personalWords
-        personalWords.forEach { accepted.add(it.text) }
+        (personalWords + completions).forEach { accepted.add(it.text) }
         val common = if (numeric) allLocalReadings.groupBy { it.text }.values
             .map { readings -> readings.maxBy { it.frequency } }.sortedByDescending { it.frequency }
         else allLocalReadings.distinctBy { it.text }
         // 原生读音直接校验，不能依赖本地词库是否收录该词。
         val nativeAllowed = native.indices.map { index ->
-            nativeComments == null || T9Spelling.allows(code, native[index], nativeComments.getOrNull(index).orEmpty())
+            nativeComments == null || T9Spelling.allows(code, native[index], nativeComments.getOrNull(index).orEmpty()) ||
+                extraMatch(native[index], nativeComments.getOrNull(index).orEmpty()) != null
         }
         if (numeric && nativeComments != null) {
             native.indices.filter { nativeAllowed[it] }.forEach { accepted.add(native[it]) }
         }
         // 多音字或两个词库中的不同读音，只要存在合法拼写就不误删。
         rejected.removeAll(accepted)
-        val local = common.map { RankedCandidate(it.text, it.pinyin) }
+        // 新匹配独立混排，不进入旧整词分组或关闭原生整句回退。
+        val local = common.filter { extraMatch(it.text, it.pinyin) == null }.map { RankedCandidate(it.text, it.pinyin) }
         val localReadings = local.associate { it.text to it.pinyin }
         val original = native.mapIndexedNotNull { index, text ->
-            val reading = if (numeric) nativeComments?.getOrNull(index) ?: localReadings[text].orEmpty() else ""
-            if (!nativeAllowed[index] || !isT9CandidateAllowed(code, text) || text in rejected || !trusted(text, reading)) null
-            else RankedCandidate(text, reading, nativeIndex = index)
+            val nativeReading = nativeComments?.getOrNull(index) ?: localReadings[text].orEmpty()
+            val match = extraMatch(text, nativeReading)
+            val reading = if (numeric || match != null) nativeReading else localReadings[text].orEmpty()
+            if (!nativeAllowed[index] || (match == null && !isT9CandidateAllowed(code, text)) || text in rejected || !trusted(text, reading)) null
+            else RankedCandidate(text, reading, nativeIndex = index, inputMatch = match)
         }
         // 整句不必预先作为词条收录。没有可信整词时保留原生完整解码，
         // 不在应用层拼字或用词性/长度猜语义；已有完整词和个人选择仍优先。
@@ -191,7 +208,26 @@ internal object OfflineT9Candidates {
             }
             singleSyllables + local + original
         } else original + local
-        val validTexts = base.mapTo(hashSetOf()) { it.text }
+        val extras = (completions + personalWords).distinctBy { it.text to it.pinyin }.mapNotNull { word ->
+            extraMatch(word.text, word.pinyin)?.let { RankedCandidate(word.text, word.pinyin, inputMatch = it) }
+        }
+        val initials = extras.filter { it.inputMatch?.kind == InputMatchKind.THREE_INITIALS }
+        val phrases = extras.filter { it.inputMatch?.kind == InputMatchKind.PHRASE_PREFIX }
+            .distinctBy { it.text }
+        val wholePhrases = extras.filter { it.inputMatch?.kind == InputMatchKind.WHOLE_PHRASE }
+        val withWhole = wholePhrases + base
+        val withInitials = if (initials.isEmpty()) withWhole else {
+            // 已有完整单音节/整词继续优先；三字简拼排在只覆盖部分按键的前缀之前。
+            // 无注释的兼容调用无法核对单字读音，继续保留其原生优先级。
+            val (whole, prefix) = withWhole.partition {
+                (nativeComments == null && it.nativeIndex != null && it.text.codePointCount(0, it.text.length) == 1) ||
+                T9Lexicon.digits(it.pinyin.replace(" ", "").replace("'", "")) == code ||
+                    code in T9Spelling.completionCodes(it.pinyin, minLength = 3)
+            }
+            whole + initials + prefix
+        }
+        val combined = if (phrases.isEmpty()) withInitials else withInitials.take(1) + phrases + withInitials.drop(1)
+        val validTexts = combined.mapTo(hashSetOf()) { it.text }
         val compatibleReadings = (allLocalReadings.map { RankedCandidate(it.text, it.pinyin) } + original + nativeSentences)
             .groupBy { it.text }.mapValues { (_, readings) ->
                 readings.map { T9Spelling.completionCodes(it.pinyin, minLength = 3) }.distinct()
@@ -199,7 +235,7 @@ internal object OfflineT9Candidates {
         val now = System.currentTimeMillis()
         val learned = history.filter { record ->
             val text = record.choice.text
-            record.choice.count > 0 && isT9CandidateAllowed(code, text) && text !in rejected &&
+            record.choice.count > 0 && (text in validTexts || isT9CandidateAllowed(code, text)) && text !in rejected &&
                 (!numeric || nativeComments == null || text in validTexts) &&
                 (record.code == code || compatibleReadings[text].orEmpty().any { codes ->
                     code in codes && record.code in codes
@@ -212,8 +248,13 @@ internal object OfflineT9Candidates {
         }
         // 明确手工词只在原拼写边界内获得基础先验，不写假点击，不改变锁音原生链。
         val preferred = try { store?.personalWords(code, preferredOnly = true).orEmpty() } catch (_: Exception) { emptyList() }
-        val ranked = PersonalCandidateRanker.rank(preferred.map { RankedCandidate(it.text,it.pinyin) } + base, learned, now)
-        return CandidateSelection(ranked, native.size, rejected.toSet()) { text, reading ->
+        var phraseCount = 0
+        val ranked = PersonalCandidateRanker.rank(preferred.map {
+            RankedCandidate(it.text, it.pinyin, inputMatch = extraMatch(it.text, it.pinyin))
+        } + combined, learned, now).filter {
+            it.inputMatch?.kind != InputMatchKind.PHRASE_PREFIX || ++phraseCount <= 2
+        }
+        return CandidateSelection(ranked, native.size, rejected.toSet(), ::extraMatch) { text, reading ->
             trusted(text, reading) || nativeWhole(text, reading)
         }
     }

@@ -1,0 +1,11 @@
+{
+  "rime_revision": "859e3b5300e0ea01334a627b15db101e94312a75",
+  "poetry_revision": "b8594f81a89752241442f2ce267d6f66f96704ee",
+  "daily_sha256": "c947a86f46b2b6f5203bafa5df717d8f3a1c340f76e64230c54b4293de8ec680",
+  "rows": 166096,
+  "short_words": 160456,
+  "long_phrases": 2820,
+  "generated_place_readings": 3400,
+  "size": 5911794,
+  "sha256": "f4ffa90946bd3f8dc0f9bf5937498c673eb5d51bd8563f7759d5c630f9ab7506"
+}

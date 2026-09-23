@@ -411,11 +411,18 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
     }
 
     @Synchronized fun personalWords(code: String, preferredOnly: Boolean = false): List<T9Candidate> {
-        if (code.length !in 3..30 || code.any { it !in '2'..'9' }) return emptyList()
+        if (code.length !in 3..30 || !(code.all { it in '2'..'9' } || code.all { it in 'a'..'z' })) return emptyList()
+        val numeric = code.all { it in '2'..'9' }
+        val prefix = if (numeric) code else T9Lexicon.digits(code)
+        val initials = if (numeric && code.length == 3) code.map {
+            "[${arrayOf("abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz")[it - '2']}]*"
+        }.joinToString(" ") else null
         val sources = if (preferredOnly) "SELECT text,pinyin,full_code FROM dictionary_added_word WHERE preferred=1"
             else "SELECT text,pinyin,full_code FROM personal_word UNION ALL SELECT text,pinyin,full_code FROM dictionary_remote_word UNION ALL SELECT text,pinyin,full_code FROM dictionary_added_word"
+        val condition = if (initials == null) "full_code GLOB ?" else "(full_code GLOB ? OR (length(text)=3 AND pinyin GLOB ?))"
+        val args = if (initials == null) arrayOf("$prefix*") else arrayOf("$prefix*", initials)
         return readableDatabase.rawQuery(
-            "SELECT DISTINCT text,pinyin FROM ($sources) WHERE full_code GLOB ? AND text NOT IN (SELECT text FROM dictionary_policy WHERE status!='enabled') ORDER BY text,pinyin", arrayOf("$code*"),
+            "SELECT DISTINCT text,pinyin FROM ($sources) WHERE $condition AND text NOT IN (SELECT text FROM dictionary_policy WHERE status!='enabled') ORDER BY text,pinyin", args,
         ).use { c -> buildList {
             while (c.moveToNext()) {
                 val reading = c.getString(1)

@@ -6,6 +6,7 @@ import com.yuyan.imemodule.application.Launcher
 import com.yuyan.imemodule.data.completion.OfflineT9Candidates
 import com.yuyan.imemodule.data.completion.CandidateSelection
 import com.yuyan.imemodule.data.completion.RankedCandidate
+import com.yuyan.imemodule.data.completion.InputSpellingMatch
 import com.yuyan.imemodule.data.completion.T9CommitTracker
 import com.yuyan.imemodule.data.completion.CompletionSync
 import com.yuyan.imemodule.data.completion.OfflineAssociationCompletion
@@ -112,6 +113,10 @@ object RimeEngine {
     fun selectCandidate(index: Int): String? {
         val code = learningCode(forCommit = true)
         val selected = candidateForSelection(index)
+        if (selected?.inputMatch?.let { it.code != code } == true) {
+            updateCandidatesOrCommitText()
+            return null
+        }
         if (selected != null && selected.nativeIndex == null) {
             reset()
             preCommitText = selected.text
@@ -327,11 +332,11 @@ object RimeEngine {
             }
             val first = selection.firstPage.firstOrNull()
             if (code.isNotEmpty()) {
-                composition = if (rimeSchema == CustomConstant.SCHEMA_ZH_T9) {
+                composition = first?.inputMatch?.takeIf { it.code == code }?.preedit ?: if (rimeSchema == CustomConstant.SCHEMA_ZH_T9) {
                     val reading = first?.pinyin?.takeIf { it.isNotBlank() }
                         ?: showCandidates.drop(customPhraseSize).firstOrNull()?.comment.orEmpty()
                     T9Spelling.preedit(code, reading) ?: code
-                } else first?.pinyin?.takeIf { it.isNotBlank() }?.replace(' ', '\'') ?: composition
+                } else first?.pinyin?.let { InputSpellingMatch.typedPrefix(code, it) } ?: composition
             } else {
                 // 保留原生已选前缀，余段读音跟随个人重排后的首项。
                 composition = getCurrentComposition(showCandidates.drop(customPhraseSize))

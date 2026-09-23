@@ -1,0 +1,37 @@
+{
+  "repository": "https://github.com/chinese-poetry/chinese-poetry",
+  "revision": "b8594f81a89752241442f2ce267d6f66f96704ee",
+  "files": [
+    {
+      "path": "蒙学/tangshisanbaishou.json",
+      "url": "https://raw.githubusercontent.com/chinese-poetry/chinese-poetry/b8594f81a89752241442f2ce267d6f66f96704ee/%E8%92%99%E5%AD%A6/tangshisanbaishou.json",
+      "sha256": "8423b65d938d0327e369972e790549b42609fa7ac4a2a72df59f4cb5a49c08f8"
+    },
+    {
+      "path": "蒙学/qianjiashi.json",
+      "url": "https://raw.githubusercontent.com/chinese-poetry/chinese-poetry/b8594f81a89752241442f2ce267d6f66f96704ee/%E8%92%99%E5%AD%A6/qianjiashi.json",
+      "sha256": "cf34d01ed29528052da5d96543e725ab67814a6cb093183808c889400ff62417"
+    },
+    {
+      "path": "宋词/宋词三百首.json",
+      "url": "https://raw.githubusercontent.com/chinese-poetry/chinese-poetry/b8594f81a89752241442f2ce267d6f66f96704ee/%E5%AE%8B%E8%AF%8D/%E5%AE%8B%E8%AF%8D%E4%B8%89%E7%99%BE%E9%A6%96.json",
+      "sha256": "ca5d74f7fdb9d5a6acc22a7c8b4395228cad4bb8be53df44c19ba83ab6983b20"
+    },
+    {
+      "path": "全唐诗/poet.tang.7000.json",
+      "authors": [
+        "李白"
+      ],
+      "url": "https://raw.githubusercontent.com/chinese-poetry/chinese-poetry/b8594f81a89752241442f2ce267d6f66f96704ee/%E5%85%A8%E5%94%90%E8%AF%97/poet.tang.7000.json",
+      "sha256": "a6fb69d7b4343c904dc56ae5aae34facc2478d196b51c37ceba9d1e2f171b342"
+    },
+    {
+      "path": "全唐诗/poet.tang.8000.json",
+      "authors": [
+        "李白"
+      ],
+      "url": "https://raw.githubusercontent.com/chinese-poetry/chinese-poetry/b8594f81a89752241442f2ce267d6f66f96704ee/%E5%85%A8%E5%94%90%E8%AF%97/poet.tang.8000.json",
+      "sha256": "ac3848e95b02736168003863795de4474838c2d6a71a24ca2a4a280ea5177773"
+    }
+  ]
+}

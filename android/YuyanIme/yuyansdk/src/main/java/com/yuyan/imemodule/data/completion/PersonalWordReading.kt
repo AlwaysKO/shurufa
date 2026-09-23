@@ -11,5 +11,6 @@ internal object PersonalWordReading {
         return normalized.takeIf { it.split(' ').size == text.length }
     }
     fun matches(code: String, reading: String): Boolean =
-        code == T9Lexicon.digits(reading.replace(" ", "")) || code in T9Spelling.completionCodes(reading, minLength = 3)
+        code == T9Lexicon.digits(reading.replace(" ", "")) || code in T9Spelling.completionCodes(reading, minLength = 3) ||
+            InputSpellingMatch.match(code, reading) != null
 }
