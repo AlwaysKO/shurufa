@@ -15,26 +15,37 @@ export async function dashboardFetch(url: string, options: RequestInit = {}): Pr
   return response;
 }
 /** 原文件上传，不在主线程生成Base64；进度仅表示已传输字节，响应成功后才算保存。 */
-export function dashboardUpload(url: string, file: File, onProgress: (percent: number) => void): Promise<Response> {
+export function dashboardUpload(url: string, file: File, onProgress: (percent: number) => void, method = 'POST'): Promise<Response> {
   const epoch = authEpoch;
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', url);
+    const id = crypto.randomUUID(), started = performance.now();
+    let transferMs: number | null = null;
+    const report = (outcome: string) => {
+      const data = { id, kind: url.includes('synthesis-library') ? 'synthesis' : 'sticker', outcome, totalMs: Math.round(performance.now() - started), transferMs, bytes: file.size, status: xhr.status || 0 };
+      // 仅上报耗时，不等待诊断请求，不影响上传结果。
+      const user = new URLSearchParams(url.split('?')[1] ?? '').get('user_id');
+      void dashboardFetch('/api/v1/dashboard/upload-diagnostics' + (user ? `?user_id=${encodeURIComponent(user)}` : ''), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).catch(() => {});
+    };
+    xhr.upload.onload = () => { transferMs = Math.round(performance.now() - started); };
+    xhr.open(method, url);
     xhr.timeout = 120_000;
     xhr.setRequestHeader('X-Dashboard-Request', '1');
+    xhr.setRequestHeader('X-Upload-Id', id);
     xhr.setRequestHeader('Content-Type', 'application/octet-stream');
     xhr.upload.onprogress = event => {
       if (event.lengthComputable) onProgress(Math.round(event.loaded / event.total * 100));
     };
     xhr.onload = () => {
+      report('load');
       if (xhr.status === 401 && epoch === authEpoch) {
         authEpoch++; authenticated.value = false; loginName.value = ''; onExpired?.();
       }
       resolve(new Response(xhr.responseText, { status: xhr.status }));
     };
-    xhr.onerror = () => reject(new Error('上传连接中断，请刷新核对是否已保存后再重试'));
-    xhr.ontimeout = () => reject(new Error('上传超时，请刷新核对是否已保存后再重试'));
-    xhr.onabort = () => reject(new Error('上传已取消'));
+    xhr.onerror = () => { report('error'); reject(new Error('上传连接中断，请刷新核对是否已保存后再重试')); };
+    xhr.ontimeout = () => { report('timeout'); reject(new Error('上传超时，请刷新核对是否已保存后再重试')); };
+    xhr.onabort = () => { report('abort'); reject(new Error('上传已取消')); };
     xhr.send(file);
   });
 }

@@ -5,6 +5,7 @@ import { resolveKeywordGifFile } from './expression/keywordGifLibrary.js';
 import { createSynthesisLibraryRouter } from './api/synthesisLibrary.js';
 import 'dotenv/config';
 import express from 'express';
+import { uploadTiming } from './lib/uploadTiming.js';
 import cors from 'cors';
 import { mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -51,6 +52,7 @@ export function createApp(pool: pg.Pool, options: CreateAppOptions = {}): expres
   const auth = createDashboardAuth();
   const relationshipAiProvider = options.relationshipAiProvider ?? new DeepSeekProvider();
   app.use('/api/v1/mobile', cors());
+  app.use(uploadTiming);
   app.use(express.json({ limit: '10mb' }));
 
   app.get('/health', (_req, res) => {

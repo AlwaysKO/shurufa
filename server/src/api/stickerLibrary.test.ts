@@ -426,3 +426,19 @@ it('聊天附件仍不缓存并按所属用户鉴权',async()=>{
   expect(own.status).toBe(200);expect(own.headers['cache-control']).toContain('no-store');
   expect((await agent.get('/uploads/chat/synthetic.gif').query({user_id:B})).status).toBe(404);
 });
+it('上传诊断只记录关联编号和耗时，不记录关键词或文件名',async()=>{
+  const log=vi.spyOn(console,'info').mockImplementation(()=>{});
+  const id='10000000-0000-4000-8000-000000000001';
+  const gif=Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7','base64');
+  const result=await agent.post('/api/v1/dashboard/stickers').query({filename:'私密文件名.gif',group_keyword:'你好'}).set('X-Upload-Id',id).set('Content-Type','application/octet-stream').send(gif);
+  expect(result.status).toBe(201);expect(result.headers['x-upload-id']).toBe(id);
+  const record=log.mock.calls.find(c=>c[0]==='[upload-server]')!;
+  const timing=JSON.parse(String(record[1]));expect(timing).toMatchObject({id,status:201,aborted:false});
+  expect(timing.stages).toHaveProperty('databaseSave');expect(timing.stages).toHaveProperty('responseGroup');
+  expect(String(record[1])).not.toContain('私密文件名');expect(String(record[1])).not.toContain('你好');
+  const data={id,kind:'sticker',outcome:'load',totalMs:5000,transferMs:4500,bytes:gif.length,status:201,filename:'不应记录'};
+  expect((await agent.post('/api/v1/dashboard/upload-diagnostics?user_id='+A).send(data)).status).toBe(200);
+  expect(String(log.mock.calls.find(c=>c[0]==='[upload-client]')![1])).not.toContain('不应记录');
+  expect((await agent.post('/api/v1/dashboard/upload-diagnostics?user_id='+A).send({...data,totalMs:-1})).status).toBe(400);
+  expect((await request(app).post('/api/v1/dashboard/upload-diagnostics?user_id='+A).send(data)).status).toBe(401);
+});

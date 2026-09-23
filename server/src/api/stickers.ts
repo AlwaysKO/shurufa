@@ -6,6 +6,7 @@ import { systemExpressionCatalog } from './expressionSnapshot.js';
 import sharp from 'sharp';
 import { Router, raw } from 'express';
 import compression from 'compression';
+import { uploadClientTiming } from '../lib/uploadTiming.js';
 import { mkdir, writeFile } from 'node:fs/promises';
 import type express from 'express';
 import type pg from 'pg';
@@ -91,6 +92,7 @@ export function createMobileStickerRouter(pool: pg.Pool): Router {
 
 export function createDashboardStickerRouter(pool: pg.Pool): Router {
   const router = Router();
+  router.post('/upload-diagnostics', uploadClientTiming);
   router.use((req, res, next) => {
     if (!/^\/(?:sticker|system-sticker)/.test(req.path)) return next();
     const started = performance.now(), json = res.json;
@@ -196,6 +198,7 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
     });
   }, async (req, res, next) => {
     try {
+      res.locals.markUpload?.('receiveAndParse');
       const binary = Buffer.isBuffer(req.body);
       const body = (binary ? req.query : req.body) as { file_base64?: string; filename?: string; keywords?: string; group_keyword?: string; width?: number; height?: number };
       if ((!binary && !body?.file_base64) || typeof body?.filename !== 'string' || !body.filename) {
@@ -214,10 +217,12 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
         const detected = dimensions.format === 'jpeg' ? 'jpg' : dimensions.format;
         if (detected !== format) return res.status(400).json({ error: 'image format does not match filename' });
       } catch { return res.status(400).json({ error: 'invalid image' }); }
+      res.locals.markUpload?.('imageMetadata');
       const fileName = `${randomUUID()}${ext}`;
       let row: Record<string, unknown>;
       try {
         row = await withGroupLock(pool, SHARED_STICKER_OWNER, async db => {
+          res.locals.markUpload?.('databaseLock');
           let keywords = String(body.keywords ?? '').trim();
           if (body.group_keyword !== undefined) {
             if (typeof body.group_keyword !== 'string') throw new StickerGroupError(400, '关键词组格式不正确');
@@ -230,8 +235,10 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
             throw new StickerGroupError(400, '关键词须为1～100字，不含换行；多个关键词用逗号分隔');
           }
           await assertStickerKeywordsActive(db, keywords);
+          res.locals.markUpload?.('groupValidation');
           await mkdir(stickerDirectory(), { recursive: true });
           await writeFile(join(stickerDirectory(), fileName), buffer);
+          res.locals.markUpload?.('writeFile');
           const result = await db.query(
             `INSERT INTO sticker (user_id, keywords, file_name, format, width, height, sha256)
              VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -239,15 +246,19 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
             [SHARED_STICKER_OWNER, keywords, fileName, format, dimensions.width ?? null, dimensions.pageHeight ?? dimensions.height ?? null, createHash('sha256').update(buffer).digest('hex')],
           );
           await rememberStickerKeywords(db, SHARED_STICKER_OWNER, keywords);
+          res.locals.markUpload?.('databaseSave');
           return result.rows[0];
         });
       } catch (error) {
         if (existsSync(join(stickerDirectory(), fileName))) unlinkSync(join(stickerDirectory(), fileName));
         throw error;
       }
+      res.locals.markUpload?.('commit');
       await publishStickerBundle(pool);
+      res.locals.markUpload?.('bundleExport');
       const group = body.group_keyword === undefined ? undefined :
         (await loadStickerLibrary(pool, SHARED_STICKER_OWNER)).groups.find(item => item.keyword === body.group_keyword);
+      res.locals.markUpload?.('responseGroup');
       res.status(201).json({
         group,
         id: row.id,
