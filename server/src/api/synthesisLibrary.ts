@@ -1,3 +1,4 @@
+import { loadSynthesisOrder, orderSynthesisAssets } from './synthesisOrder.js';
 import { Router, raw } from 'express';
 import type pg from 'pg';
 import sharp from 'sharp';
@@ -56,16 +57,35 @@ export function createSynthesisLibraryRouter(pool: pg.Pool) {
             next();
         });
     });
-    router.get('/synthesis-library', async (_req, res, next) => { try {
-        const [catalog, rows] = await Promise.all([systemExpressionCatalog(), pool.query('SELECT * FROM synthesis_asset WHERE user_id = $1 ORDER BY created_at DESC', [res.locals.userId])]);
+    async function listing(userId: string) {
+        const [catalog, rows, order] = await Promise.all([systemExpressionCatalog(),
+            pool.query('SELECT * FROM synthesis_asset WHERE user_id = $1 ORDER BY created_at DESC, id DESC', [userId]),
+            loadSynthesisOrder(pool, userId)]);
         const systemAssets = catalog.templates.filter(a => a.type === 'synthesis-template' && a.format === 'gif' && !a.embeddedText);
         const hashes = new Set(systemAssets.map(a => a.sha256));
-        const assets = [...systemAssets.map(system), ...rows.rows.filter(row => !hashes.has(row.sha256)).map(personal)];
-        res.json({ assets, total: assets.length });
+        return orderSynthesisAssets(rows.rows.filter(row => !hashes.has(row.sha256)).map(personal), systemAssets.map(system), order);
     }
-    catch (e) {
-        next(e);
-    } });
+    router.get('/synthesis-library', async (_req, res, next) => {
+        try { const assets = await listing(res.locals.userId); res.json({ assets, total: assets.length }); }
+        catch (e) { next(e); }
+    });
+    router.patch('/synthesis-library/order', async (req, res, next) => {
+        const order = req.body?.assetOrder;
+        if (!Array.isArray(order) || order.length > 10000 || !order.every(id => typeof id === 'string' && id.length > 0 && id.length <= 200) || new Set(order).size !== order.length) {
+            res.status(400).json({ error: '底图排序必须为不重复的图片ID列表' }); return;
+        }
+        try {
+            const current = await listing(res.locals.userId);
+            const ids = new Set(current.map(asset => asset.id));
+            if (ids.size !== order.length || !order.every(id => ids.has(id))) {
+                res.status(409).json({ error: '底图库已变化或包含不可用图片，请刷新后重新排序' }); return;
+            }
+            await pool.query(`INSERT INTO synthesis_library_order(user_id,asset_order) VALUES($1,$2)
+                ON CONFLICT(user_id) DO UPDATE SET asset_order=EXCLUDED.asset_order`, [res.locals.userId, JSON.stringify(order)]);
+            const assets = await listing(res.locals.userId);
+            res.json({ assets, total: assets.length });
+        } catch (e) { next(e); }
+    });
     router.post('/synthesis-library', async (req, res, next) => {
         let image: Awaited<ReturnType<typeof readImage>>;
         try {

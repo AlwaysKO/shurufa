@@ -21,7 +21,7 @@ async function database() {
   db.public.registerFunction({name:'hashtext',args:[DataType.text],returns:DataType.integer,implementation:()=>1});
   db.public.registerFunction({name:'pg_advisory_xact_lock',args:[DataType.integer],returns:DataType.integer,implementation:()=>1});
   const pool = new (db.adapters.createPg().Pool)() as pg.Pool; pools.push(pool);
-  for (const name of ['005_sticker','015_sticker_keywords','018_synthesis_library','019_keyword_gif_removal','024_sticker_group_settings','028_sticker_group_deletion','020_runtime_settings']) {
+  for (const name of ['005_sticker','015_sticker_keywords','018_synthesis_library','030_synthesis_order','019_keyword_gif_removal','024_sticker_group_settings','028_sticker_group_deletion','020_runtime_settings']) {
     await pool.query(readFileSync(new URL(`../../migrations/${name}.sql`,import.meta.url),'utf8').split('-- 兼容历史')[0]);
   }
   await pool.query('CREATE TABLE sticker_bundle_import(singleton BOOLEAN PRIMARY KEY, manifest JSONB NOT NULL)');

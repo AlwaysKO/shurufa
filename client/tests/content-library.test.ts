@@ -29,7 +29,7 @@ async function mount(name: string, api: Record<string, any>) {
   const require = (id: string) => {
     if (id === 'vue') return Vue;
     if (id === '../confirmation') return { useConfirmation: () => async (message: string) => Boolean(globalThis.confirm?.(message)) };
-    if (id === '../api') return { api, scopedAssetUrl: (url: string) => url };
+    if (id === '../api') return { api, currentUserId: Vue.ref('test-user'), scopedAssetUrl: (url: string) => url };
     if (id === '../data/phrasePresets') return presets;
     if (id.endsWith('.css')) return {};
     throw new Error(`Unexpected import: ${id}`);

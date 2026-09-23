@@ -39,6 +39,50 @@ class ExpressionVersionSyncTest {
         sync.search("干嘛", 1, { true }) { result = it }.join()
         return result
     }
+    @Test fun `慢图不能阻止后面的新图先显示且最终保持后台顺序`() = runBlocking {
+        val slowBytes = "slow-upload".toByteArray()
+        val slowSha = MessageDigest.getInstance("SHA-256").digest(slowBytes).joinToString("") { "%02x".format(it) }
+        val slow = asset("slow").copy(sha256 = slowSha, version = slowSha)
+        val fast = asset("fast")
+        val slowStarted = java.util.concurrent.CountDownLatch(1)
+        val releaseSlow = java.util.concurrent.CountDownLatch(1)
+        val fastVisible = java.util.concurrent.CountDownLatch(1)
+        val seen = java.util.concurrent.CopyOnWriteArrayList<List<String>>()
+        server.dispatcher = object : okhttp3.mockwebserver.Dispatcher() {
+            override fun dispatch(request: okhttp3.mockwebserver.RecordedRequest): MockResponse {
+                if (request.path!!.contains("slow.gif")) {
+                    slowStarted.countDown(); releaseSlow.await(5, java.util.concurrent.TimeUnit.SECONDS)
+                    return MockResponse().setBody(okio.Buffer().write(slowBytes))
+                }
+                return MockResponse().setBody(okio.Buffer().write(bytes))
+            }
+        }
+        val job = sync(initial = document("apk", listOf(slow, fast)))
+            .search("干嘛", 1, { true }, automatic = true) { results ->
+                val ids = results.map { it.id }; seen += ids
+                if (ids == listOf("fast")) fastVisible.countDown()
+            }
+        try {
+            assertTrue(slowStarted.await(2, java.util.concurrent.TimeUnit.SECONDS))
+            assertTrue("慢图尚未完成时必须先展示已下载的快图", fastVisible.await(2, java.util.concurrent.TimeUnit.SECONDS))
+        } finally { releaseSlow.countDown(); job.join() }
+        assertEquals(listOf("slow", "fast"), seen.last())
+        assertEquals(2, server.requestCount)
+    }
+
+    @Test fun `有持续传输的大图超过30秒仍能完整校验入库`() = runBlocking {
+        // 每秒持续传一个字节，总时长31秒，验证整个响应体而非仅响应头。
+        val body = "x".repeat(32).toByteArray()
+        val hash = MessageDigest.getInstance("SHA-256").digest(body).joinToString("") { "%02x".format(it) }
+        val image = asset().copy(version = hash, sha256 = hash)
+        server.enqueue(MockResponse().setBody(okio.Buffer().write(body))
+            .throttleBody(1, 1, java.util.concurrent.TimeUnit.SECONDS))
+        val file = sync(initial = document("apk", listOf(image)))
+            .download(image.version, image.fileName, image.url!!, hash)
+        assertNotNull("持续下载不能被目录接口的30秒总超时截断", file)
+        assertArrayEquals(body, file!!.readBytes())
+    }
+
     @Test fun `目录排序变更后旧异步搜索不得再次发布`() = runBlocking {
         val first = asset("first").copy(distribution = "bundled", url = null)
         val second = asset("second").copy(distribution = "bundled", url = null)

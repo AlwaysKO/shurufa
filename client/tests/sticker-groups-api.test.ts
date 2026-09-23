@@ -64,6 +64,18 @@ it('底图删除读取清理状态并携带当前用户，失败保留服务端�
  await expect(api.deleteSynthesisAsset('synthesis-test')).rejects.toThrow('暂时无法删除');
 });
 
+it('底图排序携带当前用户和完整顺序，保留失败说明', async () => {
+ const result={assets:[{id:'system'},{id:'synthesis-test'}],total:2};
+ const fetch=vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(result)))
+  .mockResolvedValueOnce(new Response(JSON.stringify({error:'底图库已变化，请刷新后重试'}),{status:409}));
+ const api=loadApi(fetch);
+ expect(await api.saveSynthesisOrder(['system','synthesis-test'])).toEqual(result);
+ expect(fetch.mock.calls[0][0]).toBe('/api/v1/dashboard/synthesis-library/order?user_id=user-a');
+ expect(fetch.mock.calls[0][1].method).toBe('PATCH');
+ expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual({assetOrder:['system','synthesis-test']});
+ await expect(api.saveSynthesisOrder(['system','synthesis-test'])).rejects.toThrow('底图库已变化');
+});
+
 it('AI底图上传400显示服务端具体校验原因，无说明时保留状态码', async () => {
  const fetch=vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({error:'仅接受240×240多帧GIF（2～100帧）'}),{status:400}))
   .mockResolvedValueOnce(new Response('upstream unavailable',{status:502}));

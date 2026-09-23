@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useConfirmation } from '../confirmation';
 import { computed, nextTick, onMounted, onBeforeUnmount, reactive, ref } from 'vue';
-import { api, scopedAssetUrl, type SynthesisAsset, type SynthesisLayout } from '../api';
+import { api, currentUserId, scopedAssetUrl, type SynthesisAsset, type SynthesisLayout } from '../api';
 import './content-library.css';
 
 const askConfirmation = useConfirmation();
@@ -17,6 +17,18 @@ const editor = ref<HTMLElement | null>(null);
 const file = ref<File | null>(null); const fileInput = ref<HTMLInputElement | null>(null);
 const preview = ref(''); const failed = ref(new Set<string>());
 const selected = ref(new Set<string>());
+const userId = currentUserId.value;
+const orderDraft = ref<string[] | null>(null);
+const dragging = ref<string | null>(null);
+const orderedAssets = computed(() => {
+  if (!orderDraft.value) return assets.value;
+  const byId = new Map(assets.value.map(asset => [asset.id, asset]));
+  const known = new Set(orderDraft.value);
+  return [...orderDraft.value.map(id => byId.get(id)).filter((asset): asset is SynthesisAsset => !!asset),
+    ...assets.value.filter(asset => !known.has(asset.id))];
+});
+const orderDirty = computed(() => orderDraft.value !== null &&
+  JSON.stringify(orderedAssets.value.map(asset => asset.id)) !== JSON.stringify(assets.value.map(asset => asset.id)));
 const manageable = (asset: SynthesisAsset) => asset.deletable && asset.source === 'personal';
 const manageableAssets = computed(() => assets.value.filter(manageable));
 const defaultArea = { x: 6, y: 190, width: 228, height: 44 };
@@ -27,12 +39,39 @@ function clearPreview() { if (preview.value) URL.revokeObjectURL(preview.value);
 let disposed = false;
 let loadSequence = 0;
 onBeforeUnmount(() => { disposed = true; clearPreview(); });
+function cancelOrder() { orderDraft.value = null; dragging.value = null; }
+function moveAsset(from: string, to: string) {
+  if (busy.value || loading.value || disposed || from === to) return;
+  const ids = orderedAssets.value.map(asset => asset.id), start = ids.indexOf(from), end = ids.indexOf(to);
+  if (start < 0 || end < 0) return;
+  ids.splice(start, 1); ids.splice(end, 0, from); orderDraft.value = ids;
+}
+function dragStart(event: DragEvent, asset: SynthesisAsset) {
+  if (busy.value || loading.value || disposed) { event.preventDefault(); return; }
+  dragging.value = asset.id;
+  if (event.dataTransfer) { event.dataTransfer.setData('text/plain', asset.id); event.dataTransfer.effectAllowed = 'move'; }
+}
+function dropAsset(asset: SynthesisAsset) {
+  if (dragging.value) moveAsset(dragging.value, asset.id);
+  dragging.value = null;
+}
+async function saveOrder() {
+  if (busy.value || loading.value || disposed || currentUserId.value !== userId || !orderDirty.value) return;
+  busy.value = true; error.value = ''; message.value = '';
+  try {
+    const result = await api.saveSynthesisOrder(orderedAssets.value.map(asset => asset.id));
+    if (disposed || currentUserId.value !== userId) return;
+    assets.value = result.assets; cancelOrder(); message.value = '底图顺序已保存。';
+  } catch (e) {
+    if (!disposed && currentUserId.value === userId) error.value = `排序保存失败：${(e as Error).message}`;
+  } finally { if (!disposed && currentUserId.value === userId) busy.value = false; }
+}
 async function load() {
   const sequence = ++loadSequence;
   loading.value = true; loadError.value = '';
   try {
     const result = await api.synthesisLibrary(); if (disposed || sequence !== loadSequence) return;
-    assets.value = result.assets; loaded.value = true; failed.value.clear();
+    assets.value = result.assets; cancelOrder(); loaded.value = true; failed.value.clear();
     selected.value = new Set([...selected.value].filter(id => assets.value.some(a => a.id === id && manageable(a))));
   } catch (e) { if (!disposed && sequence === loadSequence) loadError.value = `底图库加载失败：${(e as Error).message}`; }
   finally { if (sequence === loadSequence) loading.value = false; }
@@ -94,6 +133,7 @@ async function upload() {
     } else {
       const result = uploaded!;
       if (disposed) return;
+      cancelOrder();
       if (!assets.value.some(a => a.id === result.asset.id)) assets.value.unshift(result.asset);
       message.value = result.duplicate ? '相同图片已存在，未重复保存。' : '底图已上传入库，可在下方编辑名称和文字区域。';
     }
@@ -121,7 +161,7 @@ async function removeAssets(targets: SynthesisAsset[]) {
       try {
         const result = await api.deleteSynthesisAsset(asset.id); if (disposed) return;
         if (result.files_pending) cleanupPending++;
-        assets.value = assets.value.filter(a => a.id !== asset.id); selected.value.delete(asset.id); removed++;
+        assets.value = assets.value.filter(a => a.id !== asset.id); cancelOrder(); selected.value.delete(asset.id); removed++;
         if (editing.value?.id === asset.id) resetForm();
       } catch (e) { selected.value.add(asset.id); errors.push({ asset, reason: (e as Error).message }); }
     }
@@ -137,9 +177,9 @@ onMounted(load);
 
 <template>
   <div class="content-library synthesis-page">
-    <header class="library-intro synthesis-heading"><div><span class="eyebrow">AI SYNTHESIS LIBRARY</span><h2>AI 合成底图库</h2><p>上传后直接入库，随时调整名称和文字区域。</p></div><button class="library-button primary" :disabled="busy" @click="chooseUpload"><span aria-hidden="true">＋</span> 上传底图</button></header>
+    <header class="library-intro synthesis-heading"><div><span class="eyebrow">AI SYNTHESIS LIBRARY</span><h2>AI 合成底图库</h2><p>新上传底图默认排最前面，可拖动调整顺序。</p></div><button class="library-button primary" :disabled="busy" @click="chooseUpload"><span aria-hidden="true">＋</span> 上传底图</button></header>
     <input ref="fileInput" data-testid="synthesis-file" class="hidden-upload" type="file" accept=".gif,.png,.jpg,.jpeg,.webp" @change="chooseFile" />
-    <div class="synthesis-tip"><span>GIF / PNG / JPG / WebP · 保留原图尺寸和动画</span><span>系统底图只读，个人上传用于当前选中用户。</span></div>
+    <div class="synthesis-tip"><span>GIF / PNG / JPG / WebP · 保留原图尺寸和动画</span><span>系统底图可调整顺序，图片内容只读；个人上传用于当前选中用户。</span></div>
     <p v-if="busy" class="library-notice" role="status">{{ uploadProgress === null ? '正在保存，请稍候…' : uploadProgress < 100 ? `正在上传 ${uploadProgress}%` : '文件已传输，正在保存…' }}</p>
     <p v-if="message" class="library-notice success" role="status">{{ message }}</p>
     <div v-if="error" class="library-notice error" role="alert">{{ error }}<button v-if="file && !editing" data-testid="retry-synthesis-upload" class="library-button small" :disabled="busy" @click="upload">重试上传</button></div>
@@ -162,8 +202,10 @@ onMounted(load);
       <div class="synthesis-selection-bar"><div class="library-actions"><button data-testid="select-all-synthesis" class="library-button small" :disabled="busy || loading || !manageableAssets.length || selected.size === manageableAssets.length" @click="selectAll">全选</button><button data-testid="clear-synthesis-selection" class="library-button small" :disabled="busy || loading || !selected.size" @click="clearSelection">全不选</button><span class="selection-count" aria-live="polite">已选 {{ selected.size }} 张</span></div><button data-testid="delete-selected-synthesis" class="library-button danger" :disabled="busy || loading || !selected.size" @click="removeAssets(assets.filter(a => selected.has(a.id)))">删除所选<span v-if="selected.size">（{{ selected.size }}）</span></button></div>
       <p v-if="loading && !loaded" role="status">正在加载底图库…</p>
       <div v-else-if="loaded && !assets.length" class="library-empty"><strong>还没有底图</strong><p>选择一张 GIF，上传后即可在这里管理。</p><button class="library-button primary" :disabled="busy" @click="chooseUpload">＋ 上传第一张底图</button></div>
+      <div v-if="assets.length" class="synthesis-order-toolbar"><p>拖动排序手柄调整顺序，也可前移或后移；调整后点击保存排序。</p><div class="library-actions"><button data-testid="save-synthesis-order" class="library-button primary" :disabled="busy || loading || !orderDirty" @click="saveOrder">保存排序</button><button data-testid="cancel-synthesis-order" class="library-button" :disabled="busy || loading || !orderDirty" @click="cancelOrder">取消排序</button></div></div>
       <div class="sticker-grid synthesis-grid">
-        <article v-for="asset in assets" :key="asset.id" :data-testid="`synthesis-card-${asset.id}`" class="sticker-cell" :class="{ selected: selected.has(asset.id) }">
+        <article v-for="(asset, index) in orderedAssets" :key="asset.id" :data-testid="`synthesis-card-${asset.id}`" class="sticker-cell" :class="{ selected: selected.has(asset.id), dragging: dragging === asset.id }" @dragover.prevent @drop.prevent="dropAsset(asset)">
+          <div class="synthesis-sort-actions"><button :data-testid="`drag-synthesis-${asset.id}`" class="text-button drag-handle" :draggable="!busy && !loading" :disabled="busy || loading" aria-label="拖动排列底图" @dragstart="dragStart($event, asset)" @dragend="dragging = null">⠿ 排序</button><button class="text-button" :disabled="busy || loading || index === 0" aria-label="底图前移" @click="moveAsset(asset.id, orderedAssets[index - 1]!.id)">前移</button><button class="text-button" :disabled="busy || loading || index === orderedAssets.length - 1" aria-label="底图后移" @click="moveAsset(asset.id, orderedAssets[index + 1]!.id)">后移</button></div>
           <div class="sticker-preview"><span v-if="failed.has(asset.id)">图片加载失败，请刷新重试</span><img v-else :src="scopedAssetUrl(asset.url)" :alt="asset.name" loading="lazy" @error="failed.add(asset.id)" /><label v-if="manageable(asset)" class="synthesis-select"><input :data-testid="`select-synthesis-${asset.id}`" type="checkbox" :aria-label="`选择 ${asset.name}`" :checked="selected.has(asset.id)" :disabled="busy || loading" @change="toggleSelection(asset.id)" /></label><span class="synthesis-format">{{ asset.format.toUpperCase() }}</span></div>
           <div class="sticker-meta"><strong>{{ asset.name }}</strong><p><span class="library-badge" :class="{ personal: manageable(asset) }">{{ asset.source === 'system' ? '系统底图 · 只读' : '个人底图' }}</span></p><small>{{ asset.width }} × {{ asset.height }} · 文字区 {{ asset.textSafeArea.width }} × {{ asset.textSafeArea.height }}</small><div v-if="manageable(asset)" class="synthesis-card-actions"><button :data-testid="`edit-synthesis-${asset.id}`" class="library-button small" :disabled="busy || loading" @click="startEdit(asset)">编辑</button><button :data-testid="`replace-synthesis-${asset.id}`" class="library-button small" :disabled="busy || loading" @click="startEdit(asset, true)">替换</button><button :data-testid="`delete-synthesis-${asset.id}`" class="library-button small danger" :disabled="busy || loading" @click="removeAssets([asset])">删除</button></div></div>
         </article>
@@ -184,6 +226,11 @@ onMounted(load);
 .synthesis-grid { grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); }
 .synthesis-grid .sticker-cell { transition:border-color .15s,box-shadow .15s; }
 .synthesis-grid .sticker-cell.selected { border-color:#7784e4; box-shadow:0 0 0 2px #5261d81a; }
+.synthesis-grid .sticker-cell.dragging { opacity:.5; }
+.synthesis-order-toolbar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px; }
+.synthesis-order-toolbar p { color:#8490a4; font-size:12px; line-height:1.7; }
+.synthesis-sort-actions { display:flex; align-items:center; gap:12px; padding:12px; }
+.synthesis-sort-actions .drag-handle { cursor:grab; }
 .synthesis-grid .sticker-meta>strong { display:block; overflow-wrap:anywhere; margin-bottom:8px; }
 .synthesis-card-actions { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin-top:14px; }
 .synthesis-card-actions .library-button { padding:7px 4px; }

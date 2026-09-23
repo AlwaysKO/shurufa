@@ -152,6 +152,7 @@ test("删除覆盖全部个人业务表、附件关联和分析游标，系统�
  await insert("sticker_keyword",{keyword:"测试"});
  await insert("sticker_group_settings",{keyword:"测试",aliases:JSON.stringify(["别名"]),asset_order:JSON.stringify([])});
  await insert("synthesis_asset",{id:randomUUID(),name:"底图",file_name:user+".gif",sha256:hash,width:1,height:1,text_safe_area:{},layout:{},source_statement:"测试",no_text_confirmed:true,rights_confirmed:true});
+ await insert("synthesis_library_order",{asset_order:JSON.stringify([])});
  await insert("mobile_report_receipt",{report_id:randomUUID(),payload_hash:hash});
  await insert("personal_candidate_usage",{code:"ci",text:"词",count:1,weight:1,last_used:1});
  await insert("completion_feedback_usage",{prefix:"词",completion:"语"});
@@ -239,4 +240,12 @@ test('关键词组并发争用同一说法仅一组成功，避免手机一次�
  expect(responses.map(r=>r.status).sort()).toEqual([200,409]);
  const rows=(await pool.query('SELECT aliases FROM sticker_group_settings WHERE user_id=$1',[OWNER])).rows;
  expect(rows.filter(row=>row.aliases?.includes('共同说法'))).toHaveLength(1);
+});
+
+
+test("删除设备清理其底图顺序，保留其他设备顺序",async()=>{
+ for(const user of [A,B]) await pool.query("INSERT INTO synthesis_library_order(user_id,asset_order) VALUES($1,$2)",[user,JSON.stringify(["system-blank"])]);
+ expect((await remove()).status).toBe(200);
+ expect(await count("synthesis_library_order",A)).toBe(0);
+ expect((await pool.query("SELECT asset_order FROM synthesis_library_order WHERE user_id=$1",[B])).rows).toEqual([{asset_order:["system-blank"]}]);
 });

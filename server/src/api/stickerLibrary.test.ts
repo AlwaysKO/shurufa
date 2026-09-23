@@ -30,6 +30,7 @@ beforeEach(async () => {
   await pool.query(readFileSync(migration, 'utf8').split('-- 兼容历史')[0]);
   await pool.query(readFileSync(new URL('../../migrations/019_keyword_gif_removal.sql', import.meta.url), 'utf8'));
   await pool.query(readFileSync(new URL('../../migrations/018_synthesis_library.sql', import.meta.url), 'utf8'));
+  await pool.query(readFileSync(new URL('../../migrations/030_synthesis_order.sql', import.meta.url), 'utf8'));
   await pool.query(readFileSync(new URL('../../migrations/024_sticker_group_settings.sql', import.meta.url), 'utf8'));
   await pool.query(readFileSync(new URL('../../migrations/028_sticker_group_deletion.sql', import.meta.url), 'utf8'));
   await pool.query(readFileSync(new URL('../../migrations/020_runtime_settings.sql', import.meta.url), 'utf8'));

@@ -89,14 +89,17 @@ class ExpressionCatalog(
             .map { it.ranked.asset }
     }
 
-    /** 手动 DIY 展示全部无字可编辑底图；相关项前置，不用查询词过滤掉其他情绪。 */
+    /** 手动 DIY 展示全部无字可编辑底图；优先采用后台顺序，旧目录相关项前置。 */
     fun synthesisTemplates(query: String): List<ExpressionAsset> {
         val text = ExpressionQueryMatching.normalize(query)
         if (text.isEmpty()) return emptyList()
-        return document.templates.filter {
+        val templates = document.templates.filter {
             it.id !in document.retiredTemplateIds && it.type == "synthesis-template" && it.embeddedText.isNullOrBlank() &&
                 it.textSafeArea != null && it.layout != null
-        }.sortedByDescending { ExpressionQueryMatching.score(text, it.keywords) }
+        }
+        val order = document.synthesisOrder?.withIndex()?.associate { it.value to it.index }
+        return if (order != null) templates.sortedBy { order[it.id] ?: Int.MAX_VALUE }
+            else templates.sortedByDescending { ExpressionQueryMatching.score(text, it.keywords) }
     }
 
 
@@ -119,6 +122,7 @@ class ExpressionCatalog(
         ExpressionCatalogDocument(
             version = remote.version,
             recommendationGroups = remote.recommendationGroups ?: document.recommendationGroups,
+            synthesisOrder = remote.synthesisOrder ?: document.synthesisOrder,
             templates = mergeBy(document.templates, remote.templates) { it.id }
                 .filterNot { it.id in document.retiredTemplateIds || it.id in remote.retiredTemplateIds },
             retiredTemplateIds = (document.retiredTemplateIds + remote.retiredTemplateIds).distinct(),

@@ -96,7 +96,7 @@ beforeEach(async () => {
     new URL('../../migrations/011_expression_assets.sql', import.meta.url),
     'utf8',
   ));
-  for (const file of ['005_sticker.sql', '018_synthesis_library.sql', '019_keyword_gif_removal.sql', '015_sticker_keywords.sql', '024_sticker_group_settings.sql', '028_sticker_group_deletion.sql']) await pool.query(readFileSync(new URL(`../../migrations/${file}`, import.meta.url), 'utf8').split('-- 兼容历史')[0]);
+  for (const file of ['005_sticker.sql', '018_synthesis_library.sql', '030_synthesis_order.sql', '019_keyword_gif_removal.sql', '015_sticker_keywords.sql', '024_sticker_group_settings.sql', '028_sticker_group_deletion.sql']) await pool.query(readFileSync(new URL(`../../migrations/${file}`, import.meta.url), 'utf8').split('-- 兼容历史')[0]);
   root = await mkdtemp(join(tmpdir(), 'expressions-api-'));
   vi.spyOn(process, 'cwd').mockReturnValue(root);
   const runtimeRoot = join(root, '.runtime', 'expression-assets');

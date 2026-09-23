@@ -17,6 +17,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
+import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.async
 import kotlinx.coroutines.sync.withPermit
@@ -231,6 +234,8 @@ class ExpressionSync(
     private val trustedBundled = initialCatalog.document.templates.filter { it.distribution != "remote" }.associateBy { it.sha256 }
     private val networkClient = client.newBuilder().callTimeout(30, TimeUnit.SECONDS)
         .followRedirects(false).followSslRedirects(false).build()
+    // 原件允许持续传输的大GIF完成；连接/读取停滞仍受原客户端超时限制。
+    private val assetClient = networkClient.newBuilder().callTimeout(2, TimeUnit.MINUTES).build()
     private val pendingLock = Any()
     private val queries = mutableMapOf<String, QueryWork>()
     private val downloads = mutableMapOf<String, Deferred<File?>>()
@@ -274,12 +279,30 @@ class ExpressionSync(
             val local = withContext(Dispatchers.IO) { candidates.mapNotNull(::localAsset) }
             if (catalog === snapshot && acceptResponse(requestId)) onResult(local.filter(::stillCurrent))
             // 独立于订阅者，快速输入取消旧搜索时仍完成已启动的SHA原件预取。
+            val updates = Channel<Unit>(Channel.CONFLATED)
             val prefetch = scope.async(Dispatchers.IO) {
-                for (asset in candidates) if (stillCurrent(asset) && localAsset(asset) == null) {
-                    download(asset.version, asset.fileName,
-                        asset.url ?: "/uploads/expression/${asset.fileName}", asset.sha256)
+                val next = AtomicInteger()
+                coroutineScope {
+                    repeat(minOf(2, candidates.size)) {
+                        launch {
+                            while (true) {
+                                val asset = candidates.getOrNull(next.getAndIncrement()) ?: break
+                                if (stillCurrent(asset) && localAsset(asset) == null) {
+                                    download(asset.version, asset.fileName,
+                                        asset.url ?: "/uploads/expression/${asset.fileName}", asset.sha256)
+                                    updates.trySend(Unit)
+                                }
+                            }
+                        }
+                    }
                 }
                 candidates.mapNotNull(::localAsset)
+            }
+            prefetch.invokeOnCompletion { updates.close() }
+            // 在订阅协程发布，取消输入不会收到迟到结果；快图无需等待整批慢图。
+            for (update in updates) {
+                val ready = withContext(Dispatchers.IO) { candidates.mapNotNull(::localAsset) }
+                if (catalog === snapshot && acceptResponse(requestId)) onResult(ready.filter(::stillCurrent))
             }
             val loaded = prefetch.await()
             if (catalog === snapshot && acceptResponse(requestId)) onResult(loaded.filter(::stillCurrent))
@@ -440,7 +463,7 @@ class ExpressionSync(
                             cache.validFile(version, relativePath, sha256)?.let { return@withPermit it }
                             val request = Request.Builder().url(resolveExpressionRemoteSource(baseUrl, url))
                                 .header("X-Device-Id", deviceId).build()
-                            networkClient.newCall(request).awaitBody { response ->
+                            assetClient.newCall(request).awaitBody { response ->
                                 check(response.isSuccessful)
                                 val body = response.body ?: return@awaitBody null
                                 val limit = queryCache.maxAssetBytes

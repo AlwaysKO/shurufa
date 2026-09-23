@@ -4,18 +4,26 @@ import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { newDb, DataType } from 'pg-mem';
-import type pg from 'pg';
+import pg from 'pg';
 import request from 'supertest';
 import { beforeEach, afterEach, it, expect, vi } from 'vitest';
 import { createApp } from '../app.js';
 import { authenticatedRequest } from '../lib/dashboardAuthTestHelper.js';
+const databaseUrl = process.env.SYNTHESIS_TEST_DATABASE_URL;
+if (databaseUrl && (!['127.0.0.1','localhost'].includes(new URL(databaseUrl).hostname) || !new URL(databaseUrl).pathname.endsWith('_test'))) throw Error('Synthesis tests require an isolated local test database');
+let testSchema: string | undefined;
 const A = '00000000-0000-4000-8000-00000000000a', B = '00000000-0000-4000-8000-00000000000b';
 const gif = readFileSync(new URL('../../../assets/expression/templates/blank-cat-side-eye.gif', import.meta.url));
 let pool: pg.Pool, root: string, app: ReturnType<typeof createApp>, agent: Awaited<ReturnType<typeof authenticatedRequest>>;
 const body = () => ({ file_base64: gif.toString('base64'), filename: 'cat.gif', name: '猫', noTextConfirmed: true, rightsConfirmed: true, sourceStatement: '本人拥有用于本产品的授权', textSafeArea: { x: 6, y: 190, width: 228, height: 44 }, layout: { minFontSize: 12, maxFontSize: 24, textColor: '#222222', strokeColor: '#ffffff', strokeWidth: 1, alignment: 'center', maxLines: 2 } });
-beforeEach(async () => { const db = newDb(); db.public.registerFunction({name:'hashtext',args:[DataType.text],returns:DataType.integer,implementation:()=>1}); db.public.registerFunction({name:'pg_advisory_xact_lock',args:[DataType.integer],returns:DataType.integer,implementation:()=>1}); db.public.registerFunction({name:'trim',args:[DataType.text],returns:DataType.text,implementation:(s:string)=>s.trim()}); db.public.registerFunction({name:'length',args:[DataType.text],returns:DataType.integer,implementation:(s:string)=>s.length}); pool = new (db.adapters.createPg().Pool)(); for (const f of ['005_sticker.sql', '018_synthesis_library.sql', '019_keyword_gif_removal.sql', '015_sticker_keywords.sql', '024_sticker_group_settings.sql', '028_sticker_group_deletion.sql'])
+beforeEach(async () => { const db = newDb(); db.public.registerFunction({name:'hashtext',args:[DataType.text],returns:DataType.integer,implementation:()=>1}); db.public.registerFunction({name:'pg_advisory_xact_lock',args:[DataType.integer],returns:DataType.integer,implementation:()=>1}); db.public.registerFunction({name:'trim',args:[DataType.text],returns:DataType.text,implementation:(s:string)=>s.trim()}); db.public.registerFunction({name:'length',args:[DataType.text],returns:DataType.integer,implementation:(s:string)=>s.length}); if (databaseUrl) {
+    testSchema = 'synthesis_' + crypto.randomUUID().replaceAll('-', '');
+    const bootstrap = new pg.Pool({ connectionString: databaseUrl });
+    await bootstrap.query(`CREATE SCHEMA ${testSchema}`); await bootstrap.end();
+    pool = new pg.Pool({ connectionString: databaseUrl, options: `-c search_path=${testSchema}` });
+  } else pool = new (db.adapters.createPg().Pool)(); for (const f of ['005_sticker.sql', '018_synthesis_library.sql', '030_synthesis_order.sql', '019_keyword_gif_removal.sql', '015_sticker_keywords.sql', '024_sticker_group_settings.sql', '028_sticker_group_deletion.sql'])
     await pool.query(readFileSync(new URL(`../../migrations/${f}`, import.meta.url), 'utf8').split('-- 兼容历史')[0]); root = await mkdtemp(join(tmpdir(), 'synthesis-api-')); vi.spyOn(process, 'cwd').mockReturnValue(root); await mkdir(join(root, '.runtime/expression-assets'), { recursive: true }); await writeFile(join(root, '.runtime/expression-assets/catalog.json'), JSON.stringify({ version: 'system-v1', templates: [], emojiBases: [], emojiCombinations: [] })); app = createApp(pool); agent = await authenticatedRequest(app); });
-afterEach(async () => { vi.restoreAllMocks(); await pool?.end(); if (root)
+afterEach(async () => { vi.restoreAllMocks(); if (testSchema) { await pool.query(`DROP SCHEMA ${testSchema} CASCADE`); testSchema = undefined; } await pool?.end(); if (root)
     await rm(root, { recursive: true, force: true }); });
 it('无字上传独立存储、并发SHA去重、隔离所有者、完整目录和删除更新版本', async () => { const initial = await request(app).get('/api/v1/mobile/expressions/versions').set('X-Device-Id', A); expect(initial.status).toBe(200); const uploads = await Promise.all([1, 2].map(() => agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send(body()))); expect(uploads.map(r => r.status).sort()).toEqual([200, 201]); const asset = uploads[0].body.asset; expect(asset.sourceType).toBe('owner-upload'); expect((await pool.query('SELECT * FROM sticker')).rows).toHaveLength(0); const catalog = await request(app).get('/api/v1/mobile/expressions/catalog').set('X-Device-Id', A); expect(catalog.body).toMatchObject({ complete: true, templates: [{ id: asset.id, type: 'synthesis-template', embeddedText: null }] }); expect(catalog.body.version).not.toBe(initial.body.version); expect((await request(app).get(asset.url).set('X-Device-Id', B)).status).toBe(404); expect((await request(app).get(asset.url).set('X-Device-Id', A)).status).toBe(200); expect((await agent.delete(`/api/v1/dashboard/synthesis-library/${asset.id}?user_id=${B}`)).status).toBe(404); const deleted = await agent.delete(`/api/v1/dashboard/synthesis-library/${asset.id}?user_id=${A}`); expect(deleted.status).toBe(200); expect((await request(app).get('/api/v1/mobile/expressions/versions').set('X-Device-Id', A)).body.version).toBe(initial.body.version); });
 it.each(['textSafeArea', 'layout'])('缺少 %s 拒绝上传', async (key) => { const input: any = body(); delete input[key]; expect((await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send(input)).status).toBe(400); });
@@ -154,4 +162,32 @@ it('动态WebP转换为GIF后仍保留多帧和节奏',async()=>{
  const image=await request(app).get(result.body.asset.url).set('X-Device-Id',A);
  const after=await sharp(image.body,{animated:true}).metadata();
  expect(after.pages).toBe(before.pages);expect(after.delay).toEqual(before.delay);
+});
+
+it('底图排序持久化、用户隔离、手机目录同序，新上传置顶且重复上传不改顺序',async()=>{
+ const first=(await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send(body())).body.asset;
+ const sys={...first,id:'system-blank',sourceType:'ai-original',sha256:'c'.repeat(64),fileName:'templates/system.gif'};
+ await writeFile(join(root,'.runtime/expression-assets/catalog.json'),JSON.stringify({version:'system-v2',templates:[sys],emojiBases:[],emojiCombinations:[]}));
+ const ids=async(user=A)=>(await agent.get(`/api/v1/dashboard/synthesis-library?user_id=${user}`)).body.assets.map((a:any)=>a.id);
+ expect(await ids()).toEqual([first.id,sys.id]);
+ const before=(await request(app).get('/api/v1/mobile/expressions/versions').set('X-Device-Id',A)).body.version;
+ const sorted=await agent.patch(`/api/v1/dashboard/synthesis-library/order?user_id=${A}`).send({assetOrder:[sys.id,first.id]});
+ expect(sorted.status).toBe(200);expect(await ids()).toEqual([sys.id,first.id]);expect(await ids(B)).toEqual([sys.id]);
+ const snapshot=(await request(app).get('/api/v1/mobile/expressions/catalog').set('X-Device-Id',A)).body;
+ expect(snapshot.synthesisOrder).toEqual([sys.id,first.id]);expect(snapshot.version).not.toBe(before);
+ const secondGif=readFileSync(new URL('../../../assets/expression/templates/blank-dog-shocked.gif',import.meta.url));
+ const secondBody={...body(),file_base64:secondGif.toString('base64')};
+ const second=(await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send(secondBody)).body.asset;
+ expect(second?.id).toBeDefined();expect(await ids()).toEqual([second.id,sys.id,first.id]);
+ await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send(body());expect(await ids()).toEqual([second.id,sys.id,first.id]);
+ await agent.delete(`/api/v1/dashboard/synthesis-library/${first.id}?user_id=${A}`);
+ expect(await ids()).toEqual([second.id,sys.id]);
+});
+it('排序拒绝重复、缺失、外用户或无效ID，不破坏原顺序',async()=>{
+ const a=(await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send(body())).body.asset;
+ const b=(await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${B}`).send(body())).body.asset;
+ const endpoint=`/api/v1/dashboard/synthesis-library/order?user_id=${A}`;
+ for(const order of [[a.id,a.id],[],[b.id],['unknown'],null]) expect((await agent.patch(endpoint).send({assetOrder:order})).status).toBeGreaterThanOrEqual(400);
+ expect((await agent.get(`/api/v1/dashboard/synthesis-library?user_id=${A}`)).body.assets.map((x:any)=>x.id)).toEqual([a.id]);
+ expect((await request(app).patch(endpoint).send({assetOrder:[a.id]})).status).toBe(401);
 });

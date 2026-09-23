@@ -97,4 +97,6 @@ data class ExpressionCatalogDocument(
     val complete: Boolean = false,
     /** null/缺省仅兼容旧目录；空数组是权威清空，不能回退关键词。 */
     val recommendationGroups: List<ExpressionRecommendationGroup>? = null,
+    /** 后台底图顺序；缺省目录沿用旧相关性排序。 */
+    val synthesisOrder: List<String>? = null,
 )

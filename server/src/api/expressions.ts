@@ -46,11 +46,12 @@ function publicAsset(asset: ExpressionAsset): Record<string, unknown> {
   };
 }
 
-function publicCatalog(catalog: GeneratedExpressionCatalog & { recommendationGroups?: RecommendationGroup[] }): Record<string, unknown> {
+function publicCatalog(catalog: GeneratedExpressionCatalog & { recommendationGroups?: RecommendationGroup[]; synthesisOrder?: string[] }): Record<string, unknown> {
   return {
     version: catalog.version,
     complete: true,
     recommendationGroups: catalog.recommendationGroups ?? [],
+    synthesisOrder: catalog.synthesisOrder,
     retiredTemplateIds: catalog.retiredTemplateIds ?? [],
     templates: catalog.templates.map(publicAsset),
     emojiBases: catalog.emojiBases.map((item) => ({

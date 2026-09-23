@@ -665,6 +665,7 @@ export const api = {
   updateCollectorSetting: (collectorBaseUrl: string) =>
     put<{ ok: boolean; collector_base_url: string }>('/api/v1/dashboard/settings/collector', { collector_base_url: collectorBaseUrl }),
   synthesisLibrary: () => get<{ assets: SynthesisAsset[]; total: number }>('/api/v1/dashboard/synthesis-library'),
+  saveSynthesisOrder: (assetOrder: string[]) => patch<{ assets: SynthesisAsset[]; total: number }>('/api/v1/dashboard/synthesis-library/order', { assetOrder }),
   uploadSynthesisAsset: async (body: SynthesisUpload): Promise<{ asset: SynthesisAsset; duplicate: boolean }> => {
     const url = withDashboardUser('/api/v1/dashboard/synthesis-library');
     const res = await dashboardFetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });

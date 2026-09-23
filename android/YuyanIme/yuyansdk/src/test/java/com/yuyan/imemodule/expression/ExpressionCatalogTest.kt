@@ -8,6 +8,21 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
 class ExpressionCatalogTest {
+    @Test fun `后台底图顺序优先于关键词相关度且写盘重读不丢排序`() {
+        val raw = """{"version":"v2","complete":true,"synthesisOrder":["new","old"],
+          "templates":[
+            {"id":"old","type":"synthesis-template","format":"gif","version":"v1","fileName":"old.gif","sha256":"a","width":240,"height":240,"keywords":["开心"],"textSafeArea":{"x":0,"y":0,"width":240,"height":40},"layout":{"minFontSize":12,"maxFontSize":20,"textColor":"#ffffff","strokeColor":"#000000","strokeWidth":1,"alignment":"center","maxLines":2}},
+            {"id":"new","type":"synthesis-template","format":"gif","version":"v1","fileName":"new.gif","sha256":"b","width":240,"height":240,"textSafeArea":{"x":0,"y":0,"width":240,"height":40},"layout":{"minFontSize":12,"maxFontSize":20,"textColor":"#ffffff","strokeColor":"#000000","strokeWidth":1,"alignment":"center","maxLines":2}}
+          ],"emojiBases":[],"emojiCombinations":[]}"""
+        val dir = java.nio.file.Files.createTempDirectory("synthesis-order").toFile()
+        try {
+            val store = ExpressionCatalogStore(dir, "https://example.com", "user", "apk")
+            store.write(ExpressionCatalog.fromJson(raw).document)
+            val restored = ExpressionCatalog(requireNotNull(store.read()))
+            assertEquals(listOf("new", "old"), restored.synthesisTemplates("开心").map { it.id })
+        } finally { dir.deleteRecursively() }
+    }
+
     @Test fun `手动模板池覆盖动态和静态无字底图且相关优先`() {
         val layout = com.yuyan.imemodule.expression.model.ExpressionTextLayout(18, 40, "#ffffff", "#000000", 2, "center", 2)
         val area = com.yuyan.imemodule.expression.model.ExpressionTextSafeArea(0, 0, 200, 80)

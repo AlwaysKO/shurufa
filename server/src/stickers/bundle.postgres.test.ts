@@ -33,6 +33,7 @@ test('真实PostgreSQL迁移历史归属、空库恢复和JSONB重排后重复�
     const migration=readFileSync(new URL('../../migrations/027_shared_sticker_library.sql',import.meta.url),'utf8');
     await pool.query(migration); await pool.query(migration);
     await pool.query(readFileSync(new URL('../../migrations/028_sticker_group_deletion.sql',import.meta.url),'utf8'));
+    await pool.query(readFileSync(new URL('../../migrations/030_synthesis_order.sql',import.meta.url),'utf8'));
     expect((await pool.query('SELECT user_id FROM sticker')).rows[0].user_id).toBe(old);
     await pool.query("INSERT INTO device(id,name) VALUES($1,'原上传手机')",[old]);
     await deleteDeviceData(pool,old);
