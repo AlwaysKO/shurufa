@@ -144,8 +144,11 @@ object RimeEngine {
     }
 
     fun selectCandidate(index: Int): String? {
-        val code = learningCode(forCommit = true)
+        // 同步可能在候选显示之后到达，旧列表也不能再提交已禁词。
         val selected = candidateForSelection(index)
+        val selectedText = selected?.text?.takeIf { it.isNotEmpty() } ?: showCandidates.getOrNull(index)?.text
+        if (selectedText in OfflineT9Candidates.blockedCandidateTexts()) return null
+        val code = learningCode(forCommit = true)
         if (selected?.inputMatch?.let { it.code != code } == true) {
             t9CommitTracker.clear()
             updateCandidatesOrCommitText()
@@ -196,9 +199,10 @@ object RimeEngine {
                     }
                 }
             }
-            nativeCandidateMetadata.appendNativePage(candidates.map { it.text }, "", candidates.map { it.comment })
-            val visible = personalCandidates?.appendNativePage(candidates.map { it.text }, learningCode(), candidates.map { it.comment })
-                ?.map { candidates[it] }?.toTypedArray() ?: candidates
+            val blocked = OfflineT9Candidates.blockedCandidateTexts()
+            val nativeVisible = nativeCandidateMetadata.appendNativePage(candidates.map { it.text }, "", candidates.map { it.comment }, blocked)
+            val indexes = personalCandidates?.appendNativePage(candidates.map { it.text }, learningCode(), candidates.map { it.comment }, blocked) ?: nativeVisible
+            val visible = indexes.map { candidates[it] }.toTypedArray()
             if (visible.isNotEmpty()) return visible
             // 过滤后整页为空时继续翻页，不能让候选栏误以为已经没有后续候选。
         }
@@ -222,7 +226,7 @@ object RimeEngine {
                 rime = Rime.getAssociateList(text).filterNotNull(),
                 custom = CustomEngine.predictAssociationWordsChinese(text),
                 remote = CompletionSync.query(text).map { it.completion },
-            )
+            ).filterNot { it.text in OfflineT9Candidates.blockedCandidateTexts() }
             associationRimeIndexes = merged.map { it.rimeIndex }
             showCandidates = merged.map {
                 val comment = if (it.source == AssociationCandidateSource.REMOTE) CompletionSync.candidateComment else ""
@@ -234,6 +238,7 @@ object RimeEngine {
 
     fun selectAssociation(index: Int) {
         val selected = showCandidates.getOrNull(index) ?: return
+        if (selected.text in OfflineT9Candidates.blockedCandidateTexts()) return
         associationRimeIndexes.getOrNull(index)?.let(Rime::chooseAssociate)
         preCommitText = selected.text
         showCandidates = emptyList()
@@ -307,6 +312,7 @@ object RimeEngine {
             return preCommitText
         }
         val candidates = Rime.getRimeContext()?.candidates?.asList() ?: emptyList()
+        val blocked = OfflineT9Candidates.blockedCandidateTexts()
         nativeCandidateMetadata = CandidateSelection(candidates.mapIndexed { index, item ->
             RankedCandidate(item.text, item.comment, index)
         }, candidates.size)
@@ -315,6 +321,7 @@ object RimeEngine {
         showCandidates = when {
             compositionText.isNotBlank() -> {
                 val phrase = CustomEngine.processPhrase(compositionText.replace("\'", ""))
+                phrase.removeAll { it in blocked }
                 if(InputModeSwitcher.isEnglish && StringUtils.isLetter(compositionText) &&
                     !compositionText.equals(candidates.first().text, ignoreCase = true) ){
                     phrase.add(0, compositionText)
@@ -363,7 +370,7 @@ object RimeEngine {
             rimeSchema == CustomConstant.SCHEMA_ZH_T9 && !keyRecordStack.isEmpty() &&
                 !InputModeSwitcher.isEnglish && !AppPrefs.getInstance().input.chineseFanTi.getValue() ->
                 OfflineT9Candidates.rankNative(nativeCandidateMetadata.firstPage, candidates.size)
-            else -> null
+            else -> if (blocked.isEmpty()) null else CandidateSelection(nativeCandidateMetadata.firstPage, candidates.size, blockedTexts = blocked)
         }
         personalCandidates?.let { selection ->
             showCandidates = showCandidates.take(customPhraseSize) + selection.firstPage.map {

@@ -7,7 +7,7 @@ const askConfirmation = useConfirmation();
 
 const devices = ref<DictionaryDevice[]>([]), rows = ref<DictionaryEntry[]>([]);
 const total = ref(0), totalWords = ref<number>(), page = ref(1), deviceId = ref(''), q = ref(''), status = ref('enabled');
-const view = ref('merged');
+const view = ref('merged'), sort = ref('default'), blockedWord = ref('');
 const selected = ref<string[]>([]), targets = ref<string[]>([]), allSelected = ref(false);
 const busy = ref(false), loading = ref(false), loaded = ref(false), error = ref(''), notice = ref('');
 const newWord = ref(''), newPinyin = ref('');
@@ -22,9 +22,9 @@ const date = (s:string|null|undefined) => s ? new Date(s).toLocaleString('zh-CN'
 const statuses = {enabled:'启用',disabled:'停用',deleted:'已删除'};
 const migration: Record<string,string> = {complete:'读取完成',permission_denied:'没有读取权限',unavailable:'系统词典不可用',failed:'读取失败',not_attempted:'尚未尝试'};
 const filter = (): DictionaryFilter => ({...(deviceId.value ? {device_id:deviceId.value} : {}),...(q.value.trim() ? {q:q.value.trim()} : {}),...(status.value ? {status:status.value} : {})});
-const sourceLabel = (s:string) => ({dashboard:'后台手动添加',system_dictionary:'系统词典导入',selection:'实际选词学习',rime:'Rime 选词学习'}[s] || s);
-const source = (r:DictionaryEntry) => r.sources?.length ? r.sources.map(sourceLabel).join('、') : r.kind==='merged' ? '合并来源（详见明细）' : r.source==='dashboard' || r.source==='system_dictionary' ? sourceLabel(r.source) : r.kind==='choice' ? '实际选词学习' : '选词读音';
-const rowDevice = (r:DictionaryEntry) => r.device_ids?.length ? r.device_ids.map(deviceName).join('、') : r.device_id ? deviceName(r.device_id) : r.source==='dashboard' || r.sources?.every(s=>s==='dashboard') && r.sources.length ? '—（后台添加）' : '手机来源未记录';
+const sourceLabel = (s:string) => ({dashboard:'后台手动添加',system_dictionary:'系统词典导入',selection:'实际选词学习',rime:'Rime 选词学习',policy:'后台屏蔽规则（未上报词）'}[s] || s);
+const source = (r:DictionaryEntry) => r.sources?.length ? r.sources.map(sourceLabel).join('、') : r.kind==='merged' ? '合并来源（详见明细）' : r.source==='policy' || r.source==='dashboard' || r.source==='system_dictionary' ? sourceLabel(r.source) : r.kind==='choice' ? '实际选词学习' : '选词读音';
+const rowDevice = (r:DictionaryEntry) => r.source==='policy' || r.sources?.includes('policy') ? '当前绑定词库' : r.device_ids?.length ? r.device_ids.map(deviceName).join('、') : r.device_id ? deviceName(r.device_id) : r.source==='dashboard' || r.sources?.every(s=>s==='dashboard') && r.sources.length ? '—（后台添加）' : '手机来源未记录';
 const hasChoices = (r:DictionaryEntry) => r.kind==='choice' || r.kind==='merged' && (r.has_choices ?? r.count>0);
 function clearSelection() {selected.value=[];allSelected.value=false;}
 function selectPage() {
@@ -47,7 +47,7 @@ async function load(targetPage=page.value): Promise<boolean|undefined> {
   if(!alive) return;
   const version=++generation; loading.value=true; loaded.value=false; error.value='';
   try {
-    const [directory,result]=await Promise.all([dictionaryApi.devices(),dictionaryApi.entries({...filter(),page:targetPage,view:view.value})]);
+    const [directory,result]=await Promise.all([dictionaryApi.devices(),dictionaryApi.entries({...filter(),page:targetPage,view:view.value,sort:sort.value})]);
     if(version!==generation || !alive) return false;
     const lastPage=Math.max(1,Math.ceil(result.total/50));
     if(targetPage>lastPage) return await load(lastPage);
@@ -56,7 +56,7 @@ async function load(targetPage=page.value): Promise<boolean|undefined> {
   } catch(e) { if(version===generation && alive) error.value=(e as Error).message; return false; }
   finally {if(version===generation && alive) loading.value=false;}
 }
-watch([deviceId,q,status,view],()=>{clearSelection();notice.value='';void load(1);});
+watch([deviceId,q,status,view,sort],()=>{clearSelection();notice.value='';void load(1);});
 function filterDevice(id:string) {if(busy.value) return;deviceId.value=id;view.value=id ? 'raw' : 'merged';}
 async function addWord() {
   if(busy.value || loading.value) return;
@@ -112,12 +112,21 @@ async function bind(d:DictionaryDevice) {
   try {await dictionaryApi.bind(d.device_id);if(!alive) return;notice.value='后台绑定已保存，等待手机联网同步。';clearSelection();await load(1);}
   catch(e) {if(alive) error.value=(e as Error).message;} finally {if(alive) busy.value=false;}
 }
+async function blockWord() {
+  const text=blockedWord.value.trim();
+  if(!/^[\u4e00-\u9fff]{1,30}$/.test(text)) {error.value='请输入 1–30 个汉字，不需要填写拼音。';return;}
+  if(await decide([text],'deleted')) {
+    const savedNotice=notice.value;
+    blockedWord.value='';deviceId.value='';view.value='merged';q.value=text;status.value='deleted';
+    await nextTick();if(alive) notice.value=savedNotice;
+  }
+}
 async function decide(texts:string[],value:DictionaryStatus) {
   if(busy.value || loading.value || !loaded.value || !canManage.value || !texts.length) return;
-  if(value!=='enabled' && !(await askConfirmation(`${statuses[value]}这 ${texts.length} 个词的个人学习与加权？绑定手机同步后生效，原始上报明细保留；不会屏蔽公共词库中的同名词。`, { title: value === 'deleted' ? '确认删除个人词语' : '确认停用个人词语', confirmText: value === 'deleted' ? '确认删除' : '确认停用' }))) return;
+  if(value!=='enabled' && !(await askConfirmation(`${statuses[value]}这 ${texts.length} 个词？升级后的绑定手机从主后台同步后，将屏蔽所有词库中完全同名的候选，包括已学习的词和内置词。原始记录保留，可恢复；不影响其他词。作用于当前绑定词库的手机，不是上方勾选的增量接收目标。`, { title: value === 'deleted' ? '确认删除个人词语' : '确认停用个人词语', confirmText: value === 'deleted' ? '确认删除' : '确认停用' }))) return;
   if (!alive || busy.value || !canManage.value) return;
   busy.value=true;error.value='';notice.value='';
-  try {await dictionaryApi.decisions([...new Set(texts)],value);if(!alive) return;notice.value=`${value==='enabled' ? '已恢复' : value==='disabled' ? '已停用' : '已删除'} ${new Set(texts).size} 个词${value==='deleted' ? '，可切换“已删除”状态查看或恢复' : ''}；等待手机确认应用。`;clearSelection();await load();}
+  try {await dictionaryApi.decisions([...new Set(texts)],value);if(!alive) return;notice.value=`${value==='enabled' ? '已恢复' : value==='disabled' ? '已停用' : '已删除'} ${new Set(texts).size} 个词${value==='deleted' ? '，可切换“已删除”状态查看或恢复' : ''}；支持全来源屏蔽的手机从主后台同步后生效，原始记录保留以便恢复。`;clearSelection();await load();return true;}
   catch(e) {if(alive) error.value=(e as Error).message;} finally {if(alive) busy.value=false;}
 }
 onMounted(()=>load(1)); onBeforeUnmount(()=>{alive=false;generation++;});
@@ -136,6 +145,16 @@ onMounted(()=>load(1)); onBeforeUnmount(()=>{alive=false;generation++;});
       </form>
     </section>
     <section class="library-panel">
+      <h3>屏蔽不想要的词</h3>
+      <p>当前列表可查看已上报的个人词、选词记录和后台添加词，不是手机完整内置词库。即使列表中找不到，也可在这里输入要删除的词；手机同步后屏蔽所有词库中的同名候选。原始记录保留，可在“已删除”中恢复。</p>
+      <p>仅从主后台管理当前绑定词库，作用于：{{ devices.filter(d=>d.in_group).map(label).join('、') || '等待设备信息' }}。上方添加及下方增量同步不会撤销删除；只有明确恢复才取消屏蔽。</p>
+      <p v-if="!canManage">本站为备份端，请在手机设置的主后台执行删除；本站不下发删除决策。</p>
+      <form data-testid="block-form" class="library-row" @submit.prevent="blockWord">
+        <input v-model="blockedWord" data-testid="blocked-word" class="library-input" aria-label="不想要的词" placeholder="输入不想要的词，无需拼音" maxlength="30" required :disabled="busy||!canManage">
+        <button class="library-button danger" :disabled="busy||loading||!loaded||!canManage">删除并同步屏蔽</button>
+      </form>
+    </section>
+    <section class="library-panel">
       <h3>选择接收词语和习惯的手机</h3><p>可选多台手机，不需要先绑定。新手机注册个人词库同步后才会出现；旧版本可以排队，但须升级才能接收增量词语。系统词典不等于其他输入法的私有词库。</p>
       <div class="batch-actions">
         <button class="library-button primary" data-testid="sync-all-habits" :disabled="busy||loading||!loaded||!targets.length" @click="syncAllHabits">一键同步全部习惯和词语到所选 {{ targets.length }} 台手机</button>
@@ -148,8 +167,9 @@ onMounted(()=>load(1)); onBeforeUnmount(()=>{alive=false;generation++;});
           <p>{{ d.additions_supported ? '支持增量接收' : '需升级：尚未支持增量接收' }}<br>待应用：{{ d.additions_pending ?? 0 }} 条<br>增量应用确认：{{ date(d.additions_applied_at) }}</p>
           <p>{{ d.habits_supported ? '支持真实习惯接收' : '需升级：尚未支持习惯接收' }}<br>习惯待应用：{{ d.habits_pending ?? 0 }} 条<br>习惯应用确认：{{ date(d.habits_applied_at) }}</p>
           <p v-if="d.additions_supported && d.habits_supported && d.additions_pending === 0 && d.habits_pending === 0 && d.additions_applied_at && d.habits_applied_at">手机已确认当前词语与习惯投递；实际候选效果请在手机检查。</p>
+          <p>{{ !d.candidate_policy_supported ? '需升级：尚不支持全来源候选屏蔽' : d.restore_enabled===false ? '支持全来源屏蔽：请从主后台同步管理规则' : !d.in_group ? '支持全来源屏蔽：未绑定此词库' : d.synced ? '手机已确认应用当前全来源屏蔽规则' : '全来源屏蔽规则：等待手机联网同步' }}</p>
           <details><summary>原始备份与管理状态</summary>
-            <p>{{ d.restore_enabled === false ? '仅备份：本站不下发管理决策，但可增量添加词语' : d.in_group ? (d.synced ? '手机已确认应用管理决策' : '等待手机同步') : '未绑定此词库' }}</p>
+            <p>{{ d.restore_enabled === false ? '仅备份：本站不下发管理决策，但可增量添加词语' : d.in_group ? (d.synced ? '手机已确认个人词库管理快照' : '等待手机同步') : '未绑定此词库' }}</p>
             <p>最近上报：{{ date(d.last_report_at) }}<br>管理应用确认：{{ date(d.applied_at) }}</p>
             <p>系统词典：{{ migration[d.migration_status] || d.migration_status }} · 导入 {{ d.imported }} 词</p>
             <button v-if="d.in_group" class="library-button small" :data-testid="`device-${d.device_id}`" :disabled="busy||loading" @click="filterDevice(d.device_id)">查看此手机明细</button>
@@ -169,8 +189,10 @@ onMounted(()=>load(1)); onBeforeUnmount(()=>{alive=false;generation++;});
         <input v-model="q" data-testid="search" class="library-input" aria-label="搜索个人词语" placeholder="搜索词语或拼音" :disabled="busy">
         <select v-model="view" class="library-input" data-testid="view-filter" aria-label="词库视图" :disabled="busy"><option value="merged">按词合并查看</option><option value="raw">各手机原始上报</option></select>
         <select v-model="status" class="library-input" data-testid="status-filter" aria-label="个人词语状态" :disabled="busy"><option value="">全部状态</option><option value="enabled">启用</option><option value="disabled">停用</option><option value="deleted">已删除</option></select>
+        <select v-model="sort" class="library-input" data-testid="sort-filter" aria-label="后台列表排序" :disabled="busy"><option value="default">默认：后台添加优先</option><option value="count_asc">使用次数：从少到多</option><option value="count_desc">使用次数：从多到少</option><option value="recent">最近使用优先</option><option value="text">按词语名称</option></select>
         <button class="library-button" :disabled="busy||loading">查询</button>
       </form>
+      <p>排序只影响后台列表，不改变手机候选顺序。使用次数仅统计已上报的真实选词，未记录使用不代表该词一定冷门。</p>
       <div class="batch-actions">
         <button class="library-button small" data-testid="select-page" :disabled="busy||loading||!loaded||!rows.length" @click="selectPage">全选当前页</button>
         <button class="library-button small" data-testid="select-all" :disabled="busy||loading||!loaded||!total" @click="selectAll">选择全部筛选结果</button>

@@ -54,7 +54,8 @@ class ExpressionSync(
         .mapNotNull { asset -> asset.thumbnailFileName?.let { asset.id to it } }.toMap()
 
     private val catalogStore = ExpressionCatalogStore(catalogDirectory, baseUrl, deviceId, initialCatalog.document.version)
-    internal val backgroundSyncKey: String get() = catalogStore.key
+    internal val backgroundSyncKey: String get() = catalogStore.key + ":recommendations-v1"
+    internal val backgroundVersion: String get() = catalog.document.recommendationVersion ?: catalog.document.version
     private val refreshMutex = catalogStore.refreshMutex
     private val keyboardLock = Any()
     private var keyboardSession: Job? = null
@@ -123,9 +124,11 @@ class ExpressionSync(
     }
 
     /** 半小时后台探测只读取版本，不下载目录或原件。 */
-    suspend fun remoteVersion(): String? = withContext(Dispatchers.IO) {
+    suspend fun remoteVersion(recommendationsOnly: Boolean = false): String? = withContext(Dispatchers.IO) {
         try {
-            val request = Request.Builder().url("${baseUrl.trimEnd('/')}/api/v1/mobile/expressions/versions")
+            val url = "${baseUrl.trimEnd('/')}/api/v1/mobile/expressions/versions".toHttpUrl().newBuilder()
+                .apply { if (recommendationsOnly) addQueryParameter("scope", "recommendations") }.build()
+            val request = Request.Builder().url(url)
                 .header("X-Device-Id", deviceId).build()
             networkClient.newCall(request).awaitBody { response ->
                 check(response.isSuccessful)
@@ -142,7 +145,7 @@ class ExpressionSync(
 
     suspend fun backgroundSyncNeeded(version: String): Boolean = withContext(Dispatchers.IO) {
         refreshMutex.withLock { reloadPersistedCatalog() }
-        if (catalog.document.version != version || !catalog.document.complete) return@withContext true
+        if (backgroundVersion != version || !catalog.document.complete) return@withContext true
         queryCache.hasRoomForBackgroundOriginal() && backgroundCandidates().any { localAsset(it) == null }
     }
 
@@ -160,11 +163,15 @@ class ExpressionSync(
         require(maxDownloads > 0)
         val updated = refreshMutex.withLock {
             reloadPersistedCatalog()
+            val version = expectedVersion ?: remoteVersion(recommendationsOnly = true) ?: return@withLock false
             when {
-                expectedVersion == null -> checkVersion()
-                expectedVersion == catalog.document.version && catalog.document.complete -> true
+                version == backgroundVersion && catalog.document.complete -> true
                 else -> {
-                    refreshCatalogLocked() ?: throw IOException("background catalog update failed")
+                    // 升级前缓存可能只有总版本；即使总版本未变也要取得独立推荐版本。
+                    if (refreshCatalogLocked(force = catalog.document.recommendationVersion == null) == null) {
+                        if (expectedVersion == null) return@withLock false
+                        throw IOException("background catalog update failed")
+                    }
                     true
                 }
             }
@@ -208,12 +215,12 @@ class ExpressionSync(
         }
     }
 
-    private suspend fun refreshCatalogLocked(): ExpressionCatalog? = withContext(Dispatchers.IO) {
+    private suspend fun refreshCatalogLocked(force: Boolean = false): ExpressionCatalog? = withContext(Dispatchers.IO) {
         try {
             val url = "$baseUrl/api/v1/mobile/expressions/catalog"
                 .toHttpUrl()
                 .newBuilder()
-                .addQueryParameter("version", catalog.document.version)
+                .apply { if (!force) addQueryParameter("version", catalog.document.version) }
                 .build()
             val request = Request.Builder()
                 .url(url)
@@ -258,7 +265,7 @@ class ExpressionSync(
 
     private fun reloadPersistedCatalog() {
         catalogStore.read()?.let { saved ->
-            if (saved.version != catalog.document.version) {
+            if (saved.version != catalog.document.version || saved.recommendationVersion != catalog.document.recommendationVersion) {
                 runCatching { sanitizeSnapshot(saved) }.getOrNull()?.let { catalog = ExpressionCatalog(it) }
             }
         }

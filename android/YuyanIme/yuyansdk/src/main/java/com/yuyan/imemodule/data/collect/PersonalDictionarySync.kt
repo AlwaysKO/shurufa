@@ -60,7 +60,7 @@ internal class PersonalDictionarySync(
                 }
             }
             // 注册回执不缓存：服务端重置后必须补传本机数据。
-            val registered=json.parseToJsonElement(request("/register",buildJsonObject {put("restore_enabled",restoreFromTarget);put("additions_supported",true);put("habits_supported",true);put("short_codes_supported",true)}.toString())).jsonObject
+            val registered=json.parseToJsonElement(request("/register",buildJsonObject {put("restore_enabled",restoreFromTarget);put("additions_supported",true);put("habits_supported",true);put("short_codes_supported",true);put("candidate_policy_supported",true)}.toString())).jsonObject
             val records=store.dictionaryExport()
             val (status,imported)=migration()
             val serialized=json.encodeToString(ListSerializer(DictionaryRecord.serializer()),records)

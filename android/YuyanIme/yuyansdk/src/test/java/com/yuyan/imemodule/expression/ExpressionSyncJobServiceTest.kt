@@ -8,6 +8,7 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.Before
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
@@ -17,6 +18,83 @@ import kotlinx.coroutines.*
 
 @RunWith(RobolectricTestRunner::class)
 class ExpressionSyncJobServiceTest {
+    @Before fun resetProcessMonitor() {
+        // Robolectric 重建 Context/Looper，但 Kotlin companion 的进程状态会跨用例保留。
+        ReflectionHelpers.setStaticField(ExpressionSyncJobService::class.java, "monitoring", false)
+    }
+
+    @Test @Config(sdk = [30]) fun `版本请求失败后半小时内不因反复打开键盘而重试`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val scheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+        ExpressionSyncJobService.recordCheckAttempt(context, "scope")
+        ExpressionSyncJobService.scheduleDownload(context, "scope", "v2")
+        scheduler.cancelAll()
+        repeat(3) { ExpressionSyncJobService.recover(context) }
+        assertFalse(ExpressionSyncJobService.checkDue(context, "scope"))
+        assertTrue(ExpressionSyncJobService.checkDue(context, "other-scope"))
+        assertEquals(setOf(5175301, 5175302), scheduler.allPendingJobs.map { it.id }.toSet())
+    }
+
+    @Test @Config(sdk = [30]) fun `无人输入时半小时巡检恢复被移除的任务`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val scheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+        ExpressionSyncJobService.startRecovery(context)
+        ExpressionSyncJobService.recordCheck(context, "scope", "v2")
+        ExpressionSyncJobService.scheduleDownload(context, "scope", "v2")
+        scheduler.cancelAll()
+        // Handler 使用虚拟 uptime；版本节流使用持久化 wall clock，单独推进其记录。
+        context.getSharedPreferences("expression_background_sync", Context.MODE_PRIVATE).edit()
+            .putLong("last_attempt_at", System.currentTimeMillis() - 30 * 60 * 1000L).commit()
+        org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper())
+            .idleFor(30, java.util.concurrent.TimeUnit.MINUTES)
+        assertEquals(setOf(5175301, 5175302, 5175303), scheduler.allPendingJobs.map { it.id }.toSet())
+    }
+
+    @Test @Config(sdk = [30]) fun `WiFi恢复事件补回待下载任务且重复入口只监听一次`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val scheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+        ExpressionSyncJobService.startRecovery(context)
+        ExpressionSyncJobService.startRecovery(context)
+        val callbacks = org.robolectric.Shadows.shadowOf(cm).networkCallbacks
+        assertEquals(1, callbacks.size)
+        ExpressionSyncJobService.recordCheck(context, "scope", "v2")
+        ExpressionSyncJobService.scheduleDownload(context, "scope", "v2")
+        scheduler.cancelAll()
+        callbacks.single().onAvailable(org.robolectric.shadow.api.Shadow.newInstanceOf(android.net.Network::class.java))
+        org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
+        assertEquals(setOf(5175301, 5175302), scheduler.allPendingJobs.map { it.id }.toSet())
+    }
+
+    @Test @Config(sdk = [30]) fun `任务被清空后恢复周期检查和已持久化的WiFi下载`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val scheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+        scheduler.cancelAll()
+        ExpressionSyncJobService.scheduleDownload(context, "scope", "v2")
+        scheduler.cancelAll()
+        ExpressionSyncJobService.recover(context)
+        val jobs = scheduler.allPendingJobs
+        assertEquals(30 * 60 * 1000L, jobs.single { it.isPeriodic }.intervalMillis)
+        val download = jobs.single { it.id == 5175302 }
+        assertEquals("v2", download.extras.getString("version"))
+        assertTrue(download.requiredNetwork!!.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI))
+        assertNotNull(jobs.singleOrNull { it.id == 5175303 })
+        ExpressionSyncJobService.recover(context)
+        assertSame(download, scheduler.allPendingJobs.single { it.id == 5175302 })
+    }
+
+    @Test @Config(sdk = [30]) fun `刚检查过只恢复持久任务不重复立即探测`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val scheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+        scheduler.cancelAll()
+        ExpressionSyncJobService.recordCheck(context, "scope", "v3")
+        assertFalse(ExpressionSyncJobService.checkDue(context, "scope"))
+        assertTrue(ExpressionSyncJobService.checkDue(context, "another-endpoint"))
+        ExpressionSyncJobService.recover(context)
+        assertNull(scheduler.allPendingJobs.firstOrNull { it.id == 5175303 })
+        assertTrue(scheduler.allPendingJobs.any { it.isPeriodic })
+    }
+
     @Test @Config(sdk = [30]) fun `半小时版本检查允许移动网络且不要求空闲`() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val scheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler

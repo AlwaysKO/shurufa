@@ -6,6 +6,7 @@ import com.yuyan.inputmethod.core.CandidateListItem
 import com.yuyan.inputmethod.core.Kernel
 import com.yuyan.inputmethod.util.T9Spelling
 import com.yuyan.imemodule.manager.InputModeSwitcher
+import com.yuyan.imemodule.data.completion.OfflineT9Candidates
 
 /**
  * 词库解码操作对象
@@ -102,6 +103,7 @@ object DecodingInfo {
      * 选择一个候选词，且重新获取候选词列表
      */
     fun chooseDecodingCandidate(candId: Int): String {
+        if (isCandidateBlocked(candId)) return ""
         activeCandidate = 0
         activeCandidateBar = 0
         var candidate: String
@@ -135,12 +137,15 @@ object DecodingInfo {
         return candidatesLiveData.value?.getOrNull(candId)
     }
 
+    fun isCandidateBlocked(candId: Int): Boolean = getCandidate(candId)?.text in OfflineT9Candidates.blockedCandidateTexts()
+
     // 更新候选词
     fun cacheCandidates(words: Array<CandidateListItem>, associate: Boolean = false) {
         isAssociate = associate
         activeCandidate = 0
         activeCandidateBar = 0
-        candidatesLiveData.value = words.asList()
+        val blocked = OfflineT9Candidates.blockedCandidateTexts()
+        candidatesLiveData.value = if (blocked.isEmpty()) words.asList() else words.filterNot { it.text in blocked }
     }
 
     /**

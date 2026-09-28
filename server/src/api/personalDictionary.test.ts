@@ -35,6 +35,8 @@ beforeEach(async () => {
   const habitsPath=new URL('../../migrations/025_dictionary_habits.sql',import.meta.url);
   if(existsSync(habitsPath)) await pool.query(readFileSync(habitsPath,'utf8'));
   await pool.query(readFileSync(new URL('../../migrations/026_dictionary_short_codes.sql',import.meta.url),'utf8'));
+  const policyMigration=new URL('../../migrations/031_dictionary_candidate_policy.sql',import.meta.url);
+  if(existsSync(policyMigration)) await pool.query(readFileSync(policyMigration,'utf8'));
   app = createApp(pool);
 });
 afterEach(async () => {
@@ -397,4 +399,50 @@ it('旧手机过滤短码但可正常确认快照和习惯，新版升级后可�
  await mobile(B,'post','/register').send({short_codes_supported:true,habits_supported:true});
  expect((await mobile(B,'get','')).body.entries.some((e:any)=>e.code==='3')).toBe(true);
  expect((await mobile(B,'get','/habits?after=0')).body.entries.map((e:any)=>e.code)).toEqual(['3',choice().code]);
+});
+
+describe('全来源词语屏蔽与清理排序', () => {
+  it('尚未上报的词可直接删除并在后台查看和恢复，不冒充已学习词', async () => {
+    await mobile(A,'post','/register').send({});
+    const admin=await dash();
+    await admin.post(`/api/v1/dashboard/dictionary/decisions?user_id=${A}`).send({texts:['朱逢博'],status:'deleted'});
+    const rows=(await admin.get(`/api/v1/dashboard/dictionary/entries?user_id=${A}&view=merged&status=deleted`)).body.entries;
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({text:'朱逢博',status:'deleted',sources:['policy'],count:0,has_choices:false});
+    await admin.post(`/api/v1/dashboard/dictionary/decisions?user_id=${A}`).send({texts:['朱逢博'],status:'enabled'});
+    expect((await mobile(A,'get','')).body.policies).toEqual([{text:'朱逢博',status:'enabled'}]);
+  });
+  it('合并词的使用次数排序在分页前生效且无使用记录排前便于清理', async () => {
+    await mobile(A,'post','/register').send({});
+    await upload(A,[choice('甲',4),choice('乙',1),{...choice('乙',7),code:'94'},{...word,text:'丙',pinyin:'bing'}]);
+    const admin=await dash();
+    const query=`/api/v1/dashboard/dictionary/entries?user_id=${A}&view=merged`;
+    expect((await admin.get(query+'&sort=count_asc')).body.entries.map((e:any)=>e.text)).toEqual(['丙','甲','乙']);
+    expect((await admin.get(query+'&sort=count_desc')).body.entries.map((e:any)=>e.text)).toEqual(['乙','甲','丙']);
+    expect((await admin.get(query+'&sort=invalid')).status).toBe(400);
+  });
+});
+
+ it('旧版确认不能冒充全来源屏蔽能力，升级后必须重新确认', async () => {
+    await mobile(A,'post','/register').send({});
+    const revision=(await mobile(A,'get','')).body.revision;
+    await mobile(A,'post','/ack').send({revision});
+    const admin=await dash();
+    let device=(await admin.get(`/api/v1/dashboard/dictionary/devices?user_id=${A}`)).body.devices[0];
+    expect(device.candidate_policy_supported).toBe(false);
+    await mobile(A,'post','/register').send({candidate_policy_supported:true});
+    device=(await admin.get(`/api/v1/dashboard/dictionary/devices?user_id=${A}`)).body.devices[0];
+    expect(device.candidate_policy_supported).toBe(true);
+    expect(device.synced).toBe(false);
+  });
+it('使用次数排序覆盖全部页且重复查询稳定', async () => {
+  await mobile(A,'post','/register').send({});
+  const records=Array.from({length:55},(_,i)=>({...choice('词'+String.fromCharCode(0x4e00+i),i+1),last_used:1000+i}));
+  await upload(A,records);
+  const admin=await dash();
+  const path=`/api/v1/dashboard/dictionary/entries?user_id=${A}&view=merged&sort=count_desc`;
+  const first=(await admin.get(path)).body.entries;
+  const second=(await admin.get(path+'&page=2')).body.entries;
+  expect([...first,...second].map((r:any)=>r.text)).toEqual([...records].reverse().map(r=>r.text));
+  expect((await admin.get(path)).body.entries).toEqual(first);
 });

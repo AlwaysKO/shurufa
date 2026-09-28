@@ -36,5 +36,10 @@ export async function expressionSnapshot(pool: pg.Pool, userId: string) {
     }));
     // Hash only catalog/DB metadata, never a GIF. Usage counters deliberately excluded.
     const version = createHash('sha256').update(JSON.stringify({ userId, recommendationGroups, synthesisOrder, removed: [...removed], system, stickers: stickers.rows, synthesis: synthesis.rows.map(({ created_at, ...row }) => row) })).digest('hex');
-    return { ...system, version, complete: true, templates, recommendationGroups, synthesisOrder, retiredTemplateIds: system.retiredTemplateIds ?? [] };
+    const retired = new Set(system.retiredTemplateIds ?? []);
+    const recommendationVersion = createHash('sha256').update(JSON.stringify({
+        recommendationGroups,
+        assets: templates.filter(asset => asset.type === 'prebuilt' && !retired.has(asset.id)).map(publicExpressionAsset),
+    })).digest('hex');
+    return { ...system, version, recommendationVersion, complete: true, templates, recommendationGroups, synthesisOrder, retiredTemplateIds: system.retiredTemplateIds ?? [] };
 }

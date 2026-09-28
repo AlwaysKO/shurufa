@@ -115,6 +115,33 @@ afterEach(async () => {
 });
 
 describe('mobile expression API', () => {
+  it('推荐版本不受AI底图更新影响，推荐图片内容变化仍会更新', async () => {
+    const app = createApp(pool);
+    const getVersion = async (scope?: string) => (await request(app)
+      .get('/api/v1/mobile/expressions/versions').query(scope ? { scope } : {})
+      .set('X-Device-Id', USER_A)).body.version;
+    const before = await getVersion('recommendations');
+    const allBefore = await getVersion();
+    const changed = structuredClone(catalog);
+    changed.templates.find(item => item.id === 'synthesis-hot')!.sha256 = '9'.repeat(64);
+    await writeFile(join(root, '.runtime', 'expression-assets', 'catalog.json'), JSON.stringify(changed));
+    expect(await getVersion()).not.toBe(allBefore);
+    expect(await getVersion('recommendations')).toBe(before);
+    changed.templates.find(item => item.id === 'hello-2')!.sha256 = '8'.repeat(64);
+    await writeFile(join(root, '.runtime', 'expression-assets', 'catalog.json'), JSON.stringify(changed));
+    const after = await getVersion('recommendations');
+    expect(after).not.toBe(before);
+    const snapshot = await request(app).get('/api/v1/mobile/expressions/catalog').set('X-Device-Id', USER_A);
+    expect(snapshot.body.recommendationVersion).toBe(after);
+    changed.templates.find(item => item.id === 'hello-2')!.keywords.push('新增说法');
+    await writeFile(join(root, '.runtime', 'expression-assets', 'catalog.json'), JSON.stringify(changed));
+    const afterKeyword = await getVersion('recommendations');
+    expect(afterKeyword).not.toBe(after);
+    changed.templates = changed.templates.filter(item => item.id !== 'hello-2');
+    await writeFile(join(root, '.runtime', 'expression-assets', 'catalog.json'), JSON.stringify(changed));
+    expect(await getVersion('recommendations')).not.toBe(afterKeyword);
+  });
+
   it.each(['你好', '早安', '晚安', '好的', '对不起'])('已验收新词 %s 原 GIF 保持组内顺序并共享同组素材，不外搜', async (word) => {
     const production = JSON.parse(readFileSync(
       new URL('../../../android/YuyanIme/yuyansdk/src/main/assets/expression/catalog.json', import.meta.url), 'utf8',

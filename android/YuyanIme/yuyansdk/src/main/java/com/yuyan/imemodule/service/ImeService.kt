@@ -234,6 +234,7 @@ open class ImeService : InputMethodService() {
     override fun onCreate() {
         setTheme(R.style.Theme_ImeTheme)
         super.onCreate()
+        com.yuyan.imemodule.expression.ExpressionSyncJobService.startRecovery(this)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             window?.window?.decorView?.isForceDarkAllowed = false
         }
@@ -272,6 +273,7 @@ open class ImeService : InputMethodService() {
     }
 
     override fun onStartInputView(editorInfo: EditorInfo, restarting: Boolean) {
+        com.yuyan.imemodule.expression.ExpressionSyncJobService.startRecovery(this)
         if (isSoftKeyboard)mInputView.onStartInputView(editorInfo, restarting)
         super.onStartInputView(editorInfo, restarting)
     }

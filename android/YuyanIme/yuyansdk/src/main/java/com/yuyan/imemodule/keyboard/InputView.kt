@@ -1439,6 +1439,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
     }
 
     fun chooseAndUpdate(candId: Int = mSkbCandidatesBarView.getActiveCandNo()): String? {
+        if (DecodingInfo.isCandidateBlocked(candId)) return null
         val candidate = DecodingInfo.getCandidate(candId)
         return if (RelationshipReplyPolicy.ENABLED && candidate?.comment == RELATIONSHIP_REPLY_REFRESH_COMMENT) {
             relationshipReplyController.refresh(::showRelationshipReplyCandidates)

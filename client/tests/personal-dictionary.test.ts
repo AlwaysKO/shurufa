@@ -256,3 +256,21 @@ it.each(['deleted','disabled'])('重新添加 %s 同名词时展示其原状态�
   expect(api.entries.mock.calls.at(-1)?.[0].status).toBeUndefined();
   expect(api.decisions).not.toHaveBeenCalled();
 });
+
+it('后台排序重新查询首页且不调用手机排序或增量同步', async () => {
+  const api=mockApi(); const view=await mount('PersonalDictionary',api);
+  expect(view.find('sort-filter')).toBeDefined();
+  update(view,'sort-filter','count_asc'); await settle();
+  expect(api.entries.mock.calls.at(-1)?.[0]).toMatchObject({sort:'count_asc',page:1});
+  expect(api.sync).not.toHaveBeenCalled();
+});
+it('不在上报列表的内置词也能输入并明确删除', async () => {
+  const api=mockApi(); vi.stubGlobal('confirm',vi.fn().mockReturnValue(true));
+  const view=await mount('PersonalDictionary',api);
+  expect(view.find('blocked-word')).toBeDefined();
+  update(view,'blocked-word',' 朱逢博 ');
+  view.find('block-form')!.props.onSubmit({preventDefault(){}}); await settle();
+  expect(api.decisions).toHaveBeenCalledWith(['朱逢博'],'deleted');
+  expect(globalThis.confirm).toHaveBeenCalledWith(expect.stringContaining('所有词库'));
+  expect(view.text()).not.toContain('不会屏蔽公共词库');
+});

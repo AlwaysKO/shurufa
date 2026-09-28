@@ -50,16 +50,19 @@ internal object PersonalCandidateRanker {
 
 /** 首屏去重/重排后，后续页仍沿用 Rime 的连续原生索引。索引不包含手工候选。 */
 internal class CandidateSelection(
-    val firstPage: List<RankedCandidate>, private val nativeCount: Int,
+    firstPage: List<RankedCandidate>, private val nativeCount: Int,
     private val excludedTexts: Set<String> = emptySet(),
     private val extraMatch: (String, String) -> InputSpellingMatch? = { _, _ -> null },
+    private val blockedTexts: Set<String> = emptySet(),
     private val acceptNative: (String, String) -> Boolean = { _, _ -> true },
 ) {
+    val firstPage = if (blockedTexts.isEmpty()) firstPage else firstPage.filterNot { it.text in blockedTexts }
     private val followingPages = mutableListOf<RankedCandidate>()
     private var nextNativeIndex = nativeCount
 
-    fun appendNativePage(texts: List<String>, code: String, comments: List<String>? = null): List<Int> {
+    fun appendNativePage(texts: List<String>, code: String, comments: List<String>? = null, latestBlockedTexts: Set<String> = emptySet()): List<Int> {
         val visible = texts.indices.filter {
+            if (texts[it] in blockedTexts || texts[it] in latestBlockedTexts) return@filter false
             val match = extraMatch(texts[it], comments?.getOrNull(it).orEmpty())
             (match != null || isT9CandidateAllowed(code, texts[it])) && acceptNative(texts[it], comments?.getOrNull(it).orEmpty()) &&
                 (match != null ||

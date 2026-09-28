@@ -46,9 +46,10 @@ function publicAsset(asset: ExpressionAsset): Record<string, unknown> {
   };
 }
 
-function publicCatalog(catalog: GeneratedExpressionCatalog & { recommendationGroups?: RecommendationGroup[]; synthesisOrder?: string[] }): Record<string, unknown> {
+function publicCatalog(catalog: GeneratedExpressionCatalog & { recommendationVersion?: string; recommendationGroups?: RecommendationGroup[]; synthesisOrder?: string[] }): Record<string, unknown> {
   return {
     version: catalog.version,
+    recommendationVersion: catalog.recommendationVersion,
     complete: true,
     recommendationGroups: catalog.recommendationGroups ?? [],
     synthesisOrder: catalog.synthesisOrder,
@@ -122,8 +123,11 @@ export function createMobileExpressionRouter(
     next();
   });
 
-  router.get('/versions', async (_req, res, next) => {
-    try { res.json({ version: (await expressionSnapshot(pool, res.locals.userId)).version }); }
+  router.get('/versions', async (req, res, next) => {
+    try {
+      const snapshot = await expressionSnapshot(pool, res.locals.userId);
+      res.json({ version: req.query.scope === 'recommendations' ? snapshot.recommendationVersion : snapshot.version });
+    }
     catch (error) { next(error); }
   });
 

@@ -61,7 +61,10 @@ internal object OfflineT9Candidates {
     fun query(code: String, native: List<String> = emptyList()): List<RankedCandidate> =
         select(code, native).firstPage
 
+    fun blockedCandidateTexts(): Set<String> = store?.blockedCandidateTexts().orEmpty()
+
     fun select(code: String, native: List<String> = emptyList(), nativeComments: List<String>? = null): CandidateSelection {
+        val blocked = blockedCandidateTexts()
         if (code.length in 1..2 && code.all { it in '2'..'9' }) {
             val history = try { store?.learned(code).orEmpty().associateBy { it.text } }
                 catch (_: Exception) { emptyMap() }
@@ -76,12 +79,13 @@ internal object OfflineT9Candidates {
                     (if (index == 0) 2.0 else 1.0 / (index + 1)) +
                         (choice?.let { h -> PersonalCandidateRanker.decay(h.weight, h.lastUsed, now) } ?: 0.0)
                 })
-            return CandidateSelection(ranked, native.size)
+            return CandidateSelection(ranked, native.size, blockedTexts = blocked)
         }
         val numeric = code.length in 3..30 && code.all { it in '2'..'9' }
         val letters = code.length in 2..30 && code.all { it in 'a'..'z' }
         if (!numeric && !letters) return CandidateSelection(
             native.mapIndexed { index, text -> RankedCandidate(text, nativeIndex = index) }, native.size,
+            blockedTexts = blocked,
         )
         val history = try { store?.relatedLearned(code).orEmpty() } catch (_: Exception) { emptyList() }
         val personalWords = try { store?.personalWords(code).orEmpty() } catch (_: Exception) { emptyList() }
@@ -275,12 +279,12 @@ internal object OfflineT9Candidates {
         } + combined, learned, now).filter {
             it.inputMatch?.kind != InputMatchKind.PHRASE_PREFIX || ++phraseCount <= 2
         }
-        return CandidateSelection(ranked, native.size, rejected.toSet(), ::extraMatch) { text, reading ->
+        return CandidateSelection(ranked, native.size, rejected.toSet(), ::extraMatch, blocked) { text, reading ->
             trusted(text, reading) || nativeWhole(text, reading)
         }
     }
 
-    /** 锁音/分段只重排原生现有项：不注入、过滤或按文字合并不同读音的原生索引。 */
+    /** 锁音/分段只重排原生现有项，额外排除明确禁词；不注入或合并不同读音的索引。 */
     fun rankNative(native: List<RankedCandidate>, nativeCount: Int): CandidateSelection {
         val readings = native.map { PersonalWordReading.normalize(it.text, it.pinyin) }
         val codes = readings.map { it?.let { reading -> T9Lexicon.digits(reading.replace(" ", "")) } }
@@ -298,7 +302,7 @@ internal object OfflineT9Candidates {
             prior + if (choice != null && choice.count > 0)
                 PersonalCandidateRanker.decay(choice.weight, choice.lastUsed, now) else 0.0
         }).map { it.value }
-        return CandidateSelection(ranked, nativeCount)
+        return CandidateSelection(ranked, nativeCount, blockedTexts = blockedCandidateTexts())
     }
 
     private fun learningChoices(selection: T9CommitSelection): List<PendingChoice> = buildList {

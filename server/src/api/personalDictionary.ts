@@ -81,7 +81,11 @@ async function dashboardEntries(db: Db, group: string, filter: {device_id?:unkno
   if(filter.status && !['enabled','disabled','deleted'].includes(String(filter.status))) throw new HttpError(400,'invalid status');
   const q=typeof filter.q==='string' ? filter.q.slice(0,100) : '';
   const policies=new Map(data.policies.map(p=>[p.text,p.status]));
-  return [...data.entries,...manual.map(v=>({...v,device_id:'',kind:'word',source:'dashboard',code:'',count:0,weight:0,last_used:0}))]
+  const known=new Set([...data.entries,...manual].map(e=>e.text));
+  // 内置词不一定有个人上报；仍需让显式删除可查、可恢复，不伪造使用记录。
+  const policyOnly=data.policies.filter(p=>!known.has(p.text)).map(p=>({...p,device_id:'',kind:'policy',source:'policy',pinyin:'',code:'',count:0,weight:0,last_used:0}));
+  if(data.entries.length+manual.length+policyOnly.length>100000) throw new HttpError(413,'词库过大，未下发截断数据');
+  return [...data.entries,...manual.map(v=>({...v,device_id:'',kind:'word',source:'dashboard',code:'',count:0,weight:0,last_used:0})),...policyOnly]
     .map(e=>({...e,status:policies.get(e.text) ?? 'enabled'}))
     .filter(e=>(!id || e.device_id===id) && (!q || e.text.includes(q) || e.pinyin.includes(q)) && (!filter.status || e.status===filter.status));
 }
@@ -93,6 +97,8 @@ export function createMobileDictionaryRouter(pool: pg.Pool): Router {
     const additions=req.body?.additions_supported ?? false;
     const habits=req.body?.habits_supported ?? false;
     const shortCodes=req.body?.short_codes_supported ?? false;
+    const candidatePolicy=req.body?.candidate_policy_supported ?? false;
+    if(typeof candidatePolicy!=='boolean') throw new HttpError(400,'invalid candidate policy capability');
     if(typeof shortCodes!=='boolean') throw new HttpError(400,'invalid short code capability');
     if(typeof habits!=='boolean') throw new HttpError(400,'invalid habits capability');
     if(typeof additions!=='boolean') throw new HttpError(400,'invalid additions capability');
@@ -102,13 +108,14 @@ export function createMobileDictionaryRouter(pool: pg.Pool): Router {
     await db.query(`INSERT INTO dictionary_device(device_id,group_id,token_hash) VALUES($1,$1,$2) ON CONFLICT DO NOTHING`,[id,hash(token)]);
     const registered = await authenticate(db,req,id);
     // 主控角色变化后必须重新应用并确认，不能沿用切换前的确认版本。
-    if (registered.restore_enabled !== restores || registered.short_codes_supported !== shortCodes) {
+    if (registered.restore_enabled !== restores || registered.short_codes_supported !== shortCodes || registered.candidate_policy_supported !== candidatePolicy) {
       await db.query('UPDATE dictionary_device SET applied_revision=NULL WHERE device_id=$1',[id]);
     }
     await db.query('UPDATE dictionary_device SET restore_enabled=$2 WHERE device_id=$1',[id,restores]);
     await db.query('UPDATE dictionary_device SET additions_supported=$2 WHERE device_id=$1',[id,additions]);
     await db.query('UPDATE dictionary_device SET habits_supported=$2 WHERE device_id=$1',[id,habits]);
     await db.query('UPDATE dictionary_device SET short_codes_supported=$2 WHERE device_id=$1',[id,shortCodes]);
+    await db.query('UPDATE dictionary_device SET candidate_policy_supported=$2 WHERE device_id=$1',[id,candidatePolicy]);
     return {ok:true,has_report:registered.last_report_at != null,additions_supported:true,habits_supported:true,short_codes_supported:true};
   }));
   r.get('/additions',transaction(pool,async(db,req,res)=>{
@@ -201,7 +208,7 @@ export function createDashboardDictionaryRouter(pool: pg.Pool): Router {
   const r = Router();
   r.get('/devices',transaction(pool,async(db,_req,res) => {
     const d = await device(db,res.locals.userId), current = await snapshot(db,d.group_id), legacy = await snapshot(db,d.group_id,false);
-    const rows = (await db.query(`SELECT s.device_id,s.group_id,s.last_report_at,s.applied_at,s.applied_revision,s.migration_status,s.imported,s.restore_enabled,s.short_codes_supported,s.additions_supported,s.additions_ack,s.additions_applied_at,s.habits_supported,s.habits_ack,s.habits_applied_at,
+    const rows = (await db.query(`SELECT s.device_id,s.group_id,s.last_report_at,s.applied_at,s.applied_revision,s.migration_status,s.imported,s.restore_enabled,s.short_codes_supported,s.candidate_policy_supported,s.additions_supported,s.additions_ack,s.additions_applied_at,s.habits_supported,s.habits_ack,s.habits_applied_at,
       d.name,d.model,d.brand,d.dashboard_name FROM dictionary_device s JOIN device d ON d.id=s.device_id ORDER BY s.device_id`)).rows;
     for(const row of rows) row.additions_pending=Number((await db.query('SELECT COUNT(*) AS n FROM dictionary_addition WHERE device_id=$1 AND cursor>$2',[row.device_id,row.additions_ack])).rows[0].n);
     for(const row of rows) row.habits_pending=Number((await db.query('SELECT COUNT(*) AS n FROM dictionary_habit WHERE device_id=$1 AND cursor>$2',[row.device_id,row.habits_ack])).rows[0].n);
@@ -209,6 +216,8 @@ export function createDashboardDictionaryRouter(pool: pg.Pool): Router {
   }));
   r.get('/entries',transaction(pool,async(db,req,res) => {
     const d = await device(db,res.locals.userId);
+    const sort=req.query.sort ?? 'default';
+    if(typeof sort!=='string' || !['default','count_asc','count_desc','recent','text'].includes(sort)) throw new HttpError(400,'invalid sort');
     let all = await dashboardEntries(db,d.group_id,req.query);
     // 仅调整后台展示顺序，手工确认的词不再埋在手机原始上报的后续页。
     all.sort((a,b)=>Number(b.source==='dashboard')-Number(a.source==='dashboard'));
@@ -227,6 +236,11 @@ export function createDashboardDictionaryRouter(pool: pg.Pool): Router {
           weight:choices.reduce((n,e)=>n+e.weight*Math.pow(0.5,(at-e.last_used)/(14*24*60*60*1000)),0),last_used:at};
       });
     }
+    // 先按词合并再排序，再分页，不能只重排当前50条。
+    if(sort!=='default') all.sort((a,b)=>{
+      const primary=sort==='count_asc' ? a.count-b.count : sort==='count_desc' ? b.count-a.count : sort==='recent' ? b.last_used-a.last_used : 0;
+      return primary || a.text.localeCompare(b.text,'zh-CN') || a.device_id.localeCompare(b.device_id) || a.code.localeCompare(b.code) || a.pinyin.localeCompare(b.pinyin) || a.source.localeCompare(b.source);
+    });
     const page = Math.max(1,Math.min(100000,Math.floor(Number(req.query.page)||1))), size=50;
     return {total:all.length,total_words:totalWords,page,page_size:size,entries:all.slice((page-1)*size,page*size)};
   }));
@@ -324,6 +338,7 @@ export function createDashboardDictionaryRouter(pool: pg.Pool): Router {
     if (!Array.isArray(texts) || !texts.length || texts.length>500 || !texts.every(chinese) || !['enabled','disabled','deleted'].includes(status)) throw new HttpError(400,'invalid decision');
     for (const text of new Set(texts)) await db.query(`INSERT INTO dictionary_policy(group_id,text,status) VALUES($1,$2,$3)
       ON CONFLICT(group_id,text) DO UPDATE SET status=EXCLUDED.status,updated_at=NOW()`,[d.group_id,text,status]);
+    await dashboardEntries(db,d.group_id,{});
     return {ok:true};
   }));
   return r;

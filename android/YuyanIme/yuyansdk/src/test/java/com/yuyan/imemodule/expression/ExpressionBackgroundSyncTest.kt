@@ -18,6 +18,89 @@ import org.junit.Before
 import org.junit.Test
 
 class ExpressionBackgroundSyncTest {
+    @Test fun `待办落后实际目录时分批补图仍使用条件目录请求`() = runBlocking {
+        val sync = sync()
+        val second = "second-image".toByteArray()
+        catalog(document("all-9", listOf(asset(), asset("second", second))).copy(recommendationVersion = "rec-3"))
+        server.enqueue(MockResponse().setBody(String(bytes)))
+        assertFalse(sync.syncInBackground(maxDownloads = 1, expectedVersion = "rec-2"))
+        server.enqueue(MockResponse().setResponseCode(304))
+        server.enqueue(MockResponse().setBody(String(second)))
+        assertTrue(sync.syncInBackground(maxDownloads = 1, expectedVersion = "rec-2"))
+        val requests = List(4) { server.takeRequest() }
+        assertEquals("all-9", requests[2].requestUrl!!.queryParameter("version"))
+        assertEquals("/uploads/stickers/second.png", requests[3].requestUrl!!.encodedPath)
+    }
+
+    @Test fun `旧缓存总版本相同也取得推荐版本且已有实例能读到迁移结果`() = runBlocking {
+        catalog(document("all-9", listOf(asset())))
+        server.enqueue(MockResponse().setBody(String(bytes)))
+        assertTrue(sync().syncInBackground(expectedVersion = "all-9"))
+        val stale = sync()
+        val catalogRequests = java.util.concurrent.atomic.AtomicInteger()
+        server.dispatcher = object : okhttp3.mockwebserver.Dispatcher() {
+            override fun dispatch(request: okhttp3.mockwebserver.RecordedRequest): MockResponse = when {
+                request.requestUrl!!.encodedPath.endsWith("/versions") -> MockResponse().setBody("{\"version\":\"rec-2\"}")
+                request.requestUrl!!.encodedPath.endsWith("/catalog") -> {
+                    catalogRequests.incrementAndGet()
+                    if (request.requestUrl!!.queryParameter("version") == "all-9") MockResponse().setResponseCode(304)
+                    else MockResponse().setBody(Json.encodeToString(document("all-9", listOf(asset())).copy(recommendationVersion = "rec-2")))
+                }
+                else -> MockResponse().setResponseCode(404)
+            }
+        }
+        assertTrue(sync().syncInBackground())
+        assertFalse(stale.backgroundSyncNeeded("rec-2"))
+        assertTrue(stale.syncInBackground())
+        assertEquals(1, catalogRequests.get())
+        assertEquals(5, server.requestCount)
+    }
+
+    @Test fun `跳过多个推荐版本按最新目录补齐中间新增图片且不重下旧图`() = runBlocking {
+        val sync = sync()
+        catalog(document("all-1", listOf(asset())).copy(recommendationVersion = "rec-1"))
+        server.enqueue(MockResponse().setBody(String(bytes)))
+        assertTrue(sync.syncInBackground(expectedVersion = "rec-1"))
+        val middleBytes = "added-in-rec-3".toByteArray()
+        val latestBytes = "added-in-rec-7".toByteArray()
+        catalog(document("all-20", listOf(asset(), asset("middle", middleBytes), asset("latest", latestBytes)))
+            .copy(recommendationVersion = "rec-7"))
+        server.enqueue(MockResponse().setBody(String(middleBytes)))
+        server.enqueue(MockResponse().setBody(String(latestBytes)))
+        assertTrue(sync.syncInBackground(expectedVersion = "rec-7"))
+        assertEquals(5, server.requestCount)
+        val requests = List(5) { server.takeRequest().requestUrl!!.encodedPath }
+        assertEquals(1, requests.count { it == "/uploads/stickers/new.png" })
+        assertTrue(requests.containsAll(listOf("/uploads/stickers/middle.png", "/uploads/stickers/latest.png")))
+        assertFalse(sync().backgroundSyncNeeded("rec-7"))
+    }
+
+    @Test fun `独立推荐版本不因总目录版本变化而重复同步`() = runBlocking {
+        val sync = sync()
+        version("recommendations-2")
+        catalog(document("all-9", listOf(asset())).copy(recommendationVersion = "recommendations-2"))
+        server.enqueue(MockResponse().setBody(String(bytes)))
+        assertTrue(sync.syncInBackground())
+        assertFalse(sync.backgroundSyncNeeded("recommendations-2"))
+        version("recommendations-2")
+        assertTrue(sync.syncInBackground())
+        assertEquals(4, server.requestCount)
+        assertEquals("/api/v1/mobile/expressions/versions?scope=recommendations", server.takeRequest().path)
+        assertEquals("all-9", sync().currentCatalog().document.version)
+        assertEquals("recommendations-2", sync().currentCatalog().document.recommendationVersion)
+    }
+
+    @Test fun `已有超过64MB图片仍继续增量预下载`() = runBlocking {
+        val originals = File(root, "expression-query/originals").apply { mkdirs() }
+        val existing = File(originals, "a".repeat(64))
+        java.io.RandomAccessFile(existing, "rw").use { it.setLength(80L * 1024 * 1024) }
+        version("v2"); catalog(document("v2", listOf(asset())))
+        server.enqueue(MockResponse().setBody(String(bytes)))
+        assertTrue(sync().syncInBackground())
+        assertEquals(3, server.requestCount)
+        assertTrue(existing.isFile)
+    }
+
     private lateinit var server: MockWebServer
     private lateinit var root: File
     private lateinit var scope: CoroutineScope
@@ -183,7 +266,7 @@ class ExpressionBackgroundSyncTest {
         val catalogRequests = java.util.concurrent.atomic.AtomicInteger()
         server.dispatcher = object : okhttp3.mockwebserver.Dispatcher() {
             override fun dispatch(request: okhttp3.mockwebserver.RecordedRequest): MockResponse = when {
-                request.path!!.endsWith("/versions") -> MockResponse().setBody("{\"version\":\"v2\"}")
+                request.requestUrl!!.encodedPath.endsWith("/versions") -> MockResponse().setBody("{\"version\":\"v2\"}")
                 request.path!!.contains("/catalog") -> {
                     catalogRequests.incrementAndGet()
                     MockResponse().setBody(Json.encodeToString(document("v2", listOf(asset()))))
@@ -202,7 +285,7 @@ class ExpressionBackgroundSyncTest {
     @Test fun `缓存接近上限时后台不驱逐旧图也不反复下载`() = runBlocking {
         val originals = File(root, "expression-query/originals").apply { mkdirs() }
         val existing = File(originals, "a".repeat(64))
-        java.io.RandomAccessFile(existing, "rw").use { it.setLength(55L * 1024 * 1024) }
+        java.io.RandomAccessFile(existing, "rw").use { it.setLength(1015L * 1024 * 1024) }
         val sync = sync()
         version("v2"); catalog(document("v2", listOf(asset())))
         assertFalse(sync.syncInBackground())
@@ -210,7 +293,7 @@ class ExpressionBackgroundSyncTest {
         assertFalse(sync.syncInBackground())
         assertEquals("缓存预算不足只检查版本，不重复请求图片", 3, server.requestCount)
         assertTrue(existing.isFile)
-        assertEquals(55L * 1024 * 1024, existing.length())
+        assertEquals(1015L * 1024 * 1024, existing.length())
     }
 
     @Test fun `后台网络等待时键盘仍立即展示已落盘目录`() = runBlocking {

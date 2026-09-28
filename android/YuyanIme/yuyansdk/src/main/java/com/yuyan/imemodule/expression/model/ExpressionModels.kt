@@ -99,4 +99,6 @@ data class ExpressionCatalogDocument(
     val recommendationGroups: List<ExpressionRecommendationGroup>? = null,
     /** 后台底图顺序；缺省目录沿用旧相关性排序。 */
     val synthesisOrder: List<String>? = null,
+    /** 推荐词/原图的独立内容版本；旧服务器缺省时兼容总目录版本。 */
+    val recommendationVersion: String? = null,
 )

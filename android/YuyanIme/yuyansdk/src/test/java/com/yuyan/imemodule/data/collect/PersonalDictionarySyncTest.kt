@@ -75,6 +75,7 @@ class PersonalDictionarySyncTest {
             server.enqueue(MockResponse().setBody("{\"ok\":true}"))
             assertTrue(sync.run())
             val register=server.takeRequest();assertTrue(register.path!!.endsWith("/register"));assertEquals(64,register.getHeader("X-Dictionary-Token")!!.length)
+            assertTrue(register.body.readUtf8().contains("\"candidate_policy_supported\":true"))
             val report=server.takeRequest();assertTrue(report.path!!.endsWith("/report"));assertTrue(report.body.readUtf8().contains("充电宝"))
             assertEquals("/api/v1/mobile/dictionary",server.takeRequest().path)
             assertTrue(server.takeRequest().path!!.endsWith("/ack"))

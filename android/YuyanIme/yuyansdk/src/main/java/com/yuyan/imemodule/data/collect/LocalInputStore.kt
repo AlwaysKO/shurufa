@@ -27,6 +27,21 @@ internal data class CodedLearnedInput(val code: String, val choice: LearnedInput
 internal class LocalInputStore(context: Context, name: String = "local_input.db", private val now: () -> Long = System::currentTimeMillis) :
     SQLiteOpenHelper(context.applicationContext, name, null, 10) {
     private val json = Json { ignoreUnknownKeys = true }
+    private val policyKey = context.getDatabasePath(name).absolutePath
+
+    // 采集同步与候选引擎有不同的 helper 实例，共享已提交策略；按键只做内存查找。
+    fun blockedCandidateTexts(): Set<String> = candidatePolicies[policyKey].orEmpty()
+
+    override fun onOpen(db: SQLiteDatabase) {
+        super.onOpen(db)
+        refreshCandidatePolicies(db)
+    }
+
+    private fun refreshCandidatePolicies(db: SQLiteDatabase) = synchronized(candidatePolicies) {
+        candidatePolicies[policyKey] = db.rawQuery("SELECT text FROM dictionary_policy WHERE status<>'enabled'", null).use { c ->
+            buildSet { while (c.moveToNext()) add(c.getString(0)) }
+        }
+    }
     override fun onCreate(db: SQLiteDatabase) {
         createPendingLearning(db)
         createReportTables(db)
@@ -551,13 +566,13 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
     @Synchronized fun applyDictionarySnapshot(snapshot: DictionarySnapshot, selfDeviceId: String) {
         require(snapshot.revision.matches(Regex("[a-f0-9]{64}")))
         require(snapshot.entries.size <= 100_000 && snapshot.entries.all { it.deviceId.isNotEmpty() && it.valid() })
-        require(snapshot.policies.all { it.status in listOf("enabled","disabled","deleted") && it.text.length in 1..30 && it.text.all { ch -> ch in '\u4e00'..'\u9fff' } })
+        require(snapshot.policies.size <= 100_000 && snapshot.policies.all { it.status in listOf("enabled","disabled","deleted") && it.text.length in 1..30 && it.text.all { ch -> ch in '\u4e00'..'\u9fff' } })
         val db=writableDatabase
         db.beginTransaction()
         try {
             retainRemoteWords(db)
             db.delete("dictionary_remote_word",null,null); db.delete("dictionary_remote_choice",null,null)
-            snapshot.policies.forEach { p -> db.insertWithOnConflict("dictionary_policy",null,ContentValues().apply { put("text",p.text);put("status",p.status) },SQLiteDatabase.CONFLICT_REPLACE) }
+            snapshot.policies.forEach { p -> check(db.insertWithOnConflict("dictionary_policy",null,ContentValues().apply { put("text",p.text);put("status",p.status) },SQLiteDatabase.CONFLICT_REPLACE) != -1L) }
             snapshot.entries.filter { it.deviceId!=selfDeviceId }.forEach { e ->
                 val values=ContentValues().apply { put("device_id",e.deviceId);put("text",e.text) }
                 if(e.kind=="choice") {
@@ -573,6 +588,7 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
             }
             db.setTransactionSuccessful()
         } finally {db.endTransaction()}
+        refreshCandidatePolicies(db)
     }
 
     private fun validCode(code: String): Boolean =
@@ -580,6 +596,7 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
             (code.length in 2..30 && code.all { it in 'a'..'z' })
 
     private companion object {
+        val candidatePolicies = java.util.concurrent.ConcurrentHashMap<String, Set<String>>()
         const val LEGACY_ONLINE_TARGET = "https://my.dog8ball.com"
     }
 }

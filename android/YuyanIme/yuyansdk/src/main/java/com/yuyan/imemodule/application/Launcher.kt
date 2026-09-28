@@ -27,6 +27,7 @@ class Launcher {
     fun initData(context: Context) {
         this.context = context
         currentInit()
+        com.yuyan.imemodule.expression.ExpressionSyncJobService.startRecovery(context)
         onInitDataChildThread()
     }
 
@@ -51,7 +52,6 @@ class Launcher {
             OfflineAssociationCompletion.init(context)
             // 数据采集：设备注册 + 行为/位置上报（内部自管协程，失败自动重试）
             DataCollector.init(context)
-            com.yuyan.imemodule.expression.ExpressionSyncJobService.schedule(context)
             CaptureUploader.start(context)
             // 复制词库文件
             val dataDictVersion = AppPrefs.getInstance().internal.dataDictVersion.getValue()
