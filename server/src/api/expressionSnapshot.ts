@@ -16,17 +16,25 @@ export function publicExpressionAsset(asset: ExpressionAsset) {
     return { ...asset, version: asset.sha256, url: uploaded ? `/uploads/${asset.fileName}` : `/uploads/expression/${asset.fileName}`, thumbnail_url: asset.thumbnailFileName ? `/uploads/expression/${asset.thumbnailFileName}` : null };
 }
 export function synthesisRowAsset(row: any): ExpressionAsset {
-    return { id: `synthesis-${row.id}`, type: 'synthesis-template', format: row.file_name.split('.').pop(), sourceType: 'owner-upload', distribution: 'remote', version: row.sha256, sha256: row.sha256, fileName: `synthesis/${row.file_name}`, thumbnailFileName: null, width: row.width, height: row.height, keywords: [], emotions: [], embeddedText: null, textSafeArea: row.text_safe_area, layout: row.layout, heat: 0 };
+    return { id: row.system_asset_id ?? `synthesis-${row.id}`, type: 'synthesis-template', format: row.file_name.split('.').pop(), sourceType: 'owner-upload', distribution: 'remote', version: row.sha256, sha256: row.sha256, fileName: `synthesis/${row.file_name}`, thumbnailFileName: null, width: row.width, height: row.height, keywords: [], emotions: [], embeddedText: null, textSafeArea: row.text_safe_area, layout: row.layout, heat: 0 };
+}
+// 后台和手机共用可见列表；保留历史上传，系统同图只显示一次。
+export function mergedSynthesisAssets(templates: ExpressionAsset[], rows: any[], order: string[]) {
+    const uploaded = rows.map(synthesisRowAsset);
+    const byId = new Map(uploaded.map(asset => [asset.id, asset]));
+    const hashes = new Set(uploaded.map(asset => asset.sha256));
+    const system = templates.filter(asset => asset.type === 'synthesis-template')
+        .flatMap(asset => byId.has(asset.id) ? [byId.get(asset.id)!] : hashes.has(asset.sha256) ? [] : [asset]);
+    const systemIds = new Set(system.map(asset => asset.id));
+    return orderSynthesisAssets(uploaded.filter(asset => !systemIds.has(asset.id)), system, order);
 }
 export async function expressionSnapshot(pool: pg.Pool, userId: string) {
-    const [system, stickers, synthesis, savedOrder] = await Promise.all([systemExpressionCatalog(), pool.query('SELECT id, keywords, file_name, format, width, height, sha256 FROM sticker ORDER BY id'), pool.query('SELECT * FROM synthesis_asset WHERE user_id = $1 ORDER BY created_at DESC, id DESC', [userId]), loadSynthesisOrder(pool, userId)]);
+    const [system, stickers, synthesis, savedOrder] = await Promise.all([systemExpressionCatalog(), pool.query('SELECT id, keywords, file_name, format, width, height, sha256 FROM sticker ORDER BY id'), pool.query('SELECT * FROM synthesis_asset ORDER BY created_at DESC, id DESC'), loadSynthesisOrder(pool)]);
     const personal: ExpressionAsset[] = stickers.rows.filter(row => /^[a-f0-9]{64}$/.test(row.sha256 ?? '')).map(row => ({ id: `sticker-${row.id}`, type: 'prebuilt', format: row.format, sourceType: 'owner-upload', distribution: 'remote', version: row.sha256, sha256: row.sha256, fileName: `stickers/${row.file_name}`, thumbnailFileName: null, width: row.width ?? 240, height: row.height ?? 240, keywords: [...new Set<string>(String(row.keywords).split(/[,，]/).map(s => s.trim()).filter(Boolean))], emotions: [], embeddedText: null, textSafeArea: null, layout: null, heat: 0 }));
-    const synthesisHashes = new Set(system.templates.filter(asset => asset.type === 'synthesis-template').map(asset => asset.sha256));
-    const uploadedSynthesis = synthesis.rows.map(synthesisRowAsset).filter(asset => !synthesisHashes.has(asset.sha256));
     const removed = await removedKeywordGifHashes(pool, userId);
     const library = await loadStickerLibrary(pool, userId);
     const visibleIds = new Set(library.groups.flatMap(group => group.assets.map(asset => asset.source === 'personal' ? `sticker-${asset.id}` : String(asset.id))));
-    const orderedSynthesis = orderSynthesisAssets(uploadedSynthesis, system.templates.filter(asset => asset.type === 'synthesis-template'), savedOrder);
+    const orderedSynthesis = mergedSynthesisAssets(system.templates, synthesis.rows, savedOrder);
     const synthesisOrder = orderedSynthesis.map(asset => asset.id);
     const templates = [...system.templates.filter(asset => asset.type !== 'synthesis-template' && (asset.type !== 'prebuilt' || (!removed.has(asset.sha256) && visibleIds.has(asset.id)))),
       ...personal.filter(asset => visibleIds.has(asset.id)), ...orderedSynthesis];

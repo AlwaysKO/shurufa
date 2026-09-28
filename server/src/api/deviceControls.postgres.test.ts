@@ -162,7 +162,7 @@ test("删除覆盖全部个人业务表、附件关联和分析游标，系统�
  }
  expect((await remove()).status).toBe(200);
  const tables=(await pool.query("SELECT table_name FROM information_schema.columns WHERE table_schema=current_schema() AND column_name='user_id'")).rows;
- for(const {table_name} of tables){expect(await count(table_name),table_name).toBe(0);expect(await count(table_name,B),table_name).toBe(1);}
+ for(const {table_name} of tables){expect(await count(table_name),table_name).toBe(["sticker","sticker_keyword","sticker_group_settings","keyword_gif_removal","synthesis_asset","synthesis_library_order"].includes(table_name)?1:0);expect(await count(table_name,B),table_name).toBe(1);}
  expect((await pool.query("SELECT * FROM expression_asset")).rowCount).toBe(1);
  expect((await pool.query("SELECT * FROM chat_message_asset")).rowCount).toBe(1);
  expect((await pool.query("SELECT key FROM analysis_state")).rows).toEqual([{key:`last_analyzed_epoch_ms:${B}`}]);
@@ -243,9 +243,21 @@ test('关键词组并发争用同一说法仅一组成功，避免手机一次�
 });
 
 
-test("删除设备清理其底图顺序，保留其他设备顺序",async()=>{
+test("删除设备保留共享底图及历史排序",async()=>{
  for(const user of [A,B]) await pool.query("INSERT INTO synthesis_library_order(user_id,asset_order) VALUES($1,$2)",[user,JSON.stringify(["system-blank"])]);
  expect((await remove()).status).toBe(200);
- expect(await count("synthesis_library_order",A)).toBe(0);
+ expect(await count("synthesis_library_order",A)).toBe(1);
  expect((await pool.query("SELECT asset_order FROM synthesis_library_order WHERE user_id=$1",[B])).rows).toEqual([{asset_order:["system-blank"]}]);
+});
+
+test('删除上传设备后共享底图记录、原文件和其他手机访问均保留',async()=>{
+ const fileName='shared-legacy.gif', id=randomUUID();
+ await mkdir(join(root,'uploads/synthesis'),{recursive:true});
+ await writeFile(join(root,'uploads/synthesis',fileName),'shared-test-fixture');
+ await pool.query(`INSERT INTO synthesis_asset(id,user_id,name,file_name,sha256,width,height,text_safe_area,layout,source_statement,no_text_confirmed,rights_confirmed)
+ VALUES($1,$2,'共享底图',$3,$4,240,240,'{}','{}','',false,false)`,[id,A,fileName,'c'.repeat(64)]);
+ expect((await remove(A)).status).toBe(200);
+ expect(await count('synthesis_asset',A)).toBe(1);
+ expect(existsSync(join(root,'uploads/synthesis',fileName))).toBe(true);
+ expect((await request(app).get('/uploads/synthesis/'+fileName).set('X-Device-Id',B)).status).toBe(200);
 });

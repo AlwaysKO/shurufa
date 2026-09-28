@@ -271,7 +271,7 @@ export interface SynthesisLayout {
 export interface SynthesisAsset {
   id: string; name: string; source: 'system' | 'personal'; deletable: boolean;
   sourceStatement?: string;
-  url: string; format: 'gif'; sha256: string; width: number; height: number;
+  url: string; format: 'gif' | 'png' | 'jpg' | 'jpeg' | 'webp'; sha256: string; width: number; height: number;
   textSafeArea: SynthesisSafeArea; layout: SynthesisLayout;
 }
 export interface SynthesisUpload {

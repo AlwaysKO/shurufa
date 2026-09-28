@@ -1,7 +1,9 @@
 import type pg from 'pg';
 
-export async function loadSynthesisOrder(pool: pg.Pool, userId: string): Promise<string[]> {
-  const result = await pool.query('SELECT asset_order FROM synthesis_library_order WHERE user_id=$1', [userId]);
+export const SHARED_SYNTHESIS_OWNER = '00000000-0000-4000-8000-000000000000';
+
+export async function loadSynthesisOrder(pool: pg.Pool): Promise<string[]> {
+  const result = await pool.query('SELECT asset_order FROM synthesis_library_order WHERE user_id=$1', [SHARED_SYNTHESIS_OWNER]);
   return result.rows[0]?.asset_order ?? [];
 }
 

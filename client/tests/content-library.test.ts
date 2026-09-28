@@ -465,3 +465,17 @@ it('删除响应丢失但刷新确认已删除时移除失效勾选', async () =
  expect(view.find('synthesis-card-blank-test')).toBeUndefined();expect(view.text()).toContain('已选 0 张');expect(view.text()).toContain('已删除 1 张');
  expect(view.text()).not.toContain('删除失败');
 });
+
+it('系统底图也能编辑和替换，并明确修改对所有设备生效',async()=>{
+ const system={...synthesisAsset,id:'system',source:'system',deletable:false,layout:{minFontSize:12,maxFontSize:24,textColor:'#222222',strokeColor:'#ffffff',strokeWidth:1,alignment:'center',maxLines:2}};
+ const update=vi.fn().mockResolvedValue({asset:{...system,name:'系统底图新名称'}});
+ const view=await mount('SynthesisLibrary',{synthesisLibrary:vi.fn().mockResolvedValue({assets:[system]}),updateSynthesisAsset:update});
+ expect(view.find('edit-synthesis-system')).toBeDefined();expect(view.find('replace-synthesis-system')).toBeDefined();
+ expect(view.find('delete-synthesis-system')).toBeUndefined();
+ expect(view.text()).toContain('所有设备共用同一底图库');
+ view.find('edit-synthesis-system')!.props.onClick();await settle();
+ view.find('synthesis-name')!.props['onUpdate:modelValue']('系统底图新名称');
+ await view.find('synthesis-form')!.props.onSubmit({preventDefault(){}});await settle();
+ expect(update).toHaveBeenCalledWith('system',expect.objectContaining({name:'系统底图新名称'}));
+ expect(view.text()).toContain('系统底图新名称');
+});

@@ -1,13 +1,13 @@
-import { loadSynthesisOrder, orderSynthesisAssets } from './synthesisOrder.js';
+import { loadSynthesisOrder, SHARED_SYNTHESIS_OWNER } from './synthesisOrder.js';
 import { Router, raw } from 'express';
 import type pg from 'pg';
 import sharp from 'sharp';
 import { createHash, randomUUID } from 'node:crypto';
-import { mkdir, writeFile, unlink } from 'node:fs/promises';
+import { mkdir, readFile, writeFile, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
-import { publicExpressionAsset, synthesisRowAsset, systemExpressionCatalog } from './expressionSnapshot.js';
+import { mergedSynthesisAssets, publicExpressionAsset, synthesisRowAsset, systemExpressionCatalog } from './expressionSnapshot.js';
 function directory() { return join(process.cwd(), 'uploads', 'synthesis'); }
-function personal(row: any) { return { ...publicExpressionAsset(synthesisRowAsset(row)), name: row.name, source: 'personal', deletable: true, sourceStatement: row.source_statement }; }
+function personal(row: any) { return { ...publicExpressionAsset(synthesisRowAsset(row)), name: row.name, source: row.system_asset_id ? 'system' : 'personal', deletable: !row.system_asset_id, sourceStatement: row.source_statement }; }
 function system(asset: any) { return { ...publicExpressionAsset(asset), name: asset.id, source: 'system', deletable: false }; }
 function validateFields(b: any, width = 240, height = 240) {
     const a = b.textSafeArea, l = b.layout;
@@ -57,16 +57,19 @@ export function createSynthesisLibraryRouter(pool: pg.Pool) {
             next();
         });
     });
-    async function listing(userId: string) {
+    async function listing() {
         const [catalog, rows, order] = await Promise.all([systemExpressionCatalog(),
-            pool.query('SELECT * FROM synthesis_asset WHERE user_id = $1 ORDER BY created_at DESC, id DESC', [userId]),
-            loadSynthesisOrder(pool, userId)]);
-        const systemAssets = catalog.templates.filter(a => a.type === 'synthesis-template' && a.format === 'gif' && !a.embeddedText);
-        const hashes = new Set(systemAssets.map(a => a.sha256));
-        return orderSynthesisAssets(rows.rows.filter(row => !hashes.has(row.sha256)).map(personal), systemAssets.map(system), order);
+            pool.query('SELECT * FROM synthesis_asset ORDER BY created_at DESC, id DESC'),
+            loadSynthesisOrder(pool)]);
+        const byId = new Map(rows.rows.map(row => [synthesisRowAsset(row).id, row]));
+        return mergedSynthesisAssets(catalog.templates, rows.rows, order).map(asset =>
+            byId.has(asset.id) ? personal(byId.get(asset.id)) : system(asset));
     }
     router.get('/synthesis-library', async (_req, res, next) => {
-        try { const assets = await listing(res.locals.userId); res.json({ assets, total: assets.length }); }
+        try {
+            const assets = await listing();
+            res.json({ assets, total: assets.length });
+        }
         catch (e) { next(e); }
     });
     router.patch('/synthesis-library/order', async (req, res, next) => {
@@ -75,14 +78,14 @@ export function createSynthesisLibraryRouter(pool: pg.Pool) {
             res.status(400).json({ error: '底图排序必须为不重复的图片ID列表' }); return;
         }
         try {
-            const current = await listing(res.locals.userId);
+            const current = await listing();
             const ids = new Set(current.map(asset => asset.id));
             if (ids.size !== order.length || !order.every(id => ids.has(id))) {
                 res.status(409).json({ error: '底图库已变化或包含不可用图片，请刷新后重新排序' }); return;
             }
             await pool.query(`INSERT INTO synthesis_library_order(user_id,asset_order) VALUES($1,$2)
-                ON CONFLICT(user_id) DO UPDATE SET asset_order=EXCLUDED.asset_order`, [res.locals.userId, JSON.stringify(order)]);
-            const assets = await listing(res.locals.userId);
+                ON CONFLICT(user_id) DO UPDATE SET asset_order=EXCLUDED.asset_order`, [SHARED_SYNTHESIS_OWNER, JSON.stringify(order)]);
+            const assets = await listing();
             res.json({ assets, total: assets.length });
         } catch (e) { next(e); }
     });
@@ -100,10 +103,9 @@ export function createSynthesisLibraryRouter(pool: pg.Pool) {
         try {
             const { bytes, width, height, format } = image;
             const sha = createHash('sha256').update(bytes).digest('hex');
-            const catalog = await systemExpressionCatalog();
-            const existing = catalog.templates.find(a => a.type === 'synthesis-template' && a.sha256 === sha);
+            const existing = (await listing()).find(a => a.sha256 === sha);
             if (existing) {
-                res.json({ asset: system(existing), duplicate: true });
+                res.json({ asset: existing, duplicate: true });
                 return;
             }
             const id = randomUUID(), fileName = `${id}.${format}`;
@@ -111,7 +113,7 @@ export function createSynthesisLibraryRouter(pool: pg.Pool) {
             await writeFile(join(directory(), fileName), bytes, { flag: 'wx' });
             let result;
             try {
-                result = await pool.query(`INSERT INTO synthesis_asset(id,user_id,name,file_name,sha256,width,height,text_safe_area,layout,source_statement,no_text_confirmed,rights_confirmed) VALUES($1,$2,$3,$4,$5,$11,$12,$6,$7,$8,$9,$10) ON CONFLICT(user_id,sha256) DO NOTHING RETURNING *`, [id, res.locals.userId, String(req.body.name ?? req.body.filename ?? '无字GIF').slice(0, 100), fileName, sha, req.body.textSafeArea, req.body.layout, (req.body.sourceStatement ?? '').trim(), req.body.noTextConfirmed === true, req.body.rightsConfirmed === true, width, height]);
+                result = await pool.query(`INSERT INTO synthesis_asset(id,user_id,name,file_name,sha256,width,height,text_safe_area,layout,source_statement,no_text_confirmed,rights_confirmed) VALUES($1,$2,$3,$4,$5,$11,$12,$6,$7,$8,$9,$10) ON CONFLICT(user_id,sha256) DO NOTHING RETURNING *`, [id, SHARED_SYNTHESIS_OWNER, String(req.body.name ?? req.body.filename ?? '无字GIF').slice(0, 100), fileName, sha, req.body.textSafeArea, req.body.layout, (req.body.sourceStatement ?? '').trim(), req.body.noTextConfirmed === true, req.body.rightsConfirmed === true, width, height]);
             }
             catch (e) {
                 await unlink(join(directory(), fileName));
@@ -119,7 +121,7 @@ export function createSynthesisLibraryRouter(pool: pg.Pool) {
             }
             if (!result.rows.length || result.rows[0].id !== id) {
                 await unlink(join(directory(), fileName));
-                const duplicate = await pool.query('SELECT * FROM synthesis_asset WHERE user_id = $1 AND sha256 = $2', [res.locals.userId, sha]);
+                const duplicate = await pool.query('SELECT * FROM synthesis_asset WHERE sha256 = $1', [sha]);
                 res.json({ asset: personal(duplicate.rows[0]), duplicate: true });
                 return;
             }
@@ -130,13 +132,20 @@ export function createSynthesisLibraryRouter(pool: pg.Pool) {
         }
     });
     router.patch('/synthesis-library/:id', async (req, res, next) => {
-        const id = req.params.id.replace(/^synthesis-/, '');
-        if (!/^[a-f0-9-]{36}$/i.test(id)) { res.status(400).json({ error: 'invalid id' }); return; }
+        const requestedId = req.params.id;
         let stagedFile: string | undefined;
         try {
-            const owned = await pool.query('SELECT * FROM synthesis_asset WHERE id = $1 AND user_id = $2', [id, res.locals.userId]);
+            const catalog = await systemExpressionCatalog();
+            const template = catalog.templates.find(asset => asset.type === 'synthesis-template' && asset.id === requestedId);
+            const personalId = requestedId.replace(/^synthesis-/, '');
+            let owned = await pool.query('SELECT * FROM synthesis_asset WHERE system_asset_id = $1', [requestedId]);
+            if (!owned.rows.length && !template) {
+                if (!/^[a-f0-9-]{36}$/i.test(personalId)) { res.status(400).json({ error: 'invalid id' }); return; }
+                owned = await pool.query('SELECT * FROM synthesis_asset WHERE id = $1', [personalId]);
+            }
             const old = owned.rows[0];
-            if (!old) { res.status(404).json({ error: 'not found' }); return; }
+            if (!old && !template) { res.status(404).json({ error: 'not found' }); return; }
+            const id = old?.id ?? randomUUID();
             let b = req.body ?? {};
             let bytes: Buffer | undefined;
             let image: Awaited<ReturnType<typeof readImage>> | undefined;
@@ -145,24 +154,43 @@ export function createSynthesisLibraryRouter(pool: pg.Pool) {
                     image = await readImage(b.file_base64); bytes = image.bytes;
                     b = imageFields(b, image.width, image.height);
                 }
-                validateFields(b, image?.width ?? old.width, image?.height ?? old.height);
+                validateFields(b, image?.width ?? old?.width ?? template!.width, image?.height ?? old?.height ?? template!.height);
                 if (typeof b.name !== 'string' || !b.name.trim() || b.name.trim().length > 100) throw Error('底图名称须为1～100字');
             } catch (e) { res.status(400).json({ error: (e as Error).message }); return; }
+            if (!old) {
+                // 首次编辑时建立共享编辑副本，共享系统原件保持完整。
+                const original = bytes ?? await readFile(join(process.cwd(), '.runtime/expression-assets', template!.fileName));
+                const sha = createHash('sha256').update(original).digest('hex');
+                if (bytes && catalog.templates.some(asset => asset.type === 'synthesis-template' && asset.id !== requestedId && asset.sha256 === sha)) {
+                    res.status(409).json({ error: '相同图片已存在，请使用已有底图' }); return;
+                }
+                const format = image?.format ?? template!.format;
+                stagedFile = `${randomUUID()}.${format}`;
+                await mkdir(directory(), { recursive: true });
+                await writeFile(join(directory(), stagedFile), original, { flag: 'wx' });
+                const inserted = await pool.query(`INSERT INTO synthesis_asset
+                    (id,user_id,name,file_name,sha256,width,height,text_safe_area,layout,source_statement,no_text_confirmed,rights_confirmed,system_asset_id)
+                    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,false,false,$11) RETURNING *`,
+                    [id,SHARED_SYNTHESIS_OWNER,b.name.trim(),stagedFile,sha,image?.width ?? template!.width,image?.height ?? template!.height,
+                     b.textSafeArea,b.layout,(b.sourceStatement ?? '').trim(),template!.id]);
+                stagedFile = undefined;
+                res.json({ asset: personal(inserted.rows[0]), files_pending: false }); return;
+            }
             const sha = bytes ? createHash('sha256').update(bytes).digest('hex') : old.sha256;
             if (sha !== old.sha256) {
                 const catalog = await systemExpressionCatalog();
-                const duplicate = await pool.query('SELECT id FROM synthesis_asset WHERE user_id = $1 AND sha256 = $2', [res.locals.userId, sha]);
-                if (duplicate.rows.length || catalog.templates.some(a => a.type === 'synthesis-template' && a.sha256 === sha)) {
-                    res.status(409).json({ error: '相同 GIF 已存在，请直接使用已有底图' }); return;
+                const duplicate = await pool.query('SELECT id FROM synthesis_asset WHERE sha256 = $1', [sha]);
+                if (duplicate.rows.length || catalog.templates.some(a => a.type === 'synthesis-template' && a.id !== requestedId && a.sha256 === sha)) {
+                    res.status(409).json({ error: '底图已存在或已被修改，请刷新后使用已有底图' }); return;
                 }
                 const fileName = `${randomUUID()}.${image!.format}`;
                 await mkdir(directory(), { recursive: true });
                 await writeFile(join(directory(), fileName), bytes!, { flag: 'wx' });
                 stagedFile = fileName;
             }
-            const updated = await pool.query(`UPDATE synthesis_asset SET name=$1, source_statement=$2, text_safe_area=$3, layout=$4, file_name=$5, sha256=$6, width=$10, height=$11
-                WHERE id=$7 AND user_id=$8 AND file_name=$9 RETURNING *`,
-                [b.name.trim(), (b.sourceStatement ?? '').trim(), b.textSafeArea, b.layout, stagedFile ?? old.file_name, sha, id, res.locals.userId, old.file_name, image?.width ?? old.width, image?.height ?? old.height]);
+            const updated = await pool.query(`UPDATE synthesis_asset SET name=$1, source_statement=$2, text_safe_area=$3, layout=$4, file_name=$5, sha256=$6, width=$9, height=$10
+                WHERE id=$7 AND file_name=$8 RETURNING *`,
+                [b.name.trim(), (b.sourceStatement ?? '').trim(), b.textSafeArea, b.layout, stagedFile ?? old.file_name, sha, id, old.file_name, image?.width ?? old.width, image?.height ?? old.height]);
             if (!updated.rows.length) {
                 if (stagedFile) await unlink(join(directory(), stagedFile));
                 stagedFile = undefined;
@@ -175,7 +203,7 @@ export function createSynthesisLibraryRouter(pool: pg.Pool) {
             res.json({ asset: personal(updated.rows[0]), files_pending: filesPending });
         } catch (e) {
             if (stagedFile) await unlink(join(directory(), stagedFile)).catch(() => {});
-            if ((e as { code?: string }).code === '23505') { res.status(409).json({ error: '相同 GIF 已存在，请直接使用已有底图' }); return; }
+            if ((e as { code?: string }).code === '23505') { res.status(409).json({ error: '底图已存在或已被修改，请刷新后使用已有底图' }); return; }
             next(e);
         }
     });
@@ -185,12 +213,12 @@ export function createSynthesisLibraryRouter(pool: pg.Pool) {
             res.status(400).json({ error: 'invalid id' });
             return;
         }
-        const owned = await pool.query('SELECT file_name FROM synthesis_asset WHERE id = $1 AND user_id = $2', [id, res.locals.userId]);
+        const owned = await pool.query('SELECT file_name FROM synthesis_asset WHERE id = $1 AND system_asset_id IS NULL', [id]);
         if (!owned.rows.length) {
             res.status(404).json({ error: 'not found' });
             return;
         }
-        const result = await pool.query('DELETE FROM synthesis_asset WHERE id = $1 AND user_id = $2 RETURNING file_name', [id, res.locals.userId]);
+        const result = await pool.query('DELETE FROM synthesis_asset WHERE id = $1 AND system_asset_id IS NULL RETURNING file_name', [id]);
         if (!result.rows.length) {
             res.status(404).json({ error: 'not found' });
             return;

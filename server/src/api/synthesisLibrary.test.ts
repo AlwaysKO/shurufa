@@ -21,11 +21,11 @@ beforeEach(async () => { const db = newDb(); db.public.registerFunction({name:'h
     const bootstrap = new pg.Pool({ connectionString: databaseUrl });
     await bootstrap.query(`CREATE SCHEMA ${testSchema}`); await bootstrap.end();
     pool = new pg.Pool({ connectionString: databaseUrl, options: `-c search_path=${testSchema}` });
-  } else pool = new (db.adapters.createPg().Pool)(); for (const f of ['005_sticker.sql', '018_synthesis_library.sql', '030_synthesis_order.sql', '019_keyword_gif_removal.sql', '015_sticker_keywords.sql', '024_sticker_group_settings.sql', '028_sticker_group_deletion.sql'])
+  } else pool = new (db.adapters.createPg().Pool)(); for (const f of ['005_sticker.sql', '018_synthesis_library.sql', '030_synthesis_order.sql', '032_synthesis_system_edit.sql', '019_keyword_gif_removal.sql', '015_sticker_keywords.sql', '024_sticker_group_settings.sql', '028_sticker_group_deletion.sql'])
     await pool.query(readFileSync(new URL(`../../migrations/${f}`, import.meta.url), 'utf8').split('-- 兼容历史')[0]); root = await mkdtemp(join(tmpdir(), 'synthesis-api-')); vi.spyOn(process, 'cwd').mockReturnValue(root); await mkdir(join(root, '.runtime/expression-assets'), { recursive: true }); await writeFile(join(root, '.runtime/expression-assets/catalog.json'), JSON.stringify({ version: 'system-v1', templates: [], emojiBases: [], emojiCombinations: [] })); app = createApp(pool); agent = await authenticatedRequest(app); });
 afterEach(async () => { vi.restoreAllMocks(); if (testSchema) { await pool.query(`DROP SCHEMA ${testSchema} CASCADE`); testSchema = undefined; } await pool?.end(); if (root)
     await rm(root, { recursive: true, force: true }); });
-it('无字上传独立存储、并发SHA去重、隔离所有者、完整目录和删除更新版本', async () => { const initial = await request(app).get('/api/v1/mobile/expressions/versions').set('X-Device-Id', A); expect(initial.status).toBe(200); const uploads = await Promise.all([1, 2].map(() => agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send(body()))); expect(uploads.map(r => r.status).sort()).toEqual([200, 201]); const asset = uploads[0].body.asset; expect(asset.sourceType).toBe('owner-upload'); expect((await pool.query('SELECT * FROM sticker')).rows).toHaveLength(0); const catalog = await request(app).get('/api/v1/mobile/expressions/catalog').set('X-Device-Id', A); expect(catalog.body).toMatchObject({ complete: true, templates: [{ id: asset.id, type: 'synthesis-template', embeddedText: null }] }); expect(catalog.body.version).not.toBe(initial.body.version); expect((await request(app).get(asset.url).set('X-Device-Id', B)).status).toBe(404); expect((await request(app).get(asset.url).set('X-Device-Id', A)).status).toBe(200); expect((await agent.delete(`/api/v1/dashboard/synthesis-library/${asset.id}?user_id=${B}`)).status).toBe(404); const deleted = await agent.delete(`/api/v1/dashboard/synthesis-library/${asset.id}?user_id=${A}`); expect(deleted.status).toBe(200); expect((await request(app).get('/api/v1/mobile/expressions/versions').set('X-Device-Id', A)).body.version).toBe(initial.body.version); });
+it('无字上传独立存储、并发SHA去重、多设备共享、完整目录和删除更新版本', async () => { const initial = await request(app).get('/api/v1/mobile/expressions/versions').set('X-Device-Id', A); expect(initial.status).toBe(200); const uploads = await Promise.all([1, 2].map(() => agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send(body()))); expect(uploads.map(r => r.status).sort()).toEqual([200, 201]); const asset = uploads[0].body.asset; expect(asset.sourceType).toBe('owner-upload'); expect((await pool.query('SELECT * FROM sticker')).rows).toHaveLength(0); const catalog = await request(app).get('/api/v1/mobile/expressions/catalog').set('X-Device-Id', A); expect(catalog.body).toMatchObject({ complete: true, templates: [{ id: asset.id, type: 'synthesis-template', embeddedText: null }] }); expect(catalog.body.version).not.toBe(initial.body.version); expect((await request(app).get(asset.url).set('X-Device-Id', B)).status).toBe(200); expect((await request(app).get(asset.url).set('X-Device-Id', A)).status).toBe(200); expect((await agent.get(`/api/v1/dashboard/synthesis-library?user_id=${B}`)).body.assets[0].id).toBe(asset.id); const deleted = await agent.delete(`/api/v1/dashboard/synthesis-library/${asset.id}?user_id=${A}`); expect(deleted.status).toBe(200); expect((await request(app).get('/api/v1/mobile/expressions/versions').set('X-Device-Id', A)).body.version).toBe(initial.body.version); });
 it.each(['textSafeArea', 'layout'])('缺少 %s 拒绝上传', async (key) => { const input: any = body(); delete input[key]; expect((await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send(input)).status).toBe(400); });
 it('拒绝伪造GIF与越界安全区', async () => { for (const input of [{ ...body(), file_base64: Buffer.from('GIF89a').toString('base64') }, { ...body(), textSafeArea: { x: 200, y: 200, width: 100, height: 100 } }])
     expect((await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send(input)).status).toBe(400); });
@@ -41,10 +41,10 @@ it('后续系统图库吸收同SHA个人底图时完整目录仍只下发一次'
  await writeFile(join(root,'.runtime/expression-assets/catalog.json'),JSON.stringify({version:'promoted',templates:[asset],emojiBases:[],emojiCombinations:[]}));
  const response=await request(app).get('/api/v1/mobile/expressions/catalog').set('X-Device-Id',A);
  expect(response.body.templates).toHaveLength(1);
- expect(response.body.templates[0].id).toBe('system-promoted');
+ expect(response.body.templates[0].id).toBe(uploaded.body.asset.id);
  const listing=await agent.get(`/api/v1/dashboard/synthesis-library?user_id=${A}`);
  expect(listing.body.assets).toHaveLength(1);
- expect(listing.body.assets[0].id).toBe('system-promoted');
+ expect(listing.body.assets[0].id).toBe(uploaded.body.asset.id);
 });
 
 it('关键词图删除标记不能删掉同SHA的独立合成底图', async () => {
@@ -70,13 +70,13 @@ it.each([{minFontSize:12,strokeWidth:1,size:14},{minFontSize:18,strokeWidth:3,si
  expect((await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send(input)).status).toBe(201);
 });
 
-it('编辑个人底图保留ID和GIF，更新文字区及版本，隔离其他用户', async () => {
+it('编辑共享底图保留ID和GIF，任意设备入口可更新文字区及版本', async () => {
  const uploaded=await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send(body());
  const asset=uploaded.body.asset;
  const version=(await request(app).get('/api/v1/mobile/expressions/versions').set('X-Device-Id',A)).body.version;
  const {file_base64,filename,...fields}=body();
  const patch={...fields,name:'改名后的猫',textSafeArea:{x:10,y:180,width:220,height:50}};
- expect((await agent.patch(`/api/v1/dashboard/synthesis-library/${asset.id}?user_id=${B}`).send(patch)).status).toBe(404);
+ expect((await agent.patch(`/api/v1/dashboard/synthesis-library/${asset.id}?user_id=${B}`).send(patch)).status).toBe(200);
  const changed=await agent.patch(`/api/v1/dashboard/synthesis-library/${asset.id}?user_id=${A}`).send(patch);
  expect(changed.status).toBe(200);
  expect(changed.body.asset).toMatchObject({id:asset.id,url:asset.url,sha256:asset.sha256,name:patch.name,textSafeArea:patch.textSafeArea});
@@ -95,7 +95,7 @@ it('替换GIF使用新地址且清理旧文件，非法图片保留原图', asyn
  expect((await request(app).get(updated.body.asset.url).set('X-Device-Id',A)).status).toBe(200);
  expect((await request(app).get(asset.url).set('X-Device-Id',A)).status).toBe(404);
 });
-it('编辑拒绝空名称和错误文字区，不能修改系统底图', async () => {
+it('编辑拒绝空名称、错误文字区及不存在的系统底图', async () => {
  const asset=(await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send(body())).body.asset;
  const {file_base64,filename,...fields}=body();
  for(const patch of [{...fields,name:' '},{...fields,textSafeArea:{x:0,y:0,width:1,height:1}}]){
@@ -164,7 +164,7 @@ it('动态WebP转换为GIF后仍保留多帧和节奏',async()=>{
  expect(after.pages).toBe(before.pages);expect(after.delay).toEqual(before.delay);
 });
 
-it('底图排序持久化、用户隔离、手机目录同序，新上传置顶且重复上传不改顺序',async()=>{
+it('底图排序持久化、所有设备共享、手机目录同序，新上传置顶且重复上传不改顺序',async()=>{
  const first=(await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send(body())).body.asset;
  const sys={...first,id:'system-blank',sourceType:'ai-original',sha256:'c'.repeat(64),fileName:'templates/system.gif'};
  await writeFile(join(root,'.runtime/expression-assets/catalog.json'),JSON.stringify({version:'system-v2',templates:[sys],emojiBases:[],emojiCombinations:[]}));
@@ -172,7 +172,7 @@ it('底图排序持久化、用户隔离、手机目录同序，新上传置顶�
  expect(await ids()).toEqual([first.id,sys.id]);
  const before=(await request(app).get('/api/v1/mobile/expressions/versions').set('X-Device-Id',A)).body.version;
  const sorted=await agent.patch(`/api/v1/dashboard/synthesis-library/order?user_id=${A}`).send({assetOrder:[sys.id,first.id]});
- expect(sorted.status).toBe(200);expect(await ids()).toEqual([sys.id,first.id]);expect(await ids(B)).toEqual([sys.id]);
+ expect(sorted.status).toBe(200);expect(await ids()).toEqual([sys.id,first.id]);expect(await ids(B)).toEqual([sys.id,first.id]);
  const snapshot=(await request(app).get('/api/v1/mobile/expressions/catalog').set('X-Device-Id',A)).body;
  expect(snapshot.synthesisOrder).toEqual([sys.id,first.id]);expect(snapshot.version).not.toBe(before);
  const secondGif=readFileSync(new URL('../../../assets/expression/templates/blank-dog-shocked.gif',import.meta.url));
@@ -183,11 +183,82 @@ it('底图排序持久化、用户隔离、手机目录同序，新上传置顶�
  await agent.delete(`/api/v1/dashboard/synthesis-library/${first.id}?user_id=${A}`);
  expect(await ids()).toEqual([second.id,sys.id]);
 });
-it('排序拒绝重复、缺失、外用户或无效ID，不破坏原顺序',async()=>{
+it('排序拒绝重复、缺失或无效ID，不破坏原顺序',async()=>{
  const a=(await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send(body())).body.asset;
  const b=(await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${B}`).send(body())).body.asset;
  const endpoint=`/api/v1/dashboard/synthesis-library/order?user_id=${A}`;
- for(const order of [[a.id,a.id],[],[b.id],['unknown'],null]) expect((await agent.patch(endpoint).send({assetOrder:order})).status).toBeGreaterThanOrEqual(400);
+ for(const order of [[a.id,a.id],[],['unknown'],null]) expect((await agent.patch(endpoint).send({assetOrder:order})).status).toBeGreaterThanOrEqual(400);
  expect((await agent.get(`/api/v1/dashboard/synthesis-library?user_id=${A}`)).body.assets.map((x:any)=>x.id)).toEqual([a.id]);
  expect((await request(app).patch(endpoint).send({assetOrder:[a.id]})).status).toBe(401);
+});
+
+it('系统底图可编辑与替换，后台手机保持同ID并跨设备生效，系统原件保留', async () => {
+ const {file_base64,filename,...fields}=body();
+ const sys={id:'blank-editable',type:'synthesis-template',format:'gif',sha256:(await import('node:crypto')).createHash('sha256').update(gif).digest('hex'),fileName:'templates/original.gif',width:240,height:240,textSafeArea:fields.textSafeArea,layout:fields.layout,embeddedText:null,keywords:[],emotions:[],heat:0};
+ await mkdir(join(root,'.runtime/expression-assets/templates'),{recursive:true});
+ await writeFile(join(root,'.runtime/expression-assets/templates/original.gif'),gif);
+ await writeFile(join(root,'.runtime/expression-assets/catalog.json'),JSON.stringify({version:'sys',templates:[sys],emojiBases:[],emojiCombinations:[]}));
+ const endpoint=`/api/v1/dashboard/synthesis-library/${sys.id}?user_id=${A}`;
+ const before=(await request(app).get('/api/v1/mobile/expressions/catalog').set('X-Device-Id',A)).body;
+ const changed=await agent.patch(endpoint).send({...fields,name:'编辑系统图',textSafeArea:{x:10,y:180,width:220,height:50}});
+ expect(changed.status).toBe(200);expect(changed.body.asset).toMatchObject({id:sys.id,name:'编辑系统图',source:'system',deletable:false});
+ const listed=(await agent.get(`/api/v1/dashboard/synthesis-library?user_id=${A}`)).body.assets;
+ expect(listed).toHaveLength(1);expect(listed[0]).toEqual(changed.body.asset);
+ const mobile=(await request(app).get('/api/v1/mobile/expressions/catalog').set('X-Device-Id',A)).body;
+ expect(mobile.version).not.toBe(before.version);expect(mobile.templates).toHaveLength(1);
+ expect(mobile.templates[0]).toMatchObject({id:sys.id,textSafeArea:{x:10,y:180,width:220,height:50}});
+ expect((await request(app).get(changed.body.asset.url).set('X-Device-Id',B)).status).toBe(200);
+ expect((await agent.get(`/api/v1/dashboard/synthesis-library?user_id=${B}`)).body.assets[0].name).toBe('编辑系统图');
+ const replacement=readFileSync(new URL('../../../assets/expression/templates/blank-dog-shocked.gif',import.meta.url));
+ const replaced=await agent.patch(endpoint).send({...fields,file_base64:replacement.toString('base64')});
+ expect(replaced.status).toBe(200);expect(replaced.body.asset.id).toBe(sys.id);
+ expect((await request(app).get(replaced.body.asset.url).set('X-Device-Id',A)).status).toBe(200);
+ expect(readFileSync(join(root,'.runtime/expression-assets/templates/original.gif'))).toEqual(gif);
+ expect((await agent.get(`/api/v1/dashboard/synthesis-library?user_id=${A}`)).body.assets).toHaveLength(1);
+});
+
+it('历史上传不被后来系统同图隐藏，后台包含静态底图并与所有手机同序', async () => {
+ const mine=(await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send(body())).body.asset;
+ const sys={...mine,id:'later-system',fileName:'templates/later.gif',type:'synthesis-template'};
+ const staticAsset={...sys,id:'static-system',format:'png',sha256:'d'.repeat(64),fileName:'templates/static.png'};
+ await writeFile(join(root,'.runtime/expression-assets/catalog.json'),JSON.stringify({version:'new',templates:[sys,staticAsset],emojiBases:[],emojiCombinations:[]}));
+ const listed=(await agent.get(`/api/v1/dashboard/synthesis-library?user_id=${A}`)).body;
+ expect(listed.assets.map((a:any)=>a.id)).toEqual([mine.id,staticAsset.id]);
+ const mobile=(await request(app).get('/api/v1/mobile/expressions/catalog').set('X-Device-Id',A)).body;
+ expect(mobile.synthesisOrder).toEqual(listed.assets.map((a:any)=>a.id));
+ const other=(await agent.get(`/api/v1/dashboard/synthesis-library?user_id=${B}`)).body;
+ expect(other.assets).toEqual(listed.assets);
+ const repeat=await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send(body());
+ expect(repeat.body.asset.id).toBe(mine.id);
+});
+
+it('历史设备上传在所有设备可见、可改、可删，重复上传全局去重',async()=>{
+ const asset=(await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send(body())).body.asset;
+ await pool.query('UPDATE synthesis_asset SET user_id=$1',[A]); // 模拟共享前保存的记录
+ const {file_base64,filename,...fields}=body();
+ const before=(await request(app).get('/api/v1/mobile/expressions/versions').set('X-Device-Id',A)).body.version;
+ const same=await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${B}`).send(body());
+ expect(same.body).toMatchObject({duplicate:true,asset:{id:asset.id}});
+ expect((await agent.patch(`/api/v1/dashboard/synthesis-library/${asset.id}?user_id=${B}`).send({...fields,name:'共享历史底图'})).status).toBe(200);
+ const a=(await request(app).get('/api/v1/mobile/expressions/catalog').set('X-Device-Id',A)).body;
+ const b=(await request(app).get('/api/v1/mobile/expressions/catalog').set('X-Device-Id',B)).body;
+ expect(a.templates).toEqual(b.templates);expect(a.version).not.toBe(before);
+ expect((await request(app).get(asset.url).set('X-Device-Id',B)).status).toBe(200);
+ expect((await agent.delete(`/api/v1/dashboard/synthesis-library/${asset.id}?user_id=${B}`)).status).toBe(200);
+ expect((await agent.get(`/api/v1/dashboard/synthesis-library?user_id=${A}`)).body.assets).toEqual([]);
+ expect((await request(app).get(asset.url).set('X-Device-Id',A)).status).toBe(404);
+});
+
+it.skipIf(!databaseUrl)('共享排序迁移合并历史顺序且可重复执行，不覆盖后续排序或删除历史记录',async()=>{
+ const asset=(await agent.post(`/api/v1/dashboard/synthesis-library?user_id=${A}`).send(body())).body.asset;
+ await pool.query('UPDATE synthesis_asset SET user_id=$1',[A]);
+ await pool.query('INSERT INTO synthesis_library_order(user_id,asset_order) VALUES($1,$2),($3,$4)',[A,JSON.stringify(['system-a',asset.id]),B,JSON.stringify([asset.id,'system-b'])]);
+ const sql=readFileSync(new URL('../../migrations/033_shared_synthesis_library.sql',import.meta.url),'utf8');
+ await pool.query(sql);
+ expect((await pool.query('SELECT asset_order FROM synthesis_library_order WHERE user_id=$1',[OWNER])).rows[0].asset_order).toEqual(['system-a',asset.id,'system-b']);
+ await pool.query('UPDATE synthesis_library_order SET asset_order=$1 WHERE user_id=$2',[JSON.stringify([asset.id]),OWNER]);
+ await pool.query(sql);
+ expect((await pool.query('SELECT asset_order FROM synthesis_library_order WHERE user_id=$1',[OWNER])).rows[0].asset_order).toEqual([asset.id]);
+ expect((await pool.query('SELECT user_id FROM synthesis_asset')).rows[0].user_id).toBe(A);
+ expect((await pool.query('SELECT * FROM synthesis_library_order')).rows).toHaveLength(3);
 });

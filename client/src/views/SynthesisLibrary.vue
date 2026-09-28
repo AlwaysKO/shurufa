@@ -82,7 +82,7 @@ function resetForm() {
   name.value = ''; sourceStatement.value = ''; Object.assign(safeArea, defaultArea);
 }
 function startEdit(asset: SynthesisAsset, replace = false) {
-  if (busy.value || loading.value || !manageable(asset)) return;
+  if (busy.value || loading.value) return;
   resetForm(); editing.value = asset; name.value = asset.name; sourceStatement.value = asset.sourceStatement ?? '';
   Object.assign(safeArea, asset.textSafeArea); error.value = ''; message.value = '';
   if (replace) fileInput.value?.click();
@@ -151,7 +151,7 @@ async function removeAssets(targets: SynthesisAsset[]) {
   const rows = targets.filter(manageable);
   if (busy.value || loading.value || !rows.length) return;
   const label = rows.length === 1 ? `“${rows[0]!.name}”这张` : `选中的 ${rows.length} 张`;
-  if (!(await askConfirmation(`删除${label} AI 合成底图？手机下次检查更新后移除，关键词推荐图不受影响。`))) return;
+  if (!(await askConfirmation(`删除${label} 共享 AI 合成底图？所有手机下次检查更新后移除，关键词推荐图不受影响。`))) return;
   if (disposed || busy.value || loading.value) return;
   busy.value = true; error.value = ''; message.value = '';
   let removed = 0; let cleanupPending = 0; const errors: { asset: SynthesisAsset; reason: string }[] = [];
@@ -179,13 +179,13 @@ onMounted(load);
   <div class="content-library synthesis-page">
     <header class="library-intro synthesis-heading"><div><span class="eyebrow">AI SYNTHESIS LIBRARY</span><h2>AI 合成底图库</h2><p>新上传底图默认排最前面，可拖动调整顺序。</p></div><button class="library-button primary" :disabled="busy" @click="chooseUpload"><span aria-hidden="true">＋</span> 上传底图</button></header>
     <input ref="fileInput" data-testid="synthesis-file" class="hidden-upload" type="file" accept=".gif,.png,.jpg,.jpeg,.webp" @change="chooseFile" />
-    <div class="synthesis-tip"><span>GIF / PNG / JPG / WebP · 保留原图尺寸和动画</span><span>系统底图可调整顺序，图片内容只读；个人上传用于当前选中用户。</span></div>
+    <div class="synthesis-tip"><span>GIF / PNG / JPG / WebP · 保留原图尺寸和动画</span><span>所有设备共用同一底图库，上传、编辑和排序对所有设备生效。</span></div>
     <p v-if="busy" class="library-notice" role="status">{{ uploadProgress === null ? '正在保存，请稍候…' : uploadProgress < 100 ? `正在上传 ${uploadProgress}%` : '文件已传输，正在保存…' }}</p>
     <p v-if="message" class="library-notice success" role="status">{{ message }}</p>
     <div v-if="error" class="library-notice error" role="alert">{{ error }}<button v-if="file && !editing" data-testid="retry-synthesis-upload" class="library-button small" :disabled="busy" @click="upload">重试上传</button></div>
     <div v-if="loadError" class="library-notice error" role="alert">{{ loadError }}<button data-testid="retry-synthesis" class="library-button small" :disabled="loading || busy" @click="load">重新加载</button></div>
     <section v-if="editing" ref="editor" class="library-panel synthesis-editor">
-      <div class="section-heading"><div><h3>编辑底图</h3><p>可修改资料或替换 GIF，点击保存后生效。</p></div><button data-testid="cancel-synthesis-edit" class="library-button" :disabled="busy" @click="resetForm">取消编辑</button></div>
+      <div class="section-heading"><div><h3>编辑底图</h3><p>可修改名称、文字区域或替换图片，点击保存后生效。</p></div><button data-testid="cancel-synthesis-edit" class="library-button" :disabled="busy" @click="resetForm">取消编辑</button></div>
       <form data-testid="synthesis-form" @submit.prevent="upload">
         <fieldset :disabled="busy" class="upload-fields">
           <div class="synthesis-edit-grid"><div class="synthesis-edit-fields">
@@ -198,16 +198,16 @@ onMounted(load);
       </form>
     </section>
     <section class="library-panel">
-      <div class="section-heading"><div><h3>全部底图 <span class="library-badge">{{ loaded ? assets.length : '—' }}</span></h3><p>勾选图片后可批量删除个人底图。</p></div><button class="library-button" :disabled="loading || busy" @click="load">刷新列表</button></div>
+      <div class="section-heading"><div><h3>全部底图 <span class="library-badge">{{ loaded ? assets.length : '—' }}</span></h3><p>勾选图片后可批量删除上传底图。</p></div><button class="library-button" :disabled="loading || busy" @click="load">刷新列表</button></div>
       <div class="synthesis-selection-bar"><div class="library-actions"><button data-testid="select-all-synthesis" class="library-button small" :disabled="busy || loading || !manageableAssets.length || selected.size === manageableAssets.length" @click="selectAll">全选</button><button data-testid="clear-synthesis-selection" class="library-button small" :disabled="busy || loading || !selected.size" @click="clearSelection">全不选</button><span class="selection-count" aria-live="polite">已选 {{ selected.size }} 张</span></div><button data-testid="delete-selected-synthesis" class="library-button danger" :disabled="busy || loading || !selected.size" @click="removeAssets(assets.filter(a => selected.has(a.id)))">删除所选<span v-if="selected.size">（{{ selected.size }}）</span></button></div>
       <p v-if="loading && !loaded" role="status">正在加载底图库…</p>
-      <div v-else-if="loaded && !assets.length" class="library-empty"><strong>还没有底图</strong><p>选择一张 GIF，上传后即可在这里管理。</p><button class="library-button primary" :disabled="busy" @click="chooseUpload">＋ 上传第一张底图</button></div>
+      <div v-else-if="loaded && !assets.length" class="library-empty"><strong>还没有底图</strong><p>选择一张图片，上传后即可在这里管理。</p><button class="library-button primary" :disabled="busy" @click="chooseUpload">＋ 上传第一张底图</button></div>
       <div v-if="assets.length" class="synthesis-order-toolbar"><p>拖动排序手柄调整顺序，也可前移或后移；调整后点击保存排序。</p><div class="library-actions"><button data-testid="save-synthesis-order" class="library-button primary" :disabled="busy || loading || !orderDirty" @click="saveOrder">保存排序</button><button data-testid="cancel-synthesis-order" class="library-button" :disabled="busy || loading || !orderDirty" @click="cancelOrder">取消排序</button></div></div>
       <div class="sticker-grid synthesis-grid">
         <article v-for="(asset, index) in orderedAssets" :key="asset.id" :data-testid="`synthesis-card-${asset.id}`" class="sticker-cell" :class="{ selected: selected.has(asset.id), dragging: dragging === asset.id }" @dragover.prevent @drop.prevent="dropAsset(asset)">
           <div class="synthesis-sort-actions"><button :data-testid="`drag-synthesis-${asset.id}`" class="text-button drag-handle" :draggable="!busy && !loading" :disabled="busy || loading" aria-label="拖动排列底图" @dragstart="dragStart($event, asset)" @dragend="dragging = null">⠿ 排序</button><button class="text-button" :disabled="busy || loading || index === 0" aria-label="底图前移" @click="moveAsset(asset.id, orderedAssets[index - 1]!.id)">前移</button><button class="text-button" :disabled="busy || loading || index === orderedAssets.length - 1" aria-label="底图后移" @click="moveAsset(asset.id, orderedAssets[index + 1]!.id)">后移</button></div>
           <div class="sticker-preview"><span v-if="failed.has(asset.id)">图片加载失败，请刷新重试</span><img v-else :src="scopedAssetUrl(asset.url)" :alt="asset.name" loading="lazy" @error="failed.add(asset.id)" /><label v-if="manageable(asset)" class="synthesis-select"><input :data-testid="`select-synthesis-${asset.id}`" type="checkbox" :aria-label="`选择 ${asset.name}`" :checked="selected.has(asset.id)" :disabled="busy || loading" @change="toggleSelection(asset.id)" /></label><span class="synthesis-format">{{ asset.format.toUpperCase() }}</span></div>
-          <div class="sticker-meta"><strong>{{ asset.name }}</strong><p><span class="library-badge" :class="{ personal: manageable(asset) }">{{ asset.source === 'system' ? '系统底图 · 只读' : '个人底图' }}</span></p><small>{{ asset.width }} × {{ asset.height }} · 文字区 {{ asset.textSafeArea.width }} × {{ asset.textSafeArea.height }}</small><div v-if="manageable(asset)" class="synthesis-card-actions"><button :data-testid="`edit-synthesis-${asset.id}`" class="library-button small" :disabled="busy || loading" @click="startEdit(asset)">编辑</button><button :data-testid="`replace-synthesis-${asset.id}`" class="library-button small" :disabled="busy || loading" @click="startEdit(asset, true)">替换</button><button :data-testid="`delete-synthesis-${asset.id}`" class="library-button small danger" :disabled="busy || loading" @click="removeAssets([asset])">删除</button></div></div>
+          <div class="sticker-meta"><strong>{{ asset.name }}</strong><p><span class="library-badge" :class="{ personal: manageable(asset) }">{{ asset.source === 'system' ? '系统底图' : '共享上传' }}</span></p><small>{{ asset.width }} × {{ asset.height }} · 文字区 {{ asset.textSafeArea.width }} × {{ asset.textSafeArea.height }}</small><div class="synthesis-card-actions"><button :data-testid="`edit-synthesis-${asset.id}`" class="library-button small" :disabled="busy || loading" @click="startEdit(asset)">编辑</button><button :data-testid="`replace-synthesis-${asset.id}`" class="library-button small" :disabled="busy || loading" @click="startEdit(asset, true)">替换</button><button v-if="manageable(asset)" :data-testid="`delete-synthesis-${asset.id}`" class="library-button small danger" :disabled="busy || loading" @click="removeAssets([asset])">删除</button></div></div>
         </article>
       </div>
     </section>
