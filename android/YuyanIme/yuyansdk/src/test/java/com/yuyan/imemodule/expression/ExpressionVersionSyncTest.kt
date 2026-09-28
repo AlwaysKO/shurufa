@@ -39,6 +39,44 @@ class ExpressionVersionSyncTest {
         sync.search("干嘛", 1, { true }) { result = it }.join()
         return result
     }
+    @Test fun `缓存底图未变化时打开键盘只刷新一次而非逐图刷新`() = runBlocking {
+        val templates = (1..40).map { asset("cached-$it").copy(type = "synthesis-template") }
+        ExpressionQueryCache(ExpressionCache(root)).writeOriginal(sha, bytes.inputStream())
+        val sync = sync(initial = document("apk", templates))
+        var callbacks = 0
+        server.enqueue(MockResponse().setBody("{\"version\":\"apk\"}"))
+        sync.onKeyboardOpened { callbacks++ }.join()
+        assertEquals(1, callbacks)
+        assertEquals(40, sync.currentCatalog().document.templates.count { it.resolvedPreviewUrl != null })
+        assertEquals(1, server.requestCount)
+    }
+
+    @Test fun `新目录引用已有SHA缓存时变化通知已经包含可用预览`() = runBlocking {
+        val next = document("next", listOf(asset().copy(type = "synthesis-template")))
+        ExpressionQueryCache(ExpressionCache(root)).writeOriginal(sha, bytes.inputStream())
+        val sync = sync()
+        server.enqueue(MockResponse().setBody("{\"version\":\"next\"}"))
+        server.enqueue(MockResponse().setBody(Json.encodeToString(next)))
+        val visible = mutableListOf<List<String>>()
+        sync.onKeyboardOpened {
+            visible += sync.currentCatalog().document.templates.filter { it.resolvedPreviewUrl != null }.map { it.id }
+        }.join()
+        assertEquals(listOf(emptyList<String>(), listOf("new")), visible)
+        assertEquals(2, server.requestCount)
+    }
+
+    @Test fun `全部缓存命中和没有匹配时不重复发布同一推荐列表`() = runBlocking {
+        ExpressionQueryCache(ExpressionCache(root)).writeOriginal(sha, bytes.inputStream())
+        val sync = sync(initial = document("apk", listOf(asset())))
+        for (query in listOf("干嘛", "无匹配")) {
+            val seen = mutableListOf<List<String>>()
+            sync.search(query, 1, { true }, automatic = true) { seen += it.map { a -> a.id } }.join()
+            assertEquals(query, 1, seen.size)
+            assertEquals(if (query == "干嘛") listOf("new") else emptyList<String>(), seen.single())
+        }
+        assertEquals(0, server.requestCount)
+    }
+
     @Test fun `慢图不能阻止后面的新图先显示且最终保持后台顺序`() = runBlocking {
         val slowBytes = "slow-upload".toByteArray()
         val slowSha = MessageDigest.getInstance("SHA-256").digest(slowBytes).joinToString("") { "%02x".format(it) }

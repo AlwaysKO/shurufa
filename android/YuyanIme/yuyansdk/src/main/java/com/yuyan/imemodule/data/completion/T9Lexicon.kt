@@ -29,11 +29,16 @@ internal class T9Lexicon private constructor(entries: List<T9Candidate>) {
 
     /** 临时构建本次导入词的读音映射，不给全库额外保留逐词索引。 */
     fun readings(texts: Set<String>): Map<String, List<String>> = if (texts.isEmpty()) emptyMap() else
-        buckets.values.asSequence().flatten().filter { it.candidate.text in texts }
+        numericEntries.asSequence().filter { it.candidate.text in texts }
             .map { it.candidate }.groupBy({ it.text }, { it.pinyin })
 
-    private val buckets = entries.map { Entry(it, it.pinyin.split(' ').map(::digits)) }
-        .groupBy { it.syllables.first().first() }
+    private val numericEntries = entries.map { Entry(it, it.pinyin.split(' ').map(::digits)) }
+        .groupBy { it.syllables.first().first() }.values.flatten()
+    private val buckets = buildMap<String, MutableList<Entry>> {
+        for (entry in numericEntries) {
+            for (prefix in spellingPrefixes(entry.syllables)) getOrPut(prefix) { mutableListOf() }.add(entry)
+        }
+    }
 
     private val pinyinBuckets = entries.map { Entry(it, it.pinyin.split(' ')) }
         .groupBy { it.syllables.first().first() }
@@ -41,6 +46,20 @@ internal class T9Lexicon private constructor(entries: List<T9Candidate>) {
     fun queryPinyin(code: String, limit: Int = 8): List<T9Candidate> {
         if (code.length !in 2..30 || code.any { it !in 'a'..'z' }) return emptyList()
         return queryEntries(pinyinBuckets[code.first()].orEmpty(), code, limit, true)
+    }
+
+    /** 只从已有双字词补充首字简拼，旧 query 的匹配与拒绝证据保持不变。 */
+    fun queryInitialFull(code: String, limit: Int = 32, includeTexts: Set<String> = emptySet()): List<T9Candidate> {
+        if (code.length !in 4..7 || code.any { it !in '2'..'9' }) return emptyList()
+        return buckets[code.take(3)].orEmpty().asSequence().filter {
+            it.syllables.size == 2 && it.syllables[0].length > 1 &&
+                it.candidate.text.length == 2 && it.candidate.text.all { char -> Character.isIdeographic(char.code) } &&
+                it.syllables[0].take(1) + it.syllables[1] == code
+        }.filter {
+            // 同码也可能符合旧末字补全（如就会 jiuh/jhui）；旧分组及读音显示优先。
+            InputSpellingMatch.match(code, it.candidate.pinyin)?.kind == InputMatchKind.INITIAL_FULL_WORD
+        }.map { it.candidate }.sortedWith(compareByDescending<T9Candidate> { it.frequency }.thenBy { it.text })
+            .filterIndexed { index, candidate -> index < limit || candidate.text in includeTexts }.toList()
     }
 
     fun query(
@@ -51,7 +70,24 @@ internal class T9Lexicon private constructor(entries: List<T9Candidate>) {
         onSpellingMatch: (String, Boolean) -> Unit = { _, _ -> },
     ): List<T9Candidate> {
         if (code.length !in 3..30 || code.any { it !in '2'..'9' }) return emptyList()
-        return queryEntries(buckets[code.first()].orEmpty(), code, limit, allowAbbreviations, onSpellingMatch, includeTexts)
+        return queryEntries(buckets[code.take(3)].orEmpty(), code, limit, allowAbbreviations, onSpellingMatch, includeTexts)
+    }
+
+    /** 只缩小扫描范围；内部简拼也入桶，保留后续匹配回调的拒绝证据和原始词条顺序。 */
+    private fun spellingPrefixes(syllables: List<String>): Set<String> {
+        var prefixes = setOf("")
+        for (syllable in syllables) {
+            prefixes = buildSet {
+                for (prefix in prefixes) {
+                    if (prefix.length == 3) add(prefix) else {
+                        add((prefix + syllable).take(3))
+                        if (syllable.length > 1) add(prefix + syllable.first())
+                    }
+                }
+            }
+            if (prefixes.all { it.length == 3 }) break
+        }
+        return prefixes.filterTo(linkedSetOf()) { it.length == 3 }
     }
 
     private fun queryEntries(
@@ -106,6 +142,7 @@ internal class T9Lexicon private constructor(entries: List<T9Candidate>) {
     }
 
     companion object {
+        private val lexiconReadingPattern = Regex("[a-z]+( [a-z]+)+")
         fun digits(pinyin: String): String = pinyin.lowercase().map { c ->
             when (c) {
                 in 'a'..'c' -> '2'; in 'd'..'f' -> '3'; in 'g'..'i' -> '4'
@@ -116,7 +153,7 @@ internal class T9Lexicon private constructor(entries: List<T9Candidate>) {
 
         fun parse(reader: Reader): T9Lexicon = T9Lexicon(reader.buffered().lineSequence().mapNotNull { line ->
             val fields = line.split('\t')
-            if (fields.size != 3 || !fields[1].matches(Regex("[a-z]+( [a-z]+)+"))) return@mapNotNull null
+            if (fields.size != 3 || !lexiconReadingPattern.matches(fields[1])) return@mapNotNull null
             val frequency = fields[2].toLongOrNull() ?: return@mapNotNull null
             T9Candidate(fields[0], fields[1], frequency)
         }.toList())

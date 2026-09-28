@@ -26,6 +26,79 @@ import java.util.UUID
 @Config(sdk = [30], qualifiers = "mdpi", shadows = [WechatListCaptureTest.ServiceShadow::class])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class ScreenshotConfirmationCaptureTest {
+    @Test fun typingEventBurstProducesOneDelayedCheckAndRestoredTitleIsSaved() = runBlocking {
+        val service = Robolectric.buildService(PassiveChatAccessibilityService::class.java).create().get()
+        fun set(name: String, value: Any) = service.javaClass.getDeclaredField(name).apply { isAccessible = true }.set(service, value)
+        val scope = service.javaClass.getDeclaredField("backgroundScope").apply { isAccessible = true }.get(service) as CoroutineScope
+        var now = 1000L
+        var captures = 0
+        var saved = 0
+        var typing = true
+        val files = mutableSetOf<String>()
+        set("screenshotUpdates", ScreenshotUpdatePolicy { now })
+        set("coordinator", CaptureCoordinator(store = object : CaptureOutboxStore {
+            override suspend fun enqueueIfNew(seenMessage: SeenMessageEntity, pendingMessage: PendingMessageEntity,
+                pendingAssets: List<PendingAssetEntity>): Boolean { saved++; return true }
+        }, deviceId = { "device" }, wakeUploader = {}))
+        set("mediaCapturer", WindowMediaCapturer(service, ScreenshotSource { _, _ ->
+            captures++
+            WindowScreenshotResult.Success(Bitmap.createBitmap(400, 800, Bitmap.Config.ARGB_8888), 0, 0)
+        }))
+        set("screenshotIdentityResolver", object : ScreenshotConversationIdentityResolver {
+            override suspend fun resolve(asset: PendingAssetEntity, expectedVersion: Long, titleInput: TitleOcrInput?): ScreenshotConversationIdentity {
+                files += asset.localPath
+                return if (typing) unresolvedWechatScreenshotIdentity("对方正在輸入...")
+                else screenshotConversationIdentity("测试联系人", "").copy(status = "confirmed", confidence = .95)
+            }
+        })
+        val root = AccessibilityNodeInfo.obtain().apply {
+            packageName = "com.tencent.mm"; className = "android.widget.FrameLayout"
+            setBoundsInScreen(Rect(0, 0, 400, 800))
+        }
+        WechatListCaptureTest.ServiceShadow.root = root
+        val window = AccessibilityWindowInfo.obtain()
+        Shadows.shadowOf(window).apply {
+            setRoot(root); setId(root.windowId); setActive(true)
+            setType(AccessibilityWindowInfo.TYPE_APPLICATION); setBoundsInScreen(Rect(0, 0, 400, 800))
+        }
+        Shadows.shadowOf(service).setWindows(listOf(window))
+        fun request() = service.javaClass.getDeclaredMethod("captureEmptyTreeWeChatScreenshot", Boolean::class.javaPrimitiveType)
+            .apply { isAccessible = true }.invoke(service, false)
+        suspend fun drain() {
+            withTimeout(10_000) {
+                do { Shadows.shadowOf(Looper.getMainLooper()).idle(); delay(10) }
+                while (scope.coroutineContext[Job]!!.children.any { it.isActive })
+            }
+        }
+        CollectionConsent.setEnabled(service, true)
+        try {
+            request(); drain()
+            assertEquals(1, captures); assertEquals(0, saved)
+            repeat(100) { request() }
+            drain()
+            assertEquals("状态动画事件不能重复触发物理截图", 1, captures)
+            typing = false
+            now += 3000
+            Shadows.shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(3000))
+            drain()
+            assertEquals("延后请求合并为一次，且不需要新的事件才能恢复", 2, captures)
+            assertEquals(1, saved)
+            val policy = service.javaClass.getDeclaredField("screenshotUpdates").apply { isAccessible = true }
+                .get(service) as ScreenshotUpdatePolicy
+            policy.observeTitle(root.windowId, 0, "typing")
+            request()
+            service.javaClass.getDeclaredMethod("resetScreenshotIdentity").apply { isAccessible = true }.invoke(service)
+            now += 3000
+            Shadows.shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(3000))
+            drain()
+            assertEquals("导航重置必须取消旧页面的延后检查", 2, captures)
+        } finally {
+            CollectionConsent.setEnabled(service, false); service.onDestroy()
+            WechatListCaptureTest.ServiceShadow.root = null
+            files.forEach { File(it).delete() }
+        }
+    }
+
     @Test fun firstImageAndConfirmationReplayShareCaptureIdButDifferentFramesDoNot() = runBlocking {
         val service = Robolectric.buildService(PassiveChatAccessibilityService::class.java).create().get()
         fun set(name: String, value: Any) = service.javaClass.getDeclaredField(name).apply { isAccessible = true }.set(service, value)

@@ -3,7 +3,7 @@ package com.yuyan.imemodule.data.capture.media
 import android.graphics.Bitmap
 import kotlin.math.*
 
-/** 微信单行输入工具栏的严格视觉适配。未知/多行布局不裁，不使用正文OCR。 */
+/** 微信输入工具栏的严格视觉适配。多行仅接受底部控件与增高输入框的完整证据；未知布局不裁。 */
 internal fun wechatInputBarTop(bitmap: Bitmap, density: Float): Int? {
     if (!density.isFinite() || density <= 0 || bitmap.width < 160 * density) return null
     val w = bitmap.width; val h = bitmap.height
@@ -58,7 +58,50 @@ internal fun wechatInputBarTop(bitmap: Bitmap, density: Float): Int? {
         }
         return (18..26).any { ring(left - it * density, cy, bg) }
     }
-    val low = maxOf((h * 0.7).toInt(), h - (90 * density).roundToInt(), 1)
+    fun controls(cy: Float, bg: Int): Boolean {
+        val right = w - 22 * density
+        if (!ring(23 * density, cy, bg)) return false
+        if (sendButton(cy, bg)) return true
+        if (!ring(right, cy, bg)) return false
+        if (!listOf(0f to 0f, -5f to 0f, 5f to 0f, 0f to -5f, 0f to 5f).all {
+            nearInk(right + it.first * density, cy + it.second * density, bg)
+        }) return false
+        // 加号斜角应为空白，排除只有圆环、头像或实心按钮的候选。
+        return listOf(-5 to -5, -5 to 5, 5 to -5, 5 to 5).none {
+            abs(luma((right + it.first * density).roundToInt(), (cy + it.second * density).roundToInt()) - bg) > 32
+        }
+    }
+    fun multilineField(top: Int, cy: Float, bg: Int): Boolean {
+        val inset = (3 * density).roundToInt().coerceAtLeast(1)
+        val startY = (top + 14 * density).roundToInt()
+        val endY = (cy + 8 * density).roundToInt()
+        if (startY >= endY || endY >= h) return false
+        val step = (3 * density).roundToInt().coerceAtLeast(1)
+        // 输入框两边必须是完整的浅/深底色竖边，文字仅在内部变化；同色空白扩展不算证据。
+        fun edge(x: Int, inside: Int, fill: Int): Boolean =
+            x - inset >= 0 && x + inset < w && (startY..endY step step).all { y ->
+                abs(luma(x + inside * inset, y) - fill) <= 4 &&
+                    abs(luma(x - inside * inset, y) - bg) <= 4
+            }
+        for (left in (40 * density).roundToInt()..(60 * density).roundToInt()) {
+            if (left + inset >= w) continue
+            val fill = luma(left + inset, startY)
+            if (abs(fill - bg) !in 6..48 || !edge(left, 1, fill)) continue
+            for (right in (w - 150 * density).roundToInt()..(w - 80 * density).roundToInt()) {
+                if (right - left < 120 * density || !edge(right, -1, fill)) continue
+                // 上缘须贴着全宽工具栏边界；气泡或仅底部一行白框不能冒充增高输入框。
+                for (offset in 6..10) {
+                    val y = (top + offset * density).roundToInt()
+                    if (((left + 6 * density).roundToInt()..(right - 6 * density).roundToInt() step step).all { x ->
+                        abs(luma(x, y + inset) - fill) <= 4 && abs(luma(x, y - inset) - bg) <= 4
+                    }) return true
+                }
+            }
+        }
+        return false
+    }
+    val singleLow = maxOf((h * 0.7).toInt(), h - (90 * density).roundToInt(), 1)
+    val low = maxOf((h * 0.7).toInt(), h - (140 * density).roundToInt(), 1)
     val high = h - (42 * density).roundToInt()
     if (high < low) return null
     // 从底部向上，仅接受最下方完整工具栏；全宽边界及两侧背景必须连续到底。
@@ -69,19 +112,13 @@ internal fun wechatInputBarTop(bitmap: Bitmap, density: Float): Int? {
         if ((top until h step maxOf(1, density.roundToInt())).any {
             abs(luma(0, it) - bg) > 8 || abs(luma(w - 1, it) - bg) > 8
         }) continue
-        val cy = top + 26 * density
-        val right = w - 22 * density
-        if (!ring(23 * density, cy, bg)) continue
-        if (sendButton(cy, bg)) return top
-        if (!ring(right, cy, bg)) continue
-        if (!listOf(0f to 0f, -5f to 0f, 5f to 0f, 0f to -5f, 0f to 5f).all {
-            nearInk(right + it.first * density, cy + it.second * density, bg)
-        }) continue
-        // 加号斜角应为空白，排除只有圆环、头像或实心按钮的候选。
-        if (listOf(-5 to -5, -5 to 5, 5 to -5, 5 to 5).any {
-            abs(luma((right + it.first * density).roundToInt(), (cy + it.second * density).roundToInt()) - bg) > 32
-        }) continue
-        return top
+        if (top >= singleLow && controls(top + 26 * density, bg)) return top
+        if (h - top < 60 * density) continue
+        for (cy in (h - 34 * density).roundToInt()..(h - 22 * density).roundToInt()) {
+            // 已观察的多行草稿是发送态；不猜测无文字、多功能面板等其它增高布局。
+            if (ring(23 * density, cy.toFloat(), bg) && sendButton(cy.toFloat(), bg) &&
+                multilineField(top, cy.toFloat(), bg)) return top
+        }
     }
     return null
 }

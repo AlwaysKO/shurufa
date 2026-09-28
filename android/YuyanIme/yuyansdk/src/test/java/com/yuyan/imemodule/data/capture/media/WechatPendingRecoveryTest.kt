@@ -7,7 +7,7 @@ import org.junit.Test
 
 class WechatPendingRecoveryTest {
     @Test fun typingFirstFrameIsNeverSavedOrReplayedWithLaterNormalTitle() = runBlocking {
-        for (title in listOf("对方正在输入", "对方正在输入.", "对方正在输入..8")) {
+        for (title in listOf("对方正在輸入...", "對方正在輸入…", "对方 正在輸入..8", "对方正在输入", "对方正在输入.", "对方正在输入..8")) {
             for (known in listOf(false, true)) {
                 val tracker = WechatTitleStabilizer()
                 if (known) {

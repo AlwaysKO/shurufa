@@ -87,22 +87,32 @@ class ExpressionSync(
             }
             onChanged()
             if (checkRemoteVersion) {
-                refreshMutex.withLock {
-                    reloadPersistedCatalog()
-                    checkVersion()
+                val before = catalog
+                withContext(Dispatchers.IO) {
+                    refreshMutex.withLock {
+                        reloadPersistedCatalog()
+                        checkVersion()
+                    }
                 }
-                onChanged()
+                if (catalog !== before) {
+                    // 新目录可能引用后台已下载的SHA，通知前先恢复可用预览。
+                    withContext(Dispatchers.IO) {
+                        catalog.document.templates.filter { it.type == "synthesis-template" && !matchesBundled(it) }
+                            .forEach(::localAsset)
+                    }
+                    onChanged()
+                }
             }
             // 合成池无关键词门禁，提前补齐新底图；不预取全推荐库，推荐原件按匹配懒取。
             for (asset in catalog.document.templates.filter { it.type == "synthesis-template" && !matchesBundled(it) }) {
-                withContext(Dispatchers.IO) {
+                val becameAvailable = withContext(Dispatchers.IO) {
                     if (stillCurrent(asset) && localAsset(asset) == null) {
                         download(asset.version, asset.fileName,
                             asset.url ?: "/uploads/expression/${asset.fileName}", asset.sha256)
-                        localAsset(asset)
-                    }
+                        localAsset(asset) != null && stillCurrent(asset)
+                    } else false
                 }
-                onChanged()
+                if (becameAvailable) onChanged()
             }
         }.also { keyboardSession = it; it.start() }
     }
@@ -275,9 +285,20 @@ class ExpressionSync(
         if (normalized.isEmpty() || (!automatic && normalized.length > 100)) return@launch
         val snapshot = catalog
         if (automatic || snapshot.document.complete || snapshot.document.recommendationGroups != null) {
-            val candidates = if (automatic) snapshot.recommend(query) else snapshot.search(query)
-            val local = withContext(Dispatchers.IO) { candidates.mapNotNull(::localAsset) }
-            if (catalog === snapshot && acceptResponse(requestId)) onResult(local.filter(::stillCurrent))
+            val (candidates, local) = withContext(Dispatchers.IO) {
+                val matches = if (automatic) snapshot.recommend(query) else snapshot.search(query)
+                matches to matches.mapNotNull(::localAsset)
+            }
+            var published: List<ExpressionAsset>? = null
+            fun publish(results: List<ExpressionAsset>) {
+                if (catalog !== snapshot || !acceptResponse(requestId)) return
+                val current = results.filter(::stillCurrent)
+                if (current == published) return
+                published = current
+                onResult(current)
+            }
+            publish(local)
+            if (local.size == candidates.size) return@launch
             // 独立于订阅者，快速输入取消旧搜索时仍完成已启动的SHA原件预取。
             val updates = Channel<Unit>(Channel.CONFLATED)
             val prefetch = scope.async(Dispatchers.IO) {
@@ -302,10 +323,10 @@ class ExpressionSync(
             // 在订阅协程发布，取消输入不会收到迟到结果；快图无需等待整批慢图。
             for (update in updates) {
                 val ready = withContext(Dispatchers.IO) { candidates.mapNotNull(::localAsset) }
-                if (catalog === snapshot && acceptResponse(requestId)) onResult(ready.filter(::stillCurrent))
+                publish(ready)
             }
             val loaded = prefetch.await()
-            if (catalog === snapshot && acceptResponse(requestId)) onResult(loaded.filter(::stillCurrent))
+            publish(loaded)
             return@launch
         }
         val (entry, local, complete) = withContext(Dispatchers.IO) {

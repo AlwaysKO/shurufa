@@ -6,6 +6,27 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class ScreenshotUpdatePolicyTest {
+    @Test fun typingChecksAreSpacedWithoutDelayingFirstCaptureOrLosingRecovery() {
+        var now = 1000L
+        val policy = ScreenshotUpdatePolicy { now }
+        val scope = ScreenshotScope(10, 3)
+        assertEquals(0L, policy.captureDelayMillis(scope))
+        policy.observeTitle(10, 3, "typing")
+        repeat(100) { assertEquals(3000L, policy.captureDelayMillis(scope)) }
+        now += 2999
+        assertEquals(1L, policy.captureDelayMillis(scope))
+        now++
+        assertEquals(0L, policy.captureDelayMillis(scope))
+        assertTrue(policy.accepts(10, 3, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED))
+        policy.observeTitle(10, 3, "typing")
+        assertEquals(3000L, policy.captureDelayMillis(scope))
+        policy.observeTitle(10, 3, "confirmed")
+        assertEquals(0L, policy.captureDelayMillis(scope))
+        policy.observeTitle(10, 3, "typing")
+        assertEquals(0L, policy.captureDelayMillis(ScreenshotScope(11, 4)))
+        policy.clear()
+        assertEquals(0L, policy.captureDelayMillis(scope))
+    }
     @Test fun firstTypingFrameAllowsTitleRecoveryWithoutMarkingAnythingSaved() {
         val policy = ScreenshotUpdatePolicy()
         val scope = ScreenshotScope(10, 3)

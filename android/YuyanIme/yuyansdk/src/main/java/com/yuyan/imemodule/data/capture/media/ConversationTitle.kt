@@ -5,6 +5,8 @@ import com.yuyan.imemodule.data.capture.model.ChatPlatform
 private val TRANSIENT_TITLES = setOf("正在输入", "正在输入中", "对方正在输入", "在线", "离线", "手机在线", "忙碌", "连接中")
 internal fun isPeerTypingConversationTitle(raw: String?): Boolean =
     java.text.Normalizer.normalize(raw.orEmpty(), java.text.Normalizer.Form.NFKC)
+        // OCR 会把固定状态中的“输”读成“輸”；仅在状态判断中兼容，不转换联系人姓名。
+        .replace('對', '对').replace('輸', '输')
         .replace(Regex("\\s+"), "").startsWith("对方正在输入")
 
 internal fun isTransientConversationTitle(raw: String?): Boolean {

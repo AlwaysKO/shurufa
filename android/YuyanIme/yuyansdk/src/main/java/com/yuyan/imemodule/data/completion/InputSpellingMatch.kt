@@ -1,6 +1,8 @@
 package com.yuyan.imemodule.data.completion
 
-internal enum class InputMatchKind { THREE_INITIALS, PHRASE_PREFIX, WHOLE_PHRASE }
+import com.yuyan.inputmethod.util.T9Spelling
+
+internal enum class InputMatchKind { THREE_INITIALS, PHRASE_PREFIX, WHOLE_PHRASE, INITIAL_FULL_WORD }
 
 /** 附在候选上的实际输入证据；完整读音另存，不把预测后缀伪装成已输入拼音。 */
 internal data class InputSpellingMatch(val kind: InputMatchKind, val code: String, val preedit: String) {
@@ -22,6 +24,12 @@ internal data class InputSpellingMatch(val kind: InputMatchKind, val code: Strin
             val syllables = normalized.split(Regex(" +"))
             val numeric = code.isNotEmpty() && code.all { it in '2'..'9' }
             if (!numeric && (code.isEmpty() || code.any { it !in 'a'..'z' })) return null
+            // 独立的双字混拼证据：第一字仅首字母，第二字必须打全；不扩大长词内部简拼。
+            if (numeric && code.length in 4..7 && syllables.size == 2 && syllables[0].length > 1 &&
+                T9Lexicon.digits(syllables[0].take(1) + syllables[1]) == code &&
+                T9Spelling.preedit(code, reading)?.none(Char::isDigit) != true) {
+                return InputSpellingMatch(InputMatchKind.INITIAL_FULL_WORD, code, "${syllables[0].first()}'${syllables[1]}")
+            }
             if (numeric && code.length == 3 && syllables.size == 3 &&
                 T9Lexicon.digits(syllables.joinToString("") { it.take(1) }) == code) {
                 return InputSpellingMatch(InputMatchKind.THREE_INITIALS, code, syllables.joinToString("'") { it.take(1) })

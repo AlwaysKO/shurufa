@@ -6,7 +6,7 @@ import type {
 } from '../types/chat.js';
 
 export interface IngestCapturedMessagesResult {
-  conversationId: number;
+  conversationId: number | null;
   inserted: number;
   duplicated: number;
   missingAssets: string[];
@@ -24,6 +24,17 @@ interface RecentCallState {
 }
 
 const CALL_STATE_DEDUP_WINDOW_MS = 5 * 60 * 1000;
+
+function isPeerTypingTitle(value: unknown): boolean {
+  return typeof value === 'string' && value.normalize('NFKC')
+    .replace(/對/g, '对').replace(/輸/g, '输').replace(/\s+/g, '').startsWith('对方正在输入');
+}
+
+function isPeerTypingScreenshot(conversation: CapturedConversationInput, message: CapturedMessageInput): boolean {
+  return conversation.platform === 'wechat' && isScreenshotCapture(message)
+    && (isPeerTypingTitle(conversation.display_name)
+      || isPeerTypingTitle(message.metadata?.conversation_identity_observed_title));
+}
 
 function isWechatCallState(
   conversation: CapturedConversationInput,
@@ -106,6 +117,14 @@ export async function ingestCapturedMessages(
   if (messages.length > 200) {
     throw new Error('单批消息不得超过 200 条');
   }
+
+  // 旧客户端或已排队的状态帧也不能新建会话；成功应答，避免反复补传和索要无用素材。
+  const acceptedMessages = messages.filter(message => !isPeerTypingScreenshot(conversation, message));
+  const discardedTyping = messages.length - acceptedMessages.length;
+  if (discardedTyping > 0 && acceptedMessages.length === 0) {
+    return { conversationId: null, inserted: 0, duplicated: discardedTyping, missingAssets: [] };
+  }
+  messages = acceptedMessages;
 
   const client = await pool.connect();
   try {
@@ -198,7 +217,7 @@ export async function ingestCapturedMessages(
     }
 
     let inserted = 0;
-    let duplicated = 0;
+    let duplicated = discardedTyping;
     let discarded = 0;
     for (const message of messages) {
       if (existing.deleted.has(message.fingerprint)) { duplicated += 1; continue; }

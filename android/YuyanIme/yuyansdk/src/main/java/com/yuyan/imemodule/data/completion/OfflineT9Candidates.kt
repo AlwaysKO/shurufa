@@ -86,15 +86,36 @@ internal object OfflineT9Candidates {
         val history = try { store?.relatedLearned(code).orEmpty() } catch (_: Exception) { emptyList() }
         val personalWords = try { store?.personalWords(code).orEmpty() } catch (_: Exception) { emptyList() }
         val completions = inputCompletions?.query(code).orEmpty()
-        val extraReadings = (completions + personalWords).mapNotNull { word ->
+        val retainedTexts = history.mapTo(hashSetOf()) { it.choice.text }.apply { addAll(native) }
+        val mainDictionary = lexicon
+        val domainDictionary = domains
+        val rejected = mutableSetOf<String>()
+        val accepted = mutableSetOf<String>()
+        fun lookup(dictionary: T9Lexicon?): List<T9Candidate> = if (numeric) {
+            // 多个高频同码词不能把完整日常词裁掉；仍是固定上限，学习词可越过上限召回。
+            dictionary?.query(code, limit = 32, includeTexts = retainedTexts) { text, allowed ->
+                if (allowed) accepted.add(text) else rejected.add(text)
+            }.orEmpty()
+        } else dictionary?.queryPinyin(code).orEmpty()
+        val dictionaryWords = lookup(mainDictionary)
+        val domainWords = lookup(domainDictionary)
+        // 仅修补旧规则没有完整汉字候选的空缺，正常整词不增加混拼查询与候选。
+        val needsInitialFull = numeric && code.length in 4..7 && dictionaryWords.isEmpty() && domainWords.isEmpty() &&
+            personalWords.isEmpty() && completions.isEmpty() && native.indices.none { index ->
+                native[index].any { Character.isIdeographic(it.code) } &&
+                    (nativeComments == null || T9Spelling.preedit(code, nativeComments.getOrNull(index).orEmpty())
+                        ?.none(Char::isDigit) == true)
+            }
+        val initialFullWords = if (needsInitialFull) (mainDictionary?.queryInitialFull(code, includeTexts = retainedTexts).orEmpty() +
+            domainDictionary?.queryInitialFull(code, includeTexts = retainedTexts).orEmpty()).sortedByDescending { it.frequency }
+        else emptyList()
+        val extraWords = completions + personalWords + initialFullWords
+        val extraReadings = extraWords.mapNotNull { word ->
             InputSpellingMatch.match(code, word.pinyin)?.let { (word.text to word.pinyin) to it }
         }.toMap()
         fun extraMatch(text: String, reading: String): InputSpellingMatch? =
             extraReadings[text to PersonalWordReading.normalize(text, reading)]
-        val retainedTexts = history.mapTo(hashSetOf()) { it.choice.text }.apply { addAll(native) }
         val selectedByText = history.filter { it.choice.count > 0 }.groupBy { it.choice.text }
-        val mainDictionary = lexicon
-        val domainDictionary = domains
         fun locallyTrusted(text: String, reading: String): Boolean {
             if (!numeric) return true
             var offset = 0
@@ -115,18 +136,8 @@ internal object OfflineT9Candidates {
         }
         fun trusted(text: String, reading: String): Boolean =
             locallyTrusted(text, reading) || publicPhrases?.contains(text) == true || extraMatch(text, reading) != null
-        val rejected = mutableSetOf<String>()
-        val accepted = mutableSetOf<String>()
-        fun lookup(dictionary: T9Lexicon?): List<T9Candidate> = if (numeric) {
-            // 多个高频同码词不能把完整日常词裁掉；仍是固定上限，学习词可越过上限召回。
-            dictionary?.query(code, limit = 32, includeTexts = retainedTexts) { text, allowed ->
-                if (allowed) accepted.add(text) else rejected.add(text)
-            }.orEmpty()
-        } else dictionary?.queryPinyin(code).orEmpty()
-        val dictionaryWords = lookup(mainDictionary)
-        val domainWords = lookup(domainDictionary)
-        val allLocalReadings = dictionaryWords + domainWords + personalWords
-        (personalWords + completions).forEach { accepted.add(it.text) }
+        val allLocalReadings = dictionaryWords + domainWords + personalWords + initialFullWords
+        extraWords.forEach { accepted.add(it.text) }
         val common = if (numeric) allLocalReadings.groupBy { it.text }.values
             .map { readings -> readings.maxBy { it.frequency } }.sortedByDescending { it.frequency }
         else allLocalReadings.distinctBy { it.text }
@@ -208,7 +219,7 @@ internal object OfflineT9Candidates {
             }
             singleSyllables + local + original
         } else original + local
-        val extras = (completions + personalWords).distinctBy { it.text to it.pinyin }.mapNotNull { word ->
+        val extras = extraWords.distinctBy { it.text to it.pinyin }.mapNotNull { word ->
             extraMatch(word.text, word.pinyin)?.let { RankedCandidate(word.text, word.pinyin, inputMatch = it) }
         }
         val initials = extras.filter { it.inputMatch?.kind == InputMatchKind.THREE_INITIALS }
@@ -226,7 +237,17 @@ internal object OfflineT9Candidates {
             }
             whole + initials + prefix
         }
-        val combined = if (phrases.isEmpty()) withInitials else withInitials.take(1) + phrases + withInitials.drop(1)
+        val initialFull = extras.filter { it.inputMatch?.kind == InputMatchKind.INITIAL_FULL_WORD }
+        // 已有完整候选和末字补全仍在前；仅表情或分段前缀不能挤掉完整双字词。
+        val withInitialFull = if (initialFull.isEmpty()) withInitials else {
+            val insertion = withInitials.indexOfLast {
+                it.inputMatch?.kind != InputMatchKind.INITIAL_FULL_WORD &&
+                    (it.inputMatch != null || (it.text.any { char -> Character.isIdeographic(char.code) } &&
+                        T9Spelling.preedit(code, it.pinyin)?.none(Char::isDigit) == true))
+            } + 1
+            withInitials.take(insertion) + initialFull + withInitials.drop(insertion)
+        }
+        val combined = if (phrases.isEmpty()) withInitialFull else withInitialFull.take(1) + phrases + withInitialFull.drop(1)
         val validTexts = combined.mapTo(hashSetOf()) { it.text }
         val compatibleReadings = (allLocalReadings.map { RankedCandidate(it.text, it.pinyin) } + original + nativeSentences)
             .groupBy { it.text }.mapValues { (_, readings) ->

@@ -84,12 +84,14 @@ class CaptureCoordinator(
     private var identityScope: String? = null
     private var identityTracker: ConversationTitleStabilizer? = null
     private val unresolvedFrames = linkedMapOf<String, ScreenshotConversationIdentity>()
+    private val screenshotContents = RecentScreenshotContents(clock)
 
     fun resetConversationIdentity() = synchronized(identityLock) {
         identityGeneration++
         identityScope = null
         identityTracker = null
         unresolvedFrames.clear()
+        screenshotContents.clear()
     }
 
     suspend fun capture(packageName: String, snapshot: UiNodeSnapshot, windowId: Int? = null): Boolean {
@@ -120,7 +122,9 @@ class CaptureCoordinator(
                         bounds,
                         message.inputAreaBounds,
                         lossyWebp = message.metadata["capture_kind"] == "conversation_screenshot",
-                        contentInput = if (knownList) wechatListContentInput(bounds)?.also { listInputs[index] = it } else null,
+                        contentInput = (if (knownList) wechatListContentInput(bounds) else
+                            if (message.metadata["capture_kind"] == "conversation_screenshot") ScreenshotContentInput(0, detectBlocks = true, detectWechatBody = conversation.platform == ChatPlatform.WECHAT) else null)
+                            ?.also { listInputs[index] = it },
                     )
                 }
             }
@@ -176,7 +180,16 @@ class CaptureCoordinator(
                 message.copy(metadata = message.metadata + wechatListMetadata(knownList, listInputs[index]?.wechatListSha256))
             }
             onViewportParsed(result.viewport.copy(conversation = conversation, messages = rawMessages))
-            val persisted = enqueueParsed(conversation, rawMessages, capturedAssets.filterKeys { it >= 0 }, captureToken)
+            val contents = if (screenshotWithTitle && conversation.identityConfidence >= 0.8 &&
+                rawMessages.all { it.metadata["conversation_identity_previous_key"].isNullOrBlank() }) {
+                val titleHash = capturedAssets[-1]?.sha256
+                val identityKey = conversation.stableKeyOrNull()
+                if (titleHash != null && identityKey != null) listInputs.mapNotNull { (index, input) ->
+                    input.blocks?.let { index to ScreenshotContentEvidence(identityKey, titleHash, it) }
+                }.toMap() else emptyMap()
+            } else emptyMap()
+            val persisted = enqueueParsed(conversation, rawMessages, capturedAssets.filterKeys { it >= 0 }, captureToken, contents,
+                listInputs.mapNotNull { (index, input) -> input.sha256?.let { index to it } }.toMap())
             CaptureTrace.record(CaptureStage.PERSIST_RESULT, value = persisted.ordinal, layer = CaptureLayer.COORDINATOR)
             return screenshotWithTitle && (persisted == CapturePersistResult.FAILED || conversation.identityConfidence < 0.8)
         } catch (_: Exception) {
@@ -191,8 +204,10 @@ class CaptureCoordinator(
         messages: List<CapturedMessage>,
         pendingAssetsByMessage: Map<Int, PendingAssetEntity> = emptyMap(),
         captureToken: Long = captureGeneration(),
+        screenshotContentByMessage: Map<Int, ScreenshotContentEvidence> = emptyMap(),
+        screenshotPixelHashes: Map<Int, String> = emptyMap(),
     ): CapturePersistResult = try {
-            enqueueParsed(conversation, messages, pendingAssetsByMessage, captureToken).also {
+            enqueueParsed(conversation, messages, pendingAssetsByMessage, captureToken, screenshotContentByMessage, screenshotPixelHashes).also {
                 CaptureTrace.record(CaptureStage.PERSIST_RESULT, value = it.ordinal, layer = CaptureLayer.COORDINATOR)
             }
         } catch (_: Exception) {
@@ -206,6 +221,8 @@ class CaptureCoordinator(
         rawMessages: List<CapturedMessage>,
         capturedAssets: Map<Int, PendingAssetEntity>,
         captureToken: Long = captureGeneration(),
+        screenshotContentByMessage: Map<Int, ScreenshotContentEvidence> = emptyMap(),
+        screenshotPixelHashes: Map<Int, String> = emptyMap(),
     ): CapturePersistResult {
         if (!captureAllowed() || captureGeneration() != captureToken) return CapturePersistResult.FAILED
         if (isPeerTypingConversationTitle(conversation.displayName)) return CapturePersistResult.FAILED
@@ -215,6 +232,7 @@ class CaptureCoordinator(
             !isPendingNotification(conversation, rawMessages) &&
             !isPendingNotificationScreenshot(conversation, rawMessages, capturedAssets)) return CapturePersistResult.FAILED
         val conversationKey = conversation.stableKeyOrNull() ?: return CapturePersistResult.FAILED
+        val contentGeneration = synchronized(identityLock) { identityGeneration }
         var insertedAny = false
         var persistableAny = false
         for ((index, rawMessage) in rawMessages.withIndex()) {
@@ -250,11 +268,20 @@ class CaptureCoordinator(
                     previousKey + message.senderKey.removePrefix(conversation.externalKey.orEmpty()) else message.senderKey,
             )
             // 只替换指纹材料，上传附件始终保留原图的真实 SHA。
-            val fingerprintInput = if (listHash == null) fingerprintMessage else fingerprintMessage.copy(
-                assetSha256 = listOf("wechat-list-v1:$listHash"),
-            )
+            val pixelHash = screenshotPixelHashes[index]?.takeIf {
+                asset != null && message.messageType == ChatMessageType.IMAGE && it.matches(Regex("[a-f0-9]{64}"))
+            }
+            val fingerprintInput = when {
+                listHash != null -> fingerprintMessage.copy(assetSha256 = listOf("wechat-list-v1:$listHash"))
+                pixelHash != null -> fingerprintMessage.copy(assetSha256 = fingerprintMessage.assetSha256 + "screenshot-pixels-v1:$pixelHash")
+                else -> fingerprintMessage
+            }
             val fingerprint = messageFingerprint(fingerprintInput) ?: continue
             persistableAny = true
+            val content = screenshotContentByMessage[index]?.takeIf { asset != null && listHash == null }
+            if (content != null && synchronized(identityLock) {
+                    identityGeneration == contentGeneration && screenshotContents.contains(content)
+                }) continue
             val capturedAt = clock()
             val pending = pendingMessage(targetConversation, message, fingerprint, capturedAt, contentFingerprint(fingerprintInput))
             if (store.enqueueIfNew(
@@ -264,6 +291,14 @@ class CaptureCoordinator(
                 )
             ) {
                 insertedAny = true
+                // 通知待确认帧可查询已确认历史，但不能把占位来源当成可信归属写回缓存。
+                synchronized(identityLock) {
+                    content?.takeIf { identityGeneration == contentGeneration && captureGeneration() == captureToken &&
+                        it.identity == conversationKey && conversation.identityConfidence >= 0.8 &&
+                        message.metadata["conversation_identity_status"] != "pending" &&
+                        message.metadata["conversation_identity_previous_key"].isNullOrBlank()
+                    }?.let(screenshotContents::record)
+                }
             } else if (listHash == null && isConfirmedScreenshot(conversation, message)) {
                 // 复用原图片指纹重放，仅更新新会话的确认名。服务端先更新会话再去重，不新增图片。
                 // 使用独立的已见标识，确认补传有持久化重试且每个确认结果最多入队一次。

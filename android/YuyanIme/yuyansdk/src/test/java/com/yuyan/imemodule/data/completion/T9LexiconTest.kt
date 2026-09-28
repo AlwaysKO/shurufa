@@ -6,7 +6,32 @@ import java.io.File
 import java.util.zip.GZIPInputStream
 
 class T9LexiconTest {
+    @Test fun `双字混拼独立召回而旧查询拒绝边界保持`() {
+        val words = T9Lexicon.parse("看看\tkan kan\t100\n浏览\tliu lan\t10\n看看了\tkan kan le\t200\n".reader())
+        assertEquals(listOf("看看", "浏览"), words.queryInitialFull("5526").map { it.text })
+        assertTrue(words.query("5526").isEmpty())
+        for (code in listOf("55", "552", "55265", "5'526", "kkan")) assertTrue(words.queryInitialFull(code).isEmpty())
+    }
+
     private val lexicon = T9Lexicon.parse("候选词\thou xuan ci\t100\n后远啊\thou yuan a\t1\n输入法\tshu ru fa\t200\n你好\tni hao\t1000\n".reader())
+
+    @Test fun `缩小查询范围后内部简拼仍提供拒绝证据`() {
+        val words = T9Lexicon.parse("长条形\tchang tiao xing\t100\n充电宝\tchong dian bao\t10\n".reader())
+        val evidence = mutableListOf<Pair<String, Boolean>>()
+        assertTrue(words.query("289", onSpellingMatch = { text, allowed -> evidence.add(text to allowed) }).isEmpty())
+        assertEquals(listOf("长条形" to false), evidence)
+        assertEquals(listOf("长条形"), words.query(T9Lexicon.digits("changtiaox")).map { it.text })
+    }
+
+    @Test fun `读音导出不重复且保留全码不足三键的词`() {
+        val words = T9Lexicon.parse("你好\tni hao\t100\n哦啊\to a\t1\n".reader())
+        assertEquals(mapOf("你好" to listOf("ni hao"), "哦啊" to listOf("o a")), words.readings(setOf("你好", "哦啊")))
+    }
+
+    @Test fun `读音导出保留旧桶的多音字读音顺序`() {
+        val words = T9Lexicon.parse("云朵\tyun duo\t100\n行走\thang zou\t1\n行走\txing zou\t100\n".reader())
+        assertEquals(listOf("xing zou", "hang zou"), words.readings(setOf("行走"))["行走"])
+    }
 
     @Test fun `末音节每个前缀可匹配但不补写内部音节`() {
         val words = T9Lexicon.parse("充电宝\tchong dian bao\t100\n".reader())

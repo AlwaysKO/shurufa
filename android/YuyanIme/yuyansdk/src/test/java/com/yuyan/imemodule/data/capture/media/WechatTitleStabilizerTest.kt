@@ -65,7 +65,7 @@ class WechatTitleStabilizerTest {
         val tracker = WechatTitleStabilizer()
         tracker.observe("联系人", pictureA, 1000)
         val known = tracker.observe("联系人", pictureA, 1800)
-        for (text in listOf("对方正在输入", "对方正在输入.", "对方正在输入..8", "对方正在输入xyz",
+        for (text in listOf("对方正在輸入...", "對方正在輸入…", "对方 正在輸入..8", "对方正在输入", "对方正在输入.", "对方正在输入..8", "对方正在输入xyz",
             "对方正在输入…", "对方 正在输入：", "对方正在输入中...", "对方正在输入•••")) {
             val status = tracker.observe(text, pictureB, 2600)
             assertEquals(text, known.externalKey, status.externalKey); assertEquals("联系人", status.displayName)
@@ -75,7 +75,7 @@ class WechatTitleStabilizerTest {
         assertTrue(tracker.observe("对方正在输入：",pictureB,4200).displayName.startsWith("待确认"))
     }
     @Test fun typingPrefixNeverBecomesAConfirmedContactOnFirstEntry() {
-        for (text in listOf("对方正在输入", "对方正在输入.", "对方正在输入..8", " 对方 正在输入..8 ")) {
+        for (text in listOf("对方正在輸入...", "對方正在輸入…", "对方 正在輸入..8", "对方正在输入", "对方正在输入.", "对方正在输入..8", " 对方 正在输入..8 ")) {
             val tracker = WechatTitleStabilizer()
             tracker.observe(text, pictureB, 1000)
             val next = tracker.observe(text, pictureB, 1800)

@@ -1,0 +1,122 @@
+package com.yuyan.imemodule.service.capture
+
+import android.accessibilityservice.AccessibilityService
+import android.graphics.Rect
+import android.os.Looper
+import android.view.accessibility.AccessibilityNodeInfo
+import android.view.accessibility.AccessibilityWindowInfo
+import com.yuyan.imemodule.data.capture.media.WindowMediaCapturer
+import com.yuyan.imemodule.data.capture.media.ScreenshotSource
+import com.yuyan.imemodule.data.capture.media.WindowScreenshotResult
+import com.yuyan.imemodule.data.collect.CollectionConsent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
+import org.junit.Assert.*
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.Robolectric
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.Implementation
+import org.robolectric.annotation.Implements
+import org.robolectric.shadows.ShadowAccessibilityService
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.atomic.AtomicLong
+
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [30], qualifiers = "mdpi", shadows = [ScreenshotWindowReadThreadTest.ServiceShadow::class])
+class ScreenshotWindowReadThreadTest {
+    @Implements(AccessibilityService::class)
+    class ServiceShadow : ShadowAccessibilityService() {
+        @Implementation
+        fun getRootInActiveWindow(): AccessibilityNodeInfo? {
+            reads += "root" to Thread.currentThread()
+            return root?.let { AccessibilityNodeInfo.obtain(it) }
+        }
+
+        @Implementation
+        override fun getWindows(): List<AccessibilityWindowInfo> {
+            reads += "windows" to Thread.currentThread()
+            afterWindowRead?.invoke()
+            return super.getWindows()
+        }
+
+        companion object {
+            val reads = CopyOnWriteArrayList<Pair<String, Thread>>()
+            var root: AccessibilityNodeInfo? = null
+            var afterWindowRead: (() -> Unit)? = null
+        }
+    }
+
+    @Test fun screenshotWindowAndNavigationChecksDoNotBlockKeyboardMainThread() = runBlocking {
+        withService { service, drain, captures ->
+            request(service)
+            drain()
+            assertEquals("首图仍应立即请求", 1, captures())
+            assertTrue(ServiceShadow.reads.any { it.first == "windows" })
+            assertTrue(ServiceShadow.reads.any { it.first == "root" })
+            for ((operation, thread) in ServiceShadow.reads) {
+                assertFalse("截图 $operation 的 Binder 读取不能占用键盘主线程", thread === Looper.getMainLooper().thread)
+            }
+        }
+    }
+
+    @Test fun navigationDuringWindowReadCannotRebindOldRequestToNewConversation() = runBlocking {
+        withService { service, drain, captures ->
+            ServiceShadow.afterWindowRead = {
+                ServiceShadow.afterWindowRead = null
+                (field(service, "screenshotIdentityGeneration") as AtomicLong).incrementAndGet()
+            }
+            request(service)
+            drain()
+            assertEquals("窗口读取期间发生导航，必须丢弃旧请求", 0, captures())
+        }
+    }
+
+    private fun field(service: PassiveChatAccessibilityService, name: String): Any =
+        service.javaClass.getDeclaredField(name).apply { isAccessible = true }.get(service)
+
+    private fun request(service: PassiveChatAccessibilityService) {
+        service.javaClass.getDeclaredMethod("captureEmptyTreeWeChatScreenshot", Boolean::class.javaPrimitiveType)
+            .apply { isAccessible = true }.invoke(service, false)
+    }
+
+    private suspend fun withService(body: suspend (PassiveChatAccessibilityService, suspend () -> Unit, () -> Int) -> Unit) {
+        val service = Robolectric.buildService(PassiveChatAccessibilityService::class.java).create().get()
+        val scope = field(service, "backgroundScope") as CoroutineScope
+        var captures = 0
+        service.javaClass.getDeclaredField("mediaCapturer").apply { isAccessible = true }.set(service,
+            WindowMediaCapturer(service, ScreenshotSource { _, _ -> captures++; WindowScreenshotResult.Failed(1) }))
+        val root = AccessibilityNodeInfo.obtain().apply {
+            packageName = "com.tencent.mm"
+            setBoundsInScreen(Rect(0, 0, 400, 800))
+        }
+        ServiceShadow.root = root
+        ServiceShadow.reads.clear()
+        val window = AccessibilityWindowInfo.obtain()
+        Shadows.shadowOf(window).apply {
+            setRoot(root); setId(root.windowId); setActive(true)
+            setType(AccessibilityWindowInfo.TYPE_APPLICATION); setBoundsInScreen(Rect(0, 0, 400, 800))
+        }
+        Shadows.shadowOf(service).setWindows(listOf(window))
+        CollectionConsent.setEnabled(service, true)
+        try {
+            body(service, {
+                withTimeout(5_000) {
+                    do { Shadows.shadowOf(Looper.getMainLooper()).idle(); delay(10) }
+                    while (scope.coroutineContext[Job]!!.children.any { it.isActive })
+                }
+            }, { captures })
+        } finally {
+            CollectionConsent.setEnabled(service, false)
+            service.onDestroy()
+            ServiceShadow.root = null
+            ServiceShadow.afterWindowRead = null
+            ServiceShadow.reads.clear()
+        }
+    }
+}

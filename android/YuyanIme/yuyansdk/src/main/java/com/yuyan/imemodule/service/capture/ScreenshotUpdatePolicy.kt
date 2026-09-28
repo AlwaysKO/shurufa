@@ -8,14 +8,19 @@ internal data class ScreenshotScope(val window: Int, val generation: Long)
 internal fun isReadableScreenshotTitleStatus(status: String?): Boolean =
     status == "confirmed" || status == "truncated"
 
-internal class ScreenshotUpdatePolicy {
+internal class ScreenshotUpdatePolicy(private val nowMillis: () -> Long = { System.nanoTime() / 1_000_000 }) {
     private var confirmed: ScreenshotScope? = null
+    private var typingScope: ScreenshotScope? = null
+    private var typingRecheckAt = 0L
+    @Synchronized fun captureDelayMillis(scope: ScreenshotScope): Long =
+        if (typingScope == scope) (typingRecheckAt - nowMillis()).coerceAtLeast(0) else 0
     private var pendingScrollResume: ScreenshotScope? = null
     @Synchronized fun allowScrollResume(scope: ScreenshotScope) { pendingScrollResume = scope }
     @Synchronized fun canResumeScroll(scope: ScreenshotScope): Boolean =
         confirmed == scope || pendingScrollResume == scope
     @Synchronized fun rejectScrollResume(scope: ScreenshotScope) {
         if (pendingScrollResume == scope) pendingScrollResume = null
+        if (typingScope == scope) typingScope = null
         if (confirmed == scope) { confirmed = null; lastSaved = null }
     }
     private data class SavedContent(val identity: String, val title: String, val body: String)
@@ -31,9 +36,13 @@ internal class ScreenshotUpdatePolicy {
         // 确认重放持有首帧图像，却可能携带第二帧标题；不能拼接成不存在的保存记录。
         lastSaved = if (sameFrameConfirmed) content(identity, titleHash, bodyHash) else null
     }
-    fun observeTitle(window: Int, generation: Long, status: String) {
+    @Synchronized fun observeTitle(window: Int, generation: Long, status: String) {
         // 输入状态能证明仍在聊天页，但不代表有可保存的联系人名或正文证据。
         if (status == "typing" || isReadableScreenshotTitleStatus(status)) confirm(window, generation)
+        if (status == "typing") {
+            typingScope = ScreenshotScope(window, generation)
+            typingRecheckAt = nowMillis() + 3_000L
+        } else if (isReadableScreenshotTitleStatus(status)) typingScope = null
     }
     // 这里只确认当前页面可继续检查内容，不提升截断标题的身份置信度。
     @Synchronized fun confirm(window: Int, generation: Long) {
@@ -41,7 +50,7 @@ internal class ScreenshotUpdatePolicy {
         if (scope != confirmed) lastSaved = null
         confirmed = scope
     }
-    @Synchronized fun clear() { confirmed = null; lastSaved = null; pendingScrollResume = null }
+    @Synchronized fun clear() { confirmed = null; lastSaved = null; pendingScrollResume = null; typingScope = null }
     @Synchronized fun accepts(window: Int, generation: Long, eventType: Int): Boolean =
         confirmed == ScreenshotScope(window, generation) && eventType in setOf(
             AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED, AccessibilityEvent.TYPE_VIEW_SCROLLED)

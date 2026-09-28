@@ -4,10 +4,11 @@ import android.accessibilityservice.AccessibilityService
 import android.graphics.Bitmap
 import android.os.Build
 import android.view.Display
-import androidx.core.content.ContextCompat
 import com.yuyan.imemodule.data.capture.ui.IntRect
 import com.yuyan.imemodule.data.capture.adapter.AdapterRegistry
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asExecutor
 import kotlin.coroutines.resume
 
 fun interface ScreenshotSource {
@@ -38,16 +39,22 @@ class WindowScreenshotter(
             }
             val callback = object : AccessibilityService.TakeScreenshotCallback {
                 override fun onSuccess(screenshot: AccessibilityService.ScreenshotResult) {
-                    if (!canUseScreenshotResult(windowScoped, windowId, currentChatWindowId())) {
-                        screenshot.hardwareBuffer.close()
+                    val hardwareBuffer = screenshot.hardwareBuffer
+                    if (!continuation.isActive) {
+                        hardwareBuffer.close()
+                        return
+                    }
+                    // 新版已绑定窗口，无须再跨进程读取当前页面；整屏截图仍需复核导航。
+                    if (!windowScoped && !canUseScreenshotResult(false, windowId, currentChatWindowId())) {
+                        hardwareBuffer.close()
                         fail()
                         return
                     }
-                    val hardwareBuffer = screenshot.hardwareBuffer
                     val bitmap = try {
                         runCatching {
-                            Bitmap.wrapHardwareBuffer(hardwareBuffer, screenshot.colorSpace)
-                                ?.copy(Bitmap.Config.ARGB_8888, false)
+                            val wrapped = Bitmap.wrapHardwareBuffer(hardwareBuffer, screenshot.colorSpace)
+                            try { wrapped?.copy(Bitmap.Config.ARGB_8888, false) }
+                            finally { wrapped?.recycle() }
                         }.getOrNull()
                     } finally {
                         hardwareBuffer.close()
@@ -63,7 +70,9 @@ class WindowScreenshotter(
                         )
                     }
                     if (continuation.isActive) {
-                        continuation.resume(result)
+                        continuation.resume(result) { _, undelivered, _ ->
+                            if (undelivered is WindowScreenshotResult.Success) undelivered.bitmap.recycle()
+                        }
                     } else if (result is WindowScreenshotResult.Success) {
                         result.bitmap.recycle()
                     }
@@ -73,11 +82,13 @@ class WindowScreenshotter(
                     if (continuation.isActive) continuation.resume(WindowScreenshotResult.Failed(errorCode))
                 }
             }
-            val executor = ContextCompat.getMainExecutor(service)
+            // 截图与键盘共用进程：Binder 等待和整帧像素复制均不能占用键盘主线程。
+            val executor = Dispatchers.IO.asExecutor()
             executor.execute {
                 if (!continuation.isActive) return@execute
                 // 获取前只读当前窗口的包名/ID，避免排队后已经离开聊天仍截取其他 App。
                 if (currentChatWindowId() != windowId) { fail(); return@execute }
+                if (!continuation.isActive) return@execute
                 try {
                     if (windowScoped) service.takeScreenshotOfWindow(windowId, executor, callback)
                     else service.takeScreenshot(Display.DEFAULT_DISPLAY, executor, callback)

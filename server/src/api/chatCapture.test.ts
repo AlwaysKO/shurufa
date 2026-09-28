@@ -105,6 +105,21 @@ describe('mobile chat capture API', () => {
       .toMatchObject({ ok: true, inserted: 0, duplicated: 1, missingAssets: [] });
   });
 
+  it('旧版输入状态截图返回成功确认，不要求客户端重传', async () => {
+    const response = await request(createApp(pool)).post('/api/v1/mobile/chat/messages/batch').send({
+      device_id: deviceId,
+      conversation: { platform: 'wechat', account_key: 'wechat-empty-tree',
+        external_key: 'screenshot-v2:truncated:old', display_name: '对方正在輸入…（名称被截断）',
+        conversation_type: 'unknown', identity_confidence: 0.55 },
+      messages: [{ id: crypto.randomUUID(), fingerprint: 'd'.repeat(64), content_fingerprint: 'e'.repeat(64),
+        sender_key: 'viewport', direction: 'system', message_type: 'image', captured_at: new Date().toISOString(),
+        asset_sha256: ['f'.repeat(64)], metadata: { capture_source: 'wechat_empty_tree_screenshot' } }],
+    });
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({ ok: true, conversationId: null, inserted: 0, duplicated: 1, missingAssets: [] });
+    expect((await pool.query('SELECT id FROM chat_conversation')).rowCount).toBe(0);
+  });
+
   it('消息引用的截图尚未上传时返回可重试状态', async () => {
     const missingSha256 = 'c'.repeat(64);
     const response = await request(createApp(pool))

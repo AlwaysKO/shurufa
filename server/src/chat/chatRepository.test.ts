@@ -53,6 +53,36 @@ beforeEach(async () => {
 });
 
 describe('ingestCapturedMessages', () => {
+  it.each(['对方正在输入…（名称被截断）', '对方正在輸入…（名称被截断）', '對方 正在輸入..8'])('旧版状态截图 %s 成功处理但不创建会话或索要素材', async (title) => {
+    const screenshot = message({ direction: 'system', message_type: 'image', text: undefined,
+      asset_sha256: ['f'.repeat(64)], metadata: { capture_source: 'wechat_empty_tree_screenshot' } });
+    const result = await ingestCapturedMessages(pool, userId, deviceId,
+      { ...conversation, display_name: title }, [screenshot]);
+    expect(result).toMatchObject({ conversationId: null, inserted: 0, duplicated: 1, missingAssets: [] });
+    expect((await pool.query('SELECT id FROM chat_conversation')).rowCount).toBe(0);
+    expect((await pool.query('SELECT id FROM chat_message')).rowCount).toBe(0);
+  });
+
+  it('同批状态截图按 observed_title 丢弃，普通正文及正常图片仍保留', async () => {
+    const typing = message({ direction: 'system', message_type: 'image', text: undefined,
+      asset_sha256: ['f'.repeat(64)], metadata: { capture_source: 'notification_screenshot_fallback',
+        conversation_identity_observed_title: '对方正在輸入...' } });
+    const text = message({ fingerprint: 'c'.repeat(64), text: '对方正在輸入...' });
+    const normal = message({ fingerprint: 'd'.repeat(64), message_type: 'image', text: undefined,
+      metadata: { capture_source: 'wechat_empty_tree_screenshot', conversation_identity_observed_title: '正常联系人' } });
+    const result = await ingestCapturedMessages(pool, userId, deviceId, conversation, [typing, text, normal]);
+    expect(result).toMatchObject({ inserted: 2, duplicated: 1, missingAssets: [] });
+    expect((await pool.query('SELECT fingerprint FROM chat_message')).rows.map(row => row.fingerprint).sort())
+      .toEqual([text.fingerprint, normal.fingerprint]);
+  });
+
+  it('姓名中间包含输入状态字样不误拒绝', async () => {
+    const result = await ingestCapturedMessages(pool, userId, deviceId,
+      { ...conversation, display_name: '讨论对方正在輸入' }, [message({ message_type: 'image',
+        metadata: { capture_source: 'wechat_empty_tree_screenshot' } })]);
+    expect(result.inserted).toBe(1);
+  });
+
   it.each(['wechat', 'qq', 'douyin'] as const)('新版 %s 确认重放不重复图片且低置信度重试不降级名字', async (platform) => {
     const pending = { ...conversation, platform, account_key: `${platform}-local`, external_key: `capture-v3:${'1'.repeat(64)}`, display_name: '待确认会话', identity_confidence: 0.55 };
     const image = message({ message_type: 'image', text: undefined });

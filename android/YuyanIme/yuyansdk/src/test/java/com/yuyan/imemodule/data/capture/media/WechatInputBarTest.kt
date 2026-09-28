@@ -47,6 +47,74 @@ class WechatInputBarTest {
         }
     }
 
+
+    private fun multilineSendSample(
+        toolbarHeight: Int,
+        dark: Boolean = false,
+        density: Float = 1f,
+        inputField: Boolean = true,
+        voice: Boolean = true,
+        emoji: Boolean = true,
+    ): Bitmap = sendSample(dark = dark, density = density, voice = voice, emoji = emoji).apply {
+        val canvas = Canvas(this)
+        canvas.scale(density, density)
+        val background = if (dark) Color.rgb(35, 35, 35) else Color.rgb(247, 247, 247)
+        canvas.drawRect(0f, 800f - toolbarHeight, 360f, 746f, Paint().apply { color = background })
+        if (inputField) {
+            val paint = Paint().apply { color = if (dark) Color.rgb(55, 55, 55) else Color.WHITE }
+            canvas.drawRoundRect(50f, 806f - toolbarHeight, 260f, 794f, 4f, 4f, paint)
+            paint.color = if (dark) Color.WHITE else Color.BLACK
+            for (y in (818 - toolbarHeight)..780 step 22) {
+                canvas.drawRect(64f, y.toFloat(), 142f, y + 2f, paint)
+            }
+        }
+    }
+
+    @Test fun multilineDraftUsesFullWidthBoundaryAboveBottomAlignedControls() {
+        for (height in listOf(78, 102, 126)) for (density in listOf(1f, 2.5f, 3.375f)) {
+            for (dark in listOf(false, true)) {
+                val image = multilineSendSample(height, dark, density)
+                try {
+                    val top = wechatInputBarTop(image, density)
+                    assertNotNull("height=$height density=$density dark=$dark", top)
+                    assertTrue(kotlin.math.abs(top!! - (800 - height) * density) <= 1f)
+                } finally { image.recycle() }
+            }
+        }
+    }
+
+    @Test fun multilineDraftChangesAreExcludedButLastBodyPixelIsPreserved() {
+        val image = multilineSendSample(102)
+        try {
+            val top = wechatInputBarTop(image, 1f)
+            assertEquals(698, top)
+            val bounds = com.yuyan.imemodule.data.capture.ui.IntRect(0, 0, image.width, top!!)
+            val before = exactPixelHash(image, bounds)
+            Canvas(image).drawRect(160f, 716f, 180f, 782f, Paint().apply { color = Color.BLACK })
+            assertEquals(top, wechatInputBarTop(image, 1f))
+            assertEquals(before, exactPixelHash(image, bounds))
+            image.setPixel(180, top - 1, Color.BLACK)
+            assertEquals(top, wechatInputBarTop(image, 1f))
+            assertNotEquals(before, exactPixelHash(image, bounds))
+        } finally { image.recycle() }
+    }
+
+    @Test fun multilineCandidateStillNeedsInputFieldAndCompleteToolbarControls() {
+        val images = listOf(multilineSendSample(102, inputField = false),
+            multilineSendSample(102, voice = false), multilineSendSample(102, emoji = false))
+        try { images.forEach { assertNull(wechatInputBarTop(it, 1f)) } }
+        finally { images.forEach { it.recycle() } }
+    }
+
+    @Test fun messageBubbleImmediatelyAboveMultilineInputIsPreserved() {
+        val image = multilineSendSample(102)
+        try {
+            Canvas(image).drawRoundRect(220f, 660f, 352f, 697f, 4f, 4f,
+                Paint().apply { color = Color.rgb(7, 193, 96) })
+            assertEquals(698, wechatInputBarTop(image, 1f))
+        } finally { image.recycle() }
+    }
+
     @Test fun narrowSendToolbarFromReportedLayoutStillExcludesDraftChanges() {
         for (density in listOf(3.375f, 3.5f, 3.625f)) for (dark in listOf(false, true)) {
             val image = sendSample(dark = dark, density = density, buttonWidth = 46f)

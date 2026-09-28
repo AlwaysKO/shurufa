@@ -5,6 +5,15 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class InputSpellingMatchTest {
+    @Test fun `双字首字简拼只接受完整尾字并显示实际键入部分`() {
+        assertEquals("k'kan", InputSpellingMatch.match("5526", "kan kan")?.preedit)
+        assertEquals("l'lan", InputSpellingMatch.match("5526", "liu lan")?.preedit)
+        for ((code, reading) in listOf("552" to "kan kan", "55" to "kan kan", "55265" to "kan kan le",
+            "5'526" to "kan kan", "kkan" to "kan kan", "5526" to "kan kang")) {
+            assertNull("$code $reading", InputSpellingMatch.match(code, reading))
+        }
+    }
+
     @Test fun `简拼显示依据词条读音而非键帽首字母`() {
         assertEquals("j'k'y", InputSpellingMatch.match("559", "jiu ke yi")?.preedit)
         assertEquals("l'k'z", InputSpellingMatch.match("559", "liang kou zhen")?.preedit)

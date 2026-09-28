@@ -124,12 +124,14 @@ class WindowMediaCapturer(
                             var cropped = originalCrop
                             try {
                                 request.titleOcrInput?.captureFrom(originalCrop)
+                                var bodyBoundaryVerified = request.wechatInputBarDensity == null
                                 request.wechatInputBarDensity?.let { density ->
                                     wechatInputBarTop(originalCrop, density)?.let { top ->
+                                        bodyBoundaryVerified = true
                                         cropped = Bitmap.createBitmap(originalCrop, 0, 0, originalCrop.width, top)
                                     }
                                 }
-                                request.contentInput?.captureFrom(cropped, context.resources.displayMetrics.density)
+                                request.contentInput?.captureFrom(cropped, context.resources.displayMetrics.density, bodyBoundaryVerified)
                                 val encoded = if (request.lossyWebp) encodeWebp(cropped) else encodeLossless(cropped)
                                 val contentHash = sha256(encoded)
                                 val output = File(context.cacheDir, "chat-capture/$contentHash")

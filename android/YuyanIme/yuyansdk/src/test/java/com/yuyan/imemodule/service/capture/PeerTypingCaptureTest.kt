@@ -92,7 +92,7 @@ class PeerTypingCaptureTest {
             }
         })
         try {
-            for (title in listOf("对方正在输入", "对方正在输入.", "对方正在输入..8")) {
+            for (title in listOf("对方正在輸入...", "對方正在輸入…", "对方 正在輸入..8", "对方正在输入", "对方正在输入.", "对方正在输入..8")) {
                 ServiceShadow.root = root(title)
                 runRequest(NotificationScreenshotFallbackRequest(title, System.currentTimeMillis()))
             }

@@ -168,8 +168,8 @@ async function uploadFile(event: Event) {
   if (!target) return;
   const { keyword } = target;
   err.value = ''; msg.value = '';
-  if (!/\.(gif|png|jpe?g|webp)$/i.test(file.name) || !file.size || file.size > 5 * 1024 * 1024) {
-    err.value = '请选择 GIF / PNG / JPG / WebP 图片，单张不超过 5 MB，不能是空文件。'; input.value = ''; return;
+  if (!/\.(gif|png|jpe?g|webp)$/i.test(file.name) || !file.size || file.size > 10 * 1024 * 1024) {
+    err.value = '请选择 GIF / PNG / JPG / WebP 图片，单张不超过 10 MB，不能是空文件。'; input.value = ''; return;
   }
   busy.value = true;
   try {
@@ -320,7 +320,7 @@ onMounted(load);
               </div>
             </article>
           </div>
-          <p class="upload-hint">支持 GIF / PNG / JPG / WebP，单张不超过 5 MB。上传后归入“{{ activeGroup.keyword }}”语义组并使用已保存的同组说法，用于所有设备的斗图搜索与手机关键词推荐；手机下次打开键盘检查更新后补充，不修改系统素材。空关键词组不触发图片推荐，规划词不等于已启用全部语义扩展；未发布试稿不在这里展示。</p>
+          <p class="upload-hint">支持 GIF / PNG / JPG / WebP，单张不超过 10 MB。上传后归入“{{ activeGroup.keyword }}”语义组并使用已保存的同组说法，用于所有设备的斗图搜索与手机关键词推荐；手机下次打开键盘检查更新后补充，不修改系统素材。空关键词组不触发图片推荐，规划词不等于已启用全部语义扩展；未发布试稿不在这里展示。</p>
         </template>
         <div v-else class="library-empty"><strong>{{ q || filter !== 'all' ? '没有匹配的关键词' : '从第一个关键词开始' }}</strong><p>{{ q.trim() ? '可点击关键词库中的按钮新增或打开词组，再添加说法和图片。' : '调整左侧筛选，或在上方新增关键词。' }}</p></div>
       </section>

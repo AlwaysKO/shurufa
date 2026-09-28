@@ -131,12 +131,12 @@ it('非法文件和超限文件不上传，上传失败保留当前关键词并�
   const view = await mount('Stickers', { stickerLibrary: vi.fn().mockResolvedValue(structuredClone(library)), uploadStickerFile: upload });
   view.find('keyword-晚安')!.props.onClick(); await settle();
   const onChange = view.find('group-upload-input')!.props.onChange;
-  for (const file of [new File(['bad'], 'bad.txt'), new File([], 'empty.gif'), { name: 'huge.gif', size: 5 * 1024 * 1024 + 1 }]) {
+  for (const file of [new File(['bad'], 'bad.txt'), new File([], 'empty.gif'), { name: 'huge.gif', size: 10 * 1024 * 1024 + 1 }]) {
     await onChange({ target: { files: [file], value: '' } }); await settle();
   }
   expect(upload).not.toHaveBeenCalled();
   vi.stubGlobal('Image', class { naturalWidth = 240; naturalHeight = 240; onload: (() => void) | null = null; set src(_s: string) { this.onload?.(); } });
-  await onChange({ target: { files: [new File(['GIF89a'], 'valid.gif')], value: 'valid.gif' } }); await settle();
+  await onChange({ target: { files: [new File([new Uint8Array(10 * 1024 * 1024)], 'valid.gif')], value: 'valid.gif' } }); await settle();
   expect(view.text()).toContain('网络中断'); expect(view.find('keyword-晚安')!.props['aria-current']).toBe('true');
 });
 it('搜索和待补图筛选不把系统图片串到空关键词', async () => {
