@@ -9,6 +9,7 @@ const mounted: Vue.App[] = [];
 afterEach(() => { mounted.splice(0).forEach(app => app.unmount()); vi.unstubAllGlobals(); });
 async function settle() { for (let i = 0; i < 12; i++) { await Promise.resolve(); await Vue.nextTick(); } }
 async function mount(name: string, api: Record<string, any>) {
+  api = { eventApps: async () => ({ apps: [] }), ...api };
   const { descriptor } = parse(readFileSync(new URL(`../src/views/${name}.vue`, import.meta.url), 'utf8'));
   const compiled = compileScript(descriptor, { id: name, inlineTemplate: true });
   const code = ts.transpileModule(compiled.content, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
@@ -75,6 +76,36 @@ const editHistory = [
   { id: 'c', occurred_at: '2026-09-16', event_type: 'commit', text: '九', text_before: '晚上点见', text_after: '晚上九点见', sequence_no: 3 },
 ];
 const editGroup = { ...editHistory[2], device_id: 'device-1', edit_count: 3, edit_complete: true, edit_events: editHistory };
+
+it('来源App下拉使用历史来源，切换回第一页、清除勾选，并保留筛选到下一页和原始模式', async () => {
+  const events = vi.fn().mockResolvedValue({ total: 40, items: [editGroup] });
+  const view = await mount('Activity', { events, devices: async () => ({ devices: [] }),
+    eventApps: async () => ({ apps: [{ package_name: 'com.example.chat', app_name: '聊天' }, { package_name: 'com.example.old', app_name: null }] }) });
+  const source = view.find('source-app');
+  expect(source).toBeDefined();
+  expect(source!.options.map(n => n.props.value)).toEqual(['', 'com.example.chat', 'com.example.old']);
+  view.all().find(n => n.tag === 'button' && n.text === '下一页')!.props.onClick(); await settle();
+  view.find('select-page')!.props.onClick(); await settle();
+  source!.props['onUpdate:modelValue']('com.example.chat'); source!.props.onChange(); await settle();
+  expect(events).toHaveBeenLastCalledWith(expect.objectContaining({ page: 1, package_name: 'com.example.chat', grouped: true }));
+  expect(view.find('selection-count')!.text).toContain('0');
+  view.all().find(n => n.tag === 'button' && n.text === '下一页')!.props.onClick(); await settle();
+  expect(events).toHaveBeenLastCalledWith(expect.objectContaining({ page: 2, package_name: 'com.example.chat' }));
+  view.find('mode-raw')!.props.onClick(); await settle();
+  expect(events).toHaveBeenLastCalledWith(expect.objectContaining({ page: 1, package_name: 'com.example.chat', grouped: false }));
+  view.all().find(n => n.tag === 'button' && n.text === '重置')!.props.onClick(); await settle();
+  expect(events.mock.calls.at(-1)![0].package_name).toBeUndefined();
+});
+
+it('来源选项加载失败不阻塞明细，能够重试', async () => {
+  const eventApps = vi.fn().mockRejectedValueOnce(Error('network')).mockResolvedValue({ apps: [{ package_name: 'com.example.chat' }] });
+  const view = await mount('Activity', { eventApps, devices: async () => ({ devices: [] }), events: async () => ({ total: 1, items: [editGroup] }) });
+  expect(view.text()).toContain('晚上九点见');
+  expect(view.find('retry-source-apps')).toBeDefined();
+  view.find('retry-source-apps')!.props.onClick(); await settle();
+  expect(view.find('source-app')!.options).toHaveLength(2);
+  expect(view.find('retry-source-apps')).toBeUndefined();
+});
 
 it('默认按整段请求并显示完整末态，展开所有原始操作而非拼接片段', async () => {
   const events = vi.fn().mockResolvedValue({ total: 1, items: [editGroup] });

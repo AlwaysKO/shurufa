@@ -812,10 +812,19 @@ export function createDashboardRouter(pool: pg.Pool): Router {
     }
   });
 
-  /**
-   * 位置轨迹：设备移动历史（同位置自动合并，last_seen_at 为最后出现时间）。
-   * 支持 device_id、days、limit 参数；未解析地址的坐标异步反地理编码。
-   */
+  router.get('/event-apps', async (_req, res, next) => {
+    try {
+      const userId = res.locals.userId;
+      const result = await pool.query<{ package_name: string }>(
+        `SELECT DISTINCT package_name FROM input_event
+         WHERE user_id = $1 AND package_name IS NOT NULL AND btrim(package_name) <> ''
+         ORDER BY package_name`, [userId],
+      );
+      res.json({ apps: await withAppNames(pool, userId, result.rows) });
+    } catch (err) { next(err); }
+  });
+
+  /** 位置轨迹：date 按北京时间自然日查询；未指定时兼容 days 参数。 */
   router.get('/locations', async (req, res, next) => {
     try {
       const userId = (req.query.user_id as string) ?? res.locals.userId;
@@ -825,21 +834,33 @@ export function createDashboardRouter(pool: pg.Pool): Router {
 
       const conds = ['user_id = $1', 'occurred_at >= $2'];
       const params: unknown[] = [userId, daysAgo(days)];
+      const date = req.query.date;
+      if (date !== undefined) {
+        const start = typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)
+          ? new Date(`${date}T00:00:00+08:00`) : new Date(NaN);
+        if (!Number.isFinite(start.getTime()) || new Date(start.getTime() + 8 * 3_600_000).toISOString().slice(0, 10) !== date) {
+          res.status(400).json({ error: '日期必须是有效的 YYYY-MM-DD（北京时间）' });
+          return;
+        }
+        params[1] = start;
+        params.push(new Date(start.getTime() + 86_400_000));
+        conds.push('occurred_at < $3');
+      }
       if (deviceId) {
         params.push(deviceId);
         conds.push(`device_id = $${params.length}`);
       }
 
       const result = await pool.query(
-        `SELECT id, device_id, latitude, longitude, accuracy, provider, speed, address,
+        `SELECT id, device_id, latitude, longitude, accuracy, provider, speed, address, context,
                 occurred_at, first_seen_at, last_seen_at
          FROM location_track
          WHERE ${conds.join(' AND ')}
-         ORDER BY occurred_at DESC
+         ORDER BY occurred_at DESC, id DESC
          LIMIT $${params.length + 1}`,
-        [...params, limit],
+        [...params, limit + 1],
       );
-      const rows = result.rows as Array<{
+      const rows = result.rows.slice(0, limit) as Array<{
         id: number;
         latitude: string;
         longitude: string;
@@ -853,7 +874,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
         userId,
       ).catch(() => { console.warn('[geocoder] 地址解析任务异常'); });
 
-      res.json({ days, total: rows.length, locations: rows.map(row => ({
+      res.json({ days: date === undefined ? days : 1, date, total: rows.length, has_more: result.rows.length > limit, locations: rows.map(row => ({
         ...row,
         ...(row.address
           ? { address_status: 'resolved', address_error: null, address_retry_at: null }

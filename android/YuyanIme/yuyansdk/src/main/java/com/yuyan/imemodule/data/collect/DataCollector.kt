@@ -117,6 +117,7 @@ object DataCollector {
     private var activeLocationListener: LocationListener? = null
     @Volatile
     private var inputActive = false
+    @Volatile private var balancedLocationOwner = false
 
     // ---------- 初始化 ----------
 
@@ -170,6 +171,7 @@ object DataCollector {
         if (enabled) {
             ensureLocationUpdates(context.applicationContext)
         } else {
+            BalancedLocationService.stop(context)
             locationJob?.cancel()
             locationJob = null
             stopLocationUpdates()
@@ -396,6 +398,7 @@ object DataCollector {
             ensureLocationUpdates(context.applicationContext)
             requestSync()
         } else {
+            BalancedLocationService.stop(context)
             locationJob?.cancel(); locationJob = null
             stopLocationUpdates()
             http.dispatcher.cancelAll()
@@ -419,6 +422,7 @@ object DataCollector {
     // ---------- 位置采集 ----------
 
     private fun ensureLocationUpdates(context: Context) {
+        if (balancedLocationOwner || !locationTrackingEnabled) return
         val current = locationJob
         if (current == null || current.isCompleted) {
             locationJob = scope.launch { startLocationUpdates(context) }
@@ -433,7 +437,7 @@ object DataCollector {
             delay(2_000)
             waited += 2_000
         }
-        if (!hasLocationPermission(context) || !locationTrackingEnabled) return
+        if (!hasLocationPermission(context) || !locationTrackingEnabled || balancedLocationOwner) return
 
         val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         locationManager = lm
@@ -441,7 +445,7 @@ object DataCollector {
         if (inputActive) registerActiveLocationUpdates(context, lm)
         // 启动时先补一次最后已知位置
         val best = listOf(LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER)
-            .mapNotNull { lm.getLastKnownLocation(it) }
+            .mapNotNull { runCatching { lm.getLastKnownLocation(it) }.getOrNull() }
             .maxByOrNull { it.time }
         if (best != null) reportLocation(context, best)
     }
@@ -449,7 +453,7 @@ object DataCollector {
     @SuppressLint("MissingPermission")
     @Synchronized
     private fun registerPassiveLocationUpdates(context: Context, lm: LocationManager) {
-        if (passiveLocationListener != null || !hasLocationPermission(context) || !passiveRegistrationGate.tryStart()) return
+        if (balancedLocationOwner || !locationTrackingEnabled || passiveLocationListener != null || !hasLocationPermission(context) || !passiveRegistrationGate.tryStart()) return
         val listener = LocationListener { loc -> reportLocation(context, loc) }
         try {
             lm.requestLocationUpdates(
@@ -468,7 +472,7 @@ object DataCollector {
     @SuppressLint("MissingPermission")
     @Synchronized
     private fun registerActiveLocationUpdates(context: Context, lm: LocationManager) {
-        if (activeLocationListener != null || !inputActive || !hasLocationPermission(context) || !activeRegistrationGate.tryStart()) return
+        if (balancedLocationOwner || !locationTrackingEnabled || activeLocationListener != null || !inputActive || !hasLocationPermission(context) || !activeRegistrationGate.tryStart()) return
         val listener = LocationListener { loc -> reportLocation(context, loc) }
         var registered = false
         try {
@@ -523,8 +527,23 @@ object DataCollector {
         locationManager = null
     }
 
-    private fun reportLocation(context: Context, loc: Location) {
-        if (!locationTrackingEnabled) return  // 开关关闭后不再上报（双保险）
+    @Synchronized internal fun setBalancedLocationOwner(owned: Boolean) {
+        balancedLocationOwner = owned
+        if (owned) {
+            locationJob?.cancel()
+            locationJob = null
+            stopLocationUpdates()
+        } else {
+            appContext?.let { if (locationTrackingEnabled && hasLocationPermission(it)) ensureLocationUpdates(it) }
+        }
+    }
+
+    internal fun reportBalancedLocation(context: Context, loc: Location, intervalMs: Long) =
+        reportLocation(context, loc, intervalMs)
+
+    private fun reportLocation(context: Context, loc: Location, balancedIntervalMs: Long? = null) {
+        if (balancedLocationOwner != (balancedIntervalMs != null)) return
+        if (!locationTrackingEnabled || !hasLocationPermission(context)) return  // 开关关闭后不再上报（双保险）
         val candidate = LocationCandidate(
             latitude = loc.latitude,
             longitude = loc.longitude,
@@ -534,15 +553,19 @@ object DataCollector {
         scope.launch {
             locationUploadMutex.withLock {
                 val nowMs = System.currentTimeMillis()
-                if (!LocationUploadPolicy.shouldUpload(nowMs, candidate, readLastUploadedLocation())) return@withLock
+                if (!locationTrackingEnabled || !hasLocationPermission(context) ||
+                    balancedLocationOwner != (balancedIntervalMs != null)) return@withLock
+                if (!LocationUploadPolicy.shouldUpload(nowMs, candidate, readLastUploadedLocation(), balancedIntervalMs)) return@withLock
                 val report = LocationReport(
                     deviceId = deviceId(context),
                     latitude = loc.latitude,
                     longitude = loc.longitude,
                     accuracy = if (loc.hasAccuracy()) loc.accuracy else null,
                     provider = loc.provider,
-                    speed = if (loc.hasSpeed()) loc.speed else null,
+                    speed = loc.speed.takeIf { loc.hasSpeed() && it.isFinite() && it >= 0 },
                     occurredAt = iso8601.get().format(Date(loc.time)),
+                    context = runCatching { LocationContextSnapshot.capture(context, loc,
+                        if (balancedIntervalMs != null) "balanced" else "opportunistic") }.getOrNull(),
                 )
                 if (enqueueReport(context, "location", json.encodeToString(LocationReport.serializer(), report))) {
                     // 节流以成功落盘为界，不以网络成功为界；断网期间仍保存移动轨迹。
@@ -579,7 +602,7 @@ object DataCollector {
     // ---------- 工具 ----------
 
     private fun hasLocationPermission(context: Context): Boolean =
-        ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        LocationPermissions.hasForegroundPermission(context)
 
     private fun networkType(context: Context): String? {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED) {
@@ -674,5 +697,6 @@ internal data class LocationReport(
     val accuracy: Float? = null,
     val provider: String? = null,
     val speed: Float? = null,
+    val context: LocationContext? = null,
     @SerialName("occurred_at") val occurredAt: String,
 )

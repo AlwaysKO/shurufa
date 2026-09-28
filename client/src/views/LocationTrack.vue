@@ -3,13 +3,19 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { api, deviceLabel, type DeviceRow, type LocationRow } from '../api';
+import { analyzeLocations, locationDay, wifiLabel, networkLabel, contextDetails, durationLabel, escapeLocationHtml } from '../locationAnalysis';
 
 const devices = ref<DeviceRow[]>([]);
 const locations = ref<LocationRow[]>([]);
-const days = ref(7);
 const deviceId = ref('');
 const loading = ref(false);
 const error = ref('');
+const today = ref(locationDay(new Date().toISOString()));
+const selectedDay = ref(today.value);
+const hasMore = ref(false);
+const visibleLocations = computed(() => locations.value);
+const analysis = computed(() => analyzeLocations(visibleLocations.value));
+const routeSegments = computed(() => analysis.value.segments.filter(segment => segment.length > 1));
 let refreshTimer: ReturnType<typeof setTimeout> | null = null;
 let latestRequest = 0;
 let disposed = false;
@@ -71,16 +77,23 @@ function addressLabel(row: LocationRow): string {
 async function loadLocations(background = false) {
   clearRefresh();
   const request = ++latestRequest;
-  if (!background) loading.value = true;
+  today.value = locationDay(new Date().toISOString());
+  if (!background) {
+    loading.value = true;
+    locations.value = [];
+    hasMore.value = false;
+    renderMap(false);
+  }
   let failed = false;
   try {
-    const data = await api.locations({ device_id: deviceId.value || undefined, days: days.value, limit: 500 });
+    const data = await api.locations({ device_id: deviceId.value || undefined, date: selectedDay.value, limit: 1000 });
     if (disposed || request !== latestRequest) return;
     const mapChanged = data.locations.length !== locations.value.length || data.locations.some((row, index) => {
       const previous = locations.value[index];
-      return row.id !== previous?.id || row.address !== previous.address;
+      return row.id !== previous?.id || row.address !== previous.address || row.last_seen_at !== previous.last_seen_at;
     });
     locations.value = data.locations;
+    hasMore.value = data.has_more === true;
     error.value = '';
     // 自动更新状态时不重画地图；地址变化时更新标记，但保留用户缩放和中心点。
     if (!background || mapChanged) renderMap(!background);
@@ -101,11 +114,11 @@ function renderMap(recenter = true) {
   if (layer) layer.remove();
   layer = L.layerGroup().addTo(map);
 
-  const pts = [...locations.value].reverse(); // 按时间正序连线
+  const pts = [...visibleLocations.value].reverse().filter(p => Number.isFinite(Number(p.latitude)) && Math.abs(Number(p.latitude)) <= 90 && Number.isFinite(Number(p.longitude)) && Math.abs(Number(p.longitude)) <= 180);
   if (pts.length === 0) return;
-  if (pts.length > 1) {
+  for (const segment of routeSegments.value) {
     L.polyline(
-      pts.map((p) => [Number(p.latitude), Number(p.longitude)]),
+      segment.map((p) => [Number(p.latitude), Number(p.longitude)]),
       { color: '#3742fa', weight: 3, opacity: 0.7 },
     ).addTo(layer);
   }
@@ -118,9 +131,10 @@ function renderMap(recenter = true) {
     L.circleMarker([lat, lng], { radius: isFirst || isLast ? 8 : 5, color: '#fff', weight: 2, fillColor: color, fillOpacity: 0.9 })
       .addTo(layer)
       .bindPopup(
-        `<b>${p.address ?? `${lat.toFixed(4)}, ${lng.toFixed(4)}`}</b><br>` +
+        `<b>${escapeLocationHtml(p.address ?? `${lat.toFixed(4)}, ${lng.toFixed(4)}`)}</b><br>` +
           `${formatBeijingTime(p.occurred_at)}（北京时间）<br>` +
-          `${providers[p.provider ?? ''] ?? p.provider ?? '-'} · 精度 ${p.accuracy ?? '-'}m${p.speed != null ? ` · 速度 ${Number(p.speed).toFixed(1)}m/s` : ''}`,
+          `${escapeLocationHtml(providers[p.provider ?? ''] ?? p.provider ?? '-')} · 精度 ${escapeLocationHtml(String(p.accuracy ?? '-'))}m${p.speed != null ? ` · 速度 ${(Number(p.speed) * 3.6).toFixed(1)} km/h` : ''}<br>` +
+          `Wi-Fi：${escapeLocationHtml(wifiLabel(p))}<br>${escapeLocationHtml(contextDetails(p))}`,
       );
   });
   const last = pts[pts.length - 1];
@@ -133,7 +147,31 @@ function timeRange(row: LocationRow): string {
     : `${formatBeijingTime(row.first_seen_at)} ~ ${formatBeijingTime(row.last_seen_at)}`;
 }
 
-watch([days, deviceId], () => loadLocations());
+function chooseDay(value: string) {
+  today.value = locationDay(new Date().toISOString());
+  selectedDay.value = value && value <= today.value ? value : today.value;
+}
+
+function changeDate(event: Event) {
+  const input = event.target as HTMLInputElement;
+  chooseDay(input.value);
+  input.value = selectedDay.value;
+}
+
+function moveDay(offset: number) {
+  const date = new Date(`${selectedDay.value}T00:00:00+08:00`);
+  chooseDay(locationDay(new Date(date.getTime() + offset * 86_400_000).toISOString()));
+}
+
+watch([selectedDay, deviceId], () => loadLocations());
+
+function focusPoint(point: LocationRow) {
+  map?.setView([Number(point.latitude), Number(point.longitude)], 16);
+}
+function rowDevice(point: LocationRow) {
+  const device = devices.value.find(item => item.id === point.device_id);
+  return device ? deviceLabel(device) : point.device_id;
+}
 
 onMounted(() => {
   map = L.map('loc-map').setView([23.13, 113.26], 5);
@@ -155,10 +193,10 @@ onBeforeUnmount(() => {
 });
 
 const summary = computed(() => {
-  const n = locations.value.length;
+  const n = visibleLocations.value.length;
   if (n === 0) return '暂无位置数据';
-  const t = timeRange(locations.value[0]);
-  return `共 ${n} 个不同位置，最近记录（北京时间）：${t}`;
+  const t = timeRange(visibleLocations.value[0]);
+  return `共 ${n} 条采样，最近记录（北京时间）：${t}`;
 });
 </script>
 
@@ -169,15 +207,24 @@ const summary = computed(() => {
         <option value="">全部设备</option>
         <option v-for="d in devices" :key="d.id" :value="d.id">{{ deviceLabel(d) }}</option>
       </select>
-      <select v-model="days">
-        <option :value="1">近 1 天</option>
-        <option :value="7">近 7 天</option>
-        <option :value="30">近 30 天</option>
-        <option :value="90">近 90 天</option>
-      </select>
+      <button class="btn" data-testid="location-prev-day" @click="moveDay(-1)">前一天</button>
+      <label>日期（北京时间）
+        <input type="date" data-testid="location-date" :value="selectedDay" :max="today" @change="changeDate" />
+      </label>
+      <button class="btn" data-testid="location-next-day" :disabled="selectedDay >= today" @click="moveDay(1)">后一天</button>
+      <button class="btn" @click="chooseDay('')">今天</button>
       <button class="btn" :disabled="loading" @click="loadLocations()">刷新</button>
       <span class="summary">{{ summary }}</span>
       <span v-if="error" class="err">{{ error }}</span>
+    </div>
+
+    <p class="analysis-hint">新版手机仅在位置有效变化时上报，位置不变不重复上报。均衡模式移动时约 30 秒采样，停留后约 5 分钟检查；实际频率受权限、信号和系统限制。静止缺报无法确认准确停留或 Wi-Fi 连接时长。路线连线不代表实际经过的道路；超过 15 分钟的缺口、跨日和不同设备分段显示。</p>
+    <p v-if="hasMore" class="coverage-warning" role="status">当天记录超过 1000 条，仅分析已加载的最近记录。可选择单台设备缩小范围；这里的里程与停留不代表完整行程。</p>
+    <div v-if="visibleLocations.length" class="location-stats">
+      <div><strong>{{ routeSegments.length }}</strong><span>有连续观测的路线段</span></div>
+      <div><strong>{{ (analysis.distanceMeters / 1000).toFixed(2) }} km</strong><span>过滤漂移后的估算里程</span></div>
+      <div><strong>{{ analysis.stays.length }}</strong><span>估算停留（至少 5 分钟）</span></div>
+      <div><strong>{{ analysis.excludedPoints }}</strong><span>低精度或无效点未参与分析</span></div>
     </div>
 
     <p v-if="unresolvedAddresses.length" class="address-hint" role="status">
@@ -185,6 +232,38 @@ const summary = computed(() => {
     </p>
     <div id="loc-map" class="map"></div>
 
+    <div v-if="visibleLocations.length" class="location-insights">
+      <section>
+        <h3>估算停留</h3>
+        <p class="analysis-hint">同一区域的连续观测跨度。缺失期间无法确认是否离开；最后一次观测之后不继续计时。</p>
+        <p v-if="!analysis.stays.length" class="analysis-hint">暂无足够连续的停留记录。</p>
+        <button v-for="stay in analysis.stays" :key="`${stay.start.device_id}-${stay.start.id}`" class="insight-row" @click="focusPoint(stay.start)">
+          <strong>{{ durationLabel(stay.durationMs) }} · {{ stay.start.address || '地址未解析' }}</strong>
+          <span>{{ formatBeijingTime(stay.start.occurred_at) }} ～ {{ formatBeijingTime(stay.end.occurred_at) }}</span>
+          <span>{{ rowDevice(stay.start) }} · {{ stay.points.length }} 次观测 · 点击定位</span>
+        </button>
+      </section>
+      <section>
+        <h3>Wi-Fi 观测跨度</h3>
+        <p class="analysis-hint">采样时连接相同网络的时间跨度，不保证两次采样之间一直连接，也不能等同于在场时间。</p>
+        <p v-if="!analysis.wifiSessions.length" class="analysis-hint">暂无连续的 Wi-Fi 记录；历史数据需手机升级后逐步补充新采样。</p>
+        <div v-for="session in analysis.wifiSessions" :key="`${session.start.device_id}-${session.start.id}`" class="insight-row">
+          <strong>{{ wifiLabel(session.start) }} · {{ durationLabel(session.durationMs) }}</strong>
+          <span>{{ formatBeijingTime(session.start.occurred_at) }} ～ {{ formatBeijingTime(session.end.occurred_at) }}</span>
+          <span>{{ rowDevice(session.start) }} · {{ session.start.context?.wifi?.bssid ? '相同热点标识' : '仅名称一致，热点标识不可读取' }}</span>
+        </div>
+      </section>
+    </div>
+    <details v-if="routeSegments.length" class="route-details">
+      <summary>查看 {{ routeSegments.length }} 段路线的起止时间（北京时间）</summary>
+      <button v-for="(segment, index) in routeSegments" :key="`${segment[0].device_id}-${segment[0].id}`" class="insight-row" @click="focusPoint(segment[0])">
+        <strong>路线 {{ index + 1 }} · {{ rowDevice(segment[0]) }}</strong>
+        <span>{{ formatBeijingTime(segment[0].occurred_at) }} ～ {{ formatBeijingTime(segment[segment.length - 1].occurred_at) }} · {{ segment.length }} 次观测</span>
+        <span>{{ segment[0].address || '地址未解析' }} → {{ segment[segment.length - 1].address || '地址未解析' }}</span>
+      </button>
+    </details>
+
+    <div class="table-scroll">
     <table class="table">
       <thead>
         <tr>
@@ -194,12 +273,14 @@ const summary = computed(() => {
           <th>来源</th>
           <th>精度</th>
           <th>速度</th>
+          <th>Wi-Fi / 网络</th>
+          <th>设备状态</th>
           <th>时间范围（北京时间）</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(r, i) in locations" :key="r.id">
-          <td>{{ locations.length - i }}</td>
+        <tr v-for="(r, i) in visibleLocations" :key="r.id">
+          <td>{{ visibleLocations.length - i }}<small class="address-detail">{{ rowDevice(r) }}</small></td>
           <td class="mono">{{ Number(r.latitude).toFixed(4) }}, {{ Number(r.longitude).toFixed(4) }}</td>
           <td>
             <span :class="{ 'address-failed': !r.address && r.address_status === 'failed' }">{{ addressLabel(r) }}</span>
@@ -210,20 +291,36 @@ const summary = computed(() => {
           </td>
           <td>{{ providers[r.provider ?? ''] ?? r.provider ?? '-' }}</td>
           <td>{{ r.accuracy ?? '-' }} m</td>
-          <td>{{ r.speed != null ? Number(r.speed).toFixed(1) + ' m/s' : '-' }}</td>
+          <td>{{ r.speed != null ? (Number(r.speed) * 3.6).toFixed(1) + ' km/h' : '-' }}</td>
+          <td class="context-cell">
+            <strong>{{ wifiLabel(r) }}</strong>
+            <small class="address-detail">{{ networkLabel(r) }}</small>
+            <small v-if="r.context?.wifi?.rssi != null" class="address-detail">信号 {{ r.context.wifi.rssi }} dBm</small>
+            <small v-if="r.context?.wifi?.frequency_mhz != null" class="address-detail">频率 {{ r.context.wifi.frequency_mhz }} MHz</small>
+            <details v-if="r.context?.wifi?.bssid || r.context?.wifi?.link_speed_mbps != null">
+              <summary>连接详情</summary>
+              <small v-if="r.context?.wifi?.bssid" class="address-detail">热点 {{ r.context.wifi.bssid }}</small>
+              <small v-if="r.context?.wifi?.link_speed_mbps != null" class="address-detail">链路速率 {{ r.context.wifi.link_speed_mbps }} Mbps（非网速实测）</small>
+            </details>
+          </td>
+          <td class="context-cell">{{ contextDetails(r) }}
+            <small v-if="r.context?.capture_mode" class="address-detail">{{ r.context.capture_mode === 'balanced' ? '均衡记录' : '普通记录' }}</small>
+            <small v-if="r.context?.captured_at" class="address-detail">状态采集：{{ formatBeijingTime(r.context.captured_at) }}</small>
+          </td>
           <td class="mono">{{ timeRange(r) }}</td>
         </tr>
-        <tr v-if="!loading && locations.length === 0">
-          <td colspan="7" class="empty">暂无位置数据 — 输入法端每分钟上报，位置变化时自动记录</td>
+        <tr v-if="!loading && visibleLocations.length === 0">
+          <td colspan="9" class="empty">当天暂无位置数据，可切换日期或设备查看。采集新记录需在手机设置中开启位置记录并授予权限。</td>
         </tr>
       </tbody>
     </table>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
-.toolbar select { padding: 6px 8px; border: 1px solid #ddd; border-radius: 6px; background: #fff; }
+.toolbar select, .toolbar input { padding: 6px 8px; border: 1px solid #ddd; border-radius: 6px; background: #fff; }
 .btn { padding: 6px 14px; background: #3742fa; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .summary { color: #666; font-size: 13px; }
@@ -237,4 +334,20 @@ const summary = computed(() => {
 .table th { background: #fafafa; color: #555; font-weight: 600; white-space: nowrap; }
 .mono { font-family: 'SF Mono', Consolas, monospace; font-size: 12px; }
 .empty { text-align: center; color: #999; padding: 24px; }
+.analysis-hint { color: #64748b; font-size: 13px; line-height: 1.6; margin: 8px 0 12px; }
+.coverage-warning { padding: 12px; border: 1px solid #f5d18c; border-radius: 8px; color: #805a12; background: #fff9eb; }
+.location-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+.location-stats > div { display: flex; flex-direction: column; gap: 7px; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px; background: white; }
+.location-stats strong { font-size: 22px; color: #3742fa; }
+.location-stats span { font-size: 12px; color: #64748b; }
+.location-insights { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.location-insights section { border: 1px solid #e5e7eb; padding: 16px; border-radius: 8px; background: white; max-height: 360px; overflow: auto; }
+.location-insights h3 { margin: 0; font-size: 15px; }
+.insight-row { display: flex; flex-direction: column; gap: 6px; padding: 12px; margin: 8px 0; width: 100%; box-sizing: border-box; text-align: left; border: 1px solid #e5e7eb; background: #f8fafc; border-radius: 6px; overflow-wrap: anywhere; }
+button.insight-row { cursor: pointer; }
+.insight-row span { color: #64748b; font-size: 12px; }
+.route-details { margin: 12px 0 16px; }
+.table-scroll { overflow-x: auto; }
+.context-cell { min-width: 170px; max-width: 270px; overflow-wrap: anywhere; line-height: 1.5; }
+@media (max-width: 800px) { .location-stats { grid-template-columns: 1fr 1fr; } .location-insights { grid-template-columns: 1fr; } }
 </style>

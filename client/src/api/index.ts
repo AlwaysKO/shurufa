@@ -183,6 +183,28 @@ export interface ActivityPage {
   items: ActivityItem[];
 }
 
+export interface LocationContext {
+  version: 1;
+  captured_at?: string | null;
+  capture_mode?: 'balanced' | 'opportunistic' | null;
+  network_type?: 'wifi' | 'cellular' | 'ethernet' | 'vpn' | 'offline' | 'other' | 'unknown' | null;
+  wifi?: {
+    status: 'connected' | 'disconnected' | 'unavailable' | 'permission_denied' | 'location_disabled';
+    ssid?: string | null;
+    bssid?: string | null;
+    rssi?: number | null;
+    frequency_mhz?: number | null;
+    link_speed_mbps?: number | null;
+  } | null;
+  battery_percent?: number | null;
+  charging?: boolean | null;
+  is_interactive?: boolean | null;
+  power_save?: boolean | null;
+  altitude_m?: number | null;
+  bearing_deg?: number | null;
+  speed_accuracy_mps?: number | null;
+}
+
 export interface LocationRow {
   id: string;
   device_id: string;
@@ -198,6 +220,7 @@ export interface LocationRow {
   address_status?: 'pending' | 'resolving' | 'failed' | 'resolved';
   address_error?: string | null;
   address_retry_at?: string | null;
+  context?: LocationContext | null;
 }
 
 export interface ReportData {
@@ -619,6 +642,7 @@ export const api = {
   hours: (days = 30) => get<{ days: number; hours: HourPoint[] }>(`/api/v1/dashboard/hours?days=${days}`),
   heatmap: (days = 30) => get<{ days: number; cells: HeatmapCell[] }>(`/api/v1/dashboard/heatmap?days=${days}`),
   apps: (days = 30) => get<{ days: number; apps: AppStat[] }>(`/api/v1/dashboard/apps?days=${days}`),
+  eventApps: () => get<{ apps: Array<{ package_name: string; app_name: string | null }> }>('/api/v1/dashboard/event-apps'),
   phrases: (kind: 'word' | 'phrase', days: number | 'all' = 'all', limit = 50) =>
     get<{ kind: string; phrases: PhraseRow[] }>(`/api/v1/dashboard/phrases?kind=${kind}&days=${days}&limit=${limit}`),
   prefixes: () => get<{ prefixes: PrefixRow[] }>(`/api/v1/dashboard/prefixes`),
@@ -650,12 +674,13 @@ export const api = {
     if (query.page_size) p.set('page_size', String(query.page_size));
     return get<ActivityPage>(`/api/v1/dashboard/events?${p.toString()}`);
   },
-  locations: (query: { device_id?: string; days?: number; limit?: number } = {}) => {
+  locations: (query: { device_id?: string; date?: string; days?: number; limit?: number } = {}) => {
     const p = new URLSearchParams();
     if (query.device_id) p.set('device_id', query.device_id);
+    if (query.date) p.set('date', query.date);
     if (query.days) p.set('days', String(query.days));
     if (query.limit) p.set('limit', String(query.limit));
-    return get<{ days: number; total: number; locations: LocationRow[] }>(`/api/v1/dashboard/locations?${p.toString()}`);
+    return get<{ days: number; date?: string; total: number; has_more?: boolean; locations: LocationRow[] }>(`/api/v1/dashboard/locations?${p.toString()}`);
   },
   report: (type: 'daily' | 'weekly', date: string) => get<ReportData>(`/api/v1/dashboard/report?type=${type}&date=${date}`),
   exportData: () => get<ExportData>(`/api/v1/dashboard/export`),

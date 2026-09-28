@@ -32,14 +32,20 @@ internal object LocationUploadPolicy {
         nowMs: Long,
         candidate: LocationCandidate,
         lastUploaded: UploadedLocation?,
+        balancedIntervalMs: Long? = null,
     ): Boolean {
         val ageMs = nowMs - candidate.locationTimeMs
         if (ageMs !in 0..MAX_LOCATION_AGE_MS) return false
         if (!candidate.accuracyMeters.isFinite() || candidate.accuracyMeters < 0f || candidate.accuracyMeters > MAX_ACCURACY_METERS) {
             return false
         }
+        if (!candidate.latitude.isFinite() || candidate.latitude !in -90.0..90.0 ||
+            !candidate.longitude.isFinite() || candidate.longitude !in -180.0..180.0) return false
         if (lastUploaded == null) return true
-        if (nowMs - lastUploaded.uploadedAtMs < MIN_UPLOAD_INTERVAL_MS) return false
+        if (candidate.locationTimeMs <= lastUploaded.locationTimeMs) return false
+        if (balancedIntervalMs != null) {
+            if (candidate.locationTimeMs - lastUploaded.locationTimeMs < balancedIntervalMs) return false
+        } else if (nowMs - lastUploaded.uploadedAtMs < MIN_UPLOAD_INTERVAL_MS) return false
 
         val requiredMovement = max(
             MIN_MOVEMENT_METERS,

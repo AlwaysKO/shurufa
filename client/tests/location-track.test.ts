@@ -4,6 +4,7 @@ import { compileScript, parse } from '@vue/compiler-sfc';
 import ts from 'typescript';
 import * as Vue from 'vue';
 import type { LocationRow } from '../src/api';
+import * as locationAnalysis from '../src/locationAnalysis';
 
 type Node = { tag: string; text: string; children: Node[]; parent: Node | null; props: Record<string, any>; options: Node[]; selectedIndex: number; tagName: string; addEventListener: () => void; removeEventListener: () => void };
 const mounted: Vue.App[] = [];
@@ -29,10 +30,11 @@ async function mountLocations(locations: LocationRow[], overrides: Record<string
     insertStaticContent(text, p, anchor) { const n = node('static', text); insert(n, p, anchor); return [n, n]; },
   });
   const popups: string[] = [];
+  const lines: unknown[] = [];
   const layer = () => ({ addTo() { return this; }, remove() {} });
   const leaflet = {
     map: () => ({ setView() { return this; }, getZoom: () => 13, remove() {} }),
-    layerGroup: layer, tileLayer: layer, polyline: layer,
+    layerGroup: layer, tileLayer: layer, polyline: (points: unknown) => { lines.push(points); return layer(); },
     circleMarker: () => ({ ...layer(), bindPopup(html: string) { popups.push(html); return this; } }),
   };
   const api = { devices: vi.fn(async () => ({ devices: [] })), locations: vi.fn(async () => ({ locations })) };
@@ -43,6 +45,7 @@ async function mountLocations(locations: LocationRow[], overrides: Record<string
     if (name === 'leaflet') return { default: leaflet };
     if (name === 'leaflet/dist/leaflet.css') return {};
     if (name === '../api') return { api, deviceLabel: () => '测试设备' };
+    if (name === '../locationAnalysis') return locationAnalysis;
     throw new Error(`Unexpected import: ${name}`);
   };
   vi.stubGlobal('document', { activeElement: null });
@@ -52,7 +55,7 @@ async function mountLocations(locations: LocationRow[], overrides: Record<string
   const app = renderer.createApp(module.exports.default); app.mount(root); mounted.push(app);
   for (let i = 0; i < 8; i++) { await Promise.resolve(); await Vue.nextTick(); }
   const all = (n: Node): Node[] => [n, ...n.children.flatMap(all)];
-  return { api, popups, unmount: () => app.unmount(), all: () => all(root), text: () => all(root).map(n => n.text).join(' '), summary: () => all(root).find(n => n.props.class === 'summary')?.text,
+  return { api, popups, lines, unmount: () => app.unmount(), all: () => all(root), text: () => all(root).map(n => n.text).join(' '), summary: () => all(root).find(n => n.props.class === 'summary')?.text,
     cells: () => all(root).filter(n => n.tag === 'td').map(n => n.text) };
 }
 
@@ -107,7 +110,60 @@ it('空轨迹保持原有空状态，不伪造最新时间', async () => {
   expect(view.popups).toEqual([]);
 });
 
+it('显示Wi-Fi及设备状态，地图弹窗不会执行地址或SSID里的HTML',async()=>{
+ const row={...point('2026-09-29T01:00:00Z'),address:'<script>bad()</script>',context:{version:1 as const,wifi:{status:'connected' as const,ssid:'<img src=x>',rssi:-65},battery_percent:80,charging:true}};
+ const view=await mountLocations([row]);
+ expect(view.text()).toContain('<img src=x>');expect(view.text()).toContain('80%');expect(view.text()).toContain('充电中');
+ expect(view.popups[0]).not.toContain('<script>');expect(view.popups[0]).not.toContain('<img');
+ expect(view.popups[0]).toContain('&lt;img');
+});
+it('展示估算停留与截断提示，不跨设备和采样缺口画线',async()=>{
+ const rows=[point('2026-09-29T01:00:00Z'),{...point('2026-09-29T01:05:00Z'),id:'2'},
+  {...point('2026-09-29T02:00:00Z'),id:'3'},{...point('2026-09-29T01:03:00Z'),id:'4',device_id:'another'}];
+ const view=await mountLocations(rows,{locations:vi.fn(async()=>({locations:rows,has_more:true}))});
+ expect(view.lines).toHaveLength(1);
+ expect(view.text()).toContain('估算停留');expect(view.text()).toContain('5分钟');
+ expect(view.text()).toContain('仅分析已加载');
+});
+
 async function settle() { for (let i = 0; i < 12; i++) { await Promise.resolve(); await Vue.nextTick(); } }
+
+it('默认北京时间当天，前后按天请求，空数据日不回退所有日期', async () => {
+  vi.useFakeTimers(); vi.setSystemTime(new Date('2026-09-28T17:00:00Z'));
+  const view = await mountLocations([]);
+  const find = (id: string) => view.all().find(n => n.props['data-testid'] === id)!;
+  expect(view.api.locations).toHaveBeenLastCalledWith({ date: '2026-09-29', device_id: undefined, limit: 1000 });
+  expect(find('location-next-day').props.disabled).toBe(true);
+  find('location-prev-day').props.onClick(); await settle();
+  expect(view.api.locations).toHaveBeenLastCalledWith({ date: '2026-09-28', device_id: undefined, limit: 1000 });
+  expect(find('location-date').props.value).toBe('2026-09-28');
+  find('location-next-day').props.onClick(); await settle();
+  expect(view.api.locations.mock.calls.at(-1)![0].date).toBe('2026-09-29');
+  expect(view.text()).not.toContain('全部已加载日期');
+  const cleared = { value: '' };
+  find('location-date').props.onChange({ target: cleared }); await settle();
+  expect(cleared.value).toBe('2026-09-29');
+});
+
+it('切换日期立即清除旧轨迹，忽略过时响应；清空日期恢复当天', async () => {
+  vi.useFakeTimers(); vi.setSystemTime(new Date('2026-09-29T01:00:00Z'));
+  let resolveOld!: (value: unknown) => void;
+  const locations = vi.fn().mockResolvedValueOnce({ locations: [point('2026-09-29T01:00:00Z')] })
+    .mockImplementationOnce(() => new Promise(resolve => { resolveOld = resolve; }))
+    .mockResolvedValue({ locations: [] });
+  const view = await mountLocations([], { locations });
+  const find = (id: string) => view.all().find(n => n.props['data-testid'] === id)!;
+  expect(find('location-prev-day')).toBeDefined();
+  find('location-prev-day').props.onClick(); await settle();
+  expect(view.cells()).toEqual([]);
+  find('location-prev-day').props.onClick(); await settle();
+  resolveOld({ locations: [point('2026-09-28T01:00:00Z')] }); await settle();
+  expect(view.summary()).toBe('暂无位置数据');
+  expect(view.text()).not.toContain('测试位置');
+  expect(view.text()).toContain('当天暂无位置数据');
+  find('location-date').props.onChange({ target: { value: '' } }); await settle();
+  expect(locations.mock.calls.at(-1)![0].date).toBe('2026-09-29');
+});
 const unresolved = (status: LocationRow['address_status']): LocationRow => ({ ...point('2026-09-17T01:00:56Z'), address: null, address_status: status });
 
 it('排队中的地址自动更新为解析结果，完成后停止轮询', async () => {

@@ -189,7 +189,7 @@
     <string name="setting_server_url_tips">留空为 USB ADB 的 http://127.0.0.1:3000（需 adb reverse）。只有检测到 USB 数据连接且该地址 /health 正常时才上传本地；线上地址由网页后台“数据管理”配置并从当前线上后台安全迁移。局域网地址请使用 HTTPS。</string>
     <string name="setting_server_url_auto">默认：http://127.0.0.1:3000；仅 USB 连接且健康检查通过时上传本地</string>
     <string name="setting_location_tracking">位置采集</string>
-    <string name="setting_location_tracking_tips">每分钟上报一次位置，仅存储在你的服务器（同位置不重复记录）</string>
+    <string name="setting_location_tracking_tips">允许记录位置及当前连接信息并同步到你的服务器；频率受下方均衡模式、系统权限和省电影响</string>
     <string name="voice_input">语音输入</string>
     <string name="voice_input_working">正在聆听…</string>
     <string name="voice_input_no_service">未检测到语音识别服务</string>

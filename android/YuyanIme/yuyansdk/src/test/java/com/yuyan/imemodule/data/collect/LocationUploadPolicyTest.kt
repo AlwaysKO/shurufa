@@ -66,6 +66,17 @@ class LocationUploadPolicyTest {
         assertTrue(LocationUploadPolicy.shouldUpload(now, candidate(latitude = 23.1360, accuracyMeters = 40f), last))
     }
 
+    @Test
+    fun `all modes suppress unchanged position indefinitely and ignore accuracy drift`() {
+        for (interval in listOf(null, 30_000L, 300_000L)) {
+            val last = uploaded(locationTimeMs = now - 86_400_000, uploadedAtMs = now - 86_400_000)
+            assertFalse(LocationUploadPolicy.shouldUpload(now, candidate(), last, interval))
+            assertFalse(LocationUploadPolicy.shouldUpload(now, candidate(latitude = 23.1352, accuracyMeters = 5f), last, interval))
+            assertFalse(LocationUploadPolicy.shouldUpload(now, candidate(latitude = 23.1356, accuracyMeters = 40f), last.copy(accuracyMeters = 40f), interval))
+            assertTrue(LocationUploadPolicy.shouldUpload(now, candidate(latitude = 23.1360, accuracyMeters = 40f), last.copy(accuracyMeters = 40f), interval))
+        }
+    }
+
     private fun candidate(
         latitude: Double = 23.1350,
         longitude: Double = 113.2360,

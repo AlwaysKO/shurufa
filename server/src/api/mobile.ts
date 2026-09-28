@@ -6,6 +6,7 @@ import { EVENT_TYPES, type DeviceInfo, type MobileEvent, type SessionInfo } from
 import { locationKey } from '../lib/geocoder.js';
 import { eventMetadata } from '../lib/appNames.js';
 import { collectorBaseUrl } from '../lib/runtimeSettings.js';
+import { validLocationContext } from '../lib/locationContext.js';
 
 
 /** 批量插入事件（幂等：冲突跳过），返回实际插入数 */
@@ -186,38 +187,44 @@ export function createMobileRouter(pool: pg.Pool): Router {
         provider?: string;
         speed?: number;
         occurred_at?: string;
+        context?: unknown;
       };
       if (!body?.device_id || body.latitude == null || body.longitude == null) {
         return res.status(400).json({ error: 'device_id, latitude, longitude required' });
       }
+      if (!validLocationContext(body.context)) return res.status(400).json({ error: 'invalid location context' });
       const lat = Number(body.latitude);
       const lng = Number(body.longitude);
       if (Number.isNaN(lat) || Number.isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
         return res.status(400).json({ error: 'invalid coordinates' });
       }
       const occurredAt = body.occurred_at ?? new Date().toISOString();
+      if (typeof occurredAt !== 'string' || !Number.isFinite(Date.parse(occurredAt))) {
+        return res.status(400).json({ error: 'invalid location time' });
+      }
 
       // 查该设备最新一条位置记录，同坐标（4 位精度）只更新时间不新增
       const last = await pool.query(
-        `SELECT latitude, longitude FROM location_track
+        `SELECT id, latitude, longitude, context, occurred_at FROM location_track
          WHERE user_id = $1 AND device_id = $2
-         ORDER BY occurred_at DESC LIMIT 1`,
+         ORDER BY occurred_at DESC, id DESC LIMIT 1`,
         [res.locals.userId, body.device_id],
       );
-      const prev = last.rows[0] as { latitude: string; longitude: string } | undefined;
-      if (prev && locationKey(Number(prev.latitude), Number(prev.longitude)) === locationKey(lat, lng)) {
+      const prev = last.rows[0] as { id: string; latitude: string; longitude: string; context: unknown; occurred_at: Date } | undefined;
+      if (body.context == null && prev && prev.context == null && Date.parse(occurredAt) >= new Date(prev.occurred_at).getTime() &&
+          locationKey(Number(prev.latitude), Number(prev.longitude)) === locationKey(lat, lng)) {
         await pool.query(
-          `UPDATE location_track SET last_seen_at = NOW()
-           WHERE user_id = $1 AND device_id = $2 AND latitude = $3 AND longitude = $4`,
-          [res.locals.userId, body.device_id, prev.latitude, prev.longitude],
+          `UPDATE location_track SET last_seen_at = GREATEST(last_seen_at, $4::timestamptz)
+           WHERE user_id = $1 AND device_id = $2 AND id = $3`,
+          [res.locals.userId, body.device_id, prev.id, occurredAt],
         );
         return res.json({ ok: true, recorded: 'same' });
       }
 
       await pool.query(
         `INSERT INTO location_track
-           (user_id, device_id, latitude, longitude, accuracy, provider, speed, occurred_at)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+           (user_id, device_id, latitude, longitude, accuracy, provider, speed, occurred_at, first_seen_at, last_seen_at, context)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$8,$8,$9)`,
         [
           res.locals.userId,
           body.device_id,
@@ -227,6 +234,7 @@ export function createMobileRouter(pool: pg.Pool): Router {
           body.provider ?? null,
           body.speed ?? null,
           occurredAt,
+          body.context == null ? null : JSON.stringify(body.context),
         ],
       );
       res.json({ ok: true, recorded: 'new' });

@@ -1,5 +1,9 @@
 package com.yuyan.imemodule.ui.fragment
 
+import android.Manifest
+import android.os.Build
+import android.content.SharedPreferences
+import androidx.preference.PreferenceManager
 import android.content.ComponentName
 import android.content.pm.PackageManager
 import androidx.lifecycle.lifecycleScope
@@ -20,6 +24,8 @@ import com.yuyan.imemodule.application.Launcher
 import com.yuyan.imemodule.data.collect.CollectionConsent
 import com.yuyan.imemodule.data.collect.CollectionConsentDialog
 import com.yuyan.imemodule.data.collect.DataCollector
+import com.yuyan.imemodule.data.collect.BalancedLocationService
+import com.yuyan.imemodule.data.collect.LocationPermissions
 import com.yuyan.imemodule.data.capture.adapter.DouyinCaptureDiagnostics
 import com.yuyan.imemodule.manager.UserDataManager
 import com.yuyan.imemodule.prefs.AppPrefs
@@ -47,15 +53,51 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
     private var exportTimestamp = System.currentTimeMillis()
     private lateinit var exportLauncher: ActivityResultLauncher<String>
     private lateinit var importLauncher: ActivityResultLauncher<String>
+    private var balancedPreference: SwitchPreferenceCompat? = null
+    private val balancedStateListener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, key ->
+        if (key == BalancedLocationService.KEY) {
+            balancedPreference?.isChecked = prefs.getBoolean(BalancedLocationService.KEY, false)
+        }
+    }
+    private val locationPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+        if (LocationPermissions.hasForegroundPermission(requireContext())) requestBalancedNotificationPermission()
+        else Toast.makeText(requireContext(), "未授予位置权限，均衡位置记录未开启", Toast.LENGTH_LONG).show()
+    }
+    private val notificationPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+        // Android permits a location FGS when notifications are denied; settings still offers Stop.
+        startBalancedLocation()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        balancedPreference?.isChecked = BalancedLocationService.isRunning
+    }
+
+    private fun requestBalancedNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= 33 && androidx.core.content.ContextCompat.checkSelfPermission(
+                requireContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else startBalancedLocation()
+    }
+
+    private fun startBalancedLocation() {
+        val enabled = BalancedLocationService.startFromActivity(requireActivity())
+        balancedPreference?.isChecked = enabled
+        if (!enabled) Toast.makeText(requireContext(), "请先开启个人数据同步、位置采集及系统定位，再开启均衡记录", Toast.LENGTH_LONG).show()
+    }
 
     override fun onStart() {
         super.onStart()
         imeHideIcon.registerOnChangeListener(switchKeyListener)
+        PreferenceManager.getDefaultSharedPreferences(requireContext())
+            .registerOnSharedPreferenceChangeListener(balancedStateListener)
     }
 
     override fun onStop() {
         super.onStop()
         imeHideIcon.unregisterOnChangeListener(switchKeyListener)
+        PreferenceManager.getDefaultSharedPreferences(requireContext())
+            .unregisterOnSharedPreferenceChangeListener(balancedStateListener)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -154,6 +196,25 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
             setOnPreferenceChangeListener { _, newValue ->
                 DataCollector.setLocationTrackingEnabled(ctx, newValue as Boolean)
                 true
+            }
+        })
+        screen.addPreference(SwitchPreferenceCompat(ctx).apply {
+            key = BalancedLocationService.KEY
+            isPersistent = false
+            title = "均衡位置记录"
+            summary = "移动约 30 秒采样，稳定停留约 5 分钟检查；仅位置有效变化时上报，附当前 Wi-Fi、网络和电量，位置不变不重复上报。可在此停止，允许通知时也可在通知栏停止。恢复移动可能延迟约 5 分钟，系统限制或无信号时更久；服务被系统结束后需重新开启。关闭后恢复原有机会定位。"
+            isChecked = BalancedLocationService.isRunning
+            balancedPreference = this
+            setOnPreferenceChangeListener { _, value ->
+                if (value != true) {
+                    BalancedLocationService.stop(ctx)
+                    isChecked = false
+                } else if (!CollectionConsent.enabled(ctx) || !DataCollector.locationTrackingEnabled) {
+                    Toast.makeText(ctx, "请先开启个人数据同步和位置采集", Toast.LENGTH_LONG).show()
+                } else if (!LocationPermissions.hasForegroundPermission(ctx)) {
+                    locationPermissionLauncher.launch(LocationPermissions.foregroundRequest())
+                } else requestBalancedNotificationPermission()
+                false
             }
         })
         screen.addPreference(R.string.export_user_data) {

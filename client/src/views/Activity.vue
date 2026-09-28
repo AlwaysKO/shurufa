@@ -22,6 +22,10 @@ let unmounted = false;
 
 const type = ref<'all' | 'text' | 'paste' | 'voice' | 'image' | 'delete'>('all');
 const deviceId = ref('');
+const packageName = ref('');
+const sourceApps = ref<Array<{ package_name: string; app_name: string | null }>>([]);
+const sourceAppsLoading = ref(false);
+const sourceAppsError = ref(false);
 const days = ref<number | null>(null);
 const from = ref('');
 const to = ref('');
@@ -32,7 +36,7 @@ const grouped = computed(() => preferredGrouped.value && !showAll.value);
 const loading = ref(false);
 let latestRequest = 0;
 const contextKey = computed(() => JSON.stringify([
-  currentUserId.value, type.value, deviceId.value, days.value, from.value, to.value,
+  currentUserId.value, type.value, deviceId.value, packageName.value, days.value, from.value, to.value,
   q.value, showAll.value, preferredGrouped.value, page.value,
 ]));
 const selectedRows = computed(() => items.value.filter(item => selectedIds.value.includes(item.id)));
@@ -52,6 +56,7 @@ async function load(): Promise<void> {
   try {
     const res = await api.events({
       device_id: deviceId.value || undefined,
+      package_name: packageName.value || undefined,
       from: from.value || undefined,
       to: to.value || undefined,
       days: days.value ?? undefined,
@@ -103,6 +108,7 @@ function quickDays(d: number | null) {
 function resetFilters() {
   type.value = 'all';
   deviceId.value = '';
+  packageName.value = '';
   days.value = null;
   from.value = '';
   to.value = '';
@@ -182,7 +188,19 @@ async function deleteRecords(rows: ActivityItem[], bulk: boolean) {
 
 onBeforeUnmount(() => { unmounted = true; ++latestRequest; });
 
+async function loadSourceApps() {
+  sourceAppsLoading.value = true;
+  sourceAppsError.value = false;
+  try {
+    const result = await api.eventApps();
+    if (!unmounted) sourceApps.value = result.apps;
+  } catch {
+    if (!unmounted) sourceAppsError.value = true;
+  } finally { sourceAppsLoading.value = false; }
+}
+
 onMounted(async () => {
+  void loadSourceApps();
   // 支持 URL ?q= 预填搜索（词云等页面点击词跳转过来）
   const route = useRoute();
   if (typeof route.query.q === 'string' && route.query.q.trim()) {
@@ -220,6 +238,16 @@ onMounted(async () => {
       <option value="">全部设备</option>
       <option v-for="d in devices" :key="d.id" :value="d.id">{{ d.name || d.model || d.id.slice(0, 8) }}</option>
     </select>
+
+    <label>来源 App
+      <select v-model="packageName" data-testid="source-app" class="input" :disabled="sourceAppsLoading" @change="search()">
+        <option value="">{{ sourceAppsLoading ? '加载来源…' : '全部 App' }}</option>
+        <option v-for="app in sourceApps" :key="app.package_name" :value="app.package_name">
+          {{ appName(app.package_name, app.app_name) }}{{ appName(app.package_name, app.app_name) !== app.package_name ? `（${app.package_name}）` : '' }}
+        </option>
+      </select>
+    </label>
+    <button v-if="sourceAppsError" class="btn" data-testid="retry-source-apps" @click="loadSourceApps()">来源加载失败，重试</button>
 
     <span style="width: 8px"></span>
     <button :class="{ active: days === null && !from && !to }" @click="quickDays(null)">全部时间</button>

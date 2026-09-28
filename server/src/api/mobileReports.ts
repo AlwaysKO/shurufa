@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import type pg from 'pg';
 import { createHash } from 'node:crypto';
+import { validLocationContext } from '../lib/locationContext.js';
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const text = (value: unknown, max = 500): value is string =>
@@ -14,7 +15,8 @@ function validPayload(kind: unknown, p: Record<string, unknown>): boolean {
         finite(p.longitude) && Math.abs(p.longitude) <= 180 &&
         text(p.occurred_at, 64) && Number.isFinite(Date.parse(p.occurred_at)) &&
         (p.accuracy == null || (finite(p.accuracy) && p.accuracy >= 0)) &&
-        (p.speed == null || finite(p.speed)) && (p.provider == null || text(p.provider, 64));
+        (p.speed == null || finite(p.speed)) && (p.provider == null || text(p.provider, 64)) &&
+        validLocationContext(p.context);
     case 'completion_feedback':
       return text(p.completion) && text(p.prefix) && typeof p.accepted === 'boolean';
     case 'phrase_upsert':
@@ -66,9 +68,10 @@ export function createMobileReportRouter(pool: pg.Pool): Router {
       switch (kind) {
         case 'location':
           await client.query(
-            `INSERT INTO location_track(user_id,device_id,latitude,longitude,accuracy,provider,speed,occurred_at)
-             VALUES($1,$1,$2,$3,$4,$5,$6,$7)`,
-            [user, p.latitude, p.longitude, p.accuracy ?? null, p.provider ?? null, p.speed ?? null, p.occurred_at],
+            `INSERT INTO location_track(user_id,device_id,latitude,longitude,accuracy,provider,speed,occurred_at,first_seen_at,last_seen_at,context)
+             VALUES($1,$1,$2,$3,$4,$5,$6,$7,$7,$7,$8)`,
+            [user, p.latitude, p.longitude, p.accuracy ?? null, p.provider ?? null, p.speed ?? null, p.occurred_at,
+              p.context == null ? null : JSON.stringify(p.context)],
           );
           break;
         case 'completion_feedback': {
