@@ -31,6 +31,7 @@ async function mount(name: string, api: Record<string, any>) {
     if (id === '../confirmation') return { useConfirmation: () => async (message: string) => Boolean(globalThis.confirm?.(message)) };
     if (id === '../api') return { api, currentUserId: Vue.ref('test-user'), scopedAssetUrl: (url: string) => url };
     if (id === '../data/phrasePresets') return presets;
+    if (id === './StickerMaterials.vue') return { default: { render: () => null } };
     if (id.endsWith('.css')) return {};
     throw new Error(`Unexpected import: ${id}`);
   };

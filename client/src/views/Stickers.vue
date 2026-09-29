@@ -3,6 +3,9 @@ import { useConfirmation } from '../confirmation';
 import { computed, onMounted, ref, watch } from 'vue';
 import { api, scopedAssetUrl, type LibrarySticker, type StickerLibrary, type StickerKeywordGroup } from '../api';
 import './content-library.css';
+import StickerMaterials from './StickerMaterials.vue';
+const activeTab = ref<'keywords' | 'materials'>('keywords');
+watch(activeTab, tab => { if (tab === 'keywords') void load(); });
 
 const askConfirmation = useConfirmation();
 
@@ -130,11 +133,17 @@ function revealKeyword(keyword: string) {
   selectedKeyword.value = library.value.groups[index]?.keyword ?? keyword;
 }
 
+let loadEpoch = 0;
 async function load() {
+  const epoch = ++loadEpoch;
   loading.value = true; loadError.value = '';
-  try { library.value = await api.stickerLibrary(); loaded.value = true; }
-  catch (e) { loadError.value = `词库加载失败：${(e as Error).message}`; }
-  finally { loading.value = false; }
+  try {
+    const result = await api.stickerLibrary();
+    if (epoch !== loadEpoch) return;
+    library.value = result; loaded.value = true;
+  }
+  catch (e) { if (epoch === loadEpoch) loadError.value = `词库加载失败：${(e as Error).message}`; }
+  finally { if (epoch === loadEpoch) loading.value = false; }
 }
 async function addKeyword(source: 'new' | 'search' = 'new') {
   if (busy.value || loading.value || !loaded.value) return;
@@ -231,6 +240,9 @@ onMounted(load);
       <div class="intro-mark sticker-mark" aria-hidden="true">☺</div>
       <div><span class="eyebrow">EXPRESSION LIBRARY</span><h2>多种说法，共用一组表情</h2><p>所有设备共享关键词和推荐图。按意思归组，同组说法共用表情，不必重复上传。</p></div>
     </header>
+    <nav class="library-actions" aria-label="表情管理视图"><button class="library-button" :class="{primary: activeTab === 'keywords'}" @click="activeTab = 'keywords'">按关键词</button><button class="library-button" :class="{primary: activeTab === 'materials'}" @click="activeTab = 'materials'">表情素材库</button></nav>
+    <StickerMaterials v-if="activeTab === 'materials'" @changed="loaded = false" />
+    <template v-else>
     <div class="library-stats" aria-label="表情库统计">
       <div class="library-stat"><span>全部语义组</span><strong>{{ loaded ? library.groups.length : '—' }}</strong></div>
       <div class="library-stat"><span>已有表情的组</span><strong>{{ loaded ? groupsWithImages : '—' }}</strong></div>
@@ -325,5 +337,6 @@ onMounted(load);
         <div v-else class="library-empty"><strong>{{ q || filter !== 'all' ? '没有匹配的关键词' : '从第一个关键词开始' }}</strong><p>{{ q.trim() ? '可点击关键词库中的按钮新增或打开词组，再添加说法和图片。' : '调整左侧筛选，或在上方新增关键词。' }}</p></div>
       </section>
     </div>
+    </template>
   </div>
 </template>
