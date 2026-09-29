@@ -257,6 +257,7 @@ export interface ExportData {
     phrases: number;
     completions: number;
     locations: number;
+    app_usage: number;
   };
   devices: unknown[];
   sessions: unknown[];
@@ -264,6 +265,7 @@ export interface ExportData {
   phrases: unknown[];
   completions: unknown[];
   locations: unknown[];
+  app_usage: unknown[];
 }
 
 export interface CleanupResult {
@@ -609,7 +611,28 @@ async function deliveryWrite(method: 'PUT' | 'POST', suffix: string, body: unkno
   return data as DeliveryState;
 }
 
+export interface AppUsageData {
+  overview: { duration_ms: number; count: number; gap_count: number; last_received_at: string | null };
+  apps: Array<{ package_name: string; app_name: string | null; duration_ms: number; count: number }>;
+  daily: Array<{ day: string; duration_ms: number }>;
+  records: Array<{ id: string; kind: 'usage' | 'gap'; package_name: string | null; app_name: string | null; start_ms: number; end_ms: number; duration_ms: number; end_reason: string }>;
+  total: number; page: number; page_size: number;
+}
+export interface AppUsageDayData {
+  day: string; start_ms: number; end_ms: number; total: number; limit: number; truncated: boolean;
+  records: Array<AppUsageData['records'][number] & { clipped_start_ms: number; clipped_end_ms: number }>;
+}
 export const api = {
+  appUsageDay: (day: string, packageName?: string) => {
+    const p = new URLSearchParams({ day });
+    if (packageName) p.set('package_name', packageName);
+    return get<AppUsageDayData>(`/api/v1/dashboard/app-usage/day?${p}`);
+  },
+  appUsage: (query: { from: string; to: string; package_name?: string; page: number }) => {
+    const p = new URLSearchParams({ from: query.from, to: query.to, page: String(query.page) });
+    if (query.package_name) p.set('package_name', query.package_name);
+    return get<AppUsageData>(`/api/v1/dashboard/app-usage?${p}`);
+  },
   expressionDelivery: () => get<DeliveryState>('/api/v1/dashboard/settings/expression-delivery'),
   saveExpressionDelivery: (expectedRevision: number, rules: DeliveryRule[]) => deliveryWrite('PUT', '', { expectedRevision, rules }),
   rollbackExpressionDelivery: (expectedRevision: number, revision: number) => deliveryWrite('POST', '/rollback', { expectedRevision, revision }),

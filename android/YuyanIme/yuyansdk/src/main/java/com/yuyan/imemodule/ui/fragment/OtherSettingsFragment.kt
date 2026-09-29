@@ -1,5 +1,9 @@
 package com.yuyan.imemodule.ui.fragment
 
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
+import com.yuyan.imemodule.data.usage.AppUsageTracker
 import android.Manifest
 import android.os.Build
 import android.content.SharedPreferences
@@ -53,6 +57,50 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
     private var exportTimestamp = System.currentTimeMillis()
     private lateinit var exportLauncher: ActivityResultLauncher<String>
     private lateinit var importLauncher: ActivityResultLauncher<String>
+    private var usagePreference: SwitchPreferenceCompat? = null
+    private var pendingUsageConsent = false
+    private val usagePermissionLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if (pendingUsageConsent) {
+            pendingUsageConsent = false
+            enableUsageAfterPermission()
+        }
+        refreshUsagePreference()
+    }
+    private fun refreshUsagePreference() {
+        val ctx = context ?: return
+        usagePreference?.isChecked = AppUsageTracker.enabled(ctx)
+        usagePreference?.summary = "记录所有 App 前台使用时间段，不依赖键盘；后台运行不计入。系统使用权限：" +
+            (if (AppUsageTracker.hasPermission(ctx)) "已授予" else "未授予，开启时需授权") +
+            "。从开启后记录，离线保存、双端补传；只统计已结束段，系统省电可能延迟。受个人数据同步总开关控制。"
+    }
+    private fun enableUsageAfterPermission() {
+        val ctx = context ?: return
+        if (AppUsageTracker.setEnabled(ctx, true)) {
+            AppUsageTracker.start(ctx)
+            Toast.makeText(ctx, "应用使用记录已开启，从现在开始记录", Toast.LENGTH_LONG).show()
+        } else Toast.makeText(ctx, "需先开启个人数据同步并授予使用情况访问权限，当前未开启", Toast.LENGTH_LONG).show()
+        refreshUsagePreference()
+    }
+    private fun requestUsageRecording() {
+        val ctx = requireContext()
+        if (!CollectionConsent.enabled(ctx)) {
+            Toast.makeText(ctx, "请先开启个人数据同步", Toast.LENGTH_LONG).show()
+            return
+        }
+        AlertDialog.Builder(ctx).setTitle("开启应用使用记录？")
+            .setMessage("将记录这部手机所有 App 的名称、包名、前台开始和结束时间，不读取页面内容。手机本地持久保存，并补传到当前线上后台和符合连接条件的电脑后台。\n\n只从本次开启后开始记录，不导入此前历史。后台运行不计时；分屏按最后恢复的应用单一归属。系统缺失记录将标为断档，不推算连续使用。可随时关闭，待传记录保留并暂停发送。")
+            .setPositiveButton("同意并开启") { _, _ ->
+                if (AppUsageTracker.hasPermission(ctx)) enableUsageAfterPermission()
+                else {
+                    pendingUsageConsent = true
+                    try { usagePermissionLauncher.launch(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS, Uri.parse("package:${ctx.packageName}"))) }
+                    catch (_: android.content.ActivityNotFoundException) {
+                        try { usagePermissionLauncher.launch(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)) }
+                        catch (_: android.content.ActivityNotFoundException) { pendingUsageConsent = false; Toast.makeText(ctx, "请在系统设置中找到使用情况访问权限", Toast.LENGTH_LONG).show() }
+                    }
+                }
+            }.setNegativeButton("取消", null).show()
+    }
     private var balancedPreference: SwitchPreferenceCompat? = null
     private val balancedStateListener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, key ->
         if (key == BalancedLocationService.KEY) {
@@ -71,6 +119,7 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
     override fun onResume() {
         super.onResume()
         balancedPreference?.isChecked = BalancedLocationService.isRunning
+        refreshUsagePreference()
     }
 
     private fun requestBalancedNotificationPermission() {
@@ -174,6 +223,39 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
                 if (value == true) CollectionConsentDialog.show(ctx) { isChecked = true }
                 else { DataCollector.setCollectionEnabled(ctx, false); isChecked = false }
                 false
+            }
+        })
+        screen.addPreference(SwitchPreferenceCompat(ctx).apply {
+            key = AppUsageTracker.KEY
+            isPersistent = false
+            title = "应用使用记录"
+            usagePreference = this
+            setOnPreferenceChangeListener { _, value ->
+                if (value == true) requestUsageRecording()
+                else { AppUsageTracker.setEnabled(ctx, false); refreshUsagePreference() }
+                false
+            }
+        })
+        refreshUsagePreference()
+        screen.addPreference(Preference(ctx).apply {
+            title = "立即同步应用使用记录"
+            summary = "查询新的系统记录并尝试补传；尚未退出的应用段不会提前计入后台"
+            setOnPreferenceClickListener {
+                if (!AppUsageTracker.enabled(ctx) || !AppUsageTracker.hasPermission(ctx)) {
+                    Toast.makeText(ctx, "请先开启应用使用记录并授予权限", Toast.LENGTH_LONG).show()
+                } else {
+                    isEnabled = false
+                    lifecycleScope.launch {
+                        try {
+                            AppUsageTracker.sync(ctx.applicationContext)
+                            Toast.makeText(ctx, "本轮采集与补传尝试结束，请在后台核对最近收到记录时间；失败记录保留待传", Toast.LENGTH_LONG).show()
+                        } catch (e: Exception) {
+                            if (e is kotlinx.coroutines.CancellationException) throw e
+                            Toast.makeText(ctx, "同步暂未完成，记录保留后续重试", Toast.LENGTH_LONG).show()
+                        } finally { isEnabled = true }
+                    }
+                }
+                true
             }
         })
         // 数据采集：服务器地址（key 与 DataCollector/ServerConfig 约定一致）

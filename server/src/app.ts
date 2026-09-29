@@ -1,3 +1,4 @@
+import { createMobileAppUsageRouter, createDashboardAppUsageRouter } from './api/appUsage.js';
 import { createMobileDeliveryRouter, createDashboardDeliveryRouter } from './api/expressionDelivery.js';
 import { createDeviceControlsRouter } from './api/deviceControls.js';
 import { discardDisabledUploads } from './lib/deviceSaving.js';
@@ -95,6 +96,7 @@ export function createApp(pool: pg.Pool, options: CreateAppOptions = {}): expres
   app.use('/api/v1/mobile', requireMobileIdentity, discardDisabledUploads(pool));
   app.use('/api/v1/mobile', createMobileDeliveryRouter(pool));
   app.use('/api/v1/mobile/dictionary', createMobileDictionaryRouter(pool));
+  app.use('/api/v1/mobile', createMobileAppUsageRouter(pool));
   app.use('/api/v1/mobile', createMobileRouter(pool));
   app.use('/api/v1/mobile', createMobileStickerRouter(pool));
   app.use('/api/v1/mobile', createMobilePhraseRouter(pool));
@@ -113,6 +115,7 @@ export function createApp(pool: pg.Pool, options: CreateAppOptions = {}): expres
   app.use('/api/v1/dashboard', createDashboardDeliveryRouter(pool));
   app.use('/api/v1/dashboard/dictionary', createDashboardDictionaryRouter(pool));
   app.use('/api/v1/dashboard', createDeviceControlsRouter(pool));
+  app.use('/api/v1/dashboard', createDashboardAppUsageRouter(pool));
   app.use('/api/v1/dashboard', createDashboardRouter(pool));
   app.use('/api/v1/dashboard', createDashboardStickerRouter(pool));
   app.use('/api/v1/dashboard', createSynthesisLibraryRouter(pool));

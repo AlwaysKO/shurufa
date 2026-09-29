@@ -53,7 +53,7 @@ async function doExport() {
     a.click();
     URL.revokeObjectURL(url);
     const c = data.counts;
-    exportMsg.value = `已导出：${c.events} 条事件、${c.devices} 台设备、${c.sessions} 个会话、${c.phrases} 条词频、${c.completions} 条补全、${c.locations} 条位置`;
+    exportMsg.value = `已导出：${c.events} 条事件、${c.devices} 台设备、${c.sessions} 个会话、${c.phrases} 条词频、${c.completions} 条补全、${c.locations} 条位置、${c.app_usage} 条应用使用段`;
   } catch (e) {
     exportMsg.value = `导出失败：${(e as Error).message}`;
   } finally {
@@ -71,7 +71,7 @@ async function doCleanup() {
     package_name: pkg.value || undefined,
   };
   const timeRange = payload.from || payload.to ? `${payload.from || '不限起始'} ～ ${payload.to || '不限结束'}` : '全部时间';
-  const message = `确定永久清理当前用户的数据吗？\n范围：${payload.scope === 'all' ? '输入事件及会话、位置、统计等关联数据' : '仅输入事件'}\n时间：${timeRange}\n应用：${payload.package_name || '全部应用'}\n\n删除后无法恢复，建议先导出备份。`;
+  const message = `确定永久清理当前用户的数据吗？\n范围：${payload.scope === 'all' ? '输入事件及会话、位置、应用使用、统计等关联数据' : '仅输入事件'}\n时间：${timeRange}\n应用：${payload.package_name || '全部应用'}\n\n删除后无法恢复，建议先导出备份。`;
   if (!(await askConfirmation(message, { title: '确认清理数据', confirmText: '确认清理' }))) return;
   if (!canCleanup.value) return;
   busy.value = true;
@@ -82,6 +82,7 @@ async function doCleanup() {
     const parts = [`已删除 ${d.events ?? 0} 条事件`];
     if (r.scope === 'all') {
       if (d.sessions) parts.push(`${d.sessions} 个会话`);
+      if (d.app_usage) parts.push(`${d.app_usage} 条应用使用段`);
       if (d.locations) parts.push(`${d.locations} 条位置`);
       if (d.phrases) parts.push(`${d.phrases} 条词频统计`);
       if (d.completions) parts.push(`${d.completions} 条补全候选`);
@@ -109,7 +110,7 @@ async function doCleanup() {
 
   <div class="card">
     <h3>导出数据（JSON）</h3>
-    <p class="desc">将设备、事件日志、词频统计、补全模型、位置轨迹全部导出为 JSON 文件，用于备份或迁移。</p>
+    <p class="desc">应用使用清理按北京时间的开始日期选取整段；筛选 App 时不删除无归属断档。将设备、事件日志、词频统计、补全模型、位置轨迹、应用使用段全部导出为 JSON 文件，用于备份或迁移。</p>
     <button class="primary" :disabled="exporting" @click="doExport">{{ exporting ? '导出中…' : '导出全部数据' }}</button>
     <p v-if="exportMsg" class="msg" :class="{ err: exportMsg.startsWith('导出失败') }">{{ exportMsg }}</p>
   </div>
@@ -122,7 +123,7 @@ async function doCleanup() {
       <label>范围</label>
       <div class="radios">
         <label><input v-model="scope" type="radio" value="events" /> 仅事件日志</label>
-        <label><input v-model="scope" type="radio" value="all" /> 全部采集数据（含词频/补全/位置，统计从零重建）</label>
+        <label><input v-model="scope" type="radio" value="all" /> 全部采集数据（含词频/补全/位置/应用使用，统计从零重建）</label>
       </div>
     </div>
 

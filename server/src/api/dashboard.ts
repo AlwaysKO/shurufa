@@ -603,13 +603,14 @@ export function createDashboardRouter(pool: pg.Pool): Router {
    */
   router.get('/export', async (req, res, next) => {
     try {
-      const [devices, sessions, events, phrases, completions, locations] = await Promise.all([
+      const [devices, sessions, events, phrases, completions, locations, appUsage] = await Promise.all([
         pool.query(`SELECT * FROM device WHERE id = $1`, [res.locals.userId]),
         pool.query(`SELECT * FROM input_session WHERE device_id = $1 ORDER BY started_at DESC`, [res.locals.userId]),
         pool.query(`SELECT * FROM input_event WHERE user_id = $1 ORDER BY occurred_at ASC`, [res.locals.userId]),
         pool.query(`SELECT * FROM phrase_stat WHERE user_id = $1`, [res.locals.userId]),
         pool.query(`SELECT * FROM completion_candidate WHERE user_id = $1`, [res.locals.userId]),
         pool.query(`SELECT * FROM location_track WHERE user_id = $1 ORDER BY occurred_at ASC`, [res.locals.userId]),
+        pool.query(`SELECT * FROM app_usage_segment WHERE user_id = $1 ORDER BY start_ms ASC`, [res.locals.userId]),
       ]);
       res.json({
         exported_at: new Date().toISOString(),
@@ -620,6 +621,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
           phrases: phrases.rowCount,
           completions: completions.rowCount,
           locations: locations.rowCount,
+          app_usage: appUsage.rowCount,
         },
         devices: devices.rows,
         sessions: sessions.rows,
@@ -627,6 +629,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
         phrases: phrases.rows,
         completions: completions.rows,
         locations: locations.rows,
+        app_usage: appUsage.rows,
       });
     } catch (err) {
       next(err);
@@ -673,6 +676,14 @@ export function createDashboardRouter(pool: pg.Pool): Router {
         deleted.events = eventsRes.rowCount ?? 0;
 
         if (scope === 'all') {
+          // 应用段按开始时间选取整段删除，不伪造裁切后的原始记录。
+          const uConds = ['user_id = $1'];
+          const uParams: unknown[] = [res.locals.userId];
+          if (body.from) { uParams.push(body.from); uConds.push(`start_ms >= EXTRACT(epoch FROM ($${uParams.length}::date::timestamp AT TIME ZONE 'Asia/Shanghai')) * 1000`); }
+          if (body.to) { uParams.push(body.to); uConds.push(`start_ms < EXTRACT(epoch FROM (($${uParams.length}::date + 1)::timestamp AT TIME ZONE 'Asia/Shanghai')) * 1000`); }
+          if (body.package_name) { uParams.push(body.package_name); uConds.push(`package_name = $${uParams.length}`); }
+          deleted.app_usage = (await client.query(`DELETE FROM app_usage_segment WHERE ${uConds.join(' AND ')}`, uParams)).rowCount ?? 0;
+
           // 会话（无 user_id 列，单用户环境按设备全删；带时间则按开始时间过滤）
           const sConds: string[] = ['device_id = $1'];
           const sParams: unknown[] = [res.locals.userId];

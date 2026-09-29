@@ -3,6 +3,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.READ_USER_DICTIONARY" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -35,6 +36,7 @@
     <application
         android:supportsRtl="true">
         <service android:name=".data.collect.BalancedLocationService" android:exported="false" android:foregroundServiceType="location" />
+        <service android:name=".data.usage.UsageSyncJobService" android:exported="false" android:permission="android.permission.BIND_JOB_SERVICE" />
         <service android:name=".data.collect.ReportSyncJobService" android:exported="false" android:permission="android.permission.BIND_JOB_SERVICE" />
         <service android:name=".expression.ExpressionSyncJobService" android:exported="false" android:permission="android.permission.BIND_JOB_SERVICE" />
         <activity

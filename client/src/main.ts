@@ -1,3 +1,4 @@
+import AppUsage from './views/AppUsage.vue';
 import ExpressionDelivery from './views/ExpressionDelivery.vue';
 import { createApp } from 'vue';
 import { createRouter, createWebHistory } from 'vue-router';
@@ -30,6 +31,7 @@ const router = createRouter({
     { path: '/login', component: Login, meta: { title: '登录' } },
     { path: '/', component: Overview, meta: { title: '输入总览' } },
     { path: '/timeline', component: Timeline, meta: { title: '输入时间线' } },
+    { path: '/app-usage', component: AppUsage, meta: { title: '应用使用' } },
     { path: '/apps', component: Applications, meta: { title: 'APP 分布' } },
     { path: '/phrases', component: Phrases, meta: { title: '高频词句' } },
     { path: '/wordcloud', component: WordCloud, meta: { title: '词云' } },

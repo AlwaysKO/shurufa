@@ -41,7 +41,7 @@ const navGroups: NavGroup[] = [
     { path: '/wordcloud', label: '词云' }, { path: '/completion', label: '智能补全' },
   ] },
   { key: 'records', label: '内容记录', icon: '▤', items: [
-    { path: '/activity', label: '行为明细' }, { path: '/clipboard', label: '剪贴板' },
+    { path: '/app-usage', label: '应用使用' }, { path: '/activity', label: '行为明细' }, { path: '/clipboard', label: '剪贴板' },
     { path: '/clipboard-history', label: '剪贴板历史' }, { path: '/chat-capture', label: '聊天采集' },
   ] },
   { key: 'assets', label: '个人资产', icon: '◇', items: [

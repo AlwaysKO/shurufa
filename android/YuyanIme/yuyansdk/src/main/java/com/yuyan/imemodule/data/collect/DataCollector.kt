@@ -127,6 +127,7 @@ object DataCollector {
         prefs = PreferenceManager.getDefaultSharedPreferences(app)
         currentDeviceId = deviceId(app)
         ServerConfig.init(app)
+        com.yuyan.imemodule.data.usage.AppUsageTracker.start(app)
         if (CollectionConsent.enabled(app)) {
             CompletionSync.init(app)
             PhraseSync.init(app)
