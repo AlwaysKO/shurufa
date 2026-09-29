@@ -14,6 +14,7 @@ import type pg from 'pg';
 import { createMobileDictionaryRouter, createDashboardDictionaryRouter } from './api/personalDictionary.js';
 import { createMobileRouter } from './api/mobile.js';
 import { createDashboardRouter } from './api/dashboard.js';
+import { createStickerImportRouter, createStickerImportAgentRouter } from './api/stickerImport.js';
 import { createStickerMaterialsRouter } from './api/stickerMaterials.js';
 import { createMobileStickerRouter, createDashboardStickerRouter } from './api/stickers.js';
 import { createMobilePhraseRouter, createDashboardPhraseRouter } from './api/userPhrases.js';
@@ -55,6 +56,7 @@ export function createApp(pool: pg.Pool, options: CreateAppOptions = {}): expres
   const relationshipAiProvider = options.relationshipAiProvider ?? new DeepSeekProvider();
   app.use('/api/v1/mobile', cors());
   app.use(uploadTiming);
+  app.use('/api/v1/sticker-import-agent', createStickerImportAgentRouter(pool));
   app.use(express.json({ limit: '10mb' }));
 
   app.get('/health', (_req, res) => {
@@ -120,6 +122,7 @@ export function createApp(pool: pg.Pool, options: CreateAppOptions = {}): expres
   app.use('/api/v1/dashboard', createDashboardRouter(pool));
   app.use('/api/v1/dashboard', createDashboardStickerRouter(pool));
   app.use('/api/v1/dashboard', createStickerMaterialsRouter(pool));
+  app.use('/api/v1/dashboard', createStickerImportRouter(pool));
   app.use('/api/v1/dashboard', createSynthesisLibraryRouter(pool));
   app.use('/api/v1/dashboard', createDashboardPhraseRouter(pool));
   app.use('/api/v1/dashboard/chat', createChatDashboardRouter(pool));

@@ -45,7 +45,7 @@ export function requireMobileIdentity(req: Request, res: Response, next: NextFun
 }
 
 export function requireDashboardIdentity(req: Request, res: Response, next: NextFunction): void {
-  if (/^\/(sticker-materials|sticker-library|sticker-keywords|sticker-groups|stickers|system-stickers)(\/|$)/.test(req.path)) {
+  if (/^\/(sticker-import|sticker-materials|sticker-library|sticker-keywords|sticker-groups|stickers|system-stickers)(\/|$)/.test(req.path)) {
     res.locals.userId = SHARED_STICKER_OWNER;
     next();
     return;
