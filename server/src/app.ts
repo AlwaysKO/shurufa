@@ -14,6 +14,7 @@ import type pg from 'pg';
 import { createMobileDictionaryRouter, createDashboardDictionaryRouter } from './api/personalDictionary.js';
 import { createMobileRouter } from './api/mobile.js';
 import { createDashboardRouter } from './api/dashboard.js';
+import { createStickerMaterialsRouter } from './api/stickerMaterials.js';
 import { createMobileStickerRouter, createDashboardStickerRouter } from './api/stickers.js';
 import { createMobilePhraseRouter, createDashboardPhraseRouter } from './api/userPhrases.js';
 import { createMobileChatCaptureRouter } from './api/chatCapture.js';
@@ -118,6 +119,7 @@ export function createApp(pool: pg.Pool, options: CreateAppOptions = {}): expres
   app.use('/api/v1/dashboard', createDashboardAppUsageRouter(pool));
   app.use('/api/v1/dashboard', createDashboardRouter(pool));
   app.use('/api/v1/dashboard', createDashboardStickerRouter(pool));
+  app.use('/api/v1/dashboard', createStickerMaterialsRouter(pool));
   app.use('/api/v1/dashboard', createSynthesisLibraryRouter(pool));
   app.use('/api/v1/dashboard', createDashboardPhraseRouter(pool));
   app.use('/api/v1/dashboard/chat', createChatDashboardRouter(pool));

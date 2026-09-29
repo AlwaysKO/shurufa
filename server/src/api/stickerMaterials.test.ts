@@ -1,6 +1,8 @@
 import { SHARED_STICKER_OWNER as OWNER } from '../stickers/shared.js';
+import * as bundle from '../stickers/bundle.js';
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, rm, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { newDb, DataType } from 'pg-mem';
@@ -81,4 +83,87 @@ it('原手动上传入口仍拒绝空关键词', async () => {
   });
   expect(res.status).toBe(400);
   expect((await pool.query('SELECT * FROM sticker')).rows).toEqual([]);
+});
+const gif = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7','base64');
+async function upload(name='tiny.gif', hash?:string) { return agent.post('/api/v1/dashboard/sticker-materials').query({filename:name,...(hash?{sha256:hash}:{})}).set('Content-Type','application/octet-stream').send(gif); }
+it('素材导入不依赖手机，保留原图并按内容重复识别，支持筛选分页',async()=>{
+ const first=await upload(); expect(first.status).toBe(201); expect(first.body.material).toMatchObject({keywords:[],assigned:false,format:'gif',width:1,height:1});
+ const duplicate=await upload('renamed.gif'); expect(duplicate.status).toBe(200); expect(duplicate.body.status).toBe('existing'); expect(duplicate.body.material.ids).toEqual(first.body.material.ids);
+ const list=await agent.get('/api/v1/dashboard/sticker-materials').query({state:'unassigned',page_size:1}); expect(list.status).toBe(200); expect(list.body.total).toBe(1); expect(list.body.pageSize).toBe(1);
+ const match=await agent.post('/api/v1/dashboard/sticker-materials/match').send({sha256s:[first.body.material.sha256,'a'.repeat(64)]}); expect(match.body.items.map((i:any)=>i.status)).toEqual(['existing','missing']);
+ expect((await agent.get('/api/v1/dashboard/sticker-materials').query({state:'assigned'})).body.total).toBe(0);
+});
+it('多行旧记录差量修改保留ID、次数与排序，只移除指定组，最后一词可清空',async()=>{
+ const first=await upload(); const sha=first.body.material.sha256,id=first.body.material.ids[0];
+ await pool.query("UPDATE sticker SET keywords='A,B', use_count=19 WHERE id=$1",[id]);
+ await writeFile(join(root,'server/uploads/stickers/copy.gif'),gif);
+ await pool.query("INSERT INTO sticker(user_id,keywords,file_name,format,sha256,use_count) VALUES($1,'B,C','copy.gif','gif',$2,27)",[OWNER,sha]);
+ await pool.query('INSERT INTO sticker_group_settings(user_id,keyword,asset_order) VALUES($1,$2,$3)',[OWNER,'B',JSON.stringify([`personal:${id}`])]);
+ const edit=await agent.patch(`/api/v1/dashboard/sticker-materials/${sha}/keywords`).send({add:['D'],remove:['A']}); expect(edit.status).toBe(200); expect(edit.body.material.keywords).toEqual(['B','D','C']);
+ expect((await pool.query('SELECT id,use_count FROM sticker ORDER BY id')).rows).toEqual([{id,use_count:19},{id:id+1,use_count:27}]);
+ expect((await pool.query('SELECT asset_order FROM sticker_group_settings')).rows[0].asset_order).toEqual([`personal:${id}`]);
+ const cleared=await agent.patch(`/api/v1/dashboard/sticker-materials/${sha}/keywords`).send({add:[],remove:['B','C','D']}); expect(cleared.body.material.keywords).toEqual([]);
+ expect((await request(app).get('/api/v1/mobile/stickers').set('X-Device-Id',A)).body.stickers).toEqual([]);
+ expect((await upload()).body.material.ids).toHaveLength(2);
+});
+it('导入拒绝伪造哈希、路径、类型及无效图，鉴权和跨站保护保持',async()=>{
+ expect((await upload('x.gif','a'.repeat(64))).status).toBe(400);
+ expect((await upload('../x.gif')).status).toBe(400); expect((await upload('x.png')).status).toBe(400);
+ expect((await agent.post('/api/v1/dashboard/sticker-materials').query({filename:'x.gif'}).set('Content-Type','application/octet-stream').send(Buffer.from('bad'))).status).toBe(400);
+ expect((await request(app).get('/api/v1/dashboard/sticker-materials')).status).toBe(401);
+ expect((await agent.post('/api/v1/dashboard/sticker-materials/match').set('Origin','https://evil.test').send({sha256s:[]})).status).toBe(403);
+ expect((await pool.query('SELECT * FROM sticker')).rows).toEqual([]);
+});
+it('拒绝metadata可读但缺少GIF结束符的截断图',async()=>{
+ const res=await agent.post('/api/v1/dashboard/sticker-materials').query({filename:'cut.gif'}).set('Content-Type','application/octet-stream').send(gif.subarray(0,-1));
+ expect(res.status).toBe(400); expect((await pool.query('SELECT * FROM sticker')).rows).toEqual([]);
+});
+it('同组别名只增加规范组；移除规范组同时移除旧别名，已删组不得增加',async()=>{
+ const first=await upload(),sha=first.body.material.sha256,id=first.body.material.ids[0];
+ await pool.query("UPDATE sticker SET keywords='扁你,B' WHERE id=$1",[id]);
+ const edited=await agent.patch(`/api/v1/dashboard/sticker-materials/${sha}/keywords`).send({add:['过来打我啊'],remove:[]}); expect(edited.status).toBe(200); expect(edited.body.material.keywords).toEqual(['扁你','B']);
+ const removed=await agent.patch(`/api/v1/dashboard/sticker-materials/${sha}/keywords`).send({add:[],remove:['打闹']}); expect(removed.body.material.keywords).toEqual(['B']);
+ await pool.query("INSERT INTO sticker_group_deletion(keyword,revision) VALUES('打闹',$1)",[A]);
+ expect((await agent.patch(`/api/v1/dashboard/sticker-materials/${sha}/keywords`).send({add:['扁你'],remove:[]})).status).toBe(409);
+});
+it('归档失败不删除已提交原图，重试按已有素材返回',async()=>{
+ vi.spyOn(bundle,'publishStickerBundle').mockRejectedValueOnce(Error('synthetic archive failure'));
+ const res=await upload(); expect(res.status).toBe(500);
+ const row=(await pool.query('SELECT * FROM sticker')).rows[0]; expect(row).toBeDefined();
+ expect(await readFile(join(root,'server/uploads/stickers',row.file_name))).toEqual(gif);
+ const retry=await upload(); expect(retry.status).toBe(200); expect(retry.body.status).toBe('existing');
+});
+it('全部旧副本缺失的导入返回明确冲突，不新建记录或吞掉旧词',async()=>{
+ const hash=createHash('sha256').update(gif).digest('hex');
+ await pool.query("INSERT INTO sticker(user_id,keywords,file_name,format,sha256) VALUES($1,'旧词','missing.gif','gif',$2)",[OWNER,hash]);
+ const match=await agent.post('/api/v1/dashboard/sticker-materials/match').send({sha256s:[hash]}); expect(match.body.items[0].status).toBe('unavailable');
+ expect((await upload()).status).toBe(409); expect((await pool.query('SELECT keywords FROM sticker')).rows).toEqual([{keywords:'旧词'}]);
+});
+it('非法分页、非法SHA、超量匹配、超限文件和空词修改均拒绝',async()=>{
+ for(const query of [{page:0},{page_size:101},{state:'bad'}]) expect((await agent.get('/api/v1/dashboard/sticker-materials').query(query)).status).toBe(400);
+ for(const sha256s of [[' '],Array(501).fill('a'.repeat(64))]) expect((await agent.post('/api/v1/dashboard/sticker-materials/match').send({sha256s})).status).toBe(400);
+ expect((await agent.post('/api/v1/dashboard/sticker-materials').query({filename:'large.gif'}).set('Content-Type','application/octet-stream').send(Buffer.alloc(10*1024*1024+1))).status).toBe(413);
+ const first=await upload();
+ expect((await agent.patch(`/api/v1/dashboard/sticker-materials/${first.body.material.sha256}/keywords`).send({add:[' '],remove:[]})).status).toBe(400);
+});
+it('自定义说法解析回既有组，不创建额外组；按关键词查询分页',async()=>{
+ const first=await upload(),sha=first.body.material.sha256;
+ await pool.query('INSERT INTO sticker_group_settings(user_id,keyword,aliases) VALUES($1,$2,$3)',[OWNER,'自定义组',JSON.stringify(['自定义说法'])]);
+ const res=await agent.patch(`/api/v1/dashboard/sticker-materials/${sha}/keywords`).send({add:['自定义说法'],remove:[]}); expect(res.status).toBe(200); expect(res.body.material.keywords).toEqual(['自定义组']);
+ const filtered=await agent.get('/api/v1/dashboard/sticker-materials').query({state:'assigned',q:'自定义',page:2,page_size:1}); expect(filtered.body.total).toBe(1); expect(filtered.body.items).toEqual([]);
+});
+it('最低ID副本缺图时新增关键词只写入原图已验证的确定性记录',async()=>{
+ const hash=createHash('sha256').update(gif).digest('hex');
+ const missing=(await pool.query("INSERT INTO sticker(user_id,keywords,file_name,format,sha256) VALUES($1,'旧关联','missing.gif','gif',$2) RETURNING id",[OWNER,hash])).rows[0].id;
+ await mkdir(join(root,'server/uploads/stickers'),{recursive:true});
+ await writeFile(join(root,'server/uploads/stickers/healthy.gif'),gif);
+ const healthy=(await pool.query("INSERT INTO sticker(user_id,keywords,file_name,format,sha256) VALUES($1,'保留词','healthy.gif','gif',$2) RETURNING id",[OWNER,hash])).rows[0].id;
+ // 本例有意保留缺图旧行；归档会独立拒绝缺图，不影响验证已提交关联的目标行。
+ vi.spyOn(bundle,'publishStickerBundle').mockResolvedValueOnce(undefined);
+ const response=await agent.patch(`/api/v1/dashboard/sticker-materials/${hash}/keywords`).send({add:['新词'],remove:[]});
+ expect(response.status).toBe(200);
+ expect((await pool.query('SELECT id,keywords FROM sticker ORDER BY id')).rows).toEqual([{id:missing,keywords:'旧关联'},{id:healthy,keywords:'保留词,新词'}]);
+ const mobile=await request(app).get('/api/v1/mobile/stickers').query({q:'新词'}).set('X-Device-Id',A);
+ expect(mobile.body.stickers.map((item:any)=>item.id)).toEqual([healthy]);
+ expect(mobile.body.stickers[0].url).toBe('/uploads/stickers/healthy.gif');
 });
