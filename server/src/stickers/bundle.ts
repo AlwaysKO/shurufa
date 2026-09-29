@@ -26,7 +26,7 @@ export async function validateStickerBundle(value: unknown, root: string): Promi
   for (const s of data.stickers) {
     if (!s || typeof s.fileName !== 'string' || !filename.test(s.fileName) || files.has(s.fileName)) throw new Error('图库文件名非法或重复');
     files.add(s.fileName);
-    if (!/^[a-f0-9]{64}$/.test(s.sha256) || typeof s.keywords !== 'string' || !s.keywords.trim() || !['gif','png','jpg','webp'].includes(s.format)
+    if (!/^[a-f0-9]{64}$/.test(s.sha256) || typeof s.keywords !== 'string' || (s.keywords !== '' && !s.keywords.trim()) || !['gif','png','jpg','webp'].includes(s.format)
       || s.fileName.replace(/^.*\./,'').replace('jpeg','jpg') !== s.format
       || [s.width,s.height].some(n => n !== null && (!Number.isInteger(n) || n <= 0))) throw new Error('图库图片元数据非法');
     const directory = await realpath(join(root, 'uploads/stickers'));
@@ -111,13 +111,16 @@ export async function importStickerBundle(pool: pg.Pool, root = process.cwd()): 
     const ids = new Map<string,string>();
     for (const s of data.stickers) {
       const importedKeywords = activeKeywords(s.keywords);
-      if (!importedKeywords.length) continue;
+      // 未分配素材仍须恢复原图；被目标明确删组的有词图片不能复活。
+      if (s.keywords !== '' && !importedKeywords.length) continue;
       const old = previous?.stickers.find(item => item.fileName === s.fileName);
       let row = (await db.query('SELECT id,sha256,keywords,format,width,height FROM sticker WHERE file_name=$1 FOR UPDATE',[s.fileName])).rows[0];
       if (row && row.sha256 && row.sha256 !== s.sha256) throw new Error(`同名图片内容冲突：${s.fileName}`);
       if (!same(old,s)) {
         const keywords = !old && row ? [...new Set([...activeKeywords(row.keywords),...importedKeywords])].join(',') : importedKeywords.join(',');
-        const change = (key: 'keywords'|'format'|'width'|'height') => old ? !same(old[key],s[key]) : key === 'keywords' || row?.[key] == null;
+        // 源端未分配只表示尚未归类，不是清空目标已有归属的指令。
+        const change = (key: 'keywords'|'format'|'width'|'height') => key === 'keywords' && !importedKeywords.length ? false
+          : old ? !same(old[key],s[key]) : key === 'keywords' || row?.[key] == null;
         row = (await db.query(`INSERT INTO sticker(user_id,keywords,file_name,format,width,height,sha256) VALUES($1,$2,$3,$4,$5,$6,$7)
           ON CONFLICT(file_name) DO UPDATE SET keywords=CASE WHEN $8 THEN EXCLUDED.keywords ELSE sticker.keywords END,
           format=CASE WHEN $9 THEN EXCLUDED.format ELSE sticker.format END,

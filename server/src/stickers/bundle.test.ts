@@ -185,3 +185,50 @@ it('首次导入同文件合并关键词，随后只修正尺寸不会覆盖线�
   await importStickerBundle(dest,root);
   expect((await dest.query('SELECT keywords,width FROM sticker')).rows[0]).toEqual({keywords:'后来线上更新',width:2});
 });
+
+it('未分配原图可导出并恢复，空关键词不创建分组且保留原字节与SHA', async () => {
+  const origin = await database();
+  await writeFile(join(root, 'uploads/stickers/unassigned.gif'), gif);
+  await origin.query("INSERT INTO sticker(user_id,keywords,file_name,format,sha256,width,height) VALUES($1,'','unassigned.gif','gif',$2,1,1)", [OWNER, sha]);
+  await exportStickerBundle(origin, root);
+  const manifest = JSON.parse(await readFile(join(root, 'data/sticker-library.json'), 'utf8'));
+  expect(manifest.keywords).toEqual([]);
+  expect(manifest.settings).toEqual([]);
+  expect(manifest.stickers).toEqual([{ fileName: 'unassigned.gif', keywords: '', format: 'gif', width: 1, height: 1, sha256: sha }]);
+  const dest = await database();
+  await importStickerBundle(dest, root);
+  await importStickerBundle(dest, root);
+  expect((await dest.query('SELECT keywords,file_name,sha256 FROM sticker')).rows).toEqual([{ keywords: '', file_name: 'unassigned.gif', sha256: sha }]);
+  expect((await dest.query('SELECT * FROM sticker_keyword')).rows).toEqual([]);
+  expect((await dest.query('SELECT * FROM sticker_group_settings')).rows).toEqual([]);
+  expect(await readFile(join(root, 'uploads/stickers/unassigned.gif'))).toEqual(gif);
+  await exportStickerBundle(dest, root);
+  expect(JSON.parse(await readFile(join(root, 'data/sticker-library.json'), 'utf8'))).toEqual(manifest);
+});
+
+it.each(['首次未分配', '分配后变更为未分配'])('源端%s不清空目标已有关键词、次数和排序，多轮清单仍保留', async mode => {
+  const origin = await source();
+  if (mode === '首次未分配') await origin.query("UPDATE sticker SET keywords=''");
+  await exportStickerBundle(origin, root);
+  const dest = await database();
+  await dest.query("INSERT INTO sticker(user_id,keywords,file_name,format,sha256,use_count) VALUES($1,'线上词,第二词','test.gif','gif',$2,42)", [OWNER, sha]);
+  await dest.query('INSERT INTO sticker_group_settings(user_id,keyword,aliases,asset_order) VALUES($1,$2,$3,$4)', [OWNER, '线上词', JSON.stringify(['线上词']), JSON.stringify(['personal:1'])]);
+  await importStickerBundle(dest, root);
+  expect((await dest.query('SELECT keywords,use_count FROM sticker')).rows[0]).toEqual({
+    keywords: mode === '首次未分配' ? '线上词,第二词' : '线上词,第二词,来砍我', use_count: 42,
+  });
+  // 首次有词导入允许合并；后续用户在线上编辑不可被未分配状态覆盖。
+  await dest.query("UPDATE sticker SET keywords='线上词,第二词'");
+  const expected = (await dest.query('SELECT id,keywords,use_count FROM sticker')).rows;
+  const settings = (await dest.query('SELECT keyword,aliases,asset_order FROM sticker_group_settings ORDER BY keyword')).rows;
+  await origin.query("UPDATE sticker SET keywords='',width=2");
+  await exportStickerBundle(origin, root);
+  await importStickerBundle(dest, root);
+  expect((await dest.query('SELECT id,keywords,use_count FROM sticker')).rows).toEqual(expected);
+  expect((await dest.query('SELECT width FROM sticker')).rows[0].width).toBe(2);
+  await origin.query('UPDATE sticker SET height=3');
+  await exportStickerBundle(origin, root);
+  await importStickerBundle(dest, root);
+  expect((await dest.query('SELECT id,keywords,use_count FROM sticker')).rows).toEqual(expected);
+  expect((await dest.query('SELECT keyword,aliases,asset_order FROM sticker_group_settings ORDER BY keyword')).rows).toEqual(settings);
+});

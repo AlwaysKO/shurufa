@@ -54,7 +54,7 @@ export function createMobileStickerRouter(pool: pg.Pool): Router {
       const result = await pool.query(
         `SELECT id, file_name, format, width, height, use_count
          FROM sticker
-         WHERE ($1 = '' OR keywords ILIKE '%' || $1 || '%')
+         WHERE trim(keywords) <> '' AND ($1 = '' OR keywords ILIKE '%' || $1 || '%')
          ORDER BY use_count DESC, id DESC
          LIMIT $2`,
         [q, limit],
