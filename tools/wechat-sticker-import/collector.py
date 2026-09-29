@@ -18,6 +18,9 @@ import time
 import urllib.request
 import warnings
 
+from deadline_http import (DeadlineHTTPHandler, DeadlineHTTPSHandler,
+                           set_deadline, copy_deadline)
+
 from Crypto.Cipher import AES
 from PIL import Image
 
@@ -256,7 +259,7 @@ class CdnRedirectHandler(urllib.request.HTTPRedirectHandler):
 
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         validate_cdn_url(newurl)
-        return super().redirect_request(req, fp, code, msg, headers, newurl)
+        return copy_deadline(req, super().redirect_request(req, fp, code, msg, headers, newurl))
 
 
 def source_cdn_url(url):
@@ -277,12 +280,14 @@ def source_cdn_url(url):
 def download_original(url, cancel=None):
     url = source_cdn_url(url)
     # Do not inherit arbitrary proxy settings or send cookies/credentials.
-    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), CdnRedirectHandler())
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), CdnRedirectHandler(),
+                                         DeadlineHTTPHandler(), DeadlineHTTPSHandler())
     for attempt in range(2):
         check_cancel(cancel)
         try:
             deadline = time.monotonic() + 45
-            with opener.open(url, timeout=15) as response:
+            request = set_deadline(urllib.request.Request(url), deadline, lambda: check_cancel(cancel))
+            with opener.open(request, timeout=15) as response:
                 validate_cdn_url(response.url)
                 length = response.headers.get('Content-Length')
                 if length is not None and (not length.isdigit() or int(length) > MAX_IMAGE):
