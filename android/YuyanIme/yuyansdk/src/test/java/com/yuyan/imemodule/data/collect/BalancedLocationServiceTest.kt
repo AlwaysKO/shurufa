@@ -137,4 +137,31 @@ class BalancedLocationServiceTest {
         controller.destroy()
     }
 
+    @Test fun `process destruction preserves user choice and null intent resumes sticky service`() {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(app)
+        prefs.edit().putBoolean(CollectionConsent.KEY, true).putBoolean(BalancedLocationService.KEY, true).commit()
+        val first = Robolectric.buildService(BalancedLocationService::class.java).create()
+        try {
+            assertEquals(android.app.Service.START_STICKY, first.get().onStartCommand(Intent(), 0, 1))
+        } finally { first.destroy() }
+        assertTrue("销毁不是用户关闭", prefs.getBoolean(BalancedLocationService.KEY, false))
+        val restored = Robolectric.buildService(BalancedLocationService::class.java).create()
+        try {
+            assertEquals(android.app.Service.START_STICKY, restored.get().onStartCommand(null, 0, 2))
+            assertTrue(BalancedLocationService.isRunning)
+        } finally { restored.destroy() }
+    }
+
+    @Test fun `temporary permission loss pauses without clearing enabled preference`() {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(app)
+        prefs.edit().putBoolean(CollectionConsent.KEY, true).putBoolean(BalancedLocationService.KEY, true).commit()
+        shadowOf(app).denyPermissions(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+        val controller = Robolectric.buildService(BalancedLocationService::class.java).create()
+        try {
+            assertEquals(android.app.Service.START_NOT_STICKY, controller.get().onStartCommand(null, 0, 1))
+            assertFalse(BalancedLocationService.isRunning)
+            assertTrue("缺权限只能暂停", prefs.getBoolean(BalancedLocationService.KEY, false))
+        } finally { controller.destroy() }
+    }
+
 }

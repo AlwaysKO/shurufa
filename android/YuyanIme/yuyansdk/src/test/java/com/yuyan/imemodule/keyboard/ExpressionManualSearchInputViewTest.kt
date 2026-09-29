@@ -138,6 +138,88 @@ class ExpressionManualSearchInputViewTest {
         DecodingInfo.isAssociate = false
     }
 
+    /** 仅替代 JVM 无法加载的 ARM 引擎边界；路由、DecodingInfo 和按键栈仍用生产实现。 */
+    @Implements(value = com.yuyan.inputmethod.core.Kernel::class, isInAndroidSdk = false)
+    class CompositionKernelShadow {
+        private fun stack() = com.yuyan.inputmethod.RimeEngine::class.java.getDeclaredField("keyRecordStack").run {
+            isAccessible = true
+            get(com.yuyan.inputmethod.RimeEngine) as com.yuyan.inputmethod.data.KeyRecordStack
+        }
+        @Implementation fun reset() {
+            stack().clear()
+            com.yuyan.inputmethod.RimeEngine.clearCachedCompositionForSchemaSwitch()
+        }
+        @Implementation fun deleteAction() {
+            stack().pop()
+            com.yuyan.inputmethod.RimeEngine.showComposition = ""
+        }
+    }
+
+    @Test
+    @Config(shadows = [CompositionKernelShadow::class])
+    fun `空候选仍有拼音时刷新不清空输入且退格不删除已上屏正文`() {
+        val inputView = realChatInputView()
+        val sentKeys = mutableListOf<Int>()
+        services.last().hostKeyEventSender = { sentKeys.add(it); true }
+        InputModeSwitcher::class.java.getDeclaredField("mInputMode").apply {
+            isAccessible = true; setInt(InputModeSwitcher, InputModeSwitcher.MODE_T9_CHINESE)
+        }
+        val engine = com.yuyan.inputmethod.RimeEngine
+        val stack = engine::class.java.getDeclaredField("keyRecordStack").run {
+            isAccessible = true; get(engine) as com.yuyan.inputmethod.data.KeyRecordStack
+        }
+        @Suppress("UNCHECKED_CAST")
+        val records = stack::class.java.getDeclaredField("keyRecords").run {
+            isAccessible = true; get(stack) as MutableList<com.yuyan.inputmethod.data.InputKey>
+        }
+        try {
+            stack.clear()
+            records.add(com.yuyan.inputmethod.data.InputKey.T9Key('P'))
+            engine.showCandidates = emptyList(); engine.showComposition = "7"
+            DecodingInfo.candidatesLiveData.value = emptyList(); DecodingInfo.isAssociate = false
+            InputView::class.java.getDeclaredMethod("updateCandidate").apply { isAccessible = true }.invoke(inputView)
+            assertFalse("空候选不等于输入结束", DecodingInfo.isEngineFinish)
+            assertEquals("7", engine.showComposition)
+            inputView.processKeyUp(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL))
+            assertFalse("退格不能发给已有三个字的宿主正文", sentKeys.contains(KeyEvent.KEYCODE_DEL))
+            assertTrue(stack.isEmpty())
+            inputView.processKeyUp(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL))
+            assertTrue("拼音删完后恢复正常正文退格", sentKeys.contains(KeyEvent.KEYCODE_DEL))
+        } finally { stack.clear(); engine.clearCachedCompositionForSchemaSwitch() }
+    }
+
+    @Test
+    @Config(shadows = [CompositionKernelShadow::class])
+    fun `空候选但尚有按键时直接退格必须优先删拼音`() {
+        val inputView = realChatInputView()
+        val sentKeys = mutableListOf<Int>()
+        services.last().hostKeyEventSender = { sentKeys.add(it); true }
+        InputModeSwitcher::class.java.getDeclaredField("mInputMode").apply {
+            isAccessible = true; setInt(InputModeSwitcher, InputModeSwitcher.MODE_T9_CHINESE)
+        }
+        val engine = com.yuyan.inputmethod.RimeEngine
+        val stack = engine::class.java.getDeclaredField("keyRecordStack").run {
+            isAccessible = true; get(engine) as com.yuyan.inputmethod.data.KeyRecordStack
+        }
+        @Suppress("UNCHECKED_CAST")
+        val records = stack::class.java.getDeclaredField("keyRecords").run {
+            isAccessible = true; get(stack) as MutableList<com.yuyan.inputmethod.data.InputKey>
+        }
+        try {
+            stack.clear()
+            records.add(com.yuyan.inputmethod.data.InputKey.T9Key('P'))
+            engine.showCandidates = emptyList(); engine.showComposition = "7"
+            DecodingInfo.candidatesLiveData.value = emptyList(); DecodingInfo.isAssociate = false
+            assertFalse("空候选不等于输入结束", DecodingInfo.isEngineFinish)
+            assertEquals("7", engine.showComposition)
+            inputView.processKeyUp(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL))
+            assertFalse("退格不能发给已有三个字的宿主正文", sentKeys.contains(KeyEvent.KEYCODE_DEL))
+            assertTrue(stack.isEmpty())
+            inputView.processKeyUp(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL))
+            assertTrue("拼音删完后恢复正常正文退格", sentKeys.contains(KeyEvent.KEYCODE_DEL))
+        } finally { stack.clear(); engine.clearCachedCompositionForSchemaSwitch() }
+    }
+
     @Test
     fun `九宫格候选时显示确定清空和上屏联想时恢复换行`() {
         androidx.emoji2.text.EmojiCompat.init(object : androidx.emoji2.text.EmojiCompat.Config(androidx.emoji2.text.EmojiCompat.MetadataRepoLoader { }) {})

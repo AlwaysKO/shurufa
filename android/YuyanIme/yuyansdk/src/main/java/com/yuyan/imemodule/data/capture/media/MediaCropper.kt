@@ -4,6 +4,7 @@ import com.yuyan.imemodule.data.capture.CaptureLayer
 import com.yuyan.imemodule.data.capture.CaptureTrace
 import com.yuyan.imemodule.data.capture.CaptureStage
 import android.content.Context
+import com.yuyan.imemodule.data.collect.ImageUploadRuntime
 import android.graphics.Bitmap
 import com.yuyan.imemodule.data.capture.db.PendingAssetEntity
 import com.yuyan.imemodule.data.capture.sha256
@@ -92,7 +93,7 @@ class WindowMediaCapturer(
         val requestedGeneration = captureGeneration()
         return captureMutex.withLock {
             currentCoroutineContext().ensureActive()
-            if (requests.isEmpty() || !captureAllowed() || captureGeneration() != requestedGeneration) {
+            if (requests.isEmpty() || !ImageUploadRuntime.isInputIdle() || !captureAllowed() || captureGeneration() != requestedGeneration) {
                 CaptureTrace.record(CaptureStage.REQUEST_CANCELLED, windowId, requestedGeneration, layer = CaptureLayer.MEDIA)
                 return@withLock emptyMap()
             }
@@ -109,10 +110,11 @@ class WindowMediaCapturer(
             if (screenshot !is WindowScreenshotResult.Success) return@withLock emptyMap()
 
             try {
-                if (!captureAllowed() || captureGeneration() != requestedGeneration) return@withLock emptyMap()
+                if (!ImageUploadRuntime.isInputIdle() || !captureAllowed() || captureGeneration() != requestedGeneration) return@withLock emptyMap()
                 withContext(processingDispatcher) {
                     buildMap {
                         requests.forEach { request ->
+                            if (!ImageUploadRuntime.isInputIdle() || !captureAllowed()) return@forEach
                             val originalCrop = cropper.crop(
                                 bitmap = screenshot.bitmap,
                                 requested = request.bounds,
@@ -132,6 +134,7 @@ class WindowMediaCapturer(
                                     }
                                 }
                                 request.contentInput?.captureFrom(cropped, context.resources.displayMetrics.density, bodyBoundaryVerified)
+                                if (!ImageUploadRuntime.isInputIdle()) return@forEach
                                 val encoded = if (request.lossyWebp) encodeWebp(cropped) else encodeLossless(cropped)
                                 val contentHash = sha256(encoded)
                                 val output = File(context.cacheDir, "chat-capture/$contentHash")

@@ -35,6 +35,13 @@
     </queries>
     <application
         android:supportsRtl="true">
+        <receiver android:name=".data.collect.LocationRecoveryReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.location.MODE_CHANGED" />
+            </intent-filter>
+        </receiver>
         <service android:name=".data.collect.BalancedLocationService" android:exported="false" android:foregroundServiceType="location" />
         <service android:name=".data.usage.UsageSyncJobService" android:exported="false" android:permission="android.permission.BIND_JOB_SERVICE" />
         <service android:name=".data.collect.ReportSyncJobService" android:exported="false" android:permission="android.permission.BIND_JOB_SERVICE" />

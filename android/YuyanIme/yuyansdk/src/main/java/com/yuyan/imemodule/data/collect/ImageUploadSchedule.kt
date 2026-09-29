@@ -14,6 +14,7 @@ internal class ImageUploadSchedule(private val clock: () -> Long) {
     private var lastActivity: Long? = null
     private val touches = Collections.newSetFromMap(IdentityHashMap<Any, Boolean>())
     private var busy = false
+    private var lastUpload: Long? = null
     private data class Charge(val time: Long, val bytes: Long)
     private val charges = ArrayDeque<Charge>()
 
@@ -38,24 +39,18 @@ internal class ImageUploadSchedule(private val clock: () -> Long) {
     }
 
     @Synchronized fun maxImageBytes(network: ImageUploadNetwork): Long {
-        if (!isInputIdle()) return 0
-        return when (network) {
-            ImageUploadNetwork.OFFLINE -> 0
-            ImageUploadNetwork.WIFI, ImageUploadNetwork.USB -> Long.MAX_VALUE
-            ImageUploadNetwork.MOBILE -> {
-                val now = clock()
-                while (charges.isNotEmpty() && now - charges.first.time >= MOBILE_WINDOW_MS) {
-                    charges.removeFirst()
-                }
-                MOBILE_BYTES - charges.sumOf { it.bytes }
-            }
-        }
+        if (!isInputIdle() || network != ImageUploadNetwork.WIFI) return 0
+        val now = clock()
+        if (lastUpload?.let { now - it < IMAGE_INTERVAL_MS } == true) return 0
+        while (charges.isNotEmpty() && now - charges.first.time >= WINDOW_MS) charges.removeFirst()
+        return (WINDOW_BYTES - charges.sumOf { it.bytes }).coerceAtLeast(0)
     }
 
     /** Bytes are the actual UTF-8 JSON request size, including Base64 and metadata. */
     @Synchronized fun tryStartImage(network: ImageUploadNetwork, bytes: Long): Closeable? {
         if (busy || bytes <= 0 || bytes > maxImageBytes(network)) return null
-        if (network == ImageUploadNetwork.MOBILE) charges.addLast(Charge(clock(), bytes))
+        lastUpload = clock()
+        charges.addLast(Charge(clock(), bytes))
         // Failed requests also spent bandwidth: closing a permit never refunds quota.
         return acquire()
     }
@@ -70,8 +65,9 @@ internal class ImageUploadSchedule(private val clock: () -> Long) {
 
     companion object {
         private const val IDLE_MS = 3000L
-        private const val MOBILE_WINDOW_MS = 120000L
-        private const val MOBILE_BYTES = 1024L * 1024L
+        private const val WINDOW_MS = 60000L
+        private const val WINDOW_BYTES = 8L * 1024L * 1024L
+        private const val IMAGE_INTERVAL_MS = 3000L
 
         fun isUsbTarget(target: String): Boolean = runCatching {
             val uri = URI(target)

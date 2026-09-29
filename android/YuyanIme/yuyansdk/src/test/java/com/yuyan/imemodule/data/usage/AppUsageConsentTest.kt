@@ -110,7 +110,7 @@ class AppUsageConsentTest {
     }
     @Test fun `acknowledgement must contain explicit matching batch count`() {
         assertTrue(AppUsageTracker.acceptsReceipt("{\"ok\":true,\"received\":2}",2))
-        assertTrue(AppUsageTracker.acceptsReceipt("{\"ok\":true,\"discarded\":true,\"received\":2}",2))
+        assertFalse(AppUsageTracker.acceptsReceipt("{\"ok\":true,\"discarded\":true,\"received\":2}",2))
         assertFalse(AppUsageTracker.acceptsReceipt("{\"ok\":true}",2))
         assertFalse(AppUsageTracker.acceptsReceipt("{\"ok\":true,\"received\":1}",2))
         assertFalse(AppUsageTracker.acceptsReceipt("not json",2))

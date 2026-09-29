@@ -12,6 +12,10 @@ internal object LocationPermissions {
         Manifest.permission.ACCESS_COARSE_LOCATION,
     )
 
+    fun hasBackgroundPermission(context: Context): Boolean =
+        hasForegroundPermission(context) && (android.os.Build.VERSION.SDK_INT < 29 ||
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED)
+
     fun hasForegroundPermission(context: Context): Boolean = foregroundRequest().any {
         ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
     }

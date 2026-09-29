@@ -1,6 +1,9 @@
 package com.yuyan.inputmethod
 
 import android.view.KeyEvent
+import android.os.SystemClock
+import android.util.Log
+import com.yuyan.imemodule.BuildConfig
 import com.yuyan.imemodule.application.CustomConstant
 import com.yuyan.imemodule.application.Launcher
 import com.yuyan.imemodule.data.completion.OfflineT9Candidates
@@ -98,18 +101,31 @@ object RimeEngine {
     }
 
     fun onNormalKey(event: KeyEvent) {
+        val started = SystemClock.uptimeMillis()
         t9CommitTracker.clear()
         val keyCode = event.keyCode
         val keyChar = if(keyCode == KeyEvent.KEYCODE_APOSTROPHE) if(isFinish()) '/'.code else '\''.code
             else event.unicodeChar
         if (keyRecordStack.pushKey(event))Rime.processKey(keyChar, event.action)
+        val nativeDone = SystemClock.uptimeMillis()
         updateCandidatesOrCommitText()
+        val finished = SystemClock.uptimeMillis()
+        // 只记录阶段耗时，不记录按键、拼音或候选正文。
+        if (BuildConfig.DEBUG && finished - started >= 32) {
+            Log.d("ImeLatency", "action=input native_ms=${nativeDone - started} candidates_ms=${finished - nativeDone}")
+        }
     }
 
     fun onDeleteKey() {
+        val started = SystemClock.uptimeMillis()
         t9CommitTracker.clear()
         processDelAction()
+        val nativeDone = SystemClock.uptimeMillis()
         updateCandidatesOrCommitText()
+        val finished = SystemClock.uptimeMillis()
+        if (BuildConfig.DEBUG && finished - started >= 32) {
+            Log.d("ImeLatency", "action=delete native_ms=${nativeDone - started} candidates_ms=${finished - nativeDone}")
+        }
     }
 
     /** 只拷贝本次展示列表和已缓存元数据，禁止为诊断重新查询或排序候选。 */

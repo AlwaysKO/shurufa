@@ -29,7 +29,7 @@ class EventDeliveryDrainTest {
         // Two assets exceed the existing 262144-character batch budget.
         repeat(count) { store.enqueueReport(PendingReport("asset-$it", "chat_asset", "{\"file_base64\":\"${"A".repeat(150000)}\"}"), listOf(target, "other")) }
     }
-    private fun ok(server: MockWebServer, count: Int) { repeat(count) { server.enqueue(MockResponse().setBody("{\"ok\":true}")) } }
+    private fun ok(server: MockWebServer, count: Int) { repeat(count) { server.enqueue(MockResponse().setBody("{\"ok\":true,\"received\":1}")) } }
 
     @Test fun `同次唤醒连续补传但保留单批内存上限和另一端待传`() = fixture { store, server, target, sender ->
         seed(store, target, 3); assertEquals(1, store.pendingReports(target).size); ok(server, 4)
@@ -57,7 +57,7 @@ class EventDeliveryDrainTest {
         server.dispatcher = object : okhttp3.mockwebserver.Dispatcher() {
             override fun dispatch(request: okhttp3.mockwebserver.RecordedRequest): MockResponse {
                 if (request.path == "/api/v1/mobile/chat/assets") clock.addAndGet(3000)
-                return MockResponse().setBody("{\"ok\":true}")
+                return MockResponse().setBody("{\"ok\":true,\"received\":1}")
             }
         }
         assertTrue(sender.drain(target, nowMillis = { clock.get() }))

@@ -2,9 +2,28 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { api, currentUserId, appName, type AppUsageData, type AppUsageDayData } from '../api';
 // 输入框与显示统一北京时间，不依赖浏览器所在时区。
-const beijingInput = (ms: number) => new Date(ms + 8 * 3600000).toISOString().slice(0, 16);
+const DAY = 86400000;
+const beijingInput = (ms: number) => new Date(ms + 8 * 3600000).toISOString().slice(0, 10);
 const to = ref(beijingInput(Date.now()));
-const from = ref(beijingInput(Date.now() - 7 * 86400000));
+const from = ref(to.value);
+const presets = [{ key: 'today', label: '今天', days: 1, offset: 0 }, { key: 'yesterday', label: '昨天', days: 1, offset: 1 }, { key: '7days', label: '近7天', days: 7, offset: 0 }, { key: '30days', label: '近30天', days: 30, offset: 0 }];
+const activePreset = computed(() => {
+  const now = Date.now();
+  return presets.find(p => from.value === beijingInput(now - (p.days - 1 + p.offset) * DAY) && to.value === beijingInput(now - p.offset * DAY))?.key ?? '';
+});
+async function selectPreset(key: string) {
+  const preset = presets.find(p => p.key === key);
+  if (!preset) return;
+  const now = Date.now();
+  from.value = beijingInput(now - (preset.days - 1 + preset.offset) * DAY);
+  to.value = beijingInput(now - preset.offset * DAY);
+  await load();
+}
+const dateStart = (value: string) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return NaN;
+  const ms = Date.parse(`${value}T00:00:00+08:00`);
+  return Number.isFinite(ms) && beijingInput(ms) === value ? ms : NaN;
+};
 const packageName = ref('');
 const data = ref<AppUsageData | null>(null);
 const loading = ref(false), error = ref('');
@@ -58,9 +77,9 @@ async function load(page?: number) {
   if (submit) { dayVersion++; timeline.value = null; timelineLoading.value = false; }
   if (!currentUserId.value) { loading.value = false; return; }
   if (submit) {
-    const start = Date.parse(`${from.value}:00+08:00`), end = Date.parse(`${to.value}:00+08:00`);
+    const start = dateStart(from.value), end = dateStart(to.value) + DAY;
     if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start || end - start > 366 * 86400000) {
-      loading.value = false; error.value = '请选择有效的起止时间，范围最多366天。'; return;
+      loading.value = false; error.value = '请选择有效的起止日期，范围最多366天（含结束当天）。'; return;
     }
     submittedQuery = { from: new Date(start).toISOString(), to: new Date(end).toISOString(), package_name: packageName.value.trim() || undefined };
     activePackage = submittedQuery.package_name ?? '';
@@ -82,13 +101,18 @@ const reasons: Record<string, string> = { switch: '切换应用', process_restar
 </script>
 <template>
   <section>
-    <p class="note">全部 App 的前台使用记录，与输入法是否打开无关。仅统计已结束段；后台播放不计时。全部时间为北京时间，时长按查询范围裁剪，断档不计使用。</p>
-    <form class="filters" @submit.prevent="load()">
-      <label>开始 <input v-model="from" type="datetime-local" required /></label>
-      <label>结束 <input v-model="to" type="datetime-local" required /></label>
-      <label>App <input v-model="packageName" placeholder="包名（留空为全部）" /></label>
-      <button type="submit" :disabled="loading">查询 / 刷新</button>
-      <button type="button" @click="packageName = ''; load()">全部 App</button>
+    <p class="note">除妙言输入法自身以外的 App 前台使用记录，与输入法是否打开无关。仅统计已结束段；后台播放不计时。全部时间为北京时间，时长按查询范围裁剪，断档不计使用。</p>
+    <div class="date-presets" role="group" aria-label="快捷日期"><button v-for="preset in presets" :key="preset.key" type="button" :aria-pressed="activePreset === preset.key" :class="{ active: activePreset === preset.key }" @click="selectPreset(preset.key)">{{ preset.label }}</button></div>
+    <form class="usage-filters" @submit.prevent="load()">
+      <fieldset><legend>开始日期 <span>北京时间</span></legend><div class="date-time">
+        <input v-model="from" aria-label="开始日期" type="date" required />
+      </div></fieldset>
+      <fieldset><legend>结束日期 <span>北京时间</span></legend><div class="date-time">
+        <input v-model="to" aria-label="结束日期" type="date" required />
+      </div></fieldset>
+      <label class="app-filter">应用包名<input v-model="packageName" placeholder="留空查询全部 App" /></label>
+      <div class="filter-actions"><button class="query-button" type="submit" :disabled="loading">{{ loading ? '查询中…' : '查询 / 刷新' }}</button>
+      <button type="button" @click="packageName = ''; load()">全部 App</button></div>
     </form>
     <p v-if="error" role="alert" class="empty">{{ error }}</p>
     <p v-else-if="loading" class="empty">加载中…</p>
@@ -143,13 +167,25 @@ const reasons: Record<string, string> = { switch: '切换应用', process_restar
             <td>{{ r.kind === 'gap' ? '⚠ 数据断档' : appName(r.package_name!, r.app_name) }}<small v-if="r.package_name">{{ r.package_name }}</small></td>
             <td>{{ time(r.start_ms) }}</td><td>{{ time(r.end_ms) }}</td><td>{{ duration(r.duration_ms) }}</td><td>{{ reasons[r.end_reason] ?? r.end_reason }}</td>
           </tr></tbody></table></div>
-        <p v-if="!data.records.length" class="empty">暂无记录。请在手机开启应用使用记录并授予使用情况访问权限，切换 App 后刷新；不会导入授权前历史。</p>
+        <p v-if="!data.records.length" class="empty">暂无记录。请在手机输入法「设置 → 其他」开启「应用使用记录」，按提示授予「使用情况访问权限」。切换 App 后可点「立即同步应用使用记录」，再刷新本页。仅连接 USB 不会开启记录，也不会导入授权前历史。</p>
         <div class="filters"><button :disabled="data.page <= 1" @click="load(data.page - 1)">上一页</button><span>{{ data.page }} / {{ pages }}</span><button :disabled="data.page >= pages" @click="load(data.page + 1)">下一页</button></div>
       </div>
     </template>
   </section>
 </template>
 <style scoped>
-.note,small{color:var(--text-muted,#888);font-size:12px;line-height:1.8}small{display:block}.summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.charts{display:grid;grid-template-columns:1fr 1fr;gap:16px}.rank{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:10px;color:inherit;cursor:pointer;display:grid;grid-template-columns:1fr auto;width:100%;text-align:left;margin:8px 0;gap:4px}.rank meter{grid-column:1/-1;width:100%}.day{display:flex;align-items:center;gap:12px;margin:12px 0}.day meter{flex:1;min-width:50px}.table-scroll{overflow-x:auto}table{width:100%;text-align:left;border-collapse:collapse}td,th{padding:10px;border-bottom:1px solid #8883;white-space:nowrap}.gap{color:#d89530}.filters{flex-wrap:wrap}.filters label{display:flex;align-items:center;gap:6px}input{padding:7px}.summary strong{font-size:22px}@media(max-width:900px){.summary,.charts{grid-template-columns:1fr}.day{flex-wrap:wrap}}
+.note,small{color:var(--text-muted,#888);font-size:12px;line-height:1.8}small{display:block}.summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.charts{display:grid;grid-template-columns:1fr 1fr;gap:16px}.rank{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:10px;color:inherit;cursor:pointer;display:grid;grid-template-columns:1fr auto;width:100%;text-align:left;margin:8px 0;gap:4px}.rank meter{grid-column:1/-1;width:100%}.day{display:flex;align-items:center;gap:12px;margin:12px 0}.day meter{flex:1;min-width:50px}.table-scroll{overflow-x:auto}table{width:100%;text-align:left;border-collapse:collapse}td,th{padding:10px;border-bottom:1px solid #8883;white-space:nowrap}.gap{color:#d89530}.filters{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.filters label{display:flex;align-items:center;gap:6px}input{padding:7px}.summary strong{font-size:22px}@media(max-width:900px){.summary,.charts{grid-template-columns:1fr}.day{flex-wrap:wrap}}
 .timeline-scroll{overflow-x:auto}.timeline-grid{min-width:700px}.axis{display:flex;justify-content:space-between;margin-left:150px;font-size:12px;color:#888;margin-bottom:8px}.timeline-lane{display:grid;grid-template-columns:150px 1fr;align-items:center;margin:7px 0}.lane-label{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:10px}.lane-track{position:relative;height:26px;overflow:hidden;background:repeating-linear-gradient(to right,transparent 0,transparent calc(16.666% - 1px),#8884 calc(16.666% - 1px),#8884 16.666%);border:1px solid #8883}.segment{position:absolute;top:2px;height:20px;min-width:2px;padding:0;border:0;border-radius:2px}.segment:focus{outline:2px solid currentColor;z-index:2}.segment-gap{background-image:repeating-linear-gradient(45deg,transparent,transparent 3px,#fff5 3px,#fff5 6px)}
+
+.usage-filters{display:flex;align-items:flex-end;flex-wrap:wrap;gap:16px;padding:18px;margin:16px 0;background:var(--card-bg,#fff);border:1px solid #e2e8f0;border-radius:12px}
+.usage-filters fieldset{padding:0;margin:0;border:0;min-width:0}
+.usage-filters legend,.app-filter{font-size:13px;font-weight:600;color:var(--text-color,#334155)}
+.usage-filters legend{margin-bottom:8px;padding:0}.usage-filters legend span{font-size:11px;font-weight:400;color:#94a3b8;margin-left:6px}
+.date-time{display:flex;gap:8px}.app-filter{display:flex;flex-direction:column;gap:8px;flex:1;min-width:180px}
+.usage-filters input,.filters input{box-sizing:border-box;min-width:0;height:40px;padding:8px 10px;border:1px solid #dbe2ea;border-radius:8px;background:var(--card-bg,#fff);color:inherit;font:inherit;font-size:14px;outline:none}
+.usage-filters input:focus,.filters input:focus{border-color:#4f7cf0;box-shadow:0 0 0 3px #4f7cf018}.date-time input[type=date]{width:148px}
+.filter-actions{display:flex;gap:8px}.usage-filters button,.filters button{height:40px;padding:0 14px;border:1px solid #dbe2ea;border-radius:8px;background:var(--card-bg,#fff);color:inherit;cursor:pointer;font:inherit;font-size:13px;white-space:nowrap}
+.usage-filters .query-button{background:#416fe8;border-color:#416fe8;color:#fff}.usage-filters button:disabled,.filters button:disabled{opacity:.5;cursor:default}
+@media(max-width:600px){.usage-filters{padding:14px;gap:14px}.usage-filters fieldset,.app-filter,.filter-actions{width:100%;min-width:0}.date-time,.filter-actions{flex-wrap:wrap}.date-time input[type=date]{width:100%;flex:1 1 130px}.filter-actions button{flex:1;min-width:0;padding:0 8px}}
+.date-presets{display:flex;gap:6px;flex-wrap:wrap;margin-top:16px}.date-presets button{padding:9px 18px;border:1px solid #dbe2ea;border-radius:8px;background:var(--card-bg,#fff);color:inherit;cursor:pointer;font:inherit;font-size:14px}.date-presets button.active{background:#416fe8;border-color:#416fe8;color:#fff}.date-presets button:focus-visible{outline:2px solid #416fe8;outline-offset:2px}
 </style>

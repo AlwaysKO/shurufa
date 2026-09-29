@@ -21,7 +21,7 @@ class EventDeliveryImagePolicyTest {
         val store = LocalInputStore(context, name)
         val server = MockWebServer().apply { start() }
         server.dispatcher = object : Dispatcher() {
-            override fun dispatch(request: RecordedRequest) = MockResponse().setBody("{\"ok\":true}")
+            override fun dispatch(request: RecordedRequest) = MockResponse().setBody("{\"ok\":true,\"received\":1}")
         }
         try { block(store, server, server.url("/").toString().trimEnd('/')) }
         finally { server.shutdown(); store.close(); context.deleteDatabase(name) }
@@ -69,7 +69,7 @@ class EventDeliveryImagePolicyTest {
         store.enqueueReport(PendingReport("asset", "chat_asset", "{}"), listOf(target))
         server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest) = if (request.path!!.endsWith("/assets"))
-                MockResponse().setResponseCode(503) else MockResponse().setBody("{\"ok\":true}")
+                MockResponse().setResponseCode(503) else MockResponse().setBody("{\"ok\":true,\"received\":1}")
         }
         var closed = 0
         val sender = EventDelivery(store, OkHttpClient(), "device", "{}", tryStartImage = { _, _ -> Closeable { closed++ } })

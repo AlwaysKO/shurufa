@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import type pg from 'pg';
 import { savingFlags } from '../lib/deviceSaving.js';
+// 精确排除自身发行变体，不能误伤以相似前缀命名的其他应用。保留历史原始记录。
+const OWN_USAGE_PACKAGES = ['com.yuyan.pinyin', 'com.yuyan.pinyin.debug', 'com.yuyan.pinyin.release', 'com.yuyan.pinyin.offline', 'com.yuyan.pinyin.offline.debug', 'com.yuyan.pinyin.offline.release'];
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const text=(v:unknown,max:number)=>typeof v==='string' && v.trim().length>0 && v.length<=max && !v.includes('\0');
 function validRecords(records:unknown): records is Array<Record<string,unknown>> {
@@ -42,10 +44,11 @@ export function createDashboardAppUsageRouter(pool:pg.Pool) {
       GREATEST(start_ms,$2::bigint)::float8 AS clipped_start_ms,LEAST(end_ms,$3::bigint)::float8 AS clipped_end_ms,
       (LEAST(end_ms,$3::bigint)-GREATEST(start_ms,$2::bigint))::float8 AS duration_ms
     FROM app_usage_segment WHERE user_id=$1 AND end_ms>$2 AND start_ms<$3
+     AND (kind='gap' OR package_name <> ALL($5::text[]))
      AND ($4::text IS NULL OR package_name=$4 OR kind='gap')
    ), limited AS (SELECT * FROM selected ORDER BY start_ms,id LIMIT 2000)
    SELECT (SELECT COUNT(*)::int FROM selected) AS total,
-    COALESCE((SELECT json_agg(r ORDER BY start_ms,id) FROM limited r),'[]'::json) AS records`,[res.locals.userId,start,end,pkg]);
+    COALESCE((SELECT json_agg(r ORDER BY start_ms,id) FROM limited r),'[]'::json) AS records`,[res.locals.userId,start,end,pkg,OWN_USAGE_PACKAGES]);
    const {total,records}=result.rows[0];
    res.json({day,start_ms:start,end_ms:end,total,limit,truncated:total>limit,records});
   }catch(error){next(error);}
@@ -64,6 +67,7 @@ export function createDashboardAppUsageRouter(pool:pg.Pool) {
    const result=await pool.query(`WITH clipped AS (
      SELECT *,GREATEST(start_ms,$2::bigint) AS s, LEAST(end_ms,$3::bigint) AS e
      FROM app_usage_segment WHERE user_id=$1 AND end_ms>$2 AND start_ms<$3
+       AND (kind='gap' OR package_name <> ALL($6::text[]))
        AND ($4::text IS NULL OR package_name=$4 OR kind='gap')
     ), usage AS (SELECT * FROM clipped WHERE kind='usage'),
     apps AS (SELECT package_name,MAX(app_name) AS app_name,SUM(e-s)::float8 AS duration_ms,COUNT(*)::int AS count FROM usage GROUP BY package_name),
@@ -83,7 +87,7 @@ export function createDashboardAppUsageRouter(pool:pg.Pool) {
      'apps',COALESCE((SELECT json_agg(a ORDER BY duration_ms DESC,package_name) FROM apps a),'[]'::json),
      'daily',COALESCE((SELECT json_agg(d ORDER BY day) FROM days d),'[]'::json),
      'records',COALESCE((SELECT json_agg(r ORDER BY start_ms DESC,id) FROM records r),'[]'::json),
-     'total',(SELECT COUNT(*)::int FROM clipped)) AS data`,[res.locals.userId,from,to,pkg,(page-1)*50]);
+     'total',(SELECT COUNT(*)::int FROM clipped)) AS data`,[res.locals.userId,from,to,pkg,(page-1)*50,OWN_USAGE_PACKAGES]);
    const data=result.rows[0].data;
    if(data.overview.last_received_at) data.overview.last_received_at=new Date(data.overview.last_received_at).toISOString();
    res.json({...data,page,page_size:50});

@@ -3,8 +3,11 @@ package com.yuyan.imemodule.data.completion
 import com.yuyan.inputmethod.util.T9Spelling
 import android.content.Context
 import android.util.Log
-import android.os.Handler
-import android.os.Looper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import com.yuyan.imemodule.data.collect.PendingChoice
 import com.yuyan.imemodule.data.collect.LocalInputStore
 import com.yuyan.imemodule.data.collect.CollectionConsent
@@ -14,6 +17,7 @@ import com.yuyan.imemodule.data.emojicon.YuyanEmojiCompat
 import java.util.zip.GZIPInputStream
 
 internal object OfflineT9Candidates {
+    private val learningScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var appContext: Context? = null
     @Volatile private var lexicon: T9Lexicon? = null
     @Volatile private var domains: T9Lexicon? = null
@@ -355,15 +359,18 @@ internal object OfflineT9Candidates {
 
     private fun scheduleLearningSettlement() {
         val current = store ?: return
+        val context = appContext ?: return
+        // 不在主线程结算，也不持有候选 helper 的监视器等待其他写者。
         // 捕获实例避免旧会话定时器触碰重建后的数据库；事务负责重复调用幂等。
-        Handler(Looper.getMainLooper()).postDelayed({
+        learningScope.launch {
+            delay(CorrectionLearningTracker.REWARD_WINDOW_MS + 1)
             if (store === current) {
                 try {
-                    current.settleLearning()
+                    LocalInputStore(context, current.databaseName).use { it.settleLearning() }
                     if (appContext?.let { CollectionConsent.enabled(it) } == true) DataCollector.requestSync()
                 } catch (error: Exception) { Log.w("OfflineT9", "临时学习结算失败，下次重试", error) }
             }
-        }, CorrectionLearningTracker.REWARD_WINDOW_MS + 1)
+        }
     }
 
     @JvmOverloads fun learn(code: String, text: String, pinyin: String = "") {

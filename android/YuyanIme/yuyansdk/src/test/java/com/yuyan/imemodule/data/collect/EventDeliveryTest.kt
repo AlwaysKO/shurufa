@@ -29,8 +29,8 @@ class EventDeliveryTest {
             val e = MobileEvent("id-1", "device-1", "commit", text = "候选词", inputCode = "46898262", occurredAt = "2026-09-07T00:00:00Z")
             store.enqueue(e, listOf(a, b))
             val delivery = EventDelivery(store, OkHttpClient(), "device-1", "{\"id\":\"device-1\"}")
-            local.enqueue(MockResponse().setBody("{\"ok\":true}"))
-            local.enqueue(MockResponse().setBody("{\"ok\":true}"))
+            local.enqueue(MockResponse().setBody("{\"ok\":true,\"received\":1}"))
+            local.enqueue(MockResponse().setBody("{\"ok\":true,\"received\":1}"))
             remote.enqueue(MockResponse().setResponseCode(503))
             assertTrue(delivery.flush(a))
             assertFalse(delivery.flush(b))
@@ -39,8 +39,8 @@ class EventDeliveryTest {
             assertEquals("device-1", request.getHeader("X-Device-Id"))
             assertTrue(request.body.readUtf8().contains("46898262"))
             assertEquals(listOf(e), store.pending(b))
-            remote.enqueue(MockResponse().setBody("{\"ok\":true}"))
-            remote.enqueue(MockResponse().setBody("{\"ok\":true}"))
+            remote.enqueue(MockResponse().setBody("{\"ok\":true,\"received\":1}"))
+            remote.enqueue(MockResponse().setBody("{\"ok\":true,\"received\":1}"))
             assertTrue(delivery.flush(b))
             assertTrue(store.targets().isEmpty())
             assertEquals(2, local.requestCount)
@@ -59,8 +59,8 @@ class EventDeliveryTest {
             val event = MobileEvent("id-1", "device-1", "commit", occurredAt = "2026-09-07T00:00:00Z")
             store.enqueue(event, listOf(target))
             val delivery = EventDelivery(store, OkHttpClient(), "device-1", "{\"id\":\"device-1\"}")
-            server.enqueue(MockResponse().setBody("{\"ok\":true}"))
-            server.enqueue(MockResponse().setBody("{\"proxy\":{\"ok\":true},\"error\":\"wrong upstream\"}"))
+            server.enqueue(MockResponse().setBody("{\"ok\":true,\"received\":1}"))
+            server.enqueue(MockResponse().setBody("{\"proxy\":{\"ok\":true,\"received\":1},\"error\":\"wrong upstream\"}"))
             assertFalse(delivery.flush(target))
             assertEquals(listOf(event), store.pending(target))
         } finally { server.shutdown(); store.close(); context.deleteDatabase(name) }
@@ -83,8 +83,21 @@ class EventDeliveryTest {
             }
             events.forEach { store.enqueue(it, listOf(a, b)) }
             val delivery = EventDelivery(store, OkHttpClient(), "device-1", "{\"id\":\"device-1\"}")
-            local.enqueue(MockResponse().setBody("{\"ok\":true}"))
-            local.enqueue(MockResponse().setBody("{\"ok\":true}"))
+            var failRemote=true
+            fun dispatcher(remoteSide:Boolean)=object:okhttp3.mockwebserver.Dispatcher(){
+                override fun dispatch(request:okhttp3.mockwebserver.RecordedRequest):MockResponse {
+                    if(request.path=="/api/v1/mobile/events/batch") {
+                        if(remoteSide && failRemote) return MockResponse().setResponseCode(503)
+                        val count=Json.decodeFromString(EventBatch.serializer(),request.body.clone().readUtf8()).events.size
+                        return MockResponse().setBody("{\"ok\":true,\"received\":$count}")
+                    }
+                    return MockResponse().setBody("{\"ok\":true}")
+                }
+            }
+            local.dispatcher=dispatcher(false);remote.dispatcher=dispatcher(true)
+
+
+
             assertTrue(delivery.flush(a))
             assertEquals("/api/v1/mobile/device", local.takeRequest().path)
             val request = local.takeRequest()
@@ -97,7 +110,7 @@ class EventDeliveryTest {
             assertEquals(events, store.pending(b))
             val uploaded = first.toMutableList()
             while (store.pending(a).isNotEmpty()) {
-                local.enqueue(MockResponse().setBody("{\"ok\":true}"))
+
                 assertTrue(delivery.flush(a))
                 val next = local.takeRequest()
                 assertTrue(next.bodySize <= 1024 * 1024)
@@ -105,13 +118,14 @@ class EventDeliveryTest {
             }
             assertEquals(events, uploaded)
             assertEquals(events, store.pending(b))
-            remote.enqueue(MockResponse().setBody("{\"ok\":true}"))
-            remote.enqueue(MockResponse().setResponseCode(503))
+
+
             assertFalse(delivery.flush(b))
             assertEquals(events, store.pending(b))
             remote.takeRequest(); remote.takeRequest()
-            remote.enqueue(MockResponse().setBody("{\"ok\":true}"))
-            remote.enqueue(MockResponse().setBody("{\"ok\":true}"))
+
+
+            failRemote=false
             assertTrue(delivery.flush(b))
             remote.takeRequest()
             val retry = remote.takeRequest()

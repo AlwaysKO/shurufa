@@ -19,6 +19,19 @@ import org.robolectric.annotation.Config
 @Config(sdk = [30])
 class MediaCropperTest {
     @Test
+    fun typingDefersPhysicalScreenshotWithoutChangingConsent() = runBlocking {
+        var shots=0
+        com.yuyan.imemodule.data.collect.ImageUploadRuntime.noteKeyActivity()
+        try {
+            val capturer=WindowMediaCapturer(ApplicationProvider.getApplicationContext(),ScreenshotSource { _, _ ->
+                shots++;WindowScreenshotResult.Unsupported
+            })
+            assertTrue(capturer.capture(1,IntRect(0,0,100,100),listOf(MediaCaptureRequest(0,IntRect(0,0,50,50)))).isEmpty())
+            assertEquals(0,shots)
+        } finally { android.os.SystemClock.sleep(3001) }
+    }
+
+    @Test
     fun scrollStartingDuringSystemCaptureRejectsAndRecyclesOldFrame() = runBlocking {
         var generation = 1L
         val bitmap = solidBitmap(100, 100, Color.BLUE)

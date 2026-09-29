@@ -69,9 +69,7 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
     private fun refreshUsagePreference() {
         val ctx = context ?: return
         usagePreference?.isChecked = AppUsageTracker.enabled(ctx)
-        usagePreference?.summary = "记录所有 App 前台使用时间段，不依赖键盘；后台运行不计入。系统使用权限：" +
-            (if (AppUsageTracker.hasPermission(ctx)) "已授予" else "未授予，开启时需授权") +
-            "。从开启后记录，离线保存、双端补传；只统计已结束段，系统省电可能延迟。受个人数据同步总开关控制。"
+        usagePreference?.summary = "记录App 前台使用输入习惯，记录输入习惯，方便创建个人输入词库。从开启后记录，系统省电可能延迟。受个人数据同步总开关控制。"
     }
     private fun enableUsageAfterPermission() {
         val ctx = context ?: return
@@ -104,7 +102,7 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
     private var balancedPreference: SwitchPreferenceCompat? = null
     private val balancedStateListener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, key ->
         if (key == BalancedLocationService.KEY) {
-            balancedPreference?.isChecked = prefs.getBoolean(BalancedLocationService.KEY, false)
+            refreshBalancedPreference()
         }
     }
     private val locationPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
@@ -118,7 +116,8 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
 
     override fun onResume() {
         super.onResume()
-        balancedPreference?.isChecked = BalancedLocationService.isRunning
+        BalancedLocationService.restoreFromActivity(requireActivity())
+        refreshBalancedPreference()
         refreshUsagePreference()
     }
 
@@ -131,8 +130,48 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
 
     private fun startBalancedLocation() {
         val enabled = BalancedLocationService.startFromActivity(requireActivity())
-        balancedPreference?.isChecked = enabled
+        refreshBalancedPreference()
+        if (enabled && !PreferenceManager.getDefaultSharedPreferences(requireContext()).getBoolean("location_recovery_guide_shown_v1", false)) {
+            PreferenceManager.getDefaultSharedPreferences(requireContext()).edit().putBoolean("location_recovery_guide_shown_v1", true).apply()
+            showLocationRecoverySetup()
+        }
         if (!enabled) Toast.makeText(requireContext(), "请先开启个人数据同步、位置采集及系统定位，再开启均衡记录", Toast.LENGTH_LONG).show()
+    }
+
+    private val backgroundLocationPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+        BalancedLocationService.restoreFromActivity(requireActivity())
+        refreshBalancedPreference()
+    }
+
+    private fun refreshBalancedPreference() {
+        val ctx = context ?: return
+        val enabled = BalancedLocationService.isEnabled(ctx)
+        balancedPreference?.isChecked = enabled
+        val state = when {
+            !enabled -> "未开启"
+            !CollectionConsent.enabled(ctx) -> "已记住开启选择，个人数据同步关闭，当前暂停"
+            !LocationPermissions.hasForegroundPermission(ctx) -> "已记住开启选择，位置权限不可用，当前暂停"
+            !LocationPermissions.hasBackgroundPermission(ctx) -> "已记住开启选择；后台自动恢复仍需在系统位置权限中选择始终允许"
+            BalancedLocationService.isRunning -> "正在记录；重启或进程结束后会尝试自动恢复"
+            else -> "已记住开启选择；当前等待系统定位或后台运行条件恢复"
+        }
+        balancedPreference?.summary = "$state。位置不变不上报，可随时关闭；保留系统通知，系统限制可能延迟恢复。首次可在下方完成后台恢复设置。"
+    }
+
+    private fun showLocationRecoverySetup() {
+        val ctx = requireContext()
+        AlertDialog.Builder(ctx).setTitle("一次配置，后续自动恢复")
+            .setMessage("开启后会持续记住你的选择，重启或进程被回收不会把开关关闭。\n\n请在系统应用设置中一次完成：\n1. 位置权限选择“始终允许”（支持大致位置）。\n2. 如果手机有应用启动管理，允许自启动、关联启动和后台运行，避免省电限制。\n3. 如有“未使用时移除权限”，可按你的需要关闭。\n\n此说明不会自动反复弹出。不同品牌路径不同，无法由输入法代你授权；强行停止或撤销授权后不能保证自动恢复。")
+            .setPositiveButton("去系统设置") { _, _ ->
+                if (Build.VERSION.SDK_INT == 29 && !LocationPermissions.hasBackgroundPermission(ctx)) {
+                    backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                } else {
+                    try { startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${ctx.packageName}"))) }
+                    catch (_: android.content.ActivityNotFoundException) {
+                        Toast.makeText(ctx, "请手动打开系统设置中的本应用权限与启动管理", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }.setNegativeButton("稍后设置", null).show()
     }
 
     override fun onStart() {
@@ -199,21 +238,6 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
 
     override fun onPreferenceUiCreated(screen: PreferenceScreen) {
         val ctx = requireContext()
-        screen.addPreference(Preference(ctx).apply {
-            title = "抖音识别诊断"
-            summary = "在手机上查看最近一次页面识别状态；不含聊天内容"
-            setOnPreferenceClickListener {
-                val last = DouyinCaptureDiagnostics(ctx).read()
-                val status = last?.let {
-                    "最近状态：${it.status.label}\n记录时间：${java.text.DateFormat.getDateTimeInstance().format(java.util.Date(it.observedAt))}"
-                } ?: "尚无识别记录。请确认个人数据同步和系统无障碍服务已开启，再进入抖音私信聊天页。"
-                val consent = if (CollectionConsent.enabled(ctx)) "开启" else "关闭"
-                AlertDialog.Builder(ctx).setTitle("抖音识别诊断")
-                    .setMessage("个人数据同步：$consent\n$status\n\n此状态仅说明页面识别，不代表截图或上传成功。最近记录可能来自已退出的页面；不保存标题、正文或截图。")
-                    .setPositiveButton(android.R.string.ok, null).show()
-                true
-            }
-        })
         screen.addPreference(SwitchPreferenceCompat(ctx).apply {
             key = CollectionConsent.KEY
             setDefaultValue(false)
@@ -284,8 +308,8 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
             key = BalancedLocationService.KEY
             isPersistent = false
             title = "均衡位置记录"
-            summary = "移动约 30 秒采样，稳定停留约 5 分钟检查；仅位置有效变化时上报，附当前 Wi-Fi、网络和电量，位置不变不重复上报。可在此停止，允许通知时也可在通知栏停止。恢复移动可能延迟约 5 分钟，系统限制或无信号时更久；服务被系统结束后需重新开启。关闭后恢复原有机会定位。"
-            isChecked = BalancedLocationService.isRunning
+            summary = "开启状态会保留；重启和异常结束后在系统允许时恢复。位置不变不上报，保留系统通知；主动关闭才取消自动恢复。"
+            isChecked = BalancedLocationService.isEnabled(ctx)
             balancedPreference = this
             setOnPreferenceChangeListener { _, value ->
                 if (value != true) {
@@ -299,6 +323,12 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
                 false
             }
         })
+        screen.addPreference(Preference(ctx).apply {
+            title = "位置记录后台恢复设置"
+            summary = "首次配置始终定位、自启动与后台运行；以后不重复要求开启记录"
+            setOnPreferenceClickListener { showLocationRecoverySetup(); true }
+        })
+        refreshBalancedPreference()
         screen.addPreference(R.string.export_user_data) {
             lifecycleScope.launch {
                 exportTimestamp = System.currentTimeMillis()

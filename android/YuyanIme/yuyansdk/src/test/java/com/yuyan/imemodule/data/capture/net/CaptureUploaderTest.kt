@@ -138,7 +138,7 @@ class CaptureUploaderTest {
     }
 
     @Test
-    fun uploadsAtMostTwoHundredMessagesPerBatch() = runBlocking {
+    fun uploadsAtMostTwentyMessagesPerBatch() = runBlocking {
         repeat(201) { index -> dao.insertPendingMessage(pendingMessage("batch-$index")) }
         server.enqueue(MockResponse().setResponseCode(200).setBody("""{"ok":true,"inserted":200}"""))
 
@@ -146,8 +146,8 @@ class CaptureUploaderTest {
 
         val request = server.takeRequest()
         val body = Json.parseToJsonElement(request.body.readUtf8()).jsonObject
-        assertEquals(200, body.getValue("messages").jsonArray.size)
-        assertEquals(1, dao.readyMessages(Long.MAX_VALUE, 500).size)
+        assertEquals(20, body.getValue("messages").jsonArray.size)
+        assertEquals(181, dao.readyMessages(Long.MAX_VALUE, 500).size)
     }
 
     private fun uploader() = CaptureUploader(

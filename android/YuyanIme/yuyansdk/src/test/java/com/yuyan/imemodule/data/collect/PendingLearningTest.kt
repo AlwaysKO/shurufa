@@ -12,6 +12,23 @@ import java.util.UUID
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28])
 class PendingLearningTest {
+    @Test fun `候选读取不结算写库但过期临时奖励仍立即可见`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val name = "readonly-${UUID.randomUUID()}.db"
+        var now = 1000L
+        val db = LocalInputStore(context, name, now = { now })
+        try {
+            db.stageLearning("receipt", listOf(PendingChoice("7", "是", "shi")), emptyList())
+            now = 18001L
+            assertEquals(1L, db.learned("7").single().count)
+            db.readableDatabase.rawQuery("SELECT COUNT(*) FROM pending_learning", null).use {
+                it.moveToFirst(); assertEquals("候选查询必须是只读操作", 1, it.getInt(0))
+            }
+            db.settleLearning()
+            assertEquals(1L, db.learned("7").single().count)
+        } finally { db.close(); context.deleteDatabase(name) }
+    }
+
     @Test fun `临时奖励本机可见但未上传取消只影响本笔`() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val name = "pending-${UUID.randomUUID()}.db"

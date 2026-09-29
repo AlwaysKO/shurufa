@@ -39,34 +39,26 @@ class ImageUploadScheduleTest {
         assertTrue(policy.isInputIdle())
     }
 
-    @Test fun `mobile charges actual bytes across rolling window even after failure`() {
-        policy.tryStartImage(mobile, 600000)!!.close()
-        now = 60000
-        policy.tryStartImage(mobile, 400000)!!.close()
-        assertEquals(48576L, policy.maxImageBytes(mobile))
-        now = 119999
-        assertNull(policy.tryStartImage(mobile, 50000))
-        now = 120000
-        assertEquals(648576L, policy.maxImageBytes(mobile))
-        now = 180000
-        assertEquals(1048576L, policy.maxImageBytes(mobile))
+    @Test fun `wifi charges bytes and pauses between images and at rolling window limit`() {
+        policy.tryStartImage(wifi,4*1024*1024)!!.close()
+        assertEquals(0L,policy.maxImageBytes(wifi))
+        now=3000
+        policy.tryStartImage(wifi,4*1024*1024)!!.close()
+        now=6000
+        assertEquals(0L,policy.maxImageBytes(wifi))
+        now=60000
+        assertEquals(4*1024*1024L,policy.maxImageBytes(wifi))
+        now=63000
+        assertEquals(8*1024*1024L,policy.maxImageBytes(wifi))
     }
 
-    @Test fun `oversized image spends no quota and smaller image still proceeds`() {
-        assertNull(policy.tryStartImage(mobile, 1048577))
-        assertEquals(1048576L, policy.maxImageBytes(mobile))
-        policy.tryStartImage(mobile, 100)!!.close()
-        assertEquals(1048476L, policy.maxImageBytes(mobile))
-    }
-
-    @Test fun `wifi and usb bypass quota without resetting mobile budget`() {
-        policy.tryStartImage(mobile, 1048576)!!.close()
-        policy.tryStartImage(wifi, 5000000)!!.close()
-        policy.tryStartImage(ImageUploadNetwork.USB, 5000000)!!.close()
-        assertEquals(0L, policy.maxImageBytes(mobile))
-        assertEquals(Long.MAX_VALUE, policy.maxImageBytes(wifi))
-        assertEquals(0L, policy.maxImageBytes(ImageUploadNetwork.OFFLINE))
-        assertNull(policy.tryStartImage(ImageUploadNetwork.OFFLINE, 1))
+    @Test fun `non wifi always pauses and oversized image does not spend quota`() {
+        for(network in listOf(mobile,ImageUploadNetwork.USB,ImageUploadNetwork.OFFLINE)) {
+            assertEquals(0L,policy.maxImageBytes(network))
+            assertNull(policy.tryStartImage(network,1))
+        }
+        assertNull(policy.tryStartImage(wifi,8*1024*1024+1))
+        assertEquals(8*1024*1024L,policy.maxImageBytes(wifi))
     }
 
     @Test fun `preparation and uploads share one nonblocking permit with idempotent release`() {

@@ -1403,7 +1403,8 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
         return when {
             keyCode == KeyEvent.KEYCODE_DEL -> {
-                if (DecodingInfo.isCandidatesEmpty || DecodingInfo.isAssociate) {
+                // 候选暂时为空（过滤/未解码）不等于没有拼音；已有按键必须先交给引擎退格。
+                if (DecodingInfo.isEngineFinish && (DecodingInfo.isCandidatesEmpty || DecodingInfo.isAssociate)) {
                     service.getTextBeforeCursor(1).takeIf { it.isNotEmpty() }?.let { textBeforeCursors.push(it) }
                     sendKeyEvent(keyCode)
                 } else {
@@ -1545,7 +1546,8 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
 
     private fun updateCandidate() {
         DecodingInfo.updateDecodingCandidate()
-        if (!DecodingInfo.isCandidatesEmpty) {
+        // 保留空候选时尚未完成的组合，否则下一次退格会错误地删除正文。
+        if (!DecodingInfo.isEngineFinish || !DecodingInfo.isCandidatesEmpty) {
             (KeyboardManager.instance.currentContainer as? T9TextContainer)?.updateSymbolListView()
         } else {
             resetToIdleState()

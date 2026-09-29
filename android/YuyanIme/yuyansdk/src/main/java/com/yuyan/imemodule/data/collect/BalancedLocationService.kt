@@ -22,7 +22,7 @@ import androidx.core.location.LocationManagerCompat
 import androidx.preference.PreferenceManager
 import com.yuyan.imemodule.ui.activity.SettingsActivity
 
-/** Only the visible settings Activity starts this non-sticky, user-stoppable session. */
+/** User choice survives process death; lifecycle cleanup is not an explicit opt-out. */
 class BalancedLocationService : Service() {
     private val handler = Handler(Looper.getMainLooper())
     private val policy = BalancedLocationPolicy()
@@ -49,11 +49,14 @@ class BalancedLocationService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == ACTION_STOP || !allowed()) {
+        if (intent?.action == ACTION_STOP) {
+            preferences.edit().putBoolean(KEY, false).commit()
+        }
+        if (!allowed()) {
             finishSession()
             return START_NOT_STICKY
         }
-        if (started) return START_NOT_STICKY
+        if (started) return START_STICKY
         try {
             showNotification()
             started = true
@@ -64,7 +67,7 @@ class BalancedLocationService : Service() {
         } catch (_: Exception) {
             finishSession()
         }
-        return START_NOT_STICKY
+        return if (started) START_STICKY else START_NOT_STICKY
     }
 
     private fun allowed(): Boolean = preferences.getBoolean(KEY, false) &&
@@ -129,7 +132,6 @@ class BalancedLocationService : Service() {
         isRunning = false
         handler.removeCallbacksAndMessages(null)
         removeUpdates()
-        preferences.edit().putBoolean(KEY, false).apply()
         if (owned) DataCollector.setBalancedLocationOwner(false)
         @Suppress("DEPRECATION")
         stopForeground(true)
@@ -180,17 +182,45 @@ class BalancedLocationService : Service() {
             if (!LocationManagerCompat.isLocationEnabled(manager)) return false
             return try {
                 DataCollector.init(activity)
-                prefs.edit().putBoolean(KEY, true).apply()
+                prefs.edit().putBoolean(KEY, true).commit()
                 ContextCompat.startForegroundService(activity, Intent(activity, BalancedLocationService::class.java))
                 true
             } catch (_: Exception) {
-                prefs.edit().putBoolean(KEY, false).apply()
+                false
+            }
+        }
+
+        fun isEnabled(context: Context): Boolean =
+            PreferenceManager.getDefaultSharedPreferences(context).getBoolean(KEY, false)
+
+        /** No permission UI, alarms or forced resurrection. Android may reject a background start. */
+        fun restore(context: Context): Boolean = restoreIfAllowed(context, visibleActivity = false)
+
+        fun restoreFromActivity(activity: Activity): Boolean {
+            if (activity.isFinishing || activity.isDestroyed) return false
+            return restoreIfAllowed(activity, visibleActivity = true)
+        }
+
+        private fun restoreIfAllowed(context: Context, visibleActivity: Boolean): Boolean {
+            val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+            if (!isEnabled(context) || !CollectionConsent.enabled(context) ||
+                !prefs.getBoolean("location_tracking_enable", true) ||
+                !LocationPermissions.hasForegroundPermission(context)) return false
+            val manager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            if (!LocationManagerCompat.isLocationEnabled(manager)) return false
+            if (isRunning) return true
+            if (!visibleActivity && !LocationPermissions.hasBackgroundPermission(context)) return false
+            return try {
+                ContextCompat.startForegroundService(context, Intent(context, BalancedLocationService::class.java))
+                true
+            } catch (_: RuntimeException) {
+                // Keep the user's intent; retry at a later eligible lifecycle entry.
                 false
             }
         }
 
         fun stop(context: Context) {
-            PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean(KEY, false).apply()
+            PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean(KEY, false).commit()
             context.stopService(Intent(context, BalancedLocationService::class.java))
         }
     }

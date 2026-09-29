@@ -6,6 +6,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.intOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.MediaType.Companion.toMediaType
@@ -23,11 +24,14 @@ internal class EventDelivery(
     private val allowed: (String?) -> Boolean = { true },
     private val maxImageBytes: (String) -> Long = { Long.MAX_VALUE },
     private val beginImageRead: () -> java.io.Closeable? = { java.io.Closeable {} },
+    private val chatAllowed: (String) -> Boolean = { true },
+    private val prepareChatCall: ((String, Request) -> okhttp3.Call?)? = null,
+    private val finishChatCall: (okhttp3.Call) -> Unit = {},
     private val tryStartImage: (String, Long) -> java.io.Closeable? = { _, _ -> java.io.Closeable {} },
 ) {
     private val locks = ConcurrentHashMap<String, Any>()
-    private val registered = ConcurrentHashMap.newKeySet<String>()
-    private val reportsFirstNext = ConcurrentHashMap.newKeySet<String>()
+    private val registered = java.util.Collections.newSetFromMap(ConcurrentHashMap<String, Boolean>())
+    private val reportsFirstNext = java.util.Collections.newSetFromMap(ConcurrentHashMap<String, Boolean>())
     private val json = Json { ignoreUnknownKeys = true }
 
     /** 小批次串行补传；空队列、无进展或失败立即结束，避免忙循环与全量加载。 */
@@ -78,7 +82,8 @@ internal class EventDelivery(
             var reportsOk = true
             ReportingTrace.record(ReportingStage.READ_REPORTS, target == onlineTarget())
             val reports = store.pendingReports(target, includeLocation = allowed("location"),
-                maxImageBytes = { maxImageBytes(target) }, beginImageRead = beginImageRead)
+                maxImageBytes = { maxImageBytes(target) },
+                includeChat = (onlineTarget() == null || target == onlineTarget()) && chatAllowed(target), beginImageRead = beginImageRead)
             ReportingTrace.record(ReportingStage.REPORTS_READY, target == onlineTarget(), reports.size)
             for (report in reports) {
                 if (!allowed(report.kind)) continue
@@ -138,8 +143,8 @@ internal class EventDelivery(
                 else {
                     val body = json.encodeToString(EventBatch.serializer(), EventBatch(deviceId, batch))
                     if (!canStartRequest()) return true
-                    if (post(target, "/api/v1/mobile/events/batch", body)) {
-                        store.acknowledge(target, batch.map { it.id })
+                    if (post(target, "/api/v1/mobile/events/batch", body, expectedEvents = batch.size)) {
+                        store.acknowledge(target, batch.map { it.id }, onlineTarget())
                         confirmed(batch.size)
                         ReportingTrace.record(ReportingStage.STORE_ACK, target == onlineTarget(), batch.size)
                     } else eventsOk = false
@@ -170,7 +175,7 @@ internal class EventDelivery(
         return pending.take(count)
     }
 
-    private fun post(target: String, path: String, body: String, reportId: String? = null): Boolean {
+    private fun post(target: String, path: String, body: String, reportId: String? = null, expectedEvents: Int? = null): Boolean {
         val stage = when (path) {
             "/api/v1/mobile/device" -> ReportingStage.POST_DEVICE
             "/api/v1/mobile/events/batch" -> ReportingStage.POST_EVENTS
@@ -181,16 +186,20 @@ internal class EventDelivery(
         ReportingTrace.record(stage, target == onlineTarget())
         val request = Request.Builder().url(target + path).header("X-Device-Id", deviceId)
             .post(body.toRequestBody("application/json; charset=utf-8".toMediaType())).build()
-        return http.newCall(request).execute().use { response ->
+        val chat = path.startsWith("/api/v1/mobile/chat/")
+        val call = if (chat && prepareChatCall != null) prepareChatCall.invoke(target, request) ?: return false else http.newCall(request)
+        try { return call.execute().use { response ->
             ReportingTrace.record(ReportingStage.HTTP_RESULT, target == onlineTarget(), response.code)
             // 避免把反向代理返回的 200 HTML 登录页当成入库成功。
             if (!response.isSuccessful) false else {
                 val result = json.parseToJsonElement(response.body?.string() ?: "")
                 (result.jsonObject["ok"]?.jsonPrimitive?.booleanOrNull == true &&
+                    result.jsonObject["discarded"]?.jsonPrimitive?.booleanOrNull != true &&
+                    (expectedEvents == null || result.jsonObject["received"]?.jsonPrimitive?.intOrNull == expectedEvents) &&
                     (reportId == null || result.jsonObject["id"]?.jsonPrimitive?.content == reportId)).also {
                     ReportingTrace.record(ReportingStage.ACK_RESULT, target == onlineTarget(), flag = it)
                 }
             }
-        }
+        } } finally { if (chat) finishChatCall(call) }
     }
 }

@@ -81,3 +81,21 @@ test('范围查询拒绝自动进位的无效日历日期',async()=>{
  const r=await agent.get(`/api/v1/dashboard/app-usage?user_id=${A}&from=2026-02-30T00:00:00Z&to=2026-03-05T00:00:00Z`);
  expect(r.status).toBe(400);
 });
+
+test('历史妙言自身从汇总明细时间轴排除但不删除，不误伤相似包名',async()=>{
+ const C=randomUUID();
+ const own=['com.yuyan.pinyin','com.yuyan.pinyin.debug','com.yuyan.pinyin.release','com.yuyan.pinyin.offline','com.yuyan.pinyin.offline.debug','com.yuyan.pinyin.offline.release'];
+ await post([...own.map(package_name=>rec({package_name})),rec({package_name:'com.yuyan.pinyin.other'}),rec({kind:'gap',package_name:null,app_name:null})],C);
+ const r=await get('',C);expect(r.status).toBe(200);
+ expect(r.body.overview).toMatchObject({duration_ms:1800000,count:1,gap_count:1});expect(r.body.total).toBe(2);
+ expect(r.body.apps.map((a:any)=>a.package_name)).toEqual(['com.yuyan.pinyin.other']);
+ expect(r.body.daily).toEqual([{day:'2026-09-20',duration_ms:900000},{day:'2026-09-21',duration_ms:900000}]);
+ expect(r.body.records.filter((a:any)=>a.kind==='usage').map((a:any)=>a.package_name)).toEqual(['com.yuyan.pinyin.other']);
+ const url=`/api/v1/dashboard/app-usage/day?user_id=${C}&day=2026-09-21`;
+ expect((await agent.get(url)).body.total).toBe(2);
+ for(const pkg of own){
+  expect((await get('&package_name='+pkg,C)).body.overview).toMatchObject({count:0,duration_ms:0,gap_count:1});
+  expect((await agent.get(url+'&package_name='+pkg)).body.records.map((r:any)=>r.kind)).toEqual(['gap']);
+ }
+ expect(Number((await pool.query('SELECT COUNT(*) AS n FROM app_usage_segment WHERE user_id=$1',[C])).rows[0].n)).toBe(8);
+});

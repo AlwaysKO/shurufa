@@ -28,7 +28,7 @@ class EventDeliveryFairnessTest {
         store.enqueueReport(PendingReport("message", "chat_messages", "{}"), listOf(target))
         server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest) = if (request.path == "/api/v1/mobile/events/batch")
-                MockResponse().setResponseCode(400) else MockResponse().setBody("{\"ok\":true}")
+                MockResponse().setResponseCode(400) else MockResponse().setBody("{\"ok\":true,\"received\":1}")
         }
         assertFalse(EventDelivery(store, OkHttpClient(), "device", "{}").drain(target))
         assertTrue(store.pendingReports(target).isEmpty())
@@ -37,7 +37,7 @@ class EventDeliveryFairnessTest {
     @Test fun `超大单个事件保留但不阻止聊天报告发送`() = fixture { store, server, target ->
         store.enqueue(MobileEvent("e", "device", "commit", text = "字".repeat(400000), occurredAt = "2026-09-22T00:00:00Z"), listOf(target))
         store.enqueueReport(PendingReport("message", "chat_messages", "{}"), listOf(target))
-        repeat(2) { server.enqueue(MockResponse().setBody("{\"ok\":true}")) }
+        repeat(2) { server.enqueue(MockResponse().setBody("{\"ok\":true,\"received\":1}")) }
         assertFalse(EventDelivery(store, OkHttpClient(), "device", "{}").drain(target))
         assertTrue(store.pendingReports(target).isEmpty()); assertEquals(1, store.pending(target).size)
     }
@@ -53,7 +53,7 @@ class EventDeliveryFairnessTest {
         server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 if (request.path == "/api/v1/mobile/chat/messages/batch") clock.addAndGet(3000)
-                return MockResponse().setBody("{\"ok\":true}")
+                return MockResponse().setBody("{\"ok\":true,\"received\":1}")
             }
         }
         assertTrue(EventDelivery(store, OkHttpClient(), "device", "{}").drain(target, nowMillis = { clock.get() }))
@@ -62,7 +62,7 @@ class EventDeliveryFairnessTest {
     @Test fun `二百状态但坏回执不计进展不确认`() = fixture { store, server, target ->
         store.enqueueReport(PendingReport("m", "chat_messages", "{}"), listOf(target))
         for (reply in listOf("{\"ok\":false}", "<html>login</html>")) {
-            server.enqueue(MockResponse().setBody("{\"ok\":true}")); server.enqueue(MockResponse().setBody(reply))
+            server.enqueue(MockResponse().setBody("{\"ok\":true,\"received\":1}")); server.enqueue(MockResponse().setBody(reply))
             var batches = 0
             assertFalse(EventDelivery(store, OkHttpClient(), "device", "{}").drain(target, beforeBatch = { batches++ }))
             assertEquals(1, batches); assertEquals(1, store.pendingReports(target).size)
@@ -70,7 +70,7 @@ class EventDeliveryFairnessTest {
     }
     @Test fun `全部被授权过滤时无进展退出且不删除数据`() = fixture { store, server, target ->
         store.enqueueReport(PendingReport("m", "chat_messages", "{}"), listOf(target))
-        server.enqueue(MockResponse().setBody("{\"ok\":true}")); var batches = 0
+        server.enqueue(MockResponse().setBody("{\"ok\":true,\"received\":1}")); var batches = 0
         val sender = EventDelivery(store, OkHttpClient(), "device", "{}", allowed = { it != "chat_messages" })
         assertTrue(sender.drain(target, beforeBatch = { batches++ }))
         assertEquals(1, batches); assertEquals(1, store.pendingReports(target).size); assertEquals(1, server.requestCount)
@@ -85,7 +85,7 @@ class EventDeliveryFairnessTest {
                     clock.addAndGet(6000)
                     return MockResponse().setResponseCode(503)
                 }
-                return MockResponse().setBody("{\"ok\":true}")
+                return MockResponse().setBody("{\"ok\":true,\"received\":1}")
             }
         }
         val sender = EventDelivery(store, OkHttpClient(), "device", "{}")

@@ -2,41 +2,90 @@ package com.yuyan.imemodule.data.collect
 
 import android.content.Context
 import android.net.ConnectivityManager
+import android.net.Network
 import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.os.SystemClock
+import okhttp3.Call
+import okhttp3.ConnectionPool
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import java.io.Closeable
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
 
-/** Runtime bridge shared by collection preparation and both destination upload paths. */
+/** Screenshot preparation is idle-only; actual chat uploads are online + Wi-Fi only. */
 object ImageUploadRuntime {
     private val schedule = ImageUploadSchedule(SystemClock::elapsedRealtime)
+    private val calls = java.util.Collections.newSetFromMap(ConcurrentHashMap<Call, Boolean>())
+    private val generation = AtomicLong()
+    @Volatile private var observing = false
 
     fun isInputIdle(): Boolean = schedule.isInputIdle()
     fun beginPreparation(): Closeable? = schedule.beginPreparation()
-    fun noteKeyActivity() = schedule.noteKeyActivity()
-    fun noteTouch(action: Int, source: Any) = schedule.noteTouch(action, source)
+    fun noteKeyActivity() { schedule.noteKeyActivity(); cancelUploads() }
+    fun noteTouch(action: Int, source: Any) { schedule.noteTouch(action,source); cancelUploads() }
+
+    private fun cancelUploads() {
+        generation.incrementAndGet()
+        calls.forEach { it.cancel() }
+    }
+
+    private fun wifi(context: Context): Network? = runCatching {
+        val manager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return null
+        val active = manager.activeNetwork ?: return null
+        val caps = manager.getNetworkCapabilities(active) ?: return null
+        if (caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) &&
+            caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+            caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)) active else null
+    }.getOrNull()
+
+    fun canUploadChat(context: Context, target: String): Boolean =
+        target.trimEnd('/') == ServerConfig.baseUrl && CollectionConsent.enabled(context) && isInputIdle() && wifi(context) != null
 
     fun maxImageBytes(context: Context, target: String): Long =
-        schedule.maxImageBytes(network(context, target))
+        if (canUploadChat(context,target)) schedule.maxImageBytes(ImageUploadNetwork.WIFI) else 0L
 
     fun tryStartImage(context: Context, target: String, bytes: Long): Closeable? =
-        schedule.tryStartImage(network(context, target), bytes)
+        if (canUploadChat(context,target)) schedule.tryStartImage(ImageUploadNetwork.WIFI,bytes) else null
 
-    private fun network(context: Context, target: String): ImageUploadNetwork {
-        // The caller still verifies reverse forwarding health; USB needs no Internet.
-        if (ImageUploadSchedule.isUsbTarget(target)) return ImageUploadNetwork.USB
-        return runCatching {
-            val manager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
-                ?: return ImageUploadNetwork.OFFLINE
-            val active = manager.activeNetwork ?: return ImageUploadNetwork.OFFLINE
-            val capabilities = manager.getNetworkCapabilities(active) ?: return ImageUploadNetwork.OFFLINE
-            if (!capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
-                ImageUploadNetwork.OFFLINE
-            } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-                ImageUploadNetwork.WIFI
-            } else {
-                // VPN, Ethernet and unknown transports never silently bypass the mobile budget.
-                ImageUploadNetwork.MOBILE
-            }
-        }.getOrDefault(ImageUploadNetwork.OFFLINE)
+    // Called from an IO worker, never from a key callback. Bound sockets/DNS cannot fall back to cellular.
+    internal fun prepareChatCall(context: Context, target: String, http: OkHttpClient, request: Request): Call? {
+        observe(context)
+        val token=generation.get()
+        if (!canUploadChat(context,target)) return null
+        val network=wifi(context) ?: return null
+        val body=request.body ?: return null
+        val client=http.newBuilder().socketFactory(network.socketFactory)
+            .dns(object : okhttp3.Dns { override fun lookup(hostname: String) = network.getAllByName(hostname).toList() })
+            .connectionPool(ConnectionPool(0,1,TimeUnit.SECONDS))
+            .callTimeout(90,TimeUnit.SECONDS).build()
+        val guarded=GuardedChatBody(body,allowed={
+            generation.get()==token && canUploadChat(context,target) && wifi(context)==network
+        })
+        val call=client.newCall(request.newBuilder().method(request.method,guarded).build())
+        calls.add(call)
+        if (generation.get()!=token || !canUploadChat(context,target) || wifi(context)!=network) {
+            call.cancel();calls.remove(call);return null
+        }
+        return call
+    }
+
+    internal fun finishChatCall(call: Call) { calls.remove(call) }
+
+    @Synchronized private fun observe(context: Context) {
+        if (observing) return
+        val manager=context.applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return
+        try {
+            manager.registerNetworkCallback(NetworkRequest.Builder().addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).build(),
+                object : ConnectivityManager.NetworkCallback() {
+                    override fun onLost(network: Network) { cancelUploads() }
+                    override fun onCapabilitiesChanged(network: Network, capabilities: NetworkCapabilities) {
+                        if (wifi(context)==null) cancelUploads()
+                    }
+                })
+            observing=true
+        } catch (_: Exception) { /* Per-chunk checks and Wi-Fi-bound sockets still fail closed. */ }
     }
 }

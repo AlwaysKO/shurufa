@@ -56,7 +56,8 @@ class ScreenshotWindowReadThreadTest {
         withService { service, drain, captures ->
             request(service)
             drain()
-            assertEquals("首图仍应立即请求", 1, captures())
+            assertEquals("首图仍应立即请求; idle=${com.yuyan.imemodule.data.collect.ImageUploadRuntime.isInputIdle()}; " +
+                org.robolectric.shadows.ShadowLog.getLogsForTag("ChatCaptureTrace").joinToString { it.msg }, 1, captures())
             assertTrue(ServiceShadow.reads.any { it.first == "windows" })
             assertTrue(ServiceShadow.reads.any { it.first == "root" })
             for ((operation, thread) in ServiceShadow.reads) {
@@ -104,6 +105,11 @@ class ScreenshotWindowReadThreadTest {
         }
         Shadows.shadowOf(service).setWindows(listOf(window))
         CollectionConsent.setEnabled(service, true)
+        // This fixture tests Binder threading while idle, not the input cooldown itself.
+        // Robolectric resets its clock while the runtime singleton may survive another test.
+        com.yuyan.imemodule.data.collect.ImageUploadRuntime.noteKeyActivity()
+        org.robolectric.shadows.ShadowSystemClock.advanceBy(java.time.Duration.ofMillis(3001))
+        assertTrue(com.yuyan.imemodule.data.collect.ImageUploadRuntime.isInputIdle())
         try {
             body(service, {
                 withTimeout(5_000) {

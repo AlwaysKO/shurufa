@@ -154,6 +154,7 @@ object DataCollector {
             }
         }
         ensureLocationUpdates(app)
+        BalancedLocationService.restore(app)
     }
 
     /** 设备 UUID：首次生成后持久化 */
@@ -218,6 +219,9 @@ object DataCollector {
             onlineTarget = { ServerConfig.baseUrl },
             allowed = { kind -> CollectionConsent.enabled(context) && (kind != "location" || locationTrackingEnabled) },
             beginImageRead = { ImageUploadRuntime.beginPreparation() },
+            chatAllowed = { target -> ImageUploadRuntime.canUploadChat(context,target) },
+            prepareChatCall = { target, request -> ImageUploadRuntime.prepareChatCall(context,target,http,request) },
+            finishChatCall = ImageUploadRuntime::finishChatCall,
             maxImageBytes = { target -> ImageUploadRuntime.maxImageBytes(context, target) },
             tryStartImage = { target, bytes -> ImageUploadRuntime.tryStartImage(context, target, bytes) },
         )
@@ -369,7 +373,8 @@ object DataCollector {
             }
             if (fields.any { !CollectionConsent.allowsText(body[it]?.jsonPrimitive?.contentOrNull) }) return false
             ServerConfig.init(context)
-            store(context).enqueueReport(PendingReport(UUID.randomUUID().toString(), kind, safePayload), ServerConfig.eventTargets)
+            store(context).enqueueReport(PendingReport(UUID.randomUUID().toString(), kind, safePayload),
+                if (kind == "chat_asset" || kind == "chat_messages") listOf(ServerConfig.baseUrl) else ServerConfig.eventTargets)
             requestSync()
             true
         } catch (_: Exception) { Log.e(TAG, "报告落盘失败，保留原数据重试"); false }

@@ -25,9 +25,12 @@ internal data class CodedLearnedInput(val code: String, val choice: LearnedInput
 
 /** 独立数据库，不迁移或清空既有 Rime 用户库和剪贴板库。 */
 internal class LocalInputStore(context: Context, name: String = "local_input.db", private val now: () -> Long = System::currentTimeMillis) :
-    SQLiteOpenHelper(context.applicationContext, name, null, 10) {
+    SQLiteOpenHelper(context.applicationContext, name, null, 11) {
     private val json = Json { ignoreUnknownKeys = true }
     private val policyKey = context.getDatabasePath(name).absolutePath
+
+    // 上传队列与候选使用独立 helper；WAL 允许按键读取已提交快照，不等后台写事务。
+    init { setWriteAheadLoggingEnabled(true) }
 
     // 采集同步与候选引擎有不同的 helper 实例，共享已提交策略；按键只做内存查找。
     fun blockedCandidateTexts(): Set<String> = candidatePolicies[policyKey].orEmpty()
@@ -50,12 +53,17 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
         createDictionarySyncTables(db)
         createDictionaryAdditionTables(db)
         createDictionaryHabitTables(db)
-        db.execSQL("CREATE TABLE pending_event (id TEXT PRIMARY KEY NOT NULL, payload TEXT NOT NULL)")
+        db.execSQL("CREATE TABLE pending_event (id TEXT PRIMARY KEY NOT NULL, payload TEXT NOT NULL, online_confirmed_at INTEGER)")
         db.execSQL("CREATE TABLE event_target (event_id TEXT NOT NULL, target TEXT NOT NULL, PRIMARY KEY(event_id,target))")
         db.execSQL("CREATE INDEX event_target_url ON event_target(target)")
         db.execSQL("CREATE TABLE learned_input (code TEXT NOT NULL, text TEXT NOT NULL, count INTEGER NOT NULL, last_used INTEGER NOT NULL, weight REAL NOT NULL DEFAULT 0, PRIMARY KEY(code,text))")
     }
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        if (oldVersion < 11) db.execSQL("CREATE TABLE IF NOT EXISTS pending_event (id TEXT PRIMARY KEY NOT NULL, payload TEXT NOT NULL, online_confirmed_at INTEGER)")
+        if (oldVersion < 11) db.execSQL("CREATE TABLE IF NOT EXISTS event_target (event_id TEXT NOT NULL, target TEXT NOT NULL, PRIMARY KEY(event_id,target))")
+        if (oldVersion < 11 && !hasColumn(db, "pending_event", "online_confirmed_at")) {
+            db.execSQL("ALTER TABLE pending_event ADD COLUMN online_confirmed_at INTEGER")
+        }
         if (oldVersion < 10) createPendingLearning(db)
         if(oldVersion < 9) {
             createDictionaryHabitTables(db)
@@ -116,10 +124,13 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
         arrayOf(target, limit.coerceIn(1, 500).toString()),
     ).use { c -> buildList { while (c.moveToNext()) add(json.decodeFromString(MobileEvent.serializer(), c.getString(0))) } }
 
-    @Synchronized fun acknowledge(target: String, ids: List<String>) {
+    @Synchronized fun acknowledge(target: String, ids: List<String>, onlineTarget: String? = null) {
         val db = writableDatabase
         db.beginTransaction()
         try {
+            if (target == onlineTarget) ids.forEach {
+                db.execSQL("UPDATE pending_event SET online_confirmed_at=COALESCE(online_confirmed_at,?) WHERE id=?", arrayOf(now(), it))
+            }
             ids.forEach { id -> db.delete("event_target", "event_id=? AND target=?", arrayOf(id, target)) }
             db.execSQL("DELETE FROM pending_event WHERE NOT EXISTS(SELECT 1 FROM event_target t WHERE t.event_id=pending_event.id)")
             db.setTransactionSuccessful()
@@ -181,14 +192,20 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
     @Synchronized fun pendingReports(
         target: String, limit: Int = 20, includeLocation: Boolean = true,
         maxImageBytes: () -> Long = { Long.MAX_VALUE },
+        includeChat: Boolean = true,
         beginImageRead: () -> java.io.Closeable? = { java.io.Closeable {} },
     ): List<PendingReport> {
-        val budget = maxImageBytes().coerceAtLeast(0)
+        val budget = if (includeChat) maxImageBytes().coerceAtLeast(0) else 0L
         val db = writableDatabase
         // 有界迁移旧队列；暂停期间不读取旧图，未索引依赖保守等待。
         val imagePermit = if (budget > 0) beginImageRead() else null
         return try {
-            ReportImageIndex.indexPending(db, target, imagePermit != null) { id, length -> readReportPayload(id, length) }
+            if (includeChat) ReportImageIndex.indexPending(db, target, imagePermit != null) { id, length -> readReportPayload(id, length) }
+            // Compute this once, not once for every dependent message (quadratic on old queues).
+            val unknownAssets = includeChat && db.rawQuery("""SELECT 1 FROM pending_report a
+                JOIN report_target t ON t.report_id=a.id LEFT JOIN report_image_meta m ON m.report_id=a.id
+                WHERE t.target=? AND a.kind='chat_asset' AND (m.report_id IS NULL OR m.asset_sha256 IS NULL) LIMIT 1""",
+                arrayOf(target)).use { it.moveToFirst() }
             // 无许可必须在LIMIT之前排除图片，不能让前20张图遮蔽普通报告。
             val queryBudget = if (imagePermit != null) budget else 0L
             db.rawQuery(
@@ -196,22 +213,18 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
                FROM pending_report r JOIN report_target t ON t.report_id=r.id
                LEFT JOIN report_image_meta m ON m.report_id=r.id
                WHERE t.target=? AND (?='1' OR r.kind!='location')
+                 AND (?='1' OR r.kind NOT IN ('chat_asset','chat_messages'))
                  AND (r.kind!='chat_asset' OR (m.payload_bytes<=? AND ?>0))
                  AND (r.kind!='chat_messages' OR (m.dependencies_valid=1
                    AND NOT EXISTS (
                      SELECT 1 FROM report_image_dependency d
-                     JOIN report_image_meta a ON a.asset_sha256=d.sha256
-                     JOIN report_target at ON at.report_id=a.report_id
+                     CROSS JOIN report_image_meta a INDEXED BY report_image_hash ON a.asset_sha256=d.sha256
+                     CROSS JOIN report_target at ON at.report_id=a.report_id
                      WHERE d.report_id=r.id AND at.target=t.target)
-                   AND NOT EXISTS (
-                     SELECT 1 FROM pending_report a JOIN report_target at ON at.report_id=a.id
-                     LEFT JOIN report_image_meta am ON am.report_id=a.id
-                     WHERE a.kind='chat_asset' AND at.target=t.target
-                       AND (am.report_id IS NULL OR am.asset_sha256 IS NULL)
-                       AND EXISTS (SELECT 1 FROM report_image_dependency ud WHERE ud.report_id=r.id))))
+                   AND (?='0' OR NOT EXISTS (SELECT 1 FROM report_image_dependency ud WHERE ud.report_id=r.id))))
                ORDER BY t.attempted_at,
                  CASE r.kind WHEN 'chat_messages' THEN 0 WHEN 'chat_asset' THEN 1 ELSE 2 END,r.rowid LIMIT ?""",
-            arrayOf(target, if (includeLocation) "1" else "0", queryBudget.toString(), queryBudget.toString(), limit.coerceIn(1,20).toString()),
+            arrayOf(target, if (includeLocation) "1" else "0", if (includeChat) "1" else "0", queryBudget.toString(), queryBudget.toString(), if (unknownAssets) "1" else "0", limit.coerceIn(1,20).toString()),
         ).use { c -> buildList {
             var characters = 0L
             var imageBytes = 0L
@@ -255,7 +268,7 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
         db.beginTransaction()
         try {
             if (target == onlineTarget) ids.forEach {
-                db.execSQL("UPDATE pending_report SET online_confirmed_at=? WHERE id=?", arrayOf(now(), it))
+                db.execSQL("UPDATE pending_report SET online_confirmed_at=COALESCE(online_confirmed_at,?) WHERE id=?", arrayOf(now(), it))
             }
             ids.forEach { db.delete("report_target","report_id=? AND target=?",arrayOf(it,target)) }
             db.execSQL("DELETE FROM pending_report WHERE NOT EXISTS(SELECT 1 FROM report_target t WHERE t.report_id=pending_report.id)")
@@ -274,12 +287,17 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
                 """DELETE FROM report_target
                    WHERE target!=? AND report_id IN (
                      SELECT id FROM pending_report
-                     WHERE kind IN ('chat_asset','chat_messages')
-                       AND online_confirmed_at IS NOT NULL AND online_confirmed_at<=?
+                     WHERE online_confirmed_at IS NOT NULL AND online_confirmed_at<=?
+                       AND NOT EXISTS (SELECT 1 FROM report_target ot WHERE ot.report_id=pending_report.id AND ot.target=?)
                    )""",
-                arrayOf(onlineTarget, cutoff),
+                arrayOf(onlineTarget, cutoff, onlineTarget),
             )
             db.execSQL("DELETE FROM pending_report WHERE NOT EXISTS(SELECT 1 FROM report_target t WHERE t.report_id=pending_report.id)")
+            db.execSQL("""DELETE FROM event_target WHERE target!=? AND event_id IN (
+                SELECT id FROM pending_event WHERE online_confirmed_at IS NOT NULL AND online_confirmed_at<=?
+                AND NOT EXISTS (SELECT 1 FROM event_target ot WHERE ot.event_id=pending_event.id AND ot.target=?))""",
+                arrayOf(onlineTarget,cutoff,onlineTarget))
+            db.execSQL("DELETE FROM pending_event WHERE NOT EXISTS (SELECT 1 FROM event_target t WHERE t.event_id=pending_event.id)")
             db.setTransactionSuccessful()
         } finally { db.endTransaction() }
     }
@@ -352,17 +370,6 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
         } finally { db.endTransaction() }
     }
 
-    private fun temporaryChoices(): List<CodedLearnedInput> = readableDatabase.rawQuery(
-        "SELECT choices,selected_at FROM pending_learning", null,
-    ).use { c -> buildList {
-        while (c.moveToNext()) {
-            val at = c.getLong(1)
-            json.decodeFromString(ListSerializer(PendingChoice.serializer()), c.getString(0)).forEach {
-                add(CodedLearnedInput(it.code, LearnedInput(it.text, 1, 1.0, at)))
-            }
-        }
-    } }
-
     @Synchronized @JvmOverloads fun learn(code: String, text: String, targets: List<String> = emptyList(), pinyin: String = "") {
         settleLearning()
         learnAt(code, text, targets, pinyin, now())
@@ -408,16 +415,27 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
     }
 
     private fun effectiveChoices(where: String, args: Array<String>): List<CodedLearnedInput> {
-        settleLearning()
+        // 候选读取不得结算写库。正式/临时奖励在同一条 SELECT 中读取，避免后台
+        // 结算恰好夹在两次查询之间而暂时漏算或双算；临时奖励仍立即参与排序。
+        val pending = mutableListOf<CodedLearnedInput>()
         // 同来源跨管理快照/加法通道只选较新一份，再合并不同设备的真实证据。
         val rows=readableDatabase.rawQuery(
-            "SELECT code,text,count,weight,last_used,device_id,version FROM (SELECT code,text,count,weight,last_used,'' AS device_id,0 AS version FROM learned_input UNION ALL SELECT code,text,count,weight,last_used,device_id,version FROM dictionary_remote_choice UNION ALL SELECT code,text,count,weight,last_used,device_id,version FROM dictionary_added_habit) WHERE $where AND text NOT IN (SELECT text FROM dictionary_policy WHERE status!='enabled')", args,
+            "SELECT code,text,count,weight,last_used,device_id,version,NULL AS pending_choices FROM (SELECT code,text,count,weight,last_used,'' AS device_id,0 AS version FROM learned_input UNION ALL SELECT code,text,count,weight,last_used,device_id,version FROM dictionary_remote_choice UNION ALL SELECT code,text,count,weight,last_used,device_id,version FROM dictionary_added_habit) WHERE $where AND text NOT IN (SELECT text FROM dictionary_policy WHERE status!='enabled') UNION ALL SELECT '','',0,0,selected_at,'',0,choices FROM pending_learning", args,
         ).use { c -> buildList {
-            while(c.moveToNext()) add(Triple(c.getString(5),c.getLong(6),CodedLearnedInput(c.getString(0),LearnedInput(c.getString(1),c.getLong(2),c.getDouble(3),c.getLong(4)))))
+            while(c.moveToNext()) {
+                if (c.isNull(7)) {
+                    add(Triple(c.getString(5),c.getLong(6),CodedLearnedInput(c.getString(0),LearnedInput(c.getString(1),c.getLong(2),c.getDouble(3),c.getLong(4)))))
+                } else {
+                    val at = c.getLong(4)
+                    json.decodeFromString(ListSerializer(PendingChoice.serializer()), c.getString(7)).forEach {
+                        pending.add(CodedLearnedInput(it.code, LearnedInput(it.text, 1, 1.0, at)))
+                    }
+                }
+            }
         } }.groupBy { Triple(it.first,it.third.code,it.third.choice.text) }.values.map { values ->
             values.maxWith(compareBy<Triple<String,Long,CodedLearnedInput>> { it.second }.thenBy { it.third.choice.lastUsed }.thenBy { it.third.choice.count }).third
         }
-        val temporary = temporaryChoices().filter { record ->
+        val temporary = pending.filter { record ->
             val matches = if (where == "code=?") record.code == args[0]
                 else record.code.startsWith(args[0].removeSuffix("*")) || record.code in args.drop(1)
             matches && readableDatabase.rawQuery("SELECT 1 FROM dictionary_policy WHERE text=? AND status!='enabled'", arrayOf(record.choice.text)).use { !it.moveToFirst() }

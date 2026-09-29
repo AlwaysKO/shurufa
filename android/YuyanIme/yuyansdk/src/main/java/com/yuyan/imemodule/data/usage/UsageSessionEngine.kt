@@ -16,6 +16,11 @@ internal data class UsageReduction(val state: UsageState, val records: List<Usag
 
 /** Pure reducer. A cursor is an exclusive query end, never a fabricated session end. */
 internal object UsageSessionEngine {
+    // 保留自身前台事件作为切换边界，只禁止生成自身使用段，不能延长前一个 App 的时长。
+    private val ownPackages = setOf(
+        "com.yuyan.pinyin", "com.yuyan.pinyin.debug", "com.yuyan.pinyin.release",
+        "com.yuyan.pinyin.offline", "com.yuyan.pinyin.offline.debug", "com.yuyan.pinyin.offline.release",
+    )
     private const val ACTIVITY_TRANSITION_MS = 1000L
     private fun record(kind: String, pkg: String?, start: Long, end: Long, reason: String) = UsageRecord(
         UUID.nameUUIDFromBytes("$kind|$pkg|$start|$end|$reason".toByteArray(Charsets.UTF_8)).toString(),
@@ -36,7 +41,7 @@ internal object UsageSessionEngine {
         fun close(time: Long, reason: String) {
             active?.let { a ->
                 val end=a.pausedAt?.coerceAtMost(time) ?: time
-                if (end>a.start) records.add(record("usage",a.packageName,a.start,end,reason))
+                if (end>a.start && a.packageName !in ownPackages) records.add(record("usage",a.packageName,a.start,end,reason))
             }
             active=null
         }

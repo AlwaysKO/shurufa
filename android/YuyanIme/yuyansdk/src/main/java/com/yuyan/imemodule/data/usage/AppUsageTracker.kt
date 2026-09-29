@@ -147,7 +147,7 @@ object AppUsageTracker {
             store.save(result.copy(state=result.state.copy(boot=boot,elapsed=elapsed,observedAt=now),records=records.map { r ->
                 r.copy(appName=r.packageName?.let { names.resolve(context,it) })
             }),targets)
-            store.prune(now-7*DAY)
+            store.prune(now-7*DAY,ServerConfig.baseUrl)
         }
     }
 
@@ -171,7 +171,7 @@ object AppUsageTracker {
     }
 
     internal fun acceptsReceipt(body: String, received: Int): Boolean = try {
-        val j=JSONObject(body); j.optBoolean("ok") && j.optInt("received",-1)==received
+        val j=JSONObject(body); j.optBoolean("ok") && !j.optBoolean("discarded") && j.optInt("received",-1)==received
     } catch (_: Exception) { false }
 
     suspend fun sync(context: Context) = withContext(Dispatchers.IO) {
@@ -191,7 +191,7 @@ object AppUsageTracker {
                     if(batch.isEmpty()) continue
                     try {
                         if (uploadUsageBatch(http,target,DataCollector.deviceId(context),batch,uploads)) {
-                            store.acknowledge(target,batch.map { it.id })
+                            store.acknowledge(target,batch.map { it.id },ServerConfig.baseUrl)
                         }
                     } catch (e: Exception) {
                         if(e is CancellationException) throw e

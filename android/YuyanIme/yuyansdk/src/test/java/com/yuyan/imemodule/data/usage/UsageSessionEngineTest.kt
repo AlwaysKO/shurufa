@@ -4,6 +4,17 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class UsageSessionEngineTest {
+    @Test fun `own app variants are excluded without extending previous app time`() {
+        for (pkg in listOf("com.yuyan.pinyin", "com.yuyan.pinyin.debug", "com.yuyan.pinyin.release", "com.yuyan.pinyin.offline", "com.yuyan.pinyin.offline.debug", "com.yuyan.pinyin.offline.release")) {
+            val r=UsageSessionEngine.reduce(UsageState(cursor=100), listOf(event(110,"resume","a"),event(200,"resume",pkg),event(400,"resume","b"),event(500,"lock")),600)
+            assertEquals(listOf("a","b"),r.records.map { it.packageName })
+            assertEquals(listOf(90L,100L),r.records.map { it.endMs-it.startMs })
+        }
+    }
+    @Test fun `restored own session emits no usage while similarly named third party stays`() {
+        val r=UsageSessionEngine.reduce(UsageState(cursor=200,active=UsageActive("com.yuyan.pinyin.offline.debug","one",100)),listOf(event(300,"resume","com.yuyan.pinyin.other"),event(400,"lock")),500)
+        assertEquals(listOf("com.yuyan.pinyin.other"),r.records.map { it.packageName })
+    }
     private fun event(time: Long, type: String, pkg: String = "a", token: String = "one") = UsageEvent(time, type, pkg, token)
     @Test fun `switch and lock close intervals without background time`() {
         val r = UsageSessionEngine.reduce(UsageState(cursor = 100), listOf(event(110,"resume"), event(200,"resume","b"), event(250,"lock")), 300)

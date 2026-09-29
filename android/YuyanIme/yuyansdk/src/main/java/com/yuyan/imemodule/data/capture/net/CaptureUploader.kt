@@ -121,8 +121,8 @@ class CaptureUploader(
     }
 
     companion object {
-        private const val MAX_ASSET_BATCH = 200
-        private const val MAX_MESSAGE_BATCH = 200
+        private const val MAX_ASSET_BATCH = 2
+        private const val MAX_MESSAGE_BATCH = 20
         private const val IDLE_DELAY_MILLIS = 3_000L
         private const val ACTIVE_DELAY_MILLIS = 1_000L
         private val startLock = Any()

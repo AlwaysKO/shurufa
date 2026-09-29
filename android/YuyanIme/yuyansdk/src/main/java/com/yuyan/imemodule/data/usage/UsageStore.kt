@@ -16,14 +16,16 @@ internal fun usageRecordFromJson(j: JSONObject) = UsageRecord(j.getString("id"),
 /** Transactions bind cursor advancement to per-target delivery records.
  * The device-owned queue must not travel through system or keyboard database backups.
  */
-internal class UsageStore(context: Context): SQLiteOpenHelper(context.applicationContext,java.io.File(context.noBackupFilesDir,"app_usage.db").absolutePath,null,1), java.io.Closeable {
+internal class UsageStore(context: Context): SQLiteOpenHelper(context.applicationContext,java.io.File(context.noBackupFilesDir,"app_usage.db").absolutePath,null,2), java.io.Closeable {
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL("CREATE TABLE state (id INTEGER PRIMARY KEY CHECK(id=1), payload TEXT NOT NULL)")
-        db.execSQL("CREATE TABLE record (id TEXT PRIMARY KEY, end_ms INTEGER NOT NULL, payload TEXT NOT NULL, start_ms INTEGER NOT NULL CHECK(end_ms>start_ms))")
+        db.execSQL("CREATE TABLE record (id TEXT PRIMARY KEY, end_ms INTEGER NOT NULL, payload TEXT NOT NULL, start_ms INTEGER NOT NULL CHECK(end_ms>start_ms), online_confirmed_at INTEGER)")
         db.execSQL("CREATE TABLE delivery (record_id TEXT NOT NULL, target TEXT NOT NULL, acknowledged INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(record_id,target))")
         db.execSQL("CREATE INDEX pending_delivery ON delivery(target,acknowledged)")
     }
-    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) = Unit
+    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        if (oldVersion < 2) db.execSQL("ALTER TABLE record ADD COLUMN online_confirmed_at INTEGER")
+    }
     fun state(): UsageState? = readableDatabase.rawQuery("SELECT payload FROM state WHERE id=1",null).use { c ->
         if(!c.moveToFirst()) return@use null
         val j=JSONObject(c.getString(0)); val a=j.optJSONObject("active"); val candidate=j.optJSONObject("candidate")
@@ -55,15 +57,19 @@ internal class UsageStore(context: Context): SQLiteOpenHelper(context.applicatio
     fun pending(target: String): List<UsageRecord> = readableDatabase.rawQuery(
         "SELECT r.payload FROM record r JOIN delivery d ON r.id=d.record_id WHERE d.target=? AND d.acknowledged=0 ORDER BY r.end_ms,r.id LIMIT 200",arrayOf(target)
     ).use { c -> buildList { while(c.moveToNext()) add(usageRecordFromJson(JSONObject(c.getString(0)))) } }
-    fun acknowledge(target: String, ids: List<String>) {
-        val db=writableDatabase; db.beginTransaction()
-        try { ids.forEach { db.execSQL("UPDATE delivery SET acknowledged=1 WHERE record_id=? AND target=?",arrayOf(it,target)) }; db.setTransactionSuccessful() }
-        finally { db.endTransaction() }
-    }
-    /** Only fully delivered records expire; offline pending data is never discarded by retention. */
-    fun prune(before: Long) {
+    fun acknowledge(target: String, ids: List<String>, onlineTarget: String? = null, now: Long = System.currentTimeMillis()) {
         val db=writableDatabase; db.beginTransaction()
         try {
+            if (target == onlineTarget) ids.forEach { db.execSQL("UPDATE record SET online_confirmed_at=COALESCE(online_confirmed_at,?) WHERE id=?",arrayOf(now,it)) }
+            ids.forEach { db.execSQL("UPDATE delivery SET acknowledged=1 WHERE record_id=? AND target=?",arrayOf(it,target)) }; db.setTransactionSuccessful() }
+        finally { db.endTransaction() }
+    }
+    /** Pending local copies expire only seven days after explicit online confirmation. */
+    fun prune(before: Long, onlineTarget: String? = null) {
+        val db=writableDatabase; db.beginTransaction()
+        try {
+            if (onlineTarget != null) db.execSQL("""DELETE FROM record WHERE online_confirmed_at IS NOT NULL AND online_confirmed_at<=?
+                AND NOT EXISTS (SELECT 1 FROM delivery d WHERE d.record_id=record.id AND d.target=? AND d.acknowledged=0)""",arrayOf(before,onlineTarget))
             db.execSQL("DELETE FROM record WHERE end_ms<? AND NOT EXISTS (SELECT 1 FROM delivery d WHERE d.record_id=record.id AND d.acknowledged=0)",arrayOf(before))
             db.execSQL("DELETE FROM delivery WHERE NOT EXISTS (SELECT 1 FROM record r WHERE r.id=delivery.record_id)")
             db.setTransactionSuccessful()

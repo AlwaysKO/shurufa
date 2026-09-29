@@ -61,4 +61,19 @@ class UsageStoreTest {
         assertEquals(20L,wire.getLong("end_ms"))
         assertEquals(r,usageRecordFromJson(wire))
     }
+    @Test fun `online confirmation retention does not expire unconfirmed usage or reset on repeat acknowledgement`() {
+        val week=7*86400000L
+        UsageStore(app).use { store ->
+            val records=listOf("done","pending").map { UsageRecord(it,"usage","pkg",null,1,10,"pause") }
+            store.save(UsageReduction(UsageState(cursor=20),records),listOf("local","online"))
+            store.acknowledge("online",listOf("done"),"online",100L)
+            store.prune(99L,"online")
+            assertEquals(2,store.pending("local").size)
+            store.acknowledge("online",listOf("done"),"online",week)
+            store.prune(101L,"online")
+            assertEquals(listOf("pending"),store.pending("local").map{it.id})
+            assertEquals(listOf("pending"),store.pending("online").map{it.id})
+        }
+    }
+
 }
