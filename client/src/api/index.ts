@@ -629,7 +629,7 @@ export interface AppUsageData {
   overview: { duration_ms: number; count: number; gap_count: number; last_received_at: string | null };
   apps: Array<{ package_name: string; app_name: string | null; duration_ms: number; count: number }>;
   daily: Array<{ day: string; duration_ms: number }>;
-  records: Array<{ id: string; kind: 'usage' | 'gap'; package_name: string | null; app_name: string | null; start_ms: number; end_ms: number; duration_ms: number; end_reason: string }>;
+  records: Array<{ id: string; kind: 'usage' | 'gap'; package_name: string | null; app_name: string | null; start_ms: number; end_ms: number; duration_ms: number; end_reason: string; segment_count?: number }>;
   total: number; page: number; page_size: number;
 }
 export interface AppUsageDayData {

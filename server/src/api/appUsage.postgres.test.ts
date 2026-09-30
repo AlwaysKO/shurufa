@@ -99,3 +99,75 @@ test('历史妙言自身从汇总明细时间轴排除但不删除，不误伤�
  }
  expect(Number((await pool.query('SELECT COUNT(*) AS n FROM app_usage_segment WHERE user_id=$1',[C])).rows[0].n)).toBe(8);
 });
+
+const mergeBase=Date.parse('2026-09-29T16:00:00Z');
+const part=(s:number,e:number,extra={})=>rec({package_name:'com.tencent.mm',app_name:'微信',start_ms:mergeBase+s,end_ms:mergeBase+e,...extra});
+const mergedGet=(id:string,extra='')=>agent.get(`/api/v1/dashboard/app-usage?user_id=${id}&from=2026-09-29T16:00:00Z&to=2026-09-30T16:00:00Z${extra}`);
+
+test('一分钟内相邻同App四段合并展示，间隔不计时且原始统计时间轴和数据库保留',async()=>{
+ const C=randomUUID();
+ const rows=[part(-28000,69000),part(70000,81000),part(102000,110000),part(136000,276000)];
+ expect((await post(rows,C)).status).toBe(200);
+ const result=await mergedGet(C);expect(result.status).toBe(200);
+ expect(result.body.total).toBe(1);
+ expect(result.body.records).toHaveLength(1);
+ expect(result.body.records[0]).toMatchObject({start_ms:mergeBase-28000,end_ms:mergeBase+276000,duration_ms:228000,segment_count:4});
+ expect(result.body.overview).toMatchObject({count:4,duration_ms:228000,gap_count:0});
+ expect(result.body.apps[0]).toMatchObject({count:4,duration_ms:228000});
+ expect(result.body.daily).toEqual([{day:'2026-09-30',duration_ms:228000}]);
+ const day=await agent.get(`/api/v1/dashboard/app-usage/day?user_id=${C}&day=2026-09-30`);
+ expect(day.body.total).toBe(4);
+ expect(Number((await pool.query('SELECT COUNT(*) AS n FROM app_usage_segment WHERE user_id=$1',[C])).rows[0].n)).toBe(4);
+ expect((await mergedGet(randomUUID())).body.total).toBe(0);
+});
+test('恰好60秒可合并，超过60秒或有重叠不合并',async()=>{
+ const C=randomUUID();await post([part(0,10000),part(70000,80000),part(140001,150001),part(145000,155000)],C);
+ const result=await mergedGet(C);expect(result.status).toBe(200);
+ expect(result.body.total).toBe(3);
+ expect(result.body.records.map((r:any)=>r.segment_count)).toEqual([1,1,2]);
+});
+test('筛选前检查其他App与隐藏的自身App，不能跳过中间记录误合并',async()=>{
+ for(const middle of ['com.other','com.yuyan.pinyin.offline.debug']){
+  const C=randomUUID();await post([part(0,10000),part(11000,12000,{package_name:middle}),part(13000,23000)],C);
+  const result=await mergedGet(C,'&package_name=com.tencent.mm');
+  expect(result.status).toBe(200);expect(result.body.total).toBe(2);
+  expect(result.body.records.map((r:any)=>r.segment_count)).toEqual([1,1]);
+ }
+});
+test('锁屏熄屏和采集中断不能与之后的同App合并，gap也阻断',async()=>{
+ for(const reason of ['lock','off','shutdown','reboot','permission_lost','collection_paused','clock_changed','history_gap','process_restart']){
+  const C=randomUUID();await post([part(0,10000,{end_reason:reason}),part(15000,25000)],C);
+  expect((await mergedGet(C)).body.total).toBe(2);
+ }
+ const C=randomUUID();await post([part(0,10000),part(11000,12000,{kind:'gap',package_name:null,app_name:null}),part(13000,23000)],C);
+ expect((await mergedGet(C)).body.total).toBe(3);
+});
+test('与更早的长段重叠时不因紧邻同App误并',async()=>{
+ const C=randomUUID();await post([part(0,50000,{package_name:'com.other'}),part(10000,20000),part(21000,30000)],C);
+ expect((await mergedGet(C,'&package_name=com.tencent.mm')).body.total).toBe(2);
+});
+test('早先长段占据两段间隙时也必须阻断，不能越过其他App或锁屏',async()=>{
+ for(const end_reason of ['switch','lock']){
+  for(const previousEnd of [20000,50000]){
+  const C=randomUUID();await post([part(0,50000,{package_name:'com.other',end_reason}),part(10000,previousEnd),part(55000,65000)],C);
+  const result=await mergedGet(C,'&package_name=com.tencent.mm');
+  expect(result.status).toBe(200);expect(result.body.total).toBe(2);
+  }
+ }
+});
+test('当前段与后续其他App重叠时也不参与合并',async()=>{
+ const C=randomUUID();await post([part(0,10000),part(20000,50000),part(30000,40000,{package_name:'com.other'})],C);
+ expect((await mergedGet(C,'&package_name=com.tencent.mm')).body.total).toBe(2);
+});
+test('合并先于分页，统计不受页码影响且不能把跨原始分页的组合拆开',async()=>{
+ const C=randomUUID();const rows=[];
+ for(let i=0;i<51;i++){rows.push(part(i*200000,i*200000+10000),part(i*200000+20000,i*200000+30000));}
+ expect((await post(rows,C)).status).toBe(200);
+ const first=await mergedGet(C),second=await mergedGet(C,'&page=2');
+ expect(first.status).toBe(200);expect(first.body.total).toBe(51);expect(first.body.records).toHaveLength(50);
+ expect(second.body.total).toBe(51);expect(second.body.records).toHaveLength(1);
+ expect([...first.body.records,...second.body.records].every((r:any)=>r.segment_count===2&&r.duration_ms===20000)).toBe(true);
+ expect(second.body.overview).toEqual(first.body.overview);
+ expect(first.body.overview).toMatchObject({count:102,duration_ms:1020000});
+ expect(new Set([...first.body.records,...second.body.records].map((r:any)=>r.id)).size).toBe(51);
+});

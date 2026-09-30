@@ -64,10 +64,29 @@ export function createDashboardAppUsageRouter(pool:pg.Pool) {
   const from=iso(req.query.from),to=iso(req.query.to),page=Number(req.query.page??1),pkg=req.query.package_name??null;
   if(!Number.isFinite(from)||!Number.isFinite(to)||to<=from||to-from>366*86400000||!Number.isSafeInteger(page)||page<1||page>1000000||(pkg!==null&&!text(pkg,255))){res.status(400).json({error:'有效起止时间（含时区，最多366天）、页码和App包名必填/必需有效'});return;}
   try {
-   const result=await pool.query(`WITH clipped AS (
-     SELECT *,GREATEST(start_ms,$2::bigint) AS s, LEAST(end_ms,$3::bigint) AS e
+   // 先在全部App中判邻接，再筛选和分页；被隐藏的App也必须阻断合并。
+   // 未上报的短段无法还原，这里只承诺“短间隔合并”，不推断空白必然是桌面。
+   const result=await pool.query(`WITH ordered AS (
+     SELECT *,GREATEST(start_ms,$2::bigint) AS s, LEAST(end_ms,$3::bigint) AS e,
+       LAG(kind) OVER w AS previous_kind,LAG(package_name) OVER w AS previous_package,
+       LAG(end_ms) OVER w AS previous_end,LAG(end_reason) OVER w AS previous_reason,
+       MAX(end_ms) OVER (w ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) AS previous_max_end,
+       LEAD(start_ms) OVER w AS next_start
      FROM app_usage_segment WHERE user_id=$1 AND end_ms>$2 AND start_ms<$3
-       AND (kind='gap' OR package_name <> ALL($6::text[]))
+     WINDOW w AS (ORDER BY start_ms,id)
+    ), overlap_checked AS (
+     SELECT *,COALESCE(start_ms>=previous_max_end,true) AND COALESCE(end_ms<=next_start,true) AS non_overlapping
+     FROM ordered
+    ), boundaries AS (
+     SELECT *,CASE WHEN kind='usage' AND previous_kind='usage' AND package_name=previous_package
+       AND previous_reason IN ('switch','pause','resume')
+       AND non_overlapping AND LAG(non_overlapping) OVER (ORDER BY start_ms,id)
+       AND start_ms-previous_end BETWEEN 0 AND 60000
+       THEN 0 ELSE 1 END AS new_group FROM overlap_checked
+    ), grouped AS (
+     SELECT *,SUM(new_group) OVER (ORDER BY start_ms,id ROWS UNBOUNDED PRECEDING) AS group_id FROM boundaries
+    ), clipped AS (
+     SELECT * FROM grouped WHERE (kind='gap' OR package_name <> ALL($6::text[]))
        AND ($4::text IS NULL OR package_name=$4 OR kind='gap')
     ), usage AS (SELECT * FROM clipped WHERE kind='usage'),
     apps AS (SELECT package_name,MAX(app_name) AS app_name,SUM(e-s)::float8 AS duration_ms,COUNT(*)::int AS count FROM usage GROUP BY package_name),
@@ -78,16 +97,21 @@ export function createDashboardAppUsageRouter(pool:pg.Pool) {
      FROM usage CROSS JOIN LATERAL generate_series(
        date_trunc('day',to_timestamp(s/1000.0) AT TIME ZONE 'Asia/Shanghai'),
        date_trunc('day',to_timestamp((e-1)/1000.0) AT TIME ZONE 'Asia/Shanghai'), interval '1 day') d GROUP BY d
+    ), combined AS (
+     SELECT (ARRAY_AGG(id ORDER BY start_ms,id))[1] AS id,kind,package_name,MAX(app_name) AS app_name,
+       MIN(start_ms)::float8 AS start_ms,MAX(end_ms)::float8 AS end_ms,
+       (ARRAY_AGG(end_reason ORDER BY start_ms DESC,id DESC))[1] AS end_reason,
+       SUM(e-s)::float8 AS duration_ms,COUNT(*)::int AS segment_count
+     FROM clipped GROUP BY group_id,kind,package_name
     ), records AS (
-     SELECT id,kind,package_name,app_name,start_ms::float8,end_ms::float8,end_reason,(e-s)::float8 AS duration_ms
-     FROM clipped ORDER BY start_ms DESC,id LIMIT 50 OFFSET $5
+     SELECT * FROM combined ORDER BY start_ms DESC,id LIMIT 50 OFFSET $5
     )
     SELECT json_build_object(
      'overview',json_build_object('last_received_at',(SELECT MAX(received_at) FROM app_usage_segment WHERE user_id=$1),'duration_ms',(SELECT COALESCE(SUM(e-s),0)::float8 FROM usage),'count',(SELECT COUNT(*)::int FROM usage),'gap_count',(SELECT COUNT(*)::int FROM clipped WHERE kind='gap')),
      'apps',COALESCE((SELECT json_agg(a ORDER BY duration_ms DESC,package_name) FROM apps a),'[]'::json),
      'daily',COALESCE((SELECT json_agg(d ORDER BY day) FROM days d),'[]'::json),
      'records',COALESCE((SELECT json_agg(r ORDER BY start_ms DESC,id) FROM records r),'[]'::json),
-     'total',(SELECT COUNT(*)::int FROM clipped)) AS data`,[res.locals.userId,from,to,pkg,(page-1)*50,OWN_USAGE_PACKAGES]);
+     'total',(SELECT COUNT(*)::int FROM combined)) AS data`,[res.locals.userId,from,to,pkg,(page-1)*50,OWN_USAGE_PACKAGES]);
    const data=result.rows[0].data;
    if(data.overview.last_received_at) data.overview.last_received_at=new Date(data.overview.last_received_at).toISOString();
    res.json({...data,page,page_size:50});

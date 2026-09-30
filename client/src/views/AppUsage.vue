@@ -177,11 +177,11 @@ const reasons: Record<string, string> = { switch: '切换应用', process_restar
           <p v-else class="empty">当天暂无记录。</p>
         </template>
       </div>
-      <div class="card usage-records" :aria-busy="recordsLoading"><h3>使用时间段 / 断档 <small>共 {{ data.total }} 段</small></h3>
-        <p class="note">起止时间保留原始值；“范围内时长”已裁剪。统计不受分页影响，次数指与查询范围相交的原始使用段。</p>
-        <div class="table-scroll"><table><thead><tr><th>App / 类型</th><th>原始开始</th><th>原始结束</th><th>范围内时长</th><th>结束 / 断档原因</th></tr></thead>
+      <div class="card usage-records" :aria-busy="recordsLoading"><h3>使用时间段 / 断档 <small>共 {{ data.total }} 条</small></h3>
+        <p class="note">相邻同一 App 的记录间隔不超过1分钟时合并展示；中间有其他 App 记录、锁屏或断档则不合并。起止跨度可能包含中断，“范围内时长”仅累加实际使用片段，不计中间空档。历史空档不一定是桌面。上方统计次数和时间轴仍按原始使用段，分页只影响本表。</p>
+        <div class="table-scroll"><table><thead><tr><th>App / 类型</th><th>开始时间</th><th>结束时间</th><th>范围内时长</th><th>结束 / 断档原因</th></tr></thead>
           <tbody><tr v-for="r in data.records" :key="r.id" :class="{ gap: r.kind === 'gap' }">
-            <td>{{ r.kind === 'gap' ? '⚠ 数据断档' : appName(r.package_name!, r.app_name) }}<small v-if="r.package_name">{{ r.package_name }}</small></td>
+            <td>{{ r.kind === 'gap' ? '⚠ 数据断档' : appName(r.package_name!, r.app_name) }}<small v-if="r.package_name">{{ r.package_name }}</small><small v-if="(r.segment_count ?? 1) > 1" class="merged-note">短间隔合并 · {{ r.segment_count }}段</small></td>
             <td>{{ time(r.start_ms) }}</td><td>{{ time(r.end_ms) }}</td><td>{{ duration(r.duration_ms) }}</td><td>{{ reasons[r.end_reason] ?? r.end_reason }}</td>
           </tr></tbody></table></div>
         <p v-if="!data.records.length" class="empty">暂无记录。请在手机输入法「设置 → 其他」开启「应用使用记录」，按提示授予「使用情况访问权限」。切换 App 后可点「立即同步应用使用记录」，再刷新本页。仅连接 USB 不会开启记录，也不会导入授权前历史。</p>
