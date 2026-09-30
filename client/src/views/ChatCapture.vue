@@ -396,6 +396,36 @@ async function deleteSelectedConversation() {
   }
 }
 
+async function deletePendingSource(message: ChatMessageRow) {
+  if (!pendingGroup.value || !message.conversation_id || loading.value || mutationBusy.value) return;
+  const context = selectionContext.value, conversation = selected.value, scope = previewScope.value;
+  let source: ChatConversationRow | null = null;
+  loading.value = true; error.value = '';
+  try {
+    source = (await api.resolveChatConversation(message.conversation_id)).conversation;
+    if (disposed || context !== selectionContext.value) return;
+    if (!source || source.id !== message.conversation_id || source.platform !== platform.value || !source.is_pending_source) {
+      throw Error('来源已变化或已确认，请刷新后处理');
+    }
+  } catch (reason) {
+    if (!disposed && context === selectionContext.value) error.value = (reason as Error).message;
+    return;
+  } finally { if (context === selectionContext.value) loading.value = false; }
+  if (!source || disposed || context !== selectionContext.value) return;
+  if (!(await confirmAction(`删除来源 #${source.id}“${source.display_name || message.sender_name || '待确认'}”及其全部 ${source.message_count} 条消息？包含该来源的文字和图片，其他待确认来源保留。此操作不可恢复。`,
+    { title: '删除待确认来源', confirmText: '删除此来源' }))) return;
+  if (disposed || context !== selectionContext.value || loading.value || mutationBusy.value) return;
+  deleting.value = true; let completed = false;
+  try {
+    await api.deleteChatConversation(source.id, platform.value); completed = true;
+    if (disposed || context !== selectionContext.value) return;
+    deleteNotice.value = `已删除来源 #${source.id}。`;
+    await refreshAfterImageDeletion(conversation, scope);
+  } catch (reason) {
+    if (!disposed && scope === previewScope.value) error.value = `${completed ? '来源已删除，但列表刷新失败' : '删除来源失败'}：${(reason as Error).message}`;
+  } finally { deleting.value = false; }
+}
+
 async function deleteSelectedConversations() {
   if (loading.value || mutationBusy.value || !selectedConversations.value.length) return;
   const version = conversationScopeVersion, listVersion = latestLoad, app = platform.value;
@@ -493,6 +523,7 @@ async function deleteSelectedImages() {
 const mergeOpen = ref(false);
 const mergeSource = ref<ChatConversationRow | null>(null);
 const mergeQuery = ref('');
+const sourceName = ref('');
 const mergeTargets = ref<ChatConversationRow[]>([]);
 const mergePage = ref(1), mergeTotal = ref(0), mergeLoading = ref(false);
 const mergeError = ref('');
@@ -525,9 +556,33 @@ async function confirmSource(message: ChatMessageRow) {
     if (!result.conversation || result.conversation.platform !== platform.value ||
         result.conversation.id !== message.conversation_id || (pendingGroup.value && !result.conversation.is_pending_source && !result.conversation.display_name?.startsWith('待确认') && result.conversation.identity_confidence >= 0.8)) throw Error('此来源已确认或已合并，请刷新后查看');
     mergeSource.value = result.conversation;
+    sourceName.value = message.pending_diagnostic?.observed_title ?? '';
     mergeOpen.value = true; mergeQuery.value = message.pending_diagnostic?.observed_title ?? ''; await searchMergeTargets();
   } catch (reason) { if (scope === previewScope.value) error.value = (reason as Error).message; }
   finally { if (scope === previewScope.value) loading.value = false; }
+}
+async function confirmSourceName() {
+  const source = mergeSource.value, scope = previewScope.value, conversation = selected.value;
+  const name = sourceName.value.trim();
+  if (!source || !pendingGroup.value || mutationBusy.value || loading.value || mergeLoading.value) return;
+  if (!name || name.length > 200 || name.startsWith('待确认') || /[\u0000-\u001f\u007f]/.test(name)) {
+    mergeError.value = '请填写有效的联系人或群聊名称（最多200字）'; return;
+  }
+  if (!(await confirmAction(`将来源 #${source.id} 确认为“${name}”？保留该来源全部消息并移出待确认列表；不会自动合并其他同名来源。`,
+    { title: '确认来源名称', confirmText: '确认名称' }))) return;
+  if (disposed || scope !== previewScope.value || source !== mergeSource.value || mutationBusy.value || loading.value) return;
+  merging.value = true; mergeError.value = ''; let completed = false;
+  try {
+    await api.confirmChatConversationName(source.id, name, platform.value); completed = true;
+    if (disposed || scope !== previewScope.value) return;
+    mergeOpen.value = false; deleteNotice.value = `来源 #${source.id} 已确认为“${name}”。`;
+    await refreshAfterImageDeletion(conversation, scope);
+  } catch (reason) {
+    if (!disposed && scope === previewScope.value) {
+      const text = `${completed ? '名称已确认，但列表刷新失败' : '确认名称失败'}：${(reason as Error).message}`;
+      if (completed) error.value = text; else mergeError.value = text;
+    }
+  } finally { merging.value = false; }
 }
 async function mergeInto(target: ChatConversationRow) {
   const source = mergeSource.value, scope = previewScope.value;
@@ -566,6 +621,7 @@ async function chooseSuggestedSource(message: ChatMessageRow, targetId: number) 
       throw Error('来源或建议归属已变化，请刷新后重新选择');
     }
     mergeSource.value = source;
+    sourceName.value = message.pending_diagnostic?.observed_title ?? '';
     mergeOpen.value = true;
     target = candidate;
   } catch (reason) {
@@ -659,10 +715,15 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
       </div>
 
       <p v-if="multipleSources" class="timeline-summary">同名会话的全部图片集中展示，内部来源独立保留。更改归属请使用图片上的“确认此来源归属”。</p>
-      <p v-if="pendingGroup" class="timeline-summary">未确认图片集中显示，来源仍独立保留。可逐来源确认归属，或选择图片删除；不会整组误合并。</p>
+      <p v-if="pendingGroup" class="timeline-summary">待确认文字和图片集中显示。可逐来源删除，或确认归属：选择已有会话，也可手动填写联系人或群聊名称。</p>
       <section v-if="mergeOpen" class="merge-panel" aria-label="选择合并目标">
         <h4>选择目标会话（同一手机、同一App）</h4>
         <p>当前来源：{{ displayName(mergeSource) }}（#{{ mergeSource?.id }}）。仅此来源的历史图片和文字归入目标，后续该来源上报也归入目标。</p>
+        <div v-if="pendingGroup" class="source-name-confirmation">
+          <label>确认联系人或群聊名称 <input v-model="sourceName" data-testid="chat-confirm-name-input" maxlength="200" placeholder="填写确认后的名称" :disabled="mutationBusy" /></label>
+          <button class="capture-action" data-testid="chat-confirm-name" :disabled="mutationBusy || loading || mergeLoading || !sourceName.trim()" @click="confirmSourceName">按此名称归档</button>
+          <p>没有已有目标时可直接确认名称，保留此来源全部记录。</p>
+        </div>
         <form @submit.prevent="searchMergeTargets(1)">
           <input v-model="mergeQuery" aria-label="搜索目标会话" placeholder="搜索会话名称" :disabled="mutationBusy" />
           <button class="capture-action" :disabled="mutationBusy || mergeLoading">搜索</button>
@@ -702,6 +763,7 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
         >
           <div class="message-head">
             <button class="capture-action capture-source-action" v-if="(pendingGroup || multipleSources) && message.conversation_id" :data-testid="`chat-confirm-source-${message.id}`" :disabled="loading || mutationBusy" @click="confirmSource(message)">确认此来源归属 #{{ message.conversation_id }}</button>
+            <button class="delete-button" v-if="pendingGroup && message.conversation_id" :data-testid="`chat-delete-source-${message.id}`" :disabled="loading || mutationBusy" @click="deletePendingSource(message)">删除此来源 #{{ message.conversation_id }}</button>
             <span :data-testid="`chat-image-label-${message.id}`">{{ messageDisplayName(message) }}</span>
             <span class="badge">{{ directionNames[message.direction] }}</span>
             <span class="badge">{{ message.message_type }}</span>

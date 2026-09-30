@@ -38,6 +38,56 @@ async function message(conversationId:number,options:{id?:string;user?:string;ti
 }
 
 const merge=(source:number,target:number)=>agent.post(`/api/v1/dashboard/chat/conversations/${source}/merge?user_id=${A}`).send({confirm:'MERGE',target_id:target});
+
+test('待确认来源可直接确认名称并保留消息，后续上报不覆盖人工名称',async()=>{
+ const id=await conversation();await message(id,{text:'怎么了'});
+ const key='notification-v2:pending:manual-test';
+ await pool.query("UPDATE chat_conversation SET display_name='待确认通知（好友）',external_key=$2,identity_confidence=.55 WHERE id=$1",[id,key]);
+ const response=await agent.post(`/api/v1/dashboard/chat/conversations/${id}/confirm?user_id=${A}`).send({confirm:'CONFIRM',display_name:' 好友甲 ',platform:'wechat'});
+ expect(response.status).toBe(200);
+ const resolved=await agent.get(`/api/v1/dashboard/chat/conversations/${id}/resolve?user_id=${A}`);
+ expect(resolved.body.conversation).toMatchObject({id,display_name:'好友甲',is_pending_source:false,message_count:1,identity_confidence:1});
+ await ingestCapturedMessages(pool,A,A,{platform:'wechat',account_key:'self',external_key:key,display_name:'错误的新标题',conversation_type:'direct',identity_confidence:.95},[{id:randomUUID(),fingerprint:'a'.repeat(64),content_fingerprint:'b'.repeat(64),sender_key:'peer',direction:'incoming',message_type:'text',text:'后续消息',captured_at:new Date().toISOString()}]);
+ expect((await pool.query('SELECT display_name,identity_confidence FROM chat_conversation WHERE id=$1',[id])).rows[0]).toMatchObject({display_name:'好友甲',identity_confidence:'1.000'});
+ expect((await pool.query('SELECT id FROM chat_message WHERE conversation_id=$1',[id])).rowCount).toBe(2);
+});
+
+test('人工确认名称隔离手机和App，拒绝已确认来源、占位名称及虚拟分组',async()=>{
+ const id=await conversation();await pool.query("UPDATE chat_conversation SET display_name='待确认会话' WHERE id=$1",[id]);
+ const confirm=(user=A,platform='wechat',display_name='好友甲',source=id)=>agent.post(`/api/v1/dashboard/chat/conversations/${source}/confirm?user_id=${user}`).send({confirm:'CONFIRM',display_name,platform});
+ expect((await confirm(B)).status).toBe(404);expect((await confirm(A,'qq')).status).toBe(409);
+ for(const name of ['', '待确认会话', 'x'.repeat(201),'好友\n甲'])expect((await confirm(A,'wechat',name)).status).toBe(400);
+ expect((await confirm(A,'wechat','好友甲',-1)).status).toBe(400);
+ expect((await confirm()).status).toBe(200);expect((await confirm()).status).toBe(409);
+});
+
+test('删除待确认纯文字来源仅删除指定来源，其他待确认消息保留',async()=>{
+ const first=await conversation(),second=await conversation();
+ await pool.query("UPDATE chat_conversation SET display_name='待确认会话' WHERE id=ANY($1::bigint[])",[[first,second]]);
+ await message(first,{text:'语音通话中'});await message(second,{text:'怎么了'});
+ const response=await agent.delete(`/api/v1/dashboard/chat/conversations/${first}?user_id=${A}&pending_only=true&platform=wechat`);
+ expect(response.status).toBe(200);expect(response.body.deleted_messages).toBe(1);
+ expect((await pool.query('SELECT conversation_id FROM chat_message')).rows).toEqual([{conversation_id:String(second)}]);
+});
+
+test('待确认删除在服务端重新核对状态，禁止确认后或跨App误删',async()=>{
+ const id=await conversation();await message(id);
+ const remove=(platform='wechat')=>agent.delete(`/api/v1/dashboard/chat/conversations/${id}?user_id=${A}&pending_only=true&platform=${platform}`);
+ expect((await remove()).status).toBe(409);
+ await pool.query("UPDATE chat_conversation SET display_name='待确认会话' WHERE id=$1",[id]);
+ expect((await remove('qq')).status).toBe(409);
+ expect((await pool.query('SELECT id FROM chat_message WHERE conversation_id=$1',[id])).rowCount).toBe(1);
+});
+
+test.each(['微佳','朋友屠'])('人工确认名称 %s 不套用历史OCR别名',async name=>{
+ const id=await conversation();await message(id);
+ await pool.query("UPDATE chat_conversation SET account_key='wechat-empty-tree',external_key='capture-v3:pending:manual',display_name='待确认会话',identity_confidence=.55 WHERE id=$1",[id]);
+ expect((await agent.post(`/api/v1/dashboard/chat/conversations/${id}/confirm?user_id=${A}`).send({confirm:'CONFIRM',display_name:name,platform:'wechat'})).status).toBe(200);
+ const resolved=await agent.get(`/api/v1/dashboard/chat/conversations/${id}/resolve?user_id=${A}`);
+ expect(resolved.body.conversation.display_name).toBe(name);
+ const grouped=await agent.get(`/api/v1/dashboard/chat/conversations?user_id=${A}&platform=wechat&group_pending=true&group_names=true`);
+ expect(grouped.body.conversations).toEqual([expect.objectContaining({display_name:name,group_name:name})]);
+});
 test('合并保留消息，隐藏源，旧ID解析到目标，名称不覆盖',async()=>{
  const a=await conversation(),b=await conversation(); await pool.query('UPDATE chat_conversation SET display_name=$1 WHERE id=$2',['目标',b]);
  const id=await message(a); const response=await merge(a,b);expect(response.status).toBe(200);

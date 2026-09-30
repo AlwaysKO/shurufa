@@ -835,6 +835,17 @@ export const api = {
     }
     return response.json();
   },
+  confirmChatConversationName: async (id: number, displayName: string, platform: ChatConversationRow['platform']) => {
+    const response = await dashboardFetch(withDashboardUser(`/api/v1/dashboard/chat/conversations/${id}/confirm`), {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ confirm: 'CONFIRM', display_name: displayName, platform }),
+    });
+    if (!response.ok) {
+      const detail = await response.json().catch(() => null);
+      throw new Error(detail?.error || `确认失败（${response.status}）`);
+    }
+    return response.json() as Promise<{ ok: boolean; id: number }>;
+  },
   chatMessages: (conversationId: number, page = 1, pageSize = 100, platform?: ChatConversationRow['platform'], groupName?: string) =>
     get<{ total: number; page: number; page_size: number; messages: ChatMessageRow[] }>(
       `/api/v1/dashboard/chat/messages?gallery=true&conversation_id=${conversationId}&page=${page}&page_size=${pageSize}${platform ? `&platform=${platform}` : ''}${groupName !== undefined ? `&group_name=${encodeURIComponent(groupName)}` : ''}`,
@@ -851,8 +862,8 @@ export const api = {
     }
     return response.json();
   },
-  deleteChatConversation: (conversationId: number) =>
-    del(`/api/v1/dashboard/chat/conversations/${conversationId}`),
+  deleteChatConversation: (conversationId: number, pendingPlatform?: ChatConversationRow['platform']) =>
+    del(`/api/v1/dashboard/chat/conversations/${conversationId}${pendingPlatform ? `?pending_only=true&platform=${pendingPlatform}` : ''}`),
   deleteChatConversations: async (body: { confirm: 'DELETE'; platform: ChatConversationRow['platform']; conversations: Array<{ id: number } | { group_name: string; source_ids: number[] }> }) => {
     const response = await dashboardFetch(withDashboardUser('/api/v1/dashboard/chat/conversations/delete-batch'), {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),

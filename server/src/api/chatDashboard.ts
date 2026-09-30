@@ -1,5 +1,5 @@
 import { createChatGroupDeletionRouter } from './chatGroupDeletion.js';
-import { createChatPendingRouter, chatConversationScope } from './chatPending.js';
+import { createChatPendingRouter, chatConversationScope, pendingConversation, chatPlatforms } from './chatPending.js';
 import { createChatConversationsRouter } from './chatConversations.js';
 import { createChatImagesRouter } from './chatImages.js';
 import { Router } from 'express';
@@ -213,6 +213,10 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
 
   router.delete('/conversations/:id', async (req, res, next) => {
     const conversationId = Number(req.params.id);
+    const pendingOnly = req.query.pending_only === 'true';
+    if (pendingOnly && (typeof req.query.platform !== 'string' || !chatPlatforms.includes(req.query.platform))) {
+      return res.status(400).json({ error: '待确认来源删除必须指定App' });
+    }
     if (!Number.isSafeInteger(conversationId) || conversationId <= 0) {
       return res.status(400).json({ error: 'conversation_id is invalid' });
     }
@@ -232,6 +236,14 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
       if (conversation.rows[0].merged_into_id) {
         await client.query('ROLLBACK');
         return res.status(409).json({ error: '该会话已合并，请刷新后操作目标会话' });
+      }
+      if (pendingOnly) {
+        const pending = await client.query(`SELECT c.id FROM chat_conversation c
+          WHERE c.id=$1 AND c.user_id=$2 AND c.platform=$3 AND (${pendingConversation()})`,
+        [conversationId, res.locals.userId, req.query.platform]);
+        if (!pending.rowCount) {
+          await client.query('ROLLBACK'); return res.status(409).json({ error: '来源已变化或已确认，未删除，请刷新后处理' });
+        }
       }
       const messageCount = await client.query<{ count: string }>(
         `SELECT COUNT(*) AS count FROM chat_message m WHERE conversation_id=$1 AND user_id=$2 AND ${visibleChatMessage()}`,

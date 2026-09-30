@@ -1,4 +1,4 @@
-import { pendingConversation, conversationGroupName } from './chatPending.js';
+import { pendingConversation, conversationGroupName, chatPlatforms } from './chatPending.js';
 import { Router } from 'express';
 import { visibleChatMessage } from '../chat/chatMessageVisibility.js';
 import type pg from 'pg';
@@ -12,6 +12,29 @@ const validId = (value: unknown): number | null => {
 
 export function createChatConversationsRouter(pool: pg.Pool): Router {
   const router = Router();
+  router.post('/conversations/:id/confirm', async (req, res, next) => {
+    const id = validId(req.params.id), name = typeof req.body?.display_name === 'string' ? req.body.display_name.trim() : '';
+    if (!id || req.body?.confirm !== 'CONFIRM' || !chatPlatforms.includes(req.body?.platform)
+      || !name || name.length > 200 || name.startsWith('待确认') || /[\u0000-\u001f\u007f]/.test(name)) {
+      return res.status(400).json({ error: '请填写有效的联系人或群聊名称并确认（最多200字）' });
+    }
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query('LOCK TABLE chat_conversation IN SHARE ROW EXCLUSIVE MODE');
+      const source = (await client.query(`SELECT c.*, (${pendingConversation()}) AS is_pending_source
+        FROM chat_conversation c WHERE c.id=$1 AND c.user_id=$2 FOR UPDATE`, [id, res.locals.userId])).rows[0];
+      if (!source) { await client.query('ROLLBACK'); return res.status(404).json({ error: '来源不存在' }); }
+      if (source.platform !== req.body.platform || !source.is_pending_source || source.merged_into_id) {
+        await client.query('ROLLBACK'); return res.status(409).json({ error: '来源已变化或已确认，请刷新后处理' });
+      }
+      await client.query(`UPDATE chat_conversation SET display_name=$3,identity_confidence=1,
+        metadata=metadata || '{"manual_display_name":true}'::jsonb WHERE id=$1 AND user_id=$2`, [id, res.locals.userId, name]);
+      await client.query('COMMIT');
+      res.json({ ok: true, id });
+    } catch (error) { await client.query('ROLLBACK').catch(() => {}); next(error); }
+    finally { client.release(); }
+  });
   router.get('/conversations/:id/resolve', async (req, res, next) => {
     const id = validId(req.params.id);
     if (!id) return res.status(400).json({ error: '会话标识无效' });

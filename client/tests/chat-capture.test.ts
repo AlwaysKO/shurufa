@@ -805,6 +805,72 @@ it.each([
   expect(view.find('chat-confirm-source-message-8')).toBeDefined();
 });
 
+it('待确认纯文字可以按来源删除并刷新分组数量', async () => {
+  fakeChatStorage();const previous=globalThis.window,confirm=vi.fn(()=>true);
+  Object.assign(globalThis,{window:{confirm}});
+  let removed=false;
+  const remove=vi.fn(async()=>{removed=true;return{ok:true};});
+  try {
+    const view=await mountChatCapture({
+      chatConversations:async()=>({total:removed?0:1,conversations:removed?[]:[{...rememberedChat(-1),is_pending_group:true}]}),
+      chatMessages:async()=>({total:1,messages:[{...screenshot(8),conversation_id:12,assets:[],message_type:'text',text:'怎么了'}]}),
+      resolveChatConversation:async()=>({conversation:{...rememberedChat(12),display_name:'待确认通知（好友）',is_pending_source:true,message_count:3}}),
+      deleteChatConversation:remove,
+    });
+    expect(view.find('chat-delete-source-message-8')?.props.disabled).toBe(false);
+    view.find('chat-delete-source-message-8')!.props.onClick();await settle();
+    expect(remove).toHaveBeenCalledExactlyOnceWith(12,'wechat');expect(confirm.mock.calls[0][0]).toContain('3');
+    expect(view.find('chat-confirm-source-message-8')).toBeUndefined();expect(statisticValues(view)[0]).toBe(0);
+  } finally {Object.assign(globalThis,{window:previous});}
+});
+
+it('待确认来源没有已有目标也能手动确认名称', async () => {
+  fakeChatStorage();const previous=globalThis.window;Object.assign(globalThis,{window:{confirm:()=>true}});
+  const previousDocument=globalThis.Document,previousShadowRoot=globalThis.ShadowRoot;
+  Object.assign(globalThis,{Document:class {},ShadowRoot:class {}});
+  const confirmName=vi.fn(async()=>({ok:true,id:12}));
+  try {
+    const view=await mountChatCapture({
+      chatConversations:async()=>({total:1,conversations:[{...rememberedChat(-1),is_pending_group:true}]}),
+      chatMessages:async()=>({total:1,messages:[{...screenshot(8),conversation_id:12,assets:[],message_type:'text'}]}),
+      resolveChatConversation:async()=>({conversation:{...rememberedChat(12),is_pending_source:true,identity_confidence:.55}}),
+      confirmChatConversationName:confirmName,
+    });
+    view.find('chat-confirm-source-message-8')!.props.onClick();await settle();
+    const input=view.find('chat-confirm-name-input')!;expect(input).toBeDefined();
+    input.props['onUpdate:modelValue']('好友甲');await settle();
+    view.find('chat-confirm-name')!.props.onClick();await settle();
+    expect(confirmName).toHaveBeenCalledExactlyOnceWith(12,'好友甲','wechat');
+  } finally {Object.assign(globalThis,{window:previous,Document:previousDocument,ShadowRoot:previousShadowRoot});}
+});
+
+it('来源已合并时不允许删除解析到的目标会话', async () => {
+  fakeChatStorage();const remove=vi.fn();
+  const view=await mountChatCapture({
+    chatConversations:async()=>({total:1,conversations:[{...rememberedChat(-1),is_pending_group:true}]}),
+    chatMessages:async()=>({total:1,messages:[{...screenshot(8),conversation_id:12,assets:[]}]}),
+    resolveChatConversation:async()=>({conversation:rememberedChat(99)}),deleteChatConversation:remove,
+  });
+  view.find('chat-delete-source-message-8')!.props.onClick();await settle();
+  expect(remove).not.toHaveBeenCalled();expect(view.text()).toContain('已变化');
+});
+
+it.each(['取消','切换手机'])('删除待确认来源时%s不执行删除',async mode=>{
+  fakeChatStorage();const previous=globalThis.window;let answer!:(value:boolean)=>void;
+  Object.assign(globalThis,{window:{confirm:()=>new Promise<boolean>(resolve=>{answer=resolve;})}});
+  const remove=vi.fn();
+  try {
+    const view=await mountChatCapture({
+      chatConversations:async()=>({total:1,conversations:[{...rememberedChat(-1),is_pending_group:true}]}),
+      chatMessages:async()=>({total:1,messages:[{...screenshot(8),conversation_id:12,assets:[]}]}),
+      resolveChatConversation:async()=>({conversation:{...rememberedChat(12),is_pending_source:true}}),deleteChatConversation:remove,
+    });
+    view.find('chat-delete-source-message-8')!.props.onClick();await settle();
+    if(mode==='切换手机'){view.currentUserId.value='user-b';await settle();}
+    answer(mode!=='取消');await settle();expect(remove).not.toHaveBeenCalled();
+  }finally{Object.assign(globalThis,{window:previous});}
+});
+
 it('疑似已有会话展示全部精确同名建议，仍由用户逐来源选择确认', async () => {
   fakeChatStorage();
   const mergeChatConversation = vi.fn();

@@ -159,7 +159,8 @@ export async function ingestCapturedMessages(
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        ON CONFLICT (user_id, platform, account_key, external_key)
        DO UPDATE SET
-         display_name = CASE WHEN (EXCLUDED.external_key LIKE 'screenshot-v2:%' OR EXCLUDED.external_key LIKE 'capture-v3:%'
+         display_name = CASE WHEN chat_conversation.metadata->>'manual_display_name'='true' THEN chat_conversation.display_name
+           WHEN (EXCLUDED.external_key LIKE 'screenshot-v2:%' OR EXCLUDED.external_key LIKE 'capture-v3:%'
            OR EXCLUDED.external_key LIKE 'notification-v2:%')
            AND chat_conversation.identity_confidence >= 0.8 AND EXCLUDED.identity_confidence < 0.8
            THEN chat_conversation.display_name
@@ -168,7 +169,8 @@ export async function ingestCapturedMessages(
            OR EXCLUDED.external_key LIKE 'notification-v2:%')
            AND chat_conversation.identity_confidence >= 0.8 AND EXCLUDED.identity_confidence < 0.8
            THEN chat_conversation.conversation_type ELSE EXCLUDED.conversation_type END,
-         identity_confidence = CASE WHEN (EXCLUDED.external_key LIKE 'screenshot-v2:%' OR EXCLUDED.external_key LIKE 'capture-v3:%'
+         identity_confidence = CASE WHEN chat_conversation.metadata->>'manual_display_name'='true' THEN chat_conversation.identity_confidence
+           WHEN (EXCLUDED.external_key LIKE 'screenshot-v2:%' OR EXCLUDED.external_key LIKE 'capture-v3:%'
            OR EXCLUDED.external_key LIKE 'notification-v2:%')
            AND chat_conversation.identity_confidence >= 0.8 AND EXCLUDED.identity_confidence < 0.8
            THEN chat_conversation.identity_confidence ELSE EXCLUDED.identity_confidence END,

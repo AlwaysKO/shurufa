@@ -6,7 +6,8 @@ export const chatPlatforms = ['wechat', 'qq', 'douyin'];
 /** 历史OCR固定页面别名仅作用于微信截图来源；不改库、不模糊合并真实联系人。 */
 export function conversationGroupName(alias = 'c'): string {
   const name = `btrim(${alias}.display_name)`;
-  return `(CASE WHEN ${alias}.platform='wechat' AND ${alias}.account_key='wechat-empty-tree' THEN
+  return `(CASE WHEN ${alias}.metadata->>'manual_display_name'='true' THEN ${name}
+    WHEN ${alias}.platform='wechat' AND ${alias}.account_key='wechat-empty-tree' THEN
     CASE WHEN ${name} IN ('朋友圈','朋友屠','用友殿','田友殿') THEN '朋友圈'
       WHEN ${name} IN ('微信','微佳') OR ${name} ~ '^微信[（(][0-9]+[）)]$' THEN '微信'
       WHEN ${name} IN ('发现','发机') THEN '发现' ELSE ${name} END
