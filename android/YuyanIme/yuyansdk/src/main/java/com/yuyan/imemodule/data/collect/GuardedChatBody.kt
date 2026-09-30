@@ -11,7 +11,7 @@ import java.io.IOException
 internal class GuardedChatBody(
     private val delegate: RequestBody,
     private val allowed: () -> Boolean,
-    private val pause: () -> Unit = { Thread.sleep(64) }, // at most 128 KiB/s, including JSON/Base64
+    private val pause: () -> Unit = { Thread.sleep(64) }, // 默认128KiB/s；生产入口按屏幕状态注入动态限速。
 ) : RequestBody() {
     override fun contentType() = delegate.contentType()
     override fun contentLength() = delegate.contentLength()

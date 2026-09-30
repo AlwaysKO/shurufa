@@ -13,6 +13,20 @@ if [[ -f "$base/current/REVISION" && $(cat "$base/current/REVISION") == "$sha" &
   echo "Already deployed $sha"
   exit 0
 fi
+# Compare against the actual running release, not just the last fetched commit.
+if [[ -f "$base/current/REVISION" && ${1:-} != --force ]]; then
+  if python3 "$config/deploy-inputs-changed.py" "$repo" "$(cat "$base/current/REVISION")" "$sha"; then
+    : # Backend inputs changed; continue with the normal deployment.
+  else
+    comparison_status=$?
+    if [[ "$comparison_status" == 1 ]]; then
+      echo "No backend input changes; skipping deployment for $sha"
+      exit 0
+    fi
+    echo "Backend input comparison failed; leaving current release unchanged" >&2
+    exit "$comparison_status"
+  fi
+fi
 release="$base/releases/$(date -u +%Y%m%dT%H%M%S)-${sha:0:12}"
 mkdir -p "$release"
 echo "Building $sha in $release"

@@ -2,11 +2,13 @@
 
 本目录归档 `/home/ubuntu/shurufa-deploy` 当前使用的部署脚本及配套配置（2026-09-16），属于原有 `AlwaysKO/shurufa` 仓库。
 2026-09-23：deploy.sh 新增公共关键词推荐图库的原图校验与数据导入。仓库中的其他配置仍为线上快照，实际运行目录需单独安装更新。
+2026-10-01：已在部署锁保护下，将后台输入比较工具和跳过判断安装至实际运行目录，保留线上图库导入opt-in等原有规则。Android/文档单独变化不再重新部署后台；本地和线上脚本副本各14项隔离测试通过，安装未重启应用或切换发布版本。
 2026-09-23：已在线上手机 API 的 location 启用 JSON gzip，避免约 1.23MB 的表情目录超过客户端 30 秒总超时。当前设备目录压缩后约 202KB；原始与解压后内容逐字节一致，不支持 gzip 的客户端仍返回原始 JSON。本站点配置已备份、通过 `nginx -t` 并平滑重载，同步归档在 `nginx.conf`。
 
 ## 文件
 
 - `deploy.sh`：拉取 `origin/main`，构建前后端及表情素材，备份数据库、执行迁移、切换发布目录并检查健康状态；失败时回退应用版本。
+- `deploy-inputs-changed.py`：比较当前线上REVISION与目标提交的发布输入，Android/文档等无关变更直接跳过；须与deploy.sh一起安装到运行目录。
 - `stage-keyword-gifs.py`：按已入库清单从本次 Git 版本补齐成品 GIF；缺文件或 SHA 不一致时阻止发布。与 `deploy.sh` 一起安装到运行目录。
 - `migrate.mjs`：在事务中执行新增 SQL 迁移，校验已执行迁移的校验和。
 - `ensure-call-recording-key.py`：迁移后、切换发布前检查录音密钥；首次空库自动生成，共享目录持久保存，后续部署复用。
@@ -27,7 +29,9 @@
 - Nginx 主配置安装路径：`/etc/nginx/sites-available/my.dog8ball.com`；代理配置：`/etc/nginx/shurufa-proxy.conf`。
 
 systemd 在开机后约 30 秒开始检查，此后在上次任务结束 60 秒后再次检查 GitHub main。
-推送到 main（包括仅修改文档或本目录）会触发现有自动部署；其他分支不会。
+推送到 main 后定时任务检查当前线上REVISION与目标提交的实际差异：仅Android、文档、诊断或本目录快照变化时跳过后台部署，不构建、不备份数据库、不迁移、不切换版本、不重启服务；其他分支不会触发。
+发布输入包括`server/`、`client/`、`assets/`，以及`assets/expression/approved-keyword-gifs.json`引用的外部成品GIF。其中任一变化仍正常发布，包含依赖锁文件、SQL和素材。比较基准始终是当前线上版本，因此不会漏掉前几次提交中尚未发布的后台变化；跳过时不改写REVISION冒充部署成功。
+首次部署和显式`--force`仍按原流程执行；Git历史缺失、比较或清单解析失败时中止，保留当前版本。新筛选规则需安装更新实际运行脚本后才生效，单独推送仓库快照不会更新运行目录。
 构建完成后脚本会将源码工作目录 `git reset --hard` 到所部署提交，因此不要在生产源码目录保留未提交修改。
 
 当前脚本从 Git 导出 `server`、`client`、`assets`，再按 `approved-keyword-gifs.json` 补齐清单引用的成品 GIF，不导出制作原图。公共推荐图库另外根据 `server/data/sticker-library.json` 从本次提交提取上传原图；迁移后事务导入关键词、匹配说法和图片顺序。上传目录始终指向共享存储。本目录不会自动同步到 `/home/ubuntu/shurufa-deploy`。
@@ -57,6 +61,7 @@ systemd 在开机后约 30 秒开始检查，此后在上次任务结束 60 秒�
 
 ```bash
 python3 deploy/production/test_call_recording_key.py
+python3 deploy/production/test_deploy_inputs.py
 bash -n deploy/production/deploy.sh
 ```
 

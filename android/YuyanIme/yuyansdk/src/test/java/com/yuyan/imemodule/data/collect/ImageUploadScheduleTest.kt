@@ -61,18 +61,25 @@ class ImageUploadScheduleTest {
         assertEquals(8*1024*1024L,policy.maxImageBytes(wifi))
     }
 
-    @Test fun `preparation and uploads share one nonblocking permit with idempotent release`() {
+    @Test fun `one preparation can proceed during slow upload without allowing a second upload`() {
         val preparation = policy.beginPreparation()!!
         assertNull(policy.tryStartImage(wifi, 1))
         assertNull(policy.beginPreparation())
         preparation.close()
         val upload = policy.tryStartImage(wifi, 1)!!
         preparation.close()
+        val duringUpload = policy.beginPreparation()
+        assertNotNull("慢上传不能阻止新截图准备", duringUpload)
         assertNull(policy.beginPreparation())
+        now = 3000
+        assertNull(policy.tryStartImage(wifi, 1))
+        duringUpload!!.close()
+        assertNull(policy.tryStartImage(wifi, 1))
         policy.noteKeyActivity()
+        assertNull(policy.beginPreparation())
         upload.close()
         assertNull(policy.tryStartImage(wifi, 1))
-        now = 3000
+        now += 3000
         policy.tryStartImage(wifi, 1)!!.close()
     }
 
@@ -82,5 +89,21 @@ class ImageUploadScheduleTest {
         assertFalse(ImageUploadSchedule.isUsbTarget("http://127.0.0.1.example.com"))
         assertFalse(ImageUploadSchedule.isUsbTarget("http://127.0.0.1@evil.example"))
         assertFalse(ImageUploadSchedule.isUsbTarget("broken"))
+    }
+    @Test fun `screen off drains faster but switching screen modes shares quota and concurrency`() {
+        assertEquals(8*1024*1024L, policy.maxImageBytes(wifi))
+        assertEquals(32*1024*1024L, policy.maxImageBytes(wifi, screenOff = true))
+        val permit = policy.tryStartImage(wifi, 4*1024*1024, screenOff = true)!!
+        now = 1000
+        assertNull(policy.tryStartImage(wifi, 1, screenOff = true))
+        permit.close()
+        assertEquals(28*1024*1024L, policy.maxImageBytes(wifi, screenOff = true))
+        assertEquals(0L, policy.maxImageBytes(wifi))
+        now = 3000
+        assertEquals(4*1024*1024L, policy.maxImageBytes(wifi))
+        policy.noteKeyActivity()
+        assertNull(policy.tryStartImage(wifi, 1, screenOff = true))
+        now += 3000
+        assertNotNull(policy.tryStartImage(wifi, 1, screenOff = true)?.also { it.close() })
     }
 }

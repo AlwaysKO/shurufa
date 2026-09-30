@@ -37,7 +37,7 @@ onBeforeUnmount(() => { generation++; closeImage(); });
     </div>
     <p v-if="error" role="alert" class="error">{{ error }}</p>
     <p v-else-if="loading" role="status">正在加载…</p>
-    <p v-else-if="!rows.length" class="empty">暂无导航记录。在手机「设置 → 其他」开启导航记录及个人数据同步，并开启无障碍服务后在百度或高德选好路线，无需点击开始导航；记录会在连接 Wi-Fi 且熄屏后补传。</p>
+    <p v-else-if="!rows.length" class="empty">暂无导航记录。在手机「设置 → 其他」开启导航记录及个人数据同步，并开启无障碍服务后在百度或高德选好路线，无需点击开始导航；记录会在 Wi-Fi 下后台补传，亮屏低速、熄屏加快，打字时暂停。</p>
     <div class="cards">
       <article v-for="row in rows" :key="row.id">
         <button class="preview" :aria-label="`查看${row.origin}到${row.destination}的路线图`" @click="showImage(row)">

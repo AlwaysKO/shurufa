@@ -13,7 +13,8 @@ internal enum class ImageUploadNetwork { OFFLINE, MOBILE, WIFI, USB }
 internal class ImageUploadSchedule(private val clock: () -> Long) {
     private var lastActivity: Long? = null
     private val touches = Collections.newSetFromMap(IdentityHashMap<Any, Boolean>())
-    private var busy = false
+    private var preparing = false
+    private var uploading = false
     private var lastUpload: Long? = null
     private data class Charge(val time: Long, val bytes: Long)
     private val charges = ArrayDeque<Charge>()
@@ -34,32 +35,36 @@ internal class ImageUploadSchedule(private val clock: () -> Long) {
         touches.isEmpty() && (lastActivity?.let { clock() - it >= IDLE_MS } ?: true)
 
     @Synchronized fun beginPreparation(): Closeable? {
-        if (!isInputIdle() || busy) return null
-        return acquire()
+        if (!isInputIdle() || preparing) return null
+        return acquire(upload = false)
     }
 
-    @Synchronized fun maxImageBytes(network: ImageUploadNetwork): Long {
+    @Synchronized fun maxImageBytes(network: ImageUploadNetwork, screenOff: Boolean = false): Long {
         if (!isInputIdle() || network != ImageUploadNetwork.WIFI) return 0
         val now = clock()
-        if (lastUpload?.let { now - it < IMAGE_INTERVAL_MS } == true) return 0
+        if (lastUpload?.let { now - it < if (screenOff) 1000L else IMAGE_INTERVAL_MS } == true) return 0
         while (charges.isNotEmpty() && now - charges.first.time >= WINDOW_MS) charges.removeFirst()
-        return (WINDOW_BYTES - charges.sumOf { it.bytes }).coerceAtLeast(0)
+        val budget = if (screenOff) 32L * 1024L * 1024L else WINDOW_BYTES
+        return (budget - charges.sumOf { it.bytes }).coerceAtLeast(0)
     }
 
     /** Bytes are the actual UTF-8 JSON request size, including Base64 and metadata. */
-    @Synchronized fun tryStartImage(network: ImageUploadNetwork, bytes: Long): Closeable? {
-        if (busy || bytes <= 0 || bytes > maxImageBytes(network)) return null
+    @Synchronized fun tryStartImage(network: ImageUploadNetwork, bytes: Long, screenOff: Boolean = false): Closeable? {
+        if (preparing || uploading || bytes <= 0 || bytes > maxImageBytes(network, screenOff)) return null
         lastUpload = clock()
         charges.addLast(Charge(clock(), bytes))
         // Failed requests also spent bandwidth: closing a permit never refunds quota.
-        return acquire()
+        return acquire(upload = true)
     }
 
-    private fun acquire(): Closeable {
-        busy = true
+    // 亮屏慢传不能长期阻止新截图；准备和截图上传分别最多一个，释放互不影响。
+    private fun acquire(upload: Boolean): Closeable {
+        if (upload) uploading = true else preparing = true
         val closed = AtomicBoolean(false)
         return Closeable {
-            if (closed.compareAndSet(false, true)) synchronized(this) { busy = false }
+            if (closed.compareAndSet(false, true)) synchronized(this) {
+                if (upload) uploading = false else preparing = false
+            }
         }
     }
 
