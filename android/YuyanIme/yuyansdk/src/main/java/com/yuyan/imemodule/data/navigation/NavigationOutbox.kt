@@ -7,13 +7,15 @@ import org.json.JSONObject
 import java.security.MessageDigest
 
 internal class NavigationOutbox(private val directory: File, private val now: () -> Long = System::currentTimeMillis) {
+    fun contains(id: String): Boolean = File(directory, "$id.json").isFile || File(directory, "$id.seen").isFile
+
     fun enqueue(record: NavigationRecord, allowed: () -> Boolean = { true }): Boolean = runCatching {
         if (!allowed()) return false
         require(record.id.matches(Regex("[a-f0-9-]{36}")))
         require(record.image.isNotEmpty() && record.image.size <= 3 * 1024 * 1024)
         check(directory.isDirectory || directory.mkdirs())
         val file = File(directory, "${record.id}.json")
-        if (file.isFile) return true
+        if (contains(record.id)) return true
         val payload = JSONObject().put("id", record.id).put("platform", record.route.platform)
             .put("origin", record.route.origin).put("destination", record.route.destination)
             .put("overview_at", record.overviewAt).put("started_at", record.startedAt)
@@ -26,6 +28,7 @@ internal class NavigationOutbox(private val directory: File, private val now: ()
             stream.write(payload.toByteArray(Charsets.UTF_8))
             if (!allowed()) { atomic.failWrite(stream); return false }
             atomic.finishWrite(stream)
+            check(file.isFile && file.length() == payload.toByteArray(Charsets.UTF_8).size.toLong())
         }
         catch (error: Exception) { atomic.failWrite(stream); throw error }
         true
@@ -35,6 +38,10 @@ internal class NavigationOutbox(private val directory: File, private val now: ()
     fun count(): Int = files().size
 
     suspend fun drain(allowed: () -> Boolean, send: suspend (String) -> String?) {
+        if (!allowed()) return
+        // 只清理过期的小回执；离线多日的图片仍保留补传。
+        directory.listFiles { file -> file.isFile && file.name.matches(Regex("[a-f0-9-]{36}\\.seen")) }
+            .orEmpty().filter { now() - it.lastModified() > 7 * 86_400_000L }.forEach { it.delete() }
         for (file in files().filter { it.lastModified() <= now() }.take(2)) {
             if (!allowed()) return
             try {
@@ -45,7 +52,17 @@ internal class NavigationOutbox(private val directory: File, private val now: ()
                 val response = send(payload) ?: continue
                 val receipt = JSONObject(response)
                 if (receipt.optBoolean("ok") && receipt.optString("id") == record.getString("id") &&
-                    receipt.optString("sha256") == record.getString("sha256")) AtomicFile(file).delete()
+                    receipt.optString("sha256") == record.getString("sha256")) {
+                    // 先落盘去重回执再删除图片，重启/再次打开也不会重新截图。
+                    val marker = AtomicFile(File(directory, "${file.nameWithoutExtension}.seen"))
+                    val stream = marker.startWrite()
+                    try {
+                        stream.write(1); marker.finishWrite(stream)
+                        check(marker.baseFile.isFile && marker.readFully().contentEquals(byteArrayOf(1)))
+                    }
+                    catch (error: Exception) { marker.failWrite(stream); throw error }
+                    AtomicFile(file).delete()
+                }
             } catch (error: kotlinx.coroutines.CancellationException) { throw error }
             catch (_: Exception) { /* 失败记录保留到下次重试。 */ }
             finally {

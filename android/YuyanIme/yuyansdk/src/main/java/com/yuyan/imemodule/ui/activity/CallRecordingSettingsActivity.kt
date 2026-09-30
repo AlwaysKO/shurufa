@@ -100,9 +100,9 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
             }}
         }
         callLogStatus=text("")
-        button("授权通话记录并立即同步"){
+        button("授权并立即同步"){
             if(!PhoneCallLogRuntime.consent(this).enabled){
-                Toast.makeText(this,"请先开启上方通话记录同步开关",Toast.LENGTH_LONG).show()
+                Toast.makeText(this,"请先开启上方同步开关",Toast.LENGTH_LONG).show()
             }else if(!PhoneCallLogRuntime.hasPermission(this))callLogPermission.launch(Manifest.permission.READ_CALL_LOG)
             else PhoneCallLogJobService.wake(this)
         }
@@ -127,7 +127,7 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
                     }
                 }
             }catch(e:CancellationException){throw e}
-            catch(_:Exception){Toast.makeText(this@CallRecordingSettingsActivity,"通话记录同步未开启，请重试",Toast.LENGTH_LONG).show()}
+            catch(_:Exception){Toast.makeText(this@CallRecordingSettingsActivity,"同步未开启，请重试",Toast.LENGTH_LONG).show()}
             finally{changingCallLog=false;callLogSwitch.isEnabled=true;refreshStatus()}
         }
     }
@@ -211,7 +211,7 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
             updatingCallLog=true;callLogSwitch.isChecked=PhoneCallLogRuntime.consent(this).enabled;updatingCallLog=false
             callLogStatus.text=when{
                 !callLogSwitch.isChecked->"输入记录同步已关闭"
-                !CollectionConsent.enabled(this)->"个人数据同步总开关关闭，通话记录暂停"
+                !CollectionConsent.enabled(this)->"个人数据同步总开关关闭"
                 !PhoneCallLogRuntime.hasPermission(this)->"尚未获得系统输入记录权限，请点击下方授权；若系统拒绝，请到应用权限中检查"
                 else->PhoneCallLogRuntime.preferences(this).getString("status","已开启，等待后台同步")
             }
@@ -221,7 +221,7 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
         val consent=CallRecordingRuntime.consent(this);val p=CallRecordingRuntime.preferences(this)
         val permissionBlock=if(consent.wantsRecording)CallRecordingService.permissionBlock(this) else null
         val state=permissionBlock ?: (p.getString("state","")?:"")
-        val labels=mapOf("waiting_incoming" to "等待普通来电接通（实验）","recording_unverified" to "正在录音，双方声音未验证",
+        val labels=mapOf("waiting_incoming" to "等待","recording_unverified" to "正在录音，双方声音未验证",
             "system_silenced" to "系统将录音静音，已停止","suspected_silent" to "持续无有效信号，已停止","microphone_unavailable" to "麦克风不可用，已停止",
             "single_sim_required" to "旧单卡限制已更新，等待重新建立监听",
             "no_active_sim" to "未发现活动 SIM，尚未录音",

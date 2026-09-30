@@ -30,20 +30,20 @@ onBeforeUnmount(() => { generation++; closeImage(); });
 <template>
   <section class="navigation-records">
     <h2>导航记录</h2>
-    <p class="hint">查看开始导航前的路线总览。记录表示已开始导航，不代表已到达目的地。</p>
+    <p class="hint">查看选好路线时的总览截图和起终点。记录不表示已经开始导航或到达；新版手机同一天同一地图相同起终点只记一次。</p>
     <div class="filters">
       <label>地图来源 <select v-model="platform"><option value="">全部</option><option value="amap">高德地图</option><option value="baidu">百度地图</option></select></label>
       <button :disabled="loading" @click="load">刷新</button><span>共 {{ total }} 条</span>
     </div>
     <p v-if="error" role="alert" class="error">{{ error }}</p>
     <p v-else-if="loading" role="status">正在加载…</p>
-    <p v-else-if="!rows.length" class="empty">暂无导航记录。在手机「设置 → 其他」开启导航记录及个人数据同步，并开启无障碍服务后使用百度或高德导航；记录会在连接 Wi-Fi 且熄屏后补传。</p>
+    <p v-else-if="!rows.length" class="empty">暂无导航记录。在手机「设置 → 其他」开启导航记录及个人数据同步，并开启无障碍服务后在百度或高德选好路线，无需点击开始导航；记录会在连接 Wi-Fi 且熄屏后补传。</p>
     <div class="cards">
       <article v-for="row in rows" :key="row.id">
         <button class="preview" :aria-label="`查看${row.origin}到${row.destination}的路线图`" @click="showImage(row)">
           <img :src="navigationImageUrl(row.id, currentUserId)" :alt="`${row.origin} → ${row.destination}`" loading="lazy">
         </button>
-        <div class="details"><span class="badge">{{ name(row.platform) }}</span><time>{{ time(row.started_at) }}</time>
+        <div class="details"><span class="badge">{{ name(row.platform) }}</span><time>{{ time(row.overview_at) }}</time>
           <p><span class="endpoint">起</span>{{ row.origin }}</p><p><span class="endpoint destination">终</span>{{ row.destination }}</p>
           <button @click="showImage(row)">查看原图</button>
         </div>

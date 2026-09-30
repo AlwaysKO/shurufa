@@ -5,6 +5,15 @@ import org.junit.Test
 
 class NavigationPageTest {
     private fun labels(vararg text: String) = text.map { NavigationLabel(null, it, null) }
+    @Test fun baidu22RouteSelectionPageExposesEndpointsBeforeStarting() {
+        val page = NavigationPage.parse("com.baidu.BaiduMap", listOf(
+            NavigationLabel("com.baidu.BaiduMap:id/route_search_input_start_text", "我的位置", null),
+            NavigationLabel("com.baidu.BaiduMap:id/route_search_input_end_text", "测试市第一医院", null),
+            NavigationLabel("com.baidu.BaiduMap:id/route_tab_item_time", "26分钟", null),
+            NavigationLabel("com.baidu.BaiduMap:id/route_tab_item_distance", "12公里", null),
+            NavigationLabel("com.baidu.BaiduMap:id/to_pro_nav", "开始导航", null)))
+        assertEquals(NavigationPage.Overview(NavigationRoute("baidu", "我的位置", "测试市第一医院")), page)
+    }
     @Test fun bothMapsRecognizeLabeledOverview() {
         for (pkg in listOf("com.autonavi.minimap", "com.baidu.BaiduMap")) {
             val page = NavigationPage.parse(pkg, labels("起点：我的位置", "终点：杭州东站", "35分钟", "12公里", "开始导航"))

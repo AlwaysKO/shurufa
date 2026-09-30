@@ -1,45 +1,30 @@
 package com.yuyan.imemodule.data.navigation
 
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
 import java.util.UUID
 
 internal data class NavigationRoute(val platform: String, val origin: String, val destination: String)
 internal data class NavigationRecord(val id: String, val route: NavigationRoute, val image: ByteArray, val overviewAt: Long, val startedAt: Long)
-internal class NavigationSession {
-    private var pending: NavigationRecord? = null
-    private var clickedAt: Long? = null
-    private var confirmed: NavigationRecord? = null
 
-    fun preview(route: NavigationRoute, image: ByteArray, now: Long, startClickAt: Long? = null) {
-        if (image.isEmpty()) return
-        val old = pending
-        pending = NavigationRecord(if (old?.route == route) old.id else UUID.randomUUID().toString(), route, image, now, 0)
-        if (old?.route != route) clickedAt = null
-        if (startClickAt != null) clickedAt = startClickAt
-        confirmed = null
-    }
+/** 同一天同一地图的相同起终点只记录一次；交通/时间标签变化不改变身份。 */
+internal fun navigationOverviewId(route: NavigationRoute, at: Long, zone: TimeZone = TimeZone.getDefault()): String {
+    val day = SimpleDateFormat("yyyy-MM-dd", Locale.ROOT).apply { timeZone = zone }.format(java.util.Date(at))
+    val key = listOf("route-overview-v1", day, route.platform, route.origin, route.destination)
+        .joinToString("") { "${it.length}:$it" }
+    return UUID.nameUUIDFromBytes(key.toByteArray(Charsets.UTF_8)).toString()
+}
 
-    fun startClicked(platform: String, now: Long) {
-        if (pending?.route?.platform == platform) clickedAt = now
+/** 持久去重先于截图，失败不记成功。由 NavigationCapture 的单消费者串行调用。 */
+internal class NavigationSession(private val outbox: NavigationOutbox, private val zone: () -> TimeZone = TimeZone::getDefault) {
+    suspend fun saveOverview(route: NavigationRoute, at: Long, allowed: () -> Boolean, capture: suspend () -> ByteArray?): Boolean {
+        if (!allowed()) return false
+        val id = navigationOverviewId(route, at, zone())
+        if (outbox.contains(id)) return false
+        val bytes = capture() ?: return false
+        if (!allowed()) return false
+        // started_at 为旧服务端必填兼容字段；新记录使用截图时刻，不能据此断言已开始导航。
+        return outbox.enqueue(NavigationRecord(id, route, bytes, at, at), allowed)
     }
-
-    /** 只在调用方已经确认导航中页面时调用。失败入队仍保留同一记录ID。 */
-    fun confirm(platform: String, destination: String?, now: Long): NavigationRecord? {
-        val candidate = pending ?: return null
-        if (candidate.route.platform != platform || now - candidate.overviewAt !in 0..300_000) return null
-        if (destination != null && candidate.route.destination != destination) return null
-        val clickMatches = clickedAt?.let { now - it in 0..15_000 } == true
-        if (!clickMatches && destination != candidate.route.destination) return null
-        return confirmed ?: candidate.copy(startedAt = now).also { confirmed = it }
-    }
-
-    fun persisted(id: String) { if (pending?.id == id) abandon() }
-    fun expire(now: Long) { pending?.let { if (now - it.overviewAt !in 0..300_000) abandon() } }
-    fun transition(now: Long) { if (clickedAt?.let { now - it in 0..15_000 } != true) abandon() }
-    fun hasPreview(): Boolean = pending != null
-    fun overviewChanged(route: NavigationRoute? = null): Long? {
-        val sameRouteClick = if (pending?.route == route) clickedAt else null
-        abandon()
-        return sameRouteClick
-    }
-    fun abandon() { pending = null; clickedAt = null; confirmed = null }
 }

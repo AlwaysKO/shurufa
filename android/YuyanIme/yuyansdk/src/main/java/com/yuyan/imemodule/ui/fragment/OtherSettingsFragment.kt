@@ -269,13 +269,13 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
             key = com.yuyan.imemodule.data.navigation.NavigationSettings.KEY
             isPersistent = false
             isChecked = com.yuyan.imemodule.data.navigation.NavigationSettings.selected(ctx)
-            title = "导航记录"
-            summary = "百度/高德开始导航后保存一张路线总览，连接Wi-Fi且熄屏后同步后台。需Android 11及以上、个人数据同步和无障碍服务。关闭暂停采集与补传，已保存记录保留。"
+            title = "输入记录"
+            summary = "百度/高德选好路线后保存总览截图，同一天同一地图相同起终点只记一次，连接Wi-Fi且熄屏后同步后台。需Android 11及以上、个人数据同步和无障碍服务。关闭暂停采集与补传，已保存记录保留。"
             isEnabled = android.os.Build.VERSION.SDK_INT >= 30
             setOnPreferenceChangeListener { _, value ->
                 if (value == true) {
                     androidx.appcompat.app.AlertDialog.Builder(ctx).setTitle("开启导航记录？")
-                        .setMessage("会读取百度/高德前台路线页，暂存含起终点的路线截图；确认开始导航后保存到手机，连接Wi-Fi且熄屏后上传当前线上后台，供你在「导航记录」查看。亮屏暂停截图上传，避让其他应用；仅查路线不会上传。\n\n请同时开启个人数据同步和本应用无障碍服务。可以随时关闭此开关，关闭后暂停采集与补传。")
+                        .setMessage("会读取百度/高德前台路线页，选好路线、显示起终点后就保存一张总览截图，无需开始导航。同一天同一地图相同起终点只记一次；连接Wi-Fi且熄屏后上传当前线上后台，供你在「导航记录」查看。亮屏暂停截图上传，避让其他应用。路线记录不表示已经出发或到达。\n\n请同时开启个人数据同步和本应用无障碍服务。可以随时关闭此开关，关闭后暂停采集与补传。")
                         .setPositiveButton("同意并开启") { _, _ ->
                             com.yuyan.imemodule.data.navigation.NavigationSettings.setEnabled(ctx, true)
                             isChecked = true

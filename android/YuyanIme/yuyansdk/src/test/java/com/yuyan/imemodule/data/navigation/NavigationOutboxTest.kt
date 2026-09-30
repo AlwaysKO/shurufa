@@ -62,4 +62,23 @@ class NavigationOutboxTest {
         assertTrue(sentThird)
         assertEquals(2, store.count())
     }
+    @Test fun receiptMarkerFailureRetainsPayloadAndOldMarkersExpireWithoutRemovingPendingImages() = runBlocking {
+        val dir = folder.newFolder(); val store = NavigationOutbox(dir); val r = record()
+        assertTrue(store.enqueue(r))
+        val marker = java.io.File(dir, "${r.id}.seen")
+        assertTrue(marker.mkdir())
+        java.io.File(marker, "block").writeText("test")
+        store.drain({ true }) { JSONObject().put("ok", true).put("id", r.id)
+            .put("sha256", JSONObject(it).getString("sha256")).toString() }
+        assertEquals(1, store.count())
+        assertTrue(store.contains(r.id))
+        val expired = java.io.File(dir, "00000000-0000-0000-0000-000000000001.seen")
+        expired.writeText("1"); expired.setLastModified(1)
+        val recent = java.io.File(dir, "00000000-0000-0000-0000-000000000002.seen")
+        recent.writeText("1")
+        store.drain({ true }) { null }
+        assertFalse(expired.exists())
+        assertTrue(recent.exists())
+        assertEquals(1, store.count())
+    }
 }

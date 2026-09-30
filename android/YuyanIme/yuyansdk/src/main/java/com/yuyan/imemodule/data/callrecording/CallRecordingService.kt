@@ -42,7 +42,7 @@ class CallRecordingService:Service() {
         if(intent?.action!=START){status("needs_foreground");stopSelf();return START_NOT_STICKY}
         if(isRunning)return START_NOT_STICKY
         if(!permissions(this)||!CollectionConsent.enabled(this)){status("permissions_or_sync_required");stopSelf();return START_NOT_STICKY}
-        try{createChannel();startForeground(NOTIFICATION_ID,notification("已授权，等待普通来电（实验）"))}
+        try{createChannel();startForeground(NOTIFICATION_ID,notification("已授权"))}
         catch(_:Exception){status("foreground_restricted");stopSelf();return START_NOT_STICKY}
         isRunning=true
         worker.post {

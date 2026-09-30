@@ -1,68 +1,91 @@
 package com.yuyan.imemodule.data.navigation
 
+import java.io.File
+import java.util.TimeZone
+import kotlinx.coroutines.runBlocking
+import org.json.JSONObject
 import org.junit.Assert.*
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [30])
 class NavigationSessionTest {
-    private val route = NavigationRoute("amap", "我的位置", "杭州东站")
+    @get:Rule val folder = TemporaryFolder()
+    private val route = NavigationRoute("amap", "我的位置", "测试车站")
     private val image = byteArrayOf(1, 2, 3)
-    @Test fun queryAloneAndActiveWithoutEvidenceAreNotRecorded() {
-        val state = NavigationSession()
-        state.preview(route, image, 1_000)
-        assertNull(state.confirm("amap", null, 2_000))
-        state.startClicked("amap", 2_000)
-        val record = state.confirm("amap", null, 3_000)!!
-        assertEquals("杭州东站", record.route.destination)
-        assertArrayEquals(image, record.image)
-        assertEquals(3_000L, record.startedAt)
+    private val zone = TimeZone.getTimeZone("Asia/Shanghai")
+    private val at = 1790827200000L // 2026-10-01 12:00 上海时间
+    private fun state(dir: File) = NavigationSession(NavigationOutbox(dir)) { zone }
+
+    @Test fun selectedOverviewIsPersistedWithoutAnyStartClick() = runBlocking {
+        val dir = folder.newFolder()
+        assertTrue(state(dir).saveOverview(route, at, { true }) { image })
+        val json = JSONObject(dir.listFiles()!!.single { it.extension == "json" }.readText())
+        assertEquals(at, json.getLong("overview_at"))
+        assertEquals(at, json.getLong("started_at")) // 旧上传协议兼容时间，不表示已经导航。
+        assertEquals(route.destination, json.getString("destination"))
     }
-    @Test fun successDeduplicatesAndPersistenceFailureCanRetrySameId() {
-        val state = NavigationSession()
-        state.preview(route, image, 1_000); state.startClicked("amap", 2_000)
-        val first = state.confirm("amap", null, 3_000)!!
-        assertEquals(first.id, state.confirm("amap", null, 4_000)!!.id)
-        state.persisted(first.id)
-        assertNull(state.confirm("amap", null, 5_000))
-        state.preview(route, image, 6_000); state.startClicked("amap", 7_000)
-        assertNotEquals(first.id, state.confirm("amap", null, 8_000)!!.id)
+    @Test fun sameRouteIsDeduplicatedBeforeScreenshotIncludingProcessRestart() = runBlocking {
+        val dir = folder.newFolder(); var captures = 0
+        val state = state(dir)
+        assertTrue(state.saveOverview(route, at, { true }) { captures++; image })
+        assertFalse(state.saveOverview(route, at + 60_000, { true }) { captures++; image })
+        assertFalse(state(dir).saveOverview(route, at + 120_000, { true }) { captures++; image })
+        assertEquals(1, captures)
+        assertEquals(1, NavigationOutbox(dir).count())
     }
-    @Test fun differentAppDestinationExpiryAndAbandonedQueryNeverConfirm() {
-        for (mode in 0..4) {
-            val state = NavigationSession()
-            state.preview(route, image, 1_000); state.startClicked("amap", 2_000)
-            if (mode == 3) state.abandon()
-            if (mode == 4) state.preview(route.copy(destination = "西湖"), image, 2_500)
-            assertNull(state.confirm(if (mode == 0) "baidu" else "amap", if (mode == 1) "西湖" else null,
-                if (mode == 2) 400_000 else 3_000))
+    @Test fun returningAfterAnotherRouteAndSuccessfulUploadDoesNotRescreenshot() = runBlocking {
+        val dir = folder.newFolder(); val state = state(dir)
+        assertTrue(state.saveOverview(route, at, { true }) { image })
+        assertTrue(state.saveOverview(route.copy(destination = "测试公园"), at, { true }) { image })
+        NavigationOutbox(dir).drain({ true }) { body ->
+            val r = JSONObject(body)
+            JSONObject().put("ok", true).put("id", r.getString("id")).put("sha256", r.getString("sha256")).toString()
         }
+        assertEquals(0, NavigationOutbox(dir).count())
+        assertFalse(state(dir).saveOverview(route, at + 60_000, { true }) { fail("已传记录也不能重拍"); image })
     }
-    @Test fun matchingDestinationCanConfirmWithoutClickButCannotConfirmDifferentRoute() {
-        val state = NavigationSession()
-        state.preview(route, image, 1_000)
-        assertNull(state.confirm("amap", "西湖", 2_000))
-        assertNotNull(state.confirm("amap", "杭州东站", 3_000))
+    @Test fun nextLocalDayChangedEndpointOrPlatformCanBeRecorded() = runBlocking {
+        val dir = folder.newFolder(); val state = state(dir)
+        for ((r, time) in listOf(route to at, route to (at + 86_400_000),
+            route.copy(origin = "测试广场") to at, route.copy(destination = "测试公园") to at,
+            route.copy(platform = "baidu") to at)) {
+            assertTrue(state.saveOverview(r, time, { true }) { image })
+        }
+        assertEquals(5, NavigationOutbox(dir).count())
     }
-    @Test fun lateClicksAndClockRollbackDoNotConfirm() {
-        val state = NavigationSession()
-        state.preview(route, image, 100_000); state.startClicked("amap", 101_000)
-        assertNull(state.confirm("amap", null, 90_000))
-        assertNull(state.confirm("amap", null, 130_000))
+    @Test fun screenshotFailureRevocationAndPersistenceFailureCanRetry() = runBlocking {
+        val dir = folder.newFolder(); val state = state(dir)
+        assertFalse(state.saveOverview(route, at, { true }) { null })
+        assertFalse(state.saveOverview(route, at, { false }) { fail("撤回同意不能截图"); image })
+        var allowed = true
+        assertFalse(state.saveOverview(route, at, { allowed }) { allowed = false; image })
+        assertEquals(0, NavigationOutbox(dir).count())
+        assertTrue(state.saveOverview(route, at, { true }) { image })
+        val blocked = folder.newFile()
+        assertFalse(state(blocked).saveOverview(route, at, { true }) { image })
+        assertTrue(blocked.delete()); assertTrue(blocked.mkdir())
+        assertTrue(state(blocked).saveOverview(route, at, { true }) { image })
     }
-    @Test fun changedRouteInvalidatesOldImageEvenWhenNewScreenshotFails() {
-        val state = NavigationSession()
-        state.preview(route, image, 1_000)
-        state.overviewChanged()
-        state.startClicked("amap", 2_000)
-        assertNull(state.confirm("amap", null, 3_000))
+    @Test fun routeKeyUsesCalendarDayAndUnambiguousEndpointBoundaries() {
+        assertEquals(navigationOverviewId(route, at, zone), navigationOverviewId(route, at + 60_000, zone))
+        assertNotEquals(navigationOverviewId(route, at, zone), navigationOverviewId(route, at + 43_200_000, zone))
+        assertNotEquals(navigationOverviewId(route.copy(origin = "a|b", destination = "c"), at, zone),
+            navigationOverviewId(route.copy(origin = "a", destination = "b|c"), at, zone))
     }
-    @Test fun freshOverviewFromStartClickKeepsClickEvidenceWhenLabelsChanged() {
-        val state = NavigationSession()
-        state.preview(route, image, 1_000)
-        state.startClicked("amap", 2_000)
-        val previousClick = state.overviewChanged(route)
-        assertEquals(2_000L, previousClick)
-        state.preview(route, byteArrayOf(4, 5, 6), 2_500, startClickAt = previousClick)
-        val confirmed = state.confirm("amap", null, 3_000)!!
-        assertArrayEquals(byteArrayOf(4, 5, 6), confirmed.image)
+    @Test fun runningServiceUsesCurrentPhoneTimezoneAfterTimezoneChange() = runBlocking {
+        val original = TimeZone.getDefault()
+        try {
+            TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
+            val state = NavigationSession(NavigationOutbox(folder.newFolder()))
+            assertTrue(state.saveOverview(route, at, { true }) { image })
+            TimeZone.setDefault(TimeZone.getTimeZone("GMT-12:00"))
+            assertTrue(state.saveOverview(route, at, { true }) { image })
+        } finally { TimeZone.setDefault(original) }
     }
 }

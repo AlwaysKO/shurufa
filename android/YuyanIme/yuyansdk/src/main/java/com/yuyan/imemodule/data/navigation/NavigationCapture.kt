@@ -23,23 +23,21 @@ import java.util.concurrent.atomic.AtomicLong
 
 /** 地图单独识别，聊天采集器的支持范围保持不变。所有树读取、截图和编码都在IO执行。 */
 internal class NavigationCapture(private val service: AccessibilityService) : Closeable {
-    private data class Event(val value: AccessibilityEvent?, val epoch: Long, val consent: Long, val setting: Long, val at: Long)
+    private data class Event(val value: AccessibilityEvent?, val epoch: Long, val consent: Long, val setting: Long)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val epoch = AtomicLong()
     private val events = Channel<Event>(24, BufferOverflow.DROP_OLDEST, onUndeliveredElement = { recycle(it.value) })
-    private val session = NavigationSession()
+    private val session = NavigationSession(NavigationSync.outbox(service))
     private var packageName: String? = null
-    private var lastOverview: String? = null
     private var lastRead = 0L
 
     init {
         scope.launch {
             while (isActive) {
-                val event = withTimeoutOrNull(30_000) { events.receive() }
-                if (event == null) { session.expire(System.currentTimeMillis()); if (!session.hasPreview()) lastOverview = null; continue }
+                val event = events.receive()
                 try {
-                    if (event.value == null || !current(event)) { abandon(); continue }
-                    if (!ImageUploadRuntime.awaitInputIdle { current(event) }) { abandon(); continue }
+                    if (event.value == null || !current(event)) { continue }
+                    if (!ImageUploadRuntime.awaitInputIdle { current(event) }) { continue }
                     val gap = 500 - (SystemClock.elapsedRealtime() - lastRead)
                     if (gap > 0) delay(gap)
                     if (current(event)) process(event)
@@ -59,14 +57,14 @@ internal class NavigationCapture(private val service: AccessibilityService) : Cl
         }
         if (packageName != pkg) { reset(); packageName = pkg }
         @Suppress("DEPRECATION") val copy = AccessibilityEvent.obtain(event)
-        val item = Event(copy, epoch.get(), CollectionConsent.epoch, NavigationSettings.generation.get(), System.currentTimeMillis())
+        val item = Event(copy, epoch.get(), CollectionConsent.epoch, NavigationSettings.generation.get())
         if (events.trySend(item).isFailure) recycle(copy)
     }
 
     fun reset() {
         packageName = null
         val version = epoch.incrementAndGet()
-        events.trySend(Event(null, version, CollectionConsent.epoch, NavigationSettings.generation.get(), System.currentTimeMillis()))
+        events.trySend(Event(null, version, CollectionConsent.epoch, NavigationSettings.generation.get()))
     }
 
     private fun current(event: Event) = event.epoch == epoch.get() && event.consent == CollectionConsent.epoch &&
@@ -77,58 +75,32 @@ internal class NavigationCapture(private val service: AccessibilityService) : Cl
     private suspend fun process(event: Event) {
         val original = event.value ?: return
         val pkg = original.packageName?.toString() ?: return
-        val platform = NavigationPage.platform(pkg) ?: return
-        var startClickAt: Long? = null
-        if (original.eventType == AccessibilityEvent.TYPE_VIEW_CLICKED) {
-            val texts = original.text.map(CharSequence::toString) + listOfNotNull(original.contentDescription?.toString())
-            val source = if (texts.any(NavigationPage::isStart)) null else original.source
-            val start = try { texts.any(NavigationPage::isStart) || listOfNotNull(source?.text?.toString(), source?.contentDescription?.toString()).any(NavigationPage::isStart) }
-            finally { source?.recycle() }
-            if (start) { startClickAt = event.at; session.startClicked(platform, event.at) }
-        }
         val before = readPage(pkg) ?: return
         lastRead = SystemClock.elapsedRealtime()
-        val now = System.currentTimeMillis()
-        session.expire(now)
-        if (!session.hasPreview()) lastOverview = null
-        when (val page = NavigationPage.parse(pkg, before.labels)) {
-            is NavigationPage.Overview -> {
-                val signature = before.labels.toString()
-                if (signature == lastOverview && session.hasPreview()) return
-                val previousClick = session.overviewChanged(page.route)
-                val refreshClickAt = startClickAt ?: previousClick
-                lastOverview = null
-                val permit = ImageUploadRuntime.beginPreparation() ?: return
+        val page = NavigationPage.parse(pkg, before.labels) as? NavigationPage.Overview ?: return
+        val allowed = { current(event) && ImageUploadRuntime.isInputIdle() }
+        // 去重发生在调用截图接口之前；上传完成和进程重启不重置去重结果。
+        val permit = ImageUploadRuntime.beginPreparation() ?: return
+        val saved = try {
+            session.saveOverview(page.route, System.currentTimeMillis(), allowed) capture@{
+                val image = withTimeoutOrNull(5_000) { WindowScreenshotter(service) { it == pkg }.capture(before.window, before.bounds) }
+                if (image !is WindowScreenshotResult.Success) return@capture null
                 try {
-                    val image = withTimeoutOrNull(5_000) { WindowScreenshotter(service) { it == pkg }.capture(before.window, before.bounds) }
-                    if (image !is WindowScreenshotResult.Success) return
-                    try {
-                        if (!current(event) || !ImageUploadRuntime.isInputIdle()) return
-                        val after = readPage(pkg) ?: return
-                        if (after.window != before.window || after.labels != before.labels) return
-                        val stream = ByteArrayOutputStream()
-                        val map = cropNavigationWindow(image, before.bounds) ?: return
-                        try { if (!map.compress(Bitmap.CompressFormat.WEBP, 85, stream)) return }
-                        finally { if (map !== image.bitmap) map.recycle() }
-                        if (!current(event) || !ImageUploadRuntime.isInputIdle() || stream.size() > 3 * 1024 * 1024) return
-                        session.preview(page.route, stream.toByteArray(), now, refreshClickAt)
-                        lastOverview = signature
-                    } finally { image.bitmap.recycle() }
-                } finally { permit.close() }
+                    if (!allowed()) return@capture null
+                    val after = readPage(pkg) ?: return@capture null
+                    if (after.window != before.window || after.bounds != before.bounds || after.labels != before.labels) return@capture null
+                    val stream = ByteArrayOutputStream()
+                    val map = cropNavigationWindow(image, before.bounds) ?: return@capture null
+                    try { if (!map.compress(Bitmap.CompressFormat.WEBP, 85, stream)) return@capture null }
+                    finally { if (map !== image.bitmap) map.recycle() }
+                    if (!allowed() || stream.size() > 3 * 1024 * 1024) return@capture null
+                    stream.toByteArray()
+                } finally { image.bitmap.recycle() }
             }
-            is NavigationPage.Active -> {
-                val record = session.confirm(page.platform, page.destination, now) ?: return
-                val permit = ImageUploadRuntime.beginPreparation() ?: return
-                try {
-                    if (!current(event) || !ImageUploadRuntime.isInputIdle()) return
-                    if (NavigationSync.outbox(service).enqueue(record) { current(event) && ImageUploadRuntime.isInputIdle() }) {
-                        session.persisted(record.id); lastOverview = null
-                        DataCollector.init(service.applicationContext)
-                        DataCollector.requestSync()
-                    }
-                } finally { permit.close() }
-            }
-            NavigationPage.Other -> { session.transition(now); if (!session.hasPreview()) lastOverview = null }
+        } finally { permit.close() }
+        if (saved) {
+            DataCollector.init(service.applicationContext)
+            DataCollector.requestSync()
         }
     }
 
@@ -158,7 +130,6 @@ internal class NavigationCapture(private val service: AccessibilityService) : Cl
         } finally { root.recycle() }
     }
 
-    private fun abandon() { session.abandon(); lastOverview = null }
     override fun close() { epoch.incrementAndGet(); events.cancel(); scope.cancel() }
     companion object {
         @Suppress("DEPRECATION") private fun recycle(event: AccessibilityEvent?) { event?.recycle() }

@@ -32,7 +32,7 @@ internal object PhoneCallLogRuntime {
             val request=http.requestId()
             if(!hasPermission(app)){
                 http.send(PhoneCallLogBatch(request,"permission_required",emptyList(),false))
-                preferences(app).edit().putString("status","需要系统通话记录权限；请在此页点击授权").apply();return
+                preferences(app).edit().putString("status","需要系统记录权限；请在此页点击授权").apply();return
             }
             val readAllowed={allowed()&&hasPermission(app)}
             val read=try{PhoneCallLogReader.read(app.contentResolver,System.currentTimeMillis(),readAllowed)}
@@ -40,7 +40,7 @@ internal object PhoneCallLogRuntime {
                     if(allowed()){
                         val state=if(hasPermission(app))"failed" else "permission_required"
                         http.send(PhoneCallLogBatch(request,state,emptyList(),false))
-                        preferences(app).edit().putString("status",if(state=="failed")"系统通话记录读取失败，稍后重试"else"系统通话记录权限已撤回").apply()
+                        preferences(app).edit().putString("status",if(state=="failed")"系统记录读取失败，稍后重试"else"系统权限已撤回").apply()
                     }
                     return
                 }
@@ -52,9 +52,9 @@ internal object PhoneCallLogRuntime {
             // 发送含记录的请求期间另加实时系统权限检查；状态回报不包含记录。
             PhoneCallLogHttp(target,device,{app.getSharedPreferences("personal_dictionary_sync_v1",0).getString("token",null)},readAllowed).send(batch)
             if(readAllowed())preferences(app).edit().putString("last_fingerprint",fingerprint)
-                .putLong("last_synced_at",System.currentTimeMillis()).putString("status","已同步最近7天 ${read.records.size} 条普通电话记录${if(read.truncated)"（达到2000条上限）"else""}").apply()
+                .putLong("last_synced_at",System.currentTimeMillis()).putString("status","已同步最近7天 ${read.records.size} 条普通记录${if(read.truncated)"（达到2000条上限）"else""}").apply()
         }catch(_:Exception){
-            if(running()&&consent(app).enabled&&ImageUploadRuntime.isInputIdle())preferences(app).edit().putString("status","通话记录同步暂未完成，稍后自动重试").apply()
+            if(running()&&consent(app).enabled&&ImageUploadRuntime.isInputIdle())preferences(app).edit().putString("status","同步暂未完成，稍后自动重试").apply()
         }finally{lock.unlock()}
     }
 }

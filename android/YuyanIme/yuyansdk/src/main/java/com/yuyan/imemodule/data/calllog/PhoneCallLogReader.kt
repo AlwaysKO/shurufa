@@ -16,7 +16,7 @@ internal data class PhoneCallLogRecord(val source_id:String,val number:String?,v
 internal data class PhoneCallLogBatch(val request_id:String?,val status:String,val records:List<PhoneCallLogRecord>,val truncated:Boolean)
 internal data class PhoneCallLogRead(val records:List<PhoneCallLogRecord>,val truncated:Boolean)
 
-/** 仅普通系统通话记录；从不写回提供者，也不查询联系人。 */
+/** 仅普通系统记录；从不写回提供者，也不查询联系人。 */
 internal object PhoneCallLogReader {
     const val WINDOW_MS=7*24*60*60*1000L
     private const val LIMIT=2000

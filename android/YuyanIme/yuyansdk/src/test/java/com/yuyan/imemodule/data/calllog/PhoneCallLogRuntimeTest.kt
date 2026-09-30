@@ -24,7 +24,7 @@ import java.util.UUID
 @Config(sdk=[28])
 class PhoneCallLogRuntimeTest {
     private val app=ApplicationProvider.getApplicationContext<Application>()
-    @Test fun `通话记录独立持久恢复不要求录音开启也不启动服务`() {
+    @Test fun `记录独立持久恢复不要求开启也不启动服务`() {
         val scheduler=app.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
         CallRecordingRuntime.consent(app).revokeAll()
         PhoneCallLogRuntime.preferences(app).edit().clear().commit()
@@ -43,7 +43,7 @@ class PhoneCallLogRuntimeTest {
         val guarded=object:ContextWrapper(app){
             override fun getApplicationContext():Context=this
             override fun getNoBackupFilesDir():File=throw AssertionError("不应读取设备身份")
-            override fun getContentResolver():ContentResolver=throw AssertionError("不应查询通话记录")
+            override fun getContentResolver():ContentResolver=throw AssertionError("不应查询记录")
         }
         PhoneCallLogRuntime.preferences(app).edit().clear().commit()
         PhoneCallLogRuntime.run(guarded){true}
