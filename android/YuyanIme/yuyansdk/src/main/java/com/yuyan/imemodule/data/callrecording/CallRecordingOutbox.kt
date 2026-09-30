@@ -90,8 +90,16 @@ internal class CallRecordingOutbox(
     }
     fun acceptReceipt(id:String,receipt:CallReceipt):Boolean = exclusive {
         val t=read(id)
-        if(!matches(t,receipt))return@exclusive false
+        if(receipt.record_id!=t.id || !matches(t,receipt))return@exclusive false
         save(t.copy(uploadStatus="saved",cleanupStatus="pending",receipt=receipt,lastError=null,nextAttemptAt=0));true
+    }
+    /** 仅内容查询/上传的明确去重响应可复用其他 UUID；设备和文件完整性仍逐项验证。 */
+    fun acceptExistingReceipt(id:String,receipt:CallReceipt):Boolean = exclusive {
+        val t=read(id)
+        if(!validId(receipt.record_id))return@exclusive false
+        val linked=t.copy(serverRecordId=receipt.record_id)
+        if(!matches(linked,receipt))return@exclusive false
+        save(linked.copy(uploadStatus="saved",cleanupStatus="pending",receipt=receipt,lastError=null,nextAttemptAt=0));true
     }
     fun cleanup(id:String):Boolean = exclusive {
         val t=read(id)
@@ -152,7 +160,7 @@ internal class CallRecordingOutbox(
             val timestamp=runCatching{val f=SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",Locale.ROOT);f.isLenient=false
                 val normalized=if(r.stored_at.matches(Regex("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z")))r.stored_at.replace("Z",".000Z")else r.stored_at
                 normalized.length==24 && f.parse(normalized)!=null}.getOrDefault(false)
-            return r.stored && r.record_id==task.id && r.device_id==task.deviceId && r.byte_size==task.metadata.byte_size &&
+            return r.stored && r.record_id==(task.serverRecordId?:task.id) && r.device_id==task.deviceId && r.byte_size==task.metadata.byte_size &&
                 r.sha256==task.metadata.sha256 && timestamp
         }
         fun sha256(file:File,allowed:()->Boolean):String {

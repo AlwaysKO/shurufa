@@ -26,6 +26,7 @@ internal data class CallTask(
     val receipt:CallReceipt?=null,
     val source:SystemRecordingSource?=null,
     val duplicateOf:String?=null,
+    val serverRecordId:String?=null,
 )
 
 /** 外部原件只有只读 URI；队列始终拥有独立缓存，清理代码永不操作 URI。 */

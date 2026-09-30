@@ -25,11 +25,33 @@ class CallRecordingUploaderTest {
         return box.enqueue(id,UUID.randomUUID().toString(),CallMetadata(destination="https://example.test",recording_started_at=1000,recording_ended_at=2000,audio_duration_ms=1000))
     }
     private class Transport:CallTransport {
+        var existing:CallReceipt?=null;var lookups=0
+        override fun existing(task:CallTask):CallReceipt? {lookups++;return existing}
         var queries=0;var uploads=0;var saved:CallReceipt?=null;var error=false;var revoke:(()->Unit)?=null
         override fun receipt(task:CallTask):CallReceipt? {queries++;if(error)throw IOException();return saved}
         override fun upload(task:CallTask,file:File,allowed:()->Boolean):CallReceipt {
             uploads++;revoke?.invoke();if(!allowed())throw IOException()
             return saved ?: CallReceipt(true,task.id,task.deviceId,task.metadata.byte_size,task.metadata.sha256,"2026-09-30T00:00:00Z")
+        }
+    }
+    @Test fun `不同本地ID同内容后台已保存时不上传并保存原回执供恢复清理`()=io {
+        val box=box();val task=enqueue(box);val network=Transport()
+        val originalId=UUID.randomUUID().toString()
+        network.existing=CallReceipt(true,originalId,task.deviceId,task.metadata.byte_size,task.metadata.sha256,"2026-09-30T00:00:00Z")
+        assertFalse(box.acceptReceipt(task.id,network.existing!!))
+        CallRecordingUploader(box,network,{true},{"https://example.test"}).runOnce()
+        assertEquals(0,network.uploads);assertEquals(1,network.lookups)
+        assertEquals(originalId,box.tasks().single().receipt!!.record_id)
+        assertFalse(box.audioFile(task.id).exists())
+    }
+    @Test fun `内容查询回执属于别的设备或内容不匹配时不上传不删除`()=io {
+        for(kind in 0..3){
+            val box=box();val task=enqueue(box);val network=Transport()
+            val good=CallReceipt(true,UUID.randomUUID().toString(),task.deviceId,task.metadata.byte_size,task.metadata.sha256,"2026-09-30T00:00:00Z")
+            network.existing=when(kind){0->good.copy(device_id=UUID.randomUUID().toString());1->good.copy(sha256="f".repeat(64));2->good.copy(byte_size=1);else->good.copy(record_id="invalid")}
+            CallRecordingUploader(box,network,{true},{"https://example.test"}).runOnce()
+            assertEquals(0,network.uploads);assertTrue(box.audioFile(task.id).exists())
+            assertEquals("failed",box.tasks().single().uploadStatus)
         }
     }
     @Test fun `撤权输入忙或目标变化时不联网不删文件`()=io {

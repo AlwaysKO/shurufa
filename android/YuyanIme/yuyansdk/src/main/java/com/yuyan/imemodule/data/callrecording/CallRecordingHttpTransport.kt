@@ -2,6 +2,8 @@ package com.yuyan.imemodule.data.callrecording
 
 import android.util.Base64
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.Call
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -23,6 +25,10 @@ internal class CallRecordingHttpTransport(
 ):CallTransport {
     private val json=Json {ignoreUnknownKeys=true;encodeDefaults=true}
     override fun receipt(task:CallTask):CallReceipt? = execute(task,"/receipt",null,allowed)
+    override fun existing(task:CallTask):CallReceipt? {
+        require(Regex("[a-f0-9]{64}").matches(task.metadata.sha256) && task.metadata.byte_size in 1..CallRecordingOutbox.MAX_AUDIO_BYTES)
+        return execute(task,"",null,allowed,"by-content?sha256=${task.metadata.sha256}&byte_size=${task.metadata.byte_size}")
+    }
     override fun upload(task:CallTask,file:File,allowed:()->Boolean):CallReceipt {
         val body=object:RequestBody(){
             override fun contentType()="application/octet-stream".toMediaType()
@@ -39,15 +45,15 @@ internal class CallRecordingHttpTransport(
                 if(written!=task.metadata.byte_size)throw IOException("local_audio_changed")
             }
         }
-        return execute(task,"",body){allowed()&&this.allowed()} ?: throw IOException("missing_receipt")
+        return execute(task,"",body,{allowed()&&this.allowed()}) ?: throw IOException("missing_receipt")
     }
-    private fun execute(task:CallTask,suffix:String,body:RequestBody?,permitted:()->Boolean):CallReceipt? {
+    private fun execute(task:CallTask,suffix:String,body:RequestBody?,permitted:()->Boolean,path:String=task.id+suffix):CallReceipt? {
         CallRecordingOutbox.checkWorker()
         require(CallRecordingOutbox.validId(task.id)&&CallRecordingOutbox.validId(task.deviceId)&&CallRecordingOutbox.validDestination(task.metadata.destination))
         if(!permitted())throw IOException("transfer_paused")
         val token=credential(task) ?: throw IOException("device_credential_unavailable")
         if(!Regex("[a-f0-9]{64}").matches(token))throw IOException("device_credential_unavailable")
-        val request=Request.Builder().url(task.metadata.destination+"/api/v1/mobile/call-recordings/"+task.id+suffix)
+        val request=Request.Builder().url(task.metadata.destination+"/api/v1/mobile/call-recordings/"+path)
             .header("X-Device-Id",task.deviceId).header("X-Dictionary-Token",token)
         if(body!=null){
             val metadata=Base64.encodeToString(json.encodeToString(CallMetadata.serializer(),task.metadata).toByteArray(),Base64.NO_WRAP)
@@ -59,8 +65,9 @@ internal class CallRecordingHttpTransport(
         try {
             call.execute().use {response->
                 if(!permitted())throw IOException("transfer_paused")
-                if(body==null && response.code==404)return null
-                if(response.code!=200)throw IOException("call_http_${response.code}")
+                if(body==null && response.code==404 && !path.startsWith("by-content?"))return null
+                val contentMissing=body==null && response.code==404 && path.startsWith("by-content?")
+                if(response.code!=200 && !contentMissing)throw IOException("call_http_${response.code}")
                 val responseBody=response.body ?: throw IOException("missing_receipt")
                 if(responseBody.contentLength()>16384)throw IOException("receipt_too_large")
                 val bytes=responseBody.byteStream().use{input->
@@ -68,6 +75,12 @@ internal class CallRecordingHttpTransport(
                     while(true){if(!permitted())throw IOException("transfer_paused");val count=input.read(buffer);if(count<0)break
                         if(output.size()+count>16384)throw IOException("receipt_too_large");output.write(buffer,0,count)}
                     output.toByteArray()
+                }
+                if(contentMissing){
+                    // 旧服务的路由 404 不等于“后台没有此文件”，否则升级期间会重复上传。
+                    val error=runCatching{json.parseToJsonElement(bytes.toString(Charsets.UTF_8)).jsonObject["error"]?.jsonPrimitive?.content}.getOrNull()
+                    if(error!="record_not_found")throw IOException("content_lookup_unavailable")
+                    return null
                 }
                 return json.decodeFromString(CallReceipt.serializer(),bytes.toString(Charsets.UTF_8))
             }

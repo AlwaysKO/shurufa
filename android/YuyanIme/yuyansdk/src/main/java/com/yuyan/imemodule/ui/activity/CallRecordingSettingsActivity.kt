@@ -24,6 +24,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.Lifecycle
 import kotlinx.coroutines.Job
 import com.yuyan.imemodule.data.callrecording.*
+import com.yuyan.imemodule.data.calllog.*
 import com.yuyan.imemodule.data.collect.CollectionConsent
 import com.yuyan.imemodule.data.collect.DataCollector
 import com.yuyan.imemodule.data.collect.ServerConfig
@@ -39,6 +40,13 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
     private lateinit var status:TextView
     private lateinit var counts:TextView
     private lateinit var systemStatus:TextView
+    private lateinit var callLogSwitch:SwitchCompat
+    private lateinit var callLogStatus:TextView
+    private var updatingCallLog=false
+    private var changingCallLog=false
+    private val callLogPermission=registerForActivityResult(ActivityResultContracts.RequestPermission()){
+        PhoneCallLogJobService.wake(this);refreshStatus()
+    }
     private var player:MediaPlayer?=null
     private var previewEpoch=0L
     private var previewJob:Job?=null
@@ -79,7 +87,7 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
         }
         status=text("")
         counts=text("")
-        text("系统录音：目录只需授权一次，之后自动读取、上传已有和新增录音（M4A、MP3、AMR、WAV），不用反复选择。荣耀手机会直接定位常用录音目录。仅扫描所选目录本层，子目录不扫描；电话、微信不能选择同一个目录。系统原件不会删除或移动。")
+        text("系统录音：目录只需授权一次，之后仅读取最近7天录音（M4A、MP3、AMR、WAV），按文件内容核对后台，已保存的不会重复上传，不用反复选择。荣耀电话与微信可共用系统通话录音目录，按文件来源自动分类；其他目录请分别选择。仅扫描所选目录本层，子目录不扫描。系统原件不会删除或移动。")
         systemStatus=text("")
         button("选择电话系统录音目录"){chooseDirectory("phone")}
         button("选择微信系统录音目录"){chooseDirectory("wechat")}
@@ -88,13 +96,55 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
         button("刷新待传与中断状态"){refreshCounts();CallRecordingJobService.wake(this)}
         button("试听最近一条未清理录音"){preview()}
         button("停止试听"){stopPreview()}
+        text("手机通话记录：独立于录音，只读取最近7天普通电话的号码、系统缓存联系人名、呼入/呼出/未接类型、时间和时长；不含微信通话记录，不修改手机记录。开启后同步至 ${ServerConfig.baseUrl}，最多2000条。后台点击获取后，手机在联网且输入空闲时处理，通常等待下一次系统任务（约15分钟，系统可能延迟）。")
+        callLogSwitch=SwitchCompat(this).apply{
+            text="同步最近7天手机通话记录"
+            isChecked=PhoneCallLogRuntime.consent(this@CallRecordingSettingsActivity).enabled
+            box.addView(this)
+            setOnCheckedChangeListener{_,checked->if(!updatingCallLog&&!changingCallLog){
+                if(checked)enableCallLog()else{
+                    PhoneCallLogRuntime.consent(this@CallRecordingSettingsActivity).revoke()
+                    PhoneCallLogRuntime.restore(this@CallRecordingSettingsActivity);refreshStatus()
+                }
+            }}
+        }
+        callLogStatus=text("")
+        button("授权通话记录并立即同步"){
+            if(!PhoneCallLogRuntime.consent(this).enabled){
+                Toast.makeText(this,"请先开启上方通话记录同步开关",Toast.LENGTH_LONG).show()
+            }else if(!PhoneCallLogRuntime.hasPermission(this))callLogPermission.launch(Manifest.permission.READ_CALL_LOG)
+            else PhoneCallLogJobService.wake(this)
+        }
         button("返回"){finish()}
+    }
+    private fun enableCallLog(){
+        if(!CollectionConsent.enabled(this)){
+            Toast.makeText(this,"请先开启个人数据同步总开关",Toast.LENGTH_LONG).show();refreshStatus();return
+        }
+        val target=ServerConfig.baseUrl;val ticket=PhoneCallLogRuntime.consent(this).revision
+        changingCallLog=true;callLogSwitch.isEnabled=false
+        lifecycleScope.launch{
+            try{
+                val device=withContext(Dispatchers.IO){DataCollector.deviceId(this@CallRecordingSettingsActivity)}
+                if(!lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)||!CollectionConsent.enabled(this@CallRecordingSettingsActivity))return@launch
+                val granted=withContext(Dispatchers.IO){PhoneCallLogRuntime.consent(this@CallRecordingSettingsActivity).grant(device,target,ticket)}
+                if(granted){
+                    PhoneCallLogRuntime.restore(this@CallRecordingSettingsActivity)
+                    if(lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)){
+                        if(PhoneCallLogRuntime.hasPermission(this@CallRecordingSettingsActivity))PhoneCallLogJobService.wake(this@CallRecordingSettingsActivity)
+                        else callLogPermission.launch(Manifest.permission.READ_CALL_LOG)
+                    }
+                }
+            }catch(e:CancellationException){throw e}
+            catch(_:Exception){Toast.makeText(this@CallRecordingSettingsActivity,"通话记录同步未开启，请重试",Toast.LENGTH_LONG).show()}
+            finally{changingCallLog=false;callLogSwitch.isEnabled=true;refreshStatus()}
+        }
     }
     private fun chooseDirectory(platform:String) {
         val intent=Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or
             Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION or Intent.FLAG_GRANT_PREFIX_URI_PERMISSION)
         if(Build.VERSION.SDK_INT>=26 && Build.MANUFACTURER.equals("HONOR",ignoreCase=true)) {
-            val directory=if(platform=="phone")"primary:Sounds/CallRecord"else"primary:Sounds"
+            val directory="primary:Sounds/CallRecord"
             intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI,
                 DocumentsContract.buildDocumentUri("com.android.externalstorage.documents",directory))
         }
@@ -107,7 +157,7 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
         lifecycleScope.launch {
             val success=withContext(Dispatchers.IO){runCatching{SystemRecordingDocuments(this@CallRecordingSettingsActivity).setTree(platform,uri)}.isSuccess}
             if(success){CallRecordingJobService.wake(this@CallRecordingSettingsActivity);refreshStatus()}
-            else Toast.makeText(this@CallRecordingSettingsActivity,"目录无法授权，或与另一录音目录相同；请选择对应录音目录",Toast.LENGTH_LONG).show()
+            else Toast.makeText(this@CallRecordingSettingsActivity,"目录无法授权，或不支持共用该目录；请选择对应录音目录",Toast.LENGTH_LONG).show()
         }
     }
     private fun finishChange(){
@@ -167,6 +217,15 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
     }
     private fun refreshStatus(){
         syncSwitch()
+        if(::callLogSwitch.isInitialized&&!changingCallLog){
+            updatingCallLog=true;callLogSwitch.isChecked=PhoneCallLogRuntime.consent(this).enabled;updatingCallLog=false
+            callLogStatus.text=when{
+                !callLogSwitch.isChecked->"通话记录同步已关闭"
+                !CollectionConsent.enabled(this)->"个人数据同步总开关关闭，通话记录暂停"
+                !PhoneCallLogRuntime.hasPermission(this)->"尚未获得系统通话记录权限，请点击下方授权；若系统拒绝，请到应用权限中检查"
+                else->PhoneCallLogRuntime.preferences(this).getString("status","已开启，等待后台同步")
+            }
+        }
         if(CallRecordingService.activeId!=null)stopPreview()
         if(!::status.isInitialized)return
         val consent=CallRecordingRuntime.consent(this);val p=CallRecordingRuntime.preferences(this)
@@ -216,7 +275,7 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
     private fun previewAllowed(epoch:Long)=callPreviewAllowed(epoch,previewEpoch,
         lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED),CallRecordingService.activeId!=null)
     private fun stopPreview(){previewEpoch++;previewJob?.cancel();previewJob=null;player?.release();player=null}
-    override fun onResume(){super.onResume();CallRecordingService.restoreFromActivity(this);main.post(ticker);refreshCounts()}
+    override fun onResume(){super.onResume();PhoneCallLogRuntime.restore(this);PhoneCallLogJobService.wake(this);CallRecordingService.restoreFromActivity(this);main.post(ticker);refreshCounts()}
     override fun onPause(){main.removeCallbacks(ticker);stopPreview();super.onPause()}
 }
 

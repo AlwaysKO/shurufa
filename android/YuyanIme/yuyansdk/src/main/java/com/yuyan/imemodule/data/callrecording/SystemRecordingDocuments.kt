@@ -3,6 +3,7 @@ package com.yuyan.imemodule.data.callrecording
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.provider.DocumentsContract
 import java.io.InputStream
 
@@ -14,7 +15,7 @@ internal class SystemRecordingDocuments(private val context:Context) {
     fun setTree(platform:String,uri:Uri) {
         require(platform in listOf("phone","wechat") && uri.scheme=="content" && DocumentsContract.isTreeUri(uri))
         val other=tree(if(platform=="phone")"wechat"else"phone")
-        require(other==null || !sameDirectory(uri,other)){"same_recording_directory"}
+        require(other==null || !sameDirectory(uri,other) || isHonorMixedDirectory(uri)){"same_recording_directory"}
         resolver.takePersistableUriPermission(uri,Intent.FLAG_GRANT_READ_URI_PERMISSION)
         check(prefs.edit().putString("system_tree_$platform",uri.toString()).commit())
     }
@@ -35,6 +36,14 @@ internal class SystemRecordingDocuments(private val context:Context) {
                 val child=c.getString(0);val name=c.getString(1)?:""
                 if(c.getString(4)==DocumentsContract.Document.MIME_TYPE_DIR)continue
                 if(name.substringAfterLast('.',"").lowercase() !in setOf("m4a","mp4","mp3","amr","wav"))continue
+                if(isHonorMixedDirectory(tree)) {
+                    val source=when {
+                        name.startsWith("微信-")->"wechat"
+                        name.startsWith("通话-")->"phone"
+                        else->null
+                    }
+                    if(source!=platform)continue
+                }
                 result.add(SystemRecordingDocument(DocumentsContract.buildDocumentUriUsingTree(tree,child).toString(),name,
                     if(c.isNull(2))0 else c.getLong(2),if(c.isNull(3))0 else c.getLong(3),platform))
             }}
@@ -59,6 +68,9 @@ internal class SystemRecordingDocuments(private val context:Context) {
         val x=DocumentsContract.getTreeDocumentId(a).trimEnd('/');val y=DocumentsContract.getTreeDocumentId(b).trimEnd('/')
         return x==y
     }
+    private fun isHonorMixedDirectory(uri:Uri)=Build.MANUFACTURER.equals("HONOR",ignoreCase=true) &&
+        uri.authority=="com.android.externalstorage.documents" &&
+        DocumentsContract.getTreeDocumentId(uri).trimEnd('/')=="primary:Sounds/CallRecord"
 }
 
 internal fun systemRecordingUploadReady(task:CallTask,configured:Boolean,scanComplete:Boolean,now:Long):Boolean =

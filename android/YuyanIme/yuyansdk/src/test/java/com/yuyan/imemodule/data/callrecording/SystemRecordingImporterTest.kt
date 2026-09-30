@@ -21,9 +21,23 @@ class SystemRecordingImporterTest {
         val root=File(ApplicationProvider.getApplicationContext<Context>().noBackupFilesDir,UUID.randomUUID().toString())
         val box=CallRecordingOutbox(File(root,"outbox"))
         val bytes="0000ftypM4A synthetic".toByteArray()
-        var now=1_790_000_000_000L
+        var now=systemRecordingStartTime("20260930_133000")!!
         val doc=SystemRecordingDocument("content://test/recording","Call_20260930_123000.m4a",bytes.size.toLong(),now-60000,"phone")
         fun importer()=SystemRecordingImporter(File(root,"index"),box,{RecordedSystemAudio(60000,"audio/mp4")},{now})
+    }
+    @Test fun `超过七天的原件不观察不打开即使刚复制过也跳过`()=io {
+        val f=Fixture();var opened=0
+        val old=f.doc.copy(name="微信-测试-202609201205.m4a",modifiedAt=f.now-60000)
+        val expired=f.doc.copy(uri="content://test/old",name="unknown.m4a",modifiedAt=f.now-8*86400000L)
+        repeat(2){f.importer().scan(listOf(old,expired),device,target,{true},{opened++;f.bytes.inputStream()},{true});f.now+=31000}
+        assertEquals(0,opened);assertTrue(f.box.tasks().isEmpty())
+    }
+    @Test fun `七天边界包含临界点拒绝过期和未来分钟文件名不冒充精确起点`() {
+        val f=Fixture()
+        assertTrue(systemRecordingWithinSevenDays(f.doc.copy(name="unknown.m4a",modifiedAt=f.now-7*86400000L),f.now))
+        assertFalse(systemRecordingWithinSevenDays(f.doc.copy(name="unknown.m4a",modifiedAt=f.now-7*86400000L-1),f.now))
+        assertFalse(systemRecordingWithinSevenDays(f.doc.copy(name="微信-测试-202610011200.m4a"),f.now))
+        assertNull(systemRecordingStartTime("微信-测试-202609301200.m4a"))
     }
     @Test fun `连续两次稳定观察后只读导入重复扫描和重启不重复入队`()=io {
         val f=Fixture();val original=f.bytes.clone()
@@ -45,6 +59,28 @@ class SystemRecordingImporterTest {
         f.box.acceptReceipt(task.id,CallReceipt(true,task.id,device,task.metadata.byte_size,task.metadata.sha256,"2026-09-30T00:00:00Z"));importer.markSaved(f.box.tasks().single());f.box.cleanup(task.id)
         File(f.root,"outbox/${task.id}.json").delete()
         f.importer().scan(listOf(f.doc),device,target,{true},{error("已上传原件不能再次打开")},{true})
+        assertTrue(f.box.tasks().isEmpty())
+    }
+    @Test fun `旧电话分类仍待传的同一原件不能按微信再次入队`()=io {
+        val f=Fixture();val importer=f.importer()
+        importer.scan(listOf(f.doc),device,target,{true},{f.bytes.inputStream()},{true});f.now+=31000
+        importer.scan(listOf(f.doc),device,target,{true},{f.bytes.inputStream()},{true})
+        val corrected=f.doc.copy(platform="wechat")
+        importer.scan(listOf(corrected),device,target,{true},{f.bytes.inputStream()},{true});f.now+=31000
+        importer.scan(listOf(corrected),device,target,{true},{f.bytes.inputStream()},{true})
+        assertEquals(1,f.box.tasks().size)
+    }
+    @Test fun `旧分类上传历史清理后同一原件不因平台修正再次上传`()=io {
+        val f=Fixture();val importer=f.importer()
+        importer.scan(listOf(f.doc),device,target,{true},{f.bytes.inputStream()},{true});f.now+=31000
+        importer.scan(listOf(f.doc),device,target,{true},{f.bytes.inputStream()},{true})
+        val task=f.box.tasks().single()
+        f.box.acceptReceipt(task.id,CallReceipt(true,task.id,device,task.metadata.byte_size,task.metadata.sha256,"2026-09-30T00:00:00Z"))
+        importer.markSaved(f.box.tasks().single());f.box.cleanup(task.id)
+        File(f.root,"outbox/${task.id}.json").delete()
+        val corrected=f.doc.copy(platform="wechat")
+        f.importer().scan(listOf(corrected),device,target,{true},{f.bytes.inputStream()},{true});f.now+=31000
+        f.importer().scan(listOf(corrected),device,target,{true},{f.bytes.inputStream()},{true})
         assertTrue(f.box.tasks().isEmpty())
     }
     @Test fun `复制期间变化或输入忙不发布不删除原件下次可恢复`()=io {

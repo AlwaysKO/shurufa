@@ -1,6 +1,7 @@
 import express, { Router, type Request, type Response, type NextFunction } from 'express';
 import { createHash, timingSafeEqual } from 'node:crypto';
 import type pg from 'pg';
+import { createMobileCallLogsRouter, createDashboardCallLogsRouter } from './callLogs.js';
 import { savingFlags } from '../lib/deviceSaving.js';
 import { encryptAudio, decryptAudio, loadAudioKey } from '../calls/storage.js';
 
@@ -72,6 +73,13 @@ export function createMobileCallRecordingsRouter(pool:pg.Pool):Router {
     if(!row || typeof row.token_hash!=='string' || row.token_hash.length!==64 || !timingSafeEqual(Buffer.from(hash(token!)),Buffer.from(row.token_hash))) fail(401,'device_credential_mismatch');
     next();
   })().catch(next); });
+  r.use('/call-log',createMobileCallLogsRouter(pool));
+  r.get('/by-content',handler(async(req,res)=>{
+    const sha=req.query.sha256,size=Number(req.query.byte_size);
+    if(typeof sha!=='string'||!/^[a-f0-9]{64}$/.test(sha)||!Number.isSafeInteger(size)||size<1||size>MAX_BYTES)fail(400,'invalid_content_query');
+    const row=(await pool.query(`SELECT ${receiptColumns} FROM call_recording WHERE device_id=$1 AND sha256=$2 AND byte_size=$3 ORDER BY (deleted_at IS NOT NULL) DESC,stored_at,record_id LIMIT 1`,[res.locals.userId,sha,size])).rows[0];
+    if(!row)fail(404,'record_not_found');res.json(receipt(row));
+  }));
   r.get('/:id/receipt',handler(async(req,res)=>{
     const row=(await pool.query(`SELECT ${receiptColumns} FROM call_recording WHERE device_id=$1 AND record_id=$2`,[res.locals.userId,idOf(req)])).rows[0];
     if(!row) fail(404,'record_not_found');res.json(receipt(row));
@@ -88,6 +96,15 @@ export function createMobileCallRecordingsRouter(pool:pg.Pool):Router {
     const db=await pool.connect();
     try {
       await db.query('BEGIN');await db.query('SET LOCAL synchronous_commit = on');
+      await db.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[device+':'+String(m.sha256)]);
+      const prior=(await db.query(`SELECT ${receiptColumns} FROM call_recording WHERE device_id=$1 AND record_id=$2 FOR UPDATE`,[device,id])).rows[0];
+      if(prior){
+        const result=receipt(prior);
+        if(prior.sha256!==m.sha256||prior.byte_size!==m.byte_size||prior.metadata_sha256!==fingerprint)fail(409,'record_conflict');
+        await db.query('COMMIT');res.json(result);return;
+      }
+      const same=(await db.query(`SELECT ${receiptColumns} FROM call_recording WHERE device_id=$1 AND sha256=$2 AND byte_size=$3 ORDER BY (deleted_at IS NOT NULL) DESC,stored_at,record_id LIMIT 1 FOR UPDATE`,[device,m.sha256,m.byte_size])).rows[0];
+      if(same){const result=receipt(same);await db.query('COMMIT');res.json(result);return;}
       await db.query(`INSERT INTO call_recording(device_id,record_id,metadata,metadata_sha256,sha256,byte_size,recorded_at,platform,recording_status,audio_ciphertext)
         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT(device_id,record_id) DO NOTHING`,
         [device,id,JSON.stringify(m),fingerprint,m.sha256,m.byte_size,new Date(Number(m.recording_started_at)),m.platform,m.recording_status,encrypted]);
@@ -109,6 +126,7 @@ function dateBoundary(v:unknown,end=false):Date|null {
 }
 export function createDashboardCallRecordingsRouter(pool:pg.Pool):Router {
   const r=Router();r.use((_req,res,next)=>{res.set('Cache-Control','no-store');next();});
+  r.use('/call-log',createDashboardCallLogsRouter(pool));
   r.get('/',handler(async(req,res)=>{
     const page=Number(req.query.page??1);
     if(!Number.isSafeInteger(page)||page<1||page>100000) fail(400,'invalid_page');

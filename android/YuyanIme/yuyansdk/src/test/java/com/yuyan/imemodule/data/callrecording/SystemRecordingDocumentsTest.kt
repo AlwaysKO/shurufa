@@ -16,6 +16,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowContentResolver
+import org.robolectric.shadows.ShadowBuild
 import java.io.File
 import java.util.UUID
 import java.util.concurrent.Executors
@@ -47,7 +48,7 @@ class SystemRecordingDocumentsTest {
     @Test fun `ContentResolver只读授权导入上传后保留提供者原文件`()=io {
         CallRecordingRuntime.preferences(context).edit().clear().commit()
         val root=File(context.noBackupFilesDir,"provider-"+UUID.randomUUID()).apply{mkdirs()}
-        val original=File(root,"original.m4a").apply{writeText("0000ftypM4A synthetic provider audio");setLastModified(1_790_000_000_000)}
+        val original=File(root,"original.m4a").apply{writeText("0000ftypM4A synthetic provider audio");setLastModified(systemRecordingStartTime("20260930_123000")!!)}
         val originalBytes=original.readBytes()
         val provider=Provider(original)
         provider.attachInfo(context,ProviderInfo().apply{authority="recording.test";exported=true;grantUriPermissions=true})
@@ -112,5 +113,42 @@ class SystemRecordingDocumentsTest {
         val documents=SystemRecordingDocuments(context)
         documents.setTree("wechat",DocumentsContract.buildTreeDocumentUri("recording.test","primary:Sounds"))
         assertEquals(listOf("wechat.m4a"),documents.list("wechat"){true}.map{it.name})
+    }
+    @Test fun `荣耀电话微信允许授权同一个系统通话目录`()=io {
+        ShadowBuild.setManufacturer("HONOR")
+        CallRecordingRuntime.preferences(context).edit().clear().commit()
+        val documents=SystemRecordingDocuments(context)
+        val uri=DocumentsContract.buildTreeDocumentUri("com.android.externalstorage.documents","primary:Sounds/CallRecord")
+        documents.setTree("phone",uri);documents.setTree("wechat",uri)
+        assertTrue(documents.readable("phone"));assertTrue(documents.readable("wechat"))
+    }
+    @Test fun `荣耀混合目录按来源前缀区分微信电话且跳过其他文件`()=io {
+        ShadowBuild.setManufacturer("HONOR")
+        CallRecordingRuntime.preferences(context).edit().clear().commit()
+        val file=File(context.noBackupFilesDir,"mixed-fixture-"+UUID.randomUUID()).apply{writeText("synthetic")}
+        val provider=object:Provider(file) {
+            override fun query(uri:Uri,projection:Array<out String>?,selection:String?,args:Array<out String>?,sort:String?):Cursor {
+                val columns=projection!!
+                return MatrixCursor(columns).apply{for(name in listOf("微信-测试-202609302205.m4a","通话-微信客服-202609301924.m4a","普通录音.m4a")) {
+                    val values:Map<String,Any> = mapOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID to "primary:Sounds/CallRecord/$name",
+                        DocumentsContract.Document.COLUMN_DISPLAY_NAME to name,DocumentsContract.Document.COLUMN_SIZE to 100L,
+                        DocumentsContract.Document.COLUMN_LAST_MODIFIED to 1000L,DocumentsContract.Document.COLUMN_MIME_TYPE to "audio/mp4")
+                    addRow(columns.map{values[it]}.toTypedArray())
+                }}
+            }
+        }
+        val authority="com.android.externalstorage.documents"
+        provider.attachInfo(context,ProviderInfo().apply{this.authority=authority;exported=true;grantUriPermissions=true})
+        ShadowContentResolver.registerProviderInternal(authority,provider)
+        val documents=SystemRecordingDocuments(context)
+        val uri=DocumentsContract.buildTreeDocumentUri(authority,"primary:Sounds/CallRecord")
+        // 即使只配置了一种来源，也不能把混合目录中的另一种录音错误上传。
+        documents.setTree("wechat",uri)
+        assertEquals(listOf("微信-测试-202609302205.m4a"),documents.list("wechat"){true}.map{it.name})
+        documents.clear("wechat");documents.setTree("phone",uri)
+        assertEquals(listOf("通话-微信客服-202609301924.m4a"),documents.list("phone"){true}.map{it.name})
+        documents.setTree("wechat",uri)
+        val all=documents.list("phone"){true}+documents.list("wechat"){true}
+        assertEquals(2,all.size);assertEquals(2,all.map{it.uri}.distinct().size)
     }
 }

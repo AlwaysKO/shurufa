@@ -12,6 +12,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_CALL_LOG" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -39,6 +40,7 @@
         android:supportsRtl="true">
         <activity android:name=".ui.activity.CallRecordingSettingsActivity" android:exported="false" />
         <service android:name=".data.callrecording.CallRecordingService" android:exported="false" android:foregroundServiceType="microphone" />
+        <service android:name=".data.calllog.PhoneCallLogJobService" android:exported="false" android:permission="android.permission.BIND_JOB_SERVICE" />
         <service android:name=".data.callrecording.CallRecordingJobService" android:exported="false" android:permission="android.permission.BIND_JOB_SERVICE" />
         <receiver android:name=".data.callrecording.CallRecordingRecoveryReceiver" android:exported="false">
             <intent-filter><action android:name="android.intent.action.BOOT_COMPLETED" /><action android:name="android.intent.action.MY_PACKAGE_REPLACED" /></intent-filter>

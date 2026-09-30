@@ -17,6 +17,7 @@ internal object CallRecordingRuntime {
     fun outbox(context:Context)=CallRecordingOutbox(File(root(context),"outbox"))
     fun sessions(context:Context)=CallRecordingSessions(File(root(context),"sessions"),outbox(context))
     fun restore(context:Context){
+        com.yuyan.imemodule.data.calllog.PhoneCallLogRuntime.restore(context)
         // 恢复待传只使用系统 Job，不从 BOOT/后台拉起麦克风服务。
         if(consent(context).wantsUpload)CallRecordingJobService.schedule(context)else CallRecordingJobService.cancel(context)
     }
@@ -52,7 +53,8 @@ internal object CallRecordingRuntime {
             }
             CallRecordingUploader(box,transport,allowed,{ServerConfig.baseUrl},
                 systemSourceExists=documents::exists,onSaved=importer::markSaved,
-                ready={task->systemRecordingUploadReady(task,documents.tree(task.metadata.platform)!=null,
+                ready={task->(task.source==null || task.metadata.recording_ended_at>=System.currentTimeMillis()-7*86_400_000L) &&
+                    systemRecordingUploadReady(task,documents.tree(task.metadata.platform)!=null,
                     scanned[task.metadata.platform]==true,System.currentTimeMillis())}).runOnce()
             if(box.tasks().any{it.source==null && it.cleanupStatus!="deleted" &&
                 !systemRecordingUploadReady(it,documents.tree(it.metadata.platform)!=null,scanned[it.metadata.platform]==true,System.currentTimeMillis())})retrySoon=true

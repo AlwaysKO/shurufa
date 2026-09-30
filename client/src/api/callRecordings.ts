@@ -22,3 +22,11 @@ export async function callAudio(device:string,id:string,signal:AbortSignal):Prom
 export async function deleteCall(device:string,id:string):Promise<void> {
   await checked(await dashboardFetch(url(device,`/${encodeURIComponent(id)}`),{method:'DELETE'}));
 }
+export interface PhoneCallLog {source_id:string;number:string|null;name:string|null;type:number;date:number;duration_seconds:number}
+export interface PhoneCallLogSync {request_id:string|null;requested_at:string|null;status:'never'|'pending'|'synced'|'permission_required'|'disabled'|'failed';synced_at:string|null;truncated:boolean}
+export async function listPhoneCallLogs(device:string,page:number,signal:AbortSignal):Promise<{records:PhoneCallLog[];total:number;sync:PhoneCallLogSync}> {
+  return (await checked(await dashboardFetch(url(device,'/call-log')+'&page='+page,{signal}))).json();
+}
+export async function requestPhoneCallLogs(device:string,signal:AbortSignal):Promise<void> {
+  await checked(await dashboardFetch(url(device,'/call-log/sync'),{method:'POST',signal}));
+}

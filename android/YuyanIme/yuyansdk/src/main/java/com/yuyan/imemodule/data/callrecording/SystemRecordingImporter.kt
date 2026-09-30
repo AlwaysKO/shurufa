@@ -43,8 +43,15 @@ internal class SystemRecordingImporter(
         for(doc in documents) {
             if(!allowed())return SystemImportResult(imported,waiting,errors,false)
             if(doc.size !in 1..CallRecordingOutbox.MAX_AUDIO_BYTES || doc.modifiedAt<=0){errors++;continue}
+            if(!systemRecordingWithinSevenDays(doc,now()))continue
             var stagedId:String?=null
             try {
+                // 升级纠正混合目录分类时，旧平台已发布/已保存的同一原件不能再次上传。
+                val otherPlatform=if(doc.platform=="phone")"wechat"else"phone"
+                val prior=read(key(device,target,otherPlatform,doc.uri,doc.size,doc.modifiedAt))
+                if(prior?.complete==true)continue
+                val priorTask=prior?.taskId?.let{tasks[it]}
+                if(priorTask!=null){if(priorTask.uploadStatus=="saved")markSaved(priorTask);continue}
                 val key=key(device,target,doc.platform,doc.uri,doc.size,doc.modifiedAt)
                 var entry=read(key) ?: Entry(now()).also{write(key,it)}
                 if(entry.complete)continue
@@ -126,6 +133,16 @@ internal fun systemRecordingStartTime(name:String):Long? {
     val match=matches.singleOrNull() ?: return null
     val value=match.groupValues.drop(1).joinToString("")
     return runCatching{SimpleDateFormat("yyyyMMddHHmmss",Locale.ROOT).apply{isLenient=false}.parse(value)?.time}.getOrNull()
+}
+
+/** 分钟精度仅用于七天范围过滤，不能作为同次通话的精确匹配证据。 */
+internal fun systemRecordingWithinSevenDays(doc:SystemRecordingDocument,now:Long):Boolean {
+    val minute=Regex("(?<![0-9])(20[0-9]{10})(?![0-9])").findAll(doc.name).toList().singleOrNull()?.value
+    val named=systemRecordingStartTime(doc.name) ?: minute?.let {
+        runCatching{SimpleDateFormat("yyyyMMddHHmm",Locale.ROOT).apply{isLenient=false}.parse(it)?.time}.getOrNull()
+    }
+    val recordedAt=named ?: doc.modifiedAt
+    return recordedAt>=now-7*86_400_000L && recordedAt<=now
 }
 
 internal fun inspectSystemRecording(file:File):RecordedSystemAudio? {

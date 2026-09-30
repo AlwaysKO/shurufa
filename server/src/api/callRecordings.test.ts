@@ -35,6 +35,7 @@ beforeEach(async () => {
   await pool.query('CREATE TABLE dictionary_device(device_id UUID PRIMARY KEY,token_hash TEXT); CREATE TABLE runtime_setting(key TEXT PRIMARY KEY,value TEXT)');
   await pool.query('INSERT INTO dictionary_device VALUES($1,$2),($3,$4)',[A,hash(token),B,hash(otherToken)]);
   await pool.query(await readFile(new URL('../../migrations/037_call_recordings.sql',import.meta.url),'utf8'));
+  await pool.query(await readFile(new URL('../../migrations/039_call_logs.sql',import.meta.url),'utf8'));
   app=createApp(pool);agent=await authenticatedRequest(app);
 });
 afterEach(async()=>{if(!root)return;await pool?.query('DROP SCHEMA '+schema+' CASCADE');await pool?.end();if(dir)await rm(dir,{recursive:true,force:true});delete process.env.CALL_RECORDING_KEY_FILE;});
@@ -107,7 +108,7 @@ test('显式删除音频和敏感元数据，保留幂等墓碑，禁止重试�
   expect(row.audio_ciphertext).toBeNull();expect(row.metadata).toEqual({});
 });
 test('日期/平台/录音状态筛选及分页参数校验',async()=>{
-  await put(randomUUID());await put(randomUUID(),metadata({platform:'wechat',call_type:'video',recording_status:'interrupted'}));
+  await put(randomUUID());const different=Buffer.from('0000ftypM4A different wechat audio');await put(randomUUID(),metadata({platform:'wechat',call_type:'video',recording_status:'interrupted',sha256:hash(different),byte_size:different.length}),different);
   expect((await agent.get(url()+'&platform=phone')).body.records).toHaveLength(1);
   expect((await agent.get(url()+'&recording_status=interrupted')).body.records).toHaveLength(1);
   expect((await agent.get(url()+'&from=2020-01-01&to=2020-01-02')).body.records).toHaveLength(0);
@@ -134,3 +135,61 @@ test('实际请求体超过64MiB也拒绝，不信任声明的长度',async()=>{
   const r=await put(id,metadata({byte_size:64*1024*1024}),Buffer.alloc(64*1024*1024+1));
   expect(r.status).toBe(413);expect((await receipt(id)).status).toBe(404);
 },15000);
+
+const byContent=(device=A,credential=token)=>request(app).get(`/api/v1/mobile/call-recordings/by-content?sha256=${hash(audio)}&byte_size=${audio.length}`).set('X-Device-Id',device).set('X-Dictionary-Token',credential);
+test('内容预检按设备返回原回执，不同ID并发同内容只存一份',async()=>{
+  expect((await byContent()).status).toBe(404);
+  const results=await Promise.all([put(randomUUID()),put(randomUUID()),put(randomUUID())]);
+  for(const result of results)expect(result.status).toBe(200);
+  expect(new Set(results.map(r=>r.body.record_id)).size).toBe(1);
+  expect((await byContent()).body).toEqual(results[0].body);
+  expect((await byContent(B,otherToken)).status).toBe(404);
+  expect((await pool.query('SELECT COUNT(*) AS n FROM call_recording')).rows[0].n).toBe('1');
+  expect((await put(randomUUID(),metadata(),audio,B,otherToken)).status).toBe(200);
+});
+test('按内容查询和换ID重传不能复活显式删除的录音',async()=>{
+  const id=randomUUID();await put(id);await agent.delete(url(id));
+  expect((await byContent()).status).toBe(410);expect((await put(randomUUID())).status).toBe(410);
+});
+const logMobile=(method:'get'|'post',body?:object,device=A,credential=token)=>{
+  const req=request(app)[method]('/api/v1/mobile/call-recordings/call-log/sync').set('X-Device-Id',device).set('X-Dictionary-Token',credential);
+  return body===undefined?req:req.send(body);
+};
+const logUrl=(suffix='',device=A)=>`/api/v1/dashboard/call-recordings/call-log${suffix}?user_id=${device}`;
+const logRow=()=>({source_id:'provider-123',number:'synthetic-123',name:'测试',type:2,date:Date.now()-60000,duration_seconds:20});
+test('后台请求手机通话记录，最近7天幂等入库并保持设备隔离',async()=>{
+  expect((await logMobile('get')).body).toEqual({request_id:null});
+  const requested=await agent.post(logUrl('/sync'));expect(requested.status).toBe(200);
+  const requestId=requested.body.request_id;expect(typeof requestId).toBe('string');
+  expect((await logMobile('get')).body.request_id).toBe(requestId);
+  const records=[logRow()];const batch={request_id:requestId,status:'synced',records,truncated:false};
+  expect((await logMobile('post',batch)).status).toBe(200);
+  expect((await logMobile('post',{...batch,request_id:null})).status).toBe(200);
+  const list=await agent.get(logUrl());expect(list.status).toBe(200);expect(list.body.total).toBe(1);
+  expect(list.body.records[0]).toMatchObject(records[0]);expect(list.body.sync.status).toBe('synced');
+  expect((await agent.get(logUrl('',B))).body.records).toEqual([]);
+  expect((await logMobile('post',batch,B,token)).status).toBe(401);
+});
+test('旧请求不能覆盖新请求，权限不足状态可见，自动同步保留未处理请求',async()=>{
+  const old=(await agent.post(logUrl('/sync'))).body.request_id;
+  const latest=(await agent.post(logUrl('/sync'))).body.request_id;
+  expect((await logMobile('post',{request_id:old,status:'synced',records:[logRow()],truncated:false})).status).toBe(409);
+  expect((await logMobile('post',{request_id:null,status:'synced',records:[logRow()],truncated:false})).status).toBe(200);
+  expect((await logMobile('get')).body.request_id).toBe(latest);
+  expect((await logMobile('post',{request_id:latest,status:'permission_required',records:[],truncated:false})).status).toBe(200);
+  expect((await agent.get(logUrl())).body.sync.status).toBe('permission_required');
+});
+test('通话记录拒绝超范围时间、过多条目和错误类型，关闭保存时不接收',async()=>{
+  const batch={request_id:null,status:'synced',records:[logRow()],truncated:false};
+  for(const row of [{...logRow(),date:Date.now()-8*86400000},{...logRow(),date:Date.now()+600000},{...logRow(),type:99},{...logRow(),duration_seconds:-1}])
+    expect((await logMobile('post',{...batch,records:[row]})).status).toBe(400);
+  expect((await logMobile('post',{...batch,records:Array(2001).fill(logRow())})).status).toBe(400);
+  await pool.query('INSERT INTO runtime_setting VALUES($1,$2)',[`device_save_uploads:${A}`,'false']);
+  expect((await logMobile('post',batch)).status).toBe(409);
+});
+test('通话记录允许读取到上传之间的五分钟时钟容差，仍拒绝更旧数据',async()=>{
+  const batch={request_id:null,status:'synced',records:[{...logRow(),date:Date.now()-7*86400000-60000}],truncated:false};
+  const response=await logMobile('post',batch);
+  expect(response.status).toBe(200);expect(response.body).toEqual({stored:true,count:1});
+  expect((await logMobile('post',{...batch,records:[{...logRow(),date:Date.now()-7*86400000-6*60000}]})).status).toBe(400);
+});

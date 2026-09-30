@@ -5,6 +5,7 @@ import kotlinx.coroutines.CancellationException
 
 internal interface CallTransport {
     fun receipt(task:CallTask):CallReceipt?
+    fun existing(task:CallTask):CallReceipt? = null
     fun upload(task:CallTask,file:File,allowed:()->Boolean):CallReceipt
 }
 /** 运行入口必须提供实时的授权/设备身份/输入空闲检查；不从键盘线程调用。 */
@@ -45,13 +46,17 @@ internal class CallRecordingUploader(
                 outbox.markAttempt(task.id)
                 // 超时/进程死亡后先查询原回执，不盲目重传。
                 var receipt=transport.receipt(task)
+                var contentReceipt=false
                 if(!permitted()){outbox.pause(task.id);continue}
                 if(receipt==null) {
                     if(!outbox.verify(task,::permitted)){outbox.fail(task.id,now(),"local_audio_changed");continue}
-                    receipt=transport.upload(task,outbox.audioFile(task.id),::permitted)
+                    receipt=transport.existing(task)
+                    contentReceipt=true
+                    if(!permitted()){outbox.pause(task.id);continue}
+                    if(receipt==null)receipt=transport.upload(task,outbox.audioFile(task.id),::permitted)
                 }
                 if(!permitted()){outbox.pause(task.id);continue}
-                if(outbox.acceptReceipt(task.id,receipt)){onSaved(task.copy(uploadStatus="saved",receipt=receipt));if(permitted())outbox.cleanup(task.id)}
+                if(if(contentReceipt)outbox.acceptExistingReceipt(task.id,receipt)else outbox.acceptReceipt(task.id,receipt)){onSaved(task.copy(uploadStatus="saved",receipt=receipt));if(permitted())outbox.cleanup(task.id)}
                 else outbox.fail(task.id,now(),"invalid_receipt")
             } catch(e:CancellationException){throw e}
             catch(_:Exception){

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, onBeforeUnmount } from 'vue';
+import PhoneCallLogs from './PhoneCallLogs.vue';
 import { currentUserId } from '../api';
 import { authenticated } from '../auth';
 import { useConfirmation } from '../confirmation';
@@ -48,7 +49,7 @@ onBeforeUnmount(()=>{alive=false;generation++;request?.abort();stopAudio();});
 </script>
 <template>
   <section class="calls">
-    <h2>通话记录</h2>
+    <h2>通话录音</h2>
     <p class="notice">当前设备由左侧选择。上传已保存不代表双方声音完整；线上保留由管理员管理，本页面不自动清理。日期与时间均为北京时间。</p>
     <div class="filters">
       <label>开始日期 <input v-model="from" type="date"></label><label>结束日期 <input v-model="to" type="date"></label>
@@ -74,6 +75,7 @@ onBeforeUnmount(()=>{alive=false;generation++;request?.abort();stopAudio();});
       <audio v-if="audioUrl" :src="audioUrl" controls preload="metadata" @error="error='音频无法解码或播放；不能据此认定录音完整。'" />
       <p v-else>音频尚未加载成功。</p><button @click="stopAudio">关闭试听</button>
     </aside>
+    <PhoneCallLogs />
   </section>
 </template>
 <style scoped>
