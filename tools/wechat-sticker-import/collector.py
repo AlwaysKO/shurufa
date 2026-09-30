@@ -416,9 +416,11 @@ def cache_original(directory, data, metadata):
         with path.open('xb') as stream:
             owned = True
             stream.write(data)
-    except Exception:
+    except BaseException as error:
         if owned:
             path.unlink(missing_ok=True)
+        if not isinstance(error, Exception):
+            raise
         raise CollectorError('collector_failed') from None
     return str(path)
 

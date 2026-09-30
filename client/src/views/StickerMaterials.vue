@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import './content-library.css';
+import { runMaterialBatch, type BatchRow, type BatchStatus } from '../api/stickerMaterialBatch';
 import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue';
 import {
   stickerMaterials,
@@ -11,6 +13,41 @@ import { scopedAssetUrl } from '../api';
 import { useConfirmation } from '../confirmation';
 const emit = defineEmits<{ changed: [] }>();
 const confirm = useConfirmation();
+const batchRows = ref<BatchRow[]>([]), batchBusy = ref(false), batchError = ref('');
+const batchInput = ref<HTMLInputElement | null>(null);
+const batchCancelled = ref(false);
+const batchLabels: Record<BatchStatus, string> = {
+  pending: '等待处理', hashing: '计算原图指纹', matching: '比对后台', uploading: '上传原图',
+  existing: '后台已有', imported: '新增成功', duplicate: '本批重复，已跳过', failed: '失败', cancelled: '已停止，待重试',
+};
+const batchFinished = computed(() => batchRows.value.filter(r => ['existing','imported','duplicate','failed','cancelled'].includes(r.status)).length);
+const batchRetryable = computed(() => batchRows.value.some(r => ['failed','cancelled'].includes(r.status)));
+async function runBatch() {
+  if (!alive || batchBusy.value || keywordBusy.value) return;
+  batchBusy.value = true;
+  batchCancelled.value = false;
+  try {
+    await runMaterialBatch(batchRows.value, stickerMaterials, () => !alive || batchCancelled.value);
+  } finally {
+    if (alive) {
+      batchBusy.value = false;
+      emit('changed');
+      await loadMaterials(1);
+    }
+  }
+}
+async function chooseBatch(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const files = Array.from(input.files || []);
+  input.value = '';
+  if (batchBusy.value || keywordBusy.value || !files.length) return;
+  batchError.value = '';
+  if (files.length > 1000) { batchError.value = '每批最多选择 1000 张，请分批上传'; return; }
+  batchRows.value = files.map(file => ({ file, status: 'pending' }));
+  await runBatch();
+}
+function cancelBatch() { batchCancelled.value = true; }
+
 const items = ref<Material[]>([]),
   warnings = ref<string[]>([]);
 const filter = ref<MaterialQuery['state']>('all'),
@@ -31,6 +68,8 @@ let pollTimer: ReturnType<typeof setTimeout> | undefined,
 const cardBusy = ref<Record<string, boolean>>({}),
   cardErrors = ref<Record<string, string>>({}),
   drafts = ref<Record<string, string>>({});
+// 批量匹配缓存与关键词差量编辑互斥，避免同批结果显示编辑前的标签。
+const keywordBusy = computed(() => Object.values(cardBusy.value).some(Boolean));
 const failedImages = ref(new Set<string>());
 const previewUrl = (m: Material) => {
   const url = scopedAssetUrl(m.url);
@@ -61,7 +100,7 @@ function applyFilter() {
   return loadMaterials(1);
 }
 async function changeKeywords(m: Material, add: string[], remove: string[]) {
-  if (cardBusy.value[m.sha256] || (!add.length && !remove.length)) return;
+  if (batchBusy.value || cardBusy.value[m.sha256] || (!add.length && !remove.length)) return;
   cardBusy.value[m.sha256] = true;
   cardErrors.value[m.sha256] = '';
   try {
@@ -70,6 +109,7 @@ async function changeKeywords(m: Material, add: string[], remove: string[]) {
     const index = items.value.findIndex((item) => item.sha256 === m.sha256);
     if (index >= 0) items.value[index] = material;
     drafts.value[m.sha256] = '';
+    for (const row of batchRows.value) if (row.sha256 === m.sha256) row.material = material;
     emit('changed');
     await loadMaterials();
   } catch (e) {
@@ -327,8 +367,34 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section class="materials-page" aria-label="表情素材库">
-    <section class="library-panel import-panel">
+  <section class="content-library materials-page" aria-label="表情素材库">
+    <section class="library-panel import-panel" aria-label="批量上传原图">
+      <h3>批量上传表情原图</h3>
+      <p>先用本地独立导出工具把微信收藏存入文件夹，再在这里多选上传，无需配对或保持助手运行。按原图 SHA256 比对当前后台，已有图片保留全部推荐词；新图先未分配，添加推荐词后进入关键词推荐图。</p>
+      <p>每批最多 1000 张，单张不超过 10 MB；保留 GIF 动画。仅完全相同的原图去重，压缩或重新编码后的图片可能被识别为新图。</p>
+      <input ref="batchInput" type="file" hidden accept="image/gif,image/png,image/jpeg,image/webp" multiple aria-label="选择批量上传图片" :disabled="batchBusy || keywordBusy" @change="chooseBatch" />
+      <div class="library-actions">
+        <button class="library-button primary" :disabled="batchBusy || keywordBusy" @click="batchInput?.click()">选择图片批量上传</button>
+        <button v-if="batchBusy" class="library-button" @click="cancelBatch" :disabled="batchCancelled">停止后续上传</button>
+        <button v-if="!batchBusy && batchRetryable" class="library-button" :disabled="keywordBusy" @click="runBatch">重试失败或未完成项</button>
+        <span v-if="batchRows.length" role="status">已处理 {{ batchFinished }} / {{ batchRows.length }} 张{{ batchBusy ? '（进行中）' : '（本批结束）' }}</span>
+      </div>
+      <p v-if="batchBusy">离开页面将停止后续上传；当前请求可能已保存，重新上传时会再次去重。</p>
+      <p v-if="batchError" role="alert" class="library-notice error">{{ batchError }}</p>
+      <details v-if="batchRows.length" open class="batch-results">
+        <summary>本批处理明细（已有推荐词自动显示）</summary>
+        <ul><li v-for="(row, index) in batchRows" :key="index">
+          <strong>{{ row.file.name }}</strong> · {{ batchLabels[row.status] }}
+          <template v-if="row.material">
+            <span v-for="keyword in row.material.keywords" :key="keyword" class="library-badge">{{ keyword }}</span>
+            <span v-if="!row.material.keywords.length" class="library-badge">未分配推荐词</span>
+          </template>
+          <span v-if="row.error" class="batch-error">{{ row.error }}</span>
+        </li></ul>
+      </details>
+    </section>
+    <details class="library-panel import-panel">
+      <summary>可选：本机助手配对后从电脑微信直接导入</summary>
       <h3>从电脑微信导入收藏表情</h3>
       <p>
         由本机助手读取收藏原图，再上传到当前后台；无需连接手机。相同原图自动跳过，保留已有关键词。新图先进入未分配素材，不参与手机推荐。
@@ -447,7 +513,7 @@ onBeforeUnmount(() => {
           取消任务（不删除已导入图）
         </button>
       </div>
-    </section>
+    </details>
     <form class="material-filters library-actions" @submit.prevent="applyFilter">
       <label
         >分配状态
@@ -475,7 +541,7 @@ onBeforeUnmount(() => {
     </p>
     <p v-if="loading" role="status">正在加载素材…</p>
     <p v-else-if="!items.length && !materialError" class="library-empty">
-      没有符合条件的素材。可调整筛选，或从本机助手导入。
+      没有符合条件的素材。可调整筛选，或选择图片批量上传。
     </p>
     <div class="material-grid" :aria-busy="loading">
       <article v-for="m in items" :key="m.sha256" class="library-panel material-card">
@@ -503,7 +569,7 @@ onBeforeUnmount(() => {
             <button
               class="text-button"
               :aria-label="`移除关联：${keyword}`"
-              :disabled="cardBusy[m.sha256] || loading"
+              :disabled="batchBusy || cardBusy[m.sha256] || loading"
               @click="changeKeywords(m, [], [keyword])"
             >
               ×
@@ -516,10 +582,10 @@ onBeforeUnmount(() => {
             class="library-input"
             aria-label="新增关联关键词"
             placeholder="新增关键词，多个用逗号分隔"
-            :disabled="cardBusy[m.sha256]"
+            :disabled="batchBusy || cardBusy[m.sha256]"
           /><button
             class="library-button"
-            :disabled="cardBusy[m.sha256] || loading || !drafts[m.sha256]?.trim()"
+            :disabled="batchBusy || cardBusy[m.sha256] || loading || !drafts[m.sha256]?.trim()"
           >
             {{ cardBusy[m.sha256] ? '保存中…' : '添加关联' }}
           </button>
@@ -548,6 +614,10 @@ onBeforeUnmount(() => {
   </section>
 </template>
 <style scoped>
+.batch-results ul { max-height: 320px; overflow: auto; padding-left: 20px; }
+.batch-results li { padding: 8px 0; overflow-wrap: anywhere; }
+.batch-results .library-badge { margin-left: 6px; }
+.batch-error { display: block; color: #b42318; }
 .materials-page {
   display: grid;
   gap: 18px;

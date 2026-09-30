@@ -47,6 +47,7 @@ const navGroups: NavGroup[] = [
   { key: 'assets', label: '个人资产', icon: '◇', items: [
     { path: '/personal-dictionary', label: '个人词库与换机' },
     { path: '/user-phrases', label: '常用语' }, { path: '/stickers', label: '关键词推荐图' },
+    { path: '/sticker-materials', label: '表情素材库' },
     { path: '/ai-synthesis', label: 'AI 合成底图' },
     { path: '/relationships', label: '关系记忆' },
   ] },
@@ -210,7 +211,7 @@ function seenAt(value: string) { return new Date(value).toLocaleString('zh-CN', 
     </aside>
     <main class="content">
       <h1 class="page-title">{{ route.meta.title }}</h1>
-      <RouterView v-if="usersReady && (route.path === '/stickers' || (currentUserId && selectedUser))" :key="`${route.fullPath}:${currentUserId}`" />
+      <RouterView v-if="usersReady && (route.path === '/stickers' || route.path === '/sticker-materials' || (currentUserId && selectedUser))" :key="`${route.fullPath}:${currentUserId}`" />
       <div v-else-if="usersReady && initializationError" class="card empty load-error">
         <p>用户目录加载失败，请检查后台服务。</p><button type="button" @click="initializeUsers">重试</button>
       </div>

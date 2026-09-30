@@ -2,6 +2,8 @@ import { readFileSync, existsSync } from 'node:fs';
 import { parse, compileScript } from '@vue/compiler-sfc';
 import ts from 'typescript';
 import * as Vue from 'vue';
+import * as Batch from '../src/api/stickerMaterialBatch';
+import { webcrypto } from 'node:crypto';
 import { afterEach, expect, it, vi } from '../../server/node_modules/vitest/dist/index.js';
 const mounted: Vue.App[] = [];
 const settle = async () => {
@@ -70,6 +72,8 @@ async function setup(overrides: Record<string, any> = {}) {
   new Function('require', 'module', 'exports', code)(
     (id: string) => {
       if (id === 'vue') return Vue;
+      if (id === '../api/stickerMaterialBatch') return Batch;
+      if (id === './content-library.css') return {};
       if (id === '../api/stickerMaterials') return { stickerMaterials: api };
       if (id === '../api') return { scopedAssetUrl: (url: string) => url };
       if (id === '../confirmation') return { useConfirmation: () => async () => true };
@@ -321,6 +325,8 @@ async function setupParent(stickerLibrary: ReturnType<typeof vi.fn>) {
   new Function('require', 'module', 'exports', code)(
     (id: string) => {
       if (id === 'vue') return Vue;
+      if (id === '../api/stickerMaterialBatch') return Batch;
+      if (id === './content-library.css') return {};
       if (id === '../api') return { api: { stickerLibrary }, scopedAssetUrl: (s: string) => s };
       if (id === '../confirmation') return { useConfirmation: () => async () => true };
       if (id.endsWith('.css') || id === './StickerMaterials.vue') return {};
@@ -474,4 +480,86 @@ it('撤销助手成功后的新状态不能被撤销期间的旧轮询倒写', a
   await oldPoll;
   expect(state.online.value).toBe(false);
   expect(state.currentJob.value.status).toBe('cancelled');
+});
+
+it('素材库具有独立菜单、路由和无设备访问资格，配对默认折叠', () => {
+ const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8');
+ const main = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
+ expect(app).toContain("path: '/sticker-materials', label: '表情素材库'");
+ expect(app).toMatch(/route.path === '\/sticker-materials'/);
+ expect(main).toContain("path: '/sticker-materials', component: StickerMaterials");
+ const component = readFileSync(new URL('../src/views/StickerMaterials.vue', import.meta.url), 'utf8');
+ expect(component).toMatch(/<details class="library-panel import-panel">/);
+ expect(component).toContain('multiple');
+});
+it('批量选择后显示已有关键词和新增未分配，成功后刷新图库并通知推荐页', async () => {
+ vi.stubGlobal('crypto', webcrypto);
+ const apiMatch = vi.fn(async (hashes: string[]) => ({ items: hashes.map(sha256 => ({ sha256, status: 'existing', material: { ...material, sha256 } })) }));
+ const { state, api, emit } = await setup({ match: apiMatch, upload: vi.fn() });
+ const input = { files: [{name:'a.gif',size:3,arrayBuffer: async()=>new Uint8Array([1,2,3]).buffer}],value:'chosen' };
+ await state.chooseBatch({ target: input });
+ expect(state.batchRows.value[0].status).toBe('existing');
+ expect(state.batchRows.value[0].material.keywords).toEqual(['开心','高兴']);
+ expect(input.value).toBe(''); expect(api.upload).not.toHaveBeenCalled(); expect(emit).toHaveBeenCalledWith('changed');
+ vi.unstubAllGlobals();
+});
+it('离开素材页后匹配响应不得触发上传、刷新和推荐页通知', async () => {
+ vi.stubGlobal('crypto', webcrypto);
+ let resolve!: (value: any) => void;
+ const apiMatch=vi.fn(()=>new Promise(r=>resolve=r));
+ const { state, api, emit, app }=await setup({match:apiMatch,upload:vi.fn()});
+ const work=state.chooseBatch({target:{files:[{name:'a.gif',size:3,arrayBuffer:async()=>new Uint8Array([1,2,3]).buffer}],value:'chosen'}});
+ for(let i=0;i<20 && !apiMatch.mock.calls.length;i++) await new Promise(r=>setTimeout(r,5));
+ expect(apiMatch).toHaveBeenCalledTimes(1);
+ const before=api.list.mock.calls.length, emitted=emit.mock.calls.length;
+ app.unmount();
+ const sha256=state.batchRows.value[0].sha256;
+ resolve({items:[{sha256,status:'missing'}]}); await work;
+ expect(api.upload).not.toHaveBeenCalled(); expect(api.list).toHaveBeenCalledTimes(before); expect(emit).toHaveBeenCalledTimes(emitted);
+ vi.unstubAllGlobals();
+});
+it('批量API通过 dashboardFetch 发送 SHA 列表和原始字节，并限制请求等待', async () => {
+ const fetch = vi.fn(async () => new Response('{}'));
+ const api=loadApi(fetch), file = {name:'原图.gif'} as File, sha='a'.repeat(64);
+ await api.match([sha]); await api.upload(file,sha);
+ expect(fetch.mock.calls[0][0]).toBe('/api/v1/dashboard/sticker-materials/match');
+ expect(JSON.parse((fetch.mock.calls[0] as any)[1].body)).toEqual({sha256s:[sha]});
+ expect((fetch.mock.calls[0] as any)[1].signal).toBeInstanceOf(AbortSignal);
+ const [url,options]=fetch.mock.calls[1] as any;
+ expect(url).toContain('filename=%E5%8E%9F%E5%9B%BE.gif'); expect(url).toContain(`sha256=${sha}`);
+ expect(options.body).toBe(file); expect(options.headers['Content-Type']).toBe('application/octet-stream'); expect(options.signal).toBeInstanceOf(AbortSignal);
+});
+it('批量运行期间禁止关键词编辑，避免同批缓存回显旧标签', async () => {
+ const { state, api } = await setup();
+ state.batchBusy.value = true;
+ await state.changeKeywords(material, ['新词'], []);
+ expect(api.keywords).not.toHaveBeenCalled();
+ expect(state.cardBusy.value[material.sha256]).toBeUndefined();
+});
+it('关键词编辑尚未结束时不允许开始、重试或选择新批次', async () => {
+ const { state } = await setup();
+ state.cardBusy.value[material.sha256] = true;
+ const original = [{ file: {name:'待重试.gif',size:3}, status:'failed' }];
+ state.batchRows.value = original;
+ await state.runBatch();
+ expect(state.batchBusy.value).toBe(false);
+ expect(state.batchRows.value[0].status).toBe('failed');
+ const input={ files:[{name:'新图.gif',size:3}], value:'chosen' };
+ await state.chooseBatch({target:input});
+ expect(state.batchRows.value[0].file.name).toBe('待重试.gif');
+ expect(state.batchBusy.value).toBe(false);
+});
+it('批量入口和关键词表单双向禁用，页面筛选仍可用', () => {
+ const source=readFileSync(new URL('../src/views/StickerMaterials.vue',import.meta.url),'utf8');
+ expect(source).toContain(':disabled="batchBusy || keywordBusy"');
+ expect(source).toContain(':disabled="keywordBusy" @click="runBatch"');
+ expect(source).toContain(':disabled="batchBusy || cardBusy[m.sha256] || loading"');
+ expect(source).toContain(':disabled="batchBusy || cardBusy[m.sha256]"');
+});
+it('独立素材页自带共享样式作用域，文件选择只显示中文入口', () => {
+ const source=readFileSync(new URL('../src/views/StickerMaterials.vue',import.meta.url),'utf8');
+ expect(source).toContain('class="content-library materials-page"');
+ expect(source).toMatch(/<input ref="batchInput"[^>]*\bhidden\b/);
+ expect(source).toContain('aria-label="选择批量上传图片"');
+ expect(source).toContain('选择图片批量上传</button>');
 });

@@ -45,9 +45,10 @@ const errors: Record<string, string> = {
   unauthorized: '登录已过期，请重新登录后台。',
   import_internal_error: '导入服务暂时异常，请稍后刷新核对任务状态。',
 };
-async function request<T>(path: string, method = 'GET', body?: unknown): Promise<T> {
+async function request<T>(path: string, method = 'GET', body?: unknown, signal?: AbortSignal): Promise<T> {
   const response = await dashboardFetch(`/api/v1/dashboard/${path}`, {
     method,
+    ...(signal ? { signal } : {}),
     ...(body === undefined
       ? {}
       : { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }),
@@ -65,6 +66,15 @@ async function request<T>(path: string, method = 'GET', body?: unknown): Promise
 }
 const prefix = 'sticker-import';
 export const stickerMaterials = {
+  match: (sha256s: string[]) => request<unknown>('sticker-materials/match', 'POST', { sha256s }, AbortSignal.timeout(30000)),
+  upload: async (file: File, sha256: string): Promise<unknown> => {
+    const response = await dashboardFetch(`/api/v1/dashboard/sticker-materials?${new URLSearchParams({ filename: file.name, sha256 })}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, body: file,
+      signal: AbortSignal.timeout(120000),
+    });
+    if (!response.ok) throw new Error(`图片上传未确认成功（${response.status}）`);
+    return response.json();
+  },
   list: (query: MaterialQuery) =>
     request<{
       items: Material[];
