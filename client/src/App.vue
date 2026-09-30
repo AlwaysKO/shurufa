@@ -42,7 +42,7 @@ const navGroups: NavGroup[] = [
   ] },
   { key: 'records', label: '内容记录', icon: '▤', items: [
     { path: '/app-usage', label: '应用使用' }, { path: '/activity', label: '行为明细' }, { path: '/clipboard', label: '剪贴板' },
-    { path: '/clipboard-history', label: '剪贴板历史' }, { path: '/chat-capture', label: '聊天采集' },
+    { path: '/call-recordings', label: '通话记录' }, { path: '/clipboard-history', label: '剪贴板历史' }, { path: '/chat-capture', label: '聊天采集' },
   ] },
   { key: 'assets', label: '个人资产', icon: '◇', items: [
     { path: '/personal-dictionary', label: '个人词库与换机' },

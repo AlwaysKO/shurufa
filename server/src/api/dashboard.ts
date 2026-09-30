@@ -846,10 +846,27 @@ export function createDashboardRouter(pool: pg.Pool): Router {
       const conds = ['user_id = $1', 'occurred_at >= $2'];
       const params: unknown[] = [userId, daysAgo(days)];
       const date = req.query.date;
-      if (date !== undefined) {
-        const start = typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)
-          ? new Date(`${date}T00:00:00+08:00`) : new Date(NaN);
-        if (!Number.isFinite(start.getTime()) || new Date(start.getTime() + 8 * 3_600_000).toISOString().slice(0, 10) !== date) {
+      const from = req.query.from, to = req.query.to;
+      const hasRange = from !== undefined || to !== undefined;
+      let rangeDays: number | undefined;
+      const parseDay = (value: unknown) => {
+        const parsed = typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
+          ? new Date(`${value}T00:00:00+08:00`) : new Date(NaN);
+        return Number.isFinite(parsed.getTime()) && new Date(parsed.getTime() + 8 * 3_600_000).toISOString().slice(0, 10) === value ? parsed : null;
+      };
+      if (hasRange) {
+        const start = parseDay(from), end = parseDay(to);
+        if (!start || !end || start > end || date !== undefined || req.query.days !== undefined) {
+          res.status(400).json({ error: '请提供有效的开始、结束日期（北京时间），开始不得晚于结束，且不能同时指定 date/days' });
+          return;
+        }
+        params[1] = start;
+        params.push(new Date(end.getTime() + 86_400_000));
+        conds.push('occurred_at < $3');
+        rangeDays = (end.getTime() - start.getTime()) / 86_400_000 + 1;
+      } else if (date !== undefined) {
+        const start = parseDay(date);
+        if (!start) {
           res.status(400).json({ error: '日期必须是有效的 YYYY-MM-DD（北京时间）' });
           return;
         }
@@ -885,7 +902,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
         userId,
       ).catch(() => { console.warn('[geocoder] 地址解析任务异常'); });
 
-      res.json({ days: date === undefined ? days : 1, date, total: rows.length, has_more: result.rows.length > limit, locations: rows.map(row => ({
+      res.json({ days: rangeDays ?? (date === undefined ? days : 1), date, ...(hasRange ? { from, to } : {}), total: rows.length, has_more: result.rows.length > limit, locations: rows.map(row => ({
         ...row,
         ...(row.address
           ? { address_status: 'resolved', address_error: null, address_retry_at: null }

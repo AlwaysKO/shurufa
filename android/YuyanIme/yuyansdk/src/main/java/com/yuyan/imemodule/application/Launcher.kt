@@ -28,6 +28,7 @@ class Launcher {
         this.context = context
         currentInit()
         com.yuyan.imemodule.expression.ExpressionSyncJobService.startRecovery(context)
+        com.yuyan.imemodule.data.callrecording.CallRecordingRuntime.restore(context)
         onInitDataChildThread()
     }
 

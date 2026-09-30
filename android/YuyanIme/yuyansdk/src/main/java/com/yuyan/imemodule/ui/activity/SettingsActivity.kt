@@ -86,6 +86,7 @@ open class SettingsActivity : AppCompatActivity() {
 
     override fun onPostResume() {
         super.onPostResume()
+        com.yuyan.imemodule.data.callrecording.CallRecordingService.restoreFromActivity(this)
         if (AppPrefs.getInstance().internal.privacyPolicySure.getValue() && !SetupActivity.shouldShowUp() &&
             !PreferenceManager.getDefaultSharedPreferences(this).contains(CollectionConsent.KEY)) {
             CollectionConsentDialog.show(this)

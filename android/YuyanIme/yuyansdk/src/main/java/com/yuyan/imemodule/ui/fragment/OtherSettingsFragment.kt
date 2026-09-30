@@ -238,6 +238,11 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
 
     override fun onPreferenceUiCreated(screen: PreferenceScreen) {
         val ctx = requireContext()
+        screen.addPreference(Preference(ctx).apply {
+            title = "通话录音（能力验证）"
+            summary = "一次授权、线上补传；普通来电实验支持，呼出与微信当前受限"
+            setOnPreferenceClickListener { startActivity(Intent(ctx, com.yuyan.imemodule.ui.activity.CallRecordingSettingsActivity::class.java)); true }
+        })
         screen.addPreference(SwitchPreferenceCompat(ctx).apply {
             key = CollectionConsent.KEY
             setDefaultValue(false)

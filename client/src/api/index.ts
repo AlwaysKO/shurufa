@@ -697,13 +697,15 @@ export const api = {
     if (query.page_size) p.set('page_size', String(query.page_size));
     return get<ActivityPage>(`/api/v1/dashboard/events?${p.toString()}`);
   },
-  locations: (query: { device_id?: string; date?: string; days?: number; limit?: number } = {}) => {
+  locations: (query: { device_id?: string; date?: string; from?: string; to?: string; days?: number; limit?: number } = {}) => {
     const p = new URLSearchParams();
     if (query.device_id) p.set('device_id', query.device_id);
     if (query.date) p.set('date', query.date);
+    if (query.from) p.set('from', query.from);
+    if (query.to) p.set('to', query.to);
     if (query.days) p.set('days', String(query.days));
     if (query.limit) p.set('limit', String(query.limit));
-    return get<{ days: number; date?: string; total: number; has_more?: boolean; locations: LocationRow[] }>(`/api/v1/dashboard/locations?${p.toString()}`);
+    return get<{ days: number; date?: string; from?: string; to?: string; total: number; has_more?: boolean; locations: LocationRow[] }>(`/api/v1/dashboard/locations?${p.toString()}`);
   },
   report: (type: 'daily' | 'weekly', date: string) => get<ReportData>(`/api/v1/dashboard/report?type=${type}&date=${date}`),
   exportData: () => get<ExportData>(`/api/v1/dashboard/export`),

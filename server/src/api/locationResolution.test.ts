@@ -66,3 +66,35 @@ it('位置查询返回快照和截断标记，额外探测点不参与地址解�
  expect(query.mock.calls[0][0]).toMatch(/\bcontext\b/);
  expect(query.mock.calls[0][1].slice(-2)).toEqual(['device-a',3]);
 });
+
+it('跨天范围包含结束日全天，使用北京时间并保留用户和设备限制',async()=>{
+ const query=vi.fn().mockResolvedValue({rows:[]});vi.mocked(resolveMissingAddresses).mockResolvedValue(undefined);
+ const app=express();app.use((_req,res,next)=>{res.locals.userId='owner';next();});app.use(createDashboardRouter({query} as unknown as pg.Pool));
+ const response=await request(app).get('/locations').query({from:'2026-02-24',to:'2026-03-02',device_id:'phone',limit:1000});
+ expect(response.status).toBe(200);expect(response.body).toMatchObject({from:'2026-02-24',to:'2026-03-02',days:7});
+ expect(query.mock.calls[0][0]).toContain('occurred_at < $3');
+ expect(query.mock.calls[0][1]).toEqual(['owner',new Date('2026-02-23T16:00:00Z'),new Date('2026-03-02T16:00:00Z'),'phone',1001]);
+});
+it.each([
+ {from:'2026-09-01'}, {to:'2026-09-30'}, {from:'',to:'2026-09-30'},
+ {from:'2026-02-30',to:'2026-03-02'}, {from:'2026-09-30',to:'2026-09-01'},
+ {from:'2026-09-01',to:'2026-09-30',date:'2026-09-05'},
+ {from:'2026-09-01',to:'2026-09-30',days:7},
+])('拒绝无效、不完整或冲突范围 %j，不回退为默认查询',async range=>{
+ vi.mocked(resolveMissingAddresses).mockResolvedValue(undefined);
+ const query=vi.fn().mockResolvedValue({rows:[]});const app=express();app.use(createDashboardRouter({query} as unknown as pg.Pool));
+ const response=await request(app).get('/locations').query(range);
+ expect(response.status).toBe(400);expect(query).not.toHaveBeenCalled();
+});
+
+it.each([
+ ['2026-09-30','2026-09-30',1,'2026-09-29T16:00:00Z','2026-09-30T16:00:00Z'],
+ ['2024-02-28','2024-03-01',3,'2024-02-27T16:00:00Z','2024-03-01T16:00:00Z'],
+ ['2025-12-31','2026-01-01',2,'2025-12-30T16:00:00Z','2026-01-01T16:00:00Z'],
+])('范围 %s 至 %s 的北京时间边界正确',async(from,to,days,start,end)=>{
+ const query=vi.fn().mockResolvedValue({rows:[]});vi.mocked(resolveMissingAddresses).mockResolvedValue(undefined);
+ const app=express();app.use((_req,res,next)=>{res.locals.userId='owner';next();});app.use(createDashboardRouter({query} as unknown as pg.Pool));
+ const response=await request(app).get('/locations').query({from,to});
+ expect(response.status).toBe(200);expect(response.body.days).toBe(days);
+ expect(query.mock.calls[0][1]).toEqual(['owner',new Date(start),new Date(end),201]);
+});

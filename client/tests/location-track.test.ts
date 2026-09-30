@@ -132,13 +132,13 @@ it('默认北京时间当天，前后按天请求，空数据日不回退所有�
   vi.useFakeTimers(); vi.setSystemTime(new Date('2026-09-28T17:00:00Z'));
   const view = await mountLocations([]);
   const find = (id: string) => view.all().find(n => n.props['data-testid'] === id)!;
-  expect(view.api.locations).toHaveBeenLastCalledWith({ date: '2026-09-29', device_id: undefined, limit: 1000 });
+  expect(view.api.locations).toHaveBeenLastCalledWith({ from: '2026-09-29', to: '2026-09-29', device_id: undefined, limit: 1000 });
   expect(find('location-next-day').props.disabled).toBe(true);
   find('location-prev-day').props.onClick(); await settle();
-  expect(view.api.locations).toHaveBeenLastCalledWith({ date: '2026-09-28', device_id: undefined, limit: 1000 });
+  expect(view.api.locations).toHaveBeenLastCalledWith({ from: '2026-09-28', to: '2026-09-28', device_id: undefined, limit: 1000 });
   expect(find('location-date').props.value).toBe('2026-09-28');
   find('location-next-day').props.onClick(); await settle();
-  expect(view.api.locations.mock.calls.at(-1)![0].date).toBe('2026-09-29');
+  expect(view.api.locations.mock.calls.at(-1)![0].from).toBe('2026-09-29');
   expect(view.text()).not.toContain('全部已加载日期');
   const cleared = { value: '' };
   find('location-date').props.onChange({ target: cleared }); await settle();
@@ -160,9 +160,9 @@ it('切换日期立即清除旧轨迹，忽略过时响应；清空日期恢复�
   resolveOld({ locations: [point('2026-09-28T01:00:00Z')] }); await settle();
   expect(view.summary()).toBe('暂无位置数据');
   expect(view.text()).not.toContain('测试位置');
-  expect(view.text()).toContain('当天暂无位置数据');
+  expect(view.text()).toContain('所选日期范围暂无位置数据');
   find('location-date').props.onChange({ target: { value: '' } }); await settle();
-  expect(locations.mock.calls.at(-1)![0].date).toBe('2026-09-29');
+  expect(locations.mock.calls.at(-1)![0].from).toBe('2026-09-29');
 });
 const unresolved = (status: LocationRow['address_status']): LocationRow => ({ ...point('2026-09-17T01:00:56Z'), address: null, address_status: status });
 
@@ -241,4 +241,56 @@ it('手动刷新后的新结果不会被较慢的自动更新响应覆盖', asyn
   resolveOld({ locations: rows }); await settle();
   expect(view.text()).toContain('新结果');
   expect(view.text()).not.toContain('解析中');
+});
+
+
+it('近7天和近30天包含北京时间今天，跨月准确且每次只查询一次',async()=>{
+ vi.useFakeTimers();vi.setSystemTime(new Date('2026-03-01T16:30:00Z'));
+ const view=await mountLocations([]);
+ const click=async(label:string)=>{view.all().find(n=>n.tag==='button'&&n.text===label)!.props.onClick();await settle();};
+ await click('近7天');
+ expect(view.api.locations).toHaveBeenLastCalledWith({from:'2026-02-24',to:'2026-03-02',device_id:undefined,limit:1000});
+ expect(view.api.locations).toHaveBeenCalledTimes(2);
+ await click('近30天');
+ expect(view.api.locations).toHaveBeenLastCalledWith({from:'2026-02-01',to:'2026-03-02',device_id:undefined,limit:1000});
+ expect(view.api.locations).toHaveBeenCalledTimes(3);
+ await click('今天');
+ expect(view.api.locations).toHaveBeenLastCalledWith({from:'2026-03-02',to:'2026-03-02',device_id:undefined,limit:1000});
+});
+it('手动选择跨天范围，跨天前后按钮平移整个范围且不超过今天',async()=>{
+ vi.useFakeTimers();vi.setSystemTime(new Date('2026-09-30T01:00:00Z'));
+ const view=await mountLocations([]);
+ const find=(id:string)=>view.all().find(n=>n.props['data-testid']===id)!;
+ find('location-date').props.onChange({target:{value:'2026-09-20'}});await settle();
+ find('location-end-date').props.onChange({target:{value:'2026-09-25'}});await settle();
+ expect(view.api.locations).toHaveBeenLastCalledWith({from:'2026-09-20',to:'2026-09-25',device_id:undefined,limit:1000});
+ find('location-prev-day').props.onClick();await settle();
+ expect(view.api.locations).toHaveBeenLastCalledWith({from:'2026-09-19',to:'2026-09-24',device_id:undefined,limit:1000});
+ find('location-next-day').props.onClick();await settle();
+ expect(view.api.locations).toHaveBeenLastCalledWith({from:'2026-09-20',to:'2026-09-25',device_id:undefined,limit:1000});
+});
+it('近7天轮询保留相同范围，选择非法日期不发送宽泛请求',async()=>{
+ vi.useFakeTimers();vi.setSystemTime(new Date('2026-09-30T01:00:00Z'));
+ const view=await mountLocations([unresolved('pending')]);
+ view.all().find(n=>n.tag==='button'&&n.text==='近7天')!.props.onClick();await settle();
+ await vi.advanceTimersByTimeAsync(5000);await settle();
+ expect(view.api.locations).toHaveBeenLastCalledWith({from:'2026-09-24',to:'2026-09-30',device_id:undefined,limit:1000});
+ const count=view.api.locations.mock.calls.length;
+ view.all().find(n=>n.props['data-testid']==='location-date')!.props.onChange({target:{value:'2026-02-30'}});await settle();
+ expect(view.api.locations).toHaveBeenCalledTimes(count);
+});
+
+it('日期顺序自动收拢为单日，未来日期不提交，清空结束日期恢复今天',async()=>{
+ vi.useFakeTimers();vi.setSystemTime(new Date('2026-09-30T01:00:00Z'));
+ const view=await mountLocations([]);
+ const find=(id:string)=>view.all().find(n=>n.props['data-testid']===id)!;
+ find('location-end-date').props.onChange({target:{value:'2026-09-20'}});await settle();
+ expect(view.api.locations).toHaveBeenLastCalledWith({from:'2026-09-20',to:'2026-09-20',device_id:undefined,limit:1000});
+ find('location-date').props.onChange({target:{value:'2026-09-25'}});await settle();
+ expect(view.api.locations).toHaveBeenLastCalledWith({from:'2026-09-25',to:'2026-09-25',device_id:undefined,limit:1000});
+ const count=view.api.locations.mock.calls.length;
+ const future={value:'2026-10-01'};find('location-end-date').props.onChange({target:future});await settle();
+ expect(future.value).toBe('2026-09-25');expect(view.api.locations).toHaveBeenCalledTimes(count);
+ find('location-end-date').props.onChange({target:{value:''}});await settle();
+ expect(view.api.locations).toHaveBeenLastCalledWith({from:'2026-09-30',to:'2026-09-30',device_id:undefined,limit:1000});
 });

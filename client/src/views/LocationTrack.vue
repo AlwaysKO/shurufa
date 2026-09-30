@@ -12,6 +12,8 @@ const loading = ref(false);
 const error = ref('');
 const today = ref(locationDay(new Date().toISOString()));
 const selectedDay = ref(today.value);
+const endDay = ref(today.value);
+const singleDay = computed(() => selectedDay.value === endDay.value);
 const hasMore = ref(false);
 const visibleLocations = computed(() => locations.value);
 const analysis = computed(() => analyzeLocations(visibleLocations.value));
@@ -86,7 +88,7 @@ async function loadLocations(background = false) {
   }
   let failed = false;
   try {
-    const data = await api.locations({ device_id: deviceId.value || undefined, date: selectedDay.value, limit: 1000 });
+    const data = await api.locations({ device_id: deviceId.value || undefined, from: selectedDay.value, to: endDay.value, limit: 1000 });
     if (disposed || request !== latestRequest) return;
     const mapChanged = data.locations.length !== locations.value.length || data.locations.some((row, index) => {
       const previous = locations.value[index];
@@ -147,23 +149,46 @@ function timeRange(row: LocationRow): string {
     : `${formatBeijingTime(row.first_seen_at)} ~ ${formatBeijingTime(row.last_seen_at)}`;
 }
 
-function chooseDay(value: string) {
+function chooseDays(days: number) {
   today.value = locationDay(new Date().toISOString());
-  selectedDay.value = value && value <= today.value ? value : today.value;
+  const start = shiftDay(today.value, -(days - 1));
+  const unchanged = selectedDay.value === start && endDay.value === today.value;
+  selectedDay.value = start;
+  endDay.value = today.value;
+  if (unchanged) void loadLocations();
 }
 
-function changeDate(event: Event) {
+function changeDate(event: Event, edge: 'start' | 'end' = 'start') {
   const input = event.target as HTMLInputElement;
-  chooseDay(input.value);
-  input.value = selectedDay.value;
+  today.value = locationDay(new Date().toISOString());
+  const value = input.value;
+  if (!value) {
+    chooseDays(1);
+  } else if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || locationDay(`${value}T00:00:00+08:00`) !== value || value > today.value) {
+    error.value = '请选择有效且不晚于今天的日期';
+  } else if (edge === 'start') {
+    selectedDay.value = value;
+    if (endDay.value < value) endDay.value = value;
+  } else {
+    endDay.value = value;
+    if (selectedDay.value > value) selectedDay.value = value;
+  }
+  input.value = edge === 'start' ? selectedDay.value : endDay.value;
+}
+
+function shiftDay(value: string, offset: number) {
+  return locationDay(new Date(Date.parse(`${value}T00:00:00+08:00`) + offset * 86_400_000).toISOString());
 }
 
 function moveDay(offset: number) {
-  const date = new Date(`${selectedDay.value}T00:00:00+08:00`);
-  chooseDay(locationDay(new Date(date.getTime() + offset * 86_400_000).toISOString()));
+  today.value = locationDay(new Date().toISOString());
+  const nextEnd = shiftDay(endDay.value, offset);
+  if (nextEnd > today.value) return;
+  selectedDay.value = shiftDay(selectedDay.value, offset);
+  endDay.value = nextEnd;
 }
 
-watch([selectedDay, deviceId], () => loadLocations());
+watch([selectedDay, endDay, deviceId], () => loadLocations());
 
 function focusPoint(point: LocationRow) {
   map?.setView([Number(point.latitude), Number(point.longitude)], 16);
@@ -207,19 +232,24 @@ const summary = computed(() => {
         <option value="">全部设备</option>
         <option v-for="d in devices" :key="d.id" :value="d.id">{{ deviceLabel(d) }}</option>
       </select>
-      <button class="btn" data-testid="location-prev-day" @click="moveDay(-1)">前一天</button>
-      <label>日期（北京时间）
+      <button class="btn" data-testid="location-prev-day" @click="moveDay(-1)">{{ singleDay ? '前一天' : '前移一天' }}</button>
+      <label>开始日期（北京时间）
         <input type="date" data-testid="location-date" :value="selectedDay" :max="today" @change="changeDate" />
       </label>
-      <button class="btn" data-testid="location-next-day" :disabled="selectedDay >= today" @click="moveDay(1)">后一天</button>
-      <button class="btn" @click="chooseDay('')">今天</button>
+      <label>结束日期（北京时间）
+        <input type="date" data-testid="location-end-date" :value="endDay" :max="today" @change="changeDate($event, 'end')" />
+      </label>
+      <button class="btn" data-testid="location-next-day" :disabled="endDay >= today" @click="moveDay(1)">{{ singleDay ? '后一天' : '后移一天' }}</button>
+      <button class="btn" @click="chooseDays(1)">今天</button>
+      <button class="btn" @click="chooseDays(7)">近7天</button>
+      <button class="btn" @click="chooseDays(30)">近30天</button>
       <button class="btn" :disabled="loading" @click="loadLocations()">刷新</button>
       <span class="summary">{{ summary }}</span>
       <span v-if="error" class="err">{{ error }}</span>
     </div>
 
     <p class="analysis-hint">新版手机仅在位置有效变化时上报，位置不变不重复上报。均衡模式移动时约 30 秒采样，停留后约 5 分钟检查；实际频率受权限、信号和系统限制。静止缺报无法确认准确停留或 Wi-Fi 连接时长。路线连线不代表实际经过的道路；超过 15 分钟的缺口、跨日和不同设备分段显示。</p>
-    <p v-if="hasMore" class="coverage-warning" role="status">当天记录超过 1000 条，仅分析已加载的最近记录。可选择单台设备缩小范围；这里的里程与停留不代表完整行程。</p>
+    <p v-if="hasMore" class="coverage-warning" role="status">所选日期范围记录超过 1000 条，仅分析已加载的最近记录。可缩短日期范围或选择单台设备；这里的里程与停留不代表完整行程。</p>
     <div v-if="visibleLocations.length" class="location-stats">
       <div><strong>{{ routeSegments.length }}</strong><span>有连续观测的路线段</span></div>
       <div><strong>{{ (analysis.distanceMeters / 1000).toFixed(2) }} km</strong><span>过滤漂移后的估算里程</span></div>
@@ -310,7 +340,7 @@ const summary = computed(() => {
           <td class="mono">{{ timeRange(r) }}</td>
         </tr>
         <tr v-if="!loading && visibleLocations.length === 0">
-          <td colspan="9" class="empty">当天暂无位置数据，可切换日期或设备查看。采集新记录需在手机设置中开启位置记录并授予权限。</td>
+          <td colspan="9" class="empty">所选日期范围暂无位置数据，可切换日期或设备查看。采集新记录需在手机设置中开启位置记录并授予权限。</td>
         </tr>
       </tbody>
     </table>
