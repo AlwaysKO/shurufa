@@ -805,6 +805,63 @@ it.each([
   expect(view.find('chat-confirm-source-message-8')).toBeDefined();
 });
 
+it('待确认非图片可全选本页、全不选并一次删除选中记录，图片保留', async () => {
+  fakeChatStorage();const previous=globalThis.window;Object.assign(globalThis,{window:{confirm:()=>true}});
+  let removed=false;
+  const text={...screenshot(81),conversation_id:12,assets:[],message_type:'text',text:'文字'};
+  const voice={...screenshot(82),conversation_id:12,assets:[],message_type:'voice',text:'语音'};
+  const image={...screenshot(83),conversation_id:12};
+  const remove=vi.fn(async()=>{removed=true;return{deleted_messages:2,files_pending:false};});
+  try {
+    const view=await mountChatCapture({
+      chatConversations:async()=>({total:1,conversations:[{...rememberedChat(-1),is_pending_group:true}]}),
+      chatMessages:async()=>({total:removed?1:3,messages:removed?[image]:[text,voice,image]}),deletePendingChatMessages:remove,
+    });
+    expect(view.find('select-pending-message-message-81')).toBeDefined();
+    expect(view.find('select-pending-message-message-83')).toBeUndefined();
+    view.find('pending-select-page')!.props.onClick();await settle();
+    expect(view.find('pending-selection-count')!.text).toContain('2');
+    view.find('pending-clear-selection')!.props.onClick();await settle();
+    expect(view.find('pending-delete-selected')!.props.disabled).toBe(true);
+    view.find('pending-select-page')!.props.onClick();await settle();
+    view.find('pending-delete-selected')!.props.onClick();await settle();
+    expect(remove).toHaveBeenCalledExactlyOnceWith({confirm:'DELETE',platform:'wechat',messages:[
+      {message_id:text.id,conversation_id:12},{message_id:voice.id,conversation_id:12},
+    ]});
+    expect(view.find('select-pending-message-message-81')).toBeUndefined();
+    expect(view.find('open-chat-image-83')).toBeDefined();
+  } finally {Object.assign(globalThis,{window:previous});}
+});
+
+it.each(['取消','确认时切换手机'])('非图片批量删除%s不会提交',async mode=>{
+  fakeChatStorage();const previous=globalThis.window;let answer:(v:boolean)=>void=()=>{};
+  Object.assign(globalThis,{window:{confirm:()=>new Promise<boolean>(resolve=>{answer=resolve;})}});
+  const remove=vi.fn();
+  try {
+    const view=await mountChatCapture({chatConversations:async()=>({total:1,conversations:[{...rememberedChat(-1),is_pending_group:true}]}),
+      chatMessages:async()=>({total:1,messages:[{...screenshot(81),conversation_id:12,assets:[],message_type:'text'}]}),deletePendingChatMessages:remove});
+    view.find('pending-select-page')!.props.onClick();await settle();
+    view.find('pending-delete-selected')!.props.onClick();await settle();
+    if(mode==='确认时切换手机'){view.currentUserId.value='user-b';await settle();}
+    answer(mode!=='取消');await settle();expect(remove).not.toHaveBeenCalled();
+  } finally {Object.assign(globalThis,{window:previous});}
+});
+it('非图片选择随翻页清空，失败保留选择且不混入图片',async()=>{
+  fakeChatStorage();const previous=globalThis.window;Object.assign(globalThis,{window:{confirm:()=>true}});
+  const remove=vi.fn(async()=>{throw Error('来源已变化，整批未删除');});
+  try {
+    const view=await mountChatCapture({chatConversations:async()=>({total:1,conversations:[{...rememberedChat(-1),is_pending_group:true}]}),
+      chatMessages:async(_id:number,page:number)=>({total:21,messages:[{...screenshot(page===1?81:82),conversation_id:12,assets:[],message_type:'text'}]}),deletePendingChatMessages:remove});
+    view.find('pending-select-page')!.props.onClick();await settle();
+    view.find('chat-page-next')!.props.onClick();await settle();
+    expect(view.find('pending-selection-count')!.text).toContain('0');
+    view.find('pending-select-page')!.props.onClick();await settle();
+    view.find('pending-delete-selected')!.props.onClick();await settle();
+    expect(remove.mock.calls[0][0].messages).toEqual([{message_id:'message-82',conversation_id:12}]);
+    expect(view.text()).toContain('整批未删除');expect(view.find('pending-selection-count')!.text).toContain('1');
+  } finally {Object.assign(globalThis,{window:previous});}
+});
+
 it('待确认纯文字可以按来源删除并刷新分组数量', async () => {
   fakeChatStorage();const previous=globalThis.window,confirm=vi.fn(()=>true);
   Object.assign(globalThis,{window:{confirm}});

@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import pg from 'pg';
 import request from 'supertest';
 import { beforeAll, afterAll, expect, it } from 'vitest';
@@ -19,6 +19,51 @@ for(const f of readdirSync(new URL('../../migrations/',import.meta.url)).filter(
 app=createApp(pool);agent=await authenticatedRequest(app);
 });
 afterAll(async()=>{await pool?.end();});
+test('已有设备仅上报应用使用也更新目录最近活跃，使用服务器接收时间',async()=>{
+ const C=randomUUID(), D=randomUUID(), old='2026-09-01T00:00:00.000Z';
+ await pool.query('INSERT INTO device(id,last_seen_at) VALUES($1,$3),($2,$3)',[C,D,old]);
+ const before=Date.now();
+ expect((await post([rec()],C)).status).toBe(200);
+ await expect.poll(async()=>+(await pool.query('SELECT last_seen_at FROM device WHERE id=$1',[C])).rows[0].last_seen_at).toBeGreaterThanOrEqual(before);
+ const directory=await agent.get(`/api/v1/dashboard/users?id=${C}`);
+ expect(Date.parse(directory.body.users[0].last_seen_at)).toBeGreaterThanOrEqual(before);
+ expect((await pool.query('SELECT last_seen_at FROM device WHERE id=$1',[D])).rows[0].last_seen_at.toISOString()).toBe(old);
+});
+test('失败上报及目录读取不制造活跃；去重成功和关闭保存的有效联系仍更新',async()=>{
+ const C=randomUUID(), old='2026-09-01T00:00:00.000Z', row=rec();
+ await pool.query('INSERT INTO device(id,last_seen_at) VALUES($1,$2)',[C,old]);
+ expect((await post([],C)).status).toBe(400);
+ await agent.get(`/api/v1/dashboard/users?id=${C}`);
+ expect((await pool.query('SELECT last_seen_at FROM device WHERE id=$1',[C])).rows[0].last_seen_at.toISOString()).toBe(old);
+ await post([row],C);
+ await expect.poll(async()=>+(await pool.query('SELECT last_seen_at FROM device WHERE id=$1',[C])).rows[0].last_seen_at).toBeGreaterThan(Date.parse(old));
+ await pool.query('UPDATE device SET last_seen_at=$2 WHERE id=$1',[C,old]);
+ await post([row],C);
+ await expect.poll(async()=>+(await pool.query('SELECT last_seen_at FROM device WHERE id=$1',[C])).rows[0].last_seen_at).toBeGreaterThan(Date.parse(old));
+ await pool.query('UPDATE device SET last_seen_at=$2 WHERE id=$1',[C,old]);
+ await pool.query('INSERT INTO runtime_setting(key,value) VALUES($1,$2)',[`device_save_uploads:${C}`,'false']);
+ expect((await post([rec()],C)).body.discarded).toBe(true);
+ await expect.poll(async()=>+(await pool.query('SELECT last_seen_at FROM device WHERE id=$1',[C])).rows[0].last_seen_at).toBeGreaterThan(Date.parse(old));
+ expect(Number((await pool.query('SELECT COUNT(*) FROM app_usage_segment WHERE user_id=$1',[C])).rows[0].count)).toBe(1);
+ await pool.query('UPDATE device SET last_seen_at=$2 WHERE id=$1',[C,old]);
+ expect((await request(app).post('/api/v1/mobile/device').set('X-Device-Id',C).send({id:C})).body.discarded).toBe(true);
+ await expect.poll(async()=>+(await pool.query('SELECT last_seen_at FROM device WHERE id=$1',[C])).rows[0].last_seen_at).toBeGreaterThan(Date.parse(old));
+});
+test('历史回填取真实接收时间最大值，重复执行不伪造现在也不倒退或复活设备',async()=>{
+ const C=randomUUID(), D=randomUUID(), deleted=randomUUID();
+ const old='2026-09-01T00:00:00.000Z', received='2026-09-30T20:08:17.120Z', newer='2026-09-30T21:00:00.000Z';
+ await pool.query('INSERT INTO device(id,last_seen_at) VALUES($1,$3),($2,$4)',[C,D,old,newer]);
+ for(const id of [C,D,deleted]) {
+  await pool.query(`INSERT INTO app_usage_segment(user_id,id,kind,package_name,start_ms,end_ms,end_reason,received_at)
+   VALUES($1,$2,'usage','com.android.settings',1790798196000,1790798874346,'switch',$3)`,[id,randomUUID(),received]);
+  await pool.query('INSERT INTO mobile_report_receipt(user_id,report_id,payload_hash,received_at) VALUES($1,$2,$3,$4)',[id,randomUUID(),'test',old]);
+ }
+ const path=new URL('../../migrations/040_device_last_activity.sql',import.meta.url);
+ if(existsSync(path)) for(let i=0;i<2;i++)await pool.query(readFileSync(path,'utf8'));
+ expect((await pool.query('SELECT last_seen_at FROM device WHERE id=$1',[C])).rows[0].last_seen_at.toISOString()).toBe(received);
+ expect((await pool.query('SELECT last_seen_at FROM device WHERE id=$1',[D])).rows[0].last_seen_at.toISOString()).toBe(newer);
+ expect((await pool.query('SELECT id FROM device WHERE id=$1',[deleted])).rowCount).toBe(0);
+});
 test('校验批大小、正时长、身份、包名和未来时间',async()=>{
  for(const records of [[],Array.from({length:201},()=>rec()),[rec({end_ms:0})],[rec({start_ms:1.1})],[rec({package_name:''})],[rec({kind:'gap',package_name:'bad'})],[rec({end_ms:Date.now()+3600000})]])expect((await post(records)).status).toBe(400);
  expect((await post([rec()],'bad')).status).toBe(400);

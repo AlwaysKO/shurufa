@@ -17,6 +17,16 @@ function loadApi(fetch: ReturnType<typeof vi.fn>) {
 }
 
 
+it('非图片批删一次提交当前手机及消息来源快照，返回冲突说明',async()=>{
+ const body={confirm:'DELETE' as const,platform:'wechat' as const,messages:[{message_id:'m',conversation_id:12}]};
+ const fetch=vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({deleted_messages:1,files_pending:false})))
+  .mockResolvedValueOnce(new Response(JSON.stringify({error:'整批未删除'}),{status:409}));
+ const api=loadApi(fetch);expect((await api.deletePendingChatMessages(body)).deleted_messages).toBe(1);
+ expect(fetch.mock.calls[0][0]).toBe('/api/v1/dashboard/chat/pending/messages/delete-batch?user_id=user-a');
+ expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual(body);
+ await expect(api.deletePendingChatMessages(body)).rejects.toThrow('整批未删除');
+});
+
 it('预览方向请求带当前用户与精确会话/图片锚点，不按页批量下载图片',async()=>{
  const fetch=vi.fn().mockResolvedValue(new Response(JSON.stringify({image:null})));const api=loadApi(fetch);
  expect(await api.chatAdjacentImage(12,'message-id',8,'next')).toEqual({image:null});

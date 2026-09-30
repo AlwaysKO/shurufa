@@ -864,6 +864,16 @@ export const api = {
   },
   deleteChatConversation: (conversationId: number, pendingPlatform?: ChatConversationRow['platform']) =>
     del(`/api/v1/dashboard/chat/conversations/${conversationId}${pendingPlatform ? `?pending_only=true&platform=${pendingPlatform}` : ''}`),
+  deletePendingChatMessages: async (body: { confirm: 'DELETE'; platform: ChatConversationRow['platform']; messages: Array<{ message_id: string; conversation_id: number }> }) => {
+    const response = await dashboardFetch(withDashboardUser('/api/v1/dashboard/chat/pending/messages/delete-batch'), {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      const detail = await response.json().catch(() => null);
+      throw new Error(typeof detail?.error === 'string' ? detail.error : `非图片记录批量删除失败（${response.status}）`);
+    }
+    return response.json() as Promise<{ deleted_messages: number; files_pending: boolean }>;
+  },
   deleteChatConversations: async (body: { confirm: 'DELETE'; platform: ChatConversationRow['platform']; conversations: Array<{ id: number } | { group_name: string; source_ids: number[] }> }) => {
     const response = await dashboardFetch(withDashboardUser('/api/v1/dashboard/chat/conversations/delete-batch'), {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),

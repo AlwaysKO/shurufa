@@ -1,4 +1,5 @@
 import { createChatGroupDeletionRouter } from './chatGroupDeletion.js';
+import { createChatPendingDeletionRouter } from './chatPendingDeletion.js';
 import { createChatPendingRouter, chatConversationScope, pendingConversation, chatPlatforms } from './chatPending.js';
 import { createChatConversationsRouter } from './chatConversations.js';
 import { createChatImagesRouter } from './chatImages.js';
@@ -25,6 +26,7 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
   const router = Router();
   router.use(createChatPendingRouter(pool));
   router.use(createChatGroupDeletionRouter(pool));
+  router.use(createChatPendingDeletionRouter(pool));
   router.use(createChatImagesRouter(pool));
   router.use(createChatConversationsRouter(pool));
 

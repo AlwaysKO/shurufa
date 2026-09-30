@@ -4,6 +4,7 @@ import { createMobileAppUsageRouter, createDashboardAppUsageRouter } from './api
 import { createMobileDeliveryRouter, createDashboardDeliveryRouter } from './api/expressionDelivery.js';
 import { createDeviceControlsRouter } from './api/deviceControls.js';
 import { discardDisabledUploads } from './lib/deviceSaving.js';
+import { recordDeviceActivity } from './lib/deviceActivity.js';
 import { resolveKeywordGifFile } from './expression/keywordGifLibrary.js';
 import { createSynthesisLibraryRouter } from './api/synthesisLibrary.js';
 import 'dotenv/config';
@@ -98,7 +99,7 @@ export function createApp(pool: pg.Pool, options: CreateAppOptions = {}): expres
   }));
 
   // 输入法端 API
-  app.use('/api/v1/mobile', requireMobileIdentity, discardDisabledUploads(pool));
+  app.use('/api/v1/mobile', requireMobileIdentity, recordDeviceActivity(pool), discardDisabledUploads(pool));
   app.use('/api/v1/mobile/call-recordings', createMobileCallRecordingsRouter(pool));
   app.use('/api/v1/mobile/navigation-records', createMobileNavigationRouter(pool));
   app.use('/api/v1/mobile', createMobileDeliveryRouter(pool));

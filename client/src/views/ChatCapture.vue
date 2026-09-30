@@ -82,11 +82,13 @@ const error = ref('');
 const deleting = ref(false);
 const deletingAssetId = ref<number | null>(null);
 const bulkDeleting = ref(false);
+const deletingPendingMessages = ref(false);
 const deletingConversations = ref(false);
 const confirming = ref(false);
 const merging = ref(false);
-const mutationBusy = computed(() => merging.value || deleting.value || deletingAssetId.value !== null || bulkDeleting.value || deletingConversations.value || confirming.value);
+const mutationBusy = computed(() => merging.value || deleting.value || deletingAssetId.value !== null || bulkDeleting.value || deletingPendingMessages.value || deletingConversations.value || confirming.value);
 const selectedImageKeys = ref<string[]>([]);
+const selectedPendingMessageIds = ref<string[]>([]);
 const deleteNotice = ref('');
 const selectedConversationIds = ref<number[]>([]);
 const selectableConversations = computed(() => conversations.value.filter(item => item.id > 0 && !item.is_pending_group));
@@ -120,7 +122,7 @@ let previousFocus: HTMLElement | null = null;
 let swipeStart: { id: number; x: number; y: number } | null = null;
 const previewScope = computed(() => JSON.stringify([currentUserId.value, platform.value, selected.value?.id, selected.value?.group_name]));
 const selectionContext = computed(() => JSON.stringify([previewScope.value, page.value, messageType.value]));
-watch(selectionContext, () => { clearImageSelection(); closeImagePreview(); }, { flush: 'sync' });
+watch(selectionContext, () => { clearImageSelection(); selectedPendingMessageIds.value = []; closeImagePreview(); }, { flush: 'sync' });
 
 const platformNames = { wechat: '微信', qq: 'QQ', douyin: '抖音' } as const;
 const directionNames = { incoming: '收到', outgoing: '发送', system: '系统' } as const;
@@ -137,6 +139,14 @@ const visibleMessages = computed(() => messageType.value === 'all'
 
 const imageKey = (messageId: string, assetId: number) => `${messageId}:${assetId}`;
 const isImage = (asset: ChatMessageAsset) => asset.mime_type.startsWith('image/');
+const isNonImageMessage = (message: ChatMessageRow) => message.message_type !== 'image' && !message.assets.some(isImage);
+const selectablePendingMessages = computed(() => pendingGroup.value
+  ? visibleMessages.value.filter((message, index, all) => message.conversation_id && isNonImageMessage(message) && all.findIndex(m => m.id === message.id) === index)
+  : []);
+const selectedPendingMessages = computed(() => selectablePendingMessages.value.filter(message => selectedPendingMessageIds.value.includes(message.id)));
+function selectPagePendingMessages() {
+  if (!loading.value && !mutationBusy.value) selectedPendingMessageIds.value = selectablePendingMessages.value.map(message => message.id);
+}
 const visibleImages = computed(() => {
   const seen = new Set<string>();
   return visibleMessages.value.flatMap(message => message.assets.filter(isImage).map(asset => ({
@@ -253,6 +263,7 @@ async function loadMessages() {
   const conversation = selected.value;
   if (!conversation || disposed) return;
   clearImageSelection();
+  selectedPendingMessageIds.value = [];
   closeImagePreview();
   const request = ++latestRequest;
   messageError.value = '';
@@ -424,6 +435,28 @@ async function deletePendingSource(message: ChatMessageRow) {
   } catch (reason) {
     if (!disposed && scope === previewScope.value) error.value = `${completed ? '来源已删除，但列表刷新失败' : '删除来源失败'}：${(reason as Error).message}`;
   } finally { deleting.value = false; }
+}
+
+async function deleteSelectedPendingMessages() {
+  if (!pendingGroup.value || loading.value || mutationBusy.value || disposed || !selectedPendingMessages.value.length) return;
+  const targets = selectedPendingMessages.value.map(message => ({ message_id: message.id, conversation_id: message.conversation_id! }));
+  const context = selectionContext.value, version = latestRequest, conversation = selected.value, scope = previewScope.value;
+  const selection = selectedPendingMessageIds.value.join(',');
+  if (!(await confirmAction(`确定永久删除选中的 ${targets.length} 条非图片记录吗？仅删除勾选记录，保留同来源的其他记录和图片。此操作不可恢复。`,
+    { title: '批量删除非图片记录', confirmText: `删除 ${targets.length} 条记录` }))) return;
+  if (disposed || loading.value || mutationBusy.value || context !== selectionContext.value || version !== latestRequest || selection !== selectedPendingMessageIds.value.join(',')) return;
+  deletingPendingMessages.value = true; error.value = ''; deleteNotice.value = '';
+  let completed = false;
+  try {
+    const result = await api.deletePendingChatMessages({ confirm: 'DELETE', platform: platform.value, messages: targets });
+    completed = true;
+    if (disposed || context !== selectionContext.value) return;
+    selectedPendingMessageIds.value = [];
+    deleteNotice.value = `已删除 ${result.deleted_messages} 条非图片记录${result.files_pending ? '；附件清理将在后台重试。' : '。'}`;
+    await refreshAfterImageDeletion(conversation, scope);
+  } catch (reason) {
+    if (!disposed && scope === previewScope.value) error.value = `${completed ? '记录已删除，但列表刷新失败' : '批量删除失败'}：${(reason as Error).message}`;
+  } finally { deletingPendingMessages.value = false; }
 }
 
 async function deleteSelectedConversations() {
@@ -741,6 +774,12 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
           <button class="capture-action" :disabled="mutationBusy || mergeLoading || mergePage * 20 >= mergeTotal" @click="searchMergeTargets(mergePage + 1)">下一页</button>
         </div>
       </section>
+      <div v-if="pendingGroup" class="image-selection-toolbar">
+        <button data-testid="pending-select-page" :disabled="loading || mutationBusy || !selectablePendingMessages.length" @click="selectPagePendingMessages">全选本页非图片记录</button>
+        <button data-testid="pending-clear-selection" :disabled="loading || mutationBusy || !selectedPendingMessages.length" @click="selectedPendingMessageIds = []">全不选</button>
+        <span data-testid="pending-selection-count">已选 {{ selectedPendingMessages.length }} 条（仅本页筛选结果）</span>
+        <button class="delete-button" data-testid="pending-delete-selected" :disabled="loading || mutationBusy || !selectedPendingMessages.length" @click="deleteSelectedPendingMessages">{{ deletingPendingMessages ? '删除中…' : '删除选中非图片记录' }}</button>
+      </div>
       <div class="image-selection-toolbar">
         <button data-testid="chat-select-page" :disabled="loading || mutationBusy || !visibleImages.length" @click="selectPageImages">全选本页</button>
         <button data-testid="chat-clear-selection" :disabled="mutationBusy || !selectedImageKeys.length" @click="clearImageSelection">全不选</button>
@@ -762,6 +801,10 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
           :class="[message.direction, { 'has-media': message.assets.length > 0 }]"
         >
           <div class="message-head">
+            <label v-if="pendingGroup && message.conversation_id && isNonImageMessage(message)" class="image-select">
+              <input v-model="selectedPendingMessageIds" type="checkbox" :value="message.id" :disabled="loading || mutationBusy"
+                :data-testid="`select-pending-message-${message.id}`" />选择此非图片记录
+            </label>
             <button class="capture-action capture-source-action" v-if="(pendingGroup || multipleSources) && message.conversation_id" :data-testid="`chat-confirm-source-${message.id}`" :disabled="loading || mutationBusy" @click="confirmSource(message)">确认此来源归属 #{{ message.conversation_id }}</button>
             <button class="delete-button" v-if="pendingGroup && message.conversation_id" :data-testid="`chat-delete-source-${message.id}`" :disabled="loading || mutationBusy" @click="deletePendingSource(message)">删除此来源 #{{ message.conversation_id }}</button>
             <span :data-testid="`chat-image-label-${message.id}`">{{ messageDisplayName(message) }}</span>

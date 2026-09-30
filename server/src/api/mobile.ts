@@ -93,7 +93,7 @@ export function createMobileRouter(pool: pg.Pool): Router {
            hardware = COALESCE(EXCLUDED.hardware, device.hardware),
            rom_version = COALESCE(EXCLUDED.rom_version, device.rom_version),
            ram_mb = COALESCE(EXCLUDED.ram_mb, device.ram_mb),
-           last_seen_at = NOW()`,
+           last_seen_at = GREATEST(device.last_seen_at, NOW())`,
         [
           info.id,
           info.name ?? null,
@@ -163,9 +163,6 @@ export function createMobileRouter(pool: pg.Pool): Router {
       }
 
       const inserted = await insertEvents(pool, res.locals.userId, valid, requestIp(req));
-
-      // 顺手更新设备最近活跃时间（不阻塞主流程）
-      await pool.query('UPDATE device SET last_seen_at = NOW() WHERE id = $1', [body.device_id ?? valid[0].device_id]).catch(() => {});
 
       res.json({ ok: true, inserted, received: valid.length });
     } catch (err) {

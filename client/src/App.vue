@@ -247,7 +247,7 @@ function seenAt(value: string) { return new Date(value).toLocaleString('zh-CN', 
               <button type="button" class="user-select" @click="chooseUser(user)">
                 <span class="user-row-avatar">📱</span>
                 <span class="user-row-main"><strong>{{ deviceLabel(user) }}</strong><span>{{ subtitle(user) }}</span><code>{{ user.id }}</code></span>
-                <span class="user-row-meta"><span>{{ seenAt(user.last_seen_at) }}</span><b v-if="user.id === currentUserId">当前</b></span>
+                <span class="user-row-meta"><span title="服务器最近成功收到设备注册或上报的时间；不代表正在打字或截图已全部同步">最近活跃 {{ seenAt(user.last_seen_at) }}</span><b v-if="user.id === currentUserId">当前</b></span>
               </button>
               <div class="user-actions">
                 <button type="button" role="switch" :aria-checked="user.save_uploads !== false" :aria-label="`${deviceLabel(user)} 保存上报数据`" class="saving-switch" :class="{ off: user.save_uploads === false }" :disabled="!!userAction || editSaving" @click="toggleSaving(user)">

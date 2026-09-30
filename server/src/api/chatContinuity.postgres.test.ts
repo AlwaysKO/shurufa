@@ -39,6 +39,44 @@ async function message(conversationId:number,options:{id?:string;user?:string;ti
 
 const merge=(source:number,target:number)=>agent.post(`/api/v1/dashboard/chat/conversations/${source}/merge?user_id=${A}`).send({confirm:'MERGE',target_id:target});
 
+const removePending=(messages:Array<{message_id:string;conversation_id:number}>,platform='wechat',user=A)=>agent.post('/api/v1/dashboard/chat/pending/messages/delete-batch').query({user_id:user}).send({confirm:'DELETE',platform,messages});
+test('批量删除待确认非图片仅删除选中记录，同来源未选记录与图片保留',async()=>{
+ const c=await conversation();await pool.query("UPDATE chat_conversation SET display_name='待确认会话' WHERE id=$1",[c]);
+ const first=await message(c,{type:'text',text:'文字'}),second=await message(c,{type:'voice'}),keep=await message(c,{type:'text',text:'保留'}),image=await message(c,{type:'image'});
+ const result=await removePending([{message_id:first,conversation_id:c},{message_id:second,conversation_id:c}]);
+ expect(result.status,JSON.stringify(result.body)).toBe(200);expect(result.body.deleted_messages).toBe(2);
+ expect((await pool.query('SELECT id FROM chat_message ORDER BY id')).rows.map(r=>r.id)).toEqual([keep,image].sort());
+ expect((await pool.query('SELECT id FROM chat_conversation WHERE id=$1',[c])).rowCount).toBe(1);
+});
+test('批量非图片删除拒绝图片、跨设备/App、已确认或已移动记录，整批原子保留',async()=>{
+ const c=await conversation(),other=await conversation();await pool.query("UPDATE chat_conversation SET display_name='待确认会话' WHERE id=ANY($1::bigint[])",[[c,other]]);
+ const text=await message(c,{type:'text'}),image=await message(c,{type:'image'}),target={message_id:text,conversation_id:c};
+ expect((await removePending([target,{message_id:image,conversation_id:c}])).status).toBe(409);
+ expect((await removePending([target],'qq')).status).toBe(409);
+ expect((await removePending([target],'wechat',B)).status).toBe(409);
+ await pool.query('UPDATE chat_message SET conversation_id=$2 WHERE id=$1',[text,other]);
+ expect((await removePending([target])).status).toBe(409);
+ await pool.query("UPDATE chat_conversation SET display_name='已确认好友' WHERE id=$1",[other]);
+ expect((await removePending([{message_id:text,conversation_id:other}])).status).toBe(409);
+ expect((await pool.query('SELECT id FROM chat_message')).rowCount).toBe(2);
+});
+test('非图片批删拒绝文字消息夹带图片，校验确认和重复参数；语音附件共享引用保留',async()=>{
+ const c=await conversation();await pool.query("UPDATE chat_conversation SET display_name='待确认会话' WHERE id=$1",[c]);
+ const picture=await groupPicture(c);await pool.query("UPDATE chat_message SET message_type='text' WHERE id=$1",[picture.message_id]);
+ const target={message_id:picture.message_id,conversation_id:c};
+ expect((await removePending([target])).status).toBe(409);
+ expect((await removePending([target,target])).status).toBe(400);
+ expect((await removePending([])).status).toBe(400);
+ expect((await removePending([{message_id:'invalid',conversation_id:c}])).status).toBe(400);
+ expect((await agent.post('/api/v1/dashboard/chat/pending/messages/delete-batch').query({user_id:A}).send({platform:'wechat',messages:[target]})).status).toBe(400);
+ await pool.query("UPDATE media_asset SET mime_type='audio/ogg' WHERE id=$1",[picture.asset_id]);
+ const keep=await message(c,{type:'voice'});
+ await pool.query("INSERT INTO chat_message_asset(message_id,asset_id,role,position) VALUES($1,$2,'content',0)",[keep,picture.asset_id]);
+ expect((await removePending([target])).status).toBe(200);
+ expect((await pool.query('SELECT id FROM media_asset WHERE id=$1',[picture.asset_id])).rowCount).toBe(1);
+ expect((await pool.query('SELECT message_id FROM chat_message_asset WHERE asset_id=$1',[picture.asset_id])).rows).toEqual([{message_id:keep}]);
+});
+
 test('待确认来源可直接确认名称并保留消息，后续上报不覆盖人工名称',async()=>{
  const id=await conversation();await message(id,{text:'怎么了'});
  const key='notification-v2:pending:manual-test';
