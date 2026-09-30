@@ -191,7 +191,6 @@ open class ImeService : InputMethodService() {
                     learning?.let { put("learning", it) }
                     selection?.diagnosticJson()?.let {
                         put("candidate_diagnostic", it)
-                        put("app_version", runCatching { packageManager.getPackageInfo(packageName, 0).versionName }.getOrNull() ?: "unknown")
                     }
                 })) resetEditTracking()
     }
@@ -599,7 +598,7 @@ open class ImeService : InputMethodService() {
             }
             if (!composingForHistory && !voiceHasPartialText) observeHostEdit()
         }
-        if (isSoftKeyboard) mInputView.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesEnd, candidatesStart)
+        if (isSoftKeyboard && ::mInputView.isInitialized) mInputView.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesEnd, candidatesStart)
     }
 
     private val cursorAnchorPosition = FloatArray(2)
@@ -990,7 +989,7 @@ open class ImeService : InputMethodService() {
         isSoftKeyboard = !hardwareKeyboard
         isHardwareKeyboard = hardwareKeyboard
         setCandidatesViewShown(isHardwareKeyboard)
-        currentInputConnection.requestCursorUpdates(if(isHardwareKeyboard)InputConnection.CURSOR_UPDATE_MONITOR else 0)
+        currentInputConnection?.requestCursorUpdates(if(isHardwareKeyboard)InputConnection.CURSOR_UPDATE_MONITOR else 0)
     }
 
 }

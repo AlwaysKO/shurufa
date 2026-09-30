@@ -69,3 +69,14 @@ it('空匹配请求不访问数据库或扫描文件',async()=>{
  const query=vi.fn(async()=>{throw Error('must not query');});
  expect(await matchMaterials({query} as any,[])).toEqual({items:[],warnings:[]});expect(query).not.toHaveBeenCalled();
 });
+
+it('素材按首次入库ID倒序后分页，旧同图新增副本不冒充新素材置顶',async()=>{
+ const root=await fixture(),second=Buffer.from(gif),third=Buffer.from(gif);second[13]=127;third[13]=63;
+ const hashes=[gif,second,third].map(b=>createHash('sha256').update(b).digest('hex'));
+ for(const [name,bytes] of [['old.gif',gif],['middle.gif',second],['new.gif',third],['duplicate.gif',gif]] as const) await writeFile(join(root,'uploads/stickers',name),bytes);
+ const db=database([{id:1,keywords:'旧词',file_name:'old.gif',sha256:hashes[0]}, {id:3,keywords:'',file_name:'middle.gif',sha256:hashes[1]}, {id:5,keywords:'',file_name:'new.gif',sha256:hashes[2]}, {id:9,keywords:'旧词',file_name:'duplicate.gif',sha256:hashes[0]}]);
+ const first=await listMaterials(db,{page_size:1},root);expect(first.total).toBe(3);expect(first.items[0].sha256).toBe(hashes[2]);
+ expect((await listMaterials(db,{page:2,page_size:1},root)).items[0].sha256).toBe(hashes[1]);
+ expect((await listMaterials(db,{state:'unassigned'},root)).items.map(m=>m.sha256)).toEqual([hashes[2],hashes[1]]);
+ expect((await listMaterials(db,{page:3,page_size:1},root)).items[0].ids).toEqual([1,9]);
+});

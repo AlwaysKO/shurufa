@@ -58,6 +58,32 @@ class T9FullCompositionDisplayTest {
         }
     }
 
+    @Test fun `迟到联想入口不清除6243组合和原生候选索引`() {
+        composition("6243", "na ge", listOf("na ge"))
+        DecodingInfo.isAssociate = false
+        val original = RimeEngine.showCandidates
+        val metadata = RimeEngine.candidateForSelection(0)
+        DecodingInfo.getAssociateWord("")
+        assertFalse(DecodingInfo.isAssociate)
+        assertSame(original, RimeEngine.showCandidates)
+        assertEquals(metadata, RimeEngine.candidateForSelection(0))
+        assertEquals("na'ge", RimeEngine.getT9CompositionForDisplay())
+        DecodingInfo.getAssociateWord("我是说")
+        assertFalse(DecodingInfo.isAssociate)
+        assertSame(original, RimeEngine.showCandidates)
+        assertEquals(metadata, RimeEngine.candidateForSelection(0))
+        assertEquals("6243", stack.unlockedT9Digits())
+    }
+
+    @Test fun `引擎联想入口也不能清除已有组合元数据`() {
+        composition("6243", "na ge", listOf("na ge"))
+        val metadata = RimeEngine.candidateForSelection(0)
+        RimeEngine.predictAssociationWords("")
+        assertEquals(metadata, RimeEngine.candidateForSelection(0))
+        RimeEngine.predictAssociationWords("我是说")
+        assertEquals("na'ge", RimeEngine.getT9CompositionForDisplay())
+    }
+
     @Test fun `选词前显示整段拼音但不改变提交缓存和候选`() {
         composition("9628924726448264", "wo bu zai", listOf("wo bu zai pang huang", "wo bu zai"))
         val original = RimeEngine.showComposition

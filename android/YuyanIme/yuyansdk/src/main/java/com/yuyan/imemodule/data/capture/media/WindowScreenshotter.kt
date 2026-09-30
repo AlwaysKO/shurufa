@@ -3,6 +3,7 @@ package com.yuyan.imemodule.data.capture.media
 import android.accessibilityservice.AccessibilityService
 import android.graphics.Bitmap
 import android.os.Build
+import com.yuyan.imemodule.data.collect.ImageUploadRuntime
 import android.view.Display
 import com.yuyan.imemodule.data.capture.ui.IntRect
 import com.yuyan.imemodule.data.capture.adapter.AdapterRegistry
@@ -50,6 +51,11 @@ class WindowScreenshotter(
                         fail()
                         return
                     }
+                    if (!ImageUploadRuntime.isInputIdle()) {
+                        hardwareBuffer.close()
+                        fail()
+                        return
+                    }
                     val bitmap = try {
                         runCatching {
                             val wrapped = Bitmap.wrapHardwareBuffer(hardwareBuffer, screenshot.colorSpace)
@@ -86,9 +92,11 @@ class WindowScreenshotter(
             val executor = Dispatchers.IO.asExecutor()
             executor.execute {
                 if (!continuation.isActive) return@execute
+                if (!ImageUploadRuntime.isInputIdle()) { fail(); return@execute }
                 // 获取前只读当前窗口的包名/ID，避免排队后已经离开聊天仍截取其他 App。
                 if (currentChatWindowId() != windowId) { fail(); return@execute }
                 if (!continuation.isActive) return@execute
+                if (!ImageUploadRuntime.isInputIdle()) { fail(); return@execute }
                 try {
                     if (windowScoped) service.takeScreenshotOfWindow(windowId, executor, callback)
                     else service.takeScreenshot(Display.DEFAULT_DISPLAY, executor, callback)

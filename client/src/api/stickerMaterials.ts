@@ -85,7 +85,7 @@ export const stickerMaterials = {
     }>(
       `sticker-materials?${new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)]))}`,
     ),
-  keywords: (sha: string, delta: { add: string[]; remove: string[] }) =>
+  keywords: (sha: string, delta: { add: string[]; remove: string[]; requireExistingGroups?: boolean }) =>
     request<{ material: Material }>(
       `sticker-materials/${encodeURIComponent(sha)}/keywords`,
       'PATCH',

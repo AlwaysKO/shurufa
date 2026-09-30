@@ -152,6 +152,7 @@ object DecodingInfo {
      * 根据输入的字符查询候选词
      */
     fun getAssociateWord(words: String) {
+        if (Kernel.hasActiveComposition) return
         isAssociate = true
         Kernel.getAssociateWord(words)
     }

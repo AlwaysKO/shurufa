@@ -11,25 +11,39 @@ import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.Closeable
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicLong
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asExecutor
+import kotlinx.coroutines.delay
 
 /** Screenshot preparation is idle-only; actual chat uploads are online + Wi-Fi only. */
 object ImageUploadRuntime {
     private val schedule = ImageUploadSchedule(SystemClock::elapsedRealtime)
-    private val calls = java.util.Collections.newSetFromMap(ConcurrentHashMap<Call, Boolean>())
-    private val generation = AtomicLong()
+    private val cancellations = InputPriorityCancellation<Call>(Dispatchers.IO.asExecutor()) { it.cancel() }
     @Volatile private var observing = false
 
     fun isInputIdle(): Boolean = schedule.isInputIdle()
+    /** 阶段边界让出；取消异常只终止本轮，不确认/删除待传数据。 */
+    fun requireInputIdle() {
+        if (!isInputIdle()) throw CancellationException("Input active")
+    }
+
+    /** 后台挂起，不阻塞 UI。身份/代次失效时停止等待，避免旧页面任务累积。 */
+    suspend fun awaitInputIdle(isCurrent: () -> Boolean): Boolean {
+        while (isCurrent()) {
+            if (isInputIdle()) return true
+            delay(100)
+        }
+        return false
+    }
+
     fun beginPreparation(): Closeable? = schedule.beginPreparation()
     fun noteKeyActivity() { schedule.noteKeyActivity(); cancelUploads() }
     fun noteTouch(action: Int, source: Any) { schedule.noteTouch(action,source); cancelUploads() }
 
     private fun cancelUploads() {
-        generation.incrementAndGet()
-        calls.forEach { it.cancel() }
+        cancellations.request()
     }
 
     private fun wifi(context: Context): Network? = runCatching {
@@ -53,7 +67,7 @@ object ImageUploadRuntime {
     // Called from an IO worker, never from a key callback. Bound sockets/DNS cannot fall back to cellular.
     internal fun prepareChatCall(context: Context, target: String, http: OkHttpClient, request: Request): Call? {
         observe(context)
-        val token=generation.get()
+        val token=cancellations.token()
         if (!canUploadChat(context,target)) return null
         val network=wifi(context) ?: return null
         val body=request.body ?: return null
@@ -62,17 +76,17 @@ object ImageUploadRuntime {
             .connectionPool(ConnectionPool(0,1,TimeUnit.SECONDS))
             .callTimeout(90,TimeUnit.SECONDS).build()
         val guarded=GuardedChatBody(body,allowed={
-            generation.get()==token && canUploadChat(context,target) && wifi(context)==network
+            cancellations.token()==token && canUploadChat(context,target) && wifi(context)==network
         })
         val call=client.newCall(request.newBuilder().method(request.method,guarded).build())
-        calls.add(call)
-        if (generation.get()!=token || !canUploadChat(context,target) || wifi(context)!=network) {
-            call.cancel();calls.remove(call);return null
+        cancellations.track(call, token)
+        if (cancellations.token()!=token || !canUploadChat(context,target) || wifi(context)!=network) {
+            call.cancel();cancellations.finish(call);return null
         }
         return call
     }
 
-    internal fun finishChatCall(call: Call) { calls.remove(call) }
+    internal fun finishChatCall(call: Call) { cancellations.finish(call) }
 
     @Synchronized private fun observe(context: Context) {
         if (observing) return

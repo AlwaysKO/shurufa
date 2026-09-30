@@ -61,9 +61,12 @@ internal class PersonalDictionarySync(
             }
             // 注册回执不缓存：服务端重置后必须补传本机数据。
             val registered=json.parseToJsonElement(request("/register",buildJsonObject {put("restore_enabled",restoreFromTarget);put("additions_supported",true);put("habits_supported",true);put("short_codes_supported",true);put("candidate_policy_supported",true)}.toString())).jsonObject
+            check(enabled())
             val records=store.dictionaryExport()
+            check(enabled())
             val (status,imported)=migration()
             val serialized=json.encodeToString(ListSerializer(DictionaryRecord.serializer()),records)
+            check(enabled())
             val fingerprint=MessageDigest.getInstance("SHA-256").digest((endpoint+serialized+status+imported).toByteArray()).joinToString("") { "%02x".format(it) }
             // 周期性补传全量也采用替换语义，服务器不会把上报当新点击。
             val due=System.currentTimeMillis()-prefs.getLong(statePrefix+"uploaded_at",0)>24*60*60*1000L
@@ -71,7 +74,7 @@ internal class PersonalDictionarySync(
                 val sequence=maxOf(System.currentTimeMillis(),prefs.getLong(statePrefix+"sequence",0)+1)
                 check(prefs.edit().putLong(statePrefix+"sequence",sequence).commit())
                 val batches=records.chunked(500).ifEmpty { listOf(emptyList()) }
-                batches.forEach { batch -> request("/report",json.encodeToString(DictionaryReport.serializer(),DictionaryReport(sequence,batch,status,imported))) }
+                batches.forEach { batch -> check(enabled()); request("/report",json.encodeToString(DictionaryReport.serializer(),DictionaryReport(sequence,batch,status,imported))) }
                 check(prefs.edit().putString(statePrefix+"uploaded_hash",fingerprint).putLong(statePrefix+"uploaded_at",System.currentTimeMillis()).commit())
             }
             if(registered["additions_supported"]?.jsonPrimitive?.booleanOrNull == true) {

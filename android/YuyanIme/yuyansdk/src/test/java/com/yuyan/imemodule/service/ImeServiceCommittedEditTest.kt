@@ -21,6 +21,9 @@ import androidx.test.core.app.ApplicationProvider
 import com.yuyan.imemodule.application.Launcher
 import com.yuyan.imemodule.data.collect.CollectionConsent
 import com.yuyan.imemodule.data.collect.DataCollector
+import com.yuyan.imemodule.data.collect.ImageUploadRuntime
+import org.robolectric.shadows.ShadowSystemClock
+import java.time.Duration
 import com.yuyan.imemodule.data.collect.LocalInputStore
 import com.yuyan.imemodule.data.emojicon.YuyanEmojiCompat
 import com.yuyan.imemodule.data.completion.*
@@ -349,7 +352,12 @@ class ImeServiceCommittedEditTest {
         } finally { tracker.clear() }
     }
 
-    private fun rows(db: LocalInputStore) = db.targets().firstOrNull()?.let { db.pending(it) }.orEmpty()
+    private fun rows(db: LocalInputStore): List<com.yuyan.imemodule.data.collect.MobileEvent> {
+        val deadline = System.nanoTime() + 5_000_000_000L
+        while (DataCollector.bufferedEventCount > 0 && System.nanoTime() < deadline) Thread.sleep(10)
+        assertEquals("尚未排空内存事件队列", 0, DataCollector.bufferedEventCount)
+        return db.targets().firstOrNull()?.let { db.pending(it) }.orEmpty()
+    }
     private fun withService(test: (EditTestService, EditTestConnection, LocalInputStore) -> Unit) {
         val context = ApplicationProvider.getApplicationContext<Context>()
         Launcher::class.java.getDeclaredField("context").apply { isAccessible = true; set(Launcher.instance, context) }
@@ -357,6 +365,8 @@ class ImeServiceCommittedEditTest {
         val field = DataCollector::class.java.getDeclaredField("eventStore").apply { isAccessible = true }
         (field.get(DataCollector) as? LocalInputStore)?.close(); field.set(DataCollector, null)
         context.deleteDatabase("local_input.db")
+        ImageUploadRuntime.noteKeyActivity()
+        ShadowSystemClock.advanceBy(Duration.ofMillis(3001))
         CollectionConsent.setEnabled(context, true)
         YuyanEmojiCompat.mEditorInfo = EditorInfo().apply { inputType = InputType.TYPE_CLASS_TEXT; packageName = "test.chat"; fieldId = 1 }
         val service = Robolectric.buildService(EditTestService::class.java).get()

@@ -167,3 +167,32 @@ it('最低ID副本缺图时新增关键词只写入原图已验证的确定性�
  expect(mobile.body.stickers.map((item:any)=>item.id)).toEqual([healthy]);
  expect(mobile.body.stickers[0].url).toBe('/uploads/stickers/healthy.gif');
 });
+
+it('素材组选取模式拒绝已不存在的候选，不静默新建关键词',async()=>{
+ const first=await upload(),sha=first.body.material.sha256;
+ const response=await agent.patch(`/api/v1/dashboard/sticker-materials/${sha}/keywords`).send({add:['不存在的候选组0929'],remove:[],requireExistingGroups:true});
+ expect(response.status).toBe(409);
+ expect((await pool.query('SELECT keywords FROM sticker')).rows).toEqual([{keywords:''}]);
+ expect((await agent.get('/api/v1/dashboard/sticker-library')).body.groups.some((g:any)=>g.keyword==='不存在的候选组0929')).toBe(false);
+});
+it('选择已有主关键词一次即可复用整组说法且不改配置，别名同样解析到主组',async()=>{
+ const first=await upload(),sha=first.body.material.sha256,id=first.body.material.ids[0];
+ await pool.query('INSERT INTO sticker_group_settings(user_id,keyword,aliases) VALUES($1,$2,$3)',[OWNER,'晨间验收组',JSON.stringify(['晨间验收说法甲','晨间验收说法乙'])]);
+ for(const word of ['晨间验收组','晨间验收说法乙']) {
+  const response=await agent.patch(`/api/v1/dashboard/sticker-materials/${sha}/keywords`).send({add:[word],remove:[],requireExistingGroups:true});
+  expect(response.status).toBe(200);expect(response.body.material.keywords).toEqual(['晨间验收组']);
+ }
+ for(const q of ['晨间验收说法甲','晨间验收说法乙']) {
+  const response=await request(app).get('/api/v1/mobile/stickers').query({q}).set('X-Device-Id',A);
+  expect(response.body.stickers.map((s:any)=>s.id)).toContain(id);
+ }
+ expect((await pool.query('SELECT aliases FROM sticker_group_settings WHERE keyword=$1',['晨间验收组'])).rows[0].aliases).toEqual(['晨间验收说法甲','晨间验收说法乙']);
+});
+it('组选择模式校验布尔标记并允许仅移除已有组',async()=>{
+ const first=await upload(),sha=first.body.material.sha256;
+ const url=`/api/v1/dashboard/sticker-materials/${sha}/keywords`;
+ expect((await agent.patch(url).send({add:['你好'],remove:[],requireExistingGroups:'true'})).status).toBe(400);
+ expect((await agent.patch(url).send({add:['你好'],remove:[],requireExistingGroups:true})).status).toBe(200);
+ const removed=await agent.patch(url).send({add:[],remove:['你好'],requireExistingGroups:true});
+ expect(removed.status).toBe(200);expect(removed.body.material.keywords).toEqual([]);
+});

@@ -9,7 +9,7 @@ import {
   type ImportAgent,
   type ImportJob,
 } from '../api/stickerMaterials';
-import { scopedAssetUrl } from '../api';
+import { api, scopedAssetUrl, type StickerKeywordGroup } from '../api';
 import { useConfirmation } from '../confirmation';
 const emit = defineEmits<{ changed: [] }>();
 const confirm = useConfirmation();
@@ -50,14 +50,14 @@ function cancelBatch() { batchCancelled.value = true; }
 
 const items = ref<Material[]>([]),
   warnings = ref<string[]>([]);
-const filter = ref<MaterialQuery['state']>('all'),
+const filter = ref<MaterialQuery['state']>('unassigned'),
   search = ref('');
 const page = ref(1),
   total = ref(0),
   loading = ref(false),
   materialError = ref('');
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / 30)));
-let query: MaterialQuery = { state: 'all', q: '', page: 1, page_size: 30 };
+let query: MaterialQuery = { state: 'unassigned', q: '', page: 1, page_size: 30 };
 let selectedJobId = '';
 let alive = true,
   materialEpoch = 0,
@@ -100,38 +100,83 @@ function applyFilter() {
   return loadMaterials(1);
 }
 async function changeKeywords(m: Material, add: string[], remove: string[]) {
-  if (batchBusy.value || cardBusy.value[m.sha256] || (!add.length && !remove.length)) return;
+  if (!alive || batchBusy.value || cardBusy.value[m.sha256] || (!add.length && !remove.length)) return;
   cardBusy.value[m.sha256] = true;
   cardErrors.value[m.sha256] = '';
   try {
-    const { material } = await stickerMaterials.keywords(m.sha256, { add, remove });
+    const { material } = await stickerMaterials.keywords(m.sha256, { add, remove, requireExistingGroups: true });
     if (!alive) return;
     const index = items.value.findIndex((item) => item.sha256 === m.sha256);
     if (index >= 0) items.value[index] = material;
     drafts.value[m.sha256] = '';
     for (const row of batchRows.value) if (row.sha256 === m.sha256) row.material = material;
     emit('changed');
-    await loadMaterials();
+    await Promise.all([loadMaterials(), loadGroups()]);
   } catch (e) {
     if (alive) cardErrors.value[m.sha256] = (e as Error).message;
   } finally {
     if (alive) cardBusy.value[m.sha256] = false;
   }
 }
-function addKeywords(m: Material) {
-  return changeKeywords(
-    m,
-    [
-      ...new Set(
-        (drafts.value[m.sha256] || '')
-          .split(/[,，\n]/)
-          .map((s) => s.trim())
-          .filter(Boolean),
-      ),
-    ],
-    [],
-  );
+const groups = ref<StickerKeywordGroup[]>([]), groupLoading = ref(true), groupError = ref('');
+let groupEpoch = 0;
+const groupByWord = computed(() => {
+  const map = new Map<string, string>();
+  for (const group of groups.value) for (const word of group.aliases) map.set(word, group.keyword);
+  for (const group of groups.value) map.set(group.keyword, group.keyword);
+  return map;
+});
+// 组资产是服务端实际归属；别名编辑后，历史 raw 关键词未必仍在 aliases 中。
+const groupsByAssetId = computed(() => {
+  const index = new Map<number, { keywords: Set<string>; groups: Set<string> }>();
+  for (const group of groups.value) for (const asset of group.assets || []) {
+    if (asset.source !== 'personal') continue;
+    const id = Number(asset.id);
+    const item = index.get(id) || { keywords: new Set<string>(), groups: new Set<string>() };
+    asset.keywords.forEach(word => item.keywords.add(word));
+    item.groups.add(group.keyword);
+    index.set(id, item);
+  }
+  return index;
+});
+function materialGroups(m: Material): string[] {
+  const snapshotWords = new Set<string>(), snapshotGroups = new Set<string>();
+  for (const id of m.ids) {
+    const asset = groupsByAssetId.value.get(id);
+    asset?.keywords.forEach(word => snapshotWords.add(word));
+    asset?.groups.forEach(keyword => snapshotGroups.add(keyword));
+  }
+  const words = new Set(m.keywords);
+  // 关键词刚编辑但组快照尚未刷新时，不允许旧资产把已移除组重新显示回来。
+  if (snapshotGroups.size && snapshotWords.size === words.size &&
+      [...words].every(word => snapshotWords.has(word))) return [...snapshotGroups];
+  return [...new Set(m.keywords.map(word => groupByWord.value.get(word) || word))];
 }
+function groupCandidates(m: Material) {
+  const text = (drafts.value[m.sha256] || '').trim().toLocaleLowerCase();
+  if (!text || groupLoading.value || groupError.value) return [];
+  return groups.value.filter(group => [group.keyword, ...group.aliases]
+    .some(word => word.toLocaleLowerCase().includes(text)));
+}
+async function loadGroups() {
+  const epoch = ++groupEpoch;
+  groupLoading.value = true;
+  groupError.value = '';
+  try {
+    const result = await api.stickerLibrary();
+    if (alive && epoch === groupEpoch) groups.value = result.groups;
+  } catch (e) {
+    if (alive && epoch === groupEpoch) groupError.value = (e as Error).message;
+  } finally {
+    if (alive && epoch === groupEpoch) groupLoading.value = false;
+  }
+}
+function selectGroup(m: Material, keyword: string) {
+  if (!alive || loading.value || groupLoading.value || groupError.value ||
+      !groups.value.some(group => group.keyword === keyword) || materialGroups(m).includes(keyword)) return;
+  return changeKeywords(m, [keyword], []);
+}
+function refreshMaterials() { return Promise.all([loadMaterials(), loadGroups()]); }
 const agents = ref<ImportAgent[]>([]),
   selectedAgent = ref(''),
   jobs = ref<ImportJob[]>([]),
@@ -351,6 +396,7 @@ async function revokeAgent() {
 }
 onMounted(() => {
   void loadMaterials(1);
+  void loadGroups();
   void poll();
   clockTimer = setInterval(() => {
     now.value = Date.now();
@@ -386,7 +432,7 @@ onBeforeUnmount(() => {
         <ul><li v-for="(row, index) in batchRows" :key="index">
           <strong>{{ row.file.name }}</strong> · {{ batchLabels[row.status] }}
           <template v-if="row.material">
-            <span v-for="keyword in row.material.keywords" :key="keyword" class="library-badge">{{ keyword }}</span>
+            <span v-for="keyword in materialGroups(row.material)" :key="keyword" class="library-badge">{{ keyword }}</span>
             <span v-if="!row.material.keywords.length" class="library-badge">未分配推荐词</span>
           </template>
           <span v-if="row.error" class="batch-error">{{ row.error }}</span>
@@ -530,11 +576,16 @@ onBeforeUnmount(() => {
         placeholder="搜索关键词"
       />
       <button class="library-button" type="submit">搜索</button
-      ><button class="text-button" type="button" :disabled="loading" @click="loadMaterials()">
+      ><button class="text-button" type="button" :disabled="loading" @click="refreshMaterials()">
         刷新</button
       ><span>共 {{ total }} 张（按原图去重）</span>
     </form>
-    <p>一张图可关联多个关键词；移除关联不是删除图片，移除最后一个关键词后回到未分配。</p>
+    <p>新上传的素材排在前面。一张图可关联多个推荐词；同组说法沿用关键词推荐图配置，移除最后一组后回到未分配。</p>
+    <p v-if="groupLoading" role="status">正在加载已有推荐词…</p>
+    <p v-if="groupError" role="alert" class="library-notice error">
+      推荐词加载失败：{{ groupError }}
+      <button type="button" class="text-button" @click="loadGroups()">重试加载推荐词</button>
+    </p>
     <p v-for="warning in warnings" :key="warning" class="library-notice">{{ warning }}</p>
     <p v-if="materialError" role="alert" class="library-notice error">
       素材加载失败：{{ materialError }}
@@ -564,7 +615,7 @@ onBeforeUnmount(() => {
         </div>
         <small v-if="m.ids.length > 1">汇总 {{ m.ids.length }} 条历史记录，未合并或删除</small>
         <div class="material-keywords">
-          <span v-for="keyword in m.keywords" :key="keyword" class="library-badge"
+          <span v-for="keyword in materialGroups(m)" :key="keyword" class="library-badge"
             >{{ keyword }}
             <button
               class="text-button"
@@ -576,20 +627,27 @@ onBeforeUnmount(() => {
             </button></span
           ><span v-if="!m.keywords.length">暂无关键词</span>
         </div>
-        <form @submit.prevent="addKeywords(m)">
+        <div class="group-picker">
           <input
             v-model="drafts[m.sha256]"
             class="library-input"
-            aria-label="新增关联关键词"
-            placeholder="新增关键词，多个用逗号分隔"
-            :disabled="batchBusy || cardBusy[m.sha256]"
-          /><button
-            class="library-button"
-            :disabled="batchBusy || cardBusy[m.sha256] || loading || !drafts[m.sha256]?.trim()"
-          >
-            {{ cardBusy[m.sha256] ? '保存中…' : '添加关联' }}
-          </button>
-        </form>
+            aria-label="搜索已有推荐词"
+            placeholder="输入文字，搜索已有推荐词"
+            :disabled="batchBusy || cardBusy[m.sha256] || groupLoading || !!groupError"
+          />
+          <div v-if="drafts[m.sha256]?.trim() && !groupLoading && !groupError" class="group-candidates" aria-label="匹配的推荐词">
+            <button v-for="group in groupCandidates(m)" :key="group.keyword" type="button"
+              class="library-button"
+              :disabled="batchBusy || cardBusy[m.sha256] || loading || materialGroups(m).includes(group.keyword)"
+              @click="selectGroup(m, group.keyword)">
+              {{ group.keyword }}{{ materialGroups(m).includes(group.keyword) ? '（已关联）' : '' }}
+            </button>
+            <p v-if="!groupCandidates(m).length" class="group-help">
+              未找到已有推荐词，请到 <a href="/stickers">关键词推荐图</a> 维护。
+            </p>
+          </div>
+          <small class="group-help">选择推荐词即可关联，同组说法自动沿用。</small>
+        </div>
         <p v-if="cardErrors[m.sha256]" role="alert" class="library-notice error">
           {{ cardErrors[m.sha256] }}
         </p>
@@ -713,4 +771,7 @@ select.library-input {
   width: auto;
   max-width: 100%;
 }
+
+.group-candidates { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; max-height: 180px; overflow-y: auto; }
+.group-help { display: block; margin-top: 8px; color: var(--muted, #718096); font-size: 12px; }
 </style>

@@ -8,6 +8,8 @@ import com.yuyan.imemodule.data.completion.canLearnInput
 
 /** Consent is separate from old privacy-policy acceptance; upgrades must opt in too. */
 object CollectionConsent {
+    private val consentEpoch = java.util.concurrent.atomic.AtomicLong()
+    internal val epoch: Long get() = consentEpoch.get()
     const val KEY = "reporting_consent_v1"
     private val sensitive = Regex("密码|验证码|校验码|动态口令|一次性口令|password|passcode|one.?time|verification.?code|otp|secret|token", RegexOption.IGNORE_CASE)
     fun enabled(context: Context): Boolean = PreferenceManager.getDefaultSharedPreferences(context.applicationContext).getBoolean(KEY, false)
@@ -15,6 +17,7 @@ object CollectionConsent {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context.applicationContext)
         val changed = prefs.getBoolean(KEY, false) != enabled
         check(prefs.edit().putBoolean(KEY, enabled).commit())
+        if (changed) consentEpoch.incrementAndGet()
         if (changed) com.yuyan.imemodule.data.usage.AppUsageTracker.masterConsentChanged(context.applicationContext)
     }
     fun allowsEditor(editor: EditorInfo?): Boolean = editor != null &&

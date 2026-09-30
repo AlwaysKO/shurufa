@@ -9,6 +9,7 @@ import com.yuyan.imemodule.data.capture.db.PendingAssetEntity
 import com.yuyan.imemodule.data.capture.model.ConversationType
 import com.yuyan.imemodule.data.capture.sha256
 import com.yuyan.imemodule.data.capture.ui.IntRect
+import com.yuyan.imemodule.data.collect.ImageUploadRuntime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -134,18 +135,21 @@ internal class MlKitWechatScreenshotIdentityResolver(identityStore: Conversation
     private val recognizer = TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
 
     override suspend fun resolve(asset: PendingAssetEntity, expectedVersion: Long, titleInput: TitleOcrInput?): ScreenshotConversationIdentity = withContext(Dispatchers.Default) {
+        ImageUploadRuntime.requireInputIdle()
         val header = (if (titleInput != null) titleInput.takeOrDecode(asset.localPath) else decodeTitleHeader(asset.localPath))
             ?: return@withContext unresolvedWechatScreenshotIdentity().copy(isChatPage = false)
         var prepared: Bitmap? = null
         try {
             val exactBand = titleInput?.hasExactTitleBand == true
             if (exactBand) prepared = prepareWechatTitleHeader(header)
+            ImageUploadRuntime.requireInputIdle()
             val lines = if (prepared != null) recognizePreparedWechatTitleHeader(prepared, ::recognize)
                 else awaitTitleOcrCompletion { recognize(header) }
             val title = selectWechatChatTitleLine(lines, header.width, header.height)?.let {
                 if (exactBand) restoreWechatTitleEllipsis(header, it) else it
             }
             // 清洗后无标题时，原始导航只用于判断页面，不把受控件污染的文字拿来确认姓名。
+            ImageUploadRuntime.requireInputIdle()
             val pageLines = if (exactBand) awaitTitleOcrCompletion { recognize(header) } else lines
             if (exactBand && isWechatNonChatHeader(header, pageLines)) {
                 return@withContext unresolvedWechatScreenshotIdentity(title?.text).copy(isChatPage = false)

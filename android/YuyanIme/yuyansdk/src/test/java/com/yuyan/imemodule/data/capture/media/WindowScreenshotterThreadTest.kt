@@ -15,6 +15,7 @@ import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
@@ -32,6 +33,13 @@ import java.util.concurrent.Executor
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [30], shadows = [WindowScreenshotterThreadTest.ServiceShadow::class])
 class WindowScreenshotterThreadTest {
+    @Before fun inputStartsIdle() {
+        // Robolectric 时钟会重置，但同配置的运行时单例可能跨测试保留。
+        com.yuyan.imemodule.data.collect.ImageUploadRuntime.noteKeyActivity()
+        org.robolectric.shadows.ShadowSystemClock.advanceBy(java.time.Duration.ofMillis(3001))
+        assertTrue(com.yuyan.imemodule.data.collect.ImageUploadRuntime.isInputIdle())
+    }
+
     class TestService : AccessibilityService() {
         override fun onAccessibilityEvent(event: android.view.accessibility.AccessibilityEvent?) = Unit
         override fun onInterrupt() = Unit

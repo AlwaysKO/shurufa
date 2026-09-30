@@ -232,7 +232,12 @@ object RimeEngine {
         updateCandidatesOrCommitText()
     }
 
+    /** 主线程状态：原始按键、锁音/分段、显示组合和原生组合任一未结束都不能切到联想。 */
+    val hasActiveComposition: Boolean
+        get() = !keyRecordStack.isEmpty() || showComposition.isNotEmpty() || Rime.isComposing
+
     fun predictAssociationWords(text: String) {
+        if (hasActiveComposition) return
         personalCandidates = null
         nativeCandidateMetadata = CandidateSelection(emptyList(), 0)
         pinyins = emptyArray()

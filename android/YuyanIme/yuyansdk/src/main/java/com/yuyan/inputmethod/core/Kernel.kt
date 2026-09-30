@@ -57,6 +57,9 @@ object Kernel {
         get() = RimeEngine.getT9CompositionForDisplay()
 
     /** librime 真实组合状态，不使用候选栏展示缓存推断。 */
+    val hasActiveComposition: Boolean
+        get() = RimeEngine.hasActiveComposition
+
     val isComposing: Boolean
         get() = Rime.isComposing
 

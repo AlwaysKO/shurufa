@@ -42,6 +42,9 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonPrimitive
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -82,6 +85,14 @@ object DataCollector {
 
     private val appNames = AppNameResolver()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val inputEvents = IdlePersistenceQueue(
+        scope,
+        awaitIdle = { ImageUploadRuntime.awaitInputIdle { true } },
+        isIdle = ImageUploadRuntime::isInputIdle,
+        onFailure = { Log.w(TAG, "事件落盘失败，保留内存队首稍后重试：${it.javaClass.simpleName}") },
+    )
+    /** 尚未保存的易失事件数；不是已保存/上报计数。 */
+    internal val bufferedEventCount: Int get() = inputEvents.pendingCount
     @Volatile private var eventStore: LocalInputStore? = null
     @Volatile private var delivery: EventDelivery? = null
     private val dictionarySyncs = java.util.concurrent.ConcurrentHashMap<DictionarySyncTarget, PersonalDictionarySync>()
@@ -230,7 +241,10 @@ object DataCollector {
 
     // ---------- 事件上报 ----------
 
-    /** 记录一次行为事件（SQLite 持久队列，重试复用同一 id，两个目标分别确认） */
+    /**
+     * true 仅代表接收到有界内存队列，不代表已保存。停手后才写 SQLite，进程退出可能丢失。
+     * 编辑器/文本隐私在发生时校验，撤权使旧的未保存事件失效；已有持久记录不动。
+     */
     fun recordEvent(
         context: Context,
         eventType: String,
@@ -245,38 +259,75 @@ object DataCollector {
         textAfter: String? = null,
         metadata: JsonObject? = null,
     ): Boolean {
+        val consentEpoch = CollectionConsent.epoch
         if (!CollectionConsent.enabled(context) || !CollectionConsent.allowsEditor(YuyanEmojiCompat.mEditorInfo) || !CollectionConsent.allowsText(text) || !CollectionConsent.allowsText(textBefore) || !CollectionConsent.allowsText(textAfter)) return false
-        val event = MobileEvent(
-            id = UUID.randomUUID().toString(),
-            deviceId = deviceId(context),
-            eventType = eventType,
-            text = text?.take(5000),
-            packageName = packageName,
-            appName = appNames.resolve(context, packageName),
-            editorId = editorId,
-            sequenceNo = sequenceNo ?: System.currentTimeMillis(),
-            sessionId = sessionId,
-            textBefore = textBefore,
-            textAfter = textAfter,
-            metadata = metadata,
-            inputCode = inputCode,
-            networkType = networkType(context),
-            source = source,
-            occurredAt = iso8601.get().format(Date()),
-        )
-        try {
-            store(context).enqueue(event, ServerConfig.eventTargets)
-            requestSync()
-            return true
-        } catch (error: Exception) {
-            Log.e(TAG, "事件落盘失败，未视为已上报", error)
-            return false
+        val app = context.applicationContext
+        val occurredAt = System.currentTimeMillis()
+        val eventText = text?.take(5000)
+        val metadataBudget = longArrayOf(0)
+        val eventMetadata = try { metadata?.let { snapshotEventMetadata(it, metadataBudget) as JsonObject } }
+            catch (_: IllegalArgumentException) { return false }
+        val targets = ServerConfig.eventTargets.toList()
+        val estimatedBytes = 1024L + metadataBudget[0] +
+            listOf(eventType, eventText, packageName, editorId, inputCode, source, sessionId, textBefore, textAfter)
+                .sumOf { 48L + (it?.length ?: 0).toLong() * 2 } + targets.sumOf { 48L + it.length.toLong() * 2 }
+        // 固定 ID/载荷只在后台首次使用时生成，失败重试沿用同一份，不重复制造事件。
+        var event: MobileEvent? = null
+        return inputEvents.offer(estimatedBytes) {
+            if (CollectionConsent.epoch != consentEpoch || !CollectionConsent.enabled(app)) return@offer
+            if (event == null) {
+                val enrichedMetadata = if (eventMetadata?.containsKey("candidate_diagnostic") == true) {
+                    JsonObject(eventMetadata + ("app_version" to JsonPrimitive(appVersionName(app))))
+                } else eventMetadata
+                event = MobileEvent(
+                    id = UUID.randomUUID().toString(),
+                    deviceId = deviceId(app),
+                    eventType = eventType,
+                    text = eventText,
+                    packageName = packageName,
+                    appName = appNames.resolve(app, packageName),
+                    editorId = editorId,
+                    sequenceNo = sequenceNo ?: occurredAt,
+                    sessionId = sessionId,
+                    textBefore = textBefore,
+                    textAfter = textAfter,
+                    metadata = enrichedMetadata,
+                    inputCode = inputCode,
+                    // 不把停手后的网络状态冒充事件发生时的网络状态，也不在按键路径查询系统。
+                    networkType = null,
+                    source = source,
+                    occurredAt = iso8601.get().format(Date(occurredAt)),
+                )
+            }
+            // 身份文件与 PackageManager 返回时可能已恢复输入，写库前重新等待。
+            ImageUploadRuntime.awaitInputIdle { true }
+            if (CollectionConsent.epoch != consentEpoch || !CollectionConsent.enabled(app)) return@offer
+            store(app).enqueue(checkNotNull(event), targets)
+            // 已提交后调度失败不能把这一项当作落盘失败。定时补传仍会发现持久记录。
+            runCatching { requestSync() }
+        }
+    }
+
+    /** 有限深拷贝，不在输入线程序列化 JSON；拒绝超大诊断而非无界占用内存。 */
+    private fun snapshotEventMetadata(value: JsonElement, budget: LongArray, depth: Int = 0): JsonElement {
+        require(depth <= 16)
+        budget[0] += 64
+        if (value is JsonPrimitive) budget[0] += value.content.length.toLong() * 2
+        require(budget[0] <= 64 * 1024)
+        return when (value) {
+            is JsonObject -> JsonObject(value.mapValues { (key, item) ->
+                budget[0] += 48L + key.length.toLong() * 2
+                snapshotEventMetadata(item, budget, depth + 1)
+            })
+            is JsonArray -> JsonArray(value.map { snapshotEventMetadata(it, budget, depth + 1) })
+            else -> value
         }
     }
 
     private fun flushEvents(syncDictionary: Boolean = true) { scope.launch { flushNow(syncDictionary) } }
 
     suspend fun flushNow(syncDictionary: Boolean = true) = coroutineScope {
+        if (!ImageUploadRuntime.isInputIdle()) return@coroutineScope
         val uploader = delivery ?: return@coroutineScope
         val app = appContext ?: return@coroutineScope
         if (!CollectionConsent.enabled(app)) {
@@ -299,6 +350,7 @@ object DataCollector {
                 ReportingTrace.record(ReportingStage.DELIVERY_ERROR, target == onlineTarget)
             },
         ) { target ->
+            if (!ImageUploadRuntime.isInputIdle()) return@run
             val now = android.os.SystemClock.elapsedRealtime()
             val regularSync = retryGate.regularPending(target)
             if (retryGate.blocks(target, now, regularSync)) {
@@ -309,25 +361,27 @@ object DataCollector {
             ReportingTrace.record(ReportingStage.FLUSH_START, target == onlineTarget)
             val taskContext = currentCoroutineContext()
             val ok = uploader.drain(target,
-                beforeBatch = { taskContext.ensureActive() },
-                beforeRequest = { taskContext.ensureActive() })
+                beforeBatch = { taskContext.ensureActive(); ImageUploadRuntime.requireInputIdle() },
+                beforeRequest = { taskContext.ensureActive(); ImageUploadRuntime.requireInputIdle() })
             ReportingTrace.record(ReportingStage.FLUSH_END, target == onlineTarget, flag = ok)
             val plan = dictionarySyncTargets(ServerConfig.eventTargets, ServerConfig.baseUrl, ServerConfig.dictionaryAuthorityUrl)
                 .firstOrNull { it.url == target }
-            if (regularSync && plan != null && CollectionConsent.enabled(app)) {
+            var dictionaryCompleted = plan == null
+            if (regularSync && plan != null && ImageUploadRuntime.isInputIdle() && CollectionConsent.enabled(app)) {
                 val sync = dictionarySyncs.getOrPut(plan) {
                     PersonalDictionarySync(store(app), app.getSharedPreferences("personal_dictionary_sync_v1", 0), http,
-                        deviceId(app), plan.url, { CollectionConsent.enabled(app) }, {
+                        deviceId(app), plan.url, { CollectionConsent.enabled(app) && ImageUploadRuntime.isInputIdle() }, {
                             val migration = app.getSharedPreferences("system_dictionary_migration_v1", 0)
                             migration.getString("status", "not_attempted")!! to migration.getInt("imported", 0)
                         }, restoreFromTarget = plan.restoreFromTarget, statePrefix = plan.statePrefix)
                 }
-                if (!sync.run()) Log.w(TAG, "个人词库尚未同步确认，保留本机记录（目标：$target）")
+                dictionaryCompleted = sync.run()
+                if (!dictionaryCompleted) Log.w(TAG, "个人词库尚未同步确认，保留本机记录（目标：$target）")
             }
             val retryDelay = if (ok && eventStore?.hasPendingImages() == true) IMAGE_POLL_INTERVAL_MS
                 else if (ok) 5_000L else FLUSH_INTERVAL_MS
             retryGate.record(target, android.os.SystemClock.elapsedRealtime() + retryDelay,
-                failed = !ok, regularCompleted = regularSync)
+                failed = !ok, regularCompleted = dictionaryCompleted)
             if (!ok) Log.w(TAG, "同步未确认，保留手机待传数据")
         }
     }

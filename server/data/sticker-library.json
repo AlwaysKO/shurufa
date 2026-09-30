@@ -1,11 +1,66 @@
 {
   "version": 1,
   "keywords": [
+    "不要",
+    "冷",
+    "划水",
     "嘚瑟",
+    "开心",
+    "我来了",
+    "我来打你了",
+    "扁你",
+    "打你",
+    "打我",
+    "打闹",
+    "捶你",
+    "捶我",
+    "揍你",
+    "揍我",
+    "来啊",
     "来砍我",
-    "白眼"
+    "点赞",
+    "爆米花",
+    "爱心",
+    "玩闹",
+    "白眼",
+    "站住",
+    "红包",
+    "过来打我啊",
+    "酷"
   ],
   "stickers": [
+    {
+      "fileName": "0eeee50c-b808-4476-adf5-2a998a690c64.gif",
+      "keywords": "爆米花",
+      "format": "gif",
+      "width": 282,
+      "height": 282,
+      "sha256": "fde77576a4d373d0e4cdfb8e02df4e0ef7dd4bb0a53bd9eb09d71fb71d336450"
+    },
+    {
+      "fileName": "18cd7491-e8a9-4733-b62d-ed8537367caf.gif",
+      "keywords": "不要",
+      "format": "gif",
+      "width": 282,
+      "height": 282,
+      "sha256": "c6400ab34ac691dd82b5c01b19616595e65e9d14d3264c390cfc873f71ee2291"
+    },
+    {
+      "fileName": "1f6eb518-7566-4b7c-81b9-024f3b34d107.gif",
+      "keywords": "打闹,玩闹,打你,打我,揍你,揍我,捶你,捶我,扁你,我来打你了,过来打我啊",
+      "format": "gif",
+      "width": 240,
+      "height": 240,
+      "sha256": "14e1ffa58f1fd71c5808c62699a79925e60f6e08fb644f17bf677aee6f86bbc5"
+    },
+    {
+      "fileName": "210d9cec-30c1-424e-a4ff-a32e1172afa3.png",
+      "keywords": "",
+      "format": "png",
+      "width": 240,
+      "height": 300,
+      "sha256": "ee5d0a9145190857f1f655937b5c2a4bb347f57898572ab4db9322571101a056"
+    },
     {
       "fileName": "4ec490dd-2e3e-4d7a-9985-461eef5032b2.gif",
       "keywords": "来砍我",
@@ -13,6 +68,70 @@
       "width": 163,
       "height": 50,
       "sha256": "2d9f9af116e456aaad7666ed510f60d7d48afb52a70433402f17b3e2d0595232"
+    },
+    {
+      "fileName": "564f856a-5588-48c1-86f5-08612968d011.gif",
+      "keywords": "我来了",
+      "format": "gif",
+      "width": 282,
+      "height": 279,
+      "sha256": "e5b6c7e439a863c847e4f201e968f56b9b2f6539587cc34d3786125999ef6a70"
+    },
+    {
+      "fileName": "68a5f8ba-ea71-490f-af48-f7ffa1c6d96e.png",
+      "keywords": "",
+      "format": "png",
+      "width": 300,
+      "height": 281,
+      "sha256": "cb0eee570db50a67eb92c088582e4061efb9f480050d0cddca916afff041c76a"
+    },
+    {
+      "fileName": "6cd7fcc1-5591-4f44-b8a6-ec1300528eaf.gif",
+      "keywords": "开心",
+      "format": "gif",
+      "width": 282,
+      "height": 282,
+      "sha256": "72df2244269902ac551b248bb079c31336e2da97de23e4ae2c3f292410ba1aaf"
+    },
+    {
+      "fileName": "8266212a-f9a0-4e17-8786-9f92040b4cb5.gif",
+      "keywords": "来啊",
+      "format": "gif",
+      "width": 220,
+      "height": 223,
+      "sha256": "a0ccef1f625f3b54bee22ffd4e80286fc5898bff117d7ca230a9760e7e0d80bd"
+    },
+    {
+      "fileName": "a0e4da65-193d-4063-8db1-0bf2d331c6be.gif",
+      "keywords": "划水",
+      "format": "gif",
+      "width": 282,
+      "height": 282,
+      "sha256": "97effb069206f5442f255ab70a754d53aea10c414d6bdc295ed194b1d8dd59f9"
+    },
+    {
+      "fileName": "b65a75ba-16c0-4f12-910f-55d1857802a9.gif",
+      "keywords": "爱心",
+      "format": "gif",
+      "width": 280,
+      "height": 230,
+      "sha256": "dde507f0c543c7131a6510ffc46f64f4b790078724005622d3b12a48372aaf08"
+    },
+    {
+      "fileName": "cc823a28-59f5-4575-b361-10fb495eceb1.gif",
+      "keywords": "酷",
+      "format": "gif",
+      "width": 219,
+      "height": 274,
+      "sha256": "dd39726f71f9f2d9f398d764a8c6de3b947c8cc355e04db22daf96d31a3670d7"
+    },
+    {
+      "fileName": "ea89c6a1-303b-4f1f-a52c-b089457e894c.gif",
+      "keywords": "冷",
+      "format": "gif",
+      "width": 282,
+      "height": 282,
+      "sha256": "9ffc80e33cc886609e6db077651794b1ed0a22b4c3383fe176eace0ec24993e0"
     },
     {
       "fileName": "eef4ebba-b2b8-482f-bc28-1d1765b86e34.png",
@@ -23,15 +142,39 @@
       "sha256": "a889b88ae30c2c209f586fa52ae409f12d22119f61a4287269cb98819177c9f4"
     },
     {
+      "fileName": "ef10dfb5-5a69-4117-9999-d507092835ee.gif",
+      "keywords": "点赞",
+      "format": "gif",
+      "width": 282,
+      "height": 282,
+      "sha256": "b436a43190d8bb8c7aaecaba18fc567901088a9e950100d273076647a384d859"
+    },
+    {
       "fileName": "f3d62618-fa87-450b-827c-ef72245c2927.gif",
       "keywords": "白眼",
       "format": "gif",
       "width": 291,
       "height": 227,
       "sha256": "030968037d9807101f30f609f745e5ae71aa0db45067b63e86e6e2308262e650"
+    },
+    {
+      "fileName": "f70e8fa6-5313-4080-a210-7d800c1c1c7d.gif",
+      "keywords": "红包",
+      "format": "gif",
+      "width": 282,
+      "height": 282,
+      "sha256": "727f6a8620434ff9ee5f04b5b4d49c5a7a52ebcc8d8176cb5cae8ebb5d640fb2"
     }
   ],
   "settings": [
+    {
+      "keyword": "冷",
+      "aliases": [
+        "冷",
+        "瑟瑟发抖"
+      ],
+      "assetOrder": null
+    },
     {
       "keyword": "来砍我",
       "aliases": [
@@ -49,7 +192,32 @@
       "assetOrder": null
     }
   ],
-  "removals": [],
+  "removals": [
+    {
+      "sha256": "3b5c60154a24f4906f24fc6924b9a50bd9bcafb6c7a2a1329ca44691b114cd39",
+      "assetId": "prebuilt-11-tpl-10"
+    },
+    {
+      "sha256": "47215647938de32e1b697d6aa01b2b2ae6275af8097f7a31d93f50fe6e3b3967",
+      "assetId": "prebuilt-16-tpl-24"
+    },
+    {
+      "sha256": "ce2bf2f77b2b1ce3a6d7a22eded916898f1f3e31f19082a490ae4df998ac2931",
+      "assetId": "prebuilt-11-tpl-07"
+    },
+    {
+      "sha256": "cfff6a98ae5416d05cb2ee8b1ab5bf5e1aca5d9fad7a1276deab9962680d36a2",
+      "assetId": "prebuilt-16-tpl-32"
+    },
+    {
+      "sha256": "dcc278446f9e55658e40aef6bf2a49a56ec8294d1a56237f5d3081105bf14fc9",
+      "assetId": "prebuilt-11-tpl-16"
+    },
+    {
+      "sha256": "e0600caf0a6d13630051b7fee2e84c5ac6f6ad45e535dca76ea23869b7bf104f",
+      "assetId": "prebuilt-11-tpl-01"
+    }
+  ],
   "deletedGroups": [
     {
       "keyword": "翻白眼",

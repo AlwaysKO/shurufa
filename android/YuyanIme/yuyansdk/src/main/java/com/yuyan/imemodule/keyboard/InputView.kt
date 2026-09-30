@@ -1996,6 +1996,8 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
             return
         }
         if (oldSelStart == newSelStart) return
+        // 前次提交的迟到光标通知，不能重置已开始的下一词或把候选换成正文联想。
+        if (Kernel.hasActiveComposition) return
         when {
             InputModeSwitcher.isNumberSkb -> {
                 val textBeforeCursor = service.getTextBeforeCursor(500)

@@ -57,7 +57,8 @@ export async function listMaterials(db: Database, query: {state?:unknown;q?:unkn
   const state=query.state??'all', page=Number(query.page??1), pageSize=Number(query.page_size??30);
   if(!['all','assigned','unassigned'].includes(String(state)) || !Number.isInteger(page)||page<1 || !Number.isInteger(pageSize)||pageSize<1||pageSize>100 || (query.q!==undefined&&typeof query.q!=='string')) throw new StickerGroupError(400,'invalid material filter');
   const {groups,warnings}=await readMaterials(db,root), q=String(query.q??'').trim().toLowerCase();
-  const items=[...groups.values()].map(g=>g.material).filter(m=>(state==='all'||m.assigned===(state==='assigned'))&&(!q||m.keywords.some(k=>k.toLowerCase().includes(q))));
+  // 同 SHA 聚合以最早记录代表首次入库；重复上传和编辑关联不提升素材顺序。
+  const items=[...groups.values()].map(g=>g.material).sort((a,b)=>b.ids[0]-a.ids[0]).filter(m=>(state==='all'||m.assigned===(state==='assigned'))&&(!q||m.keywords.some(k=>k.toLowerCase().includes(q))));
   return {items:items.slice((page-1)*pageSize,page*pageSize),total:items.length,page,pageSize,warnings};
 }
 export async function matchMaterials(db: Database, sha256s: unknown, root=process.cwd()) {
@@ -116,12 +117,14 @@ export async function importMaterial(db: Database, input:{buffer:Buffer;filename
 /** 差量关联；调用方须持公共图库事务锁，提交后归档。 */
 export async function updateMaterialKeywords(db: Database, sha256: string, input:unknown, root=process.cwd()) {
   validateMaterialSha(sha256);
-  const change=input as {add?:unknown;remove?:unknown};
+  const change=input as {add?:unknown;remove?:unknown;requireExistingGroups?:unknown};
+  if(change?.requireExistingGroups!==undefined && typeof change.requireExistingGroups!=='boolean') throw new StickerGroupError(400,'invalid group selection mode');
   function words(value:unknown) { if(!Array.isArray(value)||value.length>500) throw new StickerGroupError(400,'invalid keyword delta'); return value.map(word=>{ if(typeof word!=='string'||word.length>100||/[,，\r\n]/.test(word)||!normalizeRecommendationPhrase(word)) throw new StickerGroupError(400,'invalid keyword'); return normalizeRecommendationPhrase(word); }); }
   const add=words(change?.add),remove=words(change?.remove);
   const library=await loadStickerLibrary(db,OWNER,root);
   const canonical=(word:string)=>library.groups.find(g=>[g.keyword,...g.aliases].some(a=>normalizeRecommendationPhrase(a)===normalizeRecommendationPhrase(word)))?.keyword??stickerGroupKeyword(word);
   const additions=[...new Set(add.map(canonical))],removals=new Set(remove.map(canonical));
+  if(change.requireExistingGroups===true && additions.some(word=>!library.groups.some(g=>g.keyword===word))) throw new StickerGroupError(409,'关键词组已不存在，请刷新候选后重新选择');
   if(additions.some(w=>removals.has(w))) throw new StickerGroupError(400,'同一关键词不能同时添加和移除');
   await assertStickerKeywordsActive(db,additions.join(','));
   const group=(await readMaterials(db,root)).groups.get(sha256);

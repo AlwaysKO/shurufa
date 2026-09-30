@@ -39,6 +39,10 @@ const job = (id = 'j1', status = 'running') => ({
 });
 async function setup(overrides: Record<string, any> = {}) {
   const api = {
+    stickerLibrary: vi.fn(async () => ({ groups: [
+      { keyword: '开心', aliases: ['高兴'] }, { keyword: '早安', aliases: ['早上好'] },
+      { keyword: '早点休息', aliases: ['早睡'] }, { keyword: '猫', aliases: [] }, { keyword: '狗', aliases: [] },
+    ] })),
     list: vi.fn(async (q: any) => ({
       items: [material],
       total: 61,
@@ -75,7 +79,7 @@ async function setup(overrides: Record<string, any> = {}) {
       if (id === '../api/stickerMaterialBatch') return Batch;
       if (id === './content-library.css') return {};
       if (id === '../api/stickerMaterials') return { stickerMaterials: api };
-      if (id === '../api') return { scopedAssetUrl: (url: string) => url };
+      if (id === '../api') return { scopedAssetUrl: (url: string) => url, api };
       if (id === '../confirmation') return { useConfirmation: () => async () => true };
       throw Error(id);
     },
@@ -112,7 +116,7 @@ it('筛选、搜索重置分页并显示同图全部历史关键词', async () =
   const { state, api } = await setup();
   expect(state.items.value[0].keywords).toEqual(['开心', '高兴']);
   await state.loadMaterials(2);
-  expect(api.list).toHaveBeenLastCalledWith({ state: 'all', q: '', page: 2, page_size: 30 });
+  expect(api.list).toHaveBeenLastCalledWith({ state: 'unassigned', q: '', page: 2, page_size: 30 });
   state.filter.value = 'unassigned';
   state.search.value = '猫';
   await state.applyFilter();
@@ -126,7 +130,7 @@ it('筛选、搜索重置分页并显示同图全部历史关键词', async () =
 it('关键词编辑只发送显式差量并使用服务端返回', async () => {
   const { state, api, emit } = await setup();
   await state.changeKeywords(material, [], ['高兴']);
-  expect(api.keywords).toHaveBeenCalledWith(material.sha256, { add: [], remove: ['高兴'] });
+  expect(api.keywords).toHaveBeenCalledWith(material.sha256, { add: [], remove: ['高兴'], requireExistingGroups: true });
   expect(emit).toHaveBeenCalledWith('changed');
 });
 it('已有跳过与新增分开统计，离线不能开始导入', async () => {
@@ -554,7 +558,7 @@ it('批量入口和关键词表单双向禁用，页面筛选仍可用', () => {
  expect(source).toContain(':disabled="batchBusy || keywordBusy"');
  expect(source).toContain(':disabled="keywordBusy" @click="runBatch"');
  expect(source).toContain(':disabled="batchBusy || cardBusy[m.sha256] || loading"');
- expect(source).toContain(':disabled="batchBusy || cardBusy[m.sha256]"');
+ expect(source).toContain(':disabled="batchBusy || cardBusy[m.sha256] || groupLoading || !!groupError"');
 });
 it('独立素材页自带共享样式作用域，文件选择只显示中文入口', () => {
  const source=readFileSync(new URL('../src/views/StickerMaterials.vue',import.meta.url),'utf8');
@@ -562,4 +566,98 @@ it('独立素材页自带共享样式作用域，文件选择只显示中文入�
  expect(source).toMatch(/<input ref="batchInput"[^>]*\bhidden\b/);
  expect(source).toContain('aria-label="选择批量上传图片"');
  expect(source).toContain('选择图片批量上传</button>');
+});
+
+it('默认未分配，搜索组名或别名，仅选择已有主组关联', async () => {
+ const { state, api } = await setup();
+ expect(state.filter.value).toBe('unassigned');
+ expect(api.list).toHaveBeenCalledWith({state:'unassigned',q:'',page:1,page_size:30});
+ state.drafts.value[material.sha256] = '早';
+ expect(state.groupCandidates(material).map((g: any) => g.keyword)).toEqual(['早安','早点休息']);
+ state.drafts.value[material.sha256] = '早上好';
+ expect(state.groupCandidates(material).map((g: any) => g.keyword)).toEqual(['早安']);
+ await state.selectGroup(material, '早安');
+ expect(api.keywords).toHaveBeenCalledWith(material.sha256, {add:['早安'],remove:[],requireExistingGroups:true});
+ expect(api.stickerLibrary).toHaveBeenCalledTimes(2);
+});
+it('同组历史标签归一去重，已关联组及任意新词不能再次添加', async () => {
+ const {state,api} = await setup();
+ expect(state.materialGroups(material)).toEqual(['开心']);
+ await state.selectGroup(material,'开心');
+ await state.selectGroup(material,'不存在');
+ expect(api.keywords).not.toHaveBeenCalled();
+ state.drafts.value[material.sha256] = '不存在';
+ expect(state.groupCandidates(material)).toEqual([]);
+});
+it('关键词组加载失败禁止分配，可重试；卸载后忽略组响应', async () => {
+ const {state,api,app} = await setup({stickerLibrary:vi.fn().mockRejectedValueOnce(Error('组加载失败')).mockResolvedValue({groups:[{keyword:'早安',aliases:[]}]})});
+ expect(state.groupError.value).toBe('组加载失败');
+ await state.selectGroup(material,'早安');
+ expect(api.keywords).not.toHaveBeenCalled();
+ await state.loadGroups();
+ expect(state.groupError.value).toBe('');
+ expect(state.groups.value[0].keyword).toBe('早安');
+ let resolve!: (v:any)=>void;
+ api.stickerLibrary.mockImplementationOnce(()=>new Promise(r=>resolve=r));
+ const pending=state.loadGroups(); app.unmount(); resolve({groups:[]}); await pending;
+ expect(state.groups.value).toHaveLength(1);
+});
+
+it('推荐词仍在加载或批量上传中不能选择，选中失败不伪造关联', async () => {
+ const {state,api} = await setup();
+ let resolve!: (v:any)=>void;
+ api.stickerLibrary.mockImplementationOnce(()=>new Promise(r=>resolve=r));
+ const pending=state.loadGroups();
+ await state.selectGroup(material,'早安');
+ expect(api.keywords).not.toHaveBeenCalled();
+ resolve({groups:[{keyword:'早安',aliases:[]}]}); await pending;
+ state.batchBusy.value=true;
+ await state.selectGroup(material,'早安');
+ expect(api.keywords).not.toHaveBeenCalled();
+ state.batchBusy.value=false;
+ api.keywords.mockRejectedValueOnce(Error('推荐词已删除，请刷新'));
+ await state.selectGroup(material,'早安');
+ expect(state.materialGroups(material)).not.toContain('早安');
+ expect(state.cardErrors.value[material.sha256]).toContain('推荐词已删除');
+});
+it('分配后沿用未分配筛选刷新，卡片移出；刷新同时更新候选组', async () => {
+ const {state,api} = await setup();
+ api.list.mockResolvedValue({items:[],total:0,page:1,pageSize:30,warnings:[]});
+ await state.selectGroup(material,'早安');
+ expect(api.list).toHaveBeenLastCalledWith({state:'unassigned',q:'',page:1,page_size:30});
+ expect(state.items.value).toEqual([]);
+ await state.refreshMaterials();
+ expect(api.stickerLibrary).toHaveBeenCalledTimes(3);
+});
+
+it('别名删除后的历史图片按推荐库实际资产归组，支持一图多组并禁重', async () => {
+ const legacy = {...material, keywords:['高兴','晚安']};
+ const groups = [
+  {keyword:'开心',aliases:['开心'],assets:[{id:1,source:'personal',keywords:['高兴']}]},
+  {keyword:'晚安',aliases:['晚安'],assets:[{id:2,source:'personal',keywords:['晚安']}]},
+ ];
+ const {state,api}=await setup({stickerLibrary:vi.fn(async()=>({groups}))});
+ expect(state.materialGroups(legacy)).toEqual(['开心','晚安']);
+ await state.selectGroup(legacy,'开心');
+ expect(api.keywords).not.toHaveBeenCalled();
+});
+it('移除组后旧资产快照不复活标签，编辑成功刷新组列表并拒绝编辑前晚到响应', async () => {
+ const legacy={...material,keywords:['高兴','晚安']};
+ const oldGroups=[{keyword:'开心',aliases:['开心'],assets:[{id:1,source:'personal',keywords:['高兴']}]},
+  {keyword:'晚安',aliases:['晚安'],assets:[{id:2,source:'personal',keywords:['晚安']}]}];
+ const next={...legacy,keywords:['晚安']};
+ const {state,api}=await setup({stickerLibrary:vi.fn(async()=>({groups:oldGroups}))});
+ expect(state.materialGroups(next)).toEqual(['晚安']);
+ let resolve!: (v:any)=>void;
+ api.stickerLibrary.mockImplementationOnce(()=>new Promise(r=>resolve=r));
+ const oldRefresh=state.loadGroups();
+ const nextGroups=[{keyword:'开心',aliases:['开心'],assets:[]},oldGroups[1]];
+ api.stickerLibrary.mockResolvedValue({groups:nextGroups});
+ api.keywords.mockResolvedValue({material:next});
+ api.list.mockResolvedValue({items:[next],total:1,page:1,pageSize:30,warnings:[]});
+ await state.changeKeywords(legacy,[],['开心']);
+ expect(api.stickerLibrary).toHaveBeenCalledTimes(3);
+ resolve({groups:oldGroups}); await oldRefresh;
+ expect(state.groups.value).toEqual(nextGroups);
+ expect(state.materialGroups(state.items.value[0])).toEqual(['晚安']);
 });

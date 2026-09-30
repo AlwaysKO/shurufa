@@ -56,6 +56,8 @@ import com.yuyan.imemodule.data.collect.CollectionConsent
 import com.yuyan.imemodule.data.collect.DataCollector
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import com.yuyan.imemodule.data.collect.LatestIdleWork
+import com.yuyan.imemodule.data.collect.ImageUploadRuntime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.SupervisorJob
@@ -67,11 +69,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
-import kotlin.coroutines.resume
 import com.yuyan.imemodule.data.capture.ActiveChatContext
 import com.yuyan.imemodule.data.capture.ActiveChatContextStore
 import com.yuyan.imemodule.data.capture.model.ChatDirection
-import kotlinx.coroutines.suspendCancellableCoroutine
 
 /**
  * 聊天采集保持只读。图片确认观察独立于采集，仅按用户发送操作清理本次原输入。
@@ -80,6 +80,11 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     private val douyinDiagnostics by lazy { DouyinCaptureDiagnostics(this) }
     private val backgroundDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     private val backgroundScope = CoroutineScope(SupervisorJob() + backgroundDispatcher)
+    private val eventReads = LatestIdleWork(backgroundScope, ImageUploadRuntime::awaitInputIdle)
+    private val stableReads = LatestIdleWork(backgroundScope, ImageUploadRuntime::awaitInputIdle)
+    private val foregroundReads = LatestIdleWork(backgroundScope, ImageUploadRuntime::awaitInputIdle)
+    private val screenshotReads = LatestIdleWork(backgroundScope, ImageUploadRuntime::awaitInputIdle)
+    private val fallbackReads = LatestIdleWork(backgroundScope, ImageUploadRuntime::awaitInputIdle)
     private val treeReader = AccessibilityTreeReader()
     private val mainHandler = Handler(Looper.getMainLooper())
     private val snapshotGeneration = AtomicLong(0)
@@ -145,6 +150,11 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     )
 
     private fun resetScreenshotIdentity() {
+        eventReads.cancel()
+        stableReads.cancel()
+        foregroundReads.cancel()
+        screenshotReads.cancel()
+        fallbackReads.cancel()
         typingRecheck?.let(mainHandler::removeCallbacks)
         typingRecheck = null
         scrollGate.clear()
@@ -233,12 +243,14 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         // 系统会在回调返回后回收 event；只复制事件，不在键盘共用主线程读取页面树。
         @Suppress("DEPRECATION")
         val capturedEvent = AccessibilityEvent.obtain(event)
-        backgroundScope.launch {
+        eventReads.submit({
+            !destroyed && snapshotGeneration.get() == generation && screenshotIdentityGeneration.get() == identityGeneration
+        }) {
             if (!CollectionConsent.enabled(this@PassiveChatAccessibilityService) ||
                 snapshotGeneration.get() != generation ||
                 screenshotIdentityGeneration.get() != identityGeneration) {
                 CaptureTrace.record(CaptureStage.SUPERSEDED, windowId, identityGeneration, eventType)
-                return@launch
+                return@submit
             }
             val activeRoot = rootInActiveWindow
             val activeSnapshot = try {
@@ -246,7 +258,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                 val rootPackage = activeRoot?.packageName?.toString()?.takeIf { it.isNotBlank() }
                 val rootWindow = activeRoot?.windowId ?: -1
                 if ((rootPackage != null && rootPackage != packageName) ||
-                    (rootWindow >= 0 && windowId >= 0 && rootWindow != windowId)) return@launch
+                    (rootWindow >= 0 && windowId >= 0 && rootWindow != windowId)) return@submit
                 treeReader.read(activeRoot)
             } finally {
                 activeRoot?.let(::recycleRoot)
@@ -264,11 +276,11 @@ class PassiveChatAccessibilityService : AccessibilityService() {
             // 新内容事件只替换尚未开始的读取，不能饿死已读出的首个视口。
             // 真正离开窗口/切身份仍使结果失效，实际截图前再复核当前会话。
             if (!CollectionConsent.enabled(this@PassiveChatAccessibilityService) ||
-                screenshotIdentityGeneration.get() != identityGeneration || scrollGate.isScrolling()) return@launch
+                screenshotIdentityGeneration.get() != identityGeneration || scrollGate.isScrolling()) return@submit
             CaptureTrace.record(CaptureStage.TREE, windowId, identityGeneration,
                 (if (hasReadableChatContent(activeSnapshot)) 1 else 0) + (if (hasReadableChatContent(sourceSnapshot)) 2 else 0))
             val snapshot = preferredAccessibilitySnapshot(activeSnapshot, sourceSnapshot)
-            if (packageName == WECHAT_PACKAGE && snapshot != null && isWechatNonChatTree(snapshot)) return@launch
+            if (packageName == WECHAT_PACKAGE && snapshot != null && isWechatNonChatTree(snapshot)) return@submit
             if (shouldCaptureEmptyTreeWeChatOpen(
                     eventType = eventType,
                     className = eventClass,
@@ -285,14 +297,14 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                         if (current) captureEmptyTreeWeChatScreenshot()
                     }, delayMillis)
                 }
-                return@launch
+                return@submit
             }
             if (packageName == WECHAT_PACKAGE && !hasReadableChatContent(activeSnapshot) &&
                 !hasReadableChatContent(sourceSnapshot) && screenshotUpdates.accepts(windowId, identityGeneration, eventType)) {
                 CaptureTrace.record(CaptureStage.CONTENT_SCHEDULED, windowId, identityGeneration)
                 emptyUpdateDebouncer.submit(windowId, updateSequence.incrementAndGet().toString(),
                     ScreenshotScope(windowId, identityGeneration), "$windowId:$identityGeneration")
-                return@launch
+                return@submit
             }
             if (packageName == WECHAT_PACKAGE && !hasReadableChatContent(activeSnapshot) &&
                 !hasReadableChatContent(sourceSnapshot) &&
@@ -300,7 +312,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                 screenshotGate.markChanged(ScreenshotScope(windowId, identityGeneration))) {
                 // 初次确认期间的新内容先记账，确认成功后才补拍末次状态。
                 CaptureTrace.record(CaptureStage.CONTENT_PENDING, windowId, identityGeneration)
-                return@launch
+                return@submit
             }
             if (regularCapture && snapshot != null) submitChatViewport(packageName, windowId, snapshot, generation)
         }.invokeOnCompletion {
@@ -433,24 +445,24 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     private fun onStableViewport(viewport: StableViewport) {
         val identityGeneration = screenshotIdentityGeneration.get()
         // 限频等待期间可能已切换会话或退出 App；后台复核当前树，不阻塞输入法主线程。
-        backgroundScope.launch {
+        stableReads.submit({ !destroyed && screenshotIdentityGeneration.get() == identityGeneration }) {
             if (!CollectionConsent.enabled(this@PassiveChatAccessibilityService) ||
-                screenshotIdentityGeneration.get() != identityGeneration || scrollGate.isScrolling()) return@launch
-            val root = rootInActiveWindow ?: return@launch
+                screenshotIdentityGeneration.get() != identityGeneration || scrollGate.isScrolling()) return@submit
+            val root = rootInActiveWindow ?: return@submit
             val current = try {
                 if (root.packageName?.toString() != viewport.packageName || root.windowId != viewport.windowId) {
-                    return@launch
+                    return@submit
                 }
                 treeReader.read(root)
             } finally {
                 recycleRoot(root)
-            } ?: return@launch
+            } ?: return@submit
             if (!samePendingChat(viewport.packageName, viewport.snapshot, current)) {
-                return@launch
+                return@submit
             }
-            val activeCoordinator = coordinator ?: return@launch
+            val activeCoordinator = coordinator ?: return@submit
             if (!CollectionConsent.enabled(this@PassiveChatAccessibilityService) ||
-                screenshotIdentityGeneration.get() != identityGeneration || scrollGate.isScrolling()) return@launch
+                screenshotIdentityGeneration.get() != identityGeneration || scrollGate.isScrolling()) return@submit
             val pendingName = activeCoordinator.capture(viewport.packageName, current, viewport.windowId)
             if (pendingName && viewport.confirmationAttempt < 2) {
                 mainHandler.postDelayed({
@@ -466,34 +478,34 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         if (!CollectionConsent.enabled(this) || !isForegroundChatCapturePackage(expectedPackage)) return
         val generation = snapshotGeneration.get()
         val identityGeneration = screenshotIdentityGeneration.get()
-        backgroundScope.launch {
+        foregroundReads.submit({ !destroyed && screenshotIdentityGeneration.get() == identityGeneration }) {
             if (!CollectionConsent.enabled(this@PassiveChatAccessibilityService) ||
                 screenshotIdentityGeneration.get() != identityGeneration) {
-                return@launch
+                return@submit
             }
-            val root = rootInActiveWindow ?: return@launch
+            val root = rootInActiveWindow ?: return@submit
             try {
                 val packageName = root.packageName?.toString()
                 if (packageName != expectedPackage) {
-                    return@launch
+                    return@submit
                 }
                 val scrollScope = ScreenshotScope(root.windowId, identityGeneration)
                 val snapshot = treeReader.read(root)
-                if (packageName == WECHAT_PACKAGE && snapshot != null && isWechatNonChatTree(snapshot)) return@launch
+                if (packageName == WECHAT_PACKAGE && snapshot != null && isWechatNonChatTree(snapshot)) return@submit
                 CaptureTrace.record(CaptureStage.TREE, root.windowId, identityGeneration, value = if (hasReadableChatContent(snapshot)) 1 else 0, flag = true)
                 if (packageName == WECHAT_PACKAGE && !hasReadableChatContent(snapshot)) {
                     if (!scrollResumeOnly) screenshotUpdates.allowScrollResume(scrollScope)
-                    if (scrollGate.isScrolling()) return@launch
-                    if (scrollResumeOnly && !screenshotUpdates.canResumeScroll(scrollScope)) return@launch
+                    if (scrollGate.isScrolling()) return@submit
+                    if (scrollResumeOnly && !screenshotUpdates.canResumeScroll(scrollScope)) return@submit
                     mainHandler.post {
                         if (screenshotIdentityGeneration.get() == identityGeneration) captureEmptyTreeWeChatScreenshot(scrollResumeOnly)
                     }
-                    return@launch
+                    return@submit
                 }
-                if (snapshot == null || scrollGate.isScrolling()) return@launch
+                if (snapshot == null || scrollGate.isScrolling()) return@submit
                 val windowId = root.windowId
                 if (!CollectionConsent.enabled(this@PassiveChatAccessibilityService) ||
-                    screenshotIdentityGeneration.get() != identityGeneration || scrollGate.isScrolling()) return@launch
+                    screenshotIdentityGeneration.get() != identityGeneration || scrollGate.isScrolling()) return@submit
                 submitChatViewport(packageName, windowId, snapshot, generation, confirmationAttempt)
             } finally {
                 recycleRoot(root)
@@ -507,7 +519,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
 
     private suspend fun isCurrentScreenshotWindow(windowId: Int, generation: Long, captureToken: Long): Boolean =
         withContext(Dispatchers.IO) {
-            if (!isScreenshotRequestCurrent(generation, captureToken) || scrollGate.isScrolling() ||
+            if (!ImageUploadRuntime.isInputIdle() || !isScreenshotRequestCurrent(generation, captureToken) || scrollGate.isScrolling() ||
                 (getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager)?.isKeyguardLocked == true) return@withContext false
             val root = rootInActiveWindow ?: return@withContext false
             val current = try { root.packageName?.toString() == WECHAT_PACKAGE && root.windowId == windowId }
@@ -552,10 +564,10 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         val captureToken = captureRequestGeneration.get()
         CaptureTrace.record(CaptureStage.EMPTY_REQUEST, generation = generation)
         if (!isScreenshotRequestCurrent(generation, captureToken)) return
-        backgroundScope.launch {
-            if (!isScreenshotRequestCurrent(generation, captureToken)) return@launch
+        screenshotReads.submit({ isScreenshotRequestCurrent(generation, captureToken) }) {
+            if (!isScreenshotRequestCurrent(generation, captureToken)) return@submit
             // Binder 等待在后台完成，主线程仅处理轻量调度状态。
-            val snapshot = readScreenshotWindow() ?: return@launch
+            val snapshot = readScreenshotWindow() ?: return@submit
             val capture = withContext(Dispatchers.Main) {
                 if (!isScreenshotRequestCurrent(generation, captureToken) ||
                     (expectedScope != null && expectedScope != ScreenshotScope(snapshot.id, generation))) return@withContext null
@@ -727,8 +739,12 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     }
 
     private fun onStableFallbackRequest(request: NotificationScreenshotFallbackRequest) {
-        backgroundScope.launch {
+        fallbackReads.submit({ !destroyed && pendingFallbackRequest() == request }) {
             fallbackCaptureMutex.withLock {
+                if (!ImageUploadRuntime.isInputIdle()) {
+                    scheduleFallbackRetry(request)
+                    return@withLock
+                }
                 if (!CollectionConsent.enabled(this@PassiveChatAccessibilityService)) return@withLock
                 if (pendingFallbackRequest() != request) return@withLock
                 val descriptor = pendingNotificationScreenshotDescriptor(request) ?: run {
@@ -872,55 +888,35 @@ class PassiveChatAccessibilityService : AccessibilityService() {
 
     private suspend fun currentFallbackTarget(
         request: NotificationScreenshotFallbackRequest,
-    ): FallbackTarget? = suspendCancellableCoroutine { continuation ->
-        mainHandler.post {
-            if (!continuation.isActive) return@post
-            if (scrollGate.isScrolling()) { continuation.resume(null); return@post }
-            val root = rootInActiveWindow
-            val foregroundPackage = root?.packageName?.toString()
+    ): FallbackTarget? = withContext(backgroundDispatcher) {
+        if (!ImageUploadRuntime.isInputIdle() || destroyed || scrollGate.isScrolling() ||
+            pendingFallbackRequest() != request) return@withContext null
+        val root = rootInActiveWindow ?: return@withContext null
+        try {
             val inputMethodVisible = windows.any { it.type == AccessibilityWindowInfo.TYPE_INPUT_METHOD }
             val screenLocked = (getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager).isDeviceLocked
             if (!shouldCaptureNotificationFallback(
                     screenLocked = screenLocked,
-                    foregroundPackage = foregroundPackage,
+                    foregroundPackage = root.packageName?.toString(),
                     inputMethodVisible = inputMethodVisible,
                     targetPackage = request.packageName,
-                ) || root == null
-            ) {
-                root?.let(::recycleRoot)
-                continuation.resume(null)
-                return@post
-            }
+                )) return@withContext null
             val snapshot = treeReader.read(root)
-            if (request.packageName == WECHAT_PACKAGE && snapshot != null && isWechatNonChatTree(snapshot)) {
-                recycleRoot(root)
-                continuation.resume(null)
-                return@post
-            }
+            if (request.packageName == WECHAT_PACKAGE && snapshot != null && isWechatNonChatTree(snapshot)) return@withContext null
             val parsed = snapshot?.let { AdapterRegistry.forPackage(request.packageName)?.parse(it) } as? ParseResult.Success
-            if (isPeerTypingConversationTitle(parsed?.viewport?.conversation?.displayName)) {
-                recycleRoot(root)
-                continuation.resume(null)
-                return@post
-            }
+            if (isPeerTypingConversationTitle(parsed?.viewport?.conversation?.displayName)) return@withContext null
             val chatViewport = snapshot?.let { notificationChatViewport(request.packageName, it) }
-            // QQ/抖音有页面树时必须确认聊天页，不能把消息列表/短视频页面当作聊天截图。
-            // 微信空树继续保留既有补偿路径；可识别页面同样使用真实聊天区边界。
-            if (chatViewport == null && request.packageName != WECHAT_PACKAGE) {
-                recycleRoot(root)
-                continuation.resume(null)
-                return@post
-            }
+            // QQ/抖音必须确认聊天页，微信空树沿用已有补偿路径。
+            if (chatViewport == null && request.packageName != WECHAT_PACKAGE) return@withContext null
+            if (!ImageUploadRuntime.isInputIdle() || pendingFallbackRequest() != request) return@withContext null
             val bounds = Rect()
             root.getBoundsInScreen(bounds)
-            val target = FallbackTarget(
+            FallbackTarget(
                 windowId = root.windowId,
                 windowBounds = IntRect(bounds.left, bounds.top, bounds.right, bounds.bottom),
                 chatViewport = chatViewport,
-            )
-            recycleRoot(root)
-            continuation.resume(target.takeIf { bounds.width() > 0 && bounds.height() > 0 })
-        }
+            ).takeIf { bounds.width() > 0 && bounds.height() > 0 }
+        } finally { recycleRoot(root) }
     }
 
     private fun isoTimestamp(milliseconds: Long): String = java.text.SimpleDateFormat(
