@@ -9,6 +9,7 @@ import { deleteStickerGroupInTransaction, type StickerGroupDeletion } from './de
 import { cleanDeviceFiles } from '../lib/deleteDeviceData.js';
 import { normalizeRecommendationPhrase } from '../expression/recommendationGroups.js';
 import { SHARED_STICKER_OWNER as OWNER } from './shared.js';
+import { matchMaterials } from './materials.js';
 
 type Sticker = { fileName: string; keywords: string; format: string; width: number | null; height: number | null; sha256: string };
 type Setting = { keyword: string; aliases: string[] | null; assetOrder: string[] | null };
@@ -107,9 +108,20 @@ export async function importStickerBundle(pool: pg.Pool, root = process.cwd()): 
       }
     }
     const deleted = new Set((await db.query<{keyword: string}>('SELECT keyword FROM sticker_group_deletion')).rows.map(row => row.keyword));
+    // 素材级删除有明确标记；系统素材隐藏记录不扩展为删除用户上传记录。
+    const removedMaterials = new Set([
+      ...(await db.query<{sha256: string; asset_id: string}>('SELECT sha256,asset_id FROM keyword_gif_removal WHERE user_id=$1', [OWNER])).rows
+        .filter(row => row.asset_id === `material:${row.sha256}`).map(row => row.sha256),
+      ...data.removals.filter(row => row.assetId === `material:${row.sha256}`).map(row => row.sha256),
+    ]);
+    // 旧服务器可能尚未补算原图 SHA；先按安全路径核验文件并回填，避免漏删同图历史副本。
+    const removedHashes = [...removedMaterials];
+    for (let i = 0; i < removedHashes.length; i += 500) await matchMaterials(db, removedHashes.slice(i, i + 500), root);
+    for (const sha of removedMaterials) await db.query('DELETE FROM sticker WHERE sha256=$1', [sha]);
     const activeKeywords = (value: string) => splitStickerKeywords(value).filter(word => !deleted.has(stickerGroupKeyword(word)));
     const ids = new Map<string,string>();
     for (const s of data.stickers) {
+      if (removedMaterials.has(s.sha256)) continue;
       const importedKeywords = activeKeywords(s.keywords);
       // 未分配素材仍须恢复原图；被目标明确删组的有词图片不能复活。
       if (s.keywords !== '' && !importedKeywords.length) continue;
@@ -163,7 +175,10 @@ export async function importStickerBundle(pool: pg.Pool, root = process.cwd()): 
       const occupied = new Set(library.groups.filter(g => g.keyword !== group.keyword).flatMap(g => g.aliases).map(normalizeRecommendationPhrase));
       if (group.aliases.some(alias => occupied.has(normalizeRecommendationPhrase(alias)))) throw new Error(`图库说法归属冲突：${group.keyword}，请先调整另一组的同组说法`);
     }
-    for (const s of data.removals) await db.query('INSERT INTO keyword_gif_removal(user_id,sha256,asset_id) VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[OWNER,s.sha256,s.assetId]);
+    for (const s of data.removals) {
+      await db.query('INSERT INTO keyword_gif_removal(user_id,sha256,asset_id) VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[OWNER,s.sha256,s.assetId]);
+      if (s.assetId === `material:${s.sha256}`) await db.query('UPDATE keyword_gif_removal SET asset_id=$1 WHERE user_id=$2 AND sha256=$3', [s.assetId, OWNER, s.sha256]);
+    }
     await db.query('INSERT INTO sticker_bundle_import(singleton,manifest) VALUES(TRUE,$1) ON CONFLICT(singleton) DO UPDATE SET manifest=EXCLUDED.manifest',[JSON.stringify(data)]);
     await db.query('COMMIT');
   } catch (error) { await db.query('ROLLBACK'); throw error; }

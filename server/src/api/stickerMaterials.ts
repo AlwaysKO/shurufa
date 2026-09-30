@@ -1,7 +1,7 @@
 import { Router, raw } from 'express';
 import { unlink } from 'node:fs/promises';
 import type pg from 'pg';
-import { importMaterial, listMaterials, matchMaterials, updateMaterialKeywords } from '../stickers/materials.js';
+import { deleteMaterials, importMaterial, listMaterials, matchMaterials, updateMaterialKeywords } from '../stickers/materials.js';
 import { StickerGroupError, withGroupLock } from './stickerLibrary.js';
 import { SHARED_STICKER_OWNER } from '../stickers/shared.js';
 import { publishStickerBundle } from '../stickers/bundle.js';
@@ -9,6 +9,13 @@ export function createStickerMaterialsRouter(pool:pg.Pool):Router {
   const router=Router();
   router.get('/sticker-materials',async(req,res,next)=>{try{res.json(await listMaterials(pool,req.query));}catch(error){next(error);}});
   router.post('/sticker-materials/match',async(req,res,next)=>{try{res.json(await matchMaterials(pool,req.body?.sha256s));}catch(error){next(error);}});
+  router.post('/sticker-materials/delete', async (req, res, next) => {
+    try {
+      const result = await withGroupLock(pool, SHARED_STICKER_OWNER, db => deleteMaterials(db, req.body));
+      await publishStickerBundle(pool);
+      res.json(result);
+    } catch (error) { next(error); }
+  });
   router.post('/sticker-materials',raw({type:'application/octet-stream',limit:'10mb'}),async(req,res,next)=>{
     const createdFiles:string[]=[];
     try {

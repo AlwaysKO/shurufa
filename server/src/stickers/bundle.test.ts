@@ -232,3 +232,22 @@ it.each(['首次未分配', '分配后变更为未分配'])('源端%s不清空�
   expect((await dest.query('SELECT id,keywords,use_count FROM sticker')).rows).toEqual(expected);
   expect((await dest.query('SELECT keyword,aliases,asset_order FROM sticker_group_settings ORDER BY keyword')).rows).toEqual(settings);
 });
+
+it('素材删除标记同步移除目标历史副本，且旧清单不能恢复已删除素材',async()=>{
+ const origin=await source(),dest=await database();
+ await exportStickerBundle(origin,root);
+ const original=await readFile(join(root,'data/sticker-library.json'),'utf8');
+ await importStickerBundle(dest,root);
+ await dest.query("INSERT INTO sticker(user_id,keywords,file_name,format,sha256) VALUES($1,'其他词','duplicate.gif','gif',$2)",[OWNER,sha]);
+ await writeFile(join(root,'uploads/stickers/legacy.gif'),gif);
+ await dest.query("INSERT INTO sticker(user_id,keywords,file_name,format,sha256) VALUES($1,'旧图','legacy.gif','gif',NULL)",[OWNER]);
+ await origin.query('DELETE FROM sticker');
+ await origin.query('INSERT INTO keyword_gif_removal(user_id,sha256,asset_id) VALUES($1,$2,$3)',[OWNER,sha,`material:${sha}`]);
+ await exportStickerBundle(origin,root);
+ await importStickerBundle(dest,root);
+ expect((await dest.query('SELECT * FROM sticker')).rows).toHaveLength(0);
+ await writeFile(join(root,'data/sticker-library.json'),original);
+ await importStickerBundle(dest,root);
+ expect((await dest.query('SELECT * FROM sticker')).rows).toHaveLength(0);
+ expect(await readFile(join(root,'uploads/stickers/test.gif'))).toEqual(gif);
+});

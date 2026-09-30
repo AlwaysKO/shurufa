@@ -39,6 +39,8 @@ const job = (id = 'j1', status = 'running') => ({
 });
 async function setup(overrides: Record<string, any> = {}) {
   const api = {
+    confirm: vi.fn(async () => true),
+    remove: vi.fn(async () => ({ deleted: 1 })),
     stickerLibrary: vi.fn(async () => ({ groups: [
       { keyword: '开心', aliases: ['高兴'] }, { keyword: '早安', aliases: ['早上好'] },
       { keyword: '早点休息', aliases: ['早睡'] }, { keyword: '猫', aliases: [] }, { keyword: '狗', aliases: [] },
@@ -80,7 +82,7 @@ async function setup(overrides: Record<string, any> = {}) {
       if (id === './content-library.css') return {};
       if (id === '../api/stickerMaterials') return { stickerMaterials: api };
       if (id === '../api') return { scopedAssetUrl: (url: string) => url, api };
-      if (id === '../confirmation') return { useConfirmation: () => async () => true };
+      if (id === '../confirmation') return { useConfirmation: () => api.confirm };
       throw Error(id);
     },
     module,
@@ -555,10 +557,10 @@ it('关键词编辑尚未结束时不允许开始、重试或选择新批次', a
 });
 it('批量入口和关键词表单双向禁用，页面筛选仍可用', () => {
  const source=readFileSync(new URL('../src/views/StickerMaterials.vue',import.meta.url),'utf8');
- expect(source).toContain(':disabled="batchBusy || keywordBusy"');
- expect(source).toContain(':disabled="keywordBusy" @click="runBatch"');
- expect(source).toContain(':disabled="batchBusy || cardBusy[m.sha256] || loading"');
- expect(source).toContain(':disabled="batchBusy || cardBusy[m.sha256] || groupLoading || !!groupError"');
+ expect(source).toContain(':disabled="deleteBusy || batchBusy || keywordBusy"');
+ expect(source).toContain(':disabled="deleteBusy || keywordBusy" @click="runBatch"');
+ expect(source).toContain(':disabled="deleteBusy || batchBusy || cardBusy[m.sha256] || loading"');
+ expect(source).toContain(':disabled="deleteBusy || batchBusy || cardBusy[m.sha256] || groupLoading || !!groupError"');
 });
 it('独立素材页自带共享样式作用域，文件选择只显示中文入口', () => {
  const source=readFileSync(new URL('../src/views/StickerMaterials.vue',import.meta.url),'utf8');
@@ -660,4 +662,59 @@ it('移除组后旧资产快照不复活标签，编辑成功刷新组列表并�
  resolve({groups:oldGroups}); await oldRefresh;
  expect(state.groups.value).toEqual(nextGroups);
  expect(state.materialGroups(state.items.value[0])).toEqual(['晚安']);
+});
+
+
+it('只选当前页，全不选及翻页/筛选清空选择', async () => {
+ const {state}=await setup();
+ state.selectAllMaterials(); expect([...state.selectedMaterials.value]).toEqual([material.sha256]);
+ state.clearMaterialSelection(); expect(state.selectedMaterials.value.size).toBe(0);
+ state.selectAllMaterials(); await state.loadMaterials(2); expect(state.selectedMaterials.value.size).toBe(0);
+ state.selectAllMaterials(); await state.applyFilter(); expect(state.selectedMaterials.value.size).toBe(0);
+});
+it('确认删除当前页素材后刷新列表和分组，取消则不删除', async () => {
+ const {state,api,emit}=await setup();
+ state.selectAllMaterials(); api.confirm.mockResolvedValueOnce(false);
+ await state.deleteSelectedMaterials(); expect(api.remove).not.toHaveBeenCalled();
+ expect(state.selectedMaterials.value.size).toBe(1);
+ await state.deleteSelectedMaterials();
+ expect(api.confirm).toHaveBeenLastCalledWith(expect.stringMatching(/1 张.*所有设备/),expect.anything());
+ expect(api.remove).toHaveBeenCalledWith([material.sha256]);
+ expect(state.selectedMaterials.value.size).toBe(0); expect(emit).toHaveBeenCalledWith('changed');
+ expect(api.stickerLibrary).toHaveBeenCalledTimes(2); expect(api.list).toHaveBeenCalledTimes(2);
+});
+it('删除失败保留选择并提示，确认期间阻止重复提交和选择变化', async () => {
+ let finish!:(accepted:boolean)=>void;
+ const {state,api}=await setup({confirm:vi.fn(()=>new Promise<boolean>(resolve=>{finish=resolve;})),remove:vi.fn(async()=>{throw Error('删除未确认');})});
+ state.selectAllMaterials(); const pending=state.deleteSelectedMaterials();
+ expect(state.deleteBusy.value).toBe(true);
+ state.clearMaterialSelection(); expect(state.selectedMaterials.value.size).toBe(1);
+ await state.deleteSelectedMaterials(); expect(api.confirm).toHaveBeenCalledTimes(1);
+ finish(true); await pending;
+ expect(state.deleteError.value).toBe('删除未确认'); expect(state.selectedMaterials.value.size).toBe(1);
+ expect(state.deleteBusy.value).toBe(false);
+});
+it('空选择、加载中及离开页面后的确认不发送删除', async () => {
+ let finish!:(accepted:boolean)=>void;
+ const {state,api,app}=await setup({confirm:vi.fn(()=>new Promise<boolean>(resolve=>{finish=resolve;}))});
+ await state.deleteSelectedMaterials(); expect(api.confirm).not.toHaveBeenCalled();
+ state.selectAllMaterials(); state.loading.value=true; await state.deleteSelectedMaterials(); expect(api.confirm).not.toHaveBeenCalled();
+ state.loading.value=false; const pending=state.deleteSelectedMaterials(); app.unmount(); mounted.splice(mounted.indexOf(app),1);
+ finish(true); await pending; expect(api.remove).not.toHaveBeenCalled();
+});
+it('模板提供当前页选择、全不选和删除入口',()=>{
+ const text=readFileSync(new URL('../src/views/StickerMaterials.vue',import.meta.url),'utf8');
+ for(const label of ['全选当前页','全不选','删除选中','type="checkbox"','toggleMaterialSelection']) expect(text).toContain(label);
+});
+it('单选可切换且全选不包括另一页，删除空页自动回到有效页', async () => {
+ const second={...material,sha256:'b'.repeat(64),ids:[3]};
+ let deleted=false;
+ const {state,api}=await setup({list:vi.fn(async(q:any)=>({items:deleted?[]:[q.page===1?material:second],total:deleted?0:31,page:q.page,warnings:[]})),remove:vi.fn(async()=>{deleted=true;return{deleted:1};})});
+ state.toggleMaterialSelection(material.sha256); expect(state.selectedMaterials.value.has(material.sha256)).toBe(true);
+ state.toggleMaterialSelection(material.sha256); expect(state.selectedMaterials.value.size).toBe(0);
+ state.toggleMaterialSelection(second.sha256); expect(state.selectedMaterials.value.size).toBe(0);
+ state.selectAllMaterials(); await state.loadMaterials(2); state.selectAllMaterials();
+ expect([...state.selectedMaterials.value]).toEqual([second.sha256]);
+ await state.deleteSelectedMaterials(); expect(api.remove).toHaveBeenCalledWith([second.sha256]);
+ expect(state.page.value).toBe(1); expect(state.total.value).toBe(0); expect(state.items.value).toEqual([]);
 });

@@ -93,6 +93,8 @@ export async function importMaterial(db: Database, input:{buffer:Buffer;filename
   if(!Buffer.isBuffer(buffer)||!buffer.length||buffer.length>10*1024*1024) throw new StickerGroupError(400,'file size must be 0 ~ 10MB');
   const sha=createHash('sha256').update(buffer).digest('hex');
   if(input.sha256!==undefined&&validateMaterialSha(input.sha256)!==sha) throw new StickerGroupError(400,'image sha256 mismatch');
+  const removed = await db.query('SELECT asset_id FROM keyword_gif_removal WHERE user_id=$1 AND sha256=$2', [OWNER, sha]);
+  if (removed.rows.some(row => row.asset_id === `material:${sha}`)) throw new StickerGroupError(409, '该素材已删除，不可重复导入');
   const formats:Record<string,string>={'.gif':'gif','.png':'png','.jpg':'jpg','.jpeg':'jpg','.webp':'webp'},format=formats[extname(filename).toLowerCase()];
   let metadata:Metadata;
   try {
@@ -139,4 +141,23 @@ export async function updateMaterialKeywords(db: Database, sha256: string, input
     if(keywords!==row.keywords) await db.query('UPDATE sticker SET keywords=$1 WHERE id=$2',[keywords,row.id]);
   }
   return (await readMaterials(db,root)).groups.get(sha256)!.material;
+}
+
+/** 调用方持公共图库事务锁；只删除图库记录，保留原文件及制作归档。 */
+export async function deleteMaterials(db: Database, input: unknown, root = process.cwd()) {
+  const body = input as { confirm?: unknown; sha256s?: unknown } | null;
+  if (body?.confirm !== 'DELETE' || !Array.isArray(body.sha256s) || !body.sha256s.length || body.sha256s.length > 30) {
+    throw new StickerGroupError(400, '请确认删除，并选择当前页的 1～30 张素材');
+  }
+  const hashes = [...new Set(body.sha256s.map(validateMaterialSha))];
+  const { groups } = await readMaterials(db, root, hashes);
+  if (hashes.some(sha => !groups.has(sha))) throw new StickerGroupError(409, '所选素材已变化或不可用，请刷新后重新选择');
+  for (const sha of hashes) {
+    const group = groups.get(sha)!;
+    await rememberStickerKeywords(db, OWNER, group.material.keywords.join(','));
+    await db.query(`INSERT INTO keyword_gif_removal(user_id,sha256,asset_id) VALUES($1,$2,$3)
+      ON CONFLICT(user_id,sha256) DO UPDATE SET asset_id=EXCLUDED.asset_id`, [OWNER, sha, `material:${sha}`]);
+    await db.query('DELETE FROM sticker WHERE sha256=$1', [sha]);
+  }
+  return { deleted: hashes.length };
 }

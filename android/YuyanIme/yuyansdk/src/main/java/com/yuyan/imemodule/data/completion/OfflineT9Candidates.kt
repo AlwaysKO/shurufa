@@ -17,6 +17,7 @@ import com.yuyan.imemodule.data.emojicon.YuyanEmojiCompat
 import java.util.zip.GZIPInputStream
 
 internal object OfflineT9Candidates {
+    private val readingSeparators = Regex("[' ]+")
     private val learningScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var appContext: Context? = null
     @Volatile private var lexicon: T9Lexicon? = null
@@ -118,11 +119,12 @@ internal object OfflineT9Candidates {
             domainDictionary?.queryInitialFull(code, includeTexts = retainedTexts).orEmpty()).sortedByDescending { it.frequency }
         else emptyList()
         val extraWords = completions + personalWords + initialFullWords
+        val readingMemo = CandidateReadingMemo()
         val extraReadings = extraWords.mapNotNull { word ->
             InputSpellingMatch.match(code, word.pinyin)?.let { (word.text to word.pinyin) to it }
         }.toMap()
         fun extraMatch(text: String, reading: String): InputSpellingMatch? =
-            extraReadings[text to PersonalWordReading.normalize(text, reading)]
+            if (extraReadings.isEmpty()) null else extraReadings[text to readingMemo.normalize(text, reading)]
         val selectedByText = history.filter { it.choice.count > 0 }.groupBy { it.choice.text }
         fun locallyTrusted(text: String, reading: String): Boolean {
             if (!numeric) return true
@@ -136,7 +138,7 @@ internal object OfflineT9Candidates {
             // 保留单字、纯表情/符号；多个汉字不能通过夹杂符号绕过整词依据。
             if (hanCount <= 1) return true
             if (mainDictionary?.containsText(text) == true || domainDictionary?.containsText(text) == true) return true
-            if (personalWords.any { it.text == text && PersonalWordReading.normalize(text, reading) == it.pinyin }) return true
+            if (personalWords.any { it.text == text && readingMemo.normalize(text, reading) == it.pinyin }) return true
             val codes = T9Spelling.completionCodes(reading, minLength = 3)
             return selectedByText[text].orEmpty().any { record ->
                 record.code == code || (code in codes && record.code in codes)
@@ -190,7 +192,7 @@ internal object OfflineT9Candidates {
                 offset += Character.charCount(point)
                 count++
             }
-            return count == reading.trim().split(Regex("[' ]+")).size
+            return count == reading.trim().split(readingSeparators).size
         }
         val nativeSentences = if (allowNativeWhole) native.mapIndexedNotNull { index, text ->
             val reading = nativeComments?.getOrNull(index).orEmpty()

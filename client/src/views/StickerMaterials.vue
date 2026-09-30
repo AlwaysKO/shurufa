@@ -23,7 +23,7 @@ const batchLabels: Record<BatchStatus, string> = {
 const batchFinished = computed(() => batchRows.value.filter(r => ['existing','imported','duplicate','failed','cancelled'].includes(r.status)).length);
 const batchRetryable = computed(() => batchRows.value.some(r => ['failed','cancelled'].includes(r.status)));
 async function runBatch() {
-  if (!alive || batchBusy.value || keywordBusy.value) return;
+  if (!alive || deleteBusy.value || batchBusy.value || keywordBusy.value) return;
   batchBusy.value = true;
   batchCancelled.value = false;
   try {
@@ -40,7 +40,7 @@ async function chooseBatch(event: Event) {
   const input = event.target as HTMLInputElement;
   const files = Array.from(input.files || []);
   input.value = '';
-  if (batchBusy.value || keywordBusy.value || !files.length) return;
+  if (deleteBusy.value || batchBusy.value || keywordBusy.value || !files.length) return;
   batchError.value = '';
   if (files.length > 1000) { batchError.value = '每批最多选择 1000 张，请分批上传'; return; }
   batchRows.value = files.map(file => ({ file, status: 'pending' }));
@@ -70,12 +70,51 @@ const cardBusy = ref<Record<string, boolean>>({}),
   drafts = ref<Record<string, string>>({});
 // 批量匹配缓存与关键词差量编辑互斥，避免同批结果显示编辑前的标签。
 const keywordBusy = computed(() => Object.values(cardBusy.value).some(Boolean));
+const selectedMaterials = ref(new Set<string>());
+const deleteBusy = ref(false), deleteError = ref(''), deleteMessage = ref('');
+const selectionDisabled = computed(() => loading.value || deleteBusy.value || batchBusy.value || keywordBusy.value || !!materialError.value);
+function selectAllMaterials() {
+  if (!selectionDisabled.value) selectedMaterials.value = new Set(items.value.map(m => m.sha256));
+}
+function clearMaterialSelection() {
+  if (!deleteBusy.value) selectedMaterials.value = new Set();
+}
+function toggleMaterialSelection(sha: string) {
+  if (selectionDisabled.value || !items.value.some(m => m.sha256 === sha)) return;
+  if (selectedMaterials.value.has(sha)) selectedMaterials.value.delete(sha);
+  else selectedMaterials.value.add(sha);
+}
+async function deleteSelectedMaterials() {
+  if (!alive || selectionDisabled.value) return;
+  const hashes = items.value.filter(m => selectedMaterials.value.has(m.sha256)).map(m => m.sha256);
+  if (!hashes.length) return;
+  deleteBusy.value = true;
+  deleteError.value = '';
+  deleteMessage.value = '';
+  try {
+    if (!await confirm(`确定删除当前页选中的 ${hashes.length} 张素材？将从所有设备共享的素材库和推荐结果移除，包括同图全部历史记录；保留原文件和制作归档，重复导入不会恢复。`, { title: '删除表情素材', confirmText: '确认删除' }) || !alive) return;
+    const result = await stickerMaterials.remove(hashes);
+    if (!alive) return;
+    selectedMaterials.value = new Set();
+    // 旧批次匹配结果不继续显示已删除素材的关联信息。
+    batchRows.value = batchRows.value.filter(row => !row.sha256 || !hashes.includes(row.sha256));
+    deleteMessage.value = `已删除 ${result.deleted} 张素材`;
+    emit('changed');
+    await Promise.all([loadMaterials(page.value, true), loadGroups()]);
+  } catch (e) {
+    if (alive) deleteError.value = (e as Error).message;
+  } finally {
+    if (alive) deleteBusy.value = false;
+  }
+}
 const failedImages = ref(new Set<string>());
 const previewUrl = (m: Material) => {
   const url = scopedAssetUrl(m.url);
   return `${url}${url.includes('?') ? '&' : '?'}v=${m.sha256}`;
 };
-async function loadMaterials(nextPage = page.value) {
+async function loadMaterials(nextPage = page.value, afterDelete = false) {
+  if (deleteBusy.value && !afterDelete) return;
+  selectedMaterials.value = new Set();
   const epoch = ++materialEpoch;
   loading.value = true;
   materialError.value = '';
@@ -86,8 +125,8 @@ async function loadMaterials(nextPage = page.value) {
     warnings.value = result.warnings;
     total.value = result.total;
     page.value = result.page;
-    if (nextPage > 1 && !result.items.length && result.total > 0) {
-      await loadMaterials(Math.max(1, Math.ceil(result.total / 30)));
+    if (nextPage > 1 && !result.items.length) {
+      await loadMaterials(Math.max(1, Math.ceil(result.total / 30)), afterDelete);
     }
   } catch (e) {
     if (alive && epoch === materialEpoch) materialError.value = (e as Error).message;
@@ -96,11 +135,12 @@ async function loadMaterials(nextPage = page.value) {
   }
 }
 function applyFilter() {
+  if (deleteBusy.value) return;
   query = { state: filter.value, q: search.value.trim(), page: 1, page_size: 30 };
   return loadMaterials(1);
 }
 async function changeKeywords(m: Material, add: string[], remove: string[]) {
-  if (!alive || batchBusy.value || cardBusy.value[m.sha256] || (!add.length && !remove.length)) return;
+  if (!alive || deleteBusy.value || batchBusy.value || cardBusy.value[m.sha256] || (!add.length && !remove.length)) return;
   cardBusy.value[m.sha256] = true;
   cardErrors.value[m.sha256] = '';
   try {
@@ -418,11 +458,11 @@ onBeforeUnmount(() => {
       <h3>批量上传表情原图</h3>
       <p>先用本地独立导出工具把微信收藏存入文件夹，再在这里多选上传，无需配对或保持助手运行。按原图 SHA256 比对当前后台，已有图片保留全部推荐词；新图先未分配，添加推荐词后进入关键词推荐图。</p>
       <p>每批最多 1000 张，单张不超过 10 MB；保留 GIF 动画。仅完全相同的原图去重，压缩或重新编码后的图片可能被识别为新图。</p>
-      <input ref="batchInput" type="file" hidden accept="image/gif,image/png,image/jpeg,image/webp" multiple aria-label="选择批量上传图片" :disabled="batchBusy || keywordBusy" @change="chooseBatch" />
+      <input ref="batchInput" type="file" hidden accept="image/gif,image/png,image/jpeg,image/webp" multiple aria-label="选择批量上传图片" :disabled="deleteBusy || batchBusy || keywordBusy" @change="chooseBatch" />
       <div class="library-actions">
-        <button class="library-button primary" :disabled="batchBusy || keywordBusy" @click="batchInput?.click()">选择图片批量上传</button>
+        <button class="library-button primary" :disabled="deleteBusy || batchBusy || keywordBusy" @click="batchInput?.click()">选择图片批量上传</button>
         <button v-if="batchBusy" class="library-button" @click="cancelBatch" :disabled="batchCancelled">停止后续上传</button>
-        <button v-if="!batchBusy && batchRetryable" class="library-button" :disabled="keywordBusy" @click="runBatch">重试失败或未完成项</button>
+        <button v-if="!batchBusy && batchRetryable" class="library-button" :disabled="deleteBusy || keywordBusy" @click="runBatch">重试失败或未完成项</button>
         <span v-if="batchRows.length" role="status">已处理 {{ batchFinished }} / {{ batchRows.length }} 张{{ batchBusy ? '（进行中）' : '（本批结束）' }}</span>
       </div>
       <p v-if="batchBusy">离开页面将停止后续上传；当前请求可能已保存，重新上传时会再次去重。</p>
@@ -563,7 +603,7 @@ onBeforeUnmount(() => {
     <form class="material-filters library-actions" @submit.prevent="applyFilter">
       <label
         >分配状态
-        <select v-model="filter" class="library-input" @change="applyFilter">
+        <select :disabled="deleteBusy" v-model="filter" class="library-input" @change="applyFilter">
           <option value="all">全部</option>
           <option value="unassigned">未分配</option>
           <option value="assigned">已分配</option>
@@ -571,16 +611,25 @@ onBeforeUnmount(() => {
       >
       <input
         v-model="search"
+        :disabled="deleteBusy"
         class="library-input"
         aria-label="搜索素材关键词"
         placeholder="搜索关键词"
       />
-      <button class="library-button" type="submit">搜索</button
-      ><button class="text-button" type="button" :disabled="loading" @click="refreshMaterials()">
+      <button class="library-button" type="submit" :disabled="deleteBusy">搜索</button
+      ><button class="text-button" type="button" :disabled="deleteBusy || loading" @click="refreshMaterials()">
         刷新</button
       ><span>共 {{ total }} 张（按原图去重）</span>
     </form>
     <p>新上传的素材排在前面。一张图可关联多个推荐词；同组说法沿用关键词推荐图配置，移除最后一组后回到未分配。</p>
+    <div class="library-actions" aria-label="素材批量删除">
+      <button type="button" class="library-button" :disabled="selectionDisabled || !items.length" @click="selectAllMaterials">全选当前页</button>
+      <button type="button" class="library-button" :disabled="deleteBusy || !selectedMaterials.size" @click="clearMaterialSelection">全不选</button>
+      <span>已选 {{ selectedMaterials.size }} 张（仅当前页）</span>
+      <button type="button" class="library-button danger" :disabled="selectionDisabled || !selectedMaterials.size" @click="deleteSelectedMaterials">{{ deleteBusy ? '正在确认或删除…' : '删除选中' }}</button>
+    </div>
+    <p v-if="deleteError" class="library-notice error" role="alert">删除未确认成功：{{ deleteError }}；请刷新核对后重试。</p>
+    <p v-if="deleteMessage" role="status">{{ deleteMessage }}</p>
     <p v-if="groupLoading" role="status">正在加载已有推荐词…</p>
     <p v-if="groupError" role="alert" class="library-notice error">
       推荐词加载失败：{{ groupError }}
@@ -596,6 +645,11 @@ onBeforeUnmount(() => {
     </p>
     <div class="material-grid" :aria-busy="loading">
       <article v-for="m in items" :key="m.sha256" class="library-panel material-card">
+        <label class="library-actions">
+          <input type="checkbox" :checked="selectedMaterials.has(m.sha256)" :disabled="selectionDisabled"
+            :aria-label="`选择素材：${m.keywords.join('、') || m.sha256.slice(0, 8)}`" @change="toggleMaterialSelection(m.sha256)" />
+          选择此素材
+        </label>
         <div class="material-preview">
           <span v-if="failedImages.has(m.sha256)" role="alert">原图加载失败</span
           ><img
@@ -620,7 +674,7 @@ onBeforeUnmount(() => {
             <button
               class="text-button"
               :aria-label="`移除关联：${keyword}`"
-              :disabled="batchBusy || cardBusy[m.sha256] || loading"
+              :disabled="deleteBusy || batchBusy || cardBusy[m.sha256] || loading"
               @click="changeKeywords(m, [], [keyword])"
             >
               ×
@@ -633,12 +687,12 @@ onBeforeUnmount(() => {
             class="library-input"
             aria-label="搜索已有推荐词"
             placeholder="输入文字，搜索已有推荐词"
-            :disabled="batchBusy || cardBusy[m.sha256] || groupLoading || !!groupError"
+            :disabled="deleteBusy || batchBusy || cardBusy[m.sha256] || groupLoading || !!groupError"
           />
           <div v-if="drafts[m.sha256]?.trim() && !groupLoading && !groupError" class="group-candidates" aria-label="匹配的推荐词">
             <button v-for="group in groupCandidates(m)" :key="group.keyword" type="button"
               class="library-button"
-              :disabled="batchBusy || cardBusy[m.sha256] || loading || materialGroups(m).includes(group.keyword)"
+              :disabled="deleteBusy || batchBusy || cardBusy[m.sha256] || loading || materialGroups(m).includes(group.keyword)"
               @click="selectGroup(m, group.keyword)">
               {{ group.keyword }}{{ materialGroups(m).includes(group.keyword) ? '（已关联）' : '' }}
             </button>
@@ -656,14 +710,14 @@ onBeforeUnmount(() => {
     <nav class="library-actions" aria-label="素材分页">
       <button
         class="library-button"
-        :disabled="loading || page <= 1"
+        :disabled="deleteBusy || loading || page <= 1"
         @click="loadMaterials(page - 1)"
       >
         上一页</button
       ><span>第 {{ page }} / {{ pageCount }} 页</span
       ><button
         class="library-button"
-        :disabled="loading || page >= pageCount"
+        :disabled="deleteBusy || loading || page >= pageCount"
         @click="loadMaterials(page + 1)"
       >
         下一页

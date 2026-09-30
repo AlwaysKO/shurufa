@@ -7,10 +7,13 @@ internal enum class InputMatchKind { THREE_INITIALS, PHRASE_PREFIX, WHOLE_PHRASE
 /** 附在候选上的实际输入证据；完整读音另存，不把预测后缀伪装成已输入拼音。 */
 internal data class InputSpellingMatch(val kind: InputMatchKind, val code: String, val preedit: String) {
     companion object {
+        private val separators = Regex("[' ]+")
+        private val spaces = Regex(" +")
+        private val phrasePattern = Regex("[a-z]+(?: +[a-z]+)+")
         /** 仅显示用途；普通全键候选也不能扩写未键入的字母。 */
         fun typedPrefix(code: String, reading: String): String? {
             if (code.isEmpty() || code.any { it !in 'a'..'z' }) return null
-            val syllables = reading.trim().lowercase().replace('ü', 'v').split(Regex("[' ]+"))
+            val syllables = reading.trim().lowercase().replace('ü', 'v').split(separators)
             if (!syllables.joinToString("").startsWith(code)) return null
             var remaining = code.length
             return syllables.mapNotNull { syllable ->
@@ -20,8 +23,8 @@ internal data class InputSpellingMatch(val kind: InputMatchKind, val code: Strin
 
         fun match(code: String, reading: String, allowPhrase: Boolean = true): InputSpellingMatch? {
             val normalized = reading.trim().lowercase().replace('ü', 'v').replace('\'', ' ')
-            if (!Regex("[a-z]+(?: +[a-z]+)+").matches(normalized)) return null
-            val syllables = normalized.split(Regex(" +"))
+            if (!phrasePattern.matches(normalized)) return null
+            val syllables = normalized.split(spaces)
             val numeric = code.isNotEmpty() && code.all { it in '2'..'9' }
             if (!numeric && (code.isEmpty() || code.any { it !in 'a'..'z' })) return null
             // 独立的双字混拼证据：第一字仅首字母，第二字必须打全；不扩大长词内部简拼。

@@ -66,6 +66,7 @@ async function request<T>(path: string, method = 'GET', body?: unknown, signal?:
 }
 const prefix = 'sticker-import';
 export const stickerMaterials = {
+  remove: (sha256s: string[]) => request<{ deleted: number }>('sticker-materials/delete', 'POST', { confirm: 'DELETE', sha256s }),
   match: (sha256s: string[]) => request<unknown>('sticker-materials/match', 'POST', { sha256s }, AbortSignal.timeout(30000)),
   upload: async (file: File, sha256: string): Promise<unknown> => {
     const response = await dashboardFetch(`/api/v1/dashboard/sticker-materials?${new URLSearchParams({ filename: file.name, sha256 })}`, {

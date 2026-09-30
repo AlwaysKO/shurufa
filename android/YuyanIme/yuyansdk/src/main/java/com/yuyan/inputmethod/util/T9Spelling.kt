@@ -4,13 +4,14 @@ import com.yuyan.imemodule.data.completion.T9Lexicon
 
 /** 按原生候选的实际读音对齐按键，不从汉字词表猜测读音。 */
 internal object T9Spelling {
+    private val separators = Regex("[' ]+")
     private val readingPattern = Regex("[a-zü]+(?:[' ]+[a-zü]+)*")
 
     /** 学习只能在同一读音的完整码与末音节前缀间共享；默认不含三键；学习可显式允许三键，但仍排除内部简拼。 */
     fun completionCodes(reading: String, minLength: Int = 4): Set<String> {
         val normalized = reading.trim().lowercase()
         if (!readingPattern.matches(normalized)) return emptySet()
-        val syllables = normalized.replace('ü', 'v').split(Regex("[' ]+"))
+        val syllables = normalized.replace('ü', 'v').split(separators)
         if (syllables.size < 2) return emptySet()
         val prefix = T9Lexicon.digits(syllables.dropLast(1).joinToString(""))
         val last = T9Lexicon.digits(syllables.last())
@@ -52,7 +53,7 @@ internal object T9Spelling {
         if (code.isEmpty() || code.any { it !in '2'..'9' }) return null
         val normalized = reading.trim().lowercase()
         if (!readingPattern.matches(normalized)) return null
-        val syllables = normalized.replace('ü', 'v').split(Regex("[' ]+"))
+        val syllables = normalized.replace('ü', 'v').split(separators)
         var offset = 0
         val typed = mutableListOf<String>()
         for ((index, syllable) in syllables.withIndex()) {

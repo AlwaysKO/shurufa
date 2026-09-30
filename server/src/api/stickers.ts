@@ -235,6 +235,9 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
             throw new StickerGroupError(400, '关键词须为1～100字，不含换行；多个关键词用逗号分隔');
           }
           await assertStickerKeywordsActive(db, keywords);
+          const sha256 = createHash('sha256').update(buffer).digest('hex');
+          const removed = await db.query('SELECT asset_id FROM keyword_gif_removal WHERE user_id=$1 AND sha256=$2', [SHARED_STICKER_OWNER, sha256]);
+          if (removed.rows.some(row => row.asset_id === `material:${sha256}`)) throw new StickerGroupError(409, '该素材已删除，不可重复导入');
           res.locals.markUpload?.('groupValidation');
           await mkdir(stickerDirectory(), { recursive: true });
           await writeFile(join(stickerDirectory(), fileName), buffer);
@@ -243,7 +246,7 @@ export function createDashboardStickerRouter(pool: pg.Pool): Router {
             `INSERT INTO sticker (user_id, keywords, file_name, format, width, height, sha256)
              VALUES ($1, $2, $3, $4, $5, $6, $7)
              RETURNING id, keywords, file_name, format, width, height, use_count, created_at`,
-            [SHARED_STICKER_OWNER, keywords, fileName, format, dimensions.width ?? null, dimensions.pageHeight ?? dimensions.height ?? null, createHash('sha256').update(buffer).digest('hex')],
+            [SHARED_STICKER_OWNER, keywords, fileName, format, dimensions.width ?? null, dimensions.pageHeight ?? dimensions.height ?? null, sha256],
           );
           await rememberStickerKeywords(db, SHARED_STICKER_OWNER, keywords);
           res.locals.markUpload?.('databaseSave');

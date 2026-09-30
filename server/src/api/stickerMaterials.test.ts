@@ -196,3 +196,30 @@ it('组选择模式校验布尔标记并允许仅移除已有组',async()=>{
  const removed=await agent.patch(url).send({add:[],remove:['你好'],requireExistingGroups:true});
  expect(removed.status).toBe(200);expect(removed.body.material.keywords).toEqual([]);
 });
+
+it('批量删除同图全部历史记录，保留其他素材与原文件，并阻止重新导入', async () => {
+ const first=await upload(), sha=first.body.material.sha256;
+ await pool.query("UPDATE sticker SET keywords='你好' WHERE sha256=$1",[sha]);
+ await writeFile(join(root,'server/uploads/stickers/copy.gif'),gif);
+ await pool.query("INSERT INTO sticker(user_id,keywords,file_name,format,sha256) VALUES($1,'晚安','copy.gif','gif',$2)",[A,sha]);
+ const other=Buffer.from(gif); other[13]=127;
+ const second=await agent.post('/api/v1/dashboard/sticker-materials').query({filename:'other.gif'}).set('Content-Type','application/octet-stream').send(other);
+ const deleted=await agent.post('/api/v1/dashboard/sticker-materials/delete').send({confirm:'DELETE',sha256s:[sha]});
+ expect(deleted.status).toBe(200); expect(deleted.body.deleted).toBe(1);
+ expect((await pool.query('SELECT sha256 FROM sticker')).rows).toEqual([{sha256:second.body.material.sha256}]);
+ expect((await pool.query('SELECT sha256,asset_id FROM keyword_gif_removal')).rows).toEqual([{sha256:sha,asset_id:`material:${sha}`}]);
+ expect(await readFile(join(root,'server',first.body.material.url))).toEqual(gif);
+ expect((await upload()).status).toBe(409);
+ expect((await agent.post('/api/v1/dashboard/stickers').send({keywords:'你好',filename:'tiny.gif',file_base64:gif.toString('base64')})).status).toBe(409);
+ const listing=await agent.get('/api/v1/dashboard/sticker-materials'); expect(listing.body.total).toBe(1);
+ const mobile=await request(app).get('/api/v1/mobile/stickers').query({q:'你好'}).set('X-Device-Id',A);
+ expect(mobile.body.stickers).toEqual([]);
+});
+it('素材批量删除拒绝空列表、超量、坏哈希、缺确认和旧选择，且要求登录与同源',async()=>{
+ const first=await upload(),sha=first.body.material.sha256,url='/api/v1/dashboard/sticker-materials/delete';
+ for(const body of [{sha256s:[sha]}, {confirm:'DELETE',sha256s:[]}, {confirm:'DELETE',sha256s:Array(31).fill(sha)}, {confirm:'DELETE',sha256s:['bad']}]) expect((await agent.post(url).send(body)).status).toBe(400);
+ expect((await agent.post(url).send({confirm:'DELETE',sha256s:[sha,'a'.repeat(64)]})).status).toBe(409);
+ expect((await pool.query('SELECT * FROM sticker')).rows).toHaveLength(1);
+ expect((await request(app).post(url).send({confirm:'DELETE',sha256s:[sha]})).status).toBe(401);
+ expect((await agent.post(url).set('Origin','https://evil.test').send({confirm:'DELETE',sha256s:[sha]})).status).toBe(403);
+});
