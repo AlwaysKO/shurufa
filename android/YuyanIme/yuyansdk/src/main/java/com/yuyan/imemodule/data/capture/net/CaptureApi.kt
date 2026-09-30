@@ -1,11 +1,14 @@
 package com.yuyan.imemodule.data.capture.net
 
 import com.yuyan.imemodule.data.capture.db.PendingAssetEntity
+import com.yuyan.imemodule.data.capture.notification.filterCallStatusNotifications
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.jsonObject
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -75,7 +78,9 @@ class CaptureApi(
             conversation = first.conversation,
             messages = messages.map { it.message },
         )
-        return post("/api/v1/mobile/chat/messages/batch", json.encodeToString(body))
+        // 已入旧 Room 队列的状态也就地结束，不再转入通用报告队列或发起 HTTP。
+        val filtered = filterCallStatusNotifications(json.encodeToJsonElement(body).jsonObject) ?: return true
+        return post("/api/v1/mobile/chat/messages/batch", filtered.toString())
     }
 
     private fun post(path: String, jsonBody: String): Boolean {

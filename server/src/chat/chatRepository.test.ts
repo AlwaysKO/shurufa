@@ -157,7 +157,7 @@ describe('ingestCapturedMessages', () => {
     expect((await pool.query('SELECT id FROM chat_message')).rowCount).toBe(2);
   });
 
-  it('同一微信通话状态通知在短时间反复更新时只保存一条', async () => {
+  it('通话中状态通知包括重复更新均不保存或创建会话', async () => {
     const first = message({
       text: '视频通话中',
       content_fingerprint: '1'.repeat(64),
@@ -175,9 +175,28 @@ describe('ingestCapturedMessages', () => {
     const firstResult = await ingestCapturedMessages(pool, userId, deviceId, conversation, [first]);
     const updateResult = await ingestCapturedMessages(pool, userId, deviceId, conversation, [update]);
 
-    expect(firstResult).toMatchObject({ inserted: 1, duplicated: 0 });
-    expect(updateResult).toMatchObject({ inserted: 0, duplicated: 1 });
-    expect((await pool.query('SELECT text FROM chat_message')).rows).toEqual([{ text: '视频通话中' }]);
+    expect(firstResult).toMatchObject({ conversationId: null, inserted: 0, duplicated: 1 });
+    expect(updateResult).toMatchObject({ conversationId: null, inserted: 0, duplicated: 1 });
+    expect((await pool.query('SELECT text FROM chat_message')).rowCount).toBe(0);
+    expect((await pool.query('SELECT id FROM chat_conversation')).rowCount).toBe(0);
+  });
+
+  it.each(['wechat', 'qq', 'douyin'] as const)('%s 过滤旧版通话状态且不索要素材，混合批次保留普通消息', async platform => {
+    const status = message({ text: '语音通话中', message_type: 'voice', asset_sha256: ['f'.repeat(64)], metadata: { capture_source: 'notification' } });
+    const voice = message({ fingerprint: 'c'.repeat(64), text: '[语音]', message_type: 'voice', metadata: { capture_source: 'notification' } });
+    const chat = message({ fingerprint: 'd'.repeat(64), text: '语音通话中', metadata: { capture_source: 'notification', notification_messaging_style: 'true' } });
+    const ui = message({ fingerprint: 'e'.repeat(64), text: '视频通话中', metadata: { capture_source: 'accessibility' } });
+    const normal = message({ fingerprint: 'f'.repeat(64), text: '语音通话中听不清', metadata: { capture_source: 'notification' } });
+    expect(await ingestCapturedMessages(pool,userId,deviceId,{...conversation,platform},[status,voice,chat,ui,normal]))
+      .toMatchObject({inserted:4,duplicated:1,missingAssets:[]});
+    expect((await pool.query('SELECT text FROM chat_message')).rows.map(r=>r.text)).toEqual(['[语音]','语音通话中','视频通话中','语音通话中听不清']);
+  });
+
+  it('兼容旧版消息时间戳，真实MessagingStyle同名文字保留且不作通话状态去重', async () => {
+    const metadata = { capture_source: 'notification', notification_message_timestamp: '1700000000000' };
+    const first = message({text:'语音通话中',metadata});
+    const second = message({text:'语音通话中',fingerprint:'c'.repeat(64),metadata});
+    expect(await ingestCapturedMessages(pool,userId,deviceId,conversation,[first,second])).toMatchObject({inserted:2,duplicated:0});
   });
 
   it('服务端拒绝旧客户端上传的微信隐藏占位和桌面登录提示', async () => {

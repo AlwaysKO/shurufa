@@ -29,6 +29,7 @@ sealed interface WindowScreenshotResult {
 
 class WindowScreenshotter(
     private val service: AccessibilityService,
+    private val supportedPackage: (String) -> Boolean = { AdapterRegistry.forPackage(it) != null },
 ) : ScreenshotSource {
     override suspend fun capture(windowId: Int, windowBounds: IntRect): WindowScreenshotResult {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return WindowScreenshotResult.Unsupported
@@ -108,7 +109,7 @@ class WindowScreenshotter(
     @Suppress("DEPRECATION")
     private fun currentChatWindowId(): Int? = runCatching {
         val root = service.rootInActiveWindow ?: return@runCatching null
-        try { if (AdapterRegistry.forPackage(root.packageName?.toString().orEmpty()) != null) root.windowId else null }
+        try { if (supportedPackage(root.packageName?.toString().orEmpty())) root.windowId else null }
         finally { root.recycle() }
     }.getOrNull()
 }

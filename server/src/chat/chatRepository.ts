@@ -36,6 +36,17 @@ function isPeerTypingScreenshot(conversation: CapturedConversationInput, message
       || isPeerTypingTitle(message.metadata?.conversation_identity_observed_title));
 }
 
+function isMessagingNotification(message: CapturedMessageInput): boolean {
+  const metadata = message.metadata;
+  if (metadata && 'notification_messaging_style' in metadata) {
+    return metadata.notification_messaging_style === true || metadata.notification_messaging_style === 'true';
+  }
+  // 兼容旧版：仅 MessagingStyle 通知会携带原消息时间戳。
+  const timestamp = metadata?.notification_message_timestamp;
+  return (typeof timestamp === 'string' || typeof timestamp === 'number')
+    && /^[0-9]+$/.test(String(timestamp)) && Number.isSafeInteger(Number(timestamp)) && Number(timestamp) > 0;
+}
+
 function isWechatCallState(
   conversation: CapturedConversationInput,
   message: CapturedMessageInput,
@@ -44,7 +55,16 @@ function isWechatCallState(
   return conversation.platform === 'wechat'
     && message.direction === 'incoming'
     && source === 'notification'
+    && !isMessagingNotification(message)
     && /^(视频|语音)通话/.test(message.text?.trim() ?? '');
+}
+
+function isOngoingCallNotification(conversation: CapturedConversationInput, message: CapturedMessageInput): boolean {
+  return ['wechat', 'qq', 'douyin'].includes(conversation.platform)
+    && message.direction === 'incoming'
+    && message.metadata?.capture_source === 'notification'
+    && !isMessagingNotification(message)
+    && ['语音通话中', '视频通话中'].includes(message.text?.trim() ?? '');
 }
 
 function isUnusableWechatNotification(
@@ -119,10 +139,11 @@ export async function ingestCapturedMessages(
   }
 
   // 旧客户端或已排队的状态帧也不能新建会话；成功应答，避免反复补传和索要无用素材。
-  const acceptedMessages = messages.filter(message => !isPeerTypingScreenshot(conversation, message));
-  const discardedTyping = messages.length - acceptedMessages.length;
-  if (discardedTyping > 0 && acceptedMessages.length === 0) {
-    return { conversationId: null, inserted: 0, duplicated: discardedTyping, missingAssets: [] };
+  const acceptedMessages = messages.filter(message => !isPeerTypingScreenshot(conversation, message)
+    && !isOngoingCallNotification(conversation, message));
+  const discardedStates = messages.length - acceptedMessages.length;
+  if (discardedStates > 0 && acceptedMessages.length === 0) {
+    return { conversationId: null, inserted: 0, duplicated: discardedStates, missingAssets: [] };
   }
   messages = acceptedMessages;
 
@@ -217,7 +238,7 @@ export async function ingestCapturedMessages(
     }
 
     let inserted = 0;
-    let duplicated = discardedTyping;
+    let duplicated = discardedStates;
     let discarded = 0;
     for (const message of messages) {
       if (existing.deleted.has(message.fingerprint)) { duplicated += 1; continue; }

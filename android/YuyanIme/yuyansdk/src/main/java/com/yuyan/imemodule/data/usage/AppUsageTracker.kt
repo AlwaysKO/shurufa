@@ -144,7 +144,8 @@ object AppUsageTracker {
             }
             val result=UsageSessionEngine.reduce(state,events,until)
             records.addAll(result.records)
-            store.save(result.copy(state=result.state.copy(boot=boot,elapsed=elapsed,observedAt=now),records=records.map { r ->
+            val homePackages=usageHomePackages(context)
+            store.save(result.copy(state=result.state.copy(boot=boot,elapsed=elapsed,observedAt=now),records=records.filter { shouldReportUsage(it,homePackages) }.map { r ->
                 r.copy(appName=r.packageName?.let { names.resolve(context,it) })
             }),targets)
             store.prune(now-7*DAY,ServerConfig.baseUrl)
@@ -182,12 +183,13 @@ object AppUsageTracker {
             if(!hasPermission(context)) return@withLock
             ServerConfig.init(context)
             val gate=collectorTargetGate(context,ServerConfig.baseUrl)
+            val homePackages=usageHomePackages(context)
             UsageStore(context).use { store ->
                 for(target in store.targets()) {
                     currentCoroutineContext().ensureActive()
                     if(!enabled(context) || !hasPermission(context)) break
                     if(!gate.canUpload(target)) continue
-                    val batch=store.pending(target)
+                    val batch=store.pendingForUpload(target,homePackages)
                     if(batch.isEmpty()) continue
                     try {
                         if (uploadUsageBatch(http,target,DataCollector.deviceId(context),batch,uploads)) {

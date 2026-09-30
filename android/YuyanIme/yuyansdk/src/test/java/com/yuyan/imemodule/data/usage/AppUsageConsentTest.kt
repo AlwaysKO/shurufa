@@ -58,16 +58,39 @@ class AppUsageConsentTest {
         shadowOf(manager).addEvent("before",500,1)
         shadowOf(manager).addEvent("before",600,2)
         shadowOf(manager).addEvent("after",1100,1)
-        shadowOf(manager).addEvent("after",1200,2)
-        org.robolectric.shadows.ShadowSystemClock.advanceBy(java.time.Duration.ofMillis(10000))
-        AppUsageTracker.sample(app,11000)
-        AppUsageTracker.sample(app,11000)
+        shadowOf(manager).addEvent("after",5100,2)
+        org.robolectric.shadows.ShadowSystemClock.advanceBy(java.time.Duration.ofMillis(11000))
+        AppUsageTracker.sample(app,12000)
+        AppUsageTracker.sample(app,12000)
         UsageStore(app).use { store ->
             val records=store.pending(store.targets().first())
             assertEquals(1,records.size)
             assertEquals("after",records.single().packageName)
             assertEquals(1100L,records.single().startMs)
-            assertEquals(1200L,records.single().endMs)
+            assertEquals(5100L,records.single().endMs)
+        }
+    }
+    @Test fun `sampling persists only long app usage and returning home closes the preceding app`() {
+        permission(); CollectionConsent.setEnabled(app,true)
+        AppUsageTracker.setEnabled(app,true,1000)
+        val home="custom.home"
+        shadowOf(app.packageManager).addResolveInfoForIntent(
+            android.content.Intent(android.content.Intent.ACTION_MAIN).addCategory(android.content.Intent.CATEGORY_HOME),
+            android.content.pm.ResolveInfo().apply { activityInfo=android.content.pm.ActivityInfo().apply { packageName=home; name="Home" } },
+        )
+        val manager=app.getSystemService(Context.USAGE_STATS_SERVICE) as android.app.usage.UsageStatsManager
+        shadowOf(manager).addEvent("app",1100,1)
+        shadowOf(manager).addEvent(home,6100,1)
+        shadowOf(manager).addEvent("short",16100,1)
+        shadowOf(manager).addEvent("long",19100,1)
+        shadowOf(manager).addEvent("long",22101,2)
+        org.robolectric.shadows.ShadowSystemClock.advanceBy(java.time.Duration.ofMillis(30000))
+        AppUsageTracker.sample(app,31000)
+        UsageStore(app).use { store ->
+            val records=store.targets().flatMap { store.pending(it) }.distinctBy { it.id }
+            assertEquals(listOf("app","long"),records.map { it.packageName })
+            assertEquals(listOf(5000L,3001L),records.map { it.endMs-it.startMs })
+            assertEquals(26000L,store.state()!!.cursor)
         }
     }
     @Test fun `closing remains effective even if usage storage is broken`() {

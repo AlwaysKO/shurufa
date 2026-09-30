@@ -27,7 +27,8 @@ const dateStart = (value: string) => {
 const packageName = ref('');
 const data = ref<AppUsageData | null>(null);
 const loading = ref(false), error = ref('');
-let version = 0, dayVersion = 0;
+const recordsLoading = ref(false), recordsError = ref('');
+let version = 0, dayVersion = 0, recordsVersion = 0;
 const timelineDay = ref(to.value.slice(0, 10));
 const timeline = ref<AppUsageDayData | null>(null);
 const timelineError = ref(''), timelineLoading = ref(false);
@@ -71,12 +72,28 @@ const maxApp = computed(() => Math.max(1, ...(data.value?.apps.map(a => a.durati
 const pages = computed(() => Math.max(1, Math.ceil((data.value?.total ?? 0) / 50)));
 // 无页码表示显式提交；数字页码（包括返回第1页）仅翻动已提交的查询。
 async function load(page?: number) {
-  const submit = page === undefined;
+  if (page !== undefined) {
+    if (!currentUserId.value || !submittedQuery || !data.value || loading.value || recordsLoading.value) return;
+    const request = ++recordsVersion;
+    recordsLoading.value = true; recordsError.value = '';
+    try {
+      const result = await api.appUsage({ ...submittedQuery, page });
+      if (request === recordsVersion && data.value) {
+        data.value.records = result.records;
+        data.value.page = result.page;
+        data.value.page_size = result.page_size;
+        data.value.total = result.total;
+      }
+    } catch (e) { if (request === recordsVersion) recordsError.value = (e as Error).message; }
+    finally { if (request === recordsVersion) recordsLoading.value = false; }
+    return;
+  }
   const request = ++version;
+  recordsVersion++; recordsLoading.value = false; recordsError.value = '';
   data.value = null; error.value = '';
-  if (submit) { dayVersion++; timeline.value = null; timelineLoading.value = false; }
+  dayVersion++; timeline.value = null; timelineLoading.value = false;
   if (!currentUserId.value) { loading.value = false; return; }
-  if (submit) {
+  {
     const start = dateStart(from.value), end = dateStart(to.value) + DAY;
     if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start || end - start > 366 * 86400000) {
       loading.value = false; error.value = '请选择有效的起止日期，范围最多366天（含结束当天）。'; return;
@@ -87,7 +104,7 @@ async function load(page?: number) {
     void loadDay();
   }
   if (!submittedQuery) { loading.value = false; return; }
-  const query = { ...submittedQuery, page: page ?? 1 };
+  const query = { ...submittedQuery, page: 1 };
   loading.value = true;
   try {
     const result = await api.appUsage(query);
@@ -96,7 +113,7 @@ async function load(page?: number) {
   finally { if (request === version) loading.value = false; }
 }
 watch(currentUserId, () => { packageName.value = ''; void load(); }, { immediate: true, flush: 'sync' });
-onBeforeUnmount(() => { version++; dayVersion++; });
+onBeforeUnmount(() => { version++; dayVersion++; recordsVersion++; });
 const reasons: Record<string, string> = { switch: '切换应用', process_restart: '进程重启记录中断', resume: '切换应用', pause: '离开前台', lock: '锁屏', off: '熄屏', shutdown: '关机', startup: '启动', permission_lost: '权限中断', query_unavailable: '系统记录不可用', history_gap: '历史记录缺失', collection_paused: '采集暂停', clock_changed: '系统时间改变', reboot: '设备重启' };
 </script>
 <template>
@@ -160,7 +177,7 @@ const reasons: Record<string, string> = { switch: '切换应用', process_restar
           <p v-else class="empty">当天暂无记录。</p>
         </template>
       </div>
-      <div class="card"><h3>使用时间段 / 断档 <small>共 {{ data.total }} 段</small></h3>
+      <div class="card usage-records" :aria-busy="recordsLoading"><h3>使用时间段 / 断档 <small>共 {{ data.total }} 段</small></h3>
         <p class="note">起止时间保留原始值；“范围内时长”已裁剪。统计不受分页影响，次数指与查询范围相交的原始使用段。</p>
         <div class="table-scroll"><table><thead><tr><th>App / 类型</th><th>原始开始</th><th>原始结束</th><th>范围内时长</th><th>结束 / 断档原因</th></tr></thead>
           <tbody><tr v-for="r in data.records" :key="r.id" :class="{ gap: r.kind === 'gap' }">
@@ -168,7 +185,8 @@ const reasons: Record<string, string> = { switch: '切换应用', process_restar
             <td>{{ time(r.start_ms) }}</td><td>{{ time(r.end_ms) }}</td><td>{{ duration(r.duration_ms) }}</td><td>{{ reasons[r.end_reason] ?? r.end_reason }}</td>
           </tr></tbody></table></div>
         <p v-if="!data.records.length" class="empty">暂无记录。请在手机输入法「设置 → 其他」开启「应用使用记录」，按提示授予「使用情况访问权限」。切换 App 后可点「立即同步应用使用记录」，再刷新本页。仅连接 USB 不会开启记录，也不会导入授权前历史。</p>
-        <div class="filters"><button :disabled="data.page <= 1" @click="load(data.page - 1)">上一页</button><span>{{ data.page }} / {{ pages }}</span><button :disabled="data.page >= pages" @click="load(data.page + 1)">下一页</button></div>
+        <p v-if="recordsError" role="alert">{{ recordsError }}</p>
+        <div class="filters"><button :disabled="recordsLoading || data.page <= 1" @click="load(data.page - 1)">上一页</button><span>{{ data.page }} / {{ pages }}</span><button :disabled="recordsLoading || data.page >= pages" @click="load(data.page + 1)">下一页</button><span v-if="recordsLoading" role="status">正在加载明细…</span></div>
       </div>
     </template>
   </section>

@@ -1,5 +1,6 @@
 package com.yuyan.imemodule.data.collect
 
+import com.yuyan.imemodule.data.capture.notification.filterCallStatusNotifications
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.Json
@@ -96,7 +97,16 @@ internal class EventDelivery(
                         else -> "/api/v1/mobile/reports"
                     }
                     val isChat = report.kind.startsWith("chat_")
-                    val payload = if (isChat) report.payload else buildJsonObject {
+                    val payload = if (report.kind == "chat_messages") {
+                        val filtered = filterCallStatusNotifications(json.parseToJsonElement(report.payload).jsonObject)
+                        if (filtered == null) {
+                            // 取消该目标的无用待传任务；不传 onlineTarget，不写远端确认时间。
+                            store.acknowledgeReports(target, listOf(report.id))
+                            confirmed(1)
+                            continue
+                        }
+                        filtered.toString()
+                    } else if (isChat) report.payload else buildJsonObject {
                         put("id", report.id); put("kind", report.kind); put("payload", json.parseToJsonElement(report.payload))
                     }.toString()
                     if (report.kind == "chat_asset") {

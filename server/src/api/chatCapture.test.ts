@@ -150,4 +150,23 @@ describe('mobile chat capture API', () => {
     expect(response.body).toMatchObject({ ok: false, missingAssets: [missingSha256] });
     expect((await pool.query('SELECT id FROM chat_message')).rowCount).toBe(0);
   });
+
+  it.each(['语音通话中', '视频通话中'])('旧版 %s 通知返回成功并丢弃，不创建待确认会话或要求补图', async text => {
+    const app = createApp(pool);
+    const payload = {
+      device_id: deviceId,
+      conversation: { platform: 'wechat', account_key: 'notification', external_key: 'notification-v2:pending:test',
+        display_name: '待确认通知（测试联系人）', conversation_type: 'direct', identity_confidence: 0.55 },
+      messages: [{ id: crypto.randomUUID(), fingerprint: 'a'.repeat(64), content_fingerprint: 'b'.repeat(64),
+        sender_key: 'peer', direction: 'incoming', message_type: 'voice', text, captured_at: new Date().toISOString(),
+        asset_sha256: ['f'.repeat(64)], metadata: { capture_source: 'notification' } }],
+    };
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const response = await request(app).post('/api/v1/mobile/chat/messages/batch').send(payload);
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({ ok: true, conversationId: null, inserted: 0, duplicated: 1, missingAssets: [] });
+    }
+    expect((await pool.query('SELECT id FROM chat_conversation')).rowCount).toBe(0);
+    expect((await pool.query('SELECT id FROM chat_message')).rowCount).toBe(0);
+  });
 });

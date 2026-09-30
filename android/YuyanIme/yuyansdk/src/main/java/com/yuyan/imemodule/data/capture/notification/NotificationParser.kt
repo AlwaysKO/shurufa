@@ -40,6 +40,8 @@ data class ParsedNotification(
 
 class NotificationParser {
     fun shouldIgnore(snapshot: NotificationSnapshot): Boolean {
+        if (snapshot.packageName in SCREENSHOT_FALLBACK_PACKAGES && !snapshot.isMessagingStyle
+            && isOngoingCallStatus(snapshot.text)) return true
         if (snapshot.packageName != WECHAT_PACKAGE) return false
         val title = normalizeCapturedText(snapshot.title)
         val text = normalizeCapturedText(snapshot.text)
@@ -62,7 +64,8 @@ class NotificationParser {
     fun requiresMediaScreenshotFallback(snapshot: NotificationSnapshot): Boolean {
         if (snapshot.packageName !in SCREENSHOT_FALLBACK_PACKAGES || shouldIgnore(snapshot)) return false
         val text = normalizeCapturedText(snapshot.text)
-        if (snapshot.packageName == WECHAT_PACKAGE && wechatCallMessageType(text) != null) return true
+        if (!snapshot.isMessagingStyle && snapshot.packageName == WECHAT_PACKAGE && wechatCallMessageType(text) != null) return true
+        if (snapshot.isMessagingStyle && isOngoingCallStatus(text)) return false
         if (snapshot.mediaUriReadable) return false
         return notificationMessageType(text) != ChatMessageType.TEXT
     }
@@ -102,6 +105,7 @@ class NotificationParser {
         val hasMedia = snapshot.mediaUri != null
         val metadata = buildMap {
             put("capture_source", "notification")
+            put("notification_messaging_style", snapshot.isMessagingStyle.toString())
             put("identity_confidence", confidence.toString())
             put("conversation_identity_status", if (confirmed) "confirmed" else "pending")
             put("identity_unavailable", (!confirmed).toString())
@@ -134,7 +138,7 @@ class NotificationParser {
                 senderKey = senderKey,
                 senderName = senderName,
                 direction = ChatDirection.INCOMING,
-                messageType = notificationMessageType(body).let { classified ->
+                messageType = (if (snapshot.isMessagingStyle && isOngoingCallStatus(body)) ChatMessageType.TEXT else notificationMessageType(body)).let { classified ->
                     if (classified == ChatMessageType.TEXT && hasMedia) ChatMessageType.IMAGE else classified
                 },
                 text = body,

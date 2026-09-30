@@ -1,4 +1,5 @@
 import { createMobileCallRecordingsRouter, createDashboardCallRecordingsRouter } from './api/callRecordings.js';
+import { createMobileNavigationRouter, createDashboardNavigationRouter } from './api/navigationRecords.js';
 import { createMobileAppUsageRouter, createDashboardAppUsageRouter } from './api/appUsage.js';
 import { createMobileDeliveryRouter, createDashboardDeliveryRouter } from './api/expressionDelivery.js';
 import { createDeviceControlsRouter } from './api/deviceControls.js';
@@ -99,6 +100,7 @@ export function createApp(pool: pg.Pool, options: CreateAppOptions = {}): expres
   // 输入法端 API
   app.use('/api/v1/mobile', requireMobileIdentity, discardDisabledUploads(pool));
   app.use('/api/v1/mobile/call-recordings', createMobileCallRecordingsRouter(pool));
+  app.use('/api/v1/mobile/navigation-records', createMobileNavigationRouter(pool));
   app.use('/api/v1/mobile', createMobileDeliveryRouter(pool));
   app.use('/api/v1/mobile/dictionary', createMobileDictionaryRouter(pool));
   app.use('/api/v1/mobile', createMobileAppUsageRouter(pool));
@@ -118,6 +120,7 @@ export function createApp(pool: pg.Pool, options: CreateAppOptions = {}): expres
   // Dashboard API
   app.use('/api/v1/dashboard', auth.requireSession, auth.protectWrite, requireDashboardIdentity);
   app.use('/api/v1/dashboard/call-recordings', createDashboardCallRecordingsRouter(pool));
+  app.use('/api/v1/dashboard/navigation-records', createDashboardNavigationRouter(pool));
   app.use('/api/v1/dashboard', createDashboardDeliveryRouter(pool));
   app.use('/api/v1/dashboard/dictionary', createDashboardDictionaryRouter(pool));
   app.use('/api/v1/dashboard', createDeviceControlsRouter(pool));

@@ -6,6 +6,20 @@ import { dashboardFetch, dashboardUpload } from '../auth';
 const USER_STORAGE_KEY = 'shurufa_dashboard_user_id';
 export const currentUserId = ref(localStorage.getItem(USER_STORAGE_KEY) ?? '');
 
+export interface NavigationRecordRow {
+  id: string;
+  platform: 'amap' | 'baidu';
+  origin: string;
+  destination: string;
+  started_at: string;
+  overview_at: string;
+  received_at: string;
+}
+
+export function navigationImageUrl(id: string, userId: string): string {
+  return `/api/v1/dashboard/navigation-records/${encodeURIComponent(id)}/image?user_id=${encodeURIComponent(userId)}`;
+}
+
 export function setCurrentUserId(userId: string): void {
   currentUserId.value = userId;
   if (userId) localStorage.setItem(USER_STORAGE_KEY, userId);
@@ -623,6 +637,8 @@ export interface AppUsageDayData {
   records: Array<AppUsageData['records'][number] & { clipped_start_ms: number; clipped_end_ms: number }>;
 }
 export const api = {
+  navigationRecords: (page: number, platform: string) => get<{ records: NavigationRecordRow[]; total: number; page_size: number }>(
+    `/api/v1/dashboard/navigation-records?page=${page}${platform ? `&platform=${encodeURIComponent(platform)}` : ''}`),
   appUsageDay: (day: string, packageName?: string) => {
     const p = new URLSearchParams({ day });
     if (packageName) p.set('package_name', packageName);

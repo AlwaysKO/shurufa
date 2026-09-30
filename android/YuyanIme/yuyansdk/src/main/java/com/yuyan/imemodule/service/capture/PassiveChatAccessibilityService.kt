@@ -77,6 +77,7 @@ import com.yuyan.imemodule.data.capture.model.ChatDirection
  * 聊天采集保持只读。图片确认观察独立于采集，仅按用户发送操作清理本次原输入。
  */
 class PassiveChatAccessibilityService : AccessibilityService() {
+    private var navigationCapture: com.yuyan.imemodule.data.navigation.NavigationCapture? = null
     private val douyinDiagnostics by lazy { DouyinCaptureDiagnostics(this) }
     private val backgroundDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     private val backgroundScope = CoroutineScope(SupervisorJob() + backgroundDispatcher)
@@ -169,6 +170,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
+        navigationCapture?.onEvent(event)
         WechatExpressionConfirmation.event(event)
         if (!CollectionConsent.enabled(this)) {
             resetScreenshotIdentity()
@@ -323,12 +325,15 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() {
+        navigationCapture?.reset()
         WechatExpressionConfirmation.cancel()
         resetScreenshotIdentity()
     }
 
     override fun onServiceConnected() {
         super.onServiceConnected()
+        navigationCapture?.close()
+        navigationCapture = com.yuyan.imemodule.data.navigation.NavigationCapture(this)
         WechatExpressionConfirmation.connect(this)
         CaptureTrace.record(CaptureStage.CONNECTED)
         val database = CaptureDatabase.create(applicationContext)
@@ -397,6 +402,8 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     }
 
     override fun onDestroy() {
+        navigationCapture?.close()
+        navigationCapture = null
         WechatExpressionConfirmation.disconnect(this)
         destroyed = true
         resetScreenshotIdentity()

@@ -14,6 +14,23 @@ import org.robolectric.annotation.Config
 class UsageStoreTest {
     private lateinit var app: Application
     @Before fun setup() { app=ApplicationProvider.getApplicationContext(); app.deleteDatabase(java.io.File(app.noBackupFilesDir,"app_usage.db").absolutePath) }
+    @Test fun `legacy queue suppresses home and short usage on all targets without losing gaps or failed uploads`() {
+        UsageStore(app).use { store ->
+            val records=listOf(
+                UsageRecord("home","usage","custom.home",null,10000,20000,"switch"),
+                UsageRecord("short","usage","app",null,10000,13000,"switch"),
+                UsageRecord("keep","usage","app",null,10000,13001,"switch"),
+                UsageRecord("gap","gap",null,null,10000,10001,"reboot"),
+            )
+            store.save(UsageReduction(UsageState(cursor=21000),records),listOf("local","online"))
+            assertEquals(setOf("keep","gap"),store.pendingForUpload("local",setOf("custom.home")).map { it.id }.toSet())
+            assertEquals(setOf("keep","gap"),store.pending("online").map { it.id }.toSet())
+            assertEquals(21000L,store.state()!!.cursor)
+        }
+        UsageStore(app).use { store ->
+            assertEquals(setOf("keep","gap"),store.pendingForUpload("local",setOf("custom.home")).map { it.id }.toSet())
+        }
+    }
     @Test fun `checkpoint and queued records survive reopening with independent target acknowledgements`() {
         val r=UsageSessionEngine.reduce(UsageState(cursor=100),listOf(UsageEvent(110,"resume","a","one"),UsageEvent(200,"lock")),300)
         UsageStore(app).use { it.save(r,listOf("local","online")) }

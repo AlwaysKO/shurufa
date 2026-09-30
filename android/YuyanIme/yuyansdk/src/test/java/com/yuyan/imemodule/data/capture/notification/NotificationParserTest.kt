@@ -167,11 +167,28 @@ class NotificationParserTest {
     }
 
     @Test
-    fun wechatCallStateRequestsOneSupportingScreenshotAndKeepsVideoType() {
-        val snapshot = snapshot("com.tencent.mm", "龚林莉", "视频通话中")
+    fun ongoingCallStatusIsIgnoredWithoutAnyScreenshotFallback() {
+        for (pkg in listOf("com.tencent.mm", "com.tencent.mobileqq", "com.ss.android.ugc.aweme")) {
+            for (text in listOf("语音通话中", "视频通话中")) {
+                val snapshot = snapshot(pkg, "测试联系人", text)
+                assertTrue(parser.shouldIgnore(snapshot))
+                assertNull(parser.parse(snapshot))
+                org.junit.Assert.assertFalse(parser.requiresScreenshotFallback(snapshot))
+                org.junit.Assert.assertFalse(parser.requiresMediaScreenshotFallback(snapshot))
+            }
+        }
+    }
 
-        assertTrue(parser.requiresMediaScreenshotFallback(snapshot))
-        assertEquals(ChatMessageType.VIDEO, parser.parse(snapshot)?.message?.messageType)
+    @Test
+    fun realVoiceAndMessagingStyleTextAreNotCallStatus() {
+        val voice = snapshot("com.tencent.mm", "好友", "[语音]")
+        assertEquals(ChatMessageType.VOICE, parser.parse(voice)?.message?.messageType)
+        for (text in listOf("语音通话中", "语音通话中听不清")) {
+            val chat = voice.copy(text=text, isMessagingStyle=true)
+            org.junit.Assert.assertFalse(parser.shouldIgnore(chat))
+            assertEquals(text, parser.parse(chat)?.message?.text)
+            assertEquals("true", parser.parse(chat)?.message?.metadata?.get("notification_messaging_style"))
+        }
     }
 
     @Test

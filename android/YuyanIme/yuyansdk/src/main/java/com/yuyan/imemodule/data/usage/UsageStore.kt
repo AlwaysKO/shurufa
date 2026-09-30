@@ -57,6 +57,19 @@ internal class UsageStore(context: Context): SQLiteOpenHelper(context.applicatio
     fun pending(target: String): List<UsageRecord> = readableDatabase.rawQuery(
         "SELECT r.payload FROM record r JOIN delivery d ON r.id=d.record_id WHERE d.target=? AND d.acknowledged=0 ORDER BY r.end_ms,r.id LIMIT 200",arrayOf(target)
     ).use { c -> buildList { while(c.moveToNext()) add(usageRecordFromJson(JSONObject(c.getString(0)))) } }
+    /** Apply updated reporting rules to old queues too, without pretending they were uploaded. */
+    fun pendingForUpload(target: String, homePackages: Set<String>): List<UsageRecord> {
+        val (reportable, suppressed)=pending(target).partition { shouldReportUsage(it,homePackages) }
+        if (suppressed.isNotEmpty()) {
+            val db=writableDatabase
+            db.beginTransaction()
+            try {
+                suppressed.forEach { db.execSQL("DELETE FROM delivery WHERE record_id=? AND acknowledged=0",arrayOf(it.id)) }
+                db.setTransactionSuccessful()
+            } finally { db.endTransaction() }
+        }
+        return reportable
+    }
     fun acknowledge(target: String, ids: List<String>, onlineTarget: String? = null, now: Long = System.currentTimeMillis()) {
         val db=writableDatabase; db.beginTransaction()
         try {

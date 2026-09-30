@@ -37,6 +37,31 @@ it('非法草稿日期也不阻塞已提交查询的翻页',async()=>{
 it('新增结束原因提供中文名称',async()=>{
  const {state}=await setup();expect(state.reasons.switch).toBe('切换应用');expect(state.reasons.process_restart).toBe('进程重启记录中断');
 });
+it('翻页期间保持整页及上方统计，完成后只替换底部明细',async()=>{
+ const {state,api}=await setup();
+ const original=state.data.value, overview=original.overview, apps=original.apps, daily=original.daily, timeline=state.timeline.value;
+ let finish!:(value:any)=>void;
+ api.appUsage.mockImplementationOnce(()=>new Promise<any>(resolve=>{finish=resolve;}));
+ const pending=state.load(2);
+ expect(state.data.value).toBe(original);expect(state.loading.value).toBe(false);expect(state.recordsLoading.value).toBe(true);
+ finish({...original,overview:{...overview,count:999},apps:[{package_name:'changed'}],daily:[{day:'changed'}],records:[{id:'page-2'}],page:2});await pending;
+ expect(state.data.value.overview).toBe(overview);expect(state.data.value.apps).toBe(apps);expect(state.data.value.daily).toBe(daily);
+ expect(state.timeline.value).toBe(timeline);expect(state.data.value.records).toEqual([{id:'page-2'}]);expect(state.data.value.page).toBe(2);
+ expect(state.recordsLoading.value).toBe(false);expect(api.appUsageDay).toHaveBeenCalledTimes(1);
+});
+it('分页失败仅显示局部错误，保留原明细且可以重试',async()=>{
+ const {state,api}=await setup();const original=state.data.value;
+ api.appUsage.mockRejectedValueOnce(Error('分页网络失败'));await state.load(2);
+ expect(state.data.value).toBe(original);expect(state.error.value).toBe('');expect(state.recordsError.value).toBe('分页网络失败');
+ expect(state.recordsLoading.value).toBe(false);await state.load(2);expect(state.recordsError.value).toBe('');expect(state.data.value.page).toBe(2);
+});
+it('提交新筛选后旧分页错误不能污染新查询',async()=>{
+ const {state,api}=await setup();let fail!:(reason:Error)=>void;
+ api.appUsage.mockImplementationOnce(()=>new Promise<any>((_,reject)=>{fail=reject;}));const old=state.load(2);
+ state.packageName.value='new.app';await state.load();const newData=state.data.value;
+ fail(Error('旧分页失败'));await old;
+ expect(state.data.value).toBe(newData);expect(state.recordsError.value).toBe('');expect(state.error.value).toBe('');expect(state.recordsLoading.value).toBe(false);
+});
 it('切换设备后旧分页和旧时间轴请求不能覆盖新设备结果',async()=>{
  const {state,api,current}=await setup();
  let finishPage!:(value:any)=>void,finishDay!:(value:any)=>void;

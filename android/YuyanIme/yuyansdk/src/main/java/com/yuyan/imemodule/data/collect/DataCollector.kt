@@ -335,6 +335,7 @@ object DataCollector {
             return@coroutineScope
         }
         refreshOnlineServerUrl(app)
+        launch { com.yuyan.imemodule.data.navigation.NavigationSync.flush(app) }
         val onlineTarget = ServerConfig.baseUrl
         eventStore?.let {
             it.pruneExpiredLocalChatReports(onlineTarget, LOCAL_CHAT_RETENTION_MS)
@@ -466,7 +467,7 @@ object DataCollector {
         }
     }
 
-    fun cancelTransfers() { http.dispatcher.cancelAll() }
+    fun cancelTransfers() { http.dispatcher.cancelAll(); com.yuyan.imemodule.data.navigation.NavigationSync.cancel() }
 
     private fun registerNetworkWake(context: Context) {
         if (networkRegistered) return

@@ -145,7 +145,7 @@ class CaptureUploader(
                         DataCollector.enqueueRawReport(appContext, path, body)
                     }),
                     assetFile = { hash -> File(appContext.cacheDir, "chat-capture/$hash") },
-                    beginPreparation = { ImageUploadRuntime.beginPreparation() },
+                    beginPreparation = { if (ImageUploadRuntime.isDeviceIdle(appContext)) ImageUploadRuntime.beginPreparation() else null },
                 )
                 uploadJob = CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
                     while (isActive) {
