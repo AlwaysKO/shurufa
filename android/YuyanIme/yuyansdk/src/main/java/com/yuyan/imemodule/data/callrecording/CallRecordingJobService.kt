@@ -15,10 +15,14 @@ class CallRecordingJobService:JobService() {
         val alive=AtomicBoolean(true)
         jobs[params.jobId]?.let{it.first.set(false);it.second.cancel()}
         val job=scope.launch {
-            try {CallRecordingRuntime.runUploads(applicationContext){alive.get()&&isActive}}
+            var retrySoon=false
+            try {retrySoon=CallRecordingRuntime.runUploads(applicationContext){alive.get()&&isActive}}
             catch(e:CancellationException){throw e}
             catch(_:Exception){ /* 周期任务会重试，文件不丢弃，不记录敏感数据。 */ }
-            finally {withContext(NonCancellable+Dispatchers.Main){if(alive.get()){jobs.remove(params.jobId);jobFinished(params,false)}}}
+            finally {withContext(NonCancellable+Dispatchers.Main){if(alive.get()){
+                jobs.remove(params.jobId);jobFinished(params,false)
+                if(retrySoon)wake(applicationContext,35_000)
+            }}}
         }
         jobs[params.jobId]=alive to job;return true
     }
@@ -33,7 +37,7 @@ class CallRecordingJobService:JobService() {
         private fun scheduler(c:Context)=c.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
         private fun builder(c:Context,id:Int)=JobInfo.Builder(id,ComponentName(c,CallRecordingJobService::class.java)).setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
         fun schedule(context:Context){val s=scheduler(context);if(s.allPendingJobs.none{it.id==JOB_ID})s.schedule(builder(context,JOB_ID).setPersisted(true).setPeriodic(15*60*1000L).build())}
-        fun wake(context:Context){if(CallRecordingRuntime.consent(context).wantsUpload){schedule(context);scheduler(context).schedule(builder(context,WAKE_ID).setMinimumLatency(3000).build())}}
+        fun wake(context:Context,delayMillis:Long=3000){if(CallRecordingRuntime.consent(context).wantsUpload){schedule(context);scheduler(context).schedule(builder(context,WAKE_ID).setMinimumLatency(delayMillis).build())}}
         fun cancel(context:Context){scheduler(context).cancel(JOB_ID);scheduler(context).cancel(WAKE_ID)}
     }
 }

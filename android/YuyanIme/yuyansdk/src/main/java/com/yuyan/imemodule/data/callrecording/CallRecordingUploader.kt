@@ -14,14 +14,33 @@ internal class CallRecordingUploader(
     private val allowed:()->Boolean,
     private val onlineTarget:()->String,
     private val now:()->Long=System::currentTimeMillis,
+    private val systemSourceExists:(SystemRecordingSource)->Boolean={false},
+    private val onSaved:(CallTask)->Unit={},
+    private val ready:(CallTask)->Boolean={true},
 ) {
     fun runOnce()=outbox.uploadBatch {
-        for(task in outbox.tasks()) {
+        val initial=outbox.tasks()
+        for(local in initial.filter{it.source==null && it.attempts==0 && it.cleanupStatus!="deleted" && it.uploadStatus!="saved"}) {
+            if(!allowed())return@uploadBatch
+            val system=CallRecordingDuplicates.preferredSystem(local,initial)
+            outbox.linkDuplicate(local.id,system?.takeIf{sourceExists(it)}?.id)
+        }
+        // 系统文件先获得持久回执，之后才有资格清理对应的本地副本。
+        for(task in outbox.tasks().sortedBy{if(it.source!=null)0 else 1}) {
             if(task.cleanupStatus=="deleted")continue
             fun permitted()=allowed() && onlineTarget()==task.metadata.destination
             try {
                 if(!permitted()){outbox.pause(task.id);continue}
-                if(task.uploadStatus=="saved"){outbox.cleanup(task.id);continue}
+                if(task.duplicateOf!=null) {
+                    val system=outbox.tasks().firstOrNull{it.id==task.duplicateOf}
+                    if(system!=null && sourceExists(system)) {
+                        if(permitted())outbox.cleanupDuplicate(task.id,system.id)
+                        continue
+                    }
+                    outbox.linkDuplicate(task.id,null)
+                }
+                if(task.uploadStatus=="saved"){onSaved(task);if(permitted())outbox.cleanup(task.id);continue}
+                if(!ready(task))continue
                 if(now()<task.nextAttemptAt)continue
                 outbox.markAttempt(task.id)
                 // 超时/进程死亡后先查询原回执，不盲目重传。
@@ -32,7 +51,7 @@ internal class CallRecordingUploader(
                     receipt=transport.upload(task,outbox.audioFile(task.id),::permitted)
                 }
                 if(!permitted()){outbox.pause(task.id);continue}
-                if(outbox.acceptReceipt(task.id,receipt))outbox.cleanup(task.id)
+                if(outbox.acceptReceipt(task.id,receipt)){onSaved(task.copy(uploadStatus="saved",receipt=receipt));if(permitted())outbox.cleanup(task.id)}
                 else outbox.fail(task.id,now(),"invalid_receipt")
             } catch(e:CancellationException){throw e}
             catch(_:Exception){
@@ -43,4 +62,5 @@ internal class CallRecordingUploader(
             }
         }
     }
+    private fun sourceExists(task:CallTask)=task.source?.let{runCatching{systemSourceExists(it)}.getOrDefault(false)}?:false
 }

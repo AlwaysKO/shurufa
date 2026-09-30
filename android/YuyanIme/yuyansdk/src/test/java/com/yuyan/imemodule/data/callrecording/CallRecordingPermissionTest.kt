@@ -12,27 +12,50 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk=[28])
 class CallRecordingPermissionTest {
-    @Test fun `通知未允许时显示具体阻断且不能当作权限齐全`() {
+    @Test fun `通知未允许不阻断已授权录音`() {
         val context=ApplicationProvider.getApplicationContext<android.app.Application>()
         shadowOf(context).grantPermissions(Manifest.permission.RECORD_AUDIO,Manifest.permission.READ_PHONE_STATE)
         val manager=context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         shadowOf(manager).setNotificationsEnabled(false)
-        assertEquals("notifications_required",CallRecordingService.permissionBlock(context))
-        assertFalse(CallRecordingService.permissions(context))
+        assertNull(CallRecordingService.permissionBlock(context))
+        assertTrue(CallRecordingService.permissions(context))
         shadowOf(manager).setNotificationsEnabled(true)
         assertNull(CallRecordingService.permissionBlock(context))
     }
 
-    @Test fun `通知通道关闭时引导到对应通道而非假装可运行`() {
+    @Test fun `通知通道关闭不阻断录音且仍可打开通道设置`() {
         val context=ApplicationProvider.getApplicationContext<android.app.Application>()
         shadowOf(context).grantPermissions(Manifest.permission.RECORD_AUDIO,Manifest.permission.READ_PHONE_STATE)
         val manager=context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         shadowOf(manager).setNotificationsEnabled(true)
         manager.createNotificationChannel(android.app.NotificationChannel("consented_call_audio_v1","录音",NotificationManager.IMPORTANCE_NONE))
-        assertEquals("notification_channel_required",CallRecordingService.permissionBlock(context))
+        assertNull(CallRecordingService.permissionBlock(context))
+        assertTrue(CallRecordingService.permissions(context))
         val intent=CallRecordingService.notificationSettingsIntent(context)
         assertEquals(android.provider.Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS,intent.action)
         assertEquals(context.packageName,intent.getStringExtra(android.provider.Settings.EXTRA_APP_PACKAGE))
         assertEquals("consented_call_audio_v1",intent.getStringExtra(android.provider.Settings.EXTRA_CHANNEL_ID))
+    }
+
+    @Test @Config(sdk=[35]) fun `拒绝通知运行时权限不阻断录音`() {
+        val context=ApplicationProvider.getApplicationContext<android.app.Application>()
+        shadowOf(context).grantPermissions(Manifest.permission.RECORD_AUDIO,Manifest.permission.READ_PHONE_STATE)
+        shadowOf(context).denyPermissions(Manifest.permission.POST_NOTIFICATIONS)
+        assertNull(CallRecordingService.permissionBlock(context))
+        assertTrue(CallRecordingService.permissions(context))
+    }
+
+    @Test fun `没有麦克风或电话权限仍阻断录音`() {
+        val context=ApplicationProvider.getApplicationContext<android.app.Application>()
+        val manager=context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        shadowOf(manager).setNotificationsEnabled(false)
+        shadowOf(context).grantPermissions(Manifest.permission.READ_PHONE_STATE)
+        shadowOf(context).denyPermissions(Manifest.permission.RECORD_AUDIO)
+        assertEquals("audio_phone_permissions_required",CallRecordingService.permissionBlock(context))
+        assertFalse(CallRecordingService.permissions(context))
+        shadowOf(context).grantPermissions(Manifest.permission.RECORD_AUDIO)
+        shadowOf(context).denyPermissions(Manifest.permission.READ_PHONE_STATE)
+        assertEquals("audio_phone_permissions_required",CallRecordingService.permissionBlock(context))
+        assertFalse(CallRecordingService.permissions(context))
     }
 }

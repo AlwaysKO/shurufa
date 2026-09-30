@@ -24,4 +24,12 @@ internal data class CallTask(
     val uploadStatus:String="pending", val cleanupStatus:String="retained",
     val attempts:Int=0, val nextAttemptAt:Long=0, val lastError:String?=null,
     val receipt:CallReceipt?=null,
+    val source:SystemRecordingSource?=null,
+    val duplicateOf:String?=null,
+)
+
+/** 外部原件只有只读 URI；队列始终拥有独立缓存，清理代码永不操作 URI。 */
+@Serializable
+internal data class SystemRecordingSource(
+    val uri:String, val size:Long, val modifiedAt:Long, val startTimeKnown:Boolean,
 )

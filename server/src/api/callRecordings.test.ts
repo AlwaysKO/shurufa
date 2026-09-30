@@ -68,6 +68,22 @@ test('未登录不能列举或播放，鉴权播放返回实际音频且禁缓�
   const r=await agent.get(`/api/v1/dashboard/call-recordings/${id}/audio?user_id=${A}`);
   expect(r.status).toBe(200);expect(r.headers['cache-control']).toBe('no-store');expect(r.body).toEqual(audio);
 });
+test('系统录音常见格式按实际类型保存播放且拒绝伪造类型',async()=>{
+  const fixtures=[
+    ['audio/mpeg',Buffer.from('ID3synthetic mp3 recording')],
+    ['audio/amr',Buffer.from('#!AMR\nsynthetic recording')],
+    ['audio/wav',Buffer.from('RIFF0000WAVEsynthetic recording')],
+  ] as const;
+  for(const [mime,bytes] of fixtures){
+    const id=randomUUID();
+    expect((await put(id,metadata({mime_type:mime,sha256:hash(bytes),byte_size:bytes.length}),bytes)).status).toBe(200);
+    const response=await agent.get(`/api/v1/dashboard/call-recordings/${id}/audio?user_id=${A}`);
+    expect(response.status).toBe(200);expect(response.headers['content-type']).toContain(mime);
+    expect(response.body).toEqual(bytes);
+    expect((await put(randomUUID(),metadata({mime_type:'audio/mp4',sha256:hash(bytes),byte_size:bytes.length}),bytes)).status).toBe(400);
+  }
+  expect((await put(randomUUID(),metadata({mime_type:'text/html'}))).status).toBe(400);
+});
 test('保存关闭、密钥缺失、长度/哈希错误、元数据超限均不发可清理回执',async()=>{
   const id=randomUUID();
   expect((await put(id,metadata({sha256:'f'.repeat(64)}))).status).toBe(400);

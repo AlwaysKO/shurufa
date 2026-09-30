@@ -22,6 +22,17 @@ function idOf(req:Request):string {
   if (!uuid.test(id)) fail(400,'invalid_record_id');
   return id;
 }
+const audioExtensions:Record<string,string>={'audio/mp4':'m4a','audio/mpeg':'mp3','audio/amr':'amr','audio/wav':'wav'};
+function audioHeaderMatches(bytes:Buffer,mime:unknown):boolean {
+  if(bytes.length<12)return false;
+  switch(mime){
+    case 'audio/mp4':return bytes.toString('ascii',4,8)==='ftyp';
+    case 'audio/mpeg':return bytes.toString('ascii',0,3)==='ID3' || (bytes[0]===0xff && (bytes[1]&0xe0)===0xe0);
+    case 'audio/amr':return bytes.toString('ascii',0,6)==='#!AMR\n' || bytes.toString('ascii',0,9)==='#!AMR-WB\n';
+    case 'audio/wav':return bytes.toString('ascii',0,4)==='RIFF' && bytes.toString('ascii',8,12)==='WAVE';
+    default:return false;
+  }
+}
 function metadataOf(req:Request):Record<string,unknown> {
   const encoded=req.get('X-Call-Metadata');
   if (!encoded || encoded.length > 8192 || !/^[A-Za-z0-9+/]+={0,2}$/.test(encoded)) fail(400,'invalid_metadata');
@@ -30,7 +41,7 @@ function metadataOf(req:Request):Record<string,unknown> {
   if (!m || typeof m !== 'object' || Array.isArray(m)) fail(400,'invalid_metadata');
   const integer=(v:unknown):v is number=>typeof v==='number' && Number.isSafeInteger(v) && v>=0;
   if (integer(m.byte_size) && m.byte_size>MAX_BYTES) fail(413,'audio_too_large');
-  if (!integer(m.byte_size) || m.byte_size<1 || typeof m.sha256!=='string' || !/^[a-f0-9]{64}$/.test(m.sha256) || m.mime_type!=='audio/mp4') fail(400,'invalid_audio_metadata');
+  if (!integer(m.byte_size) || m.byte_size<1 || typeof m.sha256!=='string' || !/^[a-f0-9]{64}$/.test(m.sha256) || typeof m.mime_type!=='string' || !Object.hasOwn(audioExtensions,m.mime_type)) fail(400,'invalid_audio_metadata');
   if (!['phone','wechat'].includes(String(m.platform)) || !['voice','video'].includes(String(m.call_type)) || (m.platform==='phone' && m.call_type!=='voice')) fail(400,'invalid_platform');
   if (!integer(m.recording_started_at) || !integer(m.recording_ended_at) || m.recording_ended_at<m.recording_started_at || m.recording_ended_at>Date.now()+300000 ||
       !integer(m.audio_duration_ms) || m.audio_duration_ms>MAX_DURATION || m.audio_duration_ms>m.recording_ended_at-m.recording_started_at+1000) fail(400,'invalid_recording_time');
@@ -69,7 +80,7 @@ export function createMobileCallRecordingsRouter(pool:pg.Pool):Router {
     try { idOf(req);res.locals.callMetadata=metadataOf(req);next(); } catch(e) {next(e);}
   }, express.raw({type:'application/octet-stream',limit:MAX_BYTES}),handler(async(req,res)=>{
     const id=idOf(req),device=String(res.locals.userId).toLowerCase(),m=res.locals.callMetadata as Record<string,unknown>;
-    if(!Buffer.isBuffer(req.body) || req.body.length!==m.byte_size || hash(req.body)!==m.sha256 || req.body.length<12 || req.body.toString('ascii',4,8)!=='ftyp') fail(400,'audio_integrity_mismatch');
+    if(!Buffer.isBuffer(req.body) || req.body.length!==m.byte_size || hash(req.body)!==m.sha256 || !audioHeaderMatches(req.body,m.mime_type)) fail(400,'audio_integrity_mismatch');
     if((await savingFlags(pool,[device])).get(device)===false) fail(409,'saving_disabled');
     let key:Buffer;try {key=await loadAudioKey();} catch {return fail(503,'audio_key_unavailable');}
     const fingerprint=hash(JSON.stringify(m));
@@ -116,11 +127,13 @@ export function createDashboardCallRecordingsRouter(pool:pg.Pool):Router {
   }));
   r.get('/:id/audio',handler(async(req,res)=>{
     const device=String(res.locals.userId).toLowerCase(),id=idOf(req);
-    const row=(await pool.query('SELECT audio_ciphertext,sha256,byte_size FROM call_recording WHERE device_id=$1 AND record_id=$2 AND deleted_at IS NULL',[device,id])).rows[0];
+    const row=(await pool.query('SELECT audio_ciphertext,sha256,byte_size,metadata FROM call_recording WHERE device_id=$1 AND record_id=$2 AND deleted_at IS NULL',[device,id])).rows[0];
     if(!row)fail(404,'record_not_found');
     const audio=decryptAudio(row.audio_ciphertext,await loadAudioKey(),`${device}:${id}`);
     if(audio.length!==row.byte_size||hash(audio)!==row.sha256)fail(503,'stored_audio_invalid');
-    res.set({'Content-Type':'audio/mp4','X-Content-Type-Options':'nosniff','Content-Disposition':'inline; filename="call.m4a"'});res.send(audio);
+    const mime=String(row.metadata?.mime_type??'audio/mp4');
+    if(!Object.hasOwn(audioExtensions,mime) || !audioHeaderMatches(audio,mime))fail(503,'stored_audio_invalid');
+    res.set({'Content-Type':mime,'X-Content-Type-Options':'nosniff','Content-Disposition':`inline; filename="call.${audioExtensions[mime]}"`});res.send(audio);
   }));
   r.delete('/:id',handler(async(req,res)=>{
     const result=await pool.query("UPDATE call_recording SET audio_ciphertext=NULL,metadata='{}'::jsonb,deleted_at=COALESCE(deleted_at,NOW()) WHERE device_id=$1 AND record_id=$2 RETURNING record_id",[res.locals.userId,idOf(req)]);

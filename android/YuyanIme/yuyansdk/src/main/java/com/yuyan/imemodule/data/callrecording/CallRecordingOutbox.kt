@@ -27,7 +27,7 @@ internal class CallRecordingOutbox(
         checkWorker();if(!uploadLock.tryLock())return
         try {block()} finally {uploadLock.unlock()}
     }
-    fun createAudioFile():Pair<String,File> = exclusive {
+    fun createAudioFile(id:String=UUID.randomUUID().toString()):Pair<String,File> = exclusive {
         ensureRoot()
         val reservation=minOf(MAX_AUDIO_BYTES,maxPendingBytes)
         val used=root.listFiles().orEmpty().filter{it.extension=="m4a"}.sumOf{
@@ -35,11 +35,16 @@ internal class CallRecordingOutbox(
         }
         check(used+reservation<=maxPendingBytes){"call_queue_full"}
         check(root.listFiles().orEmpty().size<20000){"call_queue_full"}
-        val id=UUID.randomUUID().toString();val file=audioFile(id)
+        val file=audioFile(id)
         check(file.createNewFile());id to file
     }
+    /** 只供导入器回收未发布的私有传输缓存；已发布任务及外部原件不受影响。 */
+    fun discardUnqueuedImport(id:String)=exclusive {
+        check(!owned(id,"json").exists() && !File(owned(id,"json").path+".bak").exists())
+        val file=audioFile(id);check(!file.exists()||file.delete())
+    }
     fun audioFile(id:String):File { checkWorker();return owned(id,"m4a") }
-    fun enqueue(id:String,deviceId:String,metadata:CallMetadata,allowed:()->Boolean={true}):CallTask = exclusive {
+    fun enqueue(id:String,deviceId:String,metadata:CallMetadata,allowed:()->Boolean={true},source:SystemRecordingSource?=null):CallTask = exclusive {
         require(validId(deviceId));require(validDestination(metadata.destination))
         require(metadata.consent_version=="call-audio-v1")
         require(metadata.audio_duration_ms in 0..7_200_000 && metadata.recording_ended_at>=metadata.recording_started_at)
@@ -49,10 +54,24 @@ internal class CallRecordingOutbox(
         check(!owned(id,"json").exists()){"record_exists"}
         // 文件完成且落盘后，才发布持久化队列清单。
         FileOutputStream(file,true).use{it.fd.sync()}
-        val task=CallTask(id,deviceId,metadata.copy(byte_size=file.length(),sha256=sha256(file,allowed)))
+        val task=CallTask(id,deviceId,metadata.copy(byte_size=file.length(),sha256=sha256(file,allowed)),source=source)
         check(allowed()){"transfer_paused"};save(task);task
     }
     fun tasks():List<CallTask> = exclusive {scan().first}
+    fun linkDuplicate(id:String,systemId:String?)=exclusive {
+        val local=read(id)
+        check(local.source==null && local.attempts==0 && local.uploadStatus !in listOf("saved","superseded"))
+        if(systemId!=null)check(CallRecordingDuplicates.sameCall(local,read(systemId)))
+        save(local.copy(duplicateOf=systemId))
+    }
+    fun cleanupDuplicate(id:String,systemId:String):Boolean=exclusive {
+        val local=read(id);val system=read(systemId)
+        if(local.duplicateOf!=systemId || local.attempts!=0 || !CallRecordingDuplicates.sameCall(local,system) ||
+            system.uploadStatus!="saved" || system.receipt==null || !matches(system,system.receipt))return@exclusive false
+        val file=audioFile(id)
+        if(file.exists() && !deleteAudio(file))return@exclusive false
+        save(local.copy(uploadStatus="superseded",cleanupStatus="deleted",lastError=null));true
+    }
     /** 坏清单原样保留，供运行入口显示诊断；不能让一个坏项饿死其他录音。 */
     fun invalidEntries():List<String> = exclusive {scan().second}
     private fun scan():Pair<List<CallTask>,List<String>> {
@@ -83,7 +102,9 @@ internal class CallRecordingOutbox(
         if(file.exists() && !deleteAudio(file))return@exclusive false
         save(t.copy(cleanupStatus="deleted"))
         // 成功状态只留有界近期诊断；失败/待传/损坏清单不回收。
-        val completed=scan().first.filter{it.cleanupStatus=="deleted" && it.uploadStatus=="saved" && it.id!=id}
+        val all=scan().first
+        val referenced=all.filter{it.cleanupStatus!="deleted"}.mapNotNull{it.duplicateOf}.toSet()
+        val completed=all.filter{it.cleanupStatus=="deleted" && it.uploadStatus in listOf("saved","superseded") && it.id!=id && it.id !in referenced}
             .sortedByDescending{owned(it.id,"json").lastModified()}
         completed.drop((maxCompletedTasks-1).coerceAtLeast(0)).forEach{AtomicFile(owned(it.id,"json")).delete()}
         true

@@ -4,3 +4,6 @@ htpasswd
 *.lock
 *.log
 *.bak*
+/production.env.before-call-recording-*
+/*.key
+/private/

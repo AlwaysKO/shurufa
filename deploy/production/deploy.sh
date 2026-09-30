@@ -40,6 +40,11 @@ pg_dump -Fc -f "$base/backups/$(basename "$release").dump"
 umask 0022
 cd "$release/server"
 node "$config/migrate.mjs"
+python3 "$config/ensure-call-recording-key.py" --env-file "$config/production.env" --shared-dir "$base/shared"
+# The helper may add the initial key path; reload for post-migration commands.
+set -a
+source "$config/production.env"
+set +a
 if [[ -f scripts/stage-sticker-bundle.mjs ]]; then
   node dist/stickers/cli.js import
 fi

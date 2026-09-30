@@ -9,7 +9,6 @@ import android.media.MediaRecorder
 import android.os.*
 import android.telephony.*
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.yuyan.imemodule.data.collect.CollectionConsent
 import com.yuyan.imemodule.data.collect.DataCollector
@@ -187,15 +186,12 @@ class CallRecordingService:Service() {
         @Volatile internal var activeId:String?=null;private set
         internal fun permissionBlock(context:Context):String? {
             if(listOf(Manifest.permission.RECORD_AUDIO,Manifest.permission.READ_PHONE_STATE).any{ContextCompat.checkSelfPermission(context,it)!=PackageManager.PERMISSION_GRANTED})return "audio_phone_permissions_required"
-            if(Build.VERSION.SDK_INT>=33&&ContextCompat.checkSelfPermission(context,Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)return "notifications_required"
-            if(!NotificationManagerCompat.from(context).areNotificationsEnabled())return "notifications_required"
-            if(Build.VERSION.SDK_INT>=26&&(context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).getNotificationChannel(CHANNEL)?.importance==NotificationManager.IMPORTANCE_NONE)return "notification_channel_required"
             return null
         }
         internal fun permissions(context:Context)=permissionBlock(context)==null
         internal fun notificationSettingsIntent(context:Context):Intent {
             if(Build.VERSION.SDK_INT>=26){
-                val channelBlocked=permissionBlock(context)=="notification_channel_required"
+                val channelBlocked=(context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).getNotificationChannel(CHANNEL)?.importance==NotificationManager.IMPORTANCE_NONE
                 return Intent(if(channelBlocked)android.provider.Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS else android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS)
                     .putExtra(android.provider.Settings.EXTRA_APP_PACKAGE,context.packageName)
                     .putExtra(android.provider.Settings.EXTRA_CHANNEL_ID,CHANNEL)
