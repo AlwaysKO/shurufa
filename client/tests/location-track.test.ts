@@ -110,6 +110,16 @@ it('空轨迹保持原有空状态，不伪造最新时间', async () => {
   expect(view.popups).toEqual([]);
 });
 
+it('历史网络定位速度缺少精度时列表和地图显示未知，原始值仅用于排查', async () => {
+  const row = { ...point('2026-10-03T01:23:38Z'), provider: 'network', accuracy: '100', speed: String(50.2 / 3.6) };
+  const view = await mountLocations([row]);
+  expect(view.text()).toContain('未知（可信度不足）');
+  expect(view.popups[0]).toContain('速度 未知（可信度不足）');
+  expect(view.popups[0]).not.toContain(' · 速度 50.2 km/h');
+  expect(view.text()).toContain('原始速度 50.2 km/h（仅供排查）');
+  expect(row.speed).toBe(String(50.2 / 3.6));
+});
+
 it('显示Wi-Fi及设备状态，地图弹窗不会执行地址或SSID里的HTML',async()=>{
  const row={...point('2026-09-29T01:00:00Z'),address:'<script>bad()</script>',context:{version:1 as const,wifi:{status:'connected' as const,ssid:'<img src=x>',rssi:-65},battery_percent:80,charging:true}};
  const view=await mountLocations([row]);

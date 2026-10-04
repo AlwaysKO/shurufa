@@ -1,11 +1,43 @@
 import { expect, it } from '../../server/node_modules/vitest/dist/index.js';
 import type { LocationRow } from '../src/api';
-import { analyzeLocations, wifiLabel, contextDetails, escapeLocationHtml } from '../src/locationAnalysis';
+import { analyzeLocations, wifiLabel, contextDetails, escapeLocationHtml, speedLabel, speedDetails } from '../src/locationAnalysis';
 
 function point(minute: number, longitude = 113.26, device = 'a'): LocationRow {
  const time = new Date(Date.parse('2026-09-29T01:00:00Z') + minute * 60_000).toISOString();
  return {id:`${device}-${minute}`,device_id:device,latitude:'23.13',longitude:String(longitude),accuracy:'30',provider:'network',speed:'0',address:'位置',occurred_at:time,first_seen_at:time,last_seen_at:time};
 }
+it('历史速度缺失精度、精度差或数值非法均不作为实际速度展示', () => {
+ const row = {...point(0), speed:'13.944444'};
+ expect(speedLabel(row)).toBe('未知（可信度不足）');
+ expect(speedLabel({...row, accuracy:'100', context:{version:1,speed_accuracy_mps:0.5}})).toBe('未知（可信度不足）');
+ for (const speed of ['-1','NaN','Infinity','']) expect(speedLabel({...row,speed})).toBe('未知（可信度不足）');
+ expect(speedLabel({...row,speed:null})).toBe('未知（未提供速度）');
+});
+it('可信历史和新速度都保留实际读数及零值，不按步行限速裁剪', () => {
+ const row = {...point(0),speed:'20',context:{version:1 as const,speed_accuracy_mps:1}};
+ expect(speedLabel(row)).toBe('72.0 km/h');
+ expect(speedLabel({...row,speed:'0'})).toBe('0.0 km/h');
+ expect(speedLabel({...row,context:{...row.context,raw_speed_mps:20,speed_quality:'trusted',speed_quality_reason:'accurate'}})).toBe('72.0 km/h');
+});
+it('速度精度按绝对及相对门槛限制，新质量标记不能绕过质量校验', () => {
+ const row = {...point(0),speed:'10',context:{version:1 as const,speed_accuracy_mps:2.5}};
+ expect(speedLabel(row)).toBe('36.0 km/h');
+ expect(speedLabel({...row,context:{...row.context,speed_accuracy_mps:2.51}})).toBe('未知（可信度不足）');
+ expect(speedLabel({...row,context:{version:1,speed_quality:'trusted'}})).toBe('未知（可信度不足）');
+ expect(speedLabel({...row,context:{...row.context,speed_quality:'unreliable'}})).toBe('未知（可信度不足）');
+});
+it('新客户端过滤后的速度不被原值回填，原始速度和原因留在诊断详情', () => {
+ const row:LocationRow = {...point(0),speed:null,context:{version:1,raw_speed_mps:50.2/3.6,speed_quality:'unreliable',speed_quality_reason:'poor_location_accuracy'}};
+ expect(speedLabel(row)).toBe('未知（可信度不足）');
+ expect(speedDetails(row)).toContain('原始速度 50.2 km/h（仅供排查）');
+ expect(speedDetails(row)).toContain('位置精度不足');
+});
+it('极大有限原始值换算溢出时不展示Infinity速度，也不裁剪成其他数值', () => {
+ const row:LocationRow = {...point(0),speed:String(Number.MAX_VALUE),context:{version:1,raw_speed_mps:Number.MAX_VALUE,speed_accuracy_mps:1}};
+ expect(speedLabel(row)).toBe('未知（可信度不足）');
+ expect(speedDetails(row)).not.toContain('Infinity');
+ expect(speedDetails(row)).toContain('速度换算超出可显示范围');
+});
 it('按设备时间排序，连续同区域观测才形成停留，不延伸到当前时间',()=>{
  const result=analyzeLocations([point(10),point(0),point(5)]);
  expect(result.stays).toHaveLength(1);

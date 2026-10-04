@@ -217,6 +217,9 @@ export interface LocationContext {
   altitude_m?: number | null;
   bearing_deg?: number | null;
   speed_accuracy_mps?: number | null;
+  raw_speed_mps?: number | null;
+  speed_quality?: 'trusted' | 'unreliable' | 'unavailable' | null;
+  speed_quality_reason?: 'accurate' | 'missing_speed' | 'missing_speed_accuracy' | 'poor_location_accuracy' | 'poor_speed_accuracy' | null;
 }
 
 export interface LocationRow {

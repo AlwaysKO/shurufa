@@ -116,6 +116,42 @@ export function networkLabel(point: LocationRow) {
   const type = point.context?.network_type;
   return type ? {wifi:'Wi-Fi',cellular:'移动数据',ethernet:'有线网络',vpn:'VPN',offline:'离线',other:'其他网络',unknown:'网络未知'}[type] : '未采集';
 }
+const nonnegative = (value: string | number | null | undefined) => {
+  if (value == null || (typeof value === 'string' && !value.trim())) return null;
+  const result = Number(value);
+  return Number.isFinite(result) && result >= 0 ? result : null;
+};
+function speedIssue(point: LocationRow): string | null {
+  const c = point.context, speed = nonnegative(point.speed);
+  if (c?.speed_quality === 'unreliable' || c?.speed_quality === 'unavailable' ||
+      (c?.speed_quality_reason != null && c.speed_quality_reason !== 'accurate')) {
+    return c?.speed_quality_reason === 'poor_location_accuracy' ? '位置精度不足' :
+      c?.speed_quality_reason === 'poor_speed_accuracy' ? '速度精度不足' :
+      c?.speed_quality_reason === 'missing_speed_accuracy' ? '未提供速度精度' : '速度未通过可信度校验';
+  }
+  if (speed == null) return '未提供有效速度';
+  if (!Number.isFinite(speed * 3.6)) return '速度换算超出可显示范围';
+  const positionError = nonnegative(point.accuracy);
+  if (positionError == null || positionError > 50) return '位置精度不足';
+  const speedError = nonnegative(c?.speed_accuracy_mps);
+  if (speedError == null) return '未提供速度精度';
+  if (speedError > Math.max(1.5, Math.min(5, speed * 0.25))) return '速度精度不足';
+  return null;
+}
+/** 新旧记录共用手机端精度门槛；缺少证据时不把原始读数当作实际速度。 */
+export function speedLabel(point: LocationRow) {
+  if (point.speed == null && point.context?.raw_speed_mps == null &&
+      point.context?.speed_quality !== 'unreliable') return '未知（未提供速度）';
+  return speedIssue(point) == null ? `${(Number(point.speed) * 3.6).toFixed(1)} km/h` : '未知（可信度不足）';
+}
+export function speedDetails(point: LocationRow) {
+  const raw = nonnegative(point.context?.raw_speed_mps ?? point.speed);
+  const issue = speedIssue(point);
+  const rawLabel = raw == null ? null : Number.isFinite(raw * 3.6)
+    ? `原始速度 ${(raw * 3.6).toFixed(1)} km/h（仅供排查）`
+    : `原始速度 ${raw} m/s（仅供排查，速度换算超出可显示范围）`;
+  return [rawLabel, issue].filter(Boolean).join(' · ');
+}
 export function contextDetails(point: LocationRow) {
   const c = point.context;
   if (!c) return '未采集';

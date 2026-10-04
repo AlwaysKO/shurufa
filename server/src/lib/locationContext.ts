@@ -11,7 +11,8 @@ export function validLocationContext(value: unknown): boolean {
   if (value == null) return true;
   if (!object(value) || value.version !== 1) return false;
   const allowed = new Set(['version', 'captured_at', 'capture_mode', 'network_type', 'wifi', 'battery_percent',
-    'charging', 'is_interactive', 'power_save', 'altitude_m', 'bearing_deg', 'speed_accuracy_mps']);
+    'charging', 'is_interactive', 'power_save', 'altitude_m', 'bearing_deg', 'speed_accuracy_mps',
+    'raw_speed_mps', 'speed_quality', 'speed_quality_reason']);
   if (Object.keys(value).some(key => !allowed.has(key))) return false;
   if (value.captured_at != null && (typeof value.captured_at !== 'string' || value.captured_at.length > 64 ||
       !Number.isFinite(Date.parse(value.captured_at)))) return false;
@@ -20,7 +21,10 @@ export function validLocationContext(value: unknown): boolean {
       !number(value.battery_percent, 0, 100) || !boolean(value.charging) ||
       !boolean(value.is_interactive) || !boolean(value.power_save) ||
       !number(value.altitude_m, -20_000, 100_000) || !number(value.bearing_deg, 0, 360) || value.bearing_deg === 360 ||
-      !number(value.speed_accuracy_mps, 0, 10_000)) return false;
+      !number(value.speed_accuracy_mps, 0, 10_000) ||
+      !number(value.raw_speed_mps, 0, Number.MAX_VALUE) ||
+      !choice(value.speed_quality, ['trusted', 'unreliable', 'unavailable']) ||
+      !choice(value.speed_quality_reason, ['accurate', 'missing_speed', 'missing_speed_accuracy', 'poor_location_accuracy', 'poor_speed_accuracy'])) return false;
   if (value.wifi == null) return true;
   const wifi = value.wifi;
   if (!object(wifi) || typeof wifi.status !== 'string' ||

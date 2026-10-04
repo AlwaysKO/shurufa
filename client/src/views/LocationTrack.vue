@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { api, deviceLabel, type DeviceRow, type LocationRow } from '../api';
-import { analyzeLocations, locationDay, wifiLabel, networkLabel, contextDetails, durationLabel, escapeLocationHtml } from '../locationAnalysis';
+import { analyzeLocations, locationDay, wifiLabel, networkLabel, contextDetails, durationLabel, escapeLocationHtml, speedLabel, speedDetails } from '../locationAnalysis';
 
 const devices = ref<DeviceRow[]>([]);
 const locations = ref<LocationRow[]>([]);
@@ -135,8 +135,9 @@ function renderMap(recenter = true) {
       .bindPopup(
         `<b>${escapeLocationHtml(p.address ?? `${lat.toFixed(4)}, ${lng.toFixed(4)}`)}</b><br>` +
           `${formatBeijingTime(p.occurred_at)}（北京时间）<br>` +
-          `${escapeLocationHtml(providers[p.provider ?? ''] ?? p.provider ?? '-')} · 精度 ${escapeLocationHtml(String(p.accuracy ?? '-'))}m${p.speed != null ? ` · 速度 ${(Number(p.speed) * 3.6).toFixed(1)} km/h` : ''}<br>` +
-          `Wi-Fi：${escapeLocationHtml(wifiLabel(p))}<br>${escapeLocationHtml(contextDetails(p))}`,
+          `${escapeLocationHtml(providers[p.provider ?? ''] ?? p.provider ?? '-')} · 精度 ${escapeLocationHtml(String(p.accuracy ?? '-'))}m · 速度 ${escapeLocationHtml(speedLabel(p))}<br>` +
+          `Wi-Fi：${escapeLocationHtml(wifiLabel(p))}<br>${escapeLocationHtml(contextDetails(p))}` +
+          `<details><summary>速度诊断</summary>${escapeLocationHtml(speedDetails(p))}</details>`,
       );
   });
   const last = pts[pts.length - 1];
@@ -321,7 +322,9 @@ const summary = computed(() => {
           </td>
           <td>{{ providers[r.provider ?? ''] ?? r.provider ?? '-' }}</td>
           <td>{{ r.accuracy ?? '-' }} m</td>
-          <td>{{ r.speed != null ? (Number(r.speed) * 3.6).toFixed(1) + ' km/h' : '-' }}</td>
+          <td>{{ speedLabel(r) }}
+            <details><summary>速度诊断</summary><small>{{ speedDetails(r) }}</small></details>
+          </td>
           <td class="context-cell">
             <strong>{{ wifiLabel(r) }}</strong>
             <small class="address-detail">{{ networkLabel(r) }}</small>

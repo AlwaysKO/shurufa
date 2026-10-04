@@ -38,6 +38,14 @@ const locationContext = {
  battery_percent: 75, charging: false, is_interactive: true, power_save: false,
  altitude_m: 15.5, bearing_deg: 90, speed_accuracy_mps: 0.5,
 };
+it.each(['/reports','/location'])('速度质量及原始值可通过 %s 保存，可信速度仍为空',async path=>{
+ const context={version:1,raw_speed_mps:50.2/3.6,speed_quality:'unreliable',speed_quality_reason:'poor_location_accuracy'};
+ const payload={device_id:device,latitude:31,longitude:121,accuracy:100,provider:'network',speed:null,occurred_at:'2026-10-03T01:23:38Z',context};
+ const body=path==='/reports'?{id:crypto.randomUUID(),kind:'location',payload}:payload;
+ expect((await request(app).post(path).send(body)).status).toBe(200);
+ const rows=(await pool.query('SELECT * FROM location_track')).rows;
+ expect(rows).toHaveLength(1); expect(rows[0].speed).toBeNull();expect(rows[0].context).toEqual(context);
+});
 it('位置快照保存Wi-Fi和设备状态，离线补传与重复报告不丢字段',async()=>{
  const report={id:crypto.randomUUID(),kind:'location',payload:{latitude:31,longitude:121,occurred_at:'2026-09-29T01:00:00Z',context:locationContext}};
  for(let i=0;i<2;i++) expect((await request(app).post('/reports').send(report)).status).toBe(200);
@@ -53,6 +61,8 @@ it.each([
  {version:1,wifi:{status:'connected',bssid:'02:00:00:00:00:00'}},
  {version:1,wifi:{status:'connected',rssi:500}}, {version:1,bearing_deg:360},
  {version:1,speed_accuracy_mps:-1}, {version:1,password:'not-a-supported-field'},
+ {version:1,raw_speed_mps:-1}, {version:1,raw_speed_mps:'50'},
+ {version:1,speed_quality:'probably'}, {version:1,speed_quality_reason:'unknown-reason'},
 ].map(context=>[context]))('拒绝非法位置快照 %j',async context=>{
  const payload={latitude:31,longitude:121,occurred_at:'2026-09-29T01:00:00Z',context};
  expect((await request(app).post('/reports').send({id:crypto.randomUUID(),kind:'location',payload})).status).toBe(400);
