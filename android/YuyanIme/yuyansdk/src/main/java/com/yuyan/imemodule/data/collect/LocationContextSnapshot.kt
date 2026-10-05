@@ -38,6 +38,9 @@ internal data class LocationContext(
     @SerialName("altitude_m") val altitudeM: Double? = null,
     @SerialName("bearing_deg") val bearingDeg: Float? = null,
     @SerialName("speed_accuracy_mps") val speedAccuracyMps: Float? = null,
+    @SerialName("raw_speed_mps") val rawSpeedMps: Float? = null,
+    @SerialName("speed_quality") val speedQuality: String? = null,
+    @SerialName("speed_quality_reason") val speedQualityReason: String? = null,
 )
 
 @Serializable
@@ -52,6 +55,7 @@ internal data class ConnectedWifi(
 
 internal object LocationContextSnapshot {
     fun capture(context: Context, location: Location, mode: String, nowMs: Long = System.currentTimeMillis()): LocationContext {
+        val speed = LocationSpeedQuality.from(location)
         val battery = runCatching { context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED)) }.getOrNull()
         val percent = battery?.let {
             val level = it.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
@@ -77,6 +81,9 @@ internal object LocationContextSnapshot {
             bearingDeg = location.bearing.takeIf { location.hasBearing() && it.isFinite() && it >= 0 && it < 360 },
             speedAccuracyMps = if (Build.VERSION.SDK_INT >= 26) location.speedAccuracyMetersPerSecond
                 .takeIf { location.hasSpeedAccuracy() && it.isFinite() && it in 0f..10000f } else null,
+            rawSpeedMps = speed.rawSpeedMps,
+            speedQuality = speed.quality,
+            speedQualityReason = speed.reason,
         )
     }
 

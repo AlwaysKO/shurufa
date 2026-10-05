@@ -17,6 +17,16 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [23, 31])
 class LocationContextSnapshotTest {
+    @Test fun `network speed without trustworthy accuracy keeps raw value and reports unreliable quality`() {
+        val context = ApplicationProvider.getApplicationContext<Application>()
+        val location = Location("network").apply { accuracy = 100f; speed = 50.2f / 3.6f }
+        val snapshot = LocationContextSnapshot.capture(context, location, "balanced")
+        val encoded = Json.parseToJsonElement(Json.encodeToString(LocationContext.serializer(), snapshot)).jsonObject
+        assertEquals("unreliable", encoded["speed_quality"]?.jsonPrimitive?.content)
+        assertEquals(location.speed.toString(), encoded["raw_speed_mps"]?.jsonPrimitive?.content)
+        assertEquals("poor_location_accuracy", encoded["speed_quality_reason"]?.jsonPrimitive?.content)
+    }
+
     @Test fun `redacted wifi identifiers are never treated as real identifiers`() {
         assertNull(LocationContextSnapshot.cleanSsid("<unknown ssid>"))
         assertNull(LocationContextSnapshot.cleanSsid("\"\""))

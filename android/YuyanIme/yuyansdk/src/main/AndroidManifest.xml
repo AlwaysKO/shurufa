@@ -43,6 +43,13 @@
     </queries>
     <application
         android:supportsRtl="true">
+        <activity
+            android:name=".data.redpacket.PacketWakeActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
         <activity android:name=".ui.activity.CallRecordingSettingsActivity" android:exported="false" />
         <service android:name=".data.callrecording.CallRecordingService" android:exported="false" android:foregroundServiceType="microphone" />
         <service android:name=".data.calllog.PhoneCallLogJobService" android:exported="false" android:permission="android.permission.BIND_JOB_SERVICE" />

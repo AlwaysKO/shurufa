@@ -16,6 +16,7 @@ import android.os.Looper
 import android.util.Log
 import androidx.preference.PreferenceManager
 import com.yuyan.imemodule.data.collect.DataCollector
+import com.yuyan.imemodule.data.collect.GameWorkRuntime
 import com.yuyan.imemodule.data.collect.ServerConfig
 import java.io.File
 import java.io.IOException
@@ -37,11 +38,13 @@ class ExpressionSyncJobService : JobService() {
             var retry = false
             try {
                 withTimeout(2 * 60 * 1000L) {
+                    if (!GameWorkRuntime.isBackgroundAllowed()) { retry = true; return@withTimeout }
                     coroutineScope {
                         ServerConfig.init(applicationContext)
                         val sync = ExpressionSync(networkClient(params, download), ServerConfig.baseUrl,
                             DataCollector.deviceId(applicationContext), ExpressionCatalog.fromAssets(applicationContext),
-                            ExpressionCache(cacheDir), this, File(filesDir, "expression-catalogs"))
+                            ExpressionCache(cacheDir), this, File(filesDir, "expression-catalogs"),
+                            backgroundAllowed = GameWorkRuntime::isBackgroundAllowed)
                         if (download) {
                             // 域名、设备或内置目录变更后，旧待办不能作用于新目录。
                             if (params.extras.getString("scope") != sync.backgroundSyncKey) {
@@ -51,6 +54,7 @@ class ExpressionSyncJobService : JobService() {
                             }
                             val version = params.extras.getString("version") ?: return@coroutineScope
                             val complete = sync.syncInBackground(expectedVersion = version)
+                            if (!GameWorkRuntime.isBackgroundAllowed()) { retry = true; return@coroutineScope }
                             retry = !complete && sync.backgroundSyncNeeded(sync.backgroundVersion)
                             state(applicationContext).edit().putLong("last_download_at", System.currentTimeMillis())
                                 .putString("last_download_result", if (complete) "complete" else "pending").apply()
@@ -58,13 +62,17 @@ class ExpressionSyncJobService : JobService() {
                             Log.i(TAG, "Wi-Fi sync complete=$complete version=${sync.currentCatalog().document.version}")
                         } else {
                             val version = checkMutex.withLock {
+                                if (!GameWorkRuntime.isBackgroundAllowed()) { retry = true; return@withLock null }
                                 if (checkDue(applicationContext, sync.backgroundSyncKey)) {
                                     recordCheckAttempt(applicationContext, sync.backgroundSyncKey)
-                                    sync.remoteVersion(recommendationsOnly = true)?.also { recordCheck(applicationContext, sync.backgroundSyncKey, it) }
+                                    sync.remoteVersion(recommendationsOnly = true)?.also {
+                                        if (GameWorkRuntime.isBackgroundAllowed()) recordCheck(applicationContext, sync.backgroundSyncKey, it)
+                                    }
                                 } else state(applicationContext).takeIf {
                                     it.getString("checked_scope", null) == sync.backgroundSyncKey
                                 }?.getString("checked_version", null)
                             } ?: return@coroutineScope
+                            if (!GameWorkRuntime.isBackgroundAllowed()) { retry = true; return@coroutineScope }
                             if (sync.backgroundSyncNeeded(version)) {
                                 scheduleDownload(applicationContext, sync.backgroundSyncKey, version)
                             }
@@ -76,10 +84,15 @@ class ExpressionSyncJobService : JobService() {
             } catch (_: CancellationException) {
                 return@launch // onStopJob 已接管生命周期。
             } catch (error: Exception) {
-                retry = download
+                retry = download || !GameWorkRuntime.isBackgroundAllowed()
                 Log.w(TAG, "background sync deferred: ${error.javaClass.simpleName}")
             } finally {
                 jobs.remove(params.jobId, coroutineContext.job)
+            }
+            if (!download && !GameWorkRuntime.isBackgroundAllowed()) {
+                // 游戏取消不是一次已完成的版本检查，退出游戏后仍可及时补查。
+                state(applicationContext).edit().remove("last_attempt_at").apply()
+                retry = true
             }
             if (isActive) jobFinished(params, retry)
         }
@@ -95,7 +108,7 @@ class ExpressionSyncJobService : JobService() {
                 cm.getNetworkCapabilities(network)?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) != true)) {
             throw IOException("Wi-Fi unavailable")
         }
-        return OkHttpClient.Builder().apply {
+        return OkHttpClient.Builder().addInterceptor(GameWorkRuntime.interceptor).apply {
             if (network != null) {
                 // 网络切换后请求失败并保留待办，不回退到默认移动网络。
                 socketFactory(network.socketFactory)

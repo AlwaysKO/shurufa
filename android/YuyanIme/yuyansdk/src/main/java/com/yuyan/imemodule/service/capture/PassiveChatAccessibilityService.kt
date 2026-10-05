@@ -81,11 +81,11 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     private val douyinDiagnostics by lazy { DouyinCaptureDiagnostics(this) }
     private val backgroundDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     private val backgroundScope = CoroutineScope(SupervisorJob() + backgroundDispatcher)
-    private val eventReads = LatestIdleWork(backgroundScope, ImageUploadRuntime::awaitInputIdle)
-    private val stableReads = LatestIdleWork(backgroundScope, ImageUploadRuntime::awaitInputIdle)
-    private val foregroundReads = LatestIdleWork(backgroundScope, ImageUploadRuntime::awaitInputIdle)
-    private val screenshotReads = LatestIdleWork(backgroundScope, ImageUploadRuntime::awaitInputIdle)
-    private val fallbackReads = LatestIdleWork(backgroundScope, ImageUploadRuntime::awaitInputIdle)
+    private val eventReads = LatestIdleWork(backgroundScope, ImageUploadRuntime::awaitBackgroundWorkAllowed)
+    private val stableReads = LatestIdleWork(backgroundScope, ImageUploadRuntime::awaitBackgroundWorkAllowed)
+    private val foregroundReads = LatestIdleWork(backgroundScope, ImageUploadRuntime::awaitBackgroundWorkAllowed)
+    private val screenshotReads = LatestIdleWork(backgroundScope, ImageUploadRuntime::awaitBackgroundWorkAllowed)
+    private val fallbackReads = LatestIdleWork(backgroundScope, ImageUploadRuntime::awaitBackgroundWorkAllowed)
     private val treeReader = AccessibilityTreeReader()
     private val mainHandler = Handler(Looper.getMainLooper())
     private val snapshotGeneration = AtomicLong(0)
@@ -170,6 +170,8 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
+        com.yuyan.imemodule.data.collect.GameForegroundMonitor.event(event)
+        com.yuyan.imemodule.data.redpacket.GroupRedPacketAssistant.event(event)
         navigationCapture?.onEvent(event)
         WechatExpressionConfirmation.event(event)
         if (!CollectionConsent.enabled(this)) {
@@ -325,6 +327,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() {
+        com.yuyan.imemodule.data.redpacket.GroupRedPacketAssistant.cancel("无障碍服务中断", false)
         navigationCapture?.reset()
         WechatExpressionConfirmation.cancel()
         resetScreenshotIdentity()
@@ -332,6 +335,8 @@ class PassiveChatAccessibilityService : AccessibilityService() {
 
     override fun onServiceConnected() {
         super.onServiceConnected()
+        com.yuyan.imemodule.data.collect.GameForegroundMonitor.connect(this)
+        com.yuyan.imemodule.data.redpacket.GroupRedPacketAssistant.connect(this)
         navigationCapture?.close()
         navigationCapture = com.yuyan.imemodule.data.navigation.NavigationCapture(this)
         WechatExpressionConfirmation.connect(this)
@@ -402,6 +407,8 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     }
 
     override fun onDestroy() {
+        com.yuyan.imemodule.data.collect.GameForegroundMonitor.disconnect(this)
+        com.yuyan.imemodule.data.redpacket.GroupRedPacketAssistant.disconnect(this)
         navigationCapture?.close()
         navigationCapture = null
         WechatExpressionConfirmation.disconnect(this)
@@ -526,7 +533,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
 
     private suspend fun isCurrentScreenshotWindow(windowId: Int, generation: Long, captureToken: Long): Boolean =
         withContext(Dispatchers.IO) {
-            if (!ImageUploadRuntime.isInputIdle() || !isScreenshotRequestCurrent(generation, captureToken) || scrollGate.isScrolling() ||
+            if (!ImageUploadRuntime.isBackgroundWorkAllowed() || !isScreenshotRequestCurrent(generation, captureToken) || scrollGate.isScrolling() ||
                 (getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager)?.isKeyguardLocked == true) return@withContext false
             val root = rootInActiveWindow ?: return@withContext false
             val current = try { root.packageName?.toString() == WECHAT_PACKAGE && root.windowId == windowId }
@@ -748,7 +755,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     private fun onStableFallbackRequest(request: NotificationScreenshotFallbackRequest) {
         fallbackReads.submit({ !destroyed && pendingFallbackRequest() == request }) {
             fallbackCaptureMutex.withLock {
-                if (!ImageUploadRuntime.isInputIdle()) {
+                if (!ImageUploadRuntime.isBackgroundWorkAllowed()) {
                     scheduleFallbackRetry(request)
                     return@withLock
                 }
@@ -896,7 +903,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     private suspend fun currentFallbackTarget(
         request: NotificationScreenshotFallbackRequest,
     ): FallbackTarget? = withContext(backgroundDispatcher) {
-        if (!ImageUploadRuntime.isInputIdle() || destroyed || scrollGate.isScrolling() ||
+        if (!ImageUploadRuntime.isBackgroundWorkAllowed() || destroyed || scrollGate.isScrolling() ||
             pendingFallbackRequest() != request) return@withContext null
         val root = rootInActiveWindow ?: return@withContext null
         try {
@@ -915,7 +922,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
             val chatViewport = snapshot?.let { notificationChatViewport(request.packageName, it) }
             // QQ/抖音必须确认聊天页，微信空树沿用已有补偿路径。
             if (chatViewport == null && request.packageName != WECHAT_PACKAGE) return@withContext null
-            if (!ImageUploadRuntime.isInputIdle() || pendingFallbackRequest() != request) return@withContext null
+            if (!ImageUploadRuntime.isBackgroundWorkAllowed() || pendingFallbackRequest() != request) return@withContext null
             val bounds = Rect()
             root.getBoundsInScreen(bounds)
             FallbackTarget(

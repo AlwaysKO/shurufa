@@ -93,7 +93,7 @@ class WindowMediaCapturer(
         val requestedGeneration = captureGeneration()
         return captureMutex.withLock {
             currentCoroutineContext().ensureActive()
-            if (requests.isEmpty() || !ImageUploadRuntime.isInputIdle() || !captureAllowed() || captureGeneration() != requestedGeneration) {
+            if (requests.isEmpty() || !ImageUploadRuntime.isBackgroundWorkAllowed() || !captureAllowed() || captureGeneration() != requestedGeneration) {
                 CaptureTrace.record(CaptureStage.REQUEST_CANCELLED, windowId, requestedGeneration, layer = CaptureLayer.MEDIA)
                 return@withLock emptyMap()
             }
@@ -110,11 +110,11 @@ class WindowMediaCapturer(
             if (screenshot !is WindowScreenshotResult.Success) return@withLock emptyMap()
 
             try {
-                if (!ImageUploadRuntime.isInputIdle() || !captureAllowed() || captureGeneration() != requestedGeneration) return@withLock emptyMap()
+                if (!ImageUploadRuntime.isBackgroundWorkAllowed() || !captureAllowed() || captureGeneration() != requestedGeneration) return@withLock emptyMap()
                 withContext(processingDispatcher) {
                     buildMap {
                         requests.forEach { request ->
-                            if (!ImageUploadRuntime.isInputIdle() || !captureAllowed()) return@forEach
+                            if (!ImageUploadRuntime.isBackgroundWorkAllowed() || !captureAllowed()) return@forEach
                             val originalCrop = cropper.crop(
                                 bitmap = screenshot.bitmap,
                                 requested = request.bounds,
@@ -134,7 +134,7 @@ class WindowMediaCapturer(
                                     }
                                 }
                                 request.contentInput?.captureFrom(cropped, context.resources.displayMetrics.density, bodyBoundaryVerified)
-                                if (!ImageUploadRuntime.isInputIdle()) return@forEach
+                                if (!ImageUploadRuntime.isBackgroundWorkAllowed()) return@forEach
                                 val encoded = if (request.lossyWebp) encodeWebp(cropped) else encodeLossless(cropped)
                                 val contentHash = sha256(encoded)
                                 val output = File(context.cacheDir, "chat-capture/$contentHash")

@@ -7,6 +7,28 @@ class BalancedLocationPolicyTest {
     private val start = 1_800_000_000_000L
     private fun point(time: Long, lat: Double = 23.13) = LocationCandidate(lat, 113.3, 15f, time)
 
+    @Test fun `single unconfirmed jump briefly checks movement then restores stationary sampling`() {
+        val policy = BalancedLocationPolicy()
+        (0..4).forEach { policy.observe(start + it * 30_000, point(start + it * 30_000), null) }
+        policy.observe(start + 150_000, point(start + 150_000, 23.15), null)
+        assertEquals(30_000L, policy.intervalMs)
+        policy.observe(start + 180_000, point(start + 180_000), null)
+        assertEquals(300_000L, policy.intervalMs)
+    }
+
+    @Test fun `unconfirmed excursions do not keep stationary high frequency forever`() {
+        val policy = BalancedLocationPolicy()
+        (0..4).forEach { policy.observe(start + it * 30_000, point(start + it * 30_000), null) }
+        policy.observe(start + 150_000, point(start + 150_000, 23.131), null)
+        assertEquals(30_000L, policy.intervalMs)
+        policy.observe(start + 180_000, point(start + 180_000, 23.129), null)
+        policy.observe(start + 210_000, point(start + 210_000, 23.131), null)
+        policy.observe(start + 240_000, point(start + 240_000, 23.129), null)
+        assertEquals(300_000L, policy.intervalMs)
+        policy.observe(start + 540_000, point(start + 540_000), null)
+        assertEquals(300_000L, policy.intervalMs)
+    }
+
     @Test fun `observation precedes stationary sampling and movement restores thirty seconds`() {
         val policy = BalancedLocationPolicy()
         assertEquals(30_000L, policy.intervalMs)

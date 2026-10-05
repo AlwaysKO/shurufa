@@ -71,4 +71,41 @@ class CaptureUploaderPreparationTest {
         assertEquals(1, closed)
         assertEquals(1, dao.findPendingAsset(asset.sha256)!!.attempts)
     }
+
+    @Test fun gamePauseKeepsQueuedAssetUntouchedAndResumesLater() = fixture { db, dir ->
+        val dao = db.captureDao()
+        val file = File(dir, "queued").apply { writeText("queued") }
+        val asset = PendingAssetEntity("c".repeat(64), file.path, "image/webp", null, 10, 10)
+        dao.insertPendingAsset(asset)
+        var allowed = false
+        var transfers = 0
+        var preparations = 0
+        val uploader = CaptureUploader(dao, CaptureApi("http://localhost", "device", enqueue = { _, _ ->
+            transfers++; true
+        }), assetFile = { file }, beginPreparation = { preparations++; Closeable {} }, backgroundAllowed = { allowed })
+        assertEquals(UploadRunResult(0, 0), uploader.runOnce(1000))
+        assertEquals(0, transfers)
+        assertEquals(0, preparations)
+        assertEquals(0, dao.findPendingAsset(asset.sha256)!!.attempts)
+        assertTrue(file.exists())
+        allowed = true
+        assertEquals(UploadRunResult(1, 0), uploader.runOnce(1000))
+        assertEquals(1, transfers)
+        assertNull(dao.findPendingAsset(asset.sha256))
+    }
+
+    @Test fun gameStartsDuringTransferKeepsUnconfirmedAssetWithoutFailurePenalty() = fixture { db, dir ->
+        val dao = db.captureDao()
+        val file = File(dir, "queued").apply { writeText("queued") }
+        val asset = PendingAssetEntity("d".repeat(64), file.path, "image/webp", null, 10, 10)
+        dao.insertPendingAsset(asset)
+        var allowed = true
+        val uploader = CaptureUploader(dao, CaptureApi("http://localhost", "device", enqueue = { _, _ ->
+            allowed = false; false
+        }), assetFile = { file }, backgroundAllowed = { allowed })
+        assertEquals(UploadRunResult(1, 0), uploader.runOnce(1000))
+        assertEquals(0, dao.findPendingAsset(asset.sha256)!!.attempts)
+        assertEquals(0L, uploader.internalFailureCount.get())
+        assertTrue(file.exists())
+    }
 }

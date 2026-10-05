@@ -109,8 +109,39 @@ class BalancedLocationServiceTest {
         assertEquals(300_000L, lm.getLegacyLocationRequests(LocationManager.GPS_PROVIDER).single().intervalMillis)
         sample(23.14, now - 1_000)
         assertEquals(30_000L, lm.getLegacyLocationRequests(LocationManager.GPS_PROVIDER).single().intervalMillis)
+        sample(23.1401, now)
+        assertEquals(30_000L, lm.getLegacyLocationRequests(LocationManager.GPS_PROVIDER).single().intervalMillis)
         service.onStartCommand(Intent().setAction(BalancedLocationService.ACTION_STOP), 0, 2)
         controller.destroy()
+    }
+
+    @Test fun `confirmation requests return to five minutes without another location callback`() {
+        PreferenceManager.getDefaultSharedPreferences(app).edit().putBoolean(CollectionConsent.KEY, true)
+            .putBoolean(BalancedLocationService.KEY, true).commit()
+        val controller = Robolectric.buildService(BalancedLocationService::class.java).create()
+        try {
+            val service = controller.get()
+            service.onStartCommand(Intent(), 0, 1)
+            val lm = shadowOf(app.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+            val now = System.currentTimeMillis()
+            val policy = org.robolectric.util.ReflectionHelpers.getField<BalancedLocationPolicy>(service, "policy")
+            (0..3).forEach {
+                val time = now - 122_000 + it * 30_000
+                policy.observe(time, LocationCandidate(23.13, 113.3, 15f, time), null)
+            }
+            fun sample(latitude: Double, time: Long) {
+                val location = Location("gps").apply {
+                    this.latitude = latitude; longitude = 113.3; accuracy = 15f; this.time = time
+                }
+                lm.getLocationUpdateListeners(LocationManager.GPS_PROVIDER).toList().forEach { it.onLocationChanged(location) }
+            }
+            sample(23.13, now - 2000)
+            assertEquals(300_000L, lm.getLegacyLocationRequests(LocationManager.GPS_PROVIDER).single().intervalMillis)
+            sample(23.14, now - 1000)
+            assertEquals(30_000L, lm.getLegacyLocationRequests(LocationManager.GPS_PROVIDER).single().intervalMillis)
+            shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(60))
+            assertEquals(300_000L, lm.getLegacyLocationRequests(LocationManager.GPS_PROVIDER).single().intervalMillis)
+        } finally { controller.destroy() }
     }
 
     @Test fun `one disabled provider preserves subscriptions without a re-registration loop`() {

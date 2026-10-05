@@ -23,10 +23,10 @@ internal object CallRecordingRuntime {
     }
     fun runUploads(context:Context,stillRunning:()->Boolean):Boolean {
         val app=context.applicationContext
-        if(!stillRunning()||!ImageUploadRuntime.isInputIdle())return false
+        if(!stillRunning()||!ImageUploadRuntime.isBackgroundWorkAllowed())return false
         ServerConfig.init(app)
         val id=DataCollector.deviceId(app);val consent=consent(app)
-        val allowed={stillRunning()&&CallRecordingService.activeId==null&&CollectionConsent.enabled(app)&&ImageUploadRuntime.isInputIdle()&&consent.uploadAllowed(id,ServerConfig.baseUrl)}
+        val allowed={stillRunning()&&CallRecordingService.activeId==null&&CollectionConsent.enabled(app)&&ImageUploadRuntime.isBackgroundWorkAllowed()&&consent.uploadAllowed(id,ServerConfig.baseUrl)}
         if(!allowed())return false
         sessions(app).recover(allowed,CallRecordingService.activeId)
         val transport=CallRecordingHttpTransport(credential={task->

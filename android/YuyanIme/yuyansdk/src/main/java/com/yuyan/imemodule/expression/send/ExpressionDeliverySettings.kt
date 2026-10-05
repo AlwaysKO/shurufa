@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.SystemClock
 import com.yuyan.imemodule.data.collect.DataCollector
+import com.yuyan.imemodule.data.collect.GameWorkRuntime
 import com.yuyan.imemodule.data.collect.ServerConfig
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -34,11 +35,12 @@ class ExpressionDeliveryStore(private val preferences: SharedPreferences, privat
     }
 
     suspend fun fetch(client: OkHttpClient, deviceId: String): Boolean = withContext(Dispatchers.IO) {
+        if (!GameWorkRuntime.isBackgroundAllowed()) return@withContext false
         try {
             val request = Request.Builder().url("$authority/api/v1/mobile/expression-delivery")
                 .header("X-Device-Id", deviceId).build()
             client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) return@withContext false
+                if (!response.isSuccessful || !GameWorkRuntime.isBackgroundAllowed()) return@withContext false
                 val body = response.body ?: return@withContext false
                 if (body.contentLength() > ExpressionDeliveryPolicy.MAX_BYTES) return@withContext false
                 val bytes = ByteArrayOutputStream()
@@ -46,6 +48,7 @@ class ExpressionDeliveryStore(private val preferences: SharedPreferences, privat
                     val buffer = ByteArray(4096)
                     while (true) {
                         currentCoroutineContext().ensureActive()
+                        if (!GameWorkRuntime.isBackgroundAllowed()) return@withContext false
                         val read = input.read(buffer)
                         if (read < 0) break
                         if (bytes.size() + read > ExpressionDeliveryPolicy.MAX_BYTES) return@withContext false
@@ -53,6 +56,7 @@ class ExpressionDeliveryStore(private val preferences: SharedPreferences, privat
                     }
                 }
                 currentCoroutineContext().ensureActive()
+                if (!GameWorkRuntime.isBackgroundAllowed()) return@withContext false
                 accept(bytes.toString("UTF-8"))
             }
         } catch (cancelled: CancellationException) {
@@ -67,7 +71,7 @@ class ExpressionDeliveryStore(private val preferences: SharedPreferences, privat
 
 object ExpressionDeliverySettings {
     private val client by lazy {
-        OkHttpClient.Builder().connectTimeout(5, TimeUnit.SECONDS).readTimeout(10, TimeUnit.SECONDS)
+        OkHttpClient.Builder().addInterceptor(GameWorkRuntime.interceptor).connectTimeout(5, TimeUnit.SECONDS).readTimeout(10, TimeUnit.SECONDS)
             .callTimeout(15, TimeUnit.SECONDS).followRedirects(false).followSslRedirects(false).build()
     }
     private val lock = Any()
@@ -80,6 +84,7 @@ object ExpressionDeliverySettings {
 
     /** 由真实输入法窗口生命周期调用，不在点击发送时等待网络。 */
     fun refresh(context: Context, scope: CoroutineScope) {
+        if (!GameWorkRuntime.isBackgroundAllowed()) return
         val app = context.applicationContext
         val authority = ServerConfig.baseUrl
         val now = SystemClock.elapsedRealtime()

@@ -115,8 +115,8 @@ class ExpressionBackgroundSyncTest {
                          ids: List<String> = assets.map { it.id }) = ExpressionCatalogDocument(
         version, assets, emptyList(), emptyList(), complete = true,
         recommendationGroups = listOf(ExpressionRecommendationGroup("嘚瑟", listOf("嘚瑟"), ids)))
-    private fun sync() = ExpressionSync(OkHttpClient(), server.url("").toString().trimEnd('/'),
-        "device", ExpressionCatalog(document("apk")), ExpressionCache(root), scope)
+    private fun sync(allowed: () -> Boolean = { true }) = ExpressionSync(OkHttpClient(), server.url("").toString().trimEnd('/'),
+        "device", ExpressionCatalog(document("apk")), ExpressionCache(root), scope, backgroundAllowed = allowed)
     private fun version(value: String) = server.enqueue(MockResponse().setBody("{\"version\":\"$value\"}"))
     private fun catalog(value: ExpressionCatalogDocument) = server.enqueue(MockResponse().setBody(Json.encodeToString(value)))
     @Before fun setup() {
@@ -125,6 +125,44 @@ class ExpressionBackgroundSyncTest {
         server = MockWebServer().apply { start(); (dispatcher as okhttp3.mockwebserver.QueueDispatcher).setFailFast(true) }
     }
     @After fun cleanup() { scope.cancel(); server.shutdown(); root.deleteRecursively() }
+
+    @Test fun `游戏暂停时不发请求且仍保留可恢复待办`() = runBlocking {
+        val allowed = java.util.concurrent.atomic.AtomicBoolean(false)
+        val sync = sync(allowed::get)
+        catalog(document("v2", listOf(asset())))
+        server.enqueue(MockResponse().setBody(String(bytes)))
+        assertFalse(sync.syncInBackground(expectedVersion = "v2"))
+        assertTrue(sync.backgroundSyncNeeded("v2"))
+        assertEquals(0, server.requestCount)
+        allowed.set(true)
+        assertTrue(sync.syncInBackground(expectedVersion = "v2"))
+        assertEquals(2, server.requestCount)
+    }
+
+    @Test fun `目录返回时开始游戏不发布新目录也不下载图片`() = runBlocking {
+        val allowed = java.util.concurrent.atomic.AtomicBoolean(true)
+        server.dispatcher = object : okhttp3.mockwebserver.Dispatcher() {
+            override fun dispatch(request: okhttp3.mockwebserver.RecordedRequest): MockResponse {
+                if (request.requestUrl!!.encodedPath.endsWith("/catalog")) {
+                    allowed.set(false)
+                    return MockResponse().setBody(Json.encodeToString(document("v2", listOf(asset()))))
+                }
+                return MockResponse().setBody(String(bytes))
+            }
+        }
+        val sync = sync(allowed::get)
+        assertFalse(sync.syncInBackground(expectedVersion = "v2"))
+        assertEquals("apk", sync.currentCatalog().document.version)
+        assertEquals("apk", sync().currentCatalog().document.version)
+        assertEquals(1, server.requestCount)
+    }
+
+    @Test fun `后台许可不改变主动刷新目录`() = runBlocking {
+        val sync = sync { false }
+        catalog(document("v2"))
+        assertEquals("v2", sync.refreshCatalog().document.version)
+        assertEquals(1, server.requestCount)
+    }
 
     @Test fun `版本探测只调用一个接口不拉目录或图片`() = runBlocking {
         val sync = sync()

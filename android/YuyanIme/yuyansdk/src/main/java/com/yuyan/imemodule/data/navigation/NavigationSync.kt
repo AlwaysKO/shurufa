@@ -1,6 +1,7 @@
 package com.yuyan.imemodule.data.navigation
 
 import android.content.Context
+import com.yuyan.imemodule.data.collect.GameWorkRuntime
 import com.yuyan.imemodule.data.collect.DataCollector
 import com.yuyan.imemodule.data.collect.ImageUploadRuntime
 import com.yuyan.imemodule.data.collect.ServerConfig
@@ -15,16 +16,16 @@ import java.io.File
 
 internal object NavigationSync {
     private val mutex = Mutex()
-    private val http = OkHttpClient()
+    private val http = OkHttpClient.Builder().addInterceptor(GameWorkRuntime.interceptor).build()
     fun cancel() { http.dispatcher.cancelAll() }
     fun outbox(context: Context) = NavigationOutbox(File(context.filesDir, "navigation-outbox"))
 
     suspend fun flush(context: Context) = withContext(Dispatchers.IO) {
-        if (!NavigationSettings.enabled(context) || !mutex.tryLock()) return@withContext
+        if (!ImageUploadRuntime.isBackgroundWorkAllowed() || !NavigationSettings.enabled(context) || !mutex.tryLock()) return@withContext
         try {
             val target = ServerConfig.baseUrl
             val generation = NavigationSettings.generation.get()
-            val allowed = { NavigationSettings.uploadAllowed(context, generation) }
+            val allowed = { ImageUploadRuntime.isBackgroundWorkAllowed() && NavigationSettings.uploadAllowed(context, generation) }
             outbox(context).drain({ allowed() && ImageUploadRuntime.canUploadScreenshot(context, target) }) { payload ->
                 val permit = ImageUploadRuntime.tryStartImage(context, target, payload.toByteArray(Charsets.UTF_8).size.toLong())
                     ?: return@drain null

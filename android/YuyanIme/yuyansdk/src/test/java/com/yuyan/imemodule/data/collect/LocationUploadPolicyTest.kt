@@ -42,6 +42,15 @@ class LocationUploadPolicyTest {
     }
 
     @Test
+    fun `uncertain location over fifty meters cannot create new reports`() {
+        for (interval in listOf(null, 30_000L, 300_000L)) {
+            assertTrue(LocationUploadPolicy.shouldUpload(now, candidate(accuracyMeters = 50f), null, interval))
+            assertFalse(LocationUploadPolicy.shouldUpload(now, candidate(accuracyMeters = 50.01f), null, interval))
+            assertFalse(LocationUploadPolicy.shouldUpload(now, candidate(accuracyMeters = 100f), null, interval))
+        }
+    }
+
+    @Test
     fun `successful upload is rate limited for one minute`() {
         val last = uploaded(uploadedAtMs = now - 59_999)
         val moved = candidate(latitude = 23.136)

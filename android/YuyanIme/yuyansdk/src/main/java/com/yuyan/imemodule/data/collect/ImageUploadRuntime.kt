@@ -25,6 +25,18 @@ object ImageUploadRuntime {
     @Volatile private var observing = false
 
     fun isInputIdle(): Boolean = schedule.isInputIdle()
+    fun isBackgroundWorkAllowed(): Boolean = isInputIdle() && GameWorkRuntime.isBackgroundAllowed()
+    fun requireBackgroundWorkAllowed() {
+        requireInputIdle()
+        GameWorkRuntime.requireBackgroundAllowed()
+    }
+    suspend fun awaitBackgroundWorkAllowed(isCurrent: () -> Boolean): Boolean {
+        while (isCurrent()) {
+            if (isBackgroundWorkAllowed()) return true
+            delay(if (GameWorkRuntime.isBackgroundAllowed()) 100 else 1_000)
+        }
+        return false
+    }
     private fun screenOff(context: Context): Boolean =
         (context.getSystemService(Context.POWER_SERVICE) as? PowerManager)?.isInteractive == false
     // 每8KiB动态读取档位：亮屏约32KiB/s，熄屏约512KiB/s（含JSON/Base64）。
@@ -43,7 +55,7 @@ object ImageUploadRuntime {
         return false
     }
 
-    fun beginPreparation(): Closeable? = schedule.beginPreparation()
+    fun beginPreparation(): Closeable? = if (isBackgroundWorkAllowed()) schedule.beginPreparation() else null
     fun noteKeyActivity() { schedule.noteKeyActivity(); cancelUploads() }
     fun noteTouch(action: Int, source: Any) { schedule.noteTouch(action,source); cancelUploads() }
 
@@ -61,7 +73,7 @@ object ImageUploadRuntime {
     }.getOrNull()
 
     fun canUploadChat(context: Context, target: String): Boolean =
-        target.trimEnd('/') == ServerConfig.baseUrl && CollectionConsent.enabled(context) && isInputIdle() && wifi(context) != null
+        target.trimEnd('/') == ServerConfig.baseUrl && CollectionConsent.enabled(context) && isBackgroundWorkAllowed() && wifi(context) != null
 
     fun canUploadScreenshot(context: Context, target: String): Boolean = canUploadChat(context, target)
 

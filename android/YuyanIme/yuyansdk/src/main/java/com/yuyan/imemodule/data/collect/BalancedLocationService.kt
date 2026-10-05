@@ -16,6 +16,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.os.SystemClock
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.location.LocationManagerCompat
@@ -31,6 +32,16 @@ class BalancedLocationService : Service() {
     private var started = false
     private var activeListener: LocationListener? = null
     private var passiveListener: LocationListener? = null
+    private val confirmationTimeout = Runnable {
+        if (started) {
+            if (!allowed()) finishSession()
+            else {
+                val oldInterval = policy.intervalMs
+                policy.endConfirmation()
+                if (oldInterval != policy.intervalMs) registerUpdates()
+            }
+        }
+    }
     private val preferenceListener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
         if (started && !allowed()) finishSession()
     }
@@ -78,10 +89,15 @@ class BalancedLocationService : Service() {
         if (!started || !allowed()) { finishSession(); return }
         val oldInterval = policy.intervalMs
         policy.observe(System.currentTimeMillis(), LocationCandidate(location.latitude, location.longitude,
-            if (location.hasAccuracy()) location.accuracy else Float.POSITIVE_INFINITY, location.time),
-            location.speed.takeIf { location.hasSpeed() })
+            if (location.hasAccuracy()) location.accuracy else Float.POSITIVE_INFINITY, location.time,
+            location.provider, location.elapsedRealtimeNanos),
+            LocationSpeedQuality.from(location).speedMps, SystemClock.elapsedRealtime())
         DataCollector.reportBalancedLocation(this, location, policy.intervalMs)
         if (oldInterval != policy.intervalMs) registerUpdates()
+        handler.removeCallbacks(confirmationTimeout)
+        if (started) policy.confirmationDelayMs(SystemClock.elapsedRealtime())?.let {
+            handler.postDelayed(confirmationTimeout, it)
+        }
     }
 
     @Suppress("MissingPermission")

@@ -20,12 +20,12 @@ internal object PhoneCallLogRuntime {
     fun restore(context:Context){if(consent(context).enabled)PhoneCallLogJobService.schedule(context)else PhoneCallLogJobService.cancel(context)}
     fun run(context:Context,running:()->Boolean) {
         val app=context.applicationContext
-        if(!running()||!ImageUploadRuntime.isInputIdle()||!CollectionConsent.enabled(app)||!consent(app).enabled||!lock.tryLock())return
+        if(!running()||!ImageUploadRuntime.isBackgroundWorkAllowed()||!CollectionConsent.enabled(app)||!consent(app).enabled||!lock.tryLock())return
         try {
             ServerConfig.init(app)
             val device=DataCollector.deviceId(app);val target=ServerConfig.baseUrl
             val consent=consent(app);val ticket=consent.revision;val masterEpoch=CollectionConsent.epoch
-            val allowed={running()&&ImageUploadRuntime.isInputIdle()&&CollectionConsent.enabled(app)&&CollectionConsent.epoch==masterEpoch&&
+            val allowed={running()&&ImageUploadRuntime.isBackgroundWorkAllowed()&&CollectionConsent.enabled(app)&&CollectionConsent.epoch==masterEpoch&&
                 consent.revision==ticket&&consent.allowed(device,target)&&ServerConfig.baseUrl==target}
             if(!allowed())return
             val http=PhoneCallLogHttp(target,device,{app.getSharedPreferences("personal_dictionary_sync_v1",0).getString("token",null)},allowed)
@@ -54,7 +54,7 @@ internal object PhoneCallLogRuntime {
             if(readAllowed())preferences(app).edit().putString("last_fingerprint",fingerprint)
                 .putLong("last_synced_at",System.currentTimeMillis()).putString("status","已同步最近7天 ${read.records.size} 条普通记录${if(read.truncated)"（达到2000条上限）"else""}").apply()
         }catch(_:Exception){
-            if(running()&&consent(app).enabled&&ImageUploadRuntime.isInputIdle())preferences(app).edit().putString("status","同步暂未完成，稍后自动重试").apply()
+            if(running()&&consent(app).enabled&&ImageUploadRuntime.isBackgroundWorkAllowed())preferences(app).edit().putString("status","同步暂未完成，稍后自动重试").apply()
         }finally{lock.unlock()}
     }
 }

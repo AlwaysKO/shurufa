@@ -45,7 +45,11 @@ class ExpressionSync(
     private val cache: ExpressionCache,
     private val scope: CoroutineScope,
     catalogDirectory: File = File(cache.queryRoot, "catalogs"),
+    private val backgroundAllowed: () -> Boolean = { true },
 ) {
+    private class BackgroundPaused : IOException("Background expression work paused")
+    private fun requireAllowed(allowed: () -> Boolean) { if (!allowed()) throw BackgroundPaused() }
+
     @Volatile
     private var catalog = initialCatalog
     private val json = Json { ignoreUnknownKeys = true }
@@ -124,17 +128,19 @@ class ExpressionSync(
     }
 
     /** 半小时后台探测只读取版本，不下载目录或原件。 */
-    suspend fun remoteVersion(recommendationsOnly: Boolean = false): String? = withContext(Dispatchers.IO) {
+    suspend fun remoteVersion(recommendationsOnly: Boolean = false, allowed: () -> Boolean = { true }): String? = withContext(Dispatchers.IO) {
         try {
+            requireAllowed(allowed)
             val url = "${baseUrl.trimEnd('/')}/api/v1/mobile/expressions/versions".toHttpUrl().newBuilder()
                 .apply { if (recommendationsOnly) addQueryParameter("scope", "recommendations") }.build()
             val request = Request.Builder().url(url)
                 .header("X-Device-Id", deviceId).build()
             networkClient.newCall(request).awaitBody { response ->
                 check(response.isSuccessful)
-                json.decodeFromString<VersionResponse>(readMetadata(response, 4096)).version
+                json.decodeFromString<VersionResponse>(readMetadata(response, 4096, allowed)).version
             }
-        } catch (cancelled: CancellationException) { throw cancelled }
+        } catch (paused: BackgroundPaused) { throw paused }
+        catch (cancelled: CancellationException) { throw cancelled }
         catch (_: Exception) { null }
     }
 
@@ -144,16 +150,25 @@ class ExpressionSync(
     }
 
     suspend fun backgroundSyncNeeded(version: String): Boolean = withContext(Dispatchers.IO) {
-        refreshMutex.withLock { reloadPersistedCatalog() }
-        if (backgroundVersion != version || !catalog.document.complete) return@withContext true
-        queryCache.hasRoomForBackgroundOriginal() && backgroundCandidates().any { localAsset(it) == null }
+        try {
+            requireAllowed(backgroundAllowed)
+            refreshMutex.withLock { reloadPersistedCatalog(backgroundAllowed) }
+            if (backgroundVersion != version || !catalog.document.complete) return@withContext true
+            requireAllowed(backgroundAllowed)
+            queryCache.hasRoomForBackgroundOriginal() && backgroundCandidates(backgroundAllowed).any {
+                requireAllowed(backgroundAllowed)
+                localAsset(it) == null
+            }
+        } catch (_: BackgroundPaused) { true }
     }
 
-    private fun backgroundCandidates(): List<ExpressionAsset> {
+    private fun backgroundCandidates(allowed: () -> Boolean = { true }): List<ExpressionAsset> {
+        requireAllowed(allowed)
         val snapshot = catalog.document
-        val ids = snapshot.recommendationGroups?.filter { it.aliases.isNotEmpty() }
-            ?.flatMap { it.assetIds }?.toSet()
+        val ids = snapshot.recommendationGroups?.filter { requireAllowed(allowed); it.aliases.isNotEmpty() }
+            ?.flatMap { requireAllowed(allowed); it.assetIds }?.toSet()
         return snapshot.templates.filter {
+            requireAllowed(allowed)
             it.type == "prebuilt" && (ids?.contains(it.id) ?: it.keywords.isNotEmpty())
         }.distinctBy { it.sha256 }
     }
@@ -161,48 +176,60 @@ class ExpressionSync(
     /** Wi-Fi 任务复用探测版本；上轮缺件即使版本未变也继续补齐，单轮有界。 */
     suspend fun syncInBackground(maxDownloads: Int = 24, expectedVersion: String? = null): Boolean = withContext(Dispatchers.IO) {
         require(maxDownloads > 0)
-        val updated = refreshMutex.withLock {
-            reloadPersistedCatalog()
-            val version = expectedVersion ?: remoteVersion(recommendationsOnly = true) ?: return@withLock false
-            when {
-                version == backgroundVersion && catalog.document.complete -> true
-                else -> {
-                    // 升级前缓存可能只有总版本；即使总版本未变也要取得独立推荐版本。
-                    if (refreshCatalogLocked(force = catalog.document.recommendationVersion == null) == null) {
-                        if (expectedVersion == null) return@withLock false
-                        throw IOException("background catalog update failed")
+        try {
+            requireAllowed(backgroundAllowed)
+            val updated = refreshMutex.withLock {
+                reloadPersistedCatalog(backgroundAllowed)
+                requireAllowed(backgroundAllowed)
+                val version = expectedVersion ?: remoteVersion(recommendationsOnly = true, allowed = backgroundAllowed) ?: return@withLock false
+                requireAllowed(backgroundAllowed)
+                when {
+                    version == backgroundVersion && catalog.document.complete -> true
+                    else -> {
+                        // 升级前缓存可能只有总版本；即使总版本未变也要取得独立推荐版本。
+                        if (refreshCatalogLocked(force = catalog.document.recommendationVersion == null, allowed = backgroundAllowed) == null) {
+                            requireAllowed(backgroundAllowed)
+                            if (expectedVersion == null) return@withLock false
+                            throw IOException("background catalog update failed")
+                        }
+                        true
                     }
-                    true
                 }
             }
-        }
-        if (!updated || !catalog.document.complete) return@withContext false
-        val candidates = backgroundCandidates()
-        var attempts = 0
-        var complete = true
-        for (asset in candidates) {
-            if (!stillCurrent(asset) || localAsset(asset) != null) continue
-            if (attempts++ >= maxDownloads) return@withContext false
-            if (!queryCache.hasRoomForBackgroundOriginal()) return@withContext false
-            if (download(asset.version, asset.fileName,
-                    asset.url ?: "/uploads/expression/${asset.fileName}", asset.sha256,
-                    allowCacheEviction = false) == null) complete = false
-        }
-        complete
+            requireAllowed(backgroundAllowed)
+            if (!updated || !catalog.document.complete) return@withContext false
+            val candidates = backgroundCandidates(backgroundAllowed)
+            var attempts = 0
+            var complete = true
+            for (asset in candidates) {
+                requireAllowed(backgroundAllowed)
+                if (!stillCurrent(asset) || localAsset(asset) != null) continue
+                requireAllowed(backgroundAllowed)
+                if (attempts++ >= maxDownloads) return@withContext false
+                if (!queryCache.hasRoomForBackgroundOriginal()) return@withContext false
+                if (download(asset.version, asset.fileName,
+                        asset.url ?: "/uploads/expression/${asset.fileName}", asset.sha256,
+                        allowCacheEviction = false, allowed = backgroundAllowed) == null) complete = false
+            }
+            complete && backgroundAllowed()
+        } catch (_: BackgroundPaused) { false }
     }
 
-    private fun readMetadata(response: Response, limit: Int): String {
+    private fun readMetadata(response: Response, limit: Int, allowed: () -> Boolean = { true }): String {
+        requireAllowed(allowed)
         val body = requireNotNull(response.body)
         check(body.contentLength() <= limit)
         return body.byteStream().use { input ->
             val output = ByteArrayOutputStream()
             val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
             while (true) {
+                requireAllowed(allowed)
                 val count = input.read(buffer)
                 if (count < 0) break
                 check(output.size() + count <= limit)
                 output.write(buffer, 0, count)
             }
+            requireAllowed(allowed)
             output.toString("UTF-8")
         }
     }
@@ -215,8 +242,9 @@ class ExpressionSync(
         }
     }
 
-    private suspend fun refreshCatalogLocked(force: Boolean = false): ExpressionCatalog? = withContext(Dispatchers.IO) {
+    private suspend fun refreshCatalogLocked(force: Boolean = false, allowed: () -> Boolean = { true }): ExpressionCatalog? = withContext(Dispatchers.IO) {
         try {
+            requireAllowed(allowed)
             val url = "$baseUrl/api/v1/mobile/expressions/catalog"
                 .toHttpUrl()
                 .newBuilder()
@@ -230,15 +258,21 @@ class ExpressionSync(
                 if (response.code == 304) return@awaitBody null
                 check(response.isSuccessful) { "catalog request failed: ${response.code}" }
                 json.decodeFromString<ExpressionCatalogDocument>(
-                    readMetadata(response, ExpressionCatalogStore.MAX_BYTES),
+                    readMetadata(response, ExpressionCatalogStore.MAX_BYTES, allowed),
                 )
             } ?: return@withContext catalog
+            requireAllowed(allowed)
             // 发布留在持锁协程内；被取消的 OkHttp 回调不能继续覆盖新目录。
             check(!catalog.document.complete || remote.complete) { "incomplete catalog cannot replace an authoritative snapshot" }
-            val accepted = if (remote.complete) sanitizeSnapshot(remote) else remote
+            val accepted = if (remote.complete) sanitizeSnapshot(remote, allowed) else remote
+            requireAllowed(allowed)
+            val merged = catalog.merge(accepted)
+            requireAllowed(allowed)
             if (accepted.complete) catalogStore.write(accepted)
-            catalog = catalog.merge(accepted)
+            catalog = merged
             catalog
+        } catch (paused: BackgroundPaused) {
+            throw paused
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (_: Exception) {
@@ -260,23 +294,30 @@ class ExpressionSync(
     private class QueryWork(val result: CompletableDeferred<List<ExpressionAsset>?>)
 
     init {
-        reloadPersistedCatalog()
+        try { reloadPersistedCatalog(backgroundAllowed) } catch (_: BackgroundPaused) { }
     }
 
-    private fun reloadPersistedCatalog() {
+    private fun reloadPersistedCatalog(allowed: () -> Boolean = { true }) {
+        requireAllowed(allowed)
         catalogStore.read()?.let { saved ->
+            requireAllowed(allowed)
             if (saved.version != catalog.document.version || saved.recommendationVersion != catalog.document.recommendationVersion) {
-                runCatching { sanitizeSnapshot(saved) }.getOrNull()?.let { catalog = ExpressionCatalog(it) }
+                val accepted = try { sanitizeSnapshot(saved, allowed) }
+                    catch (paused: BackgroundPaused) { throw paused }
+                    catch (_: Exception) { null }
+                accepted?.let { requireAllowed(allowed); catalog = ExpressionCatalog(it) }
             }
         }
     }
 
-    private fun sanitizeSnapshot(document: ExpressionCatalogDocument): ExpressionCatalogDocument {
+    private fun sanitizeSnapshot(document: ExpressionCatalogDocument, allowed: () -> Boolean = { true }): ExpressionCatalogDocument {
+        requireAllowed(allowed)
         require(document.version.matches(Regex("[A-Za-z0-9._-]+")))
         require(document.templates.size <= 10000)
         return document.copy(templates = document.templates.filter { asset ->
+            requireAllowed(allowed)
             trusted(ExpressionQueryCache.Item(asset, asset.sourceType))
-        }.map { it.copy(resolvedPreviewUrl = null, localPreviewOnly = false,
+        }.map { requireAllowed(allowed); it.copy(resolvedPreviewUrl = null, localPreviewOnly = false,
             thumbnailUrl = it.thumbnailUrl?.takeIf(::sameOrigin)) })
     }
 
@@ -478,8 +519,11 @@ class ExpressionSync(
         url: String,
         sha256: String,
         allowCacheEviction: Boolean = true,
+        allowed: () -> Boolean = { true },
     ): File? = withContext(Dispatchers.IO) {
+        if (!allowed()) return@withContext null
         runCatching { cache.validFile(version, relativePath, sha256) }.getOrNull()?.let { return@withContext it }
+        if (!allowed()) return@withContext null
         if (!sameOrigin(url) || !ExpressionQueryCache.SHA_PATTERN.matches(sha256)) return@withContext null
         if (!runCatching { cache.file(version, relativePath); true }.getOrDefault(false)) return@withContext null
         val work = synchronized(pendingLock) {
@@ -487,16 +531,26 @@ class ExpressionSync(
                 scope.async(Dispatchers.IO, start = CoroutineStart.LAZY) {
                     try {
                         downloadSlots.withPermit {
+                            if (!allowed()) return@withPermit null
                             // 取得限流槽时另一下载可能刚落盘，真正HTTP前再查一次，关闭并发空隙。
                             cache.validFile(version, relativePath, sha256)?.let { return@withPermit it }
+                            if (!allowed()) return@withPermit null
                             val request = Request.Builder().url(resolveExpressionRemoteSource(baseUrl, url))
                                 .header("X-Device-Id", deviceId).build()
                             assetClient.newCall(request).awaitBody { response ->
+                                requireAllowed(allowed)
                                 check(response.isSuccessful)
                                 val body = response.body ?: return@awaitBody null
                                 val limit = queryCache.maxAssetBytes
                                 check(body.contentLength() <= limit)
-                                queryCache.writeOriginal(sha256, body.byteStream(), limit, allowCacheEviction)
+                                val input = object : java.io.FilterInputStream(body.byteStream()) {
+                                    override fun read(): Int { requireAllowed(allowed); return super.read() }
+                                    override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
+                                        requireAllowed(allowed)
+                                        return super.read(buffer, offset, length)
+                                    }
+                                }
+                                queryCache.writeOriginal(sha256, input, limit, allowCacheEviction)
                             }
                         }
                     } catch (cancelled: CancellationException) {

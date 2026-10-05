@@ -37,7 +37,7 @@ internal class NavigationCapture(private val service: AccessibilityService) : Cl
                 val event = events.receive()
                 try {
                     if (event.value == null || !current(event)) { continue }
-                    if (!ImageUploadRuntime.awaitInputIdle { current(event) }) { continue }
+                    if (!ImageUploadRuntime.awaitBackgroundWorkAllowed { current(event) }) { continue }
                     val gap = 500 - (SystemClock.elapsedRealtime() - lastRead)
                     if (gap > 0) delay(gap)
                     if (current(event)) process(event)
@@ -78,7 +78,7 @@ internal class NavigationCapture(private val service: AccessibilityService) : Cl
         val before = readPage(pkg) ?: return
         lastRead = SystemClock.elapsedRealtime()
         val page = NavigationPage.parse(pkg, before.labels) as? NavigationPage.Overview ?: return
-        val allowed = { current(event) && ImageUploadRuntime.isInputIdle() }
+        val allowed = { current(event) && ImageUploadRuntime.isBackgroundWorkAllowed() }
         // 去重发生在调用截图接口之前；上传完成和进程重启不重置去重结果。
         val permit = ImageUploadRuntime.beginPreparation() ?: return
         val saved = try {

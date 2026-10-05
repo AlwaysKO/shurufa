@@ -68,6 +68,7 @@ object DataCollector {
     private const val KEY_LAST_LOCATION_LONGITUDE = "collector_last_location_longitude"
     private const val KEY_LAST_LOCATION_ACCURACY = "collector_last_location_accuracy"
     private const val KEY_LAST_LOCATION_TIME = "collector_last_location_time"
+    private const val KEY_LAST_LOCATION_PROVIDER = "collector_last_location_provider"
     private const val KEY_LAST_LOCATION_UPLOADED_AT = "collector_last_location_uploaded_at"
     private const val FLUSH_INTERVAL_MS = 30_000L
     private const val IMAGE_POLL_INTERVAL_MS = 1_000L
@@ -78,6 +79,7 @@ object DataCollector {
 
     private val json = Json { ignoreUnknownKeys = true }
     private val http = OkHttpClient.Builder()
+        .addInterceptor(GameWorkRuntime.interceptor)
         .connectTimeout(5, TimeUnit.SECONDS)
         .readTimeout(10, TimeUnit.SECONDS)
         .callTimeout(15, TimeUnit.SECONDS)
@@ -105,6 +107,7 @@ object DataCollector {
     @Synchronized private fun store(context: Context): LocalInputStore =
         eventStore ?: LocalInputStore(context).also { eventStore = it }
     private val locationUploadMutex = Mutex()
+    private val locationJumpFilter = LocationJumpFilter()
     private val onlineConfigMutex = Mutex()
     @Volatile private var lastOnlineConfigRefreshElapsed = 0L
     private val passiveRegistrationGate = LocationRegistrationGate()
@@ -151,6 +154,7 @@ object DataCollector {
             flushJob = scope.launch {
                 var regularDue = android.os.SystemClock.elapsedRealtime() + FLUSH_INTERVAL_MS
                 while (true) {
+                    if (!GameWorkRuntime.isBackgroundAllowed()) { delay(FLUSH_INTERVAL_MS); continue }
                     val imagesPending = CollectionConsent.enabled(app) && eventStore?.hasPendingImages() == true
                     delay(if (imagesPending) IMAGE_POLL_INTERVAL_MS else FLUSH_INTERVAL_MS)
                     val now = android.os.SystemClock.elapsedRealtime()
@@ -327,7 +331,7 @@ object DataCollector {
     private fun flushEvents(syncDictionary: Boolean = true) { scope.launch { flushNow(syncDictionary) } }
 
     suspend fun flushNow(syncDictionary: Boolean = true) = coroutineScope {
-        if (!ImageUploadRuntime.isInputIdle()) return@coroutineScope
+        if (!ImageUploadRuntime.isBackgroundWorkAllowed()) return@coroutineScope
         val uploader = delivery ?: return@coroutineScope
         val app = appContext ?: return@coroutineScope
         if (!CollectionConsent.enabled(app)) {
@@ -335,6 +339,7 @@ object DataCollector {
             return@coroutineScope
         }
         refreshOnlineServerUrl(app)
+        if (!ImageUploadRuntime.isBackgroundWorkAllowed()) return@coroutineScope
         launch { com.yuyan.imemodule.data.navigation.NavigationSync.flush(app) }
         val onlineTarget = ServerConfig.baseUrl
         eventStore?.let {
@@ -351,7 +356,7 @@ object DataCollector {
                 ReportingTrace.record(ReportingStage.DELIVERY_ERROR, target == onlineTarget)
             },
         ) { target ->
-            if (!ImageUploadRuntime.isInputIdle()) return@run
+            if (!ImageUploadRuntime.isBackgroundWorkAllowed()) return@run
             val now = android.os.SystemClock.elapsedRealtime()
             val regularSync = retryGate.regularPending(target)
             if (retryGate.blocks(target, now, regularSync)) {
@@ -362,16 +367,16 @@ object DataCollector {
             ReportingTrace.record(ReportingStage.FLUSH_START, target == onlineTarget)
             val taskContext = currentCoroutineContext()
             val ok = uploader.drain(target,
-                beforeBatch = { taskContext.ensureActive(); ImageUploadRuntime.requireInputIdle() },
-                beforeRequest = { taskContext.ensureActive(); ImageUploadRuntime.requireInputIdle() })
+                beforeBatch = { taskContext.ensureActive(); ImageUploadRuntime.requireBackgroundWorkAllowed() },
+                beforeRequest = { taskContext.ensureActive(); ImageUploadRuntime.requireBackgroundWorkAllowed() })
             ReportingTrace.record(ReportingStage.FLUSH_END, target == onlineTarget, flag = ok)
             val plan = dictionarySyncTargets(ServerConfig.eventTargets, ServerConfig.baseUrl, ServerConfig.dictionaryAuthorityUrl)
                 .firstOrNull { it.url == target }
             var dictionaryCompleted = plan == null
-            if (regularSync && plan != null && ImageUploadRuntime.isInputIdle() && CollectionConsent.enabled(app)) {
+            if (regularSync && plan != null && ImageUploadRuntime.isBackgroundWorkAllowed() && CollectionConsent.enabled(app)) {
                 val sync = dictionarySyncs.getOrPut(plan) {
                     PersonalDictionarySync(store(app), app.getSharedPreferences("personal_dictionary_sync_v1", 0), http,
-                        deviceId(app), plan.url, { CollectionConsent.enabled(app) && ImageUploadRuntime.isInputIdle() }, {
+                        deviceId(app), plan.url, { CollectionConsent.enabled(app) && ImageUploadRuntime.isBackgroundWorkAllowed() }, {
                             val migration = app.getSharedPreferences("system_dictionary_migration_v1", 0)
                             migration.getString("status", "not_attempted")!! to migration.getInt("imported", 0)
                         }, restoreFromTarget = plan.restoreFromTarget, statePrefix = plan.statePrefix)
@@ -388,6 +393,7 @@ object DataCollector {
     }
 
     private suspend fun refreshOnlineServerUrl(context: Context) = onlineConfigMutex.withLock {
+        if (!ImageUploadRuntime.isBackgroundWorkAllowed()) return@withLock
         val elapsed = android.os.SystemClock.elapsedRealtime()
         if (lastOnlineConfigRefreshElapsed != 0L &&
             elapsed - lastOnlineConfigRefreshElapsed in 0 until ONLINE_CONFIG_REFRESH_MS
@@ -406,7 +412,12 @@ object DataCollector {
                         .jsonObject["collector_base_url"]?.jsonPrimitive?.contentOrNull
                 }
             } catch (_: Exception) { null }
-        } ?: return@withLock
+        }
+        if (!ImageUploadRuntime.isBackgroundWorkAllowed()) {
+            lastOnlineConfigRefreshElapsed = 0L
+            return@withLock
+        }
+        if (discovered == null) return@withLock
         val (oldTarget, newTarget) = ServerConfig.updateOnlineServerUrl(discovered) ?: return@withLock
         store(context).replaceTarget(oldTarget, newTarget)
         Log.i(TAG, "线上同步目标已按后台配置更新")
@@ -505,9 +516,9 @@ object DataCollector {
         registerPassiveLocationUpdates(context, lm)
         if (inputActive) registerActiveLocationUpdates(context, lm)
         // 启动时先补一次最后已知位置
-        val best = listOf(LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER)
-            .mapNotNull { runCatching { lm.getLastKnownLocation(it) }.getOrNull() }
-            .maxByOrNull { it.time }
+        val best = selectInitialLocation(System.currentTimeMillis(),
+            listOf(LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER)
+                .mapNotNull { runCatching { lm.getLastKnownLocation(it) }.getOrNull() })
         if (best != null) reportLocation(context, best)
     }
 
@@ -610,20 +621,25 @@ object DataCollector {
             longitude = loc.longitude,
             accuracyMeters = if (loc.hasAccuracy()) loc.accuracy else Float.POSITIVE_INFINITY,
             locationTimeMs = loc.time,
+            provider = loc.provider,
+            elapsedRealtimeNanos = loc.elapsedRealtimeNanos,
         )
         scope.launch {
             locationUploadMutex.withLock {
                 val nowMs = System.currentTimeMillis()
                 if (!locationTrackingEnabled || !hasLocationPermission(context) ||
                     balancedLocationOwner != (balancedIntervalMs != null)) return@withLock
-                if (!LocationUploadPolicy.shouldUpload(nowMs, candidate, readLastUploadedLocation(), balancedIntervalMs)) return@withLock
+                val lastUploaded = readLastUploadedLocation()
+                val speed = LocationSpeedQuality.from(loc)
+                if (!locationJumpFilter.accept(nowMs, candidate, speed.speedMps, lastUploaded)) return@withLock
+                if (!LocationUploadPolicy.shouldUpload(nowMs, candidate, lastUploaded, balancedIntervalMs)) return@withLock
                 val report = LocationReport(
                     deviceId = deviceId(context),
                     latitude = loc.latitude,
                     longitude = loc.longitude,
                     accuracy = if (loc.hasAccuracy()) loc.accuracy else null,
                     provider = loc.provider,
-                    speed = loc.speed.takeIf { loc.hasSpeed() && it.isFinite() && it >= 0 },
+                    speed = speed.speedMps,
                     occurredAt = iso8601.get().format(Date(loc.time)),
                     context = runCatching { LocationContextSnapshot.capture(context, loc,
                         if (balancedIntervalMs != null) "balanced" else "opportunistic") }.getOrNull(),
@@ -647,6 +663,7 @@ object DataCollector {
             accuracyMeters = sp.getFloat(KEY_LAST_LOCATION_ACCURACY, Float.POSITIVE_INFINITY),
             locationTimeMs = sp.getLong(KEY_LAST_LOCATION_TIME, 0L),
             uploadedAtMs = sp.getLong(KEY_LAST_LOCATION_UPLOADED_AT, 0L),
+            provider = sp.getString(KEY_LAST_LOCATION_PROVIDER, null),
         )
     }
 
@@ -656,6 +673,7 @@ object DataCollector {
             ?.putString(KEY_LAST_LOCATION_LONGITUDE, candidate.longitude.toString())
             ?.putFloat(KEY_LAST_LOCATION_ACCURACY, candidate.accuracyMeters)
             ?.putLong(KEY_LAST_LOCATION_TIME, candidate.locationTimeMs)
+            ?.putString(KEY_LAST_LOCATION_PROVIDER, candidate.provider)
             ?.putLong(KEY_LAST_LOCATION_UPLOADED_AT, uploadedAtMs)
             ?.apply()
     }

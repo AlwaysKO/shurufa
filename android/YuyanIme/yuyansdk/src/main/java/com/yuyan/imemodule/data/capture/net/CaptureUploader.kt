@@ -8,6 +8,7 @@ import com.yuyan.imemodule.data.capture.db.PendingMessageEntity
 import com.yuyan.imemodule.data.collect.CollectionConsent
 import com.yuyan.imemodule.data.collect.DataCollector
 import com.yuyan.imemodule.data.collect.ImageUploadRuntime
+import com.yuyan.imemodule.data.collect.GameWorkRuntime
 import com.yuyan.imemodule.data.collect.ServerConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -40,14 +41,17 @@ class CaptureUploader(
     private val api: CaptureApi,
     private val assetFile: (sha256: String) -> File,
     private val beginPreparation: () -> java.io.Closeable? = { java.io.Closeable {} },
+    private val backgroundAllowed: () -> Boolean = { true },
 ) {
     val internalFailureCount = AtomicLong(0)
 
     suspend fun runOnce(now: Long = System.currentTimeMillis()): UploadRunResult {
         var processed = 0
         var failures = 0
+        if (!backgroundAllowed()) return UploadRunResult(0, 0)
 
         for (asset in dao.dueAssets(now, MAX_ASSET_BATCH)) {
+            if (!backgroundAllowed()) break
             // 在 CaptureApi 读取文件及 Base64 编码前领取共享许可；暂停不记失败。
             val preparation = beginPreparation() ?: continue
             processed += 1
@@ -61,13 +65,16 @@ class CaptureUploader(
             if (uploaded) {
                 dao.deletePendingAsset(asset.sha256)
             } else {
+                if (!backgroundAllowed()) break
                 failures += 1
                 markAssetFailed(asset, now)
             }
         }
 
         val decoded = mutableListOf<Pair<PendingMessageEntity, PendingMessageUploadPayload>>()
+        if (!backgroundAllowed()) return UploadRunResult(processed, failures)
         for (message in dao.readyMessages(now, MAX_MESSAGE_BATCH)) {
+            if (!backgroundAllowed()) break
             try {
                 decoded += message to api.decodeMessagePayload(message.payloadJson)
             } catch (_: Exception) {
@@ -81,6 +88,7 @@ class CaptureUploader(
             payload.deviceId to payload.conversation.toString()
         }
         for (group in groups.values) {
+            if (!backgroundAllowed()) break
             processed += group.size
             val uploaded = try {
                 api.uploadMessages(group.map { it.second })
@@ -95,6 +103,7 @@ class CaptureUploader(
                     .distinct()
                     .forEach { hash -> assetFile(hash).delete() }
             } else {
+                if (!backgroundAllowed()) break
                 failures += group.size
                 group.forEach { (message) -> markMessageFailed(message, now) }
             }
@@ -143,12 +152,17 @@ class CaptureUploader(
                     dao = database.captureDao(),
                     api = CaptureApi(ServerConfig.baseUrl, DataCollector.deviceId(appContext), enqueue = { path, body ->
                         DataCollector.enqueueRawReport(appContext, path, body)
-                    }),
+                    }, backgroundAllowed = GameWorkRuntime::isBackgroundAllowed),
                     assetFile = { hash -> File(appContext.cacheDir, "chat-capture/$hash") },
                     beginPreparation = ImageUploadRuntime::beginPreparation,
+                    backgroundAllowed = GameWorkRuntime::isBackgroundAllowed,
                 )
                 uploadJob = CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
                     while (isActive) {
+                        if (!GameWorkRuntime.isBackgroundAllowed()) {
+                            delay(30_000)
+                            continue
+                        }
                         val result = try {
                             if (CollectionConsent.enabled(appContext)) uploader.runOnce()
                             else UploadRunResult(0, 0)

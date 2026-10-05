@@ -65,6 +65,7 @@ internal fun localCollectorHealthy(http: OkHttpClient, target: String): Boolean 
 
 internal fun collectorTargetGate(context: Context, onlineTarget: String): CollectorTargetGate {
     val healthClient = OkHttpClient.Builder()
+        .addInterceptor(GameWorkRuntime.interceptor)
         .connectTimeout(1, TimeUnit.SECONDS)
         .readTimeout(1, TimeUnit.SECONDS)
         .callTimeout(2, TimeUnit.SECONDS)

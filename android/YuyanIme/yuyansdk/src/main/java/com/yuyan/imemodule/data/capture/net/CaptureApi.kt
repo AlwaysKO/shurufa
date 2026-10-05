@@ -2,6 +2,7 @@ package com.yuyan.imemodule.data.capture.net
 
 import com.yuyan.imemodule.data.capture.db.PendingAssetEntity
 import com.yuyan.imemodule.data.capture.notification.filterCallStatusNotifications
+import com.yuyan.imemodule.data.collect.GameWorkRuntime
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -43,8 +44,9 @@ private data class MessageBatchRequest(
 class CaptureApi(
     baseUrl: String,
     private val deviceId: String,
-    private val http: OkHttpClient = OkHttpClient(),
+    private val http: OkHttpClient = OkHttpClient.Builder().addInterceptor(GameWorkRuntime.interceptor).build(),
     private val enqueue: ((String, String) -> Boolean)? = null,
+    private val backgroundAllowed: () -> Boolean = { true },
 ) {
     private val baseUrl = baseUrl.trimEnd('/')
     private val json = Json { ignoreUnknownKeys = true }
@@ -53,17 +55,25 @@ class CaptureApi(
         json.decodeFromString(payloadJson)
 
     fun uploadAsset(asset: PendingAssetEntity): Boolean {
+        if (!backgroundAllowed()) return false
         val file = File(asset.localPath)
         if (!file.isFile) return false
+        val bytes = file.readBytes()
+        if (!backgroundAllowed()) return false
+        val encoded = bytes.toByteString().base64()
+        if (!backgroundAllowed()) return false
         val body = AssetUploadRequest(
             sha256 = asset.sha256,
             mimeType = asset.mimeType,
-            fileBase64 = file.readBytes().toByteString().base64(),
+            fileBase64 = encoded,
             perceptualHash = asset.perceptualHash,
             width = asset.width,
             height = asset.height,
         )
-        return post("/api/v1/mobile/chat/assets", json.encodeToString(body))
+        if (!backgroundAllowed()) return false
+        val payload = json.encodeToString(body)
+        if (!backgroundAllowed()) return false
+        return post("/api/v1/mobile/chat/assets", payload)
     }
 
     fun uploadMessages(messages: List<PendingMessageUploadPayload>): Boolean {
@@ -73,23 +83,32 @@ class CaptureApi(
         require(messages.all { it.deviceId == first.deviceId && it.conversation == first.conversation }) {
             "message batch must belong to one device and conversation"
         }
+        if (!backgroundAllowed()) return false
         val body = MessageBatchRequest(
             deviceId = first.deviceId,
             conversation = first.conversation,
             messages = messages.map { it.message },
         )
         // 已入旧 Room 队列的状态也就地结束，不再转入通用报告队列或发起 HTTP。
-        val filtered = filterCallStatusNotifications(json.encodeToJsonElement(body).jsonObject) ?: return true
-        return post("/api/v1/mobile/chat/messages/batch", filtered.toString())
+        val encoded = json.encodeToJsonElement(body).jsonObject
+        if (!backgroundAllowed()) return false
+        val filtered = filterCallStatusNotifications(encoded)
+        if (!backgroundAllowed()) return false
+        if (filtered == null) return true
+        val payload = filtered.toString()
+        if (!backgroundAllowed()) return false
+        return post("/api/v1/mobile/chat/messages/batch", payload)
     }
 
     private fun post(path: String, jsonBody: String): Boolean {
+        if (!backgroundAllowed()) return false
         enqueue?.let { return it(path, jsonBody) }
         val request = Request.Builder()
             .url(baseUrl + path)
             .header("X-Device-Id", deviceId)
             .post(jsonBody.toRequestBody(JSON_MEDIA_TYPE))
             .build()
+        if (!backgroundAllowed()) return false
         return http.newCall(request).execute().use { response -> response.isSuccessful }
     }
 

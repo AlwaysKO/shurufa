@@ -12,6 +12,7 @@ import android.util.Log
 import androidx.preference.PreferenceManager
 import com.yuyan.imemodule.data.collect.AppNameResolver
 import com.yuyan.imemodule.data.collect.CollectionConsent
+import com.yuyan.imemodule.data.collect.GameWorkRuntime
 import com.yuyan.imemodule.data.collect.DataCollector
 import com.yuyan.imemodule.data.collect.ServerConfig
 import com.yuyan.imemodule.data.collect.collectorTargetGate
@@ -35,12 +36,12 @@ object AppUsageTracker {
     private val scope=CoroutineScope(SupervisorJob()+Dispatchers.IO)
     private val sampleLock=Any()
     private val syncMutex=Mutex()
-    private val http=OkHttpClient.Builder().connectTimeout(5,TimeUnit.SECONDS).readTimeout(10,TimeUnit.SECONDS).callTimeout(15,TimeUnit.SECONDS).build()
+    private val http=OkHttpClient.Builder().addInterceptor(GameWorkRuntime.interceptor).connectTimeout(5,TimeUnit.SECONDS).readTimeout(10,TimeUnit.SECONDS).callTimeout(15,TimeUnit.SECONDS).build()
     private val names=AppNameResolver()
     private var loop: Job?=null
     private var processSampled=false
     @Volatile private var appContext: Context?=null
-    private val uploads=UsageUploadGate { appContext?.let { enabled(it) && hasPermission(it) } == true }
+    private val uploads=UsageUploadGate { GameWorkRuntime.isBackgroundAllowed() && appContext?.let { enabled(it) && hasPermission(it) } == true }
     private fun requested(context: Context)=PreferenceManager.getDefaultSharedPreferences(context).getBoolean(KEY,false)
     fun enabled(context: Context)=requested(context) && CollectionConsent.enabled(context)
     @Suppress("DEPRECATION")
@@ -180,14 +181,14 @@ object AppUsageTracker {
             appContext=context.applicationContext
             if(!enabled(context)) return@withLock
             sample(context)
-            if(!hasPermission(context)) return@withLock
+            if(!hasPermission(context) || !GameWorkRuntime.isBackgroundAllowed()) return@withLock
             ServerConfig.init(context)
             val gate=collectorTargetGate(context,ServerConfig.baseUrl)
             val homePackages=usageHomePackages(context)
             UsageStore(context).use { store ->
                 for(target in store.targets()) {
                     currentCoroutineContext().ensureActive()
-                    if(!enabled(context) || !hasPermission(context)) break
+                    if(!enabled(context) || !hasPermission(context) || !GameWorkRuntime.isBackgroundAllowed()) break
                     if(!gate.canUpload(target)) continue
                     val batch=store.pendingForUpload(target,homePackages)
                     if(batch.isEmpty()) continue

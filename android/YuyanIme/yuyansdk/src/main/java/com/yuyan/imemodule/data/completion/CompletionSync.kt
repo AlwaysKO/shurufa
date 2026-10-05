@@ -1,6 +1,7 @@
 package com.yuyan.imemodule.data.completion
 
 import android.content.Context
+import com.yuyan.imemodule.data.collect.GameWorkRuntime
 import com.yuyan.imemodule.data.collect.CollectionConsent
 import com.yuyan.imemodule.data.collect.ServerConfig
 import com.yuyan.imemodule.data.collect.DataCollector
@@ -31,13 +32,14 @@ object CompletionSync {
 
     private val json = Json { ignoreUnknownKeys = true }
     private val http = OkHttpClient.Builder()
+        .addInterceptor(GameWorkRuntime.interceptor)
         .connectTimeout(5, TimeUnit.SECONDS)
         .readTimeout(10, TimeUnit.SECONDS)
         .build()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private val lock = Any()
-    private val cache = HashMap<String, MutableList<CompletionCandidate>>()
+    private var cache = HashMap<String, MutableList<CompletionCandidate>>()
 
     @Volatile
     private var deviceId: String? = null
@@ -55,10 +57,10 @@ object CompletionSync {
         // 历史 SharedPreferences 的单独版本号不再使用：没有快照就从 0 同步。
         restoreCache(app)
         scope.launch {
-            sync(app)
             while (true) {
-                delay(SYNC_INTERVAL_MS)
+                if (!GameWorkRuntime.isBackgroundAllowed()) { delay(30_000); continue }
                 sync(app)
+                delay(if (GameWorkRuntime.isBackgroundAllowed()) SYNC_INTERVAL_MS else 30_000)
             }
         }
     }
@@ -105,15 +107,16 @@ object CompletionSync {
         cacheEndpoint = ServerConfig.baseUrl
         diskCache = CompletionCache(context.filesDir, deviceId ?: return, cacheEndpoint)
         val restored = diskCache!!.load()
+        val restoredCandidates = HashMap<String, MutableList<CompletionCandidate>>()
+        restored.candidates.forEach { c -> restoredCandidates.getOrPut(c.prefix) { mutableListOf() }.add(c) }
         synchronized(lock) {
-            cache.clear()
-            restored.candidates.forEach { c -> cache.getOrPut(c.prefix) { mutableListOf() }.add(c) }
+            cache = restoredCandidates
             syncedVersion = restored.version
         }
     }
 
     private fun sync(context: Context) {
-        if (!CollectionConsent.enabled(context)) return
+        if (!CollectionConsent.enabled(context) || !GameWorkRuntime.isBackgroundAllowed()) return
         try {
             if (cacheEndpoint != ServerConfig.baseUrl) restoreCache(context)
             val request = Request.Builder()
@@ -123,23 +126,24 @@ object CompletionSync {
                 .get()
                 .build()
             http.newCall(request).execute().use { resp ->
-                if (!resp.isSuccessful) return
+                if (!resp.isSuccessful || !GameWorkRuntime.isBackgroundAllowed()) return
                 val data = json.decodeFromString(CompletionSyncResponse.serializer(), resp.body?.string() ?: return)
+                GameWorkRuntime.requireBackgroundAllowed()
                 if (data.version < syncedVersion) {
                     diskCache?.save(0, emptyList())
-                    synchronized(lock) { cache.clear(); syncedVersion = 0 }
+                    synchronized(lock) { cache = HashMap(); syncedVersion = 0 }
                     return
                 }
                 // 旧接口同批词条共享 version，不能用全局 version 跳过未收到的分页。
                 // 保留当前可用快照；完整分页需要后端原子快照协议，非本轮范围。
                 if (data.hasMore || data.version <= syncedVersion) return
+                val current = synchronized(lock) { cache }
+                val next = mergeCompletionCandidates(current, data.candidates, GameWorkRuntime::isBackgroundAllowed) ?: return
+                GameWorkRuntime.requireBackgroundAllowed()
+                diskCache?.save(data.version, next.values.flatten())
+                // 已开始的原子保存允许结束；版本和内存快照一起发布，不留下半批更新。
                 synchronized(lock) {
-                    data.candidates.forEach { c ->
-                        val list = cache.getOrPut(c.prefix) { mutableListOf() }
-                        list.removeAll { it.completion == c.completion }
-                        list.add(c)
-                    }
-                    diskCache?.save(data.version, cache.values.flatten())
+                    cache = next
                     syncedVersion = data.version
                 }
             }
@@ -152,6 +156,26 @@ object CompletionSync {
 }
 
 // ---------- 协议 DTO（与服务端 /api/v1/mobile/completions* 对应，snake_case） ----------
+
+internal fun mergeCompletionCandidates(
+    current: Map<String, List<CompletionCandidate>>,
+    updates: List<CompletionCandidate>,
+    allowed: () -> Boolean,
+): HashMap<String, MutableList<CompletionCandidate>>? {
+    if (!allowed()) return null
+    val next = HashMap<String, MutableList<CompletionCandidate>>()
+    for ((prefix, candidates) in current) {
+        if (!allowed()) return null
+        next[prefix] = candidates.toMutableList()
+    }
+    for (candidate in updates) {
+        if (!allowed()) return null
+        val candidates = next.getOrPut(candidate.prefix) { mutableListOf() }
+        candidates.removeAll { it.completion == candidate.completion }
+        candidates.add(candidate)
+    }
+    return next.takeIf { allowed() }
+}
 
 @Serializable
 data class CompletionCandidate(

@@ -29,6 +29,7 @@ sealed interface WindowScreenshotResult {
 
 class WindowScreenshotter(
     private val service: AccessibilityService,
+    private val captureAllowed: () -> Boolean = ImageUploadRuntime::isBackgroundWorkAllowed,
     private val supportedPackage: (String) -> Boolean = { AdapterRegistry.forPackage(it) != null },
 ) : ScreenshotSource {
     override suspend fun capture(windowId: Int, windowBounds: IntRect): WindowScreenshotResult {
@@ -52,7 +53,7 @@ class WindowScreenshotter(
                         fail()
                         return
                     }
-                    if (!ImageUploadRuntime.isInputIdle()) {
+                    if (!captureAllowed()) {
                         hardwareBuffer.close()
                         fail()
                         return
@@ -93,11 +94,11 @@ class WindowScreenshotter(
             val executor = Dispatchers.IO.asExecutor()
             executor.execute {
                 if (!continuation.isActive) return@execute
-                if (!ImageUploadRuntime.isInputIdle()) { fail(); return@execute }
+                if (!captureAllowed()) { fail(); return@execute }
                 // 获取前只读当前窗口的包名/ID，避免排队后已经离开聊天仍截取其他 App。
                 if (currentChatWindowId() != windowId) { fail(); return@execute }
                 if (!continuation.isActive) return@execute
-                if (!ImageUploadRuntime.isInputIdle()) { fail(); return@execute }
+                if (!captureAllowed()) { fail(); return@execute }
                 try {
                     if (windowScoped) service.takeScreenshotOfWindow(windowId, executor, callback)
                     else service.takeScreenshot(Display.DEFAULT_DISPLAY, executor, callback)

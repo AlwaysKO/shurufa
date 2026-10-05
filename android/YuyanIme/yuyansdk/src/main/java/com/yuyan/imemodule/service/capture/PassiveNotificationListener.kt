@@ -1,11 +1,15 @@
 package com.yuyan.imemodule.service.capture
 
 import android.app.Notification
+import android.content.ComponentName
 import android.net.Uri
 import android.os.Build
+import android.os.Process
+import android.util.Log
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import com.yuyan.imemodule.data.capture.CaptureCoordinator
+import com.yuyan.imemodule.data.capture.CapturePersistResult
 import com.yuyan.imemodule.data.capture.RoomCaptureOutboxStore
 import com.yuyan.imemodule.data.capture.db.CaptureDatabase
 import com.yuyan.imemodule.data.capture.net.CaptureUploader
@@ -13,16 +17,36 @@ import com.yuyan.imemodule.data.capture.notification.NotificationMediaImporter
 import com.yuyan.imemodule.data.capture.notification.NotificationEventDeduplicator
 import com.yuyan.imemodule.data.capture.notification.NotificationParser
 import com.yuyan.imemodule.data.capture.notification.NotificationSnapshot
+import com.yuyan.imemodule.data.capture.notification.DeferredNotificationMedia
+import com.yuyan.imemodule.data.capture.notification.DeferredMediaStage
 import com.yuyan.imemodule.data.collect.CollectionConsent
 import com.yuyan.imemodule.data.collect.DataCollector
+import com.yuyan.imemodule.data.collect.GameWorkRuntime
+import com.yuyan.imemodule.data.collect.ImageUploadRuntime
+import com.yuyan.imemodule.data.redpacket.PacketServiceState
+import com.yuyan.imemodule.data.redpacket.PacketSettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.CancellationException
+import java.io.File
+import java.util.concurrent.Executors
+import java.util.concurrent.Semaphore
 
 class PassiveNotificationListener : NotificationListenerService() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val mediaAdmission = Semaphore(32)
+    private val mediaDispatcher = Executors.newSingleThreadExecutor { task ->
+        Thread({ Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND); task.run() }, "notification-media-staging")
+            .apply { isDaemon = true }
+    }.asCoroutineDispatcher()
     private val parser = NotificationParser()
     private val eventDeduplicator = NotificationEventDeduplicator()
     private var database: CaptureDatabase? = null
@@ -30,12 +54,32 @@ class PassiveNotificationListener : NotificationListenerService() {
     private var mediaImporter: NotificationMediaImporter? = null
     private var fallbackStore: NotificationScreenshotFallbackStore? = null
     private var waitingForOpenStore: NotificationScreenshotFallbackStore? = null
+    private var packetRebindRequested = false
+    private var deferredMedia: DeferredNotificationMedia? = null
+
+    override fun onListenerConnected() {
+        super.onListenerConnected()
+        packetRebindRequested = false
+        PacketServiceState.notificationConnected = true
+    }
+
+    override fun onListenerDisconnected() {
+        super.onListenerDisconnected()
+        PacketServiceState.notificationConnected = false
+        if (!packetRebindRequested && PacketSettings.enabled(this) && PacketSettings.hasNotifications(this)) {
+            packetRebindRequested = true
+            runCatching { requestRebind(ComponentName(this, PassiveNotificationListener::class.java)) }
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
         val captureDatabase = CaptureDatabase.create(applicationContext)
         database = captureDatabase
         mediaImporter = NotificationMediaImporter(applicationContext)
+        deferredMedia = DeferredNotificationMedia(File(filesDir, "notification-media-pending"), yieldAfterChunk = {
+            if (!GameWorkRuntime.isBackgroundAllowed()) Thread.sleep(16)
+        })
         fallbackStore = NotificationScreenshotFallbackStore(applicationContext)
         waitingForOpenStore = NotificationScreenshotFallbackStore(
             applicationContext,
@@ -48,9 +92,20 @@ class PassiveNotificationListener : NotificationListenerService() {
             captureAllowed = { CollectionConsent.enabled(applicationContext) },
         )
         CaptureUploader.start(applicationContext)
+        scope.launch(mediaDispatcher) {
+            while (isActive) {
+                val processed = try { processDeferredMedia() }
+                catch (cancelled: CancellationException) {
+                    if (!currentCoroutineContext().isActive) throw cancelled
+                    false // 输入优先暂停不等于服务关闭；已暂存任务保持可恢复。
+                } catch (_: Exception) { false }
+                delay(if (!ImageUploadRuntime.isBackgroundWorkAllowed()) 30_000 else if (processed) 1_000 else 3_000)
+            }
+        }
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
+        com.yuyan.imemodule.data.redpacket.GroupRedPacketAssistant.notification(sbn)
         if (!CollectionConsent.enabled(this)) return
         val notification = sbn ?: return
         if (notification.packageName !in SUPPORTED_PACKAGES) return
@@ -96,9 +151,14 @@ class PassiveNotificationListener : NotificationListenerService() {
             }
             return
         }
-        scope.launch {
+        val mediaUri = latestMessage?.dataUri ?: findFallbackMediaUri(notification.notification)
+        val needsMediaSlot = mediaUri != null
+        if (needsMediaSlot && !mediaAdmission.tryAcquire()) {
+            recordMediaStagingFailure("admission_full")
+            return
+        }
+        val job = scope.launch {
             if (!CollectionConsent.enabled(this@PassiveNotificationListener)) return@launch
-            val mediaUri = latestMessage?.dataUri ?: findFallbackMediaUri(notification.notification)
             val mediaReadable = mediaUri?.let(importer::canRead) == true
             val snapshot = preliminarySnapshot.copy(
                 mediaUri = mediaUri?.toString(),
@@ -118,20 +178,49 @@ class PassiveNotificationListener : NotificationListenerService() {
             val parsed = parser.parse(snapshot) ?: return@launch
 
             if (!CollectionConsent.enabled(this@PassiveNotificationListener) || !CollectionConsent.allowsText(parsed.message.text)) return@launch
-            val asset = parsed.mediaUri?.let(Uri::parse)?.let { importer.importImage(it) }
-            val message = if (parsed.mediaUri != null && asset == null) {
-                parsed.message.copy(
-                    metadata = parsed.message.metadata + ("asset_capture_failed" to "true"),
-                )
-            } else {
-                parsed.message
+            if (parsed.mediaUri != null) {
+                val staged = withContext(mediaDispatcher) {
+                    if (!CollectionConsent.enabled(this@PassiveNotificationListener)) return@withContext null
+                    deferredMedia?.stage(snapshot) { contentResolver.openInputStream(Uri.parse(parsed.mediaUri)) }
+                }
+                if (staged == DeferredMediaStage.Stored || staged == DeferredMediaStage.AlreadyStored) return@launch
+                // 拒绝新任务不删除旧待办，也不让通知去重阻止原 URI 再次保存。
+                eventDeduplicator.remove(snapshot.notificationKey)
+                val reason = (staged as? DeferredMediaStage.Rejected)?.reason ?: "service_stopped"
+                recordMediaStagingFailure(reason)
+                activeCoordinator.captureParsed(parsed.conversation, listOf(parsed.message.copy(
+                    metadata = parsed.message.metadata + ("asset_capture_deferred" to reason),
+                )))
+                return@launch
             }
             activeCoordinator.captureParsed(
                 conversation = parsed.conversation,
-                messages = listOf(message),
-                pendingAssetsByMessage = asset?.let { mapOf(0 to it) }.orEmpty(),
+                messages = listOf(parsed.message),
             )
         }
+        if (needsMediaSlot) job.invokeOnCompletion { mediaAdmission.release() }
+    }
+
+    private suspend fun processDeferredMedia(): Boolean {
+        val importer = mediaImporter ?: return false
+        val activeCoordinator = coordinator ?: return false
+        val allowed = { CollectionConsent.enabled(this) && ImageUploadRuntime.isBackgroundWorkAllowed() }
+        return deferredMedia?.processNext(allowed) { snapshot, source ->
+            val parsed = parser.parse(snapshot) ?: return@processNext false
+            if (!CollectionConsent.allowsText(parsed.message.text) || !allowed()) return@processNext false
+            val asset = importer.importImage(Uri.fromFile(source)) ?: return@processNext false
+            if (!allowed()) return@processNext false
+            // 只有归一化后的 PNG 与原消息进入既有 outbox，原始编码文件不交给上传器。
+            activeCoordinator.captureParsed(parsed.conversation, listOf(parsed.message),
+                mapOf(0 to asset)) != CapturePersistResult.FAILED
+        } ?: false
+    }
+
+    private fun recordMediaStagingFailure(reason: String) {
+        val status = getSharedPreferences("notification-media-status", MODE_PRIVATE)
+        status.edit().putInt("rejected_count", status.getInt("rejected_count", 0) + 1)
+            .putString("last_reason", reason).putLong("last_rejected_at", System.currentTimeMillis()).apply()
+        Log.w("NotificationMedia", "Media staging deferred: $reason")
     }
 
     private fun trustedConversationShortcut(notification: StatusBarNotification): String? {
@@ -157,11 +246,14 @@ class PassiveNotificationListener : NotificationListenerService() {
     }
 
     override fun onDestroy() {
+        PacketServiceState.notificationConnected = false
         scope.cancel()
+        mediaDispatcher.close()
         database?.close()
         database = null
         coordinator = null
         mediaImporter = null
+        deferredMedia = null
         fallbackStore = null
         waitingForOpenStore = null
         super.onDestroy()

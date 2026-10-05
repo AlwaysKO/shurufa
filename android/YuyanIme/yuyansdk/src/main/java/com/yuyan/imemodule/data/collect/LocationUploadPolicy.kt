@@ -11,6 +11,8 @@ internal data class LocationCandidate(
     val longitude: Double,
     val accuracyMeters: Float,
     val locationTimeMs: Long,
+    val provider: String? = null,
+    val elapsedRealtimeNanos: Long = 0L,
 )
 
 internal data class UploadedLocation(
@@ -19,12 +21,13 @@ internal data class UploadedLocation(
     val accuracyMeters: Float,
     val locationTimeMs: Long,
     val uploadedAtMs: Long,
+    val provider: String? = null,
 )
 
 internal object LocationUploadPolicy {
     private const val MAX_LOCATION_AGE_MS = 60_000L
     private const val MIN_UPLOAD_INTERVAL_MS = 60_000L
-    private const val MAX_ACCURACY_METERS = 200f
+    private const val MAX_ACCURACY_METERS = 50f
     private const val MIN_MOVEMENT_METERS = 50.0
     private const val EARTH_RADIUS_METERS = 6_371_000.0
 
@@ -51,10 +54,11 @@ internal object LocationUploadPolicy {
             MIN_MOVEMENT_METERS,
             lastUploaded.accuracyMeters.toDouble() + candidate.accuracyMeters.toDouble(),
         )
-        return distanceMeters(lastUploaded, candidate) > requiredMovement
+        return distanceMeters(LocationCandidate(lastUploaded.latitude, lastUploaded.longitude,
+            lastUploaded.accuracyMeters, lastUploaded.locationTimeMs), candidate) > requiredMovement
     }
 
-    private fun distanceMeters(from: UploadedLocation, to: LocationCandidate): Double {
+    internal fun distanceMeters(from: LocationCandidate, to: LocationCandidate): Double {
         val lat1 = Math.toRadians(from.latitude)
         val lat2 = Math.toRadians(to.latitude)
         val latitudeDelta = lat2 - lat1
