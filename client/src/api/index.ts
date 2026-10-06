@@ -1,3 +1,4 @@
+import type { CaptureRule, CaptureState, CaptureDiagnostics } from './chatCapture';
 import type { DeliveryRule, DeliveryState } from './expressionDelivery';
 /** 与后端 /api/v1/dashboard/* 对应的数据类型 */
 import { ref } from 'vue';
@@ -570,6 +571,12 @@ async function patch<T>(url: string, body: unknown): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+async function captureWrite(method:string,suffix:string,body:unknown):Promise<CaptureState>{
+ const res=await dashboardFetch(withDashboardUser('/api/v1/dashboard/settings/chat-capture'+suffix),{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+ if(!res.ok){const detail=await res.json().catch(()=>null);throw Error(res.status===409?'配置已被其他管理员更新。草稿保留，请重新加载后核对修改。':detail?.message??`保存失败：${res.status}`);}
+ return res.json() as Promise<CaptureState>;
+}
+
 async function get<T>(url: string): Promise<T> {
   url = withDashboardUser(url);
   const res = await dashboardFetch(url);
@@ -652,6 +659,10 @@ export const api = {
     if (query.package_name) p.set('package_name', query.package_name);
     return get<AppUsageData>(`/api/v1/dashboard/app-usage?${p}`);
   },
+  chatCaptureConfig: () => get<CaptureState>('/api/v1/dashboard/settings/chat-capture'),
+  saveChatCaptureConfig:(expectedRevision:number,rules:CaptureRule[])=>captureWrite('PUT','',{expectedRevision,rules}),
+  rollbackChatCaptureConfig:(expectedRevision:number,revision:number)=>captureWrite('POST','/rollback',{expectedRevision,revision}),
+  chatCaptureDiagnostics:()=>get<CaptureDiagnostics>(`/api/v1/dashboard/chat-capture-diagnostics?device_id=${encodeURIComponent(currentUserId.value)}`),
   expressionDelivery: () => get<DeliveryState>('/api/v1/dashboard/settings/expression-delivery'),
   saveExpressionDelivery: (expectedRevision: number, rules: DeliveryRule[]) => deliveryWrite('PUT', '', { expectedRevision, rules }),
   rollbackExpressionDelivery: (expectedRevision: number, revision: number) => deliveryWrite('POST', '/rollback', { expectedRevision, revision }),

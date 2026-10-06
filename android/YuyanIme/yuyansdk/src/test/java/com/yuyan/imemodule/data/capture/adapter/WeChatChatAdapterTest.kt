@@ -120,6 +120,42 @@ class WeChatChatAdapterTest {
         }
     }
 
+    @Test fun unknownFullPageInputAndGenericTitleAreNotChatEvidence() {
+        val tree = chatTree("未知页面", emptyList()).copy(children = listOf(
+            node("com.tencent.mm:id/title", "未知页面", 180, 50, 850, 130),
+            node("com.tencent.mm:id/new_input", null, 80, 1650, 850, 1760, "android.widget.EditText")))
+        assertTrue(adapter.parse(tree) is ParseResult.Skip)
+    }
+
+    @Test fun cannotBorrowNativeChatTitleFromBackgroundFullScreenSibling() {
+        val full = chatTree("测试", emptyList())
+        val root = full.copy(children = listOf(
+            full.copy(children = listOf(full.children.first())),
+            full.copy(children = full.children.drop(1))))
+        assertTrue(adapter.parse(root) is ParseResult.Skip)
+    }
+
+    @Test fun configuredSafeStructureWorksWhenOnlyOneNativeAnchorSurvives() {
+        val base = ChatCapturePolicy.builtIn().rule("com.tencent.mm",0)!!
+        val rule = base.copy(titleIds=listOf("future_head","chatting_title"), inputIds=listOf("new_input","chatting_content_et"), bodyIds=listOf("new_body"))
+        val configured = WeChatChatAdapter { rule }
+        for (oldTitle in listOf(true,false)) {
+            val titleId = if(oldTitle) "chatting_title" else "future_head"
+            val inputId = if(oldTitle) "new_input" else "chatting_content_et"
+            val tree = group(
+                node("com.tencent.mm:id/$titleId","兼容测试",180,50,330,130,if(oldTitle) "android.widget.TextView" else "android.view.View"),
+                node(null,"返回",0,50,100,130), node(null,"聊天设置",950,50,1080,130),
+                node("com.tencent.mm:id/new_body",null,0,130,1080,1630,"android.widget.FrameLayout"),
+                node("com.tencent.mm:id/$inputId",null,80,1650,850,1760,if(oldTitle) "android.view.View" else "android.widget.EditText"))
+            assertTrue(configured.parse(tree) is ParseResult.Success)
+            val noBack = tree.copy(children=tree.children.filter { it.text != "返回" })
+            assertTrue(configured.parse(noBack) is ParseResult.Skip)
+            val background = tree.copy(children=listOf(tree.children.first()))
+            val foreground = tree.copy(children=tree.children.drop(1))
+            assertTrue(configured.parse(tree.copy(children=listOf(background,foreground))) is ParseResult.Skip)
+        }
+    }
+
     private fun chatTree(title: String, messages: List<UiNodeSnapshot>) = UiNodeSnapshot(
         null, "root", null, null, IntRect(0, 0, 1080, 1920), listOf(
             node("com.tencent.mm:id/chatting_title", title, 180, 50, 850, 130),

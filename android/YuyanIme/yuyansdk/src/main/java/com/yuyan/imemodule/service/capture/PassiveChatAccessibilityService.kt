@@ -115,6 +115,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         }
     }
     private val screenshotUpdates = ScreenshotUpdatePolicy()
+    private val emptyCandidates = EmptyTreeCandidateProbe()
     private var typingRecheck: Runnable? = null
     private val screenshotGate = ScreenshotRequestGate()
     private val updateSequence = AtomicLong()
@@ -160,6 +161,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         typingRecheck = null
         scrollGate.clear()
         screenshotUpdates.clear()
+        emptyCandidates.clear()
         emptyUpdateDebouncer.close()
         screenshotGate.clearPending()
         captureRequestGeneration.incrementAndGet()
@@ -283,6 +285,10 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                 screenshotIdentityGeneration.get() != identityGeneration || scrollGate.isScrolling()) return@submit
             CaptureTrace.record(CaptureStage.TREE, windowId, identityGeneration,
                 (if (hasReadableChatContent(activeSnapshot)) 1 else 0) + (if (hasReadableChatContent(sourceSnapshot)) 2 else 0))
+            if (!hasReadableChatContent(activeSnapshot) && !hasReadableChatContent(sourceSnapshot)) {
+                val platform = if (packageName == WECHAT_PACKAGE) "wechat" else if (packageName == "com.ss.android.ugc.aweme") "douyin" else null
+                platform?.let { com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics.record(applicationContext, it, "page", "empty_tree") }
+            }
             val snapshot = preferredAccessibilitySnapshot(activeSnapshot, sourceSnapshot)
             if (packageName == WECHAT_PACKAGE && snapshot != null && isWechatNonChatTree(snapshot)) return@submit
             if (shouldCaptureEmptyTreeWeChatOpen(
@@ -318,6 +324,14 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                 CaptureTrace.record(CaptureStage.CONTENT_PENDING, windowId, identityGeneration)
                 return@submit
             }
+            if (packageName == WECHAT_PACKAGE && !hasReadableChatContent(activeSnapshot) &&
+                !hasReadableChatContent(sourceSnapshot) && eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED &&
+                emptyCandidates.canAttempt(ScreenshotScope(windowId, identityGeneration))) {
+                // 未确认首帧失败后，只允许有限候选；每一帧仍走窗口校验与当前图像身份确认。
+                emptyUpdateDebouncer.submit(windowId, updateSequence.incrementAndGet().toString(),
+                    ScreenshotScope(windowId, identityGeneration), "$windowId:$identityGeneration")
+                return@submit
+            }
             if (regularCapture && snapshot != null) submitChatViewport(packageName, windowId, snapshot, generation)
         }.invokeOnCompletion {
             // 即使协程尚未启动就被取消，也必须归还我们持有的事件副本。
@@ -341,6 +355,10 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         navigationCapture = com.yuyan.imemodule.data.navigation.NavigationCapture(this)
         WechatExpressionConfirmation.connect(this)
         CaptureTrace.record(CaptureStage.CONNECTED)
+        backgroundScope.launch {
+            com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics.bindDeviceId(DataCollector.deviceId(applicationContext))
+            com.yuyan.imemodule.data.capture.adapter.ChatCaptureSettings.refresh(applicationContext)
+        }
         val database = CaptureDatabase.create(applicationContext)
         val activeChatContextStore = ActiveChatContextStore(applicationContext)
         activeChatContextStore.clear()
@@ -349,6 +367,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
             screenshotSource = WindowScreenshotter(this),
             captureAllowed = { CollectionConsent.enabled(applicationContext) && !scrollGate.isScrolling() },
             captureGeneration = captureRequestGeneration::get,
+            onScreenshotResult = { platform, status, code -> com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics.record(applicationContext, platform, "screenshot", status, code) },
         )
         captureDatabase = database
         mediaCapturer = activeMediaCapturer
@@ -369,6 +388,11 @@ class PassiveChatAccessibilityService : AccessibilityService() {
             wechatListContentInput = { bounds ->
                 val band = wechatTitleBand(systemStatusBarBottom(), bounds.top, resources.displayMetrics.density)
                 ScreenshotContentInput(band.top + band.height, detectWechatList = true)
+            },
+            onPersistResult = { platform, result ->
+                com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics.record(applicationContext, platform.wireName, "persist",
+                    when (result) { CapturePersistResult.INSERTED -> "inserted"; CapturePersistResult.ALREADY_PERSISTED -> "duplicate"; CapturePersistResult.FAILED -> "failed" })
+                if (result == CapturePersistResult.INSERTED) com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics.record(applicationContext, platform.wireName, "upload", "waiting")
             },
             onViewportParsed = { viewport ->
                 val incoming = viewport.messages.lastOrNull { it.direction == ChatDirection.INCOMING && !it.text.isNullOrBlank() }
@@ -439,6 +463,9 @@ class PassiveChatAccessibilityService : AccessibilityService() {
             adapter.inspect(snapshot).also { douyinDiagnostics.record(it.status) }.result
         } else adapter?.parse(snapshot)
         val parsed = result as? ParseResult.Success
+        val diagnosticPlatform = if (packageName == WECHAT_PACKAGE) "wechat" else if (packageName == "com.ss.android.ugc.aweme") "douyin" else null
+        diagnosticPlatform?.let { com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics.record(applicationContext, it, "page",
+            if (!hasReadableChatContent(snapshot)) "empty_tree" else if (parsed != null) "matched" else "rejected") }
         val conversation = parsed?.viewport?.conversation
         val key = conversation?.stableKeyOrNull()
         if (key == null || conversation.identityConfidence < 0.8) {
@@ -535,9 +562,11 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         withContext(Dispatchers.IO) {
             if (!ImageUploadRuntime.isBackgroundWorkAllowed() || !isScreenshotRequestCurrent(generation, captureToken) || scrollGate.isScrolling() ||
                 (getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager)?.isKeyguardLocked == true) return@withContext false
-            val root = rootInActiveWindow ?: return@withContext false
-            val current = try { root.packageName?.toString() == WECHAT_PACKAGE && root.windowId == windowId }
-            finally { recycleRoot(root) }
+            val root = rootInActiveWindow
+            val current = if (root == null) readScreenshotWindow()?.id == windowId else {
+                try { root.packageName?.toString() == WECHAT_PACKAGE && root.windowId == windowId }
+                finally { recycleRoot(root) }
+            }
             current && isScreenshotRequestCurrent(generation, captureToken) && !scrollGate.isScrolling()
         }
 
@@ -581,7 +610,10 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         screenshotReads.submit({ isScreenshotRequestCurrent(generation, captureToken) }) {
             if (!isScreenshotRequestCurrent(generation, captureToken)) return@submit
             // Binder 等待在后台完成，主线程仅处理轻量调度状态。
-            val snapshot = readScreenshotWindow() ?: return@submit
+            val snapshot = readScreenshotWindow() ?: run {
+                com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics.record(applicationContext, "wechat", "screenshot", "cancelled", -1001)
+                return@submit
+            }
             val capture = withContext(Dispatchers.Main) {
                 if (!isScreenshotRequestCurrent(generation, captureToken) ||
                     (expectedScope != null && expectedScope != ScreenshotScope(snapshot.id, generation))) return@withContext null
@@ -629,7 +661,10 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         val titleBand = wechatTitleBand(statusBarBottom, screenshotBounds.top, displayMetrics.density)
 
         val screenshotScope = ScreenshotScope(windowId, identityGeneration)
+        val confirmed = screenshotUpdates.accepts(windowId, identityGeneration, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED)
+        if (!confirmed && !emptyCandidates.canAttempt(screenshotScope)) return null
         if (!screenshotGate.offer(screenshotScope)) return null
+        if (!confirmed) emptyCandidates.consume(screenshotScope)
         val capture = backgroundScope.launch {
             emptyTreeCaptureMutex.withLock {
                 TitleOcrInput(titleBand.top, titleBand.height).use { titleInput ->
@@ -640,7 +675,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                     val asset = mediaCapturer?.capture(
                         windowId = windowId,
                         windowBounds = windowBounds,
-                        requests = listOf(MediaCaptureRequest(0, screenshotBounds, lossyWebp = true, titleOcrInput = titleInput, wechatInputBarDensity = displayMetrics.density, contentInput = contentInput)),
+                        requests = listOf(MediaCaptureRequest(0, screenshotBounds, lossyWebp = true, titleOcrInput = titleInput, wechatInputBarDensity = displayMetrics.density, contentInput = contentInput, platform = ChatPlatform.WECHAT)),
                     )?.get(0) ?: run {
                         CaptureTrace.record(CaptureStage.ASSET_FAILED, windowId, identityGeneration)
                         return@withLock
@@ -661,6 +696,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                     if (!isCurrentScreenshotWindow(windowId, identityGeneration, captureToken)) return@withLock
                     CaptureTrace.record(if (firstIdentity.isChatPage) CaptureStage.IDENTITY_READY else CaptureStage.IDENTITY_REJECTED,
                         windowId, identityGeneration, flag = firstIdentity.status == "confirmed")
+                    com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics.record(applicationContext, "wechat", "page", if (firstIdentity.isChatPage) "matched" else "rejected")
                     if (!firstIdentity.isChatPage) {
                         screenshotUpdates.rejectScrollResume(screenshotScope)
                         return@withLock
@@ -727,7 +763,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                             val nextAsset = mediaCapturer?.capture(
                                 windowId = windowId,
                                 windowBounds = windowBounds,
-                                requests = listOf(MediaCaptureRequest(0, screenshotBounds, lossyWebp = true, titleOcrInput = confirmationInput, wechatInputBarDensity = displayMetrics.density)),
+                                requests = listOf(MediaCaptureRequest(0, screenshotBounds, lossyWebp = true, titleOcrInput = confirmationInput, wechatInputBarDensity = displayMetrics.density, platform = ChatPlatform.WECHAT)),
                             )?.get(0) ?: return@persistScreenshotBeforeConfirmation null
                             if (!isCurrentScreenshotWindow(windowId, identityGeneration, captureToken)) return@persistScreenshotBeforeConfirmation null
                             resolver?.resolve(nextAsset, resolverVersion, confirmationInput)?.takeIf { it.isChatPage }
@@ -781,6 +817,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                         requests = listOf(
                             MediaCaptureRequest(
                                 messageIndex = 0,
+                                platform = descriptor.platform,
                                 bounds = screenshotBounds,
                                 inputAreaBounds = target.chatViewport?.inputAreaBounds,
                                 lossyWebp = true,

@@ -24,6 +24,12 @@ import kotlinx.coroutines.runBlocking
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [30])
 class NotificationParserTest {
+    // Robolectric回拨时钟，但输入/游戏单例仍可能继承上一类状态。
+    @org.junit.Before @org.junit.After fun resetBackgroundWorkForTest() {
+        com.yuyan.imemodule.data.collect.resetImageInputForTest()
+        com.yuyan.imemodule.data.collect.resetGameWorkRuntimeForTest()
+    }
+
     @Test
     fun qqHiddenMessageWaitsForOpenButOrdinaryServiceNoticeDoesNot() {
         val parser = NotificationParser()

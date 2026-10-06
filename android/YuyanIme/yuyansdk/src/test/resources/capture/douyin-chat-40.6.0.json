@@ -1,0 +1,1883 @@
+{
+  "viewId": "com.ss.android.ugc.aweme:id/d_0",
+  "className": "android.widget.LinearLayout",
+  "text": null,
+  "contentDescription": null,
+  "bounds": {
+    "left": 0,
+    "top": 0,
+    "right": 1200,
+    "bottom": 2664
+  },
+  "children": [
+    {
+      "viewId": "com.ss.android.ugc.aweme:id/qe7",
+      "className": "android.widget.LinearLayout",
+      "text": null,
+      "contentDescription": null,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1200,
+        "bottom": 258
+      },
+      "children": [
+        {
+          "viewId": "com.ss.android.ugc.aweme:id/ud-",
+          "className": "android.view.View",
+          "text": null,
+          "contentDescription": null,
+          "bounds": {
+            "left": 0,
+            "top": 0,
+            "right": 1200,
+            "bottom": 126
+          },
+          "children": []
+        },
+        {
+          "viewId": "com.ss.android.ugc.aweme:id/2kk",
+          "className": "android.widget.LinearLayout",
+          "text": null,
+          "contentDescription": null,
+          "bounds": {
+            "left": 0,
+            "top": 126,
+            "right": 1200,
+            "bottom": 257
+          },
+          "children": [
+            {
+              "viewId": "com.ss.android.ugc.aweme:id/lm=",
+              "className": "android.widget.LinearLayout",
+              "text": null,
+              "contentDescription": null,
+              "bounds": {
+                "left": 0,
+                "top": 126,
+                "right": 143,
+                "bottom": 257
+              },
+              "children": [
+                {
+                  "viewId": "com.ss.android.ugc.aweme:id/pwp",
+                  "className": "android.widget.FrameLayout",
+                  "text": null,
+                  "contentDescription": null,
+                  "bounds": {
+                    "left": 0,
+                    "top": 126,
+                    "right": 131,
+                    "bottom": 257
+                  },
+                  "children": [
+                    {
+                      "viewId": null,
+                      "className": "android.widget.Button",
+                      "text": null,
+                      "contentDescription": "返回",
+                      "bounds": {
+                        "left": 0,
+                        "top": 126,
+                        "right": 131,
+                        "bottom": 257
+                      },
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "viewId": "com.ss.android.ugc.aweme:id/2j-",
+              "className": "android.widget.FrameLayout",
+              "text": null,
+              "contentDescription": null,
+              "bounds": {
+                "left": 143,
+                "top": 126,
+                "right": 925,
+                "bottom": 257
+              },
+              "children": [
+                {
+                  "viewId": null,
+                  "className": "android.widget.FrameLayout",
+                  "text": null,
+                  "contentDescription": null,
+                  "bounds": {
+                    "left": 143,
+                    "top": 129,
+                    "right": 925,
+                    "bottom": 254
+                  },
+                  "children": [
+                    {
+                      "viewId": "com.ss.android.ugc.aweme:id/2li",
+                      "className": "android.widget.FrameLayout",
+                      "text": null,
+                      "contentDescription": null,
+                      "bounds": {
+                        "left": 143,
+                        "top": 129,
+                        "right": 483,
+                        "bottom": 254
+                      },
+                      "children": [
+                        {
+                          "viewId": null,
+                          "className": "android.widget.LinearLayout",
+                          "text": null,
+                          "contentDescription": null,
+                          "bounds": {
+                            "left": 143,
+                            "top": 129,
+                            "right": 483,
+                            "bottom": 254
+                          },
+                          "children": [
+                            {
+                              "viewId": null,
+                              "className": "android.widget.FrameLayout",
+                              "text": null,
+                              "contentDescription": null,
+                              "bounds": {
+                                "left": 143,
+                                "top": 129,
+                                "right": 268,
+                                "bottom": 254
+                              },
+                              "children": [
+                                {
+                                  "viewId": "com.ss.android.ugc.aweme:id/byn",
+                                  "className": "android.widget.ImageView",
+                                  "text": null,
+                                  "contentDescription": null,
+                                  "bounds": {
+                                    "left": 151,
+                                    "top": 137,
+                                    "right": 259,
+                                    "bottom": 245
+                                  },
+                                  "children": []
+                                }
+                              ]
+                            },
+                            {
+                              "viewId": null,
+                              "className": "android.widget.LinearLayout",
+                              "text": null,
+                              "contentDescription": null,
+                              "bounds": {
+                                "left": 295,
+                                "top": 162,
+                                "right": 483,
+                                "bottom": 220
+                              },
+                              "children": [
+                                {
+                                  "viewId": null,
+                                  "className": "android.widget.LinearLayout",
+                                  "text": null,
+                                  "contentDescription": null,
+                                  "bounds": {
+                                    "left": 295,
+                                    "top": 162,
+                                    "right": 483,
+                                    "bottom": 220
+                                  },
+                                  "children": [
+                                    {
+                                      "viewId": "com.ss.android.ugc.aweme:id/d_q",
+                                      "className": "android.widget.FrameLayout",
+                                      "text": null,
+                                      "contentDescription": null,
+                                      "bounds": {
+                                        "left": 295,
+                                        "top": 162,
+                                        "right": 471,
+                                        "bottom": 220
+                                      },
+                                      "children": [
+                                        {
+                                          "viewId": null,
+                                          "className": "android.view.ViewGroup",
+                                          "text": null,
+                                          "contentDescription": null,
+                                          "bounds": {
+                                            "left": 295,
+                                            "top": 162,
+                                            "right": 471,
+                                            "bottom": 220
+                                          },
+                                          "children": [
+                                            {
+                                              "viewId": "com.ss.android.ugc.aweme:id/vww",
+                                              "className": "android.widget.TextView",
+                                              "text": "兼容测试联系人",
+                                              "contentDescription": null,
+                                              "bounds": {
+                                                "left": 295,
+                                                "top": 162,
+                                                "right": 471,
+                                                "bottom": 220
+                                              },
+                                              "children": []
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "viewId": null,
+              "className": "android.widget.FrameLayout",
+              "text": null,
+              "contentDescription": null,
+              "bounds": {
+                "left": 937,
+                "top": 126,
+                "right": 1057,
+                "bottom": 257
+              },
+              "children": [
+                {
+                  "viewId": "com.ss.android.ugc.aweme:id/klv",
+                  "className": "android.widget.FrameLayout",
+                  "text": null,
+                  "contentDescription": null,
+                  "bounds": {
+                    "left": 937,
+                    "top": 126,
+                    "right": 1057,
+                    "bottom": 257
+                  },
+                  "children": [
+                    {
+                      "viewId": null,
+                      "className": "android.widget.LinearLayout",
+                      "text": null,
+                      "contentDescription": null,
+                      "bounds": {
+                        "left": 937,
+                        "top": 126,
+                        "right": 1057,
+                        "bottom": 257
+                      },
+                      "children": [
+                        {
+                          "viewId": "com.ss.android.ugc.aweme:id/kmf",
+                          "className": "android.widget.FrameLayout",
+                          "text": null,
+                          "contentDescription": null,
+                          "bounds": {
+                            "left": 937,
+                            "top": 126,
+                            "right": 1057,
+                            "bottom": 257
+                          },
+                          "children": [
+                            {
+                              "viewId": null,
+                              "className": "android.widget.LinearLayout",
+                              "text": null,
+                              "contentDescription": null,
+                              "bounds": {
+                                "left": 937,
+                                "top": 126,
+                                "right": 1057,
+                                "bottom": 257
+                              },
+                              "children": [
+                                {
+                                  "viewId": "com.ss.android.ugc.aweme:id/dmw",
+                                  "className": "android.widget.Button",
+                                  "text": null,
+                                  "contentDescription": "音视频通话",
+                                  "bounds": {
+                                    "left": 937,
+                                    "top": 131,
+                                    "right": 1057,
+                                    "bottom": 251
+                                  },
+                                  "children": []
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "viewId": "com.ss.android.ugc.aweme:id/r1u",
+              "className": "android.widget.LinearLayout",
+              "text": null,
+              "contentDescription": null,
+              "bounds": {
+                "left": 1057,
+                "top": 126,
+                "right": 1200,
+                "bottom": 257
+              },
+              "children": [
+                {
+                  "viewId": "com.ss.android.ugc.aweme:id/x11",
+                  "className": "android.widget.FrameLayout",
+                  "text": null,
+                  "contentDescription": null,
+                  "bounds": {
+                    "left": 1057,
+                    "top": 126,
+                    "right": 1200,
+                    "bottom": 257
+                  },
+                  "children": [
+                    {
+                      "viewId": null,
+                      "className": "android.widget.Button",
+                      "text": null,
+                      "contentDescription": "更多",
+                      "bounds": {
+                        "left": 1057,
+                        "top": 126,
+                        "right": 1200,
+                        "bottom": 257
+                      },
+                      "children": [
+                        {
+                          "viewId": "com.ss.android.ugc.aweme:id/lz1",
+                          "className": "android.widget.ImageView",
+                          "text": null,
+                          "contentDescription": null,
+                          "bounds": {
+                            "left": 1081,
+                            "top": 156,
+                            "right": 1153,
+                            "bottom": 227
+                          },
+                          "children": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "viewId": "com.ss.android.ugc.aweme:id/d_s",
+          "className": "android.view.View",
+          "text": null,
+          "contentDescription": null,
+          "bounds": {
+            "left": 0,
+            "top": 257,
+            "right": 1200,
+            "bottom": 258
+          },
+          "children": []
+        }
+      ]
+    },
+    {
+      "viewId": "com.ss.android.ugc.aweme:id/jq_",
+      "className": "android.widget.FrameLayout",
+      "text": null,
+      "contentDescription": null,
+      "bounds": {
+        "left": 0,
+        "top": 258,
+        "right": 1200,
+        "bottom": 2664
+      },
+      "children": [
+        {
+          "viewId": null,
+          "className": "android.widget.LinearLayout",
+          "text": null,
+          "contentDescription": null,
+          "bounds": {
+            "left": 0,
+            "top": 258,
+            "right": 1200,
+            "bottom": 2664
+          },
+          "children": [
+            {
+              "viewId": "com.ss.android.ugc.aweme:id/jq=",
+              "className": "android.widget.FrameLayout",
+              "text": null,
+              "contentDescription": null,
+              "bounds": {
+                "left": 0,
+                "top": 258,
+                "right": 1200,
+                "bottom": 2344
+              },
+              "children": [
+                {
+                  "viewId": "com.ss.android.ugc.aweme:id/146",
+                  "className": "android.widget.FrameLayout",
+                  "text": null,
+                  "contentDescription": null,
+                  "bounds": {
+                    "left": 0,
+                    "top": 258,
+                    "right": 1200,
+                    "bottom": 2344
+                  },
+                  "children": [
+                    {
+                      "viewId": "com.ss.android.ugc.aweme:id/5tl",
+                      "className": "android.widget.FrameLayout",
+                      "text": null,
+                      "contentDescription": null,
+                      "bounds": {
+                        "left": 1152,
+                        "top": 318,
+                        "right": 1200,
+                        "bottom": 366
+                      },
+                      "children": []
+                    },
+                    {
+                      "viewId": "com.ss.android.ugc.aweme:id/5tp",
+                      "className": "android.widget.FrameLayout",
+                      "text": null,
+                      "contentDescription": null,
+                      "bounds": {
+                        "left": 1152,
+                        "top": 318,
+                        "right": 1200,
+                        "bottom": 366
+                      },
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "viewId": null,
+                  "className": "com.bytedance.highperformanceview.layout.MeasureOnceRelativeLayout2",
+                  "text": null,
+                  "contentDescription": null,
+                  "bounds": {
+                    "left": 0,
+                    "top": 258,
+                    "right": 1200,
+                    "bottom": 2344
+                  },
+                  "children": [
+                    {
+                      "viewId": "com.ss.android.ugc.aweme:id/v6q",
+                      "className": "androidx.recyclerview.widget.RecyclerView",
+                      "text": null,
+                      "contentDescription": null,
+                      "bounds": {
+                        "left": 0,
+                        "top": 258,
+                        "right": 1200,
+                        "bottom": 2344
+                      },
+                      "children": [
+                        {
+                          "viewId": null,
+                          "className": "android.widget.FrameLayout",
+                          "text": null,
+                          "contentDescription": null,
+                          "bounds": {
+                            "left": 0,
+                            "top": 300,
+                            "right": 1200,
+                            "bottom": 472
+                          },
+                          "children": [
+                            {
+                              "viewId": null,
+                              "className": "android.view.ViewGroup",
+                              "text": null,
+                              "contentDescription": null,
+                              "bounds": {
+                                "left": 0,
+                                "top": 300,
+                                "right": 1200,
+                                "bottom": 472
+                              },
+                              "children": [
+                                {
+                                  "viewId": "com.ss.android.ugc.aweme:id/ifd",
+                                  "className": "android.widget.LinearLayout",
+                                  "text": null,
+                                  "contentDescription": null,
+                                  "bounds": {
+                                    "left": 0,
+                                    "top": 300,
+                                    "right": 1200,
+                                    "bottom": 472
+                                  },
+                                  "children": [
+                                    {
+                                      "viewId": "com.ss.android.ugc.aweme:id/l+w",
+                                      "className": "android.widget.LinearLayout",
+                                      "text": null,
+                                      "contentDescription": null,
+                                      "bounds": {
+                                        "left": 0,
+                                        "top": 300,
+                                        "right": 1200,
+                                        "bottom": 409
+                                      },
+                                      "children": [
+                                        {
+                                          "viewId": "com.ss.android.ugc.aweme:id/sxj",
+                                          "className": "android.widget.TextView",
+                                          "text": "合成测试正文",
+                                          "contentDescription": null,
+                                          "bounds": {
+                                            "left": 472,
+                                            "top": 300,
+                                            "right": 728,
+                                            "bottom": 363
+                                          },
+                                          "children": []
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "viewId": "com.ss.android.ugc.aweme:id/sxm",
+                                      "className": "android.widget.TextView",
+                                      "text": "合成测试正文",
+                                      "contentDescription": null,
+                                      "bounds": {
+                                        "left": 412,
+                                        "top": 409,
+                                        "right": 788,
+                                        "bottom": 472
+                                      },
+                                      "children": []
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "viewId": null,
+                          "className": "android.widget.FrameLayout",
+                          "text": null,
+                          "contentDescription": null,
+                          "bounds": {
+                            "left": 0,
+                            "top": 514,
+                            "right": 1200,
+                            "bottom": 630
+                          },
+                          "children": [
+                            {
+                              "viewId": null,
+                              "className": "android.view.ViewGroup",
+                              "text": null,
+                              "contentDescription": null,
+                              "bounds": {
+                                "left": 0,
+                                "top": 514,
+                                "right": 1200,
+                                "bottom": 630
+                              },
+                              "children": [
+                                {
+                                  "viewId": "com.ss.android.ugc.aweme:id/dxs",
+                                  "className": "android.widget.FrameLayout",
+                                  "text": null,
+                                  "contentDescription": null,
+                                  "bounds": {
+                                    "left": 39,
+                                    "top": 514,
+                                    "right": 147,
+                                    "bottom": 622
+                                  },
+                                  "children": [
+                                    {
+                                      "viewId": "com.ss.android.ugc.aweme:id/dxt",
+                                      "className": "android.widget.Button",
+                                      "text": null,
+                                      "contentDescription": null,
+                                      "bounds": {
+                                        "left": 39,
+                                        "top": 514,
+                                        "right": 147,
+                                        "bottom": 622
+                                      },
+                                      "children": []
+                                    }
+                                  ]
+                                },
+                                {
+                                  "viewId": "com.ss.android.ugc.aweme:id/m6p",
+                                  "className": "android.view.ViewGroup",
+                                  "text": null,
+                                  "contentDescription": null,
+                                  "bounds": {
+                                    "left": 173,
+                                    "top": 514,
+                                    "right": 1161,
+                                    "bottom": 630
+                                  },
+                                  "children": [
+                                    {
+                                      "viewId": "com.ss.android.ugc.aweme:id/fs9",
+                                      "className": "android.widget.LinearLayout",
+                                      "text": null,
+                                      "contentDescription": null,
+                                      "bounds": {
+                                        "left": 173,
+                                        "top": 514,
+                                        "right": 956,
+                                        "bottom": 630
+                                      },
+                                      "children": [
+                                        {
+                                          "viewId": "com.ss.android.ugc.aweme:id/dxw",
+                                          "className": "android.widget.FrameLayout",
+                                          "text": null,
+                                          "contentDescription": null,
+                                          "bounds": {
+                                            "left": 173,
+                                            "top": 514,
+                                            "right": 956,
+                                            "bottom": 630
+                                          },
+                                          "children": [
+                                            {
+                                              "viewId": "com.ss.android.ugc.aweme:id/swq",
+                                              "className": "com.bytedance.ies.dmt.ui.widget.DmtTextView",
+                                              "text": null,
+                                              "contentDescription": null,
+                                              "bounds": {
+                                                "left": 173,
+                                                "top": 514,
+                                                "right": 956,
+                                                "bottom": 630
+                                              },
+                                              "children": [
+                                                {
+                                                  "viewId": "com.ss.android.ugc.aweme:id/cfu",
+                                                  "className": "android.widget.LinearLayout",
+                                                  "text": null,
+                                                  "contentDescription": null,
+                                                  "bounds": {
+                                                    "left": 212,
+                                                    "top": 540,
+                                                    "right": 917,
+                                                    "bottom": 604
+                                                  },
+                                                  "children": [
+                                                    {
+                                                      "viewId": "com.ss.android.ugc.aweme:id/content_layout",
+                                                      "className": "android.widget.LinearLayout",
+                                                      "text": null,
+                                                      "contentDescription": null,
+                                                      "bounds": {
+                                                        "left": 212,
+                                                        "top": 540,
+                                                        "right": 917,
+                                                        "bottom": 604
+                                                      },
+                                                      "children": [
+                                                        {
+                                                          "viewId": null,
+                                                          "className": "android.widget.TextView",
+                                                          "text": "合成测试正文",
+                                                          "contentDescription": null,
+                                                          "bounds": {
+                                                            "left": 212,
+                                                            "top": 540,
+                                                            "right": 917,
+                                                            "bottom": 604
+                                                          },
+                                                          "children": []
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "viewId": null,
+                          "className": "android.widget.FrameLayout",
+                          "text": null,
+                          "contentDescription": null,
+                          "bounds": {
+                            "left": 0,
+                            "top": 678,
+                            "right": 1200,
+                            "bottom": 1347
+                          },
+                          "children": [
+                            {
+                              "viewId": null,
+                              "className": "android.view.ViewGroup",
+                              "text": null,
+                              "contentDescription": null,
+                              "bounds": {
+                                "left": 0,
+                                "top": 678,
+                                "right": 1200,
+                                "bottom": 1347
+                              },
+                              "children": [
+                                {
+                                  "viewId": "com.ss.android.ugc.aweme:id/m6p",
+                                  "className": "android.view.ViewGroup",
+                                  "text": null,
+                                  "contentDescription": null,
+                                  "bounds": {
+                                    "left": 39,
+                                    "top": 678,
+                                    "right": 1027,
+                                    "bottom": 1347
+                                  },
+                                  "children": [
+                                    {
+                                      "viewId": "com.ss.android.ugc.aweme:id/fs9",
+                                      "className": "android.widget.LinearLayout",
+                                      "text": null,
+                                      "contentDescription": null,
+                                      "bounds": {
+                                        "left": 525,
+                                        "top": 678,
+                                        "right": 1027,
+                                        "bottom": 1347
+                                      },
+                                      "children": [
+                                        {
+                                          "viewId": "com.ss.android.ugc.aweme:id/dxw",
+                                          "className": "android.widget.FrameLayout",
+                                          "text": null,
+                                          "contentDescription": null,
+                                          "bounds": {
+                                            "left": 525,
+                                            "top": 678,
+                                            "right": 1027,
+                                            "bottom": 1347
+                                          },
+                                          "children": [
+                                            {
+                                              "viewId": null,
+                                              "className": "android.view.ViewGroup",
+                                              "text": null,
+                                              "contentDescription": null,
+                                              "bounds": {
+                                                "left": 525,
+                                                "top": 678,
+                                                "right": 1027,
+                                                "bottom": 1347
+                                              },
+                                              "children": [
+                                                {
+                                                  "viewId": "com.ss.android.ugc.aweme:id/swt",
+                                                  "className": "android.widget.FrameLayout",
+                                                  "text": null,
+                                                  "contentDescription": null,
+                                                  "bounds": {
+                                                    "left": 525,
+                                                    "top": 678,
+                                                    "right": 1027,
+                                                    "bottom": 1347
+                                                  },
+                                                  "children": [
+                                                    {
+                                                      "viewId": "com.ss.android.ugc.aweme:id/f4t",
+                                                      "className": "android.widget.LinearLayout",
+                                                      "text": null,
+                                                      "contentDescription": null,
+                                                      "bounds": {
+                                                        "left": 525,
+                                                        "top": 678,
+                                                        "right": 1027,
+                                                        "bottom": 1347
+                                                      },
+                                                      "children": [
+                                                        {
+                                                          "viewId": "com.ss.android.ugc.aweme:id/6ej",
+                                                          "className": "android.widget.RelativeLayout",
+                                                          "text": null,
+                                                          "contentDescription": null,
+                                                          "bounds": {
+                                                            "left": 525,
+                                                            "top": 678,
+                                                            "right": 1027,
+                                                            "bottom": 1347
+                                                          },
+                                                          "children": [
+                                                            {
+                                                              "viewId": "com.ss.android.ugc.aweme:id/ftt",
+                                                              "className": "android.widget.ImageView",
+                                                              "text": null,
+                                                              "contentDescription": null,
+                                                              "bounds": {
+                                                                "left": 525,
+                                                                "top": 678,
+                                                                "right": 1027,
+                                                                "bottom": 1347
+                                                              },
+                                                              "children": []
+                                                            },
+                                                            {
+                                                              "viewId": "com.ss.android.ugc.aweme:id/ol3",
+                                                              "className": "android.widget.ImageView",
+                                                              "text": null,
+                                                              "contentDescription": null,
+                                                              "bounds": {
+                                                                "left": 722,
+                                                                "top": 958,
+                                                                "right": 830,
+                                                                "bottom": 1066
+                                                              },
+                                                              "children": []
+                                                            }
+                                                          ]
+                                                        }
+                                                      ]
+                                                    },
+                                                    {
+                                                      "viewId": "com.ss.android.ugc.aweme:id/l=6",
+                                                      "className": "android.widget.FrameLayout",
+                                                      "text": null,
+                                                      "contentDescription": null,
+                                                      "bounds": {
+                                                        "left": 525,
+                                                        "top": 678,
+                                                        "right": 1027,
+                                                        "bottom": 1347
+                                                      },
+                                                      "children": [
+                                                        {
+                                                          "viewId": "com.ss.android.ugc.aweme:id/bvh",
+                                                          "className": "android.view.View",
+                                                          "text": null,
+                                                          "contentDescription": null,
+                                                          "bounds": {
+                                                            "left": 525,
+                                                            "top": 1168,
+                                                            "right": 1027,
+                                                            "bottom": 1347
+                                                          },
+                                                          "children": []
+                                                        },
+                                                        {
+                                                          "viewId": "com.ss.android.ugc.aweme:id/qp0",
+                                                          "className": "android.widget.LinearLayout",
+                                                          "text": null,
+                                                          "contentDescription": null,
+                                                          "bounds": {
+                                                            "left": 525,
+                                                            "top": 1239,
+                                                            "right": 821,
+                                                            "bottom": 1347
+                                                          },
+                                                          "children": [
+                                                            {
+                                                              "viewId": "com.ss.android.ugc.aweme:id/fs-",
+                                                              "className": "android.widget.ImageView",
+                                                              "text": null,
+                                                              "contentDescription": null,
+                                                              "bounds": {
+                                                                "left": 555,
+                                                                "top": 1263,
+                                                                "right": 615,
+                                                                "bottom": 1323
+                                                              },
+                                                              "children": []
+                                                            },
+                                                            {
+                                                              "viewId": "com.ss.android.ugc.aweme:id/fu=",
+                                                              "className": "android.widget.TextView",
+                                                              "text": "合成测试正文",
+                                                              "contentDescription": null,
+                                                              "bounds": {
+                                                                "left": 624,
+                                                                "top": 1269,
+                                                                "right": 782,
+                                                                "bottom": 1317
+                                                              },
+                                                              "children": []
+                                                            }
+                                                          ]
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "viewId": "com.ss.android.ugc.aweme:id/dxs",
+                                  "className": "android.widget.FrameLayout",
+                                  "text": null,
+                                  "contentDescription": null,
+                                  "bounds": {
+                                    "left": 1053,
+                                    "top": 678,
+                                    "right": 1161,
+                                    "bottom": 786
+                                  },
+                                  "children": [
+                                    {
+                                      "viewId": "com.ss.android.ugc.aweme:id/dxt",
+                                      "className": "android.widget.Button",
+                                      "text": null,
+                                      "contentDescription": null,
+                                      "bounds": {
+                                        "left": 1053,
+                                        "top": 678,
+                                        "right": 1161,
+                                        "bottom": 786
+                                      },
+                                      "children": []
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "viewId": null,
+                          "className": "android.widget.FrameLayout",
+                          "text": null,
+                          "contentDescription": null,
+                          "bounds": {
+                            "left": 0,
+                            "top": 1389,
+                            "right": 1200,
+                            "bottom": 1614
+                          },
+                          "children": [
+                            {
+                              "viewId": null,
+                              "className": "android.view.ViewGroup",
+                              "text": null,
+                              "contentDescription": null,
+                              "bounds": {
+                                "left": 0,
+                                "top": 1389,
+                                "right": 1200,
+                                "bottom": 1614
+                              },
+                              "children": [
+                                {
+                                  "viewId": "com.ss.android.ugc.aweme:id/l+w",
+                                  "className": "android.widget.LinearLayout",
+                                  "text": null,
+                                  "contentDescription": null,
+                                  "bounds": {
+                                    "left": 0,
+                                    "top": 1389,
+                                    "right": 1200,
+                                    "bottom": 1498
+                                  },
+                                  "children": [
+                                    {
+                                      "viewId": "com.ss.android.ugc.aweme:id/sxj",
+                                      "className": "android.widget.TextView",
+                                      "text": "合成测试正文",
+                                      "contentDescription": null,
+                                      "bounds": {
+                                        "left": 526,
+                                        "top": 1389,
+                                        "right": 673,
+                                        "bottom": 1452
+                                      },
+                                      "children": []
+                                    }
+                                  ]
+                                },
+                                {
+                                  "viewId": "com.ss.android.ugc.aweme:id/m6p",
+                                  "className": "android.view.ViewGroup",
+                                  "text": null,
+                                  "contentDescription": null,
+                                  "bounds": {
+                                    "left": 39,
+                                    "top": 1498,
+                                    "right": 1027,
+                                    "bottom": 1614
+                                  },
+                                  "children": [
+                                    {
+                                      "viewId": "com.ss.android.ugc.aweme:id/fs9",
+                                      "className": "android.widget.LinearLayout",
+                                      "text": null,
+                                      "contentDescription": null,
+                                      "bounds": {
+                                        "left": 902,
+                                        "top": 1498,
+                                        "right": 1027,
+                                        "bottom": 1614
+                                      },
+                                      "children": [
+                                        {
+                                          "viewId": "com.ss.android.ugc.aweme:id/dxw",
+                                          "className": "android.widget.FrameLayout",
+                                          "text": null,
+                                          "contentDescription": null,
+                                          "bounds": {
+                                            "left": 902,
+                                            "top": 1498,
+                                            "right": 1027,
+                                            "bottom": 1614
+                                          },
+                                          "children": [
+                                            {
+                                              "viewId": "com.ss.android.ugc.aweme:id/swq",
+                                              "className": "com.bytedance.ies.dmt.ui.widget.DmtTextView",
+                                              "text": null,
+                                              "contentDescription": null,
+                                              "bounds": {
+                                                "left": 902,
+                                                "top": 1498,
+                                                "right": 1027,
+                                                "bottom": 1614
+                                              },
+                                              "children": [
+                                                {
+                                                  "viewId": "com.ss.android.ugc.aweme:id/cfu",
+                                                  "className": "android.widget.LinearLayout",
+                                                  "text": null,
+                                                  "contentDescription": null,
+                                                  "bounds": {
+                                                    "left": 941,
+                                                    "top": 1524,
+                                                    "right": 988,
+                                                    "bottom": 1588
+                                                  },
+                                                  "children": [
+                                                    {
+                                                      "viewId": "com.ss.android.ugc.aweme:id/content_layout",
+                                                      "className": "android.widget.LinearLayout",
+                                                      "text": null,
+                                                      "contentDescription": null,
+                                                      "bounds": {
+                                                        "left": 941,
+                                                        "top": 1524,
+                                                        "right": 988,
+                                                        "bottom": 1588
+                                                      },
+                                                      "children": [
+                                                        {
+                                                          "viewId": null,
+                                                          "className": "android.widget.TextView",
+                                                          "text": "合成测试正文",
+                                                          "contentDescription": null,
+                                                          "bounds": {
+                                                            "left": 941,
+                                                            "top": 1524,
+                                                            "right": 988,
+                                                            "bottom": 1588
+                                                          },
+                                                          "children": []
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "viewId": "com.ss.android.ugc.aweme:id/dxs",
+                                  "className": "android.widget.FrameLayout",
+                                  "text": null,
+                                  "contentDescription": null,
+                                  "bounds": {
+                                    "left": 1053,
+                                    "top": 1498,
+                                    "right": 1161,
+                                    "bottom": 1606
+                                  },
+                                  "children": [
+                                    {
+                                      "viewId": "com.ss.android.ugc.aweme:id/dxt",
+                                      "className": "android.widget.Button",
+                                      "text": null,
+                                      "contentDescription": null,
+                                      "bounds": {
+                                        "left": 1053,
+                                        "top": 1498,
+                                        "right": 1161,
+                                        "bottom": 1606
+                                      },
+                                      "children": []
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "viewId": null,
+              "className": "android.widget.FrameLayout",
+              "text": null,
+              "contentDescription": null,
+              "bounds": {
+                "left": 0,
+                "top": 2344,
+                "right": 1200,
+                "bottom": 2664
+              },
+              "children": [
+                {
+                  "viewId": "com.ss.android.ugc.aweme:id/jan",
+                  "className": "android.widget.LinearLayout",
+                  "text": null,
+                  "contentDescription": null,
+                  "bounds": {
+                    "left": 0,
+                    "top": 2344,
+                    "right": 1200,
+                    "bottom": 2664
+                  },
+                  "children": [
+                    {
+                      "viewId": null,
+                      "className": "android.widget.FrameLayout",
+                      "text": null,
+                      "contentDescription": null,
+                      "bounds": {
+                        "left": 0,
+                        "top": 2344,
+                        "right": 1200,
+                        "bottom": 2473
+                      },
+                      "children": [
+                        {
+                          "viewId": null,
+                          "className": "android.widget.FrameLayout",
+                          "text": null,
+                          "contentDescription": null,
+                          "bounds": {
+                            "left": 0,
+                            "top": 2344,
+                            "right": 1200,
+                            "bottom": 2473
+                          },
+                          "children": [
+                            {
+                              "viewId": null,
+                              "className": "android.widget.FrameLayout",
+                              "text": null,
+                              "contentDescription": null,
+                              "bounds": {
+                                "left": 0,
+                                "top": 2344,
+                                "right": 1200,
+                                "bottom": 2473
+                              },
+                              "children": [
+                                {
+                                  "viewId": "com.ss.android.ugc.aweme:id/ybr",
+                                  "className": "androidx.recyclerview.widget.RecyclerView",
+                                  "text": null,
+                                  "contentDescription": null,
+                                  "bounds": {
+                                    "left": 0,
+                                    "top": 2344,
+                                    "right": 1200,
+                                    "bottom": 2473
+                                  },
+                                  "children": [
+                                    {
+                                      "viewId": "com.ss.android.ugc.aweme:id/r1",
+                                      "className": "android.widget.Button",
+                                      "text": null,
+                                      "contentDescription": null,
+                                      "bounds": {
+                                        "left": 28,
+                                        "top": 2377,
+                                        "right": 288,
+                                        "bottom": 2473
+                                      },
+                                      "children": [
+                                        {
+                                          "viewId": "com.ss.android.ugc.aweme:id/r7",
+                                          "className": "android.view.ViewGroup",
+                                          "text": null,
+                                          "contentDescription": null,
+                                          "bounds": {
+                                            "left": 64,
+                                            "top": 2377,
+                                            "right": 252,
+                                            "bottom": 2473
+                                          },
+                                          "children": [
+                                            {
+                                              "viewId": "com.ss.android.ugc.aweme:id/j-c",
+                                              "className": "android.widget.FrameLayout",
+                                              "text": null,
+                                              "contentDescription": null,
+                                              "bounds": {
+                                                "left": 64,
+                                                "top": 2396,
+                                                "right": 123,
+                                                "bottom": 2455
+                                              },
+                                              "children": [
+                                                {
+                                                  "viewId": "com.ss.android.ugc.aweme:id/icon",
+                                                  "className": "android.widget.ImageView",
+                                                  "text": null,
+                                                  "contentDescription": null,
+                                                  "bounds": {
+                                                    "left": 64,
+                                                    "top": 2396,
+                                                    "right": 123,
+                                                    "bottom": 2455
+                                                  },
+                                                  "children": []
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "viewId": "com.ss.android.ugc.aweme:id/n-b",
+                                              "className": "android.widget.TextView",
+                                              "text": "合成测试正文",
+                                              "contentDescription": null,
+                                              "bounds": {
+                                                "left": 135,
+                                                "top": 2397,
+                                                "right": 252,
+                                                "bottom": 2450
+                                              },
+                                              "children": []
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "viewId": "com.ss.android.ugc.aweme:id/r1",
+                                      "className": "android.widget.Button",
+                                      "text": null,
+                                      "contentDescription": null,
+                                      "bounds": {
+                                        "left": 314,
+                                        "top": 2377,
+                                        "right": 613,
+                                        "bottom": 2473
+                                      },
+                                      "children": [
+                                        {
+                                          "viewId": "com.ss.android.ugc.aweme:id/r7",
+                                          "className": "android.view.ViewGroup",
+                                          "text": null,
+                                          "contentDescription": null,
+                                          "bounds": {
+                                            "left": 350,
+                                            "top": 2377,
+                                            "right": 577,
+                                            "bottom": 2473
+                                          },
+                                          "children": [
+                                            {
+                                              "viewId": "com.ss.android.ugc.aweme:id/j-c",
+                                              "className": "android.widget.FrameLayout",
+                                              "text": null,
+                                              "contentDescription": null,
+                                              "bounds": {
+                                                "left": 350,
+                                                "top": 2396,
+                                                "right": 409,
+                                                "bottom": 2455
+                                              },
+                                              "children": [
+                                                {
+                                                  "viewId": "com.ss.android.ugc.aweme:id/icon",
+                                                  "className": "android.widget.ImageView",
+                                                  "text": null,
+                                                  "contentDescription": null,
+                                                  "bounds": {
+                                                    "left": 350,
+                                                    "top": 2396,
+                                                    "right": 409,
+                                                    "bottom": 2455
+                                                  },
+                                                  "children": []
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "viewId": "com.ss.android.ugc.aweme:id/n-b",
+                                              "className": "android.widget.TextView",
+                                              "text": "合成测试正文",
+                                              "contentDescription": null,
+                                              "bounds": {
+                                                "left": 421,
+                                                "top": 2397,
+                                                "right": 577,
+                                                "bottom": 2450
+                                              },
+                                              "children": []
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "viewId": "com.ss.android.ugc.aweme:id/r1",
+                                      "className": "android.widget.Button",
+                                      "text": null,
+                                      "contentDescription": null,
+                                      "bounds": {
+                                        "left": 639,
+                                        "top": 2377,
+                                        "right": 860,
+                                        "bottom": 2473
+                                      },
+                                      "children": [
+                                        {
+                                          "viewId": "com.ss.android.ugc.aweme:id/r7",
+                                          "className": "android.view.ViewGroup",
+                                          "text": null,
+                                          "contentDescription": null,
+                                          "bounds": {
+                                            "left": 675,
+                                            "top": 2377,
+                                            "right": 824,
+                                            "bottom": 2473
+                                          },
+                                          "children": [
+                                            {
+                                              "viewId": "com.ss.android.ugc.aweme:id/j-c",
+                                              "className": "android.widget.FrameLayout",
+                                              "text": null,
+                                              "contentDescription": null,
+                                              "bounds": {
+                                                "left": 675,
+                                                "top": 2396,
+                                                "right": 734,
+                                                "bottom": 2455
+                                              },
+                                              "children": [
+                                                {
+                                                  "viewId": "com.ss.android.ugc.aweme:id/icon",
+                                                  "className": "android.widget.ImageView",
+                                                  "text": null,
+                                                  "contentDescription": null,
+                                                  "bounds": {
+                                                    "left": 675,
+                                                    "top": 2396,
+                                                    "right": 734,
+                                                    "bottom": 2455
+                                                  },
+                                                  "children": []
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "viewId": "com.ss.android.ugc.aweme:id/n-b",
+                                              "className": "android.widget.TextView",
+                                              "text": "合成测试正文",
+                                              "contentDescription": null,
+                                              "bounds": {
+                                                "left": 746,
+                                                "top": 2397,
+                                                "right": 824,
+                                                "bottom": 2450
+                                              },
+                                              "children": []
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "viewId": "com.ss.android.ugc.aweme:id/r1",
+                                      "className": "android.widget.Button",
+                                      "text": null,
+                                      "contentDescription": null,
+                                      "bounds": {
+                                        "left": 886,
+                                        "top": 2377,
+                                        "right": 1066,
+                                        "bottom": 2473
+                                      },
+                                      "children": [
+                                        {
+                                          "viewId": "com.ss.android.ugc.aweme:id/r7",
+                                          "className": "android.view.ViewGroup",
+                                          "text": null,
+                                          "contentDescription": null,
+                                          "bounds": {
+                                            "left": 922,
+                                            "top": 2377,
+                                            "right": 1030,
+                                            "bottom": 2473
+                                          },
+                                          "children": [
+                                            {
+                                              "viewId": "com.ss.android.ugc.aweme:id/n-b",
+                                              "className": "android.widget.TextView",
+                                              "text": "合成测试正文",
+                                              "contentDescription": null,
+                                              "bounds": {
+                                                "left": 934,
+                                                "top": 2397,
+                                                "right": 1030,
+                                                "bottom": 2450
+                                              },
+                                              "children": []
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "viewId": "com.ss.android.ugc.aweme:id/r1",
+                                      "className": "android.widget.Button",
+                                      "text": null,
+                                      "contentDescription": null,
+                                      "bounds": {
+                                        "left": 1092,
+                                        "top": 2377,
+                                        "right": 1200,
+                                        "bottom": 2473
+                                      },
+                                      "children": [
+                                        {
+                                          "viewId": "com.ss.android.ugc.aweme:id/r7",
+                                          "className": "android.view.ViewGroup",
+                                          "text": null,
+                                          "contentDescription": null,
+                                          "bounds": {
+                                            "left": 1128,
+                                            "top": 2377,
+                                            "right": 1200,
+                                            "bottom": 2473
+                                          },
+                                          "children": [
+                                            {
+                                              "viewId": "com.ss.android.ugc.aweme:id/n-b",
+                                              "className": "android.widget.TextView",
+                                              "text": "合成测试正文",
+                                              "contentDescription": null,
+                                              "bounds": {
+                                                "left": 1140,
+                                                "top": 2397,
+                                                "right": 1200,
+                                                "bottom": 2450
+                                              },
+                                              "children": []
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "viewId": "com.ss.android.ugc.aweme:id/mxk",
+                      "className": "android.widget.LinearLayout",
+                      "text": null,
+                      "contentDescription": null,
+                      "bounds": {
+                        "left": 0,
+                        "top": 2473,
+                        "right": 1200,
+                        "bottom": 2664
+                      },
+                      "children": [
+                        {
+                          "viewId": null,
+                          "className": "android.widget.FrameLayout",
+                          "text": null,
+                          "contentDescription": null,
+                          "bounds": {
+                            "left": 0,
+                            "top": 2473,
+                            "right": 1200,
+                            "bottom": 2664
+                          },
+                          "children": [
+                            {
+                              "viewId": "com.ss.android.ugc.aweme:id/mye",
+                              "className": "android.view.ViewGroup",
+                              "text": null,
+                              "contentDescription": null,
+                              "bounds": {
+                                "left": 24,
+                                "top": 2503,
+                                "right": 1176,
+                                "bottom": 2634
+                              },
+                              "children": [
+                                {
+                                  "viewId": "com.ss.android.ugc.aweme:id/bmj",
+                                  "className": "android.widget.LinearLayout",
+                                  "text": null,
+                                  "contentDescription": null,
+                                  "bounds": {
+                                    "left": 24,
+                                    "top": 2503,
+                                    "right": 1176,
+                                    "bottom": 2634
+                                  },
+                                  "children": [
+                                    {
+                                      "viewId": "com.ss.android.ugc.aweme:id/mwt",
+                                      "className": "android.widget.LinearLayout",
+                                      "text": null,
+                                      "contentDescription": null,
+                                      "bounds": {
+                                        "left": 24,
+                                        "top": 2503,
+                                        "right": 1176,
+                                        "bottom": 2634
+                                      },
+                                      "children": [
+                                        {
+                                          "viewId": "com.ss.android.ugc.aweme:id/pvz",
+                                          "className": "android.widget.LinearLayout",
+                                          "text": null,
+                                          "contentDescription": null,
+                                          "bounds": {
+                                            "left": 24,
+                                            "top": 2503,
+                                            "right": 155,
+                                            "bottom": 2634
+                                          },
+                                          "children": [
+                                            {
+                                              "viewId": null,
+                                              "className": "android.widget.FrameLayout",
+                                              "text": null,
+                                              "contentDescription": null,
+                                              "bounds": {
+                                                "left": 24,
+                                                "top": 2503,
+                                                "right": 155,
+                                                "bottom": 2634
+                                              },
+                                              "children": [
+                                                {
+                                                  "viewId": "com.ss.android.ugc.aweme:id/mxx",
+                                                  "className": "android.widget.Button",
+                                                  "text": null,
+                                                  "contentDescription": null,
+                                                  "bounds": {
+                                                    "left": 24,
+                                                    "top": 2503,
+                                                    "right": 155,
+                                                    "bottom": 2634
+                                                  },
+                                                  "children": [
+                                                    {
+                                                      "viewId": "com.ss.android.ugc.aweme:id/l06",
+                                                      "className": "android.widget.FrameLayout",
+                                                      "text": null,
+                                                      "contentDescription": null,
+                                                      "bounds": {
+                                                        "left": 24,
+                                                        "top": 2503,
+                                                        "right": 155,
+                                                        "bottom": 2634
+                                                      },
+                                                      "children": [
+                                                        {
+                                                          "viewId": "com.ss.android.ugc.aweme:id/d3m",
+                                                          "className": "android.widget.ImageView",
+                                                          "text": null,
+                                                          "contentDescription": null,
+                                                          "bounds": {
+                                                            "left": 24,
+                                                            "top": 2503,
+                                                            "right": 155,
+                                                            "bottom": 2634
+                                                          },
+                                                          "children": []
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "viewId": "com.ss.android.ugc.aweme:id/dy3",
+                                          "className": "android.widget.FrameLayout",
+                                          "text": null,
+                                          "contentDescription": null,
+                                          "bounds": {
+                                            "left": 155,
+                                            "top": 2503,
+                                            "right": 783,
+                                            "bottom": 2634
+                                          },
+                                          "children": [
+                                            {
+                                              "viewId": "com.ss.android.ugc.aweme:id/msg_et",
+                                              "className": "android.widget.EditText",
+                                              "text": "合成测试正文",
+                                              "contentDescription": null,
+                                              "bounds": {
+                                                "left": 155,
+                                                "top": 2503,
+                                                "right": 783,
+                                                "bottom": 2634
+                                              },
+                                              "children": []
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "viewId": "com.ss.android.ugc.aweme:id/x07",
+                                          "className": "android.widget.LinearLayout",
+                                          "text": null,
+                                          "contentDescription": null,
+                                          "bounds": {
+                                            "left": 783,
+                                            "top": 2503,
+                                            "right": 1176,
+                                            "bottom": 2634
+                                          },
+                                          "children": [
+                                            {
+                                              "viewId": null,
+                                              "className": "android.widget.FrameLayout",
+                                              "text": null,
+                                              "contentDescription": null,
+                                              "bounds": {
+                                                "left": 783,
+                                                "top": 2503,
+                                                "right": 914,
+                                                "bottom": 2634
+                                              },
+                                              "children": [
+                                                {
+                                                  "viewId": "com.ss.android.ugc.aweme:id/mxx",
+                                                  "className": "android.widget.Button",
+                                                  "text": null,
+                                                  "contentDescription": "语音",
+                                                  "bounds": {
+                                                    "left": 783,
+                                                    "top": 2503,
+                                                    "right": 914,
+                                                    "bottom": 2634
+                                                  },
+                                                  "children": [
+                                                    {
+                                                      "viewId": "com.ss.android.ugc.aweme:id/l06",
+                                                      "className": "android.widget.FrameLayout",
+                                                      "text": null,
+                                                      "contentDescription": null,
+                                                      "bounds": {
+                                                        "left": 800,
+                                                        "top": 2520,
+                                                        "right": 896,
+                                                        "bottom": 2616
+                                                      },
+                                                      "children": [
+                                                        {
+                                                          "viewId": "com.ss.android.ugc.aweme:id/d3m",
+                                                          "className": "android.widget.ImageView",
+                                                          "text": null,
+                                                          "contentDescription": "语音",
+                                                          "bounds": {
+                                                            "left": 800,
+                                                            "top": 2520,
+                                                            "right": 896,
+                                                            "bottom": 2616
+                                                          },
+                                                          "children": []
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "viewId": null,
+                                              "className": "android.widget.FrameLayout",
+                                              "text": null,
+                                              "contentDescription": null,
+                                              "bounds": {
+                                                "left": 914,
+                                                "top": 2503,
+                                                "right": 1045,
+                                                "bottom": 2634
+                                              },
+                                              "children": [
+                                                {
+                                                  "viewId": "com.ss.android.ugc.aweme:id/mxx",
+                                                  "className": "android.widget.Button",
+                                                  "text": null,
+                                                  "contentDescription": "表情",
+                                                  "bounds": {
+                                                    "left": 914,
+                                                    "top": 2503,
+                                                    "right": 1045,
+                                                    "bottom": 2634
+                                                  },
+                                                  "children": [
+                                                    {
+                                                      "viewId": "com.ss.android.ugc.aweme:id/l06",
+                                                      "className": "android.widget.FrameLayout",
+                                                      "text": null,
+                                                      "contentDescription": null,
+                                                      "bounds": {
+                                                        "left": 931,
+                                                        "top": 2520,
+                                                        "right": 1027,
+                                                        "bottom": 2616
+                                                      },
+                                                      "children": [
+                                                        {
+                                                          "viewId": "com.ss.android.ugc.aweme:id/d3m",
+                                                          "className": "android.widget.ImageView",
+                                                          "text": null,
+                                                          "contentDescription": "表情",
+                                                          "bounds": {
+                                                            "left": 931,
+                                                            "top": 2520,
+                                                            "right": 1027,
+                                                            "bottom": 2616
+                                                          },
+                                                          "children": []
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "viewId": null,
+                                              "className": "android.widget.FrameLayout",
+                                              "text": null,
+                                              "contentDescription": null,
+                                              "bounds": {
+                                                "left": 1045,
+                                                "top": 2503,
+                                                "right": 1176,
+                                                "bottom": 2634
+                                              },
+                                              "children": [
+                                                {
+                                                  "viewId": "com.ss.android.ugc.aweme:id/mxx",
+                                                  "className": "android.widget.Button",
+                                                  "text": null,
+                                                  "contentDescription": "更多面板",
+                                                  "bounds": {
+                                                    "left": 1045,
+                                                    "top": 2503,
+                                                    "right": 1176,
+                                                    "bottom": 2634
+                                                  },
+                                                  "children": [
+                                                    {
+                                                      "viewId": "com.ss.android.ugc.aweme:id/l06",
+                                                      "className": "android.widget.FrameLayout",
+                                                      "text": null,
+                                                      "contentDescription": null,
+                                                      "bounds": {
+                                                        "left": 1062,
+                                                        "top": 2520,
+                                                        "right": 1158,
+                                                        "bottom": 2616
+                                                      },
+                                                      "children": [
+                                                        {
+                                                          "viewId": "com.ss.android.ugc.aweme:id/d3m",
+                                                          "className": "android.widget.ImageView",
+                                                          "text": null,
+                                                          "contentDescription": "更多面板",
+                                                          "bounds": {
+                                                            "left": 1062,
+                                                            "top": 2520,
+                                                            "right": 1158,
+                                                            "bottom": 2616
+                                                          },
+                                                          "children": []
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

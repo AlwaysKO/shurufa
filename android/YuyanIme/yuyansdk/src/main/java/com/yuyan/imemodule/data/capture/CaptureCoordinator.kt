@@ -72,6 +72,7 @@ class CaptureCoordinator(
     private val wakeUploader: () -> Unit,
     private val mediaCapturer: MediaAssetCapturer? = null,
     private val captureAllowed: () -> Boolean = { true },
+    private val onPersistResult: (ChatPlatform, CapturePersistResult) -> Unit = { _, _ -> },
     private val onViewportParsed: (ParsedViewport) -> Unit = {},
     private val identityStore: com.yuyan.imemodule.data.capture.media.ConversationIdentityStore = com.yuyan.imemodule.data.capture.media.MemoryConversationIdentityStore(),
     private val captureGeneration: () -> Long = { 0L },
@@ -97,12 +98,14 @@ class CaptureCoordinator(
     suspend fun capture(packageName: String, snapshot: UiNodeSnapshot, windowId: Int? = null): Boolean {
         if (!captureAllowed()) return false
         val captureToken = captureGeneration()
+        var capturedPlatform: ChatPlatform? = null
         try {
             val adapter = adapterForPackage(packageName) ?: return false
             if (adapter.packageName != packageName) return false
             val result = adapter.parse(snapshot)
             if (result !is ParseResult.Success) return false
             var conversation = result.viewport.conversation
+            capturedPlatform = conversation.platform
             if (isPeerTypingConversationTitle(conversation.displayName)) return false
             val identityVersion = synchronized(identityLock) { identityGeneration }
             val titleBounds = result.viewport.titleBounds
@@ -122,6 +125,7 @@ class CaptureCoordinator(
                         bounds,
                         message.inputAreaBounds,
                         lossyWebp = message.metadata["capture_kind"] == "conversation_screenshot",
+                        platform = conversation.platform,
                         contentInput = (if (knownList) wechatListContentInput(bounds) else
                             if (message.metadata["capture_kind"] == "conversation_screenshot") ScreenshotContentInput(0, detectBlocks = true, detectWechatBody = conversation.platform == ChatPlatform.WECHAT) else null)
                             ?.also { listInputs[index] = it },
@@ -130,7 +134,7 @@ class CaptureCoordinator(
             }
             val screenshotWithTitle = titleBounds != null && rawMessages.isNotEmpty() &&
                 rawMessages.all { it.metadata["capture_kind"] == "conversation_screenshot" }
-            val requests = if (screenshotWithTitle) mediaRequests + MediaCaptureRequest(-1, titleBounds!!) else mediaRequests
+            val requests = if (screenshotWithTitle) mediaRequests + MediaCaptureRequest(-1, titleBounds!!, platform = conversation.platform) else mediaRequests
             val capturedAssets = if (requests.isNotEmpty() && windowId != null && mediaCapturer != null) {
                 try {
                     mediaCapturer.capture(windowId, snapshot.bounds, requests)
@@ -191,8 +195,11 @@ class CaptureCoordinator(
             val persisted = enqueueParsed(conversation, rawMessages, capturedAssets.filterKeys { it >= 0 }, captureToken, contents,
                 listInputs.mapNotNull { (index, input) -> input.sha256?.let { index to it } }.toMap())
             CaptureTrace.record(CaptureStage.PERSIST_RESULT, value = persisted.ordinal, layer = CaptureLayer.COORDINATOR)
+            if (captureAllowed() && captureGeneration() == captureToken) runCatching { onPersistResult(conversation.platform, persisted) }
             return screenshotWithTitle && (persisted == CapturePersistResult.FAILED || conversation.identityConfidence < 0.8)
-        } catch (_: Exception) {
+        } catch (error: Exception) {
+            if (error !is kotlinx.coroutines.CancellationException && captureAllowed() && captureGeneration() == captureToken)
+                capturedPlatform?.let { platform -> runCatching { onPersistResult(platform, CapturePersistResult.FAILED) } }
             internalFailureCount.incrementAndGet()
             CaptureTrace.record(CaptureStage.PIPELINE_FAILED, layer = CaptureLayer.COORDINATOR)
             return false
@@ -209,10 +216,13 @@ class CaptureCoordinator(
     ): CapturePersistResult = try {
             enqueueParsed(conversation, messages, pendingAssetsByMessage, captureToken, screenshotContentByMessage, screenshotPixelHashes).also {
                 CaptureTrace.record(CaptureStage.PERSIST_RESULT, value = it.ordinal, layer = CaptureLayer.COORDINATOR)
+                if (captureAllowed() && captureGeneration() == captureToken) runCatching { onPersistResult(conversation.platform, it) }
             }
-        } catch (_: Exception) {
+        } catch (error: Exception) {
             internalFailureCount.incrementAndGet()
             CaptureTrace.record(CaptureStage.PIPELINE_FAILED, layer = CaptureLayer.COORDINATOR)
+            if (error !is kotlinx.coroutines.CancellationException && captureAllowed() && captureGeneration() == captureToken)
+                runCatching { onPersistResult(conversation.platform, CapturePersistResult.FAILED) }
             CapturePersistResult.FAILED
         }
 

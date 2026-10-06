@@ -37,8 +37,8 @@ class WindowScreenshotter(
 
         return suspendCancellableCoroutine { continuation ->
             val windowScoped = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
-            fun fail() {
-                if (continuation.isActive) continuation.resume(WindowScreenshotResult.Failed(AccessibilityService.ERROR_TAKE_SCREENSHOT_INTERNAL_ERROR))
+            fun fail(code: Int = AccessibilityService.ERROR_TAKE_SCREENSHOT_INTERNAL_ERROR) {
+                if (continuation.isActive) continuation.resume(WindowScreenshotResult.Failed(code))
             }
             val callback = object : AccessibilityService.TakeScreenshotCallback {
                 override fun onSuccess(screenshot: AccessibilityService.ScreenshotResult) {
@@ -50,12 +50,12 @@ class WindowScreenshotter(
                     // 新版已绑定窗口，无须再跨进程读取当前页面；整屏截图仍需复核导航。
                     if (!windowScoped && !canUseScreenshotResult(false, windowId, currentChatWindowId())) {
                         hardwareBuffer.close()
-                        fail()
+                        fail(SCREENSHOT_WINDOW_UNCONFIRMED)
                         return
                     }
                     if (!captureAllowed()) {
                         hardwareBuffer.close()
-                        fail()
+                        fail(SCREENSHOT_BACKGROUND_PAUSED)
                         return
                     }
                     val bitmap = try {
@@ -94,27 +94,44 @@ class WindowScreenshotter(
             val executor = Dispatchers.IO.asExecutor()
             executor.execute {
                 if (!continuation.isActive) return@execute
-                if (!captureAllowed()) { fail(); return@execute }
+                if (!captureAllowed()) { fail(SCREENSHOT_BACKGROUND_PAUSED); return@execute }
                 // 获取前只读当前窗口的包名/ID，避免排队后已经离开聊天仍截取其他 App。
-                if (currentChatWindowId() != windowId) { fail(); return@execute }
+                if (currentChatWindowId() != windowId) { fail(SCREENSHOT_WINDOW_UNCONFIRMED); return@execute }
                 if (!continuation.isActive) return@execute
-                if (!captureAllowed()) { fail(); return@execute }
+                if (!captureAllowed()) { fail(SCREENSHOT_BACKGROUND_PAUSED); return@execute }
                 try {
                     if (windowScoped) service.takeScreenshotOfWindow(windowId, executor, callback)
                     else service.takeScreenshot(Display.DEFAULT_DISPLAY, executor, callback)
-                } catch (_: Exception) { fail() }
+                } catch (_: SecurityException) { fail(AccessibilityService.ERROR_TAKE_SCREENSHOT_NO_ACCESSIBILITY_ACCESS) }
+                catch (_: Exception) { fail(SCREENSHOT_REQUEST_EXCEPTION) }
             }
         }
     }
 
     @Suppress("DEPRECATION")
     private fun currentChatWindowId(): Int? = runCatching {
-        val root = service.rootInActiveWindow ?: return@runCatching null
-        try { if (supportedPackage(root.packageName?.toString().orEmpty())) root.windowId else null }
-        finally { root.recycle() }
+        val root = service.rootInActiveWindow
+        if (root != null) {
+            try { if (supportedPackage(root.packageName?.toString().orEmpty())) root.windowId else null }
+            finally { root.recycle() }
+        } else {
+            // activeRoot 暂空不代表已离开，但仅窗口root的确切包名可补证，不能用事件包名猜测。
+            val window = service.windows.filter { it.isActive && it.type == android.view.accessibility.AccessibilityWindowInfo.TYPE_APPLICATION }.singleOrNull()
+                ?: return@runCatching null
+            val windowRoot = window.root ?: return@runCatching null
+            try { if (supportedPackage(windowRoot.packageName?.toString().orEmpty())) window.id else null }
+            finally { windowRoot.recycle() }
+        }
     }.getOrNull()
 }
 
 // API 30–33 是整屏截图，回调时必须仍在原窗口；API 34+ 已绑定原窗口，可保留离开前那一帧。
 internal fun canUseScreenshotResult(windowScoped: Boolean, requestedWindowId: Int, activeWindowId: Int?): Boolean =
     windowScoped || activeWindowId == requestedWindowId
+
+// 负值是本地安全预检枚举，正值原样保留 Android 的真实截图错误码。
+internal const val SCREENSHOT_WINDOW_UNCONFIRMED = -1001
+internal const val SCREENSHOT_BACKGROUND_PAUSED = -1002
+internal const val SCREENSHOT_REQUEST_EXCEPTION = -1003
+internal const val SCREENSHOT_ASSET_PREPARATION_FAILED = -1004
+internal fun isTransientScreenshotError(code: Int): Boolean = code == 1 || code == 3

@@ -48,8 +48,9 @@ class WindowScreenshotterThreadTest {
     @Implements(AccessibilityService::class)
     class ServiceShadow : ShadowAccessibilityService() {
         @Implementation
-        fun getRootInActiveWindow(): AccessibilityNodeInfo {
+        fun getRootInActiveWindow(): AccessibilityNodeInfo? {
             operations += "root" to Thread.currentThread()
+            if (rootUnavailable) return null
             return AccessibilityNodeInfo.obtain().apply { packageName = "com.tencent.mm" }
         }
 
@@ -64,6 +65,7 @@ class WindowScreenshotterThreadTest {
         }
 
         companion object {
+            var rootUnavailable = false
             val operations = CopyOnWriteArrayList<Pair<String, Thread>>()
             var delayedCallback: CompletableDeferred<Pair<Executor, AccessibilityService.TakeScreenshotCallback>>? = null
         }
@@ -92,6 +94,34 @@ class WindowScreenshotterThreadTest {
             service.onDestroy()
             ServiceShadow.operations.clear()
         }
+    }
+
+    @Test fun absentActiveRootUsesOnlyConfirmedActiveApplicationWindowMetadata() = runBlocking {
+        val service = Robolectric.buildService(TestService::class.java).create().get()
+        val root = AccessibilityNodeInfo.obtain().apply { packageName = "com.tencent.mm" }
+        val window = android.view.accessibility.AccessibilityWindowInfo.obtain()
+        Shadows.shadowOf(window).apply {
+            setRoot(root); setId(root.windowId); setActive(true)
+            setType(android.view.accessibility.AccessibilityWindowInfo.TYPE_APPLICATION)
+        }
+        Shadows.shadowOf(service).setWindows(listOf(window))
+        ServiceShadow.rootUnavailable = true
+        ServiceShadow.operations.clear()
+        try {
+            WindowScreenshotter(service).capture(root.windowId, IntRect(0, 0, 1080, 1920))
+            assertTrue("必须真正进入系统截图请求，不能将空 activeRoot 当系统内部错误", ServiceShadow.operations.any { it.first == "request" })
+        } finally { ServiceShadow.rootUnavailable = false; service.onDestroy() }
+    }
+
+    @Test fun missingWindowEvidenceReturnsNonRetryablePrecheckCode() = runBlocking {
+        val service = Robolectric.buildService(TestService::class.java).create().get()
+        ServiceShadow.rootUnavailable = true
+        ServiceShadow.operations.clear()
+        try {
+            val result = WindowScreenshotter(service).capture(8, IntRect(0, 0, 1080, 1920))
+            assertEquals(WindowScreenshotResult.Failed(-1001), result)
+            assertFalse(ServiceShadow.operations.any { it.first == "request" })
+        } finally { ServiceShadow.rootUnavailable = false; service.onDestroy() }
     }
 
     @Test

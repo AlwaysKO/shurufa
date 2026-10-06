@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicLong
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [30], qualifiers = "mdpi", shadows = [ScreenshotWindowReadThreadTest.ServiceShadow::class])
 class ScreenshotWindowReadThreadTest {
+    private val diagnosticPlatforms = mutableListOf<String>()
     @Implements(AccessibilityService::class)
     class ServiceShadow : ShadowAccessibilityService() {
         @Implementation
@@ -78,6 +79,34 @@ class ScreenshotWindowReadThreadTest {
         }
     }
 
+    @Test fun notificationFallbackPassesPlatformToRealMediaFailureDiagnostics() = runBlocking {
+        for ((pkg, platform) in listOf("com.tencent.mm" to "wechat", "com.ss.android.ugc.aweme" to "douyin")) {
+            withService { service, drain, captures ->
+                if (platform == "douyin") {
+                    val snapshot = javaClass.getResourceAsStream("/capture/douyin-chat-40.6.0.json")!!.bufferedReader().use {
+                        kotlinx.serialization.json.Json.decodeFromString<com.yuyan.imemodule.data.capture.ui.UiNodeSnapshot>(it.readText())
+                    }
+                    fun info(tree: com.yuyan.imemodule.data.capture.ui.UiNodeSnapshot): AccessibilityNodeInfo = AccessibilityNodeInfo.obtain().apply {
+                        packageName = pkg; className = tree.className; text = tree.text; contentDescription = tree.contentDescription
+                        viewIdResourceName = tree.viewId
+                        setBoundsInScreen(Rect(tree.bounds.left, tree.bounds.top, tree.bounds.right, tree.bounds.bottom))
+                        tree.children.forEach { Shadows.shadowOf(this).addChild(info(it)) }
+                    }
+                    ServiceShadow.root = info(snapshot)
+                }
+                val request = NotificationScreenshotFallbackRequest("synthetic", System.currentTimeMillis(), pkg)
+                (field(service, "fallbackQueue") as NotificationScreenshotFallbackQueue).offer(request)
+                diagnosticPlatforms.clear()
+                service.javaClass.getDeclaredMethod("onStableFallbackRequest", NotificationScreenshotFallbackRequest::class.java)
+                    .apply { isAccessible = true }.invoke(service, request)
+                withTimeout(5_000) { while (captures() == 0) { Shadows.shadowOf(Looper.getMainLooper()).idle(); delay(10) } }
+                delay(50)
+                assertEquals(1, captures())
+                assertEquals(listOf(platform), diagnosticPlatforms)
+            }
+        }
+    }
+
     private fun field(service: PassiveChatAccessibilityService, name: String): Any =
         service.javaClass.getDeclaredField(name).apply { isAccessible = true }.get(service)
 
@@ -91,7 +120,8 @@ class ScreenshotWindowReadThreadTest {
         val scope = field(service, "backgroundScope") as CoroutineScope
         var captures = 0
         service.javaClass.getDeclaredField("mediaCapturer").apply { isAccessible = true }.set(service,
-            WindowMediaCapturer(service, ScreenshotSource { _, _ -> captures++; WindowScreenshotResult.Failed(1) }))
+            WindowMediaCapturer(service, ScreenshotSource { _, _ -> captures++; WindowScreenshotResult.Failed(2) },
+                onScreenshotResult = { platform, _, _ -> diagnosticPlatforms += platform }))
         val root = AccessibilityNodeInfo.obtain().apply {
             packageName = "com.tencent.mm"
             setBoundsInScreen(Rect(0, 0, 400, 800))

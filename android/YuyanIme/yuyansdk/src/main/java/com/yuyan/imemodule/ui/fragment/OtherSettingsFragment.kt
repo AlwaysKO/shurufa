@@ -295,6 +295,28 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
         })
         refreshUsagePreference()
         screen.addPreference(Preference(ctx).apply {
+            title = "微信 / 抖音采集诊断"
+            summary = "查看页面、截图、持久化、消息回执的最近状态与错误码；历史状态不是实时证明"
+            setOnPreferenceClickListener {
+                lifecycleScope.launch {
+                    val snapshots = com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics.latest(ctx.applicationContext)
+                    val stageLabels = mapOf("page" to "页面", "screenshot" to "截图", "persist" to "持久化", "upload" to "消息上传")
+                    val statusLabels = mapOf("matched" to "已识别", "rejected" to "未确认/拒绝", "empty_tree" to "页面树为空", "ready" to "系统截图成功",
+                        "failed" to "失败", "cancelled" to "已取消", "inserted" to "已入本地", "duplicate" to "已去重", "acknowledged" to "消息有效回执", "waiting" to "待补传")
+                    val content = listOf("wechat" to "微信", "douyin" to "抖音").joinToString("\n\n") { (platform, name) ->
+                        name + "\n" + listOf("page", "screenshot", "persist", "upload").joinToString("\n") { stage ->
+                            val row = snapshots.firstOrNull { it.platform == platform && it.stage == stage }
+                            if (row == null) "${stageLabels[stage]}：暂无状态" else "${stageLabels[stage]}：${statusLabels[row.status]}  错误码=${row.errorCode ?: "无"}  规则=${row.configRevision}\n" +
+                                java.text.DateFormat.getDateTimeInstance().format(java.util.Date(row.observedAt))
+                        }
+                    }
+                    androidx.appcompat.app.AlertDialog.Builder(ctx).setTitle("最近采集诊断（非实时）")
+                        .setMessage(content + "\n\n-1001：窗口未确认；-1002：输入/游戏避让；-1003：请求异常；-1004：截图资产准备失败。历史状态并非实时证明。").setPositiveButton("关闭", null).show()
+                }
+                true
+            }
+        })
+        screen.addPreference(Preference(ctx).apply {
             title = "立即同步应用使用记录"
             summary = "查询新的系统记录并尝试补传；尚未退出的应用段不会提前计入后台"
             setOnPreferenceClickListener {

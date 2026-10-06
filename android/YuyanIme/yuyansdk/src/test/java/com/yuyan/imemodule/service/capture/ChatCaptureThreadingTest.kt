@@ -26,6 +26,12 @@ import java.util.concurrent.TimeUnit
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28], shadows = [ChatCaptureThreadingTest.ServiceShadow::class, ChatCaptureThreadingTest.NodeShadow::class])
 class ChatCaptureThreadingTest {
+    // Robolectric回拨时钟，但输入/游戏单例仍可能继承上一类状态。
+    @org.junit.Before @org.junit.After fun resetBackgroundWorkForTest() {
+        com.yuyan.imemodule.data.collect.resetImageInputForTest()
+        com.yuyan.imemodule.data.collect.resetGameWorkRuntimeForTest()
+    }
+
     @Implements(AccessibilityService::class)
     class ServiceShadow : ShadowAccessibilityService() {
         @Implementation

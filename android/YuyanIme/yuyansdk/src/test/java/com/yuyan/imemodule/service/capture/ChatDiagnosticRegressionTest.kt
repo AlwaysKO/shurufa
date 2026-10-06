@@ -19,6 +19,12 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28], shadows = [ChatCaptureThreadingTest.ServiceShadow::class, ChatCaptureThreadingTest.NodeShadow::class])
 class ChatDiagnosticRegressionTest {
+    // Robolectric回拨时钟，但输入/游戏单例仍可能继承上一类状态。
+    @org.junit.Before @org.junit.After fun resetBackgroundWorkForTest() {
+        com.yuyan.imemodule.data.collect.resetImageInputForTest()
+        com.yuyan.imemodule.data.collect.resetGameWorkRuntimeForTest()
+    }
+
     @Test fun confirmedEmptyChatContentSchedulesFollowupInsteadOfRejectingPage() {
         val service = Robolectric.buildService(PassiveChatAccessibilityService::class.java).create().get()
         CollectionConsent.setEnabled(service, true)

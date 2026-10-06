@@ -143,6 +143,51 @@ class DouyinChatAdapterTest {
         assertTrue(DouyinChatAdapter().parse(root) is ParseResult.Skip)
     }
 
+    @Test fun acceptsRightVoiceWithSameLayerGenericMore() {
+        val tree = transform(structuralChat(settings = "更多")) {
+            if (it.viewId?.endsWith("changed_composer") == true) it.copy(children = it.children +
+                node("voice", bounds = IntRect(900, 1620, 1040, 1751), clazz = "android.widget.Button")
+                    .copy(contentDescription = "语音")) else it
+        }
+        assertTrue(DouyinChatAdapter().parse(tree) is ParseResult.Success)
+    }
+
+    @Test fun replaysSanitized406WithRightVoiceComposer() {
+        val tree = javaClass.getResourceAsStream("/capture/douyin-chat-40.6.0.json")!!.bufferedReader().use {
+            kotlinx.serialization.json.Json.decodeFromString<UiNodeSnapshot>(it.readText())
+        }
+        assertTrue(DouyinChatAdapter().parse(tree) is ParseResult.Success)
+    }
+
+    @Test fun downloadedRuleControlsVoiceSideAndNewIdsWithoutRemovingChatProof() = kotlinx.coroutines.runBlocking {
+        val fixture = javaClass.getResourceAsStream("/capture/douyin-chat-40.6.0.json")!!.bufferedReader().use {
+            kotlinx.serialization.json.Json.decodeFromString<UiNodeSnapshot>(it.readText())
+        }
+        val base = ChatCapturePolicy.builtIn().rule("com.ss.android.ugc.aweme", 0)!!
+        assertTrue(DouyinChatAdapter(ruleProvider = { base.copy(voicePosition = "left") }).parse(fixture) is ParseResult.Skip)
+        assertTrue(DouyinChatAdapter(ruleProvider = { base.copy(voicePosition = "right") }).parse(fixture) is ParseResult.Success)
+        val changed = transform(structuralChat()) {
+            when {
+                it.viewId?.endsWith("changed_title") == true -> it.copy(className = "android.view.View")
+                it.viewId?.endsWith("changed_edit") == true -> it.copy(className = "android.view.View")
+                it.viewId?.endsWith("changed_body") == true -> it.copy(className = "android.widget.FrameLayout")
+                it.contentDescription == "返回" -> it.copy(contentDescription = "回到会话")
+                it.contentDescription == "聊天设置" -> it.copy(contentDescription = "私聊选项")
+                else -> it
+            }
+        }
+        assertTrue(DouyinChatAdapter().parse(changed) is ParseResult.Skip)
+        val downloaded = """{"schemaVersion":1,"revision":3,"rules":[{"id":"updated-douyin","packageName":"com.ss.android.ugc.aweme","minVersionCode":0,"maxVersionCode":null,"enabled":true,"titleIds":["changed_title"],"inputIds":["changed_edit"],"bodyIds":["changed_body"],"backLabels":["回到会话"],"settingsLabels":["私聊选项"],"voiceLabels":["语音"],"voicePosition":"either"}]}"""
+        val runtime = ChatCaptureRefreshController(allowed = { true }, loadVersion = { CaptureAppVersion(1, "1") },
+            readCache = { null }, writeCache = { _, _ -> }, fetch = { downloaded })
+        runtime.refresh("authority")
+        val updated = runtime.rule("authority", "com.ss.android.ugc.aweme")!!
+        assertEquals(3L, runtime.policy("authority").revision)
+        assertTrue(DouyinChatAdapter(ruleProvider = { updated }).parse(changed) is ParseResult.Success)
+        val withoutHeader = transform(changed) { if (it.contentDescription == "回到会话") it.copy(contentDescription = null) else it }
+        assertTrue(DouyinChatAdapter(ruleProvider = { updated }).parse(withoutHeader) is ParseResult.Skip)
+    }
+
     private fun node(id: String, text: String? = null, bounds: IntRect = IntRect(0, 0, 1200, 2664), children: List<UiNodeSnapshot> = emptyList(), clazz: String = "android.widget.TextView") =
         UiNodeSnapshot("com.ss.android.ugc.aweme:id/$id", clazz, text, null, bounds, children)
 
@@ -193,6 +238,7 @@ class DouyinChatAdapterTest {
         val queued = mutableListOf<com.yuyan.imemodule.data.capture.db.PendingMessageEntity>()
         val hashes = mutableSetOf<String>()
         var wakes = 0
+        val persistResults = mutableListOf<com.yuyan.imemodule.data.capture.CapturePersistResult>()
         val store = object : com.yuyan.imemodule.data.capture.CaptureOutboxStore {
             override suspend fun enqueueIfNew(
                 seenMessage: com.yuyan.imemodule.data.capture.db.SeenMessageEntity,
@@ -207,6 +253,7 @@ class DouyinChatAdapterTest {
         }
         val coordinator = com.yuyan.imemodule.data.capture.CaptureCoordinator(
             store = store,
+            onPersistResult = { platform, result -> assertEquals(ChatPlatform.DOUYIN, platform); persistResults += result },
             deviceId = { "00000000-0000-4000-8000-000000000001" },
             wakeUploader = { wakes++ },
             clock = { 1000L },
@@ -223,6 +270,7 @@ class DouyinChatAdapterTest {
             },
         )
         repeat(2) { coordinator.capture("com.ss.android.ugc.aweme", chat(), 1) }
+        assertEquals(listOf(com.yuyan.imemodule.data.capture.CapturePersistResult.INSERTED, com.yuyan.imemodule.data.capture.CapturePersistResult.ALREADY_PERSISTED), persistResults)
         assertEquals(1, queued.size)
         assertEquals(1, wakes)
         assertTrue(queued.single().payloadJson.contains("douyin"))

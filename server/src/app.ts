@@ -1,3 +1,5 @@
+import { createMobileCaptureRouter, createDashboardCaptureRouter } from './api/chatCaptureSettings.js';
+import { createMobileDiagnosticsRouter, createDashboardDiagnosticsRouter } from './api/chatCaptureDiagnostics.js';
 import { createMobileCallRecordingsRouter, createDashboardCallRecordingsRouter } from './api/callRecordings.js';
 import { createMobileNavigationRouter, createDashboardNavigationRouter } from './api/navigationRecords.js';
 import { createMobileAppUsageRouter, createDashboardAppUsageRouter } from './api/appUsage.js';
@@ -103,6 +105,8 @@ export function createApp(pool: pg.Pool, options: CreateAppOptions = {}): expres
   app.use('/api/v1/mobile/call-recordings', createMobileCallRecordingsRouter(pool));
   app.use('/api/v1/mobile/navigation-records', createMobileNavigationRouter(pool));
   app.use('/api/v1/mobile', createMobileDeliveryRouter(pool));
+  app.use('/api/v1/mobile', createMobileCaptureRouter(pool));
+  app.use('/api/v1/mobile', createMobileDiagnosticsRouter(pool));
   app.use('/api/v1/mobile/dictionary', createMobileDictionaryRouter(pool));
   app.use('/api/v1/mobile', createMobileAppUsageRouter(pool));
   app.use('/api/v1/mobile', createMobileRouter(pool));
@@ -123,6 +127,8 @@ export function createApp(pool: pg.Pool, options: CreateAppOptions = {}): expres
   app.use('/api/v1/dashboard/call-recordings', createDashboardCallRecordingsRouter(pool));
   app.use('/api/v1/dashboard/navigation-records', createDashboardNavigationRouter(pool));
   app.use('/api/v1/dashboard', createDashboardDeliveryRouter(pool));
+  app.use('/api/v1/dashboard', createDashboardCaptureRouter(pool));
+  app.use('/api/v1/dashboard', createDashboardDiagnosticsRouter(pool));
   app.use('/api/v1/dashboard/dictionary', createDashboardDictionaryRouter(pool));
   app.use('/api/v1/dashboard', createDeviceControlsRouter(pool));
   app.use('/api/v1/dashboard', createDashboardAppUsageRouter(pool));

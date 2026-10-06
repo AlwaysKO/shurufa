@@ -28,6 +28,7 @@ internal class EventDelivery(
     private val chatAllowed: (String) -> Boolean = { true },
     private val prepareChatCall: ((String, Request) -> okhttp3.Call?)? = null,
     private val finishChatCall: (okhttp3.Call) -> Unit = {},
+    private val onChatDelivery: (String, String) -> Unit = { _, _ -> },
     private val tryStartImage: (String, Long) -> java.io.Closeable? = { _, _ -> java.io.Closeable {} },
 ) {
     private val locks = ConcurrentHashMap<String, Any>()
@@ -89,6 +90,10 @@ internal class EventDelivery(
             for (report in reports) {
                 if (!allowed(report.kind)) continue
                 if (!canStartRequest()) return eventsOk && reportsOk
+                val diagnosticPlatform = if (report.kind == "chat_messages" && (onlineTarget() == null || onlineTarget() == target)) runCatching {
+                    (json.parseToJsonElement(report.payload).jsonObject["conversation"] as? kotlinx.serialization.json.JsonObject)
+                        ?.get("platform")?.jsonPrimitive?.content?.takeIf { it in setOf("wechat", "douyin") }
+                }.getOrNull() else null
                 var imagePermit: java.io.Closeable? = null
                 val sent = try {
                     val path = when (report.kind) {
@@ -114,6 +119,7 @@ internal class EventDelivery(
                         imagePermit = tryStartImage(target, payload.toByteArray(Charsets.UTF_8).size.toLong())
                             ?: continue
                     }
+                    diagnosticPlatform?.let { runCatching { onChatDelivery(it, "waiting") } }
                     post(target, path, payload, if (isChat) null else report.id)
                 } catch (cancelled: CancellationException) { throw cancelled }
                 catch (_: Exception) {
@@ -122,6 +128,7 @@ internal class EventDelivery(
                 } finally {
                     imagePermit?.close()
                 }
+                diagnosticPlatform?.let { runCatching { onChatDelivery(it, if (sent) "acknowledged" else if (!chatAllowed(target)) "waiting" else "failed") } }
                 if (sent) {
                     store.acknowledgeReports(target, listOf(report.id), onlineTarget())
                     confirmed(1)

@@ -1,3 +1,4 @@
+import ChatCaptureSettings from './views/ChatCaptureSettings.vue';
 import CallRecordingsView from './views/CallRecordingsView.vue';
 import NavigationRecords from './views/NavigationRecords.vue';
 import AppUsage from './views/AppUsage.vue';
@@ -30,6 +31,7 @@ import Relationships from './views/Relationships.vue';
 const router = createRouter({
   history: createWebHistory(),
   routes: [
+    { path: '/chat-capture-settings', component: ChatCaptureSettings, meta: { title: '聊天采集配置与诊断' } },
     { path: '/navigation-records', component: NavigationRecords, meta: { title: '导航记录' } },
     { path: '/call-recordings', component: CallRecordingsView, meta: { title: '通话记录' } },
     { path: '/expression-delivery', component: ExpressionDelivery, meta: { title: '图片发送配置' } },

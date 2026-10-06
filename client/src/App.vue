@@ -53,6 +53,7 @@ const navGroups: NavGroup[] = [
     { path: '/relationships', label: '关系记忆' },
   ] },
   { key: 'manage', label: '设备与数据', icon: '⚙', items: [
+    { path: '/chat-capture-settings', label: '聊天采集配置与诊断' },
     { path: '/expression-delivery', label: '图片发送配置' },
     { path: '/locations', label: '位置轨迹' }, { path: '/data', label: '数据管理' },
   ] },

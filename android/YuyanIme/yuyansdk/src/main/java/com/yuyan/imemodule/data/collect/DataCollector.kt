@@ -140,6 +140,7 @@ object DataCollector {
         appContext = app
         prefs = PreferenceManager.getDefaultSharedPreferences(app)
         currentDeviceId = deviceId(app)
+        com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics.bindDeviceId(requireNotNull(currentDeviceId))
         ServerConfig.init(app)
         com.yuyan.imemodule.data.usage.AppUsageTracker.start(app)
         if (CollectionConsent.enabled(app)) {
@@ -237,6 +238,7 @@ object DataCollector {
             chatAllowed = { target -> ImageUploadRuntime.canUploadChat(context,target) },
             prepareChatCall = { target, request -> ImageUploadRuntime.prepareChatCall(context,target,http,request) },
             finishChatCall = ImageUploadRuntime::finishChatCall,
+            onChatDelivery = { platform, status -> com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics.record(context, platform, "upload", status) },
             maxImageBytes = { target -> ImageUploadRuntime.maxImageBytes(context, target) },
             tryStartImage = { target, bytes -> ImageUploadRuntime.tryStartImage(context, target, bytes) },
         )
@@ -339,8 +341,10 @@ object DataCollector {
             return@coroutineScope
         }
         refreshOnlineServerUrl(app)
+        com.yuyan.imemodule.data.capture.adapter.ChatCaptureSettings.refresh(app)
         if (!ImageUploadRuntime.isBackgroundWorkAllowed()) return@coroutineScope
         launch { com.yuyan.imemodule.data.navigation.NavigationSync.flush(app) }
+        launch { com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics.flush(app) }
         val onlineTarget = ServerConfig.baseUrl
         eventStore?.let {
             it.pruneExpiredLocalChatReports(onlineTarget, LOCAL_CHAT_RETENTION_MS)
@@ -474,11 +478,13 @@ object DataCollector {
             locationJob?.cancel(); locationJob = null
             stopLocationUpdates()
             http.dispatcher.cancelAll()
+            com.yuyan.imemodule.data.capture.adapter.ChatCaptureSettings.cancel()
+            com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics.cancel()
             ReportSyncJobService.cancel(context)
         }
     }
 
-    fun cancelTransfers() { http.dispatcher.cancelAll(); com.yuyan.imemodule.data.navigation.NavigationSync.cancel() }
+    fun cancelTransfers() { http.dispatcher.cancelAll(); com.yuyan.imemodule.data.capture.adapter.ChatCaptureSettings.cancel(); com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics.cancel(); com.yuyan.imemodule.data.navigation.NavigationSync.cancel() }
 
     private fun registerNetworkWake(context: Context) {
         if (networkRegistered) return

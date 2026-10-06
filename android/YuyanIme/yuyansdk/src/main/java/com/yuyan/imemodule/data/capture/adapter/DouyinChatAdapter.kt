@@ -25,8 +25,7 @@ enum class DouyinPageStatus(val label: String) {
 internal data class DouyinParseOutcome(val result: ParseResult, val status: DouyinPageStatus)
 
 /** 原版 ID 精确匹配优先；结构回退只认同一页面中的多项聊天证据。 */
-class DouyinChatAdapter : ChatAppAdapter {
-    override val packageName = "com.ss.android.ugc.aweme"
+class DouyinChatAdapter(private val ruleProvider: () -> ChatCaptureRule = { ChatCapturePolicy.builtIn().rule("com.ss.android.ugc.aweme", 0)!! }, override val packageName: String = "com.ss.android.ugc.aweme") : ChatAppAdapter {
 
     override fun parse(root: UiNodeSnapshot): ParseResult = inspect(root).result
 
@@ -90,10 +89,11 @@ class DouyinChatAdapter : ChatAppAdapter {
     }
     private fun parseStructure(root: UiNodeSnapshot): DouyinParseOutcome {
         // 不用坐标猜前后台层；多个输入框时宁可等待页面稳定。
+        val rule = ruleProvider()
         val paths = mutableListOf<List<UiNodeSnapshot>>()
         fun visit(node: UiNodeSnapshot, ancestors: List<UiNodeSnapshot>) {
             val path = ancestors + node
-            if (node.className.orEmpty().endsWith("EditText")) paths += path
+            if (node.className.orEmpty().endsWith("EditText") || rule.matchesId(node.viewId, rule.inputIds)) paths += path
             node.children.forEach { visit(it, path) }
         }
         visit(root, emptyList())
@@ -111,15 +111,17 @@ class DouyinChatAdapter : ChatAppAdapter {
                 else branch.flatten().filterNot { inputBranch.bounds.contains(it.bounds) }
             }.filter { it.bounds.width() > 0 && it.bounds.height() > 0 && scope.bounds.contains(it.bounds) }
             val hasVoiceComposer = nodes.any {
-                it.label() in setOf("切换到语音输入", "切换到语音", "按住说话") &&
-                    it.bounds.overlapsVertically(input.bounds) && it.bounds.right <= input.bounds.left &&
+                it.label() in rule.voiceLabels &&
+                    it.bounds.overlapsVertically(input.bounds) &&
+                    ((rule.voicePosition != "right" && it.bounds.right <= input.bounds.left) ||
+                        (rule.voicePosition != "left" && it.bounds.left >= input.bounds.right)) &&
                     it.bounds.width() > 0 && scope.bounds.contains(it.bounds)
             }
-            val backs = nodes.filter { it.label() in setOf("返回", "返回上一页", "Back") &&
+            val backs = nodes.filter { it.label() in rule.backLabels &&
                 it.bounds.left < scope.bounds.left + scope.bounds.width() / 4 &&
                 it.bounds.bottom < input.bounds.top && it.bounds.top < scope.bounds.top + scope.bounds.height() / 4 }
-            val settings = nodes.filter { (it.label() in setOf("聊天设置", "聊天详情", "会话设置", "群聊设置", "群聊详情") ||
-                (hasVoiceComposer && it.label() == "更多")) &&
+            val settings = nodes.filter { ((it.label() in rule.settingsLabels && it.label() != "更多") ||
+                (hasVoiceComposer && it.label() == "更多" && "更多" in rule.settingsLabels)) &&
                 it.bounds.left > scope.bounds.left + scope.bounds.width() * 2 / 3 && it.bounds.bottom < input.bounds.top }
             if (backs.isEmpty() || settings.isEmpty()) continue
             // 同一个按钮可能同时暴露父、子无障碍节点；完全重合的语义锚点合并。
@@ -128,7 +130,7 @@ class DouyinChatAdapter : ChatAppAdapter {
             if (!back.bounds.overlapsVertically(setting.bounds)) return skipped(DouyinPageStatus.INVALID_BOUNDS)
             val headerBottom = maxOf(back.bounds.bottom, setting.bounds.bottom)
             val titles = nodes.filter {
-                it.className.orEmpty().endsWith("TextView") && it.label().isNotBlank() &&
+                (it.className.orEmpty().endsWith("TextView") || rule.matchesId(it.viewId, rule.titleIds)) && it.label().isNotBlank() &&
                     it.bounds.left >= back.bounds.right && it.bounds.right <= setting.bounds.left &&
                     it.bounds.top >= minOf(back.bounds.top, setting.bounds.top) && it.bounds.bottom <= headerBottom
             }.distinctBy { it.bounds to it.label() }
@@ -140,7 +142,7 @@ class DouyinChatAdapter : ChatAppAdapter {
             }
             val lists = nodes.filter {
                 val clazz = it.className.orEmpty()
-                (clazz.endsWith("RecyclerView") || clazz.endsWith("ListView")) &&
+                (clazz.endsWith("RecyclerView") || clazz.endsWith("ListView") || rule.matchesId(it.viewId, rule.bodyIds)) &&
                     it.bounds.top >= headerBottom && it.bounds.top - headerBottom <= scope.bounds.height() / 10 &&
                     it.bounds.bottom <= input.bounds.top && input.bounds.top - it.bounds.bottom <= scope.bounds.height() / 5 &&
                     it.bounds.height() >= scope.bounds.height() / 5 && it.bounds.width() >= scope.bounds.width() * 2 / 3

@@ -84,7 +84,7 @@ object ImageUploadRuntime {
         if (canUploadScreenshot(context,target)) schedule.tryStartImage(ImageUploadNetwork.WIFI,bytes,screenOff(context)) else null
 
     // Called from an IO worker, never from a key callback. Bound sockets/DNS cannot fall back to cellular.
-    internal fun prepareChatCall(context: Context, target: String, http: OkHttpClient, request: Request, allowed: () -> Boolean = { true }): Call? {
+    internal fun prepareChatCall(context: Context, target: String, http: OkHttpClient, request: Request, allowed: () -> Boolean = { true }, preserveCallTimeout: Boolean = false): Call? {
         observe(context)
         val token=cancellations.token()
         val ready = { allowed() && canUploadChat(context, target) }
@@ -95,7 +95,7 @@ object ImageUploadRuntime {
             .dns(object : okhttp3.Dns { override fun lookup(hostname: String) = network.getAllByName(hostname).toList() })
             .connectionPool(ConnectionPool(0,1,TimeUnit.SECONDS))
             // 亮屏大图按低速发送可能超过旧90秒；打字/断网仍立即取消，不靠超时避让。
-            .callTimeout(5,TimeUnit.MINUTES).build()
+            .apply { if (!preserveCallTimeout) callTimeout(5,TimeUnit.MINUTES) }.build()
         val guarded=GuardedChatBody(body,allowed={
             ready() && cancellations.token()==token && wifi(context)==network
         }, pause = { Thread.sleep(chunkPauseMillis(context)) })
@@ -103,6 +103,19 @@ object ImageUploadRuntime {
         cancellations.track(call, token)
         if (!ready() || cancellations.token()!=token || wifi(context)!=network) {
             call.cancel();cancellations.finish(call);return null
+        }
+        return call
+    }
+
+    /** 配置元信息复用输入取消，不依赖 Wi-Fi 或图片 body；不能用于截图上传。 */
+    internal fun prepareBackgroundCall(http: OkHttpClient, request: Request, allowed: () -> Boolean): Call? {
+        val token = cancellations.token()
+        val ready = { allowed() && isBackgroundWorkAllowed() }
+        if (!ready()) return null
+        val call = http.newCall(request)
+        cancellations.track(call, token)
+        if (!ready() || cancellations.token() != token) {
+            call.cancel(); cancellations.finish(call); return null
         }
         return call
     }

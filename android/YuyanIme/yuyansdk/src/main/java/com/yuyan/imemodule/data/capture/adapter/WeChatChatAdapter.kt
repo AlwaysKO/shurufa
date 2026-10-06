@@ -9,15 +9,37 @@ import com.yuyan.imemodule.data.capture.model.ConversationType
 import com.yuyan.imemodule.data.capture.ui.UiNodeSnapshot
 
 /** 微信聊天页截图适配器；只读取标题和输入框位置，不读取消息正文。 */
-class WeChatChatAdapter : ChatAppAdapter {
+class WeChatChatAdapter(private val ruleProvider: () -> ChatCaptureRule = { ChatCapturePolicy.builtIn().rule("com.tencent.mm", 0)!! }) : ChatAppAdapter {
     override val packageName: String = WECHAT_PACKAGE
 
     override fun parse(root: UiNodeSnapshot): ParseResult {
         if (com.yuyan.imemodule.data.capture.media.isWechatNonChatTree(root)) return ParseResult.Skip(SkipReason.UNSUPPORTED_PAGE)
-        val nodes = root.flatten()
+        val known = parseKnownPage(root)
+        if (known is ParseResult.Success) return known
+        // 配置只提供候选，旧锚点部分保留时也须完整通过同层多证据证明。
+        val structural = DouyinChatAdapter(ruleProvider, WECHAT_PACKAGE).parse(root)
+        if (structural !is ParseResult.Success) return known
+        val viewport = structural.viewport
+        return ParseResult.Success(viewport.copy(
+            conversation = viewport.conversation.copy(platform = ChatPlatform.WECHAT, accountKey = "wechat-local"),
+            messages = viewport.messages.map { it.copy(metadata = it.metadata + ("capture_source" to "wechat_screenshot")) },
+        ))
+    }
+
+    private fun parseKnownPage(root: UiNodeSnapshot): ParseResult {
+        val rawNodes = root.flatten()
+        val inputs = rawNodes.filter { it.isChatInput() }
+        if (inputs.size > 1) return ParseResult.Skip(SkipReason.AMBIGUOUS_CONVERSATION)
+        val inputNode = inputs.singleOrNull()
+        val nodes = if (inputNode == null) rawNodes else sameLayerNodes(root, inputNode)
+        if (inputNode != null && rawNodes.any { it.viewId.orEmpty().contains("chatting_title") } &&
+            nodes.none { it.viewId.orEmpty().contains("chatting_title") }) return ParseResult.Skip(SkipReason.UNSUPPORTED_PAGE)
         // 朋友圈评论/发现搜索也有EditText，不能把“有输入框”当成聊天页身份。
         val explicitChat = nodes.any { it.viewId.orEmpty().containsAny("chatting_title", "chatting_content_et", "chat_input") }
-        if (!explicitChat) fixedPageTitle(root, nodes)?.let { return parseFixedPage(root, it) }
+        if (!explicitChat) {
+            fixedPageTitle(root, if (nodes.isEmpty()) rawNodes else nodes)?.let { return parseFixedPage(root, it) }
+            return ParseResult.Skip(SkipReason.UNSUPPORTED_PAGE)
+        }
         val input = nodes.filter { it.isChatInput() || (it.visibleText()?.replace(" ", "") == "按住说话" && it.bounds.top > root.bounds.top + (root.bounds.bottom - root.bounds.top) / 2) }.maxByOrNull { it.bounds.top }
             ?: return ParseResult.Skip(SkipReason.UNSUPPORTED_PAGE)
         val titleNode = nodes.filter { it.isTitleCandidate(root.bounds.bottom) }
@@ -91,6 +113,26 @@ class WeChatChatAdapter : ChatAppAdapter {
                 mediaBounds = root.bounds, metadata = mapOf("capture_source" to "wechat_page_screenshot",
                     "capture_kind" to "conversation_screenshot", "conversation_identity_status" to "confirmed"))),
         ))
+    }
+
+    private fun sameLayerNodes(root: UiNodeSnapshot, input: UiNodeSnapshot): List<UiNodeSnapshot> {
+        fun path(node: UiNodeSnapshot): List<UiNodeSnapshot>? {
+            if (node === input) return listOf(node)
+            for (child in node.children) path(child)?.let { return listOf(node) + it }
+            return null
+        }
+        val ancestors = path(root) ?: return emptyList()
+        for (scope in ancestors.dropLast(1).asReversed()) {
+            val branch = ancestors[ancestors.indexOfFirst { it === scope } + 1]
+            val nodes = scope.children.flatMap { other ->
+                if (other === branch) other.flatten()
+                else if (other.bounds.left <= input.bounds.left && other.bounds.right >= input.bounds.right &&
+                    other.bounds.top <= input.bounds.top && other.bounds.bottom >= input.bounds.bottom) emptyList()
+                else other.flatten()
+            }
+            if (nodes.any { it.viewId.orEmpty().contains("chatting_title") }) return nodes
+        }
+        return emptyList()
     }
 
     private fun UiNodeSnapshot.visibleText(): String? = text ?: contentDescription
