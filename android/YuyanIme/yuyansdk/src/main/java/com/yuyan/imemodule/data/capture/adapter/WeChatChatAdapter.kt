@@ -13,6 +13,7 @@ class WeChatChatAdapter(private val ruleProvider: () -> ChatCaptureRule = { Chat
     override val packageName: String = WECHAT_PACKAGE
 
     override fun parse(root: UiNodeSnapshot): ParseResult {
+        if (!root.visibleToUser || root.flatten().any { it.password }) return ParseResult.Skip(SkipReason.UNSUPPORTED_PAGE)
         if (com.yuyan.imemodule.data.capture.media.isWechatNonChatTree(root)) return ParseResult.Skip(SkipReason.UNSUPPORTED_PAGE)
         val known = parseKnownPage(root)
         if (known is ParseResult.Success) return known
@@ -138,7 +139,7 @@ class WeChatChatAdapter(private val ruleProvider: () -> ChatCaptureRule = { Chat
     private fun UiNodeSnapshot.visibleText(): String? = text ?: contentDescription
 
     private fun UiNodeSnapshot.isChatInput(): Boolean =
-        className.orEmpty().endsWith("EditText") || viewId.orEmpty().containsAny("chatting_content_et", "chat_input")
+        editable || className.orEmpty().endsWith("EditText") || viewId.orEmpty().containsAny("chatting_content_et", "chat_input")
 
     private fun UiNodeSnapshot.isTitleCandidate(screenBottom: Int): Boolean {
         val value = visibleText()?.trim().orEmpty()
@@ -148,7 +149,8 @@ class WeChatChatAdapter(private val ruleProvider: () -> ChatCaptureRule = { Chat
     }
 
     private fun String.containsAny(vararg values: String): Boolean = values.any { contains(it, ignoreCase = true) }
-    private fun UiNodeSnapshot.flatten(): List<UiNodeSnapshot> = listOf(this) + children.flatMap { it.flatten() }
+    private fun UiNodeSnapshot.flatten(): List<UiNodeSnapshot> =
+        if (!visibleToUser) emptyList() else listOf(this) + children.flatMap { it.flatten() }
 
     private companion object {
         const val WECHAT_PACKAGE = "com.tencent.mm"

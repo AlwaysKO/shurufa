@@ -17,7 +17,7 @@ internal class BalancedLocationPolicy {
             if (jumpFilter.needsConfirmation) {
                 if (confirmationStartedAt == null && intervalMs == STATIONARY_INTERVAL_MS) confirmationStartedAt = elapsedMs
                 confirmationStartedAt?.let {
-                    intervalMs = if (elapsedMs - it in 0 until CONFIRMATION_WINDOW_MS) MOVING_INTERVAL_MS else STATIONARY_INTERVAL_MS
+                    intervalMs = if (elapsedMs - it in 0 until CONFIRMATION_WINDOW_MS) CONFIRMATION_INTERVAL_MS else STATIONARY_INTERVAL_MS
                 }
             } else if (confirmationStartedAt != null) {
                 confirmationStartedAt = null
@@ -47,7 +47,7 @@ internal class BalancedLocationPolicy {
     }
 
     fun confirmationDelayMs(elapsedMs: Long): Long? = confirmationStartedAt
-        ?.takeIf { intervalMs == MOVING_INTERVAL_MS }
+        ?.takeIf { intervalMs == CONFIRMATION_INTERVAL_MS }
         ?.let { (CONFIRMATION_WINDOW_MS - (elapsedMs - it)).coerceIn(0, CONFIRMATION_WINDOW_MS) }
 
     /** Expiry changes sampling only; a missing fix cannot confirm movement or create a report. */
@@ -64,7 +64,8 @@ internal class BalancedLocationPolicy {
     }
 
     companion object {
-        const val MOVING_INTERVAL_MS = 30_000L
+        const val MOVING_INTERVAL_MS = 60_000L
+        private const val CONFIRMATION_INTERVAL_MS = 30_000L
         const val STATIONARY_INTERVAL_MS = 300_000L
         private const val CONFIRMATION_WINDOW_MS = 60_000L
     }

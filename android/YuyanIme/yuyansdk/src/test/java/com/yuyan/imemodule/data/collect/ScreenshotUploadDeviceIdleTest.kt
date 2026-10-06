@@ -64,12 +64,13 @@ class ScreenshotUploadDeviceIdleTest {
         assertFalse(ImageUploadRuntime.canUploadScreenshot(context, target))
         CollectionConsent.setEnabled(context, true)
         ImageUploadRuntime.noteKeyActivity()
-        assertFalse(ImageUploadRuntime.canUploadScreenshot(context, target))
+        assertTrue(ImageUploadRuntime.canUploadScreenshot(context, target))
+        assertNull(ImageUploadRuntime.beginPreparation())
         ShadowSystemClock.advanceBy(Duration.ofMillis(3001))
         assertTrue(ImageUploadRuntime.canUploadScreenshot(context, target))
         assertFalse(ImageUploadRuntime.canUploadScreenshot(context, "http://127.0.0.1:3000"))
     }
-    @Test fun wakingScreenDoesNotInterruptChunkedUploadButTypingDoes() {
+    @Test fun wifiScreenshotTransferContinuesWhileTypingButPreparationStaysIdle() {
         val (context, _) = ready()
         val power = context.getSystemService(Context.POWER_SERVICE) as PowerManager
         Shadows.shadowOf(power).setIsInteractive(false)
@@ -84,8 +85,8 @@ class ScreenshotUploadDeviceIdleTest {
             if (++chunks == 2) ImageUploadRuntime.noteKeyActivity()
         })
         val paused = Buffer()
-        try { typing.writeTo(paused); fail("打字时必须暂停") } catch (_: IOException) { }
-        assertEquals(8192L, paused.size)
+        typing.writeTo(paused)
+        assertEquals(40_000L, paused.size)
     }
     @Test fun actualChatAndNavigationRequestsAcceptLitScreenAndGuardInputAndWifi() {
         val (context, caps) = ready()
@@ -103,7 +104,11 @@ class ScreenshotUploadDeviceIdleTest {
                 val sink = Buffer(); call.request().body!!.writeTo(sink)
                 assertEquals(1L, sink.size)
                 ImageUploadRuntime.noteKeyActivity()
-                try { call.request().body!!.writeTo(Buffer()); fail("输入必须中断已建请求") } catch (_: IOException) { }
+                if (path.endsWith("/assets")) {
+                    call.request().body!!.writeTo(Buffer())
+                } else {
+                    try { call.request().body!!.writeTo(Buffer()); fail("导航仍须输入空闲") } catch (_: IOException) { }
+                }
             } finally { if (call != null) ImageUploadRuntime.finishChatCall(call) }
         }
         ShadowSystemClock.advanceBy(Duration.ofMillis(3001))
@@ -113,6 +118,22 @@ class ScreenshotUploadDeviceIdleTest {
             Shadows.shadowOf(caps).removeCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
             try { call.request().body!!.writeTo(Buffer()); fail("失去Wi-Fi资格必须中断") } catch (_: IOException) { }
         } finally { ImageUploadRuntime.finishChatCall(call) }
+    }
+    @Test fun cellularAllowsTextAndNavigationButNeverChatAssets() {
+        val (context,caps)=ready()
+        Shadows.shadowOf(caps).removeTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+        Shadows.shadowOf(caps).addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
+        for(path in listOf("/api/v1/mobile/chat/messages/batch", "/api/v1/mobile/navigation-records")) {
+            val request=Request.Builder().url(ServerConfig.baseUrl+path).post(byteArrayOf(1).toRequestBody()).build()
+            val call=ImageUploadRuntime.prepareChatCall(context,ServerConfig.baseUrl,OkHttpClient(),request)
+            assertNotNull(path,call)
+            if(call!=null)ImageUploadRuntime.finishChatCall(call)
+        }
+        val request=Request.Builder().url(ServerConfig.baseUrl+"/api/v1/mobile/chat/assets").post(byteArrayOf(1).toRequestBody()).build()
+        assertNull(ImageUploadRuntime.prepareChatCall(context,ServerConfig.baseUrl,OkHttpClient(),request))
+        ImageUploadRuntime.noteKeyActivity()
+        val nav=request.newBuilder().url(ServerConfig.baseUrl+"/api/v1/mobile/navigation-records").build()
+        assertNull(ImageUploadRuntime.prepareChatCall(context,ServerConfig.baseUrl,OkHttpClient(),nav))
     }
     @Test fun screenOffHasLargerBudgetAndLitScreenRequestHasTimeToSendLargeImageSlowly() {
         val (context, _) = ready()

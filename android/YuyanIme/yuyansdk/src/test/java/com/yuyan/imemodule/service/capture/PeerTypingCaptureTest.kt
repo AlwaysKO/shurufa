@@ -48,6 +48,7 @@ class PeerTypingCaptureTest {
         val files = mutableSetOf<String>()
         fun node(id: String?, text: String?, bounds: Rect, clazz: String) = AccessibilityNodeInfo.obtain().apply {
             packageName = "com.tencent.mm"; viewIdResourceName = id; this.text = text; className = clazz
+            isVisibleToUser = true
             setBoundsInScreen(bounds)
         }
         fun root(title: String?): AccessibilityNodeInfo = node(null, null, Rect(0, 0, 1080, 1920), "android.widget.FrameLayout").apply {

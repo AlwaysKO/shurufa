@@ -1,13 +1,17 @@
 package com.yuyan.imemodule.data.collect
 
 import android.app.Activity
+import android.app.AppOpsManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.location.Location
 import android.location.LocationListener
@@ -30,6 +34,17 @@ class BalancedLocationService : Service() {
     private lateinit var manager: LocationManager
     private lateinit var preferences: SharedPreferences
     private var started = false
+    private var appOps: AppOpsManager? = null
+    private var locationStateRegistered = false
+    private val permissionChanged = Runnable {
+        if (started && !allowed()) finishSession()
+    }
+    private val appOpsListener = AppOpsManager.OnOpChangedListener { _, changedPackage ->
+        if (changedPackage == null || changedPackage == packageName) handler.post(permissionChanged)
+    }
+    private val locationStateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) = permissionChanged.run()
+    }
     private var activeListener: LocationListener? = null
     private var passiveListener: LocationListener? = null
     private val confirmationTimeout = Runnable {
@@ -48,7 +63,7 @@ class BalancedLocationService : Service() {
     private val checkPermission = object : Runnable {
         override fun run() {
             if (!allowed()) finishSession()
-            else if (started) handler.postDelayed(this, 10_000)
+            else if (started) handler.postDelayed(this, PERMISSION_FALLBACK_MS)
         }
     }
 
@@ -57,6 +72,17 @@ class BalancedLocationService : Service() {
         manager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         preferences = PreferenceManager.getDefaultSharedPreferences(this)
         preferences.registerOnSharedPreferenceChangeListener(preferenceListener)
+        appOps = getSystemService(Context.APP_OPS_SERVICE) as? AppOpsManager
+        for (op in listOf(AppOpsManager.OPSTR_FINE_LOCATION, AppOpsManager.OPSTR_COARSE_LOCATION)) {
+            runCatching { appOps?.startWatchingMode(op, packageName, appOpsListener) }
+        }
+        locationStateRegistered = runCatching {
+            ContextCompat.registerReceiver(this, locationStateReceiver, IntentFilter().apply {
+                addAction(LocationManager.MODE_CHANGED_ACTION)
+                addAction(LocationManager.PROVIDERS_CHANGED_ACTION)
+            }, ContextCompat.RECEIVER_NOT_EXPORTED)
+            true
+        }.getOrDefault(false)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -74,7 +100,7 @@ class BalancedLocationService : Service() {
             isRunning = true
             DataCollector.setBalancedLocationOwner(true)
             registerUpdates()
-            if (started) handler.post(checkPermission)
+            if (started) handler.postDelayed(checkPermission, PERMISSION_FALLBACK_MS)
         } catch (_: Exception) {
             finishSession()
         }
@@ -83,7 +109,17 @@ class BalancedLocationService : Service() {
 
     private fun allowed(): Boolean = preferences.getBoolean(KEY, false) &&
         CollectionConsent.enabled(this) && preferences.getBoolean("location_tracking_enable", true) &&
-        LocationPermissions.hasForegroundPermission(this) && LocationManagerCompat.isLocationEnabled(manager)
+        hasLocationAccess() && LocationManagerCompat.isLocationEnabled(manager)
+
+    @Suppress("DEPRECATION")
+    private fun hasLocationAccess(): Boolean = LocationPermissions.foregroundRequest().any { permission ->
+        if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) return@any false
+        val op = AppOpsManager.permissionToOp(permission) ?: return@any true
+        val mode = runCatching { appOps?.checkOpNoThrow(op, applicationInfo.uid, packageName) }
+            .getOrDefault(AppOpsManager.MODE_ERRORED)
+        mode == null || mode == AppOpsManager.MODE_ALLOWED || mode == AppOpsManager.MODE_DEFAULT ||
+            (Build.VERSION.SDK_INT >= 29 && mode == AppOpsManager.MODE_FOREGROUND)
+    }
 
     private fun receive(location: Location) {
         if (!started || !allowed()) { finishSession(); return }
@@ -92,7 +128,7 @@ class BalancedLocationService : Service() {
             if (location.hasAccuracy()) location.accuracy else Float.POSITIVE_INFINITY, location.time,
             location.provider, location.elapsedRealtimeNanos),
             LocationSpeedQuality.from(location).speedMps, SystemClock.elapsedRealtime())
-        DataCollector.reportBalancedLocation(this, location, policy.intervalMs)
+        DataCollector.reportBalancedLocation(this, location)
         if (oldInterval != policy.intervalMs) registerUpdates()
         handler.removeCallbacks(confirmationTimeout)
         if (started) policy.confirmationDelayMs(SystemClock.elapsedRealtime())?.let {
@@ -130,7 +166,7 @@ class BalancedLocationService : Service() {
             override fun onStatusChanged(provider: String?, status: Int, extras: android.os.Bundle?) = Unit
         }
         try {
-            manager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 30_000, 0f, passive, Looper.getMainLooper())
+            manager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, policy.intervalMs, 0f, passive, Looper.getMainLooper())
             passiveListener = passive
         } catch (_: Exception) { /* Active low-frequency requests remain. */ }
     }
@@ -156,6 +192,9 @@ class BalancedLocationService : Service() {
 
     override fun onDestroy() {
         preferences.unregisterOnSharedPreferenceChangeListener(preferenceListener)
+        runCatching { appOps?.stopWatchingMode(appOpsListener) }
+        if (locationStateRegistered) unregisterReceiver(locationStateReceiver)
+        locationStateRegistered = false
         finishSession()
         super.onDestroy()
     }
@@ -186,6 +225,7 @@ class BalancedLocationService : Service() {
         const val ACTION_STOP = "com.yuyan.imemodule.STOP_BALANCED_LOCATION"
         private const val CHANNEL = "balanced_location"
         private const val NOTIFICATION_ID = 2107
+        private const val PERMISSION_FALLBACK_MS = 30 * 60_000L
         @Volatile var isRunning = false
             private set
 

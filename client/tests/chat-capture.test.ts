@@ -614,14 +614,14 @@ it('截断来源不在首页时按ID恢复，不再按相同简称查组',async(
  expect(view.find('chat-conversation-81')!.props.class).toContain('selected');
 });
 
-it('截断群名以待确认开头也保留可见名称和截断标注',async()=>{
+it('截断群名保留可见名称且历史提示不出现在列表或删除确认',async()=>{
  fakeChatStorage();const name='待确认订单…门店（名称被截断）';
  const partial={...rememberedChat(81),external_key:'screenshot-v2:truncated:11111111-1111-1111-1111-111111111111',display_name:name,identity_confidence:.55,is_name_group:false,group_name:null};
  const view=await mountChatCapture({chatConversations:async()=>({total:1,conversations:[partial]})});
- expect(view.text()).toContain(name);
+ expect(view.text()).toContain('待确认订单…门店');expect(view.text()).not.toContain('（名称被截断）');
  const previous=globalThis.window,confirm=vi.fn().mockReturnValue(false);
  globalThis.window={confirm} as unknown as Window & typeof globalThis;
- try { view.find('chat-delete-conversation')!.props.onClick();await settle();expect(confirm.mock.calls[0][0]).toContain(name); }
+ try { view.find('chat-delete-conversation')!.props.onClick();await settle();expect(confirm.mock.calls[0][0]).toContain('待确认订单…门店');expect(confirm.mock.calls[0][0]).not.toContain('（名称被截断）'); }
  finally {globalThis.window=previous;}
 });
 
@@ -1007,4 +1007,84 @@ it('仅历史标题推测的非聊天页面明确标为疑似，保留人工确�
   expect(view.text()).toContain('疑似非聊天页面，请看图确认');
   expect(view.find('chat-confirm-source-message-8')).toBeDefined();
   expect(view.find('chat-confirm-source-message-8')!.props.disabled).toBe(false);
+});
+
+
+it('完整会话实际名称里的截断字样不被当作历史提示清除',async()=>{
+ fakeChatStorage();const name='项目（名称被截断）';
+ const view=await mountChatCapture({chatConversations:async()=>({total:1,conversations:[{...rememberedChat(83),display_name:name,external_key:'header:real-name'}]})});
+ expect(view.text()).toContain(name);
+});
+
+it('刷新当前抖音列表能显示后来收到的截图并合并重复刷新请求', async () => {
+  let arrived = false;
+  const chatConversations = vi.fn(async (_page, _size, platform) => ({ total: arrived ? 1 : 0, conversations: arrived ? [{
+    id: 42, platform, account_key: 'douyin-local', external_key: 'capture-v3:sample', display_name: '测试会话',
+    conversation_type: 'unknown', identity_confidence: .85, message_count: 1,
+  }] : [] }));
+  const chatMessages = vi.fn(async () => ({ total: 0, messages: [] }));
+  const view = await mountChatCapture({ chatConversations, chatMessages });
+  view.find('chat-tab-douyin')!.props.onClick(); await settle();
+  expect(view.text()).not.toContain('测试会话');
+  arrived = true;
+  const before = chatConversations.mock.calls.length;
+  const refresh = view.find('chat-refresh');
+  expect(refresh).toBeDefined();
+  refresh!.props.onClick(); refresh!.props.onClick(); await settle();
+  expect(chatConversations).toHaveBeenCalledTimes(before + 1);
+  expect(chatConversations.mock.calls.at(-1)?.[2]).toBe('douyin');
+  expect(view.text()).toContain('测试会话');
+  expect(chatMessages.mock.calls.at(-1)?.[0]).toBe(42);
+  expect(view.find('chat-tab-douyin')!.props['aria-selected']).toBe(true);
+});
+
+const retentionPreview = { token:'preview-token', days:7, include_images:false, cutoff:'2026-09-29T04:00:00Z', total_messages:501, total_images:0, first_captured_at:'2026-09-01T00:00:00Z', last_captured_at:'2026-09-28T00:00:00Z' };
+async function mountRetention(overrides:Record<string,any>={}) {
+  fakeChatStorage();
+  return mountChatCapture({chatConversations:async()=>({total:1,conversations:[{...rememberedChat(-1),is_pending_group:true}]}),
+    chatMessages:async()=>({total:5000,messages:[]}), ...overrides});
+}
+it.each([7,30])('保留%d天先预览全范围，确认一次后自动跨页分批清理',async days=>{
+ const previous=globalThis.window;const confirm=vi.fn(()=>true);Object.assign(globalThis,{window:{confirm}});
+ const preview=vi.fn(async()=>({...retentionPreview,days}));
+ const batch=vi.fn().mockResolvedValueOnce({processed:200,total:501,deleted_messages:200,skipped_messages:0,done:false,files_pending:false})
+  .mockResolvedValueOnce({processed:501,total:501,deleted_messages:500,skipped_messages:1,done:true,files_pending:false});
+ try{const view=await mountRetention({previewPendingChatCleanup:preview,deletePendingChatCleanupBatch:batch});
+ expect(view.find(`pending-keep-${days}`)).toBeDefined();view.find(`pending-keep-${days}`)!.props.onClick();await settle();await settle();
+ expect(preview).toHaveBeenCalledExactlyOnceWith({days,include_images:false,platform:'wechat'});
+ expect(confirm).toHaveBeenCalledOnce();expect(confirm.mock.calls[0][0]).toContain('501');
+ expect(batch.mock.calls.map(c=>c[0])).toEqual([{confirm:'DELETE',token:'preview-token',offset:0},{confirm:'DELETE',token:'preview-token',offset:200}]);
+ expect(view.text()).toContain('500');expect(view.text()).toContain('跳过 1');
+ }finally{Object.assign(globalThis,{window:previous});}
+});
+it.each(['取消','切换手机'])('旧记录清理%s后不执行',async mode=>{
+ const previous=globalThis.window;let answer!:(value:boolean)=>void;Object.assign(globalThis,{window:{confirm:()=>new Promise(r=>{answer=r;})}});
+ const batch=vi.fn();try{const view=await mountRetention({previewPendingChatCleanup:async()=>retentionPreview,deletePendingChatCleanupBatch:batch});
+ expect(view.find('pending-keep-7')).toBeDefined();view.find('pending-keep-7')!.props.onClick();await settle();
+ if(mode==='切换手机'){view.currentUserId.value='other';await settle();}answer(mode!=='取消');await settle();expect(batch).not.toHaveBeenCalled();
+ }finally{Object.assign(globalThis,{window:previous});}
+});
+it('图片范围显式选择，空预览不弹删除确认',async()=>{
+ const previous=globalThis.window;const confirm=vi.fn();Object.assign(globalThis,{window:{confirm}});
+ const preview=vi.fn(async()=>({...retentionPreview,total_messages:0}));try{const view=await mountRetention({previewPendingChatCleanup:preview});
+ expect(view.find('pending-cleanup-images')).toBeDefined();view.find('pending-cleanup-images')!.props['onUpdate:modelValue'](true);await settle();view.find('pending-keep-30')!.props.onClick();await settle();
+ expect(preview).toHaveBeenCalledWith({days:30,include_images:true,platform:'wechat'});expect(confirm).not.toHaveBeenCalled();expect(view.text()).toContain('没有需要清理');
+ }finally{Object.assign(globalThis,{window:previous});}
+});
+it('清理部分成功后网络失败显示进度，不假装全部完成',async()=>{
+ const previous=globalThis.window;Object.assign(globalThis,{window:{confirm:()=>true}});
+ const batch=vi.fn().mockResolvedValueOnce({processed:200,total:501,deleted_messages:200,skipped_messages:0,done:false,files_pending:false}).mockRejectedValueOnce(Error('连接中断'));
+ try{const view=await mountRetention({previewPendingChatCleanup:async()=>retentionPreview,deletePendingChatCleanupBatch:batch});
+ expect(view.find('pending-keep-7')).toBeDefined();view.find('pending-keep-7')!.props.onClick();await settle();await settle();
+ expect(view.text()).toContain('200');expect(view.text()).toContain('连接中断');expect(view.text()).not.toContain('清理完成');
+ }finally{Object.assign(globalThis,{window:previous});}
+});
+
+it.each(['往返切换手机','卸载'])('批次等待期间%s，不继续下一批',async mode=>{
+ const previous=globalThis.window;Object.assign(globalThis,{window:{confirm:()=>true}});
+ let finish!:(value:unknown)=>void;const batch=vi.fn().mockImplementationOnce(()=>new Promise(resolve=>{finish=resolve;})).mockResolvedValue({processed:501,total:501,deleted_messages:501,skipped_messages:0,done:true,files_pending:false});
+ try{const view=await mountRetention({previewPendingChatCleanup:async()=>retentionPreview,deletePendingChatCleanupBatch:batch});view.find('pending-keep-7')!.props.onClick();await settle();expect(batch).toHaveBeenCalledTimes(1);
+ if(mode==='卸载')view.unmount();else{view.currentUserId.value='other';await settle();view.currentUserId.value='user-a';await settle();}
+ finish({processed:200,total:501,deleted_messages:200,skipped_messages:0,done:false,files_pending:false});await settle();expect(batch).toHaveBeenCalledTimes(1);
+ }finally{Object.assign(globalThis,{window:previous});}
 });

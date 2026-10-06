@@ -13,6 +13,7 @@ import com.yuyan.imemodule.data.capture.CapturePersistResult
 import com.yuyan.imemodule.data.capture.RoomCaptureOutboxStore
 import com.yuyan.imemodule.data.capture.db.CaptureDatabase
 import com.yuyan.imemodule.data.capture.net.CaptureUploader
+import com.yuyan.imemodule.data.capture.net.CaptureWorkSignal
 import com.yuyan.imemodule.data.capture.notification.NotificationMediaImporter
 import com.yuyan.imemodule.data.capture.notification.NotificationEventDeduplicator
 import com.yuyan.imemodule.data.capture.notification.NotificationParser
@@ -32,7 +33,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.CancellationException
@@ -56,6 +56,7 @@ class PassiveNotificationListener : NotificationListenerService() {
     private var waitingForOpenStore: NotificationScreenshotFallbackStore? = null
     private var packetRebindRequested = false
     private var deferredMedia: DeferredNotificationMedia? = null
+    private val deferredMediaSignal = CaptureWorkSignal()
 
     override fun onListenerConnected() {
         super.onListenerConnected()
@@ -99,7 +100,8 @@ class PassiveNotificationListener : NotificationListenerService() {
                     if (!currentCoroutineContext().isActive) throw cancelled
                     false // 输入优先暂停不等于服务关闭；已暂存任务保持可恢复。
                 } catch (_: Exception) { false }
-                delay(if (!ImageUploadRuntime.isBackgroundWorkAllowed()) 30_000 else if (processed) 1_000 else 3_000)
+                val pending = runCatching { deferredMedia?.hasPending() == true }.getOrDefault(true)
+                deferredMediaSignal.awaitNext(processed && ImageUploadRuntime.isBackgroundWorkAllowed(), hasPending = pending)
             }
         }
     }
@@ -183,7 +185,10 @@ class PassiveNotificationListener : NotificationListenerService() {
                     if (!CollectionConsent.enabled(this@PassiveNotificationListener)) return@withContext null
                     deferredMedia?.stage(snapshot) { contentResolver.openInputStream(Uri.parse(parsed.mediaUri)) }
                 }
-                if (staged == DeferredMediaStage.Stored || staged == DeferredMediaStage.AlreadyStored) return@launch
+                if (staged == DeferredMediaStage.Stored || staged == DeferredMediaStage.AlreadyStored) {
+                    deferredMediaSignal.wake()
+                    return@launch
+                }
                 // 拒绝新任务不删除旧待办，也不让通知去重阻止原 URI 再次保存。
                 eventDeduplicator.remove(snapshot.notificationKey)
                 val reason = (staged as? DeferredMediaStage.Rejected)?.reason ?: "service_stopped"

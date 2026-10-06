@@ -43,20 +43,35 @@ class LocationUploadPolicyTest {
 
     @Test
     fun `uncertain location over fifty meters cannot create new reports`() {
-        for (interval in listOf(null, 30_000L, 300_000L)) {
-            assertTrue(LocationUploadPolicy.shouldUpload(now, candidate(accuracyMeters = 50f), null, interval))
-            assertFalse(LocationUploadPolicy.shouldUpload(now, candidate(accuracyMeters = 50.01f), null, interval))
-            assertFalse(LocationUploadPolicy.shouldUpload(now, candidate(accuracyMeters = 100f), null, interval))
-        }
+        assertTrue(LocationUploadPolicy.shouldUpload(now, candidate(accuracyMeters = 50f), null))
+        assertFalse(LocationUploadPolicy.shouldUpload(now, candidate(accuracyMeters = 50.01f), null))
+        assertFalse(LocationUploadPolicy.shouldUpload(now, candidate(accuracyMeters = 100f), null))
     }
 
     @Test
-    fun `successful upload is rate limited for one minute`() {
-        val last = uploaded(uploadedAtMs = now - 59_999)
+    fun `successful persistence is rate limited for five minutes`() {
+        val last = uploaded(uploadedAtMs = now - 299_999)
         val moved = candidate(latitude = 23.136)
 
         assertFalse(LocationUploadPolicy.shouldUpload(now, moved, last))
-        assertTrue(LocationUploadPolicy.shouldUpload(now, moved, last.copy(uploadedAtMs = now - 60_000)))
+        assertTrue(LocationUploadPolicy.shouldUpload(now, moved, last.copy(uploadedAtMs = now - 300_000)))
+    }
+
+    @Test
+    fun `fresh moved points throughout the first five minutes are suppressed`() {
+        val moved = candidate(latitude = 23.136)
+        for (elapsed in listOf(30_000L, 60_000L, 299_999L)) {
+            assertFalse("elapsed=$elapsed",
+                LocationUploadPolicy.shouldUpload(now, moved, uploaded(uploadedAtMs = now - elapsed)))
+        }
+        assertTrue(LocationUploadPolicy.shouldUpload(now, moved, uploaded(uploadedAtMs = now - 300_000)))
+    }
+
+    @Test
+    fun `restored persistence time controls cooldown despite older capture time`() {
+        val restored = uploaded(locationTimeMs = now - 360_000, uploadedAtMs = now - 299_999)
+        assertFalse(LocationUploadPolicy.shouldUpload(now, candidate(latitude = 23.136), restored))
+        assertTrue(LocationUploadPolicy.shouldUpload(now + 1, candidate(latitude = 23.136), restored))
     }
 
     @Test
@@ -76,14 +91,12 @@ class LocationUploadPolicyTest {
     }
 
     @Test
-    fun `all modes suppress unchanged position indefinitely and ignore accuracy drift`() {
-        for (interval in listOf(null, 30_000L, 300_000L)) {
-            val last = uploaded(locationTimeMs = now - 86_400_000, uploadedAtMs = now - 86_400_000)
-            assertFalse(LocationUploadPolicy.shouldUpload(now, candidate(), last, interval))
-            assertFalse(LocationUploadPolicy.shouldUpload(now, candidate(latitude = 23.1352, accuracyMeters = 5f), last, interval))
-            assertFalse(LocationUploadPolicy.shouldUpload(now, candidate(latitude = 23.1356, accuracyMeters = 40f), last.copy(accuracyMeters = 40f), interval))
-            assertTrue(LocationUploadPolicy.shouldUpload(now, candidate(latitude = 23.1360, accuracyMeters = 40f), last.copy(accuracyMeters = 40f), interval))
-        }
+    fun `shared policy suppresses unchanged position indefinitely and ignores accuracy drift`() {
+        val last = uploaded(locationTimeMs = now - 86_400_000, uploadedAtMs = now - 86_400_000)
+        assertFalse(LocationUploadPolicy.shouldUpload(now, candidate(), last))
+        assertFalse(LocationUploadPolicy.shouldUpload(now, candidate(latitude = 23.1352, accuracyMeters = 5f), last))
+        assertFalse(LocationUploadPolicy.shouldUpload(now, candidate(latitude = 23.1356, accuracyMeters = 40f), last.copy(accuracyMeters = 40f)))
+        assertTrue(LocationUploadPolicy.shouldUpload(now, candidate(latitude = 23.1360, accuracyMeters = 40f), last.copy(accuracyMeters = 40f)))
     }
 
     private fun candidate(
@@ -97,7 +110,7 @@ class LocationUploadPolicyTest {
         latitude: Double = 23.1350,
         longitude: Double = 113.2360,
         accuracyMeters: Float = 10f,
-        locationTimeMs: Long = now - 120_000,
-        uploadedAtMs: Long = now - 120_000,
+        locationTimeMs: Long = now - 600_000,
+        uploadedAtMs: Long = now - 600_000,
     ) = UploadedLocation(latitude, longitude, accuracyMeters, locationTimeMs, uploadedAtMs)
 }

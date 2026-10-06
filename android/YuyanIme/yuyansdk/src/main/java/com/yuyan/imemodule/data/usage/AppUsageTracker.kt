@@ -36,6 +36,7 @@ object AppUsageTracker {
     private val scope=CoroutineScope(SupervisorJob()+Dispatchers.IO)
     private val sampleLock=Any()
     private val syncMutex=Mutex()
+    private val syncCadence=com.yuyan.imemodule.data.collect.CollectorSyncCadence(wifiIntervalMs=300_000L, now=SystemClock::elapsedRealtime)
     private val http=OkHttpClient.Builder().addInterceptor(GameWorkRuntime.interceptor).connectTimeout(5,TimeUnit.SECONDS).readTimeout(10,TimeUnit.SECONDS).callTimeout(15,TimeUnit.SECONDS).build()
     private val names=AppNameResolver()
     private var loop: Job?=null
@@ -176,12 +177,15 @@ object AppUsageTracker {
         val j=JSONObject(body); j.optBoolean("ok") && !j.optBoolean("discarded") && j.optInt("received",-1)==received
     } catch (_: Exception) { false }
 
-    suspend fun sync(context: Context) = withContext(Dispatchers.IO) {
+    suspend fun sync(context: Context, userInitiated: Boolean = false) = withContext(Dispatchers.IO) {
         syncMutex.withLock {
             appContext=context.applicationContext
             if(!enabled(context)) return@withLock
             sample(context)
-            if(!hasPermission(context) || !GameWorkRuntime.isBackgroundAllowed()) return@withLock
+            if(!hasPermission(context) || !com.yuyan.imemodule.data.collect.ImageUploadRuntime.isBackgroundWorkAllowed() ||
+                !com.yuyan.imemodule.data.collect.collectorNetworkAvailable(context)) return@withLock
+            // 仍按原频率本地采样，仅合并移动网络上的批量上报。
+            if(!syncCadence.tryStart(com.yuyan.imemodule.data.collect.ImageUploadRuntime.hasValidatedWifi(context),userInitiated)) return@withLock
             ServerConfig.init(context)
             val gate=collectorTargetGate(context,ServerConfig.baseUrl)
             val homePackages=usageHomePackages(context)

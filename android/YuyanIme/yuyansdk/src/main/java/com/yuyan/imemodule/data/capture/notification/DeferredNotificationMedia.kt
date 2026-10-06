@@ -67,6 +67,9 @@ internal class DeferredNotificationMedia(
         } finally { temporary.deleteRecursively() }
     }
 
+    /** 仅检查提交目录，不在暂停期间读取通知正文或图片。 */
+    @Synchronized fun hasPending(): Boolean = committedDirectories().isNotEmpty()
+
     @Synchronized fun pending(): List<DeferredMediaItem> = committedDirectories().mapNotNull { task ->
         runCatching {
             val metadata = File(task, "snapshot.json")

@@ -26,7 +26,7 @@ internal data class UploadedLocation(
 
 internal object LocationUploadPolicy {
     private const val MAX_LOCATION_AGE_MS = 60_000L
-    private const val MIN_UPLOAD_INTERVAL_MS = 60_000L
+    private const val MIN_UPLOAD_INTERVAL_MS = 300_000L
     private const val MAX_ACCURACY_METERS = 50f
     private const val MIN_MOVEMENT_METERS = 50.0
     private const val EARTH_RADIUS_METERS = 6_371_000.0
@@ -35,7 +35,6 @@ internal object LocationUploadPolicy {
         nowMs: Long,
         candidate: LocationCandidate,
         lastUploaded: UploadedLocation?,
-        balancedIntervalMs: Long? = null,
     ): Boolean {
         val ageMs = nowMs - candidate.locationTimeMs
         if (ageMs !in 0..MAX_LOCATION_AGE_MS) return false
@@ -46,9 +45,8 @@ internal object LocationUploadPolicy {
             !candidate.longitude.isFinite() || candidate.longitude !in -180.0..180.0) return false
         if (lastUploaded == null) return true
         if (candidate.locationTimeMs <= lastUploaded.locationTimeMs) return false
-        if (balancedIntervalMs != null) {
-            if (candidate.locationTimeMs - lastUploaded.locationTimeMs < balancedIntervalMs) return false
-        } else if (nowMs - lastUploaded.uploadedAtMs < MIN_UPLOAD_INTERVAL_MS) return false
+        // All collectors share the persisted report baseline, independent of sampling or network.
+        if (nowMs - lastUploaded.uploadedAtMs < MIN_UPLOAD_INTERVAL_MS) return false
 
         val requiredMovement = max(
             MIN_MOVEMENT_METERS,

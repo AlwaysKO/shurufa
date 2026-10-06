@@ -10,6 +10,10 @@ internal interface SnapshotNodeSource {
     val contentDescription: String?
     val bounds: IntRect
     val childCount: Int
+    val editable: Boolean get() = false
+    val scrollable: Boolean get() = false
+    val password: Boolean get() = false
+    val visibleToUser: Boolean get() = true
     fun childAt(index: Int): SnapshotNodeSource?
     fun close() = Unit
 }
@@ -40,10 +44,14 @@ internal fun snapshotTree(
         return UiNodeSnapshot(
             viewId = source.viewId,
             className = source.className,
-            text = source.text,
-            contentDescription = source.contentDescription,
+            text = if (source.password) null else source.text,
+            contentDescription = if (source.password) null else source.contentDescription,
             bounds = source.bounds,
             children = children,
+            editable = source.editable,
+            scrollable = source.scrollable,
+            password = source.password,
+            visibleToUser = source.visibleToUser,
         )
     }
 
@@ -75,6 +83,10 @@ class AccessibilityTreeReader(
                 return IntRect(rect.left, rect.top, rect.right, rect.bottom)
             }
         override val childCount: Int get() = node.childCount
+        override val editable: Boolean get() = node.isEditable
+        override val scrollable: Boolean get() = node.isScrollable
+        override val password: Boolean get() = node.isPassword
+        override val visibleToUser: Boolean get() = node.isVisibleToUser
         override fun childAt(index: Int): SnapshotNodeSource? =
             node.getChild(index)?.let { AccessibilityNodeSource(it, ownsNode = true) }
 

@@ -127,7 +127,8 @@ function speedIssue(point: LocationRow): string | null {
       (c?.speed_quality_reason != null && c.speed_quality_reason !== 'accurate')) {
     return c?.speed_quality_reason === 'poor_location_accuracy' ? '位置精度不足' :
       c?.speed_quality_reason === 'poor_speed_accuracy' ? '速度精度不足' :
-      c?.speed_quality_reason === 'missing_speed_accuracy' ? '未提供速度精度' : '速度未通过可信度校验';
+      c?.speed_quality_reason === 'missing_speed_accuracy' ? '未提供速度精度' :
+      c?.speed_quality_reason === 'missing_speed' ? '未提供速度' : '速度未通过可信度校验';
   }
   if (speed == null) return '未提供有效速度';
   if (!Number.isFinite(speed * 3.6)) return '速度换算超出可显示范围';
@@ -142,7 +143,8 @@ function speedIssue(point: LocationRow): string | null {
 export function speedLabel(point: LocationRow) {
   if (point.speed == null && point.context?.raw_speed_mps == null &&
       point.context?.speed_quality !== 'unreliable') return '未知（未提供速度）';
-  return speedIssue(point) == null ? `${(Number(point.speed) * 3.6).toFixed(1)} km/h` : '未知（可信度不足）';
+  const issue = speedIssue(point);
+  return issue == null ? `${(Number(point.speed) * 3.6).toFixed(1)} km/h` : `未知（${issue}）`;
 }
 export function speedDetails(point: LocationRow) {
   const raw = nonnegative(point.context?.raw_speed_mps ?? point.speed);
@@ -160,9 +162,9 @@ export function contextDetails(point: LocationRow) {
   if (c.charging != null) details.push(c.charging ? '充电中' : '未充电');
   if (c.is_interactive != null) details.push(c.is_interactive ? '亮屏' : '熄屏');
   if (c.power_save != null) details.push(c.power_save ? '省电模式' : '正常电源模式');
-  if (c.altitude_m != null) details.push(`定位高度 ${c.altitude_m.toFixed(1)} m`);
+  if (c.altitude_m != null) details.push(`参考高度 ${c.altitude_m.toFixed(1)} m（WGS84 椭球高，非海拔；垂直精度未记录）`);
   if (c.bearing_deg != null) details.push(`移动方向 ${c.bearing_deg.toFixed(0)}°`);
-  if (c.speed_accuracy_mps != null) details.push(`速度误差 ±${c.speed_accuracy_mps.toFixed(1)} m/s`);
+  if (c.speed_accuracy_mps != null) details.push(`速度估计误差 ±${c.speed_accuracy_mps.toFixed(1)} m/s（68%置信范围）`);
   return details.join(' · ') || '未采集';
 }
 export function escapeLocationHtml(value: string) {

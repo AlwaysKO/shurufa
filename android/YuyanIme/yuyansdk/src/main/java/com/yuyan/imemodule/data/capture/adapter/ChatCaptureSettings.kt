@@ -3,6 +3,7 @@ package com.yuyan.imemodule.data.capture.adapter
 import android.content.Context
 import android.os.Build
 import com.yuyan.imemodule.data.collect.CollectionConsent
+import com.yuyan.imemodule.data.collect.BackgroundRefreshRuntime
 import com.yuyan.imemodule.data.collect.DataCollector
 import com.yuyan.imemodule.data.collect.GameWorkRuntime
 import com.yuyan.imemodule.data.collect.ImageUploadRuntime
@@ -14,7 +15,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.util.concurrent.TimeUnit
 
-/** IO 周期接线由已有 Collector 驱动；事件解析只读内存，绝不查询 PM 或联网。 */
+/** 后台拉取加入共享刷新批次；事件解析只读内存，绝不查询 PM 或联网。 */
 object ChatCaptureSettings {
     @Volatile private var runtime: ChatCaptureRefreshController? = null
     private val http = OkHttpClient.Builder().addInterceptor(GameWorkRuntime.interceptor)
@@ -25,13 +26,25 @@ object ChatCaptureSettings {
     fun version(packageName: String): CaptureAppVersion? = runtime?.version(packageName)
     fun cancel() { http.dispatcher.cancelAll() }
 
-    suspend fun refresh(context: Context) = withContext(Dispatchers.IO) {
+    suspend fun refresh(context: Context, userInitiated: Boolean = false) = withContext(Dispatchers.IO) {
         val app = context.applicationContext
         if (!CollectionConsent.enabled(app) || !ImageUploadRuntime.isBackgroundWorkAllowed()) return@withContext
-        val controller = synchronized(this@ChatCaptureSettings) {
-            runtime ?: create(app).also { runtime = it }
-        }
-        controller.refresh(ServerConfig.baseUrl)
+        controller(app).restore(ServerConfig.baseUrl)
+        BackgroundRefreshRuntime.request(app, userInitiated)
+    }
+    /** 由前台已有采集任务触发，仅更新本地宿主版本/缓存，不唤醒网络批次。 */
+    suspend fun refreshLocal(context: Context) = withContext(Dispatchers.IO) {
+        val app = context.applicationContext
+        if (!CollectionConsent.enabled(app) || !ImageUploadRuntime.isBackgroundWorkAllowed()) return@withContext
+        controller(app).restore(ServerConfig.baseUrl)
+    }
+    internal suspend fun refreshInBatch(context: Context) = withContext(Dispatchers.IO) {
+        val app = context.applicationContext
+        if (!CollectionConsent.enabled(app) || !ImageUploadRuntime.isBackgroundWorkAllowed()) return@withContext
+        controller(app).refresh(ServerConfig.baseUrl, userInitiated = true)
+    }
+    private fun controller(app: Context) = synchronized(this) {
+        runtime ?: create(app).also { runtime = it }
     }
     private fun create(app: Context): ChatCaptureRefreshController {
         val prefs = app.getSharedPreferences("chat_capture_policy_v1", Context.MODE_PRIVATE)
@@ -56,7 +69,7 @@ object ChatCaptureSettings {
             fetch = fetch@ { source ->
                 val request = Request.Builder().url("$source/api/v1/mobile/chat-capture-config")
                     .header("X-Device-Id", DataCollector.deviceId(app)).get().build()
-                val allowed = { CollectionConsent.enabled(app) && ImageUploadRuntime.isBackgroundWorkAllowed() && ServerConfig.baseUrl == source }
+                val allowed = { CollectionConsent.enabled(app) && ImageUploadRuntime.isBackgroundWorkAllowed() && ImageUploadRuntime.hasValidatedNetwork(app) && ServerConfig.baseUrl == source }
                 val call = ImageUploadRuntime.prepareBackgroundCall(http, request, allowed) ?: return@fetch null
                 try { call.execute().use { response ->
                     val body = response.body

@@ -8,19 +8,20 @@ import com.yuyan.imemodule.data.capture.db.PendingMessageEntity
 import com.yuyan.imemodule.data.collect.CollectionConsent
 import com.yuyan.imemodule.data.collect.DataCollector
 import com.yuyan.imemodule.data.collect.ImageUploadRuntime
-import com.yuyan.imemodule.data.collect.GameWorkRuntime
 import com.yuyan.imemodule.data.collect.ServerConfig
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.JsonNull
 import java.io.File
 import java.util.concurrent.atomic.AtomicLong
 
@@ -76,7 +77,15 @@ class CaptureUploader(
         for (message in dao.readyMessages(now, MAX_MESSAGE_BATCH)) {
             if (!backgroundAllowed()) break
             try {
-                decoded += message to api.decodeMessagePayload(message.payloadJson)
+                val payload = api.decodeMessagePayload(message.payloadJson)
+                // 旧队列也可能只在依赖列保留图片引用；合并真实依赖，不能误当无图文字结束。
+                val dependencies = requiredAssets(message)
+                val existing = payload.message["asset_sha256"]
+                val assetReferences = (existing as? JsonArray)?.toList().orEmpty()
+                val restored = if (dependencies.isNotEmpty() && (existing == null || existing == JsonNull || existing is JsonArray)) payload.copy(
+                    message = JsonObject(payload.message + ("asset_sha256" to JsonArray((assetReferences + dependencies.map(::JsonPrimitive)).distinct())))
+                ) else payload
+                decoded += message to restored
             } catch (_: Exception) {
                 processed += 1
                 failures += 1
@@ -132,14 +141,12 @@ class CaptureUploader(
     companion object {
         private const val MAX_ASSET_BATCH = 2
         private const val MAX_MESSAGE_BATCH = 20
-        private const val IDLE_DELAY_MILLIS = 3_000L
-        private const val ACTIVE_DELAY_MILLIS = 1_000L
         private val startLock = Any()
         private var uploadJob: Job? = null
-        private val wakeSignal = Channel<Unit>(Channel.CONFLATED)
+        private val wakeSignal = CaptureWorkSignal()
 
         fun wake() {
-            wakeSignal.trySend(Unit)
+            wakeSignal.wake()
         }
 
         fun start(context: Context) {
@@ -152,17 +159,13 @@ class CaptureUploader(
                     dao = database.captureDao(),
                     api = CaptureApi(ServerConfig.baseUrl, DataCollector.deviceId(appContext), enqueue = { path, body ->
                         DataCollector.enqueueRawReport(appContext, path, body)
-                    }, backgroundAllowed = GameWorkRuntime::isBackgroundAllowed),
+                    }, backgroundAllowed = ImageUploadRuntime::isBackgroundWorkAllowed),
                     assetFile = { hash -> File(appContext.cacheDir, "chat-capture/$hash") },
                     beginPreparation = ImageUploadRuntime::beginPreparation,
-                    backgroundAllowed = GameWorkRuntime::isBackgroundAllowed,
+                    backgroundAllowed = ImageUploadRuntime::isBackgroundWorkAllowed,
                 )
                 uploadJob = CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
                     while (isActive) {
-                        if (!GameWorkRuntime.isBackgroundAllowed()) {
-                            delay(30_000)
-                            continue
-                        }
                         val result = try {
                             if (CollectionConsent.enabled(appContext)) uploader.runOnce()
                             else UploadRunResult(0, 0)
@@ -170,8 +173,13 @@ class CaptureUploader(
                             uploader.internalFailureCount.incrementAndGet()
                             UploadRunResult(processed = 0, failures = 1)
                         }
-                        val waitMillis = if (result.processed > 0) ACTIVE_DELAY_MILLIS else IDLE_DELAY_MILLIS
-                        withTimeoutOrNull(waitMillis) { wakeSignal.receive() }
+                        val pending = try { database.captureDao().hasPendingWork() }
+                        catch (cancelled: CancellationException) { throw cancelled }
+                        catch (_: Exception) { true }
+                        wakeSignal.awaitNext(
+                            processed = result.processed > 0 && ImageUploadRuntime.isBackgroundWorkAllowed(),
+                            hasPending = pending,
+                        )
                     }
                 }
             }

@@ -646,6 +646,17 @@ export interface AppUsageDayData {
   day: string; start_ms: number; end_ms: number; total: number; limit: number; truncated: boolean;
   records: Array<AppUsageData['records'][number] & { clipped_start_ms: number; clipped_end_ms: number }>;
 }
+async function pendingChatCleanup<T>(action: 'preview' | 'batch', body: unknown): Promise<T> {
+  const response = await dashboardFetch(withDashboardUser(`/api/v1/dashboard/chat/pending/cleanup/${action}`), {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    const detail = await response.json().catch(() => null);
+    throw new Error(typeof detail?.error === 'string' ? detail.error : `清理请求失败（${response.status}）`);
+  }
+  return response.json() as Promise<T>;
+}
+
 export const api = {
   navigationRecords: (page: number, platform: string) => get<{ records: NavigationRecordRow[]; total: number; page_size: number }>(
     `/api/v1/dashboard/navigation-records?page=${page}${platform ? `&platform=${encodeURIComponent(platform)}` : ''}`),
@@ -888,6 +899,12 @@ export const api = {
     }
     return response.json() as Promise<{ deleted_messages: number; files_pending: boolean }>;
   },
+  previewPendingChatCleanup: (body: { days: 7 | 30; include_images: boolean; platform: ChatConversationRow['platform'] }) =>
+    pendingChatCleanup<{ token: string; cutoff: string; total_messages: number; total_images: number; first_captured_at: string | null; last_captured_at: string | null }>(
+      'preview', body),
+  deletePendingChatCleanupBatch: (body: { confirm: 'DELETE'; token: string; offset: number }) =>
+    pendingChatCleanup<{ processed: number; total: number; deleted_messages: number; skipped_messages: number; done: boolean; files_pending: boolean }>(
+      'batch', body),
   deleteChatConversations: async (body: { confirm: 'DELETE'; platform: ChatConversationRow['platform']; conversations: Array<{ id: number } | { group_name: string; source_ids: number[] }> }) => {
     const response = await dashboardFetch(withDashboardUser('/api/v1/dashboard/chat/conversations/delete-batch'), {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),

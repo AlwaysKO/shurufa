@@ -18,10 +18,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.delay
 
-/** 截图准备避让输入；所有截图只在已验证Wi-Fi且输入空闲时传输，亮屏也可补传。 */
+/** 截图准备避让输入；聊天图片仅有效Wi-Fi，导航图片可用流量但须输入空闲。 */
 object ImageUploadRuntime {
     private val schedule = ImageUploadSchedule(SystemClock::elapsedRealtime)
     private val cancellations = InputPriorityCancellation<Call>(Dispatchers.IO.asExecutor()) { it.cancel() }
+    private val imageCancellations = InputPriorityCancellation<Call>(Dispatchers.IO.asExecutor()) { it.cancel() }
     @Volatile private var observing = false
 
     fun isInputIdle(): Boolean = schedule.isInputIdle()
@@ -56,6 +57,7 @@ object ImageUploadRuntime {
     }
 
     fun beginPreparation(): Closeable? = if (isBackgroundWorkAllowed()) schedule.beginPreparation() else null
+    fun beginUploadRead(): Closeable? = if (GameWorkRuntime.isBackgroundAllowed()) schedule.beginPreparation(requireIdle = false) else null
     fun noteKeyActivity() { schedule.noteKeyActivity(); cancelUploads() }
     fun noteTouch(action: Int, source: Any) { schedule.noteTouch(action,source); cancelUploads() }
 
@@ -75,7 +77,27 @@ object ImageUploadRuntime {
     fun canUploadChat(context: Context, target: String): Boolean =
         target.trimEnd('/') == ServerConfig.baseUrl && CollectionConsent.enabled(context) && isBackgroundWorkAllowed() && wifi(context) != null
 
-    fun canUploadScreenshot(context: Context, target: String): Boolean = canUploadChat(context, target)
+    fun hasValidatedWifi(context: Context): Boolean = wifi(context) != null
+
+    fun hasValidatedNetwork(context: Context): Boolean = runCatching {
+        val cm=context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val caps=cm.getNetworkCapabilities(cm.activeNetwork) ?: return false
+        caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) && caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+    }.getOrDefault(false)
+
+    fun canUploadScreenshot(context: Context, target: String): Boolean =
+        target.trimEnd('/') == ServerConfig.baseUrl && CollectionConsent.enabled(context) &&
+            GameWorkRuntime.isBackgroundAllowed() && wifi(context) != null
+
+    fun canUploadChatMessages(context: Context, target: String): Boolean =
+        target.trimEnd('/') == ServerConfig.baseUrl && CollectionConsent.enabled(context) &&
+            isBackgroundWorkAllowed() && hasValidatedNetwork(context)
+
+    fun canUploadNavigation(context: Context, target: String): Boolean = canUploadChatMessages(context,target)
+    fun tryStartNavigationImage(context: Context, target: String, bytes: Long): Closeable? =
+        if(canUploadNavigation(context,target)) schedule.tryStartImage(
+            if(hasValidatedWifi(context)) ImageUploadNetwork.WIFI else ImageUploadNetwork.MOBILE,
+            bytes,screenOff(context),allowMobile=true) else null
 
     fun maxImageBytes(context: Context, target: String): Long =
         if (canUploadScreenshot(context,target)) schedule.maxImageBytes(ImageUploadNetwork.WIFI, screenOff(context)) else 0L
@@ -86,23 +108,32 @@ object ImageUploadRuntime {
     // Called from an IO worker, never from a key callback. Bound sockets/DNS cannot fall back to cellular.
     internal fun prepareChatCall(context: Context, target: String, http: OkHttpClient, request: Request, allowed: () -> Boolean = { true }, preserveCallTimeout: Boolean = false): Call? {
         observe(context)
-        val token=cancellations.token()
-        val ready = { allowed() && canUploadChat(context, target) }
+        val image = request.url.encodedPath == "/api/v1/mobile/chat/assets"
+        val anyNetwork = request.url.encodedPath in setOf("/api/v1/mobile/chat/messages/batch", "/api/v1/mobile/navigation-records")
+        val tracker = if(image) imageCancellations else cancellations
+        val token=tracker.token()
+        val ready = { allowed() && when {
+            image -> canUploadScreenshot(context,target)
+            anyNetwork -> canUploadChatMessages(context,target)
+            else -> canUploadChat(context,target)
+        } }
         if (!ready()) return null
-        val network=wifi(context) ?: return null
+        val manager=context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return null
+        val network=if(anyNetwork)manager.activeNetwork else wifi(context)
+        if(network==null)return null
         val body=request.body ?: return null
         val client=http.newBuilder().socketFactory(network.socketFactory)
             .dns(object : okhttp3.Dns { override fun lookup(hostname: String) = network.getAllByName(hostname).toList() })
             .connectionPool(ConnectionPool(0,1,TimeUnit.SECONDS))
-            // 亮屏大图按低速发送可能超过旧90秒；打字/断网仍立即取消，不靠超时避让。
+            // 亮屏大图按低速发送可能超过旧90秒；撤权或切网由守卫取消。
             .apply { if (!preserveCallTimeout) callTimeout(5,TimeUnit.MINUTES) }.build()
         val guarded=GuardedChatBody(body,allowed={
-            ready() && cancellations.token()==token && wifi(context)==network
+            ready() && tracker.token()==token && manager.activeNetwork==network
         }, pause = { Thread.sleep(chunkPauseMillis(context)) })
         val call=client.newCall(request.newBuilder().method(request.method,guarded).build())
-        cancellations.track(call, token)
-        if (!ready() || cancellations.token()!=token || wifi(context)!=network) {
-            call.cancel();cancellations.finish(call);return null
+        tracker.track(call, token)
+        if (!ready() || tracker.token()!=token || manager.activeNetwork!=network) {
+            call.cancel();tracker.finish(call);return null
         }
         return call
     }
@@ -120,7 +151,7 @@ object ImageUploadRuntime {
         return call
     }
 
-    internal fun finishChatCall(call: Call) { cancellations.finish(call) }
+    internal fun finishChatCall(call: Call) { cancellations.finish(call); imageCancellations.finish(call) }
 
     @Synchronized private fun observe(context: Context) {
         if (observing) return
@@ -128,9 +159,10 @@ object ImageUploadRuntime {
         try {
             manager.registerNetworkCallback(NetworkRequest.Builder().addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).build(),
                 object : ConnectivityManager.NetworkCallback() {
-                    override fun onLost(network: Network) { cancelUploads() }
+                    override fun onLost(network: Network) { cancelUploads(); imageCancellations.request() }
                     override fun onCapabilitiesChanged(network: Network, capabilities: NetworkCapabilities) {
-                        if (wifi(context)==null) cancelUploads()
+                        if (wifi(context)==null) imageCancellations.request()
+                        if (!hasValidatedNetwork(context)) cancelUploads()
                     }
                 })
             observing=true

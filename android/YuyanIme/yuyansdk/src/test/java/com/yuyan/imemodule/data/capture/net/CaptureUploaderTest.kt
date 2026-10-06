@@ -11,6 +11,9 @@ import com.yuyan.imemodule.data.capture.sha256
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -55,6 +58,82 @@ class CaptureUploaderTest {
         server.shutdown()
         database.close()
         tempDir.deleteRecursively()
+    }
+
+    private fun pendingNotification(id: String, requiredHash: String? = null): PendingMessageEntity {
+        val original=pendingMessage(id,requiredHash)
+        val decoded=CaptureApi("http://localhost",DEVICE_ID).decodeMessagePayload(original.payloadJson)
+        return original.copy(payloadJson=Json.encodeToString(decoded.copy(
+            conversation=JsonObject(decoded.conversation + ("identity_confidence" to JsonPrimitive(.55))),
+            message=JsonObject(decoded.message + ("metadata" to buildJsonObject {
+                put("capture_source","notification");put("conversation_identity_status","pending")
+                put("identity_unavailable","true")
+            })),
+        )))
+    }
+
+    @Test fun unconfirmedTextInOldRoomQueueEndsLocallyWithoutNetworkOrLosingSeenRecord() = runBlocking {
+        val message=pendingNotification("noise")
+        dao.insertSeen(com.yuyan.imemodule.data.capture.db.SeenMessageEntity(message.fingerprint,100))
+        dao.insertPendingMessage(message)
+        server.enqueue(MockResponse().setResponseCode(200).setBody("{\"ok\":true}"))
+        assertEquals(UploadRunResult(1,0),uploader().runOnce(1000))
+        assertEquals(0,server.requestCount)
+        assertFalse(dao.hasPendingMessage(message.id))
+        assertEquals(message.fingerprint,dao.findSeen(message.fingerprint)?.fingerprint)
+    }
+
+    @Test fun unconfirmedTextWithRoomAssetDependencyWaitsAndIsNeverDiscarded() = runBlocking {
+        val asset=pendingAsset().copy(nextRetryAt=Long.MAX_VALUE)
+        val message=pendingNotification("with-dependency",asset.sha256)
+        dao.insertPendingAsset(asset);dao.insertPendingMessage(message)
+        assertEquals(UploadRunResult(0,0),uploader().runOnce(1000))
+        assertTrue(dao.hasPendingMessage(message.id));assertTrue(File(asset.localPath).exists())
+        assertEquals(0,server.requestCount)
+        dao.deletePendingAsset(asset.sha256) // 依赖已转入普通图片待传队列。
+        server.enqueue(MockResponse().setResponseCode(200).setBody("{\"ok\":true}"))
+        assertEquals(UploadRunResult(1,0),uploader().runOnce(2000))
+        assertEquals(1,server.requestCount)
+        val wire=Json.parseToJsonElement(server.takeRequest().body.readUtf8()).jsonObject
+        assertEquals(JsonArray(listOf(JsonPrimitive(asset.sha256))),wire["messages"]!!.jsonArray.single().jsonObject["asset_sha256"])
+    }
+
+    @Test fun filteredRoomBatchDoesNotCreateAGenericChatReport() {
+        var enqueued=0
+        val api=CaptureApi("http://localhost",DEVICE_ID,enqueue={_,_->enqueued++;true})
+        assertTrue(api.uploadMessages(listOf(api.decodeMessagePayload(pendingNotification("noise").payloadJson))))
+        assertEquals(0,enqueued)
+        assertTrue(api.uploadMessages(listOf(api.decodeMessagePayload(pendingMessage("confirmed").payloadJson))))
+        assertEquals(1,enqueued)
+    }
+
+    @Test fun malformedRoomDependenciesNeverBecomeDiscardableEmptyResourceLists() = runBlocking {
+        for ((index,dependencies) in listOf("broken json","{}","null").withIndex()) {
+            val message=pendingNotification("unknown-dependencies-$index").copy(requiredAssetHashesJson=dependencies)
+            dao.insertPendingMessage(message)
+            assertEquals(UploadRunResult(0,0),uploader().runOnce(1000))
+            assertTrue(dao.hasPendingMessage(message.id))
+        }
+        assertEquals(0,server.requestCount)
+    }
+
+    @Test
+    fun pendingCheckIncludesPausedAndBackoffTasksWithoutDecodingPayload() = runBlocking {
+        assertFalse(dao.hasPendingWork())
+        val message = pendingMessage("paused").copy(payloadJson = "invalid json", nextRetryAt = Long.MAX_VALUE)
+        dao.insertPendingMessage(message)
+        val paused = CaptureUploader(dao, CaptureApi(server.url("/").toString(), DEVICE_ID),
+            assetFile = { error("paused work must not read files") }, backgroundAllowed = { false })
+        assertEquals(UploadRunResult(0, 0), paused.runOnce(now = 1_000))
+        assertTrue(dao.hasPendingWork())
+        dao.confirmMessageUploaded(message.id)
+        assertFalse(dao.hasPendingWork())
+        val asset = pendingAsset().copy(nextRetryAt = Long.MAX_VALUE)
+        dao.insertPendingAsset(asset)
+        assertTrue(dao.hasPendingWork())
+        dao.deletePendingAsset(asset.sha256)
+        assertFalse(dao.hasPendingWork())
+        assertEquals(0, server.requestCount)
     }
 
     @Test

@@ -23,7 +23,7 @@ internal class CallRecordingUploader(
         val initial=outbox.tasks()
         for(local in initial.filter{it.source==null && it.attempts==0 && it.cleanupStatus!="deleted" && it.uploadStatus!="saved"}) {
             if(!allowed())return@uploadBatch
-            val system=CallRecordingDuplicates.preferredSystem(local,initial)
+            val system=CallRecordingDuplicates.preferredSystem(local,initial,::sourceExists)
             outbox.linkDuplicate(local.id,system?.takeIf{sourceExists(it)}?.id)
         }
         // 系统文件先获得持久回执，之后才有资格清理对应的本地副本。

@@ -5,11 +5,7 @@ import com.yuyan.imemodule.data.collect.GameWorkRuntime
 import com.yuyan.imemodule.data.collect.CollectionConsent
 import com.yuyan.imemodule.data.collect.ServerConfig
 import com.yuyan.imemodule.data.collect.DataCollector
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.yuyan.imemodule.data.collect.ImageUploadRuntime
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -26,7 +22,6 @@ import java.util.concurrent.TimeUnit
  */
 object CompletionSync {
 
-    private const val SYNC_INTERVAL_MS = 30 * 60 * 1000L
     private const val CANDIDATE_COMMENT = "☁️" // 候选栏标记：服务端补全候选
     private const val MAX_QUERY_TAIL = 6 // 服务端最多生成 6 字前缀，只匹配文本末尾 6 字
 
@@ -36,7 +31,6 @@ object CompletionSync {
         .connectTimeout(5, TimeUnit.SECONDS)
         .readTimeout(10, TimeUnit.SECONDS)
         .build()
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private val lock = Any()
     private var cache = HashMap<String, MutableList<CompletionCandidate>>()
@@ -56,13 +50,6 @@ object CompletionSync {
         deviceId = DataCollector.deviceId(app)
         // 历史 SharedPreferences 的单独版本号不再使用：没有快照就从 0 同步。
         restoreCache(app)
-        scope.launch {
-            while (true) {
-                if (!GameWorkRuntime.isBackgroundAllowed()) { delay(30_000); continue }
-                sync(app)
-                delay(if (GameWorkRuntime.isBackgroundAllowed()) SYNC_INTERVAL_MS else 30_000)
-            }
-        }
     }
 
     /** 候选栏标记：服务端补全候选（供 InputView 识别与上报） */
@@ -115,8 +102,10 @@ object CompletionSync {
         }
     }
 
-    private fun sync(context: Context) {
-        if (!CollectionConsent.enabled(context) || !GameWorkRuntime.isBackgroundAllowed()) return
+    internal fun refreshInBatch(context: Context) {
+        val allowed = { CollectionConsent.enabled(context) && ImageUploadRuntime.isBackgroundWorkAllowed() && ImageUploadRuntime.hasValidatedNetwork(context) }
+        if (!allowed()) return
+        init(context)
         try {
             if (cacheEndpoint != ServerConfig.baseUrl) restoreCache(context)
             val request = Request.Builder()
@@ -125,8 +114,9 @@ object CompletionSync {
                 .header("X-Device-Id", deviceId ?: return)
                 .get()
                 .build()
-            http.newCall(request).execute().use { resp ->
-                if (!resp.isSuccessful || !GameWorkRuntime.isBackgroundAllowed()) return
+            val call = ImageUploadRuntime.prepareBackgroundCall(http, request, allowed) ?: return
+            try { call.execute().use { resp ->
+                if (!resp.isSuccessful || !allowed()) return
                 val data = json.decodeFromString(CompletionSyncResponse.serializer(), resp.body?.string() ?: return)
                 GameWorkRuntime.requireBackgroundAllowed()
                 if (data.version < syncedVersion) {
@@ -138,7 +128,7 @@ object CompletionSync {
                 // 保留当前可用快照；完整分页需要后端原子快照协议，非本轮范围。
                 if (data.hasMore || data.version <= syncedVersion) return
                 val current = synchronized(lock) { cache }
-                val next = mergeCompletionCandidates(current, data.candidates, GameWorkRuntime::isBackgroundAllowed) ?: return
+                val next = mergeCompletionCandidates(current, data.candidates, allowed) ?: return
                 GameWorkRuntime.requireBackgroundAllowed()
                 diskCache?.save(data.version, next.values.flatten())
                 // 已开始的原子保存允许结束；版本和内存快照一起发布，不留下半批更新。
@@ -146,7 +136,7 @@ object CompletionSync {
                     cache = next
                     syncedVersion = data.version
                 }
-            }
+            } } finally { ImageUploadRuntime.finishChatCall(call) }
         } catch (_: Exception) {
             // 同步失败静默，下一周期重试；输入和本地学习不依赖此接口。
         }

@@ -421,14 +421,14 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
         bindHostTextListeners()
     }
 
-    /** 仅真实键盘打开时检查轻量版本；开关斗图/连续输入复用本次会话。 */
+    /** 键盘打开只请求共享版本检查并恢复本地目录；开关斗图/连续输入复用本次会话。 */
     private fun refreshExpressionCatalogIfRecommendationsActive(sync: ExpressionSync) {
         if (expressionManualOnly || !expressionKeyboardWindowVisible || !expressionPanelState.aiStickerEnabled ||
             expressionPanelState.recommendationsPaused) return
         // 不把sync拥有的后台预取任务保存为UI可取消任务，关闭面板不浪费已开始下载。
-        val checkRemoteVersion = !expressionWindowVersionRequested
+        if (!expressionWindowVersionRequested) com.yuyan.imemodule.data.collect.BackgroundRefreshRuntime.request(context)
         expressionWindowVersionRequested = true
-        sync.onKeyboardOpened(checkRemoteVersion = checkRemoteVersion) {
+        sync.onKeyboardOpened(checkRemoteVersion = false) {
             if (expressionKeyboardWindowVisible && expressionSync === sync &&
                 expressionPanelState.aiStickerEnabled && !expressionPanelState.recommendationsPaused) {
                 val current = sync.currentCatalog()

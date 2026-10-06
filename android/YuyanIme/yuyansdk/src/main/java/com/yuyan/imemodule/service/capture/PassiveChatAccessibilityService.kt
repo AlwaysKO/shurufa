@@ -252,6 +252,9 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         eventReads.submit({
             !destroyed && snapshotGeneration.get() == generation && screenshotIdentityGeneration.get() == identityGeneration
         }) {
+            if (packageName == WECHAT_PACKAGE || packageName == "com.ss.android.ugc.aweme") {
+                com.yuyan.imemodule.data.capture.adapter.ChatCaptureSettings.refreshLocal(applicationContext)
+            }
             if (!CollectionConsent.enabled(this@PassiveChatAccessibilityService) ||
                 snapshotGeneration.get() != generation ||
                 screenshotIdentityGeneration.get() != identityGeneration) {
@@ -520,6 +523,9 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         val generation = snapshotGeneration.get()
         val identityGeneration = screenshotIdentityGeneration.get()
         foregroundReads.submit({ !destroyed && screenshotIdentityGeneration.get() == identityGeneration }) {
+            if (expectedPackage == WECHAT_PACKAGE || expectedPackage == "com.ss.android.ugc.aweme") {
+                com.yuyan.imemodule.data.capture.adapter.ChatCaptureSettings.refreshLocal(applicationContext)
+            }
             if (!CollectionConsent.enabled(this@PassiveChatAccessibilityService) ||
                 screenshotIdentityGeneration.get() != identityGeneration) {
                 return@submit

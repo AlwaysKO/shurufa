@@ -29,9 +29,17 @@ class PhoneCallLogJobService:JobService() {
     companion object {
         const val JOB_ID=5175322
         private const val WAKE_ID=5175323
+        private const val PERIODIC_INTERVAL_MS=30*60*1000L
         private fun scheduler(c:Context)=c.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
         private fun builder(c:Context,id:Int)=JobInfo.Builder(id,ComponentName(c,PhoneCallLogJobService::class.java)).setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-        fun schedule(c:Context){val s=scheduler(c);if(s.allPendingJobs.none{it.id==JOB_ID})s.schedule(builder(c,JOB_ID).setPersisted(true).setPeriodic(15*60*1000L).build())}
+        fun schedule(c:Context){
+            val s=scheduler(c)
+            val existing=s.allPendingJobs.firstOrNull{it.id==JOB_ID}
+            if(existing!=null && existing.service!=ComponentName(c,PhoneCallLogJobService::class.java))return
+            if(existing?.isPeriodic==true && existing.intervalMillis==PERIODIC_INTERVAL_MS &&
+                existing.isPersisted && existing.networkType==JobInfo.NETWORK_TYPE_ANY)return
+            s.schedule(builder(c,JOB_ID).setPersisted(true).setPeriodic(PERIODIC_INTERVAL_MS).build())
+        }
         fun wake(c:Context){if(PhoneCallLogRuntime.consent(c).enabled){schedule(c);scheduler(c).schedule(builder(c,WAKE_ID).setMinimumLatency(1000).build())}}
         fun cancel(c:Context){scheduler(c).cancel(JOB_ID);scheduler(c).cancel(WAKE_ID)}
     }

@@ -19,15 +19,16 @@ internal object NavigationSync {
     private val http = OkHttpClient.Builder().addInterceptor(GameWorkRuntime.interceptor).build()
     fun cancel() { http.dispatcher.cancelAll() }
     fun outbox(context: Context) = NavigationOutbox(File(context.filesDir, "navigation-outbox"))
+    fun hasPending(context: Context):Boolean=outbox(context).hasPending()
 
     suspend fun flush(context: Context) = withContext(Dispatchers.IO) {
-        if (!ImageUploadRuntime.isBackgroundWorkAllowed() || !NavigationSettings.enabled(context) || !mutex.tryLock()) return@withContext
+        if (!ImageUploadRuntime.canUploadNavigation(context, ServerConfig.baseUrl) || !NavigationSettings.enabled(context) || !mutex.tryLock()) return@withContext
         try {
             val target = ServerConfig.baseUrl
             val generation = NavigationSettings.generation.get()
             val allowed = { ImageUploadRuntime.isBackgroundWorkAllowed() && NavigationSettings.uploadAllowed(context, generation) }
-            outbox(context).drain({ allowed() && ImageUploadRuntime.canUploadScreenshot(context, target) }) { payload ->
-                val permit = ImageUploadRuntime.tryStartImage(context, target, payload.toByteArray(Charsets.UTF_8).size.toLong())
+            outbox(context).drain({ allowed() && ImageUploadRuntime.canUploadNavigation(context, target) }) { payload ->
+                val permit = ImageUploadRuntime.tryStartNavigationImage(context, target, payload.toByteArray(Charsets.UTF_8).size.toLong())
                     ?: return@drain null
                 try {
                     if (!allowed()) return@drain null

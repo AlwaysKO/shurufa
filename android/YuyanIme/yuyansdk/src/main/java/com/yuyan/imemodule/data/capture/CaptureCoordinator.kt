@@ -250,6 +250,8 @@ class CaptureCoordinator(
             if (isPeerTypingConversationTitle(rawMessage.metadata["conversation_identity_observed_title"])) continue
             if (!CollectionConsent.allowsText(rawMessage.text) || rawMessage.metadata.values.any { !CollectionConsent.allowsText(it) }) continue
             val asset = capturedAssets[index]
+            if (shouldDiscardUnconfirmedText(conversation.identityConfidence,
+                    rawMessage.messageType.wireName, rawMessage.metadata, asset != null || rawMessage.assetSha256.isNotEmpty())) continue
             val listHash = verifiedWechatListHash(conversation, rawMessage)?.takeIf { asset != null }
             val targetConversation = if (listHash != null) wechatListConversation else conversation
             val normalized = if (listHash == null) rawMessage else rawMessage.copy(

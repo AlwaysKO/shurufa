@@ -102,7 +102,7 @@ class CallRecordingService:Service() {
         }
     }
     private fun startRecording(){
-        if(recorder!=null||!authorized()||closing)return
+        if(recorder!=null||!authorized()||!permissions(this)||closing)return
         val callStarted=System.currentTimeMillis();callMono=SystemClock.elapsedRealtime()
         try{
             val audio=(if(Build.VERSION.SDK_INT>=31)MediaRecorder(this)else MediaRecorder()).also{recorder=it}
@@ -116,8 +116,9 @@ class CallRecordingService:Service() {
             audio.setOutputFile(CallRecordingRuntime.outbox(this).audioFile(active.id).absolutePath)
             audio.setOnInfoListener{_,what,_->if(what==MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED||what==MediaRecorder.MEDIA_RECORDER_INFO_MAX_FILESIZE_REACHED)worker.post{if(recorder===audio){stopRecording(false,"recording_limit");status("limit_reached")}}}
             audio.setOnErrorListener{_,_,_->worker.post{if(recorder===audio)restrict("recorder_error")}}
-            if(!authorized())throw IllegalStateException()
+            if(!authorized()||!permissions(this))throw IllegalStateException()
             audio.prepare();audio.start();recordingMono=SystemClock.elapsedRealtime();signal=false
+            scheduleHealth()
             status("recording_unverified");updateNotification("正在录音 · 双方声音未验证")
         }catch(_:Exception){restrict("microphone_unavailable")}
     }
@@ -133,8 +134,13 @@ class CallRecordingService:Service() {
                     if(recordingMono>0&&!signal&&SystemClock.elapsedRealtime()-recordingMono>=30_000){restrict("suspected_silent");return}
                 }
             }catch(_:Exception){restrict("recorder_error");return}
-            worker.postDelayed(this,1000)
+            scheduleHealth()
         }
+    }
+    private fun scheduleHealth(){
+        worker.removeCallbacks(health)
+        // 来电由系统回调立即处理；空闲只低频兜底，录音时及时检查静音与撤权。
+        if(!closing)worker.postDelayed(health,if(recorder==null)30*60_000L else 1_000L)
     }
     private fun restrict(reason:String){stopRecording(false,reason);prefs.edit().putBoolean("capability_blocked",true).apply();status(reason);stopSelf()}
     private fun stopRecording(callEnded:Boolean,reason:String?){
@@ -153,6 +159,7 @@ class CallRecordingService:Service() {
         }
         activeId=null;recordingMono=0
         CallRecordingJobService.wake(this)
+        scheduleHealth()
         if(!closing)updateNotification("等待普通来电 · 呼出/微信未支持")
     }
     private fun authorized()=CallRecordingRuntime.consent(this).recordingAllowed(device,ServerConfig.baseUrl)&&CollectionConsent.enabled(this)&&!prefs.getBoolean("capability_blocked",false)

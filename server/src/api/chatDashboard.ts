@@ -10,6 +10,7 @@ import type pg from 'pg';
 import { visibleChatMessage } from '../chat/chatMessageVisibility.js';
 import { expandScreenshotDeletion, tombstoneDeletedScreenshots } from '../chat/screenshotDeletion.js';
 import { pendingMessageDiagnostics } from './chatPendingDiagnostics.js';
+import { createChatRetentionRouter } from './chatRetention.js';
 
 
 function pagination(query: Record<string, unknown>): { page: number; pageSize: number; offset: number } {
@@ -27,6 +28,7 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
   router.use(createChatPendingRouter(pool));
   router.use(createChatGroupDeletionRouter(pool));
   router.use(createChatPendingDeletionRouter(pool));
+  router.use(createChatRetentionRouter(pool));
   router.use(createChatImagesRouter(pool));
   router.use(createChatConversationsRouter(pool));
 

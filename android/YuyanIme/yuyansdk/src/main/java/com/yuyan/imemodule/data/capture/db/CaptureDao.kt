@@ -10,6 +10,9 @@ import kotlinx.serialization.json.Json
 
 @Dao
 abstract class CaptureDao {
+    @Query("SELECT EXISTS(SELECT 1 FROM pending_asset) OR EXISTS(SELECT 1 FROM pending_message)")
+    abstract suspend fun hasPendingWork(): Boolean
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     abstract suspend fun insertSeen(entity: SeenMessageEntity): Long
 

@@ -32,16 +32,28 @@ class DeferredNotificationMediaTest {
     }
 
     @Test fun pausedWorkerDoesNotDecodeOrPersistAndCanResumeFromPrivateCopy() = runBlocking {
+        assertFalse(store().hasPending())
         store().stage(snapshot()) { byteArrayOf(1, 2).inputStream() }
         var invoked = false
         assertFalse(store().processNext({ false }) { _, _ -> invoked = true; true })
         assertFalse(invoked)
+        assertTrue(store().hasPending())
         assertEquals(1, store().pending().size)
         assertTrue(store().processNext({ true }) { saved, file ->
             assertEquals(snapshot(), saved)
             assertArrayEquals(byteArrayOf(1, 2), file.readBytes())
             true
         })
+        assertTrue(store().pending().isEmpty())
+        assertFalse(store().hasPending())
+    }
+
+    @Test fun pendingCheckDoesNotDecodeMetadataOrReadOriginalBytes() {
+        File(root, ".pending-incomplete").mkdirs()
+        assertFalse(store().hasPending())
+        val committed = File(root, "a".repeat(64)).apply { mkdirs() }
+        File(committed, "snapshot.json").writeText("invalid json")
+        assertTrue(store().hasPending())
         assertTrue(store().pending().isEmpty())
     }
 

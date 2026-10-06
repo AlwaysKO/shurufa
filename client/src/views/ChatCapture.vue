@@ -50,7 +50,9 @@ const groupScopeArgs = computed((): [ChatPlatform?, string?] => selected.value?.
   ? [platform.value, selected.value.group_name] : pendingGroup.value ? [platform.value] : []);
 function displayName(conversation: ChatConversationRow | null) {
   if (!conversation) return '';
-  if (/^screenshot-v2:truncated:[a-f0-9-]{36}$/.test(conversation.external_key)) return conversation.display_name || conversation.external_key;
+  if (/^screenshot-v2:truncated:[a-f0-9-]{36}$/.test(conversation.external_key)) {
+    return conversation.display_name?.replace(/（名称被截断）$/, '') || conversation.external_key;
+  }
   return conversation.is_pending_group || conversation.is_pending_source || conversation.display_name?.startsWith('待确认')
     ? '待确认会话' : conversation.display_name || conversation.external_key;
 }
@@ -83,10 +85,13 @@ const deleting = ref(false);
 const deletingAssetId = ref<number | null>(null);
 const bulkDeleting = ref(false);
 const deletingPendingMessages = ref(false);
+const cleaningPending = ref(false);
+const cleanupImages = ref(false);
+const cleanupStatus = ref('');
 const deletingConversations = ref(false);
 const confirming = ref(false);
 const merging = ref(false);
-const mutationBusy = computed(() => merging.value || deleting.value || deletingAssetId.value !== null || bulkDeleting.value || deletingPendingMessages.value || deletingConversations.value || confirming.value);
+const mutationBusy = computed(() => cleaningPending.value || merging.value || deleting.value || deletingAssetId.value !== null || bulkDeleting.value || deletingPendingMessages.value || deletingConversations.value || confirming.value);
 const selectedImageKeys = ref<string[]>([]);
 const selectedPendingMessageIds = ref<string[]>([]);
 const deleteNotice = ref('');
@@ -121,6 +126,7 @@ let previewRequest = 0;
 let previousFocus: HTMLElement | null = null;
 let swipeStart: { id: number; x: number; y: number } | null = null;
 const previewScope = computed(() => JSON.stringify([currentUserId.value, platform.value, selected.value?.id, selected.value?.group_name]));
+watch(previewScope, () => { cleanupStatus.value = ''; cleanupImages.value = false; }, { flush: 'sync' });
 const selectionContext = computed(() => JSON.stringify([previewScope.value, page.value, messageType.value]));
 watch(selectionContext, () => { clearImageSelection(); selectedPendingMessageIds.value = []; closeImagePreview(); }, { flush: 'sync' });
 
@@ -183,7 +189,7 @@ function formatImageLabelTime(value: string): string {
 function messageDisplayName(message: ChatMessageRow): string {
   if ((message.metadata.capture_source === 'wechat_empty_tree_screenshot' ||
       message.metadata.capture_kind === 'conversation_screenshot') && selected.value) {
-    const chatName = selected.value.display_name || selected.value.external_key;
+    const chatName = displayName(selected.value);
     return `${chatName} ${formatImageLabelTime(message.captured_at)}`;
   }
   return message.sender_name || message.sender_key;
@@ -304,6 +310,11 @@ async function changePage(next: number) {
   page.value = Math.min(totalPages.value, Math.max(1, next));
   messageType.value = 'all';
   await loadMessages();
+}
+
+async function refreshCapture() {
+  if (loading.value || mutationBusy.value || previewImage.value) return;
+  await load();
 }
 
 async function selectPlatform(next: ChatConversationRow['platform']) {
@@ -457,6 +468,49 @@ async function deleteSelectedPendingMessages() {
   } catch (reason) {
     if (!disposed && scope === previewScope.value) error.value = `${completed ? '记录已删除，但列表刷新失败' : '批量删除失败'}：${(reason as Error).message}`;
   } finally { deletingPendingMessages.value = false; }
+}
+
+async function cleanupPending(days: 7 | 30) {
+  if (!pendingGroup.value || loading.value || mutationBusy.value || disposed) return;
+  const scope = previewScope.value, version = conversationScopeVersion, conversation = selected.value, includeImages = cleanupImages.value;
+  const current = () => !disposed && version === conversationScopeVersion && scope === previewScope.value;
+  cleaningPending.value = true; error.value = ''; deleteNotice.value = ''; cleanupStatus.value = '正在预览全部待确认记录…';
+  let deleted = 0, skipped = 0, started = false, completed = false;
+  try {
+    const preview = await api.previewPendingChatCleanup({ days, include_images: includeImages, platform: platform.value });
+    if (!current()) return;
+    if (!preview.total_messages) { cleanupStatus.value = '没有需要清理的旧记录。'; return; }
+    const time = (value: string | null) => value ? new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false }) : '-';
+    cleanupStatus.value = '';
+    if (!await confirmAction(`保留最近 ${days} 天，永久清理当前手机 ${platformNames[platform.value]} 的旧待确认记录？\n\n` +
+      `截止：${time(preview.cutoff)}（北京时间，不含此时刻）\n` +
+      `范围：${time(preview.first_captured_at)} ～ ${time(preview.last_captured_at)}\n` +
+      `共 ${preview.total_messages} 条记录、${preview.total_images} 张图片；${includeImages ? '包含图片' : '仅非图片记录'}。\n` +
+      '处理全部符合条件的记录，不受当前分页或本页类型筛选限制。已确认或预览后变化的记录会跳过。删除不可恢复；请保持页面打开，关闭后停止后续批次。',
+      { title: `保留最近 ${days} 天`, confirmText: `清理 ${preview.total_messages} 条记录` })) return;
+    if (!current()) return;
+    started = true;
+    let offset = 0, filesPending = false;
+    while (current()) {
+      cleanupStatus.value = `正在清理：已处理 ${offset} / ${preview.total_messages} 条，已删除 ${deleted} 条，跳过 ${skipped} 条。`;
+      const result = await api.deletePendingChatCleanupBatch({ confirm: 'DELETE', token: preview.token, offset });
+      if (!current()) return;
+      deleted = result.deleted_messages; skipped = result.skipped_messages; filesPending ||= result.files_pending;
+      if (result.done) { completed = true; break; }
+      if (result.processed <= offset) throw Error('清理进度未更新，请重新预览');
+      offset = result.processed;
+    }
+    if (!current()) return;
+    cleanupStatus.value = '';
+    deleteNotice.value = `清理完成：已删除 ${deleted} 条，跳过 ${skipped} 条${filesPending ? '；附件清理将在后台重试。' : '。'}`;
+    await refreshAfterImageDeletion(conversation, scope);
+  } catch (reason) {
+    if (current()) {
+      cleanupStatus.value = '';
+      error.value = `${completed ? '清理已完成，但列表刷新失败' : started ? `清理中断，已确认删除 ${deleted} 条、跳过 ${skipped} 条；最后一批可能已处理，可重新预览继续` : '清理预览失败'}：${(reason as Error).message}`;
+      if (started && !completed) await refreshAfterImageDeletion(conversation, scope).catch(()=>{});
+    }
+  } finally { cleaningPending.value = false; }
 }
 
 async function deleteSelectedConversations() {
@@ -683,6 +737,8 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
       @click="selectPlatform(key)"
     >{{ name }}</button>
   </nav>
+  <button type="button" class="capture-action" data-testid="chat-refresh"
+    :disabled="loading || mutationBusy" @click="refreshCapture">{{ loading ? '加载中…' : '刷新数据' }}</button>
   <div class="stat-grid capture-stats">
     <div class="stat"><div class="num">{{ overview.conversation_count }}</div><div class="label">会话</div></div>
     <div class="stat"><div class="num">{{ overview.message_count }}</div><div class="label">消息</div></div>
@@ -715,7 +771,7 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
           :class="{ selected: selected?.id === conversation.id }"
           @click="selectConversation(conversation)"
         >
-          <span class="conversation-title">{{ conversation.display_name || conversation.external_key }}</span>
+          <span class="conversation-title">{{ displayName(conversation) }}</span>
           <span class="conversation-meta">
             {{ platformNames[conversation.platform] }} · {{ conversation.message_count }} 条
           </span>
@@ -728,7 +784,7 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
     <section class="card timeline-panel">
       <div class="timeline-header">
         <div class="timeline-title">
-          <h3>{{ selected?.display_name || selected?.external_key || '消息时间线' }}</h3>
+          <h3>{{ displayName(selected) || '消息时间线' }}</h3>
           <span class="timeline-summary">共 {{ total }} 项 · 每页 {{ pageSize }} 项（图片逐张分页） · 采集时间倒序，最新在前</span>
         </div>
         <div class="timeline-actions">
@@ -749,6 +805,13 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
 
       <p v-if="multipleSources" class="timeline-summary">同名会话的全部图片集中展示，内部来源独立保留。更改归属请使用图片上的“确认此来源归属”。</p>
       <p v-if="pendingGroup" class="timeline-summary">待确认文字和图片集中显示。可逐来源删除，或确认归属：选择已有会话，也可手动填写联系人或群聊名称。</p>
+      <div v-if="pendingGroup" class="image-selection-toolbar" aria-label="批量清理旧待确认记录">
+        <button class="delete-button" data-testid="pending-keep-7" :disabled="loading || mutationBusy" @click="cleanupPending(7)">保留最近7天</button>
+        <button class="delete-button" data-testid="pending-keep-30" :disabled="loading || mutationBusy" @click="cleanupPending(30)">保留最近30天</button>
+        <label><input v-model="cleanupImages" data-testid="pending-cleanup-images" type="checkbox" :disabled="loading || mutationBusy" /> 包含图片</label>
+        <span>清理较早的待确认记录，跨全部分页；点击后先预览。</span>
+      </div>
+      <p v-if="cleanupStatus" class="delete-notice" role="status">{{ cleanupStatus }}</p>
       <section v-if="mergeOpen" class="merge-panel" aria-label="选择合并目标">
         <h4>选择目标会话（同一手机、同一App）</h4>
         <p>当前来源：{{ displayName(mergeSource) }}（#{{ mergeSource?.id }}）。仅此来源的历史图片和文字归入目标，后续该来源上报也归入目标。</p>
@@ -765,7 +828,7 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
         <p v-if="mergeError" class="error-text" role="alert">{{ mergeError }}</p>
         <p v-if="mergeLoading">正在加载目标会话…</p>
         <button v-for="target in mergeTargets" :key="target.id" :data-testid="`chat-merge-target-${target.id}`" class="capture-action merge-target" :disabled="mutationBusy || mergeLoading" @click="mergeInto(target)">
-          {{ target.display_name || target.external_key }} · {{ target.message_count }} 条 · #{{ target.id }}
+          {{ displayName(target) }} · {{ target.message_count }} 条 · #{{ target.id }}
         </button>
         <p v-if="!mergeLoading && !mergeTargets.length">没有可选目标</p>
         <div>

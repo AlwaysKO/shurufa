@@ -34,10 +34,19 @@ class CallRecordingJobService:JobService() {
     companion object {
         const val JOB_ID=5175320
         private const val WAKE_ID=5175321
+        private const val PERIODIC_INTERVAL_MS=30*60*1000L
         private fun scheduler(c:Context)=c.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
-        private fun builder(c:Context,id:Int)=JobInfo.Builder(id,ComponentName(c,CallRecordingJobService::class.java)).setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-        fun schedule(context:Context){val s=scheduler(context);if(s.allPendingJobs.none{it.id==JOB_ID})s.schedule(builder(context,JOB_ID).setPersisted(true).setPeriodic(15*60*1000L).build())}
+        private fun builder(c:Context,id:Int)=JobInfo.Builder(id,ComponentName(c,CallRecordingJobService::class.java))
+        fun schedule(context:Context){
+            CallRecordingWifi.observe(context)
+            val s=scheduler(context)
+            val existing=s.allPendingJobs.firstOrNull{it.id==JOB_ID}
+            if(existing!=null && existing.service!=ComponentName(context,CallRecordingJobService::class.java))return
+            if(existing?.isPeriodic==true && existing.intervalMillis==PERIODIC_INTERVAL_MS &&
+                existing.isPersisted && existing.networkType==JobInfo.NETWORK_TYPE_NONE)return
+            s.schedule(builder(context,JOB_ID).setPersisted(true).setPeriodic(PERIODIC_INTERVAL_MS).build())
+        }
         fun wake(context:Context,delayMillis:Long=3000){if(CallRecordingRuntime.consent(context).wantsUpload){schedule(context);scheduler(context).schedule(builder(context,WAKE_ID).setMinimumLatency(delayMillis).build())}}
-        fun cancel(context:Context){scheduler(context).cancel(JOB_ID);scheduler(context).cancel(WAKE_ID)}
+        fun cancel(context:Context){CallRecordingWifi.stop();scheduler(context).cancel(JOB_ID);scheduler(context).cancel(WAKE_ID)}
     }
 }

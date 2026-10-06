@@ -29,15 +29,19 @@ class BalancedLocationPolicyTest {
         assertEquals(300_000L, policy.intervalMs)
     }
 
-    @Test fun `observation precedes stationary sampling and movement restores thirty seconds`() {
+    @Test fun `one minute samples establish a stay and confirmed motion restores one minute`() {
         val policy = BalancedLocationPolicy()
-        assertEquals(30_000L, policy.intervalMs)
-        (0..3).forEach { policy.observe(start + it * 30_000, point(start + it * 30_000), 0f) }
-        assertEquals(30_000L, policy.intervalMs)
-        policy.observe(start + 120_000, point(start + 120_000), 0f)
+        assertEquals(60_000L, policy.intervalMs)
+        (0..2).forEach { policy.observe(start + it * 60_000, point(start + it * 60_000), 0f) }
+        assertEquals(60_000L, policy.intervalMs)
+        policy.observe(start + 180_000, point(start + 180_000), 0f)
         assertEquals(300_000L, policy.intervalMs)
-        policy.observe(start + 420_000, point(start + 420_000, 23.14), null)
+        policy.observe(start + 480_000, point(start + 480_000, 23.14), null)
         assertEquals(30_000L, policy.intervalMs)
+        assertEquals(60_000L, policy.confirmationDelayMs(start + 480_000))
+        policy.observe(start + 510_000, point(start + 510_000, 23.1401), null)
+        assertEquals(60_000L, policy.intervalMs)
+        assertNull(policy.confirmationDelayMs(start + 510_000))
     }
 
     @Test fun `stale points and sparse observations cannot establish a stay`() {
@@ -45,35 +49,36 @@ class BalancedLocationPolicyTest {
         policy.observe(start, point(start), null)
         policy.observe(start + 120_000, point(start), null)
         policy.observe(start + 300_000, point(start + 300_000), null)
-        assertEquals(30_000L, policy.intervalMs)
+        assertEquals(60_000L, policy.intervalMs)
     }
 
     @Test fun `speed restores movement even inside uncertainty radius`() {
         val policy = BalancedLocationPolicy()
         (0..4).forEach { policy.observe(start + it * 30_000, point(start + it * 30_000), 0f) }
         policy.observe(start + 150_000, point(start + 150_000), 2f)
-        assertEquals(30_000L, policy.intervalMs)
+        assertEquals(60_000L, policy.intervalMs)
     }
 
-    @Test fun `balanced upload requires movement even after its sampling interval`() {
+    @Test fun `balanced thirty second sampling still requires five minutes and movement to report`() {
         val last = UploadedLocation(23.13, 113.3, 15f, start, start)
-        assertFalse(LocationUploadPolicy.shouldUpload(start + 300_000, point(start + 300_000), last, 300_000))
-        assertFalse(LocationUploadPolicy.shouldUpload(start + 300_000, point(start), last, 300_000))
-        assertFalse(LocationUploadPolicy.shouldUpload(start + 29_999, point(start + 29_999, 23.14), last, 30_000))
-        assertFalse(LocationUploadPolicy.shouldUpload(start + 30_000, point(start + 30_000), last, 30_000))
-        assertTrue(LocationUploadPolicy.shouldUpload(start + 30_000, point(start + 30_000, 23.14), last, 30_000))
-        assertTrue(LocationUploadPolicy.shouldUpload(start + 300_000, point(start + 300_000, 23.14), last, 300_000))
+        assertFalse(LocationUploadPolicy.shouldUpload(start + 300_000, point(start + 300_000), last))
+        assertFalse(LocationUploadPolicy.shouldUpload(start + 300_000, point(start), last))
+        assertFalse(LocationUploadPolicy.shouldUpload(start + 29_999, point(start + 29_999, 23.14), last))
+        assertFalse(LocationUploadPolicy.shouldUpload(start + 30_000, point(start + 30_000), last))
+        assertFalse(LocationUploadPolicy.shouldUpload(start + 30_000, point(start + 30_000, 23.14), last))
+        assertTrue(LocationUploadPolicy.shouldUpload(start + 300_000, point(start + 300_000, 23.14), last))
     }
     @Test fun `long observation gap resets stay confidence`() {
         val policy = BalancedLocationPolicy()
         (0..4).forEach { policy.observe(start + it * 30_000, point(start + it * 30_000), null) }
         policy.observe(start + 1_200_000, point(start + 1_200_000), null)
-        assertEquals(30_000L, policy.intervalMs)
+        assertEquals(60_000L, policy.intervalMs)
     }
 
-    @Test fun `snapshot processing delay does not lose a changed location at sampling interval`() {
+    @Test fun `five minute report interval starts at successful persistence`() {
         val last = UploadedLocation(23.13, 113.3, 15f, start, start + 150)
-        assertTrue(LocationUploadPolicy.shouldUpload(start + 300_020, point(start + 300_000, 23.14), last, 300_000))
+        assertFalse(LocationUploadPolicy.shouldUpload(start + 300_020, point(start + 300_000, 23.14), last))
+        assertTrue(LocationUploadPolicy.shouldUpload(start + 300_150, point(start + 300_000, 23.14), last))
     }
 
 }

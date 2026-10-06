@@ -5,16 +5,12 @@ import com.yuyan.imemodule.data.collect.GameWorkRuntime
 import com.yuyan.imemodule.data.collect.CollectionConsent
 import com.yuyan.imemodule.data.collect.ServerConfig
 import com.yuyan.imemodule.data.collect.DataCollector
+import com.yuyan.imemodule.data.collect.ImageUploadRuntime
 import com.yuyan.imemodule.database.DataBaseKT
 import com.yuyan.imemodule.database.entry.Phrase
 import com.yuyan.imemodule.libs.pinyin4j.PinyinHelper
 import com.yuyan.inputmethod.util.LX17PinYinUtils
 import com.yuyan.inputmethod.util.T9PinYinUtils
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -32,7 +28,6 @@ import java.util.concurrent.TimeUnit
  */
 object PhraseSync {
 
-    private const val SYNC_INTERVAL_MS = 30 * 60 * 1000L
 
     private val json = Json { ignoreUnknownKeys = true }
     private val http = OkHttpClient.Builder()
@@ -40,7 +35,6 @@ object PhraseSync {
         .connectTimeout(5, TimeUnit.SECONDS)
         .readTimeout(10, TimeUnit.SECONDS)
         .build()
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     @Volatile
     private var deviceId: String? = null
 
@@ -50,14 +44,6 @@ object PhraseSync {
         initialized = true
         val app = context.applicationContext
         deviceId = DataCollector.deviceId(app)
-        scope.launch {
-            delay(3_000) // 等输入法初始化完成
-            while (true) {
-                if (!GameWorkRuntime.isBackgroundAllowed()) { delay(30_000); continue }
-                sync(app)
-                delay(if (GameWorkRuntime.isBackgroundAllowed()) SYNC_INTERVAL_MS else 30_000)
-            }
-        }
     }
 
     /** 本地新增常用语上报（服务端按 content 幂等 upsert） */
@@ -72,8 +58,10 @@ object PhraseSync {
 
     // ---------- 内部 ----------
 
-    private fun sync(context: Context) {
-        if (!CollectionConsent.enabled(context) || !GameWorkRuntime.isBackgroundAllowed()) return
+    internal fun refreshInBatch(context: Context) {
+        val allowed = { CollectionConsent.enabled(context) && ImageUploadRuntime.isBackgroundWorkAllowed() && ImageUploadRuntime.hasValidatedNetwork(context) }
+        if (!allowed()) return
+        init(context)
         try {
             val request = Request.Builder()
                 .url(ServerConfig.baseUrl + "/api/v1/mobile/phrases")
@@ -81,22 +69,25 @@ object PhraseSync {
                 .header("X-Device-Id", deviceId ?: return)
                 .get()
                 .build()
-            http.newCall(request).execute().use { resp ->
-                if (!resp.isSuccessful || !GameWorkRuntime.isBackgroundAllowed()) return
+            val call = ImageUploadRuntime.prepareBackgroundCall(http, request, allowed) ?: return
+            try { call.execute().use { resp ->
+                if (!resp.isSuccessful || !allowed()) return
                 val data = json.decodeFromString(PhraseSyncResponse.serializer(), resp.body?.string() ?: return)
-                merge(data.phrases)
-            }
+                merge(data.phrases, allowed)
+            } } finally { ImageUploadRuntime.finishChatCall(call) }
         } catch (_: Exception) {
             // 同步失败静默，下一周期重试
         }
     }
 
     /** 云端全量与本地合并：新增插入、改词更新、云端已删的本地收敛删除 */
-    private fun merge(cloud: List<CloudPhrase>) {
+    private fun merge(cloud: List<CloudPhrase>, allowed: () -> Boolean) {
+        if (!allowed()) return
         GameWorkRuntime.requireBackgroundAllowed()
         val dao = DataBaseKT.instance.phraseDao()
         val local = dao.getAll()
         for (c in cloud) {
+            if (!allowed()) return
             GameWorkRuntime.requireBackgroundAllowed()
             val localByCloud = local.firstOrNull { it.cloudId == c.id }
             if (localByCloud != null) {
@@ -116,6 +107,7 @@ object PhraseSync {
         }
         val cloudIds = cloud.map { it.id }.toSet()
         dao.getCloudPhrases().forEach { p ->
+            if (!allowed()) return
             GameWorkRuntime.requireBackgroundAllowed()
             if (p.cloudId !in cloudIds) dao.deleteByCloudId(p.cloudId) // 云端已删除 → 本地移除
         }

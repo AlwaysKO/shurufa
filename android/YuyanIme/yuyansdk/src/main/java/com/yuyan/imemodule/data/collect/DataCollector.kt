@@ -10,6 +10,7 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.net.Network
 import android.net.NetworkRequest
+import android.net.NetworkCapabilities
 import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
@@ -102,6 +103,9 @@ object DataCollector {
     private var networkRegistered = false
     private val deliveryTasks = TargetDeliveryTasks()
     private val retryGate = ReportRetryGate()
+    private val uploadPlan = CollectorUploadPlan(android.os.SystemClock::elapsedRealtime)
+    private val flushMutex = Mutex()
+    private val flushSignal = CollectorFlushSignal()
     private var wakeJob: Job? = null
 
     @Synchronized private fun store(context: Context): LocalInputStore =
@@ -151,19 +155,25 @@ object DataCollector {
         if (delivery == null) registerDevice(app)
         if (CollectionConsent.enabled(app)) ReportSyncJobService.schedule(app)
         registerNetworkWake(app)
+        BackgroundRefreshRuntime.start(app)
         if (flushJob == null) {
             flushJob = scope.launch {
                 var regularDue = android.os.SystemClock.elapsedRealtime() + FLUSH_INTERVAL_MS
                 while (true) {
-                    if (!GameWorkRuntime.isBackgroundAllowed()) { delay(FLUSH_INTERVAL_MS); continue }
-                    val imagesPending = CollectionConsent.enabled(app) && eventStore?.hasPendingImages() == true
-                    delay(if (imagesPending) IMAGE_POLL_INTERVAL_MS else FLUSH_INTERVAL_MS)
+                    val online = ImageUploadRuntime.hasValidatedNetwork(app)
+                    val pending = online && (eventStore?.hasPendingUploads() == true ||
+                        com.yuyan.imemodule.data.navigation.NavigationSync.hasPending(app))
+                    val imagesPending = ImageUploadRuntime.canUploadScreenshot(app, ServerConfig.baseUrl) &&
+                        eventStore?.hasPendingImages() == true
+                    // 新入队或批次结束只唤醒重算，不绕过同步节流；空队列半小时兜底。
+                    if (flushSignal.awaitNext(pending, imagesPending)) continue
+                    if (!collectorNetworkAvailable(app) || !GameWorkRuntime.isBackgroundAllowed()) continue
                     val now = android.os.SystemClock.elapsedRealtime()
                     if (now >= regularDue) {
                         regularDue = now + FLUSH_INTERVAL_MS
                         flushEvents()
-                    } else if (imagesPending && ImageUploadRuntime.isInputIdle()) {
-                        // 3秒空闲资格后的下一次小步检查；不连带提高词库同步频率。
+                    } else if (imagesPending) {
+                        // 已准备图片按独立资格补传，不等待输入空闲或提高词库同步频率。
                         flushEvents(syncDictionary = false)
                     }
                 }
@@ -233,9 +243,11 @@ object DataCollector {
             deviceId = info.id,
             deviceJson = json.encodeToString(DeviceInfo.serializer(), info),
             onlineTarget = { ServerConfig.baseUrl },
-            allowed = { kind -> CollectionConsent.enabled(context) && (kind != "location" || locationTrackingEnabled) },
-            beginImageRead = { ImageUploadRuntime.beginPreparation() },
-            chatAllowed = { target -> ImageUploadRuntime.canUploadChat(context,target) },
+            allowed = { kind -> CollectionConsent.enabled(context) && GameWorkRuntime.isBackgroundAllowed() &&
+                (kind == null || kind == "chat_asset" || ImageUploadRuntime.isInputIdle()) &&
+                (kind != "location" || locationTrackingEnabled) },
+            beginImageRead = { ImageUploadRuntime.beginUploadRead() },
+            chatAllowed = { target -> ImageUploadRuntime.canUploadScreenshot(context,target) || ImageUploadRuntime.canUploadChatMessages(context,target) },
             prepareChatCall = { target, request -> ImageUploadRuntime.prepareChatCall(context,target,http,request) },
             finishChatCall = ImageUploadRuntime::finishChatCall,
             onChatDelivery = { platform, status -> com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics.record(context, platform, "upload", status) },
@@ -330,70 +342,74 @@ object DataCollector {
         }
     }
 
-    private fun flushEvents(syncDictionary: Boolean = true) { scope.launch { flushNow(syncDictionary) } }
+    private fun flushEvents(syncDictionary: Boolean = true) { scope.launch {
+        try { flushNow(syncDictionary) } finally { flushSignal.wake() }
+    } }
 
+    suspend fun refreshBackgroundResources(app: Context, localOnly: Boolean = false) = withContext(Dispatchers.IO) {
+        if (!CollectionConsent.enabled(app) || !ImageUploadRuntime.isBackgroundWorkAllowed() ||
+            !collectorNetworkAvailable(app)) return@withContext
+        if (!localOnly && ImageUploadRuntime.hasValidatedNetwork(app)) refreshOnlineServerUrl(app)
+        val gate = collectorTargetGate(app,ServerConfig.baseUrl)
+        for (plan in dictionarySyncTargets(ServerConfig.eventTargets,ServerConfig.baseUrl,ServerConfig.dictionaryAuthorityUrl)) {
+            if (!ImageUploadRuntime.isBackgroundWorkAllowed()) return@withContext
+            if (localOnly && !ImageUploadSchedule.isUsbTarget(plan.url)) continue
+            if (!gate.canUpload(plan.url)) continue
+            val sync=dictionarySyncs.getOrPut(plan) {
+                PersonalDictionarySync(store(app),app.getSharedPreferences("personal_dictionary_sync_v1",0),http,
+                    deviceId(app),plan.url,{ CollectionConsent.enabled(app) && ImageUploadRuntime.isBackgroundWorkAllowed() },{
+                        val migration=app.getSharedPreferences("system_dictionary_migration_v1",0)
+                        migration.getString("status","not_attempted")!! to migration.getInt("imported",0)
+                    },restoreFromTarget=plan.restoreFromTarget,statePrefix=plan.statePrefix)
+            }
+            if(!sync.run()) Log.w(TAG,"个人词库尚未同步确认，保留本机记录")
+        }
+    }
+
+    @Suppress("UNUSED_PARAMETER")
     suspend fun flushNow(syncDictionary: Boolean = true) = coroutineScope {
-        if (!ImageUploadRuntime.isBackgroundWorkAllowed()) return@coroutineScope
-        val uploader = delivery ?: return@coroutineScope
-        val app = appContext ?: return@coroutineScope
-        if (!CollectionConsent.enabled(app)) {
-            eventStore?.pruneExpiredLocalChatReports(ServerConfig.baseUrl, LOCAL_CHAT_RETENTION_MS)
+        if (!GameWorkRuntime.isBackgroundAllowed()) return@coroutineScope
+        val uploader=delivery ?: return@coroutineScope
+        val app=appContext ?: return@coroutineScope
+        if(!CollectionConsent.enabled(app)) {
+            eventStore?.pruneExpiredLocalChatReports(ServerConfig.baseUrl,LOCAL_CHAT_RETENTION_MS)
             return@coroutineScope
         }
-        refreshOnlineServerUrl(app)
-        com.yuyan.imemodule.data.capture.adapter.ChatCaptureSettings.refresh(app)
-        if (!ImageUploadRuntime.isBackgroundWorkAllowed()) return@coroutineScope
+        if(!collectorNetworkAvailable(app)) return@coroutineScope
+        if(syncDictionary && !ImageUploadRuntime.hasValidatedNetwork(app)) BackgroundRefreshRuntime.refreshUsbResources(app)
+        val idle=ImageUploadRuntime.isInputIdle()
+        // 导航与图片有独立资格，不能被普通数据15分钟的间隔阻塞。
         launch { com.yuyan.imemodule.data.navigation.NavigationSync.flush(app) }
-        launch { com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics.flush(app) }
-        val onlineTarget = ServerConfig.baseUrl
-        eventStore?.let {
-            it.pruneExpiredLocalChatReports(onlineTarget, LOCAL_CHAT_RETENTION_MS)
-        }
-        val targets = (ServerConfig.eventTargets + eventStore?.targets().orEmpty() + eventStore?.reportTargets().orEmpty()).distinct()
-        if (syncDictionary) targets.forEach(retryGate::requestRegular)
-        val targetGate = collectorTargetGate(app, onlineTarget)
-        deliveryTasks.run(
-            targets,
-            onBusy = { ReportingTrace.record(ReportingStage.BUSY, it == onlineTarget) },
-            onFailure = { target, _ ->
-                retryGate.record(target, android.os.SystemClock.elapsedRealtime() + FLUSH_INTERVAL_MS, failed = true)
-                ReportingTrace.record(ReportingStage.DELIVERY_ERROR, target == onlineTarget)
+        if(idle) launch { com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics.flush(app) }
+        if(!flushMutex.tryLock())return@coroutineScope
+        try {
+        val wifi=ImageUploadRuntime.hasValidatedWifi(app)
+        val kinds=eventStore?.pendingKinds().orEmpty()
+        val selection=uploadPlan.select(wifi,idle,kinds,eventStore?.hasPendingEvents()==true,
+            ImageUploadRuntime.canUploadScreenshot(app,ServerConfig.baseUrl))
+        val images=selection.images
+        if(!selection.events && !selection.regular && !selection.location && !selection.chatText && !images)return@coroutineScope
+        val onlineTarget=ServerConfig.baseUrl
+        eventStore?.pruneExpiredLocalChatReports(onlineTarget,LOCAL_CHAT_RETENTION_MS)
+        val targets=(ServerConfig.eventTargets+eventStore?.targets().orEmpty()+eventStore?.reportTargets().orEmpty()).distinct()
+        val targetGate=collectorTargetGate(app,onlineTarget)
+        deliveryTasks.run(targets,
+            onBusy={ReportingTrace.record(ReportingStage.BUSY,it==onlineTarget)},
+            onFailure={target,_->
+                retryGate.record(target,android.os.SystemClock.elapsedRealtime()+FLUSH_INTERVAL_MS,failed=true)
+                ReportingTrace.record(ReportingStage.DELIVERY_ERROR,target==onlineTarget)
             },
         ) { target ->
-            if (!ImageUploadRuntime.isBackgroundWorkAllowed()) return@run
-            val now = android.os.SystemClock.elapsedRealtime()
-            val regularSync = retryGate.regularPending(target)
-            if (retryGate.blocks(target, now, regularSync)) {
-                ReportingTrace.record(ReportingStage.BACKOFF, target == onlineTarget)
-                return@run
-            }
-            if (!targetGate.canUpload(target)) return@run
-            ReportingTrace.record(ReportingStage.FLUSH_START, target == onlineTarget)
-            val taskContext = currentCoroutineContext()
-            val ok = uploader.drain(target,
-                beforeBatch = { taskContext.ensureActive(); ImageUploadRuntime.requireBackgroundWorkAllowed() },
-                beforeRequest = { taskContext.ensureActive(); ImageUploadRuntime.requireBackgroundWorkAllowed() })
-            ReportingTrace.record(ReportingStage.FLUSH_END, target == onlineTarget, flag = ok)
-            val plan = dictionarySyncTargets(ServerConfig.eventTargets, ServerConfig.baseUrl, ServerConfig.dictionaryAuthorityUrl)
-                .firstOrNull { it.url == target }
-            var dictionaryCompleted = plan == null
-            if (regularSync && plan != null && ImageUploadRuntime.isBackgroundWorkAllowed() && CollectionConsent.enabled(app)) {
-                val sync = dictionarySyncs.getOrPut(plan) {
-                    PersonalDictionarySync(store(app), app.getSharedPreferences("personal_dictionary_sync_v1", 0), http,
-                        deviceId(app), plan.url, { CollectionConsent.enabled(app) && ImageUploadRuntime.isBackgroundWorkAllowed() }, {
-                            val migration = app.getSharedPreferences("system_dictionary_migration_v1", 0)
-                            migration.getString("status", "not_attempted")!! to migration.getInt("imported", 0)
-                        }, restoreFromTarget = plan.restoreFromTarget, statePrefix = plan.statePrefix)
-                }
-                dictionaryCompleted = sync.run()
-                if (!dictionaryCompleted) Log.w(TAG, "个人词库尚未同步确认，保留本机记录（目标：$target）")
-            }
-            val retryDelay = if (ok && eventStore?.hasPendingImages() == true) IMAGE_POLL_INTERVAL_MS
-                else if (ok) 5_000L else FLUSH_INTERVAL_MS
-            retryGate.record(target, android.os.SystemClock.elapsedRealtime() + retryDelay,
-                failed = !ok, regularCompleted = dictionaryCompleted)
-            if (!ok) Log.w(TAG, "同步未确认，保留手机待传数据")
+            if(!GameWorkRuntime.isBackgroundAllowed() || !targetGate.canUpload(target))return@run
+            if(retryGate.blocks(target,android.os.SystemClock.elapsedRealtime(),false))return@run
+            val taskContext=currentCoroutineContext()
+            val check={ taskContext.ensureActive(); GameWorkRuntime.requireBackgroundAllowed() }
+            val ok=uploader.drain(target,beforeBatch=check,beforeRequest=check,selection=selection)
+            val retryDelay=if(ok && images)IMAGE_POLL_INTERVAL_MS else if(ok)5_000L else FLUSH_INTERVAL_MS
+            retryGate.record(target,android.os.SystemClock.elapsedRealtime()+retryDelay,failed=!ok,regularCompleted=true)
+            if(!ok)Log.w(TAG,"同步未确认，保留手机待传数据")
         }
+        } finally { flushMutex.unlock() }
     }
 
     private suspend fun refreshOnlineServerUrl(context: Context) = onlineConfigMutex.withLock {
@@ -461,9 +477,17 @@ object DataCollector {
         return enqueueReport(context, kind, payload)
     }
 
-    @Synchronized fun requestSync() {
-        if (wakeJob?.isActive == true) return
-        wakeJob = scope.launch { delay(5_000); flushEvents() }
+    @Synchronized fun requestSync(wifiRestored: Boolean = false) {
+        flushSignal.wake()
+        if (wakeJob?.isActive == true) {
+            if (!wifiRestored) return
+            wakeJob?.cancel()
+        }
+        wakeJob = scope.launch {
+            val app=appContext ?: return@launch
+            delay(5_000L)
+            flushEvents()
+        }
     }
 
     fun setCollectionEnabled(context: Context, enabled: Boolean) {
@@ -491,7 +515,19 @@ object DataCollector {
         try {
             val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             cm.registerNetworkCallback(NetworkRequest.Builder().build(), object : ConnectivityManager.NetworkCallback() {
-                override fun onAvailable(network: Network) { requestSync() }
+                private val readyWifi = mutableSetOf<Network>()
+                override fun onAvailable(network: Network) { requestSync(); BackgroundRefreshRuntime.networkChanged(context) }
+                override fun onCapabilitiesChanged(network: Network, capabilities: NetworkCapabilities) {
+                    BackgroundRefreshRuntime.networkChanged(context)
+                    if(capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)) requestSync()
+                    val ready=capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) &&
+                        capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                        capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+                    if(ready) {
+                        if(readyWifi.add(network))requestSync(wifiRestored=true)
+                    } else readyWifi.remove(network)
+                }
+                override fun onLost(network: Network) { readyWifi.remove(network) }
             })
             networkRegistered = true
         } catch (_: Exception) { /* 周期任务仍可重试 */ }
@@ -616,11 +652,11 @@ object DataCollector {
         }
     }
 
-    internal fun reportBalancedLocation(context: Context, loc: Location, intervalMs: Long) =
-        reportLocation(context, loc, intervalMs)
+    internal fun reportBalancedLocation(context: Context, loc: Location) =
+        reportLocation(context, loc, fromBalancedService = true)
 
-    private fun reportLocation(context: Context, loc: Location, balancedIntervalMs: Long? = null) {
-        if (balancedLocationOwner != (balancedIntervalMs != null)) return
+    private fun reportLocation(context: Context, loc: Location, fromBalancedService: Boolean = false) {
+        if (balancedLocationOwner != fromBalancedService) return
         if (!locationTrackingEnabled || !hasLocationPermission(context)) return  // 开关关闭后不再上报（双保险）
         val candidate = LocationCandidate(
             latitude = loc.latitude,
@@ -634,11 +670,11 @@ object DataCollector {
             locationUploadMutex.withLock {
                 val nowMs = System.currentTimeMillis()
                 if (!locationTrackingEnabled || !hasLocationPermission(context) ||
-                    balancedLocationOwner != (balancedIntervalMs != null)) return@withLock
+                    balancedLocationOwner != fromBalancedService) return@withLock
                 val lastUploaded = readLastUploadedLocation()
                 val speed = LocationSpeedQuality.from(loc)
                 if (!locationJumpFilter.accept(nowMs, candidate, speed.speedMps, lastUploaded)) return@withLock
-                if (!LocationUploadPolicy.shouldUpload(nowMs, candidate, lastUploaded, balancedIntervalMs)) return@withLock
+                if (!LocationUploadPolicy.shouldUpload(nowMs, candidate, lastUploaded)) return@withLock
                 val report = LocationReport(
                     deviceId = deviceId(context),
                     latitude = loc.latitude,
@@ -648,7 +684,7 @@ object DataCollector {
                     speed = speed.speedMps,
                     occurredAt = iso8601.get().format(Date(loc.time)),
                     context = runCatching { LocationContextSnapshot.capture(context, loc,
-                        if (balancedIntervalMs != null) "balanced" else "opportunistic") }.getOrNull(),
+                        if (fromBalancedService) "balanced" else "opportunistic") }.getOrNull(),
                 )
                 if (enqueueReport(context, "location", json.encodeToString(LocationReport.serializer(), report))) {
                     // 节流以成功落盘为界，不以网络成功为界；断网期间仍保存移动轨迹。

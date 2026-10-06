@@ -7,18 +7,17 @@ import org.junit.Test
 /** 仅检查性能策略接线，非真机耗时测试。 */
 class InputPriorityWiringTest {
     private fun source(path: String) = File("src/main/java/com/yuyan/imemodule/$path.kt").readText()
-    @Test fun `每批上报与词库同步开始前重新检查输入空闲`() {
-        val source = source("data/collect/DataCollector").substringAfter("suspend fun flushNow(")
-        assertTrue(source.contains("if (!ImageUploadRuntime.isBackgroundWorkAllowed()) return@coroutineScope"))
-        assertTrue(source.contains("beforeBatch = { taskContext.ensureActive(); ImageUploadRuntime.requireBackgroundWorkAllowed() }"))
-        assertTrue(source.contains("beforeRequest = { taskContext.ensureActive(); ImageUploadRuntime.requireBackgroundWorkAllowed() }"))
-        assertTrue(source.contains("if (regularSync && plan != null && ImageUploadRuntime.isBackgroundWorkAllowed()"))
+    @Test fun `普通数据按输入状态选择而聊天图片保留独立资格`() {
+        val source = source("data/collect/DataCollector")
+        assertTrue(source.contains("uploadPlan.select(wifi,idle"))
+        assertTrue(source.contains("kind == \"chat_asset\" || ImageUploadRuntime.isInputIdle()"))
+        assertTrue(source.contains("beforeBatch=check,beforeRequest=check,selection=selection"))
     }
-    @Test fun `因输入暂停词库同步不冒充常规同步完成`() {
-        val source = source("data/collect/DataCollector").substringAfter("suspend fun flushNow(")
-        assertTrue(source.contains("regularCompleted = dictionaryCompleted"))
-        assertTrue(source.contains("dictionaryCompleted = sync.run()"))
-        assertTrue(source.contains("plan.url, { CollectionConsent.enabled(app) && ImageUploadRuntime.isBackgroundWorkAllowed() }"))
+    @Test fun `共享词库刷新仍在请求与批次之间检查输入`() {
+        val source = source("data/collect/DataCollector").substringAfter("suspend fun refreshBackgroundResources(").substringBefore("suspend fun flushNow(")
+        assertTrue(source.contains("!ImageUploadRuntime.isBackgroundWorkAllowed()"))
+        assertTrue(source.contains("CollectionConsent.enabled(app) && ImageUploadRuntime.isBackgroundWorkAllowed()"))
+        assertTrue(source.contains("sync.run()"))
     }
     @Test fun `截图回调在复制整帧像素之前检查输入`() {
         val source = source("data/capture/media/WindowScreenshotter")

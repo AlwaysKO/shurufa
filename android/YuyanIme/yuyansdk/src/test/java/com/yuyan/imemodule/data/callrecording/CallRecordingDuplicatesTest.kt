@@ -18,8 +18,8 @@ class CallRecordingDuplicatesTest {
     private val target="https://example.test"
     private fun io(block:()->Unit){val e=Executors.newSingleThreadExecutor();try{e.submit(block).get()}finally{e.shutdownNow()}}
     private fun box()=CallRecordingOutbox(File(ApplicationProvider.getApplicationContext<Context>().noBackupFilesDir,UUID.randomUUID().toString()))
-    private fun add(b:CallRecordingOutbox,system:Boolean=false,start:Long=100000,end:Long=160000,platform:String="phone",known:Boolean=true):CallTask {
-        val(id,file)=b.createAudioFile();file.writeText(if(system)"system audio"else"ime audio")
+    private fun add(b:CallRecordingOutbox,system:Boolean=false,start:Long=100000,end:Long=160000,platform:String="phone",known:Boolean=true,bytes:String?=null):CallTask {
+        val(id,file)=b.createAudioFile();file.writeText(bytes ?: if(system)"system audio"else"ime audio")
         return b.enqueue(id,device,CallMetadata(platform=platform,destination=target,recording_started_at=start,recording_ended_at=end,audio_duration_ms=end-start),
             source=if(system)SystemRecordingSource("content://test/$id",file.length(),end,known) else null)
     }
@@ -57,8 +57,64 @@ class CallRecordingDuplicatesTest {
         for(kind in listOf("unknown","partial","platform","ambiguous")) {
             val b=box();val local=add(b)
             add(b,true,start=if(kind=="partial")110000 else 100000,platform=if(kind=="platform")"wechat"else"phone",known=kind!="unknown")
-            if(kind=="ambiguous")add(b,true)
+            if(kind=="ambiguous")add(b,true,bytes="other system audio")
             assertNull(CallRecordingDuplicates.preferredSystem(local,b.tasks()))
+        }
+    }
+    @Test fun `同一原件经媒体库和目录重复发现仍优先系统录音`()=io {
+        val b=box();val local=add(b);val media=add(b,true);val directory=add(b,true)
+        assertNotEquals(media.source!!.uri,directory.source!!.uri)
+        assertEquals(media.metadata.sha256,directory.metadata.sha256)
+        val preferred=CallRecordingDuplicates.preferredSystem(local,listOf(local,media,directory))
+        assertNotNull(preferred);assertTrue(preferred!!.id in setOf(media.id,directory.id))
+        // 只有可信的相同内容才合并来源；缺少指纹、不同字节或独立本地片段仍然保守。
+        assertNull(CallRecordingDuplicates.preferredSystem(local,listOf(local,
+            media.copy(metadata=media.metadata.copy(sha256="")),directory.copy(metadata=directory.metadata.copy(sha256="")))))
+        assertNull(CallRecordingDuplicates.preferredSystem(local,listOf(local,media,
+            directory.copy(metadata=directory.metadata.copy(sha256="f".repeat(64))))))
+        val otherLocal=add(b)
+        assertNull(CallRecordingDuplicates.preferredSystem(local,listOf(local,otherLocal,media,directory)))
+    }
+    @Test fun `媒体库目录双来源仅上传一份系统音频并清理输入法副本`()=io {
+        val b=box();val local=add(b);val media=add(b,true);val directory=add(b,true)
+        val saved=mutableMapOf<String,CallReceipt>();val uploaded=mutableListOf<String>()
+        val transport=object:CallTransport {
+            override fun receipt(task:CallTask):CallReceipt?=null
+            override fun existing(task:CallTask):CallReceipt?=saved[task.metadata.sha256]
+            override fun upload(task:CallTask,file:File,allowed:()->Boolean):CallReceipt {
+                uploaded.add(task.id)
+                return CallReceipt(true,task.id,task.deviceId,task.metadata.byte_size,task.metadata.sha256,"2026-09-30T00:00:00Z")
+                    .also{saved[task.metadata.sha256]=it}
+            }
+        }
+        CallRecordingUploader(b,transport,{true},{target},systemSourceExists={true}).runOnce()
+        assertEquals(1,uploaded.size);assertTrue(uploaded.single() in setOf(media.id,directory.id))
+        assertEquals("superseded",b.tasks().single{it.id==local.id}.uploadStatus)
+        assertFalse(b.audioFile(local.id).exists())
+    }
+    @Test fun `媒体URI撤权时使用同内容可读目录且全撤权不误删输入法录音`()=io {
+        for(directoryReadable in listOf(true,false)) {
+            val b=box();val local=add(b);val systems=listOf(add(b,true),add(b,true)).sortedBy{it.id}
+            val media=systems.first();val directory=systems.last()
+            val saved=mutableMapOf<String,CallReceipt>();val uploaded=mutableListOf<String>()
+            val transport=object:CallTransport {
+                override fun receipt(task:CallTask):CallReceipt?=null
+                override fun existing(task:CallTask):CallReceipt?=saved[task.metadata.sha256]
+                override fun upload(task:CallTask,file:File,allowed:()->Boolean):CallReceipt {
+                    uploaded.add(task.id)
+                    return CallReceipt(true,task.id,task.deviceId,task.metadata.byte_size,task.metadata.sha256,"2026-09-30T00:00:00Z")
+                        .also{saved[task.metadata.sha256]=it}
+                }
+            }
+            CallRecordingUploader(b,transport,{true},{target},
+                systemSourceExists={directoryReadable && it.uri==directory.source!!.uri}).runOnce()
+            if(directoryReadable) {
+                assertEquals(1,uploaded.size);assertTrue(uploaded.single() in setOf(media.id,directory.id))
+                assertEquals("superseded",b.tasks().single{it.id==local.id}.uploadStatus)
+            }else {
+                assertTrue(local.id in uploaded)
+                assertEquals("saved",b.tasks().single{it.id==local.id}.uploadStatus)
+            }
         }
     }
     @Test fun `不同设备目的地和已经尝试上传的本地录音不合并`()=io {

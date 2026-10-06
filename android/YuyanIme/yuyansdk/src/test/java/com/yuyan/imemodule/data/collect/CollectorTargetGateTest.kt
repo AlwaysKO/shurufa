@@ -11,6 +11,32 @@ class CollectorTargetGateTest {
     private val online = "https://my.dog8ball.com"
     private val local = "http://127.0.0.1:3000"
 
+    @Test fun `offline usb preserves local delivery without opening online target`() {
+        val checked = mutableListOf<String>()
+        val gate = CollectorTargetGate(online, usbConnected = { true }, localHealthy = { checked.add(it); true }, onlineAvailable = { false })
+        assertFalse(gate.canUpload(online))
+        assertTrue(gate.canUpload(local))
+        org.junit.Assert.assertEquals(listOf(local), checked)
+    }
+
+    @Test fun `physical usb keeps explicit offline work eligible`() {
+        assertTrue(collectorNetworkAvailable(false) { true })
+        assertFalse(collectorNetworkAvailable(false) { false })
+        assertTrue(collectorNetworkAvailable(true) { error("online eligibility does not query usb") })
+    }
+
+    @Test fun `offline usb does not bypass failed local health`() {
+        val gate = CollectorTargetGate(online, usbConnected = { true }, localHealthy = { false }, onlineAvailable = { false })
+        assertFalse(gate.canUpload(local))
+    }
+
+    @Test fun `offline usb does not probe a historical public target`() {
+        var checked = false
+        val gate = CollectorTargetGate(online, usbConnected = { true }, localHealthy = { checked = true; true }, onlineAvailable = { false })
+        assertFalse(gate.canUpload("https://old.example.com"))
+        assertFalse(checked)
+    }
+
     @Test
     fun `online target never depends on usb or local health`() {
         val gate = CollectorTargetGate(online, usbConnected = { false }, localHealthy = { false })

@@ -78,7 +78,7 @@ class ImageUploadScheduleTest {
         policy.noteKeyActivity()
         assertNull(policy.beginPreparation())
         upload.close()
-        assertNull(policy.tryStartImage(wifi, 1))
+        assertNotNull(policy.tryStartImage(wifi, 1)?.also { it.close() })
         now += 3000
         policy.tryStartImage(wifi, 1)!!.close()
     }
@@ -102,7 +102,7 @@ class ImageUploadScheduleTest {
         now = 3000
         assertEquals(4*1024*1024L, policy.maxImageBytes(wifi))
         policy.noteKeyActivity()
-        assertNull(policy.tryStartImage(wifi, 1, screenOff = true))
+        assertNotNull(policy.tryStartImage(wifi, 1, screenOff = true)?.also { it.close() })
         now += 3000
         assertNotNull(policy.tryStartImage(wifi, 1, screenOff = true)?.also { it.close() })
     }

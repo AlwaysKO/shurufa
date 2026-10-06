@@ -1,6 +1,7 @@
 package com.yuyan.imemodule.data.collect
 
 import com.yuyan.imemodule.data.capture.notification.filterCallStatusNotifications
+import com.yuyan.imemodule.data.capture.filterUnconfirmedTextMessages
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.Json
@@ -43,6 +44,7 @@ internal class EventDelivery(
         nowMillis: () -> Long = { System.nanoTime() / 1_000_000 },
         beforeBatch: () -> Unit = {},
         beforeRequest: () -> Unit = {},
+        selection: DeliverySelection = DeliverySelection(),
     ): Boolean = synchronized(locks.getOrPut(target) { Any() }) {
         require(maxBatches > 0)
         val started = nowMillis()
@@ -50,7 +52,7 @@ internal class EventDelivery(
             if (batch > 0 && nowMillis() - started >= 5_000) return@synchronized true
             beforeBatch() // 取消必须传播，不能在网络失败捕获中吞掉。
             var acknowledged = 0
-            val ok = flushBatch(target, canStartRequest = {
+            val ok = flushBatch(target, selection, canStartRequest = {
                 beforeRequest()
                 nowMillis() - started < 5_000
             }) { acknowledged += it }
@@ -60,12 +62,13 @@ internal class EventDelivery(
         true
     }
 
-    fun flush(target: String): Boolean = synchronized(locks.getOrPut(target) { Any() }) {
-        flushBatch(target) {}
+    fun flush(target: String, selection: DeliverySelection = DeliverySelection()): Boolean = synchronized(locks.getOrPut(target) { Any() }) {
+        flushBatch(target, selection) {}
     }
 
     private fun flushBatch(
         target: String,
+        selection: DeliverySelection,
         canStartRequest: () -> Boolean = { true },
         confirmed: (Int) -> Unit,
     ): Boolean {
@@ -80,12 +83,13 @@ internal class EventDelivery(
             // 两类队列轮换先手，防止慢失败总是耗尽5秒预算、饿死另一类。
             val reportsFirst = reportsFirstNext.remove(target)
             if (!reportsFirst) reportsFirstNext.add(target)
-            val eventsOk = if (reportsFirst) true else flushEvents(target, canStartRequest, confirmed)
+            val eventsOk = if (reportsFirst || !selection.events) true else flushEvents(target, canStartRequest, confirmed)
             var reportsOk = true
             ReportingTrace.record(ReportingStage.READ_REPORTS, target == onlineTarget())
             val reports = store.pendingReports(target, includeLocation = allowed("location"),
                 maxImageBytes = { maxImageBytes(target) },
-                includeChat = (onlineTarget() == null || target == onlineTarget()) && chatAllowed(target), beginImageRead = beginImageRead)
+                includeChat = (onlineTarget() == null || target == onlineTarget()) && chatAllowed(target), beginImageRead = beginImageRead,
+                selection = selection)
             ReportingTrace.record(ReportingStage.REPORTS_READY, target == onlineTarget(), reports.size)
             for (report in reports) {
                 if (!allowed(report.kind)) continue
@@ -104,6 +108,7 @@ internal class EventDelivery(
                     val isChat = report.kind.startsWith("chat_")
                     val payload = if (report.kind == "chat_messages") {
                         val filtered = filterCallStatusNotifications(json.parseToJsonElement(report.payload).jsonObject)
+                            ?.let(::filterUnconfirmedTextMessages)
                         if (filtered == null) {
                             // 取消该目标的无用待传任务；不传 onlineTarget，不写远端确认时间。
                             store.acknowledgeReports(target, listOf(report.id))
@@ -140,7 +145,7 @@ internal class EventDelivery(
                     reportsOk = false
                 }
             }
-            val finalEventsOk = if (reportsFirst) flushEvents(target, canStartRequest, confirmed) else eventsOk
+            val finalEventsOk = if (reportsFirst && selection.events) flushEvents(target, canStartRequest, confirmed) else eventsOk
             finalEventsOk && reportsOk
         } catch (cancelled: CancellationException) { throw cancelled } catch (_: Exception) {
             ReportingTrace.record(ReportingStage.DELIVERY_ERROR, target == onlineTarget())

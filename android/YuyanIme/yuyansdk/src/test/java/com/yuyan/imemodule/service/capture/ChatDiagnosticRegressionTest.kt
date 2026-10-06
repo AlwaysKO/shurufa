@@ -43,8 +43,7 @@ class ChatDiagnosticRegressionTest {
             }
             service.onAccessibilityEvent(event)
             event.recycle()
-            val scope = service.javaClass.getDeclaredField("backgroundScope").apply { isAccessible = true }.get(service) as CoroutineScope
-            kotlinx.coroutines.runBlocking { scope.launch {}.join() }
+            awaitReadStage(service, "CONTENT_SCHEDULED")
             val logs = org.robolectric.shadows.ShadowLog.getLogsForTag("ChatCaptureTrace").map { it.msg }
             assertTrue(logs.toString(), logs.any { it.contains("stage=CONTENT_SCHEDULED") })
             assertFalse(logs.any { it.contains("stage=PAGE_REJECTED") })
@@ -74,8 +73,7 @@ class ChatDiagnosticRegressionTest {
             }
             service.onAccessibilityEvent(event)
             event.recycle()
-            val scope = service.javaClass.getDeclaredField("backgroundScope").apply { isAccessible = true }.get(service) as CoroutineScope
-            kotlinx.coroutines.runBlocking { scope.launch {}.join() }
+            awaitReadStage(service, "CONTENT_PENDING")
             val logs = org.robolectric.shadows.ShadowLog.getLogsForTag("ChatCaptureTrace").map { it.msg }
             // 初次确认期间不能直接调度未验证页；确认完成后只补一次末次状态。
             assertFalse(logs.any { it.contains("stage=CONTENT_SCHEDULED") })
@@ -86,6 +84,19 @@ class ChatDiagnosticRegressionTest {
             CollectionConsent.setEnabled(service, false); service.onDestroy()
             ChatCaptureThreadingTest.ServiceShadow.root = null
         }
+    }
+
+    private fun awaitReadStage(service: PassiveChatAccessibilityService, stage: String) {
+        fun logs() = org.robolectric.shadows.ShadowLog.getLogsForTag("ChatCaptureTrace").map { it.msg }
+        if (logs().any { it.contains("stage=$stage") }) return
+        val scope = service.javaClass.getDeclaredField("backgroundScope").apply { isAccessible = true }.get(service) as CoroutineScope
+        // 等待已提交的真实读取任务；IO 挂起时，同一 dispatcher 的空任务不代表读取完成。
+        val reads = requireNotNull(scope.coroutineContext[kotlinx.coroutines.Job]).children.toList()
+        kotlinx.coroutines.runBlocking {
+            kotlinx.coroutines.withTimeout(3_000) { reads.forEach { it.join() } }
+        }
+        val completedLogs = logs()
+        assertTrue(completedLogs.toString(), completedLogs.any { it.contains("stage=$stage") })
     }
 
     @Test fun navigationClearsEligibilityAndPendingContentBeforeDelayedCapture() {

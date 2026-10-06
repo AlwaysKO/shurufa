@@ -122,6 +122,40 @@ class SystemRecordingDocumentsTest {
         documents.setTree("phone",uri);documents.setTree("wechat",uri)
         assertTrue(documents.readable("phone"));assertTrue(documents.readable("wechat"))
     }
+    @Test fun `媒体库异常和旧目录失效不阻断已授权的荣耀混合目录`()=io {
+        ShadowBuild.setManufacturer("HONOR")
+        CallRecordingRuntime.preferences(context).edit().clear().commit()
+        val file=File(context.noBackupFilesDir,"fallback-"+UUID.randomUUID()).apply{writeText("synthetic")}
+        val modified=System.currentTimeMillis()-60_000
+        val provider=object:Provider(file) {
+            override fun query(uri:Uri,projection:Array<out String>?,selection:String?,args:Array<out String>?,sort:String?):Cursor {
+                val columns=projection!!
+                val values:Map<String,Any> = mapOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID to "primary:Sounds/CallRecord/通话-测试.m4a",
+                    DocumentsContract.Document.COLUMN_DISPLAY_NAME to "通话-测试.m4a",DocumentsContract.Document.COLUMN_SIZE to file.length(),
+                    DocumentsContract.Document.COLUMN_LAST_MODIFIED to modified,DocumentsContract.Document.COLUMN_MIME_TYPE to "audio/mp4")
+                return MatrixCursor(columns).apply{addRow(columns.map{values[it]}.toTypedArray())}
+            }
+        }
+        val authority="com.android.externalstorage.documents"
+        provider.attachInfo(context,ProviderInfo().apply{this.authority=authority;exported=true;grantUriPermissions=true})
+        ShadowContentResolver.registerProviderInternal(authority,provider)
+        SystemRecordingDocuments(context).setTree("wechat",DocumentsContract.buildTreeDocumentUri(authority,"primary:Sounds/CallRecord"))
+        // 模拟升级前残留的失效电话目录；媒体提供者另行报错。
+        CallRecordingRuntime.preferences(context).edit().putString("system_tree_phone","content://missing/tree/primary%3AOld").commit()
+        val media=object:Provider(file) {
+            override fun query(uri:Uri,projection:Array<out String>?,selection:String?,args:Array<out String>?,sort:String?):Cursor = error("provider_unavailable")
+        }
+        media.attachInfo(context,ProviderInfo().apply{this.authority="media";exported=true})
+        ShadowContentResolver.registerProviderInternal("media",media)
+        org.robolectric.Shadows.shadowOf(context as android.app.Application).grantPermissions(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+        val sources=SystemRecordingSources(context)
+        val result=sources.scan("phone"){true}
+        assertEquals(listOf("通话-测试.m4a"),result.files.map{it.name})
+        assertFalse(result.complete)
+        assertArrayEquals(file.readBytes(),sources.open(result.files.single()).use{it.readBytes()})
+        assertEquals(0,provider.writes);assertEquals(0,media.writes)
+        assertTrue(runCatching{sources.scan("phone"){false}}.isFailure)
+    }
     @Test fun `荣耀混合目录按来源前缀区分微信电话且跳过其他文件`()=io {
         ShadowBuild.setManufacturer("HONOR")
         CallRecordingRuntime.preferences(context).edit().clear().commit()
@@ -144,6 +178,9 @@ class SystemRecordingDocumentsTest {
         val uri=DocumentsContract.buildTreeDocumentUri(authority,"primary:Sounds/CallRecord")
         // 即使只配置了一种来源，也不能把混合目录中的另一种录音错误上传。
         documents.setTree("wechat",uri)
+        // 自动模式复用已授予的同一混合目录，不要求再次选择电话目录。
+        assertTrue(documents.readable("phone"))
+        assertEquals(listOf("通话-微信客服-202609301924.m4a"),documents.list("phone"){true}.map{it.name})
         assertEquals(listOf("微信-测试-202609302205.m4a"),documents.list("wechat"){true}.map{it.name})
         documents.clear("wechat");documents.setTree("phone",uri)
         assertEquals(listOf("通话-微信客服-202609301924.m4a"),documents.list("phone"){true}.map{it.name})

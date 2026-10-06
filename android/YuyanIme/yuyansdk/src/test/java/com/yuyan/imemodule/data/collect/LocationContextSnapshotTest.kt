@@ -27,6 +27,28 @@ class LocationContextSnapshotTest {
         assertEquals("poor_location_accuracy", encoded["speed_quality_reason"]?.jsonPrimitive?.content)
     }
 
+    @Test fun `unverified ellipsoid altitude is omitted without vertical accuracy`() {
+        val context = ApplicationProvider.getApplicationContext<Application>()
+        for (provider in listOf("gps", "network")) {
+            val location = Location(provider).apply { accuracy = 30f; altitude = 49.8 }
+            assertNull(LocationContextSnapshot.capture(context, location, "balanced").altitudeM)
+        }
+    }
+
+    @Test @Config(sdk = [26, 31, 35])
+    fun `vertical uncertainty beyond twenty metres hides height while legal negative ellipsoid height remains`() {
+        val context = ApplicationProvider.getApplicationContext<Application>()
+        val location = Location("gps").apply { accuracy = 32f; altitude = -3.2 }
+        for (error in listOf(-1f, Float.NaN, Float.POSITIVE_INFINITY, 20.01f, 50f)) {
+            location.verticalAccuracyMeters = error
+            assertNull("vertical uncertainty=$error", LocationContextSnapshot.capture(context, location, "balanced").altitudeM)
+        }
+        for (error in listOf(0f, 5f, 20f)) {
+            location.verticalAccuracyMeters = error
+            assertEquals(-3.2, LocationContextSnapshot.capture(context, location, "balanced").altitudeM!!, 0.0)
+        }
+    }
+
     @Test fun `redacted wifi identifiers are never treated as real identifiers`() {
         assertNull(LocationContextSnapshot.cleanSsid("<unknown ssid>"))
         assertNull(LocationContextSnapshot.cleanSsid("\"\""))

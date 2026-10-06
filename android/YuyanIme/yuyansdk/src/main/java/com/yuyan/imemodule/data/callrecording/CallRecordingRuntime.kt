@@ -29,35 +29,45 @@ internal object CallRecordingRuntime {
         val allowed={stillRunning()&&CallRecordingService.activeId==null&&CollectionConsent.enabled(app)&&ImageUploadRuntime.isBackgroundWorkAllowed()&&consent.uploadAllowed(id,ServerConfig.baseUrl)}
         if(!allowed())return false
         sessions(app).recover(allowed,CallRecordingService.activeId)
-        val transport=CallRecordingHttpTransport(credential={task->
-            if(task.deviceId==id&&task.metadata.destination==ServerConfig.baseUrl)
-                app.getSharedPreferences("personal_dictionary_sync_v1",0).getString("token",null) else null
-        },allowed=allowed)
         val box=outbox(app)
         var retrySoon=false
         // 周期与即时 Job 共享批次锁；不让两个扫描器为同一原件创建两个任务。
         box.uploadBatch {
-            val documents=SystemRecordingDocuments(app)
+            val documents=SystemRecordingSources(app)
             val importer=SystemRecordingImporter(File(root(app),"system_index"),box)
             val scanned=mutableMapOf<String,Boolean>()
             for(platform in listOf("phone","wechat")) {
-                if(documents.tree(platform)==null)continue
+                if(!documents.configured(platform)) {
+                    preferences(app).edit().putString("system_scan_$platform","尚无音频读取权限，请在设置中授权音频").apply()
+                    continue
+                }
                 try {
-                    val result=importer.scan(documents.list(platform,allowed),id,ServerConfig.baseUrl,allowed,documents::open,documents::unchanged)
-                    scanned[platform]=result.finished && result.waiting==0
+                    val scan=documents.scan(platform,allowed)
+                    val result=importer.scan(scan.files,id,ServerConfig.baseUrl,allowed,documents::open,documents::unchanged)
+                    scanned[platform]=scan.complete && result.finished && result.waiting==0 && result.errors==0
+                    val time=java.text.SimpleDateFormat("MM-dd HH:mm",java.util.Locale.getDefault()).format(java.util.Date())
                     preferences(app).edit().putString("system_scan_$platform",
-                        "本次入队 ${result.imported}；等待文件写完 ${result.waiting}；读取/格式异常 ${result.errors}").apply()
-                    if(result.waiting>0 && result.finished)retrySoon=true
+                        "$time 检查：最近7天发现 ${scan.files.size}；新入队 ${result.imported}；等待文件写完 ${result.waiting}；读取/格式异常 ${result.errors}"+
+                            if(!scan.complete)"；部分来源暂不可读，下次重试"else "").apply()
+                    if(result.waiting>0 && result.finished && result.errors==0)retrySoon=true
                 }catch(e:kotlinx.coroutines.CancellationException){throw e}
-                catch(_:Exception){scanned[platform]=false;preferences(app).edit().putString("system_scan_$platform","目录暂不可读或扫描未完成；输入法录音最多等待10分钟后独立上传").apply()}
+                catch(_:Exception){scanned[platform]=false;preferences(app).edit().putString("system_scan_$platform","录音来源暂不可读或扫描暂停；输入法录音最多等待10分钟后独立上传").apply()}
             }
-            CallRecordingUploader(box,transport,allowed,{ServerConfig.baseUrl},
-                systemSourceExists=documents::exists,onSaved=importer::markSaved,
-                ready={task->(task.source==null || task.metadata.recording_ended_at>=System.currentTimeMillis()-7*86_400_000L) &&
-                    systemRecordingUploadReady(task,documents.tree(task.metadata.platform)!=null,
-                    scanned[task.metadata.platform]==true,System.currentTimeMillis())}).runOnce()
+            val wifi=CallRecordingWifi.network(app)
+            if(wifi!=null && allowed()) {
+                val uploadAllowed={allowed() && CallRecordingWifi.network(app)==wifi}
+                val transport=CallRecordingHttpTransport(credential={task->
+                    if(task.deviceId==id&&task.metadata.destination==ServerConfig.baseUrl)
+                        app.getSharedPreferences("personal_dictionary_sync_v1",0).getString("token",null) else null
+                },allowed=uploadAllowed,calls=CallRecordingWifi.client(wifi))
+                CallRecordingUploader(box,transport,uploadAllowed,{ServerConfig.baseUrl},
+                    systemSourceExists=documents::exists,onSaved=importer::markSaved,
+                    ready={task->(task.source==null || task.metadata.recording_ended_at>=System.currentTimeMillis()-7*86_400_000L) &&
+                        systemRecordingUploadReady(task,documents.configured(task.metadata.platform),
+                        scanned[task.metadata.platform]==true,System.currentTimeMillis())}).runOnce()
+            }
             if(box.tasks().any{it.source==null && it.cleanupStatus!="deleted" &&
-                !systemRecordingUploadReady(it,documents.tree(it.metadata.platform)!=null,scanned[it.metadata.platform]==true,System.currentTimeMillis())})retrySoon=true
+                !systemRecordingUploadReady(it,documents.configured(it.metadata.platform),scanned[it.metadata.platform]==true,System.currentTimeMillis())})retrySoon=true
         }
         return retrySoon
     }

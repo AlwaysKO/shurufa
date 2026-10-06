@@ -2,6 +2,7 @@ package com.yuyan.imemodule.data.capture.net
 
 import com.yuyan.imemodule.data.capture.db.PendingAssetEntity
 import com.yuyan.imemodule.data.capture.notification.filterCallStatusNotifications
+import com.yuyan.imemodule.data.capture.filterUnconfirmedTextMessages
 import com.yuyan.imemodule.data.collect.GameWorkRuntime
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -89,10 +90,10 @@ class CaptureApi(
             conversation = first.conversation,
             messages = messages.map { it.message },
         )
-        // 已入旧 Room 队列的状态也就地结束，不再转入通用报告队列或发起 HTTP。
+        // 已入旧 Room 队列的状态和无资源待确认文字就地结束，不转入通用报告队列或发起 HTTP。
         val encoded = json.encodeToJsonElement(body).jsonObject
         if (!backgroundAllowed()) return false
-        val filtered = filterCallStatusNotifications(encoded)
+        val filtered = filterCallStatusNotifications(encoded)?.let(::filterUnconfirmedTextMessages)
         if (!backgroundAllowed()) return false
         if (filtered == null) return true
         val payload = filtered.toString()

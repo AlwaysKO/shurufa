@@ -36,6 +36,12 @@ internal class NavigationOutbox(private val directory: File, private val now: ()
 
     private fun files() = directory.listFiles { file -> file.name.matches(Regex("[a-f0-9-]{36}\\.json")) }.orEmpty().sortedBy { it.lastModified() }
     fun count(): Int = files().size
+    /** 仅检查待传文件名与类型，不排序、不读取图片 JSON；退避中的文件仍属待办。 */
+    fun hasPending():Boolean {
+        val names=directory.list() ?: return false
+        val pendingName=Regex("[a-f0-9-]{36}\\.json")
+        return names.any{pendingName.matches(it) && File(directory,it).isFile}
+    }
 
     suspend fun drain(allowed: () -> Boolean, send: suspend (String) -> String?) {
         if (!allowed()) return
@@ -50,6 +56,7 @@ internal class NavigationOutbox(private val directory: File, private val now: ()
                 if (!allowed()) return
                 val record = JSONObject(payload)
                 val response = send(payload) ?: continue
+                if (!allowed()) return
                 val receipt = JSONObject(response)
                 if (receipt.optBoolean("ok") && receipt.optString("id") == record.getString("id") &&
                     receipt.optString("sha256") == record.getString("sha256")) {

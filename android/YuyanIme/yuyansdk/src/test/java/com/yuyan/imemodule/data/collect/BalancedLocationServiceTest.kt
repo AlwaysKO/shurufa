@@ -75,13 +75,65 @@ class BalancedLocationServiceTest {
         val controller = Robolectric.buildService(BalancedLocationService::class.java).create()
         val service = controller.get()
         service.onStartCommand(Intent(), 0, 1)
+        shadowOf(android.os.Looper.getMainLooper()).idle()
         shadowOf(app).denyPermissions(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
-        shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(10))
+        val appOps = app.getSystemService(Context.APP_OPS_SERVICE) as android.app.AppOpsManager
+        shadowOf(appOps).setMode(android.app.AppOpsManager.OPSTR_FINE_LOCATION, app.applicationInfo.uid,
+            app.packageName, android.app.AppOpsManager.MODE_IGNORED)
+        shadowOf(android.os.Looper.getMainLooper()).idle()
         assertFalse(BalancedLocationService.isRunning)
         assertTrue(shadowOf(service).isStoppedBySelf)
         val lm = app.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         assertTrue(shadowOf(lm).getLocationUpdateListeners().isEmpty())
         controller.destroy()
+    }
+
+    @Test fun `denied location app ops stop collection even if permission grant remains`() {
+        PreferenceManager.getDefaultSharedPreferences(app).edit().putBoolean(CollectionConsent.KEY, true)
+            .putBoolean(BalancedLocationService.KEY, true).commit()
+        val controller = Robolectric.buildService(BalancedLocationService::class.java).create()
+        try {
+            controller.get().onStartCommand(Intent(), 0, 1)
+            val appOps = app.getSystemService(Context.APP_OPS_SERVICE) as android.app.AppOpsManager
+            for (op in listOf(android.app.AppOpsManager.OPSTR_FINE_LOCATION, android.app.AppOpsManager.OPSTR_COARSE_LOCATION)) {
+                shadowOf(appOps).setMode(op, app.applicationInfo.uid, app.packageName, android.app.AppOpsManager.MODE_IGNORED)
+            }
+            shadowOf(android.os.Looper.getMainLooper()).idle()
+            assertFalse(BalancedLocationService.isRunning)
+            assertTrue(PreferenceManager.getDefaultSharedPreferences(app).getBoolean(BalancedLocationService.KEY, false))
+        } finally { controller.destroy() }
+    }
+
+    @Test fun `permission fallback waits thirty minutes when platform notification is missing`() {
+        PreferenceManager.getDefaultSharedPreferences(app).edit().putBoolean(CollectionConsent.KEY, true)
+            .putBoolean(BalancedLocationService.KEY, true).commit()
+        val controller = Robolectric.buildService(BalancedLocationService::class.java).create()
+        try {
+            controller.get().onStartCommand(Intent(), 0, 1)
+            val main = shadowOf(android.os.Looper.getMainLooper())
+            main.idle()
+            // Change the permission state without dispatching an AppOps change event.
+            shadowOf(app).denyPermissions(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+            main.idleFor(java.time.Duration.ofMinutes(30).minusMillis(1))
+            assertTrue(BalancedLocationService.isRunning)
+            main.idleFor(java.time.Duration.ofMillis(1))
+            assertFalse(BalancedLocationService.isRunning)
+        } finally { controller.destroy() }
+    }
+
+    @Test fun `location callback checks revoked permission before observing or reporting`() {
+        PreferenceManager.getDefaultSharedPreferences(app).edit().putBoolean(CollectionConsent.KEY, true)
+            .putBoolean(BalancedLocationService.KEY, true).commit()
+        val controller = Robolectric.buildService(BalancedLocationService::class.java).create()
+        try {
+            controller.get().onStartCommand(Intent(), 0, 1)
+            val lm = shadowOf(app.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+            val callback = lm.getLocationUpdateListeners(LocationManager.GPS_PROVIDER).single()
+            shadowOf(app).denyPermissions(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+            callback.onLocationChanged(Location("gps").apply { latitude = 23.13; longitude = 113.3; accuracy = 15f; time = System.currentTimeMillis() })
+            assertFalse(BalancedLocationService.isRunning)
+            assertTrue(lm.getLocationUpdateListeners().isEmpty())
+        } finally { controller.destroy() }
     }
 
     @Test fun `stationary session replaces system requests with five minute interval and resumes movement`() {
@@ -97,7 +149,12 @@ class BalancedLocationServiceTest {
             }
             lm.getLocationUpdateListeners(LocationManager.GPS_PROVIDER).toList().forEach { it.onLocationChanged(location) }
         }
-        assertEquals(30_000L, lm.getLegacyLocationRequests(LocationManager.GPS_PROVIDER).single().intervalMillis)
+        assertEquals(60_000L, lm.getLegacyLocationRequests(LocationManager.GPS_PROVIDER).single().intervalMillis)
+        // Android 12+ encodes passive requests with PASSIVE_INTERVAL; minUpdateInterval is the delivery throttle.
+        fun passiveInterval() = if (android.os.Build.VERSION.SDK_INT >= 31)
+            lm.getLocationRequests(LocationManager.PASSIVE_PROVIDER).single().minUpdateIntervalMillis
+        else lm.getLegacyLocationRequests(LocationManager.PASSIVE_PROVIDER).single().intervalMillis
+        assertEquals(60_000L, passiveInterval())
         // Supply an observation history without making the test wait two wall-clock minutes.
         val now = System.currentTimeMillis()
         val policy = org.robolectric.util.ReflectionHelpers.getField<BalancedLocationPolicy>(service, "policy")
@@ -107,10 +164,13 @@ class BalancedLocationServiceTest {
         }
         sample(23.13, now - 2_000)
         assertEquals(300_000L, lm.getLegacyLocationRequests(LocationManager.GPS_PROVIDER).single().intervalMillis)
+        assertEquals(300_000L, passiveInterval())
         sample(23.14, now - 1_000)
         assertEquals(30_000L, lm.getLegacyLocationRequests(LocationManager.GPS_PROVIDER).single().intervalMillis)
+        assertEquals(30_000L, passiveInterval())
         sample(23.1401, now)
-        assertEquals(30_000L, lm.getLegacyLocationRequests(LocationManager.GPS_PROVIDER).single().intervalMillis)
+        assertEquals(60_000L, lm.getLegacyLocationRequests(LocationManager.GPS_PROVIDER).single().intervalMillis)
+        assertEquals(60_000L, passiveInterval())
         service.onStartCommand(Intent().setAction(BalancedLocationService.ACTION_STOP), 0, 2)
         controller.destroy()
     }

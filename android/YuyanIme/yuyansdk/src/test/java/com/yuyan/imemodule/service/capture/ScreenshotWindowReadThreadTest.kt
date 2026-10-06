@@ -89,6 +89,8 @@ class ScreenshotWindowReadThreadTest {
                     fun info(tree: com.yuyan.imemodule.data.capture.ui.UiNodeSnapshot): AccessibilityNodeInfo = AccessibilityNodeInfo.obtain().apply {
                         packageName = pkg; className = tree.className; text = tree.text; contentDescription = tree.contentDescription
                         viewIdResourceName = tree.viewId
+                        isVisibleToUser = tree.visibleToUser
+                        isEditable = tree.editable; isScrollable = tree.scrollable; isPassword = tree.password
                         setBoundsInScreen(Rect(tree.bounds.left, tree.bounds.top, tree.bounds.right, tree.bounds.bottom))
                         tree.children.forEach { Shadows.shadowOf(this).addChild(info(it)) }
                     }

@@ -77,7 +77,7 @@ internal object LocationContextSnapshot {
             },
             isInteractive = runCatching { power?.isInteractive }.getOrNull(),
             powerSave = runCatching { power?.isPowerSaveMode }.getOrNull(),
-            altitudeM = location.altitude.takeIf { location.hasAltitude() && it.isFinite() && it in -20000.0..100000.0 },
+            altitudeM = verifiedEllipsoidAltitude(location),
             bearingDeg = location.bearing.takeIf { location.hasBearing() && it.isFinite() && it >= 0 && it < 360 },
             speedAccuracyMps = if (Build.VERSION.SDK_INT >= 26) location.speedAccuracyMetersPerSecond
                 .takeIf { location.hasSpeedAccuracy() && it.isFinite() && it in 0f..10000f } else null,
@@ -85,6 +85,15 @@ internal object LocationContextSnapshot {
             speedQuality = speed.quality,
             speedQualityReason = speed.reason,
         )
+    }
+
+    private fun verifiedEllipsoidAltitude(location: Location): Double? {
+        if (Build.VERSION.SDK_INT < 26 || !location.hasAltitude() || !location.hasVerticalAccuracy()) return null
+        // A conservative display threshold, not a guarantee: Android reports 68% uncertainty.
+        // This remains WGS84 ellipsoid height; it is never converted or relabeled as sea level.
+        val error = location.verticalAccuracyMeters
+        if (!error.isFinite() || error !in 0f..20f) return null
+        return location.altitude.takeIf { it.isFinite() && it in -20000.0..100000.0 }
     }
 
     private fun networkType(context: Context): String {

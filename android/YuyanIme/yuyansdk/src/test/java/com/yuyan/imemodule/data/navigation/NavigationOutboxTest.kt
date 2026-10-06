@@ -44,6 +44,30 @@ class NavigationOutboxTest {
         store.drain({ true }) { null }
         assertEquals(1, store.count())
     }
+    @Test fun pendingCheckUsesFilePresenceWithoutDecodingPayloadOrWaitingForBackoff() {
+        val directory=folder.newFolder();val store=NavigationOutbox(directory);val r=record()
+        assertFalse(store.hasPending())
+        java.io.File(directory,"${r.id}.seen").writeText("1")
+        java.io.File(directory,"00000000-0000-0000-0000-000000000001.json").mkdir()
+        assertFalse(store.hasPending())
+        val pending=java.io.File(directory,"${r.id}.json")
+        pending.writeText("invalid payload that must not be decoded for a queue check")
+        pending.setLastModified(System.currentTimeMillis()+30_000)
+        assertTrue(store.hasPending())
+        assertTrue(pending.delete());assertFalse(store.hasPending())
+    }
+    @Test fun consentRevokedAsReceiptArrivesRetainsImageAndDoesNotCreateSeenMarker() = runBlocking {
+        val directory=folder.newFolder();val store=NavigationOutbox(directory);val r=record();var allowed=true
+        assertTrue(store.enqueue(r))
+        store.drain({allowed}) { payload ->
+            allowed=false
+            JSONObject().put("ok",true).put("id",r.id)
+                .put("sha256",JSONObject(payload).getString("sha256")).toString()
+        }
+        assertTrue(store.hasPending())
+        assertTrue(java.io.File(directory,"${r.id}.json").isFile)
+        assertFalse(java.io.File(directory,"${r.id}.seen").exists())
+    }
     @Test fun failedOldRecordsDoNotBlockNewValidRecords() = runBlocking {
         val dir = folder.newFolder(); val store = NavigationOutbox(dir)
         val first = record(); val second = record(); val third = record()

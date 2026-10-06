@@ -34,13 +34,13 @@ internal class ImageUploadSchedule(private val clock: () -> Long) {
     @Synchronized fun isInputIdle(): Boolean =
         touches.isEmpty() && (lastActivity?.let { clock() - it >= IDLE_MS } ?: true)
 
-    @Synchronized fun beginPreparation(): Closeable? {
-        if (!isInputIdle() || preparing) return null
+    @Synchronized fun beginPreparation(requireIdle: Boolean = true): Closeable? {
+        if ((requireIdle && !isInputIdle()) || preparing) return null
         return acquire(upload = false)
     }
 
-    @Synchronized fun maxImageBytes(network: ImageUploadNetwork, screenOff: Boolean = false): Long {
-        if (!isInputIdle() || network != ImageUploadNetwork.WIFI) return 0
+    @Synchronized fun maxImageBytes(network: ImageUploadNetwork, screenOff: Boolean = false, allowMobile: Boolean = false): Long {
+        if (network != ImageUploadNetwork.WIFI && !(allowMobile && network == ImageUploadNetwork.MOBILE)) return 0
         val now = clock()
         if (lastUpload?.let { now - it < if (screenOff) 1000L else IMAGE_INTERVAL_MS } == true) return 0
         while (charges.isNotEmpty() && now - charges.first.time >= WINDOW_MS) charges.removeFirst()
@@ -49,8 +49,8 @@ internal class ImageUploadSchedule(private val clock: () -> Long) {
     }
 
     /** Bytes are the actual UTF-8 JSON request size, including Base64 and metadata. */
-    @Synchronized fun tryStartImage(network: ImageUploadNetwork, bytes: Long, screenOff: Boolean = false): Closeable? {
-        if (preparing || uploading || bytes <= 0 || bytes > maxImageBytes(network, screenOff)) return null
+    @Synchronized fun tryStartImage(network: ImageUploadNetwork, bytes: Long, screenOff: Boolean = false, allowMobile: Boolean = false): Closeable? {
+        if (preparing || uploading || bytes <= 0 || bytes > maxImageBytes(network, screenOff, allowMobile)) return null
         lastUpload = clock()
         charges.addLast(Charge(clock(), bytes))
         // Failed requests also spent bandwidth: closing a permit never refunds quota.

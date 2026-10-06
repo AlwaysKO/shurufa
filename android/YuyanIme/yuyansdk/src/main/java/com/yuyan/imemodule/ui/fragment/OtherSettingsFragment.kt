@@ -242,8 +242,8 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
         val ctx = requireContext()
         packetPreferences = com.yuyan.imemodule.data.redpacket.PacketPreferences(ctx, screen)
         screen.addPreference(Preference(ctx).apply {
-            title = "红包静默能力"
-            summary = "微信抢红包时的授权"
+            title = "记录上传"
+            summary = "自动查找记录"
             setOnPreferenceClickListener { startActivity(Intent(ctx, com.yuyan.imemodule.ui.activity.CallRecordingSettingsActivity::class.java)); true }
         })
         screen.addPreference(SwitchPreferenceCompat(ctx).apply {
@@ -326,7 +326,7 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
                     isEnabled = false
                     lifecycleScope.launch {
                         try {
-                            AppUsageTracker.sync(ctx.applicationContext)
+                            AppUsageTracker.sync(ctx.applicationContext,userInitiated=true)
                             Toast.makeText(ctx, "本轮采集与补传尝试结束，请在后台核对最近收到记录时间；失败记录保留待传", Toast.LENGTH_LONG).show()
                         } catch (e: Exception) {
                             if (e is kotlinx.coroutines.CancellationException) throw e

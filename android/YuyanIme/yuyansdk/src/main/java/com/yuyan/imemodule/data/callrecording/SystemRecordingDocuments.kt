@@ -20,12 +20,20 @@ internal class SystemRecordingDocuments(private val context:Context) {
         check(prefs.edit().putString("system_tree_$platform",uri.toString()).commit())
     }
     fun clear(platform:String){require(platform in listOf("phone","wechat"));prefs.edit().remove("system_tree_$platform").apply()}
-    fun readable(platform:String):Boolean=tree(platform)?.let{uri->resolver.persistedUriPermissions.any{it.uri==uri&&it.isReadPermission}}?:false
+    private fun trees(platform:String):List<Uri> {
+        val granted=resolver.persistedUriPermissions.filter{it.isReadPermission}.map{it.uri}
+        return (granted.filter{runCatching{isHonorMixedDirectory(it)}.getOrDefault(false)} +
+            listOfNotNull(tree(platform)?.takeIf{it in granted})).distinct()
+    }
+    fun readable(platform:String)=trees(platform).isNotEmpty()
+    var scanComplete=false
+        private set
     fun list(platform:String,allowed:()->Boolean):List<SystemRecordingDocument> {
         CallRecordingOutbox.checkWorker()
-        val tree=tree(platform) ?: return emptyList()
-        check(readable(platform)){"recording_directory_permission_lost"}
+        val authorized=trees(platform)
+        scanComplete=tree(platform)==null || tree(platform) in authorized
         val result=mutableListOf<SystemRecordingDocument>();var count=0
+        for(tree in authorized) try {
             check(allowed()){"transfer_paused"}
             val children=DocumentsContract.buildChildDocumentsUriUsingTree(tree,DocumentsContract.getTreeDocumentId(tree))
             val columns=arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID,DocumentsContract.Document.COLUMN_DISPLAY_NAME,
@@ -47,16 +55,17 @@ internal class SystemRecordingDocuments(private val context:Context) {
                 result.add(SystemRecordingDocument(DocumentsContract.buildDocumentUriUsingTree(tree,child).toString(),name,
                     if(c.isNull(2))0 else c.getLong(2),if(c.isNull(3))0 else c.getLong(3),platform))
             }}
-        return result.sortedByDescending{it.modifiedAt}
+        } catch(e:kotlinx.coroutines.CancellationException){throw e}
+        catch(_:Exception){check(allowed()){"transfer_paused"};scanComplete=false}
+        return result.distinctBy{it.uri}.sortedByDescending{it.modifiedAt}
     }
     fun open(doc:SystemRecordingDocument):InputStream=resolver.openInputStream(Uri.parse(doc.uri)) ?: error("recording_unavailable")
     fun unchanged(doc:SystemRecordingDocument)=exists(SystemRecordingSource(doc.uri,doc.size,doc.modifiedAt,false))
     fun exists(source:SystemRecordingSource):Boolean=runCatching {
         val uri=Uri.parse(source.uri)
         val authorized=listOf("phone","wechat").any{platform->
-            val selected=tree(platform)
-            selected!=null && readable(platform) && selected.authority==uri.authority &&
-                DocumentsContract.getTreeDocumentId(selected)==DocumentsContract.getTreeDocumentId(uri)
+            trees(platform).any{selected->selected.authority==uri.authority &&
+                DocumentsContract.getTreeDocumentId(selected)==DocumentsContract.getTreeDocumentId(uri)}
         }
         if(!authorized)return@runCatching false
         resolver.query(uri,arrayOf(DocumentsContract.Document.COLUMN_SIZE,DocumentsContract.Document.COLUMN_LAST_MODIFIED),null,null,null)?.use{

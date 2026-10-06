@@ -8,9 +8,9 @@ function point(minute: number, longitude = 113.26, device = 'a'): LocationRow {
 }
 it('历史速度缺失精度、精度差或数值非法均不作为实际速度展示', () => {
  const row = {...point(0), speed:'13.944444'};
- expect(speedLabel(row)).toBe('未知（可信度不足）');
- expect(speedLabel({...row, accuracy:'100', context:{version:1,speed_accuracy_mps:0.5}})).toBe('未知（可信度不足）');
- for (const speed of ['-1','NaN','Infinity','']) expect(speedLabel({...row,speed})).toBe('未知（可信度不足）');
+ expect(speedLabel(row)).toBe('未知（未提供速度精度）');
+ expect(speedLabel({...row, accuracy:'100', context:{version:1,speed_accuracy_mps:0.5}})).toBe('未知（位置精度不足）');
+ for (const speed of ['-1','NaN','Infinity','']) expect(speedLabel({...row,speed})).toBe('未知（未提供有效速度）');
  expect(speedLabel({...row,speed:null})).toBe('未知（未提供速度）');
 });
 it('可信历史和新速度都保留实际读数及零值，不按步行限速裁剪', () => {
@@ -22,19 +22,19 @@ it('可信历史和新速度都保留实际读数及零值，不按步行限速�
 it('速度精度按绝对及相对门槛限制，新质量标记不能绕过质量校验', () => {
  const row = {...point(0),speed:'10',context:{version:1 as const,speed_accuracy_mps:2.5}};
  expect(speedLabel(row)).toBe('36.0 km/h');
- expect(speedLabel({...row,context:{...row.context,speed_accuracy_mps:2.51}})).toBe('未知（可信度不足）');
- expect(speedLabel({...row,context:{version:1,speed_quality:'trusted'}})).toBe('未知（可信度不足）');
- expect(speedLabel({...row,context:{...row.context,speed_quality:'unreliable'}})).toBe('未知（可信度不足）');
+ expect(speedLabel({...row,context:{...row.context,speed_accuracy_mps:2.51}})).toBe('未知（速度精度不足）');
+ expect(speedLabel({...row,context:{version:1,speed_quality:'trusted'}})).toBe('未知（未提供速度精度）');
+ expect(speedLabel({...row,context:{...row.context,speed_quality:'unreliable'}})).toBe('未知（速度未通过可信度校验）');
 });
 it('新客户端过滤后的速度不被原值回填，原始速度和原因留在诊断详情', () => {
  const row:LocationRow = {...point(0),speed:null,context:{version:1,raw_speed_mps:50.2/3.6,speed_quality:'unreliable',speed_quality_reason:'poor_location_accuracy'}};
- expect(speedLabel(row)).toBe('未知（可信度不足）');
+ expect(speedLabel(row)).toBe('未知（位置精度不足）');
  expect(speedDetails(row)).toContain('原始速度 50.2 km/h（仅供排查）');
  expect(speedDetails(row)).toContain('位置精度不足');
 });
 it('极大有限原始值换算溢出时不展示Infinity速度，也不裁剪成其他数值', () => {
  const row:LocationRow = {...point(0),speed:String(Number.MAX_VALUE),context:{version:1,raw_speed_mps:Number.MAX_VALUE,speed_accuracy_mps:1}};
- expect(speedLabel(row)).toBe('未知（可信度不足）');
+ expect(speedLabel(row)).toBe('未知（速度换算超出可显示范围）');
  expect(speedDetails(row)).not.toContain('Infinity');
  expect(speedDetails(row)).toContain('速度换算超出可显示范围');
 });
@@ -88,4 +88,21 @@ it('设备快照保留零电量与否定状态，弹窗文本转义',()=>{
  const details=contextDetails({...point(0),context:{version:1,battery_percent:0,charging:false,is_interactive:false,wifi:{status:'connected',ssid:'<img src=x onerror=alert(1)>'}}});
  expect(details).toContain('0%');expect(details).toContain('未充电');expect(details).toContain('熄屏');
  expect(escapeLocationHtml('<img src=x onerror="x"> &')).toBe('&lt;img src=x onerror=&quot;x&quot;&gt; &amp;');
+});
+it('未知速度直接解释缺失速度误差而不把水平精度当速度精度', () => {
+ const row:LocationRow = {...point(0),accuracy:'32',provider:'gps',speed:null,
+   context:{version:1,raw_speed_mps:1.4,speed_quality:'unreliable',speed_quality_reason:'missing_speed_accuracy'}};
+ expect(speedLabel(row)).toBe('未知（未提供速度精度）');
+ expect(speedDetails({...row,context:{version:1,speed_quality:'unavailable',speed_quality_reason:'missing_speed'}})).toBe('未提供速度');
+});
+it('历史高度明确为未经垂直精度核验的椭球参考值而非海拔', () => {
+ for (const height of [49.8,-3.2,55.7]) {
+   const details=contextDetails({...point(0),context:{version:1,altitude_m:height}});
+   expect(details).toContain(`参考高度 ${height.toFixed(1)} m`);
+   expect(details).toContain('WGS84 椭球高，非海拔');
+   expect(details).toContain('垂直精度未记录');
+ }
+});
+it('速度误差注明系统估计的68%置信范围而非绝对误差保证', () => {
+ expect(contextDetails({...point(0),context:{version:1,speed_accuracy_mps:0.5}})).toContain('速度估计误差 ±0.5 m/s（68%置信范围）');
 });

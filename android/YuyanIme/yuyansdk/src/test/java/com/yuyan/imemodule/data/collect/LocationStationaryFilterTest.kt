@@ -19,15 +19,30 @@ class LocationStationaryFilterTest {
         var last: UploadedLocation? = null
         var reports = 0
         listOf(0.0, 102.0, 8.0, 98.0, 4.0, 87.0, 7.0).forEachIndexed { index, north ->
-            val candidate = point(index * 30L, north)
+            val candidate = point(index * 60L, north)
             if (filter.accept(candidate.locationTimeMs, candidate, null, last) &&
-                LocationUploadPolicy.shouldUpload(candidate.locationTimeMs, candidate, last, 30_000)) {
+                LocationUploadPolicy.shouldUpload(candidate.locationTimeMs, candidate, last)) {
                 reports++
                 last = UploadedLocation(candidate.latitude, candidate.longitude, candidate.accuracyMeters,
                     candidate.locationTimeMs, candidate.locationTimeMs, candidate.provider)
             }
         }
         assertEquals(1, reports)
+    }
+
+    @Test fun `movement is confirmed during cooldown and reported at five minutes`() {
+        val filter = LocationJumpFilter()
+        val first = point(0)
+        val last = UploadedLocation(first.latitude, first.longitude, first.accuracyMeters,
+            first.locationTimeMs, first.locationTimeMs, first.provider)
+        assertTrue(filter.accept(start, first, null))
+        assertFalse(observe(filter, 30, 90.0))
+        val confirmed = point(60, 95.0)
+        assertTrue(filter.accept(confirmed.locationTimeMs, confirmed, null, last))
+        assertFalse(LocationUploadPolicy.shouldUpload(confirmed.locationTimeMs, confirmed, last))
+        val next = point(300, 98.0)
+        assertTrue(filter.accept(next.locationTimeMs, next, null, last))
+        assertTrue(LocationUploadPolicy.shouldUpload(next.locationTimeMs, next, last))
     }
 
     @Test fun `zero speed does not support an eighty metre jump`() {

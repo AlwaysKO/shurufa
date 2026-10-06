@@ -30,6 +30,7 @@ class DouyinChatAdapter(private val ruleProvider: () -> ChatCaptureRule = { Chat
     override fun parse(root: UiNodeSnapshot): ParseResult = inspect(root).result
 
     internal fun inspect(root: UiNodeSnapshot): DouyinParseOutcome {
+        if (!root.visibleToUser || root.flatten().any { it.password }) return skipped(DouyinPageStatus.NON_CHAT_PAGE)
         if (root.flatten().count { it.hasId("d_-") } > 1) return skipped(DouyinPageStatus.AMBIGUOUS_CHAT)
         val legacy = parseLegacy(root)
         if (legacy is ParseResult.Success) return DouyinParseOutcome(legacy, DouyinPageStatus.MATCHED_LEGACY)
@@ -92,8 +93,9 @@ class DouyinChatAdapter(private val ruleProvider: () -> ChatCaptureRule = { Chat
         val rule = ruleProvider()
         val paths = mutableListOf<List<UiNodeSnapshot>>()
         fun visit(node: UiNodeSnapshot, ancestors: List<UiNodeSnapshot>) {
+            if (!node.visibleToUser) return
             val path = ancestors + node
-            if (node.className.orEmpty().endsWith("EditText") || rule.matchesId(node.viewId, rule.inputIds)) paths += path
+            if (node.editable || node.className.orEmpty().endsWith("EditText") || rule.matchesId(node.viewId, rule.inputIds)) paths += path
             node.children.forEach { visit(it, path) }
         }
         visit(root, emptyList())
@@ -130,7 +132,9 @@ class DouyinChatAdapter(private val ruleProvider: () -> ChatCaptureRule = { Chat
             if (!back.bounds.overlapsVertically(setting.bounds)) return skipped(DouyinPageStatus.INVALID_BOUNDS)
             val headerBottom = maxOf(back.bounds.bottom, setting.bounds.bottom)
             val titles = nodes.filter {
-                (it.className.orEmpty().endsWith("TextView") || rule.matchesId(it.viewId, rule.titleIds)) && it.label().isNotBlank() &&
+                (it.className.orEmpty().endsWith("TextView") || rule.matchesId(it.viewId, rule.titleIds) ||
+                    (it.children.isEmpty() && !it.text.isNullOrBlank() && !it.editable && !it.scrollable &&
+                        !it.className.orEmpty().endsWith("Button") && !it.className.orEmpty().endsWith("ImageView"))) && it.label().isNotBlank() &&
                     it.bounds.left >= back.bounds.right && it.bounds.right <= setting.bounds.left &&
                     it.bounds.top >= minOf(back.bounds.top, setting.bounds.top) && it.bounds.bottom <= headerBottom
             }.distinctBy { it.bounds to it.label() }
@@ -142,7 +146,7 @@ class DouyinChatAdapter(private val ruleProvider: () -> ChatCaptureRule = { Chat
             }
             val lists = nodes.filter {
                 val clazz = it.className.orEmpty()
-                (clazz.endsWith("RecyclerView") || clazz.endsWith("ListView") || rule.matchesId(it.viewId, rule.bodyIds)) &&
+                (it.scrollable || clazz.endsWith("RecyclerView") || clazz.endsWith("ListView") || rule.matchesId(it.viewId, rule.bodyIds)) &&
                     it.bounds.top >= headerBottom && it.bounds.top - headerBottom <= scope.bounds.height() / 10 &&
                     it.bounds.bottom <= input.bounds.top && input.bounds.top - it.bounds.bottom <= scope.bounds.height() / 5 &&
                     it.bounds.height() >= scope.bounds.height() / 5 && it.bounds.width() >= scope.bounds.width() * 2 / 3
@@ -173,5 +177,6 @@ class DouyinChatAdapter(private val ruleProvider: () -> ChatCaptureRule = { Chat
         other.top >= top && other.bottom <= bottom
 
     private fun UiNodeSnapshot.hasId(id: String) = viewId == "$packageName:id/$id"
-    private fun UiNodeSnapshot.flatten(): List<UiNodeSnapshot> = listOf(this) + children.flatMap { it.flatten() }
+    private fun UiNodeSnapshot.flatten(): List<UiNodeSnapshot> =
+        if (!visibleToUser) emptyList() else listOf(this) + children.flatMap { it.flatten() }
 }

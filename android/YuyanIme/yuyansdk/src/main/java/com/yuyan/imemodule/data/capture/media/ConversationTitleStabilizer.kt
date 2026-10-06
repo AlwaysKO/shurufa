@@ -66,9 +66,10 @@ internal open class ConversationTitleStabilizer(
             )
         }
         val previous = state?.takeIf { nowMillis - it.observedAt in 0..CONTINUITY_MILLIS }
-        val normalized = normalizeConversationTitle(title, platform)
+        // 微信 OCR 会把省略号读成两个点；先识别再去尾部装饰，避免误确认完整身份。
+        val normalized = normalizeConversationTitle(if (legacyWechat) title?.replace(Regex("\\.{2,}"), "…") else title, platform)
         if (legacyWechat && normalized != null && (normalized.contains("…") || normalized.contains("..."))) {
-            // 截断显示名不是完整身份：只在连续页面内用同一原始像素接续，不存全局映射。
+            // 隐藏后缀可能属于不同群；截断像素只在连续同页复用，不持久关联。
             state = null
             pendingKey = null
             val pixels = visualKey?.takeIf { it.matches(Regex("[a-f0-9]{64}")) }
@@ -76,8 +77,8 @@ internal open class ConversationTitleStabilizer(
                 nowMillis - it.observedAt in 0..CONTINUITY_MILLIS }?.key
                 ?: "screenshot-v2:truncated:${java.util.UUID.randomUUID()}"
             truncatedState = TruncatedState(key, pixels, nowMillis)
-            val visible = screenshotConversationIdentity(normalized.replace(Regex("\\.{3,}"), "…"), "")
-            return visible.copy(externalKey = key, displayName = visible.displayName + "（名称被截断）",
+            val visible = screenshotConversationIdentity(normalized, "")
+            return visible.copy(externalKey = key,
                 confidence = 0.55, status = "truncated", observedTitle = normalized, previousKey = null)
         }
         truncatedState = null

@@ -31,12 +31,17 @@ class ReportSyncJobService : JobService() {
     }
     companion object {
         private const val JOB_ID = 5175300
+        private const val PERIODIC_INTERVAL_MS = 30 * 60 * 1000L
         fun schedule(context: Context) {
             val scheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
-            if (scheduler.allPendingJobs.any { it.id == JOB_ID }) return
-            scheduler.schedule(JobInfo.Builder(JOB_ID, ComponentName(context, ReportSyncJobService::class.java))
+            val component = ComponentName(context, ReportSyncJobService::class.java)
+            val existing = scheduler.allPendingJobs.firstOrNull { it.id == JOB_ID }
+            if (existing != null && existing.service != component) return
+            if (existing?.isPeriodic == true && existing.intervalMillis == PERIODIC_INTERVAL_MS &&
+                existing.isPersisted && existing.networkType == JobInfo.NETWORK_TYPE_ANY) return
+            scheduler.schedule(JobInfo.Builder(JOB_ID, component)
                 .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                .setPeriodic(15 * 60 * 1000L)
+                .setPeriodic(PERIODIC_INTERVAL_MS)
                 .setPersisted(true)
                 .build())
         }

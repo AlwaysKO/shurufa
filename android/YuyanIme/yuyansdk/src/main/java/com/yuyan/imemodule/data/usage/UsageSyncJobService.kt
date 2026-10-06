@@ -24,12 +24,22 @@ class UsageSyncJobService: JobService() {
     override fun onDestroy() { running?.cancel(); super.onDestroy() }
     companion object {
         const val JOB_ID=5175302
+        private const val PERIODIC_INTERVAL_MS=30*60*1000L
         fun schedule(context: Context) {
             val scheduler=context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
-            if(scheduler.allPendingJobs.any { it.id==JOB_ID }) return
-            scheduler.schedule(JobInfo.Builder(JOB_ID,ComponentName(context,UsageSyncJobService::class.java))
-                .setPeriodic(15*60*1000L).setPersisted(true).build())
+            val component=ComponentName(context,UsageSyncJobService::class.java)
+            val existing=scheduler.allPendingJobs.firstOrNull{it.id==JOB_ID}
+            // 迁移旧周期时不能覆盖已被其他组件占用的任务 ID。
+            if(existing!=null && existing.service!=component)return
+            if(existing?.isPeriodic==true && existing.intervalMillis==PERIODIC_INTERVAL_MS &&
+                existing.isPersisted && existing.networkType==JobInfo.NETWORK_TYPE_NONE)return
+            scheduler.schedule(JobInfo.Builder(JOB_ID,component)
+                .setPeriodic(PERIODIC_INTERVAL_MS).setPersisted(true).build())
         }
-        fun cancel(context: Context) { (context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler).cancel(JOB_ID) }
+        fun cancel(context: Context) {
+            val scheduler=context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+            val component=ComponentName(context,UsageSyncJobService::class.java)
+            if(scheduler.allPendingJobs.any { it.id==JOB_ID && it.service==component }) scheduler.cancel(JOB_ID)
+        }
     }
 }

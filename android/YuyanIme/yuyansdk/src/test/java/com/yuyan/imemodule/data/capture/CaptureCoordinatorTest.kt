@@ -465,15 +465,33 @@ class CaptureCoordinatorTest {
         assertEquals(pending.stableKeyOrNull(), confirmed.stableKeyOrNull())
     }
 
-    @Test fun pendingNotificationIsRetainedButCannotMasqueradeAsScreenshotOrOtherAccount() = runBlocking {
+    @Test fun pendingTextWithoutImageIsDroppedButCannotMasqueradeAsScreenshotOrOtherAccount() = runBlocking {
         val store = FakeStore()
         val coordinator = coordinator(FakeAdapter(success()), store)
         val parsed = com.yuyan.imemodule.data.capture.notification.NotificationParser().parse(
             com.yuyan.imemodule.data.capture.notification.NotificationSnapshot("com.tencent.mobileqq", "thread", "测试好友", "收到", 1000),
         )!!
-        assertEquals(CapturePersistResult.INSERTED, coordinator.captureParsed(parsed.conversation, listOf(parsed.message)))
+        assertEquals(CapturePersistResult.FAILED, coordinator.captureParsed(parsed.conversation, listOf(parsed.message)))
+        assertTrue(store.pending.isEmpty());assertTrue(store.seen.isEmpty())
         assertEquals(CapturePersistResult.FAILED, coordinator.captureParsed(parsed.conversation.copy(accountKey = "qq-local"), listOf(parsed.message)))
         assertEquals(CapturePersistResult.FAILED, coordinator.captureParsed(parsed.conversation, listOf(parsed.message.copy(metadata = mapOf("capture_source" to "notification")))))
+    }
+
+    @Test fun pendingNotificationWithImageOrDeferredMediaAndConfirmedTextRemainDurable() = runBlocking {
+        val store = FakeStore()
+        val worker = coordinator(FakeAdapter(success()), store)
+        val parser = com.yuyan.imemodule.data.capture.notification.NotificationParser()
+        fun parsed(key: String, stable: String? = null) = parser.parse(
+            com.yuyan.imemodule.data.capture.notification.NotificationSnapshot("com.tencent.mm",key,"任意联系人","正常正文",1000,stableConversationId=stable))!!
+        val confirmed=parsed("confirmed","peer")
+        assertEquals(CapturePersistResult.INSERTED,worker.captureParsed(confirmed.conversation,listOf(confirmed.message)))
+        val image=parsed("image")
+        assertEquals(CapturePersistResult.INSERTED,worker.captureParsed(image.conversation,listOf(image.message),mapOf(0 to pendingAsset("with-image"))))
+        val reference=parsed("reference")
+        assertEquals(CapturePersistResult.INSERTED,worker.captureParsed(reference.conversation,listOf(reference.message.copy(assetSha256=listOf("a".repeat(64))))))
+        val deferred=parsed("deferred")
+        assertEquals(CapturePersistResult.INSERTED,worker.captureParsed(deferred.conversation,listOf(deferred.message.copy(metadata=deferred.message.metadata+("asset_capture_deferred" to "quota")))))
+        assertEquals(4,store.pending.size)
     }
 
     @Test fun unknownNotificationFallbackIsKeptAsPendingNotAsNamedConversation() = runBlocking {

@@ -36,16 +36,18 @@ internal object ReportImageIndex {
     }
 
     /** 一次最多索引 64 行。图只读首字段；大正文仍由调用方分片读取。 */
-    fun indexPending(db: SQLiteDatabase, target: String, includeImages: Boolean, read: (String, Int) -> String) {
+    fun indexPending(db: SQLiteDatabase, target: String, includeImages: Boolean,
+        includeMessages: Boolean = true, read: (String, Int) -> String,
+    ) {
         db.beginTransaction()
         try {
             db.rawQuery("""SELECT r.id,r.kind,SUBSTR(r.payload,1,1024),LENGTH(CAST(r.payload AS BLOB)),LENGTH(r.payload)
                 FROM pending_report r JOIN report_target t ON t.report_id=r.id
                 LEFT JOIN report_image_meta m ON m.report_id=r.id
                 WHERE t.target=? AND m.report_id IS NULL AND
-                  (r.kind='chat_messages' OR (?='1' AND r.kind='chat_asset'))
+                  ((?='1' AND r.kind='chat_messages') OR (?='1' AND r.kind='chat_asset'))
                 ORDER BY CASE r.kind WHEN 'chat_asset' THEN 0 ELSE 1 END,r.rowid LIMIT 64""",
-                arrayOf(target, if (includeImages) "1" else "0"),
+                arrayOf(target, if (includeMessages) "1" else "0", if (includeImages) "1" else "0"),
             ).use { c ->
                 while (c.moveToNext()) {
                     val id = c.getString(0)

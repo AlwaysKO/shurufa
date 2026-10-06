@@ -84,13 +84,18 @@ class DurableReportTest {
    assertEquals(20,store.pendingReports("a").size)
   }; ctx.deleteDatabase(name)
  }
- @Test fun `聊天资源和消息优先于普通积压报告`() {
+ @Test fun `位置文字先于普通积压且图片可独立选中补传`() {
   val ctx=ApplicationProvider.getApplicationContext<Context>(); val name="${UUID.randomUUID()}.db"
   LocalInputStore(ctx,name).withStore { store ->
    repeat(20) { store.enqueueReport(PendingReport("normal$it","personal_choice","{}"),listOf("a")) }
    store.enqueueReport(PendingReport("message","chat_messages","{}"),listOf("a"))
    store.enqueueReport(PendingReport("asset","chat_asset","{}"),listOf("a"))
-   assertEquals(listOf("chat_messages","chat_asset"),store.pendingReports("a",limit=2).map { it.kind })
+   store.enqueueReport(PendingReport("location","location","{}"),listOf("a"))
+   assertEquals(listOf("location","chat_messages","personal_choice"),store.pendingReports("a",limit=3).map { it.kind })
+   val imagesOnly=DeliverySelection(events=false,regular=false,location=false,chatText=false)
+   assertEquals(listOf("asset"),store.pendingReports("a",selection=imagesOnly).map { it.id })
+   store.acknowledgeReports("a",listOf("location","message")+(0 until 20).map{"normal$it"})
+   assertEquals(listOf("asset"),store.pendingReports("a").map { it.id })
   }; ctx.deleteDatabase(name)
  }
 }

@@ -185,24 +185,43 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
         } finally { db.endTransaction() }
     }
 
+    /** 只检查待传关系，避免为决定空闲轮询解码事件或图片载荷。 */
+    @Synchronized fun hasPendingUploads():Boolean=readableDatabase.rawQuery(
+        "SELECT 1 FROM event_target UNION ALL SELECT 1 FROM report_target LIMIT 1",null,
+    ).use{it.moveToFirst()}
+
     @Synchronized fun hasPendingImages(): Boolean = readableDatabase.rawQuery(
         "SELECT 1 FROM pending_report WHERE kind='chat_asset' LIMIT 1", null,
     ).use { it.moveToFirst() }
+
+    @Synchronized fun hasPendingEvents():Boolean=readableDatabase.rawQuery(
+        "SELECT 1 FROM event_target LIMIT 1",null,
+    ).use { it.moveToFirst() }
+
+    @Synchronized fun pendingKinds():Set<String> = readableDatabase.rawQuery(
+        "SELECT DISTINCT r.kind FROM pending_report r JOIN report_target t ON t.report_id=r.id",null,
+    ).use { c -> buildSet { while(c.moveToNext()) add(c.getString(0)) } }
 
     @Synchronized fun pendingReports(
         target: String, limit: Int = 20, includeLocation: Boolean = true,
         maxImageBytes: () -> Long = { Long.MAX_VALUE },
         includeChat: Boolean = true,
         beginImageRead: () -> java.io.Closeable? = { java.io.Closeable {} },
+        selection: DeliverySelection = DeliverySelection(),
     ): List<PendingReport> {
-        val budget = if (includeChat) maxImageBytes().coerceAtLeast(0) else 0L
+        val readLocation = includeLocation && selection.location
+        val readText = includeChat && selection.chatText
+        val readImages = includeChat && selection.images
+        val budget = if (readImages) maxImageBytes().coerceAtLeast(0) else 0L
         val db = writableDatabase
         // 有界迁移旧队列；暂停期间不读取旧图，未索引依赖保守等待。
         val imagePermit = if (budget > 0) beginImageRead() else null
         return try {
-            if (includeChat) ReportImageIndex.indexPending(db, target, imagePermit != null) { id, length -> readReportPayload(id, length) }
+            if (readText || readImages) ReportImageIndex.indexPending(db, target,
+                includeImages = imagePermit != null, includeMessages = readText,
+            ) { id, length -> readReportPayload(id, length) }
             // Compute this once, not once for every dependent message (quadratic on old queues).
-            val unknownAssets = includeChat && db.rawQuery("""SELECT 1 FROM pending_report a
+            val unknownAssets = readText && db.rawQuery("""SELECT 1 FROM pending_report a
                 JOIN report_target t ON t.report_id=a.id LEFT JOIN report_image_meta m ON m.report_id=a.id
                 WHERE t.target=? AND a.kind='chat_asset' AND (m.report_id IS NULL OR m.asset_sha256 IS NULL) LIMIT 1""",
                 arrayOf(target)).use { it.moveToFirst() }
@@ -213,7 +232,9 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
                FROM pending_report r JOIN report_target t ON t.report_id=r.id
                LEFT JOIN report_image_meta m ON m.report_id=r.id
                WHERE t.target=? AND (?='1' OR r.kind!='location')
-                 AND (?='1' OR r.kind NOT IN ('chat_asset','chat_messages'))
+                 AND (?='1' OR r.kind!='chat_messages')
+                 AND (?='1' OR r.kind!='chat_asset')
+                 AND (?='1' OR r.kind IN ('location','chat_messages','chat_asset'))
                  AND (r.kind!='chat_asset' OR (m.payload_bytes<=? AND ?>0))
                  AND (r.kind!='chat_messages' OR (m.dependencies_valid=1
                    AND NOT EXISTS (
@@ -223,8 +244,10 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
                      WHERE d.report_id=r.id AND at.target=t.target)
                    AND (?='0' OR NOT EXISTS (SELECT 1 FROM report_image_dependency ud WHERE ud.report_id=r.id))))
                ORDER BY t.attempted_at,
-                 CASE r.kind WHEN 'chat_messages' THEN 0 WHEN 'chat_asset' THEN 1 ELSE 2 END,r.rowid LIMIT ?""",
-            arrayOf(target, if (includeLocation) "1" else "0", if (includeChat) "1" else "0", queryBudget.toString(), queryBudget.toString(), if (unknownAssets) "1" else "0", limit.coerceIn(1,20).toString()),
+                 CASE r.kind WHEN 'location' THEN 0 WHEN 'chat_messages' THEN 1 WHEN 'chat_asset' THEN 3 ELSE 2 END,r.rowid LIMIT ?""",
+            arrayOf(target, if (readLocation) "1" else "0", if (readText) "1" else "0", if (readImages) "1" else "0",
+                if (selection.regular) "1" else "0", queryBudget.toString(), queryBudget.toString(),
+                if (unknownAssets) "1" else "0", limit.coerceIn(1,20).toString()),
         ).use { c -> buildList {
             var characters = 0L
             var imageBytes = 0L

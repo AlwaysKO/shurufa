@@ -19,6 +19,10 @@ data class UiNodeSnapshot(
     val contentDescription: String?,
     val bounds: IntRect,
     val children: List<UiNodeSnapshot>,
+    val editable: Boolean = false,
+    val scrollable: Boolean = false,
+    val password: Boolean = false,
+    val visibleToUser: Boolean = true,
 )
 
 internal fun preferredAccessibilitySnapshot(
@@ -44,6 +48,8 @@ private fun StringBuilder.appendCanonicalNode(node: UiNodeSnapshot) {
     appendValue(node.className)
     appendValue(node.text)
     appendValue(node.contentDescription)
+    append(node.editable).append(',').append(node.scrollable).append(',')
+        .append(node.password).append(',').append(node.visibleToUser).append(';')
     append(node.bounds.left).append(',')
         .append(node.bounds.top).append(',')
         .append(node.bounds.right).append(',')

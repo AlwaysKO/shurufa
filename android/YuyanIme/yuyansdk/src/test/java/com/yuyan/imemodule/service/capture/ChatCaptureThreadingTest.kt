@@ -176,4 +176,61 @@ class ChatCaptureThreadingTest {
             }
         }
     }
+    @Test
+    fun `前台事件与延迟探测在读树前后台更新宿主版本且不联网`() {
+        val settings = com.yuyan.imemodule.data.capture.adapter.ChatCaptureSettings
+        val runtimeField = settings.javaClass.getDeclaredField("runtime").apply { isAccessible = true }
+        val previousRuntime = runtimeField.get(settings)
+        try {
+            for (probe in listOf(false, true)) {
+                NodeShadow.read = CountDownLatch(1)
+                val loads = java.util.concurrent.atomic.AtomicInteger()
+                val requests = java.util.concurrent.atomic.AtomicInteger()
+                val versionReadOnMain = java.util.concurrent.atomic.AtomicBoolean()
+                val runtime = com.yuyan.imemodule.data.capture.adapter.ChatCaptureRefreshController(
+                    allowed = { true },
+                    loadVersion = {
+                        if (Looper.myLooper() == Looper.getMainLooper()) versionReadOnMain.set(true)
+                        loads.incrementAndGet()
+                        com.yuyan.imemodule.data.capture.adapter.CaptureAppVersion(123, "123")
+                    }, readCache = { null }, writeCache = { _, _ -> }, fetch = { requests.incrementAndGet(); null },
+                )
+                val service = Robolectric.buildService(PassiveChatAccessibilityService::class.java).create().get()
+                CollectionConsent.setEnabled(service, true)
+                runtimeField.set(settings, runtime)
+                ServiceShadow.root = AccessibilityNodeInfo.obtain().apply {
+                    packageName = "com.ss.android.ugc.aweme"
+                    className = "android.view.ViewGroup"
+                    setBoundsInScreen(Rect(0, 0, 1080, 2400))
+                }
+                val observedVersion = java.util.concurrent.atomic.AtomicReference<Long?>()
+                NodeShadow.onRead = { observedVersion.set(runtime.version("com.ss.android.ugc.aweme")?.code) }
+                val event = AccessibilityEvent.obtain(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED).apply {
+                    packageName = "com.ss.android.ugc.aweme"
+                }
+                try {
+                    if (probe) {
+                        service.javaClass.getDeclaredMethod("captureCurrentForegroundViewport", String::class.java,
+                            Int::class.javaPrimitiveType, Boolean::class.javaPrimitiveType).apply { isAccessible = true }
+                            .invoke(service, "com.ss.android.ugc.aweme", 0, false)
+                    } else service.onAccessibilityEvent(event)
+                    assertTrue("应读到前台树", NodeShadow.read.await(3, TimeUnit.SECONDS))
+                    // getChildCount 在回调前先释放 latch，等待同一读操作完成后再读取观测值。
+                    val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(1)
+                    while (observedVersion.get() == null && System.nanoTime() < deadline) Thread.sleep(5)
+                    assertEquals("读树时须已选择当前宿主版本", 123L, observedVersion.get())
+                    assertEquals(2, loads.get())
+                    assertFalse(versionReadOnMain.get())
+                    assertEquals(0, requests.get())
+                } finally {
+                    NodeShadow.onRead = null
+                    CollectionConsent.setEnabled(service, false)
+                    service.onDestroy()
+                    event.recycle()
+                    ServiceShadow.root = null
+                }
+            }
+        } finally { runtimeField.set(settings, previousRuntime) }
+    }
+
 }

@@ -66,3 +66,12 @@ it('会话批量删除一次发送明确快照和当前手机，保留409及非J
  await expect(api.deleteChatConversations(body)).rejects.toThrow('整批未删除');
  await expect(api.deleteChatConversations(body)).rejects.toThrow('502');
 });
+
+it('旧记录清理绑定手机并传递失效预览的明确说明',async()=>{
+ const fetch=vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({token:'t',total_messages:1})))
+  .mockResolvedValueOnce(new Response(JSON.stringify({error:'清理预览已失效，请重新预览'}),{status:410}));
+ const api=loadApi(fetch);const body={days:7 as const,include_images:false,platform:'wechat' as const};
+ await api.previewPendingChatCleanup(body);expect(fetch.mock.calls[0][0]).toBe('/api/v1/dashboard/chat/pending/cleanup/preview?user_id=user-a');expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual(body);
+ await expect(api.deletePendingChatCleanupBatch({confirm:'DELETE',token:'t',offset:0})).rejects.toThrow('清理预览已失效');
+ expect(JSON.parse(fetch.mock.calls[1][1].body)).toEqual({confirm:'DELETE',token:'t',offset:0});
+});

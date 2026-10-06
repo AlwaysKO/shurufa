@@ -15,15 +15,18 @@ internal class CollectorTargetGate(
     onlineTarget: String,
     private val usbConnected: () -> Boolean,
     private val localHealthy: (String) -> Boolean,
+    private val onlineAvailable: () -> Boolean = { true },
 ) {
     private val onlineTarget = onlineTarget.trimEnd('/')
 
     fun canUpload(target: String): Boolean {
         val normalized = target.trimEnd('/')
-        if (normalized == onlineTarget) {
-            ReportingTrace.record(ReportingStage.GATE_ONLINE, true, flag = true)
-            return true
+        val online = onlineAvailable()
+        if (normalized == onlineTarget && !ImageUploadSchedule.isUsbTarget(normalized)) {
+            ReportingTrace.record(ReportingStage.GATE_ONLINE, true, flag = online)
+            return online
         }
+        if (!online && !ImageUploadSchedule.isUsbTarget(normalized)) return false
         val usb = usbConnected()
         ReportingTrace.record(ReportingStage.GATE_USB, false, flag = usb)
         if (!usb) return false
@@ -32,6 +35,11 @@ internal class CollectorTargetGate(
         return healthy
     }
 }
+
+internal fun collectorNetworkAvailable(validatedNetwork: Boolean, usbConnected: () -> Boolean): Boolean = validatedNetwork || usbConnected()
+
+internal fun collectorNetworkAvailable(context: Context): Boolean =
+    collectorNetworkAvailable(ImageUploadRuntime.hasValidatedNetwork(context)) { isUsbDataLink(context) }
 
 internal fun isUsbDataLink(connected: Boolean, configured: Boolean): Boolean = connected && configured
 
@@ -74,5 +82,6 @@ internal fun collectorTargetGate(context: Context, onlineTarget: String): Collec
         onlineTarget = onlineTarget,
         usbConnected = { isUsbDataLink(context) },
         localHealthy = { localCollectorHealthy(healthClient, it) },
+        onlineAvailable = { ImageUploadRuntime.hasValidatedNetwork(context) },
     )
 }
