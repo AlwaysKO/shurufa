@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import type pg from 'pg';
 import { savingFlags } from '../lib/deviceSaving.js';
+import { withStatisticsRetentionLock } from '../lib/statisticsRetentionLock.js';
 // 精确排除自身发行变体，不能误伤以相似前缀命名的其他应用。保留历史原始记录。
 const OWN_USAGE_PACKAGES = ['com.yuyan.pinyin', 'com.yuyan.pinyin.debug', 'com.yuyan.pinyin.release', 'com.yuyan.pinyin.offline', 'com.yuyan.pinyin.offline.debug', 'com.yuyan.pinyin.offline.release'];
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
@@ -23,10 +24,12 @@ export function createMobileAppUsageRouter(pool:pg.Pool) {
    const flags=await savingFlags(pool,[user]);
    await pool.query('INSERT INTO device(id) VALUES($1) ON CONFLICT(id) DO NOTHING',[user]);
    if(flags.get(user)===false){res.json({ok:true,received:records.length,discarded:true});return;}
-   await pool.query(`INSERT INTO app_usage_segment(user_id,id,kind,package_name,app_name,start_ms,end_ms,end_reason)
+   await withStatisticsRetentionLock(pool,'app-usage',user,db=>db.query(`INSERT INTO app_usage_segment(user_id,id,kind,package_name,app_name,start_ms,end_ms,end_reason)
      SELECT $1,r.id,r.kind,r.package_name,r.app_name,r.start_ms,r.end_ms,r.end_reason
      FROM jsonb_to_recordset($2::jsonb) AS r(id uuid,kind text,package_name text,app_name text,start_ms bigint,end_ms bigint,end_reason text)
-     ON CONFLICT(user_id,id) DO NOTHING`,[user,JSON.stringify(records)]);
+     WHERE NOT EXISTS (SELECT 1 FROM retention_deleted_record d WHERE d.user_id=$1 AND d.dataset='app-usage'
+       AND d.record_key=r.id::text AND d.source_version='')
+     ON CONFLICT(user_id,id) DO NOTHING`,[user,JSON.stringify(records)]));
    res.json({ok:true,received:records.length});
   }catch(error){next(error);}
  });return router;

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import RetentionCleanup from '../components/RetentionCleanup.vue';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { api, currentUserId, appName, type AppUsageData, type AppUsageDayData } from '../api';
 // 输入框与显示统一北京时间，不依赖浏览器所在时区。
@@ -117,6 +118,7 @@ onBeforeUnmount(() => { version++; dayVersion++; recordsVersion++; });
 const reasons: Record<string, string> = { switch: '切换应用', process_restart: '进程重启记录中断', resume: '切换应用', pause: '离开前台', lock: '锁屏', off: '熄屏', shutdown: '关机', startup: '启动', permission_lost: '权限中断', query_unavailable: '系统记录不可用', history_gap: '历史记录缺失', collection_paused: '采集暂停', clock_changed: '系统时间改变', reboot: '设备重启' };
 </script>
 <template>
+  <RetentionCleanup dataset="app-usage" label="应用使用记录" :filters="{ package_name: packageName.trim() || undefined }" :scope-label="packageName.trim() ? appName(packageName.trim()) : '全部 App 和断档'" :context="[from, to, data?.page]" @changed="load()" />
   <section>
     <p class="note">除妙言输入法自身以外的 App 前台使用记录，与输入法是否打开无关。仅统计已结束段；后台播放不计时。全部时间为北京时间，时长按查询范围裁剪，断档不计使用。</p>
     <div class="date-presets" role="group" aria-label="快捷日期"><button v-for="preset in presets" :key="preset.key" type="button" :aria-pressed="activePreset === preset.key" :class="{ active: activePreset === preset.key }" @click="selectPreset(preset.key)">{{ preset.label }}</button></div>

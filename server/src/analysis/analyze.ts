@@ -4,6 +4,20 @@ import { pinyin } from 'pinyin-pro';
 /** 计入高频统计的事件类型 */
 const TEXT_EVENT_TYPES = ['commit', 'candidate_commit', 'paste', 'paste_inferred', 'external_insert', 'voice'];
 
+async function withCompletionTransaction<T>(pool: pg.Pool, userId: string, run: (db: pg.PoolClient) => Promise<T>): Promise<T> {
+  const db = await pool.connect();
+  try {
+    await db.query('BEGIN');
+    // Shared with retention: an analysis phase must not read sources before a
+    // cleanup and then recreate those deleted sources/candidates after it.
+    await db.query("SELECT pg_advisory_xact_lock(hashtextextended('completion-retention:' || $1,0))", [userId.toLowerCase()]);
+    const result = await run(db);
+    await db.query('COMMIT');
+    return result;
+  } catch (error) { await db.query('ROLLBACK').catch(() => {}); throw error; }
+  finally { db.release(); }
+}
+
 /** 从一段文本中提取候选词片段（中文连续片段，2~6 字） */
 function extractWords(text: string): string[] {
   const segments = text.match(/[\u4e00-\u9fff]+/g) ?? [];
@@ -28,6 +42,10 @@ function extractWords(text: string): string[] {
  * 统计 analysis_state['last_analyzed_at'] 之后的新事件，UPSERT 到 phrase_stat。
  */
 export async function analyzePhrases(pool: pg.Pool, now: Date, userId: string): Promise<{ phrases: number; words: number }> {
+  return withCompletionTransaction(pool, userId, db => analyzePhrasesInTransaction(db, now, userId));
+}
+
+async function analyzePhrasesInTransaction(pool: pg.PoolClient, now: Date, userId: string): Promise<{ phrases: number; words: number }> {
   const cursorKey = `last_analyzed_epoch_ms:${userId}`;
   // 获取上次分析游标
   const cursorRes = await pool.query(
@@ -120,6 +138,10 @@ export async function analyzePhrases(pool: pg.Pool, now: Date, userId: string): 
 
 /** 补全候选生成：从高频短语生成 prefix → completion 映射，评分并写入 completion_candidate */
 export async function generateCompletions(pool: pg.Pool, userId: string): Promise<number> {
+  return withCompletionTransaction(pool, userId, db => generateCompletionsInTransaction(db, userId));
+}
+
+async function generateCompletionsInTransaction(pool: pg.PoolClient, userId: string): Promise<number> {
   // 至少使用 3 次才认为是习惯（对话设计：use_count < 3 不生成候选）
   const phrases = await pool.query(
     `SELECT phrase, package_name, use_count, last_used_at

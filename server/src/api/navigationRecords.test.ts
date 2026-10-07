@@ -26,6 +26,7 @@ beforeEach(async () => {
   await pool.query('CREATE SCHEMA ' + schema);
   await pool.query('CREATE TABLE device(id UUID PRIMARY KEY); CREATE TABLE runtime_setting(key TEXT PRIMARY KEY,value TEXT)');
   await pool.query(readFileSync(new URL('../../migrations/038_navigation_records.sql', import.meta.url), 'utf8'));
+  await pool.query(readFileSync(new URL('../../migrations/041_statistics_retention_tombstones.sql', import.meta.url), 'utf8'));
   bytes = await sharp({ create: { width: 16, height: 16, channels: 3, background: '#abc' } }).png().toBuffer();
   app = createApp(pool); agent = await authenticatedRequest(app);
 });

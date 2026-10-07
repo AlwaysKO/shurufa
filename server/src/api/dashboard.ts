@@ -1,3 +1,4 @@
+import { createStatisticsRetentionRouter } from './statisticsRetention.js';
 import { activityConditions, CONTENT_TYPE_SQL, BEHAVIOR_TYPES } from './activityQuery.js';
 import { createActivityRetentionRouter } from './activityRetention.js';
 import { savingFlags } from '../lib/deviceSaving.js';
@@ -31,6 +32,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
   const router = Router();
   router.use(createActivityDeletionRouter(pool));
   router.use(createActivityRetentionRouter(pool));
+  router.use('/retention', createStatisticsRetentionRouter(pool));
 
   router.get('/settings/collector', async (_req, res, next) => {
     try { res.json({ collector_base_url: await collectorBaseUrl(pool) }); }

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import RetentionCleanup from '../components/RetentionCleanup.vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { api, appName, type ActivityItem } from '../api';
 
 const items = ref<ActivityItem[]>([]);
@@ -16,9 +17,13 @@ const days = ref<number | null>(7);
 /** 来源 App 下拉选项：接口 TOP20 合并列表页出现的包名 */
 const appOptions = ref<Set<string>>(new Set());
 
+let requestId = 0, disposed = false;
+onBeforeUnmount(() => { disposed = true; requestId++; });
 async function load() {
-  loading.value = true;
+  if (disposed) return;
+  const request = ++requestId;
   error.value = '';
+  loading.value = true;
   try {
     const res = await api.events({
       type: 'paste',
@@ -28,6 +33,7 @@ async function load() {
       page: page.value,
       page_size: pageSize,
     });
+    if (disposed || request !== requestId) return;
     items.value = res.items;
     total.value = res.total;
     // 聚合列表页出现的来源 App（下拉不遗漏）
@@ -35,9 +41,9 @@ async function load() {
     res.items.forEach((it) => it.package_name && seen.add(it.package_name));
     appOptions.value = seen;
   } catch (e) {
-    error.value = (e as Error).message;
+    if (!disposed && request === requestId) error.value = (e as Error).message;
   } finally {
-    loading.value = false;
+    if (!disposed && request === requestId) loading.value = false;
   }
 }
 
@@ -70,6 +76,7 @@ onMounted(async () => {
   // 预载近 30 天 TOP 来源 App 作为下拉选项
   try {
     const d = await api.apps(30);
+    if (disposed) return;
     appOptions.value = new Set(d.apps.map((a) => a.package_name).filter(Boolean));
   } catch {
     /* 加载失败不阻塞 */
@@ -79,6 +86,7 @@ onMounted(async () => {
 </script>
 
 <template>
+  <RetentionCleanup dataset="clipboard" label="复制粘贴记录" :filters="{ package_name: pkg || undefined, q: q.trim() || undefined }" :scope-label="`${pkg ? appName(pkg) : '全部来源 App'}${q.trim() ? ' · 关键词：' + q.trim() : ''}`" :context="[days, page]" @changed="search" />
   <div class="filters">
     <button :class="{ active: days === 7 }" @click="days = 7; search()">近7天</button>
     <button :class="{ active: days === 30 }" @click="days = 30; search()">近30天</button>

@@ -14,7 +14,8 @@ async function setup(){
  const code=ts.transpileModule(script.content,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
  const module={exports:{} as {default:{setup:Function}}};
  new Function('require','module','exports',code)((id:string)=>{
-  if(id==='vue')return Vue;
+  if (id === '../components/RetentionCleanup.vue') return { default: { render: () => null } };
+    if(id==='vue')return Vue;
   if(id==='../api')return {api,currentUserId:current,appName:(pkg:string,name:string)=>name||pkg};
   throw Error(id);
  },module,module.exports);

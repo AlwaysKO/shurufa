@@ -41,6 +41,7 @@ it('异步总览数据返回后先挂载图表容器再初始化图表', async (
   const setOption = vi.fn(); const init = vi.fn(() => ({ setOption }));
   const module = { exports: {} as { default: Vue.Component } };
   const require = (name: string) => {
+    if (name === '../components/RetentionCleanup.vue') return { default: { render: () => null } };
     if (name === 'vue') return Vue;
     if (name === 'echarts') return { init };
     if (name === '../api') return { api: { overview: () => response } };

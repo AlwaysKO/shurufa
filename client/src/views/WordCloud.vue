@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import RetentionCleanup from '../components/RetentionCleanup.vue';
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import * as echarts from 'echarts';
@@ -115,6 +116,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <RetentionCleanup dataset="input" label="输入记录" :context="days" @changed="load" />
   <div class="filters">
     <button :class="{ active: days === 7 }" @click="days = 7; load()">近7天</button>
     <button :class="{ active: days === 30 }" @click="days = 30; load()">近30天</button>

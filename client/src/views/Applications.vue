@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import RetentionCleanup from '../components/RetentionCleanup.vue';
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import * as echarts from 'echarts';
 import { api, appName } from '../api';
 
@@ -7,13 +8,21 @@ const days = ref(30);
 const error = ref('');
 let chart: echarts.ECharts | null = null;
 
+let requestId = 0, disposed = false;
+onBeforeUnmount(() => { disposed = true; requestId++; });
 async function load() {
+  if (disposed) return;
+  const request = ++requestId;
+  error.value = '';
   try {
     const res = await api.apps(days.value);
+    if (disposed || request !== requestId) return;
     const rows = res.apps.map((a) => ({ packageName: a.package_name, name: appName(a.package_name, a.app_name), chars: Number(a.input_chars), events: Number(a.event_count) }));
+    await nextTick();
+    if (disposed || request !== requestId) return;
     render(rows);
   } catch (e) {
-    error.value = (e as Error).message;
+    if (!disposed && request === requestId) error.value = (e as Error).message;
   }
 }
 
@@ -46,6 +55,7 @@ onMounted(load);
 </script>
 
 <template>
+  <RetentionCleanup dataset="input" label="输入记录" :context="days" @changed="load" />
   <div class="filters">
     <button v-for="d in [7, 30, 90]" :key="d" :class="{ active: days === d }" @click="days = d; load()">{{ d }} 天</button>
   </div>

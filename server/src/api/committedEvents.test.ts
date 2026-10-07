@@ -11,12 +11,16 @@ let pool: pg.Pool;
 let app: ReturnType<typeof createApp>;
 beforeEach(async () => {
   const db = newDb();
+  // pg-mem does not implement advisory locking; real lock races run against PostgreSQL.
+  db.public.registerFunction({ name: 'hashtextextended', args: [DataType.text, DataType.integer], returns: DataType.integer, implementation: () => 0 });
+  db.public.registerFunction({ name: 'pg_advisory_xact_lock', args: [DataType.integer], returns: DataType.integer, implementation: () => 0 });
   db.public.registerOperator({ operator: '?', left: DataType.jsonb, right: DataType.text, returns: DataType.bool,
     implementation: (value: Record<string, unknown>, key: string) => Object.hasOwn(value, key) });
   pool = new (db.adapters.createPg().Pool)();
   const schema = readFileSync(new URL('../../migrations/001_init.sql', import.meta.url), 'utf8');
   await pool.query(schema.slice(schema.indexOf('CREATE TABLE IF NOT EXISTS input_event'), schema.indexOf('CREATE INDEX IF NOT EXISTS idx_event_device_time')));
   await pool.query('ALTER TABLE input_event ADD COLUMN client_ip TEXT; ALTER TABLE input_event ADD COLUMN ip_location TEXT; ALTER TABLE input_event ADD COLUMN network_type TEXT');
+  await pool.query(readFileSync(new URL('../../migrations/041_statistics_retention_tombstones.sql', import.meta.url), 'utf8'));
   app = createApp(pool);
 });
 afterEach(async () => { await pool.end(); });
@@ -29,6 +33,20 @@ function event(type: string, text: string, before?: string, after?: string, seq 
 async function send(events: object[]) {
   return request(app).post('/api/v1/mobile/events/batch').set('X-Device-Id', A).send({ device_id: A, events });
 }
+it('删除过的精确输入ID重试仍成功确认但不恢复，新到达旧时间记录保留', async () => {
+  const deleted = event('commit', '已清理'), late = event('commit', '离线晚到');
+  await pool.query("INSERT INTO retention_deleted_record(user_id,dataset,record_key) VALUES($1,'input',$2)", [A, deleted.id]);
+  const response = await send([deleted, late]);
+  expect(response.status).toBe(200);
+  expect(response.body).toEqual({ ok: true, received: 2, inserted: 1 });
+  expect((await pool.query('SELECT id,text FROM input_event')).rows).toEqual([{ id: late.id, text: late.text }]);
+  expect((await send([deleted])).body).toEqual({ ok: true, received: 1, inserted: 0 });
+});
+it('同ID仅其他手机有删除标记时不误删当前手机的新记录', async () => {
+  const row = event('commit', '当前手机输入');
+  await pool.query("INSERT INTO retention_deleted_record(user_id,dataset,record_key) VALUES($1,'input',$2)", [B, row.id]);
+  expect((await send([row])).body).toEqual({ ok: true, received: 1, inserted: 1 });
+});
 it('完整保存已上屏及删除前后文本，空字符串不是未采集', async () => {
   const rows = [event('commit', '晚上八点见', '', '晚上八点见'), event('delete', '八', '晚上八点见', '晚上点见', 2), event('commit', '九', '晚上点见', '晚上九点见', 3), event('delete', '晚上九点见', '晚上九点见', '', 4)];
   expect((await send(rows)).body.inserted).toBe(4);

@@ -9,7 +9,8 @@ function compile(code: string) {
 }
 const apiModule = { exports: {} as { appName: (pkg: string | null, name?: string | null) => string } };
 new Function('require', 'module', 'exports', 'localStorage', compile(readFileSync(new URL('../src/api/index.ts', import.meta.url), 'utf8')))(
-  (id: string) => { if (id === 'vue') return Vue; if (id === '../auth') return { dashboardFetch: vi.fn() }; throw Error(id); },
+  (id: string) => { if (id === '../components/RetentionCleanup.vue') return { default: { render: () => null } };
+    if (id === 'vue') return Vue; if (id === '../auth') return { dashboardFetch: vi.fn() }; throw Error(id); },
   apiModule, apiModule.exports, { getItem: () => null },
 );
 const appName = apiModule.exports.appName;
@@ -49,6 +50,7 @@ it('APP 图表显示真实名字、同名不同包仍分开且悬浮可核对包
   const script = compileScript(descriptor, { id: 'apps-test', inlineTemplate: true });
   const module = { exports: {} as { default: Vue.Component } };
   new Function('require','module','exports','document','window',compile(script.content))((id: string) => {
+    if (id === '../components/RetentionCleanup.vue') return { default: { render: () => null } };
     if (id === 'vue') return Vue;
     if (id === 'echarts') return { init: () => ({setOption,resize() {},dispose() {}}) };
     if (id === '../api') return { appName, api: { apps: () => Promise.resolve({ apps: rows }) } };

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import RetentionCleanup from '../components/RetentionCleanup.vue';
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import * as echarts from 'echarts';
 import { api, type HeatmapCell } from '../api';
 
@@ -7,18 +8,22 @@ const days = ref(30);
 const error = ref('');
 let chart: echarts.ECharts | null = null;
 let hourChart: echarts.ECharts | null = null;
-let disposed = false;
+let disposed = false, requestId = 0;
 let hmChart: echarts.ECharts | null = null;
 
 async function load() {
+  if (disposed) return;
+  const request = ++requestId;
   try {
     const [tl, hr, hm] = await Promise.all([api.timeline(days.value), api.hours(days.value), api.heatmap(days.value)]);
-    if (disposed) return;
+    if (disposed || request !== requestId) return;
     error.value = "";
+    await nextTick();
+    if (disposed || request !== requestId) return;
     render(tl.timeline.map((p) => ({ day: p.day, chars: Number(p.input_chars), events: Number(p.event_count) })), hr.hours);
     renderHeatmap(hm.cells);
   } catch (e) {
-    if (!disposed) error.value = (e as Error).message;
+    if (!disposed && request === requestId) error.value = (e as Error).message;
   }
 }
 
@@ -101,7 +106,7 @@ onMounted(() => {
   void load();
 });
 onBeforeUnmount(() => {
-  disposed = true;
+  disposed = true; requestId++;
   window.removeEventListener('resize', resizeCharts);
   chart?.dispose();
   hourChart?.dispose();
@@ -110,6 +115,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <RetentionCleanup dataset="input" label="输入记录" :context="days" @changed="load" />
   <p class="timezone-note">本页日期、小时和星期均按北京时间（UTC+8）统计。</p>
   <div class="filters">
     <button v-for="d in [7, 30, 90]" :key="d" :class="{ active: days === d }" @click="days = d; load()">{{ d }} 天</button>

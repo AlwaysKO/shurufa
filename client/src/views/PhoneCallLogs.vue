@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import RetentionCleanup from '../components/RetentionCleanup.vue';
 import { ref, watch, computed, onBeforeUnmount } from 'vue';
 import { currentUserId } from '../api';
 import { authenticated } from '../auth';
@@ -30,8 +31,10 @@ const state=computed(()=>({never:'尚未获取',pending:'等待手机同步',syn
 const kind=(type:number)=>({1:'呼入',2:'呼出',3:'未接',4:'语音信箱',5:'拒接',6:'拦截',7:'其他设备接听'}[type]??'未知');
 const time=(value:number|string)=>new Date(value).toLocaleString('zh-CN',{timeZone:'Asia/Shanghai',hour12:false});
 onBeforeUnmount(()=>{alive=false;cancel();});
+function refreshAfterCleanup() { if (page.value !== 1) page.value = 1; else void load(); }
 </script>
 <template>
+  <RetentionCleanup dataset="call-logs" label="手机通话记录" :context="page" @changed="refreshAfterCleanup" />
   <section class="phone-call-logs">
     <h3>手机通话记录</h3>
     <p>读取手机最近 7 天的普通电话呼入、呼出、未接记录及通话时长。即使没有录音，也可显示这些记录；不包含微信通话历史。</p>

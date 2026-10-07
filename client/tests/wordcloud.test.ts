@@ -53,6 +53,7 @@ function mount() {
   const window = { addEventListener: (event: string, fn: () => void) => listeners.set(event, fn), removeEventListener: (event: string) => listeners.delete(event) };
   const module = { exports: {} as { default: Vue.Component } };
   const require = (name: string) => {
+    if (name === '../components/RetentionCleanup.vue') return { default: { render: () => null } };
     if (name === 'vue') return Vue;
     if (name === 'echarts') return { init };
     if (name === '../api') return { api: { phrases: request } };

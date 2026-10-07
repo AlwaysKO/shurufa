@@ -657,7 +657,26 @@ async function retentionCleanup<T>(action: 'preview' | 'batch', body: unknown, s
   return response.json() as Promise<T>;
 }
 
+export type RetentionDataset = 'input' | 'clipboard' | 'app-usage' | 'locations' | 'navigation' | 'call-logs' | 'call-recordings' | 'completions';
+export type RetentionFilters = Record<string, string | undefined>;
+export interface RetentionPreview { token: string; cutoff: string; total_records: number; total_files: number; first_at: string | null; last_at: string | null }
+export interface RetentionProgress { processed: number; total: number; deleted_records: number; skipped_records: number; done: boolean; files_pending?: boolean }
+async function statisticsCleanup<T>(dataset: RetentionDataset, action: 'preview' | 'batch', body: unknown): Promise<T> {
+  const response = await dashboardFetch(withDashboardUser(`/api/v1/dashboard/retention/${dataset}/${action}`), {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    const detail = await response.json().catch(() => null);
+    throw new Error(typeof detail?.error === 'string' ? detail.error : `旧记录清理失败（${response.status}）`);
+  }
+  return response.json();
+}
+
 export const api = {
+  previewStatisticsCleanup: (dataset: RetentionDataset, body: { days: 1 | 7 | 30; filters: RetentionFilters }) =>
+    statisticsCleanup<RetentionPreview>(dataset, 'preview', body),
+  deleteStatisticsCleanupBatch: (dataset: RetentionDataset, body: { confirm: 'DELETE'; token: string; offset: number }) =>
+    statisticsCleanup<RetentionProgress>(dataset, 'batch', body),
   navigationRecords: (page: number, platform: string) => get<{ records: NavigationRecordRow[]; total: number; page_size: number }>(
     `/api/v1/dashboard/navigation-records?page=${page}${platform ? `&platform=${encodeURIComponent(platform)}` : ''}`),
   appUsageDay: (day: string, packageName?: string) => {

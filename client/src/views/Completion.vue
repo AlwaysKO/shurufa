@@ -1,18 +1,28 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import * as echarts from 'echarts';
 import { api, type CompletionStats } from '../api';
+import RetentionCleanup from '../components/RetentionCleanup.vue';
 
 const stats = ref<CompletionStats | null>(null);
 const error = ref('');
 let chart: echarts.ECharts | null = null;
 
+let requestId = 0, disposed = false;
+onBeforeUnmount(() => { disposed = true; requestId++; });
 async function load() {
+  if (disposed) return;
+  const request = ++requestId;
+  error.value = '';
   try {
-    stats.value = await api.completions();
+    const result = await api.completions();
+    if (disposed || request !== requestId) return;
+    stats.value = result;
+    await nextTick();
+    if (disposed || request !== requestId) return;
     render();
   } catch (e) {
-    error.value = (e as Error).message;
+    if (!disposed && request === requestId) error.value = (e as Error).message;
   }
 }
 
@@ -35,6 +45,9 @@ onMounted(load);
 </script>
 
 <template>
+  <RetentionCleanup dataset="completions" label="补全候选与学习统计"
+    scope-label="全部补全候选及对应学习统计（按最后使用时间）"
+    @changed="load" />
   <div v-if="error" class="empty">加载失败：{{ error }}</div>
   <div v-else-if="stats">
     <div class="stat-grid" style="margin-bottom: 20px">

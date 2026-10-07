@@ -2,6 +2,7 @@ import { Router, type Request, type Response, type NextFunction } from 'express'
 import { randomUUID } from 'node:crypto';
 import type pg from 'pg';
 import { savingFlags } from '../lib/deviceSaving.js';
+import { lockStatisticsRetention } from '../lib/statisticsRetentionLock.js';
 const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 // 手机读取严格限制最近7天；服务端为读取、传输耗时和设备时钟差保留5分钟容差。
 const WEEK=7*86400000,CLOCK_TOLERANCE=5*60000;
@@ -39,12 +40,15 @@ export function createMobileCallLogsRouter(pool:pg.Pool){
     const db=await pool.connect();
     try{
       await db.query('BEGIN');await db.query('SET LOCAL synchronous_commit = on');
+      await lockStatisticsRetention(db,'call-logs',device);
       await db.query('INSERT INTO phone_call_log_sync(device_id) VALUES($1) ON CONFLICT DO NOTHING',[device]);
       const state=(await db.query('SELECT request_id FROM phone_call_log_sync WHERE device_id=$1 FOR UPDATE',[device])).rows[0];
       if(b.request_id!==null&&b.request_id!==state.request_id)fail(409,'stale_sync_request');
       if(b.records.length)await db.query(`INSERT INTO phone_call_log(device_id,source_id,number,name,type,date,duration_seconds)
         SELECT $1,x.source_id,x.number,x.name,x.type,x.date,x.duration_seconds FROM jsonb_to_recordset($2::jsonb)
           AS x(source_id text,number text,name text,type integer,date bigint,duration_seconds integer)
+        WHERE NOT EXISTS (SELECT 1 FROM retention_deleted_record d WHERE d.user_id=$1 AND d.dataset='call-logs'
+          AND d.record_key=x.source_id AND d.source_version=x.date::text)
         ON CONFLICT(device_id,source_id) DO UPDATE SET number=EXCLUDED.number,name=EXCLUDED.name,type=EXCLUDED.type,
           date=EXCLUDED.date,duration_seconds=EXCLUDED.duration_seconds`,[device,JSON.stringify(b.records)]);
       // 自动增量上报不能消费另一轮后台请求或把等待状态伪装成已完成。

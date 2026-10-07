@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import RetentionCleanup from '../components/RetentionCleanup.vue';
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import * as echarts from 'echarts';
 import { api, type ClipboardData } from '../api';
 
@@ -8,12 +9,21 @@ const data = ref<ClipboardData | null>(null);
 const error = ref('');
 let chart: echarts.ECharts | null = null;
 
+let requestId = 0, disposed = false;
+onBeforeUnmount(() => { disposed = true; requestId++; });
 async function load() {
+  if (disposed) return;
+  const request = ++requestId;
+  error.value = '';
   try {
-    data.value = await api.clipboard(days.value);
+    const result = await api.clipboard(days.value);
+    if (disposed || request !== requestId) return;
+    data.value = result;
+    await nextTick();
+    if (disposed || request !== requestId) return;
     render();
   } catch (e) {
-    error.value = (e as Error).message;
+    if (!disposed && request === requestId) error.value = (e as Error).message;
   }
 }
 
@@ -46,6 +56,7 @@ onMounted(load);
 </script>
 
 <template>
+  <RetentionCleanup dataset="clipboard" label="复制粘贴记录" :context="days" @changed="load" />
   <div class="filters">
     <button v-for="d in [7, 30, 90]" :key="d" :class="{ active: days === d }" @click="days = d; load()">{{ d }} 天</button>
   </div>

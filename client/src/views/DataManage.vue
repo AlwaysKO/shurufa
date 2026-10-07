@@ -1,8 +1,17 @@
 <script setup lang="ts">
+import RetentionCleanup from '../components/RetentionCleanup.vue';
 import { useConfirmation } from '../confirmation';
 import { computed, onMounted, ref } from 'vue';
-import { api } from '../api';
+import { api, type RetentionDataset } from '../api';
 
+const retentionDataset = ref<RetentionDataset>('input');
+const retentionCategories: Array<{ value: RetentionDataset; label: string }> = [
+  { value: 'input', label: '输入记录' }, { value: 'clipboard', label: '复制粘贴记录' },
+  { value: 'app-usage', label: '应用使用记录' }, { value: 'locations', label: '位置记录' },
+  { value: 'navigation', label: '导航记录' }, { value: 'call-logs', label: '手机通话记录' },
+  { value: 'call-recordings', label: '通话录音' }, { value: 'completions', label: '补全候选与学习统计' },
+];
+const retentionLabel = computed(() => retentionCategories.find(item => item.value === retentionDataset.value)!.label);
 const askConfirmation = useConfirmation();
 
 const exporting = ref(false);
@@ -98,6 +107,11 @@ async function doCleanup() {
 </script>
 
 <template>
+  <div class="card">
+    <h3>按保留期限清理</h3>
+    <label>数据类别 <select v-model="retentionDataset" aria-label="清理数据类别"><option v-for="item in retentionCategories" :key="item.value" :value="item.value">{{ item.label }}</option></select></label>
+    <RetentionCleanup :dataset="retentionDataset" :label="retentionLabel" scope-label="所选类别全部历史记录" :disabled="busy" />
+  </div>
   <div class="card">
     <h3>线上采集 API 域名</h3>
     <p class="desc">只填写 HTTPS 根地址，例如 https://collector.example.com。请先保持旧域名可用，等手机取得新配置后再停用旧域名。</p>

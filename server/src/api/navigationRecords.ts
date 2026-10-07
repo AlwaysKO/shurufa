@@ -3,6 +3,7 @@ import { Router } from 'express';
 import type pg from 'pg';
 import sharp from 'sharp';
 import { savingFlags } from '../lib/deviceSaving.js';
+import { withStatisticsRetentionLock } from '../lib/statisticsRetentionLock.js';
 
 const UUID = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const MAX_BYTES = 3 * 1024 * 1024;
@@ -42,14 +43,19 @@ export function createMobileNavigationRouter(pool: pg.Pool): Router {
       const user = String(res.locals.userId).toLowerCase();
       const receipt = { ok: true, id: r.id, sha256: r.sha256 };
       if ((await savingFlags(pool, [user])).get(user) === false) { res.json({ ...receipt, discarded: true }); return; }
-      await pool.query('INSERT INTO device(id) VALUES($1) ON CONFLICT(id) DO NOTHING', [user]);
-      await pool.query(`INSERT INTO navigation_record(user_id,id,platform,origin,destination,started_at,overview_at,sha256,payload_sha256,mime_type,screenshot)
-        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) ON CONFLICT(user_id,id) DO NOTHING`,
-      [user, r.id, r.platform, r.origin, r.destination, new Date(r.started_at), new Date(r.overview_at), r.sha256, r.payloadHash, r.mime_type, r.bytes]);
-      const stored = await pool.query('SELECT payload_sha256 FROM navigation_record WHERE user_id=$1 AND id=$2', [user, r.id]);
-      if (!stored.rows[0]) throw new Error('navigation record was not stored');
-      if (stored.rows[0].payload_sha256 !== r.payloadHash) { res.status(409).json({ error: 'record id already has different content' }); return; }
-      res.json(receipt);
+      const result = await withStatisticsRetentionLock(pool, 'navigation', user, async db => {
+        const deleted = await db.query('SELECT source_version FROM retention_deleted_record WHERE user_id=$1 AND dataset=\'navigation\' AND record_key=$2', [user, r.id]);
+        if (deleted.rows.length) return deleted.rows.every(row => row.source_version === r.payloadHash) ? 'deleted' : 'conflict';
+        await db.query('INSERT INTO device(id) VALUES($1) ON CONFLICT(id) DO NOTHING', [user]);
+        await db.query(`INSERT INTO navigation_record(user_id,id,platform,origin,destination,started_at,overview_at,sha256,payload_sha256,mime_type,screenshot)
+          VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) ON CONFLICT(user_id,id) DO NOTHING`,
+        [user, r.id, r.platform, r.origin, r.destination, new Date(r.started_at), new Date(r.overview_at), r.sha256, r.payloadHash, r.mime_type, r.bytes]);
+        const stored = await db.query('SELECT payload_sha256 FROM navigation_record WHERE user_id=$1 AND id=$2', [user, r.id]);
+        if (!stored.rows[0]) throw new Error('navigation record was not stored');
+        return stored.rows[0].payload_sha256 === r.payloadHash ? 'stored' : 'conflict';
+      });
+      if (result === 'conflict') { res.status(409).json({ error: 'record id already has different content' }); return; }
+      res.json(result === 'deleted' ? { ...receipt, deleted: true } : receipt);
     } catch (error) { if (error instanceof InvalidRecord) res.status(400).json({ error: error.message }); else next(error); }
   });
   return router;

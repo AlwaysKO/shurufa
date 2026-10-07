@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import RetentionCleanup from '../components/RetentionCleanup.vue';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import * as echarts from 'echarts';
 import { api, appName, type ReportData } from '../api';
@@ -138,6 +139,8 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <RetentionCleanup dataset="input" label="输入记录" :context="[type, dateStr]" @changed="load" />
+  <RetentionCleanup dataset="locations" label="位置记录" :context="[type, dateStr]" @changed="load" />
   <div class="filters">
     <button :class="{ active: type === 'daily' }" @click="switchType('daily')">日报</button>
     <button :class="{ active: type === 'weekly' }" @click="switchType('weekly')">周报</button>

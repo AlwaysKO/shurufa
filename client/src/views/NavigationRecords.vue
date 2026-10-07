@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import RetentionCleanup from '../components/RetentionCleanup.vue';
 import { ref, watch, onBeforeUnmount } from 'vue';
 import { api, currentUserId, navigationImageUrl, type NavigationRecordRow } from '../api';
 import { authenticated } from '../auth';
@@ -25,9 +26,11 @@ function showImage(row: NavigationRecordRow) { selected.value = row; dialog.valu
 const time = (value: string) => new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
 const name = (value: string) => value === 'amap' ? '高德地图' : '百度地图';
 onBeforeUnmount(() => { generation++; closeImage(); });
+function refreshAfterCleanup() { closeImage(); if (page.value !== 1) page.value = 1; else void load(); }
 </script>
 
 <template>
+  <RetentionCleanup dataset="navigation" label="导航记录" :filters="{ platform: platform || undefined }" :scope-label="platform ? name(platform) : '全部地图'" :context="page" @changed="refreshAfterCleanup" />
   <section class="navigation-records">
     <h2>导航记录</h2>
     <p class="hint">查看选好路线时的总览截图和起终点。记录不表示已经开始导航或到达；新版手机同一天同一地图相同起终点只记一次。</p>

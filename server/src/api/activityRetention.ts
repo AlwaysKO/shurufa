@@ -1,3 +1,4 @@
+import { lockStatisticsRetention } from '../lib/statisticsRetentionLock.js';
 import { randomUUID } from 'node:crypto';
 import { Router } from 'express';
 import type pg from 'pg';
@@ -24,7 +25,7 @@ function validFilters(value: unknown): value is Record<string, unknown> {
   });
 }
 const progress = (job: Job) => ({ processed: job.processed, total: job.total,
-  deleted_events: job.deleted, skipped_events: job.skipped, done: job.index === job.groups.length });
+  deleted_events: job.deleted, skipped_events: job.skipped, deleted_records: job.deleted, skipped_records: job.skipped, done: job.index === job.groups.length });
 function groupTargets(rows: Target[]) {
   const groups = new Map<string, Target[]>();
   for (const row of rows) { const group = groups.get(row.key) ?? []; group.push(row); groups.set(row.key, group); }
@@ -32,18 +33,24 @@ function groupTargets(rows: Target[]) {
 }
 const fingerprint = (rows: Target[]) => JSON.stringify(rows.map(row => [row.id,row.signature]).sort((a,b)=>a[0].localeCompare(b[0])));
 
-export function createActivityRetentionRouter(pool: pg.Pool): Router {
+export function createActivityRetentionRouter(pool: pg.Pool, mode?: 'input' | 'clipboard'): Router {
+  const prefix = mode ? '' : '/events/cleanup';
   const router = Router(), snapshots = new Map<string, Job>();
   const expire = () => { for (const [token,job] of snapshots) if (!job.busy && job.expires < Date.now()) snapshots.delete(token); };
-  router.post('/events/cleanup/preview', async (req,res,next) => {
+  router.post(`${prefix}/preview`, async (req,res,next) => {
     const body = req.body;
     if (![1,7,30].includes(body?.days) || !validFilters(body?.filters)) {
       res.status(400).json({ error: '保留天数或筛选条件无效' }); return;
     }
+    if (mode && Object.keys(body.filters).some(key => !((mode === 'clipboard' ? ['package_name','q'] : []).includes(key)))) {
+      res.status(400).json({ error: '此类别不支持该筛选条件' }); return;
+    }
     expire();
     if (snapshots.size >= 20) { res.status(429).json({ error: '清理预览较多，请稍后重试' }); return; }
     const cutoff = new Date(Date.now() - body.days * 86_400_000);
-    const filters = body.filters, grouped = filters.grouped === true && filters.all !== true;
+    const filters = mode === 'input' ? { all: true, grouped: true }
+      : mode === 'clipboard' ? { ...body.filters, type: 'paste', grouped: false, all: false } : body.filters;
+    const grouped = filters.grouped === true;
     const { where, params } = activityConditions(res.locals.userId, { ...filters, all: filters.all ? '1' : '0' });
     const cutoffParam = `$${params.length + 1}`;
     try {
@@ -62,11 +69,12 @@ export function createActivityRetentionRouter(pool: pg.Pool): Router {
       for (const [key,job] of snapshots) if (job.user === res.locals.userId && !job.busy && job.processed === 0) snapshots.delete(key);
       if (groups.length) snapshots.set(token, { user: res.locals.userId, grouped, groups, total: result.rows.length,
         index: 0, processed: 0, deleted: 0, skipped: 0, expires: Date.now()+TTL, busy: false });
-      res.json({ token, cutoff: cutoff.toISOString(), total_events: result.rows.length, total_groups: groups.length,
+      res.json({ token, cutoff: cutoff.toISOString(), total_records: result.rows.length, total_files: 0,
+        first_at: result.rows[0]?.occurred_at ?? null, last_at: result.rows.at(-1)?.occurred_at ?? null, total_events: result.rows.length, total_groups: groups.length,
         first_occurred_at: result.rows[0]?.occurred_at ?? null, last_occurred_at: result.rows.at(-1)?.occurred_at ?? null });
     } catch(error) { next(error); }
   });
-  router.post('/events/cleanup/batch', async (req,res,next) => {
+  router.post(`${prefix}/batch`, async (req,res,next) => {
     const body = req.body;
     if (body?.confirm !== 'DELETE' || typeof body?.token !== 'string' || !Number.isSafeInteger(body?.offset) || body.offset < 0) {
       res.status(400).json({ error: '清理确认参数无效' }); return;
@@ -88,6 +96,7 @@ export function createActivityRetentionRouter(pool: pg.Pool): Router {
       try {
         await db.query('BEGIN');
         await db.query("SET LOCAL lock_timeout='5s'"); await db.query("SET LOCAL statement_timeout='20s'");
+        await lockStatisticsRetention(db,'input',job.user);
         await db.query('LOCK TABLE input_event IN SHARE ROW EXCLUSIVE MODE');
         const key = job.grouped ? `(${GROUP_KEY})::text` : 'id::text';
         const match = job.grouped ? `${key}=ANY($2::text[])` : 'id=ANY($2::uuid[])';
@@ -95,6 +104,8 @@ export function createActivityRetentionRouter(pool: pg.Pool): Router {
           FROM input_event WHERE user_id=$1 AND ${match}`,[job.user,groups.map(group=>group[0].key)]);
         const current = new Map(groupTargets(result.rows).map(group=>[group[0].key,group]));
         const ids = groups.filter(group=>fingerprint(group)===fingerprint(current.get(group[0].key) ?? [])).flatMap(group=>group.map(row=>row.id));
+        await db.query(`INSERT INTO retention_deleted_record(user_id,dataset,record_key)
+          SELECT user_id,'input',id::text FROM input_event WHERE user_id=$1 AND id=ANY($2::uuid[]) ON CONFLICT DO NOTHING`,[job.user,ids]);
         const removed = await db.query('DELETE FROM input_event WHERE user_id=$1 AND id=ANY($2::uuid[])',[job.user,ids]);
         deleted = removed.rowCount ?? 0;
         await db.query('COMMIT');

@@ -41,6 +41,7 @@ async function mountLocations(locations: LocationRow[], overrides: Record<string
   Object.assign(api, overrides);
   const module = { exports: {} as { default: Vue.Component } };
   const require = (name: string) => {
+    if (name === '../components/RetentionCleanup.vue') return { default: { render: () => null } };
     if (name === 'vue') return Vue;
     if (name === 'leaflet') return { default: leaflet };
     if (name === 'leaflet/dist/leaflet.css') return {};

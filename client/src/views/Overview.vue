@@ -1,19 +1,28 @@
 <script setup lang="ts">
-import { nextTick, onMounted, ref } from 'vue';
+import RetentionCleanup from '../components/RetentionCleanup.vue';
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import * as echarts from 'echarts';
 import { api, type OverviewData } from '../api';
 
 const data = ref<OverviewData | null>(null);
 const error = ref('');
 
+let requestId = 0, disposed = false;
+onBeforeUnmount(() => { disposed = true; requestId++; });
 async function load() {
+  if (disposed) return;
+  const request = ++requestId;
+  error.value = '';
   try {
-    data.value = await api.overview(7);
+    const result = await api.overview(7);
+    if (disposed || request !== requestId) return;
+    data.value = result;
     // 图表容器受 v-if 控制，必须等本轮 DOM 更新完成。
     await nextTick();
+    if (disposed || request !== requestId) return;
     renderSourceChart();
   } catch (e) {
-    error.value = (e as Error).message;
+    if (!disposed && request === requestId) error.value = (e as Error).message;
   }
 }
 
@@ -45,6 +54,7 @@ onMounted(load);
 </script>
 
 <template>
+  <RetentionCleanup dataset="input" label="输入记录" @changed="load" />
   <div v-if="error" class="empty">加载失败：{{ error }}（请确认 server 已启动）</div>
   <div v-else-if="data">
     <div class="stat-grid" style="margin-bottom: 20px">

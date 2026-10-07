@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import RetentionCleanup from '../components/RetentionCleanup.vue';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -227,6 +228,7 @@ const summary = computed(() => {
 </script>
 
 <template>
+  <RetentionCleanup dataset="locations" label="位置记录" :filters="{ device_id: deviceId || undefined }" :scope-label="deviceId ? (devices.find(d => d.id === deviceId) ? deviceLabel(devices.find(d => d.id === deviceId)!) : deviceId) : '全部设备的位置记录'" :context="[deviceId, selectedDay, endDay]" @changed="loadLocations()" />
   <div>
     <div class="toolbar">
       <select v-model="deviceId">

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import RetentionCleanup from '../components/RetentionCleanup.vue';
 import { ref, watch, onBeforeUnmount } from 'vue';
 import PhoneCallLogs from './PhoneCallLogs.vue';
 import { currentUserId } from '../api';
@@ -8,6 +9,7 @@ import { listCalls, callAudio, deleteCall, type CallRecording } from '../api/cal
 const day=(offset=0)=>new Date(Date.now()+8*3600000+offset*86400000).toISOString().slice(0,10);
 const from=ref(day(-6)),to=ref(day()),platform=ref(''),status=ref(''),page=ref(1);
 const rows=ref<CallRecording[]>([]),total=ref(0),loading=ref(false),error=ref(''),busy=ref('');
+const cleanupBusy=ref(false);
 const selected=ref<CallRecording|null>(null),audioUrl=ref('');
 const confirm=useConfirmation();let generation=0,alive=true,audioGeneration=0;
 let request:AbortController|undefined,playRequest:AbortController|undefined;
@@ -46,8 +48,10 @@ const duration=(v:number|null)=>v===null?'未知':`${Math.floor(v/60000)}分${Ma
 const recordingLabel=(v:string)=>({ended:'已结束',interrupted:'中断',restricted:'受限'}[v]??v);
 const qualityLabel=(v:string)=>({unverified:'双方声音未验证',suspected_silent:'疑似静音',user_confirmed:'用户已确认'}[v]??v);
 onBeforeUnmount(()=>{alive=false;generation++;request?.abort();stopAudio();});
+function refreshAfterCleanup() { stopAudio(); if (page.value !== 1) page.value = 1; else void load(); }
 </script>
 <template>
+  <RetentionCleanup dataset="call-recordings" label="通话录音" :filters="{ platform: platform || undefined, recording_status: status || undefined }" :scope-label="`${platform ? (platform === 'phone' ? '普通电话' : '微信') : '全部平台'} · ${status ? recordingLabel(status) : '全部录音状态'}`" :context="[from, to, page]" :disabled="!!busy" @changed="refreshAfterCleanup" @busy="cleanupBusy = $event" />
   <section class="calls">
     <h2>通话录音</h2>
     <p class="notice">当前设备由左侧选择。上传已保存不代表双方声音完整；线上保留由管理员管理，本页面不自动清理。日期与时间均为北京时间。</p>
@@ -67,7 +71,7 @@ onBeforeUnmount(()=>{alive=false;generation++;request?.abort();stopAudio();});
         <td>{{duration(row.call_duration_ms)}}{{row.call_duration_estimated?'（估算）':''}}</td>
         <td>{{formatTime(row.recording_started_at)}}<br>{{formatTime(row.recording_ended_at)}}</td><td>{{duration(row.audio_duration_ms)}}</td>
         <td>{{recordingLabel(row.recording_status)}}<br>{{qualityLabel(row.quality_status)}}<small v-if="row.failure_reason">{{row.failure_reason}}</small></td>
-        <td>已保存</td><td><button :disabled="!!busy" @click="play(row)">详情 / 试听</button><button :disabled="!!busy" @click="remove(row)">删除</button></td>
+        <td>已保存</td><td><button :disabled="!!busy || cleanupBusy" @click="play(row)">详情 / 试听</button><button :disabled="!!busy || cleanupBusy" @click="remove(row)">删除</button></td>
       </tr></tbody></table></div>
     <div v-if="total" class="filters"><span>共 {{total}} 条，第 {{page}} 页</span><button :disabled="page<=1||loading" @click="page--">上一页</button><button :disabled="page*50>=total||loading" @click="page++">下一页</button></div>
     <aside v-if="selected"><h3>{{selected.counterpart_display||'未知对象'}} · {{qualityLabel(selected.quality_status)}}</h3>

@@ -7,10 +7,17 @@ import { locationKey } from '../lib/geocoder.js';
 import { eventMetadata } from '../lib/appNames.js';
 import { collectorBaseUrl } from '../lib/runtimeSettings.js';
 import { validLocationContext } from '../lib/locationContext.js';
+import { withStatisticsRetentionLock } from '../lib/statisticsRetentionLock.js';
 
 
 /** 批量插入事件（幂等：冲突跳过），返回实际插入数 */
-async function insertEvents(pool: pg.Pool, userId: string, events: MobileEvent[], clientIp?: string): Promise<number> {
+async function insertEvents(pool: pg.PoolClient, userId: string, events: MobileEvent[], clientIp?: string): Promise<number> {
+  const deleted = await pool.query<{ record_key: string }>(
+    "SELECT record_key FROM retention_deleted_record WHERE user_id=$1 AND dataset='input' AND source_version='' AND record_key=ANY($2::text[])",
+    [userId, events.map(event => String(event.id).toLowerCase())],
+  );
+  const deletedIds = new Set(deleted.rows.map(row => row.record_key));
+  events = events.filter(event => !deletedIds.has(String(event.id).toLowerCase()));
   if (events.length === 0) return 0;
   const values: unknown[] = [];
   const params: string[] = [];
@@ -162,7 +169,8 @@ export function createMobileRouter(pool: pg.Pool): Router {
         return res.status(400).json({ error: 'device_id mismatch' });
       }
 
-      const inserted = await insertEvents(pool, res.locals.userId, valid, requestIp(req));
+      const inserted = await withStatisticsRetentionLock(pool, 'input', res.locals.userId,
+        db => insertEvents(db, res.locals.userId, valid, requestIp(req)));
 
       res.json({ ok: true, inserted, received: valid.length });
     } catch (err) {

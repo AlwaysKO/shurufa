@@ -28,6 +28,7 @@ async function mount(name: string, api: Record<string, any>) {
   const presets = compiled.content.includes('../data/phrasePresets') ? await import('../src/data/phrasePresets') : {};
   const module = { exports: {} as { default: Vue.Component } };
   const require = (id: string) => {
+    if (id === '../components/RetentionCleanup.vue') return { default: { render: () => null } };
     if (id === 'vue') return Vue;
     if (id === '../confirmation') return { useConfirmation: () => async (message: string) => Boolean(await globalThis.confirm?.(message)) };
     if (id === 'vue-router') return { useRoute: () => ({ query: {} }) };
