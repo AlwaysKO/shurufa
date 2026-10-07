@@ -697,7 +697,7 @@ open class ImeService : InputMethodService() {
                 performed = true,
                 packageName = YuyanEmojiCompat.mEditorInfo?.packageName,
                 requestedAtMillis = System.currentTimeMillis(),
-                request = { ForegroundChatCaptureBridge.request(it.packageName, it.requestedAtMillis) },
+                request = { ForegroundChatCaptureBridge.request(it.packageName, it.requestedAtMillis, it.reason) },
             )
             observeHostEdit()
             resetEditTracking()
@@ -953,7 +953,8 @@ open class ImeService : InputMethodService() {
                 performed = true,
                 packageName = YuyanEmojiCompat.mEditorInfo?.packageName,
                 requestedAtMillis = System.currentTimeMillis(),
-                request = { ForegroundChatCaptureBridge.request(it.packageName, it.requestedAtMillis) },
+                editorAction = editorAction,
+                request = { ForegroundChatCaptureBridge.request(it.packageName, it.requestedAtMillis, it.reason) },
             )
             observeHostEdit()
             resetEditTracking()
@@ -999,9 +1000,13 @@ internal fun requestForegroundChatCaptureAfterSend(
     packageName: String?,
     requestedAtMillis: Long,
     request: (ForegroundChatCaptureRequest) -> Unit,
+    editorAction: Int? = null,
 ) {
     if (!performed || !isForegroundChatCapturePackage(packageName)) return
-    request(ForegroundChatCaptureRequest(packageName.orEmpty(), requestedAtMillis))
+    val reason = if (editorAction == EditorInfo.IME_ACTION_SEND)
+        com.yuyan.imemodule.service.capture.ForegroundChatCaptureReason.SEND
+    else com.yuyan.imemodule.service.capture.ForegroundChatCaptureReason.PROBE
+    request(ForegroundChatCaptureRequest(packageName.orEmpty(), requestedAtMillis, reason))
 }
 
 private fun Int.isTextEditingKey(): Boolean = when (this) {

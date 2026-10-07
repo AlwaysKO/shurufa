@@ -17,7 +17,9 @@ const deleteMessage = ref('');
 const deletingId = ref<string | null>(null);
 const confirming = ref(false);
 const selectedIds = ref<string[]>([]);
-const deleteBusy = computed(() => confirming.value || deletingId.value !== null);
+const cleaning = ref(false);
+const cleanupStatus = ref('');
+const deleteBusy = computed(() => cleaning.value || confirming.value || deletingId.value !== null);
 let unmounted = false;
 
 const type = ref<'all' | 'text' | 'paste' | 'voice' | 'image' | 'delete'>('all');
@@ -44,7 +46,65 @@ function clearSelection() { selectedIds.value = []; }
 function selectPage() {
   if (!loading.value && !error.value && !deleteBusy.value) selectedIds.value = items.value.map(item => item.id);
 }
-watch(contextKey, clearSelection, { flush: 'sync' });
+let contextVersion = 0;
+watch(contextKey, () => { ++contextVersion; clearSelection(); cleanupStatus.value = ''; }, { flush: 'sync' });
+
+function activityFilters() {
+  return {
+    device_id: deviceId.value || undefined,
+    package_name: packageName.value || undefined,
+    from: from.value || undefined,
+    to: to.value || undefined,
+    days: days.value ?? undefined,
+    q: q.value.trim() || undefined,
+    type: type.value,
+    all: showAll.value,
+    grouped: grouped.value,
+  };
+}
+
+async function cleanupActivity(keep: 1 | 7 | 30) {
+  if (loading.value || deleteBusy.value || unmounted) return;
+  const version = contextVersion;
+  const current = () => !unmounted && contextVersion === version;
+  const filters = activityFilters();
+  cleaning.value = true; deleteError.value = ''; deleteMessage.value = ''; cleanupStatus.value = '正在预览旧记录…';
+  let deleted = 0, skipped = 0, started = false, completed = false;
+  try {
+    const preview = await api.previewActivityCleanup({ days: keep, filters });
+    if (!current()) return;
+    if (!preview.total_events) { cleanupStatus.value = '当前筛选范围内没有需要清理的旧记录。'; return; }
+    cleanupStatus.value = '';
+    const time = (value: string | null) => value ? new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false }) : '-';
+    const accepted = await askConfirmation(`保留最近 ${keep} 天，永久清理当前手机、当前筛选范围内的旧行为记录？\n\n` +
+      `截止：${time(preview.cutoff)}（北京时间，不含此时刻）\n` +
+      `范围：${time(preview.first_occurred_at)} ～ ${time(preview.last_occurred_at)}\n` +
+      `共 ${preview.total_events} 条原始记录${filters.grouped ? `（${preview.total_groups} 组）` : ''}，跨全部分页。\n` +
+      `${filters.grouped ? '整段都早于截止时间才清理，近期编辑组完整保留。' : ''}预览后变化的记录会跳过。\n` +
+      '删除不可恢复，仅清理后台行为明细；请保持页面打开，关闭或切换筛选后停止后续批次。');
+    if (!accepted || !current()) return;
+    started = true; let offset = 0;
+    while (current()) {
+      cleanupStatus.value = `正在清理：已处理 ${offset} / ${preview.total_events} 条，已删除 ${deleted} 条，跳过 ${skipped} 条。`;
+      const result = await api.deleteActivityCleanupBatch({ confirm: 'DELETE', token: preview.token, offset });
+      if (!current()) return;
+      deleted = result.deleted_events; skipped = result.skipped_events;
+      if (result.done) { completed = true; break; }
+      if (result.processed <= offset) throw Error('清理进度未更新，请重新预览');
+      offset = result.processed;
+    }
+    if (!current()) return;
+    cleanupStatus.value = '';
+    deleteMessage.value = `清理完成：已删除 ${deleted} 条，跳过 ${skipped} 条。`;
+    await load();
+  } catch (reason) {
+    if (current()) {
+      cleanupStatus.value = '';
+      deleteError.value = `${started ? `清理中断，已确认删除 ${deleted} 条、跳过 ${skipped} 条；最后一批可能已处理，可重新预览继续` : '清理预览失败'}：${(reason as Error).message}`;
+      if (started && !completed) await load();
+    }
+  } finally { cleaning.value = false; }
+}
 
 async function load(): Promise<void> {
   if (unmounted) return;
@@ -54,19 +114,7 @@ async function load(): Promise<void> {
   loading.value = true;
   error.value = '';
   try {
-    const res = await api.events({
-      device_id: deviceId.value || undefined,
-      package_name: packageName.value || undefined,
-      from: from.value || undefined,
-      to: to.value || undefined,
-      days: days.value ?? undefined,
-      q: q.value.trim() || undefined,
-      type: type.value,
-      all: showAll.value,
-      grouped: grouped.value && !showAll.value,
-      page: page.value,
-      page_size: pageSize,
-    });
+    const res = await api.events({ ...activityFilters(), page: page.value, page_size: pageSize });
     if (request !== latestRequest) return;
     items.value = res.items;
     total.value = res.total;
@@ -262,6 +310,12 @@ onMounted(async () => {
 
     <label class="check"><input v-model="showAll" data-testid="show-all" type="checkbox" @change="changeUnderlyingEvents()" /> 显示底层事件（含按键/拼音组合）</label>
   </div>
+
+  <div class="selection-toolbar" aria-label="清理旧行为记录">
+    <button v-for="keep in [1, 7, 30] as const" :key="keep" class="delete-record" :data-testid="`activity-keep-${keep}`" :disabled="loading || deleteBusy" @click="cleanupActivity(keep)">保留最近{{ keep }}天</button>
+    <span>清理当前筛选范围的旧记录，跨全部分页；点击后先预览。{{ grouped ? '近期编辑组完整保留。' : '' }}</span>
+  </div>
+  <div v-if="cleanupStatus" class="delete-notice" role="status">{{ cleanupStatus }}</div>
 
   <div class="selection-toolbar">
     <button class="btn" data-testid="select-page" :disabled="loading || !!error || deleteBusy || !items.length" @click="selectPage">全选本页</button>

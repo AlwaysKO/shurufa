@@ -1,10 +1,71 @@
 package com.yuyan.imemodule.data.capture.ui
 
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ViewportDebouncerTest {
+    @Test fun transientFailureRetriesSameEmissionTwiceWithoutInvalidatingContext() {
+        val scheduler = FakeScheduler()
+        val emitted = mutableListOf<Any>()
+        var invalidations = 0
+        val value = Any()
+        val debouncer = ViewportDebouncer<Any>(scheduler = scheduler, immediateOnContextChange = true,
+            onContextInvalidated = { invalidations++ }, onStable = { emitted += it })
+        debouncer.submit(1, "same", value, "chat:A")
+        val initialInvalidations = invalidations
+        repeat(2) {
+            assertTrue(debouncer.retry(value))
+            assertFalse("同一失败不能积压重复重试", debouncer.retry(value))
+            scheduler.advanceBy(299)
+            assertEquals(it + 1, emitted.size)
+            scheduler.advanceBy(1)
+            assertEquals(it + 2, emitted.size)
+        }
+        assertFalse("相同视口最多补试两次", debouncer.retry(value))
+        assertEquals(initialInvalidations, invalidations)
+        scheduler.advanceBy(60_000)
+        assertEquals(3, emitted.size)
+    }
+
+    @Test fun staleFailureCannotRetryAfterNewerViewportOrNavigation() {
+        val scheduler = FakeScheduler()
+        val emitted = mutableListOf<Any>()
+        val old = Any(); val changed = Any(); val another = Any()
+        val debouncer = ViewportDebouncer<Any>(scheduler = scheduler, immediateOnContextChange = true,
+            onStable = { emitted += it })
+        debouncer.submit(1, "old", old, "chat:A")
+        assertTrue(debouncer.retry(old))
+        debouncer.submit(1, "changed", changed, "chat:A")
+        assertFalse(debouncer.retry(old))
+        scheduler.advanceBy(300)
+        assertEquals(listOf(old, changed), emitted)
+        assertFalse(debouncer.retry(old))
+        assertTrue(debouncer.retry(changed))
+        debouncer.submit(2, "other", another, "chat:B")
+        assertFalse(debouncer.retry(changed))
+        scheduler.advanceBy(300)
+        assertEquals(listOf(old, changed, another), emitted)
+        debouncer.close()
+        assertFalse(debouncer.retry(another))
+    }
+
+    @Test fun retryBudgetRestartsForNewContentButEqualObjectsCannotReplayOldEmission() {
+        val scheduler = FakeScheduler()
+        data class Value(val text: String)
+        val debouncer = ViewportDebouncer<Value>(scheduler = scheduler, immediateOnContextChange = true, onStable = {})
+        val old = Value("same")
+        debouncer.submit(1, "old", old)
+        repeat(2) { assertTrue(debouncer.retry(old)); scheduler.advanceBy(300) }
+        assertFalse(debouncer.retry(old))
+        val current = Value("same")
+        debouncer.submit(1, "new", current)
+        scheduler.advanceBy(300)
+        assertFalse("相等但非当前发出实例不能补拍", debouncer.retry(old))
+        assertTrue(debouncer.retry(current))
+    }
+
     @Test
     fun contextChangesInvalidateQueuedPhysicalCapturesButOrdinaryUpdatesDoNot() {
         val scheduler = FakeScheduler()

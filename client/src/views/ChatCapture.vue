@@ -470,30 +470,30 @@ async function deleteSelectedPendingMessages() {
   } finally { deletingPendingMessages.value = false; }
 }
 
-async function cleanupPending(days: 7 | 30) {
-  if (!pendingGroup.value || loading.value || mutationBusy.value || disposed) return;
+async function cleanupConversation(days: 1 | 7 | 30) {
+  if (!selected.value || loading.value || mutationBusy.value || disposed) return;
   const scope = previewScope.value, version = conversationScopeVersion, conversation = selected.value, includeImages = cleanupImages.value;
   const current = () => !disposed && version === conversationScopeVersion && scope === previewScope.value;
-  cleaningPending.value = true; error.value = ''; deleteNotice.value = ''; cleanupStatus.value = '正在预览全部待确认记录…';
+  cleaningPending.value = true; error.value = ''; deleteNotice.value = ''; cleanupStatus.value = '正在预览当前会话全部记录…';
   let deleted = 0, skipped = 0, started = false, completed = false;
   try {
-    const preview = await api.previewPendingChatCleanup({ days, include_images: includeImages, platform: platform.value });
+    const preview = await api.previewChatCleanup({ days, include_images: includeImages, platform: platform.value, conversation_id: conversation.id, group_name: conversation.group_name || undefined });
     if (!current()) return;
     if (!preview.total_messages) { cleanupStatus.value = '没有需要清理的旧记录。'; return; }
     const time = (value: string | null) => value ? new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false }) : '-';
     cleanupStatus.value = '';
-    if (!await confirmAction(`保留最近 ${days} 天，永久清理当前手机 ${platformNames[platform.value]} 的旧待确认记录？\n\n` +
+    if (!await confirmAction(`保留最近 ${days} 天，永久清理当前手机 ${platformNames[platform.value]} “${displayName(conversation)}” 的旧记录？\n\n` +
       `截止：${time(preview.cutoff)}（北京时间，不含此时刻）\n` +
       `范围：${time(preview.first_captured_at)} ～ ${time(preview.last_captured_at)}\n` +
       `共 ${preview.total_messages} 条记录、${preview.total_images} 张图片；${includeImages ? '包含图片' : '仅非图片记录'}。\n` +
-      '处理全部符合条件的记录，不受当前分页或本页类型筛选限制。已确认或预览后变化的记录会跳过。删除不可恢复；请保持页面打开，关闭后停止后续批次。',
+      '处理全部符合条件的记录，不受当前分页或本页类型筛选限制。预览后范围或内容变化的记录会跳过。删除不可恢复；请保持页面打开，关闭后停止后续批次。',
       { title: `保留最近 ${days} 天`, confirmText: `清理 ${preview.total_messages} 条记录` })) return;
     if (!current()) return;
     started = true;
     let offset = 0, filesPending = false;
     while (current()) {
       cleanupStatus.value = `正在清理：已处理 ${offset} / ${preview.total_messages} 条，已删除 ${deleted} 条，跳过 ${skipped} 条。`;
-      const result = await api.deletePendingChatCleanupBatch({ confirm: 'DELETE', token: preview.token, offset });
+      const result = await api.deleteChatCleanupBatch({ confirm: 'DELETE', token: preview.token, offset });
       if (!current()) return;
       deleted = result.deleted_messages; skipped = result.skipped_messages; filesPending ||= result.files_pending;
       if (result.done) { completed = true; break; }
@@ -805,11 +805,10 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
 
       <p v-if="multipleSources" class="timeline-summary">同名会话的全部图片集中展示，内部来源独立保留。更改归属请使用图片上的“确认此来源归属”。</p>
       <p v-if="pendingGroup" class="timeline-summary">待确认文字和图片集中显示。可逐来源删除，或确认归属：选择已有会话，也可手动填写联系人或群聊名称。</p>
-      <div v-if="pendingGroup" class="image-selection-toolbar" aria-label="批量清理旧待确认记录">
-        <button class="delete-button" data-testid="pending-keep-7" :disabled="loading || mutationBusy" @click="cleanupPending(7)">保留最近7天</button>
-        <button class="delete-button" data-testid="pending-keep-30" :disabled="loading || mutationBusy" @click="cleanupPending(30)">保留最近30天</button>
-        <label><input v-model="cleanupImages" data-testid="pending-cleanup-images" type="checkbox" :disabled="loading || mutationBusy" /> 包含图片</label>
-        <span>清理较早的待确认记录，跨全部分页；点击后先预览。</span>
+      <div v-if="selected" class="image-selection-toolbar" aria-label="批量清理当前会话旧记录">
+        <button v-for="keep in [1, 7, 30] as const" :key="keep" class="delete-button" :data-testid="`chat-keep-${keep}`" :disabled="loading || mutationBusy" @click="cleanupConversation(keep)">保留最近{{ keep }}天</button>
+        <label><input v-model="cleanupImages" data-testid="chat-cleanup-images" type="checkbox" :disabled="loading || mutationBusy" /> 包含图片</label>
+        <span>清理当前会话的较早记录，跨全部分页；点击后先预览。</span>
       </div>
       <p v-if="cleanupStatus" class="delete-notice" role="status">{{ cleanupStatus }}</p>
       <section v-if="mergeOpen" class="merge-panel" aria-label="选择合并目标">

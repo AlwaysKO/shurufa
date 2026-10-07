@@ -128,13 +128,27 @@ class ForegroundChatCaptureBridgeTest {
             sourceTreeUsable = false,
         ))
         assertEquals(listOf(1_500L, 6_000L), emptyTreeWeChatCaptureDelays("转文字"))
-        assertEquals(listOf(0L, 350L, 900L), emptyTreeWeChatCaptureDelays("发送"))
+        assertEquals(listOf(0L, 350L, 900L, 2_200L, 4_400L), emptyTreeWeChatCaptureDelays("发送"))
         assertTrue(emptyTreeWeChatCaptureDelays("播放语音").isEmpty())
+    }
+    @Test fun entryProbesOutliveTwoCandidateCooldownsWithoutPollingForever() {
+        for (delays in listOf(
+            foregroundChatProbeDelays(AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED, "android.widget.FrameLayout"),
+            emptyTreeWeChatCaptureDelays("工作群 昨天 你好"),
+        )) {
+            var now = 0L
+            val candidates = EmptyTreeCandidateProbe { now }
+            val scope = ScreenshotScope(1, 1)
+            val attempts = delays.filter { at -> now = at; candidates.consume(scope) }
+            assertEquals(listOf(0L, 2_200L, 4_400L), attempts)
+            assertTrue(delays.size <= 5)
+            assertTrue(delays.last() <= 5_000L)
+        }
     }
     @Test fun listRowCombinedTextAndShortStayHaveImmediateBoundedProbes() {
         assertTrue(shouldCaptureEmptyTreeWeChatOpen(AccessibilityEvent.TYPE_VIEW_CLICKED, "android.widget.LinearLayout", "工作群\n昨天\n你好", false, false))
-        assertEquals(listOf(0L, 350L, 900L), emptyTreeWeChatCaptureDelays("工作群\n昨天\n你好"))
-        assertEquals(listOf(0L, 350L, 900L), foregroundChatProbeDelays(AccessibilityEvent.TYPE_VIEW_CLICKED, "android.widget.TextView"))
+        assertEquals(listOf(0L, 350L, 900L, 2_200L, 4_400L), emptyTreeWeChatCaptureDelays("工作群\n昨天\n你好"))
+        assertEquals(listOf(0L, 350L, 900L, 2_200L, 4_400L), foregroundChatProbeDelays(AccessibilityEvent.TYPE_VIEW_CLICKED, "android.widget.TextView"))
         assertTrue(foregroundChatProbeDelays(AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED, "android.widget.EditText").isEmpty())
         assertFalse(shouldCaptureEmptyTreeWeChatOpen(AccessibilityEvent.TYPE_VIEW_CLICKED, "android.widget.LinearLayout", "设置", false, false))
     }

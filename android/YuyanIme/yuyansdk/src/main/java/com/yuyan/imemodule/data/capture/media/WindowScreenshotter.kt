@@ -10,6 +10,7 @@ import com.yuyan.imemodule.data.capture.adapter.AdapterRegistry
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
+import kotlinx.coroutines.currentCoroutineContext
 import kotlin.coroutines.resume
 
 fun interface ScreenshotSource {
@@ -34,6 +35,8 @@ class WindowScreenshotter(
 ) : ScreenshotSource {
     override suspend fun capture(windowId: Int, windowBounds: IntRect): WindowScreenshotResult {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return WindowScreenshotResult.Unsupported
+        val attempt = currentCoroutineContext()[ChatCaptureAttempt]
+        fun requestAllowed(): Boolean = attempt?.canTakeFrame() ?: captureAllowed()
 
         return suspendCancellableCoroutine { continuation ->
             val windowScoped = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
@@ -53,7 +56,7 @@ class WindowScreenshotter(
                         fail(SCREENSHOT_WINDOW_UNCONFIRMED)
                         return
                     }
-                    if (!captureAllowed()) {
+                    if (!requestAllowed()) {
                         hardwareBuffer.close()
                         fail(SCREENSHOT_BACKGROUND_PAUSED)
                         return
@@ -94,11 +97,11 @@ class WindowScreenshotter(
             val executor = Dispatchers.IO.asExecutor()
             executor.execute {
                 if (!continuation.isActive) return@execute
-                if (!captureAllowed()) { fail(SCREENSHOT_BACKGROUND_PAUSED); return@execute }
+                if (!requestAllowed()) { fail(SCREENSHOT_BACKGROUND_PAUSED); return@execute }
                 // 获取前只读当前窗口的包名/ID，避免排队后已经离开聊天仍截取其他 App。
                 if (currentChatWindowId() != windowId) { fail(SCREENSHOT_WINDOW_UNCONFIRMED); return@execute }
                 if (!continuation.isActive) return@execute
-                if (!captureAllowed()) { fail(SCREENSHOT_BACKGROUND_PAUSED); return@execute }
+                if (!requestAllowed()) { fail(SCREENSHOT_BACKGROUND_PAUSED); return@execute }
                 try {
                     if (windowScoped) service.takeScreenshotOfWindow(windowId, executor, callback)
                     else service.takeScreenshot(Display.DEFAULT_DISPLAY, executor, callback)

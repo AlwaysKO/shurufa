@@ -94,24 +94,31 @@ class WindowMediaCapturer(
         requests: List<MediaCaptureRequest>,
     ): Map<Int, PendingAssetEntity> {
         val requestedGeneration = captureGeneration()
+        val attempt = currentCoroutineContext()[ChatCaptureAttempt]
+        fun requestAllowed(): Boolean = attempt?.canTakeFrame() ?: (
+            ImageUploadRuntime.isBackgroundWorkAllowed() && captureAllowed() && captureGeneration() == requestedGeneration)
+        fun processingAuthorized(): Boolean = attempt?.let { it.isAccepted && it.isAuthorized() } ?: (
+            captureAllowed() && captureGeneration() == requestedGeneration)
         val platform = requests.firstNotNullOfOrNull { it.platform }?.wireName
         fun report(status: String, code: Int? = null) { platform?.let { runCatching { onScreenshotResult(it, status, code) } } }
-        return captureMutex.withLock {
+        suspend fun captureLocked(): Map<Int, PendingAssetEntity> {
             currentCoroutineContext().ensureActive()
-            if (requests.isEmpty() || !ImageUploadRuntime.isBackgroundWorkAllowed() || !captureAllowed() || captureGeneration() != requestedGeneration) {
+            if (requests.isEmpty() || !requestAllowed()) {
                 CaptureTrace.record(CaptureStage.REQUEST_CANCELLED, windowId, requestedGeneration, layer = CaptureLayer.MEDIA)
                 report("cancelled", SCREENSHOT_BACKGROUND_PAUSED)
-                return@withLock emptyMap()
+                return emptyMap()
             }
             CaptureTrace.record(CaptureStage.SYSTEM_REQUEST, windowId, requestedGeneration, requests.size, layer = CaptureLayer.MEDIA)
             // 系统截图提交后不能撤销。取消也必须等回调收尾，才能放行下一次物理请求。
             var screenshot = withContext(NonCancellable) { screenshotSource.capture(windowId, windowBounds) }
             var retries = 0
-            while (screenshot is WindowScreenshotResult.Failed && isTransientScreenshotError(screenshot.errorCode) && retries < 2) {
+            // 发送快帧由服务层在本次渲染窗口内补试，不叠加400ms的普通截图重试。
+            while (attempt?.allowsSettledSendFrame != true && screenshot is WindowScreenshotResult.Failed &&
+                isTransientScreenshotError(screenshot.errorCode) && retries < 2) {
                 currentCoroutineContext().ensureActive()
-                if (!ImageUploadRuntime.isBackgroundWorkAllowed() || !captureAllowed() || captureGeneration() != requestedGeneration) break
+                if (!requestAllowed()) break
                 kotlinx.coroutines.delay(400)
-                if (!ImageUploadRuntime.isBackgroundWorkAllowed() || !captureAllowed() || captureGeneration() != requestedGeneration) break
+                if (!requestAllowed()) break
                 retries++
                 screenshot = withContext(NonCancellable) { screenshotSource.capture(windowId, windowBounds) }
             }
@@ -124,20 +131,25 @@ class WindowMediaCapturer(
             }
             CaptureTrace.record(CaptureStage.SYSTEM_READY, windowId, requestedGeneration, value = (screenshot as? WindowScreenshotResult.Failed)?.errorCode ?: -1, flag = screenshot is WindowScreenshotResult.Success, layer = CaptureLayer.MEDIA)
             if (screenshot !is WindowScreenshotResult.Success) {
-                report(if (captureGeneration() != requestedGeneration || !ImageUploadRuntime.isBackgroundWorkAllowed() || !captureAllowed()) "cancelled" else "failed", (screenshot as? WindowScreenshotResult.Failed)?.errorCode)
-                return@withLock emptyMap()
+                report(if (!requestAllowed()) "cancelled" else "failed", (screenshot as? WindowScreenshotResult.Failed)?.errorCode)
+                return emptyMap()
             }
 
             val successfulScreenshot = screenshot
             try {
-                if (!ImageUploadRuntime.isBackgroundWorkAllowed() || !captureAllowed() || captureGeneration() != requestedGeneration) {
+                if (attempt != null && (!attempt.acceptFrame() ||
+                        !ImageUploadRuntime.awaitBackgroundWorkAllowed(attempt::isAuthorized))) {
                     report("cancelled")
-                    return@withLock emptyMap()
+                    return emptyMap()
+                }
+                if (!ImageUploadRuntime.isBackgroundWorkAllowed() || !processingAuthorized()) {
+                    report("cancelled")
+                    return emptyMap()
                 }
                 val assets = withContext(processingDispatcher) {
                     buildMap {
                         requests.forEach { request ->
-                            if (!ImageUploadRuntime.isBackgroundWorkAllowed() || !captureAllowed()) return@forEach
+                            if (!ImageUploadRuntime.isBackgroundWorkAllowed() || !processingAuthorized()) return@forEach
                             val originalCrop = cropper.crop(
                                 bitmap = successfulScreenshot.bitmap,
                                 requested = request.bounds,
@@ -157,7 +169,7 @@ class WindowMediaCapturer(
                                     }
                                 }
                                 request.contentInput?.captureFrom(cropped, context.resources.displayMetrics.density, bodyBoundaryVerified)
-                                if (!ImageUploadRuntime.isBackgroundWorkAllowed()) return@forEach
+                                if (!ImageUploadRuntime.isBackgroundWorkAllowed() || !processingAuthorized()) return@forEach
                                 val encoded = encodeAsset(cropped, request.lossyWebp)
                                 val contentHash = sha256(encoded)
                                 val output = File(context.cacheDir, "chat-capture/$contentHash")
@@ -190,7 +202,7 @@ class WindowMediaCapturer(
                         }
                     }
                 }
-                if (!ImageUploadRuntime.isBackgroundWorkAllowed() || !captureAllowed() || captureGeneration() != requestedGeneration) {
+                return if (!ImageUploadRuntime.isBackgroundWorkAllowed() || !processingAuthorized()) {
                     report("cancelled")
                     emptyMap()
                 } else {
@@ -202,14 +214,21 @@ class WindowMediaCapturer(
                 report("cancelled")
                 throw cancelled
             } catch (_: Exception) {
-                if (!ImageUploadRuntime.isBackgroundWorkAllowed() || !captureAllowed() || captureGeneration() != requestedGeneration) report("cancelled")
+                if (!ImageUploadRuntime.isBackgroundWorkAllowed() || !processingAuthorized()) report("cancelled")
                 else report("failed", SCREENSHOT_ASSET_PREPARATION_FAILED)
-                emptyMap()
+                return emptyMap()
             } finally {
                 // 包围调度边界：取消时编码块可能根本未运行，仍必须释放系统截图。
                 screenshot.bitmap.recycle()
             }
         }
+        if (attempt == null) return captureMutex.withLock { captureLocked() }
+        // 快速请求不排队持有下一帧；等待输入空闲的已验帧也占用此唯一槽。
+        if (!captureMutex.tryLock()) {
+            report("cancelled", SCREENSHOT_BACKGROUND_PAUSED)
+            return emptyMap()
+        }
+        return try { captureLocked() } finally { captureMutex.unlock() }
     }
 }
 

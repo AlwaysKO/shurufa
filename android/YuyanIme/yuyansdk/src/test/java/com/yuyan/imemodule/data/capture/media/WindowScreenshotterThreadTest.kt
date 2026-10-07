@@ -96,6 +96,26 @@ class WindowScreenshotterThreadTest {
         }
     }
 
+    @Test fun sendAttemptCanRequestPhysicalFrameDuringInputCooldownWithoutReleasingHeavyWork() = runBlocking {
+        val runtime = com.yuyan.imemodule.data.collect.ImageUploadRuntime
+        com.yuyan.imemodule.data.collect.resetGameWorkRuntimeForTest()
+        runtime.noteKeyActivity()
+        ServiceShadow.operations.clear()
+        val service = Robolectric.buildService(TestService::class.java).create().get()
+        val attempt = ChatCaptureAttempt(runtime.fastScreenshotPermit(), { true }, { true })
+        try {
+            kotlinx.coroutines.withContext(attempt) {
+                WindowScreenshotter(service).capture(-1, IntRect(0, 0, 1080, 1920))
+            }
+            assertTrue("发送后的物理取帧不等 3 秒", ServiceShadow.operations.any { it.first == "request" })
+            assertFalse("不能顺便放行编码和其他后台任务", runtime.isBackgroundWorkAllowed())
+        } finally {
+            service.onDestroy()
+            ServiceShadow.operations.clear()
+            com.yuyan.imemodule.data.collect.resetImageInputForTest()
+        }
+    }
+
     @Test fun absentActiveRootUsesOnlyConfirmedActiveApplicationWindowMetadata() = runBlocking {
         val service = Robolectric.buildService(TestService::class.java).create().get()
         val root = AccessibilityNodeInfo.obtain().apply { packageName = "com.tencent.mm" }

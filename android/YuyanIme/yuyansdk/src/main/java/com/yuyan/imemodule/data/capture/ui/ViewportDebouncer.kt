@@ -44,6 +44,8 @@ class ViewportDebouncer<T>(
     private var pendingSignature: String? = null
     private var emittedWindowId: Int? = null
     private var emittedSignature: String? = null
+    private var emittedValue: T? = null
+    private var retryCount = 0
 
     @Synchronized
     fun submit(windowId: Int, signature: String, value: T, contextKey: String = windowId.toString()) {
@@ -56,6 +58,8 @@ class ViewportDebouncer<T>(
                 lastEmissionAt = clock()
                 emittedWindowId = windowId
                 emittedSignature = signature
+                emittedValue = value
+                retryCount = 0
                 onStable(value)
                 return
             }
@@ -93,10 +97,38 @@ class ViewportDebouncer<T>(
                 lastEmissionAt = clock()
                 emittedWindowId = windowId
                 emittedSignature = signature
+                emittedValue = value
+                retryCount = 0
                 true
             }
             if (shouldEmit) onStable(value)
         }
+    }
+
+    @Synchronized
+    fun retry(value: T): Boolean {
+        // 失败回调只能补试最新发出的实例，不能复活旧页面或覆盖新视口。
+        if (emittedValue !== value || pendingTask != null || retryCount >= 2) return false
+        val windowId = emittedWindowId ?: return false
+        val signature = emittedSignature ?: return false
+        retryCount++
+        generation++
+        val token = generation
+        pendingWindowId = windowId
+        pendingSignature = signature
+        val rateLimitDelay = lastEmissionAt?.let { (minIntervalMillis - (clock() - it)).coerceAtLeast(0) } ?: 0L
+        pendingTask = scheduler.schedule(maxOf(stableDelayMillis, rateLimitDelay)) {
+            val shouldEmit = synchronized(this) {
+                if (token != generation) return@synchronized false
+                pendingTask = null
+                pendingWindowId = null
+                pendingSignature = null
+                lastEmissionAt = clock()
+                true
+            }
+            if (shouldEmit) onStable(value)
+        }
+        return true
     }
 
     @Synchronized
@@ -107,6 +139,8 @@ class ViewportDebouncer<T>(
         lastEmissionAt = null
         emittedWindowId = null
         emittedSignature = null
+        emittedValue = null
+        retryCount = 0
         generation += 1
         pendingTask?.cancel()
         pendingTask = null

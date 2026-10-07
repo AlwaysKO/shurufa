@@ -9,6 +9,33 @@ class ImageUploadScheduleTest {
     private val mobile = ImageUploadNetwork.MOBILE
     private val wifi = ImageUploadNetwork.WIFI
 
+    @Test fun `fast frame does not release heavy work and expires within one second`() {
+        policy.noteKeyActivity()
+        val permit = policy.fastScreenshotPermit()
+        assertTrue(permit())
+        assertFalse(policy.isInputIdle())
+        assertNull(policy.beginPreparation())
+        now = 999
+        assertTrue(permit())
+        now = 1000
+        assertFalse(permit())
+    }
+
+    @Test fun `send touch release allows frame but later input permanently invalidates permit`() {
+        val source = Any()
+        policy.noteTouch(0, source)
+        val permit = policy.fastScreenshotPermit()
+        assertFalse(permit())
+        policy.noteTouch(1, source)
+        assertTrue(permit())
+        policy.noteTouch(0, source)
+        policy.noteTouch(1, source)
+        assertFalse(permit())
+        val afterTouch = policy.fastScreenshotPermit()
+        policy.noteKeyActivity()
+        assertFalse(afterTouch())
+    }
+
     @Test fun `idle starts exactly three seconds after key activity`() {
         policy.noteKeyActivity()
         now = 2999

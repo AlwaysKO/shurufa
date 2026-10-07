@@ -14,5 +14,8 @@ internal class EmptyTreeCandidateProbe(private val now: () -> Long = { System.na
         nextAt = now() + 2_000
         return true
     }
+    /** 跟随实际首帧时间恢复，避免输入避让后开页探测已全部过期。 */
+    @Synchronized fun retryDelayMillis(scope: ScreenshotScope): Long? =
+        if (current == scope && attempts in 1..2) (nextAt - now()).coerceAtLeast(0) else null
     @Synchronized fun clear() { current = null; attempts = 0; nextAt = 0 }
 }

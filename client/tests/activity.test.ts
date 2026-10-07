@@ -371,3 +371,37 @@ it('批量删除末页全部选中行后回到有效页并清空选择', async (
   view.find('select-page')!.props.onClick(); await settle(); view.find('delete-selected')!.props.onClick(); await settle();
   expect(events.mock.calls.map(call => call[0].page)).toEqual([1,2,2,1]); expect(view.find('selection-count')!.text).toContain('0');
 });
+
+it.each([1,7,30])('行为保留%d天按当前App筛选预览，一次确认跨页批量删除',async days=>{
+ const confirm=vi.fn(()=>true);vi.stubGlobal('confirm',confirm);
+ const preview=vi.fn(async()=>({token:'retention',total_events:201,total_groups:201,cutoff:'2026-09-01T00:00:00Z'}));
+ const batch=vi.fn().mockResolvedValueOnce({processed:200,total:201,deleted_events:200,skipped_events:0,done:false}).mockResolvedValueOnce({processed:201,total:201,deleted_events:200,skipped_events:1,done:true});
+ const view=await mount('Activity',{devices:async()=>({devices:[]}),events:async()=>({total:0,items:[]}),previewActivityCleanup:preview,deleteActivityCleanupBatch:batch});
+ const source=view.find('source-app')!;source.props['onUpdate:modelValue']('com.test');source.props.onChange();await settle();
+ expect(view.find(`activity-keep-${days}`)).toBeDefined();view.find(`activity-keep-${days}`)!.props.onClick();await settle();await settle();
+ expect(preview).toHaveBeenCalledWith({days,filters:expect.objectContaining({package_name:'com.test',grouped:true})});
+ expect(confirm).toHaveBeenCalledOnce();expect(batch.mock.calls.map(c=>c[0].offset)).toEqual([0,200]);expect(view.text()).toContain('已删除 200 条');expect(view.text()).toContain('跳过 1 条');
+});
+
+it.each(['取消','往返切换筛选'])('行为清理%s后不执行删除',async mode=>{
+ let answer!:(value:boolean)=>void;vi.stubGlobal('confirm',()=>new Promise(r=>{answer=r;}));const batch=vi.fn();
+ const view=await mount('Activity',{devices:async()=>({devices:[]}),events:async()=>({total:0,items:[]}),previewActivityCleanup:async()=>({token:'t',total_events:1,total_groups:1,cutoff:'2020-01-01'}),deleteActivityCleanupBatch:batch});
+ expect(view.find('activity-keep-7')).toBeDefined();view.find('activity-keep-7')!.props.onClick();await settle();
+ if(mode==='往返切换筛选'){const source=view.find('source-app')!;source.props['onUpdate:modelValue']('other');source.props['onUpdate:modelValue']('');await settle();}
+ answer(mode!=='取消');await settle();expect(batch).not.toHaveBeenCalled();
+});
+
+it('行为清理部分成功后失败显示已确认进度，重新加载实际列表',async()=>{
+ vi.stubGlobal('confirm',()=>true);
+ const events=vi.fn(async()=>({total:0,items:[]}));
+ const batch=vi.fn().mockResolvedValueOnce({processed:200,total:201,deleted_events:200,skipped_events:0,done:false}).mockRejectedValueOnce(Error('连接中断'));
+ const view=await mount('Activity',{devices:async()=>({devices:[]}),events,previewActivityCleanup:async()=>({token:'t',total_events:201,total_groups:201,cutoff:'2020-01-01'}),deleteActivityCleanupBatch:batch});
+ view.find('activity-keep-7')!.props.onClick();await settle();await settle();
+ expect(view.text()).toContain('已确认删除 200 条');expect(view.text()).toContain('连接中断');expect(view.text()).not.toContain('清理完成');expect(events).toHaveBeenCalledTimes(2);
+});
+
+it('行为清理空预览不确认也不执行批次',async()=>{
+ const confirm=vi.fn(),batch=vi.fn();vi.stubGlobal('confirm',confirm);
+ const view=await mount('Activity',{devices:async()=>({devices:[]}),events:async()=>({total:0,items:[]}),previewActivityCleanup:async()=>({token:'t',total_events:0}),deleteActivityCleanupBatch:batch});
+ view.find('activity-keep-30')!.props.onClick();await settle();expect(view.text()).toContain('没有需要清理');expect(confirm).not.toHaveBeenCalled();expect(batch).not.toHaveBeenCalled();
+});

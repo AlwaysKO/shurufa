@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { Router } from 'express';
 import type pg from 'pg';
-import { chatPlatforms, pendingConversation } from './chatPending.js';
+import { chatPlatforms, chatConversationScope } from './chatPending.js';
 import { visibleChatMessage } from '../chat/chatMessageVisibility.js';
 import { cleanDeviceFiles, queueUploadFileCleanup } from '../lib/deleteDeviceData.js';
 import { expandScreenshotDeletion, tombstoneDeletedScreenshots } from '../chat/screenshotDeletion.js';
@@ -11,15 +11,15 @@ const MAX_MESSAGES = 50_000;
 const BATCH_SIZE = 200;
 type Target = { id: string; conversation_id: string; captured_at: Date; signature: string; asset_ids: string[]; image_ids: string[] };
 type Snapshot = {
-  user: string; platform: string; cutoff: Date; images: boolean; targets: Target[];
+  scope: { sql: string; params: unknown[] }; user: string; platform: string; cutoff: Date; images: boolean; targets: Target[];
   expires: number; busy: boolean; processed: number; deleted: number; skipped: number; filesPending: boolean;
 };
-const selection = `SELECT m.id,m.conversation_id,m.captured_at,md5(row_to_json(m)::text) AS signature,
+const selection = (scope: string) => `SELECT m.id,m.conversation_id,m.captured_at,md5(row_to_json(m)::text) AS signature,
   ARRAY(SELECT ma.asset_id::text FROM chat_message_asset ma WHERE ma.message_id=m.id ORDER BY ma.asset_id,ma.role,ma.position) AS asset_ids,
   ARRAY(SELECT ma.asset_id::text FROM chat_message_asset ma JOIN media_asset a ON a.id=ma.asset_id
     WHERE ma.message_id=m.id AND a.mime_type LIKE 'image/%' ORDER BY ma.asset_id,ma.role,ma.position) AS image_ids
   FROM chat_message m JOIN chat_conversation c ON c.id=m.conversation_id AND c.user_id=m.user_id
-  WHERE m.user_id=$1 AND c.platform=$2 AND m.platform=$2 AND (${pendingConversation()})
+  WHERE m.user_id=$1 AND c.platform=$2 AND m.platform=$2 AND c.merged_into_id IS NULL AND (${scope})
     AND ${visibleChatMessage()} AND m.captured_at < $3
     AND ($4::boolean OR (m.message_type<>'image' AND NOT EXISTS(
       SELECT 1 FROM chat_message_asset ma JOIN media_asset a ON a.id=ma.asset_id WHERE ma.message_id=m.id AND a.mime_type LIKE 'image/%')))`;
@@ -35,22 +35,25 @@ export function createChatRetentionRouter(pool: pg.Pool): Router {
   function expire() {
     for (const [token, job] of snapshots) if (!job.busy && job.expires < Date.now()) snapshots.delete(token);
   }
-  router.post('/pending/cleanup/preview', async (req, res, next) => {
+  router.post(['/pending/cleanup/preview', '/conversations/cleanup/preview'], async (req, res, next) => {
     const body = req.body;
-    if (![7,30].includes(body?.days) || !chatPlatforms.includes(body?.platform) || typeof body?.include_images !== 'boolean') {
-      res.status(400).json({ error: '请选择保留7天或30天、来源App和是否包含图片' }); return;
+    if (![1,7,30].includes(body?.days) || !chatPlatforms.includes(body?.platform) || typeof body?.include_images !== 'boolean') {
+      res.status(400).json({ error: '请选择保留1天、7天或30天、来源App和是否包含图片' }); return;
     }
+    const selected = chatConversationScope(res.locals.userId, req.path.startsWith('/pending/') ? -1 : body.conversation_id, body.platform, body.group_name);
+    if (!selected) { res.status(400).json({ error: '请选择有效会话范围' }); return; }
+    const scope = { sql: selected.sql.replace(/\$(\d+)/g, (_, n) => `$${Number(n) + 4}`), params: selected.params };
     expire();
     if (snapshots.size >= 20) { res.status(429).json({ error: '清理预览较多，请稍后重试' }); return; }
     const cutoff = new Date(Date.now() - body.days * 86_400_000);
     try {
-      const result = await pool.query<Target>(`${selection} ORDER BY m.captured_at,m.id LIMIT $5`,
-        [res.locals.userId, body.platform, cutoff, body.include_images, MAX_MESSAGES + 1]);
+      const result = await pool.query<Target>(`${selection(scope.sql)} ORDER BY m.captured_at,m.id LIMIT $${5 + scope.params.length}`,
+        [res.locals.userId, body.platform, cutoff, body.include_images, ...scope.params, MAX_MESSAGES + 1]);
       if (result.rows.length > MAX_MESSAGES) { res.status(400).json({ error: '待清理记录超过5万条，请联系管理员分段处理' }); return; }
       const token = randomUUID();
       // A user may replace an unused preview; running/partially completed work remains retryable.
       for (const [key, job] of snapshots) if (job.user === res.locals.userId && !job.busy && job.processed === 0) snapshots.delete(key);
-      if (result.rows.length) snapshots.set(token, { user: res.locals.userId, platform: body.platform, cutoff,
+      if (result.rows.length) snapshots.set(token, { scope, user: res.locals.userId, platform: body.platform, cutoff,
         images: body.include_images, targets: result.rows, expires: Date.now() + TTL, busy: false,
         processed: 0, deleted: 0, skipped: 0, filesPending: false });
       res.json({ token, days: body.days, include_images: body.include_images, cutoff: cutoff.toISOString(),
@@ -59,7 +62,7 @@ export function createChatRetentionRouter(pool: pg.Pool): Router {
     } catch (error) { next(error); }
   });
 
-  router.post('/pending/cleanup/batch', async (req, res, next) => {
+  router.post(['/pending/cleanup/batch', '/conversations/cleanup/batch'], async (req, res, next) => {
     const body = req.body;
     if (body?.confirm !== 'DELETE' || typeof body?.token !== 'string' || !Number.isSafeInteger(body?.offset) || body.offset < 0) {
       res.status(400).json({ error: '清理确认参数无效' }); return;
@@ -79,8 +82,8 @@ export function createChatRetentionRouter(pool: pg.Pool): Router {
         await db.query("SET LOCAL lock_timeout = '5s'");
         await db.query("SET LOCAL statement_timeout = '20s'");
         await db.query('LOCK TABLE chat_conversation, chat_message, chat_message_asset, media_asset IN SHARE ROW EXCLUSIVE MODE');
-        const current = await db.query<Target>(`${selection} AND m.id=ANY($5::uuid[])`,
-          [job.user, job.platform, job.cutoff, job.images, targets.map(row=>row.id)]);
+        const current = await db.query<Target>(`${selection(job.scope.sql)} AND m.id=ANY($${5 + job.scope.params.length}::uuid[])`,
+          [job.user, job.platform, job.cutoff, job.images, ...job.scope.params, targets.map(row=>row.id)]);
         const expected = new Map(targets.map(row=>[row.id,row]));
         const matched = current.rows.filter(row=> {
           const old = expected.get(row.id)!;

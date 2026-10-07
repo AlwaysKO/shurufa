@@ -78,6 +78,61 @@ class GameForegroundMonitorTest {
         assertEquals(true, h.publications.last())
     }
 
+    @Test fun verifiedForegroundClassificationIsCachedUnderActualPackageOnly() {
+        val h = Harness()
+        h.state.connect(true)
+        h.state.candidate("home.plugin", 5063)
+        h.queries.last().finish(GameForegroundResult(GameForegroundWindow.Application, false, "actual.launcher"))
+        assertEquals(false, h.publications.last())
+        h.state.candidate("home.plugin", 5064)
+        assertNull("桌面的非游戏结论不能污染插件分类", h.queries.last().cached)
+        h.queries.last().finish(GameForegroundResult(GameForegroundWindow.Application, false, "actual.launcher"))
+        h.state.candidate("actual.launcher", 5053)
+        assertEquals(false, h.queries.last().cached)
+    }
+
+    @Test fun repeatedPluginEventRechecksChangedActualForegroundAfterThrottle() {
+        val h = Harness()
+        h.state.connect(true)
+        h.state.candidate("home.plugin", -1)
+        h.queries.last().finish(GameForegroundResult(GameForegroundWindow.Application, false, "actual.launcher"))
+        assertEquals(false, h.publications.last())
+        h.advance(999)
+        h.state.candidate("home.plugin", -1)
+        assertEquals("相同插件事件仍保持现有一秒节流", 1, h.queries.size)
+        h.advance(2)
+        h.state.candidate("home.plugin", -1)
+        assertEquals("确认实际桌面不能永久确认插件窗口", 2, h.queries.size)
+        assertEquals("再次核验未知真实前台之前须保护", true, h.publications.last())
+        h.queries.last().finish(GameForegroundResult(GameForegroundWindow.Application, true, "actual.game"))
+        assertEquals(true, h.publications.last())
+    }
+
+    @Test fun actualGameCannotReuseStalePluginNonGameCache() {
+        val lookedUp = mutableListOf<String>()
+        val gaming = classifyVerifiedForeground("home.plugin", "actual.game", false) {
+            lookedUp += it
+            it == "actual.game"
+        }
+        assertEquals(listOf("actual.game"), lookedUp)
+        assertEquals(true, gaming)
+        val h = Harness()
+        h.state.connect(true)
+        h.state.candidate("home.plugin", 5063)
+        h.queries.last().finish(GameForegroundResult(GameForegroundWindow.Application, gaming, "actual.game"))
+        assertEquals(true, h.publications.last())
+    }
+
+    @Test fun oldPluginRecheckCannotReleaseNewlyConfirmedGame() {
+        val h = Harness()
+        h.state.connect(true)
+        h.state.candidate("home.plugin", 5063)
+        h.state.candidate("actual.game", 5080)
+        h.queries[1].finish(GameForegroundResult(GameForegroundWindow.Application, true, "actual.game"))
+        h.queries[0].finish(GameForegroundResult(GameForegroundWindow.Application, false, "actual.launcher"))
+        assertEquals(true, h.publications.last())
+    }
+
     @Test fun overlayCannotReleaseGameAndUnknownClassificationStaysPaused() {
         val h = Harness()
         h.state.connect(true)

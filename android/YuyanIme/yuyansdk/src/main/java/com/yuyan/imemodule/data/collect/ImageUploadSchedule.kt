@@ -12,6 +12,7 @@ internal enum class ImageUploadNetwork { OFFLINE, MOBILE, WIFI, USB }
 /** Shared, content-free policy. All timestamps are monotonic, never wall-clock time. */
 internal class ImageUploadSchedule(private val clock: () -> Long) {
     private var lastActivity: Long? = null
+    private var inputEpoch = 0L
     private val touches = Collections.newSetFromMap(IdentityHashMap<Any, Boolean>())
     private var preparing = false
     private var uploading = false
@@ -20,12 +21,14 @@ internal class ImageUploadSchedule(private val clock: () -> Long) {
     private val charges = ArrayDeque<Charge>()
 
     @Synchronized fun noteKeyActivity() {
+        inputEpoch++
         lastActivity = clock()
     }
 
     @Synchronized fun noteTouch(action: Int, source: Any) {
         when (action) {
-            0 -> touches.add(source) // ACTION_DOWN
+            0 -> { inputEpoch++; touches.add(source) } // ACTION_DOWN
+            5 -> inputEpoch++ // ACTION_POINTER_DOWN invalidates an earlier send permit
             1, 3 -> touches.remove(source) // Final ACTION_UP / ACTION_CANCEL only
         }
         lastActivity = clock()
@@ -33,6 +36,16 @@ internal class ImageUploadSchedule(private val clock: () -> Long) {
 
     @Synchronized fun isInputIdle(): Boolean =
         touches.isEmpty() && (lastActivity?.let { clock() - it >= IDLE_MS } ?: true)
+
+    @Synchronized fun fastScreenshotPermit(): () -> Boolean {
+        val epoch = inputEpoch
+        val requestedAt = clock()
+        return {
+            synchronized(this) {
+                inputEpoch == epoch && touches.isEmpty() && clock() - requestedAt in 0L until 1000L
+            }
+        }
+    }
 
     @Synchronized fun beginPreparation(requireIdle: Boolean = true): Closeable? {
         if ((requireIdle && !isInputIdle()) || preparing) return null

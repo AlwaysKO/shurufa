@@ -17,6 +17,17 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class ImeServiceKeyEventTest {
+    @Test fun onlyExplicitSendActionGrantsFastCaptureReason() {
+        val requests = mutableListOf<ForegroundChatCaptureRequest>()
+        for (action in listOf(android.view.inputmethod.EditorInfo.IME_ACTION_SEND,
+                android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH, android.view.inputmethod.EditorInfo.IME_ACTION_NEXT,
+                android.view.inputmethod.EditorInfo.IME_ACTION_DONE, android.view.inputmethod.EditorInfo.IME_ACTION_NONE)) {
+            requestForegroundChatCaptureAfterSend(true, "com.tencent.mm", 1L, requests::add, action)
+        }
+        assertEquals(listOf(com.yuyan.imemodule.service.capture.ForegroundChatCaptureReason.SEND) +
+            List(4) { com.yuyan.imemodule.service.capture.ForegroundChatCaptureReason.PROBE }, requests.map { it.reason })
+    }
+
     @Test
     fun successfulSendRequestsForegroundChatCaptureButFailedOrUnrelatedSendDoesNot() {
         val received = mutableListOf<ForegroundChatCaptureRequest>()

@@ -1,3 +1,5 @@
+import { activityConditions, CONTENT_TYPE_SQL, BEHAVIOR_TYPES } from './activityQuery.js';
+import { createActivityRetentionRouter } from './activityRetention.js';
 import { savingFlags } from '../lib/deviceSaving.js';
 import { withAppNames } from '../lib/appNames.js';
 import { Router } from 'express';
@@ -8,18 +10,6 @@ import { queryGroupedEdits } from './groupedEdits.js';
 import { createActivityDeletionRouter } from './activityDeletion.js';
 import { collectorBaseUrl, saveCollectorBaseUrl } from '../lib/runtimeSettings.js';
 
-
-/** 事件内容类型：语音 / 图片 / 文字（用于列表展示与筛选） */
-const CONTENT_TYPE_SQL = `CASE
-  WHEN event_type = 'voice' THEN 'voice'
-  WHEN (metadata->>'media_type') IN ('image','picture')
-       OR metadata ? 'image_uri' OR metadata ? 'image_url'
-       OR (event_type IN ('paste','paste_inferred','clipboard_change') AND (text IS NULL OR text = '')) THEN 'image'
-  ELSE 'text'
-END`;
-
-/** 行为事件（列表默认展示：输入/粘贴/复制/语音等有内容的行为，不含 key/compose 等底层事件） */
-const BEHAVIOR_TYPES = "('commit','candidate_commit','paste','paste_inferred','external_insert','clipboard_change','voice','delete','external_delete')";
 
 /** Raw and grouped views share address enrichment, including each group's history. */
 async function enrichEventLocations(pool: pg.Pool, rows: Array<{ client_ip?: unknown; ip_location?: unknown }>) {
@@ -40,6 +30,7 @@ function daysAgo(days: number): Date {
 export function createDashboardRouter(pool: pg.Pool): Router {
   const router = Router();
   router.use(createActivityDeletionRouter(pool));
+  router.use(createActivityRetentionRouter(pool));
 
   router.get('/settings/collector', async (_req, res, next) => {
     try { res.json({ collector_base_url: await collectorBaseUrl(pool) }); }
@@ -750,49 +741,11 @@ export function createDashboardRouter(pool: pg.Pool): Router {
   router.get('/events', async (req, res, next) => {
     try {
       const userId = (req.query.user_id as string) ?? res.locals.userId;
-      const deviceId = (req.query.device_id as string) ?? null;
-      const packageName = (req.query.package_name as string) ?? null;
-      const q = ((req.query.q as string) ?? '').trim();
-      const type = (req.query.type as string) ?? 'all';
-      const from = (req.query.from as string) ?? null;
-      const to = (req.query.to as string) ?? null;
-      const days = req.query.days ? Math.min(Math.max(Number(req.query.days) || 0, 1), 3650) : null;
-      const showAll = req.query.all === '1';
       const page = Math.max(1, Number(req.query.page ?? 1) || 1);
       const pageSize = Math.min(Math.max(1, Number(req.query.page_size ?? 20) || 20), 100);
 
-      const conds: string[] = ['user_id = $1'];
-      const params: unknown[] = [userId];
-      let n = 1;
-      const add = (cond: string, ...vs: unknown[]) => {
-        let sql = cond;
-        for (const v of vs) {
-          n++;
-          sql = sql.replace('?', `$${n}`);
-          params.push(v);
-        }
-        conds.push(sql);
-      };
-
-      if (deviceId) add('device_id = ?', deviceId);
-      if (packageName) add('package_name = ?', packageName);
-      if (from) add('occurred_at >= ?', new Date(from));
-      if (to) add('occurred_at <= ?', new Date(to));
-      if (days) add('occurred_at >= ?', daysAgo(days));
-      if (q) add('(text ILIKE ? OR text_before ILIKE ? OR text_after ILIKE ? OR input_code ILIKE ? OR client_ip = ?)', `%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`, q);
-      if (!showAll) conds.push(`event_type IN ${BEHAVIOR_TYPES}`);
-
-      // 类型筛选（对应列表“类型”列）
-      const typeConds: Record<string, string> = {
-        text: `event_type IN ('commit','candidate_commit','external_insert')`,
-        delete: `event_type IN ('delete','external_delete')`,
-        paste: `event_type IN ('paste','paste_inferred','clipboard_change')`,
-        voice: `event_type = 'voice'`,
-        image: `${CONTENT_TYPE_SQL} = 'image'`,
-      };
-      if (typeConds[type]) conds.push(typeConds[type]);
-
-      const where = conds.join(' AND ');
+      const { where, params } = activityConditions(userId, req.query);
+      const n = params.length;
 
       if (req.query.grouped === '1') {
         const grouped = await queryGroupedEdits(pool, where, params, CONTENT_TYPE_SQL, page, pageSize);

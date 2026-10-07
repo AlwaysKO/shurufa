@@ -26,6 +26,10 @@ object ImageUploadRuntime {
     @Volatile private var observing = false
 
     fun isInputIdle(): Boolean = schedule.isInputIdle()
+    fun fastScreenshotPermit(): () -> Boolean {
+        val inputPermit = schedule.fastScreenshotPermit()
+        return { inputPermit() && GameWorkRuntime.isBackgroundAllowed() }
+    }
     fun isBackgroundWorkAllowed(): Boolean = isInputIdle() && GameWorkRuntime.isBackgroundAllowed()
     fun requireBackgroundWorkAllowed() {
         requireInputIdle()

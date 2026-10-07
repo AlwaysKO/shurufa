@@ -136,6 +136,22 @@ internal interface ScreenshotConversationIdentityResolver {
     fun version(): Long = 0L
     suspend fun resolve(asset: PendingAssetEntity, expectedVersion: Long = version(), titleInput: TitleOcrInput? = null): ScreenshotConversationIdentity
     fun reset() = Unit
+    // 未提供独立状态的实现不能在导航后借用当前会话来处理旧帧。
+    fun snapshot(keepCurrent: () -> Boolean = { false }): ScreenshotConversationIdentityResolver? = null
+}
+
+internal fun observeSnapshotTitle(
+    current: ConversationTitleStabilizer,
+    snapshot: ConversationTitleStabilizer,
+    expectedVersion: Long,
+    keepCurrent: () -> Boolean,
+    title: String?,
+    visualKey: String?,
+    nowMillis: Long,
+): ScreenshotConversationIdentity = synchronized(current) {
+    // 检查与投票使用同一把锁，导航 reset 不能夹在两者之间抹掉已接受帧的归属。
+    val target = if (keepCurrent() && current.version() == expectedVersion) current else snapshot
+    target.observe(title, visualKey, nowMillis, expectedVersion)
 }
 
 internal class MlKitWechatScreenshotIdentityResolver(identityStore: ConversationIdentityStore = MemoryConversationIdentityStore()) : ScreenshotConversationIdentityResolver, Closeable {
@@ -145,7 +161,37 @@ internal class MlKitWechatScreenshotIdentityResolver(identityStore: Conversation
 
     private val recognizer = TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
 
-    override suspend fun resolve(asset: PendingAssetEntity, expectedVersion: Long, titleInput: TitleOcrInput?): ScreenshotConversationIdentity = withContext(Dispatchers.Default) {
+    override fun snapshot(keepCurrent: () -> Boolean): ScreenshotConversationIdentityResolver =
+        snapshotResolver(stabilizer.fork(), keepCurrent)
+
+    private fun snapshotResolver(
+        snapshot: ConversationTitleStabilizer,
+        keepCurrent: () -> Boolean,
+    ): ScreenshotConversationIdentityResolver {
+        val initialVersion = snapshot.version()
+        return object : ScreenshotConversationIdentityResolver {
+            override fun version(): Long = snapshot.version()
+            override fun reset() = snapshot.reset()
+            override fun snapshot(keepCurrent: () -> Boolean): ScreenshotConversationIdentityResolver =
+                snapshotResolver(snapshot.fork(), keepCurrent)
+            override suspend fun resolve(asset: PendingAssetEntity, expectedVersion: Long, titleInput: TitleOcrInput?): ScreenshotConversationIdentity =
+                resolveWithStabilizer(asset, expectedVersion, titleInput, snapshot) {
+                    expectedVersion == initialVersion && keepCurrent()
+                }
+        }
+    }
+
+    override suspend fun resolve(asset: PendingAssetEntity, expectedVersion: Long, titleInput: TitleOcrInput?): ScreenshotConversationIdentity =
+        resolveWithStabilizer(asset, expectedVersion, titleInput, stabilizer)
+
+    // 快照只隔离身份状态，沿用原识别器；其生命周期仍由此 owner 的 close 管理。
+    private suspend fun resolveWithStabilizer(
+        asset: PendingAssetEntity,
+        expectedVersion: Long,
+        titleInput: TitleOcrInput?,
+        titleStabilizer: ConversationTitleStabilizer,
+        keepCurrent: (() -> Boolean)? = null,
+    ): ScreenshotConversationIdentity = withContext(Dispatchers.Default) {
         requireScreenshotBackgroundWork()
         val header = (if (titleInput != null) titleInput.takeOrDecode(asset.localPath) else decodeTitleHeader(asset.localPath))
             ?: return@withContext unresolvedWechatScreenshotIdentity().copy(isChatPage = false)
@@ -169,12 +215,14 @@ internal class MlKitWechatScreenshotIdentityResolver(identityStore: Conversation
             val visualKey = evidence?.let {
                 if (exactBand) wechatNicknamePixelSignature(header, it) else wechatTitlePixelSignature(header, it)
             }
-            stabilizer.observe(
-                title = evidence?.text ?: title?.text,
-                visualKey = visualKey,
-                nowMillis = SystemClock.elapsedRealtime(),
-                expectedVersion = expectedVersion,
-            ).copy(
+            val observedTitle = evidence?.text ?: title?.text
+            val nowMillis = SystemClock.elapsedRealtime()
+            val identity = if (keepCurrent == null) {
+                titleStabilizer.observe(observedTitle, visualKey, nowMillis, expectedVersion)
+            } else {
+                observeSnapshotTitle(stabilizer, titleStabilizer, expectedVersion, keepCurrent, observedTitle, visualKey, nowMillis)
+            }
+            identity.copy(
                 isChatPage = isWechatScreenshotChatPage(if (title != null) lines else pageLines, header.width, header.height),
                 exactTitleHash = evidence?.let { exactPixelHash(header, IntRect(it.left, it.top, it.right, it.bottom)) },
             )

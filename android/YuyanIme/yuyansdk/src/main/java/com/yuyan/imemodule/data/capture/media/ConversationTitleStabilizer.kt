@@ -33,6 +33,17 @@ internal open class ConversationTitleStabilizer(
     private val scope = "${platform.wireName}|$accountKey|$source"
 
     @Synchronized fun version(): Long = generation
+    /** 已接受帧保留导航前证据；复制不构成新一帧，也不为标题增加确认票。 */
+    @Synchronized fun fork(): ConversationTitleStabilizer = ConversationTitleStabilizer(
+        platform, accountKey, source, legacyWechat, identityStore, tolerateUnreadableFrame,
+    ).also { snapshot ->
+        // 身份值和截断状态不可变；State 内的投票与候选字段必须独立复制。
+        snapshot.state = state?.copy()
+        snapshot.truncatedState = truncatedState
+        snapshot.generation = generation
+        snapshot.pendingKey = pendingKey
+        snapshot.pendingAt = pendingAt
+    }
     @Synchronized fun reset() { generation++; state = null; pendingKey = null; truncatedState = null }
 
     @Synchronized fun observe(

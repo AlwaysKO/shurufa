@@ -75,3 +75,13 @@ it('旧记录清理绑定手机并传递失效预览的明确说明',async()=>{
  await expect(api.deletePendingChatCleanupBatch({confirm:'DELETE',token:'t',offset:0})).rejects.toThrow('清理预览已失效');
  expect(JSON.parse(fetch.mock.calls[1][1].body)).toEqual({confirm:'DELETE',token:'t',offset:0});
 });
+
+it('通用会话与行为清理请求绑定当前手机并传递明确范围',async()=>{
+ const fetch=vi.fn().mockImplementation(async()=>new Response(JSON.stringify({token:'t',done:true})));const api=loadApi(fetch);
+ const chat={days:1 as const,include_images:true,platform:'qq' as const,conversation_id:12,group_name:'测试群'};
+ const activity={days:30 as const,filters:{package_name:'com.test',grouped:true}};
+ await api.previewChatCleanup(chat);await api.previewActivityCleanup(activity);
+ const body={confirm:'DELETE' as const,token:'t',offset:200};await api.deleteChatCleanupBatch(body);await api.deleteActivityCleanupBatch(body);
+ expect(fetch.mock.calls.map(call=>call[0])).toEqual(['chat/conversations/cleanup/preview','events/cleanup/preview','chat/conversations/cleanup/batch','events/cleanup/batch'].map(path=>`/api/v1/dashboard/${path}?user_id=user-a`));
+ expect(fetch.mock.calls.map(call=>JSON.parse(call[1].body))).toEqual([chat,activity,body,body]);
+});

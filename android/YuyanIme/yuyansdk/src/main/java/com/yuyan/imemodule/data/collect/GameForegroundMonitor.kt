@@ -19,7 +19,55 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
 internal enum class GameForegroundWindow { Application, Overlay, Unknown }
-internal data class GameForegroundResult(val window: GameForegroundWindow, val gaming: Boolean? = null)
+internal data class GameForegroundResult(
+    val window: GameForegroundWindow,
+    val gaming: Boolean? = null,
+    val verifiedPackage: String? = null,
+)
+
+internal data class GameForegroundWindowCheck(
+    val window: GameForegroundWindow,
+    val resolvedWindowId: Int?,
+    val reason: String,
+    val verifiedPackage: String? = null,
+)
+
+internal fun classifyVerifiedForeground(
+    eventPackage: String,
+    verifiedPackage: String,
+    cached: Boolean?,
+    readGameMetadata: (String) -> Boolean?,
+): Boolean? = if (eventPackage == verifiedPackage && cached != null) cached else readGameMetadata(verifiedPackage)
+
+internal fun inspectGameForegroundWindow(
+    packageName: String,
+    windowId: Int,
+    windows: List<AccessibilityWindowInfo>,
+): GameForegroundWindowCheck {
+    val eventWindow = windows.firstOrNull { it.id == windowId }
+    if (eventWindow != null && eventWindow.type != AccessibilityWindowInfo.TYPE_APPLICATION) {
+        return GameForegroundWindowCheck(GameForegroundWindow.Overlay, eventWindow.id, "event_overlay")
+    }
+    // 厂商窗口动画可能已更换事件 ID；只信当前真实前台窗口，不能按包名猜或超时放行。
+    val applications = windows.filter { it.type == AccessibilityWindowInfo.TYPE_APPLICATION }
+    val active = applications.filter { it.isActive }
+    val candidates = active.ifEmpty { applications.filter { it.isFocused } }
+    val foreground = candidates.singleOrNull() ?: return GameForegroundWindowCheck(
+        GameForegroundWindow.Unknown, null,
+        if (candidates.isEmpty()) "foreground_window_missing" else "foreground_window_ambiguous",
+    )
+    val root = runCatching { foreground.root }.getOrNull()
+        ?: return GameForegroundWindowCheck(GameForegroundWindow.Unknown, foreground.id, "foreground_root_missing")
+    @Suppress("DEPRECATION")
+    val actualPackage = try { runCatching { root.packageName?.toString() }.getOrNull() }
+        finally { root.recycle() }
+    if (actualPackage.isNullOrBlank()) {
+        return GameForegroundWindowCheck(GameForegroundWindow.Unknown, foreground.id, "foreground_package_missing")
+    }
+    return GameForegroundWindowCheck(GameForegroundWindow.Application, foreground.id,
+        if (foreground.id == windowId && actualPackage == packageName) "event_window_verified" else "foreground_window_fallback",
+        verifiedPackage = actualPackage)
+}
 
 internal class GameForegroundState(
     private val query: (String, Int, Boolean?, (GameForegroundResult) -> Unit) -> Unit,
@@ -82,7 +130,7 @@ internal class GameForegroundState(
             candidate.inFlight = false
             if (result.window == GameForegroundWindow.Overlay ||
                 result.window == GameForegroundWindow.Application && result.gaming != null) {
-                candidate.confirmed = true
+                candidate.confirmed = result.verifiedPackage == null || result.verifiedPackage == candidate.packageName
                 apply(candidate.packageName, result, candidate.previous)
             } else if (candidate.attempts <= 2) {
                 candidate.scheduled = true
@@ -138,7 +186,8 @@ internal class GameForegroundState(
     private fun apply(packageName: String, result: GameForegroundResult, previous: Boolean) {
         when (result.window) {
             GameForegroundWindow.Application -> result.gaming?.let { gaming ->
-                cache[packageName] = gaming
+                // 桌面插件等过期事件可能对应另一个真实前台包，不能污染事件包的缓存。
+                cache[result.verifiedPackage ?: packageName] = gaming
                 while (cache.size > cacheLimit.coerceAtLeast(1)) cache.remove(cache.keys.first())
                 pause(gaming)
             }
@@ -262,24 +311,38 @@ object GameForegroundMonitor {
         private fun resolve(packageName: String, windowId: Int, cached: Boolean?): GameForegroundResult {
             if (systemOverlay(packageName)) return GameForegroundResult(GameForegroundWindow.Overlay)
             val windows = runCatching { service.windows }.getOrNull()
-                ?: return GameForegroundResult(GameForegroundWindow.Unknown)
-            val kind = try {
-                val window = windows.firstOrNull { it.id == windowId }
-                when {
-                    window == null -> GameForegroundWindow.Unknown
-                    window.type != AccessibilityWindowInfo.TYPE_APPLICATION -> GameForegroundWindow.Overlay
-                    !window.isActive && !window.isFocused -> GameForegroundWindow.Unknown
-                    else -> GameForegroundWindow.Application
-                }
-            } finally { windows.forEach { it.recycle() } }
-            if (kind != GameForegroundWindow.Application) return GameForegroundResult(kind)
-            val gaming = cached ?: runCatching {
-                if (declaredGame(packageName, ApplicationInfo.CATEGORY_UNDEFINED, 0)) true
-                else context.packageManager.getApplicationInfo(packageName, 0).let { info ->
-                    declaredGame(packageName, if (Build.VERSION.SDK_INT >= 26) info.category else ApplicationInfo.CATEGORY_UNDEFINED, info.flags)
-                }
-            }.getOrNull()
-            return GameForegroundResult(kind, gaming)
+            val check = if (windows == null) {
+                GameForegroundWindowCheck(GameForegroundWindow.Unknown, null, "windows_unavailable")
+            } else try { inspectGameForegroundWindow(packageName, windowId, windows) }
+                finally { windows.forEach { it.recycle() } }
+            if (check.window != GameForegroundWindow.Application) {
+                recordWindowCheck(packageName, windowId, check, null)
+                return GameForegroundResult(check.window)
+            }
+            val verifiedPackage = requireNotNull(check.verifiedPackage)
+            val gaming = classifyVerifiedForeground(packageName, verifiedPackage, cached) { actualPackage ->
+                runCatching {
+                    if (declaredGame(actualPackage, ApplicationInfo.CATEGORY_UNDEFINED, 0)) true
+                    else context.packageManager.getApplicationInfo(actualPackage, 0).let { info ->
+                        declaredGame(actualPackage, if (Build.VERSION.SDK_INT >= 26) info.category else ApplicationInfo.CATEGORY_UNDEFINED, info.flags)
+                    }
+                }.getOrNull()
+            }
+            recordWindowCheck(packageName, windowId, check, gaming)
+            return GameForegroundResult(check.window, gaming, verifiedPackage)
+        }
+
+        private fun recordWindowCheck(packageName: String, windowId: Int, check: GameForegroundWindowCheck, gaming: Boolean?) {
+            if (BuildConfig.DEBUG) runCatching {
+                context.getSharedPreferences("game-work-probe", Context.MODE_PRIVATE).edit()
+                    .putString("window_package", packageName)
+                    .putString("verified_package", check.verifiedPackage)
+                    .putInt("requested_window_id", windowId)
+                    .putInt("resolved_window_id", check.resolvedWindowId ?: -1)
+                    .putString("window_check", check.reason)
+                    .putString("classified_game", gaming?.toString() ?: "unknown")
+                    .putLong("window_checked_at", System.currentTimeMillis()).apply()
+            }
         }
 
         fun close() {
