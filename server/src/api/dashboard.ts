@@ -4,6 +4,7 @@ import { createActivityRetentionRouter } from './activityRetention.js';
 import { savingFlags } from '../lib/deviceSaving.js';
 import { withAppNames } from '../lib/appNames.js';
 import { Router } from 'express';
+import { deviceDataReceivedAt } from '../lib/deviceDataReceived.js';
 import type pg from 'pg';
 import { resolveMissingIps } from '../lib/ipgeo.js';
 import { addressResolution, resolveMissingAddresses } from '../lib/geocoder.js';
@@ -427,12 +428,13 @@ export function createDashboardRouter(pool: pg.Pool): Router {
           [q, id, pageSize, (page - 1) * pageSize],
         ),
       ]);
-      const flags = await savingFlags(pool, result.rows.map(row => row.id));
+      const ids = result.rows.map(row => row.id);
+      const [flags, received] = await Promise.all([savingFlags(pool, ids), deviceDataReceivedAt(pool, ids)]);
       res.json({
         total: Number(count.rows[0]?.total ?? 0),
         page,
         page_size: pageSize,
-        users: result.rows.map(row => ({ ...row, save_uploads: flags.get(row.id) !== false })),
+        users: result.rows.map(row => ({ ...row, save_uploads: flags.get(row.id) !== false, last_data_received_at: received.get(row.id) ?? null })),
       });
     } catch (err) {
       next(err);
@@ -476,7 +478,8 @@ export function createDashboardRouter(pool: pg.Pool): Router {
          FROM device WHERE id = $1 ORDER BY last_seen_at DESC`,
         [res.locals.userId],
       );
-      res.json({ devices: result.rows });
+      const received = await deviceDataReceivedAt(pool, result.rows.map(row => row.id));
+      res.json({ devices: result.rows.map(row => ({ ...row, last_data_received_at: received.get(row.id) ?? null })) });
     } catch (err) {
       next(err);
     }

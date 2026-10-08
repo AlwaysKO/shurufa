@@ -59,6 +59,17 @@ export function createMobileChatCaptureRouter(pool: pg.Pool): Router {
         messages,
       );
       if (result.missingAssets.length > 0) {
+        // 旧客户端可能只重试消息；保留真实409，诊断不记录正文、联系人或请求体。
+        console.warn('[chat-missing-assets]', {
+          device_id: res.locals.userId,
+          platform: conversation.platform,
+          message_count: messages.length,
+          inserted: result.inserted,
+          duplicated: result.duplicated,
+          missing_count: result.missingAssets.length,
+          missing_assets: result.missingAssets.slice(0, 50),
+          truncated: result.missingAssets.length > 50,
+        });
         return res.status(409).json({ ok: false, ...result });
       }
       res.json({ ok: true, ...result });

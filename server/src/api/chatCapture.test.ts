@@ -120,12 +120,14 @@ describe('mobile chat capture API', () => {
     expect((await pool.query('SELECT id FROM chat_conversation')).rowCount).toBe(0);
   });
 
-  it('消息引用的截图尚未上传时返回可重试状态', async () => {
-    const missingSha256 = 'c'.repeat(64);
+  it.each([1, 61])('缺少%i张截图时保留409及完整缺失清单，仅记录有界元数据诊断', async count => {
+    const missingHashes = Array.from({ length: count }, (_, i) => i.toString(16).padStart(64, '0'));
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const missingDevice = crypto.randomUUID();
     const response = await request(createApp(pool))
       .post('/api/v1/mobile/chat/messages/batch')
       .send({
-        device_id: crypto.randomUUID(),
+        device_id: missingDevice,
         conversation: {
           platform: 'wechat',
           account_key: 'account',
@@ -142,13 +144,22 @@ describe('mobile chat capture API', () => {
           direction: 'system',
           message_type: 'image',
           captured_at: new Date().toISOString(),
-          asset_sha256: [missingSha256],
+          asset_sha256: missingHashes,
         }],
       });
 
     expect(response.status).toBe(409);
-    expect(response.body).toMatchObject({ ok: false, missingAssets: [missingSha256] });
+    expect(response.body).toMatchObject({ ok: false, missingAssets: missingHashes });
     expect((await pool.query('SELECT id FROM chat_message')).rowCount).toBe(0);
+    expect(warning).toHaveBeenCalledWith('[chat-missing-assets]', expect.objectContaining({
+      device_id: missingDevice, platform: 'wechat', message_count: 1,
+      inserted: 0, duplicated: 0, missing_count: count,
+      missing_assets: missingHashes.slice(0, 50), truncated: count > 50,
+    }));
+    const diagnostic = JSON.stringify(warning.mock.calls);
+    expect(diagnostic).not.toContain('阿明');
+    expect(diagnostic).not.toContain('external_key');
+    expect(diagnostic).not.toContain('sender_key');
   });
 
   it.each(['语音通话中', '视频通话中'])('旧版 %s 通知返回成功并丢弃，不创建待确认会话或要求补图', async text => {

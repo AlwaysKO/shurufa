@@ -2,9 +2,13 @@ import { newDb } from 'pg-mem';
 import type pg from 'pg';
 import request from 'supertest';
 import { authenticatedRequest } from '../lib/dashboardAuthTestHelper.js';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createApp } from '../app.js';
 import { isLoopbackAddress } from '../lib/requestIdentity.js';
+import { deviceDataReceivedAt } from '../lib/deviceDataReceived.js';
+
+// pg-mem 不支持关联 unnest 查询；业务时间 SQL 与八个来源由隔离 PostgreSQL 测试覆盖。
+vi.mock('../lib/deviceDataReceived.js', () => ({ deviceDataReceivedAt: vi.fn(async () => new Map()) }));
 
 let pool: pg.Pool;
 const ids = Array.from({ length: 25 }, (_, index) =>
@@ -12,6 +16,7 @@ const ids = Array.from({ length: 25 }, (_, index) =>
 );
 
 beforeEach(async () => {
+  vi.mocked(deviceDataReceivedAt).mockReset().mockResolvedValue(new Map());
   const database = newDb();
   const adapter = database.adapters.createPg();
   pool = new adapter.Pool();
@@ -45,6 +50,8 @@ describe('dashboard user directory', () => {
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({ total: 25, page: 2, page_size: 10 });
     expect(response.body.users).toHaveLength(10);
+    expect(deviceDataReceivedAt).toHaveBeenCalledWith(pool, response.body.users.map((row: { id: string }) => row.id));
+    expect(response.body.users.every((row: { last_data_received_at: unknown }) => row.last_data_received_at === null)).toBe(true);
   });
 
   it('支持名称、品牌、型号、设备 ID 搜索和精确 ID 查询', async () => {
@@ -68,9 +75,12 @@ describe('dashboard user directory', () => {
   });
 
   it('设备接口只返回当前用户自己的设备', async () => {
+    vi.mocked(deviceDataReceivedAt).mockResolvedValue(new Map([[ids[24], new Date('2026-10-08T01:02:03Z')]]));
     const response = await (await authenticatedRequest(createApp(pool)))
       .get(`/api/v1/dashboard/devices?user_id=${ids[24]}`);
     expect(response.status).toBe(200);
     expect(response.body.devices.map((row: { id: string }) => row.id)).toEqual([ids[24]]);
+    expect(response.body.devices[0].last_data_received_at).toBe('2026-10-08T01:02:03.000Z');
+    expect(deviceDataReceivedAt).toHaveBeenCalledWith(pool, [ids[24]]);
   });
 });

@@ -140,6 +140,7 @@ export interface DeviceRow {
   rom_version: string | null;
   ram_mb: number | null;
   last_seen_at: string;
+  last_data_received_at?: string | null;
 }
 
 export interface UserDirectoryPage {

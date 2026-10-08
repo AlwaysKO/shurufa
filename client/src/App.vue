@@ -178,7 +178,15 @@ async function deleteUser(user: DeviceRow) {
 function subtitle(user: DeviceRow) {
   return user.tags?.trim() || [user.brand, user.model].filter(Boolean).join(' ') || user.id;
 }
-function seenAt(value: string) { return new Date(value).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }); }
+function seenAt(value: string) {
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return '时间未知';
+  return date.toLocaleString('sv-SE', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' });
+}
+function dataReceivedAt(value: string | null | undefined) {
+  if (value === undefined) return '暂未提供';
+  return value === null ? '暂无入库记录' : seenAt(value);
+}
 </script>
 
 <template>
@@ -224,9 +232,10 @@ function seenAt(value: string) { return new Date(value).toLocaleString('zh-CN', 
       <div v-if="directoryOpen" class="directory-mask" :inert="confirmation ? true : undefined" @click.self="closeDirectory">
         <section class="directory-dialog" role="dialog" aria-modal="true" aria-label="选择用户">
           <header class="directory-header">
-            <div><h2>选择用户</h2><p>共 {{ directoryTotal }} 台设备，按最近活跃排序</p></div>
+            <div><h2>选择用户</h2><p>共 {{ directoryTotal }} 台设备，按最近联系服务器时间排序</p></div>
             <button type="button" class="close-button" @click="closeDirectory">×</button>
           </header>
+          <p class="directory-time-note">时间均为北京时间。注册或后台请求也可能更新联系时间，不表示正在使用手机；业务入库包含旧记录补传，按现存记录及回执计算，清理后可能回退，不代表消息或图片已全部同步。</p>
           <form class="directory-search" @submit.prevent="loadDirectory(1)">
             <input v-model="directoryQuery" placeholder="搜索名称、品牌、型号或设备 ID" autofocus />
             <button type="submit" :disabled="directoryLoading">搜索</button>
@@ -248,7 +257,11 @@ function seenAt(value: string) { return new Date(value).toLocaleString('zh-CN', 
               <button type="button" class="user-select" @click="chooseUser(user)">
                 <span class="user-row-avatar">📱</span>
                 <span class="user-row-main"><strong>{{ deviceLabel(user) }}</strong><span>{{ subtitle(user) }}</span><code>{{ user.id }}</code></span>
-                <span class="user-row-meta"><span title="服务器最近成功收到设备注册或上报的时间；不代表正在打字或截图已全部同步">最近活跃 {{ seenAt(user.last_seen_at) }}</span><b v-if="user.id === currentUserId">当前</b></span>
+                <span class="user-row-meta">
+                  <span class="user-row-time"><span>最近联系服务器</span><time>{{ seenAt(user.last_seen_at) }}</time></span>
+                  <span class="user-row-time"><span>最近业务入库</span><time>{{ dataReceivedAt(user.last_data_received_at) }}</time></span>
+                  <b v-if="user.id === currentUserId">当前</b>
+                </span>
               </button>
               <div class="user-actions">
                 <button type="button" role="switch" :aria-checked="user.save_uploads !== false" :aria-label="`${deviceLabel(user)} 保存上报数据`" class="saving-switch" :class="{ off: user.save_uploads === false }" :disabled="!!userAction || editSaving" @click="toggleSaving(user)">
@@ -313,12 +326,13 @@ button, input { font: inherit; }
 .directory-mask { position:fixed; z-index:1000; inset:0; display:grid; place-items:center; padding:24px; background:rgba(20,28,40,.58); backdrop-filter:blur(2px); }
 .directory-dialog { display:flex; flex-direction:column; width:min(720px,100%); max-height:min(760px,calc(100vh - 48px)); overflow:hidden; border-radius:14px; background:#fff; box-shadow:0 24px 80px rgba(0,0,0,.25); }
 .directory-header { display:flex; justify-content:space-between; padding:22px 24px 14px; }.directory-header h2 { font-size:20px; }.directory-header p { margin-top:5px; color:#8a94a3; font-size:12px; }.close-button { width:32px; height:32px; border:0; border-radius:50%; background:#f1f3f7; color:#677080; cursor:pointer; font-size:22px; }
+.directory-time-note { margin:0; padding:0 24px 14px; color:#697386; font-size:12px; line-height:1.6; }.user-row-time { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:2px 8px; }.user-row-time time { white-space:nowrap; font-variant-numeric:tabular-nums; }
 .directory-search { display:flex; gap:8px; padding:0 24px 16px; }.directory-search input { flex:1; min-width:0; padding:10px 12px; border:1px solid #dfe4ea; border-radius:8px; outline:none; }.directory-search input:focus { border-color:#5663ea; box-shadow:0 0 0 3px rgba(86,99,234,.12); }.directory-search button,.directory-footer button,.edit-panel button { padding:9px 16px; border:0; border-radius:7px; background:#4451e8; color:#fff; cursor:pointer; }.directory-search button:disabled { opacity:.55; cursor:not-allowed; }
 .edit-panel { display:grid; grid-template-columns:1fr 1fr auto; gap:8px; margin:0 24px 16px; padding:12px; border:1px solid #dfe3ff; border-radius:9px; background:#f7f8ff; }.edit-panel-title { grid-column:1/-1; display:flex; align-items:baseline; gap:10px; }.edit-panel-title strong { font-size:13px; }.edit-panel-title span { color:#8a94a3; font-size:11px; }.edit-panel input { min-width:0; padding:8px 10px; border:1px solid #dfe4ea; border-radius:7px; }.edit-panel>div:last-child { display:flex; gap:6px; }.edit-panel>div:last-child button:first-child { background:#e5e8ef; color:#596273; }.edit-panel button:disabled { opacity:.55; }.edit-error { grid-column:1/-1; color:#e74c3c; font-size:11px; }
 .directory-state { padding:60px 24px; text-align:center; color:#8a94a3; }.directory-state.error { color:#e74c3c; }.user-list { overflow-y:auto; padding:0 14px; border-block:1px solid #f0f2f5; }.user-row { display:flex; align-items:center; width:100%; border-bottom:1px solid #f3f4f6; background:#fff; color:#2f3542; }.user-row:hover { background:#f7f8ff; }.user-row.selected { background:#f0f2ff; }.user-select { display:flex; align-items:center; gap:12px; min-width:0; flex:1; padding:13px 10px; border:0; background:transparent; color:inherit; text-align:left; cursor:pointer; }.edit-user { margin-right:10px; padding:6px 10px; border:1px solid #dfe3eb; border-radius:6px; background:#fff; color:#657083; cursor:pointer; font-size:11px; }.edit-user:hover { border-color:#4451e8; color:#4451e8; }.user-row-avatar { width:38px; height:38px; background:#eef0ff; }
 .user-row-main { min-width:0; flex:1; display:flex; flex-direction:column; gap:3px; }.user-row-main strong { font-size:14px; }.user-row-main span { color:#697386; font-size:12px; }.user-row-main code { overflow:hidden; color:#a0a7b2; font-size:10px; text-overflow:ellipsis; }.user-row-meta { display:flex; flex-direction:column; align-items:flex-end; gap:6px; color:#a0a7b2; font-size:11px; }.user-row-meta b { padding:2px 7px; border-radius:10px; background:#4451e8; color:#fff; font-size:10px; }
 .directory-footer { display:flex; align-items:center; justify-content:space-between; padding:14px 24px; color:#7f8896; font-size:12px; }.directory-footer div { display:flex; gap:8px; }.directory-footer button { padding:7px 13px; }.directory-footer button:disabled { background:#dfe3eb; cursor:not-allowed; }
-@media(max-width:760px){.sidebar{width:190px}.content{padding:18px}.directory-mask{padding:10px}.user-row-meta{display:none}.edit-panel{grid-template-columns:1fr}.edit-panel-title,.edit-error{grid-column:1}}
+@media(max-width:760px){.sidebar{width:190px}.content{padding:18px}.directory-mask{padding:10px}.user-select{display:grid;grid-template-columns:38px minmax(0,1fr);gap:8px 12px}.user-row-meta{grid-column:1/-1;align-items:flex-start;text-align:left}.user-row-time{justify-content:flex-start}.edit-panel{grid-template-columns:1fr}.edit-panel-title,.edit-error{grid-column:1}}
 .user-actions { display:flex; flex-direction:column; align-items:flex-end; gap:8px; padding:10px; flex-shrink:0; }
 .user-actions .edit-user { margin-right:6px; }
 .saving-switch { display:flex; align-items:center; gap:7px; border:0; background:transparent; font-size:12px; color:#4251bd; cursor:pointer; }
