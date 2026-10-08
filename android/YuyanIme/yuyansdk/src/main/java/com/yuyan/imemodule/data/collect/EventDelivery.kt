@@ -9,6 +9,9 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.MediaType.Companion.toMediaType
@@ -125,7 +128,8 @@ internal class EventDelivery(
                             ?: continue
                     }
                     diagnosticPlatform?.let { runCatching { onChatDelivery(it, "waiting") } }
-                    post(target, path, payload, if (isChat) null else report.id)
+                    post(target, path, payload, if (isChat) null else report.id,
+                        chatReportId = if (report.kind == "chat_messages") report.id else null)
                 } catch (cancelled: CancellationException) { throw cancelled }
                 catch (_: Exception) {
                     ReportingTrace.record(ReportingStage.DELIVERY_ERROR, target == onlineTarget())
@@ -141,7 +145,6 @@ internal class EventDelivery(
                 }
                 else {
                     store.deferReport(target, report.id) // 保留失败项，但给后续正常报告发送机会。
-                    registered.remove(target)
                     reportsOk = false
                 }
             }
@@ -177,7 +180,6 @@ internal class EventDelivery(
             ReportingTrace.record(ReportingStage.DELIVERY_ERROR, target == onlineTarget())
             eventsOk = false
         }
-        if (!eventsOk) registered.remove(target)
         return eventsOk
     }
 
@@ -197,7 +199,7 @@ internal class EventDelivery(
         return pending.take(count)
     }
 
-    private fun post(target: String, path: String, body: String, reportId: String? = null, expectedEvents: Int? = null): Boolean {
+    private fun post(target: String, path: String, body: String, reportId: String? = null, expectedEvents: Int? = null, chatReportId: String? = null): Boolean {
         val stage = when (path) {
             "/api/v1/mobile/device" -> ReportingStage.POST_DEVICE
             "/api/v1/mobile/events/batch" -> ReportingStage.POST_EVENTS
@@ -212,10 +214,21 @@ internal class EventDelivery(
         val call = if (chat && prepareChatCall != null) prepareChatCall.invoke(target, request) ?: return false else http.newCall(request)
         try { return call.execute().use { response ->
             ReportingTrace.record(ReportingStage.HTTP_RESULT, target == onlineTarget(), response.code)
+            if (response.code == 401 || response.code == 403) registered.remove(target)
+            if (response.code == 409 && chatReportId != null) {
+                val source = response.body?.source()
+                // 不截断 JSON 后猜测缺图；超限、畸形或陌生引用全部保留待传。
+                val missing = if (source != null && !source.request(65_537)) missingAssets(source.readUtf8(), body) else emptySet()
+                val restored = store.requeueMissingChatAssets(target, chatReportId, missing)
+                android.util.Log.i("ChatAssetRecovery", "missing_assets requested=${missing.size} recoverable=$restored")
+                return@use false
+            }
             // 避免把反向代理返回的 200 HTML 登录页当成入库成功。
             if (!response.isSuccessful) false else {
                 val result = json.parseToJsonElement(response.body?.string() ?: "")
                 (result.jsonObject["ok"]?.jsonPrimitive?.booleanOrNull == true &&
+                    allowed(if (chat) if (chatReportId != null) "chat_messages" else "chat_asset" else null) &&
+                    (!chat || chatAllowed(target)) &&
                     result.jsonObject["discarded"]?.jsonPrimitive?.booleanOrNull != true &&
                     (expectedEvents == null || result.jsonObject["received"]?.jsonPrimitive?.intOrNull == expectedEvents) &&
                     (reportId == null || result.jsonObject["id"]?.jsonPrimitive?.content == reportId)).also {
@@ -224,4 +237,19 @@ internal class EventDelivery(
             }
         } } finally { if (chat) finishChatCall(call) }
     }
+
+    private fun missingAssets(response: String, request: String): Set<String> = try {
+        val hashes = (json.parseToJsonElement(response) as? JsonObject)?.get("missingAssets") as? JsonArray
+        require(hashes != null && hashes.size in 1..512)
+        val validHash = Regex("[a-fA-F0-9]{64}")
+        val missing = hashes.map {
+            require(it is JsonPrimitive && it.isString && validHash.matches(it.content))
+            it.content
+        }.toSet()
+        val messages = json.parseToJsonElement(request).jsonObject["messages"] as? JsonArray
+        val declared = messages.orEmpty().flatMap { message ->
+            (message.jsonObject["asset_sha256"] as? JsonArray).orEmpty().map { it.jsonPrimitive.content }
+        }.toSet()
+        missing.intersect(declared)
+    } catch (_: Exception) { emptySet() }
 }

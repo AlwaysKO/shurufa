@@ -3,6 +3,7 @@ import { afterEach, expect, it, vi } from '../../server/node_modules/vitest/dist
 import { compileScript, parse } from '@vue/compiler-sfc';
 import ts from 'typescript';
 import * as Vue from 'vue';
+import * as similarScreenshots from '../src/chatSimilarScreenshots';
 
 type Node = {
   tag: string;
@@ -95,6 +96,7 @@ async function mountChatCapture(overrides: Record<string, any> = {}) {
   const module = { exports: {} as { default: Vue.Component } };
   const require = (name: string) => {
     if (name === 'vue') return Vue;
+    if (name === '../chatSimilarScreenshots') return similarScreenshots;
     if (name === '../confirmation') return { useConfirmation: () => async (message: string) => Boolean(await globalThis.window?.confirm?.(message)) };
     if (name === '../api') return { api, currentUserId, scopedAssetUrl: (url: string) => `/scoped${url}` };
     throw new Error(`Unexpected import: ${name}`);
@@ -1106,4 +1108,35 @@ it('普通会话同样提供1/7/30天清理并传递准确的会话范围',async
  for(const days of [1,7,30])expect(view.find(`chat-keep-${days}`)).toBeDefined();
  view.find('chat-keep-1')!.props.onClick();await settle();
  expect(preview).toHaveBeenCalledWith({days:1,include_images:false,platform:'wechat',conversation_id:83,group_name:'测试群'});
+});
+
+const similarShot=(n:number)=>({...screenshot(n),device_id:'phone-a',conversation_id:1,captured_at:new Date(Date.UTC(2026,9,8,10,0,n*10)).toISOString(),assets:[{...screenshot(n).assets[0],width:1080,height:2200,perceptual_hash:'123456789abcdef0'}]});
+it('相似截图默认留首张，展开全部原图和时间，原始总计不变',async()=>{
+ fakeChatStorage();const rows=[similarShot(3),similarShot(2),similarShot(1)];const view=await mountChatCapture({chatMessages:async()=>({total:3,messages:rows})});
+ const toggle=view.find('similar-toggle-message-3:3');expect(toggle).toBeDefined();expect(view.text()).toContain('相似截图，可展开');expect(view.text()).toContain('共 3 张');expect(view.text()).toContain('相似不等于重复');expect(view.text()).toContain('原图全部保留');expect(view.text()).toContain('共 3 项');
+ expect(view.find('open-chat-image-3')).toBeDefined();expect(view.find('open-chat-image-2')).toBeUndefined();
+ toggle!.props.onClick();await settle();for(const n of [1,2,3])expect(view.find(`open-chat-image-${n}`)).toBeDefined();
+ expect(view.all().filter(n=>n.tag==='time').map(n=>n.props.datetime)).toEqual(rows.map(r=>r.captured_at));
+ view.find('open-chat-image-2')!.props.onClick();await settle();expect(view.find('chat-image-preview-image')!.props.src).toBe('/scoped/uploads/chat/2.png');
+});
+it('全选仅选择展开图片，收起移除隐藏选择，单图删除不删除整组',async()=>{
+ fakeChatStorage();vi.stubGlobal('window',{confirm:()=>true});const rows=[similarShot(3),similarShot(2),similarShot(1)];const view=await mountChatCapture({chatMessages:async()=>({total:3,messages:rows})});
+ view.find('chat-select-page')!.props.onClick();await settle();expect(view.find('chat-selection-count')!.text).toContain('已选 1 张');
+ view.find('similar-toggle-message-3:3')!.props.onClick();await settle();view.find('chat-select-page')!.props.onClick();await settle();expect(view.find('chat-selection-count')!.text).toContain('已选 3 张');
+ view.find('similar-toggle-message-3:3')!.props.onClick();await settle();expect(view.find('chat-selection-count')!.text).toContain('已选 1 张');
+ view.find('similar-toggle-message-3:3')!.props.onClick();await settle();view.find('delete-chat-image-2')!.props.onClick();await settle();expect(view.deletedImages).toEqual([['message-2',2]]);
+});
+it('切换页或会话后相似组不继承展开状态',async()=>{
+ fakeChatStorage();const rows=[similarShot(3),similarShot(2)];const view=await mountChatCapture({chatMessages:async()=>({total:21,messages:rows}),chatConversations:async()=>({total:2,conversations:[rememberedChat(1),rememberedChat(2)]})});
+ view.find('similar-toggle-message-3:3')!.props.onClick();await settle();view.find('chat-page-next')!.props.onClick();await settle();expect(view.find('open-chat-image-2')).toBeUndefined();
+ view.find('similar-toggle-message-3:3')!.props.onClick();await settle();view.all().find(n=>n.tag==='button'&&n.children.some(c=>c.text==='会话2'))!.props.onClick();await settle();expect(view.find('open-chat-image-2')).toBeUndefined();
+});
+it('相似组提示横跨图片区，避免与首张图片挤在同一网格行',()=>{
+ const source=readFileSync(new URL('../src/views/ChatCapture.vue',import.meta.url),'utf8');expect(source).toMatch(/\.similar-screenshots\s*\{[^}]*grid-column:\s*1\s*\/\s*-1/);
+});
+it('image消息带不同正文不被相似截图折叠隐藏',async()=>{
+ fakeChatStorage();const rows=[similarShot(3),{...similarShot(2),text:'明天下午三点见'},similarShot(1)];
+ const view=await mountChatCapture({chatMessages:async()=>({total:3,messages:rows})});
+ expect(view.text()).toContain('明天下午三点见');expect(view.find('similar-toggle-message-3:3')).toBeUndefined();
+ for(const n of [1,2,3])expect(view.find(`open-chat-image-${n}`)).toBeDefined();
 });

@@ -154,7 +154,7 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
       const [totalResult, rowsResult] = await Promise.all([
         pool.query<{ count: string }>(`${prefix}SELECT COUNT(*) AS count FROM ${from}
           WHERE user_id=$1 AND ${scopeFilter} AND ${visible}`, scope.params),
-        pool.query(`${prefix}SELECT id, conversation_id, platform, direction, message_type, sender_key, sender_name,
+        pool.query(`${prefix}SELECT id, device_id, conversation_id, platform, direction, message_type, sender_key, sender_name,
           text, displayed_time, occurred_at, captured_at, sequence_hint, metadata${gallery ? ',gallery_asset_id' : ''}
           FROM ${from} WHERE user_id=$1 AND ${scopeFilter} AND ${visible} ORDER BY captured_at DESC,id DESC
           ${gallery ? ',gallery_position ASC,gallery_asset_id ASC' : ''}
@@ -166,7 +166,7 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
       if (messageIds.length > 0) {
         const placeholders = messageIds.map((_, index) => `$${index + 1}`).join(', ');
         const assets = await pool.query(
-          `SELECT ma.message_id, ma.role, ma.position, a.id, a.sha256,
+          `SELECT ma.message_id, ma.role, ma.position, a.id, a.sha256, a.perceptual_hash,
                   a.mime_type, a.storage_path, a.width, a.height
            FROM chat_message_asset ma
            JOIN media_asset a ON a.id = ma.asset_id
@@ -180,6 +180,7 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
           items.push({
             id: Number(asset.id),
             sha256: asset.sha256,
+            perceptual_hash: asset.perceptual_hash,
             mime_type: asset.mime_type,
             width: asset.width,
             height: asset.height,

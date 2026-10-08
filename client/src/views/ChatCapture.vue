@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useConfirmation } from '../confirmation';
+import { groupSimilarScreenshots, type ScreenshotGroup } from '../chatSimilarScreenshots';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import {
   api, currentUserId,
@@ -127,8 +128,9 @@ let previousFocus: HTMLElement | null = null;
 let swipeStart: { id: number; x: number; y: number } | null = null;
 const previewScope = computed(() => JSON.stringify([currentUserId.value, platform.value, selected.value?.id, selected.value?.group_name]));
 watch(previewScope, () => { cleanupStatus.value = ''; cleanupImages.value = false; }, { flush: 'sync' });
+const expandedSimilarGroups = ref(new Set<string>());
 const selectionContext = computed(() => JSON.stringify([previewScope.value, page.value, messageType.value]));
-watch(selectionContext, () => { clearImageSelection(); selectedPendingMessageIds.value = []; closeImagePreview(); }, { flush: 'sync' });
+watch(selectionContext, () => { expandedSimilarGroups.value = new Set(); clearImageSelection(); selectedPendingMessageIds.value = []; closeImagePreview(); }, { flush: 'sync' });
 
 const platformNames = { wechat: '微信', qq: 'QQ', douyin: '抖音' } as const;
 const directionNames = { incoming: '收到', outgoing: '发送', system: '系统' } as const;
@@ -143,6 +145,21 @@ const visibleMessages = computed(() => messageType.value === 'all'
   ? messages.value
   : messages.value.filter((message) => message.message_type === messageType.value));
 
+const visibleMessageGroups = computed(() => groupSimilarScreenshots(messages.value)
+  .filter(group => messageType.value === 'all' || group.messages[0].message_type === messageType.value));
+function displayedGroupMessages(group: ScreenshotGroup) {
+  return expandedSimilarGroups.value.has(group.key) ? group.messages : group.messages.slice(0, 1);
+}
+const displayedMessages = computed(() => visibleMessageGroups.value.flatMap(displayedGroupMessages));
+watch(messages, () => { expandedSimilarGroups.value = new Set(); }, { flush: 'sync' });
+function toggleSimilarGroup(key: string) {
+  const expanded = new Set(expandedSimilarGroups.value);
+  if (expanded.has(key)) expanded.delete(key); else expanded.add(key);
+  expandedSimilarGroups.value = expanded;
+  const remaining = new Set(visibleImages.value.map(image => imageKey(image.message_id, image.asset_id)));
+  selectedImageKeys.value = selectedImageKeys.value.filter(key => remaining.has(key));
+}
+
 const imageKey = (messageId: string, assetId: number) => `${messageId}:${assetId}`;
 const isImage = (asset: ChatMessageAsset) => asset.mime_type.startsWith('image/');
 const isNonImageMessage = (message: ChatMessageRow) => message.message_type !== 'image' && !message.assets.some(isImage);
@@ -155,7 +172,7 @@ function selectPagePendingMessages() {
 }
 const visibleImages = computed(() => {
   const seen = new Set<string>();
-  return visibleMessages.value.flatMap(message => message.assets.filter(isImage).map(asset => ({
+  return displayedMessages.value.flatMap(message => message.assets.filter(isImage).map(asset => ({
     message_id: message.id, asset_id: asset.id,
   }))).filter(image => {
     const key = imageKey(image.message_id, image.asset_id);
@@ -843,9 +860,9 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
         <button class="delete-button" data-testid="pending-delete-selected" :disabled="loading || mutationBusy || !selectedPendingMessages.length" @click="deleteSelectedPendingMessages">{{ deletingPendingMessages ? '删除中…' : '删除选中非图片记录' }}</button>
       </div>
       <div class="image-selection-toolbar">
-        <button data-testid="chat-select-page" :disabled="loading || mutationBusy || !visibleImages.length" @click="selectPageImages">全选本页</button>
+        <button data-testid="chat-select-page" :disabled="loading || mutationBusy || !visibleImages.length" @click="selectPageImages">全选当前展开图片</button>
         <button data-testid="chat-clear-selection" :disabled="mutationBusy || !selectedImageKeys.length" @click="clearImageSelection">全不选</button>
-        <span data-testid="chat-selection-count">已选 {{ selectedImages.length }} 张（仅本页筛选结果）</span>
+        <span data-testid="chat-selection-count">已选 {{ selectedImages.length }} 张（仅本页已展开图片）</span>
         <button class="delete-button" data-testid="chat-delete-selected" :disabled="loading || mutationBusy || !selectedImages.length" @click="deleteSelectedImages">{{ bulkDeleting ? '删除中…' : '删除选中图片' }}</button>
       </div>
       <p v-if="deleteNotice" class="delete-notice" role="status">{{ deleteNotice }}</p>
@@ -856,8 +873,13 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
       <p v-if="loading" class="empty">加载中…</p>
       <p v-else-if="!messageError && visibleMessages.length === 0" class="empty">暂无消息</p>
       <div v-else-if="!messageError" class="timeline" data-testid="chat-gallery">
+        <template v-for="group in visibleMessageGroups" :key="group.key">
+          <div v-if="group.messages.length > 1" class="similar-screenshots">
+            <button type="button" :data-testid="`similar-toggle-${group.key}`" :aria-expanded="expandedSimilarGroups.has(group.key)" :disabled="loading || mutationBusy" @click="toggleSimilarGroup(group.key)">{{ expandedSimilarGroups.has(group.key) ? '收起相似截图' : '相似截图，可展开' }}（共 {{ group.messages.length }} 张）</button>
+            <span>相似不等于重复，原图全部保留。{{ expandedSimilarGroups.has(group.key) ? '已展开全部图片，可逐张查看和选择。' : '当前显示首张，展开后可逐张查看和选择。' }}</span>
+          </div>
         <article
-          v-for="message in visibleMessages"
+          v-for="message in displayedGroupMessages(group)"
           :key="`${message.id}:${message.assets[0]?.id ?? 'text'}`"
           class="message"
           :class="[message.direction, { 'has-media': message.assets.length > 0 }]"
@@ -913,6 +935,7 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
             </div>
           </div>
         </article>
+        </template>
       </div>
       <nav v-if="selected" class="capture-pager" aria-label="聊天消息分页">
         <span>共 {{ total }} 项 · 每页 {{ pageSize }} 项（图片逐张分页）</span>
@@ -973,6 +996,7 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
 .merge-panel form { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
 .merge-panel input { min-width: 0; flex: 1; padding: 6px; }
 .merge-target { justify-content: flex-start; display: block; text-align: left; width: 100%; margin: 6px 0; padding: 8px; overflow-wrap: anywhere; }
+.similar-screenshots { grid-column:1/-1; display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:10px; background:#f3f5ff; border-radius:8px; font-size:12px; color:#657083; }.similar-screenshots button { border:1px solid #c8cff3; border-radius:6px; padding:7px 10px; background:white; color:#4451bb; cursor:pointer; }.similar-screenshots button:disabled { opacity:.5; cursor:default; }
 .image-selection-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0; color: #657083; font-size: 12px; }
 .image-selection-toolbar button { padding: 6px 10px; border: 1px solid #dfe4ea; border-radius: 6px; background: white; cursor: pointer; }
 .image-select { display: flex; gap: 6px; align-items: center; font-size: 12px; cursor: pointer; }

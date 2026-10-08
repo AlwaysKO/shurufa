@@ -477,6 +477,28 @@ object DataCollector {
         return enqueueReport(context, kind, payload)
     }
 
+    fun enqueueChatBatch(context: Context, reports: Sequence<Pair<String, String>>): Boolean {
+        if (!CollectionConsent.enabled(context) || !ImageUploadRuntime.isBackgroundWorkAllowed()) return false
+        return try {
+            val pending = reports.map { (path, body) ->
+                check(CollectionConsent.enabled(context) && ImageUploadRuntime.isBackgroundWorkAllowed())
+                val kind = when (path) {
+                    "/api/v1/mobile/chat/assets" -> "chat_asset"
+                    "/api/v1/mobile/chat/messages/batch" -> "chat_messages"
+                    else -> error("Unsupported chat handoff")
+                }
+                val payload = if (kind == "chat_messages") filterChatReportPayload(body) else body
+                // 跨进程重试同一消息交接时复用任务，避免 Room 删除前崩溃复制整批。
+                PendingReport(UUID.nameUUIDFromBytes((kind + payload).toByteArray(Charsets.UTF_8)).toString(), kind, payload)
+            }
+            ServerConfig.init(context)
+            if (!CollectionConsent.enabled(context) || !ImageUploadRuntime.isBackgroundWorkAllowed()) return false
+            store(context).enqueueChatBatch(pending, listOf(ServerConfig.baseUrl))
+            requestSync()
+            true
+        } catch (_: Exception) { Log.e(TAG, "聊天批次交接失败，保留原数据重试"); false }
+    }
+
     @Synchronized fun requestSync(wifiRestored: Boolean = false) {
         flushSignal.wake()
         if (wakeJob?.isActive == true) {

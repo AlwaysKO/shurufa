@@ -837,8 +837,11 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                     if (!isCurrentScreenshotWindow(windowId, identityGeneration, captureToken)) return@withLock
                     CaptureTrace.record(CaptureStage.ASSET_READY, windowId, identityGeneration)
                     val preferences = getSharedPreferences(FALLBACK_PREFERENCES, Context.MODE_PRIVATE)
+                    // 明确发送后的帧不能仅凭历史正文认定为旧消息实例。
+                    if (sentMessage) CaptureTrace.record(CaptureStage.CONTENT_DECISION, windowId, identityGeneration,
+                        reason = com.yuyan.imemodule.data.capture.ScreenshotContentReason.SEND_CONTEXT)
                     // 列表候选使用原始像素指纹；有损编码相同不能证明细小正文变化不存在。
-                    if (contentInput.sha256 == null && contentInput.wechatListSha256 == null && screenshotUpdates.hasSavedContent(screenshotScope) &&
+                    if (!sentMessage && contentInput.sha256 == null && contentInput.wechatListSha256 == null && screenshotUpdates.hasSavedContent(screenshotScope) &&
                         preferences.getString(LAST_EMPTY_TREE_SCREENSHOT_SHA, null) == asset.sha256 &&
                         isReadableScreenshotTitleStatus(preferences.getString("last_title_identity_status", null))) {
                         CaptureTrace.record(CaptureStage.DUPLICATE, windowId, identityGeneration)
@@ -860,7 +863,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                         if (screenshotIdentityGeneration.get() == identityGeneration) screenshotUpdates.observeTitle(windowId, identityGeneration, "typing")
                         return@withLock
                     }
-                    if (isReadableScreenshotTitleStatus(firstIdentity.status) && screenshotUpdates.isSavedContent(
+                    if (!sentMessage && isReadableScreenshotTitleStatus(firstIdentity.status) && screenshotUpdates.isSavedContent(
                             screenshotScope, firstIdentity.externalKey, firstIdentity.exactTitleHash, contentInput.sha256)) {
                         CaptureTrace.record(CaptureStage.CONTENT_DUPLICATE, windowId, identityGeneration)
                         return@withLock
@@ -892,6 +895,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                                     "conversation_identity_status" to identity.status,
                                     "conversation_identity_observed_title" to identity.observedTitle.orEmpty(),
                                     "conversation_identity_previous_key" to identity.previousKey.orEmpty(),
+                                    "screenshot_body_reason" to contentInput.reason.wireName,
                                 ) + listMetadata,
                             )),
                             pendingAssetsByMessage = mapOf(0 to asset),
@@ -1056,6 +1060,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                                 "notification_key" to request.notificationKey,
                                 "source_package" to request.packageName,
                                 "identity_unavailable" to listMetadata.isEmpty().toString(),
+                                "screenshot_body_reason" to contentInput.reason.wireName,
                             ) + listMetadata,
                         ),
                     ),

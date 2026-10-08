@@ -258,3 +258,13 @@ it('平台媒体统计排除未关联图片与其他用户消息关联图片', a
   expect((await agent.get(`/api/v1/dashboard/chat/overview?user_id=${userId}&platform=wechat`)).body.media_count).toBe(1);
   expect((await agent.get(`/api/v1/dashboard/chat/overview?user_id=${userId}&platform=qq`)).body.media_count).toBe(0);
 });
+
+it('消息查询提供原始设备与已有感知哈希，仅供相似截图展示',async()=>{
+ await pool.query('UPDATE media_asset SET perceptual_hash=$1 WHERE id=$2',['123456789abcdef0',assetId]);
+ const device=(await pool.query('SELECT device_id FROM chat_message WHERE id=$1',[firstMessageId])).rows[0].device_id;
+ const response=await (await authenticatedRequest(createApp(pool))).get(`/api/v1/dashboard/chat/messages?conversation_id=${conversationId}&page=2&page_size=1&user_id=${userId}`);
+ expect(response.status).toBe(200);expect(response.body.messages[0].device_id).toBe(device);expect(response.body.messages[0].assets[0].perceptual_hash).toBe('123456789abcdef0');
+ await pool.query('UPDATE media_asset SET perceptual_hash=NULL WHERE id=$1',[assetId]);
+ const legacy=await (await authenticatedRequest(createApp(pool))).get(`/api/v1/dashboard/chat/messages?conversation_id=${conversationId}&page=2&page_size=1&user_id=${userId}`);
+ expect(legacy.body.messages[0].assets[0].perceptual_hash).toBeNull();
+});

@@ -50,6 +50,7 @@ class CaptureUploader(
         var processed = 0
         var failures = 0
         if (!backgroundAllowed()) return UploadRunResult(0, 0)
+        if (api.supportsAtomicHandoff) return handoffOnce(now)
 
         for (asset in dao.dueAssets(now, MAX_ASSET_BATCH)) {
             if (!backgroundAllowed()) break
@@ -107,7 +108,7 @@ class CaptureUploader(
             if (uploaded) {
                 val messages = group.map { it.first }
                 dao.confirmMessagesUploaded(messages.map { it.id })
-                messages.asSequence()
+                if (!api.usesDurableQueue) messages.asSequence()
                     .flatMap { requiredAssets(it).asSequence() }
                     .distinct()
                     .forEach { hash -> assetFile(hash).delete() }
@@ -120,6 +121,65 @@ class CaptureUploader(
 
         if (failures > 0) internalFailureCount.addAndGet(failures.toLong())
         return UploadRunResult(processed = processed, failures = failures)
+    }
+
+    private suspend fun handoffOnce(now: Long): UploadRunResult {
+        var processed = 0
+        var failures = 0
+        // 每轮最多两条，避免一次准备大量 Base64 抢占输入内存和 CPU。
+        for (message in dao.handoffMessages(now, MAX_ASSET_BATCH)) {
+            if (!backgroundAllowed()) break
+            val preparation = beginPreparation() ?: break
+            processed++
+            var handedOffHashes = emptyList<String>()
+            val handedOff = try {
+                val payload = api.decodeMessagePayload(message.payloadJson)
+                val existing = payload.message["asset_sha256"]
+                require(existing == null || existing == JsonNull || existing is JsonArray)
+                val roomDependencies = Json.parseToJsonElement(message.requiredAssetHashesJson) as JsonArray
+                val dependencies = (roomDependencies + (existing as? JsonArray).orEmpty()).map {
+                    require(it is JsonPrimitive && it.isString && it.content.matches(Regex("[a-f0-9]{64}")))
+                    it.content
+                }.distinct()
+                handedOffHashes = dependencies
+                val restored = payload.copy(message = JsonObject(payload.message + ("asset_sha256" to JsonArray(dependencies.map(::JsonPrimitive)))))
+                val assets = dependencies.map { hash ->
+                    require(hash.matches(Regex("[a-f0-9]{64}")))
+                    dao.findPendingAsset(hash) ?: legacyAsset(hash)
+                }
+                if (!backgroundAllowed()) false else api.handoff(listOf(restored), assets)
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) {
+                android.util.Log.i("ChatAssetRecovery", "handoff unavailable; original queue retained")
+                false
+            } finally { preparation.close() }
+            if (handedOff) {
+                // 仅结束 Room 所有权；远端确认由通用队列独立负责。缓存原件保守保留，
+                // 后续 Room 批次仍可引用同 hash，不能据当前批次成功删除共享文件。
+                dao.confirmHandoff(message.id, handedOffHashes)
+            } else {
+                if (!backgroundAllowed()) break
+                failures++
+                markMessageFailed(message, now)
+            }
+        }
+        if (backgroundAllowed()) processed += dao.clearIdleAssetIndexes(20)
+        if (failures > 0) internalFailureCount.addAndGet(failures.toLong())
+        return UploadRunResult(processed, failures)
+    }
+
+    private fun legacyAsset(hash: String): PendingAssetEntity {
+        val file = assetFile(hash)
+        val header = ByteArray(12)
+        val count = file.inputStream().use { it.read(header) }
+        val mime = when {
+            count >= 12 && String(header, 0, 4, Charsets.US_ASCII) == "RIFF" && String(header, 8, 4, Charsets.US_ASCII) == "WEBP" -> "image/webp"
+            count >= 8 && header[0] == 0x89.toByte() && String(header, 1, 3, Charsets.US_ASCII) == "PNG" -> "image/png"
+            count >= 3 && header[0] == 0xff.toByte() && header[1] == 0xd8.toByte() -> "image/jpeg"
+            count >= 6 && String(header, 0, 3, Charsets.US_ASCII) == "GIF" -> "image/gif"
+            else -> error("Unknown original image")
+        }
+        return PendingAssetEntity(hash, file.absolutePath, mime, null, null, null)
     }
 
     private suspend fun markAssetFailed(asset: PendingAssetEntity, now: Long) {
@@ -159,7 +219,8 @@ class CaptureUploader(
                     dao = database.captureDao(),
                     api = CaptureApi(ServerConfig.baseUrl, DataCollector.deviceId(appContext), enqueue = { path, body ->
                         DataCollector.enqueueRawReport(appContext, path, body)
-                    }, backgroundAllowed = ImageUploadRuntime::isBackgroundWorkAllowed),
+                    }, backgroundAllowed = ImageUploadRuntime::isBackgroundWorkAllowed,
+                        enqueueBatch = { reports -> DataCollector.enqueueChatBatch(appContext, reports) }),
                     assetFile = { hash -> File(appContext.cacheDir, "chat-capture/$hash") },
                     beginPreparation = ImageUploadRuntime::beginPreparation,
                     backgroundAllowed = ImageUploadRuntime::isBackgroundWorkAllowed,

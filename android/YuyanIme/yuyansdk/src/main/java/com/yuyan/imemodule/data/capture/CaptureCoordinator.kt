@@ -89,6 +89,7 @@ class CaptureCoordinator(
     private var identityTracker: ConversationTitleStabilizer? = null
     private val unresolvedFrames = linkedMapOf<String, ScreenshotConversationIdentity>()
     private val screenshotContents = RecentScreenshotContents(clock)
+    private var contentHistoryRevision = 0L
 
     fun resetConversationIdentity() = synchronized(identityLock) {
         identityGeneration++
@@ -96,6 +97,7 @@ class CaptureCoordinator(
         identityTracker = null
         unresolvedFrames.clear()
         screenshotContents.clear()
+        contentHistoryRevision++
     }
 
     suspend fun capture(packageName: String, snapshot: UiNodeSnapshot, windowId: Int? = null): Boolean {
@@ -194,7 +196,8 @@ class CaptureCoordinator(
                 )) }
             }
             rawMessages = rawMessages.mapIndexed { index, message ->
-                message.copy(metadata = message.metadata + wechatListMetadata(knownList, listInputs[index]?.wechatListSha256))
+                message.copy(metadata = message.metadata + wechatListMetadata(knownList, listInputs[index]?.wechatListSha256) +
+                    listInputs[index]?.let { mapOf("screenshot_body_reason" to it.reason.wireName) }.orEmpty())
             }
             if (captureGeneration() == captureToken) onViewportParsed(result.viewport.copy(conversation = conversation, messages = rawMessages))
             val contents = if (screenshotWithTitle && conversation.identityConfidence >= 0.8 &&
@@ -258,7 +261,8 @@ class CaptureCoordinator(
             !isPendingNotification(conversation, rawMessages) &&
             !isPendingNotificationScreenshot(conversation, rawMessages, capturedAssets)) return CapturePersistResult.FAILED
         val conversationKey = conversation.stableKeyOrNull() ?: return CapturePersistResult.FAILED
-        val contentGeneration = synchronized(identityLock) { identityGeneration }
+        val (contentGeneration, startingHistoryRevision) = synchronized(identityLock) { identityGeneration to contentHistoryRevision }
+        var historyRevision = startingHistoryRevision
         var insertedAny = false
         var persistableAny = false
         for ((index, rawMessage) in rawMessages.withIndex()) {
@@ -304,14 +308,39 @@ class CaptureCoordinator(
                 pixelHash != null -> fingerprintMessage.copy(assetSha256 = fingerprintMessage.assetSha256 + "screenshot-pixels-v1:$pixelHash")
                 else -> fingerprintMessage
             }
-            val fingerprint = messageFingerprint(fingerprintInput) ?: continue
+            val ordinaryFingerprint = messageFingerprint(fingerprintInput) ?: continue
+            val sendEventId = attempt?.sendEventId?.takeIf {
+                asset != null && listHash == null && isConfirmedScreenshot(conversation, message) &&
+                    message.metadata["conversation_identity_previous_key"].isNullOrBlank()
+            }
+            val fingerprint = if (sendEventId == null) ordinaryFingerprint else
+                sha256("$ordinaryFingerprint|send-event:$sendEventId".toByteArray(Charsets.UTF_8))
+            if (sendEventId != null) synchronized(identityLock) {
+                if (identityGeneration == contentGeneration && captureGeneration() == captureToken &&
+                    attempt?.claimSendHistoryReset(conversationKey) == true) {
+                    screenshotContents.clearIdentity(conversationKey)
+                    contentHistoryRevision++
+                    historyRevision = contentHistoryRevision
+                }
+            }
             persistableAny = true
             val content = screenshotContentByMessage[index]?.takeIf { asset != null && listHash == null }
-            if (content != null && synchronized(identityLock) {
-                    identityGeneration == contentGeneration && captureGeneration() == captureToken && screenshotContents.contains(content)
-                }) continue
+            val contentReason = content?.let {
+                synchronized(identityLock) {
+                    when {
+                        identityGeneration != contentGeneration || captureGeneration() != captureToken -> ScreenshotContentReason.SCOPE_CHANGED
+                        attempt?.allowsSettledSendFrame == true -> ScreenshotContentReason.SEND_CONTEXT
+                        else -> screenshotContents.matchReason(content)
+                    }
+                }
+            }
+            if (contentReason != null) CaptureTrace.record(CaptureStage.CONTENT_DECISION, layer = CaptureLayer.COORDINATOR, reason = contentReason)
+            if (contentReason == ScreenshotContentReason.SAME_CONTENT) continue
             val capturedAt = attempt?.capturedAtMillis ?: clock()
-            val pending = pendingMessage(targetConversation, message, fingerprint, capturedAt, contentFingerprint(fingerprintInput))
+            val diagnosedMessage = contentReason?.let {
+                message.copy(metadata = message.metadata + ("screenshot_content_reason" to it.wireName))
+            } ?: message
+            val pending = pendingMessage(targetConversation, diagnosedMessage, fingerprint, capturedAt, contentFingerprint(fingerprintInput))
             if (store.enqueueIfNew(
                     SeenMessageEntity(fingerprint, capturedAt),
                     pending,
@@ -321,8 +350,9 @@ class CaptureCoordinator(
                 insertedAny = true
                 // 通知待确认帧可查询已确认历史，但不能把占位来源当成可信归属写回缓存。
                 synchronized(identityLock) {
+                    // 发送前已在入队的帧可以完成保存，但不能在清理后重新播种旧历史。
                     content?.takeIf { identityGeneration == contentGeneration && captureGeneration() == captureToken &&
-                        it.identity == conversationKey && conversation.identityConfidence >= 0.8 &&
+                        contentHistoryRevision == historyRevision && it.identity == conversationKey && conversation.identityConfidence >= 0.8 &&
                         message.metadata["conversation_identity_status"] != "pending" &&
                         message.metadata["conversation_identity_previous_key"].isNullOrBlank()
                     }?.let(screenshotContents::record)

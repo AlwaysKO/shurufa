@@ -37,6 +37,22 @@ import java.util.concurrent.atomic.AtomicLong
 @Config(sdk = [30], qualifiers = "mdpi", shadows = [WechatListCaptureTest.ServiceShadow::class])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class WechatPromptCaptureTest {
+    @Test fun screenshotCarriesFixedBodyReasonWithoutChangingItsFingerprint() = runBlocking {
+        Harness().use { h ->
+            h.request(afterSend = false)
+            h.until { h.pending.size == 1 && h.promptJob()?.isActive != true }
+            val first = h.pending.single()
+            val metadata = org.json.JSONObject(first.payloadJson).getJSONObject("message").getJSONObject("metadata")
+            assertEquals("body_boundary_unverified", metadata.optString("screenshot_body_reason"))
+            assertTrue(com.yuyan.imemodule.data.capture.ScreenshotContentReason.entries.any {
+                it.wireName == metadata.optString("screenshot_body_reason")
+            })
+            h.request(afterSend = false)
+            h.until { h.pending.size == 2 && h.promptJob()?.isActive != true }
+            assertEquals(first.fingerprint, h.pending.last().fingerprint)
+        }
+    }
+
     @Test fun failedFastSendGetsOneOrdinaryCaptureAfterInputStops() = runBlocking {
         Harness().use { h ->
             h.policy().confirm(h.windowId, h.generation())

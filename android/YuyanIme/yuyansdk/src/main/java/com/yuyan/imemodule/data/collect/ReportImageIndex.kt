@@ -11,9 +11,13 @@ internal object ReportImageIndex {
         db.execSQL("CREATE TABLE IF NOT EXISTS report_image_meta (report_id TEXT PRIMARY KEY NOT NULL, asset_sha256 TEXT, payload_bytes INTEGER NOT NULL, dependencies_valid INTEGER NOT NULL)")
         db.execSQL("CREATE INDEX IF NOT EXISTS report_image_hash ON report_image_meta(asset_sha256)")
         db.execSQL("CREATE TABLE IF NOT EXISTS report_image_dependency (report_id TEXT NOT NULL, sha256 TEXT NOT NULL, PRIMARY KEY(report_id,sha256))")
+        db.execSQL("CREATE INDEX IF NOT EXISTS report_image_dependency_hash ON report_image_dependency(sha256)")
+        db.execSQL("CREATE TABLE IF NOT EXISTS report_image_target (report_id TEXT NOT NULL, target TEXT NOT NULL, PRIMARY KEY(report_id,target))")
+        db.execSQL("DROP TRIGGER IF EXISTS report_image_cleanup")
         db.execSQL("""CREATE TRIGGER IF NOT EXISTS report_image_cleanup AFTER DELETE ON pending_report BEGIN
             DELETE FROM report_image_meta WHERE report_id=OLD.id;
             DELETE FROM report_image_dependency WHERE report_id=OLD.id;
+            DELETE FROM report_image_target WHERE report_id=OLD.id;
             END""")
     }
 
@@ -33,6 +37,7 @@ internal object ReportImageIndex {
         dependencies.orEmpty().forEach { sha ->
             db.execSQL("INSERT OR IGNORE INTO report_image_dependency(report_id,sha256) VALUES(?,?)", arrayOf(id, sha))
         }
+        if (kind == "chat_asset") db.execSQL("INSERT OR IGNORE INTO report_image_target SELECT report_id,target FROM report_target WHERE report_id=?", arrayOf(id))
     }
 
     /** 一次最多索引 64 行。图只读首字段；大正文仍由调用方分片读取。 */

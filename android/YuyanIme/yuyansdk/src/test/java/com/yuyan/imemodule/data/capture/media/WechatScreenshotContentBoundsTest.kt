@@ -4,6 +4,9 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import com.yuyan.imemodule.data.capture.ScreenshotContentReason
+import com.yuyan.imemodule.data.capture.RecentScreenshotContents
+import com.yuyan.imemodule.data.capture.ScreenshotContentEvidence
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -34,6 +37,7 @@ class WechatScreenshotContentBoundsTest {
                 input.captureFrom(bitmap, density)
                 val noBar = input.blocks
                 assertNotNull(noBar)
+                assertEquals(ScreenshotContentReason.READY, input.reason)
                 assertEquals(bitmap.width - kotlin.math.ceil(5 * density).toInt(), noBar!!.width)
                 val fullHash = input.sha256
                 val canvas = Canvas(bitmap).apply { scale(density, density) }
@@ -63,6 +67,7 @@ class WechatScreenshotContentBoundsTest {
                 }
                 val input = input(); input.captureFrom(bitmap)
                 assertNull(kind, input.blocks)
+                assertEquals(kind, ScreenshotContentReason.SCROLLBAR_UNVERIFIED, input.reason)
                 assertNotNull(input.sha256)
             } finally { bitmap.recycle() }
         }
@@ -75,9 +80,11 @@ class WechatScreenshotContentBoundsTest {
             assertEquals(360, generic.blocks!!.width)
             val adapted = input(); adapted.captureFrom(bitmap, bodyBoundaryVerified = false)
             assertNull(adapted.blocks)
+            assertEquals(ScreenshotContentReason.BODY_BOUNDARY_UNVERIFIED, adapted.reason)
             for (density in listOf(0f, Float.NaN)) {
                 adapted.captureFrom(bitmap, density)
                 assertNull(adapted.blocks)
+                assertEquals(ScreenshotContentReason.INVALID_BOUNDS, adapted.reason)
             }
         } finally { bitmap.recycle() }
     }
@@ -136,6 +143,123 @@ class WechatScreenshotContentBoundsTest {
         } finally { bitmap.recycle() }
     }
 
+    @Test fun verifiedHonorSizedDarkBodyWithBottomReachingBarKeepsTheSameBlocks() {
+        val bitmap = Bitmap.createBitmap(1200, 1487, Bitmap.Config.ARGB_8888)
+        try {
+            bitmap.eraseColor(Color.rgb(17, 17, 17))
+            val canvas = Canvas(bitmap)
+            canvas.drawRect(36f, 304f, 465f, 424f, Paint().apply { color = Color.rgb(45, 45, 45) })
+            canvas.drawRect(880f, 1330f, 1164f, 1450f, Paint().apply { color = Color.rgb(50, 180, 110) })
+            canvas.drawRect(0f, 1486f, 1200f, 1487f, Paint().apply { color = Color.rgb(40, 40, 40) })
+            val input = ScreenshotContentInput(182, detectBlocks = true, detectWechatBody = true)
+            input.captureFrom(bitmap, 3.25f)
+            val original = input.blocks!!
+            canvas.drawRect(1188f, 656f, 1200f, 1486f, Paint().apply { color = Color.rgb(104, 104, 104) })
+            input.captureFrom(bitmap, 3.25f)
+            assertEquals(ScreenshotContentReason.READY, input.reason)
+            assertEquals(original.hashes, input.blocks!!.hashes)
+            assertArrayEquals(original.rowHashes, input.blocks!!.rowHashes)
+            // 已验证全宽分隔线上任何非均匀像素仍拒绝，不能把压缩噪声假定为原始截图。
+            bitmap.setPixel(1199, 1486, Color.rgb(38, 38, 38))
+            input.captureFrom(bitmap, 3.25f)
+            assertNull(input.blocks)
+            assertEquals(ScreenshotContentReason.BODY_BOUNDARY_UNVERIFIED, input.reason)
+        } finally { bitmap.recycle() }
+    }
+
+    private fun shadowedTitleBody(shadowOffset: Int = 1, shade: Int = Color.rgb(16, 16, 16)): Bitmap =
+        Bitmap.createBitmap(1200, 1487, Bitmap.Config.ARGB_8888).apply {
+            eraseColor(Color.rgb(17, 17, 17))
+            val canvas = Canvas(this)
+            val ink = Paint().apply { color = Color.rgb(70, 70, 70) }
+            canvas.drawRect(100f, 143f, 220f, 170f, ink)
+            canvas.drawRect(100f, 240f, 450f, 300f, ink)
+            canvas.drawRect(600f, 400f, 1000f, 460f, ink)
+            val y = 143 + shadowOffset
+            for (x in 0 until width) setPixel(x, y, if (x in 100 until 220 && y < 170) ink.color else shade)
+        }
+
+    @Test fun verifiedFirstDpNeutralShadowRetainsEveryTextPixelAndEveryRow() {
+        for (offset in listOf(0, 1, 3)) {
+            val bitmap = shadowedTitleBody(shadowOffset = offset)
+            try {
+                val input = ScreenshotContentInput(143, detectBlocks = true, detectWechatBody = true)
+                input.captureFrom(bitmap, 3.25f)
+                assertEquals("首部第 $offset 行", ScreenshotContentReason.READY, input.reason)
+                val original = requireNotNull(input.blocks)
+                assertEquals(1487 - 143, original.height)
+                assertTrue(original.hasClippedEdges)
+                val cache = RecentScreenshotContents()
+                cache.record(ScreenshotContentEvidence("peer", "title", original))
+                bitmap.setPixel(150, 143 + offset, Color.rgb(71, 71, 71))
+                input.captureFrom(bitmap, 3.25f)
+                assertEquals(ScreenshotContentReason.READY, input.reason)
+                val changed = requireNotNull(input.blocks)
+                assertEquals(original.height, changed.height)
+                assertEquals(original.hashes, changed.hashes)
+                assertFalse(original.rowHashes.contentEquals(changed.rowHashes))
+                assertFalse("阴影行内新增单像素必须保留，不能只比较下面完整块", cache.contains(
+                    ScreenshotContentEvidence("peer", "title", changed)))
+            } finally { bitmap.recycle() }
+        }
+    }
+
+    @Test fun verifiedTopShadowCanCoexistWithAValidatedRightScrollbar() {
+        val bitmap = shadowedTitleBody()
+        try {
+            val input = ScreenshotContentInput(143, detectBlocks = true, detectWechatBody = true)
+            input.captureFrom(bitmap, 3.25f)
+            val withoutBar = requireNotNull(input.blocks)
+            Canvas(bitmap).drawRect(1188f, 143f, 1200f, 900f,
+                Paint().apply { color = Color.rgb(104, 104, 104) })
+            input.captureFrom(bitmap, 3.25f)
+            assertEquals(ScreenshotContentReason.READY, input.reason)
+            assertEquals(withoutBar.hashes, input.blocks!!.hashes)
+            assertArrayEquals(withoutBar.rowHashes, input.blocks!!.rowHashes)
+        } finally { bitmap.recycle() }
+    }
+
+    @Test fun unknownOrUnverifiedTitleShadingNeverRelaxesWholeBodyEdges() {
+        for (kind in listOf("outside-first-dp", "strong", "colored", "asymmetric", "unverified")) {
+            val bitmap = shadowedTitleBody(
+                shadowOffset = if (kind == "outside-first-dp") 4 else 1,
+                shade = when (kind) {
+                    "strong" -> Color.rgb(15, 15, 15)
+                    "colored" -> Color.rgb(16, 16, 17)
+                    else -> Color.rgb(16, 16, 16)
+                })
+            try {
+                if (kind == "asymmetric") bitmap.setPixel(0, 144, Color.rgb(17, 17, 17))
+                val input = ScreenshotContentInput(143, detectBlocks = true, detectWechatBody = true)
+                input.captureFrom(bitmap, 3.25f, bodyBoundaryVerified = kind != "unverified")
+                assertNull(kind, input.blocks)
+            } finally { bitmap.recycle() }
+        }
+    }
+
+    @Test fun extractionReasonsResetBetweenFramesAndNeverEnableUncertainContent() {
+        val bitmap = sample()
+        try {
+            val input = input()
+            input.captureFrom(bitmap, bodyBoundaryVerified = false)
+            assertEquals(ScreenshotContentReason.BODY_BOUNDARY_UNVERIFIED, input.reason)
+            input.captureFrom(bitmap)
+            assertEquals(ScreenshotContentReason.READY, input.reason)
+            bitmap.eraseColor(Color.BLUE)
+            input.captureFrom(bitmap)
+            assertNull(input.blocks)
+            assertEquals(ScreenshotContentReason.BACKGROUND_UNVERIFIED, input.reason)
+            bitmap.eraseColor(Color.rgb(238, 238, 238))
+            input.captureFrom(bitmap)
+            assertNull(input.blocks)
+            assertEquals(ScreenshotContentReason.NO_BLOCKS, input.reason)
+            bitmap.setPixel(0, 100, Color.BLACK)
+            input.captureFrom(bitmap)
+            assertNull(input.blocks)
+            assertEquals(ScreenshotContentReason.EDGE_CONTENT_UNVERIFIED, input.reason)
+        } finally { bitmap.recycle() }
+    }
+
     @Test fun confirmedWechatListKeepsItsDedicatedHash() {
         val bitmap = wechatListSample()
         try {
@@ -143,6 +267,7 @@ class WechatScreenshotContentBoundsTest {
             input.captureFrom(bitmap)
             assertNotNull(input.wechatListSha256)
             assertNull(input.blocks)
+            assertEquals(ScreenshotContentReason.CONVERSATION_LIST, input.reason)
         } finally { bitmap.recycle() }
     }
 }

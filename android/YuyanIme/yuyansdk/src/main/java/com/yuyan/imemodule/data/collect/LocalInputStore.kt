@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteOpenHelper
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
@@ -25,7 +27,7 @@ internal data class CodedLearnedInput(val code: String, val choice: LearnedInput
 
 /** 独立数据库，不迁移或清空既有 Rime 用户库和剪贴板库。 */
 internal class LocalInputStore(context: Context, name: String = "local_input.db", private val now: () -> Long = System::currentTimeMillis) :
-    SQLiteOpenHelper(context.applicationContext, name, null, 11) {
+    SQLiteOpenHelper(context.applicationContext, name, null, 12) {
     private val json = Json { ignoreUnknownKeys = true }
     private val policyKey = context.getDatabasePath(name).absolutePath
 
@@ -96,7 +98,10 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
             db.execSQL("ALTER TABLE learned_input ADD COLUMN weight REAL NOT NULL DEFAULT 0")
             db.execSQL("UPDATE learned_input SET weight=count")
         }
-        if (oldVersion < 10) ReportImageIndex.createTables(db)
+        if (oldVersion < 12) {
+            ReportImageIndex.createTables(db)
+            db.execSQL("INSERT OR IGNORE INTO report_image_target SELECT t.report_id,t.target FROM report_target t JOIN pending_report r ON r.id=t.report_id WHERE r.kind='chat_asset'")
+        }
     }
 
     @Synchronized fun enqueue(event: MobileEvent, targets: List<String>) {
@@ -164,6 +169,36 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
         buildList { while(c.moveToNext()) add(c.getString(0)) }
     }
 
+    /** 图片真实载荷及消息依赖共同提交，Room 才能移交；重复交接复用同 hash 的载荷。 */
+    @Synchronized fun enqueueChatBatch(reports: List<PendingReport>, targets: List<String>) = enqueueChatBatch(reports.asSequence(),targets)
+
+    @Synchronized fun enqueueChatBatch(reports: Sequence<PendingReport>, targets: List<String>) {
+        require(targets.isNotEmpty())
+        val db = writableDatabase
+        db.beginTransaction()
+        try {
+            var count = 0
+            reports.forEach { report ->
+                require(report.kind == "chat_asset" || report.kind == "chat_messages")
+                count++
+                if (report.kind == "chat_asset") {
+                    val hash = json.parseToJsonElement(report.payload).jsonObject["sha256"]!!.jsonPrimitive.content
+                    val existing = db.rawQuery("SELECT m.report_id FROM report_image_meta m JOIN pending_report r ON r.id=m.report_id WHERE r.kind='chat_asset' AND m.asset_sha256=? LIMIT 1", arrayOf(hash)).use { if(it.moveToFirst()) it.getString(0) else null }
+                    if (existing == null) enqueueReport(report, targets)
+                    else targets.distinct().forEach { target ->
+                        db.execSQL("INSERT OR IGNORE INTO report_target(report_id,target) VALUES(?,?)", arrayOf(existing,target))
+                        db.execSQL("INSERT OR IGNORE INTO report_image_target(report_id,target) VALUES(?,?)", arrayOf(existing,target))
+                    }
+                } else {
+                    enqueueReport(report, targets)
+                    targets.distinct().forEach { target -> db.execSQL("INSERT OR IGNORE INTO report_target(report_id,target) VALUES(?,?)", arrayOf(report.id,target)) }
+                }
+            }
+            require(count > 0)
+            db.setTransactionSuccessful()
+        } finally { db.endTransaction() }
+    }
+
     /** 域名变化只改写尚未确认的线上投递目标；正文和电脑目标保持原状。 */
     @Synchronized fun replaceTarget(oldTarget: String, newTarget: String) {
         if (oldTarget == newTarget) return
@@ -181,6 +216,8 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
                 arrayOf(newTarget, oldTarget),
             )
             db.delete("report_target", "target=?", arrayOf(oldTarget))
+            db.execSQL("INSERT OR IGNORE INTO report_image_target SELECT report_id,? FROM report_image_target WHERE target=?", arrayOf(newTarget,oldTarget))
+            db.delete("report_image_target", "target=?", arrayOf(oldTarget))
             db.setTransactionSuccessful()
         } finally { db.endTransaction() }
     }
@@ -191,7 +228,7 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
     ).use{it.moveToFirst()}
 
     @Synchronized fun hasPendingImages(): Boolean = readableDatabase.rawQuery(
-        "SELECT 1 FROM pending_report WHERE kind='chat_asset' LIMIT 1", null,
+        "SELECT 1 FROM pending_report r JOIN report_target t ON t.report_id=r.id WHERE r.kind='chat_asset' LIMIT 1", null,
     ).use { it.moveToFirst() }
 
     @Synchronized fun hasPendingEvents():Boolean=readableDatabase.rawQuery(
@@ -290,13 +327,47 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
         val db=writableDatabase
         db.beginTransaction()
         try {
+            val releasedHashes = ids.flatMap { id -> db.rawQuery("SELECT sha256 FROM report_image_dependency WHERE report_id=?", arrayOf(id)).use { c ->
+                buildList { while (c.moveToNext()) add(c.getString(0)) }
+            } }.distinct()
             if (target == onlineTarget) ids.forEach {
                 db.execSQL("UPDATE pending_report SET online_confirmed_at=COALESCE(online_confirmed_at,?) WHERE id=?", arrayOf(now(), it))
             }
             ids.forEach { db.delete("report_target","report_id=? AND target=?",arrayOf(it,target)) }
-            db.execSQL("DELETE FROM pending_report WHERE NOT EXISTS(SELECT 1 FROM report_target t WHERE t.report_id=pending_report.id)")
+            db.execSQL("DELETE FROM pending_report WHERE kind!='chat_asset' AND NOT EXISTS(SELECT 1 FROM report_target t WHERE t.report_id=pending_report.id)")
+            // 图片回执只结束该目标的传输；最后一条依赖消息确认后才释放可恢复载荷。
+            // 旧队列有未知依赖时保守保留，孤图也不能在 Room 后续批次交接前消失。
+            releasedHashes.forEach { hash -> db.execSQL("""DELETE FROM pending_report WHERE kind='chat_asset'
+                AND id IN (SELECT report_id FROM report_image_meta WHERE asset_sha256=?)
+                AND NOT EXISTS(SELECT 1 FROM report_target t WHERE t.report_id=pending_report.id)
+                AND NOT EXISTS(SELECT 1 FROM report_image_dependency d WHERE d.sha256=?)
+                AND NOT EXISTS(SELECT 1 FROM pending_report r LEFT JOIN report_image_meta m ON m.report_id=r.id
+                    WHERE r.kind='chat_messages' AND (m.report_id IS NULL OR m.dependencies_valid!=1))""", arrayOf(hash,hash)) }
             db.setTransactionSuccessful()
         } finally { db.endTransaction() }
+    }
+
+    /** 仅恢复此目标、此消息已经声明的资源；服务器不能借 409 扩大上传范围。 */
+    @Synchronized fun requeueMissingChatAssets(target: String, reportId: String, hashes: Set<String>): Int {
+        val db = writableDatabase
+        var restored = 0
+        db.beginTransaction()
+        try {
+            hashes.forEach { hash ->
+                val id = db.rawQuery("""SELECT a.report_id FROM report_image_meta a
+                    JOIN pending_report r ON r.id=a.report_id AND r.kind='chat_asset'
+                    JOIN report_image_target t ON t.report_id=a.report_id AND t.target=?
+                    WHERE a.asset_sha256=? AND EXISTS(SELECT 1 FROM report_image_dependency d
+                      JOIN report_target mt ON mt.report_id=d.report_id WHERE d.report_id=? AND d.sha256=? AND mt.target=?)
+                    LIMIT 1""", arrayOf(target,hash,reportId,hash,target)).use { if(it.moveToFirst()) it.getString(0) else null }
+                if (id != null) {
+                    db.execSQL("INSERT OR IGNORE INTO report_target(report_id,target) VALUES(?,?)", arrayOf(id,target))
+                    restored++
+                }
+            }
+            db.setTransactionSuccessful()
+        } finally { db.endTransaction() }
+        return restored
     }
 
     /** 线上未确认的记录没有时间戳，绝不参与过期删除。 */
@@ -311,11 +382,15 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
                    WHERE target!=? AND report_id IN (
                      SELECT id FROM pending_report
                      WHERE online_confirmed_at IS NOT NULL AND online_confirmed_at<=?
+                       AND kind!='chat_asset'
+                       AND (kind!='chat_messages' OR (
+                         EXISTS(SELECT 1 FROM report_image_meta m WHERE m.report_id=pending_report.id AND m.dependencies_valid=1)
+                         AND NOT EXISTS(SELECT 1 FROM report_image_dependency d WHERE d.report_id=pending_report.id)))
                        AND NOT EXISTS (SELECT 1 FROM report_target ot WHERE ot.report_id=pending_report.id AND ot.target=?)
                    )""",
                 arrayOf(onlineTarget, cutoff, onlineTarget),
             )
-            db.execSQL("DELETE FROM pending_report WHERE NOT EXISTS(SELECT 1 FROM report_target t WHERE t.report_id=pending_report.id)")
+            db.execSQL("DELETE FROM pending_report WHERE kind!='chat_asset' AND NOT EXISTS(SELECT 1 FROM report_target t WHERE t.report_id=pending_report.id)")
             db.execSQL("""DELETE FROM event_target WHERE target!=? AND event_id IN (
                 SELECT id FROM pending_event WHERE online_confirmed_at IS NOT NULL AND online_confirmed_at<=?
                 AND NOT EXISTS (SELECT 1 FROM event_target ot WHERE ot.event_id=pending_event.id AND ot.target=?))""",

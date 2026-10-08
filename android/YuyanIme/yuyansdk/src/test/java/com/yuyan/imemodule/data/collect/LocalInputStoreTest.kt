@@ -15,7 +15,7 @@ class LocalInputStoreTest {
     private val context = ApplicationProvider.getApplicationContext<Context>()
     private val sevenDays = 7L * 24 * 60 * 60 * 1000
 
-    @Test fun `聊天报告线上确认后本地失败仅保留七天`() {
+    @Test fun `聊天图片线上确认不能代替另一个目标的真实回执`() {
         val name = "test-${UUID.randomUUID()}.db"
         var now = 1_000L
         val store = LocalInputStore(context, name, now = { now })
@@ -30,8 +30,8 @@ class LocalInputStoreTest {
 
             now += 1
             store.pruneExpiredLocalChatReports("https://online", sevenDays)
-            assertTrue(store.pendingReports("http://local").isEmpty())
-            assertTrue(store.reportTargets().isEmpty())
+            assertEquals(listOf(report.id), store.pendingReports("http://local").map { it.id })
+            assertEquals(listOf("http://local"), store.reportTargets())
         } finally { store.close(); context.deleteDatabase(name) }
     }
 

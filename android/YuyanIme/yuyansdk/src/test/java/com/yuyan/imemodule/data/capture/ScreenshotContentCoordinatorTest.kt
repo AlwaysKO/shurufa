@@ -12,11 +12,20 @@ import com.yuyan.imemodule.data.capture.model.ChatPlatform
 import com.yuyan.imemodule.data.capture.model.ConversationType
 import com.yuyan.imemodule.data.capture.model.stableKeyOrNull
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import com.yuyan.imemodule.data.capture.media.ChatCaptureAttempt
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+@org.junit.runner.RunWith(org.robolectric.RobolectricTestRunner::class)
+@org.robolectric.annotation.Config(sdk = [30])
 class ScreenshotContentCoordinatorTest {
+    @org.junit.Before @org.junit.After fun resetRuntime() {
+        com.yuyan.imemodule.data.collect.resetImageInputForTest()
+        com.yuyan.imemodule.data.collect.resetGameWorkRuntimeForTest()
+    }
+
     private val conversation = CapturedConversation(
         platform = ChatPlatform.WECHAT,
         accountKey = "wechat-empty-tree",
@@ -49,6 +58,86 @@ class ScreenshotContentCoordinatorTest {
         assertEquals(2, store.pending.size)
         assertEquals(2, store.attempts)
         assertEquals(2, wakes)
+    }
+
+    @Test fun explicitSendFrameDoesNotReuseAnEarlierMessageInstanceByBodyContent() = runBlocking {
+        val store = FakeStore()
+        val worker = worker(store)
+        val content = evidence("context", "same-text")
+        assertEquals(CapturePersistResult.INSERTED, persist(worker, "before-send", content))
+        val attempt = ChatCaptureAttempt({ true }, { true }, { true }, allowsSettledSendFrame = true)
+        assertTrue(attempt.acceptFrame())
+        val result = withContext(attempt) { persist(worker, "after-send", content) }
+        assertEquals(CapturePersistResult.INSERTED, result)
+        assertEquals(listOf("before-send", "after-send"), store.assets.map { it.sha256 })
+    }
+
+    @Test fun sendInvalidatesOnlyItsConversationHistoryBeforeTheNextSettledFrame() = runBlocking {
+        val store = FakeStore()
+        val worker = worker(store)
+        val other = conversation.copy(externalKey = "screenshot-v2:" + "b".repeat(64))
+        assertEquals(CapturePersistResult.INSERTED, persist(worker, "old-a", evidence("a", "b")))
+        assertEquals(CapturePersistResult.INSERTED, persist(worker, "old-c", evidence("c", "d")))
+        assertEquals(CapturePersistResult.INSERTED, persist(worker, "other", evidence("a", "b", peer = other), peer = other))
+        val attempt = ChatCaptureAttempt({ true }, { true }, { true }, allowsSettledSendFrame = true)
+        assertTrue(attempt.acceptFrame())
+        withContext(attempt) {
+            assertEquals(CapturePersistResult.INSERTED, persist(worker, "sent-a", evidence("a", "b")))
+        }
+        assertEquals(CapturePersistResult.INSERTED, persist(worker, "new-settled-c", evidence("c", "d")))
+        assertEquals(CapturePersistResult.ALREADY_PERSISTED,
+            persist(worker, "other-revisit", evidence("a", "b", peer = other), peer = other))
+        assertEquals(CapturePersistResult.ALREADY_PERSISTED, persist(worker, "sent-a-revisit", evidence("a", "b")))
+    }
+
+    @Test fun identicalPixelsFromDistinctExplicitSendsKeepSeparateAssetsButSameAttemptRetryDoesNot() = runBlocking {
+        val store = FakeStore()
+        val worker = worker(store)
+        val pixels = "a".repeat(64)
+        persistPixels(worker, "same-image", pixels)
+        repeat(2) { index ->
+            val attempt = ChatCaptureAttempt({ true }, { true }, { true }, allowsSettledSendFrame = true)
+            assertTrue(attempt.acceptFrame())
+            withContext(attempt) {
+                persistPixels(worker, "same-image", pixels)
+                assertEquals(index + 2, store.assets.size)
+                persistPixels(worker, "same-image", pixels)
+                assertEquals("同次发送的持久化重试不能生成另一个图片实例", index + 2, store.assets.size)
+            }
+        }
+    }
+
+    @Test fun frameAlreadyEnqueuingBeforeSendCannotRepopulatePreSendContentHistory() = runBlocking {
+        val store = FakeStore()
+        val worker = worker(store)
+        val attempt = ChatCaptureAttempt({ true }, { true }, { true }, allowsSettledSendFrame = true)
+        assertTrue(attempt.acceptFrame())
+        store.afterNextAcceptedEnqueue = {
+            runBlocking {
+                withContext(attempt) {
+                    assertEquals(CapturePersistResult.INSERTED, persist(worker, "sent", evidence("new", "send")))
+                }
+            }
+        }
+        assertEquals(CapturePersistResult.INSERTED, persist(worker, "old-in-flight", evidence("old", "body")))
+        assertEquals(CapturePersistResult.INSERTED, persist(worker, "new-instance-of-old-body", evidence("old", "body")))
+        assertEquals(CapturePersistResult.ALREADY_PERSISTED, persist(worker, "sent-revisit", evidence("new", "send")))
+    }
+
+    @Test fun persistedContentDecisionUsesOnlyFixedReasonAndLeavesFingerprintUnchanged() = runBlocking {
+        val store = FakeStore()
+        val worker = worker(store)
+        assertEquals(CapturePersistResult.INSERTED, persist(worker, "first", evidence("a", "b")))
+        assertEquals(CapturePersistResult.INSERTED, persist(worker, "second", evidence("a", "new")))
+        val reasons = store.pending.map {
+            org.json.JSONObject(it.payloadJson).getJSONObject("message").getJSONObject("metadata")
+                .optString("screenshot_content_reason")
+        }
+        assertEquals(listOf("no_saved_content", "content_changed"), reasons)
+        assertTrue(reasons.all { reason -> ScreenshotContentReason.entries.any { it.wireName == reason } })
+        assertEquals(messageFingerprint(screenshot.copy(conversationKey = conversation.stableKeyOrNull(),
+            assetSha256 = listOf("first"))), store.pending.first().fingerprint)
+        assertEquals(listOf("first", "second"), store.assets.map { it.sha256 })
     }
 
     @Test fun failedEnqueueDoesNotConsumeContentAndRetryCanPersistIt() = runBlocking {

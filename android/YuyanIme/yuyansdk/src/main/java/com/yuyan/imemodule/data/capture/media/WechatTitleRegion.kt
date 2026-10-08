@@ -2,7 +2,9 @@ package com.yuyan.imemodule.data.capture.media
 
 import android.graphics.Bitmap
 import android.graphics.Color
+import com.yuyan.imemodule.data.capture.ui.IntRect
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 /** 只用于状态栏之后已知的微信 44dp 标题带；不处理正文、旧版含状态栏回退或整图。 */
 internal fun prepareWechatTitleHeader(header: Bitmap): Bitmap {
@@ -70,10 +72,12 @@ private fun colorDistance(a: Int, b: Int): Int = maxOf(abs(Color.red(a)-Color.re
 
 /** 显示去掉装饰，身份仍保留原始昵称字形/Emoji；不让 OCR 行框和群人数改变键。 */
 internal fun wechatTitleEvidenceBounds(header: Bitmap, title: OcrTextLine): OcrTextLine? {
-    val title = withoutSeparatedWechatTitleControl(header, title)
     val width = header.width
     val height = header.height
     if (height < 8 || width < height * 5) return null
+    val title = withoutUnsupportedWechatTitlePrefix(header, title)?.let {
+        withoutSeparatedWechatTitleControl(header, it)
+    } ?: return null
     val left = (height * 1.05).toInt()
     val top = (height * .12).toInt()
     val bottom = (height * .88).toInt()
@@ -105,19 +109,39 @@ internal fun wechatTitleEvidenceBounds(header: Bitmap, title: OcrTextLine): OcrT
     return title.copy(left = left, top = top, right = right, bottom = bottom)
 }
 
-/** 数字人数后的孤立灰色控件须有字框和原始对比度证据，不能删除正常中文尾字。 */
-private fun withoutSeparatedWechatTitleControl(header: Bitmap, title: OcrTextLine): OcrTextLine {
+/** 仅移除有完整字符框且原图对应区域全空白的前置竖线，真实昵称符号保留。 */
+private fun withoutUnsupportedWechatTitlePrefix(header: Bitmap, title: OcrTextLine): OcrTextLine? {
+    var result = title
+    while (result.text.trimStart().firstOrNull() in setOf('|', '｜', '¦')) {
+        if (result.symbols.joinToString("") { it.text.filterNot(Char::isWhitespace) } !=
+            result.text.filterNot(Char::isWhitespace)) return null
+        val symbol = result.symbols.firstOrNull() ?: return null
+        if (symbol.text.trim() !in setOf("|", "｜", "¦") || symbol.left < 0 || symbol.top < 0 ||
+            symbol.right > header.width || symbol.bottom > header.height ||
+            symbol.right <= symbol.left || symbol.bottom <= symbol.top) return null
+        val background = header.getPixel(header.width / 2, 0)
+        for (y in symbol.top until symbol.bottom) for (x in symbol.left until symbol.right) {
+            if (colorDistance(header.getPixel(x, y), background) > 40) return result
+        }
+        result = result.copy(text = result.text.trimStart().removePrefix(symbol.text.trim()).trimStart(),
+            symbols = result.symbols.drop(1))
+    }
+    return result
+}
+
+/** 人数后的短尾字须有原始像素证据；深色主题的小控件可能与文字同亮度。 */
+private fun withoutSeparatedWechatTitleControl(header: Bitmap, title: OcrTextLine): OcrTextLine? {
     val match = Regex("[（(]\\s*\\d+\\s*[）)]").findAll(title.text).lastOrNull() ?: return title
     val tail = title.text.substring(match.range.last + 1).trim()
     if (tail.isEmpty() || tail.length > 2) return title
     val compact = title.symbols.joinToString("") { it.text.filterNot(Char::isWhitespace) }
-    if (compact != title.text.filterNot(Char::isWhitespace)) return title
+    if (compact != title.text.filterNot(Char::isWhitespace)) return null
     val trailer = title.symbols.takeLastWhile { symbol ->
         symbol.text.isNotBlank() && symbol.text.none { it == ')' || it == '）' } &&
             tail.contains(symbol.text.trim())
     }
-    if (trailer.isEmpty() || trailer.joinToString("") { it.text.trim() } != tail) return title
-    val preceding = title.symbols.dropLast(trailer.size).lastOrNull() ?: return title
+    if (trailer.isEmpty() || trailer.joinToString("") { it.text.trim() } != tail) return null
+    val preceding = title.symbols.dropLast(trailer.size).lastOrNull() ?: return null
     val background = header.getPixel(header.width / 2, 0)
     // OCR 的相邻符号框会重叠；只用原图实际空白列判定控件分隔。
     var gap = 0
@@ -131,7 +155,7 @@ private fun withoutSeparatedWechatTitleControl(header: Bitmap, title: OcrTextLin
         gap = if (blank) gap + 1 else 0
         longestGap = maxOf(longestGap, gap)
     }
-    if (longestGap < header.height * .08) return title
+    if (longestGap < header.height * .08) return null
     fun contrast(symbols: List<OcrTextSymbol>): Int = symbols.maxOfOrNull { symbol ->
         var peak = 0
         for (y in symbol.top.coerceAtLeast(0) until symbol.bottom.coerceAtMost(header.height)) {
@@ -145,9 +169,55 @@ private fun withoutSeparatedWechatTitleControl(header: Bitmap, title: OcrTextLin
     } ?: 0
     val textContrast = contrast(listOf(preceding))
     val controlContrast = contrast(trailer)
-    if (textContrast < 80 || controlContrast < 20 || controlContrast > textContrast * .70) return title
+    if (textContrast < 80 || controlContrast < 20) return null
+    // 按实际墨迹而不是OCR外框比较；小图标的OCR框也可能与文字一样高。
+    fun inkBounds(symbols: List<OcrTextSymbol>): IntRect? {
+        var left = header.width; var right = 0
+        var top = header.height; var bottom = 0
+        for (symbol in symbols) {
+            for (y in symbol.top.coerceAtLeast(0) until symbol.bottom.coerceAtMost(header.height)) {
+                for (x in symbol.left.coerceAtLeast(0) until symbol.right.coerceAtMost(header.width)) {
+                    if (colorDistance(header.getPixel(x, y), background) <= 40) continue
+                    left = minOf(left, x); right = maxOf(right, x + 1)
+                    top = minOf(top, y); bottom = maxOf(bottom, y + 1)
+                }
+            }
+        }
+        return if (right > left && bottom > top) IntRect(left, top, right, bottom) else null
+    }
+    val textBounds = inkBounds(listOf(preceding)) ?: return null
+    val textHeight = textBounds.bottom - textBounds.top
+    val controlBounds = inkBounds(trailer) ?: return null
+    val controlWidth = controlBounds.right - controlBounds.left
+    val controlHeight = controlBounds.bottom - controlBounds.top
+    val smallSeparatedControl = longestGap >= header.height * .12 &&
+        controlWidth <= textHeight * .90 && controlHeight <= textHeight * .85
+    // 大小、颜色都不能独立证明是图标；未知尾字保留为原始观测，不提供身份确认像素。
+    if (!smallSeparatedControl || !matchesWechatMutedBell(header, controlBounds, background)) return null
     return title.copy(text = title.text.substring(0, match.range.last + 1).trim(),
         right = preceding.right, symbols = title.symbols.dropLast(trailer.size))
+}
+
+/** 已观察到的静音铃铛：贯穿斜线、两侧轮廓、底边和铃舌；换形状时保守待确认。 */
+private fun matchesWechatMutedBell(header: Bitmap, bounds: IntRect, background: Int): Boolean {
+    val width = bounds.right - bounds.left
+    val height = bounds.bottom - bounds.top
+    if (width < 12 || height < 12) return false
+    val radius = maxOf(1, (minOf(width, height) * .035).roundToInt())
+    fun inkAt(xRatio: Double, yRatio: Double): Boolean {
+        val x = bounds.left + ((width - 1) * xRatio).roundToInt()
+        val y = bounds.top + ((height - 1) * yRatio).roundToInt()
+        for (py in maxOf(bounds.top, y - radius)..minOf(bounds.bottom - 1, y + radius)) {
+            for (px in maxOf(bounds.left, x - radius)..minOf(bounds.right - 1, x + radius)) {
+                if (colorDistance(header.getPixel(px, py), background) > 40) return true
+            }
+        }
+        return false
+    }
+    if ((2..9).any { !inkAt(it / 10.0, .1 + .9 * it / 10.0) }) return false
+    val outline = listOf(.47 to .07, .17 to .40, .72 to .40, .17 to .60, .72 to .60,
+        .20 to .87, .40 to .87, .60 to .87, .46 to .96)
+    return outline.all { (x, y) -> inkAt(x, y) } && !inkAt(.42, .27) && !inkAt(.35, .64)
 }
 
 internal fun wechatNicknamePixelSignature(header: Bitmap, bounds: OcrTextLine): String? {

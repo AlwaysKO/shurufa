@@ -16,6 +16,11 @@ internal class ChatCaptureAttempt(
     private val onFrameFailure: () -> Unit = {},
 ) : AbstractCoroutineContextElement(Key) {
     companion object Key : CoroutineContext.Key<ChatCaptureAttempt>
+    // 只区分明确发送事件；同事件的取帧/持久化重试复用，普通检查不创建实例。
+    val sendEventId: String? = if (allowsSettledSendFrame) java.util.UUID.randomUUID().toString() else null
+    private val clearedSendIdentities = mutableSetOf<String>()
+    @Synchronized fun claimSendHistoryReset(identity: String): Boolean =
+        sendEventId != null && clearedSendIdentities.add(identity)
     private val acceptedAt = AtomicReference<Long?>(null)
     val capturedAtMillis: Long? get() = acceptedAt.get()
     val isAccepted: Boolean get() = capturedAtMillis != null

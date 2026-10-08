@@ -95,6 +95,26 @@ abstract class CaptureDao {
             .toList()
     }
 
+    /** 持久交接携带图片；SQL先限量，坏依赖由调用方延后，不能全量解码旧队列。 */
+    @Query("SELECT * FROM pending_message WHERE nextRetryAt <= :now ORDER BY nextRetryAt ASC, id ASC LIMIT :limit")
+    abstract suspend fun handoffMessages(now: Long, limit: Int): List<PendingMessageEntity>
+
+    @Query("SELECT requiredAssetHashesJson FROM pending_message LIMIT :limit")
+    protected abstract suspend fun pendingDependencies(limit: Int): List<String>
+
+    @Transaction
+    open suspend fun confirmHandoff(id: String, hashes: List<String>) {
+        confirmMessageUploaded(id)
+        val rows = pendingDependencies(257)
+        if (rows.size > 256) return
+        val remaining = try { rows.flatMap { Json.decodeFromString<List<String>>(it) }.toSet() }
+        catch (_: Exception) { return }
+        hashes.filterNot(remaining::contains).forEach { deletePendingAsset(it) }
+    }
+
+    @Query("DELETE FROM pending_asset WHERE sha256 IN (SELECT sha256 FROM pending_asset LIMIT :limit) AND NOT EXISTS(SELECT 1 FROM pending_message)")
+    abstract suspend fun clearIdleAssetIndexes(limit: Int): Int
+
     private fun requiredAssets(message: PendingMessageEntity): List<String>? = try {
         Json.decodeFromString(message.requiredAssetHashesJson)
     } catch (_: Exception) {

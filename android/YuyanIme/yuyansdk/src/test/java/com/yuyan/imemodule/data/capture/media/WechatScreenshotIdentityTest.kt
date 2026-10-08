@@ -8,6 +8,15 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
 class WechatScreenshotIdentityTest {
+    @Test fun literalLeadingSeparatorsArePreservedWithoutPixelEvidence() {
+        for (prefix in listOf("|", "｜", "¦", "| ")) {
+            assertEquals(prefix + "一家人", screenshotConversationIdentity(prefix + "一家人(223)", "fallback").displayName)
+        }
+        for (name in listOf("一心一家人", "A|B", "项目(2024)讨论组")) {
+            assertEquals(name, screenshotConversationIdentity(name, "fallback").displayName)
+        }
+    }
+
     @Test fun trailingDecorationsDoNotEnterMixedChineseLatinAndNumberNames() {
         for (suffix in listOf("😀", "ℹ️", "🎉✨", "★☆♡", "®™✓", "👩‍💻", "1️⃣", "🇨🇳", "\u200d\ufe0f")) {
             assertEquals(suffix, "煌家112Lucky王", screenshotConversationIdentity("煌家112Lucky王" + suffix, "fallback").displayName)

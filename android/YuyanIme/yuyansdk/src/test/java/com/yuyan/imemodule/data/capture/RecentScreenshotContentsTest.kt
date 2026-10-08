@@ -43,6 +43,31 @@ class RecentScreenshotContentsTest {
         cache.record(a);time=300_001;assertFalse(cache.contains(a))
         cache.record(a);cache.clear();assertFalse(cache.contains(a))
     }
+    @Test fun matchReasonsPreserveStrictSequenceAndScopeRules() {
+        var time = 0L
+        val cache = RecentScreenshotContents { time }
+        val original = shot("a", "b")
+        assertEquals(ScreenshotContentReason.NO_SAVED_CONTENT, cache.matchReason(original))
+        cache.record(original)
+        assertEquals(ScreenshotContentReason.SAME_CONTENT, cache.matchReason(original))
+        assertEquals(ScreenshotContentReason.CONTENT_CHANGED, cache.matchReason(shot("b", "a")))
+        assertEquals(ScreenshotContentReason.CONTENT_CHANGED, cache.matchReason(shot("a", "b", "new")))
+        assertEquals(ScreenshotContentReason.NO_SAVED_CONTENT, cache.matchReason(shot("a", "b", identity = "other")))
+        assertEquals(ScreenshotContentReason.INSUFFICIENT_ANCHORS, cache.matchReason(shot("a")))
+        assertEquals(ScreenshotContentReason.REPEATED_ANCHORS, cache.matchReason(shot("a", "a")))
+        time = 300_001
+        assertEquals(ScreenshotContentReason.NO_SAVED_CONTENT, cache.matchReason(original))
+    }
+
+    @Test fun changedClippedPixelStillReportsChangedEvenWhenAnchorsMatch() {
+        val cache = RecentScreenshotContents()
+        cache.record(rowShot(listOf("edge", "A", "blank", "B", "tail"), "a", "b"))
+        assertEquals(ScreenshotContentReason.SAME_CONTENT,
+            cache.matchReason(rowShot(listOf("A", "blank", "B", "tail"), "a", "b")))
+        assertEquals(ScreenshotContentReason.CONTENT_CHANGED,
+            cache.matchReason(rowShot(listOf("A", "blank", "B", "new-tail-character"), "a", "b")))
+    }
+
     private fun rows(values: List<String>): ByteArray = values.flatMap { value ->
         java.security.MessageDigest.getInstance("SHA-256").digest(value.toByteArray()).toList()
     }.toByteArray()

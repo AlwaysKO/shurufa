@@ -30,10 +30,11 @@ class DurableReportTest {
    val sender=EventDelivery(store,OkHttpClient(),"device","{}")
    server.enqueue(MockResponse().setBody("{\"ok\":true}")); server.enqueue(MockResponse().setResponseCode(503))
    assertFalse(sender.flush(target)); assertEquals(1,store.pendingReports(target).size)
-   server.enqueue(MockResponse().setBody("{\"ok\":true}")); server.enqueue(MockResponse().setBody("{\"ok\":true,\"id\":\"wrong\"}"))
+   server.enqueue(MockResponse().setBody("{\"ok\":true,\"id\":\"wrong\"}"))
    assertFalse(sender.flush(target)); assertEquals(1,store.pendingReports(target).size)
-   server.enqueue(MockResponse().setBody("{\"ok\":true}")); server.enqueue(MockResponse().setBody("{\"ok\":true,\"id\":\"r1\"}"))
+   server.enqueue(MockResponse().setBody("{\"ok\":true,\"id\":\"r1\"}"))
    assertTrue(sender.flush(target)); assertTrue(store.pendingReports(target).isEmpty())
+   assertEquals(4,server.requestCount) // 一次注册、503、错误ID、真实ID确认。
   }; server.shutdown(); ctx.deleteDatabase(name)
  }
  @Test fun `本地学习与待传候选快照同事务持久化`() {

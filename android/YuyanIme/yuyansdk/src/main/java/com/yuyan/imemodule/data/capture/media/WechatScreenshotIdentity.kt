@@ -132,6 +132,14 @@ internal fun screenshotConversationIdentity(
     )
 }
 
+internal fun wechatScreenshotTitleEvidence(header: Bitmap, title: OcrTextLine, exactBand: Boolean): OcrTextLine? {
+    if (exactBand) return wechatTitleEvidenceBounds(header, title)
+    // 旧文件含状态栏，不能套用44dp标题带的控件证明，也不能将重复噪声确认成名字。
+    val count = Regex("[（(]\\s*\\d+\\s*[）)]").findAll(title.text).lastOrNull()
+    val tail = count?.let { title.text.substring(it.range.last + 1).trim() }.orEmpty()
+    return title.takeUnless { tail.length in 1..2 }
+}
+
 internal interface ScreenshotConversationIdentityResolver {
     fun version(): Long = 0L
     suspend fun resolve(asset: PendingAssetEntity, expectedVersion: Long = version(), titleInput: TitleOcrInput? = null): ScreenshotConversationIdentity
@@ -211,7 +219,7 @@ internal class MlKitWechatScreenshotIdentityResolver(identityStore: Conversation
             if (exactBand && isWechatNonChatHeader(header, pageLines)) {
                 return@withContext unresolvedWechatScreenshotIdentity(title?.text).copy(isChatPage = false)
             }
-            val evidence = title?.let { if (exactBand) wechatTitleEvidenceBounds(header, it) else it }
+            val evidence = title?.let { wechatScreenshotTitleEvidence(header, it, exactBand) }
             val visualKey = evidence?.let {
                 if (exactBand) wechatNicknamePixelSignature(header, it) else wechatTitlePixelSignature(header, it)
             }

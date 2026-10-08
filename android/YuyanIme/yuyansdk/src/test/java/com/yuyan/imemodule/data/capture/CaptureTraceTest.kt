@@ -17,6 +17,16 @@ class CaptureTraceTest {
         assertTrue(captureTraceLine(true, CaptureStage.PERSIST_RESULT,
             layer = CaptureLayer.COORDINATOR)!!.startsWith("layer=COORDINATOR "))
     }
+    @Test fun contentReasonIsAnOptionalFixedEnumAndDisabledTraceStillProducesNothing() {
+        for (reason in ScreenshotContentReason.entries) {
+            val line = captureTraceLine(true, CaptureStage.CONTENT_DECISION, reason = reason)!!
+            assertTrue(line.matches(Regex("layer=[A-Z_]+ stage=CONTENT_DECISION window=-?\\d+ generation=-?\\d+ value=-?\\d+ flag=(true|false) reason=[a-z_]+")))
+            assertNull(captureTraceLine(false, CaptureStage.CONTENT_DECISION, reason = reason))
+        }
+        assertTrue(captureTraceLine(true, CaptureStage.CONTENT_DECISION,
+            reason = ScreenshotContentReason.BODY_BOUNDARY_UNVERIFIED)!!.endsWith("reason=body_boundary_unverified"))
+    }
+
     @Test fun everyStageUsesTheSameRestrictedFormat() {
         for (stage in CaptureStage.entries) {
             val line = captureTraceLine(true, stage)

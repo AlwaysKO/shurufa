@@ -11,6 +11,101 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28])
 class WechatTitleRegionTest {
+    @Test fun aSmallRealGlyphAfterNumericParenthesesIsNotProofOfAControl() {
+        val header = image(true)
+        for (y in 48..95) for (x in 900..946) header.setPixel(x, y, header.getPixel(0, 0))
+        for (y in 52..90) for (x in 900..936) {
+            if (x <= 902 || x >= 934 || y <= 54 || y >= 88) header.setPixel(x, y, Color.WHITE)
+        }
+        val title = OcrTextLine("项目(2024)口", 185, 48, 947, 96, listOf(
+            OcrTextSymbol("项目", 185, 48, 690, 96), OcrTextSymbol("(", 770, 48, 775, 96),
+            OcrTextSymbol("2024)", 790, 48, 866, 96), OcrTextSymbol("口", 895, 48, 947, 96)))
+        assertNull(wechatTitleEvidenceBounds(header, title))
+        header.recycle()
+    }
+
+    @Test fun leadingSeparatorRequiresBlankPixelsBeforeItCanBeRemoved() {
+        val header = image()
+        for (prefix in listOf("|", "｜", "¦")) {
+            val line = OcrTextLine(prefix + "联系人", 175, 48, 690, 96, listOf(
+                OcrTextSymbol(prefix, 175, 48, 180, 96), OcrTextSymbol("联系人", 185, 48, 690, 96)))
+            assertEquals("联系人", wechatTitleEvidenceBounds(header, line)!!.text)
+            for (y in 48..95) for (x in 175..178) header.setPixel(x, y, Color.BLACK)
+            assertEquals(prefix + "联系人", wechatTitleEvidenceBounds(header, line)!!.text)
+            for (y in 48..95) for (x in 175..178) header.setPixel(x, y, header.getPixel(0, 0))
+            assertNull(wechatTitleEvidenceBounds(header, line.copy(symbols = emptyList())))
+        }
+        header.recycle()
+    }
+
+    @Test fun legacyScreenshotWithoutExactTitleBandDoesNotConfirmAmbiguousControlText() {
+        val header = image(true)
+        val tracker = WechatTitleStabilizer()
+        val title = OcrTextLine("一家人(223)应", 185, 48, 947, 96)
+        for (now in listOf(1000L, 1800L, 2600L)) {
+            val evidence = wechatScreenshotTitleEvidence(header, title, exactBand = false)
+            val visual = evidence?.let { wechatTitlePixelSignature(header, it) }
+            val identity = tracker.observe(title.text, visual, now)
+            assertEquals("pending", identity.status)
+        }
+        assertNotNull(wechatScreenshotTitleEvidence(header, title.copy(text = "正常联系人"), exactBand = false))
+        header.recycle()
+    }
+
+    @Test fun smallControlTouchingCountCannotProvideIdentityEvidence() {
+        val header = image(true)
+        for (y in 52..90) for (x in 866..936) header.setPixel(x, y, Color.WHITE)
+        val title = OcrTextLine("一家人(223)应", 185, 48, 947, 96, listOf(
+            OcrTextSymbol("一家人", 185, 48, 690, 96), OcrTextSymbol("(", 770, 48, 775, 96),
+            OcrTextSymbol("223)", 790, 48, 902, 96), OcrTextSymbol("应", 900, 48, 947, 96)))
+        assertNull(wechatScreenshotTitleEvidence(header, title, exactBand = true))
+        header.recycle()
+    }
+
+    @Test fun sameContrastSmallControlAfterCountIsExcludedInBothThemes() {
+        for (dark in listOf(false, true)) {
+            val header = image(dark)
+            val background = header.getPixel(0, 0)
+            val ink = if (dark) Color.WHITE else Color.BLACK
+            for (y in 48..95) for (x in 900..946) header.setPixel(x, y, background)
+            drawMutedBell(header, 900, 52, ink)
+            val clean = OcrTextLine("一家人(223)", 185, 48, 866, 96, listOf(
+                OcrTextSymbol("一家人", 185, 48, 690, 96), OcrTextSymbol("(", 770, 48, 775, 96),
+                OcrTextSymbol("223)", 790, 48, 866, 96)))
+            val noisy = clean.copy(text = "|一家人(223)应", right = 947,
+                symbols = listOf(OcrTextSymbol("|", 175, 48, 180, 96)) + clean.symbols +
+                    OcrTextSymbol("应", 895, 48, 947, 96))
+            // 框可以包含空白；采用实际像素尺寸，不能只比较OCR行框。
+            val expected = wechatTitleEvidenceBounds(header, clean)!!
+            val evidence = wechatTitleEvidenceBounds(header, noisy)!!
+            assertEquals("一家人(223)", evidence.text)
+            val visual = wechatNicknamePixelSignature(header, evidence)
+            assertEquals(wechatNicknamePixelSignature(header, expected), visual)
+            val tracker = WechatTitleStabilizer()
+            tracker.observe(evidence.text, visual, 1000)
+            val confirmed = tracker.observe(evidence.text, visual, 1800)
+            assertEquals("confirmed", confirmed.status)
+            assertEquals("一家人", confirmed.displayName)
+            assertEquals(com.yuyan.imemodule.data.capture.model.ConversationType.GROUP, confirmed.conversationType)
+            header.recycle()
+        }
+    }
+
+    @Test fun ambiguousCountTrailerWithoutSymbolEvidenceCannotConfirmAName() {
+        val header = image(true)
+        val title = OcrTextLine("一家人(223)应", 185, 48, 947, 96)
+        assertNull(wechatTitleEvidenceBounds(header, title))
+        header.recycle()
+    }
+
+    @Test fun ambiguousCountTrailerWithUnmatchedSymbolsCannotConfirmAName() {
+        val header = image(true)
+        val title = OcrTextLine("一家人(223)应", 185, 48, 947, 96,
+            listOf(OcrTextSymbol("一家人(223)", 185, 48, 866, 96)))
+        assertNull(wechatTitleEvidenceBounds(header, title))
+        header.recycle()
+    }
+
     @Test fun preparedTitleIsEnlargedAndAllRecognitionBoxesReturnToOriginalCoordinates() = kotlinx.coroutines.runBlocking {
         val header = image()
         var input: Bitmap? = null
@@ -59,6 +154,22 @@ class WechatTitleRegionTest {
         block(860,866,ink)
         block(900,947,Color.GREEN) // 功能图标
         block(1100,1130,ink) // 菜单
+    }
+    private fun drawMutedBell(header: Bitmap, left: Int, top: Int, ink: Int) {
+        fun stroke(x0: Int, y0: Int, x1: Int, y1: Int) {
+            val steps = maxOf(kotlin.math.abs(x1 - x0), kotlin.math.abs(y1 - y0)).coerceAtLeast(1)
+            for (step in 0..steps) {
+                val x = x0 + (x1 - x0) * step / steps
+                val y = y0 + (y1 - y0) * step / steps
+                for (py in maxOf(0, y - 1)..minOf(38, y + 1))
+                    for (px in maxOf(0, x - 1)..minOf(36, x + 1)) header.setPixel(left + px, top + py, ink)
+            }
+        }
+        stroke(16, 0, 19, 4)
+        stroke(14, 4, 7, 9); stroke(7, 9, 5, 17); stroke(5, 17, 5, 29); stroke(5, 29, 1, 34)
+        stroke(19, 4, 25, 9); stroke(25, 9, 26, 26)
+        stroke(1, 34, 28, 34); stroke(16, 37, 18, 37)
+        stroke(3, 5, 36, 38)
     }
     @Test fun removesNavigationAndColoredControlsButPreservesTextInBothThemes() {
         for (dark in listOf(false,true)) {
@@ -112,7 +223,8 @@ class WechatTitleRegionTest {
             OcrTextSymbol("一路江湖",185,48,690,96), OcrTextSymbol("(",770,48,775,96),
             OcrTextSymbol("210)",790,48,866,96)))
         // 模拟右侧灰色静音控件被读成汉字；不是删除任意中文尾字。
-        for (y in 48..95) for (x in 900..946) header.setPixel(x,y,Color.rgb(155,155,155))
+        for (y in 48..95) for (x in 900..946) header.setPixel(x,y,header.getPixel(0,0))
+        drawMutedBell(header, 900, 52, Color.rgb(155,155,155))
         val noisy = clean.copy(text="一路江湖(210)应",right=947,
             symbols=clean.symbols + OcrTextSymbol("应",900,48,947,96))
         val first = wechatTitleEvidenceBounds(header,clean)!!
@@ -123,11 +235,9 @@ class WechatTitleRegionTest {
             if (symbol.text == "210)") symbol.copy(right=902) else symbol
         })
         assertEquals("一路江湖(210)", wechatTitleEvidenceBounds(header,overlapping)!!.text)
-        // 同样位置的正常深色汉字是昵称内容，不能靠括号或距离删除。
+        // 同字号深色汉字也可能是图标；保留原始观测，但不能仅凭字号确认或截掉它。
         for (y in 48..95) for (x in 900..946) header.setPixel(x,y,Color.BLACK)
-        val realName = wechatTitleEvidenceBounds(header,noisy)!!
-        assertEquals("一路江湖(210)应",realName.text)
-        assertTrue(realName.right > 947)
+        assertNull(wechatTitleEvidenceBounds(header,noisy))
         header.recycle()
     }
 

@@ -158,6 +158,80 @@ class CaptureUploaderTest {
         assertFalse(File(asset.localPath).exists())
     }
 
+    @Test fun durableQueueHandoffIsNotARemoteMessageAckAndCannotRemoveOriginal() = runBlocking {
+        val asset = pendingAsset()
+        dao.insertPendingAsset(asset); dao.insertPendingMessage(pendingMessage("queued", asset.sha256))
+        val queued = mutableListOf<String>()
+        val api = CaptureApi(server.url("/").toString(), DEVICE_ID, enqueue = { path, _ -> queued += path; true })
+        CaptureUploader(dao, api, assetFile = { File(tempDir, it) }).runOnce(1000)
+        assertEquals(0, server.requestCount)
+        assertEquals(2, queued.size)
+        assertTrue("a durable handoff is not a remote acknowledgement", File(asset.localPath).isFile)
+    }
+
+    @Test fun atomicHandoffIncludesActualImageAndKeepsLaterRoomReferenceAndOriginal() = runBlocking {
+        val asset = pendingAsset()
+        dao.insertPendingAsset(asset)
+        dao.insertPendingMessage(pendingMessage("first",asset.sha256))
+        dao.insertPendingMessage(pendingMessage("later",asset.sha256).copy(nextRetryAt=9000))
+        val batches = mutableListOf<List<Pair<String,String>>>()
+        val api = CaptureApi(server.url("/").toString(), DEVICE_ID, enqueueBatch = { batches += listOf(it.toList()); true })
+        val worker = CaptureUploader(dao,api,assetFile={File(tempDir,it)})
+        assertEquals(UploadRunResult(1,0),worker.runOnce(1000))
+        assertFalse(dao.hasPendingMessage("first")); assertTrue(dao.hasPendingMessage("later"))
+        assertTrue(dao.findPendingAsset(asset.sha256) != null); assertTrue(File(asset.localPath).isFile)
+        assertEquals(listOf("/api/v1/mobile/chat/assets","/api/v1/mobile/chat/messages/batch"),batches.single().map { it.first })
+        assertTrue(batches.single()[0].second.contains("YXNzZXQ="))
+        assertEquals(UploadRunResult(1,0),worker.runOnce(9000))
+        assertEquals(2,batches.size); assertTrue(File(asset.localPath).isFile)
+        assertEquals(0,server.requestCount)
+    }
+
+    @Test fun missingOriginalOrFailedAtomicCommitNeverConfirmsRoomMessage() = runBlocking {
+        val asset = pendingAsset()
+        dao.insertPendingAsset(asset);dao.insertPendingMessage(pendingMessage("pending",asset.sha256))
+        var batches = 0
+        val api = CaptureApi(server.url("/").toString(),DEVICE_ID,enqueueBatch={ batches++;false })
+        val worker = CaptureUploader(dao,api,assetFile={File(tempDir,it)})
+        assertEquals(UploadRunResult(1,1),worker.runOnce(1000))
+        assertTrue(dao.hasPendingMessage("pending"));assertTrue(File(asset.localPath).isFile)
+        File(asset.localPath).delete()
+        assertEquals(UploadRunResult(1,1),worker.runOnce(40000))
+        assertEquals(1,batches);assertTrue(dao.hasPendingMessage("pending"))
+        assertTrue(dao.findPendingAsset(asset.sha256)!=null)
+    }
+
+    @Test fun atomicHandoffBoundsReadsAndDefersMalformedDependenciesWithoutStarvingLaterMessages() = runBlocking {
+        for (i in 0..2) dao.insertPendingMessage(pendingMessage("bad-$i").copy(requiredAssetHashesJson="broken"))
+        dao.insertPendingMessage(pendingMessage("valid"))
+        var batches=0
+        val worker=CaptureUploader(dao,CaptureApi(server.url("/").toString(),DEVICE_ID,enqueueBatch={batches++;true}),assetFile={File(tempDir,it)})
+        assertEquals(UploadRunResult(2,2),worker.runOnce(1000))
+        assertEquals(UploadRunResult(2,1),worker.runOnce(1000))
+        assertEquals(1,batches);assertFalse(dao.hasPendingMessage("valid"));assertTrue(dao.hasPendingMessage("bad-0"))
+    }
+
+    @Test fun oversizedAtomicImageIsNotReadOrHandedOff() = runBlocking {
+        val asset=pendingAsset()
+        java.io.RandomAccessFile(File(asset.localPath),"rw").use { it.setLength(11L*1024*1024) }
+        dao.insertPendingAsset(asset);dao.insertPendingMessage(pendingMessage("large",asset.sha256))
+        val api=CaptureApi(server.url("/").toString(),DEVICE_ID,enqueueBatch={error("oversized image must stay local")})
+        assertEquals(UploadRunResult(1,1),CaptureUploader(dao,api,assetFile={File(tempDir,it)}).runOnce(1000))
+        assertTrue(dao.hasPendingMessage("large"));assertTrue(File(asset.localPath).isFile)
+    }
+
+    @Test fun malformedWireAssetDependenciesNeverBecomeEmptySuccessfulHandoffs() = runBlocking {
+        val malformed = listOf(JsonObject(emptyMap()), JsonPrimitive("bad"), JsonArray(listOf(JsonPrimitive(123))))
+        val api=CaptureApi(server.url("/").toString(),DEVICE_ID,enqueueBatch={error("malformed dependency must not hand off")})
+        for ((index, value) in malformed.withIndex()) {
+            val message=pendingMessage("malformed-$index")
+            val payload=api.decodeMessagePayload(message.payloadJson)
+            dao.insertPendingMessage(message.copy(payloadJson=Json.encodeToString(payload.copy(message=JsonObject(payload.message + ("asset_sha256" to value))))))
+            assertEquals(UploadRunResult(1,1),CaptureUploader(dao,api,assetFile={File(tempDir,it)}).runOnce(1000))
+            assertTrue(dao.hasPendingMessage(message.id))
+        }
+    }
+
     @Test
     fun duplicatedAssetResponseIsStillSuccessful() = runBlocking {
         val asset = pendingAsset()

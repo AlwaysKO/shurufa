@@ -12,6 +12,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28])
@@ -34,8 +35,8 @@ class EventDeliveryTest {
             remote.enqueue(MockResponse().setResponseCode(503))
             assertTrue(delivery.flush(a))
             assertFalse(delivery.flush(b))
-            assertEquals("/api/v1/mobile/device", local.takeRequest().path)
-            val request = local.takeRequest()
+            assertEquals("/api/v1/mobile/device", local.takeRequest(2, TimeUnit.SECONDS)!!.path)
+            val request = local.takeRequest(2, TimeUnit.SECONDS)!!
             assertEquals("device-1", request.getHeader("X-Device-Id"))
             assertTrue(request.body.readUtf8().contains("46898262"))
             assertEquals(listOf(e), store.pending(b))
@@ -99,8 +100,8 @@ class EventDeliveryTest {
 
 
             assertTrue(delivery.flush(a))
-            assertEquals("/api/v1/mobile/device", local.takeRequest().path)
-            val request = local.takeRequest()
+            assertEquals("/api/v1/mobile/device", local.takeRequest(2, TimeUnit.SECONDS)!!.path)
+            val request = local.takeRequest(2, TimeUnit.SECONDS)!!
             assertTrue("body must fit UTF-8 budget", request.bodySize <= 1024 * 1024)
             val first = Json.decodeFromString(EventBatch.serializer(), request.body.readUtf8()).events
             assertTrue(first.isNotEmpty())
@@ -112,7 +113,7 @@ class EventDeliveryTest {
             while (store.pending(a).isNotEmpty()) {
 
                 assertTrue(delivery.flush(a))
-                val next = local.takeRequest()
+                val next = local.takeRequest(2, TimeUnit.SECONDS)!!
                 assertTrue(next.bodySize <= 1024 * 1024)
                 uploaded.addAll(Json.decodeFromString(EventBatch.serializer(), next.body.readUtf8()).events)
             }
@@ -122,18 +123,40 @@ class EventDeliveryTest {
 
             assertFalse(delivery.flush(b))
             assertEquals(events, store.pending(b))
-            remote.takeRequest(); remote.takeRequest()
+            remote.takeRequest(2, TimeUnit.SECONDS)!!; remote.takeRequest(2, TimeUnit.SECONDS)!!
 
 
             failRemote=false
             assertTrue(delivery.flush(b))
-            remote.takeRequest()
-            val retry = remote.takeRequest()
+            val retry = remote.takeRequest(2, TimeUnit.SECONDS)!!
             assertTrue(retry.bodySize <= 1024 * 1024)
             assertEquals(first, Json.decodeFromString(EventBatch.serializer(), retry.body.readUtf8()).events)
             assertEquals(events.drop(first.size), store.pending(b))
         } finally {
             local.shutdown(); remote.shutdown(); store.close(); context.deleteDatabase(name)
+        }
+    }
+
+    @Test fun `仅身份失败才要求下次重新注册`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        for(code in listOf(401,403)) {
+            val name="identity-${UUID.randomUUID()}.db"
+            val store=LocalInputStore(context,name)
+            val server=MockWebServer().apply { start() }
+            try {
+                val target=server.url("/").toString().trimEnd('/')
+                store.enqueue(MobileEvent("id","device","commit",occurredAt="2026-10-08T00:00:00Z"),listOf(target))
+                server.enqueue(MockResponse().setBody("""{"ok":true}"""))
+                server.enqueue(MockResponse().setResponseCode(code))
+                val delivery=EventDelivery(store,OkHttpClient(),"device","{}")
+                assertFalse(delivery.flush(target))
+                server.enqueue(MockResponse().setBody("""{"ok":true}"""))
+                server.enqueue(MockResponse().setBody("""{"ok":true,"received":1}"""))
+                assertTrue(delivery.flush(target))
+                val paths=List(4) { server.takeRequest(2,TimeUnit.SECONDS)?.path }
+                assertEquals(listOf("/api/v1/mobile/device","/api/v1/mobile/events/batch","/api/v1/mobile/device","/api/v1/mobile/events/batch"),paths)
+                assertTrue(store.pending(target).isEmpty())
+            } finally { server.shutdown();store.close();context.deleteDatabase(name) }
         }
     }
 

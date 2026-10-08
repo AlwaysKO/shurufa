@@ -13,29 +13,45 @@ internal class RecentScreenshotContents(private val now: () -> Long = System::cu
     private fun key(e: ScreenshotContentEvidence) = Key(e.identity, e.titleHash, e.blocks.width)
     private fun validRows(blocks: ScreenshotContentBlocks): Boolean = blocks.height in 1..8192 &&
         blocks.rowHashes.size == blocks.height * SCREENSHOT_ROW_HASH_BYTES
-    private fun eligible(e: ScreenshotContentEvidence): Boolean = e.identity.isNotBlank() && e.titleHash.isNotBlank() &&
-        e.blocks.width > 0 && e.blocks.height in 1..8192 &&
-        e.blocks.hashes.size in 2..128 && e.blocks.hashes.distinct().size == e.blocks.hashes.size &&
-        (!e.blocks.hasClippedEdges || validRows(e.blocks))
+    private fun eligibilityReason(e: ScreenshotContentEvidence): ScreenshotContentReason? = when {
+        e.identity.isBlank() || e.titleHash.isBlank() -> ScreenshotContentReason.IDENTITY_UNVERIFIED
+        e.blocks.width <= 0 || e.blocks.height !in 1..8192 -> ScreenshotContentReason.INVALID_BOUNDS
+        e.blocks.hashes.size < 2 -> ScreenshotContentReason.INSUFFICIENT_ANCHORS
+        e.blocks.hashes.size > 128 -> ScreenshotContentReason.TOO_MANY_BLOCKS
+        e.blocks.hashes.distinct().size != e.blocks.hashes.size -> ScreenshotContentReason.REPEATED_ANCHORS
+        e.blocks.hasClippedEdges && !validRows(e.blocks) -> ScreenshotContentReason.ROWS_UNVERIFIED
+        else -> null
+    }
 
-    @Synchronized fun contains(evidence: ScreenshotContentEvidence): Boolean {
-        if (!eligible(evidence)) return false // 单块或重复锚点无法区分旧实例与新发送的相同消息。
+    @Synchronized fun contains(evidence: ScreenshotContentEvidence): Boolean =
+        matchReason(evidence) == ScreenshotContentReason.SAME_CONTENT
+
+    @Synchronized fun matchReason(evidence: ScreenshotContentEvidence): ScreenshotContentReason {
+        eligibilityReason(evidence)?.let { return it }
         val current = evidence.blocks
-        return saved[key(evidence)].orEmpty().any { old ->
-            if (now() - old.at !in 0..300_000) false
-            else if (old.blocks.hasClippedEdges || current.hasClippedEdges) {
-                // 锚点相同不等于边缘碎片相同；整个当前视口必须在单帧里唯一连续出现。
-                current.height <= old.blocks.height && validRows(old.blocks) && validRows(current) &&
-                    old.blocks.hashes.windowed(current.hashes.size).count { it == current.hashes } == 1 &&
-                    uniqueRowCoverage(old.blocks, current)
-            } else old.blocks.hashes == current.hashes ||
-                (current.height < old.blocks.height && current.hashes.size < old.blocks.hashes.size &&
-                    old.blocks.hashes.windowed(current.hashes.size).count { it == current.hashes } == 1)
+        var hasRecent = false
+        val matched = saved[key(evidence)].orEmpty().any { old ->
+            if (now() - old.at !in 0..300_000) false else {
+                hasRecent = true
+                if (old.blocks.hasClippedEdges || current.hasClippedEdges) {
+                    // 锚点相同不等于边缘碎片相同；整个当前视口必须在单帧里唯一连续出现。
+                    current.height <= old.blocks.height && validRows(old.blocks) && validRows(current) &&
+                        old.blocks.hashes.windowed(current.hashes.size).count { it == current.hashes } == 1 &&
+                        uniqueRowCoverage(old.blocks, current)
+                } else old.blocks.hashes == current.hashes ||
+                    (current.height < old.blocks.height && current.hashes.size < old.blocks.hashes.size &&
+                        old.blocks.hashes.windowed(current.hashes.size).count { it == current.hashes } == 1)
+            }
+        }
+        return when {
+            matched -> ScreenshotContentReason.SAME_CONTENT
+            hasRecent -> ScreenshotContentReason.CONTENT_CHANGED
+            else -> ScreenshotContentReason.NO_SAVED_CONTENT
         }
     }
 
     @Synchronized fun record(evidence: ScreenshotContentEvidence) {
-        if (!eligible(evidence)) return
+        if (eligibilityReason(evidence) != null) return
         val key = key(evidence)
         val frames = saved.remove(key) ?: mutableListOf()
         frames.removeAll { now() - it.at !in 0..300_000 || sameFrame(it.blocks, evidence.blocks) }
@@ -44,6 +60,7 @@ internal class RecentScreenshotContents(private val now: () -> Long = System::cu
         saved[key] = frames
         while (saved.size > 16) saved.remove(saved.keys.first())
     }
+    @Synchronized fun clearIdentity(identity: String) { saved.keys.removeAll { it.identity == identity } }
     @Synchronized fun clear() = saved.clear()
 
     private fun sameFrame(a: ScreenshotContentBlocks, b: ScreenshotContentBlocks): Boolean =

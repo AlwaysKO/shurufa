@@ -403,6 +403,7 @@ export interface ChatImageDeleteRequest {
 }
 
 export interface ChatMessageAsset {
+  perceptual_hash?: string | null;
   id: number;
   sha256: string;
   mime_type: string;
@@ -414,6 +415,7 @@ export interface ChatMessageAsset {
 }
 
 export interface ChatMessageRow {
+  device_id?: string;
   pending_diagnostic?: {
     reason: 'title_unreadable' | 'title_unconfirmed' | 'possible_existing_conversation' | 'non_chat_page';
     observed_title: string | null;
