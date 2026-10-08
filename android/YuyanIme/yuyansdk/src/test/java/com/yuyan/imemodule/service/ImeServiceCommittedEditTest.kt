@@ -244,6 +244,61 @@ class ImeServiceCommittedEditTest {
         assertNull(last.textAfter)
     }
 
+    @Test fun 普通点选异码修改和撤销失败不产生纠错加强() {
+        for (mode in listOf("ordinary", "different_code", "expired")) withService { service, _, db ->
+            val offline = OfflineT9Candidates
+            val sf = offline::class.java.getDeclaredField("store").apply { isAccessible = true }
+            (sf.get(offline) as? LocalInputStore)?.close(); sf.set(offline, null)
+            offline.init(service)
+            val tracker = com.yuyan.inputmethod.RimeEngine::class.java.getDeclaredField("t9CommitTracker").run {
+                isAccessible = true; get(com.yuyan.inputmethod.RimeEngine) as T9CommitTracker
+            }
+            try {
+                if (mode != "ordinary") {
+                    tracker.selected("78", "去", "qu"); service.commitText("去")
+                    service.deleteSurroundingText(1)
+                    if (mode == "expired") db.writableDatabase.execSQL("UPDATE pending_learning SET selected_at=0")
+                }
+                val code = if (mode == "different_code") "784" else "78"
+                tracker.selected(code, "如", "ru"); service.commitText("如")
+                val hints = offline::class.java.getDeclaredField("correctionHints").run {
+                    isAccessible = true; get(offline) as ConfirmedCorrectionHints
+                }
+                assertNull(mode, hints.at(code, "如", System.currentTimeMillis()))
+            } finally {
+                tracker.clear(); (sf.get(offline) as? LocalInputStore)?.close(); sf.set(offline, null)
+            }
+        }
+    }
+
+    @Test fun 连续明确纠错撤销前一提示且不制造次数() = withService { service, _, db ->
+        val offline = OfflineT9Candidates
+        val sf = offline::class.java.getDeclaredField("store").apply { isAccessible = true }
+        (sf.get(offline) as? LocalInputStore)?.close(); sf.set(offline, null)
+        offline.init(service)
+        val tracker = com.yuyan.inputmethod.RimeEngine::class.java.getDeclaredField("t9CommitTracker").run {
+            isAccessible = true; get(com.yuyan.inputmethod.RimeEngine) as T9CommitTracker
+        }
+        val hints = offline::class.java.getDeclaredField("correctionHints").run {
+            isAccessible = true; get(offline) as ConfirmedCorrectionHints
+        }
+        try {
+            tracker.selected("78", "去", "qu"); service.commitText("去")
+            service.deleteSurroundingText(1)
+            tracker.selected("78", "如", "ru"); service.commitText("如")
+            assertNotNull(hints.at("78", "如", System.currentTimeMillis()))
+            service.deleteSurroundingText(1)
+            tracker.selected("78", "去", "qu"); service.commitText("去")
+            assertNull(hints.at("78", "如", System.currentTimeMillis()))
+            assertNotNull(hints.at("78", "去", System.currentTimeMillis()))
+            assertNull(hints.at("784", "去", System.currentTimeMillis()))
+            assertEquals(1L, db.learned("78").single().count)
+            assertEquals("去", offline.select("78", listOf("如", "去")).firstPage.first().text)
+        } finally {
+            tracker.clear(); (sf.get(offline) as? LocalInputStore)?.close(); sf.set(offline, null)
+        }
+    }
+
     @Test fun 两条提交入口立即同码换词只取消本笔临时奖励() = withService { service, connection, db ->
         val context = ApplicationProvider.getApplicationContext<Context>()
         val offline = com.yuyan.imemodule.data.completion.OfflineT9Candidates

@@ -17,6 +17,7 @@ import com.yuyan.imemodule.data.emojicon.YuyanEmojiCompat
 import java.util.zip.GZIPInputStream
 
 internal object OfflineT9Candidates {
+    private val correctionHints = ConfirmedCorrectionHints()
     private val readingSeparators = Regex("[' ]+")
     private val learningScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var appContext: Context? = null
@@ -30,7 +31,10 @@ internal object OfflineT9Candidates {
 
     fun init(context: Context) {
         appContext = context.applicationContext
-        if (store == null) store = LocalInputStore(context)
+        if (store == null) {
+            correctionHints.clear()
+            store = LocalInputStore(context)
+        }
         // 上次进程结束时未结算的奖励仍在SQLite中；旧定时器丢失不等于丢学习。
         store?.settleLearning()
         scheduleLearningSettlement()
@@ -76,14 +80,11 @@ internal object OfflineT9Candidates {
             val now = System.currentTimeMillis()
             // 不调用会去重/注入历史项的通用rank，逐项保留原生索引和同字异读。
             val ranked = native.mapIndexed { index, text -> RankedCandidate(text, nativeComments?.getOrNull(index).orEmpty(), index) }
-                .sortedWith(compareByDescending<RankedCandidate> {
-                    PersonalCandidateRanker.recentSelection(history[it.text]?.lastUsed, now)
-                }.thenByDescending {
-                    val index = requireNotNull(it.nativeIndex)
-                    val choice = history[it.text]
-                    (if (index == 0) 2.0 else 1.0 / (index + 1)) +
-                        (choice?.let { h -> PersonalCandidateRanker.decay(h.weight, h.lastUsed, now) } ?: 0.0)
-                })
+                .map { candidate ->
+                    val choice = history[candidate.text]
+                    PersonalCandidateRanker.score(requireNotNull(candidate.nativeIndex), choice?.weight ?: 0.0,
+                        choice?.lastUsed ?: now, choice?.lastUsed, now, correctionHints.at(code, candidate.text, now)) to candidate
+                }.sortedByDescending { it.first }.map { it.second }
             return CandidateSelection(ranked, native.size, blockedTexts = blocked)
         }
         val numeric = code.length in 3..30 && code.all { it in '2'..'9' }
@@ -279,10 +280,28 @@ internal object OfflineT9Candidates {
         }
         // 明确手工词只在原拼写边界内获得基础先验，不写假点击，不改变锁音原生链。
         val preferred = try { store?.personalWords(code, preferredOnly = true).orEmpty() } catch (_: Exception) { emptyList() }
-        var phraseCount = 0
-        val ranked = PersonalCandidateRanker.rank(preferred.map {
+        val preferredKeys = preferred.mapTo(hashSetOf()) { it.text to it.pinyin }
+        val personalKeys = personalWords.mapTo(hashSetOf()) { it.text to it.pinyin }
+        val annotated = (preferred.map {
             RankedCandidate(it.text, it.pinyin, inputMatch = extraMatch(it.text, it.pinyin))
-        } + combined, learned, now).filter {
+        } + combined).map { candidate ->
+            val reading = readingMemo.normalize(candidate.text, candidate.pinyin)
+            val evidence = when {
+                (candidate.text to reading) in preferredKeys -> "personal_preferred"
+                mainDictionary?.containsText(candidate.text) == true || domainDictionary?.containsText(candidate.text) == true -> "dictionary"
+                publicPhrases?.contains(candidate.text) == true -> "public_phrase"
+                (candidate.text to reading) in personalKeys -> "personal"
+                candidate.nativeIndex != null -> "native_unverified"
+                else -> "unknown"
+            }
+            candidate.copy(lexicalEvidence = evidence, wholeInput = numeric &&
+                candidate.text.codePointCount(0, candidate.text.length) > 1 &&
+                code in T9Spelling.completionCodes(candidate.pinyin))
+        }
+        var phraseCount = 0
+        val ranked = PersonalCandidateRanker.rank(annotated, learned, now, trace = true) {
+            correctionHints.at(code, it, now)
+        }.filter {
             it.inputMatch?.kind != InputMatchKind.PHRASE_PREFIX || ++phraseCount <= 2
         }
         return CandidateSelection(ranked, native.size, rejected.toSet(), ::extraMatch, blocked) { text, reading ->
@@ -299,15 +318,12 @@ internal object OfflineT9Candidates {
             try { store?.learned(code).orEmpty().associateBy { it.text } }
             catch (_: Exception) { emptyMap() }
         }
-        val ranked = native.withIndex().sortedWith(compareByDescending<IndexedValue<RankedCandidate>> { (index, candidate) ->
+        val ranked = native.mapIndexed { index, candidate ->
             val choice = history[codes[index]]?.get(candidate.text)?.takeIf { it.count > 0 }
-            PersonalCandidateRanker.recentSelection(choice?.lastUsed, now)
-        }.thenByDescending { (index, candidate) ->
-            val prior = if (index == 0) 2.0 else 1.0 / (index + 1)
-            val choice = history[codes[index]]?.get(candidate.text)
-            prior + if (choice != null && choice.count > 0)
-                PersonalCandidateRanker.decay(choice.weight, choice.lastUsed, now) else 0.0
-        }).map { it.value }
+            PersonalCandidateRanker.score(index, choice?.weight ?: 0.0,
+                choice?.lastUsed ?: now, choice?.lastUsed, now,
+                codes[index]?.let { correctionHints.at(it, candidate.text, now) }) to candidate
+        }.sortedByDescending { it.first }.map { it.second }
         return CandidateSelection(ranked, nativeCount, blockedTexts = blockedCandidateTexts())
     }
 
@@ -330,13 +346,14 @@ internal object OfflineT9Candidates {
     }
 
     /** 本机即时排序可见，17秒严格观察窗内不出现在任何上传/备份里。 */
-    fun learnTemporarily(selection: T9CommitSelection, id: String): String? {
+    fun learnTemporarily(selection: T9CommitSelection, id: String, confirmedCorrection: Boolean = false): String? {
         val current = store ?: return null
         return try {
             val upload = appContext?.let { CollectionConsent.enabled(it) } == true &&
                 CollectionConsent.allowsEditor(YuyanEmojiCompat.mEditorInfo) && CollectionConsent.allowsText(selection.text)
             current.stageLearning(id, learningChoices(selection), if (upload) ServerConfig.eventTargets else emptyList())
             scheduleLearningSettlement()
+            if (confirmedCorrection) correctionHints.record(id, selection.code, selection.text, System.currentTimeMillis())
             id
         } catch (error: Exception) {
             Log.w("OfflineT9", "临时学习保存失败", error)
@@ -345,7 +362,7 @@ internal object OfflineT9Candidates {
     }
 
     fun cancelLearning(id: String) {
-        try { store?.cancelLearning(id) }
+        try { if (store?.cancelLearning(id) == true) correctionHints.cancel(id) }
         catch (error: Exception) { Log.w("OfflineT9", "临时学习撤销失败", error) }
     }
 
@@ -353,7 +370,9 @@ internal object OfflineT9Candidates {
         val retained = correction.retainedParts.map { part ->
             PendingChoice(T9Lexicon.digits(part.pinyin.replace(" ", "")), part.text, part.pinyin)
         }
-        store?.restrictLearning(correction.rewardId, retained) == true
+        (store?.restrictLearning(correction.rewardId, retained) == true).also { applied ->
+            if (applied) correctionHints.cancel(correction.rewardId)
+        }
     } catch (error: Exception) {
         Log.w("OfflineT9", "局部学习撤销失败", error)
         false

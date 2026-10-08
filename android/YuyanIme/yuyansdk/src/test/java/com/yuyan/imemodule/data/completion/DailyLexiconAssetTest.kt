@@ -42,9 +42,13 @@ class DailyLexiconAssetTest {
         finally { db.close() }
     }
 
-    @Test fun `公共词库更新不压过用户真实改选且不放宽长词简拼`() {
+    @Test fun `公共词库保留偶选且重复使用可提升不放宽长词简拼`() {
         assertEquals("我们", OfflineT9Candidates.select("966", listOf("我哦"), listOf("wo o")).firstPage.first().text)
         OfflineT9Candidates.learn("966", "我哦", "wo o")
+        val once = OfflineT9Candidates.select("966", listOf("我哦"), listOf("wo o")).firstPage
+        assertEquals("我们", once.first().text)
+        assertTrue(once.take(3).any { it.text == "我哦" })
+        repeat(3) { OfflineT9Candidates.learn("966", "我哦", "wo o") }
         assertEquals("我哦", OfflineT9Candidates.select("966", listOf("我哦"), listOf("wo o")).firstPage.first().text)
         assertFalse(OfflineT9Candidates.select("649439", emptyList(), emptyList()).firstPage.any { it.text == "美国最高法院" })
     }

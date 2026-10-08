@@ -5,7 +5,7 @@ import type pg from 'pg';
 export const chatPlatforms = ['wechat', 'qq', 'douyin'];
 /** 历史OCR固定页面别名仅作用于微信截图来源；不改库、不模糊合并真实联系人。 */
 export function conversationGroupName(alias = 'c'): string {
-  const name = `btrim(${alias}.display_name)`;
+  const name = `chat_title_to_simplified(CASE WHEN ${truncatedConversation(alias)} THEN btrim(regexp_replace(btrim(${alias}.display_name),'（名称被截断）$','')) ELSE btrim(${alias}.display_name) END)`;
   return `(CASE WHEN ${alias}.metadata->>'manual_display_name'='true' THEN ${name}
     WHEN ${alias}.platform='wechat' AND ${alias}.account_key='wechat-empty-tree' THEN
     CASE WHEN ${name} IN ('朋友圈','朋友屠','用友殿','田友殿') THEN '朋友圈'
@@ -13,7 +13,7 @@ export function conversationGroupName(alias = 'c'): string {
       WHEN ${name} IN ('发现','发机') THEN '发现' ELSE ${name} END
     ELSE ${name} END)`;
 }
-/** 可读但不完整的标题只按独立来源展示，不能按可见简称扩大查询/删除范围。 */
+/** 手机端截断身份仍独立；后台按用户确认的可见同名规则展示聚合。 */
 export function truncatedConversation(alias = 'c'): string {
   return `${alias}.external_key ~ '^screenshot-v2:truncated:[a-f0-9-]{36}$'`;
 }
@@ -41,7 +41,7 @@ export function chatConversationScope(userId: string, id: number, platform: unkn
     if (id <= 0 || typeof name !== 'string' || !name.length || name.length > 500 ||
         typeof platform !== 'string' || !chatPlatforms.includes(platform)) return null;
     return { sql: `c.user_id=$1 AND c.platform=$3 AND c.merged_into_id IS NULL
-        AND NOT (${pendingConversation()}) AND NOT (${truncatedConversation()}) AND ${conversationGroupName()}=$2`, params: [userId, name, platform], mode: 'name' as const };
+        AND NOT (${pendingConversation()}) AND ${conversationGroupName()}=chat_title_to_simplified($2)`, params: [userId, name, platform], mode: 'name' as const };
   }
   if (pendingScope(id, platform)) return {
     sql: `c.user_id=$1 AND c.platform=$2 AND ${pendingConversation()}`, params: [userId, platform], mode: 'pending' as const,
@@ -70,9 +70,9 @@ export function createChatPendingRouter(pool: pg.Pool): Router {
     try {
       const scope = `c.user_id=$1 AND c.platform=$2 AND c.merged_into_id IS NULL`;
       const pending = pendingConversation();
-      const known = `${scope} AND NOT (${pending}) AND COALESCE(${groupNames ? conversationGroupName() : 'c.display_name'},c.external_key) ILIKE $3${exactName === undefined ? '' : ` AND NOT (${truncatedConversation()}) AND ${conversationGroupName()}=$4`}`;
+      const known = `${scope} AND NOT (${pending}) AND COALESCE(${groupNames ? conversationGroupName() : 'c.display_name'},c.external_key) ILIKE ${groupNames ? 'chat_title_to_simplified($3)' : '$3'}${exactName === undefined ? '' : ` AND ${conversationGroupName()}=chat_title_to_simplified($4)`}`;
       // 空名称保留各自来源；不能把所有缺名称记录误当同一个已知联系人。
-      const groupingKey = groupNames ? `CASE WHEN ${truncatedConversation()} THEN 'id:' || c.id::text ELSE COALESCE('name:' || NULLIF(${conversationGroupName()},''), 'id:' || c.id::text) END` : 'c.id::text';
+      const groupingKey = groupNames ? `COALESCE('name:' || NULLIF(${conversationGroupName()},''), 'id:' || c.id::text)` : 'c.id::text';
       const [summary, count] = await Promise.all([
         pool.query(`SELECT COUNT(DISTINCT c.id) AS sources,COUNT(m.id) AS message_count,
           MIN(c.first_seen_at) AS first_seen_at,MAX(c.last_seen_at) AS last_seen_at,MAX(m.captured_at) AS last_message_at
@@ -93,7 +93,7 @@ export function createChatPendingRouter(pool: pg.Pool): Router {
           MIN(first_seen_at) AS first_seen_at,MAX(last_seen_at) AS last_seen_at
         FROM sources GROUP BY grouping_key
       ) SELECT c.*,
-        ${groupNames ? `CASE WHEN ${truncatedConversation()} THEN NULL ELSE NULLIF(${conversationGroupName()},'') END` : 'NULL::text'} AS group_name,
+        ${groupNames ? `NULLIF(${conversationGroupName()},'')` : 'NULL::text'} AS group_name,
         ${groupNames ? `COALESCE(NULLIF(${conversationGroupName()},''),c.display_name)` : 'c.display_name'} AS display_name,g.*
         FROM groups g JOIN chat_conversation c ON c.id=g.id
         ORDER BY g.last_seen_at DESC,g.id DESC LIMIT $${params.length+1} OFFSET $${params.length+2}`, [...params,limit,offset]);

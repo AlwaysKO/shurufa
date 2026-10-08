@@ -37,6 +37,94 @@ import java.util.concurrent.atomic.AtomicLong
 @Config(sdk = [30], qualifiers = "mdpi", shadows = [WechatListCaptureTest.ServiceShadow::class])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class WechatPromptCaptureTest {
+    @Test fun failedFastSendGetsOneOrdinaryCaptureAfterInputStops() = runBlocking {
+        Harness().use { h ->
+            h.policy().confirm(h.windowId, h.generation())
+            h.screenshotHook = { WindowScreenshotResult.Failed(SCREENSHOT_BACKGROUND_PAUSED) }
+            ImageUploadRuntime.noteKeyActivity()
+            h.request(afterSend = true)
+            h.until { h.promptJob()?.isActive != true }
+            assertEquals(0, h.ordinaryRequests.get())
+            ShadowSystemClock.advanceBy(Duration.ofSeconds(4))
+            h.until { h.pending.isNotEmpty() }
+            assertEquals("快帧失败后同页空闲只补一次普通采集", 1, h.ordinaryRequests.get())
+            assertEquals(1, h.pending.size)
+        }
+    }
+
+    @Test fun failedFastSendRecoveryDoesNotFollowNavigation() = runBlocking {
+        Harness().use { h ->
+            h.policy().confirm(h.windowId, h.generation())
+            h.screenshotHook = { WindowScreenshotResult.Failed(SCREENSHOT_BACKGROUND_PAUSED) }
+            ImageUploadRuntime.noteKeyActivity()
+            h.request(afterSend = true)
+            h.until { h.promptJob()?.isActive != true }
+            h.resetNavigation()
+            ShadowSystemClock.advanceBy(Duration.ofSeconds(4))
+            repeat(20) { Shadows.shadowOf(Looper.getMainLooper()).idle(); delay(10) }
+            assertEquals(0, h.ordinaryRequests.get())
+            assertTrue(h.pending.isEmpty())
+        }
+    }
+
+    @Test fun successfulNewSendInvalidatesOlderIdleRecovery() = runBlocking {
+        Harness().use { h ->
+            h.policy().confirm(h.windowId, h.generation())
+            h.screenshotHook = { WindowScreenshotResult.Failed(SCREENSHOT_BACKGROUND_PAUSED) }
+            ImageUploadRuntime.noteKeyActivity()
+            h.request(afterSend = true)
+            h.until { h.promptJob()?.isActive != true }
+            h.screenshotHook = { null }
+            ImageUploadRuntime.noteKeyActivity()
+            h.request(afterSend = true)
+            h.until { h.frames.any { it.second.isAccepted } }
+            ShadowSystemClock.advanceBy(Duration.ofSeconds(4))
+            h.until { h.pending.size == 1 && h.promptJob()?.isActive != true }
+            repeat(20) { Shadows.shadowOf(Looper.getMainLooper()).idle(); delay(10) }
+            assertEquals("新发送成功后不能再执行旧发送的空闲补偿", 0, h.ordinaryRequests.get())
+        }
+    }
+
+    @Test fun revokedConsentCancelsFailedSendIdleRecovery() = runBlocking {
+        Harness().use { h ->
+            h.policy().confirm(h.windowId, h.generation())
+            h.screenshotHook = { WindowScreenshotResult.Failed(SCREENSHOT_BACKGROUND_PAUSED) }
+            ImageUploadRuntime.noteKeyActivity()
+            h.request(afterSend = true)
+            h.until { h.promptJob()?.isActive != true }
+            CollectionConsent.setEnabled(h.service, false)
+            ShadowSystemClock.advanceBy(Duration.ofSeconds(4))
+            repeat(20) { Shadows.shadowOf(Looper.getMainLooper()).idle(); delay(10) }
+            assertEquals(0, h.ordinaryRequests.get())
+            assertTrue(h.pending.isEmpty())
+        }
+    }
+
+    @Test fun cancelledFastSendDoesNotStartIdleRecovery() = runBlocking {
+        Harness().use { h ->
+            ImageUploadRuntime.noteKeyActivity()
+            h.request(afterSend = true)
+            h.promptJob()?.cancelAndJoin()
+            ShadowSystemClock.advanceBy(Duration.ofSeconds(4))
+            repeat(20) { Shadows.shadowOf(Looper.getMainLooper()).idle(); delay(10) }
+            assertEquals(0, h.ordinaryRequests.get())
+            assertTrue(h.frames.isEmpty())
+            assertTrue(h.pending.isEmpty())
+        }
+    }
+
+    @Test fun explicitSendDoesNotWaitForPreviousPeerTypingCooldown() = runBlocking {
+        Harness().use { h ->
+            h.policy().observeTitle(h.windowId, h.generation(), "typing")
+            assertTrue(h.policy().captureDelayMillis(ScreenshotScope(h.windowId, h.generation())) > 0)
+            ImageUploadRuntime.noteKeyActivity()
+            h.request(afterSend = true)
+            h.until { h.frames.isNotEmpty() || h.promptJob()?.isActive != true }
+            assertEquals("明确发送不能被之前的对方输入状态推迟三秒", 1, h.frames.size)
+            h.until { h.frames.single().second.isAccepted }
+        }
+    }
+
     @Test fun acceptedWechatSendFramePersistsOriginalConversationAfterNavigationWithoutChangingNewPage() = runBlocking {
         Harness().use { h ->
             ImageUploadRuntime.noteKeyActivity()
@@ -95,6 +183,63 @@ class WechatPromptCaptureTest {
             h.until { h.frames.singleOrNull()?.second?.isAccepted == true }
             val elapsedMillis = (h.requestNanos.first() - startedAt) / 1_000_000
             assertTrue("消息渲染尚未给出正文更新信号时不能在早期锁定旧画面: $elapsedMillis", elapsedMillis >= 250)
+        }
+    }
+
+    @Test fun contentNotificationDuringRequestedSendFrameDoesNotDiscardIt() = runBlocking {
+        Harness().use { h ->
+            h.screenshotHook = {
+                // 与真机一致：渲染已稳定并开始取帧，回调前又收到同页content事件。
+                (h.field("pendingSendRender") as SendRenderWait).changed()
+                null
+            }
+            ImageUploadRuntime.noteKeyActivity()
+            h.request(afterSend = true)
+            h.until { h.frames.any { it.second.isAccepted } || h.promptJob()?.isActive != true }
+            assertTrue("泛化content通知不能丢弃已经就绪的发送帧", h.frames.any { it.second.isAccepted })
+            h.resetNavigation()
+            ShadowSystemClock.advanceBy(Duration.ofSeconds(4))
+            h.until { h.pending.size == 1 && h.promptJob()?.isActive != true }
+            assertTrue(h.pending.single().payloadJson.contains("原会话"))
+        }
+    }
+
+    @Test fun navigationBeforeSendCallbackStillRejectsFrame() = runBlocking {
+        assertInFlightInvalidated { it.resetNavigation() }
+    }
+
+    @Test fun newInputBeforeSendCallbackStillRejectsFrame() = runBlocking {
+        assertInFlightInvalidated { ImageUploadRuntime.noteKeyActivity() }
+    }
+
+    @Test fun revokedConsentBeforeSendCallbackStillRejectsFrame() = runBlocking {
+        assertInFlightInvalidated { CollectionConsent.setEnabled(it.service, false) }
+    }
+
+    @Test fun gameBeforeSendCallbackStillRejectsFrame() = runBlocking {
+        assertInFlightInvalidated { com.yuyan.imemodule.data.collect.GameWorkRuntime.setGaming(true) }
+    }
+
+    @Test fun newTouchBeforeSendCallbackStillRejectsFrame() = runBlocking {
+        assertInFlightInvalidated { h ->
+            val event = AccessibilityEvent.obtain(AccessibilityEvent.TYPE_TOUCH_INTERACTION_START).apply {
+                packageName = "com.tencent.mm"
+            }
+            h.service.onAccessibilityEvent(event)
+            event.recycle()
+        }
+    }
+
+    private suspend fun assertInFlightInvalidated(invalidate: (Harness) -> Unit) {
+        Harness().use { h ->
+            h.screenshotHook = { invalidate(h); null }
+            ImageUploadRuntime.noteKeyActivity()
+            h.request(afterSend = true)
+            h.until { h.promptJob()?.isActive != true }
+            assertTrue("必须真正覆盖系统请求已发出后的失效", h.frames.isNotEmpty())
+            assertTrue(h.frames.none { it.second.isAccepted })
+            assertTrue(h.frames.all { it.first.isRecycled })
+            assertTrue(h.pending.isEmpty())
         }
     }
 
@@ -172,6 +317,7 @@ class WechatPromptCaptureTest {
         val requestNanos = CopyOnWriteArrayList<Long>()
         val scrollingAtRequest = CopyOnWriteArrayList<Boolean>()
         val pending = CopyOnWriteArrayList<PendingMessageEntity>()
+        val ordinaryRequests = AtomicInteger()
         val encodes = AtomicInteger()
         val liveObservations = AtomicInteger()
         private val files = CopyOnWriteArrayList<String>()
@@ -196,7 +342,18 @@ class WechatPromptCaptureTest {
             set("mediaCapturer", WindowMediaCapturer(service, ScreenshotSource { _, _ ->
                 requestNanos += System.nanoTime()
                 scrollingAtRequest += (field("scrollGate") as ScrollCaptureGate).isScrolling()
-                screenshotHook()?.let { return@ScreenshotSource it }
+                val attempt = currentCoroutineContext()[ChatCaptureAttempt]
+                if (attempt == null) {
+                    ordinaryRequests.incrementAndGet()
+                    return@ScreenshotSource WindowScreenshotResult.Success(
+                        Bitmap.createBitmap(400, 800, Bitmap.Config.ARGB_8888).apply { eraseColor(Color.WHITE) }, 0, 0)
+                }
+                // 模拟真实WindowScreenshotter在物理调用紧前进入在途阶段。
+                if (!attempt.beginFrameRequest()) return@ScreenshotSource WindowScreenshotResult.Failed(SCREENSHOT_BACKGROUND_PAUSED)
+                screenshotHook()?.let { result ->
+                    if (result !is WindowScreenshotResult.Success) attempt.frameRequestFailed()
+                    return@ScreenshotSource result
+                }
                 val bitmap = Bitmap.createBitmap(400, 800, Bitmap.Config.ARGB_8888).apply { eraseColor(Color.WHITE) }
                 frames += bitmap to requireNotNull(currentCoroutineContext()[ChatCaptureAttempt])
                 WindowScreenshotResult.Success(bitmap, 0, 0)

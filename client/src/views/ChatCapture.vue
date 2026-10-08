@@ -51,7 +51,7 @@ const groupScopeArgs = computed((): [ChatPlatform?, string?] => selected.value?.
 function displayName(conversation: ChatConversationRow | null) {
   if (!conversation) return '';
   if (/^screenshot-v2:truncated:[a-f0-9-]{36}$/.test(conversation.external_key)) {
-    return conversation.display_name?.replace(/（名称被截断）$/, '') || conversation.external_key;
+    return conversation.display_name?.trim().replace(/（名称被截断）$/, '').trim() || conversation.external_key;
   }
   return conversation.is_pending_group || conversation.is_pending_source || conversation.display_name?.startsWith('待确认')
     ? '待确认会话' : conversation.display_name || conversation.external_key;
@@ -366,8 +366,8 @@ async function load() {
           /^(?:微信会话)/.test(restored.display_name || ''))));
       if (restored && (restored.is_pending_source ?? legacyPending)) {
         restored = conversations.value.find(item => item.id === -1) ?? null;
-      } else if (restored?.display_name?.trim() && !/^screenshot-v2:truncated:[a-f0-9-]{36}$/.test(restored.external_key)) {
-        const name = restored.display_name.trim();
+      } else if (restored?.display_name?.trim()) {
+        const name = displayName(restored).trim();
         const group = conversations.value.find(item => item.group_name === name);
         if (group) restored = group;
         else if (restored.is_pending_source === false) {

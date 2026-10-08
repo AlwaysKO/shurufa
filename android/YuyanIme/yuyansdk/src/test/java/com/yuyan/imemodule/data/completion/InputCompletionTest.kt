@@ -64,7 +64,7 @@ class InputCompletionTest {
         OfflineT9Candidates.learn("559", "良口镇", "liang kou zhen")
         closeStore()
         OfflineT9Candidates.init(context)
-        assertEquals("良口镇", OfflineT9Candidates.select("559", emptyList(), emptyList()).firstPage.first().text)
+        assertTrue(OfflineT9Candidates.select("559", emptyList(), emptyList()).firstPage.take(3).any { it.text == "良口镇" })
         val db = LocalInputStore(context)
         try {
             assertEquals(1L, db.learned("559").single().count)
@@ -103,7 +103,7 @@ class InputCompletionTest {
         closeStore()
         OfflineT9Candidates.init(context)
         val candidates = OfflineT9Candidates.select(code, emptyList(), emptyList()).firstPage
-        assertEquals(text, candidates.first().text)
+        assertTrue(candidates.take(3).any { it.text == text })
         assertTrue(candidates.count { it.inputMatch?.kind == InputMatchKind.PHRASE_PREFIX } <= 2)
     }
 }

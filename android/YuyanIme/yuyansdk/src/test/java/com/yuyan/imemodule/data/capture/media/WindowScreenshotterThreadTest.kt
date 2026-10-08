@@ -34,6 +34,7 @@ import java.util.concurrent.Executor
 @Config(sdk = [30], shadows = [WindowScreenshotterThreadTest.ServiceShadow::class])
 class WindowScreenshotterThreadTest {
     @Before fun inputStartsIdle() {
+        ServiceShadow.onRootRead = {}
         // Robolectric 时钟会重置，但同配置的运行时单例可能跨测试保留。
         com.yuyan.imemodule.data.collect.ImageUploadRuntime.noteKeyActivity()
         org.robolectric.shadows.ShadowSystemClock.advanceBy(java.time.Duration.ofMillis(3001))
@@ -50,6 +51,7 @@ class WindowScreenshotterThreadTest {
         @Implementation
         fun getRootInActiveWindow(): AccessibilityNodeInfo? {
             operations += "root" to Thread.currentThread()
+            onRootRead()
             if (rootUnavailable) return null
             return AccessibilityNodeInfo.obtain().apply { packageName = "com.tencent.mm" }
         }
@@ -66,9 +68,42 @@ class WindowScreenshotterThreadTest {
 
         companion object {
             var rootUnavailable = false
+            var onRootRead: () -> Unit = {}
             val operations = CopyOnWriteArrayList<Pair<String, Thread>>()
             var delayedCallback: CompletableDeferred<Pair<Executor, AccessibilityService.TakeScreenshotCallback>>? = null
         }
+    }
+
+    @Test fun frameLockStartsAfterWindowCheckAndReleasesOnSystemFailure() = runBlocking {
+        ServiceShadow.operations.clear()
+        val service = Robolectric.buildService(TestService::class.java).create().get()
+        val attempt = ChatCaptureAttempt({ true }, { true }, { true },
+            onFrameRequest = { ServiceShadow.operations += "lock" to Thread.currentThread(); true },
+            onFrameFailure = { ServiceShadow.operations += "unlock" to Thread.currentThread() })
+        try {
+            kotlinx.coroutines.withContext(attempt) {
+                WindowScreenshotter(service).capture(-1, IntRect(0, 0, 1080, 1920))
+            }
+            assertEquals(listOf("root", "lock", "request", "callback", "unlock"), ServiceShadow.operations.map { it.first })
+        } finally { service.onDestroy(); ServiceShadow.operations.clear() }
+    }
+
+    @Test fun contentDuringWindowCheckCannotLockFramePrematurely() = runBlocking {
+        var now = 0L
+        val render = com.yuyan.imemodule.service.capture.SendRenderWait("com.tencent.mm", 1) { now }
+        now = 350
+        val service = Robolectric.buildService(TestService::class.java).create().get()
+        ServiceShadow.operations.clear()
+        ServiceShadow.onRootRead = { now = 360; render.changed() }
+        val attempt = ChatCaptureAttempt({ true }, render::isSettled, { true },
+            onFrameRequest = render::beginFrameRequest, onFrameFailure = render::frameRequestFailed)
+        try {
+            val result = kotlinx.coroutines.withContext(attempt) {
+                WindowScreenshotter(service).capture(-1, IntRect(0, 0, 1080, 1920))
+            }
+            assertEquals(WindowScreenshotResult.Failed(SCREENSHOT_BACKGROUND_PAUSED), result)
+            assertFalse(ServiceShadow.operations.any { it.first == "request" })
+        } finally { ServiceShadow.onRootRead = {}; service.onDestroy(); ServiceShadow.operations.clear() }
     }
 
     @Test

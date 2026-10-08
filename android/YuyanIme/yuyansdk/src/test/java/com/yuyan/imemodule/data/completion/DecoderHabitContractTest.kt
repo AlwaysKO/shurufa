@@ -50,20 +50,20 @@ class DecoderHabitContractTest {
         try { block(store) } finally { store.close() }
     }
 
-    @Test fun `基础候选顺序改变不能覆盖最近真实同码改选及锁音索引`() {
+    @Test fun `一次新选择不覆盖高频真实习惯且两种基础顺序都保留锁音索引`() {
         withStore { store ->
             repeat(8) { store.learn(code, name.text, pinyin = name.pinyin) }
             store.writableDatabase.execSQL("UPDATE learned_input SET last_used=last_used-60000")
             store.learn(code, sentence.text, pinyin = sentence.pinyin)
         }
         for (native in listOf(listOf(name, sentence), listOf(sentence, name))) {
-            val expectedIndex = native.indexOf(sentence)
-            assertEquals(sentence.text, candidates(native).first().text)
+            val expectedIndex = native.indexOf(name)
+            assertEquals(name.text, candidates(native).first().text)
             assertEquals(expectedIndex, candidates(native).first().nativeIndex)
             val locked = OfflineT9Candidates.rankNative(native.mapIndexed { index, item ->
                 item.copy(nativeIndex = index)
             }, native.size)
-            assertEquals(sentence.text, locked.firstPage.first().text)
+            assertEquals(name.text, locked.firstPage.first().text)
             assertEquals(expectedIndex, locked.firstPage.first().nativeIndex)
         }
         withStore { store ->
@@ -98,7 +98,7 @@ class DecoderHabitContractTest {
         }
     }
 
-    @Test fun `后台偏好标志改变默认排序但后续真实改选可优先且不制造点击`() {
+    @Test fun `后台偏好改变默认排序但后续重复选择可优先且不制造点击`() {
         val typedCode = "966"
         val usual = RankedCandidate("我们", "wo men")
         val preferred = RankedCandidate("我哦", "wo o")
@@ -119,11 +119,13 @@ class DecoderHabitContractTest {
         }
         closeStore()
         OfflineT9Candidates.init(context)
+        assertEquals(preferred.text, candidates(native.reversed(), typedCode).first().text)
+        withStore { store -> repeat(2) { store.learn(typedCode, usual.text, pinyin = usual.pinyin) } }
         assertEquals(usual.text, candidates(native.reversed(), typedCode).first().text)
         assertTrue(candidates(listOf(usual), typedCode).any { it.text == preferred.text })
         withStore { store ->
             assertEquals(listOf(usual.text), store.learned(typedCode).map { it.text })
-            assertEquals(1L, store.learned(typedCode).single().count)
+            assertEquals(3L, store.learned(typedCode).single().count)
         }
     }
 
@@ -167,8 +169,10 @@ class DecoderHabitContractTest {
         closeStore()
         OfflineT9Candidates.init(context)
         val recalled = candidates(listOf(name))
-        assertEquals("煮的面", recalled.first().text)
-        assertNull("未依赖原生引擎生成整句", recalled.first().nativeIndex)
+        assertTrue(recalled.take(3).any { it.text == "煮的面" })
+        assertNull("未依赖原生引擎生成整句", recalled.first { it.text == "煮的面" }.nativeIndex)
         withStore { store -> assertEquals(1L, store.learned(code).single { it.text == "煮的面" }.count) }
+        repeat(3) { OfflineT9Candidates.learn(selection) }
+        assertEquals("煮的面", candidates(listOf(name)).first().text)
     }
 }

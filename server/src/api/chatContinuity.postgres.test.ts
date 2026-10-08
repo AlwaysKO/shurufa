@@ -379,28 +379,34 @@ test('微信OCR固定页面的旧错字标签集中展示，不改原始数据�
  expect((await pool.query('SELECT display_name FROM chat_conversation WHERE id=$1',[ids[1]])).rows[0].display_name).toBe('朋友屠');
 });
 
-test('截断简称独立显示且不参与待确认桶或按同名读取删除',async()=>{
- const ids=[await conversation(),await conversation()];const name='测试…店5337（名称被截断）';
- for(const id of ids){await pool.query("UPDATE chat_conversation SET external_key=$2,display_name=$3,identity_confidence=.55 WHERE id=$1",[id,'screenshot-v2:truncated:'+randomUUID(),name]);await message(id);}
+test('截断可见同名聚合展示并读取全部来源，删除仍核对来源快照',async()=>{
+ const ids=[await conversation(),await conversation()];const visible='测试…店5337',name=visible+'（名称被截断）';
+ for(const [i,id] of ids.entries()){await pool.query("UPDATE chat_conversation SET external_key=$2,display_name=$3,identity_confidence=.55 WHERE id=$1",[id,'screenshot-v2:truncated:'+randomUUID(),i===0?name:visible]);await message(id);}
  const list=await agent.get(`/api/v1/dashboard/chat/conversations?user_id=${A}&platform=wechat&group_names=true&group_pending=true`);
- expect(list.status).toBe(200);expect(list.body.total).toBe(2);
- expect(list.body.conversations.map((c:any)=>c.id).sort()).toEqual([...ids].sort());
- for(const c of list.body.conversations){expect(c).toMatchObject({display_name:name,group_name:null,is_name_group:false,source_count:1,message_count:1});}
+ expect(list.status).toBe(200);expect(list.body.total).toBe(1);
+ expect(list.body.conversations).toHaveLength(1);
+ expect(list.body.conversations[0]).toMatchObject({display_name:visible,group_name:visible,is_name_group:true,source_count:2,message_count:2,source_ids:ids});
+ const exact=await agent.get('/api/v1/dashboard/chat/conversations').query({user_id:A,platform:'wechat',group_names:true,name:visible});
+ expect(exact.body.conversations).toHaveLength(1);
  const resolved=await agent.get(`/api/v1/dashboard/chat/conversations/${ids[0]}/resolve?user_id=${A}`);
- expect(resolved.body.conversation).toMatchObject({display_name:name,is_pending_source:false});
+ expect(resolved.body.conversation).toMatchObject({display_name:visible,is_pending_source:false});
+ expect((await pool.query('SELECT display_name FROM chat_conversation WHERE id=$1',[ids[0]])).rows[0].display_name).toBe(name);
  const single=await agent.get(`/api/v1/dashboard/chat/messages?user_id=${A}&conversation_id=${ids[0]}`);
- expect(single.body.total).toBe(1);expect(single.body.messages[0].conversation_id).toBe(ids[0]);
- const grouped=await agent.get(`/api/v1/dashboard/chat/messages?user_id=${A}&conversation_id=${ids[0]}&platform=wechat&group_name=${encodeURIComponent(name)}`);
- expect(grouped.status).toBe(200);expect(grouped.body.total).toBe(0);
- const deletion=await agent.post(`/api/v1/dashboard/chat/conversation-groups/delete?user_id=${A}`).send({platform:'wechat',group_name:name,source_ids:ids,confirm:'DELETE'});
- expect(deletion.status).toBe(409);expect((await pool.query('SELECT COUNT(*) FROM chat_message')).rows[0].count).toBe('2');
+ expect(single.body.total).toBe(1);
+ const grouped=await agent.get('/api/v1/dashboard/chat/messages').query({user_id:A,conversation_id:ids[0],platform:'wechat',group_name:visible,page_size:1});
+ expect(grouped.status).toBe(200);expect(grouped.body.total).toBe(2);expect(grouped.body.messages).toHaveLength(1);
+ expect((await pool.query('SELECT COUNT(*) FROM chat_conversation')).rows[0].count).toBe('2');
+ const stale=await agent.post(`/api/v1/dashboard/chat/conversation-groups/delete?user_id=${A}`).send({platform:'wechat',group_name:visible,source_ids:[ids[0]],confirm:'DELETE'});
+ expect(stale.status).toBe(409);expect((await pool.query('SELECT COUNT(*) FROM chat_message')).rows[0].count).toBe('2');
+ const deletion=await agent.post(`/api/v1/dashboard/chat/conversation-groups/delete?user_id=${A}`).send({platform:'wechat',group_name:visible,source_ids:ids,confirm:'DELETE'});
+ expect(deletion.status).toBe(200);expect((await pool.query('SELECT COUNT(*) FROM chat_message')).rows[0].count).toBe('0');
 });
 
 test('截断群名真实以待确认开头仍显示其可见名称',async()=>{
  const id=await conversation(),name='待确认订单…门店（名称被截断）';
  await pool.query('UPDATE chat_conversation SET external_key=$2,display_name=$3,identity_confidence=.55 WHERE id=$1',[id,'screenshot-v2:truncated:'+randomUUID(),name]);await message(id);
  const list=await agent.get(`/api/v1/dashboard/chat/conversations?user_id=${A}&platform=wechat&group_names=true&group_pending=true`);
- expect(list.body.conversations).toHaveLength(1);expect(list.body.conversations[0]).toMatchObject({id,display_name:name,is_name_group:false});
+ expect(list.body.conversations).toHaveLength(1);expect(list.body.conversations[0]).toMatchObject({id,display_name:'待确认订单…门店',group_name:'待确认订单…门店',is_name_group:true});
  const resolved=await agent.get(`/api/v1/dashboard/chat/conversations/${id}/resolve?user_id=${A}`);
  expect(resolved.body.conversation.is_pending_source).toBe(false);
 });
@@ -463,4 +469,42 @@ test('同名组批量删除禁止混入其他手机App来源和待确认汇总�
  expect((await batchRemove([{id:pending}])).status).toBe(409);
  expect((await batchRemove([{group_name:'同名',source_ids:[a]},{group_name:'同名',source_ids:[b]}])).status).toBe(400);
  expect((await pool.query('SELECT count(*) FROM chat_message')).rows[0].count).toBe('4');
+});
+
+
+test('历史繁简标题同组显示且不覆盖原文或跨手机平台',async()=>{
+ const cases=[['康曉林','康晓林'],['王彥兵','王彦兵'],['文件傳輸助手','文件传输助手']];
+ for(const [raw,name] of cases){
+  const a=await conversation(),b=await conversation(),foreign=await conversation('wechat',B),douyin=await conversation('douyin');
+  for(const [id,title] of [[a,raw],[b,name],[foreign,raw],[douyin,raw]])await pool.query('UPDATE chat_conversation SET display_name=$2 WHERE id=$1',[id,title]);
+  for(const id of [a,b,douyin])await message(id);await message(foreign,{user:B});
+  const list=await agent.get('/api/v1/dashboard/chat/conversations').query({user_id:A,platform:'wechat',group_names:true,name});
+  expect(list.status).toBe(200);expect(list.body.conversations).toHaveLength(1);
+  expect(list.body.conversations[0]).toMatchObject({display_name:name,group_name:name,message_count:2,source_ids:[a,b]});
+  const messages=await agent.get('/api/v1/dashboard/chat/messages').query({user_id:A,platform:'wechat',conversation_id:a,group_name:name});
+  expect(messages.body.total).toBe(2);
+  expect((await pool.query('SELECT display_name FROM chat_conversation WHERE id=$1',[a])).rows[0].display_name).toBe(raw);
+ }
+});
+
+
+test('标题繁简词级例外及旧繁体查询名称可用',async()=>{
+ const converted=await pool.query("SELECT chat_title_to_simplified($1) AS value",['乾隆項目A🙂…']);
+ expect(converted.rows[0].value).toBe('乾隆项目A🙂…');
+ expect((await pool.query('SELECT chat_title_to_simplified($1) AS value',['🙂𠁞A🙂'])).rows[0].value).toBe('🙂𠀾A🙂');
+ const id=await conversation();await pool.query('UPDATE chat_conversation SET display_name=$2 WHERE id=$1',[id,'文件傳輸助手']);await message(id);
+ const list=await agent.get('/api/v1/dashboard/chat/conversations').query({user_id:A,platform:'wechat',group_names:true,name:'文件傳輸助手'});
+ expect(list.body.conversations[0]).toMatchObject({display_name:'文件传输助手',group_name:'文件传输助手'});
+ const messages=await agent.get('/api/v1/dashboard/chat/messages').query({user_id:A,platform:'wechat',conversation_id:id,group_name:'文件傳輸助手'});
+ expect(messages.body.total).toBe(1);
+ const nullValue=await pool.query('SELECT chat_title_to_simplified(NULL) AS value');expect(nullValue.rows[0].value).toBeNull();
+ const plan=await pool.query("EXPLAIN ANALYZE SELECT count(DISTINCT chat_title_to_simplified(CASE WHEN n%2=0 THEN '傳輸工作討論群' ELSE '传输工作讨论群' END)) FROM generate_series(1,5000) n");
+ await writeFile(join(cluster!,'title-performance.txt'),plan.rows.map(r=>r['QUERY PLAN']).join('\n'));
+});
+
+
+test('仅待确认聚合的旧接口仍可按原繁体标题搜索',async()=>{
+ const id=await conversation();await pool.query('UPDATE chat_conversation SET display_name=$2 WHERE id=$1',[id,'王彥兵']);await message(id);
+ const list=await agent.get('/api/v1/dashboard/chat/conversations').query({user_id:A,platform:'wechat',group_pending:true,q:'王彥兵'});
+ expect(list.status).toBe(200);expect(list.body.conversations).toHaveLength(1);expect(list.body.conversations[0].id).toBe(id);
 });

@@ -121,8 +121,8 @@ class ChatDiagnosticRegressionTest {
         val generation = service.javaClass.getDeclaredField("snapshotGeneration").apply { isAccessible = true }.get(service) as AtomicLong
         generation.set(42)
         try {
-            service.javaClass.getDeclaredMethod("captureCurrentForegroundViewport", String::class.java, Int::class.javaPrimitiveType, Boolean::class.javaPrimitiveType).apply { isAccessible = true }
-                .invoke(service, "com.tencent.mm", 0, false)
+            service.javaClass.getDeclaredMethod("captureCurrentForegroundViewport", String::class.java, Int::class.javaPrimitiveType, Boolean::class.javaPrimitiveType, kotlin.jvm.functions.Function0::class.java).apply { isAccessible = true }
+                .invoke(service, "com.tencent.mm", 0, false, { true })
             assertEquals("0ms补探测不能作废原事件的空树截图任务", 42L, generation.get())
         } finally { CollectionConsent.setEnabled(service, false); service.onDestroy() }
     }
@@ -141,7 +141,7 @@ class ChatDiagnosticRegressionTest {
         try {
             scope.launch { started.countDown(); release.await(3, TimeUnit.SECONDS) }
             assertTrue(started.await(3, TimeUnit.SECONDS))
-            service.javaClass.getDeclaredMethod("captureCurrentForegroundViewport", String::class.java, Int::class.javaPrimitiveType, Boolean::class.javaPrimitiveType).apply { isAccessible = true }.invoke(service, "com.tencent.mm", 0, false)
+            service.javaClass.getDeclaredMethod("captureCurrentForegroundViewport", String::class.java, Int::class.javaPrimitiveType, Boolean::class.javaPrimitiveType, kotlin.jvm.functions.Function0::class.java).apply { isAccessible = true }.invoke(service, "com.tencent.mm", 0, false, { true })
             generation.incrementAndGet()
             release.countDown()
             assertTrue("没有导航切换时，普通内容事件不能饿死进入会话探测", ChatCaptureThreadingTest.NodeShadow.read.await(3, TimeUnit.SECONDS))

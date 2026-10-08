@@ -90,7 +90,7 @@ internal open class ConversationTitleStabilizer(
             truncatedState = TruncatedState(key, pixels, nowMillis)
             val visible = screenshotConversationIdentity(normalized, "")
             return visible.copy(externalKey = key,
-                confidence = 0.55, status = "truncated", observedTitle = normalized, previousKey = null)
+                confidence = 0.55, status = "truncated", observedTitle = title, previousKey = null)
         }
         truncatedState = null
         if (normalized == null && isTransientConversationTitle(title) && previous != null) {
@@ -127,7 +127,7 @@ internal open class ConversationTitleStabilizer(
             observedAt = nowMillis,
             confirmed = known?.takeIf {
                 !legacyWechat || canonicalTitle(stripWechatTitleDecoration(it.name)) == canonicalTitle(candidate.displayName)
-            }?.let { candidate.copy(displayName = if (legacyWechat) candidate.displayName else it.name, conversationType = ConversationType.entries.firstOrNull { type -> type.wireName == it.type } ?: candidate.conversationType) },
+            }?.let { candidate.copy(displayName = if (legacyWechat) candidate.displayName else ConversationTitleSimplifier.simplify(it.name), conversationType = ConversationType.entries.firstOrNull { type -> type.wireName == it.type } ?: candidate.conversationType) },
             previousKey = recoverKey?.takeIf { known != null && it != known.key },
         ).also { state = it }
         if (tolerateUnreadableFrame && continuous && recoverKey != null && recoverKey != current.key) {
@@ -150,7 +150,7 @@ internal open class ConversationTitleStabilizer(
         }
         current.visualKey = visualKey
         current.observedAt = nowMillis
-        return identity(current, candidate.displayName)
+        return identity(current, title)
     }
 
     private fun unresolved(title: String? = null): ScreenshotConversationIdentity =
@@ -172,7 +172,7 @@ internal open class ConversationTitleStabilizer(
     }
 
     private fun canonicalTitle(value: String): String =
-        Normalizer.normalize(value, Normalizer.Form.NFKC).lowercase(java.util.Locale.ROOT)
+        Normalizer.normalize(ConversationTitleSimplifier.simplify(value), Normalizer.Form.NFKC).lowercase(java.util.Locale.ROOT)
 
     private companion object {
         const val MIN_FRAME_INTERVAL_MILLIS = 350L

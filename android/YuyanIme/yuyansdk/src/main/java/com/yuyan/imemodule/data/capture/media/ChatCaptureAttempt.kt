@@ -12,6 +12,8 @@ internal class ChatCaptureAttempt(
     private val authorized: () -> Boolean,
     private val clock: () -> Long = System::currentTimeMillis,
     val allowsSettledSendFrame: Boolean = false,
+    private val onFrameRequest: () -> Boolean = { true },
+    private val onFrameFailure: () -> Unit = {},
 ) : AbstractCoroutineContextElement(Key) {
     companion object Key : CoroutineContext.Key<ChatCaptureAttempt>
     private val acceptedAt = AtomicReference<Long?>(null)
@@ -20,5 +22,7 @@ internal class ChatCaptureAttempt(
     fun canTakeFrame(): Boolean = !isAccepted && authorized() && scopeCurrent() &&
         framePermission() && GameWorkRuntime.isBackgroundAllowed()
     fun isAuthorized(): Boolean = authorized()
+    internal fun beginFrameRequest(): Boolean = canTakeFrame() && onFrameRequest()
+    internal fun frameRequestFailed() = onFrameFailure()
     internal fun acceptFrame(): Boolean = canTakeFrame() && acceptedAt.compareAndSet(null, clock())
 }

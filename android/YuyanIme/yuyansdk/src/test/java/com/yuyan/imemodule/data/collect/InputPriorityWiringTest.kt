@@ -21,7 +21,9 @@ class InputPriorityWiringTest {
     }
     @Test fun `截图回调在复制整帧像素之前检查输入`() {
         val source = source("data/capture/media/WindowScreenshotter")
-        assertTrue(source.substringBefore("Bitmap.wrapHardwareBuffer").contains("!captureAllowed()"))
+        val callback = source.substringAfter("override fun onSuccess(").substringBefore("Bitmap.wrapHardwareBuffer")
+        assertTrue(callback.contains("!requestAllowed()"))
+        assertTrue(source.contains("attempt?.canTakeFrame() ?: captureAllowed()"))
         assertTrue(source.contains("captureAllowed: () -> Boolean = ImageUploadRuntime::isBackgroundWorkAllowed"))
     }
     @Test fun `页面树工作与OCR执行前等待空闲且沿用原有身份检查`() {

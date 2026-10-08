@@ -23,6 +23,22 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CaptureCoordinatorTest {
+    @Test fun allAdapterUploadsSimplifyOnlyTitleAndPreserveRawMetadata() = runBlocking {
+        for (platform in ChatPlatform.entries) {
+            val store = FakeStore()
+            val worker = coordinator(FakeAdapter(success()), store)
+            val original = conversation.copy(platform = platform, displayName = "康曉林")
+            val result = worker.captureParsed(original, listOf(CapturedMessage(
+                conversationKey = null, senderKey = "peer", direction = ChatDirection.INCOMING,
+                messageType = ChatMessageType.TEXT, text = "傳輸原文")))
+            assertEquals(CapturePersistResult.INSERTED, result)
+            val payload = store.pending.single().payloadJson
+            assertTrue(payload.contains("\"display_name\":\"康晓林\""))
+            assertTrue(payload.contains("\"conversation_identity_observed_title\":\"康曉林\""))
+            assertTrue(payload.contains("傳輸原文"))
+        }
+    }
+
     @Test fun typingTitleSkipsPhysicalCaptureAndNormalTitleResumes() = runBlocking {
         val store = FakeStore()
         val adapter = FakeAdapter(success(mediaMessage(IntRect(0, 0, 80, 80))))

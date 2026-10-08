@@ -110,7 +110,7 @@ class NotificationParser {
             put("conversation_identity_status", if (confirmed) "confirmed" else "pending")
             put("identity_unavailable", (!confirmed).toString())
             put("conversation_identity_source", if (confirmed) "notification_shortcut" else "notification_title_unverified")
-            put("conversation_identity_observed_title", conversationTitle)
+            put("conversation_identity_observed_title", candidateTitle)
             put("notification_key", snapshot.notificationKey)
             snapshot.sourceMessageTimestampMillis?.let { put("notification_message_timestamp", it.toString()) }
             if (hasMedia) {

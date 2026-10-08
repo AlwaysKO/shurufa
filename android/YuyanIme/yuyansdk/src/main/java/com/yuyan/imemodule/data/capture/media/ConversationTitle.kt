@@ -27,9 +27,9 @@ internal fun canonicalWechatPageTitle(raw: String?): String? {
     }
 }
 
-/** 只剥离明确状态行/尾部人数；保留昵称中的括号文字，不做繁简/近似名字全局匹配。 */
+/** 只剥离明确状态行/尾部人数；保留昵称中的括号文字，统一繁转简，不做近似名字匹配。 */
 internal fun normalizeConversationTitle(raw: String?, platform: ChatPlatform): String? {
-    val lines = raw?.trim()?.lines()?.map(String::trim)?.filter(String::isNotEmpty).orEmpty()
+    val lines = raw?.let(ConversationTitleSimplifier::simplify)?.trim()?.lines()?.map(String::trim)?.filter(String::isNotEmpty).orEmpty()
     if (lines.isEmpty() || isTransientConversationTitle(lines.first())) return null
     if (lines.drop(1).any { !isTransientConversationTitle(it) }) return null
     val first = if (platform == ChatPlatform.WECHAT) stripWechatTitleDecoration(lines.first()) else lines.first()

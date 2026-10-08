@@ -1,5 +1,6 @@
 package com.yuyan.imemodule.data.capture
 
+import com.yuyan.imemodule.data.capture.media.ConversationTitleSimplifier
 import com.yuyan.imemodule.data.capture.media.ChatCaptureAttempt
 import kotlinx.coroutines.currentCoroutineContext
 import com.yuyan.imemodule.data.capture.media.ScreenshotContentInput
@@ -423,6 +424,8 @@ class CaptureCoordinator(
         contentFingerprint: String = contentFingerprint(message),
     ): PendingMessageEntity {
         val id = UUID.randomUUID().toString()
+        val displayName = conversation.displayName?.let(ConversationTitleSimplifier::simplify)
+        val originalTitle = conversation.displayName?.takeIf { it != displayName }
         val messageJson = buildJsonObject {
             put("id", id)
             put("fingerprint", fingerprint)
@@ -438,8 +441,9 @@ class CaptureCoordinator(
             if (message.assetSha256.isNotEmpty()) {
                 put("asset_sha256", JsonArray(message.assetSha256.map(::JsonPrimitive)))
             }
-            if (message.metadata.isNotEmpty()) {
+            if (message.metadata.isNotEmpty() || originalTitle != null) {
                 put("metadata", buildJsonObject {
+                    originalTitle?.let { put("conversation_identity_observed_title", it) }
                     message.metadata.forEach { (key, value) -> put(key, value) }
                 })
             }
@@ -448,7 +452,7 @@ class CaptureCoordinator(
             put("platform", conversation.platform.wireName)
             put("account_key", conversation.accountKey)
             put("external_key", conversation.externalKey.orEmpty())
-            conversation.displayName?.let { put("display_name", it) }
+            displayName?.let { put("display_name", it) }
             put("conversation_type", conversation.conversationType.wireName)
             put("identity_confidence", conversation.identityConfidence)
         }

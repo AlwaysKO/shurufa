@@ -112,6 +112,25 @@ internal class SendRenderWait(
     private data class TailPosition(val source: String, val from: Int, val to: Int, val count: Int)
     private var tail: Pair<TailPosition, Long>? = null
     private var stableTailAt: Long? = null
+    private var frameRequested = false
+    private var requestedTail: TailPosition? = null
+    private var frameInvalidated = false
+
+    /** 仅在系统截图调用紧前锁定；排队和窗口检查仍使用实时渲染状态。 */
+    @Synchronized fun beginFrameRequest(): Boolean {
+        if (frameRequested || !isSettled()) return false
+        frameRequested = true
+        requestedTail = tail?.first
+        frameInvalidated = false
+        return true
+    }
+
+    /** 失败重试必须重新等待期间发生的内容变化，不能复用上一物理请求的锁。 */
+    @Synchronized fun frameRequestFailed() {
+        frameRequested = false
+        requestedTail = null
+        frameInvalidated = false
+    }
 
     @Synchronized fun changed() {
         changedAt = clock()
@@ -125,10 +144,12 @@ internal class SendRenderWait(
         changedAt = now
         stableTailAt = null
         if (source.isBlank() || from < 0 || from > to || count <= 0 || to != count - 1) {
+            if (frameRequested) frameInvalidated = true
             tail = null
             return
         }
         val position = TailPosition(source, from, to, count)
+        if (frameRequested && position != requestedTail) frameInvalidated = true
         val previous = tail
         if (previous?.first == position && now - previous.second >= 60) stableTailAt = now
         tail = position to now
@@ -136,7 +157,8 @@ internal class SendRenderWait(
 
     private fun readyAt(): Long = stableTailAt?.let { maxOf(startedAt + 300, it) }
         ?: changedAt?.let { maxOf(startedAt + 300, it + 90) } ?: (startedAt + 350)
-    @Synchronized fun isSettled(): Boolean = readyAt().let { it <= startedAt + 500 && clock() >= it }
+    @Synchronized fun isSettled(): Boolean = if (frameRequested) !frameInvalidated
+        else readyAt().let { it <= startedAt + 500 && clock() >= it }
     @Synchronized fun remainingMillis(): Long = (minOf(readyAt(), startedAt + 500) - clock()).coerceAtLeast(0)
     fun canRetry(): Boolean = clock() < startedAt + 500
 }

@@ -33,9 +33,31 @@ class OfflinePersonalCandidatesTest {
         closeStore()
         context.deleteDatabase("local_input.db")
     }
-    @Test fun `一两键学习只提升当前原生候选并保留重复字索引与分页`() {
+    @Test fun `新奖励暂存失败不产生纠错加强或点击`() {
+        val selection = T9CommitSelection("78", "A", "a") // SQLite学习边界拒绝非汉字。
+        assertNull(OfflineT9Candidates.learnTemporarily(selection, "failed-reward", confirmedCorrection = true))
+        val hints = OfflineT9Candidates::class.java.getDeclaredField("correctionHints").run {
+            isAccessible = true; get(OfflineT9Candidates) as ConfirmedCorrectionHints
+        }
+        assertNull(hints.at("78", "A", System.currentTimeMillis()))
+        val db = LocalInputStore(context)
+        try { assertTrue(db.learned("78").isEmpty()) } finally { db.close() }
+    }
+    @Test fun `未收录同音组合一次学习不晋升可信词且重复使用仍有效`() {
+        val code = T9Lexicon.digits("fangjia")
+        OfflineT9Candidates.learn(code, "房驾", "fang jia")
+        val once = OfflineT9Candidates.select(code, listOf("房驾", "房价"), listOf("fang jia", "fang jia")).firstPage
+        assertNotEquals("房驾", once.first().text)
+        assertEquals("personal", once.first { it.text == "房驾" }.lexicalEvidence)
+        assertEquals("dictionary", once.first { it.text == "房价" }.lexicalEvidence)
+        assertEquals(0, once.first { it.text == "房驾" }.nativeIndex)
+        repeat(5) { OfflineT9Candidates.learn(code, "房驾", "fang jia") }
+        assertEquals("房驾", OfflineT9Candidates.select(code, listOf("房驾", "房价"),
+            listOf("fang jia", "fang jia")).firstPage.first().text)
+    }
+    @Test fun `一两键重复学习只提升当前原生候选并保留重复字索引与分页`() {
         for (code in listOf("3", "62")) {
-            OfflineT9Candidates.learn(code, "的")
+            repeat(3) { OfflineT9Candidates.learn(code, "的") }
             repeat(5) { OfflineT9Candidates.learn(code, "不存在") }
             val result = OfflineT9Candidates.select(code, listOf("得", "的", "的"), listOf("de", "de", "di"))
             assertEquals(listOf("的", "的", "得"), result.firstPage.map { it.text })
@@ -45,9 +67,20 @@ class OfflinePersonalCandidatesTest {
         assertEquals(listOf("得", "的"), OfflineT9Candidates.select("4", listOf("得", "的")).firstPage.map { it.text })
         val db = LocalInputStore(context)
         try {
-            assertEquals(1L, db.learned("3").first { it.text == "的" }.count)
+            assertEquals(3L, db.learned("3").first { it.text == "的" }.count)
             assertTrue(db.dictionaryExport().any { it.code == "62" && it.text == "的" })
         } finally { db.close() }
+    }
+
+    @Test fun `短码和锁音一次偶选不无条件覆盖默认且重复选择仍提升`() {
+        OfflineT9Candidates.learn("78", "如", "ru")
+        val short = OfflineT9Candidates.select("78", listOf("去", "如"), listOf("qu", "ru"))
+        assertEquals(listOf("去", "如"), short.firstPage.map { it.text })
+        val native = listOf(RankedCandidate("去", "qu", 10), RankedCandidate("如", "ru", 18))
+        assertEquals(listOf(10, 18), OfflineT9Candidates.rankNative(native, 30).firstPage.map { it.nativeIndex })
+        repeat(3) { OfflineT9Candidates.learn("78", "如", "ru") }
+        assertEquals("如", OfflineT9Candidates.select("78", listOf("去", "如")).firstPage.first().text)
+        assertEquals(18, OfflineT9Candidates.rankNative(native, 30).firstPage.first().nativeIndex)
     }
 
     @Test fun `分段学习后的鲮在锁音原生列表内提升且不注入其他历史词`() {
@@ -92,14 +125,14 @@ class OfflinePersonalCandidatesTest {
         } finally { db.close() }
     }
 
-    @Test fun `兼容完整码的最近时间不冒充三键同码改选`() {
+    @Test fun `兼容完整码的高频证据参与排序但不复制三键点击`() {
         val db = LocalInputStore(context)
         try {
             db.learn("966", "我哦", pinyin = "wo o")
             db.writableDatabase.execSQL("UPDATE learned_input SET last_used=last_used-60000 WHERE text='我哦'")
             repeat(8) { db.learn("96636", "我们", pinyin = "wo men") }
             repeat(2) {
-                assertEquals("我哦", OfflineT9Candidates.select("966", listOf("我哦", "我们"),
+                assertEquals("我们", OfflineT9Candidates.select("966", listOf("我哦", "我们"),
                     listOf("wo o", "wo men")).firstPage.first().text)
             }
             assertEquals(1L, db.learned("966").single().count)
@@ -107,7 +140,7 @@ class OfflinePersonalCandidatesTest {
         } finally { db.close() }
     }
 
-    @Test fun `锁音最近改选胜过高频旧项且同字异读索引分别保留`() {
+    @Test fun `锁音偶选不压高频旧项但重复选择有效且同字异读索引保留`() {
         val db = LocalInputStore(context)
         try {
             repeat(8) { db.learn("9464", "星", pinyin = "xing") }
@@ -117,13 +150,16 @@ class OfflinePersonalCandidatesTest {
         val native = listOf(RankedCandidate("星", "xing", 0), RankedCandidate("行", "hang", 3),
             RankedCandidate("行", "xing", 7))
         val result = OfflineT9Candidates.rankNative(native, 8)
-        assertEquals(7, result.firstPage.first().nativeIndex)
+        assertEquals(0, result.firstPage.first().nativeIndex)
+        assertEquals(listOf(0, 7, 3), result.firstPage.map { it.nativeIndex })
+        repeat(10) { OfflineT9Candidates.learn("9464", "行", "xing") }
+        assertEquals(7, OfflineT9Candidates.rankNative(native, 8).firstPage.first().nativeIndex)
         assertEquals(3, result.firstPage.size)
         assertEquals(listOf(0), result.appendNativePage(listOf("型"), "", listOf("xing")))
         assertEquals(8, result.at(3)?.nativeIndex)
     }
 
-    @Test fun `同码最近改选胜过旧高频首项并在重开后保持`() {
+    @Test fun `同码偶选不压旧高频且重开后重复学习仍可提升`() {
         val db = LocalInputStore(context)
         try {
             repeat(4) { db.learn("966", "我哦", pinyin = "wo o") }
@@ -133,8 +169,12 @@ class OfflinePersonalCandidatesTest {
         closeStore()
         OfflineT9Candidates.init(context)
         val result = OfflineT9Candidates.select("966", listOf("我哦", "我们"), listOf("wo o", "wo men"))
-        assertEquals("我们", result.firstPage.first().text)
-        assertEquals(1, result.firstPage.first().nativeIndex)
+        assertEquals("我哦", result.firstPage.first().text)
+        assertEquals(0, result.firstPage.first().nativeIndex)
+        repeat(8) { OfflineT9Candidates.learn("966", "我们", "wo men") }
+        val learned = OfflineT9Candidates.select("966", listOf("我哦", "我们"), listOf("wo o", "wo men"))
+        assertEquals("我们", learned.firstPage.first().text)
+        assertEquals(1, learned.firstPage.first().nativeIndex)
     }
 
     @Test fun `完整码学习可在合法三键末音节补全使用且不复制次数`() {
@@ -542,12 +582,14 @@ class OfflinePersonalCandidatesTest {
         assertEquals(1, first.nativeIndex)
         assertEquals(1, OfflineT9Candidates.query("xuq", native).count { it.text == "需求" })
     }
-    @Test fun `九宫格短码常用词优先且一次明确改选就生效`() {
+    @Test fun `九宫格短码常用词不被一次偶选挤掉但重复选择生效`() {
         val native = listOf("续期", "需求")
         val before = OfflineT9Candidates.query("987", native).map { it.text }
         assertTrue(before.containsAll(listOf("需求", "续期")))
         assertTrue(before.indexOf("需求") < before.indexOf("续期"))
         OfflineT9Candidates.learn("987", "续期")
+        assertEquals("需求", OfflineT9Candidates.query("987", native).first().text)
+        repeat(2) { OfflineT9Candidates.learn("987", "续期") }
         assertEquals("续期", OfflineT9Candidates.query("987", native).first().text)
         assertEquals("续期", OfflineT9Candidates.query("xuq", native).first().text)
         assertEquals("后", OfflineT9Candidates.query("468", listOf("后", "候")).first().text)

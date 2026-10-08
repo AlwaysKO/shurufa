@@ -7,21 +7,44 @@ internal data class ChoiceEvidence(val text: String, val weight: Double, val upd
 internal data class RankedCandidate(
     val text: String, val pinyin: String = "", val nativeIndex: Int? = null,
     val inputMatch: InputSpellingMatch? = null,
+    // 表示应用实际掌握的依据，不声称知道原生引擎内部词条来源。
+    val lexicalEvidence: String = "unknown", val wholeInput: Boolean = false,
+    val rankScore: Double? = null, val rankReason: String? = null,
 )
 
-/** 编码内平滑选择概率：近期明确选择优先，其余按基础先验 + 衰减选中次数。 */
+/** 编码内排序：基础先验 + 衰减选中次数 + 有界近期加分，不以一次选择时间强制置顶。 */
 internal object PersonalCandidateRanker {
     const val HALF_LIFE_MS = 14L * 24 * 60 * 60 * 1000
     const val RECENT_CHOICE_MS = 24L * 60 * 60 * 1000
 
-    /** 只接收真实同码选择时间，不能拿聚合权重的计算时间冒充最近选词。 */
-    fun recentSelection(lastSelectedAt: Long?, now: Long): Long =
-        lastSelectedAt?.takeIf { now >= it && now - it <= RECENT_CHOICE_MS } ?: Long.MIN_VALUE
+    private const val RECENT_HALF_LIFE_MS = 30L * 60 * 1000
+    private const val MAX_RECENT_BONUS = 0.4
+    private val establishedEvidence = setOf("dictionary", "public_phrase", "personal_preferred")
+
+    /** 只接收真实同码选择时间，聚合权重计算时间不能冒充最近选词。 */
+    fun recentBonus(lastSelectedAt: Long?, now: Long): Double {
+        if (lastSelectedAt == null || lastSelectedAt > now) return 0.0
+        val elapsed = now - lastSelectedAt
+        if (elapsed < 0 || elapsed > RECENT_CHOICE_MS) return 0.0
+        return MAX_RECENT_BONUS * 0.5.pow(elapsed.toDouble() / RECENT_HALF_LIFE_MS)
+    }
+
+    fun correctionBonus(confirmedAt: Long?, now: Long): Double = recentBonus(confirmedAt, now) * 5.0
+
+    /** baseIndex 是基础列表位置而不是原生选择索引；仅历史召回项传 null。 */
+    fun score(baseIndex: Int?, weight: Double, updatedAt: Long, lastSelectedAt: Long?, now: Long, confirmedCorrectionAt: Long? = null): Double {
+        val prior = when (baseIndex) {
+            null -> 0.0
+            0 -> 2.0
+            else -> 1.0 / (baseIndex + 1)
+        }
+        return prior + decay(weight, updatedAt, now) + recentBonus(lastSelectedAt, now) + correctionBonus(confirmedCorrectionAt, now)
+    }
 
     fun decay(weight: Double, updatedAt: Long, now: Long): Double =
         weight * 0.5.pow((now - updatedAt).coerceAtLeast(0).toDouble() / HALF_LIFE_MS)
 
-    fun rank(base: List<RankedCandidate>, history: List<ChoiceEvidence>, now: Long): List<RankedCandidate> {
+    fun rank(base: List<RankedCandidate>, history: List<ChoiceEvidence>, now: Long, trace: Boolean = false, confirmedCorrectionAt: (String) -> Long? = { null }): List<RankedCandidate> {
         val unique = linkedMapOf<String, RankedCandidate>()
         base.forEach { candidate ->
             val previous = unique[candidate.text]
@@ -29,22 +52,37 @@ internal object PersonalCandidateRanker {
                 nativeIndex = previous.nativeIndex ?: candidate.nativeIndex,
                 pinyin = previous.pinyin.ifBlank { candidate.pinyin },
                 inputMatch = previous.inputMatch ?: candidate.inputMatch,
+                lexicalEvidence = if (previous.pinyin.isBlank() && candidate.pinyin.isNotBlank()) candidate.lexicalEvidence else previous.lexicalEvidence,
+                wholeInput = if (previous.pinyin.isBlank() && candidate.pinyin.isNotBlank()) candidate.wholeInput else previous.wholeInput,
             )
         }
         val baseSize = unique.size
         history.forEach { unique.putIfAbsent(it.text, RankedCandidate(it.text)) }
-        val evidence = history.associate { it.text to decay(it.weight, it.updatedAt, now) }
-        val recent = history.associate { it.text to recentSelection(it.lastSelectedAt, now) }
-        return unique.values.withIndex().sortedWith(compareByDescending<IndexedValue<RankedCandidate>> {
-            recent[it.value.text] ?: Long.MIN_VALUE
-        }.thenByDescending { (index, candidate) ->
-            val prior = when {
-                index == 0 && baseSize > 0 -> 2.0
-                index < baseSize -> 1.0 / (index + 1)
-                else -> 0.0
-            }
-            prior + (evidence[candidate.text] ?: 0.0)
-        }).map { it.value }
+        val evidence = history.associateBy { it.text }
+        // 只在完整覆盖的多字项之间交换基础位置；不拿前缀单字或预测后缀当整词竞争者。
+        val items = unique.values.toMutableList()
+        val slots = items.indices.filter { items[it].wholeInput }
+        val whole = slots.map { items[it] }
+        fun established(candidate: RankedCandidate): Boolean =
+            candidate.lexicalEvidence in establishedEvidence ||
+                evidence[candidate.text]?.let { decay(it.weight, it.updatedAt, now) >= 2.5 } == true
+        val (trusted, unverified) = whole.partition(::established)
+        val ordered = trusted + unverified
+        slots.forEachIndexed { index, slot -> items[slot] = ordered[index] }
+        // 先算一次分数，再排序；不能在比较器内重复查询提示或计算衰减。
+        return items.mapIndexed { index, candidate ->
+            val choice = evidence[candidate.text]
+            val confirmed = confirmedCorrectionAt(candidate.text)
+            val score = score(index.takeIf { it < baseSize }, choice?.weight ?: 0.0,
+                choice?.updatedAt ?: now, choice?.lastSelectedAt, now, confirmed)
+            val value = if (!trace) candidate else candidate.copy(rankScore = score,
+                rankReason = when {
+                    correctionBonus(confirmed, now) > 0 -> "confirmed_correction"
+                    choice != null && choice.weight > 0 -> "base_and_learning"
+                    else -> "base"
+                })
+            score to value
+        }.sortedByDescending { it.first }.map { it.second }
     }
 }
 

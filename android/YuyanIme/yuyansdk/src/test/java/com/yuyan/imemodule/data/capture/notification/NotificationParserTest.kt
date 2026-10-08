@@ -24,6 +24,14 @@ import kotlinx.coroutines.runBlocking
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [30])
 class NotificationParserTest {
+    @Test fun simplifiedTitleRetainsOriginalNotificationTitleAndBody() {
+        val result = requireNotNull(NotificationParser().parse(NotificationSnapshot(
+            "com.tencent.mm", "traditional", "王彥兵", "傳輸原文", 1000)))
+        assertEquals("待确认通知（王彦兵）", result.conversation.displayName)
+        assertEquals("王彥兵", result.message.metadata["conversation_identity_observed_title"])
+        assertEquals("傳輸原文", result.message.text)
+    }
+
     // Robolectric回拨时钟，但输入/游戏单例仍可能继承上一类状态。
     @org.junit.Before @org.junit.After fun resetBackgroundWorkForTest() {
         com.yuyan.imemodule.data.collect.resetImageInputForTest()

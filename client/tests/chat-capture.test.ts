@@ -533,6 +533,16 @@ it('旧同名来源选中状态恢复到展示组，不把来源重新插成重�
  const view=await mountChatCapture({chatConversations:async()=>({total:1,conversations:[group]}),resolveChatConversation:async()=>({conversation:{...rememberedChat(12),display_name:'同名联系人',is_pending_source:false}})});
  expect(view.find('chat-conversation-12')).toBeUndefined();expect(view.find('chat-conversation-11')!.props.class).toContain('selected');
 });
+it('旧截断同名来源恢复到可见名称组，不再插入第二项',async()=>{
+ fakeChatStorage({'chat-capture-selection:user-a':JSON.stringify({platform:'wechat',conversations:{wechat:12}})});
+ const group=namedGroup(11,'表格式完税证明…',[11,12]);
+ const chatMessages=vi.fn().mockResolvedValue({total:0,messages:[]});
+ const view=await mountChatCapture({chatConversations:async()=>({total:1,conversations:[group]}),chatMessages,
+  resolveChatConversation:async()=>({conversation:{...rememberedChat(12),external_key:'screenshot-v2:truncated:12345678-1234-1234-1234-123456789abc',display_name:'  表格式完税证明…（名称被截断）  ',identity_confidence:.55,is_pending_source:false}})});
+ expect(view.find('chat-conversation-12')).toBeUndefined();
+ expect(view.find('chat-conversation-11')!.props.class).toContain('selected');
+ expect(chatMessages).toHaveBeenCalledWith(11,1,20,'wechat','表格式完税证明…');
+});
 it('代表来源删除后刷新仍可按组名恢复，不跳回首项',async()=>{
  fakeChatStorage({'chat-capture-selection:user-a':JSON.stringify({platform:'wechat',conversations:{wechat:11},groups:{wechat:'同名联系人'}})});
  const group=namedGroup(12,'同名联系人',[12,13]);const chatMessages=vi.fn().mockResolvedValue({total:0,messages:[]});
@@ -605,13 +615,14 @@ it('旧错字页面组刷新服从后端明确已归类结果，不再因低置�
  expect(view.find('chat-conversation-11')!.props.class).toContain('selected');expect(view.find('chat-conversation--1')!.props.class).not.toContain('selected');
 });
 
-it('截断来源不在首页时按ID恢复，不再按相同简称查组',async()=>{
+it('截断来源不在首页时恢复可见同名组而非单独插入来源',async()=>{
  fakeChatStorage({'chat-capture-selection:user-a':JSON.stringify({platform:'wechat',conversations:{wechat:81}})});
  const partial={...rememberedChat(81),external_key:'screenshot-v2:truncated:11111111-1111-1111-1111-111111111111',display_name:'测试…店（名称被截断）',identity_confidence:.55,is_pending_source:false};
- const chatConversationGroup=vi.fn().mockResolvedValue({conversation:null});
+ const chatConversationGroup=vi.fn().mockResolvedValue({conversation:namedGroup(80,'测试…店',[80,81])});
  const view=await mountChatCapture({chatConversations:async()=>({total:1,conversations:[namedGroup(1,'其他群',[1])]}),resolveChatConversation:async()=>({conversation:partial}),chatConversationGroup});
- expect(chatConversationGroup).not.toHaveBeenCalled();
- expect(view.find('chat-conversation-81')!.props.class).toContain('selected');
+ expect(chatConversationGroup).toHaveBeenCalledWith('wechat','测试…店');
+ expect(view.find('chat-conversation-81')).toBeUndefined();
+ expect(view.find('chat-conversation-80')!.props.class).toContain('selected');
 });
 
 it('截断群名保留可见名称且历史提示不出现在列表或删除确认',async()=>{

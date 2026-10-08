@@ -115,7 +115,8 @@ open class ImeService : InputMethodService() {
         // 先撤销/限制旧奖励，再暂存新奖励，避免边界结算抢先；不扣历史学习。
         val correction = correctionLearning.commitSelection(selection, before, after, reward, SystemClock.elapsedRealtime())
         val applied = correction?.let(OfflineT9Candidates::correctLearning) == true
-        val staged = reward != null && OfflineT9Candidates.learnTemporarily(selection, reward) != null
+        val staged = reward != null && OfflineT9Candidates.learnTemporarily(selection, reward,
+            confirmedCorrection = applied && correction?.kind == "whole_same_code") != null
         if (!staged) {
             correctionLearning.reset()
             OfflineT9Candidates.learn(selection)

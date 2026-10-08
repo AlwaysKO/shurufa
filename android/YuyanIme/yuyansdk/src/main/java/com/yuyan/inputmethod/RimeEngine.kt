@@ -144,6 +144,9 @@ object RimeEngine {
                 pinyin = if (redacted) "" else reading.take(CandidateCommitDiagnostic.MAX_PINYIN),
                 redacted = redacted,
                 nativeIndex = metadata?.nativeIndex,
+                lexicalEvidence = metadata?.lexicalEvidence ?: "unknown",
+                rankScore = metadata?.rankScore,
+                rankReason = metadata?.rankReason,
                 source = when {
                     position < customPhraseSize -> "custom"
                     metadata?.nativeIndex != null -> "native"

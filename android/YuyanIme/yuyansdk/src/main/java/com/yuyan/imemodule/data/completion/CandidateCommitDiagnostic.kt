@@ -11,6 +11,9 @@ internal data class CandidateDiagnosticItem(
     val nativeIndex: Int?,
     val source: String,
     val redacted: Boolean = false,
+    val lexicalEvidence: String = "unknown",
+    val rankScore: Double? = null,
+    val rankReason: String? = null,
 )
 
 /** 仅随成功上屏一次性消费，由既有采集同意和编辑框门禁决定是否持久化。 */
@@ -35,6 +38,9 @@ internal fun T9CommitSelection.diagnosticJson(): JsonObject? {
     fun item(value: CandidateDiagnosticItem) = buildJsonObject {
         put("index", value.index)
         put("source", value.source)
+        put("lexical_evidence", value.lexicalEvidence)
+        value.rankScore?.takeIf { it.isFinite() }?.let { put("rank_score", it) }
+        value.rankReason?.let { put("rank_reason", it) }
         value.nativeIndex?.let { put("native_index", it) }
         if (!value.redacted && CollectionConsent.allowsText(value.text) && CollectionConsent.allowsText(value.pinyin)) {
             put("text", value.text)

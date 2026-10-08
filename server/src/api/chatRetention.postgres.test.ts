@@ -118,7 +118,7 @@ test('附件路径异常整批回滚，修复后相同游标可重试',async()=>
  const r=await batch(p.body.token);expect(r.status,JSON.stringify(r.body)).toBe(200);expect(r.body).toMatchObject({deleted_messages:2,processed:2,done:true});
 });
 
-test('普通会话保留1天仅清理所选来源；同名分组跨来源且排除截断标题',async()=>{
+test('普通会话保留1天仅清理所选来源；同名分组包含同可见名称的截断来源',async()=>{
  const c=await conversation('wechat',A,false),same=await conversation('wechat',A,false),truncated=await conversation('wechat',A,false);
  await pool.query("UPDATE chat_conversation SET external_key=$1 WHERE id=$2",[`screenshot-v2:truncated:${randomUUID()}`,truncated]);
  const old=await message(c),other=await message(same),keep=await message(truncated),recent=await message(c,new Date().toISOString());
@@ -127,8 +127,8 @@ test('普通会话保留1天仅清理所选来源；同名分组跨来源且排�
  const r=await request(app).post('/conversations/cleanup/batch').send({confirm:'DELETE',token:p.body.token,offset:0});expect(r.status).toBe(200);
  expect(await visible()).toEqual([other,keep,recent].sort());expect(await visible()).not.toContain(old);
  const group=await request(app).post('/conversations/cleanup/preview').send({days:30,include_images:false,platform:'wechat',conversation_id:c,group_name:'已确认'});
- expect(group.status).toBe(200);expect(group.body.total_messages).toBe(1);
- await batch(group.body.token);expect(await visible()).toEqual([keep,recent].sort());
+ expect(group.status).toBe(200);expect(group.body.total_messages).toBe(2);
+ await batch(group.body.token);expect(await visible()).toEqual([recent]);
 });
 
 async function event(time='2020-01-01T00:00:00Z',session:string|null=null,user=A,pkg='com.test',text='测试') {

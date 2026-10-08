@@ -6,6 +6,65 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SendRenderWaitTest {
+    @Test fun inFlightContentDoesNotRevokeFrameButFailedRequestRechecksIt() {
+        var now = 0L
+        val wait = SendRenderWait("com.tencent.mm", 1) { now }
+        assertFalse(wait.beginFrameRequest())
+        now = 350
+        assertTrue(wait.beginFrameRequest())
+        now = 370
+        wait.changed()
+        assertTrue("实际请求后的泛化content不撤销原帧", wait.isSettled())
+        assertFalse("同一在途请求不能重复开始", wait.beginFrameRequest())
+        wait.frameRequestFailed()
+        assertFalse("失败后不能沿用旧许可", wait.isSettled())
+        now = 460
+        assertTrue(wait.beginFrameRequest())
+    }
+
+    @Test fun contentBeforePhysicalRequestStillRequiresRenderSettling() {
+        var now = 0L
+        val wait = SendRenderWait("com.tencent.mm", 1) { now }
+        now = 350
+        assertTrue(wait.isSettled())
+        now = 360
+        wait.changed()
+        assertFalse(wait.beginFrameRequest())
+    }
+
+    @Test fun inFlightPositionChangeCannotBeRevivedByReturningToSameTail() {
+        var now = 0L
+        val wait = SendRenderWait("com.tencent.mm", 1) { now }
+        now = 250
+        wait.scrolled("7:ListView", 12, 18, 19)
+        now = 320
+        wait.scrolled("7:ListView", 12, 18, 19)
+        assertTrue(wait.beginFrameRequest())
+        now = 350
+        wait.changed()
+        wait.scrolled("7:ListView", 12, 18, 19)
+        assertTrue(wait.isSettled())
+        wait.scrolled("7:ListView", 10, 16, 19)
+        assertFalse(wait.isSettled())
+        now = 450
+        wait.scrolled("7:ListView", 12, 18, 19)
+        assertFalse(wait.isSettled())
+    }
+
+    @Test fun inFlightUnknownPositionOrDifferentListInvalidatesFrame() {
+        for (source in listOf("", "7:RecyclerView")) {
+            var now = 0L
+            val wait = SendRenderWait("com.tencent.mm", 1) { now }
+            now = 250
+            wait.scrolled("7:ListView", 12, 18, 19)
+            now = 320
+            wait.scrolled("7:ListView", 12, 18, 19)
+            assertTrue(wait.beginFrameRequest())
+            wait.scrolled(source, 12, 18, 19)
+            assertFalse(wait.isSettled())
+        }
+    }
+
     @Test fun editorClearDoesNotImmediatelyLockOldFrame() {
         var now = 0L
         val wait = SendRenderWait("com.tencent.mm", 1) { now }

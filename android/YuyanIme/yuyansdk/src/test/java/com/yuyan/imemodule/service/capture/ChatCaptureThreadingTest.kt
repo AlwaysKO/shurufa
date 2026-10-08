@@ -424,8 +424,8 @@ class ChatCaptureThreadingTest {
                 try {
                     if (probe) {
                         service.javaClass.getDeclaredMethod("captureCurrentForegroundViewport", String::class.java,
-                            Int::class.javaPrimitiveType, Boolean::class.javaPrimitiveType).apply { isAccessible = true }
-                            .invoke(service, "com.ss.android.ugc.aweme", 0, false)
+                            Int::class.javaPrimitiveType, Boolean::class.javaPrimitiveType, kotlin.jvm.functions.Function0::class.java).apply { isAccessible = true }
+                            .invoke(service, "com.ss.android.ugc.aweme", 0, false, { true })
                     } else service.onAccessibilityEvent(event)
                     assertTrue("应读到前台树", NodeShadow.read.await(3, TimeUnit.SECONDS))
                     // getChildCount 在回调前先释放 latch，等待同一读操作完成后再读取观测值。

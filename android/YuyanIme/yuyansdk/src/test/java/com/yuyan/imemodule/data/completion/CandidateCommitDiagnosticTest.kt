@@ -33,6 +33,20 @@ class CandidateCommitDiagnosticTest {
     @Suppress("UNCHECKED_CAST")
     private fun diagnostics(selection: T9CommitSelection) = field(selection, "diagnostics") as List<Any>
 
+    @Test fun `诊断复制词汇依据与排序原因不把原生路线当词库来源`() {
+        val candidate = RankedCandidate("房驾", "fang jia", 7, lexicalEvidence = "personal",
+            wholeInput = true, rankScore = 1.9, rankReason = "base_and_learning")
+        RimeEngine.javaClass.getDeclaredField("nativeCandidateMetadata").apply {
+            isAccessible = true
+            set(RimeEngine, CandidateSelection(listOf(candidate), 8))
+        }
+        RimeEngine.showCandidates = listOf(CandidateListItem(candidate.pinyin, candidate.text))
+        val selected = snapshot(0, "3264542").selected
+        assertEquals("native", selected.source)
+        assertEquals("personal", selected.lexicalEvidence)
+        assertEquals("base_and_learning", selected.rankReason)
+        assertEquals(1.9, selected.rankScore!!, 0.0)
+    }
     @Test fun `快照保留重排后前五项与非首屏选中项的绝对位置`() {
         installCandidates()
         val result = snapshot(6, "559")

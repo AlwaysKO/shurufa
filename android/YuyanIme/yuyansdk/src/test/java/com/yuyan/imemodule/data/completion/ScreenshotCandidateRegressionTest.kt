@@ -70,11 +70,11 @@ class ScreenshotCandidateRegressionTest {
         assertNull(tracker.consumeSelection("看看", false))
     }
 
-    @Test fun `双字混拼真实选择在重开后仍优先但不伪造全码点击`() {
+    @Test fun `双字混拼偶选重开仍在前三且不伪造全码点击`() {
         OfflineT9Candidates.learn("5526", "浏览", "liu lan")
         closeStore()
         OfflineT9Candidates.init(context)
-        assertEquals("浏览", OfflineT9Candidates.select("5526").firstPage.first().text)
+        assertTrue(OfflineT9Candidates.select("5526").firstPage.take(3).any { it.text == "浏览" })
         val store = LocalInputStore(context)
         try {
             assertEquals(1L, store.learned("5526").first { it.text == "浏览" }.count)

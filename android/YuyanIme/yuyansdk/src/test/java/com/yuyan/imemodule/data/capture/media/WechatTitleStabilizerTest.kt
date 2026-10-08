@@ -41,7 +41,7 @@ class WechatTitleStabilizerTest {
 
     @Test fun `confirmation retries are bounded and stop once title is stable`() = runBlocking {
         val tracker = WechatTitleStabilizer()
-        val first = tracker.observe("王彥兵", "a".repeat(64), 1000)
+        val first = tracker.observe("王彦斌", "a".repeat(64), 1000)
         var calls = 0
         val result = confirmWechatScreenshotIdentity(first) {
             calls++

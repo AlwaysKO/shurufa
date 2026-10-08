@@ -38,7 +38,7 @@ class WindowScreenshotter(
         val attempt = currentCoroutineContext()[ChatCaptureAttempt]
         fun requestAllowed(): Boolean = attempt?.canTakeFrame() ?: captureAllowed()
 
-        return suspendCancellableCoroutine { continuation ->
+        val result = suspendCancellableCoroutine<WindowScreenshotResult> { continuation ->
             val windowScoped = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
             fun fail(code: Int = AccessibilityService.ERROR_TAKE_SCREENSHOT_INTERNAL_ERROR) {
                 if (continuation.isActive) continuation.resume(WindowScreenshotResult.Failed(code))
@@ -102,6 +102,8 @@ class WindowScreenshotter(
                 if (currentChatWindowId() != windowId) { fail(SCREENSHOT_WINDOW_UNCONFIRMED); return@execute }
                 if (!continuation.isActive) return@execute
                 if (!requestAllowed()) { fail(SCREENSHOT_BACKGROUND_PAUSED); return@execute }
+                // 不能提前到媒体层锁定：IO排队、窗口Binder检查期间仍可能变化。
+                if (attempt?.beginFrameRequest() == false) { fail(SCREENSHOT_BACKGROUND_PAUSED); return@execute }
                 try {
                     if (windowScoped) service.takeScreenshotOfWindow(windowId, executor, callback)
                     else service.takeScreenshot(Display.DEFAULT_DISPLAY, executor, callback)
@@ -109,6 +111,8 @@ class WindowScreenshotter(
                 catch (_: Exception) { fail(SCREENSHOT_REQUEST_EXCEPTION) }
             }
         }
+        if (result !is WindowScreenshotResult.Success) attempt?.frameRequestFailed()
+        return result
     }
 
     @Suppress("DEPRECATION")
