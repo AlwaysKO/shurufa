@@ -83,6 +83,7 @@ internal class BrowsingPageServiceBridge(
                 })
         },
         outcome = ::status,
+        persistentIntervalRemaining = { budget.remainingIntervalNow() },
     )
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -124,7 +125,11 @@ internal class BrowsingPageServiceBridge(
                     try {
                         delay(800)
                         if (hintGeneration.get() != ticket || CollectionConsent.epoch != epoch || !eligible()) return@launch
-                        val active = readActiveBrowsingWindow(service) ?: return@launch
+                        val active = resolveBrowsingWindowHint(
+                            current = { hintGeneration.get() == ticket && CollectionConsent.epoch == epoch && eligible() },
+                            read = { readActiveBrowsingWindow(service) },
+                            wait = { delay(it) },
+                        ) ?: return@launch
                         if (hintGeneration.get() == ticket && CollectionConsent.epoch == epoch && eligible())
                             driver.changedIfCurrent(navigation, epoch, active.first, active.second)
                     } catch (cancelled: CancellationException) { throw cancelled }
@@ -151,6 +156,22 @@ internal class BrowsingPageServiceBridge(
                 .onFailure { status("storage_close_failed") }
         }
     }
+}
+
+/** 同一次拓扑事件最多补核验一次；无候选截帧、无预算操作，失效或取消后不重放。 */
+internal suspend fun resolveBrowsingWindowHint(
+    current: () -> Boolean,
+    read: () -> Pair<String, Int>?,
+    wait: suspend (Long) -> Unit,
+): Pair<String, Int>? {
+    if (!current()) return null
+    val first = read()
+    if (!current()) return null
+    if (first != null) return first
+    wait(800)
+    if (!current()) return null
+    val second = read()
+    return second?.takeIf { current() }
 }
 
 /** 只在后台有界读已核实的活动应用；空树用窗口边界，不用事件包名猜底层App。 */

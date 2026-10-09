@@ -28,15 +28,22 @@ internal class BrowsingCaptureBudgetStore(context: Context) : SQLiteOpenHelper(
     }
 
     /** 无boot证据时明确拒绝；不能用当前进程随机ID冒充设备启动标识。 */
-    fun reserveNow(): BrowseBudgetResult {
-        val boot = runCatching {
-            if (Build.VERSION.SDK_INT >= 24) Settings.Global.getInt(app.contentResolver, Settings.Global.BOOT_COUNT, -1) else -1
-        }.getOrDefault(-1)
-        return reserve(boot, SystemClock.elapsedRealtime())
-    }
+    private fun bootNow(): Int = runCatching {
+        if (Build.VERSION.SDK_INT >= 24) Settings.Global.getInt(app.contentResolver, Settings.Global.BOOT_COUNT, -1) else -1
+    }.getOrDefault(-1)
 
-    @Synchronized fun reserve(boot: Int, elapsed: Long): BrowseBudgetResult {
-        if (boot < 0 || elapsed < 0) return BrowseBudgetResult.INVALID_CLOCK
+    fun reserveNow(): BrowseBudgetResult = reserve(bootNow(), SystemClock.elapsedRealtime())
+
+    /** 仅查询事件候选需要再等多久；推进安全时钟账本，但不预留尝试、不退款。 */
+    fun remainingIntervalNow(): Long? = remainingInterval(bootNow(), SystemClock.elapsedRealtime())
+    fun remainingInterval(boot: Int, elapsed: Long): Long? = evaluate(boot, elapsed, spend = false).let {
+        if (it.result == BrowseBudgetResult.INVALID_CLOCK) null else it.remaining
+    }
+    fun reserve(boot: Int, elapsed: Long): BrowseBudgetResult = evaluate(boot, elapsed, spend = true).result
+
+    private data class Availability(val result: BrowseBudgetResult, val remaining: Long = 0)
+    @Synchronized private fun evaluate(boot: Int, elapsed: Long, spend: Boolean): Availability {
+        if (boot < 0 || elapsed < 0) return Availability(BrowseBudgetResult.INVALID_CLOCK)
         val db = writableDatabase
         db.beginTransaction()
         try {
@@ -47,9 +54,9 @@ internal class BrowsingCaptureBudgetStore(context: Context) : SQLiteOpenHelper(
                 check(db.rawQuery("SELECT COUNT(*) FROM attempts", null).use { it.moveToFirst(); it.getLong(0) == 0L })
                 0L
             } else {
-                if (boot < old.boot || (boot == old.boot && elapsed < old.elapsed)) return BrowseBudgetResult.INVALID_CLOCK
+                if (boot < old.boot || (boot == old.boot && elapsed < old.elapsed)) return Availability(BrowseBudgetResult.INVALID_CLOCK)
                 val delta = if (boot == old.boot) elapsed - old.elapsed else elapsed
-                if (old.logical > Long.MAX_VALUE - delta) return BrowseBudgetResult.INVALID_CLOCK
+                if (old.logical > Long.MAX_VALUE - delta) return Availability(BrowseBudgetResult.INVALID_CLOCK)
                 old.logical + delta
             }
             db.execSQL("INSERT OR REPLACE INTO budget_clock(id,boot,elapsed,logical) VALUES(1,?,?,?)", arrayOf(boot, elapsed, logical))
@@ -65,9 +72,10 @@ internal class BrowsingCaptureBudgetStore(context: Context) : SQLiteOpenHelper(
                 usage.last?.let { logical - it < INTERVAL } == true -> BrowseBudgetResult.INTERVAL
                 else -> BrowseBudgetResult.ALLOWED
             }
-            if (result == BrowseBudgetResult.ALLOWED) db.execSQL("INSERT INTO attempts(at) VALUES(?)", arrayOf(logical))
+            if (spend && result == BrowseBudgetResult.ALLOWED) db.execSQL("INSERT INTO attempts(at) VALUES(?)", arrayOf(logical))
             db.setTransactionSuccessful()
-            return result
+            val remaining = if (result == BrowseBudgetResult.INTERVAL) INTERVAL - (logical - requireNotNull(usage.last)) else 0L
+            return Availability(result, remaining)
         } finally { db.endTransaction() }
     }
     private data class Clock(val boot: Int, val elapsed: Long, val logical: Long)

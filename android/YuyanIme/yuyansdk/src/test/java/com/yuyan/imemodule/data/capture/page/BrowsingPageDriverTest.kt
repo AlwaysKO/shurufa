@@ -9,6 +9,7 @@ class BrowsingPageDriverTest {
     private class Fixture(scope: CoroutineScope) {
         var now = 0L; var epoch = 0L; var allowed = true; var room = true; var quota = true
         var reserves = 0; var captures = 0; var reads = 0
+        var restoredInterval: Long? = 0L
         val reservedPackages = mutableListOf<String>()
         val reported = mutableListOf<Pair<String, String>>()
         var read: suspend (BrowsePageToken) -> BrowsePageSnapshot? = { p ->
@@ -19,7 +20,71 @@ class BrowsingPageDriverTest {
         val driver = BrowsingPageDriver(scope, { now }, { epoch }, { allowed },
             { current -> idle(current) }, { ms -> wait(ms) }, { room },
             { p -> read(p) }, { pkg -> reserves++; reservedPackages += pkg; quota },
-            { _, current -> if (current()) captures++; PageWriteResult(PageWriteStatus.SAVED) }, { code, pkg -> reported += code to pkg })
+            { _, current -> if (current()) captures++; PageWriteResult(PageWriteStatus.SAVED) }, { code, pkg -> reported += code to pkg }, persistentIntervalRemaining = { restoredInterval })
+    }
+    @Test fun oneEmptyWindowReadGetsOneBoundedRetryWithoutAnotherEvent() = runBlocking {
+        val f = Fixture(this)
+        f.read = { p ->
+            f.reads++
+            if (f.reads == 1) null else BrowsePageSnapshot(p, IntRect(0, 0, 500, 1000), emptyList())
+        }
+        f.driver.changed("com.tencent.mm", 1, BrowsePageEvent.WINDOW)!!.join()
+        assertEquals(2, f.reads); assertEquals(1600L, f.now)
+        assertEquals(1, f.reserves); assertEquals(1, f.captures)
+        f.driver.close().join()
+    }
+    @Test fun persistentlyEmptyWindowStopsAfterTwoReadsAndNeverReserves() = runBlocking {
+        val f = Fixture(this)
+        f.read = { f.reads++; null }
+        f.driver.changed("com.tencent.mm", 1, BrowsePageEvent.WINDOW)!!.join()
+        assertEquals(2, f.reads); assertEquals(0, f.reserves); assertEquals(0, f.captures)
+        f.driver.close().join()
+    }
+    @Test fun leavingDuringEmptyWindowRetryCannotCaptureOldPage() = runBlocking {
+        val f = Fixture(this)
+        val retryStarted = CompletableDeferred<Unit>()
+        val release = CompletableDeferred<Unit>()
+        f.read = { f.reads++; null }
+        f.wait = { delay -> if (f.reads > 0) { retryStarted.complete(Unit); release.await() }; f.now += delay }
+        val job = f.driver.changed("com.tencent.mm", 1, BrowsePageEvent.WINDOW)!!
+        yield()
+        // Old implementation ends after the first read; assert before waiting on a signal it never emits.
+        assertTrue(retryStarted.isCompleted)
+        f.driver.invalidate(); release.complete(Unit); job.join()
+        assertEquals(1, f.reads); assertEquals(0, f.captures)
+        f.driver.close().join()
+    }
+    @Test fun restoredPersistentIntervalRetainsCandidateUntilOneDelayedAttempt() = runBlocking {
+        val f = Fixture(this); f.restoredInterval = 179200
+        f.read = { p ->
+            f.reads++; assertEquals(180000L, f.now)
+            BrowsePageSnapshot(p, IntRect(0, 0, 500, 1000), emptyList())
+        }
+        f.driver.changed("com.tencent.mm", 1, BrowsePageEvent.WINDOW)!!.join()
+        assertEquals(1, f.reads); assertEquals(1, f.reserves); assertEquals(1, f.captures)
+        assertTrue(f.reported.contains("budget_interval" to "com.tencent.mm"))
+        yield(); assertEquals(1, f.captures)
+        f.driver.close().join()
+    }
+    @Test fun persistentIntervalWaitRejectsNavigationAndConsentChanges() = runBlocking {
+        for (revoke in listOf(false, true)) {
+            val f = Fixture(this); f.restoredInterval = 179200
+            val started = CompletableDeferred<Unit>(); val release = CompletableDeferred<Unit>()
+            f.wait = { ms -> if (ms > 800) { started.complete(Unit); release.await() }; f.now += ms }
+            val job = f.driver.changed("com.tencent.mm", 1, BrowsePageEvent.WINDOW)!!
+            started.await()
+            if (revoke) f.epoch++ else f.driver.invalidate()
+            release.complete(Unit); job.join()
+            assertEquals(0, f.reads); assertEquals(0, f.reserves); assertEquals(0, f.captures)
+            f.driver.close().join()
+        }
+    }
+    @Test fun invalidPersistentClockCannotFallThroughToCapture() = runBlocking {
+        val f = Fixture(this); f.restoredInterval = null
+        f.driver.changed("com.tencent.mm", 1, BrowsePageEvent.WINDOW)!!.join()
+        assertEquals(0, f.reads); assertEquals(0, f.reserves)
+        assertTrue(f.reported.contains("budget_invalid_clock" to "com.tencent.mm"))
+        f.driver.close().join()
     }
     @Test fun contentAnimationAndUnsupportedAppsDoNotTakePictures() = runBlocking {
         val f = Fixture(this)

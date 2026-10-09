@@ -25,6 +25,31 @@ class BrowsingCaptureBudgetStoreTest {
             assertEquals(BrowseBudgetResult.ALLOWED, it.reserve(4, 181000))
         }
     }
+    @Test fun intervalQuerySurvivesReopenAndDoesNotSpendOrRefundAnAttempt() {
+        BrowsingCaptureBudgetStore(app).use { assertEquals(BrowseBudgetResult.ALLOWED, it.reserve(4, 1000)) }
+        BrowsingCaptureBudgetStore(app).use {
+            assertEquals(179000L, it.remainingInterval(4, 2000))
+            assertEquals(1L, it.remainingInterval(4, 180999))
+            assertEquals(0L, it.remainingInterval(4, 181000))
+            assertEquals(BrowseBudgetResult.ALLOWED, it.reserve(4, 181000))
+            assertEquals(180000L, it.remainingInterval(4, 181000))
+            assertNull(it.remainingInterval(4, 180999))
+        }
+    }
+    @Test fun intervalQueryPreservesHourAndDayLimitsAndRebootClock() {
+        BrowsingCaptureBudgetStore(app).use { s ->
+            assertNull(s.remainingInterval(-1, 0))
+            repeat(100) { assertEquals(BrowseBudgetResult.ALLOWED, s.reserve(4, it * 180000L)) }
+            assertEquals(0L, s.remainingInterval(4, 18000000))
+            assertEquals(BrowseBudgetResult.DAY_LIMIT, s.reserve(4, 18000000))
+        }
+        setup()
+        BrowsingCaptureBudgetStore(app).use { s ->
+            assertEquals(BrowseBudgetResult.ALLOWED, s.reserve(4, 999999))
+            assertEquals(179000L, s.remainingInterval(5, 1000))
+            assertEquals(BrowseBudgetResult.INTERVAL, s.reserve(5, 1000))
+        }
+    }
     @Test fun hourLimitAndBoundaryAreRollingNotCalendarBuckets() {
         BrowsingCaptureBudgetStore(app).use { s ->
             repeat(20) { assertEquals(BrowseBudgetResult.ALLOWED, s.reserve(1, it * 180000L)) }

@@ -20,6 +20,7 @@ internal class BrowsingPageDriver(
     private val reserve: (String) -> Boolean,
     private val capture: suspend (BrowsePageSnapshot, () -> Boolean) -> PageWriteResult,
     private val outcome: (String, String) -> Unit,
+    private val persistentIntervalRemaining: () -> Long? = { 0L },
 ) {
     private val lifetime = SupervisorJob(parent.coroutineContext[Job])
     private val scope = CoroutineScope(parent.coroutineContext + lifetime)
@@ -47,8 +48,27 @@ internal class BrowsingPageDriver(
                 val remaining = schedule.remainingDelay(elapsed()) ?: return@launch
                 if (remaining > 0) wait(remaining)
                 if (!current() || !awaitIdle(::current) || !current()) return@launch
+                val restoredDelay = persistentIntervalRemaining()
+                if (restoredDelay == null || restoredDelay !in 0L..180_000L) {
+                    report("budget_invalid_clock"); return@launch
+                }
+                if (restoredDelay > 0) {
+                    report("budget_interval")
+                    // 同一事件只保留一次延后机会，不轮询截图；导航/撤权会取消此候选。
+                    wait(restoredDelay)
+                    if (!current() || !awaitIdle(::current) || !current()) return@launch
+                }
                 if (!hasCapacity()) { report("queue_full"); return@launch }
-                val snapshot = read(token) ?: run { report("window_unconfirmed"); return@launch }
+                var snapshot = read(token)
+                if (!current()) return@launch
+                if (snapshot == null) {
+                    // 窗口树可能尚未可用；仅同一事件补核验一次，不消费截图预算。
+                    wait(800)
+                    if (!current() || !awaitIdle(::current) || !current()) return@launch
+                    if (!hasCapacity()) { report("queue_full"); return@launch }
+                    snapshot = read(token)
+                }
+                if (snapshot == null) { report("window_unconfirmed"); return@launch }
                 if (!current() || snapshot.page != token) return@launch
                 val decision = PageCapturePolicy.classify(token.packageName, snapshot.bounds, snapshot.labels, chatVerified = snapshot.chatVerified)
                 if (decision.kind == PageKind.CHAT || decision.reason in setOf(

@@ -54,6 +54,12 @@ class PageCaptureUploadWiringTest {
         assertTrue(reader.contains("line.elements.mapNotNull"))
         assertTrue(reader.contains("pageOcrLineLabels(fullLine, elements)"))
     }
+    @Test fun topologyHintUsesBoundedWindowRecheckBeforeCreatingDriverCandidate() {
+        val bridge = source("data/capture/page/BrowsingPageServiceBridge.kt")
+        assertTrue(bridge.contains("resolveBrowsingWindowHint("))
+        assertTrue(bridge.contains("read = { readActiveBrowsingWindow(service) }"))
+        assertTrue(bridge.contains("driver.changedIfCurrent(navigation, epoch, active.first, active.second)"))
+    }
     @Test fun savedPageOnlyWakesExistingSync() {
         val s = source("data/capture/page/PageCaptureOutbox.kt")
         assertTrue(s.contains("DataCollector.requestSync()"))
