@@ -67,6 +67,36 @@ class PageFrameProbeTest {
         assertNull(capture(ocrFailed = true))
     }
 
+    @Test fun rejectionDiagnosticsDistinguishSystemOcrScopeAndNeverIncludeContent() = runBlocking {
+        fun messages() = org.robolectric.shadows.ShadowLog.getLogsForTag("BrowsingPageProbe").map { it.msg }
+        org.robolectric.shadows.ShadowLog.clear()
+        val failed = PageFrameProbe(ScreenshotSource { _, _ -> WindowScreenshotResult.Failed(6) },
+            recognize = { error("system failure must not reach OCR") }, allowed = { true })
+        assertNull(failed.capture("com.tencent.mm", 7, bounds, emptyList(), current = { true }))
+        assertEquals(listOf("system_failed:6"), messages())
+        suspend fun rejected(labels: List<PageLabel>): List<String> {
+            org.robolectric.shadows.ShadowLog.clear()
+            val bitmap = Bitmap.createBitmap(500, 1000, Bitmap.Config.ARGB_8888)
+            val probe = PageFrameProbe(ScreenshotSource { _, _ -> WindowScreenshotResult.Success(bitmap, 10, 20) },
+                recognize = { labels }, allowed = { true })
+            assertNull(probe.capture("com.tencent.mm", 7, bounds, emptyList(), current = { true }))
+            assertTrue(bitmap.isRecycled)
+            return messages()
+        }
+        fun emptyEvidence(count: Int) = "feed_navigation:labels=$count,top_follow=0,top_recommend=0," +
+            "top_friend=0,top_drama=0,bottom_home=0,bottom_message=0,bottom_me=0,bottom_follow=0"
+        assertEquals(listOf("ocr_empty", "classification_rejected:insufficient_evidence", emptyEvidence(0)), rejected(emptyList()))
+        val privateBody = "不允许写入日志的私密正文"
+        val privateMessages = rejected(listOf(PageLabel(privateBody, IntRect(100, 400, 400, 450))))
+        assertEquals(listOf("classification_rejected:insufficient_evidence", emptyEvidence(1)), privateMessages)
+        assertFalse(privateMessages.any { it.contains(privateBody) })
+        org.robolectric.shadows.ShadowLog.clear()
+        val stale = PageFrameProbe(ScreenshotSource { _, _ -> error("must not capture stale window") },
+            recognize = { emptyList() }, allowed = { true })
+        assertNull(stale.capture("com.tencent.mm", 7, bounds, emptyList(), current = { false }))
+        assertEquals(listOf("scope_lost"), messages())
+    }
+
     @Test fun knownPasswordPageDoesNotEvenRequestScreenshot() = runBlocking {
         var requested = false
         val probe = PageFrameProbe(ScreenshotSource { _, _ -> requested = true; WindowScreenshotResult.Unsupported },

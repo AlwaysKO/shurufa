@@ -345,3 +345,10 @@
 - 新增跨队列409→页面图ACK→DB重开→访问ACK回归；不将图片依赖暂缺当永久失败，不清除未确认记录。后端诊断32、隔离PG页面12/停留11通过，server/client build成功。
 - 最终Android26类253项全部通过、失败/错误/跳过0（page-release-android-final.log/同名XML，3分26秒）。包含全部capture.page、ChatDiagnosticsBuffer/Reporter、旧聊天适配器/身份、缺资源/图片上传定向回归；非全量机型验收。
 - 后台29个相关文件已提交e32e0c2并推送origin/main，等待生产timer实际发布；未用本地登录失败或匿名401冒充线上新API有效。线上公开资源与手机真实ACK将独立核验。手机当前已核实为旧20261008.23、原同意开启、原无障碍开启、上报仍指原生产域名，未改任何采集/上传设置。
+
+### 第十五批实际发布与首轮真机结果
+- 后台e32e0c2、手机实现ca92a27均已推送main。生产公开资源于北京时间17:34更新为index-DRiELSB7.js，实际包含page-captures/video-visits/observation_kind/browse_capture；健康200。两个真实mobile POST以空对象验证均返回其新增参数校验400，未写入伪造业务记录。不能由400推断已完成真实图片入库。
+- 本机无该生产域名或真实IP的可信SSH主机记录；没有绕过主机校验。先前本地配置登录线上一次401后未继续猜凭据，自动发布随后正常完成。无需用户再查部署日志。
+- 原签名accb82e7测试包覆盖安装成功，实际版本20261009.17/2026100917，未卸载或清数据；同意和无障碍仍开启。用户手动打开抖音15秒后熄屏首轮测试：实际budget_allowed→no_frame，私有SQLite快照完整性ok，pages/page_receipts/active/completed均0、attempts=1。结论是采集触发但没有保存图片，不能称为上传失败或真机通过。
+- 真机dumpsys另暴露manifest缺typeWindowsChanged，已补一行订阅并加XML解析回归；独立断言实际RED→GREEN，接线测试与包构建通过。原已安装accb包不包含此订阅，未混称生效。
+- 为定位no_frame，将截图槽、准备许可、系统错误码、授权/窗口失效、OCR空与分类拒绝拆成固定无内容本地日志；导航仅布尔与数量，不保存拒绝图或打印OCR正文。此轮是诊断增强，不借猜测放宽截图边界，真机问题继续验证。

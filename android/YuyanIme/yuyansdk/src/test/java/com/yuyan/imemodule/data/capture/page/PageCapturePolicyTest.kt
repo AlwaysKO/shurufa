@@ -107,6 +107,16 @@ class PageCapturePolicyTest {
         assertNull(classify(tabs + label("请输入支付密码", 200, 700)).kind)
     }
 
+    @Test fun diagnosticFlagsRevealCountBadgeWithoutChangingClassification() {
+        val labels = listOf(label("关注 推荐", 160, 110), label("首页", 20, 1900),
+            label("消息4", 640, 1900), label("我", 850, 1900))
+        assertNull(classify(labels, "com.ss.android.ugc.aweme").kind)
+        val evidence = PageCapturePolicy.feedNavigationEvidence(bounds, labels)
+        assertEquals(4, evidence.labelCount)
+        assertTrue(evidence.topFollow); assertTrue(evidence.topRecommend)
+        assertTrue(evidence.bottomHome); assertFalse(evidence.bottomMessage); assertTrue(evidence.bottomMe)
+    }
+
     @Test fun douyinImagePostIsNotReportedAsKnownVideo() {
         val labels = listOf(label("关注", 160, 120), label("推荐", 550, 120), label("图文", 250, 1500),
             label("首页", 10, 1900), label("消息", 600, 1900), label("我", 840, 1900))

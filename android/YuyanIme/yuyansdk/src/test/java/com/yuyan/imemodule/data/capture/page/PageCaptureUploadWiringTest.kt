@@ -34,6 +34,21 @@ class PageCaptureUploadWiringTest {
         assertTrue(driver.contains("reserve(token.packageName)"))
         assertTrue(driver.contains("outcome(code, token.packageName)"))
     }
+    @Test fun accessibilityManifestSubscribesToWindowTopologyEventsUsedByPageBridges() {
+        val factory = javax.xml.parsers.DocumentBuilderFactory.newInstance().apply { isNamespaceAware = true }
+        val xml = factory.newDocumentBuilder().parse(File("src/main/res/xml/passive_chat_accessibility_service.xml"))
+        val events = xml.documentElement.getAttributeNS("http://schemas.android.com/apk/res/android", "accessibilityEventTypes").split('|')
+        assertTrue("window topology handler must be subscribed in service XML", "typeWindowsChanged" in events)
+        assertTrue("typeWindowStateChanged" in events)
+        assertTrue("typeViewScrolled" in events)
+        assertTrue(source("service/capture/PassiveChatAccessibilityService.kt").contains("AccessibilityEvent.TYPE_WINDOWS_CHANGED"))
+    }
+    @Test fun readerDistinguishesPhysicalSlotAndPreparationDenial() {
+        val reader = source("data/capture/page/LocalPageFrameReader.kt")
+        assertTrue(reader.contains("PageProbeStatus.SLOT_BUSY"))
+        assertTrue(reader.contains("PageProbeStatus.PREPARATION_BLOCKED"))
+        assertTrue(reader.contains("PageProbeStatus.AUTHORIZATION_LOST"))
+    }
     @Test fun savedPageOnlyWakesExistingSync() {
         val s = source("data/capture/page/PageCaptureOutbox.kt")
         assertTrue(s.contains("DataCollector.requestSync()"))

@@ -15,6 +15,26 @@ internal object PageCapturePolicy {
     private fun normalized(label: PageLabel): String =
         ConversationTitleSimplifier.simplify(label.text.take(200)).filterNot(Char::isWhitespace)
 
+    // ML Kit 可把同一横排的独立导航合成一行；只拆真实空白，不猜无分隔文本。
+    private fun navigation(band: List<PageLabel>) = band.flatMap { label ->
+        listOf(normalized(label)) + label.text.trim().split(Regex("\\s+"))
+            .map { normalized(label.copy(text = it)) }
+    }.toSet()
+
+    /** 仅固定布尔/数量，用于定位分类失败；不返回OCR原文，不改变分类证据。 */
+    fun feedNavigationEvidence(bounds: IntRect, labels: List<PageLabel>): FeedNavigationEvidence {
+        val height = bounds.bottom - bounds.top
+        fun band(from: Double, to: Double) = navigation(labels.filter {
+            it.bounds.left >= bounds.left && it.bounds.right <= bounds.right &&
+                it.bounds.right > it.bounds.left && it.bounds.bottom > it.bounds.top &&
+                it.bounds.top >= bounds.top + height * from && it.bounds.bottom <= bounds.top + height * to
+        })
+        val top = band(0.0, .22)
+        val bottom = band(.86, 1.0)
+        return FeedNavigationEvidence(labels.size, "关注" in top, "推荐" in top, "朋友" in top, "看剧" in top,
+            "首页" in bottom, "消息" in bottom, "我" in bottom, "+关注" in bottom || "关注" in bottom)
+    }
+
     private fun sensitive(labels: List<PageLabel>, bounds: IntRect): Boolean {
         if (labels.any { it.password }) return true
         val pieces = labels.map { it to normalized(it) }
@@ -58,12 +78,6 @@ internal object PageCapturePolicy {
         fun inBand(from: Double, to: Double) = visible.filter {
             it.bounds.top >= bounds.top + height * from && it.bounds.bottom <= bounds.top + height * to
         }
-        // ML Kit 可把同一横排的独立导航合成一行；只拆真实空白，不猜无分隔文本。
-        // 仍使用该行的同帧区域，正文里的同名词不能补足顶部/底部导航。
-        fun navigation(band: List<PageLabel>) = band.flatMap { label ->
-            listOf(normalized(label)) + label.text.trim().split(Regex("\\s+"))
-                .map { normalized(label.copy(text = it)) }
-        }.toSet()
         val top = navigation(inBand(0.0, .22))
         val bottom = navigation(inBand(.86, 1.0))
         val isWechat = packageName == "com.tencent.mm"

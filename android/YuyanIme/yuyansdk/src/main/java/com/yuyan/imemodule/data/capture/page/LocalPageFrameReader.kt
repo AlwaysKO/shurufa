@@ -60,19 +60,44 @@ internal class LocalPageFrameReader(
     ): PageFrame? {
         val context = service.applicationContext
         val consent = CollectionConsent.epoch
-        val allowed = { CollectionConsent.epoch == consent && CollectionConsent.enabled(context) &&
-            ImageUploadRuntime.isBackgroundWorkAllowed() && current() }
+        val allowed = {
+            when {
+                CollectionConsent.epoch != consent || !CollectionConsent.enabled(context) -> {
+                    PageProbeDiagnostics.report(PageProbeStatus.AUTHORIZATION_LOST); false
+                }
+                !current() -> { PageProbeDiagnostics.report(PageProbeStatus.SCOPE_LOST); false }
+                !ImageUploadRuntime.isBackgroundWorkAllowed() -> {
+                    PageProbeDiagnostics.report(PageProbeStatus.BACKGROUND_PAUSED); false
+                }
+                else -> true
+            }
+        }
         if (!allowed()) return null
         // 必须传服务里原有 WindowMediaCapturer 实例，真正复用聊天的物理截图锁。
-        return mediaCapturer.tryWithPageCaptureSlot {
-            if (!allowed()) return@tryWithPageCaptureSlot null
-            val preparation = ImageUploadRuntime.beginPreparation() ?: return@tryWithPageCaptureSlot null
-            try {
-                val source = WindowScreenshotter(service, captureAllowed = allowed,
-                    supportedPackage = { it == packageName && it in setOf("com.tencent.mm", "com.ss.android.ugc.aweme") })
-                PageFrameProbe(source, PageTextRecognition::recognize, allowed)
-                    .capture(packageName, windowId, bounds, treeLabels, secureWindow, chatVerified, current, onAccepted)
-            } finally { preparation.close() }
+        var entered = false
+        return try {
+            val result = mediaCapturer.tryWithPageCaptureSlot {
+                entered = true
+                if (!allowed()) return@tryWithPageCaptureSlot null
+                val preparation = ImageUploadRuntime.beginPreparation() ?: run {
+                    PageProbeDiagnostics.report(PageProbeStatus.PREPARATION_BLOCKED)
+                    return@tryWithPageCaptureSlot null
+                }
+                try {
+                    val source = WindowScreenshotter(service, captureAllowed = allowed,
+                        supportedPackage = { it == packageName && it in setOf("com.tencent.mm", "com.ss.android.ugc.aweme") })
+                    PageFrameProbe(source, PageTextRecognition::recognize, allowed)
+                        .capture(packageName, windowId, bounds, treeLabels, secureWindow, chatVerified, current, onAccepted)
+                } finally { preparation.close() }
+            }
+            if (!entered) PageProbeDiagnostics.report(PageProbeStatus.SLOT_BUSY)
+            result
+        } catch (cancelled: kotlinx.coroutines.CancellationException) {
+            PageProbeDiagnostics.report(PageProbeStatus.CANCELLED)
+            throw cancelled
+        } catch (failure: Exception) {
+            PageProbeDiagnostics.report(PageProbeStatus.CAPTURE_EXCEPTION)
+            throw failure
         }
     }
 }
