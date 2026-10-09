@@ -32,7 +32,8 @@ internal object PageCapturePolicy {
         val top = band(0.0, .22)
         val bottom = band(.86, 1.0)
         return FeedNavigationEvidence(labels.size, "关注" in top, "推荐" in top, "朋友" in top, "看剧" in top,
-            "首页" in bottom, "消息" in bottom, "我" in bottom, "+关注" in bottom || "关注" in bottom)
+            "首页" in bottom, "消息" in bottom, "我" in bottom, "+关注" in bottom || "关注" in bottom,
+            top.any { it.contains("关注") }, top.any { it.contains("推荐") })
     }
 
     private fun sensitive(labels: List<PageLabel>, bounds: IntRect): Boolean {

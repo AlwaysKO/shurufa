@@ -109,9 +109,15 @@ private object PageTextRecognition {
         recognizer.process(InputImage.fromBitmap(bitmap, 0))
             .addOnSuccessListener { result ->
                 if (continuation.isActive) continuation.resume(result.textBlocks.flatMap { block ->
-                    block.lines.mapNotNull { line -> line.boundingBox?.let { box ->
-                        PageLabel(line.text, IntRect(box.left, box.top, box.right, box.bottom))
-                    } }
+                    block.lines.flatMap { line ->
+                        val fullLine = line.boundingBox?.let { box ->
+                            PageLabel(line.text, IntRect(box.left, box.top, box.right, box.bottom))
+                        }
+                        val elements = line.elements.mapNotNull { element -> element.boundingBox?.let { box ->
+                            PageLabel(element.text, IntRect(box.left, box.top, box.right, box.bottom))
+                        } }
+                        pageOcrLineLabels(fullLine, elements)
+                    }
                 })
             }
             .addOnFailureListener { if (continuation.isActive) continuation.resume(emptyList()) }

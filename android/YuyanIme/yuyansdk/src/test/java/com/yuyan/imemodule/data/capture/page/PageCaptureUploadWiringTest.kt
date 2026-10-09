@@ -49,6 +49,11 @@ class PageCaptureUploadWiringTest {
         assertTrue(reader.contains("PageProbeStatus.PREPARATION_BLOCKED"))
         assertTrue(reader.contains("PageProbeStatus.AUTHORIZATION_LOST"))
     }
+    @Test fun productionOcrPreservesNativeElementsAndCompleteLines() {
+        val reader = source("data/capture/page/LocalPageFrameReader.kt")
+        assertTrue(reader.contains("line.elements.mapNotNull"))
+        assertTrue(reader.contains("pageOcrLineLabels(fullLine, elements)"))
+    }
     @Test fun savedPageOnlyWakesExistingSync() {
         val s = source("data/capture/page/PageCaptureOutbox.kt")
         assertTrue(s.contains("DataCollector.requestSync()"))

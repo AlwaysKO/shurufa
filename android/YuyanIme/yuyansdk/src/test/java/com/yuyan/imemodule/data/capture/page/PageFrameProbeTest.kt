@@ -84,7 +84,8 @@ class PageFrameProbeTest {
             return messages()
         }
         fun emptyEvidence(count: Int) = "feed_navigation:labels=$count,top_follow=0,top_recommend=0," +
-            "top_friend=0,top_drama=0,bottom_home=0,bottom_message=0,bottom_me=0,bottom_follow=0"
+            "top_friend=0,top_drama=0,bottom_home=0,bottom_message=0,bottom_me=0,bottom_follow=0," +
+            "top_contains_follow=0,top_contains_recommend=0"
         assertEquals(listOf("ocr_empty", "classification_rejected:insufficient_evidence", emptyEvidence(0)), rejected(emptyList()))
         val privateBody = "不允许写入日志的私密正文"
         val privateMessages = rejected(listOf(PageLabel(privateBody, IntRect(100, 400, 400, 450))))
