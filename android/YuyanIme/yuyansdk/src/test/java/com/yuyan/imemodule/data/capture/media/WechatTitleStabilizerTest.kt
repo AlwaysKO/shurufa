@@ -54,6 +54,15 @@ class WechatTitleStabilizerTest {
         Unit
     }
 
+    @Test fun conversationListAndItsStoredIdentityCannotBecomeChat() {
+        val store = MemoryConversationIdentityStore()
+        for (name in listOf("微信", "微佳", "微信(12)")) {
+            val identity = WechatTitleStabilizer(store).observe(name, pictureA, 1000)
+            assertFalse(identity.isChatPage)
+        }
+        assertFalse(WechatTitleStabilizer(store).observe(null, pictureA, 2000).isChatPage)
+    }
+
     @Test fun fixedPagesUseCanonicalIdentityWithoutWaitingForAnotherScreenshot() {
         for ((names, expected) in listOf(listOf("朋友圈", "朋友屠", "用友殿", "田友殿") to "朋友圈", listOf("微信", "微佳", "微信(12)") to "微信")) {
             val identities = names.mapIndexed { index, name -> WechatTitleStabilizer().observe(name, index.toString().repeat(64), 1000) }

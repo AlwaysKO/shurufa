@@ -88,6 +88,12 @@ class WindowMediaCapturer(
     // 三 App 的主视口、空树和通知补偿共享本实例，不各自向系统并发截图。
     private val captureMutex = Mutex()
 
+    /** 页面候选取图复用聊天的物理截图槽；低优先级探测不在聊天请求后排队。 */
+    internal suspend fun <T> tryWithPageCaptureSlot(block: suspend () -> T): T? {
+        if (!captureMutex.tryLock()) return null
+        return try { block() } finally { captureMutex.unlock() }
+    }
+
     override suspend fun capture(
         windowId: Int,
         windowBounds: IntRect,

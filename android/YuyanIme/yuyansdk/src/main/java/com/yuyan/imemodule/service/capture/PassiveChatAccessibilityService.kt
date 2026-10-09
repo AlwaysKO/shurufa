@@ -80,6 +80,8 @@ import com.yuyan.imemodule.data.capture.model.ChatDirection
  * 聊天采集保持只读。图片确认观察独立于采集，仅按用户发送操作清理本次原输入。
  */
 class PassiveChatAccessibilityService : AccessibilityService() {
+    private var browsingCapture: com.yuyan.imemodule.data.capture.page.BrowsingPageServiceBridge? = null
+    private var videoVisitMonitor: com.yuyan.imemodule.data.capture.page.VideoVisitMonitor? = null
     private var navigationCapture: com.yuyan.imemodule.data.navigation.NavigationCapture? = null
     private val douyinDiagnostics by lazy { DouyinCaptureDiagnostics(this) }
     private val backgroundDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
@@ -188,9 +190,18 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         navigationCapture?.onEvent(event)
         WechatExpressionConfirmation.event(event)
         if (!CollectionConsent.enabled(this)) {
+            browsingCapture?.invalidate()
+            videoVisitMonitor?.interrupt()
             resetScreenshotIdentity()
             debouncer.close()
             return
+        }
+        browsingCapture?.onEvent(event)
+        when (event.eventType) {
+            AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED, AccessibilityEvent.TYPE_WINDOWS_CHANGED ->
+                videoVisitMonitor?.windowChanged(event.packageName?.toString(), event.windowId,
+                    topologyOnly = event.eventType == AccessibilityEvent.TYPE_WINDOWS_CHANGED)
+            AccessibilityEvent.TYPE_VIEW_SCROLLED -> videoVisitMonitor?.contentScrolled(event.packageName?.toString())
         }
         if (event.eventType == AccessibilityEvent.TYPE_TOUCH_INTERACTION_START) pendingSendRender = null
         val packageName = event.packageName?.toString() ?: return
@@ -379,6 +390,8 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() {
+        browsingCapture?.invalidate()
+        videoVisitMonitor?.interrupt()
         com.yuyan.imemodule.data.redpacket.GroupRedPacketAssistant.cancel("无障碍服务中断", false)
         navigationCapture?.reset()
         WechatExpressionConfirmation.cancel()
@@ -387,6 +400,11 @@ class PassiveChatAccessibilityService : AccessibilityService() {
 
     override fun onServiceConnected() {
         super.onServiceConnected()
+        if (videoVisitMonitor == null) {
+            videoVisitMonitor = runCatching {
+                com.yuyan.imemodule.data.capture.page.createVideoVisitMonitor(this)
+            }.onFailure { android.util.Log.w("VideoVisit", "listener_initialization_failure") }.getOrNull()
+        }
         com.yuyan.imemodule.data.collect.GameForegroundMonitor.connect(this)
         com.yuyan.imemodule.data.redpacket.GroupRedPacketAssistant.connect(this)
         navigationCapture?.close()
@@ -400,7 +418,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         val database = CaptureDatabase.create(applicationContext)
         val activeChatContextStore = ActiveChatContextStore(applicationContext)
         activeChatContextStore.clear()
-        val activeMediaCapturer = WindowMediaCapturer(
+        val activeMediaCapturer = mediaCapturer ?: WindowMediaCapturer(
             context = applicationContext,
             screenshotSource = WindowScreenshotter(this),
             captureAllowed = { CollectionConsent.enabled(applicationContext) && !scrollGate.isScrolling() },
@@ -409,6 +427,10 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         )
         captureDatabase = database
         mediaCapturer = activeMediaCapturer
+        browsingCapture?.close()
+        browsingCapture = runCatching {
+            com.yuyan.imemodule.data.capture.page.BrowsingPageServiceBridge(this, activeMediaCapturer, videoVisitMonitor)
+        }.onFailure { android.util.Log.w("BrowsingPageCapture", "initialization_failed") }.getOrNull()
         val identityStore = com.yuyan.imemodule.data.capture.media.PreferenceConversationIdentityStore(
             getSharedPreferences("chat-confirmed-identities", Context.MODE_PRIVATE),
         )
@@ -475,6 +497,10 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     }
 
     override fun onDestroy() {
+        browsingCapture?.close()
+        browsingCapture = null
+        videoVisitMonitor?.close()
+        videoVisitMonitor = null
         com.yuyan.imemodule.data.collect.GameForegroundMonitor.disconnect(this)
         com.yuyan.imemodule.data.redpacket.GroupRedPacketAssistant.disconnect(this)
         navigationCapture?.close()

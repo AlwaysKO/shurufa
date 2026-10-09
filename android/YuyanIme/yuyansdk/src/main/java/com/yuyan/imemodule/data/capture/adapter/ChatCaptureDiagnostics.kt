@@ -12,7 +12,7 @@ import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 
-/** release 同样启用。事件只更新八槽内存；已有 Collector 在空闲时落盘与有界补传。 */
+/** release 同样启用。事件只更新十二槽内存；已有 Collector 在空闲时落盘与有界补传。 */
 object ChatCaptureDiagnostics {
     private val buffer = ChatDiagnosticsBuffer()
     private val mutex = Mutex()
@@ -37,7 +37,7 @@ object ChatCaptureDiagnostics {
         val raw = context.getSharedPreferences(prefsName, 0).getString("latest", null) ?: return
         if (raw.toByteArray(Charsets.UTF_8).size > 32768) return
         runCatching { Json.decodeFromString<List<CaptureDiagnosticSnapshot>>(raw) }.getOrNull()
-            ?.takeIf { it.size <= 8 }?.forEach(buffer::record)
+            ?.takeIf { it.size <= 12 }?.forEach(buffer::record)
     }
     suspend fun latest(context: Context): List<CaptureDiagnosticSnapshot> = withContext(Dispatchers.IO) {
         mutex.withLock { load(context.applicationContext); buffer.latest() }

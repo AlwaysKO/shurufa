@@ -91,7 +91,7 @@ class WeChatChatAdapter(private val ruleProvider: () -> ChatCaptureRule = { Chat
         ))
     }
 
-    /** 固定页面不要求聊天输入框；仅在顶部有明确已知标题时采集，发现页仍跳过。 */
+    /** 识别顶部固定页面标题；列表归独立页面路径，朋友圈旧路径暂保留。 */
     private fun fixedPageTitle(root: UiNodeSnapshot, nodes: List<UiNodeSnapshot>): String? {
         val title = nodes.filter { it.children.isEmpty() && it.bounds.top >= root.bounds.top &&
             it.bounds.bottom <= root.bounds.top + (root.bounds.right - root.bounds.left) * 0.22 &&
@@ -104,7 +104,8 @@ class WeChatChatAdapter(private val ruleProvider: () -> ChatCaptureRule = { Chat
     }
 
     private fun parseFixedPage(root: UiNodeSnapshot, title: String): ParseResult {
-        if (title == "发现") return ParseResult.Skip(SkipReason.UNSUPPORTED_PAGE)
+        // 列表由独立应用页面路径处理，不再生成名为“微信”的聊天会话。
+        if (title == "发现" || title == "微信") return ParseResult.Skip(SkipReason.UNSUPPORTED_PAGE)
         val identity = com.yuyan.imemodule.data.capture.media.WechatTitleStabilizer().observe(title, null, 0)
         return ParseResult.Success(ParsedViewport(
             conversation = CapturedConversation(ChatPlatform.WECHAT, "wechat-empty-tree", identity.externalKey,
@@ -157,6 +158,6 @@ class WeChatChatAdapter(private val ruleProvider: () -> ChatCaptureRule = { Chat
         val GROUP_TITLE = Regex("^(.+?)[（(](\\d+)[）)]$")
         val TIME_PATTERN = Regex("^(?:\\d{1,2}:\\d{2}|昨天|星期[一二三四五六日天]|\\d{1,2}月\\d{1,2}日).*$")
         val CONTROL_TEXT = setOf("发送", "按住 说话", "切换到键盘", "返回", "更多")
-        val NON_TITLES = setOf("微信", "聊天信息", "")
+        val NON_TITLES = setOf("聊天信息", "")
     }
 }

@@ -73,7 +73,7 @@ internal open class ConversationTitleStabilizer(
                 externalKey = firstKey ?: fixedKey,
                 displayName = fixedPage, conversationType = ConversationType.UNKNOWN, confidence = 0.95,
                 source = "wechat_page_title", status = "confirmed", observedTitle = title,
-                isChatPage = fixedPage != "发现",
+                isChatPage = fixedPage != "发现" && fixedPage != "微信",
             )
         }
         val previous = state?.takeIf { nowMillis - it.observedAt in 0..CONTINUITY_MILLIS }

@@ -11,6 +11,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.junit.Before
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
@@ -18,6 +19,13 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [30])
 class MediaCropperTest {
+    @Before fun establishIdleInputClock() {
+        // 显式建立空闲前置条件，避免其他测试的输入时间戳跨越 Robolectric 虚拟时钟回拨。
+        com.yuyan.imemodule.data.collect.ImageUploadRuntime.noteKeyActivity()
+        android.os.SystemClock.sleep(3001)
+        assertTrue(com.yuyan.imemodule.data.collect.ImageUploadRuntime.isBackgroundWorkAllowed())
+    }
+
     @Test
     fun typingDefersPhysicalScreenshotWithoutChangingConsent() = runBlocking {
         var shots=0

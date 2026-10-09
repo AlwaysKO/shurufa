@@ -66,8 +66,16 @@ class WeChatChatAdapterTest {
         assertEquals(IntRect(0, 130, 1080, 1650), result.viewport.messages.single().mediaBounds)
     }
 
+    @Test fun conversationListBelongsToPageArchiveNotChat() {
+        for (name in listOf("微信", "微佳", "微信(12)")) {
+            assertTrue(adapter.parse(group(node("com.tencent.mm:id/title", name, 180, 50, 850, 130))) is ParseResult.Skip)
+        }
+        val chat = adapter.parse(chatTree("微信", emptyList())) as ParseResult.Success
+        assertEquals("wechat-local", chat.viewport.conversation.accountKey)
+    }
+
     @Test fun fixedPagesWithReadableTreesAreAlsoCapturedWithoutAnInputBox() {
-        for ((name, expected) in listOf("微信" to "微信", "微佳" to "微信", "朋友圈" to "朋友圈", "朋友屠" to "朋友圈")) {
+        for ((name, expected) in listOf("朋友圈" to "朋友圈", "朋友屠" to "朋友圈")) {
             val root = group(node("com.tencent.mm:id/title",name,180,50,850,130))
             val result = adapter.parse(root) as ParseResult.Success
             assertEquals(expected, result.viewport.conversation.displayName)

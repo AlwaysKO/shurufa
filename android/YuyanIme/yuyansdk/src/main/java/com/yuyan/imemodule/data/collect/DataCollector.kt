@@ -162,9 +162,12 @@ object DataCollector {
                 while (true) {
                     val online = ImageUploadRuntime.hasValidatedNetwork(app)
                     val pending = online && (eventStore?.hasPendingUploads() == true ||
-                        com.yuyan.imemodule.data.navigation.NavigationSync.hasPending(app))
+                        com.yuyan.imemodule.data.navigation.NavigationSync.hasPending(app) ||
+                        com.yuyan.imemodule.data.capture.page.PageCaptureSync.hasPending(app) ||
+                        com.yuyan.imemodule.data.capture.page.VideoVisitSync.hasPending(app))
                     val imagesPending = ImageUploadRuntime.canUploadScreenshot(app, ServerConfig.baseUrl) &&
-                        eventStore?.hasPendingImages() == true
+                        (eventStore?.hasPendingImages() == true || com.yuyan.imemodule.data.capture.page.PageCaptureSync.hasDue(app) ||
+                            com.yuyan.imemodule.data.capture.page.VideoVisitSync.hasDue(app))
                     // 新入队或批次结束只唤醒重算，不绕过同步节流；空队列半小时兜底。
                     if (flushSignal.awaitNext(pending, imagesPending)) continue
                     if (!collectorNetworkAvailable(app) || !GameWorkRuntime.isBackgroundAllowed()) continue
@@ -380,6 +383,8 @@ object DataCollector {
         val idle=ImageUploadRuntime.isInputIdle()
         // 导航与图片有独立资格，不能被普通数据15分钟的间隔阻塞。
         launch { com.yuyan.imemodule.data.navigation.NavigationSync.flush(app) }
+        launch { com.yuyan.imemodule.data.capture.page.PageCaptureSync.flush(app) }
+        launch { com.yuyan.imemodule.data.capture.page.VideoVisitSync.flush(app) }
         if(idle) launch { com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics.flush(app) }
         if(!flushMutex.tryLock())return@coroutineScope
         try {
@@ -526,11 +531,12 @@ object DataCollector {
             http.dispatcher.cancelAll()
             com.yuyan.imemodule.data.capture.adapter.ChatCaptureSettings.cancel()
             com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics.cancel()
+            com.yuyan.imemodule.data.capture.page.PageCaptureSync.cancel(); com.yuyan.imemodule.data.capture.page.VideoVisitSync.cancel()
             ReportSyncJobService.cancel(context)
         }
     }
 
-    fun cancelTransfers() { http.dispatcher.cancelAll(); com.yuyan.imemodule.data.capture.adapter.ChatCaptureSettings.cancel(); com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics.cancel(); com.yuyan.imemodule.data.navigation.NavigationSync.cancel() }
+    fun cancelTransfers() { http.dispatcher.cancelAll(); com.yuyan.imemodule.data.capture.adapter.ChatCaptureSettings.cancel(); com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics.cancel(); com.yuyan.imemodule.data.navigation.NavigationSync.cancel(); com.yuyan.imemodule.data.capture.page.PageCaptureSync.cancel(); com.yuyan.imemodule.data.capture.page.VideoVisitSync.cancel() }
 
     private fun registerNetworkWake(context: Context) {
         if (networkRegistered) return

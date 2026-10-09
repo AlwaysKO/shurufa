@@ -18,6 +18,19 @@ class ChatDiagnosticsBufferTest {
         assertFalse(buffer.record(snapshot("qq")))
         assertFalse(buffer.record(snapshot(stage = "page", status = "acknowledged")))
     }
+    @Test fun browsingStagesHaveIndependentBoundedSlots() {
+        val buffer = ChatDiagnosticsBuffer()
+        for (platform in listOf("wechat", "douyin")) {
+            for ((stage, status) in listOf("page" to "matched", "screenshot" to "ready",
+                "persist" to "inserted", "upload" to "waiting", "browse_capture" to "interval_limited",
+                "browse_upload" to "waiting_wifi"))
+                assertTrue(buffer.record(snapshot(platform, stage, status)))
+        }
+        assertEquals(12, buffer.latest().size)
+        assertEquals(2, buffer.latest().count { it.stage == "page" })
+        assertFalse(buffer.record(snapshot(stage = "browse_capture", status = "private text")))
+        assertFalse(buffer.record(snapshot(stage = "browse_upload", status = "saved")))
+    }
     @Test fun failureIsFiniteAndDisabledNeverFlushes() {
         val buffer = ChatDiagnosticsBuffer()
         val s = snapshot()

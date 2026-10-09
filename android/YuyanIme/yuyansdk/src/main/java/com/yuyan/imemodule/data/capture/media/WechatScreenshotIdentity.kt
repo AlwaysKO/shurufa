@@ -92,9 +92,9 @@ private fun isWechatHeaderNoise(text: String): Boolean =
 /** 首次立即探测也可能仍停留在列表；无聊天页证据时只重试，不保存成待确认截图。 */
 internal fun isWechatScreenshotChatPage(lines: List<OcrTextLine>, width: Int, headerHeight: Int): Boolean {
     val header = lines.filter { it.top >= headerHeight * 0.18 && it.bottom <= headerHeight }
-    // 用户只排除发现页。按主标题识别，不能因为正文出现“发现”而丢掉聊天截图。
+    // 列表迁移到独立页面归档；只看主标题，正文提到导航名称不能排除聊天。
     val title = selectWechatChatTitleLine(lines, width, headerHeight)
-    if (canonicalWechatPageTitle(title?.text) == "发现") return false
+    if (canonicalWechatPageTitle(title?.text) in setOf("发现", "微信")) return false
     if (selectWechatChatTitleLine(lines, width, headerHeight) != null) return true
     // 标题暂时不可读，但返回和右上角菜单同时存在时仍可保留待确认首张。
     val back = header.any { it.right < width * 0.22 && it.text.trim() in setOf("返回", "〈", "く", "<", "‹", "←") }
@@ -231,7 +231,7 @@ internal class MlKitWechatScreenshotIdentityResolver(identityStore: Conversation
                 observeSnapshotTitle(stabilizer, titleStabilizer, expectedVersion, keepCurrent, observedTitle, visualKey, nowMillis)
             }
             identity.copy(
-                isChatPage = isWechatScreenshotChatPage(if (title != null) lines else pageLines, header.width, header.height),
+                isChatPage = identity.isChatPage && isWechatScreenshotChatPage(if (title != null) lines else pageLines, header.width, header.height),
                 exactTitleHash = evidence?.let { exactPixelHash(header, IntRect(it.left, it.top, it.right, it.bottom)) },
             )
         } finally {

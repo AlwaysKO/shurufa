@@ -9,6 +9,9 @@ import java.net.URI
 /** 查询主地址使用线上；设置项仅决定电脑镜像上报地址，连接状态不改变本地学习。 */
 object ServerConfig {
 
+    private var targetEpoch = 0L
+    @get:Synchronized internal val onlineEpoch: Long get() = targetEpoch
+
     private const val KEY_SERVER_URL = "server_url"
     private const val KEY_ONLINE_SERVER_URL = "online_server_url"
 
@@ -39,6 +42,7 @@ object ServerConfig {
         val saved = checkNotNull(prefs) { "ServerConfig is not initialized" }
             .edit().putString(KEY_ONLINE_SERVER_URL, normalized).commit()
         if (!saved) return null
+        targetEpoch++
         return old to normalized
     }
 

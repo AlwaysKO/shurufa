@@ -21,7 +21,10 @@ class ChatDiagnosticsBuffer {
     @Synchronized fun record(s: CaptureDiagnosticSnapshot): Boolean {
         val statuses = mapOf("page" to setOf("matched", "rejected", "empty_tree"),
             "screenshot" to setOf("ready", "failed", "cancelled"), "persist" to setOf("inserted", "duplicate", "failed"),
-            "upload" to setOf("acknowledged", "failed", "waiting"))
+            "upload" to setOf("acknowledged", "failed", "waiting"),
+            "browse_capture" to setOf("saved", "duplicate", "interval_limited", "budget_limited",
+                "queue_full", "page_uncovered", "failed", "cancelled"),
+            "browse_upload" to setOf("acknowledged", "failed", "waiting_wifi", "discarded"))
         if (s.platform !in setOf("wechat", "douyin") || s.status !in statuses[s.stage].orEmpty() ||
             !Regex("^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$").matches(s.deviceId) ||
             s.observedAt !in 1..9007199254740991L || s.appVersionCode !in 0..9007199254740991L ||

@@ -8,6 +8,12 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
 class WechatScreenshotIdentityTest {
+    @Test fun conversationListHeaderDoesNotBecomeChat() {
+        for (name in listOf("微信", "微佳", "微信(12)")) {
+            org.junit.Assert.assertFalse(isWechatScreenshotChatPage(listOf(OcrTextLine(name, 390, 50, 690, 110)), 1080, 194))
+        }
+    }
+
     @Test fun literalLeadingSeparatorsArePreservedWithoutPixelEvidence() {
         for (prefix in listOf("|", "｜", "¦", "| ")) {
             assertEquals(prefix + "一家人", screenshotConversationIdentity(prefix + "一家人(223)", "fallback").displayName)
@@ -49,15 +55,15 @@ class WechatScreenshotIdentityTest {
         assertTrue(isWechatScreenshotChatPage(listOf(title), 1080, 194))
         assertEquals("文件传输助手", selectWechatChatTitle(listOf(title), 1080, 194))
         val listTitle = OcrTextLine("微信", 460, 50 - offset, 620, 100 - offset)
-        org.junit.Assert.assertTrue(isWechatScreenshotChatPage(listOf(listTitle), 1080, 194))
+        org.junit.Assert.assertFalse(isWechatScreenshotChatPage(listOf(listTitle), 1080, 194))
     }
 
-    @Test fun knownPageSpellingsKeepOneCategoryAndOnlyDiscoveryIsExcluded() {
-        for (name in listOf("微信", "微佳", "朋友圈", "朋友屠", "用友殿", "田友殿", "通讯录", "我")) {
+    @Test fun knownPageSpellingsKeepOneCategoryAndListLeavesChatArchive() {
+        for (name in listOf("朋友圈", "朋友屠", "用友殿", "田友殿", "通讯录", "我")) {
             val line = OcrTextLine(name, 390, 50, 690, 110)
             assertTrue(name, isWechatScreenshotChatPage(listOf(line), 1080, 194))
         }
-        for (name in listOf("发现", "发机")) {
+        for (name in listOf("发现", "发机", "微信", "微佳")) {
             org.junit.Assert.assertFalse(name, isWechatScreenshotChatPage(listOf(OcrTextLine(name, 390, 50, 690, 110)), 1080, 194))
         }
         assertEquals("微信", selectWechatChatTitle(listOf(OcrTextLine("微信", 390, 50, 690, 110)),1080,194))
@@ -133,9 +139,9 @@ class WechatScreenshotIdentityTest {
             screenshotConversationIdentity(null, "header-b").externalKey,
         )
     }
-    @Test fun homepageIsNowAllowedButEmptyHeaderIsNotInventedAsContact() {
+    @Test fun homepageBelongsToPageArchiveAndEmptyHeaderIsNotInventedAsContact() {
         val lines=listOf(OcrTextLine("微信",430,50,650,100),OcrTextLine("联系人",250,150,480,200))
-        org.junit.Assert.assertTrue(isWechatScreenshotChatPage(lines,1080,220))
+        org.junit.Assert.assertFalse(isWechatScreenshotChatPage(lines,1080,220))
         org.junit.Assert.assertFalse(isWechatScreenshotChatPage(emptyList(),1080,220))
         org.junit.Assert.assertTrue(isWechatScreenshotChatPage(listOf(OcrTextLine("工作群",430,50,650,100)),1080,220))
         org.junit.Assert.assertTrue(isWechatScreenshotChatPage(listOf(OcrTextLine("〈",10,50,40,100),OcrTextLine("···",990,50,1050,100)),1080,220))

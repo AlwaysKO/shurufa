@@ -112,7 +112,7 @@ object ImageUploadRuntime {
     // Called from an IO worker, never from a key callback. Bound sockets/DNS cannot fall back to cellular.
     internal fun prepareChatCall(context: Context, target: String, http: OkHttpClient, request: Request, allowed: () -> Boolean = { true }, preserveCallTimeout: Boolean = false): Call? {
         observe(context)
-        val image = request.url.encodedPath == "/api/v1/mobile/chat/assets"
+        val image = request.url.encodedPath in setOf("/api/v1/mobile/chat/assets", "/api/v1/mobile/page-captures")
         val anyNetwork = request.url.encodedPath in setOf("/api/v1/mobile/chat/messages/batch", "/api/v1/mobile/navigation-records")
         val tracker = if(image) imageCancellations else cancellations
         val token=tracker.token()
