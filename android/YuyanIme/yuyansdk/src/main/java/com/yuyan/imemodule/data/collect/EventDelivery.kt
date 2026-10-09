@@ -34,11 +34,17 @@ internal class EventDelivery(
     private val finishChatCall: (okhttp3.Call) -> Unit = {},
     private val onChatDelivery: (String, String) -> Unit = { _, _ -> },
     private val tryStartImage: (String, Long) -> java.io.Closeable? = { _, _ -> java.io.Closeable {} },
+    private val interaction: () -> HumanInteraction? = { null },
 ) {
     private val locks = ConcurrentHashMap<String, Any>()
     private val registered = java.util.Collections.newSetFromMap(ConcurrentHashMap<String, Boolean>())
     private val reportsFirstNext = java.util.Collections.newSetFromMap(ConcurrentHashMap<String, Boolean>())
     private val json = Json { ignoreUnknownKeys = true }
+    private val confirmedInteractions = ConcurrentHashMap<String, HumanInteraction>()
+    fun hasPendingInteraction(targets: Collection<String>): Boolean {
+        val current = interaction() ?: return false
+        return targets.any { confirmedInteractions[it] != current }
+    }
 
     /** 小批次串行补传；空队列、无进展或失败立即结束，避免忙循环与全量加载。 */
     fun drain(
@@ -78,10 +84,17 @@ internal class EventDelivery(
         return try {
             if (!allowed(null)) return false
             if (!canStartRequest()) return true
-            if (target !in registered) {
+            val currentInteraction = if (selection.regular) interaction() else null
+            if (target !in registered || (selection.regular && currentInteraction != null && confirmedInteractions[target] != currentInteraction)) {
                 ReportingTrace.record(ReportingStage.REGISTER, target == onlineTarget())
-                if (!post(target, "/api/v1/mobile/device", deviceJson)) return false
+                val body = if (currentInteraction == null) deviceJson else buildJsonObject {
+                    json.parseToJsonElement(deviceJson).jsonObject.forEach { (key, value) -> put(key, value) }
+                    put("last_interaction_at", java.time.Instant.ofEpochMilli(currentInteraction.at).toString())
+                    put("last_interaction_source", currentInteraction.source)
+                }.toString()
+                if (!post(target, "/api/v1/mobile/device", body)) return false
                 registered.add(target)
+                if (currentInteraction != null) confirmedInteractions[target] = currentInteraction
             }
             // 两类队列轮换先手，防止慢失败总是耗尽5秒预算、饿死另一类。
             val reportsFirst = reportsFirstNext.remove(target)

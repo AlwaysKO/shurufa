@@ -45,6 +45,7 @@
     </queries>
     <application
         android:supportsRtl="true">
+        <activity android:name=".data.redpacket.SilentPacketSettingsActivity" android:exported="false" />
         <activity
             android:name=".data.redpacket.PacketWakeActivity"
             android:exported="false"

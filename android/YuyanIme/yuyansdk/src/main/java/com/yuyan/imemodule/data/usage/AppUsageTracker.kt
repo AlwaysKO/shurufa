@@ -162,6 +162,9 @@ object AppUsageTracker {
         while(stream.hasNextEvent()) {
             check(++count<=50_000) { "usage log exceeds safe window" }
             stream.getNextEvent(event)
+            if (event.eventType == UsageEvents.Event.USER_INTERACTION && event.timeStamp in from..to) {
+                com.yuyan.imemodule.data.collect.HumanInteractionRuntime.usageInteraction(context, event.timeStamp)
+            }
             val type=when(event.eventType) {
                 1 -> "resume"; 2 -> "pause"; 23 -> "stop"
                 16 -> "off"; 15 -> "on"; 17 -> "lock"; 18 -> "unlock"

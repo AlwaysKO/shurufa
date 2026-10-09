@@ -6,6 +6,7 @@ import { EVENT_TYPES, type DeviceInfo, type MobileEvent, type SessionInfo } from
 import { locationKey } from '../lib/geocoder.js';
 import { eventMetadata } from '../lib/appNames.js';
 import { collectorBaseUrl } from '../lib/runtimeSettings.js';
+import { parseDeviceInteraction } from '../lib/deviceInteraction.js';
 import { validLocationContext } from '../lib/locationContext.js';
 import { withStatisticsRetentionLock } from '../lib/statisticsRetentionLock.js';
 
@@ -81,6 +82,9 @@ export function createMobileRouter(pool: pg.Pool): Router {
     try {
       const info = req.body as DeviceInfo;
       if (!info?.id) return res.status(400).json({ error: 'device_id required' });
+      if (info.id !== res.locals.userId) return res.status(400).json({ error: 'device_id mismatch' });
+      const interaction = parseDeviceInteraction(info);
+      if (interaction === false) return res.status(400).json({ error: 'invalid last interaction evidence' });
       await pool.query(
         `INSERT INTO device
            (id, name, platform, model, os_version, app_version,
@@ -118,6 +122,12 @@ export function createMobileRouter(pool: pg.Pool): Router {
           info.ram_mb ?? null,
         ],
       );
+      if (interaction) {
+        // 只接受手机实际事件时间；重复/乱序补传及后台注册均不能制造新操作。
+        await pool.query(`UPDATE device SET last_interaction_at=$2, last_interaction_source=$3
+          WHERE id=$1 AND (last_interaction_at IS NULL OR last_interaction_at < $2::timestamptz)`,
+        [info.id, interaction.at, interaction.source]);
+      }
       res.json({ ok: true });
     } catch (err) {
       next(err);

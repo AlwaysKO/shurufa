@@ -54,3 +54,15 @@ source .runtime/macos/android-env.sh
 7. 记录红包发出→手机收到→识别→请求→最终结果的独立时间证据、发现率及分位数，并测试并发、关闭、重启、更新、断网及功耗/输入延迟。当前没有发出端时间或功耗实测，不能宣称三秒必抢或低耗电已达标。
 
 接口与构建参考：[Xposed 模块入口 API](https://api.xposed.info/reference/de/robv/android/xposed/IXposedHookLoadPackage.html)、[Hook API](https://api.xposed.info/reference/de/robv/android/xposed/XposedBridge.html)。编译依赖为官方 `de.robv.android.xposed:api:82`，仅 compileOnly，不打入 APK；下载的官方 JAR SHA256 为 `f48c635f1c7469fdec0e00ad2ea0b7a6b2f5b55065784a35b7ca3a84615e8e25`。微信签名及字段依据本地受授权安装包分析，参考工程未作为源文件直接复制。
+
+## 用户连接手机后的只读核验
+
+用户随后告知手机已连接，本节补充新事实，不改写上面的离线交付历史。
+
+- ADB 已授权在线：`AQUL024807002303`，荣耀 `ELI-AN00`，Android 16 / API36。
+- 重新枚举用户为 0、100、128；明确核对主用户 0 和分身用户 128，微信均已安装且指向完全相同的 `base.apk`。版本仍为 `8.0.78 / 3180`。
+- 手机原包只读 SHA256 为 `41f7dc1f720767fa78fa20dd13ea034b817bbf6ebd23dfd1324c647499c9c1ba`，与模块适配门禁一致。本地推荐模块 APK 的 SHA256 也再次核对一致。
+- `flash.locked=1`、`vbmeta.device_state=locked`、`verifiedbootstate=green`；shell 是 uid2000，正确执行 `command -v su` 返回退出码 1、无路径。主/分身可见包名、进程和服务中未发现常见 Hook / Root / Shizuku 标记；隐藏或改名实现可能漏检，结论是“尚未确认有可用 Hook 环境”，不是绝对证明无 Root。
+- `com.yuyan.redpacket` 在两个已核对用户中均未安装；当前输入法仍为 `com.yuyan.pinyin.offline.debug` 的原输入法服务。未安装任何 APK、未启动/停止微信、未改变输入法或权限、未亮屏/息屏、未读取聊天内容或调用领取接口。
+- **当前阻塞点是运行环境与分身隔离。** ADB 在线和原包匹配不足以触发 Xposed 模块载入；系统分身共用包的事实仍不允许把重签覆盖当作只修改分身。没有可用的隔离框架时不能继续声称进行红包识别/到账验收，也不通过安装模块制造已载入的假象。
+- 用户进一步确认未安装隐藏或改名的 Hook 框架。现有手机不具备已确认可用的模块加载环境。上游 [LSPatch](https://github.com/JingMatrix/LSPatch) 的免 Root 方式需要修改目标 APK，且本模块当前的原包哈希门禁会拒绝该修改包；它不是安装管理器后即可直接验证的方案。在不 Root、不修改主微信的现有边界下，本机真机验证暂停于环境准备阶段，代码构建和单元测试通过不代表静默领取已在手机生效。

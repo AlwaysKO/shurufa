@@ -24,7 +24,7 @@ internal fun packetNotification(sbn: StatusBarNotification, now: Long): PacketRe
     val message = extras.getParcelableArray(Notification.EXTRA_MESSAGES)?.let {
         Notification.MessagingStyle.Message.getMessagesFromBundleArray(it).maxByOrNull { message -> message.timestamp }
     }
-    val title = extras.getCharSequence(Notification.EXTRA_CONVERSATION_TITLE)?.toString()
+    val title = extras.getCharSequence(Notification.EXTRA_CONVERSATION_TITLE)?.toString()?.takeIf { it.isNotBlank() }
         ?: extras.getCharSequence(Notification.EXTRA_TITLE)?.toString().orEmpty()
     val text = sequenceOf(
         message?.text,

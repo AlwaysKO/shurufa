@@ -161,7 +161,7 @@ object DataCollector {
                 var regularDue = android.os.SystemClock.elapsedRealtime() + FLUSH_INTERVAL_MS
                 while (true) {
                     val online = ImageUploadRuntime.hasValidatedNetwork(app)
-                    val pending = online && (eventStore?.hasPendingUploads() == true ||
+                    val pending = online && (delivery?.hasPendingInteraction(ServerConfig.eventTargets) == true || eventStore?.hasPendingUploads() == true ||
                         com.yuyan.imemodule.data.navigation.NavigationSync.hasPending(app) ||
                         com.yuyan.imemodule.data.capture.page.PageCaptureSync.hasPending(app) ||
                         com.yuyan.imemodule.data.capture.page.VideoVisitSync.hasPending(app))
@@ -256,6 +256,7 @@ object DataCollector {
             onChatDelivery = { platform, status -> com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics.record(context, platform, "upload", status) },
             maxImageBytes = { target -> ImageUploadRuntime.maxImageBytes(context, target) },
             tryStartImage = { target, bytes -> ImageUploadRuntime.tryStartImage(context, target, bytes) },
+            interaction = { HumanInteractionRuntime.snapshot(context) },
         )
         requestSync()
     }
@@ -389,7 +390,8 @@ object DataCollector {
         if(!flushMutex.tryLock())return@coroutineScope
         try {
         val wifi=ImageUploadRuntime.hasValidatedWifi(app)
-        val kinds=eventStore?.pendingKinds().orEmpty()
+        val kinds=eventStore?.pendingKinds().orEmpty() +
+            if (uploader.hasPendingInteraction(ServerConfig.eventTargets)) setOf("human_interaction") else emptySet()
         val selection=uploadPlan.select(wifi,idle,kinds,eventStore?.hasPendingEvents()==true,
             ImageUploadRuntime.canUploadScreenshot(app,ServerConfig.baseUrl))
         val images=selection.images

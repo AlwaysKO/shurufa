@@ -32,6 +32,7 @@ internal object GroupRedPacketAssistant {
     /** Monitor与操作入口均在主线程；保护先关闭，旧读取只能释放自身资源。 */
     fun protectForeground(protected: Boolean) {
         if (gameProtected == protected) return
+        if (Build.VERSION.SDK_INT >= 35) SilentPacketRuntime.protectForeground(protected)
         if (protected) {
             gameProtected = true
             val deferred = queued.toMutableList()
@@ -119,6 +120,7 @@ internal object GroupRedPacketAssistant {
         if (Build.VERSION.SDK_INT < 28 || sbn.packageName != PACKET_WECHAT) return
         handler.post {
             val observer = service ?: return@post
+            if (SilentPacketSettings.mode(observer) != "OFF") return@post
             if (!PacketSettings.enabled(observer)) return@post
             runCatching {
                 val parsed = packetNotification(sbn, System.currentTimeMillis())
@@ -208,6 +210,7 @@ internal object GroupRedPacketAssistant {
     }
 
     fun event(event: AccessibilityEvent) {
+        if (Build.VERSION.SDK_INT >= 35) SilentPacketRuntime.event(event)
         val observer = service ?: return
         if (Build.VERSION.SDK_INT < 28 || !PacketSettings.enabled(observer)) return
         if (gameProtected) return
@@ -373,6 +376,7 @@ internal object GroupRedPacketAssistant {
             PacketAction.Stop -> cancel("会话不匹配或无法确认群聊", false)
             PacketAction.Back -> {
                 (visual?.windowId ?: window.clickIdentity("root")?.first)?.let { initialLayout.expect(it, now()) }
+                com.yuyan.imemodule.data.collect.HumanInteractionRuntime.suppressAutomatedGesture(observer)
                 if (observer.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK)) {
                     ownBackIdleUntil = now() + 3500
                     schedule()
@@ -390,6 +394,7 @@ internal object GroupRedPacketAssistant {
                         clickReceipt.expect(it.first, it.second, now())
                         initialLayout.expect(it.first, now())
                     }
+                    com.yuyan.imemodule.data.collect.HumanInteractionRuntime.suppressAutomatedGesture(observer)
                     if (window.click(action.id)) {
                         signatures[action.id]?.let { clickedCard = it }
                         schedule()
@@ -405,6 +410,7 @@ internal object GroupRedPacketAssistant {
                 wakeToken = null
                 // 仅从已确认的红包结果页返回，不在未知页面自动按返回。
                 expectNavigation(observer)
+                com.yuyan.imemodule.data.collect.HumanInteractionRuntime.suppressAutomatedGesture(observer)
                 if (observer.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK)) ownBackIdleUntil = now() + 3500
                 if (queued.isNotEmpty()) startNext() else finishSession()
             }
@@ -439,6 +445,7 @@ internal object GroupRedPacketAssistant {
                 initialLayout.expect(first.windowId, now())
                 visualReceiptUntil = now() + 600
                 PacketProbe.action(observer, if (id.startsWith("visual:card:")) "card" else id)
+                com.yuyan.imemodule.data.collect.HumanInteractionRuntime.suppressAutomatedGesture(observer)
                 val dispatched = observer.dispatchGesture(gesture, object : AccessibilityService.GestureResultCallback() {
                     override fun onCompleted(gestureDescription: GestureDescription) { if (flow != null) schedule() }
                     override fun onCancelled(gestureDescription: GestureDescription) {

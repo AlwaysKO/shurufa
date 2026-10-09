@@ -185,6 +185,9 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
+        // 副屏只由红包端侧识别器处理，不能进入主屏前台判断或原采集/上传链。
+        if (android.os.Build.VERSION.SDK_INT >= 35 && event.displayId > 0) return
+        com.yuyan.imemodule.data.collect.HumanInteractionRuntime.accessibility(this, event)
         com.yuyan.imemodule.data.collect.GameForegroundMonitor.event(event)
         com.yuyan.imemodule.data.redpacket.GroupRedPacketAssistant.event(event)
         navigationCapture?.onEvent(event)

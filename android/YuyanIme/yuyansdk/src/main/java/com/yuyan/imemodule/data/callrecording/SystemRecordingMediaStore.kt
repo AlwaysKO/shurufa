@@ -15,7 +15,7 @@ import java.util.Locale
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-/** 只读取媒体库已公开的通话录音；不遍历私有存储，不修改原件。 */
+/** 只读取媒体库已公开的音频；不遍历私有存储，不修改原件。 */
 internal class SystemRecordingMediaStore(private val context:Context) {
     private val resolver=context.contentResolver
     companion object {

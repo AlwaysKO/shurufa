@@ -163,6 +163,7 @@ private val RELATIONSHIP_REPLY_COMMENTS = setOf(RELATIONSHIP_REPLY_COMMENT, RELA
 class InputView(context: Context, private val service: ImeService) : LifecycleRelativeLayout(context), IResponseKeyEvent {
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        com.yuyan.imemodule.data.collect.HumanInteractionRuntime.keyboardTouch(context, event)
         ImageUploadRuntime.noteTouch(event.actionMasked, this)
         val handled = super.dispatchTouchEvent(event)
         if (!handled && event.actionMasked == MotionEvent.ACTION_DOWN) {

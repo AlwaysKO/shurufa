@@ -499,6 +499,7 @@ open class ImeService : InputMethodService() {
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        com.yuyan.imemodule.data.collect.HumanInteractionRuntime.hardwareKey(this, event)
         ImageUploadRuntime.noteKeyActivity()
         // 返回键必须交给 InputMethodService：框架会启动事件跟踪，并在 Android 13+
         // 正确维护 IME 的 OnBackInvokedCallback 注册/注销生命周期。
@@ -517,6 +518,7 @@ open class ImeService : InputMethodService() {
     }
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
+        com.yuyan.imemodule.data.collect.HumanInteractionRuntime.hardwareKey(this, event)
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (expressionBackHandled) {
                 expressionBackHandled = false

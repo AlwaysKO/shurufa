@@ -69,7 +69,12 @@ class PassiveNotificationListener : NotificationListenerService() {
         super.onListenerDisconnected()
         WechatCallSignals.clear()
         PacketServiceState.notificationConnected = false
-        if (!packetRebindRequested && PacketSettings.enabled(this) && PacketSettings.hasNotifications(this)) {
+        if (android.os.Build.VERSION.SDK_INT >= 35)
+            com.yuyan.imemodule.data.redpacket.SilentPacketRuntime.stop("通知服务已断开")
+        val needsPacketListener = PacketSettings.enabled(this) ||
+            (android.os.Build.VERSION.SDK_INT >= 35 &&
+                com.yuyan.imemodule.data.redpacket.SilentPacketSettings.mode(this) != "OFF")
+        if (!packetRebindRequested && needsPacketListener && PacketSettings.hasNotifications(this)) {
             packetRebindRequested = true
             runCatching { requestRebind(ComponentName(this, PassiveNotificationListener::class.java)) }
         }
@@ -109,6 +114,8 @@ class PassiveNotificationListener : NotificationListenerService() {
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
+        if (android.os.Build.VERSION.SDK_INT >= 35)
+            com.yuyan.imemodule.data.redpacket.SilentPacketRuntime.notification(this, sbn)
         com.yuyan.imemodule.data.redpacket.GroupRedPacketAssistant.notification(sbn)
         sbn?.takeIf { it.packageName == "com.tencent.mm" }?.let { callNotification ->
             val extras = callNotification.notification.extras

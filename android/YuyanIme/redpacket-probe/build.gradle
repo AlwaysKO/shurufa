@@ -1,0 +1,27 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'com.yuyan.redpacket.probe'
+    compileSdk 36
+    defaultConfig {
+        applicationId 'com.yuyan.redpacket.probe'
+        minSdk 35
+        targetSdk 35
+        versionCode 5
+        versionName '0.2.4'
+    }
+    flavorDimensions = ['default']
+    productFlavors { offline { dimension 'default' } }
+    buildTypes {
+        debug { minifyEnabled false }
+        release { minifyEnabled false }
+    }
+    buildFeatures { aidl true }
+    compileOptions { sourceCompatibility 17; targetCompatibility 17 }
+    testOptions { unitTests.includeAndroidResources = true }
+}
+dependencies {
+    implementation 'dev.rikka.shizuku:api:13.1.5'
+    implementation 'dev.rikka.shizuku:provider:13.1.5'
+    testImplementation 'junit:junit:4.13.2'
+}
+apply from: rootProject.file('tools/signing-delivery.gradle')

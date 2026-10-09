@@ -41,6 +41,8 @@ export interface MobileEvent {
 }
 
 export interface DeviceInfo {
+  last_interaction_at?: string | null;
+  last_interaction_source?: string | null;
   id: string;
   name?: string;
   platform?: string;

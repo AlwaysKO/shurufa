@@ -141,6 +141,8 @@ export interface DeviceRow {
   ram_mb: number | null;
   last_seen_at: string;
   last_data_received_at?: string | null;
+  last_interaction_at?: string | null;
+  last_interaction_source?: 'touch' | 'key' | 'ime_input' | 'usage_interaction' | null;
 }
 
 export interface UserDirectoryPage {

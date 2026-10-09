@@ -73,9 +73,10 @@ test.each(sources)('%s 采用服务器入库时间，设备隔离且旧事件补
   expect(result.body.users[0].last_data_received_at).toBe(T1);
 });
 
-test('只查当前页现存证据，保留最近联系排序；清理后可回退，已删录音不计入', async () => {
+test('只查当前页现存证据，按人为操作排序；清理后可回退，已删录音不计入', async () => {
   await seed('input_event', T1, A); await seed('app_usage_segment', T2, A); await seed('call_recording', '2026-10-03T03:00:00Z', A);
   await pool.query('UPDATE call_recording SET deleted_at=NOW(),audio_ciphertext=NULL WHERE device_id=$1', [A]);
+  await pool.query("UPDATE device SET last_interaction_at=$2,last_interaction_source='touch' WHERE id=$1", [A, T2]);
   const first = await directory('?page=1&page_size=1');
   expect(first.body.users).toHaveLength(1); expect(first.body.users[0]).toMatchObject({ id: A, last_data_received_at: T2 });
   expect((await directory('?page=2&page_size=1')).body.users[0]).toMatchObject({ id: B, last_data_received_at: null });

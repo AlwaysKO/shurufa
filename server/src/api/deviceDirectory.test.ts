@@ -24,7 +24,7 @@ beforeEach(async () => {
     id UUID PRIMARY KEY, name TEXT, platform TEXT, model TEXT, os_version TEXT,
     app_version TEXT, brand TEXT, sdk_int INT, screen_resolution TEXT, locale TEXT,
     region TEXT, hardware TEXT, rom_version TEXT, ram_mb INT,
-    dashboard_name TEXT, tags TEXT,
+    dashboard_name TEXT, tags TEXT, last_interaction_at TIMESTAMPTZ, last_interaction_source TEXT,
     first_seen_at TIMESTAMPTZ DEFAULT NOW(), last_seen_at TIMESTAMPTZ DEFAULT NOW()
   )`);
   for (const [index, id] of ids.entries()) {
@@ -37,6 +37,14 @@ beforeEach(async () => {
 });
 
 describe('dashboard user directory', () => {
+  it('按最后人为操作排序，无证据为null，不使用后台联系时间代替', async () => {
+    await pool.query("UPDATE device SET last_interaction_at=$2,last_interaction_source='touch' WHERE id=$1", [ids[0], '2026-10-09T16:00:00Z']);
+    const response = await (await authenticatedRequest(createApp(pool))).get('/api/v1/dashboard/users');
+    expect(response.status).toBe(200);
+    expect(response.body.users[0]).toMatchObject({ id: ids[0], last_interaction_at: '2026-10-09T16:00:00.000Z', last_interaction_source: 'touch' });
+    expect(response.body.users[1].last_interaction_at).toBeNull();
+  });
+
   it('保留回环地址识别工具', () => {
     expect(isLoopbackAddress('127.0.0.1')).toBe(true);
     expect(isLoopbackAddress('::1')).toBe(true);

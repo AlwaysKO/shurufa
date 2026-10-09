@@ -21,7 +21,15 @@ internal class PacketPreferences(private val context: Context, screen: Preferenc
             false
         }
     }
+    private val silent = Preference(context).apply {
+        title = "静默抢红包（Shizuku）"
+        setOnPreferenceClickListener {
+            context.startActivity(Intent(context, SilentPacketSettingsActivity::class.java))
+            true
+        }
+    }
     init {
+        screen.addPreference(silent)
         screen.addPreference(toggle)
         screen.addPreference(Preference(context).apply {
             title = "红包助手权限设置"
@@ -46,7 +54,10 @@ internal class PacketPreferences(private val context: Context, screen: Preferenc
         refresh()
     }
     fun refresh() {
+        val mode = SilentPacketSettings.mode(context)
+        silent.summary = if (Build.VERSION.SDK_INT < 35) "静默副屏需要 Android 15 或以上系统" else if (mode == "OFF") "已关闭；在副屏处理，不切换主屏。首次需要 Shizuku 授权" else "当前模式：$mode；${SilentPacketRuntime.status()}"
+        toggle.isEnabled = Build.VERSION.SDK_INT >= 28 && mode == "OFF"
         toggle.isChecked = PacketSettings.enabled(context)
-        toggle.summary = "${PacketSettings.status(context)}。仅群聊，不抢私聊；息屏可尝试短暂亮屏，需无需身份验证解锁。隐藏通知、免打扰无通知或界面不可识别时可能漏抢。检测到打字、滚动或切换应用时停止。仅本机处理，不依赖个人数据同步。"
+        toggle.summary = if (mode != "OFF") "已选择静默副屏模式，主屏助手已停用；关闭静默模式后可手动开启" else "${PacketSettings.status(context)}。仅群聊，不抢私聊；息屏可尝试短暂亮屏，需无需身份验证解锁。隐藏通知、免打扰无通知或界面不可识别时可能漏抢。检测到打字、滚动或切换应用时停止。仅本机处理，不依赖个人数据同步。"
     }
 }

@@ -1,2 +1,4 @@
 include ':yuyansdk', ':app'
 include ':redpacket-hook'
+include ':redpacket-probe'
+include ':redpacket-silent'

@@ -178,14 +178,12 @@ async function deleteUser(user: DeviceRow) {
 function subtitle(user: DeviceRow) {
   return user.tags?.trim() || [user.brand, user.model].filter(Boolean).join(' ') || user.id;
 }
-function seenAt(value: string) {
+function interactionAt(value: string | null | undefined) {
+  const unknown = '未知（未收到操作记录）';
+  if (!value) return unknown;
   const date = new Date(value);
-  if (!Number.isFinite(date.getTime())) return '时间未知';
+  if (!Number.isFinite(date.getTime())) return unknown;
   return date.toLocaleString('sv-SE', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' });
-}
-function dataReceivedAt(value: string | null | undefined) {
-  if (value === undefined) return '暂未提供';
-  return value === null ? '暂无入库记录' : seenAt(value);
 }
 </script>
 
@@ -232,10 +230,10 @@ function dataReceivedAt(value: string | null | undefined) {
       <div v-if="directoryOpen" class="directory-mask" :inert="confirmation ? true : undefined" @click.self="closeDirectory">
         <section class="directory-dialog" role="dialog" aria-modal="true" aria-label="选择用户">
           <header class="directory-header">
-            <div><h2>选择用户</h2><p>共 {{ directoryTotal }} 台设备，按最近联系服务器时间排序</p></div>
+            <div><h2>选择用户</h2><p>共 {{ directoryTotal }} 台设备，按最后人为操作时间排序</p></div>
             <button type="button" class="close-button" @click="closeDirectory">×</button>
           </header>
-          <p class="directory-time-note">时间均为北京时间。注册或后台请求也可能更新联系时间，不表示正在使用手机；业务入库包含旧记录补传，按现存记录及回执计算，清理后可能回退，不代表消息或图片已全部同步。</p>
+          <p class="directory-time-note">时间均为北京时间，仅展示已收到的操作记录；离线操作需等待联网补传。不表示当前在线，也不代表消息或图片已全部同步。</p>
           <form class="directory-search" @submit.prevent="loadDirectory(1)">
             <input v-model="directoryQuery" placeholder="搜索名称、品牌、型号或设备 ID" autofocus />
             <button type="submit" :disabled="directoryLoading">搜索</button>
@@ -258,8 +256,7 @@ function dataReceivedAt(value: string | null | undefined) {
                 <span class="user-row-avatar">📱</span>
                 <span class="user-row-main"><strong>{{ deviceLabel(user) }}</strong><span>{{ subtitle(user) }}</span><code>{{ user.id }}</code></span>
                 <span class="user-row-meta">
-                  <span class="user-row-time"><span>最近联系服务器</span><time>{{ seenAt(user.last_seen_at) }}</time></span>
-                  <span class="user-row-time"><span>最近业务入库</span><time>{{ dataReceivedAt(user.last_data_received_at) }}</time></span>
+                  <span class="user-row-time"><span>最后人为操作</span><time>{{ interactionAt(user.last_interaction_at) }}</time></span>
                   <b v-if="user.id === currentUserId">当前</b>
                 </span>
               </button>
