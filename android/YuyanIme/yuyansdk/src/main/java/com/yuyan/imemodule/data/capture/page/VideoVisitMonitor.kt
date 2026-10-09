@@ -15,6 +15,7 @@ internal data class VideoForegroundEvidence(
     val packageName: String? = null,
     val windowId: Int? = null,
     val home: Boolean = false,
+    val feedVerified: Boolean = false,
 )
 
 /**
@@ -45,6 +46,7 @@ internal class VideoVisitMonitor(
     private var currentWindow: Int? = null
     private val store = VideoVisitStore(this.context)
     private var ready = false
+    private var storageClosed = false
     private data class End(val id: String, val elapsed: Long, val wall: Long, val reason: VideoExitReason)
     // 有界单槽：失败的第一个结束边界不得被后来的事件或进入覆盖。
     private var pending: End? = null
@@ -84,7 +86,7 @@ internal class VideoVisitMonitor(
     fun confirmVideo(generation: Long, platform: String, key: String, observedElapsed: Long, observedWall: Long,
         firstImage: String? = null, observationKind: VideoObservationKind = VideoObservationKind.CONFIRMED_VIDEO,
         windowId: Int? = null, expectedConsentEpoch: Long = consentEpoch(), expectedPolicyEpoch: Long = policyEpoch(),
-        stillCurrent: () -> Boolean = { true }) {
+        stillCurrent: () -> Boolean = { true }, onAccepted: (VideoVisit) -> Unit = {}) {
         if (closed) return
         fun authorized() = consentEpoch() == expectedConsentEpoch && policyEpoch() == expectedPolicyEpoch &&
             allowed() && platformAllowed(platform) && stillCurrent()
@@ -107,8 +109,12 @@ internal class VideoVisitMonitor(
                 if (change.previous != null) wakeSync()
                 // SQLite 等待期间主线程也可能收到边界；入口检查不能覆盖在途写入。
                 if (closed || generation != epoch.get() || !authorized() || !interactive()) {
-                    end(End(visit.id, observedElapsed, observedWall, VideoExitReason.INTERRUPTED))
-                }
+                    // 旧访问的在途刷新不抢先覆盖已排队的划走/离开边界。
+                    // 新建访问失效或真正撤权仍立即标记异常。
+                    if (change.started || consentEpoch() != expectedConsentEpoch ||
+                        policyEpoch() != expectedPolicyEpoch || !allowed() || !platformAllowed(platform))
+                        end(End(visit.id, observedElapsed, observedWall, VideoExitReason.INTERRUPTED))
+                } else onAccepted(visit)
             }
             catch (_: Exception) { onError() }
         }
@@ -118,12 +124,40 @@ internal class VideoVisitMonitor(
     fun pageCaptured(generation: Long, packageName: String, kind: PageKind, result: PageWriteResult,
         observedElapsed: Long, observedWall: Long, windowId: Int? = null,
         expectedConsentEpoch: Long = consentEpoch(), expectedPolicyEpoch: Long = policyEpoch(),
-        stillCurrent: () -> Boolean = { true }) {
-        if (kind != PageKind.MEDIA_FEED || result.status != PageWriteStatus.SAVED) return
+        stillCurrent: () -> Boolean = { true }, freshFrame: Boolean = false) {
+        if (kind != PageKind.MEDIA_FEED || (result.status != PageWriteStatus.SAVED &&
+            !(freshFrame && result.status == PageWriteStatus.DUPLICATE))) return
         val image = result.id?.takeIf { it.matches(Regex("[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}")) } ?: return
         val platform = when (packageName) { "com.tencent.mm" -> "wechat"; "com.ss.android.ugc.aweme" -> "douyin"; else -> return }
-        confirmVideo(generation, platform, "feed-observation:$image", observedElapsed, observedWall,
+        confirmVideo(generation, platform, if (windowId != null) "feed-window:$windowId" else "feed-observation:$image", observedElapsed, observedWall,
             image, VideoObservationKind.UNCONFIRMED_FEED, windowId, expectedConsentEpoch, expectedPolicyEpoch, stillCurrent)
+    }
+
+    fun activeVisit(): VideoVisit? = current
+
+    fun observeFeed(generation: Long, packageName: String, windowId: Int, observedElapsed: Long,
+        observedWall: Long, stillCurrent: () -> Boolean, onAccepted: (VideoVisit) -> Unit = {}) {
+        val platform = when (packageName) { "com.tencent.mm" -> "wechat"; "com.ss.android.ugc.aweme" -> "douyin"; else -> return }
+        confirmVideo(generation, platform, "feed-window:$windowId", observedElapsed, observedWall,
+            observationKind = VideoObservationKind.UNCONFIRMED_FEED, windowId = windowId,
+            stillCurrent = stillCurrent, onAccepted = onAccepted)
+    }
+
+    fun attachFirstFrame(generation: Long, visit: VideoVisit, result: PageWriteResult,
+        expectedConsent: Long, expectedPolicy: Long, stillCurrent: () -> Boolean) {
+        // DUPLICATE 也必须来自本次物理取帧；只复用准确同内容回执，不借旧回执启动访问。
+        if (result.status !in setOf(PageWriteStatus.SAVED, PageWriteStatus.DUPLICATE)) return
+        val image = result.id ?: return
+        worker.post {
+            if (closed || epoch.get() != generation || current?.id != visit.id ||
+                currentConsent != expectedConsent || currentPolicy != expectedPolicy ||
+                consentEpoch() != expectedConsent || policyEpoch() != expectedPolicy ||
+                !allowed() || !platformAllowed(visit.platform) || !interactive() || !stillCurrent()) return@post
+            try {
+                store.attachFrame(visit.id, visit.videoKey, VideoFrameRole.FIRST, image)
+                current = store.active()
+            } catch (_: Exception) { onError() }
+        }
     }
 
     /** 滚动只证明当前观察边界发生变化，不证明已切到另一条视频。 */
@@ -138,35 +172,39 @@ internal class VideoVisitMonitor(
     }
 
     fun windowChanged(packageName: String?, windowId: Int, topologyOnly: Boolean = false) {
-        val generation = epoch.incrementAndGet()
+        epoch.incrementAndGet()
         val visit = current ?: return
         if (closed) return
         val eventElapsed = elapsed()
         val eventWall = wall()
         val eventConsent = consentEpoch()
         val eventPolicy = policyEpoch()
-        worker.post {
-            if (closed || current?.id != visit.id || !flushEnd()) return@post
+        val eventAuthorized = boundary(visit.id, eventElapsed, eventWall, VideoExitReason.PAGE_CHANGED,
+            eventConsent, eventPolicy).reason != VideoExitReason.INTERRUPTED
+        val action = Runnable {
+            if (storageClosed || current?.id != visit.id || !flushEnd()) return@Runnable
             val host = if (visit.platform == "wechat") "com.tencent.mm" else "com.ss.android.ugc.aweme"
             val evidence = try { readForeground(packageName, windowId) }
                 catch (_: Exception) { onError(); VideoForegroundEvidence(VideoWindowKind.UNKNOWN) }
             if (evidence.kind == VideoWindowKind.OVERLAY &&
-                (evidence.packageName == null || evidence.packageName == host)) return@post
-            // 无包名的拓扑事件可能只是系统层开合；只有已知底层同一窗口才保留。
-            if (topologyOnly && currentWindow != null && evidence.kind == VideoWindowKind.APPLICATION &&
-                evidence.packageName == host && evidence.windowId == currentWindow &&
-                eventConsent == currentConsent && eventPolicy == currentPolicy) return@post
-            val exact = generation == epoch.get() && evidence.kind == VideoWindowKind.APPLICATION &&
+                (evidence.packageName == null || evidence.packageName == host)) return@Runnable
+            if (evidence.kind == VideoWindowKind.APPLICATION && evidence.packageName == host &&
+                currentWindow != null && evidence.windowId == currentWindow && evidence.feedVerified &&
+                eventConsent == currentConsent && eventPolicy == currentPolicy) return@Runnable
+            val exact = evidence.kind == VideoWindowKind.APPLICATION &&
                 evidence.packageName == packageName && evidence.windowId == windowId
             if (evidence.kind == VideoWindowKind.APPLICATION && evidence.packageName == host) {
-                end(boundary(visit.id, eventElapsed, eventWall,
-                    if (exact) VideoExitReason.PAGE_CHANGED else VideoExitReason.INTERRUPTED, eventConsent, eventPolicy))
-                return@post
+                end(End(visit.id, eventElapsed, eventWall,
+                    if (exact && eventAuthorized) VideoExitReason.PAGE_CHANGED else VideoExitReason.INTERRUPTED))
+                return@Runnable
             }
             val reason = if (!exact) VideoExitReason.INTERRUPTED
                 else if (evidence.home) VideoExitReason.EXIT else VideoExitReason.BACKGROUND
-            end(boundary(visit.id, eventElapsed, eventWall, reason, eventConsent, eventPolicy))
+            end(End(visit.id, eventElapsed, eventWall, if (eventAuthorized) reason else VideoExitReason.INTERRUPTED))
         }
+        // 匿名拓扑常先于带包名/窗口ID的状态事件到达，让精确结束优先；
+        // 到期仍无精确证据才按原规则结算不完整记录。
+        if (topologyOnly) worker.postDelayed(action, 120) else worker.post(action)
     }
 
     fun interrupt() {
@@ -219,7 +257,7 @@ internal class VideoVisitMonitor(
             try {
                 current?.id?.let { if (pending == null) pending = End(it, 0, 0, VideoExitReason.INTERRUPTED) }
                 flushEnd()
-            } finally { store.close(); onClosed() }
+            } finally { storageClosed = true; store.close(); onClosed() }
         }
     }
 }

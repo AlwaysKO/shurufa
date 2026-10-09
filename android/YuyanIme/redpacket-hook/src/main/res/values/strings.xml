@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">静默群红包</string>
+    <string name="protection_description">仅观察前台应用及键盘窗口，用于在打字或游戏时暂停红包请求；不读取聊天文字、不截图、不点击页面。</string>
+</resources>

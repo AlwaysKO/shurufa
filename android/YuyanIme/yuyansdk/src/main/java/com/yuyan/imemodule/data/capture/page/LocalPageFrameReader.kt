@@ -18,6 +18,9 @@ internal class LocalPageFrameReader(
     private val service: AccessibilityService,
     private val mediaCapturer: WindowMediaCapturer,
 ) {
+    private val shared = SharedPageFrameCapture(android.os.SystemClock::elapsedRealtime, System::currentTimeMillis)
+    fun clearSharedFrame() { shared.clear() }
+
     /** 由已通过事件/预算门禁的调用方使用；返回已落盘不等于已上传。 */
     suspend fun readAndPersist(
         outbox: PageCaptureOutbox,
@@ -29,17 +32,30 @@ internal class LocalPageFrameReader(
         chatVerified: Boolean = false,
         current: () -> Boolean,
         onPersisted: ((PageFrame, PageWriteResult, Long, Long) -> Unit)? = null,
+        acceptKind: (PageKind?) -> Boolean = { true },
+        captureKey: PageFrameCaptureKey? = null,
     ): PageWriteResult {
         val epoch = CollectionConsent.epoch
-        val requestedAt = System.currentTimeMillis()
-        val observedElapsed = android.os.SystemClock.elapsedRealtime()
+        var requestedAt = System.currentTimeMillis()
+        var observedElapsed = android.os.SystemClock.elapsedRealtime()
         var observedFrame: PageFrame? = null
         val result = captureAndPersistAcceptedPage(outbox, packageName, requestedAt,
             authorized = { CollectionConsent.epoch == epoch && CollectionConsent.enabled(service.applicationContext) },
+            acceptKind = acceptKind,
+            capturedAtProvider = { requestedAt },
         ) { accepted ->
-            read(packageName, windowId, bounds, treeLabels, secureWindow, chatVerified, current) { frame ->
-                observedFrame = frame
-                accepted(frame)
+            if (captureKey == null) {
+                read(packageName, windowId, bounds, treeLabels, secureWindow, chatVerified, current) { frame ->
+                    observedFrame = frame
+                    accepted(frame)
+                }
+            } else shared.capture(captureKey, current, read = { receive ->
+                read(packageName, windowId, bounds, treeLabels, secureWindow, chatVerified, current, receive)
+            }) { observed ->
+                observedFrame = observed.frame
+                requestedAt = observed.wall
+                observedElapsed = observed.elapsed
+                accepted(observed.frame)
             }
         }
         // 此时物理截图槽已释放、图片事务已提交；旧窗口或撤权不建立迟到访问。

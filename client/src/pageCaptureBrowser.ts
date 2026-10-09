@@ -1,5 +1,6 @@
 export type PageCaptureKind = 'conversation_list' | 'payment' | 'media_feed' | 'image_post' | 'mini_app';
 export interface PageCaptureRow {
+  title?: string; note?: string;
   id: string;
   platform: 'wechat' | 'douyin';
   kind: PageCaptureKind;
@@ -15,6 +16,7 @@ export interface PageCaptureQuery {
   page: number;
   platform: '' | 'wechat' | 'douyin';
   kind: '' | PageCaptureKind;
+  from?:string; to?:string; q?:string;
 }
 export interface PageCaptureList { records: PageCaptureRow[]; total: number; page_size: number }
 export const pageKindLabels: Record<PageCaptureKind, string> = {
@@ -23,6 +25,7 @@ export const pageKindLabels: Record<PageCaptureKind, string> = {
 export function pageCaptureListUrl(query: PageCaptureQuery): string {
   const params = new URLSearchParams({ user_id: query.userId, page: String(query.page) });
   if (query.platform) params.set('platform', query.platform);
+  for(const key of ['from','to','q'] as const) if(query[key]) params.set(key,query[key]!);
   if (query.kind) params.set('kind', query.kind);
   return `/api/v1/dashboard/page-captures?${params}`;
 }

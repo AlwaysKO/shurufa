@@ -67,24 +67,101 @@ internal class BrowsingPageServiceBridge(
             else budget.reserveNow().also { status("budget_${it.name.lowercase()}", packageName) } == BrowseBudgetResult.ALLOWED
         },
         capture = { snapshot, current ->
-            val visitGeneration = videoVisits?.generation()
-            val visitConsent = CollectionConsent.epoch
-            val visitPolicy = ChatCaptureSettings.revision()
+            val navigation = videoSequence.get()
+            val consent = CollectionConsent.epoch
+            val policy = ChatCaptureSettings.revision()
             reader.readAndPersist(outbox, snapshot.page.packageName, snapshot.page.windowId, snapshot.bounds,
                 snapshot.labels, chatVerified = snapshot.chatVerified, current = {
-                    current() && eligible() && ChatCaptureSettings.rule(snapshot.page.packageName).enabled
-                }, onPersisted = { frame, result, elapsed, wall ->
-                    if (visitGeneration != null && current() && eligible() &&
-                        ChatCaptureSettings.rule(snapshot.page.packageName).enabled)
-                        frame.page.kind?.let { kind -> videoVisits?.pageCaptured(visitGeneration,
-                            snapshot.page.packageName, kind, result, elapsed, wall, snapshot.page.windowId,
-                            visitConsent, visitPolicy, stillCurrent = { current() && eligible() &&
-                                ChatCaptureSettings.rule(snapshot.page.packageName).enabled }) }
-                })
+                    current() && navigation == videoSequence.get() && consent == CollectionConsent.epoch &&
+                        policy == ChatCaptureSettings.revision() && eligible() && ChatCaptureSettings.rule(snapshot.page.packageName).enabled
+                }, acceptKind = { it != PageKind.MEDIA_FEED },
+                captureKey = PageFrameCaptureKey(snapshot.page.packageName, snapshot.page.windowId, navigation, consent, policy))
         },
         outcome = ::status,
         persistentIntervalRemaining = { budget.remainingIntervalNow() },
+        shouldCapture = { snapshot, decision ->
+            val visit = videoVisits?.activeVisit()
+            val platform = if (snapshot.page.packageName == "com.tencent.mm") "wechat" else "douyin"
+            decision.kind != PageKind.MEDIA_FEED && !(visit?.platform == platform &&
+                visit.videoKey == "feed-window:${snapshot.page.windowId}")
+        },
     )
+    // 视频观察独立于普通页面三分钟调度；仅事件触发，无持续取帧。
+    private val videoSequence = java.util.concurrent.atomic.AtomicLong()
+    private var videoObservation: Job? = null
+    private var videoFirstFrame: Job? = null
+    private val videoLifetime = SupervisorJob(BrowsingPageWorker.scope.coroutineContext[Job])
+    private val videoScope = CoroutineScope(BrowsingPageWorker.scope.coroutineContext + videoLifetime)
+    private val videoBudget = BrowsingCaptureBudgetStore(context, videoFrames = true)
+
+    private fun cancelVideoObservation() {
+        videoSequence.incrementAndGet()
+        reader.clearSharedFrame()
+        videoObservation?.cancel()
+        videoFirstFrame?.cancel()
+    }
+
+    private fun observeVideoPage() {
+        cancelVideoObservation()
+        val sequence = videoSequence.get()
+        val consent = CollectionConsent.epoch
+        val policy = ChatCaptureSettings.revision()
+        fun current() = sequence == videoSequence.get() && eligible() &&
+            consent == CollectionConsent.epoch && policy == ChatCaptureSettings.revision()
+        videoObservation = videoScope.launch {
+            try {
+                delay(800)
+                previousDrain?.join()
+                if (!current()) return@launch
+                val active = readActiveBrowsingWindow(service) ?: return@launch
+                if (!ChatCaptureSettings.rule(active.first).enabled) return@launch
+                val snapshot = readBrowsingPageSnapshot(service, BrowsePageToken(active.first, active.second, sequence)) ?: return@launch
+                if (!current()) return@launch
+                val decision = PageCapturePolicy.classify(active.first, snapshot.bounds, snapshot.labels, chatVerified = snapshot.chatVerified)
+                if (decision.kind == PageKind.MEDIA_FEED) {
+                    val generation = videoVisits?.generation() ?: return@launch
+                    videoVisits.observeFeed(generation, active.first, active.second, SystemClock.elapsedRealtime(),
+                        System.currentTimeMillis(), ::current) { visit ->
+                        if (visit.firstImage == null && videoFirstFrame?.isActive != true && current()) {
+                            videoFirstFrame = captureVideoFirstFrame(snapshot, sequence, visit)
+                        }
+                    }
+                } else if (decision.reason == "insufficient_evidence" && videoVisits?.activeVisit() == null) {
+                    // 空树不能直接计时；候选物理帧仍须通过同帧安全分类。
+                    videoFirstFrame = captureVideoFirstFrame(snapshot, sequence, null)
+                }
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { status("video_observation_failed") }
+        }
+    }
+
+    private fun captureVideoFirstFrame(snapshot: BrowsePageSnapshot, sequence: Long, visit: VideoVisit?): Job =
+        videoScope.launch {
+            val consent = CollectionConsent.epoch
+            val policy = ChatCaptureSettings.revision()
+            val generation = videoVisits?.generation() ?: return@launch
+            fun current() = sequence == videoSequence.get() && eligible() &&
+                consent == CollectionConsent.epoch && policy == ChatCaptureSettings.revision() &&
+                ChatCaptureSettings.rule(snapshot.page.packageName).enabled &&
+                (visit == null || videoVisits.activeVisit()?.id == visit.id) && videoVisits.generation() == generation
+            try {
+                if (!current() || !ImageUploadRuntime.isBackgroundWorkAllowed() || !outbox.hasCapacity()) return@launch
+                if (videoBudget.reserveNow() != BrowseBudgetResult.ALLOWED) return@launch
+                reader.readAndPersist(outbox, snapshot.page.packageName, snapshot.page.windowId, snapshot.bounds,
+                    snapshot.labels, chatVerified = snapshot.chatVerified, current = ::current,
+                    acceptKind = { it == PageKind.MEDIA_FEED },
+                    captureKey = PageFrameCaptureKey(snapshot.page.packageName, snapshot.page.windowId, sequence, consent, policy),
+                    onPersisted = { frame, result, elapsed, wall ->
+                        if (current() && frame.page.kind == PageKind.MEDIA_FEED) {
+                            if (visit == null) videoVisits.pageCaptured(generation, snapshot.page.packageName, PageKind.MEDIA_FEED,
+                                result, elapsed, wall, snapshot.page.windowId, consent, policy, ::current, freshFrame = true)
+                            else videoVisits.attachFirstFrame(generation, visit, result, consent, policy, ::current)
+                        }
+                    })
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { status("video_frame_failed") }
+        }
+
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == Intent.ACTION_SCREEN_OFF) invalidate()
@@ -99,6 +176,7 @@ internal class BrowsingPageServiceBridge(
             close()
             throw failure
         }
+        observeVideoPage()
     }
     private fun status(code: String, packageName: String? = null) {
         android.util.Log.i("BrowsingPageCapture", code)
@@ -106,6 +184,10 @@ internal class BrowsingPageServiceBridge(
     }
 
     fun onEvent(event: AccessibilityEvent) {
+        when (event.eventType) {
+            AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED, AccessibilityEvent.TYPE_WINDOWS_CHANGED,
+            AccessibilityEvent.TYPE_VIEW_SCROLLED -> observeVideoPage()
+        }
         when (event.eventType) {
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {
                 cancelWindowHint()
@@ -144,15 +226,18 @@ internal class BrowsingPageServiceBridge(
         windowHint?.cancel()
         windowHint = null
     }
-    fun invalidate() { cancelWindowHint(); driver.invalidate() }
+    fun invalidate() { cancelWindowHint(); cancelVideoObservation(); driver.invalidate() }
     fun close() {
         if (!closed.compareAndSet(false, true)) return
         cancelWindowHint()
+        cancelVideoObservation()
+        videoLifetime.cancel()
         runCatching { context.unregisterReceiver(receiver) }
         val stopped = driver.close()
         BrowsingPageWorker.lastDrain = BrowsingPageWorker.scope.launch {
             stopped.join()
-            runCatching { try { outbox.close() } finally { budget.close() } }
+            videoLifetime.join()
+            runCatching { try { outbox.close() } finally { try { budget.close() } finally { videoBudget.close() } } }
                 .onFailure { status("storage_close_failed") }
         }
     }

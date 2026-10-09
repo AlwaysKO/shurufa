@@ -40,6 +40,9 @@ beforeEach(async () => {
   const migration = new URL('../../migrations/043_page_captures.sql', import.meta.url);
   // 初次RED允许迁移文件尚不存在；真正失败应来自缺失接口，不伪造实现。
   if (existsSync(migration)) { const sql = readFileSync(migration, 'utf8'); await pool.query(sql); await pool.query(sql); }
+  // 页面管理与视频共用资源，最小fixture也加载其依赖和管理迁移。
+  for (const name of ['044_video_visits.sql', '045_video_visit_observation_kind.sql', '046_capture_management.sql'])
+    await pool.query(readFileSync(new URL('../../migrations/' + name, import.meta.url), 'utf8'));
   app = createApp(pool); agent = await authenticatedRequest(app);
 });
 afterAll(async () => { await pool?.end(); });

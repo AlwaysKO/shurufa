@@ -3,6 +3,7 @@ import { Router } from 'express';
 import type pg from 'pg';
 import sharp from 'sharp';
 import { savingFlags } from '../lib/deviceSaving.js';
+import { capturePage, captureTombstone, captureWhere, createCaptureManagementRouter, InvalidCaptureFilter, lockCaptureDevice } from './captureManagement.js';
 
 const UUID = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const MAX_BYTES = 3 * 1024 * 1024;
@@ -49,21 +50,29 @@ export function createMobilePageCapturesRouter(pool: pg.Pool): Router {
       if ((await savingFlags(pool, [user])).get(user) === false) { res.json({ ...receipt, discarded: true }); return; }
       const db = await pool.connect();
       let matches = false;
+      let discarded = false;
       try {
         await db.query('BEGIN');
+        await lockCaptureDevice(db, user);
         await db.query('INSERT INTO device(id) VALUES($1) ON CONFLICT(id) DO NOTHING', [user]);
-        await db.query(`INSERT INTO page_capture(user_id,id,platform,kind,captured_at,width,height,sha256,payload_sha256,mime_type,screenshot)
-          VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) ON CONFLICT(user_id,id) DO NOTHING`,
-        [user, r.id, r.platform, r.kind, new Date(r.captured_at), r.width, r.height, r.sha256, r.payloadHash, r.mime_type, r.bytes]);
-        const stored = await db.query('SELECT payload_sha256 FROM page_capture WHERE user_id=$1 AND id=$2', [user, r.id]);
-        if (!stored.rows[0]) throw Error('page capture was not stored');
-        matches = stored.rows[0].payload_sha256 === r.payloadHash;
+        const deleted = await captureTombstone(db, 'page', user, r.id);
+        if (deleted) {
+          matches = deleted.payload_sha256 === r.payloadHash && deleted.sha256 === r.sha256;
+          discarded = matches;
+        } else {
+          await db.query(`INSERT INTO page_capture(user_id,id,platform,kind,captured_at,width,height,sha256,payload_sha256,mime_type,screenshot)
+            VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) ON CONFLICT(user_id,id) DO NOTHING`,
+          [user, r.id, r.platform, r.kind, new Date(r.captured_at), r.width, r.height, r.sha256, r.payloadHash, r.mime_type, r.bytes]);
+          const stored = await db.query('SELECT payload_sha256 FROM page_capture WHERE user_id=$1 AND id=$2', [user, r.id]);
+          if (!stored.rows[0]) throw Error('page capture was not stored');
+          matches = stored.rows[0].payload_sha256 === r.payloadHash;
+        }
         await db.query('COMMIT');
       } catch (error) { await db.query('ROLLBACK').catch(() => {}); throw error; }
       finally { db.release(); }
       if (!matches) { res.status(409).json({ error: 'record id already has different content' }); return; }
       // 只有原图和元信息已提交才确认；手机必须校验ID/hash后再清理本地待办。
-      res.json(receipt);
+      res.json(discarded ? { ...receipt, discarded: true } : receipt);
     } catch (error) { if (error instanceof InvalidPage) res.status(400).json({ error: error.message }); else next(error); }
   });
   return router;
@@ -71,21 +80,15 @@ export function createMobilePageCapturesRouter(pool: pg.Pool): Router {
 
 export function createDashboardPageCapturesRouter(pool: pg.Pool): Router {
   const router = Router();
+  router.use(createCaptureManagementRouter(pool, 'page'));
   router.get('/', async (req, res, next) => {
     try {
-      const pageText = req.query.page ?? '1', platform = req.query.platform, kind = req.query.kind;
-      if (typeof pageText !== 'string' || !/^[1-9]\d{0,5}$/.test(pageText) ||
-        (platform !== undefined && (typeof platform !== 'string' || !['wechat', 'douyin'].includes(platform))) ||
-        (kind !== undefined && (typeof kind !== 'string' || !KINDS.includes(kind)))) { res.status(400).json({ error: 'invalid page filter' }); return; }
-      const page = Number(pageText), params: unknown[] = [res.locals.userId];
-      let where = 'user_id=$1';
-      if (platform !== undefined) { params.push(platform); where += ` AND platform=$${params.length}`; }
-      if (kind !== undefined) { params.push(kind); where += ` AND kind=$${params.length}`; }
-      const total = await pool.query(`SELECT COUNT(*) AS n FROM page_capture WHERE ${where}`, params);
-      const records = await pool.query(`SELECT id,platform,kind,captured_at,width,height,sha256,mime_type,received_at
-        FROM page_capture WHERE ${where} ORDER BY captured_at DESC,id DESC LIMIT 20 OFFSET $${params.length + 1}`, [...params, (page - 1) * 20]);
+      const page = capturePage(req.query.page), { where, params } = captureWhere('page', res.locals.userId, req.query);
+      const total = await pool.query(`SELECT COUNT(*) AS n FROM page_capture c WHERE ${where}`, params);
+      const records = await pool.query(`SELECT c.id,c.platform,c.kind,c.captured_at,c.width,c.height,c.sha256,c.mime_type,c.received_at,c.title,c.note
+        FROM page_capture c WHERE ${where} ORDER BY c.captured_at DESC,c.id DESC LIMIT 20 OFFSET $${params.length + 1}`, [...params, (page - 1) * 20]);
       res.set('Cache-Control', 'no-store').json({ total: Number(total.rows[0].n), page, page_size: 20, records: records.rows });
-    } catch (error) { next(error); }
+    } catch (error) { if (error instanceof InvalidCaptureFilter) res.status(400).json({ error: error.message }); else next(error); }
   });
   router.get('/:id/image', async (req, res, next) => {
     try {

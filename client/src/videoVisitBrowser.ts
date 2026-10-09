@@ -1,11 +1,12 @@
 export type VideoExitReason = 'page_changed' | 'switched' | 'exit' | 'background' | 'locked' | 'interrupted';
 export interface VideoVisitRow {
   observation_kind: 'confirmed_video' | 'unconfirmed_feed';
+  title?:string; note?:string;
   id: string; platform: 'wechat' | 'douyin'; entered_at: number; ended_at: number | null;
   duration_ms: number | null; exit_reason: VideoExitReason; complete: boolean;
   first_image_id: string | null; last_image_id: string | null; received_at: string;
 }
-export interface VideoVisitQuery { userId: string; page: number; platform: '' | 'wechat' | 'douyin' }
+export interface VideoVisitQuery { userId: string; page: number; platform: '' | 'wechat' | 'douyin'; from?:string; to?:string; q?:string; observation_kind?:''|'confirmed_video'|'unconfirmed_feed'; complete?:''|'true'|'false'; exit_reason?:''|VideoExitReason }
 export interface VideoVisitList { records: VideoVisitRow[]; total: number; page: number; page_size: number }
 export const exitReasonLabels: Record<VideoExitReason,string> = { page_changed:'页面变化',switched:'切换视频',exit:'退出页面',background:'切换应用或退出应用',locked:'熄屏或锁屏',interrupted:'异常中断' };
 export function observationKindLabel(value: unknown): string {
@@ -14,6 +15,7 @@ export function observationKindLabel(value: unknown): string {
 export function durationLabel(value: number | null): string { return value === null ? '未知（记录不完整）' : `${value / 1000} 秒`; }
 export function videoVisitListUrl(query: VideoVisitQuery): string {
   const params = new URLSearchParams({user_id:query.userId,page:String(query.page)});
+  for(const key of ['from','to','q','observation_kind','complete','exit_reason'] as const)if(query[key])params.set(key,query[key]!);
   if(query.platform) params.set('platform',query.platform);
   return `/api/v1/dashboard/video-visits?${params}`;
 }

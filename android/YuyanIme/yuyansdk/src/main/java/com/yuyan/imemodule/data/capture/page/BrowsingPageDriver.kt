@@ -21,6 +21,7 @@ internal class BrowsingPageDriver(
     private val capture: suspend (BrowsePageSnapshot, () -> Boolean) -> PageWriteResult,
     private val outcome: (String, String) -> Unit,
     private val persistentIntervalRemaining: () -> Long? = { 0L },
+    private val shouldCapture: (BrowsePageSnapshot, PageDecision) -> Boolean = { _, _ -> true },
 ) {
     private val lifetime = SupervisorJob(parent.coroutineContext[Job])
     private val scope = CoroutineScope(parent.coroutineContext + lifetime)
@@ -75,6 +76,7 @@ internal class BrowsingPageDriver(
                         "unsupported_package", "secure_window", "sensitive_input", "editable_non_chat", "invalid_bounds")) {
                     report("page_rejected"); return@launch
                 }
+                if (!shouldCapture(snapshot, decision)) return@launch
                 val permission = schedule.take(elapsed(), token, current()) { current() && reserve(token.packageName) }
                 if (permission == null || !current()) { report("budget_or_scope_rejected"); return@launch }
                 report(capture(snapshot, ::current).status.name.lowercase())

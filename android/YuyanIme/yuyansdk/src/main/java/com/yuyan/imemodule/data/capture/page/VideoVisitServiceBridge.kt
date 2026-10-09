@@ -43,7 +43,14 @@ internal fun createVideoVisitMonitor(service: AccessibilityService): VideoVisitM
                         ?.activityInfo?.packageName
                 }.getOrNull() else null
                 VideoForegroundEvidence(kind, actual.verifiedPackage, actual.resolvedWindowId,
-                    home = actual.verifiedPackage != null && actual.verifiedPackage == homePackage)
+                    home = actual.verifiedPackage != null && actual.verifiedPackage == homePackage,
+                    feedVerified = CollectionConsent.enabled(context) &&
+                        actual.verifiedPackage?.let { com.yuyan.imemodule.data.capture.adapter.ChatCaptureSettings.rule(it).enabled } == true &&
+                        kind == VideoWindowKind.APPLICATION && actual.verifiedPackage in setOf("com.tencent.mm", "com.ss.android.ugc.aweme") &&
+                        actual.resolvedWindowId != null && readBrowsingPageSnapshot(service,
+                            BrowsePageToken(requireNotNull(actual.verifiedPackage), requireNotNull(actual.resolvedWindowId), 0))?.let {
+                            PageCapturePolicy.classify(it.page.packageName, it.bounds, it.labels, chatVerified = it.chatVerified).kind == PageKind.MEDIA_FEED
+                        } == true)
             } finally { windows.forEach { it.recycle() } }
         },
         allowed = { CollectionConsent.enabled(context) },

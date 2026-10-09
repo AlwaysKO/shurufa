@@ -27,7 +27,7 @@ async function assertCentered(page){
  const origin=`http://127.0.0.1:${server.address().port}`;
  const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE,args:['--no-sandbox']});
  const context=await browser.newContext({viewport:{width:1440,height:1000}});
- const page=await context.newPage(), errors=[], requests=[]; let failImage=true;
+ const page=await context.newPage(), errors=[], requests=[], imageRequests=[]; let failImage=true;
  page.on('pageerror',e=>errors.push(e.message));
  await context.addInitScript(id=>localStorage.setItem('shurufa_dashboard_user_id',id),A);
  const device=id=>({id,dashboard_name:id===A?'虚构设备 A':'虚构设备 B',brand:'Test',model:'测试夹具',last_seen_at:'2026-10-09T00:00:00Z',last_data_received_at:null});
@@ -46,6 +46,7 @@ async function assertCentered(page){
    return route.fulfill({json:{records,total:21,page:num,page_size:20}});
   }
   if(/^\/api\/v1\/dashboard\/page-captures\/[^/]+\/image$/.test(path)){
+   imageRequests.push(path);
    if(failImage){failImage=false;return route.fulfill({status:404,body:'fixture missing image'});}
    return route.fulfill({contentType:'image/svg+xml',headers:{'Cache-Control':'no-store'},body:portrait});
   }
@@ -58,13 +59,15 @@ async function assertCentered(page){
   await page.getByRole('button',{name:'重试图片',exact:true}).first().click();
   await page.locator('.cards .preview img').first().waitFor();
   assert(await page.getByText('信息流页面停留（未确认单条视频）',{exact:true}).count()===1,'信息流被误称单条视频');
-  assert(await page.getByText('已确认视频',{exact:true}).count()===19,'确认视频标签缺失');
+  assert(await page.locator('.cards').getByText('已确认视频',{exact:true}).count()===19,'确认视频标签缺失');
   assert(await page.getByText('共 21 条停留记录',{exact:true}).count()===1,'总数冒称视频数量');
   assert(await page.getByText('结束原因：页面变化',{exact:true}).count()===1,'页面变化语义缺失');
   assert(await page.locator('.cards article').count()===20,'首页不是20条');
   assert(await page.getByText('未知（记录不完整）',{exact:false}).count()===1,'未知时长未显示');
   assert(await page.getByText('首帧缺失',{exact:true}).count()===1,'缺首帧没有如实显示');
-  assert(await page.getByText('尾帧缺失',{exact:true}).count()===19,'缺尾图没有如实显示');
+  assert(!((await page.locator('.video-visits').innerText()).includes('尾帧')),'仍展示尾帧列或缺尾帧文案');
+  assert(await page.getByRole('button',{name:'查看尾帧',exact:true}).count()===0,'仍可打开尾帧');
+  assert(await page.locator('.cards article').nth(1).locator('.image-slot').count()===1,'历史有尾图记录未收敛为单首帧');
   await page.screenshot({path:output+'/video-ui-watching-cards.png'});
   await page.getByRole('button',{name:'查看首帧',exact:true}).nth(0).click();
   await page.locator('dialog[open] img').waitFor();
@@ -82,10 +85,6 @@ async function assertCentered(page){
   await page.evaluate(()=>window.oldPageImage.dispatchEvent(new Event('error')));
   await page.waitForTimeout(50);
   assert(await page.locator('dialog[open] img').count()===1,'旧弹窗迟到错误污染新原图');
-  await page.keyboard.press('Escape');
-  await page.getByRole('button',{name:'查看尾帧',exact:true}).click();
-  await assertCentered(page);
-  assert((await page.locator('dialog[open] img').getAttribute('src')).includes('last-'),'尾图点击打开错误图片');
   await page.keyboard.press('Escape');
   await page.getByLabel('应用',{exact:true}).selectOption('douyin');
   await page.getByRole('button',{name:'下一页',exact:true}).click();
@@ -109,8 +108,9 @@ async function assertCentered(page){
   await page.getByRole('button',{name:'fixture · 退出登录',exact:true}).click();
   await page.waitForURL('**/login');
   assert(await page.locator('.video-visits').count()===0,'退出仍保留私有页面');
+  assert(imageRequests.every(path=>!path.includes('last-')),'仍请求历史尾帧图片');
   assert(errors.length===0,'浏览器错误 '+errors.join(';'));
-  writeFileSync(output+'/video-ui-browser-result.json',JSON.stringify({ok:true,requests,errors},null,2));
+  writeFileSync(output+'/video-ui-browser-result.json',JSON.stringify({ok:true,requests,imageRequests,errors},null,2));
   console.log('PASS: 列表/鉴权包装/原图重试/旧弹窗错误隔离/筛选分页/切手机/退出/桌面窄屏截图（虚构接口）');
  }catch(error){await page.screenshot({path:output+'/video-ui-browser-failure.png',fullPage:true});throw error;}
  finally{await browser.close();await new Promise(r=>server.close(r));}

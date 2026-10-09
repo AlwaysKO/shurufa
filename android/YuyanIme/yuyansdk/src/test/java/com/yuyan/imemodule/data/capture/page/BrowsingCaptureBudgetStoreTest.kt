@@ -18,6 +18,22 @@ class BrowsingCaptureBudgetStoreTest {
         app = ApplicationProvider.getApplicationContext()
         app.deleteDatabase(File(app.noBackupFilesDir, "browse_capture_budget.db").absolutePath)
     }
+    @Test fun videoFramesHaveIndependentPersistentBudgetAndDoNotWaitThreeMinutes() {
+        val videoDb = File(app.noBackupFilesDir, "video_frame_budget.db").absolutePath
+        app.deleteDatabase(videoDb)
+        BrowsingCaptureBudgetStore(app).use { assertEquals(BrowseBudgetResult.ALLOWED, it.reserve(4, 1000)) }
+        BrowsingCaptureBudgetStore(app, videoFrames = true).use {
+            assertEquals(BrowseBudgetResult.ALLOWED, it.reserve(4, 1000))
+            assertEquals(BrowseBudgetResult.INTERVAL, it.reserve(4, 1999))
+            assertEquals(BrowseBudgetResult.ALLOWED, it.reserve(4, 2000))
+        }
+        BrowsingCaptureBudgetStore(app, videoFrames = true).use {
+            assertEquals(BrowseBudgetResult.INTERVAL, it.reserve(4, 2999))
+            assertEquals(BrowseBudgetResult.ALLOWED, it.reserve(4, 3000))
+        }
+        app.deleteDatabase(videoDb)
+    }
+
     @Test fun firstAttemptAndExactIntervalAcrossReopen() {
         BrowsingCaptureBudgetStore(app).use { assertEquals(BrowseBudgetResult.ALLOWED, it.reserve(4, 1000)) }
         BrowsingCaptureBudgetStore(app).use {

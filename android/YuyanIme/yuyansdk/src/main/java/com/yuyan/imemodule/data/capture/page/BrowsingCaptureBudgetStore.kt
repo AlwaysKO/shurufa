@@ -11,12 +11,12 @@ import java.io.File
 internal enum class BrowseBudgetResult { ALLOWED, INTERVAL, HOUR_LIMIT, DAY_LIMIT, INVALID_CLOCK }
 
 /**
- * 每台设备微信/抖音普通浏览共用的持久尝试预算；不存页面内容，不管理聊天/视频首尾。
+ * 每台设备微信/抖音普通浏览共用的持久尝试预算；不存页面内容，不管理聊天。视频首帧使用独立账本，每秒最多一次、每小时60次、每天300次。
  * 必须后台调用，预留先于物理取图，失败/重复/导航失效不退款。库损坏/写失败向上抛错，禁止清库放行。
  * 同boot用单调时间；跨boot只计已知新启动时间，不凭墙钟估算关机时间，额度恢复可能偏保守。
  */
-internal class BrowsingCaptureBudgetStore(context: Context) : SQLiteOpenHelper(
-    context.applicationContext, File(context.noBackupFilesDir, "browse_capture_budget.db").absolutePath, null, 1,
+internal class BrowsingCaptureBudgetStore(context: Context, private val videoFrames: Boolean = false) : SQLiteOpenHelper(
+    context.applicationContext, File(context.noBackupFilesDir, if (videoFrames) "video_frame_budget.db" else "browse_capture_budget.db").absolutePath, null, 1,
 ) {
     private val app = context.applicationContext
     override fun onCreate(db: SQLiteDatabase) {
@@ -67,17 +67,18 @@ internal class BrowsingCaptureBudgetStore(context: Context) : SQLiteOpenHelper(
                 Usage(it.getInt(0), it.getInt(1), if (it.isNull(2)) null else it.getLong(2))
             }
             val result = when {
-                usage.day >= 100 -> BrowseBudgetResult.DAY_LIMIT
-                usage.hour >= 20 -> BrowseBudgetResult.HOUR_LIMIT
-                usage.last?.let { logical - it < INTERVAL } == true -> BrowseBudgetResult.INTERVAL
+                usage.day >= if (videoFrames) 300 else 100 -> BrowseBudgetResult.DAY_LIMIT
+                usage.hour >= if (videoFrames) 60 else 20 -> BrowseBudgetResult.HOUR_LIMIT
+                usage.last?.let { logical - it < interval } == true -> BrowseBudgetResult.INTERVAL
                 else -> BrowseBudgetResult.ALLOWED
             }
             if (spend && result == BrowseBudgetResult.ALLOWED) db.execSQL("INSERT INTO attempts(at) VALUES(?)", arrayOf(logical))
             db.setTransactionSuccessful()
-            val remaining = if (result == BrowseBudgetResult.INTERVAL) INTERVAL - (logical - requireNotNull(usage.last)) else 0L
+            val remaining = if (result == BrowseBudgetResult.INTERVAL) interval - (logical - requireNotNull(usage.last)) else 0L
             return Availability(result, remaining)
         } finally { db.endTransaction() }
     }
+    private val interval: Long get() = if (videoFrames) 1_000L else INTERVAL
     private data class Clock(val boot: Int, val elapsed: Long, val logical: Long)
     private data class Usage(val day: Int, val hour: Int, val last: Long?)
     private companion object {

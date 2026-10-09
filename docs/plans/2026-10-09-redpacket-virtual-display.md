@@ -145,3 +145,9 @@
 - https://github.com/LSPosed/LSPatch （重打包机制及原仓库归档状态）
 
 补充定向反编译核验：jadx对本机APK的`com.tencent.mm.modelbase.u0`单类导出成功；其声明仍为接口，方法签名`void onSceneEnd(int, int, String, com.tencent.mm.modelbase.m1)`。这一个固定回调类型与参考代码预期相符；其他请求构造、网络分发及热补丁运行行为尚未验证。导出文件`research/wechat-8.0.78-u0.java`仅本地忽略目录保存。
+
+## 后续离线代码实现（本轮用户确认）
+
+用户在 Mac 上确认先实现独立 Hook 模块、8.0.78 适配、识别和领取状态机，默认关闭自动领取，之后连接手机验证。当前实现位于 `android/YuyanIme/redpacket-hook`，采用原 APK 哈希及精确反射签名门禁、白名单群、同 Android 用户配置、只读输入/游戏保护、持久去重和请求身份关联；不新增虚拟副屏。
+
+执行方案见 [Hook 实现计划](2026-10-09-redpacket-hook-implementation.md)，本地验证、安装包与手机验收顺序见 [Hook 交付记录](../testing/2026-10-09-redpacket-hook-delivery.md)。此前实验与未确认领取的历史结论保留；本轮写代码不等于手机已有可用的 Hook 环境，也不代表分身隔离、Tinker、静默到账或三秒目标已验收。没有连接/操作手机、覆盖微信、Root 或调用真实领取接口。

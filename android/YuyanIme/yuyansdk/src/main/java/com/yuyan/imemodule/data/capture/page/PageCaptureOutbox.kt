@@ -160,14 +160,16 @@ internal suspend fun persistAcceptedPage(
  */
 internal suspend fun captureAndPersistAcceptedPage(
     outbox: PageCaptureOutbox, packageName: String, capturedAt: Long, authorized: () -> Boolean,
+    acceptKind: (PageKind?) -> Boolean = { true },
+    capturedAtProvider: () -> Long = { capturedAt },
     capture: suspend (onAccepted: (PageFrame) -> Unit) -> Unit,
 ): PageWriteResult {
     var accepted: PageFrame? = null
     var result = PageWriteResult(PageWriteStatus.NO_FRAME)
     try {
-        capture { frame -> check(accepted == null); accepted = frame }
+        capture { frame -> if (acceptKind(frame.page.kind)) { check(accepted == null); accepted = frame } }
     } finally {
-        accepted?.let { result = persistAcceptedPage(outbox, packageName, it, capturedAt, authorized) }
+        accepted?.let { result = persistAcceptedPage(outbox, packageName, it, capturedAtProvider(), authorized) }
     }
     return result
 }

@@ -37,6 +37,157 @@ class VideoVisitMonitorTest {
         m.confirmVideo(m.generation(), "wechat", "video", elapsed, wall)
         idle()
     }
+    @Test fun verifiedSameFeedWindowEventsKeepClockAndImageCanArriveLater() {
+        val m = monitor(); idle()
+        m.observeFeed(m.generation(), "com.tencent.mm", 10, elapsed, wall, { true }); idle()
+        val visit = VideoVisitStore(app).use { it.active()!! }
+        assertNull(visit.firstImage)
+        evidence = VideoForegroundEvidence(VideoWindowKind.APPLICATION, "com.tencent.mm", 10, feedVerified = true)
+        elapsed += 2000; wall += 2000
+        m.windowChanged("com.tencent.mm", 10); idle()
+        m.attachFirstFrame(m.generation(), visit,
+            PageWriteResult(PageWriteStatus.SAVED, "00000000-0000-4000-8000-000000000001"),
+            com.yuyan.imemodule.data.collect.CollectionConsent.epoch, 0, { true })
+        idle()
+        VideoVisitStore(app).use {
+            assertEquals(visit.id, it.active()!!.id)
+            assertEquals("00000000-0000-4000-8000-000000000001", it.active()!!.firstImage)
+        }
+        elapsed += 3000; wall += 3000
+        m.contentScrolled("com.tencent.mm"); idle()
+        VideoVisitStore(app).use {
+            assertEquals(5000L, it.completed().single().durationMillis)
+            assertEquals(10000L, it.completed().single().enteredAt)
+        }
+        m.close(); idle()
+    }
+
+    @Test fun topologyOnlySameWindowWithoutSafeFeedProofCannotContinueTiming() {
+        val m = monitor(); idle()
+        m.observeFeed(m.generation(), "com.tencent.mm", 10, elapsed, wall, { true }); idle()
+        evidence = VideoForegroundEvidence(VideoWindowKind.APPLICATION, "com.tencent.mm", 10, feedVerified = false)
+        elapsed += 2000; wall += 2000
+        m.windowChanged(null, -1, topologyOnly = true); shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(120))
+        VideoVisitStore(app).use { assertNull(it.active()) }
+        m.close(); idle()
+    }
+
+    @Test fun freshVerifiedFrameMayUseExactDuplicateReceiptToStartNewObservation() {
+        val m = monitor(); idle()
+        val image = "00000000-0000-4000-8000-000000000001"
+        m.pageCaptured(m.generation(), "com.tencent.mm", PageKind.MEDIA_FEED,
+            PageWriteResult(PageWriteStatus.DUPLICATE, image), elapsed, wall, 10, freshFrame = true)
+        idle()
+        VideoVisitStore(app).use { assertEquals(image, it.active()?.firstImage) }
+        m.close(); idle()
+    }
+
+    @Test fun anotherSavedFrameInSameFeedWindowDoesNotRestartTheClock() {
+        val m = monitor(); idle()
+        m.pageCaptured(m.generation(), "com.tencent.mm", PageKind.MEDIA_FEED,
+            PageWriteResult(PageWriteStatus.SAVED, "00000000-0000-4000-8000-000000000001"), elapsed, wall, 10)
+        idle()
+        elapsed += 3000; wall += 3000
+        m.pageCaptured(m.generation(), "com.tencent.mm", PageKind.MEDIA_FEED,
+            PageWriteResult(PageWriteStatus.SAVED, "00000000-0000-4000-8000-000000000002"), elapsed, wall, 10)
+        idle()
+        VideoVisitStore(app).use {
+            assertTrue(it.completed().isEmpty())
+            assertEquals(10000L, it.active()!!.enteredAt)
+            assertEquals("00000000-0000-4000-8000-000000000001", it.active()!!.firstImage)
+        }
+        m.close(); idle()
+    }
+
+    @Test fun queuedWindowEndRetainsAuthorizationAtBoundary() {
+        val m = monitor(); enter(m)
+        elapsed = 4000; wall = 13000
+        m.windowChanged("other.app", 20)
+        allowed = false
+        idle()
+        VideoVisitStore(app).use {
+            assertEquals(VideoExitReason.BACKGROUND, it.completed().single().reason)
+            assertEquals(3000L, it.completed().single().durationMillis)
+        }
+        m.close(); idle()
+    }
+
+    @Test fun delayedTopologyCannotReadServiceAfterStorageClosesEvenWhenEndFails() {
+        var reads = 0
+        var errors = 0
+        val m = VideoVisitMonitor(app, Handler(Looper.getMainLooper()),
+            readForeground = { _, _ -> reads++; evidence }, allowed = { allowed }, interactive = { true },
+            elapsed = { elapsed }, wall = { wall }, onError = { errors++ })
+        enter(m)
+        VideoVisitStore(app).use { store ->
+            store.writableDatabase.execSQL("CREATE TRIGGER fail_end BEFORE INSERT ON completed BEGIN SELECT RAISE(ABORT, 'disk failure'); END")
+            m.windowChanged(null, -1, topologyOnly = true)
+            m.close(); idle()
+            val errorsAtClose = errors
+            shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(120))
+            assertEquals(0, reads)
+            assertEquals(errorsAtClose, errors)
+            store.writableDatabase.execSQL("DROP TRIGGER fail_end")
+        }
+    }
+
+    @Test fun normalWindowEndAlreadyReceivedSurvivesClose() {
+        val m = monitor(); enter(m)
+        elapsed = 4000; wall = 13000
+        m.windowChanged("other.app", 20)
+        m.close(); idle()
+        VideoVisitStore(app).use {
+            assertEquals(VideoExitReason.BACKGROUND, it.completed().single().reason)
+            assertEquals(13000L, it.completed().single().endedAt)
+        }
+    }
+
+    @Test fun refreshingExistingVisitCannotOverwriteQueuedNormalBoundary() {
+        val m = monitor(); enter(m)
+        elapsed = 4000; wall = 13000
+        var changed = false
+        m.confirmVideo(m.generation(), "wechat", "video", elapsed, wall, stillCurrent = {
+            if (!changed) { changed = true; m.windowChanged("other.app", 20) }
+            true
+        })
+        idle()
+        VideoVisitStore(app).use {
+            assertEquals(VideoExitReason.BACKGROUND, it.completed().single().reason)
+            assertEquals(3000L, it.completed().single().durationMillis)
+        }
+        m.close(); idle()
+    }
+
+    @Test fun topologyBeforePreciseBackgroundEventKeepsPreciseEnd() {
+        val m = monitor(); enter(m)
+        elapsed = 3900; wall = 12900
+        m.windowChanged(null, -1, topologyOnly = true); idle()
+        elapsed = 4000; wall = 13000
+        m.windowChanged("other.app", 20); idle()
+        shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(120))
+        VideoVisitStore(app).use {
+            val visit = it.completed().single()
+            assertEquals(13000L, visit.endedAt)
+            assertEquals(3000L, visit.durationMillis)
+            assertEquals(VideoExitReason.BACKGROUND, visit.reason)
+        }
+        m.close(); idle()
+    }
+
+    @Test fun repeatedMatchingBackgroundEventsPreserveFirstTrustedEndTime() {
+        val m = monitor(); enter(m)
+        elapsed = 4000; wall = 13000
+        m.windowChanged("other.app", 20)
+        elapsed = 4100; wall = 13100
+        m.windowChanged("other.app", 20)
+        idle()
+        VideoVisitStore(app).use {
+            assertEquals(3000L, it.completed().single().durationMillis)
+            assertEquals(VideoExitReason.BACKGROUND, it.completed().single().reason)
+        }
+        m.close(); idle()
+    }
+
     @Test fun revokedAndRegrantedConsentCannotAcceptQueuedOldFrame() {
         var epoch = 1L
         val m = VideoVisitMonitor(app, Handler(Looper.getMainLooper()), { _, _ -> evidence },
@@ -94,11 +245,11 @@ class VideoVisitMonitorTest {
         m.pageCaptured(m.generation(), "com.tencent.mm", PageKind.MEDIA_FEED,
             PageWriteResult(PageWriteStatus.SAVED, "00000000-0000-4000-8000-000000000001"), elapsed, wall, windowId = 10)
         idle()
-        evidence = VideoForegroundEvidence(VideoWindowKind.APPLICATION, "com.tencent.mm", 10)
-        m.windowChanged(null, -1, topologyOnly = true); idle()
+        evidence = VideoForegroundEvidence(VideoWindowKind.APPLICATION, "com.tencent.mm", 10, feedVerified = true)
+        m.windowChanged(null, -1, topologyOnly = true); shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(120))
         VideoVisitStore(app).use { assertNotNull(it.active()); assertTrue(it.completed().isEmpty()) }
         evidence = VideoForegroundEvidence(VideoWindowKind.APPLICATION, "com.tencent.mm", 11)
-        m.windowChanged(null, -1, topologyOnly = true); idle()
+        m.windowChanged(null, -1, topologyOnly = true); shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(120))
         VideoVisitStore(app).use { assertNull(it.active()); assertEquals(VideoExitReason.INTERRUPTED, it.completed().single().reason) }
         m.close(); idle()
     }

@@ -72,10 +72,10 @@ async function assertCentered(page){
   assert(await page.locator('dialog[open] img').count()===1,'旧弹窗迟到错误污染新原图');
   await page.keyboard.press('Escape');
   await page.getByLabel('应用',{exact:true}).selectOption('douyin');
-  await page.getByLabel('页面类型',{exact:true}).selectOption('media_feed');
+  await page.getByLabel('页面类型',{exact:true}).selectOption('payment');
   await page.getByRole('button',{name:'下一页',exact:true}).click();
   await page.waitForFunction(()=>document.querySelectorAll('.cards article').length===1);
-  assert(requests.some(x=>x.platform==='douyin'&&x.kind==='media_feed'&&x.page==='2'),'筛选/分页未传递');
+  assert(requests.some(x=>x.platform==='douyin'&&x.kind==='payment'&&x.page==='2'),'筛选/分页未传递');
   await page.screenshot({path:output+'/page-ui-desktop.png',fullPage:true});
   await page.locator('.cards .preview').first().click();
   await page.locator('.current-user').filter({hasText:'切换'}).evaluate(el=>el.click());

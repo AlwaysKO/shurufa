@@ -15,6 +15,13 @@ it('注销卸载不接迟到响应，空设备不请求',async()=>{const a=defer
 it('当前错误可重试且清空旧内容',async()=>{let fail=true;const b=new VideoVisitBrowser(async()=>{if(fail)throw Error('网络失败');return response()});await b.load(query());expect(b.error).toBe('网络失败');fail=false;await b.load(query());expect(b.error).toBe('');expect(b.rows.length).toBe(1)});
 it('图片错误按记录和首尾引用隔离，旧设备不能污染',async()=>{const b=new VideoVisitBrowser(async()=>response());await b.load(query());const old=b.rows[0];b.imageFailed(old,'image-a');expect(b.failedImages).toContain('one:image-a');b.retryImage(old,'image-a');expect(b.failedImages).toEqual([]);await b.load(query('b'));b.imageFailed(old,'image-a');expect(b.failedImages).toEqual([])});
 it('错误页码与异常响应不能显示为空记录',async()=>{const b=new VideoVisitBrowser(async()=>({...response(),page:2}));await b.load(query());expect(b.error).toContain('格式异常')});
-it('生产菜单路由和真实语义接线',()=>{const read=(p:string)=>readFileSync(new URL('../src/'+p,import.meta.url),'utf8');expect(read('App.vue')).toContain("path: '/video-visits'");expect(read('main.ts')).toContain("path: '/video-visits'");expect(read('api/videoVisits.ts')).toContain('dashboardFetch');const view=read('views/VideoVisits.vue');for(const s of ['前台停留','不是播放时长','首帧缺失','尾帧缺失','不完整','onBeforeUnmount','browser.invalidate()','pageCaptureImageUrl','selectedImage.row'])expect(view).toContain(s);expect(view).not.toContain('删除')});
+it('生产菜单路由和真实语义接线',()=>{const read=(p:string)=>readFileSync(new URL('../src/'+p,import.meta.url),'utf8');expect(read('App.vue')).toContain("path: '/video-visits'");expect(read('main.ts')).toContain("path: '/video-visits'");expect(read('api/videoVisits.ts')).toContain('dashboardFetch');const view=read('views/VideoVisits.vue');for(const s of ['前台停留','不是播放时长','首帧缺失','不完整','onBeforeUnmount','browser.invalidate()','pageCaptureImageUrl','selectedImage.row'])expect(view).toContain(s);expect(view).not.toContain('删除')});
 
 it('信息流与确认视频明确区分，未知类型不能冒称视频',()=>{expect(observationKindLabel('confirmed_video')).toBe('已确认视频');expect(observationKindLabel('unconfirmed_feed')).toBe('信息流页面停留（未确认单条视频）');expect(observationKindLabel(undefined)).toBe('观察类型未知');const view=readFileSync(new URL('../src/views/VideoVisits.vue',import.meta.url),'utf8');expect(view).toContain('视频与信息流停留');expect(view).toContain('条停留记录');expect(view).toContain('观看开始');expect(view).toContain('返回同一视频另记一次');expect(view).toContain('observationKindLabel(row.observation_kind)');expect(view).not.toContain('记录已确认视频的一次前台停留')});
+
+it('视频停留只展示首帧，保留起止和结束原因，兼容字段不变',()=>{
+ const view=readFileSync(new URL('../src/views/VideoVisits.vue',import.meta.url),'utf8');
+ expect(view).not.toContain('尾帧');expect(view).not.toContain('首尾');
+ for(const label of ['观看开始','观看结束','停留开始','停留结束','结束原因','row.ended_at','row.exit_reason','row.first_image_id'])expect(view).toContain(label);
+ expect(view).not.toContain('row.last_image_id');
+});

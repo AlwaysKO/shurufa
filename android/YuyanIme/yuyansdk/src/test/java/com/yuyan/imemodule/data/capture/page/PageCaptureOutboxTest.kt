@@ -21,6 +21,47 @@ class PageCaptureOutboxTest {
         app = ApplicationProvider.getApplicationContext()
         app.deleteDatabase(File(app.noBackupFilesDir, "page_capture_outbox.db").absolutePath)
     }
+    @Test fun sharedFrameKeepsPhysicalRequestTimeWhenLaterCandidatePersistsIt() = kotlinx.coroutines.runBlocking {
+        PageCaptureOutbox(app).use { outbox ->
+            var physicalTime = 2000L
+            captureAndPersistAcceptedPage(outbox, "com.tencent.mm", 2000L, authorized = { true },
+                capturedAtProvider = { physicalTime }) { accepted ->
+                physicalTime = 1000L
+                accepted(frame())
+            }
+            assertEquals(1000L, outbox.pending().single().capturedAt)
+        }
+    }
+    @Test fun ordinaryAndVideoCandidatesPersistExactlyOneSharedFrame() = kotlinx.coroutines.runBlocking {
+        for (kind in listOf(PageKind.MEDIA_FEED, PageKind.PAYMENT)) for (order in listOf(listOf(true, false), listOf(false, true))) {
+            PageCaptureOutbox(app).use { outbox ->
+                val shared = SharedPageFrameCapture({ 1000L }, { 10000L })
+                val key = PageFrameCaptureKey("com.tencent.mm", 1, 1, 1, 1)
+                var reads = 0
+                val results = mutableListOf<PageWriteStatus>()
+                for (video in order) {
+                    results += captureAndPersistAcceptedPage(outbox, key.packageName, 10000L,
+                        authorized = { true }, acceptKind = { (it == PageKind.MEDIA_FEED) == video }) { accepted ->
+                        shared.capture(key, { true }, { receive -> reads++; receive(frame(kind = kind)) }) { accepted(it.frame) }
+                    }.status
+                }
+                assertEquals(1, reads)
+                assertEquals(setOf(PageWriteStatus.SAVED, PageWriteStatus.NO_FRAME), results.toSet())
+                assertEquals(1, outbox.pending().size)
+            }
+            app.deleteDatabase(File(app.noBackupFilesDir, "page_capture_outbox.db").absolutePath)
+        }
+    }
+    @Test fun videoFrameBudgetCannotPersistAnotherPageKind() = kotlinx.coroutines.runBlocking {
+        PageCaptureOutbox(app).use { s ->
+            for (kind in listOf(PageKind.PAYMENT, PageKind.CONVERSATION_LIST)) {
+                val result = captureAndPersistAcceptedPage(s, "com.tencent.mm", 1000,
+                    authorized = { true }, acceptKind = { it == PageKind.MEDIA_FEED }) { accepted -> accepted(frame(kind = kind)) }
+                assertEquals(PageWriteStatus.NO_FRAME, result.status)
+                assertTrue(s.pending().isEmpty())
+            }
+        }
+    }
     @Test fun committedImageAndMetadataSurviveReopen() {
         val id = PageCaptureOutbox(app).use { s ->
             val saved = s.enqueue("com.tencent.mm", frame(), 1000)

@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import { reactive, ref, watch, onBeforeUnmount } from 'vue';
+import CaptureManagementControls from '../components/CaptureManagementControls.vue';
+import CaptureRecordActions from '../components/CaptureRecordActions.vue';
+import { CaptureManagement } from '../captureManagement';
+import { captureMutation } from '../api/captureManagement';
 import { currentUserId } from '../api';
 import { authenticated } from '../auth';
 import { fetchPageCaptures } from '../api/pageCaptures';
@@ -7,31 +11,42 @@ import { PageCaptureBrowser, pageCaptureImageUrl, pageKindLabels, type PageCaptu
 
 const browser = reactive(new PageCaptureBrowser(fetchPageCaptures));
 const page = ref(1), platform = ref<'' | 'wechat' | 'douyin'>(''), kind = ref<'' | PageCaptureKind>('');
+const manager=reactive(new CaptureManagement(captureMutation('page-captures')));
+const from=ref(''),to=ref(''),q=ref('');
+const ordinaryKinds=Object.fromEntries(Object.entries(pageKindLabels).filter(([kind])=>kind!=='media_feed'));
 const dialog = ref<HTMLDialogElement>();
 const platformLabel = (value: string) => value === 'wechat' ? '微信' : value === 'douyin' ? '抖音' : '未知平台';
 const time = (value: string) => new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
 function closeImage() { dialog.value?.close(); browser.selected = null; }
-function load() {
+async function load() {
   closeImage();
-  void browser.load({ userId: authenticated.value ? currentUserId.value : '', page: page.value, platform: platform.value, kind: kind.value });
+  const query={userId:authenticated.value?currentUserId.value:'',page:page.value,platform:platform.value,kind:kind.value,from:from.value,to:to.value,q:q.value};
+  manager.setScope(query);manager.setRows([]);
+  await browser.load(query);
+  if(!browser.error && !browser.rows.length && browser.total>0 && page.value>Math.ceil(browser.total/20)){page.value=Math.ceil(browser.total/20);return;}
+  manager.setRows(browser.rows);
 }
-watch([currentUserId, authenticated, platform, kind], () => { if (page.value !== 1) page.value = 1; else load(); }, { immediate: true, flush: 'sync' });
+watch([currentUserId, authenticated, platform, kind,from,to,q], () => { if (page.value !== 1) page.value = 1; else void load(); }, { immediate: true, flush: 'sync' });
 watch(page, load, { flush: 'sync' });
 function showImage(row: PageCaptureRow) { browser.select(row); if (browser.selected) dialog.value?.showModal(); }
-onBeforeUnmount(() => { closeImage(); browser.invalidate(); });
+onBeforeUnmount(() => { closeImage(); browser.invalidate();manager.invalidate(); });
 </script>
 
 <template>
   <section class="page-captures">
     <h2>应用页面</h2>
     <p class="hint">微信、抖音的非聊天页面单独保存，不参与联系人会话合并。这里仅展示已成功入库的截图；没有记录不代表没有使用应用。</p>
-    <p class="hint">信息流截图不等于已确认的视频，当前不显示视频首尾或观看时长。支付相关截图也不代表后台已核实交易结果。</p>
+    <p class="hint">视频与信息流停留在对应菜单查看。支付相关截图不代表后台已核实交易结果。</p>
     <div class="filters">
       <label>应用 <select v-model="platform" aria-label="应用"><option value="">全部</option><option value="wechat">微信</option><option value="douyin">抖音</option></select></label>
-      <label>页面类型 <select v-model="kind" aria-label="页面类型"><option value="">全部</option><option v-for="(label, value) in pageKindLabels" :key="value" :value="value">{{ label }}</option></select></label>
+      <label>页面类型 <select v-model="kind" aria-label="页面类型"><option value="">全部</option><option v-for="(label, value) in ordinaryKinds" :key="value" :value="value">{{ label }}</option></select></label>
+      <label>开始日期 <input v-model="from" type="date" aria-label="开始日期"></label>
+      <label>结束日期 <input v-model="to" type="date" aria-label="结束日期"></label>
+      <label>名称或备注 <input v-model.lazy="q" type="search" aria-label="名称或备注" placeholder="输入后回车搜索"></label>
       <button :disabled="browser.loading || !currentUserId || !authenticated" @click="load">刷新</button>
       <span>共 {{ browser.total }} 张</span>
     </div>
+    <CaptureManagementControls :manager="manager" :enabled="!!currentUserId && authenticated && !browser.loading" :row-count="browser.rows.length" @refresh="load" />
     <p v-if="!authenticated" class="empty">请登录后查看。</p>
     <p v-else-if="!currentUserId" class="empty">请先在顶部选择手机。</p>
     <p v-else-if="browser.error" role="alert" class="error">{{ browser.error }}</p>
@@ -44,10 +59,12 @@ onBeforeUnmount(() => { closeImage(); browser.invalidate(); });
           <img :src="pageCaptureImageUrl(row.id, browser.userId)" :alt="pageKindLabels[row.kind] || '页面截图'" loading="lazy" @error="browser.imageFailed(row)">
         </button>
         <div class="details">
+          <h3 v-if="row.title">{{ row.title }}</h3><p v-if="row.note" class="record-note">{{ row.note }}</p>
           <span class="badge">{{ platformLabel(row.platform) }}</span> <strong>{{ pageKindLabels[row.kind] || '未知页面' }}</strong>
           <time>采集：{{ time(row.captured_at) }}</time><time>入库：{{ time(row.received_at) }}</time>
           <small>{{ row.width }} × {{ row.height }} · 北京时间</small>
         </div>
+        <CaptureRecordActions :manager="manager" :row="row" />
       </article>
     </div>
     <nav v-if="browser.total > 20" aria-label="应用页面分页">
@@ -66,7 +83,7 @@ onBeforeUnmount(() => { closeImage(); browser.invalidate(); });
 </template>
 
 <style scoped>
-.page-captures{max-width:1100px;margin:auto;padding:24px;color:#263248}.hint,.empty{color:#64748b;line-height:1.7}.filters,nav{display:flex;align-items:center;flex-wrap:wrap;gap:14px;margin:20px 0}button,select{border:1px solid #cbd5e1;border-radius:6px;padding:8px 12px;background:white;color:inherit}button{cursor:pointer}button:disabled{opacity:.5;cursor:default}.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));gap:18px}article{border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;background:white}.preview{display:block;width:100%;padding:0;border:0;border-radius:0;background:#f1f5f9}.preview img{display:block;width:100%;height:260px;object-fit:contain}.details{padding:16px}.badge{font-size:12px;color:#2563eb;background:#eff6ff;padding:4px 8px;border-radius:4px}time,small{display:block;margin:10px 0;font-size:12px;color:#64748b}nav{justify-content:center}.error,.image-error{color:#b42318}.image-error{padding:24px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}dialog{position:fixed;inset:0;margin:auto;width:fit-content;max-width:min(1000px,95vw);max-height:95vh;border:0;border-radius:12px;padding:16px}dialog::backdrop{background:#0009}dialog header{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:12px}dialog img{display:block;max-width:100%;max-height:80vh;object-fit:contain;margin:auto}
+.page-captures{max-width:1100px;margin:auto;padding:24px;color:#263248}.hint,.empty{color:#64748b;line-height:1.7}.filters,nav{display:flex;align-items:center;flex-wrap:wrap;gap:14px;margin:20px 0}button,select,input{border:1px solid #cbd5e1;border-radius:6px;padding:8px 12px;background:white;color:inherit}button{cursor:pointer}button:disabled{opacity:.5;cursor:default}.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));gap:18px}article{border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;background:white}.preview{display:block;width:100%;padding:0;border:0;border-radius:0;background:#f1f5f9}.preview img{display:block;width:100%;height:260px;object-fit:contain}.details{padding:16px}.details h3{margin-bottom:8px;font-size:16px;overflow-wrap:anywhere}.record-note{white-space:pre-wrap;overflow-wrap:anywhere;margin-bottom:12px;font-size:13px;color:#64748b}.badge{font-size:12px;color:#2563eb;background:#eff6ff;padding:4px 8px;border-radius:4px}time,small{display:block;margin:10px 0;font-size:12px;color:#64748b}nav{justify-content:center}.error,.image-error{color:#b42318}.image-error{padding:24px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}dialog{position:fixed;inset:0;margin:auto;width:fit-content;max-width:min(1000px,95vw);max-height:95vh;border:0;border-radius:12px;padding:16px}dialog::backdrop{background:#0009}dialog header{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:12px}dialog img{display:block;max-width:100%;max-height:80vh;object-fit:contain;margin:auto}
 </style>
 
 <style>

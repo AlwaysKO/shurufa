@@ -43,6 +43,7 @@ beforeEach(async () => {
   if (existsSync(migration)) { const sql = readFileSync(migration, 'utf8'); await pool.query(sql); await pool.query(sql); }
   const observationMigration = new URL('../../migrations/045_video_visit_observation_kind.sql', import.meta.url);
   if (existsSync(observationMigration)) { const sql = readFileSync(observationMigration, 'utf8'); await pool.query(sql); await pool.query(sql); }
+  await pool.query(readFileSync(new URL('../../migrations/046_capture_management.sql', import.meta.url), 'utf8'));
   app = createApp(pool); agent = await authenticatedRequest(app);
 });
 afterAll(async () => { await pool?.end(); });

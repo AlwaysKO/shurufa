@@ -9,6 +9,7 @@ class BrowsingPageDriverTest {
     private class Fixture(scope: CoroutineScope) {
         var now = 0L; var epoch = 0L; var allowed = true; var room = true; var quota = true
         var reserves = 0; var captures = 0; var reads = 0
+        var delegated = false
         var restoredInterval: Long? = 0L
         val reservedPackages = mutableListOf<String>()
         val reported = mutableListOf<Pair<String, String>>()
@@ -20,7 +21,17 @@ class BrowsingPageDriverTest {
         val driver = BrowsingPageDriver(scope, { now }, { epoch }, { allowed },
             { current -> idle(current) }, { ms -> wait(ms) }, { room },
             { p -> read(p) }, { pkg -> reserves++; reservedPackages += pkg; quota },
-            { _, current -> if (current()) captures++; PageWriteResult(PageWriteStatus.SAVED) }, { code, pkg -> reported += code to pkg }, persistentIntervalRemaining = { restoredInterval })
+            { _, current -> if (current()) captures++; PageWriteResult(PageWriteStatus.SAVED) }, { code, pkg -> reported += code to pkg }, persistentIntervalRemaining = { restoredInterval }, shouldCapture = { _, _ -> !delegated })
+    }
+    @Test fun delegatedVideoDoesNotConsumeOrdinaryCaptureBudget() = runBlocking {
+        val f = Fixture(this)
+        f.delegated = true
+        f.driver.changed("com.ss.android.ugc.aweme", 1, BrowsePageEvent.WINDOW)!!.join()
+        assertEquals(1, f.reads); assertEquals(0, f.reserves); assertEquals(0, f.captures)
+        f.delegated = false
+        f.driver.changed("com.tencent.mm", 2, BrowsePageEvent.WINDOW)!!.join()
+        assertEquals(2, f.reads); assertEquals(1, f.reserves); assertEquals(1, f.captures)
+        f.driver.close().join()
     }
     @Test fun oneEmptyWindowReadGetsOneBoundedRetryWithoutAnotherEvent() = runBlocking {
         val f = Fixture(this)
