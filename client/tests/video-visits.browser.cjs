@@ -7,6 +7,15 @@ const root = resolve(__dirname, '../..'), dist = resolve(root, 'client/dist');
 const output = resolve(root, '.runtime/page-capture-20261009'); mkdirSync(output, {recursive:true});
 const A='aaaaaaaa-0000-4000-8000-000000000001', B='bbbbbbbb-0000-4000-8000-000000000002';
 const assert=(value,message)=>{if(!value)throw Error(message)};
+// 与手机原图同宽高比例；单像素夹具不能复现纵向图片弹窗布局。
+const portrait=Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="1332"><rect width="600" height="1332" fill="#315173"/><rect x="40" y="80" width="520" height="900" fill="#dce9f1"/><text x="80" y="1100" font-size="36">Fixture frame</text></svg>');
+async function assertCentered(page){
+ await page.locator('dialog[open] img').evaluate(img=>img.decode());
+ const box=await page.locator('dialog[open]').boundingBox(), viewport=page.viewportSize();
+ assert(Math.abs(box.x+box.width/2-viewport.width/2)<=2,'放大弹窗水平未居中 '+JSON.stringify(box));
+ assert(Math.abs(box.y+box.height/2-viewport.height/2)<=2,'放大弹窗垂直未居中 '+JSON.stringify(box));
+ assert(box.x>=0&&box.y>=0&&box.x+box.width<=viewport.width&&box.y+box.height<=viewport.height,'弹窗超出屏幕');
+}
 (async()=>{
  const server=createServer((req,res)=>{
   const path=new URL(req.url,'http://localhost').pathname;
@@ -33,12 +42,12 @@ const assert=(value,message)=>{if(!value)throw Error(message)};
    const user=url.searchParams.get('user_id'), num=Number(url.searchParams.get('page'));
    const records=Array.from({length:num===1?20:1},(_,i)=>({id:`${user===A?'aaaaaaaa':'bbbbbbbb'}-0000-4000-8000-${String((num-1)*20+i+1).padStart(12,'0')}`,
     observation_kind:i===0?'unconfirmed_feed':'confirmed_video',platform:url.searchParams.get('platform')||'wechat',entered_at:1791504000000,ended_at:i===2?null:1791504010000,duration_ms:i===2?null:10000,
-    complete:i!==2,exit_reason:i===0?'page_changed':i===2?'interrupted':'background',first_image_id:`image-${user}-${i}`,last_image_id:null,received_at:'2026-10-09T00:01:00Z'}));
+    complete:i!==2,exit_reason:i===0?'page_changed':i===2?'interrupted':'background',first_image_id:i===3?null:`image-${user}-${i}`,last_image_id:i===1?`last-${user}-${i}`:null,received_at:'2026-10-09T00:01:00Z'}));
    return route.fulfill({json:{records,total:21,page:num,page_size:20}});
   }
   if(/^\/api\/v1\/dashboard\/page-captures\/[^/]+\/image$/.test(path)){
    if(failImage){failImage=false;return route.fulfill({status:404,body:'fixture missing image'});}
-   return route.fulfill({contentType:'image/png',headers:{'Cache-Control':'no-store'},body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a7XsAAAAASUVORK5CYII=','base64')});
+   return route.fulfill({contentType:'image/svg+xml',headers:{'Cache-Control':'no-store'},body:portrait});
   }
   throw Error('未预期接口 '+path);
  });
@@ -54,26 +63,38 @@ const assert=(value,message)=>{if(!value)throw Error(message)};
   assert(await page.getByText('结束原因：页面变化',{exact:true}).count()===1,'页面变化语义缺失');
   assert(await page.locator('.cards article').count()===20,'首页不是20条');
   assert(await page.getByText('未知（记录不完整）',{exact:false}).count()===1,'未知时长未显示');
-  assert(await page.getByText('尾图缺失',{exact:true}).count()===20,'缺尾图没有如实显示');
-  await page.getByRole('button',{name:'查看首图',exact:true}).nth(0).click();
+  assert(await page.getByText('首帧缺失',{exact:true}).count()===1,'缺首帧没有如实显示');
+  assert(await page.getByText('尾帧缺失',{exact:true}).count()===19,'缺尾图没有如实显示');
+  await page.screenshot({path:output+'/video-ui-watching-cards.png'});
+  await page.getByRole('button',{name:'查看首帧',exact:true}).nth(0).click();
   await page.locator('dialog[open] img').waitFor();
+  await assertCentered(page);
+  await page.screenshot({path:output+'/video-ui-desktop-modal.png'});
+  assert(!await page.locator('.cards article').first().innerText().then(text=>text.includes('入库：')),'观看卡片仍主显入库时间');
+  const confirmed=page.locator('.cards article').nth(1);
+  assert((await confirmed.innerText()).includes('观看时长：10 秒'),'缺少观看时长');
+  assert((await confirmed.innerText()).includes('观看开始：2026/10/9 08:00:00'),'缺少真实观看开始时间');
+  assert((await confirmed.innerText()).includes('观看结束：2026/10/9 08:00:10'),'缺少真实观看结束时间');
   await page.evaluate(()=>{window.oldPageImage=document.querySelector('dialog[open] img')});
   await page.keyboard.press('Escape');
-  await page.getByRole('button',{name:'查看首图',exact:true}).nth(1).click();
+  await page.getByRole('button',{name:'查看首帧',exact:true}).nth(1).click();
   await page.locator('dialog[open] img').waitFor();
   await page.evaluate(()=>window.oldPageImage.dispatchEvent(new Event('error')));
   await page.waitForTimeout(50);
   assert(await page.locator('dialog[open] img').count()===1,'旧弹窗迟到错误污染新原图');
+  await page.keyboard.press('Escape');
+  await page.getByRole('button',{name:'查看尾帧',exact:true}).click();
+  await assertCentered(page);
+  assert((await page.locator('dialog[open] img').getAttribute('src')).includes('last-'),'尾图点击打开错误图片');
   await page.keyboard.press('Escape');
   await page.getByLabel('应用',{exact:true}).selectOption('douyin');
   await page.getByRole('button',{name:'下一页',exact:true}).click();
   await page.waitForFunction(()=>document.querySelectorAll('.cards article').length===1);
   assert(requests.some(x=>x.platform==='douyin'&&x.page==='2'),'筛选/分页未传递');
   await page.screenshot({path:output+'/video-ui-desktop.png',fullPage:true});
-  await page.getByRole('button',{name:'查看首图',exact:true}).click();
-  await page.keyboard.press('Escape');
-  await page.locator('.current-user').filter({hasText:'切换'}).click();
-  await page.locator('.user-select').filter({hasText:'虚构设备 B'}).click();
+  await page.getByRole('button',{name:'查看首帧',exact:true}).click();
+  await page.locator('.current-user').filter({hasText:'切换'}).evaluate(el=>el.click());
+  await page.locator('.user-select').filter({hasText:'虚构设备 B'}).evaluate(el=>el.click());
   await page.waitForFunction(id=>Array.from(document.querySelectorAll('.cards img')).some(x=>x.src.includes(id)),B);
   assert(await page.locator('dialog[open]').count()===0,'切手机未关闭原图');
   assert(!await page.locator(`.cards img[src*="${A}"]`).count(),'切手机仍显示旧手机图片');
@@ -81,6 +102,10 @@ const assert=(value,message)=>{if(!value)throw Error(message)};
   assert(await page.locator('.video-visits').evaluate(el=>el.getBoundingClientRect().width>300),'窄屏侧栏挤压视频访问');
   await page.getByRole('heading',{name:'视频与信息流停留',level:2,exact:true}).scrollIntoViewIfNeeded();
   await page.screenshot({path:output+'/video-ui-mobile.png',fullPage:false});
+  await page.locator('.cards .preview').first().click();
+  await assertCentered(page);
+  await page.screenshot({path:output+'/video-ui-mobile-modal.png'});
+  await page.keyboard.press('Escape');
   await page.getByRole('button',{name:'fixture · 退出登录',exact:true}).click();
   await page.waitForURL('**/login');
   assert(await page.locator('.video-visits').count()===0,'退出仍保留私有页面');

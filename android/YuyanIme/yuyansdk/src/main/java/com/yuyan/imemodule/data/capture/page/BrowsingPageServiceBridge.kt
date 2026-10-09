@@ -47,7 +47,7 @@ internal class BrowsingPageServiceBridge(
         if (closed.get() || Build.VERSION.SDK_INT < 30 || !CollectionConsent.enabled(context) ||
             !power.isInteractive || keyguard.isKeyguardLocked || power.isPowerSaveMode) return false
         if (battery.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY) in 0..14) return false
-        return power.currentThermalStatus < PowerManager.THERMAL_STATUS_MODERATE
+        return power.currentThermalStatus < PowerManager.THERMAL_STATUS_CRITICAL
     }
     private val driver = BrowsingPageDriver(
         BrowsingPageWorker.scope, SystemClock::elapsedRealtime, { CollectionConsent.epoch }, ::eligible,

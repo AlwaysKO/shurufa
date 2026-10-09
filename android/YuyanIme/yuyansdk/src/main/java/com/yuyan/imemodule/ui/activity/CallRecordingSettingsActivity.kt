@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.DocumentsContract
+import android.provider.Settings
 import android.media.MediaPlayer
 import android.view.View
 import android.view.ViewGroup
@@ -65,7 +66,7 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
     private val wechatDirectory=registerForActivityResult(ActivityResultContracts.StartActivityForResult()){saveDirectory("wechat",it.resultCode,it.data)}
     private val ticker=object:Runnable{override fun run(){refreshStatus();main.postDelayed(this,1500)}}
     override fun onCreate(savedInstanceState:Bundle?){
-        super.onCreate(savedInstanceState);title="记录";ServerConfig.init(this)
+        super.onCreate(savedInstanceState);title="通话录音与上传";ServerConfig.init(this)
         enableEdgeToEdge()
         val box=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;setPadding(32,36,32,36)}
         val scroll=ScrollView(this).apply{addView(box)}
@@ -74,12 +75,12 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
         fun text(value:String)=TextView(this).apply{text=value;textSize=16f;setPadding(0,12,0,12);box.addView(this)}
         fun button(label:String,action:()->Unit){box.addView(Button(this).apply{text=label;setOnClickListener{action()}},ViewGroup.LayoutParams(-1,-2))}
         automatic=SwitchCompat(this).apply {
-            text="自动查找并上传输入记录"
+            text="电话 / 微信录音与上传"
             val consent=CallRecordingRuntime.consent(this@CallRecordingSettingsActivity)
             isChecked=consent.wantsRecording||consent.wantsUpload
             box.addView(this)
         }
-        text("自动查找最近输入习惯。")
+        text("尝试录制普通来电、拨出电话和微信语音 / 视频通话的麦克风声音，并自动查找系统已有的电话 / 微信录音。Android 可能限制通话期间的麦克风，不能保证录到双方声音；录音是否可用需实际试听，未录成会显示原因。请在通话参与者知情的情况下使用。")
         automatic.setOnCheckedChangeListener{_,checked->
             if(!updatingSwitch&&!changing){
                 if(checked)requestEnable() else {
@@ -92,7 +93,14 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
         }
         status=text("")
         counts=text("")
-        text("允许读取记录后自动查找，无需选择文件夹；以前授予的目录也会继续使用。系统未公开的可能无法自动发现。")
+        button("确认或扩展电话 / 微信自录授权"){requestEnable()}
+        text("微信自动识别需通知读取权限，且微信提供持续的正在通话通知；没有这类通知时，可先接通微信，再返回这里手动尝试录音。系统回收服务后需进入本页恢复，不能绕过后台麦克风限制。")
+        button("微信通话识别：通知读取授权"){
+            try{startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))}
+            catch(_:Exception){Toast.makeText(this,"无法打开通知读取设置，请到系统特殊权限中授权",Toast.LENGTH_LONG).show()}
+        }
+        button("录制当前微信通话"){requestManualWechatRecording()}
+        text("允许读取音频后自动查找最近7天的电话 / 微信录音，无需选择文件夹；以前授予的目录也会继续使用。系统未公开的录音可能无法自动发现。只通过有效 Wi-Fi 上传到已同意的服务器，系统原件不删除；输入法自录副本在服务器确认保存后清理。关闭上方开关即可停止自录和后续上传，待传文件仍保留。")
         systemStatus=text("")
         button("授权并立即查找"){
             if(!CallRecordingRuntime.consent(this).wantsUpload)requestEnable()
@@ -101,11 +109,11 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
         }
         button("高级：补充未发现的目录（可选）"){
             AlertDialog.Builder(this).setTitle("仅在自动查找遗漏时使用")
-                .setItems(arrayOf("补充目录","补充目录")){_,which->chooseDirectory(if(which==0)"phone"else"wechat")}
+                .setItems(arrayOf("电话录音目录","微信录音目录")){_,which->chooseDirectory(if(which==0)"phone"else"wechat")}
                 .setNegativeButton("取消",null).show()
         }
         callLogSwitch=SwitchCompat(this).apply{
-            text="同步最近7天手机输入记录"
+            text="同步最近7天手机通话记录"
             isChecked=PhoneCallLogRuntime.consent(this@CallRecordingSettingsActivity).enabled
             box.addView(this)
             setOnCheckedChangeListener{_,checked->if(!updatingCallLog&&!changingCallLog){
@@ -115,6 +123,7 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
                 }
             }}
         }
+        text("通话记录单独授权：读取号码、系统已有的联系人名称、呼入 / 呼出 / 未接类型、时间和时长并上传；不包含录音声音，也不读取微信通话历史。关闭此开关即可停止后续同步。")
         callLogStatus=text("")
         button("授权并立即同步"){
             if(!PhoneCallLogRuntime.consent(this).enabled){
@@ -130,10 +139,19 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
         }
         val target=ServerConfig.baseUrl;val ticket=PhoneCallLogRuntime.consent(this).revision
         changingCallLog=true;callLogSwitch.isEnabled=false
+        var accepted=false
+        AlertDialog.Builder(this).setTitle("同步手机通话记录")
+            .setMessage("将读取最近7天系统电话的号码、系统已有联系人名称、呼入 / 呼出 / 未接类型、通话时间和时长，并上传到：\n$target\n\n不包含录音声音或微信通话历史；可随时关闭本页的通话记录同步开关停止后续同步。")
+            .setNegativeButton("取消",null)
+            .setPositiveButton("同意并开启"){_,_->accepted=true;enableCallLogConfirmed(target,ticket)}
+            .setOnDismissListener{if(!accepted){changingCallLog=false;callLogSwitch.isEnabled=true;refreshStatus()}}
+            .show()
+    }
+    private fun enableCallLogConfirmed(target:String,ticket:Long){
         lifecycleScope.launch{
             try{
                 val device=withContext(Dispatchers.IO){DataCollector.deviceId(this@CallRecordingSettingsActivity)}
-                if(!lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)||!CollectionConsent.enabled(this@CallRecordingSettingsActivity))return@launch
+                if(!lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)||!CollectionConsent.enabled(this@CallRecordingSettingsActivity)||ServerConfig.baseUrl!=target)return@launch
                 val granted=withContext(Dispatchers.IO){PhoneCallLogRuntime.consent(this@CallRecordingSettingsActivity).grant(device,target,ticket)}
                 if(granted){
                     PhoneCallLogRuntime.restore(this@CallRecordingSettingsActivity)
@@ -146,6 +164,20 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
             catch(_:Exception){Toast.makeText(this@CallRecordingSettingsActivity,"同步未开启，请重试",Toast.LENGTH_LONG).show()}
             finally{changingCallLog=false;callLogSwitch.isEnabled=true;refreshStatus()}
         }
+    }
+    private fun requestManualWechatRecording(){
+        val consent=CallRecordingRuntime.consent(this)
+        if(!consent.wantsRecording||!consent.hasExpandedRecordingScope){requestEnable();return}
+        var video=false
+        AlertDialog.Builder(this).setTitle("选择当前已接通的微信通话类型")
+            .setSingleChoiceItems(arrayOf("语音通话","视频通话"),0){_,which->video=which==1}
+            .setView(TextView(this).apply{
+                text="请先在微信接通通话，再返回本页开始尝试。只录系统允许访问的麦克风声音，不录制视频画面，不能保证录到双方声音；挂断后停止。录音将按本页已授权规则通过 Wi-Fi 上传。"
+                setPadding(48,16,48,24)
+            })
+            .setNegativeButton("取消",null)
+            .setPositiveButton("开始尝试录音"){_,_->CallRecordingService.startWechatFromActivity(this,video);refreshStatus()}
+            .show()
     }
     private fun chooseDirectory(platform:String) {
         val intent=Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or
@@ -196,7 +228,8 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
                     enable(device,target,ticket);return@launch
                 }
                 var accepted=false
-                AlertDialog.Builder(this@CallRecordingSettingsActivity).setTitle("开启上传")
+                AlertDialog.Builder(this@CallRecordingSettingsActivity).setTitle("电话 / 微信录音与上传授权")
+                    .setMessage("同意后将尝试录制普通来电、拨出电话及微信语音 / 视频通话，并查找最近7天系统公开的电话 / 微信录音。录音声音、文件信息及通话时间将上传到：\n$target\n\n仅有效 Wi-Fi 上传，后台已有的录音不重复上传。系统原件不删除；输入法自录副本仅在服务器确认保存或确认同通话系统录音已保存且原件仍在时删除。\n\nAndroid 可能使麦克风不可用或静音，不能保证录到双方声音；请在参与者知情时使用。自录使用系统前台服务提示，不绕过系统限制。\n\n可以随时关闭本页主开关，停止后续自录和上传；待传文件保留。手机通话记录需另行开启下方开关。")
                     .setNegativeButton("取消",null)
                     .setPositiveButton("同意并开启"){_,_->accepted=true;enable(device,target,ticket)}
                     .setOnDismissListener{if(!accepted)finishChange()}
@@ -208,6 +241,7 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
     private fun enable(device:String,target:String,ticket:Long){
         lifecycleScope.launch {
             try{
+                if(!lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)||!CollectionConsent.enabled(this@CallRecordingSettingsActivity)||ServerConfig.baseUrl!=target){finishChange();return@launch}
                 val granted=withContext(Dispatchers.IO){CallRecordingRuntime.consent(this@CallRecordingSettingsActivity).grantCombined(device,target,ticket)}
                 if(!granted){finishChange();return@launch}
                 CallRecordingRuntime.preferences(this@CallRecordingSettingsActivity).edit().putBoolean("capability_blocked",false).apply()
@@ -237,8 +271,17 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
         val consent=CallRecordingRuntime.consent(this);val p=CallRecordingRuntime.preferences(this)
         val permissionBlock=if(consent.wantsRecording)CallRecordingService.permissionBlock(this) else null
         val state=permissionBlock ?: (p.getString("state","")?:"")
-        val labels=mapOf("waiting_incoming" to "等待","recording_unverified" to "正在记录，未验证",
-            "system_silenced" to "系统将静音，已停止","suspected_silent" to "持续无有效信号，已停止","microphone_unavailable" to "麦克风不可用，已停止",
+        val labels=mapOf("waiting_incoming" to "等待普通来电（尚未确认呼出 / 微信自录授权）",
+            "waiting_calls" to "等待电话 / 微信通话；当前没有录音",
+            "recording_unverified" to "正在录音，声音质量及双方音轨尚未验证",
+            "outgoing_unverified" to "正在尝试拨出电话录音，接通时间和声音质量未验证",
+            "waiting_wechat_evidence" to "等待微信正在通话的有效通知及系统音频状态",
+            "wechat_call_not_active" to "未检测到正在进行的微信通话，请先接通再尝试",
+            "wechat_call_waiting_audio" to "检测到微信通话通知，等待通话音频状态确认",
+            "retry_next_call" to "本次未录成，等待下一次通话重试",
+            "system_silenced" to "系统将录音静音，本次已停止，下次通话重新尝试",
+            "suspected_silent" to "持续无有效声音，本次已停止，下次通话重新尝试",
+            "microphone_unavailable" to "麦克风不可用，本次已停止，下次通话重新尝试",
             "single_sim_required" to "旧单卡限制已更新，等待重新建立",
             "no_active_sim" to "未发现活动 SIM，尚未开始",
             "legacy_multi_sim_unsupported" to "Android 6 不支持本实现的逐卡监听",
@@ -248,9 +291,14 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
             "notification_channel_required" to "旧通知限制已更新，等待前台恢复",
             "audio_phone_permissions_required" to "麦克风或电话权限未允许，请关闭再打开开关授权","foreground_restricted" to "系统限制后台麦克风启动",
             "permissions_or_sync_required" to "权限或同步总开关不可用，当前暂停","setup_restricted" to "授权目标/设备或系统条件不满足",
-            "phone_state_unavailable" to "无法订阅通话状态","recorder_error" to "记录异常，已停止","local_finalize_pending" to "文件已保留，等待本地恢复",
+            "phone_state_unavailable" to "无法订阅通话状态","recorder_error" to "录音异常，本次已停止","local_finalize_pending" to "文件已保留，等待本地恢复",
             "limit_reached" to "达到单次上限，已停止")
-        status.text="遇到受限状态可关闭再打开此开关重试。系统回收后需下次进入设置前台尝试恢复。\n选择：${if(consent.wantsRecording)"已记住开启"else"关闭"}\n上传授权：${if(consent.wantsUpload)"开启"else"关闭"}\n当前：${if(CallRecordingService.isRunning)labels[state]?:"准备中" else if(consent.wantsRecording)labels[state]?.let{"$it；服务未运行"}?:"未运行，等待前台权限条件" else"未记录"}\n呼出 / 微信：自动查找系统已有记录，不支持输入法自录。"
+        val lastFailure=p.getString("last_failure",null)?.takeIf{it.isNotBlank()}
+        status.text="自录选择：${if(consent.wantsRecording)"已记住开启"else"关闭"}\n"+
+            "自录授权范围：${if(consent.hasExpandedRecordingScope)"电话来电 / 呼出及微信通话"else"仅普通来电；扩展范围请点击下方确认"}\n"+
+            "上传授权：${if(consent.wantsUpload)"开启"else"关闭"}\n上传目标：${consent.destination.ifBlank{"未授权"}}\n"+
+            "当前：${if(CallRecordingService.isRunning)labels[state]?:state.ifBlank{"准备中"} else if(consent.wantsRecording)labels[state]?.let{"$it；服务未运行"}?:"未运行，等待前台权限条件" else"未录音"}"+
+            (lastFailure?.let{"\n最近一次未录成原因：${labels[it]?:it}"}?:"")
         if(::systemStatus.isInitialized) {
             systemStatus.text="系统音频读取：${if(!sourceAccessLoaded)"正在检查权限"else if(audioReadable)"已允许"else"未允许，可点击下方授权"}\n"+
                 listOf("phone" to "电话","wechat" to "微信").joinToString("\n"){(platform,label)->

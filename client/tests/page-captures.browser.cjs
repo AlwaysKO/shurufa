@@ -7,6 +7,15 @@ const root = resolve(__dirname, '../..'), dist = resolve(root, 'client/dist');
 const output = resolve(root, '.runtime/page-capture-20261009'); mkdirSync(output, {recursive:true});
 const A='aaaaaaaa-0000-4000-8000-000000000001', B='bbbbbbbb-0000-4000-8000-000000000002';
 const assert=(value,message)=>{if(!value)throw Error(message)};
+// 与手机原图同宽高比例；单像素夹具不能复现纵向图片弹窗布局。
+const portrait=Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="1332"><rect width="600" height="1332" fill="#315173"/><rect x="40" y="80" width="520" height="900" fill="#dce9f1"/><text x="80" y="1100" font-size="36">Fixture frame</text></svg>');
+async function assertCentered(page){
+ await page.locator('dialog[open] img').evaluate(img=>img.decode());
+ const box=await page.locator('dialog[open]').boundingBox(), viewport=page.viewportSize();
+ assert(Math.abs(box.x+box.width/2-viewport.width/2)<=2,'放大弹窗水平未居中 '+JSON.stringify(box));
+ assert(Math.abs(box.y+box.height/2-viewport.height/2)<=2,'放大弹窗垂直未居中 '+JSON.stringify(box));
+ assert(box.x>=0&&box.y>=0&&box.x+box.width<=viewport.width&&box.y+box.height<=viewport.height,'弹窗超出屏幕');
+}
 (async()=>{
  const server=createServer((req,res)=>{
   const path=new URL(req.url,'http://localhost').pathname;
@@ -32,13 +41,13 @@ const assert=(value,message)=>{if(!value)throw Error(message)};
    requests.push(Object.fromEntries(url.searchParams));
    const user=url.searchParams.get('user_id'), num=Number(url.searchParams.get('page'));
    const records=Array.from({length:num===1?20:1},(_,i)=>({id:`${user===A?'aaaaaaaa':'bbbbbbbb'}-0000-4000-8000-${String((num-1)*20+i+1).padStart(12,'0')}`,
-    platform:url.searchParams.get('platform')||'wechat',kind:url.searchParams.get('kind')||'payment',width:16,height:16,
+    platform:url.searchParams.get('platform')||'wechat',kind:url.searchParams.get('kind')||'payment',width:600,height:1332,
     captured_at:'2026-10-09T00:00:00Z',received_at:'2026-10-09T00:01:00Z',sha256:'a'.repeat(64),mime_type:'image/png'}));
    return route.fulfill({json:{records,total:21,page_size:20}});
   }
   if(/^\/api\/v1\/dashboard\/page-captures\/[^/]+\/image$/.test(path)){
    if(failImage){failImage=false;return route.fulfill({status:404,body:'fixture missing image'});}
-   return route.fulfill({contentType:'image/png',headers:{'Cache-Control':'no-store'},body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a7XsAAAAASUVORK5CYII=','base64')});
+   return route.fulfill({contentType:'image/svg+xml',headers:{'Cache-Control':'no-store'},body:portrait});
   }
   throw Error('未预期接口 '+path);
  });
@@ -49,11 +58,14 @@ const assert=(value,message)=>{if(!value)throw Error(message)};
   await page.getByRole('button',{name:'重试图片',exact:true}).first().click();
   await page.locator('.cards .preview img').first().waitFor();
   assert(await page.locator('.cards article').count()===20,'首页不是20条');
-  await page.getByRole('button',{name:'查看原图',exact:true}).nth(0).click();
+  await page.locator('.cards .preview').nth(0).click();
   await page.locator('dialog[open] img').waitFor();
+  await assertCentered(page);
+  await page.screenshot({path:output+'/page-ui-desktop-modal.png'});
+  assert(await page.getByRole('button',{name:'查看原图',exact:true}).count()===0,'冗余查看原图按钮未移除');
   await page.evaluate(()=>{window.oldPageImage=document.querySelector('dialog[open] img')});
   await page.keyboard.press('Escape');
-  await page.getByRole('button',{name:'查看原图',exact:true}).nth(1).click();
+  await page.locator('.cards .preview').nth(1).click();
   await page.locator('dialog[open] img').waitFor();
   await page.evaluate(()=>window.oldPageImage.dispatchEvent(new Event('error')));
   await page.waitForTimeout(50);
@@ -65,10 +77,9 @@ const assert=(value,message)=>{if(!value)throw Error(message)};
   await page.waitForFunction(()=>document.querySelectorAll('.cards article').length===1);
   assert(requests.some(x=>x.platform==='douyin'&&x.kind==='media_feed'&&x.page==='2'),'筛选/分页未传递');
   await page.screenshot({path:output+'/page-ui-desktop.png',fullPage:true});
-  await page.getByRole('button',{name:'查看原图',exact:true}).click();
-  await page.keyboard.press('Escape');
-  await page.locator('.current-user').filter({hasText:'切换'}).click();
-  await page.locator('.user-select').filter({hasText:'虚构设备 B'}).click();
+  await page.locator('.cards .preview').first().click();
+  await page.locator('.current-user').filter({hasText:'切换'}).evaluate(el=>el.click());
+  await page.locator('.user-select').filter({hasText:'虚构设备 B'}).evaluate(el=>el.click());
   await page.waitForFunction(id=>Array.from(document.querySelectorAll('.cards img')).some(x=>x.src.includes(id)),B);
   assert(await page.locator('dialog[open]').count()===0,'切手机未关闭原图');
   assert(!await page.locator(`.cards img[src*="${A}"]`).count(),'切手机仍显示旧手机图片');
@@ -76,6 +87,10 @@ const assert=(value,message)=>{if(!value)throw Error(message)};
   assert(await page.locator('.page-captures').evaluate(el=>el.getBoundingClientRect().width>300),'窄屏侧栏挤压应用页面');
   await page.getByRole('heading',{name:'应用页面',level:2,exact:true}).scrollIntoViewIfNeeded();
   await page.screenshot({path:output+'/page-ui-mobile.png',fullPage:false});
+  await page.locator('.cards .preview').first().click();
+  await assertCentered(page);
+  await page.screenshot({path:output+'/page-ui-mobile-modal.png'});
+  await page.keyboard.press('Escape');
   await page.getByRole('button',{name:'fixture · 退出登录',exact:true}).click();
   await page.waitForURL('**/login');
   assert(await page.locator('.page-captures').count()===0,'退出仍保留私有页面');

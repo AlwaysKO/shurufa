@@ -24,6 +24,34 @@ class PageFrameProbeTest {
         PageLabel("通讯录", IntRect(130, 950, 210, 980)), PageLabel("发现", IntRect(260, 950, 340, 980)),
         PageLabel("我", IntRect(400, 950, 480, 980)))
 
+    @Test fun missingFeedHeaderUsesBoundedSameFrameTilesWithRealCoordinates() = runBlocking {
+        val bitmap = Bitmap.createBitmap(1200, 2664, Bitmap.Config.ARGB_8888)
+        var captures = 0
+        val recognized = mutableListOf<Bitmap>()
+        val probe = PageFrameProbe(ScreenshotSource { _, _ ->
+            captures++; WindowScreenshotResult.Success(bitmap, 0, 0)
+        }, recognize = { image ->
+            recognized += image
+            if (image.width == 1200) listOf(
+                PageLabel("首页", IntRect(40, 2560, 180, 2618)),
+                PageLabel("消息", IntRect(790, 2560, 900, 2618)),
+                PageLabel("我", IntRect(1060, 2560, 1110, 2618)))
+            else {
+                assertEquals(150, image.width); assertEquals(319, image.height)
+                when (recognized.size) {
+                    4 -> listOf(PageLabel("推荐", IntRect(10, 150, 110, 200)))
+                    8 -> listOf(PageLabel("关注", IntRect(20, 150, 120, 200)))
+                    else -> emptyList()
+                }
+            }
+        }, allowed = { true })
+        val frame = probe.capture("com.ss.android.ugc.aweme", 7, IntRect(0, 0, 1200, 2664),
+            emptyList(), current = { true })
+        assertEquals(PageKind.MEDIA_FEED, frame?.page?.kind)
+        assertEquals(1, captures); assertEquals(8, recognized.size)
+        assertTrue(recognized.all { it.isRecycled })
+    }
+
     @Test fun allowedListFrameIsCroppedToHostWindowBeforeRecognitionAndEncoding() = runBlocking {
         val bitmap = Bitmap.createBitmap(600, 1100, Bitmap.Config.ARGB_8888)
         val probe = PageFrameProbe(ScreenshotSource { _, _ -> WindowScreenshotResult.Success(bitmap, 0, 0) },

@@ -9,6 +9,7 @@ import android.util.Log
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import com.yuyan.imemodule.data.capture.CaptureCoordinator
+import com.yuyan.imemodule.data.callrecording.WechatCallSignals
 import com.yuyan.imemodule.data.capture.CapturePersistResult
 import com.yuyan.imemodule.data.capture.RoomCaptureOutboxStore
 import com.yuyan.imemodule.data.capture.db.CaptureDatabase
@@ -66,6 +67,7 @@ class PassiveNotificationListener : NotificationListenerService() {
 
     override fun onListenerDisconnected() {
         super.onListenerDisconnected()
+        WechatCallSignals.clear()
         PacketServiceState.notificationConnected = false
         if (!packetRebindRequested && PacketSettings.enabled(this) && PacketSettings.hasNotifications(this)) {
             packetRebindRequested = true
@@ -108,6 +110,19 @@ class PassiveNotificationListener : NotificationListenerService() {
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         com.yuyan.imemodule.data.redpacket.GroupRedPacketAssistant.notification(sbn)
+        sbn?.takeIf { it.packageName == "com.tencent.mm" }?.let { callNotification ->
+            val extras = callNotification.notification.extras
+            WechatCallSignals.notification(
+                packageName = callNotification.packageName,
+                key = callNotification.key,
+                ongoing = callNotification.isOngoing,
+                text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString()
+                    ?: extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString(),
+                isMessagingStyle = extras.containsKey(Notification.EXTRA_MESSAGES) ||
+                    extras.getString(Notification.EXTRA_TEMPLATE) == "android.app.Notification\$MessagingStyle",
+                postedAtMillis = callNotification.postTime,
+            )
+        }
         if (!CollectionConsent.enabled(this)) return
         val notification = sbn ?: return
         if (notification.packageName !in SUPPORTED_PACKAGES) return
@@ -237,12 +252,23 @@ class PassiveNotificationListener : NotificationListenerService() {
         }.getOrNull()
     }
 
+    override fun onNotificationRemoved(sbn: StatusBarNotification?) {
+        val notification = sbn ?: return
+        // Legacy callbacks provide no removal reason; never infer a chat screenshot request.
+        WechatCallSignals.removed(notification.packageName, notification.key, notification.postTime)
+    }
+
+    override fun onNotificationRemoved(sbn: StatusBarNotification?, rankingMap: RankingMap?) {
+        onNotificationRemoved(sbn)
+    }
+
     override fun onNotificationRemoved(
         sbn: StatusBarNotification?,
         rankingMap: RankingMap?,
         reason: Int,
     ) {
         val notification = sbn ?: return
+        WechatCallSignals.removed(notification.packageName, notification.key, notification.postTime)
         eventDeduplicator.remove(notification.key)
         val request = waitingForOpenStore?.takeByNotificationKey(notification.key) ?: return
         if (!shouldArmNotificationScreenshot(reason)) return
@@ -251,6 +277,7 @@ class PassiveNotificationListener : NotificationListenerService() {
     }
 
     override fun onDestroy() {
+        WechatCallSignals.clear()
         PacketServiceState.notificationConnected = false
         scope.cancel()
         mediaDispatcher.close()

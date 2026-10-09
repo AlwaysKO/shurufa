@@ -15,9 +15,9 @@ internal object PageCapturePolicy {
     private fun normalized(label: PageLabel): String =
         ConversationTitleSimplifier.simplify(label.text.take(200)).filterNot(Char::isWhitespace)
 
-    // ML Kit 可把同一横排的独立导航合成一行；只拆真实空白，不猜无分隔文本。
+    // ML Kit 可将导航与相邻图标合成一个元素；只按真实分隔符拆词，不猜无分隔文本。
     private fun navigation(band: List<PageLabel>) = band.flatMap { label ->
-        listOf(normalized(label)) + label.text.trim().split(Regex("\\s+"))
+        listOf(normalized(label)) + label.text.trim().split(Regex("[\\s\\p{P}\\p{S}]+"))
             .map { normalized(label.copy(text = it)) }
     }.toSet()
 

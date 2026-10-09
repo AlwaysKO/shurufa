@@ -77,14 +77,33 @@ internal class PageFrameProbe(
             }
             val window = Bitmap.createBitmap(image.bitmap, left, top, width, height)
             crop = window
-            val labels = awaitTitleOcrCompletion { recognize(window) }
+            var labels = awaitTitleOcrCompletion { recognize(window) }
             if (labels.isEmpty()) PageProbeDiagnostics.report(PageProbeStatus.OCR_EMPTY)
             if (!guarded()) return@withContext null
             // 树仅用于预先拒绝风险；正向页面证据只能来自这一帧，不能与旧树拼导航。
             // OCR无结果时不只凭图标放行；敏感提示仍由同帧文本在分类最前拒绝。
             val miniApp = packageName == "com.tencent.mm" && labels.isNotEmpty() && hasWechatMiniAppCapsule(window)
-            val page = PageCapturePolicy.classify(packageName, IntRect(0, 0, width, height), labels,
+            val frameBounds = IntRect(0, 0, width, height)
+            var page = PageCapturePolicy.classify(packageName, frameBounds, labels,
                 miniAppChromeVerified = miniApp)
+            val navigation = PageCapturePolicy.feedNavigationEvidence(frameBounds, labels)
+            if (packageName == "com.ss.android.ugc.aweme" && page.reason == "insufficient_evidence" &&
+                navigation.bottomHome && navigation.bottomMessage && navigation.bottomMe && width >= 8 && height >= 9) {
+                // 整帧OCR会漏掉或合并叠在视频上的导航。只补读同一帧顶部的有界重叠小块，
+                // 坐标按真实裁剪原点还原；不重新截图、不借旧树、不猜中文字的子框。
+                for (index in 14 downTo 0) {
+                    if (!guarded()) return@withContext null
+                    val x = width * index / 16
+                    val tile = Bitmap.createBitmap(window, x, 0, width / 8, (height * .12).toInt())
+                    val extra = try { awaitTitleOcrCompletion { recognize(tile) } }
+                        finally { tile.recycle() }
+                    if (!guarded()) return@withContext null
+                    labels = labels + extra.map { label -> label.copy(bounds = IntRect(
+                        label.bounds.left + x, label.bounds.top, label.bounds.right + x, label.bounds.bottom)) }
+                    page = PageCapturePolicy.classify(packageName, frameBounds, labels)
+                    if (page.reason != "insufficient_evidence") break
+                }
+            }
             if (page.kind == null || page.kind == PageKind.CHAT) {
                 PageProbeDiagnostics.report(PageProbeStatus.CLASSIFICATION_REJECTED, page.reason)
                 if (page.reason == "insufficient_evidence") PageProbeDiagnostics.feedNavigation(

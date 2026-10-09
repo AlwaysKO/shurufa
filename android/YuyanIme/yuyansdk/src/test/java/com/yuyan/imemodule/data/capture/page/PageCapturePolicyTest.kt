@@ -107,6 +107,32 @@ class PageCapturePolicyTest {
         assertNull(classify(tabs + label("请输入支付密码", 200, 700)).kind)
     }
 
+    @Test fun wechatNativeOcrMayJoinNavigationTabsWithIconPunctuation() {
+        val frameBounds = IntRect(0, 0, 1200, 2664)
+        val tabs = listOf(
+            PageLabel("关注", IntRect(270, 149, 389, 202)),
+            PageLabel("看剧", IntRect(446, 149, 547, 202)),
+            PageLabel("朋友-推荐,Q.", IntRect(597, 149, 1046, 202)),
+        )
+        val result = PageCapturePolicy.classify("com.tencent.mm", frameBounds, tabs)
+        assertEquals(PageKind.MEDIA_FEED, result.kind)
+        assertNull(result.contentKey)
+        val evidence = PageCapturePolicy.feedNavigationEvidence(frameBounds, tabs)
+        assertTrue(evidence.topFriend)
+        assertTrue(evidence.topRecommend)
+    }
+
+    @Test fun punctuatedNavigationCannotBypassPageGeometryOrSensitiveInput() {
+        val tabs = listOf(label("关注", 120, 110), label("看剧", 300, 110),
+            label("朋友-推荐,Q.", 480, 110))
+        assertEquals(PageKind.MEDIA_FEED, classify(tabs).kind)
+        assertNull(classify(tabs.map { it.copy(bounds = IntRect(100, 800, 900, 850)) }).kind)
+        assertNull(classify(tabs + label("请输入支付密码", 200, 700)).kind)
+        assertNull(classify(tabs.filterNot { it.text == "看剧" }).kind)
+        assertNull(classify(tabs.map { if (it.text.startsWith("朋友")) it.copy(text = "朋友推荐") else it }).kind)
+        assertNull(classify(tabs.map { if (it.text.startsWith("朋友")) it.copy(text = "朋友-推荐理由") else it }).kind)
+    }
+
     @Test fun diagnosticFlagsRevealCountBadgeWithoutChangingClassification() {
         val labels = listOf(label("关注 推荐", 160, 110), label("首页", 20, 1900),
             label("消息4", 640, 1900), label("我", 850, 1900))

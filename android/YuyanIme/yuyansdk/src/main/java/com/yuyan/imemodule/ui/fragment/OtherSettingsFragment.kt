@@ -242,8 +242,8 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
         val ctx = requireContext()
         packetPreferences = com.yuyan.imemodule.data.redpacket.PacketPreferences(ctx, screen)
         screen.addPreference(Preference(ctx).apply {
-            title = "记录上传"
-            summary = "自动查找记录"
+            title = "通话录音与上传"
+            summary = "电话 / 微信录音、系统录音文件及手机通话记录"
             setOnPreferenceClickListener { startActivity(Intent(ctx, com.yuyan.imemodule.ui.activity.CallRecordingSettingsActivity::class.java)); true }
         })
         screen.addPreference(SwitchPreferenceCompat(ctx).apply {

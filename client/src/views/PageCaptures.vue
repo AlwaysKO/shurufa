@@ -47,7 +47,6 @@ onBeforeUnmount(() => { closeImage(); browser.invalidate(); });
           <span class="badge">{{ platformLabel(row.platform) }}</span> <strong>{{ pageKindLabels[row.kind] || '未知页面' }}</strong>
           <time>采集：{{ time(row.captured_at) }}</time><time>入库：{{ time(row.received_at) }}</time>
           <small>{{ row.width }} × {{ row.height }} · 北京时间</small>
-          <button @click="showImage(row)">查看原图</button>
         </div>
       </article>
     </div>
@@ -67,7 +66,7 @@ onBeforeUnmount(() => { closeImage(); browser.invalidate(); });
 </template>
 
 <style scoped>
-.page-captures{max-width:1100px;margin:auto;padding:24px;color:#263248}.hint,.empty{color:#64748b;line-height:1.7}.filters,nav{display:flex;align-items:center;flex-wrap:wrap;gap:14px;margin:20px 0}button,select{border:1px solid #cbd5e1;border-radius:6px;padding:8px 12px;background:white;color:inherit}button{cursor:pointer}button:disabled{opacity:.5;cursor:default}.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));gap:18px}article{border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;background:white}.preview{display:block;width:100%;padding:0;border:0;border-radius:0;background:#f1f5f9}.preview img{display:block;width:100%;height:260px;object-fit:contain}.details{padding:16px}.badge{font-size:12px;color:#2563eb;background:#eff6ff;padding:4px 8px;border-radius:4px}time,small{display:block;margin:10px 0;font-size:12px;color:#64748b}nav{justify-content:center}.error,.image-error{color:#b42318}.image-error{padding:24px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}dialog{max-width:min(1000px,95vw);max-height:95vh;border:0;border-radius:12px;padding:16px}dialog::backdrop{background:#0009}dialog header{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:12px}dialog img{display:block;max-width:100%;max-height:80vh;object-fit:contain;margin:auto}
+.page-captures{max-width:1100px;margin:auto;padding:24px;color:#263248}.hint,.empty{color:#64748b;line-height:1.7}.filters,nav{display:flex;align-items:center;flex-wrap:wrap;gap:14px;margin:20px 0}button,select{border:1px solid #cbd5e1;border-radius:6px;padding:8px 12px;background:white;color:inherit}button{cursor:pointer}button:disabled{opacity:.5;cursor:default}.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));gap:18px}article{border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;background:white}.preview{display:block;width:100%;padding:0;border:0;border-radius:0;background:#f1f5f9}.preview img{display:block;width:100%;height:260px;object-fit:contain}.details{padding:16px}.badge{font-size:12px;color:#2563eb;background:#eff6ff;padding:4px 8px;border-radius:4px}time,small{display:block;margin:10px 0;font-size:12px;color:#64748b}nav{justify-content:center}.error,.image-error{color:#b42318}.image-error{padding:24px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}dialog{position:fixed;inset:0;margin:auto;width:fit-content;max-width:min(1000px,95vw);max-height:95vh;border:0;border-radius:12px;padding:16px}dialog::backdrop{background:#0009}dialog header{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:12px}dialog img{display:block;max-width:100%;max-height:80vh;object-fit:contain;margin:auto}
 </style>
 
 <style>
