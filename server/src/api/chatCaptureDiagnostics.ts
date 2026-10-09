@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import type pg from 'pg';
-const statuses={page:['matched','rejected','empty_tree'],screenshot:['ready','failed','cancelled'],persist:['inserted','duplicate','failed'],upload:['acknowledged','failed','waiting']} as const;
+const statuses={page:['matched','rejected','empty_tree'],screenshot:['ready','failed','cancelled'],persist:['inserted','duplicate','failed'],upload:['acknowledged','failed','waiting'],browse_capture:['saved','duplicate','interval_limited','budget_limited','queue_full','page_uncovered','failed','cancelled'],browse_upload:['acknowledged','failed','waiting_wifi','discarded']} as const;
 const stages=Object.keys(statuses) as (keyof typeof statuses)[],platforms=['wechat','douyin'];
 const key=(id:string,p:string,s:string)=>`chat_capture_diagnostic_v1:${id.toLowerCase()}:${p}:${s}`;
 const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;

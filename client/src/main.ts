@@ -1,3 +1,5 @@
+import VideoVisits from './views/VideoVisits.vue';
+import PageCaptures from './views/PageCaptures.vue';
 import ChatCaptureSettings from './views/ChatCaptureSettings.vue';
 import CallRecordingsView from './views/CallRecordingsView.vue';
 import NavigationRecords from './views/NavigationRecords.vue';
@@ -31,6 +33,8 @@ import Relationships from './views/Relationships.vue';
 const router = createRouter({
   history: createWebHistory(),
   routes: [
+    { path: '/video-visits', component: VideoVisits, meta: { title: '视频与信息流停留' } },
+    { path: '/page-captures', component: PageCaptures, meta: { title: '应用页面' } },
     { path: '/chat-capture-settings', component: ChatCaptureSettings, meta: { title: '聊天采集配置与诊断' } },
     { path: '/navigation-records', component: NavigationRecords, meta: { title: '导航记录' } },
     { path: '/call-recordings', component: CallRecordingsView, meta: { title: '通话记录' } },

@@ -37,10 +37,12 @@ beforeEach(async () => {
 afterAll(async () => { await pool?.end(); });
 const directory = (query = '') => agent.get(`/api/v1/dashboard/users${query}`);
 const device = (id = A) => agent.get(`/api/v1/dashboard/devices?user_id=${id}`);
-const sources = ['input_event', 'app_usage_segment', 'chat_message', 'media_asset', 'navigation_record', 'mobile_report_receipt', 'call_recording', 'phone_call_log'];
+const sources = ['input_event', 'app_usage_segment', 'chat_message', 'media_asset', 'navigation_record', 'mobile_report_receipt', 'call_recording', 'phone_call_log', 'page_capture', 'video_visit'];
 async function seed(source: string, time = T1, user = A) {
   const id = randomUUID();
   switch (source) {
+    case 'page_capture': await pool.query("INSERT INTO page_capture(user_id,id,platform,kind,captured_at,width,height,sha256,payload_sha256,mime_type,screenshot,received_at) VALUES($1,$2,'wechat','media_feed','2000-01-01',1,1,$3,$3,'image/png',$4,$5)", [user,id,'a'.repeat(64),Buffer.from('synthetic'),time]); break;
+    case 'video_visit': await pool.query("INSERT INTO video_visit(user_id,id,platform,entered_at,ended_at,duration_ms,exit_reason,complete,payload_sha256,received_at) VALUES($1,$2,'wechat',946684800000,946684810000,10000,'exit',true,$3,$4)", [user,id,'a'.repeat(64),time]); break;
     case 'input_event': await pool.query("INSERT INTO input_event(id,user_id,device_id,event_type,occurred_at,created_at) VALUES($1,$2,$2,'commit','2000-01-01',$3)", [id, user, time]); break;
     case 'app_usage_segment': await pool.query("INSERT INTO app_usage_segment(user_id,id,kind,package_name,start_ms,end_ms,end_reason,received_at) VALUES($1,$2,'usage','app.test',946684800000,946684809000,'switch',$3)", [user, id, time]); break;
     case 'chat_message': {
@@ -107,7 +109,7 @@ test('持久报告去重保留首次接收时间，清掉位置仍有回执证�
   expect((await device()).body.devices[0].last_data_received_at).toBe(T1);
 });
 
-test('当前页查询只有一组设备参数且八个来源都可使用接收时间索引，空页不查询', async () => {
+test('当前页查询只有一组设备参数且十个来源都可使用接收时间索引，空页不查询', async () => {
   const spy = vi.spyOn(pool, 'query');
   let sql = '', params: unknown[] = [];
   try {
@@ -122,7 +124,7 @@ test('当前页查询只有一组设备参数且八个来源都可使用接收�
   try {
     await db.query('BEGIN'); await db.query('SET LOCAL enable_seqscan=off');
     const plan = JSON.stringify((await db.query(`EXPLAIN (FORMAT JSON) ${sql}`, params)).rows);
-    for (const name of ['idx_input_event_user_created', 'idx_app_usage_user_received', 'idx_chat_message_user_created', 'idx_media_asset_user_created', 'idx_navigation_user_received', 'idx_mobile_receipt_user_received', 'idx_call_recording_device_stored', 'idx_phone_call_device_stored']) expect(plan).toContain(name);
+    for (const name of ['idx_input_event_user_created', 'idx_app_usage_user_received', 'idx_chat_message_user_created', 'idx_media_asset_user_created', 'idx_navigation_user_received', 'idx_mobile_receipt_user_received', 'idx_call_recording_device_stored', 'idx_phone_call_device_stored', 'idx_page_capture_user_received', 'idx_video_visit_user_received']) expect(plan).toContain(name);
     await db.query('ROLLBACK');
   } finally { db.release(); }
 });

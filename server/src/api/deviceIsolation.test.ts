@@ -15,6 +15,7 @@ beforeEach(async () => {
   const adapter = database.adapters.createPg();
   pool = new adapter.Pool();
   await pool.query(readFileSync(new URL('../../migrations/007_chat_capture.sql', import.meta.url), 'utf8'));
+  await pool.query(readFileSync(new URL('../../migrations/022_chat_conversation_merge.sql', import.meta.url), 'utf8'));
   await pool.query(`CREATE TABLE input_session (
     id UUID PRIMARY KEY, device_id UUID NOT NULL, started_at TIMESTAMPTZ NOT NULL,
     ended_at TIMESTAMPTZ, package_name TEXT, editor_id TEXT, event_count INT NOT NULL DEFAULT 0

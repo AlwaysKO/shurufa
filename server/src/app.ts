@@ -1,3 +1,5 @@
+import { createMobileVideoVisitsRouter, createDashboardVideoVisitsRouter } from './api/videoVisits.js';
+import { createMobilePageCapturesRouter, createDashboardPageCapturesRouter } from './api/pageCaptures.js';
 import { createMobileCaptureRouter, createDashboardCaptureRouter } from './api/chatCaptureSettings.js';
 import { createMobileDiagnosticsRouter, createDashboardDiagnosticsRouter } from './api/chatCaptureDiagnostics.js';
 import { createMobileCallRecordingsRouter, createDashboardCallRecordingsRouter } from './api/callRecordings.js';
@@ -103,6 +105,8 @@ export function createApp(pool: pg.Pool, options: CreateAppOptions = {}): expres
   // 输入法端 API
   app.use('/api/v1/mobile', requireMobileIdentity, recordDeviceActivity(pool), discardDisabledUploads(pool));
   app.use('/api/v1/mobile/call-recordings', createMobileCallRecordingsRouter(pool));
+  app.use('/api/v1/mobile/video-visits', createMobileVideoVisitsRouter(pool));
+  app.use('/api/v1/mobile/page-captures', createMobilePageCapturesRouter(pool));
   app.use('/api/v1/mobile/navigation-records', createMobileNavigationRouter(pool));
   app.use('/api/v1/mobile', createMobileDeliveryRouter(pool));
   app.use('/api/v1/mobile', createMobileCaptureRouter(pool));
@@ -125,6 +129,8 @@ export function createApp(pool: pg.Pool, options: CreateAppOptions = {}): expres
   // Dashboard API
   app.use('/api/v1/dashboard', auth.requireSession, auth.protectWrite, requireDashboardIdentity);
   app.use('/api/v1/dashboard/call-recordings', createDashboardCallRecordingsRouter(pool));
+  app.use('/api/v1/dashboard/video-visits', createDashboardVideoVisitsRouter(pool));
+  app.use('/api/v1/dashboard/page-captures', createDashboardPageCapturesRouter(pool));
   app.use('/api/v1/dashboard/navigation-records', createDashboardNavigationRouter(pool));
   app.use('/api/v1/dashboard', createDashboardDeliveryRouter(pool));
   app.use('/api/v1/dashboard', createDashboardCaptureRouter(pool));

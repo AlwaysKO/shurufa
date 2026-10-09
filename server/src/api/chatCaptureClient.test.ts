@@ -18,3 +18,8 @@ it('诊断新鲜度区分未上报、十分钟边界、历史、未来和非法�
 });
 
 it.each([{packageName:['com.tencent.mm']},{voicePosition:['either']},{packageName:{toString:'com.tencent.mm'}},{voicePosition:{toString:'either'}}])('后台编辑器严格拒绝非字符串枚举 %j',async patch=>{const {parseCaptureRules}=await import(clientModule);const rules=defaultCaptureConfig().rules;Object.assign(rules[0],patch);expect(()=>parseCaptureRules(JSON.stringify(rules),0)).toThrow();});
+it('独立浏览诊断展示原因并说明离线结果延迟',()=>{
+ const view=readFileSync(new URL('../../../client/src/views/ChatCaptureSettings.vue',import.meta.url),'utf8');
+ for(const text of ['browse_capture','browse_upload','间隔限制','重复跳过','等待有效 Wi-Fi','页面未覆盖或证据不足','诊断本身也需联网补传','待传队列已满（已有图片保留，本次未入队）'])
+  expect(view).toContain(text);
+});

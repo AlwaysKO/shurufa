@@ -33,3 +33,17 @@ it('32KiB按完整合法配置UTF8字节限制，合法近边界可保存',async
 });
 
 it.each([{packageName:['com.tencent.mm']},{voicePosition:['either']},{packageName:{toString:'com.tencent.mm'}},{voicePosition:{toString:'either'}}])('枚举字段严格拒绝非字符串 %j',async patch=>{const {dashboard,state}=await setup();const rules=state.body.current.rules;Object.assign(rules[0],patch);expect((await dashboard.put(url).send({expectedRevision:0,rules})).status).toBe(400);expect((await dashboard.get(url)).body.current.revision).toBe(0);});
+it('浏览诊断独立于聊天阶段且拒绝内容和未知原因',async()=>{
+ const {app,dashboard}=await setup();
+ const post=(patch:object)=>request(app).post('/api/v1/mobile/chat/diagnostics').set('X-Device-Id',uid).send({...diagnostic,...patch});
+ expect((await post({})).status).toBe(200);
+ for(const [stage,status] of [['browse_capture','interval_limited'],['browse_upload','waiting_wifi']])
+  expect((await post({stage,status})).status).toBe(200);
+ for(const patch of [{stage:'browse_capture',status:'message text'},{stage:'browse_upload',status:'saved'},{stage:'browse_capture',status:'saved',content:'private'}])
+  expect((await post(patch)).status).toBe(400);
+ const data=(await dashboard.get(`/api/v1/dashboard/chat-capture-diagnostics?user_id=${uid}&device_id=${uid}`)).body;
+ expect(data.platforms.wechat.page.status).toBe('empty_tree');
+ expect(data.platforms.wechat.browse_capture.status).toBe('interval_limited');
+ expect(data.platforms.wechat.browse_upload.status).toBe('waiting_wifi');
+ expect(data.platforms.douyin.browse_capture).toBeNull();
+});

@@ -13,7 +13,9 @@ export async function deviceDataReceivedAt(pool: pg.Pool, ids: string[]): Promis
       (SELECT received_at FROM navigation_record WHERE user_id=selected.id ORDER BY received_at DESC LIMIT 1),
       (SELECT received_at FROM mobile_report_receipt WHERE user_id=selected.id ORDER BY received_at DESC LIMIT 1),
       (SELECT stored_at FROM call_recording WHERE device_id=selected.id AND deleted_at IS NULL ORDER BY stored_at DESC LIMIT 1),
-      (SELECT stored_at FROM phone_call_log WHERE device_id=selected.id ORDER BY stored_at DESC LIMIT 1)
+      (SELECT stored_at FROM phone_call_log WHERE device_id=selected.id ORDER BY stored_at DESC LIMIT 1),
+      (SELECT received_at FROM page_capture WHERE user_id=selected.id ORDER BY received_at DESC LIMIT 1),
+      (SELECT received_at FROM video_visit WHERE user_id=selected.id ORDER BY received_at DESC LIMIT 1)
     ) AS last_data_received_at
     FROM unnest($1::uuid[]) AS selected(id)`, [ids]);
   return new Map(result.rows.map(row => [row.id, row.last_data_received_at]));
