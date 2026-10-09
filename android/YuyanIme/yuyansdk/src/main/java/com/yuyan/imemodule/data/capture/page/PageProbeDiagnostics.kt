@@ -13,7 +13,8 @@ internal enum class PageProbeStatus {
 
 internal data class FeedNavigationEvidence(val labelCount: Int,
     val topFollow: Boolean, val topRecommend: Boolean, val topFriend: Boolean, val topDrama: Boolean,
-    val bottomHome: Boolean, val bottomMessage: Boolean, val bottomMe: Boolean, val bottomFollow: Boolean)
+    val bottomHome: Boolean, val bottomMessage: Boolean, val bottomMe: Boolean, val bottomFollow: Boolean,
+    val topContainsFollow: Boolean = false, val topContainsRecommend: Boolean = false)
 
 internal object PageProbeDiagnostics {
     private val reasons = setOf("unsupported_package", "secure_window", "sensitive_input",
@@ -24,7 +25,8 @@ internal object PageProbeDiagnostics {
             ",top_follow=${bit(evidence.topFollow)},top_recommend=${bit(evidence.topRecommend)}" +
             ",top_friend=${bit(evidence.topFriend)},top_drama=${bit(evidence.topDrama)}" +
             ",bottom_home=${bit(evidence.bottomHome)},bottom_message=${bit(evidence.bottomMessage)}" +
-            ",bottom_me=${bit(evidence.bottomMe)},bottom_follow=${bit(evidence.bottomFollow)}")
+            ",bottom_me=${bit(evidence.bottomMe)},bottom_follow=${bit(evidence.bottomFollow)}" +
+            ",top_contains_follow=${bit(evidence.topContainsFollow)},top_contains_recommend=${bit(evidence.topContainsRecommend)}")
     }
     fun report(status: PageProbeStatus, reason: String? = null, errorCode: Int? = null) {
         val detail = if (errorCode != null && status == PageProbeStatus.SYSTEM_FAILED) ":$errorCode"
