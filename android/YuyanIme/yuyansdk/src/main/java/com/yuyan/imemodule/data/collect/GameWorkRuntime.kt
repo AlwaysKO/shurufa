@@ -1,5 +1,7 @@
 package com.yuyan.imemodule.data.collect
 
+import android.content.Context
+import android.os.PowerManager
 import android.os.SystemClock
 import java.util.concurrent.Executor
 import kotlinx.coroutines.Dispatchers
@@ -14,7 +16,15 @@ import java.io.IOException
 
 /** 游戏优先与打字空闲分别判断，避免改变红包的原有操作策略。 */
 object GameWorkRuntime {
-    private val gate = GameWorkGate(SystemClock::elapsedRealtime, Dispatchers.IO.asExecutor())
+    @Volatile private var power: PowerManager? = null
+    internal fun bind(context: Context) {
+        power = context.applicationContext.getSystemService(Context.POWER_SERVICE) as? PowerManager
+    }
+    private val gate = GameWorkGate(SystemClock::elapsedRealtime, Dispatchers.IO.asExecutor()) {
+        // Accessibility may disconnect while a game/unknown foreground guard is still set.
+        // Only actual screen-off can release it; screen-on restores the original guard.
+        runCatching { power?.isInteractive == false }.getOrDefault(false)
+    }
     fun isBackgroundAllowed(): Boolean = gate.isAllowed()
     fun requireBackgroundAllowed() {
         if (!isBackgroundAllowed()) throw GameWorkPausedException()
@@ -25,11 +35,11 @@ object GameWorkRuntime {
 
 class GameWorkPausedException : IOException("Background work paused for game")
 
-internal class GameWorkGate(private val clock: () -> Long, executor: Executor) {
+internal class GameWorkGate(private val clock: () -> Long, executor: Executor, private val screenOff: () -> Boolean = { false }) {
     @Volatile private var gaming = false
     @Volatile private var resumeAt = 0L
     private val calls = InputPriorityCancellation<Call>(executor) { it.cancel() }
-    fun isAllowed(): Boolean = !gaming && clock() >= resumeAt
+    fun isAllowed(): Boolean = (!gaming || screenOff()) && clock() >= resumeAt
     @Synchronized fun setGaming(value: Boolean) {
         if (gaming == value) return
         if (value) {

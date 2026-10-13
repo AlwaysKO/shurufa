@@ -82,4 +82,17 @@ class SilentPacketReadDiagnosticTest {
             assertTrue(frame.bitmap.isRecycled)
         }
     }
+
+    @Test fun inspectionPublishesDetailsPresenceAndCountButNoCandidateComparison() = runBlocking {
+        val frame = frame()
+        val diagnostic = inspectSilentPacketFrame(frame, { true }, {
+            snapshot(it).copy(match = PacketVisualMatch(PacketPage(verifiedGroupDetails = true,
+                groupDetailsName = "private-name", groupDetailsMemberCount = 5), emptyMap()))
+        }, { 1100 })
+        assertTrue(diagnostic.facts!!.detailsNamePresent)
+        assertNull(diagnostic.facts!!.detailsNameExact)
+        assertEquals(5, diagnostic.facts!!.detailsMemberCount)
+        assertTrue(diagnostic.renderFacts().contains("detailsNameExact=null"))
+        assertFalse(diagnostic.renderFacts().contains("private-name"))
+    }
 }

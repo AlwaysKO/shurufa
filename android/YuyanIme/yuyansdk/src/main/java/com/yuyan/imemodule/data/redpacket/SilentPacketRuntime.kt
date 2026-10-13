@@ -1,5 +1,6 @@
 package com.yuyan.imemodule.data.redpacket
 
+import android.app.PendingIntent
 import android.app.KeyguardManager
 import android.content.ComponentName
 import android.content.Context
@@ -13,7 +14,6 @@ import android.os.PowerManager
 import android.os.SystemClock
 import android.service.notification.StatusBarNotification
 import android.view.accessibility.AccessibilityEvent
-import com.yuyan.imemodule.data.collect.ImageUploadRuntime
 import com.yuyan.redpacket.silent.ISilentPacketService
 import kotlinx.coroutines.*
 import org.json.JSONObject
@@ -35,6 +35,7 @@ internal object SilentPacketRuntime {
         }
     @Volatile private var userReport = "{\"users\":[]}"
     @Volatile private var lastOutcome = ""
+    @Volatile private var foregroundVerified = false
     private val diagnostics = SilentPacketDiagnostics()
     private var binding = false
     private var installedListeners = false
@@ -45,6 +46,13 @@ internal object SilentPacketRuntime {
     private val recent = PacketDeduplicator()
     private val startGate = SilentPacketStartGate()
     private var pendingDiagnostic: Runnable? = null
+    private class NoticeDiagnostic(val userId: Int, val groups: Set<String>, val armedAt: Long,
+        @Volatile var expected: Long, val expiresAt: Long) {
+        @Volatile var cancelled = false
+        var accepted = false
+        var expiry: Runnable? = null
+    }
+    @Volatile private var pendingNoticeDiagnostic: NoticeDiagnostic? = null
     private var retryScheduled = false
     private val retry = Runnable { retryScheduled = false; drain() }
     private val queued = ArrayDeque<PacketRequest>()
@@ -55,7 +63,7 @@ internal object SilentPacketRuntime {
             binding = false
             service = ISilentPacketService.Stub.asInterface(binder)
             diagnostics.record(SERVICE_CONNECTED)
-            report = "静默服务已连接，等待白名单群红包"
+            report = "静默服务已连接，等待红包通知"
             refreshStatus()
             drain()
         }
@@ -81,17 +89,115 @@ internal object SilentPacketRuntime {
 
     fun status(): String = (if (lastOutcome.isEmpty()) report else "$report\n最近红包任务（历史结果）：$lastOutcome") +
         if (com.yuyan.imemodule.BuildConfig.DEBUG) "\n" + diagnostics.snapshot().render() else ""
+    /** 首次使用页面显示操作状态，完整JSON/枚举只在用户展开诊断后展示。 */
+    fun summary(value: Context? = context, preparation: SilentPacketSetupSnapshot? = null): String {
+        val app = value?.applicationContext
+        val label = if (app == null) "静默红包未连接，请打开设置检查实际模式与准备情况" else {
+            val setup = preparation ?: SilentPacketSetup.collect(app)
+            val current = report
+            val backendState = if (current.startsWith("{"))
+                runCatching { JSONObject(current).optString("state") }.getOrNull() else null
+            renderSilentPacketOperationalState(SilentPacketOperationalState(
+                SilentPacketSettings.mode(app), setup,
+                PacketServiceState.notificationConnected, PacketServiceState.accessibilityConnected,
+                service != null, foregroundVerified,
+                runCatching { app.getSystemService(PowerManager::class.java).isInteractive }.getOrDefault(false),
+                runCatching { app.getSystemService(KeyguardManager::class.java).isDeviceLocked }.getOrDefault(true),
+                connecting = binding, taskRunning = active != null && job?.isActive == true,
+                backendState = backendState))
+        }
+        return if (lastOutcome.isEmpty()) label else "$label\n最近红包任务（历史结果）：$lastOutcome"
+    }
+
+    /** 仅Debug手动开启的一次性普通群通知检查；等待期不领取，不重放历史通知。 */
+    fun diagnoseNextNotice(value: Context, userId: Int) {
+        if (!com.yuyan.imemodule.BuildConfig.DEBUG || Build.VERSION.SDK_INT < 35 || userId < 0) return
+        val app = value.applicationContext
+        val expected = generation.get()
+        main.post {
+            if (generation.get() != expected) return@post
+            context = app
+            if (service == null) { report = "请先连接 Shizuku"; return@post }
+            if (job != null || pendingDiagnostic != null || pendingNoticeDiagnostic != null ||
+                stopsInFlight > 0 || queued.isNotEmpty()) { report = "请先停止当前会话或等待任务结束"; return@post }
+            val groups = SilentPacketSettings.groups(app).toSet()
+            if (groups.isEmpty()) { report = "普通通知只读自检需要已有测试群范围"; return@post }
+            if (!foregroundVerified || !PacketServiceState.accessibilityConnected) {
+                report = "等待无障碍连接并确认主屏前台后重试"; return@post
+            }
+            val check = NoticeDiagnostic(userId, groups, System.currentTimeMillis(), expected,
+                SystemClock.uptimeMillis() + 60_000)
+            check.expiry = Runnable {
+                if (pendingNoticeDiagnostic === check && !check.cancelled) {
+                    clearNoticeDiagnostic()
+                    report = "未收到符合范围的普通群通知，只读等待已结束"
+                    drain()
+                }
+            }
+            pendingNoticeDiagnostic = check
+            main.postDelayed(check.expiry!!, 60_000)
+            report = "等待下一条测试群普通消息通知（60秒）；本次只读、不点击，等待期间不自动领取"
+        }
+    }
+
+    /** 屏幕/无障碍生命周期不能依赖前台verified回调边沿，已unknown时也须撤销。 */
+    fun cancelNoticeDiagnosticForLifecycle() {
+        val check = pendingNoticeDiagnostic ?: return
+        check.cancelled = true
+        main.post {
+            if (pendingNoticeDiagnostic === check) {
+                clearNoticeDiagnostic()
+                report = "屏幕或无障碍状态变化，普通通知只读等待已取消"
+                drain()
+            }
+        }
+    }
+
+    private fun clearNoticeDiagnostic() {
+        pendingNoticeDiagnostic?.expiry?.let(main::removeCallbacks)
+        pendingNoticeDiagnostic = null
+    }
+
+    private fun inspectNextNotice(app: Context, sbn: StatusBarNotification) {
+        fun log(reason: SilentPacketNoticeDiagnosticReason) {
+            if (com.yuyan.imemodule.BuildConfig.DEBUG)
+                silentPacketNoticeDiagnosticLog.record(reason)?.let { android.util.Log.i("YuyanSilent", it) }
+        }
+        val check = pendingNoticeDiagnostic ?: return
+        val expected = check.expected
+        if (check.cancelled || SystemClock.uptimeMillis() >= check.expiresAt) {
+            log(if (check.cancelled) SilentPacketNoticeDiagnosticReason.WAIT_CANCELLED else SilentPacketNoticeDiagnosticReason.WAIT_EXPIRED)
+            clearNoticeDiagnostic()
+            report = "通知只读等待已失效"
+            drain()
+            return
+        }
+        if (!foregroundVerified) { log(SilentPacketNoticeDiagnosticReason.FOREGROUND_UNKNOWN); return }
+        if (expected != generation.get()) { log(SilentPacketNoticeDiagnosticReason.GENERATION_MISMATCH); return }
+        if (check.accepted) { log(SilentPacketNoticeDiagnosticReason.ALREADY_ACCEPTED); return }
+        val intent = runCatching { silentPacketDiagnosticNotice(sbn, check.userId, check.groups,
+            check.armedAt, System.currentTimeMillis(), ::log) }.getOrElse {
+            log(SilentPacketNoticeDiagnosticReason.READ_FAILED); null
+        } ?: return
+        check.accepted = true
+        scheduleDiagnosis(app, check.userId, intent, expected, sbn.postTime, check.expiresAt)
+    }
+
     fun users(): String = userReport
 
     /** 用户主动执行的只读检查；不发送通知入口、不点击；识别仅在内存进行，不输出聊天文字。 */
-    fun diagnose(value: Context, userId: Int) {
+    fun diagnose(value: Context, userId: Int) = scheduleDiagnosis(value, userId, null)
+
+    private fun scheduleDiagnosis(value: Context, userId: Int, notificationIntent: PendingIntent?,
+        expected: Long = generation.get(), noticePostedAt: Long? = null, noticeDeadline: Long = Long.MAX_VALUE) {
         if (Build.VERSION.SDK_INT < 35 || userId < 0) { report = "请先选择有效微信账号"; return }
         val app = value.applicationContext
         main.post {
+            if (generation.get() != expected) return@post
+            clearNoticeDiagnostic()
             if (job != null || stopsInFlight > 0) { report = "请先停止当前会话"; return@post }
             if (service == null) { report = "请先连接 Shizuku"; return@post }
             pendingDiagnostic?.let(main::removeCallbacks)
-            val expected = generation.get()
             val deadline = SystemClock.uptimeMillis() + 2_000
             startGate.defer(SystemClock.uptimeMillis())
             report = "等待主屏操作稳定后只读检查"
@@ -109,7 +215,7 @@ internal object SilentPacketRuntime {
                     val wait = startGate.remaining(now)
                     if (wait > 0) { main.postDelayed(this, minOf(wait, deadline - now)); return }
                     pendingDiagnostic = null
-                    startDiagnosis(app, userId, expected)
+                    startDiagnosis(app, userId, expected, notificationIntent, noticePostedAt, noticeDeadline)
                 }
             }
             pendingDiagnostic = pending
@@ -117,29 +223,38 @@ internal object SilentPacketRuntime {
         }
     }
 
-    private fun startDiagnosis(app: Context, userId: Int, expected: Long) {
+    private fun startDiagnosis(app: Context, userId: Int, expected: Long, notificationIntent: PendingIntent? = null,
+        noticePostedAt: Long? = null, noticeDeadline: Long = Long.MAX_VALUE) {
         if (generation.get() != expected) return
         if (job != null || stopsInFlight > 0) { report = "请先停止当前会话"; return }
         val current = service ?: run { report = "请先连接 Shizuku"; return }
         val deadline = SystemClock.uptimeMillis() + 17_000
-        val safe = { SystemClock.uptimeMillis() < deadline && generation.get() == expected && GroupRedPacketAssistant.isInteractionAllowed() &&
-            ImageUploadRuntime.isBackgroundWorkAllowed() && PacketServiceState.accessibilityConnected &&
+        val safe = { SystemClock.uptimeMillis() < deadline && generation.get() == expected && foregroundVerified &&
+            PacketServiceState.accessibilityConnected &&
             app.getSystemService(PowerManager::class.java).isInteractive &&
             !app.getSystemService(KeyguardManager::class.java).isDeviceLocked }
         report = "正在只读检查微信副屏"
         val task = scope.launch(start = CoroutineStart.LAZY) {
             try {
-                if (!safe()) { report = "等待无障碍连接、输入空闲并离开游戏后重试"; return@launch }
+                if (!safe()) { report = "等待无障碍连接并确认主屏前台后重试"; return@launch }
                 val result = JSONObject(current.start(userId))
                 if (result.optString("state") != "RUNNING") { report = result.toString(); return@launch }
+                if (notificationIntent != null && (!safe() || SystemClock.uptimeMillis() >= noticeDeadline ||
+                        noticePostedAt == null || System.currentTimeMillis() - noticePostedAt !in 0..PACKET_NOTICE_MAX_AGE ||
+                        !current.launch(notificationIntent))) {
+                    report = "普通通知副屏入口校验失败，已停止"; return@launch
+                }
                 val reader = SilentPacketReader()
                 val checks = mutableListOf<SilentPacketReadDiagnostic>()
+                val sampleAges = mutableListOf<Long>()
                 val prepareStarted = SystemClock.uptimeMillis()
                 var prepareMs = 0L
                 try {
                     if (!reader.prepare(safe)) { report = "识别预热被保护中止，已停止"; return@launch }
                     prepareMs = SystemClock.uptimeMillis() - prepareStarted
-                    repeat(2) {
+                    repeat(2) { index ->
+                        // 第二帧延后采样，区分入口加载与持续未显示；仍受同一17秒截止保护。
+                        if (index > 0) delay(3_000)
                         var frame: SilentPacketFrame? = null
                         for (attempt in 0 until 10) {
                             if (!safe()) break
@@ -148,13 +263,16 @@ internal object SilentPacketRuntime {
                             frame = captureFrame(current, safe) ?: continue
                             break
                         }
-                        frame?.let { checks += inspectSilentPacketFrame(it, safe, { image -> reader.read(image, safe) }) }
+                        frame?.let {
+                            sampleAges += SystemClock.uptimeMillis() - prepareStarted
+                            checks += inspectSilentPacketFrame(it, safe, { image -> reader.read(image, safe) })
+                        }
                     }
                 } finally { reader.close() }
                 report = if (checks.size == 2 && safe()) {
-                    "副屏只读诊断：微信位于副屏 ${result.optInt("displayId")}，主屏焦点为0；预热${prepareMs}ms；" +
+                    "副屏只读诊断${if (notificationIntent != null) "（普通通知入口）" else "（微信入口）"}：微信位于副屏 ${result.optInt("displayId")}，主屏焦点为0；预热${prepareMs}ms；" +
                         checks.mapIndexed { index, check ->
-                            "OCR${index + 1}=${check.result.name}，识别${check.elapsedMs}ms，帧龄${check.frameAgeMs}ms"
+                            "OCR${index + 1}=${check.result.name}，预热开始后${sampleAges[index]}ms，识别${check.elapsedMs}ms，帧龄${check.frameAgeMs}ms；${check.renderFacts()}"
                         }.joinToString("；") + "；正在释放副屏"
                 } else "副屏画面尚未验证，已停止"
             } catch (_: Exception) { report = "只读自检失败，已请求回收副屏" }
@@ -206,7 +324,7 @@ internal object SilentPacketRuntime {
                 binding = true
                 val next = Shizuku.UserServiceArgs(ComponentName(app.packageName,
                     "com.yuyan.redpacket.silent.SilentPacketService"))
-                    .daemon(true).processNameSuffix("silent_packet").debuggable(false).version(3)
+                    .daemon(true).processNameSuffix("silent_packet").debuggable(false).version(5)
                 args = next
                 Shizuku.bindUserService(next, connection)
                 report = "正在连接静默服务"
@@ -239,11 +357,13 @@ internal object SilentPacketRuntime {
     }
 
     fun stop(reason: String) {
+        pendingNoticeDiagnostic?.cancelled = true
         generation.incrementAndGet()
         report = reason
         main.post {
             pendingDiagnostic?.let(main::removeCallbacks)
             pendingDiagnostic = null
+            clearNoticeDiagnostic()
             active = null
             queued.clear()
             clearRetry()
@@ -253,10 +373,17 @@ internal object SilentPacketRuntime {
     }
 
     fun protectForeground(protected: Boolean) {
+        foregroundVerified = !protected
         diagnostics.record(if (protected) FOREGROUND_PROTECTED else FOREGROUND_READY)
         if (protected) {
+            val screenSafe = context?.let { app ->
+                app.getSystemService(PowerManager::class.java).isInteractive &&
+                    !app.getSystemService(KeyguardManager::class.java).isDeviceLocked
+            } == true
+            if (!screenSafe) pendingNoticeDiagnostic?.cancelled = true
             generation.incrementAndGet()
             main.post {
+                if (pendingNoticeDiagnostic?.cancelled == true) clearNoticeDiagnostic()
                 clearRetry()
                 active?.takeIf { !activeCardCommitted }?.let { packet ->
                     if (queued.none { it.candidate.id == packet.candidate.id }) {
@@ -266,34 +393,34 @@ internal object SilentPacketRuntime {
                 }
                 job?.cancel()
                 service?.let { stopBackend(it) }
-                report = "游戏或前台未确认，静默红包暂停"
+                report = "前台未确认，静默红包暂停"
             }
         } else main.post {
-            if (report == "游戏或前台未确认，静默红包暂停") report = "前台保护已解除，等待群红包"
+            // 等待期尚无副屏/入口；只恢复同一手动请求，原到期时间不变。
+            pendingNoticeDiagnostic?.takeIf { !it.cancelled && !it.accepted &&
+                foregroundVerified && service != null && SystemClock.uptimeMillis() < it.expiresAt
+            }?.let { it.expected = generation.get() }
+            if (report == "前台未确认，静默红包暂停") report = if (pendingNoticeDiagnostic != null)
+                "前台已确认，继续等待普通群通知；原等待期限不变，本次只读、不点击"
+                else "前台保护已解除，等待群红包"
             scheduleDrain(3_100)
         }
     }
 
     fun event(event: AccessibilityEvent) {
-        if (silentPacketUserAction(event.eventType)) {
+        // 主屏操作不取消副屏任务；仅隔离自检按钮的迟到事件。
+        if (pendingDiagnostic != null && silentPacketUserAction(event.eventType))
             startGate.defer(SystemClock.uptimeMillis())
-            // 副屏事件已在无障碍服务入口隔离；这里只处理主屏操作信号。
-            if (job?.isActive == true) {
-                diagnostics.record(INPUT_STOPPED)
-                diagnostics.record(when (event.eventType) {
-                    AccessibilityEvent.TYPE_TOUCH_INTERACTION_START -> INPUT_STOPPED_TOUCH
-                    AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED -> INPUT_STOPPED_TEXT
-                    AccessibilityEvent.TYPE_VIEW_CLICKED -> INPUT_STOPPED_CLICK
-                    else -> INPUT_STOPPED_SCROLL
-                })
-                stop("检测到主屏操作或界面滚动，静默红包已停止")
-            }
-        }
     }
 
     fun notification(value: Context, sbn: StatusBarNotification?) {
         if (Build.VERSION.SDK_INT < 35 || sbn == null || sbn.packageName != PACKET_WECHAT) return
         val app = value.applicationContext
+        // 手动只读验收窗口独占下一条新普通群通知；不把历史/红包通知改造成测试候选。
+        if (pendingNoticeDiagnostic != null) {
+            main.post { inspectNextNotice(app, sbn) }
+            return
+        }
         val selectedUser = SilentPacketSettings.userId(app)
         val noticeUser = sbn.uid / 100_000
         // OEM 通知归属只用于诊断；授权仍按 UID 和后端 PendingIntent 创建者分别校验。
@@ -305,10 +432,16 @@ internal object SilentPacketRuntime {
         val packet = runCatching { packetNotification(sbn, System.currentTimeMillis()) }.getOrNull()
             ?: run { diagnostics.record(PARSE_REJECTED); return }
         diagnostics.record(PARSED)
-        if (noticeUser != selectedUser) { diagnostics.record(PROFILE_REJECTED); return }
+        val intent = packet.intent
+        val authenticatedUser = silentPacketSourceUser(sbn.uid, intent.creatorUid)
+        if (intent.creatorPackage != PACKET_WECHAT || !intent.isActivity || authenticatedUser != noticeUser ||
+            packet.targetUserId != authenticatedUser || SilentPacketSettings.targetUser(app, noticeUser) == null) {
+            diagnostics.record(PROFILE_REJECTED); return
+        }
         diagnostics.record(PROFILE_MATCHED)
         if (!silentPacketEligible(SilentPacketSettings.mode(app), selectedUser,
-                noticeUser, SilentPacketSettings.groups(app), packet.candidate)) {
+                noticeUser, SilentPacketSettings.groups(app), packet.candidate,
+                autoUser = SilentPacketSettings.autoUser(app), autoGroups = SilentPacketSettings.autoGroups(app))) {
             diagnostics.record(GROUP_REJECTED); return
         }
         diagnostics.record(ELIGIBLE)
@@ -316,7 +449,7 @@ internal object SilentPacketRuntime {
             context = app
             if (!recent.accept(packet.candidate.id)) { diagnostics.record(DEDUPLICATED); return@post }
             if (queued.size >= 4) { queued.removeFirst(); diagnostics.record(QUEUE_DROPPED) }
-            queued.addLast(packet.copy(deferredByGame = !GroupRedPacketAssistant.isInteractionAllowed()))
+            queued.addLast(packet.copy(deferredByGame = !foregroundVerified))
             diagnostics.record(QUEUED)
             startGate.defer(SystemClock.uptimeMillis())
             connect(app)
@@ -325,9 +458,8 @@ internal object SilentPacketRuntime {
     }
 
     private fun allowed(app: Context, expected: Long): Boolean = generation.get() == expected &&
-        SilentPacketSettings.mode(app) != "OFF" && GroupRedPacketAssistant.isInteractionAllowed() &&
+        SilentPacketSettings.mode(app) != "OFF" && foregroundVerified &&
         PacketServiceState.accessibilityConnected && PacketServiceState.notificationConnected &&
-        ImageUploadRuntime.isBackgroundWorkAllowed() &&
         app.getSystemService(PowerManager::class.java).isInteractive &&
         !app.getSystemService(KeyguardManager::class.java).isDeviceLocked
 
@@ -355,23 +487,28 @@ internal object SilentPacketRuntime {
             (!it.isValidAt(System.currentTimeMillis())).also { stale -> if (stale) diagnostics.record(TASK_STALE) }
         }
         if (queued.isEmpty()) clearRetry()
-        if (job != null || pendingDiagnostic != null || stopsInFlight > 0 || queued.isEmpty() || SilentPacketSettings.mode(app) == "OFF") return
+        if (job != null || pendingDiagnostic != null || pendingNoticeDiagnostic != null || stopsInFlight > 0 || queued.isEmpty() || SilentPacketSettings.mode(app) == "OFF") return
         val quietWait = startGate.remaining(SystemClock.uptimeMillis())
         if (quietWait > 0) { scheduleDrain(quietWait); return }
-        if (!GroupRedPacketAssistant.isInteractionAllowed()) { diagnostics.record(WAITING_PROTECTION); return }
+        if (!foregroundVerified) { diagnostics.record(WAITING_PROTECTION); return }
         // 断线后只由 BinderReceived/用户重新连接恢复，不每秒唤醒等待 Shizuku。
         val current = service ?: run { diagnostics.record(WAITING_CONNECTION); return }
-        if (!ImageUploadRuntime.isInputIdle()) {
-            diagnostics.record(WAITING_INPUT)
-            scheduleDrain(1_000); return
-        }
         while (queued.isNotEmpty()) {
             val request = queued.removeFirst()
             if (!request.isValidAt(System.currentTimeMillis())) { diagnostics.record(TASK_STALE); continue }
-            if (request.candidate.chatName !in SilentPacketSettings.groups(app)) {
+            // 老的手工队列缺少字段时仅可沿用已选账号；自动路由必须具有来源身份。
+            val sourceUser = if (request.targetUserId >= 0) request.targetUserId
+                else if (!SilentPacketSettings.autoUser(app)) SilentPacketSettings.userId(app) else -1
+            val targetUser = SilentPacketSettings.targetUser(app, sourceUser)
+            if (targetUser == null) { diagnostics.record(TASK_PROFILE_REJECTED); continue }
+            if (!SilentPacketSettings.allowsGroup(app, request.candidate.chatName)) {
                 diagnostics.record(TASK_GROUP_REJECTED); continue
             }
             val expected = generation.get()
+            val deadline = SystemClock.uptimeMillis() + 25_000
+            val taskAllowed = { SystemClock.uptimeMillis() < deadline && allowed(app, expected) &&
+                SilentPacketSettings.targetUser(app, sourceUser) == targetUser &&
+                SilentPacketSettings.allowsGroup(app, request.candidate.chatName) }
             active = request
             activeCardCommitted = false
             val task = scope.launch(start = CoroutineStart.LAZY) {
@@ -383,8 +520,8 @@ internal object SilentPacketRuntime {
                 }
                 diagnostics.record(TASK_STARTED)
                 try {
-                    if (!allowed(app, expected)) {
-                        finish("输入、前台或权限保护，任务未开始", TASK_BLOCKED); return@launch
+                    if (!taskAllowed()) {
+                        finish("前台、锁屏或权限保护，任务未开始", TASK_BLOCKED); return@launch
                     }
                     val prefs = app.getSharedPreferences("silent_packet_receipts", Context.MODE_PRIVATE)
                     val ledger = SilentPacketLedger(prefs.getString("attempted", "").orEmpty()) {
@@ -393,41 +530,65 @@ internal object SilentPacketRuntime {
                     if (ledger.contains(request.candidate.id)) {
                         finish("已处理或结果未确认，跳过重复通知", TASK_DUPLICATE); return@launch
                     }
-                    val start = JSONObject(current.start(SilentPacketSettings.userId(app)))
+                    val start = JSONObject(current.startForNotification(targetUser))
                     diagnostics.startedBackend(start.optString("state"))
                     if (start.optString("state") != "RUNNING") {
                         finish("副屏启动失败：${start.optString("state")}", TASK_START_FAILED); return@launch
                     }
-                    if (!allowed(app, expected)) {
+                    if (!taskAllowed()) {
                         finish("副屏已启动，但客户端保护已中止任务", TASK_START_INVALIDATED); return@launch
+                    }
+                    if (!request.isValidAt(System.currentTimeMillis())) {
+                        finish("通知已超时，未启动会话入口", TASK_STALE); return@launch
                     }
                     if (!current.launch(request.intent)) {
                         finish("通知未能定向副屏，已停止", TASK_LAUNCH_FAILED); return@launch
                     }
-                    if (!allowed(app, expected)) {
+                    if (!taskAllowed()) {
                         finish("通知已定向副屏，但客户端保护已中止任务", TASK_LAUNCH_INVALIDATED); return@launch
                     }
-                    val backend = object : SilentPacketBackend {
-                        override fun capture(): SilentPacketFrame? {
-                            return captureFrame(current) { allowed(app, expected) }
+                    val nativeTaskContext = currentCoroutineContext()
+                    val backend = object : NativePacketBackend {
+                        override fun observe(): NativePacketSnapshot? {
+                            if (!taskAllowed()) return null
+                            val bundle = current.observeWindow() ?: return null
+                            if (!taskAllowed()) return null
+                            val ticket = NativePacketTicket(bundle.getLong("frameId", -1),
+                                bundle.getLong("capturedAtUptime", -1), bundle.getInt("displayId", -1),
+                                bundle.getInt("userId", -1), bundle.getInt("width", 0), bundle.getInt("height", 0),
+                                when (bundle.getString("packetUi")) {
+                                    "RECEIVE" -> NativePacketUi.RECEIVE
+                                    "DETAIL" -> NativePacketUi.DETAIL
+                                    else -> NativePacketUi.NONE
+                                })
+                            val snapshot = NativePacketReader.read(ticket, onFacts = { facts ->
+                                diagnostics.native(facts)
+                                if (com.yuyan.imemodule.BuildConfig.DEBUG) android.util.Log.i("YuyanSilent",
+                                    "AUTO_NODES ${facts.render()}")
+                            }, permitted = { taskAllowed() && nativeTaskContext.isActive })
+                            return snapshot.takeIf { taskAllowed() }
                         }
                         override fun tap(x: Int, y: Int, frameId: Long): Boolean {
-                            if (!allowed(app, expected)) return false
+                            if (!taskAllowed()) return false
                             com.yuyan.imemodule.data.collect.HumanInteractionRuntime.suppressAutomatedGesture(app)
                             return current.tap(x, y, frameId)
                         }
                         override fun back(): Boolean {
-                            if (!allowed(app, expected)) return false
+                            if (!taskAllowed()) return false
                             com.yuyan.imemodule.data.collect.HumanInteractionRuntime.suppressAutomatedGesture(app)
                             return current.back()
                         }
                     }
                     val mode = if (SilentPacketSettings.mode(app) == "AUTO") SilentPacketMode.AUTO else SilentPacketMode.PROBE
-                    val result = SilentPacketEngine.run(request, backend, { allowed(app, expected) }, mode,
+                    val result = NativePacketRunner().run(request, backend, taskAllowed, mode,
                         beforeCard = {
-                            (allowed(app, expected) && ledger.reserve(request.candidate.id, System.currentTimeMillis()))
+                            (taskAllowed() && ledger.reserve(request.candidate.id, System.currentTimeMillis()))
                                 .also { if (it) activeCardCommitted = true }
-                        }, onTrace = diagnostics::engine)
+                        }, onTrace = { stage, event, elapsed ->
+                            diagnostics.engine(stage, event, elapsed)
+                            if (com.yuyan.imemodule.BuildConfig.DEBUG && event.name.startsWith("WAIT_"))
+                                android.util.Log.i("YuyanSilent", "AUTO_WAIT stage=${stage.name} reason=${event.name} elapsedMs=$elapsed")
+                        })
                     outcome = resultLabel(result)
                     report = outcome
                     diagnostics.finished(result)
@@ -440,9 +601,15 @@ internal object SilentPacketRuntime {
                 }
             }
             job = task
+            val timeout = Runnable {
+                if (job === task && !task.isCompleted && generation.get() == expected)
+                    stop("静默任务已超时，已请求停止副屏")
+            }
             task.invokeOnCompletion {
+                main.removeCallbacks(timeout)
                 main.post { if (job === task) { job = null; active = null; drain() } }
             }
+            main.postDelayed(timeout, (deadline - SystemClock.uptimeMillis()).coerceAtLeast(0))
             task.start()
             return
         }
@@ -462,16 +629,17 @@ internal object SilentPacketRuntime {
     }
 
     private fun resultLabel(result: String): String = when (result) {
-        "claimed" -> "已识别领取成功"
+        "claimed" -> "已确认红包到账"
         "expired" -> "红包已过期"
         "exhausted" -> "红包已被领完"
         "probe_candidate" -> "只读识别到群红包，未点击"
         "probe_no_candidate" -> "只读未识别到可领取红包"
-        "protected" -> "输入或前台保护，已停止"
-        "mismatch" -> "通知与副屏群名不一致，已停止"
+        "protected" -> "前台或权限保护，已停止"
+        "mismatch" -> "通知与副屏会话不一致，已停止"
         "stale_request" -> "通知已超时，已跳过"
         "duplicate" -> "重复任务或去重保存失败，已停止"
+        "nodes_unavailable" -> "微信副屏控件不可读，领取结果未确认；不会重试"
         "off" -> "静默红包已关闭"
-        else -> "领取结果未确认，不会自动重放"
+        else -> "未确认红包到账，不会自动重放"
     }
 }

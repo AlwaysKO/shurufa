@@ -12,5 +12,7 @@ interface ISilentPacketService {
  void stop() = 6;
  String users() = 7;
  Bundle captureFrame() = 8;
+ String startForNotification(int userId) = 9;
+ Bundle observeWindow() = 10;
  void destroy() = 16777114;
 }

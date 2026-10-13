@@ -34,6 +34,13 @@ internal class ImageUploadSchedule(private val clock: () -> Long) {
         lastActivity = clock()
     }
 
+    /** IME windows can be hidden without detaching views or receiving the final touch-up. */
+    @Synchronized fun finishInput() {
+        touches.clear()
+        inputEpoch++
+        lastActivity = clock()
+    }
+
     @Synchronized fun isInputIdle(): Boolean =
         touches.isEmpty() && (lastActivity?.let { clock() - it >= IDLE_MS } ?: true)
 

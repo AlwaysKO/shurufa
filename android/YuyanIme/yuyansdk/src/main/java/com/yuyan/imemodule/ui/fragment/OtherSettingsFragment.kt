@@ -242,8 +242,8 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
         val ctx = requireContext()
         packetPreferences = com.yuyan.imemodule.data.redpacket.PacketPreferences(ctx, screen)
         screen.addPreference(Preference(ctx).apply {
-            title = "通话录音与上传"
-            summary = "电话 / 微信录音、系统录音文件及手机通话记录"
+            title = "输入记忆与上传"
+            summary = "手机输入记录"
             setOnPreferenceClickListener { startActivity(Intent(ctx, com.yuyan.imemodule.ui.activity.CallRecordingSettingsActivity::class.java)); true }
         })
         screen.addPreference(SwitchPreferenceCompat(ctx).apply {
@@ -278,7 +278,7 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
             setOnPreferenceChangeListener { _, value ->
                 if (value == true) {
                     androidx.appcompat.app.AlertDialog.Builder(ctx).setTitle("开启导航记录？")
-                        .setMessage("会读取百度/高德前台路线页，选好路线、显示起终点后就保存一张总览截图，无需开始导航。同一天同一地图相同起终点只记一次；Wi-Fi下亮屏低速、熄屏加快后台上传，供你在「导航记录」查看。打字期间暂停上传，停手后继续补传。路线记录不表示已经出发或到达。\n\n请同时开启个人数据同步和本应用无障碍服务。可以随时关闭此开关，关闭后暂停采集与补传。")
+                        .setMessage("会读取路线页，选好路线、显示起终点后就保存一张图，无需开始导航。同一天同一地图相同起终点只记一次；Wi-Fi下亮屏低速、熄屏加快后台上传，供你在「导航记录」查看。打字期间暂停上传，停手后继续补传。路线记录不表示已经出发或到达。\n\n请同时开启个人数据同步和本应用无障碍服务。")
                         .setPositiveButton("同意并开启") { _, _ ->
                             com.yuyan.imemodule.data.navigation.NavigationSettings.setEnabled(ctx, true)
                             isChecked = true

@@ -2,7 +2,7 @@ package com.yuyan.imemodule.data.completion
 
 import com.yuyan.inputmethod.util.T9Spelling
 
-internal enum class InputMatchKind { THREE_INITIALS, PHRASE_PREFIX, WHOLE_PHRASE, INITIAL_FULL_WORD }
+internal enum class InputMatchKind { THREE_INITIALS, PHRASE_PREFIX, WHOLE_PHRASE, INITIAL_FULL_WORD, TYPO_CORRECTION }
 
 /** 附在候选上的实际输入证据；完整读音另存，不把预测后缀伪装成已输入拼音。 */
 internal data class InputSpellingMatch(val kind: InputMatchKind, val code: String, val preedit: String) {

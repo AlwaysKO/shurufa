@@ -45,4 +45,15 @@ class OfflineAssociationIndexTest {
     fun noMatchingSuffixReturnsEmptyResult() {
         assertEquals(OfflineAssociationQuery.EMPTY, index.query("完全不匹配"))
     }
+
+    @Test fun `已输入部分联想后继续推荐剩余正文`() {
+        assertEquals(listOf("越"), index.query("前文关山难").partial)
+        assertEquals(listOf("梦长"), index.query("关山魂").partial)
+    }
+
+    @Test fun `完整匹配和句间联想不被部分补全覆盖`() {
+        assertEquals(listOf("谁悲失路之人"), index.query("关山难越").next)
+        assertEquals(OfflineAssociationQuery.EMPTY, index.query("关山难越谁悲"))
+        assertEquals(OfflineAssociationQuery.EMPTY, index.query("关山难道"))
+    }
 }

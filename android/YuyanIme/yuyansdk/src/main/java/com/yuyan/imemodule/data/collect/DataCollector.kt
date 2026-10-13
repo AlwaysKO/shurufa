@@ -535,6 +535,7 @@ object DataCollector {
             com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics.cancel()
             com.yuyan.imemodule.data.capture.page.PageCaptureSync.cancel(); com.yuyan.imemodule.data.capture.page.VideoVisitSync.cancel()
             ReportSyncJobService.cancel(context)
+            UploadRecovery.cancel(context)
         }
     }
 
@@ -554,7 +555,10 @@ object DataCollector {
                         capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
                         capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
                     if(ready) {
-                        if(readyWifi.add(network))requestSync(wifiRestored=true)
+                        if(readyWifi.add(network)) {
+                            requestSync(wifiRestored=true)
+                            UploadRecovery.wake(context)
+                        }
                     } else readyWifi.remove(network)
                 }
                 override fun onLost(network: Network) { readyWifi.remove(network) }

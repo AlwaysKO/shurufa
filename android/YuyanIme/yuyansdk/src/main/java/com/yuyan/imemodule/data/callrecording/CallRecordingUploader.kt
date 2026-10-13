@@ -59,9 +59,14 @@ internal class CallRecordingUploader(
                 if(if(contentReceipt)outbox.acceptExistingReceipt(task.id,receipt)else outbox.acceptReceipt(task.id,receipt)){onSaved(task.copy(uploadStatus="saved",receipt=receipt));if(permitted())outbox.cleanup(task.id)}
                 else outbox.fail(task.id,now(),"invalid_receipt")
             } catch(e:CancellationException){throw e}
-            catch(_:Exception){
+            catch(error:Exception){
                 // 连错误状态都写不下时仍保留原清单/音频，不能阻塞其他健康任务。
-                try {if(permitted())outbox.fail(task.id,now(),"network_error")else outbox.pause(task.id)}
+                val reason=when {
+                    error is CallRecordingHttpFailure && error.statusCode in 400..599->"call_http_${error.statusCode}"
+                    error is java.io.InterruptedIOException->"network_timeout"
+                    else->"network_error"
+                }
+                try {if(permitted())outbox.fail(task.id,now(),reason)else outbox.pause(task.id)}
                 catch(e:CancellationException){throw e}
                 catch(_:Exception){ /* 下次恢复原状态继续重试，绝不删除。 */ }
             }

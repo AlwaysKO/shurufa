@@ -192,4 +192,45 @@ class SilentPacketDiagnosticsTest {
         assertFalse(snapshot.render().contains("secret"))
         assertEquals(1, first.history.size)
     }
+    @Test fun waitReasonSurvivesCaptureHistoryEvictionAndShowsFixedEnumAndTime() {
+        val diagnostics = SilentPacketDiagnostics()
+        diagnostics.engine(SilentPacketEngineStage.GROUP_CHECK, SilentPacketEngineEvent.WAIT_INFO_TARGET, 121)
+        repeat(40) { diagnostics.engine(SilentPacketEngineStage.OCR, SilentPacketEngineEvent.COMPLETED, 200L + it) }
+        val snapshot = diagnostics.snapshot()
+        assertEquals(SilentPacketEngineRecord(SilentPacketEngineStage.GROUP_CHECK,
+            SilentPacketEngineEvent.WAIT_INFO_TARGET, 121), snapshot.lastEngineWait)
+        assertTrue(snapshot.render().contains("最近等待=GROUP_CHECK WAIT_INFO_TARGET @121ms"))
+    }
+    @Test fun newEnginePreparationClearsOldWaitAndSnapshotStaysIndependent() {
+        val diagnostics = SilentPacketDiagnostics()
+        diagnostics.engine(SilentPacketEngineStage.GROUP_CHECK, SilentPacketEngineEvent.WAIT_GROUP_DETAILS, -5)
+        val before = diagnostics.snapshot()
+        assertEquals(0L, before.lastEngineWait?.elapsedMs)
+        diagnostics.engine(SilentPacketEngineStage.PREPARE, SilentPacketEngineEvent.STARTED, 0)
+        assertNull(diagnostics.snapshot().lastEngineWait)
+        assertTrue(diagnostics.snapshot().render().contains("最近等待=NONE"))
+        assertEquals(SilentPacketEngineEvent.WAIT_GROUP_DETAILS, before.lastEngineWait?.event)
+    }
+    @Test fun latestValidPageSurvivesHistoryAndNonvalidEvidenceCannotReplaceIt() {
+        val diagnostics = SilentPacketDiagnostics()
+        val page = SilentPacketReadDiagnostic(SilentPacketReadResult.VALID, 20, 30,
+            SilentPacketPageFacts(false, false, false, false, false, 0), SilentPacketSourceFacts(1, 0, 0, false, 0))
+        diagnostics.page(page)
+        repeat(40) { diagnostics.engine(SilentPacketEngineStage.OCR, SilentPacketEngineEvent.COMPLETED, 100L + it) }
+        diagnostics.page(SilentPacketReadDiagnostic(SilentPacketReadResult.FRAME_STALE, 1500, 1600))
+        assertEquals(page, diagnostics.snapshot().lastEnginePage)
+        assertTrue(diagnostics.snapshot().render().contains("最近有效页面=VALID OCR20ms age30ms"))
+        assertTrue(diagnostics.snapshot().render().contains("titleCandidateCount=1"))
+    }
+    @Test fun newEngineClearsPreviousPageWithoutChangingOldSnapshot() {
+        val diagnostics = SilentPacketDiagnostics()
+        val page = SilentPacketReadDiagnostic(SilentPacketReadResult.VALID, 20, 30,
+            SilentPacketPageFacts(false, false, false, false, false, 0))
+        diagnostics.page(page)
+        val before = diagnostics.snapshot()
+        assertEquals(page, before.lastEnginePage)
+        diagnostics.engine(SilentPacketEngineStage.PREPARE, SilentPacketEngineEvent.STARTED, 0)
+        assertNull(diagnostics.snapshot().lastEnginePage)
+        assertEquals(page, before.lastEnginePage)
+    }
 }

@@ -6,6 +6,7 @@ internal data class PacketVisualSnapshot(
     val match: PacketVisualMatch, val windowId: Int, val bounds: IntRect,
     val originX: Int, val originY: Int, val capturedAt: Long,
     val signatures: Map<String, String> = emptyMap(),
+    val sourceFacts: SilentPacketSourceFacts? = null,
 )
 
 internal fun confirmedPacketTarget(first: PacketVisualSnapshot, second: PacketVisualSnapshot, id: String, now: Long): IntRect? {

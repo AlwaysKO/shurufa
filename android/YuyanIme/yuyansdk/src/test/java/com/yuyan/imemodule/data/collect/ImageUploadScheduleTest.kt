@@ -9,6 +9,20 @@ class ImageUploadScheduleTest {
     private val mobile = ImageUploadNetwork.MOBILE
     private val wifi = ImageUploadNetwork.WIFI
 
+    @Test fun `keyboard hidden releases missing touch up but retains idle delay and invalidates frame`() {
+        policy.noteTouch(0,Any());policy.noteTouch(0,Any())
+        val frame=policy.fastScreenshotPermit()
+        now=60_000
+        assertFalse(policy.isInputIdle())
+        val finish=policy.javaClass.declaredMethods.firstOrNull { it.name == "finishInput" }
+        assertNotNull("键盘隐藏必须能结束遗留触摸",finish)
+        finish!!.invoke(policy)
+        assertFalse(frame());assertFalse(policy.isInputIdle())
+        now+=2999;assertFalse(policy.isInputIdle())
+        now++;assertTrue(policy.isInputIdle())
+        policy.noteTouch(0,Any());assertFalse(policy.isInputIdle())
+    }
+
     @Test fun `fast frame does not release heavy work and expires within one second`() {
         policy.noteKeyActivity()
         val permit = policy.fastScreenshotPermit()

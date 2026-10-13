@@ -69,6 +69,7 @@
         </receiver>
         <service android:name=".data.collect.BalancedLocationService" android:exported="false" android:foregroundServiceType="location" />
         <service android:name=".data.usage.UsageSyncJobService" android:exported="false" android:permission="android.permission.BIND_JOB_SERVICE" />
+        <service android:name=".data.collect.UploadRecoveryJobService" android:exported="false" android:permission="android.permission.BIND_JOB_SERVICE" />
         <service android:name=".data.collect.ReportSyncJobService" android:exported="false" android:permission="android.permission.BIND_JOB_SERVICE" />
         <service android:name=".expression.ExpressionSyncJobService" android:exported="false" android:permission="android.permission.BIND_JOB_SERVICE" />
         <activity

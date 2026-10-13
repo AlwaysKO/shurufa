@@ -77,9 +77,11 @@ internal class GameForegroundState(
     private val clock: () -> Long = { System.nanoTime() / 1_000_000 },
     private val retryInitialize: (Long) -> Unit = {},
     private val publishInteraction: (Boolean) -> Unit = {},
+    private val publishVerifiedForeground: (Boolean) -> Unit = {},
 ) {
     private class Candidate(
         val packageName: String, val windowId: Int, val token: Long, val previous: Boolean,
+        val previousVerified: Boolean,
         var attempts: Int = 0, var lastAttemptAt: Long = 0, var inFlight: Boolean = false,
         var scheduled: Boolean = false, var confirmed: Boolean = false,
     )
@@ -92,6 +94,7 @@ internal class GameForegroundState(
     private var initializationConfirmed = false
     private var paused: Boolean? = null
     private var interactionPaused: Boolean? = null
+    private var foregroundVerified: Boolean? = null
     private val cache = LinkedHashMap<String, Boolean>(16, .75f, true)
 
     fun connect(interactive: Boolean): Long {
@@ -99,6 +102,7 @@ internal class GameForegroundState(
         this.interactive = interactive
         resetCandidate()
         generation++
+        verifyForeground(false)
         protectInteraction(true)
         pause(interactive, updateInteraction = interactive)
         return generation
@@ -111,8 +115,9 @@ internal class GameForegroundState(
             (current.confirmed || current.inFlight || current.scheduled || clock() - current.lastAttemptAt < 1_000)) return
         val previous = paused ?: true
         val token = ++generation
-        val next = Candidate(packageName, windowId, token, previous)
+        val next = Candidate(packageName, windowId, token, previous, foregroundVerified == true)
         currentCandidate = next
+        verifyForeground(false)
         // 已确认的非游戏换 Activity 不制造取消/恢复冷却，仍异步核验窗口归属。
         if (previous || cache[packageName] != false) pause(true)
         if (packageName.isBlank()) return
@@ -131,7 +136,7 @@ internal class GameForegroundState(
             if (result.window == GameForegroundWindow.Overlay ||
                 result.window == GameForegroundWindow.Application && result.gaming != null) {
                 candidate.confirmed = result.verifiedPackage == null || result.verifiedPackage == candidate.packageName
-                apply(candidate.packageName, result, candidate.previous)
+                apply(candidate.packageName, result, candidate.previous, candidate.previousVerified)
             } else if (candidate.attempts <= 2) {
                 candidate.scheduled = true
                 schedule(if (candidate.attempts == 1) 250 else 750) { request(candidate) }
@@ -161,6 +166,7 @@ internal class GameForegroundState(
         this.interactive = interactive
         resetCandidate()
         generation++
+        verifyForeground(false)
         // 息屏可以补传，但不能把游戏中的红包交互也放行。
         pause(interactive, updateInteraction = interactive)
         return generation
@@ -170,6 +176,7 @@ internal class GameForegroundState(
         connected = false
         generation++
         resetCandidate()
+        verifyForeground(false)
         pause(true)
     }
 
@@ -183,17 +190,27 @@ internal class GameForegroundState(
         initializationConfirmed = false
     }
 
-    private fun apply(packageName: String, result: GameForegroundResult, previous: Boolean) {
+    private fun apply(packageName: String, result: GameForegroundResult, previous: Boolean, previousVerified: Boolean = false) {
         when (result.window) {
             GameForegroundWindow.Application -> result.gaming?.let { gaming ->
                 // 桌面插件等过期事件可能对应另一个真实前台包，不能污染事件包的缓存。
                 cache[result.verifiedPackage ?: packageName] = gaming
                 while (cache.size > cacheLimit.coerceAtLeast(1)) cache.remove(cache.keys.first())
                 pause(gaming)
+                verifyForeground(true)
             }
-            GameForegroundWindow.Overlay -> pause(previous)
+            GameForegroundWindow.Overlay -> {
+                pause(previous)
+                verifyForeground(previousVerified)
+            }
             GameForegroundWindow.Unknown -> Unit
         }
+    }
+
+    private fun verifyForeground(value: Boolean) {
+        if (foregroundVerified == value) return
+        foregroundVerified = value
+        publishVerifiedForeground(value)
     }
 
     private fun protectInteraction(value: Boolean) {
@@ -227,7 +244,7 @@ object GameForegroundMonitor {
 
     fun event(event: AccessibilityEvent) {
         if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
-        val packageName = event.packageName?.toString() ?: return
+        val packageName = event.packageName?.toString().orEmpty()
         val windowId = event.windowId
         val className = event.className?.toString().orEmpty()
         if (systemOverlay(packageName) || className.endsWith("SoftInputWindow") ||
@@ -270,12 +287,20 @@ object GameForegroundMonitor {
         }, schedule = { delay, action ->
             main.postAtTime({ if (!closed && session === this) action() }, this, SystemClock.uptimeMillis() + delay)
         }, retryInitialize = ::initialize,
-            publishInteraction = com.yuyan.imemodule.data.redpacket.GroupRedPacketAssistant::protectForeground)
+            publishInteraction = com.yuyan.imemodule.data.redpacket.GroupRedPacketAssistant::protectForeground,
+            publishVerifiedForeground = { verified ->
+                if (Build.VERSION.SDK_INT >= 35)
+                    com.yuyan.imemodule.data.redpacket.SilentPacketRuntime.protectForeground(!verified)
+            })
         private val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 if (closed) return
                 when (intent?.action) {
-                    Intent.ACTION_SCREEN_OFF -> state.screen(false)
+                    Intent.ACTION_SCREEN_OFF -> {
+                        if (Build.VERSION.SDK_INT >= 35)
+                            com.yuyan.imemodule.data.redpacket.SilentPacketRuntime.cancelNoticeDiagnosticForLifecycle()
+                        state.screen(false)
+                    }
                     Intent.ACTION_SCREEN_ON -> initialize(state.screen(true))
                 }
             }
@@ -346,6 +371,8 @@ object GameForegroundMonitor {
         }
 
         fun close() {
+            if (Build.VERSION.SDK_INT >= 35)
+                com.yuyan.imemodule.data.redpacket.SilentPacketRuntime.cancelNoticeDiagnosticForLifecycle()
             closed = true
             main.removeCallbacksAndMessages(this)
             if (registered) runCatching { context.unregisterReceiver(receiver) }

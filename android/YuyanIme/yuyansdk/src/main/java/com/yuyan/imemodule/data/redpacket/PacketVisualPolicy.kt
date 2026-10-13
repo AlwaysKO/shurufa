@@ -92,7 +92,28 @@ internal fun parsePacketVisualFrame(frame: PacketVisualFrame): PacketVisualMatch
         val announcement = setting("群公告")
         val verified = menuFor(infoTitle) == null && name != null && announcement != null &&
             announcement.bounds.top > name.bounds.bottom
-        return PacketVisualMatch(PacketPage(verifiedGroupDetails = verified), emptyMap())
+        // 标签存在只保留旧资料页布尔；完整名称必须来自唯一、未截断的同一设置行。
+        val memberPattern = Regex("聊天信息[（(]([0-9]{1,5})[）)]")
+        val memberCount = memberPattern.matchEntire(infoTitle.compact())?.groupValues?.get(1)?.toIntOrNull()
+        val uniqueLayout = verified && memberCount != null && memberCount >= 2 &&
+            titles.count { memberPattern.matches(it.compact()) } == 1 &&
+            lines.count { it.compact() == "群聊名称" } == 1 && lines.count { it.compact() == "群公告" } == 1
+        val values = if (uniqueLayout && name != null) lines.filter { line ->
+            val rect = line.bounds
+            rect.left >= maxOf(name.bounds.right + width * .04, width * .35) &&
+                kotlin.math.abs(rect.centerY() - name.bounds.centerY()) <=
+                    maxOf(name.bounds.height() * .35, height * .008)
+        } else emptyList()
+        val fullName = values.singleOrNull()?.takeIf { line ->
+            val text = line.text.trim()
+            val rect = line.bounds
+            text.isNotEmpty() && text.length <= 100 && text.none { it.isISOControl() } &&
+                !text.contains('…') && !text.contains('⋯') && !text.contains("...") &&
+                rect.right < width * .94 && rect.width() >= width * .03 &&
+                rect.height() <= name!!.bounds.height() * 1.5
+        }?.text?.trim()
+        return PacketVisualMatch(PacketPage(verifiedGroupDetails = verified,
+            groupDetailsName = fullName, groupDetailsMemberCount = memberCount.takeIf { fullName != null }), emptyMap())
     }
 
     val groupSuffix = Regex("^(.*?)\\s*[（(]\\s*([0-9]{1,5})\\s*[）)]\\s*$")
@@ -113,8 +134,11 @@ internal fun parsePacketVisualFrame(frame: PacketVisualFrame): PacketVisualMatch
     }.distinct().sortedBy { it.top }.map { rect ->
         "visual:card:${rect.left},${rect.top},${rect.right},${rect.bottom}".also { targets[it] = rect }
     }
+    // 全局顶部文字可以多于一行；只读INFO资格只认唯一实际菜单与其唯一配对标题。
+    val uniqueToolbar = frame.menuDots.count(::valid) == 1 &&
+        titles.filter { menuFor(it) != null }.singleOrNull() == title
     return PacketVisualMatch(PacketPage(chatName = chatName, groupChat = group != null,
-        cards = cards, chatInfoButton = info), targets)
+        cards = cards, chatInfoButton = info, uniqueChatToolbar = uniqueToolbar), targets)
 }
 
 private fun PacketVisualLine.compact(): String = text.replace(Regex("\\s+"), "")

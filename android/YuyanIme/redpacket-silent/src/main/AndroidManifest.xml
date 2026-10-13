@@ -1,7 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
  <uses-sdk tools:overrideLibrary="rikka.shizuku.api,rikka.shizuku.provider" />
  <uses-permission android:name="moe.shizuku.manager.permission.API_V23" />
- <queries><package android:name="com.tencent.mm" /><package android:name="moe.shizuku.privileged.api" /></queries>
+ <queries>
+  <package android:name="com.tencent.mm" />
+  <package android:name="moe.shizuku.privileged.api" />
+  <intent><action android:name="android.intent.action.VIEW" /><data android:scheme="https" /></intent>
+ </queries>
  <application>
   <meta-data android:name="moe.shizuku.client.V3_SUPPORT" android:value="true" />
   <provider android:name="rikka.shizuku.ShizukuProvider" android:authorities="${applicationId}.shizuku"

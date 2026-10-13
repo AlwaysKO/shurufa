@@ -2,13 +2,14 @@ package com.yuyan.inputmethod.data
 
 import android.view.KeyEvent
 import com.yuyan.imemodule.application.CustomConstant
+import com.yuyan.imemodule.data.completion.T9Lexicon
 import com.yuyan.inputmethod.RimeEngine.processDelAction
 import com.yuyan.inputmethod.core.Rime
 import com.yuyan.inputmethod.util.LX17PinYinUtils
 import com.yuyan.inputmethod.util.T9PinYinUtils
 import java.util.LinkedList
 
-class KeyRecordStack {
+class KeyRecordStack(private val currentSchema: () -> String = { Rime.getCurrentRimeSchema() }) {
     private val keyRecords = ArrayList<InputKey>(20)
 
     /** 仅对没有锁拼音/选字/分词的原始九宫格组合提供补充候选。 */
@@ -21,6 +22,23 @@ class KeyRecordStack {
             digits.append(index + 2)
         }
         return digits.toString()
+    }
+
+    /** 只交接尚未选字的真实锁音；显式分词和未知操作继续保留原生分段路径。 */
+    internal fun lockedT9Input(): String? {
+        if (keyRecords.none { it is InputKey.PinyinKey } || keyRecords.any {
+                it !is InputKey.PinyinKey && it !is InputKey.T9Key && it != InputKey.SelectPinyinAction
+            }) return null
+        return buildString {
+            for (record in keyRecords) when (record) {
+                is InputKey.PinyinKey -> {
+                    if (isNotEmpty() && last() != '\'') append('\'')
+                    append(record.pinyin())
+                }
+                is InputKey.T9Key -> append(T9Lexicon.digits(record.toString()))
+                else -> Unit
+            }
+        }
     }
 
     /** 仅供最终学习校验：锁音还原为等价按键，不据此开放整码本地候选。 */
@@ -98,10 +116,10 @@ class KeyRecordStack {
         return true
     }
 
-    fun pushPinyinSelectAction(pinyin: String?): InputKey.PinyinKey? {
+    fun pushPinyinSelectAction(pinyin: String?, replace: (InputKey.PinyinKey) -> Boolean = { true }): InputKey.PinyinKey? {
         pinyin ?: return null
         val keys = LinkedList<InputKey.T9Key>()
-        val rimeSchema = Rime.getCurrentRimeSchema()
+        val rimeSchema = currentSchema()
         when (rimeSchema) {
             CustomConstant.SCHEMA_ZH_T9 -> {
                 T9PinYinUtils.pinyin2Key(pinyin).forEach {
@@ -120,24 +138,23 @@ class KeyRecordStack {
                 record.toString() == keys[j].toString() && record is InputKey.T9Key && !record.consumed
             }
         }
-        repeat(keys.size) {
-            keyRecords.removeAt(index)
-        }
-        var posInInput = 0
-        keyRecords.forEach {
-            if(it is InputKey.SelectPinyinAction) posInInput += 1
-        }
-        keyRecords.add(InputKey.SelectPinyinAction)
-        keyRecords.add(index, InputKey.PinyinKey(pinyin))
-        posInInput = keyRecords.subList(0, index).fold(0) { acc, inputKey ->
-            acc + when (inputKey) {
+        if (keys.isEmpty() || index < 0) return null
+        val position = keyRecords.subList(0, index).sumOf { inputKey ->
+            when (inputKey) {
                 is InputKey.T9Key, is InputKey.Apostrophe -> 1
                 is InputKey.PinyinKey -> inputKey.inputKeyLength
                 else -> 0
             }
         }
-        keyRecords[index] = (keyRecords[index] as InputKey.PinyinKey).copy(posInInput)
-        return keyRecords.getOrNull(index) as? InputKey.PinyinKey
+        val replacement = InputKey.PinyinKey(pinyin, position)
+        if (!replace(replacement)) return null
+        if (keyRecords.lastOrNull() == InputKey.SelectPinyinAction) keyRecords.removeLastOrNull()
+        repeat(keys.size) {
+            keyRecords.removeAt(index)
+        }
+        keyRecords.add(InputKey.SelectPinyinAction)
+        keyRecords.add(index, replacement)
+        return replacement
     }
 
     fun pushCandidateSelectAction() {
@@ -154,7 +171,7 @@ class KeyRecordStack {
         val index = keyRecords.indexOfLast { it is InputKey.PinyinKey }
         val inputKey = keyRecords.getOrNull(index) as? InputKey.PinyinKey
         if (index >= 0) {
-            keyRecords.replaceAt(index, inputKey!!.restoreToT9key())
+            keyRecords.replaceAt(index, inputKey!!.restoreToT9key(currentSchema()))
         }
         return inputKey
     }
@@ -210,9 +227,9 @@ interface InputKey {
             }
         }
 
-        fun restoreToT9key(): List<T9Key> {
+        fun restoreToT9key(schema: String = Rime.getCurrentRimeSchema()): List<T9Key> {
             val keys = LinkedList<T9Key>()
-            val rimeSchema = Rime.getCurrentRimeSchema()
+            val rimeSchema = schema
             when (rimeSchema) {
                 CustomConstant.SCHEMA_ZH_T9 -> {
                     T9PinYinUtils.pinyin2Key(pinyin).forEach {

@@ -10,6 +10,7 @@ import androidx.preference.PreferenceManager
 import com.yuyan.imemodule.service.capture.PassiveChatAccessibilityService
 
 internal object PacketServiceState {
+    @Volatile var nativeAccessibilityService: android.accessibilityservice.AccessibilityService? = null
     @Volatile var accessibilityConnected = false
     @Volatile var notificationConnected = false
 }

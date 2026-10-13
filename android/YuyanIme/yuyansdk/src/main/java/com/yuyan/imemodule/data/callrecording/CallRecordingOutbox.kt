@@ -85,7 +85,8 @@ internal class CallRecordingOutbox(
     fun markAttempt(id:String) = exclusive { val t=read(id);save(t.copy(uploadStatus="uploading",attempts=(t.attempts+1).coerceAtMost(30))) }
     fun pause(id:String) = exclusive {val t=read(id);if(t.uploadStatus!="saved")save(t.copy(uploadStatus="paused",lastError="authorization_or_input_paused"))}
     fun fail(id:String,now:Long,reason:String) = exclusive {
-        val t=read(id);require(reason in listOf("network_error","invalid_receipt","local_audio_changed"))
+        val t=read(id);require(reason in listOf("network_error","network_timeout","invalid_receipt","local_audio_changed") ||
+            Regex("call_http_[45][0-9]{2}").matches(reason))
         if(t.uploadStatus!="saved")save(t.copy(uploadStatus="failed",lastError=reason,nextAttemptAt=now+minOf(3_600_000L,30_000L*(1L shl t.attempts.coerceIn(0,7)))))
     }
     fun acceptReceipt(id:String,receipt:CallReceipt):Boolean = exclusive {

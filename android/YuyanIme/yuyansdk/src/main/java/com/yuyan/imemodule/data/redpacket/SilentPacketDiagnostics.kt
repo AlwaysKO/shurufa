@@ -20,6 +20,7 @@ internal enum class SilentPacketDiagnosticEvent(val channel: SilentPacketDiagnos
     TASK_DUPLICATE(SilentPacketDiagnosticChannel.TASK),
     TASK_STALE(SilentPacketDiagnosticChannel.TASK),
     TASK_GROUP_REJECTED(SilentPacketDiagnosticChannel.TASK),
+    TASK_PROFILE_REJECTED(SilentPacketDiagnosticChannel.TASK),
     TASK_START_FAILED(SilentPacketDiagnosticChannel.TASK),
     TASK_LAUNCH_FAILED(SilentPacketDiagnosticChannel.TASK),
     TASK_CANCELLED(SilentPacketDiagnosticChannel.TASK),
@@ -31,11 +32,13 @@ internal enum class SilentPacketDiagnosticEvent(val channel: SilentPacketDiagnos
     TASK_PROBE_NO_CANDIDATE(SilentPacketDiagnosticChannel.TASK),
     TASK_MISMATCH(SilentPacketDiagnosticChannel.TASK),
     TASK_UNKNOWN(SilentPacketDiagnosticChannel.TASK),
+    TASK_NODES_UNAVAILABLE(SilentPacketDiagnosticChannel.TASK),
     TASK_OFF(SilentPacketDiagnosticChannel.TASK),
     TASK_PROTECTED(SilentPacketDiagnosticChannel.TASK),
     FOREGROUND_PROTECTED(SilentPacketDiagnosticChannel.RUNTIME),
     FOREGROUND_READY(SilentPacketDiagnosticChannel.RUNTIME),
     INPUT_STOPPED(SilentPacketDiagnosticChannel.RUNTIME),
+    USER_ACTION_PAUSED(SilentPacketDiagnosticChannel.RUNTIME),
     INPUT_STOPPED_TOUCH(SilentPacketDiagnosticChannel.RUNTIME),
     INPUT_STOPPED_TEXT(SilentPacketDiagnosticChannel.RUNTIME),
     INPUT_STOPPED_CLICK(SilentPacketDiagnosticChannel.RUNTIME),
@@ -91,6 +94,9 @@ internal data class SilentPacketDiagnosticSnapshot(
     val lastBackendState: SilentPacketBackendState,
     val history: List<SilentPacketDiagnosticRecord>,
     val engineHistory: List<SilentPacketEngineRecord> = emptyList(),
+    val lastEngineWait: SilentPacketEngineRecord? = null,
+    val lastEnginePage: SilentPacketReadDiagnostic? = null,
+    val lastNativePage: NativePacketReadFacts? = null,
 ) {
     fun render(): String = buildString {
         append("诊断（本进程内存，重启清零）：selectedUser=").append(selectedUser)
@@ -112,6 +118,14 @@ internal data class SilentPacketDiagnosticSnapshot(
             append(" ").append(entry.event.name)
             entry.backendState?.let { append("[").append(it.name).append("]") }
         }
+        append("\n最近等待=")
+        lastEngineWait?.let { append(it.stage.name).append(" ").append(it.event.name)
+            .append(" @").append(it.elapsedMs).append("ms") } ?: append("NONE")
+        append("\n最近有效页面=")
+        lastEnginePage?.let { append(it.result.name).append(" OCR").append(it.elapsedMs)
+            .append("ms age").append(it.frameAgeMs).append("ms；").append(it.renderFacts()) } ?: append("NONE")
+        append("\n最近原生控件读取=")
+        lastNativePage?.let { append(it.render()) } ?: append("NONE")
         append("\n引擎阶段（末16条，任务耗时）：")
         engineHistory.takeLast(16).forEach { entry ->
             append("\n").append(entry.stage.name).append(" ").append(entry.event.name)
@@ -122,10 +136,30 @@ internal data class SilentPacketDiagnosticSnapshot(
 
 /** Thread-safe metadata only. Records observations; never schedules, retains or replays a packet. */
 internal class SilentPacketDiagnostics(private val clock: () -> Long = { System.nanoTime() / 1_000_000 }) {
+    private var lastNativePage: NativePacketReadFacts? = null
+    @Synchronized fun native(facts: NativePacketReadFacts) { lastNativePage = facts }
     private val engineHistory = ArrayDeque<SilentPacketEngineRecord>()
+    private var lastEngineWait: SilentPacketEngineRecord? = null
+
+    private var lastEnginePage: SilentPacketReadDiagnostic? = null
+
+    @Synchronized fun page(facts: SilentPacketReadDiagnostic) {
+        if (facts.result == SilentPacketReadResult.VALID && facts.facts != null) lastEnginePage = facts
+    }
 
     @Synchronized fun engine(stage: SilentPacketEngineStage, event: SilentPacketEngineEvent, elapsedMs: Long) {
-        engineHistory.addLast(SilentPacketEngineRecord(stage, event, elapsedMs.coerceAtLeast(0)))
+        val record = SilentPacketEngineRecord(stage, event, elapsedMs.coerceAtLeast(0))
+        if (stage == SilentPacketEngineStage.PREPARE && event == SilentPacketEngineEvent.STARTED) {
+            lastEngineWait = null
+            lastEnginePage = null
+            lastNativePage = null
+        }
+        if (event in setOf(SilentPacketEngineEvent.WAIT_CHAT_TITLE, SilentPacketEngineEvent.WAIT_TITLE_UNVERIFIED,
+                SilentPacketEngineEvent.WAIT_INFO_TARGET, SilentPacketEngineEvent.WAIT_GROUP_DETAILS,
+                SilentPacketEngineEvent.WAIT_CARD, SilentPacketEngineEvent.WAIT_OPEN_PANEL,
+                SilentPacketEngineEvent.WAIT_OPEN_TARGET, SilentPacketEngineEvent.WAIT_RESULT,
+                SilentPacketEngineEvent.WAIT_TITLE_CONFIRMATION)) lastEngineWait = record
+        engineHistory.addLast(record)
         if (engineHistory.size > 32) engineHistory.removeFirst()
     }
     private val counts = LongArray(SilentPacketDiagnosticEvent.entries.size)
@@ -179,13 +213,14 @@ internal class SilentPacketDiagnostics(private val clock: () -> Long = { System.
         "duplicate" -> SilentPacketDiagnosticEvent.TASK_DUPLICATE
         "off" -> SilentPacketDiagnosticEvent.TASK_OFF
         "protected" -> SilentPacketDiagnosticEvent.TASK_PROTECTED
+        "nodes_unavailable" -> SilentPacketDiagnosticEvent.TASK_NODES_UNAVAILABLE
         else -> SilentPacketDiagnosticEvent.TASK_UNKNOWN
     })
 
     @Synchronized fun snapshot(): SilentPacketDiagnosticSnapshot = SilentPacketDiagnosticSnapshot(
         sequence, SilentPacketDiagnosticEvent.entries.associateWith { counts[it.ordinal] },
         lastNotice, lastTask, lastRuntime, selectedUser, noticeUser, sbnUser, intentUser,
-        lastBackendState, history.toList(), engineHistory.toList(),
+        lastBackendState, history.toList(), engineHistory.toList(), lastEngineWait, lastEnginePage, lastNativePage,
     )
 
     private fun increment(value: Long): Long = if (value == Long.MAX_VALUE) value else value + 1

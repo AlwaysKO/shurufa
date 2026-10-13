@@ -42,14 +42,17 @@ class SilentPacketRuntimeDiagnosticQuietTest {
     private fun resetPendingDiagnostic() {
         SilentPacketRuntime::class.java.declaredFields.firstOrNull { it.name == "pendingDiagnostic" }
             ?.apply { isAccessible = true }?.set(SilentPacketRuntime, null)
-        SilentPacketRuntime::class.java.declaredFields.firstOrNull { it.name == "startGate" }
-            ?.apply { isAccessible = true }?.get(SilentPacketRuntime)?.let { gate ->
-                gate.javaClass.getDeclaredField("deferredAt").apply { isAccessible = true }.set(gate, null)
-            }
+        for (name in listOf("startGate")) {
+            SilentPacketRuntime::class.java.declaredFields.firstOrNull { it.name == name }
+                ?.apply { isAccessible = true }?.get(SilentPacketRuntime)?.let { gate ->
+                    gate.javaClass.getDeclaredField("deferredAt").apply { isAccessible = true }.set(gate, null)
+                }
+        }
     }
 
     @Before fun prepare() {
         handler().removeCallbacksAndMessages(null)
+        set("foregroundVerified", true)
         resetPendingDiagnostic()
         set("context", null)
         set("job", null)

@@ -15,6 +15,25 @@ class SilentPacketDispatchTest {
         assertFalse(silentPacketEligible("AUTO", 128, 128, setOf("测试"), packet))
     }
 
+    @Test fun automaticRoutingAcceptsEitherRealNotificationUserWithoutManualSelection() {
+        for (user in listOf(0, 128)) {
+            assertTrue(silentPacketEligible("AUTO", -1, user, emptySet(), packet, autoUser = true, autoGroups = true))
+            assertTrue(silentPacketEligible("PROBE", 999, user, emptySet(), packet, autoUser = true, autoGroups = true))
+        }
+        assertFalse(silentPacketEligible("AUTO", -1, -1, emptySet(), packet, autoUser = true, autoGroups = true))
+        assertFalse(silentPacketEligible("OFF", -1, 0, emptySet(), packet, autoUser = true, autoGroups = true))
+        assertFalse(silentPacketEligible("unknown", -1, 0, emptySet(), packet, autoUser = true, autoGroups = true))
+    }
+
+    @Test fun automaticGroupScopeDoesNotBroadenManualAccountAndViceVersa() {
+        assertTrue(silentPacketEligible("AUTO", 128, 128, emptySet(), packet, autoGroups = true))
+        assertFalse(silentPacketEligible("AUTO", 128, 0, emptySet(), packet, autoGroups = true))
+        assertTrue(silentPacketEligible("AUTO", -1, 0, setOf("测试群"), packet, autoUser = true))
+        assertFalse(silentPacketEligible("AUTO", -1, 0, setOf("测试"), packet, autoUser = true))
+        assertFalse(silentPacketEligible("AUTO", -1, 0, emptySet(), packet.copy(chatName = " "),
+            autoUser = true, autoGroups = true))
+    }
+
     @Test fun persistsBeforeAcceptingAndRefusesUnknownReplayAfterRestart() {
         var saved = ""
         val first = SilentPacketLedger("") { saved = it; true }

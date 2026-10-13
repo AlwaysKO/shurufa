@@ -403,6 +403,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
 
     override fun onServiceConnected() {
         super.onServiceConnected()
+        com.yuyan.imemodule.data.redpacket.PacketServiceState.nativeAccessibilityService = this
         if (videoVisitMonitor == null) {
             videoVisitMonitor = runCatching {
                 com.yuyan.imemodule.data.capture.page.createVideoVisitMonitor(this)
@@ -499,7 +500,15 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         }
     }
 
+    override fun onUnbind(intent: android.content.Intent?): Boolean {
+        if (com.yuyan.imemodule.data.redpacket.PacketServiceState.nativeAccessibilityService === this)
+            com.yuyan.imemodule.data.redpacket.PacketServiceState.nativeAccessibilityService = null
+        return super.onUnbind(intent)
+    }
+
     override fun onDestroy() {
+        if (com.yuyan.imemodule.data.redpacket.PacketServiceState.nativeAccessibilityService === this)
+            com.yuyan.imemodule.data.redpacket.PacketServiceState.nativeAccessibilityService = null
         browsingCapture?.close()
         browsingCapture = null
         videoVisitMonitor?.close()

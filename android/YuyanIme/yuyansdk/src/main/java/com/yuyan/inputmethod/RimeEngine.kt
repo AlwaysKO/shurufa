@@ -177,7 +177,8 @@ object RimeEngine {
         if (selected != null && selected.nativeIndex == null) {
             reset()
             preCommitText = selected.text
-            t9CommitTracker.selected(code, selected.text, selected.pinyin, diagnostic)
+            // 纠错建议按真实文本上屏，不把错误按键写成这个词的新读音或学习次数。
+            t9CommitTracker.selected(code, selected.text, selected.pinyin, diagnostic, selected.inputMatch?.kind)
             return preCommitText
         }
         val indexReal = selected?.nativeIndex ?: (index - customPhraseSize)
@@ -193,7 +194,7 @@ object RimeEngine {
         }
         keyRecordStack.pushCandidateSelectAction()
         val committed = updateCandidatesOrCommitText()
-        t9CommitTracker.segment(code, chosenText, chosenReading, committed, diagnostic)
+        t9CommitTracker.segment(code, chosenText, chosenReading, committed, diagnostic, selected?.inputMatch?.kind)
         return committed
     }
 
@@ -230,8 +231,10 @@ object RimeEngine {
 
     fun selectPinyin(index: Int) {
         // 锁音不改原始按键；保留明确选中的段，最终仍须整词/读音/编码三者一致。
-        val pinyinKey = keyRecordStack.pushPinyinSelectAction(pinyins[index]) ?: return
-        Rime.replaceKey(pinyinKey.posInInput, pinyinKey.t9Keys().length, pinyinKey.pinyin())
+        val pinyin = pinyins.getOrNull(index) ?: return
+        keyRecordStack.pushPinyinSelectAction(pinyin) { key ->
+            Rime.replaceKey(key.posInInput, key.t9Keys().length, key.pinyin())
+        } ?: return
         updateCandidatesOrCommitText()
     }
 
@@ -391,6 +394,9 @@ object RimeEngine {
         }
         personalCandidates = when {
             code.isNotEmpty() -> OfflineT9Candidates.select(code, candidates.map { it.text }, candidates.map { it.comment })
+            rimeSchema == CustomConstant.SCHEMA_ZH_T9 && !InputModeSwitcher.isEnglish &&
+                !AppPrefs.getInstance().input.chineseFanTi.getValue() && keyRecordStack.lockedT9Input() != null ->
+                OfflineT9Candidates.selectLocked(requireNotNull(keyRecordStack.lockedT9Input()), candidates.map { it.text }, candidates.map { it.comment })
             rimeSchema == CustomConstant.SCHEMA_ZH_T9 && !keyRecordStack.isEmpty() &&
                 !InputModeSwitcher.isEnglish && !AppPrefs.getInstance().input.chineseFanTi.getValue() ->
                 OfflineT9Candidates.rankNative(nativeCandidateMetadata.firstPage, candidates.size)
@@ -398,7 +404,8 @@ object RimeEngine {
         }
         personalCandidates?.let { selection ->
             showCandidates = showCandidates.take(customPhraseSize) + selection.firstPage.map {
-                it.nativeIndex?.let { index -> candidates[index] } ?: CandidateListItem("本地", it.text)
+                it.nativeIndex?.let { index -> candidates[index] } ?: CandidateListItem(
+                    if (it.inputMatch?.kind == com.yuyan.imemodule.data.completion.InputMatchKind.TYPO_CORRECTION) "纠错" else "本地", it.text)
             }.ifEmpty {
                 getNextPageCandidates().asList()
             }

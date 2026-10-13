@@ -19,6 +19,30 @@ import java.util.concurrent.Executors
 @Config(sdk=[28])
 class CallRecordingHttpTransportTest {
     private fun io(block:()->Unit){val executor=Executors.newSingleThreadExecutor();try{executor.submit(block).get()}finally{executor.shutdownNow()}}
+    @Test fun `HTTP拒收按安全状态码持久化并保留文件待重试`()=io {
+        val server=MockWebServer();server.start()
+        try {
+            val context=ApplicationProvider.getApplicationContext<Context>()
+            val http=OkHttpClient()
+            val factory=Call.Factory{req->http.newCall(req.newBuilder().url(server.url(req.url.encodedPath)).build())}
+            for(status in listOf(413,401,403,429,503)) {
+                val box=CallRecordingOutbox(File(context.noBackupFilesDir,"calls-"+UUID.randomUUID()))
+                val(id,file)=box.createAudioFile();file.writeText("0000ftypM4A error fixture")
+                val task=box.enqueue(id,UUID.randomUUID().toString(),CallMetadata(destination="https://example.test",recording_started_at=1000,recording_ended_at=2000,audio_duration_ms=1000))
+                val transport=CallRecordingHttpTransport({"a".repeat(64)},{true},factory)
+                if(status==413) {
+                    server.enqueue(MockResponse().setResponseCode(404))
+                    server.enqueue(MockResponse().setResponseCode(404).setBody("""{"error":"record_not_found"}"""))
+                }
+                server.enqueue(MockResponse().setResponseCode(status).setBody("untrusted response body must not be persisted"))
+                CallRecordingUploader(box,transport,{true},{task.metadata.destination}).runOnce()
+                val failed=box.tasks().single()
+                assertEquals("call_http_$status",failed.lastError)
+                assertEquals("failed",failed.uploadStatus);assertTrue(file.exists())
+                assertTrue(failed.nextAttemptAt>System.currentTimeMillis())
+            }
+        } finally {server.shutdown()}
+    }
     @Test fun `请求凭据按设备发送并用原始音频上传缺失回执才返回null`()=io {
         val server=MockWebServer();server.start()
         try {

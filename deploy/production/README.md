@@ -7,6 +7,8 @@
 
 ## 文件
 
+2026-10-13：修复长录音被站点 12 MiB 限制拒绝的问题，仅 `/api/v1/mobile/call-recordings/` 设置 `client_max_body_size 64m`，与录音 API 原始二进制上限一致。已备份实际站点、通过 `nginx -t` 并平滑重载；线上无正文边界探测确认 64 MiB 放行、超出 1 字节仍拒绝，其他接口限制不变。配置回归可执行 `python3 deploy/production/test_recording_nginx_limit.py`（需要本地 Nginx，不上传音频）。此配置仍须单独安装，Git 推送不会自动更新 Nginx。
+
 - `deploy.sh`：拉取 `origin/main`，构建前后端及表情素材，备份数据库、执行迁移、切换发布目录并检查健康状态；失败时回退应用版本。
 - `deploy-inputs-changed.py`：比较当前线上REVISION与目标提交的发布输入，Android/文档等无关变更直接跳过；须与deploy.sh一起安装到运行目录。
 - `stage-keyword-gifs.py`：按已入库清单从本次 Git 版本补齐成品 GIF；缺文件或 SHA 不一致时阻止发布。与 `deploy.sh` 一起安装到运行目录。

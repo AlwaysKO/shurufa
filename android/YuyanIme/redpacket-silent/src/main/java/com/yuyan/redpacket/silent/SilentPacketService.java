@@ -22,6 +22,7 @@ public final class SilentPacketService extends ISilentPacketService.Stub {
  private final SilentSession session;
  private final FrameGate frames=new FrameGate();
  private final FrameCaptureTransaction<Bitmap> captureTransaction;
+ private final WindowObservationTransaction windowObservation;
  private final ScheduledExecutorService worker=Executors.newSingleThreadScheduledExecutor();
  private final ScheduledExecutorService watchdog=Executors.newSingleThreadScheduledExecutor();
  private final HardDeadline hardDeadline=new HardDeadline(watchdog,()->Process.killProcess(Process.myPid()));
@@ -30,7 +31,18 @@ public final class SilentPacketService extends ISilentPacketService.Stub {
   if(Build.VERSION.SDK_INT<35 || Process.myUid()!=2000)throw new SecurityException("SHELL_API35_REQUIRED");
   clientUid=context.getApplicationInfo().uid;
   if(clientUid<10000)throw new SecurityException("INVALID_CLIENT");
-  this.context=context;backend=new ShellDisplay(context);session=new SilentSession(backend);
+  this.context=context;backend=new ShellDisplay(context);session=new SilentSession(backend,frames);
+  windowObservation=new WindowObservationTransaction(frames,new WindowObservationTransaction.Backend() {
+   public boolean safe(){return SilentPacketService.this.safe();}
+   public boolean notificationMode(){return session.notificationMode();}
+   public Focus verifiedFocus(){return session.verifiedFocus();}
+   public int displayId(){return session.display();}
+   public int userId(){return session.user();}
+   public int width(){return backend.width(session.display());}
+   public int height(){return backend.height(session.display());}
+   public long elapsed(){return SystemClock.elapsedRealtime();}
+   public long uptime(){return SystemClock.uptimeMillis();}
+  });
   captureTransaction=new FrameCaptureTransaction<>(frames,new FrameCaptureTransaction.Backend<Bitmap>() {
    public boolean safe(){return SilentPacketService.this.safe();}
    public Bitmap capture(){return backend.capture(session.display());}
@@ -56,12 +68,14 @@ public final class SilentPacketService extends ISilentPacketService.Stub {
    return failed;
   }
  }
- @Override public String start(int userId) {
+ @Override public String start(int userId) {return startSession(userId,false);}
+ @Override public String startForNotification(int userId){return startSession(userId,true);}
+ private String startSession(int userId,boolean notification) {
   authorize(false);hardDeadline.arm(SilentSession.DURATION_MS);
   return run(()->{
    hardDeadline.arm(SilentSession.DURATION_MS);
    if(userId<0 || !installed(userId)){session.stop("USER_UNAVAILABLE");finishCleanup();return snapshot();}
-   session.start(Process.myUid(),userId,SystemClock.elapsedRealtime());
+   session.start(Process.myUid(),userId,SystemClock.elapsedRealtime(),notification);
    if(session.running() && monitor==null)monitor=worker.scheduleWithFixedDelay(()->{
     session.verify(SystemClock.elapsedRealtime());if(!session.running())finishCleanup();
    },2,2,TimeUnit.SECONDS);
@@ -69,10 +83,22 @@ public final class SilentPacketService extends ISilentPacketService.Stub {
    return snapshot();
   },"{\"state\":\"SERVICE_UNRESPONSIVE\"}");
  }
+ @Override public Bundle observeWindow(){return run(()->{
+  WindowObservationTransaction.Ticket ticket=windowObservation.observe();
+  if(ticket==null)return null;
+  Bundle result=new Bundle();result.putLong("frameId",ticket.frameId);
+  result.putLong("capturedAtUptime",ticket.capturedAtUptime);result.putInt("displayId",ticket.displayId);
+  result.putInt("userId",ticket.userId);result.putInt("width",ticket.width);result.putInt("height",ticket.height);
+  result.putString("packetUi",ticket.packetUi);
+  return result;
+ },null);}
  @Override public String status(){return run(()->{safe();return snapshot();},"{\"state\":\"SERVICE_UNRESPONSIVE\"}");}
  private boolean safe() {
   boolean ok=session.verify(SystemClock.elapsedRealtime());
   if(!ok)finishCleanup();return ok;
+ }
+ private boolean afterAction(){
+  boolean ok=session.afterAction(SystemClock.elapsedRealtime());if(!ok)finishCleanup();return ok;
  }
  @Override public Bundle captureFrame(){return run(()->{
   FrameCaptureTransaction.Frame<Bitmap> frame=captureTransaction.capture();
@@ -91,10 +117,10 @@ public final class SilentPacketService extends ISilentPacketService.Stub {
  },null);}
  @Override public boolean tap(int x,int y,long frameId){return run(()->{
   if(!safe() || !frames.consume(frameId,x,y,SystemClock.elapsedRealtime()))return false;
-  backend.tap(session.display(),x,y);return safe();
+  backend.tap(session.display(),x,y);return afterAction();
  },false);}
  @Override public boolean back(){return run(()->{
-  if(!safe())return false;frames.invalidate();backend.back(session.display());return safe();
+  if(!safe())return false;frames.invalidate();backend.back(session.display());return afterAction();
  },false);}
  @Override public boolean launch(PendingIntent intent){return run(()->{
   if(intent==null || !SilentPolicy.pending(intent.isActivity(),intent.getCreatorPackage(),intent.getCreatorUid(),session.user()) || !safe())return false;
@@ -104,7 +130,7 @@ public final class SilentPacketService extends ISilentPacketService.Stub {
   // Sender explicitly grants its shell BAL privileges; no creator-side or primary-display fallback.
   backend.beforeAction();
   intent.send(context,0,null,null,null,null,options.toBundle());
-  return safe();
+  return afterAction();
  },false);}
  @Override public void stop(){
   authorize(false);ScheduledFuture<?> fuse=watchdog.schedule(()->Process.killProcess(Process.myPid()),3,TimeUnit.SECONDS);

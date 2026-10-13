@@ -636,6 +636,8 @@ open class ImeService : InputMethodService() {
         cancelVoiceInput()
         expressionBackCallbackController.clear()
         DataCollector.setInputActive(baseContext, false)
+        com.yuyan.imemodule.data.collect.ImageUploadRuntime.finishInput()
+        com.yuyan.imemodule.data.collect.UploadRecovery.wake(applicationContext)
         if(isSoftKeyboard) mInputView.onWindowHidden()
         super.onWindowHidden()
     }

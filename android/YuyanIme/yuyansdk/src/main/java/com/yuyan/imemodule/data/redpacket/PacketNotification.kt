@@ -9,14 +9,16 @@ internal data class PacketRequest(
     val intent: PendingIntent,
     val postedAt: Long,
     val deferredByGame: Boolean = false,
+    val targetUserId: Int = -1,
 ) {
+    // deferredByGame沿用旧字段名，包含前台身份待核验等保护暂停；原通知时间不续期。
     // 本地暂存上限；不表示微信保证红包在此期间仍可领取。
     fun isValidAt(now: Long): Boolean = now - postedAt in
         0..if (deferredByGame) 24 * 60 * 60_000L else PACKET_NOTICE_MAX_AGE
 }
 
 internal fun packetNotification(sbn: StatusBarNotification, now: Long): PacketRequest? {
-    if (android.os.Build.VERSION.SDK_INT < 28 || sbn.packageName != PACKET_WECHAT) return null
+    if (android.os.Build.VERSION.SDK_INT < 28 || sbn.packageName != PACKET_WECHAT || sbn.uid < 0) return null
     val notification = sbn.notification
     if (notification.flags and Notification.FLAG_GROUP_SUMMARY != 0) return null
     val intent = notification.contentIntent ?: return null
@@ -36,5 +38,5 @@ internal fun packetNotification(sbn: StatusBarNotification, now: Long): PacketRe
         extras.getBoolean(Notification.EXTRA_IS_GROUP_CONVERSATION) else null
     val postedAt = message?.timestamp?.takeIf { it > 0 } ?: sbn.postTime
     val notice = PacketNotice(sbn.packageName, sbn.key, title, text, postedAt, group)
-    return groupPacketCandidate(notice, now)?.let { PacketRequest(it, intent, postedAt) }
+    return groupPacketCandidate(notice, now)?.let { PacketRequest(it, intent, postedAt, targetUserId = sbn.uid / 100_000) }
 }

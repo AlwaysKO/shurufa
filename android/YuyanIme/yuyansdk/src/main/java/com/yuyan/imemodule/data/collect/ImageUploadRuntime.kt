@@ -25,6 +25,7 @@ object ImageUploadRuntime {
     private val imageCancellations = InputPriorityCancellation<Call>(Dispatchers.IO.asExecutor()) { it.cancel() }
     @Volatile private var observing = false
 
+    fun finishInput() = schedule.finishInput()
     fun isInputIdle(): Boolean = schedule.isInputIdle()
     fun fastScreenshotPermit(): () -> Boolean {
         val inputPermit = schedule.fastScreenshotPermit()

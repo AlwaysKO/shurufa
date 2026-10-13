@@ -18,6 +18,8 @@ class ImageUploadInputHookTest {
     @Test fun `hardware activity is marked before key dispatch without content`() {
         val source = File("src/main/java/com/yuyan/imemodule/service/ImeService.kt").readText()
         val method = source.substringAfter("override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {")
-        assertTrue(method.trimStart().startsWith("ImageUploadRuntime.noteKeyActivity()"))
+        val activity = method.indexOf("ImageUploadRuntime.noteKeyActivity()")
+        val dispatch = method.indexOf("if (keyCode == KeyEvent.KEYCODE_BACK)")
+        assertTrue(activity >= 0 && dispatch > activity)
     }
 }

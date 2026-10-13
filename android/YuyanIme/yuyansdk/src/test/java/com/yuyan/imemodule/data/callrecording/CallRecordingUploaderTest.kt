@@ -78,6 +78,27 @@ class CallRecordingUploaderTest {
         CallRecordingUploader(box,network,{true},{"https://example.test"},now={100000}).runOnce()
         assertTrue(box.audioFile(task.id).exists());assertEquals("failed",box.tasks().single().uploadStatus)
     }
+    @Test fun `网络超时使用固定分类而不记录异常原文`()=io {
+        for(error in listOf(java.net.SocketTimeoutException("private timeout detail"),java.io.InterruptedIOException("private call timeout detail"))) {
+            val box=box();val task=enqueue(box)
+            val network=object:CallTransport {
+                override fun receipt(task:CallTask):CallReceipt?=throw error
+                override fun upload(task:CallTask,file:File,allowed:()->Boolean):CallReceipt=throw AssertionError("must not upload")
+            }
+            CallRecordingUploader(box,network,{true},{task.metadata.destination}).runOnce()
+            assertEquals("network_timeout",box.tasks().single().lastError)
+            assertTrue(box.audioFile(task.id).exists())
+        }
+    }
+    @Test fun `任意异常文本不能伪装成可信HTTP分类`()=io {
+        val box=box();val task=enqueue(box)
+        val network=object:CallTransport {
+            override fun receipt(task:CallTask):CallReceipt?=throw IOException("call_http_413 private detail")
+            override fun upload(task:CallTask,file:File,allowed:()->Boolean):CallReceipt=throw AssertionError("must not upload")
+        }
+        CallRecordingUploader(box,network,{true},{task.metadata.destination}).runOnce()
+        assertEquals("network_error",box.tasks().single().lastError)
+    }
     @Test fun `传输期间撤权不确认不清理`()=io {
         val box=box();val task=enqueue(box);val network=Transport();var allowed=true
         network.revoke={allowed=false}

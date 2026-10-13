@@ -28,6 +28,18 @@ internal class OfflineAssociationIndex private constructor(
                 return result.copy(trailingPunctuation = hasTrailingPunctuation)
             }
         }
+        // 完整触发词优先；用户已输入部分补全时，仅续完原有 P 表达，不猜 N 句间关系。
+        for (length in tail.length downTo MIN_LOOKUP_LENGTH + 1) {
+            val suffix = tail.takeLast(length)
+            for (prefixLength in length - 1 downTo MIN_LOOKUP_LENGTH) {
+                val index = keys.binarySearch(suffix.take(prefixLength))
+                if (index < 0) continue
+                val entered = suffix.drop(prefixLength)
+                val remaining = values[index].partial.filter { it.startsWith(entered) }
+                    .map { it.drop(entered.length) }.filter { it.isNotBlank() }.distinct()
+                if (remaining.isNotEmpty()) return OfflineAssociationQuery(remaining, emptyList(), hasTrailingPunctuation)
+            }
+        }
         return OfflineAssociationQuery.EMPTY
     }
 

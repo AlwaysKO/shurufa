@@ -9,9 +9,10 @@ internal fun silentPacketUserAction(eventType: Int): Boolean =
         eventType == AccessibilityEvent.TYPE_VIEW_SCROLLED
 
 internal fun silentPacketEligible(mode: String, selectedUser: Int, noticeUser: Int,
-    groups: Set<String>, packet: PacketCandidate): Boolean =
-    mode in setOf("AUTO", "PROBE") && selectedUser >= 0 && selectedUser == noticeUser &&
-        packet.chatName in groups
+    groups: Set<String>, packet: PacketCandidate, autoUser: Boolean = false, autoGroups: Boolean = false): Boolean =
+    mode in setOf("AUTO", "PROBE") && noticeUser >= 0 &&
+        (autoUser || selectedUser >= 0 && selectedUser == noticeUser) && packet.chatName.isNotBlank() &&
+        (autoGroups || packet.chatName in groups)
 
 /** 点击红包卡片前落盘，结果未知也不自动重放；只保存散列ID与时间。 */
 internal class SilentPacketLedger(saved: String, private val save: (String) -> Boolean) {

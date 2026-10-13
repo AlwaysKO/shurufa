@@ -36,6 +36,8 @@ internal data class PacketPage(
     val chatName: String? = null, val groupChat: Boolean = false, val cards: List<String> = emptyList(),
     val packetPanel: Boolean = false, val openButton: String? = null, val result: String? = null,
     val chatInfoButton: String? = null, val verifiedGroupDetails: Boolean = false,
+    val groupDetailsName: String? = null, val groupDetailsMemberCount: Int? = null,
+    val uniqueChatToolbar: Boolean = false,
 )
 internal sealed interface PacketAction {
     data object Wait : PacketAction
@@ -46,26 +48,44 @@ internal sealed interface PacketAction {
 }
 
 /** 先确认群资料，再返回原会话；一次任务最多点一次卡片和一次拆开。 */
-internal class PacketFlow(val candidate: PacketCandidate, private val startedAt: Long) {
+internal class PacketFlow(val candidate: PacketCandidate, private val startedAt: Long,
+                          private val allowDetailsFallback: Boolean = false) {
     private var stage = 0
     private var resultDeadline = startedAt + PACKET_TIMEOUT
+    private var fallbackHeader: String? = null
+    private var restoredChat = false
+    val usesDetailsFallback: Boolean get() = fallbackHeader != null
+    fun beginDetailsFallback(rawHeader: String): Boolean {
+        if (!allowDetailsFallback || stage != 0 || usesDetailsFallback || rawHeader.isBlank() ||
+            rawHeader == candidate.chatName) return false
+        fallbackHeader = rawHeader
+        return true
+    }
+    fun restoreVerifiedChat(): Boolean {
+        if (!usesDetailsFallback || stage != 2 || restoredChat) return false
+        restoredChat = true
+        return true
+    }
     fun canClick(now: Long): Boolean = stage != 5 && now - startedAt in 0 until PACKET_TIMEOUT
     fun step(page: PacketPage, now: Long): PacketAction {
         if (stage == 5 || now < startedAt || now >= resultDeadline) return PacketAction.Stop
-        if (page.chatName != null && page.chatName != candidate.chatName) return PacketAction.Stop
+        if (page.chatName != null && page.chatName != (fallbackHeader ?: candidate.chatName)) return PacketAction.Stop
         if (stage == 0) {
             if (page.chatName == null) return PacketAction.Wait
-            if (!page.groupChat && !candidate.confirmedGroup) return PacketAction.Stop
+            if (!usesDetailsFallback && !page.groupChat && !candidate.confirmedGroup) return PacketAction.Stop
             val info = page.chatInfoButton ?: return PacketAction.Wait
             stage = 1
             return PacketAction.Click(info)
         }
         if (stage == 1) {
             if (!page.verifiedGroupDetails) return PacketAction.Wait
+            if (usesDetailsFallback && (page.groupDetailsName != candidate.chatName ||
+                    (page.groupDetailsMemberCount ?: 0) < 2)) return PacketAction.Stop
             stage = 2
             return PacketAction.Back
         }
         if (stage == 2) {
+            if (usesDetailsFallback && !restoredChat) return PacketAction.Wait
             if (page.chatName == null) return PacketAction.Wait
             val card = page.cards.lastOrNull() ?: return PacketAction.Wait
             stage = 3

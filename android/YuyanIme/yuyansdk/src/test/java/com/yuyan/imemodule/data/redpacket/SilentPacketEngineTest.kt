@@ -37,6 +37,8 @@ class SilentPacketEngineTest {
         var repeatId = false
         var switchDisplay = false
         var readDelay = 0L
+        val readDelays = ArrayDeque<Long>()
+        var sourceFacts: SilentPacketSourceFacts? = null
         var transientNull = false
         var safe = true
         var failTap = false
@@ -58,11 +60,11 @@ class SilentPacketEngineTest {
         override fun tap(x: Int, y: Int, frameId: Long): Boolean { taps += frameId; return !failTap }
         override fun back(): Boolean { backs++; return true }
         val runner get() = SilentPacketRunner(read = { frame ->
-            now += readDelay
+            now += if (readDelays.isEmpty()) readDelay else readDelays.removeFirst()
             val match = matches.remove(frame.bitmap)!!
             frame.bitmap.recycle()
             PacketVisualSnapshot(match, frame.displayId, IntRect(0, 0, 100, 200), 0, 0, frame.capturedAt,
-                match.targets.mapValues { "same" })
+                match.targets.mapValues { "same" }, sourceFacts)
         }, clock = { now }, wallClock = { 1000L }, pause = { now += it })
         suspend fun run(mode: SilentPacketMode = SilentPacketMode.AUTO) = runner.run(request(), this, { safe }, mode)
     }
@@ -80,7 +82,7 @@ class SilentPacketEngineTest {
         assertEquals(1, session.backs)
     }
     @Test fun wrongConversationNeverClicksEvenWithConfirmedNotification() = runBlocking {
-        val session = Session(listOf(chat("其他群")))
+        val session = Session(listOf(chat("其他群"), chat("其他群")))
         assertEquals("mismatch", session.runner.run(request(true), session, { true }, SilentPacketMode.AUTO))
         assertTrue(session.taps.isEmpty())
     }
@@ -173,7 +175,7 @@ class SilentPacketEngineTest {
 
     @Test fun diagnosticsSeparateMissingCaptureFromSlowRecognitionWithoutRelaxingTtl() = runBlocking {
         for (slow in listOf(false, true)) {
-            val session = Session(if (slow) listOf(chat()) else emptyList())
+            val session = Session(if (slow) List(3) { chat() } else emptyList())
             if (slow) session.readDelay = 1_001
             val traces = mutableListOf<Triple<SilentPacketEngineStage, SilentPacketEngineEvent, Long>>()
             assertEquals("unknown", session.runner.run(request(), session, { true }, SilentPacketMode.AUTO,
@@ -181,7 +183,7 @@ class SilentPacketEngineTest {
             if (slow) {
                 assertTrue(traces.any { it.first == SilentPacketEngineStage.OCR && it.second == SilentPacketEngineEvent.COMPLETED })
                 assertEquals(SilentPacketEngineEvent.FRAME_STALE, traces.last().second)
-                assertEquals(1_001L, traces.last().third)
+                assertTrue(traces.last().third >= 3_003L)
             } else {
                 assertEquals(SilentPacketEngineStage.CAPTURE, traces.lastOrNull()?.first)
                 assertEquals(SilentPacketEngineEvent.CAPTURE_UNAVAILABLE, traces.lastOrNull()?.second)
@@ -193,7 +195,7 @@ class SilentPacketEngineTest {
 
     @Test fun diagnosticsIdentifyGroupMismatchAndFailedInfoClick() = runBlocking {
         for (mismatch in listOf(true, false)) {
-            val session = Session(if (mismatch) listOf(chat("其他群")) else listOf(chat(), chat()))
+            val session = Session(if (mismatch) listOf(chat("其他群"), chat("其他群")) else listOf(chat(), chat()))
             session.failTap = !mismatch
             val traces = mutableListOf<Pair<SilentPacketEngineStage, SilentPacketEngineEvent>>()
             assertEquals(if (mismatch) "mismatch" else "unknown",
@@ -221,5 +223,157 @@ class SilentPacketEngineTest {
                 traces.lastOrNull()?.second)
             assertTrue(session.taps.isEmpty())
         }
+    }
+    private suspend fun assertWaitingReason(pages: List<PacketVisualMatch>, expected: SilentPacketEngineEvent,
+        stage: SilentPacketEngineStage = SilentPacketEngineStage.GROUP_CHECK, expectedTaps: Int = 0,
+        facts: SilentPacketSourceFacts? = null) {
+        val session = Session(pages)
+        session.sourceFacts = facts
+        val traces = mutableListOf<Pair<SilentPacketEngineStage, SilentPacketEngineEvent>>()
+        assertEquals("unknown", session.runner.run(request(), session, { true }, SilentPacketMode.AUTO,
+            onTrace = { phase, event, _ -> traces += phase to event }))
+        assertEquals("same wait reason must not be logged for every frame", 1, traces.count { it == (stage to expected) })
+        assertEquals(expectedTaps, session.taps.size)
+        assertTrue(traces.none { it.second == SilentPacketEngineEvent.WAIT_GROUP_DETAILS } || expectedTaps > 0)
+    }
+
+    @Test fun missingChatTitleHasOneFixedWaitingReasonWithoutInteraction() = runBlocking {
+        assertWaitingReason(List(8) { PacketVisualMatch(PacketPage(), emptyMap()) }, SilentPacketEngineEvent.WAIT_CHAT_TITLE)
+    }
+    @Test fun titleCandidateWithoutGroupOrMenuHasDistinctFixedReason() = runBlocking {
+        assertWaitingReason(List(8) { PacketVisualMatch(PacketPage(), emptyMap()) },
+            SilentPacketEngineEvent.WAIT_TITLE_UNVERIFIED, facts = SilentPacketSourceFacts(1, 0, 0, false, 0))
+    }
+    @Test fun verifiedChatWithoutInfoTargetWaitsWithoutClicking() = runBlocking {
+        assertWaitingReason(List(8) { PacketVisualMatch(PacketPage(chatName = "测试群", groupChat = true), emptyMap()) },
+            SilentPacketEngineEvent.WAIT_INFO_TARGET)
+    }
+    @Test fun afterInfoClickUnknownPageReportsMissingGroupDetailsRatherThanTitle() = runBlocking {
+        assertWaitingReason(listOf(chat(), chat()) + List(8) { PacketVisualMatch(PacketPage(), emptyMap()) },
+            SilentPacketEngineEvent.WAIT_GROUP_DETAILS, expectedTaps = 1)
+    }
+    @Test fun verifiedGroupReturnedToChatWithoutCardsReportsCardWait() = runBlocking {
+        val emptyChat = PacketVisualMatch(PacketPage(chatName = "测试群", groupChat = true), emptyMap())
+        assertWaitingReason(listOf(chat(), chat(), details(), details()) + List(8) { emptyChat },
+            SilentPacketEngineEvent.WAIT_CARD, SilentPacketEngineStage.CARD_CLICK, 1)
+    }
+    @Test fun afterCardClickMissingPanelReportsPanelWaitWithoutReplay() = runBlocking {
+        assertWaitingReason(listOf(chat(), chat(), details(), details(), chat(), chat()) +
+            List(8) { PacketVisualMatch(PacketPage(), emptyMap()) },
+            SilentPacketEngineEvent.WAIT_OPEN_PANEL, SilentPacketEngineStage.OPEN_CLICK, 2)
+    }
+    @Test fun panelWithoutOpenTargetHasDistinctWaitReason() = runBlocking {
+        assertWaitingReason(listOf(chat(), chat(), details(), details(), chat(), chat()) +
+            List(8) { PacketVisualMatch(PacketPage(packetPanel = true), emptyMap()) },
+            SilentPacketEngineEvent.WAIT_OPEN_TARGET, SilentPacketEngineStage.OPEN_CLICK, 2)
+    }
+    @Test fun submittedOpenWaitsForResultAndNeverRepeatsOpen() = runBlocking {
+        assertWaitingReason(listOf(chat(), chat(), details(), details(), chat(), chat(), panel(), panel()) + List(8) { panel() },
+            SilentPacketEngineEvent.WAIT_RESULT, SilentPacketEngineStage.RESULT_CHECK, 3)
+    }
+
+    @Test fun validAutoFramesPublishPrimitiveFactsWithoutChatNameOrTargetIdentifiers() = runBlocking {
+        val session = Session(listOf(chat()))
+        session.sourceFacts = SilentPacketSourceFacts(1, 1, 1, false, 2)
+        val pages = mutableListOf<SilentPacketReadDiagnostic>()
+        assertEquals("unknown", session.runner.run(request(), session, { true }, SilentPacketMode.AUTO,
+            onPageFacts = { pages += it }))
+        assertEquals(1, pages.size)
+        assertEquals(SilentPacketReadResult.VALID, pages.single().result)
+        assertEquals(SilentPacketPageFacts(true, true, true, false, false, 1), pages.single().facts)
+        assertEquals(session.sourceFacts, pages.single().sourceFacts)
+        assertFalse(pages.single().renderFacts().contains("测试群"))
+        assertFalse(pages.single().renderFacts().contains("visual:"))
+    }
+    @Test fun staleOrProtectedFramesNeverPublishPageFacts() = runBlocking {
+        for (kind in listOf("capture_stale", "ocr_stale", "protected")) {
+            val session = Session(listOf(chat()))
+            session.stale = kind == "capture_stale"
+            session.readDelay = if (kind == "ocr_stale") 2000 else 0
+            session.safe = kind != "protected"
+            val pages = mutableListOf<SilentPacketReadDiagnostic>()
+            session.runner.run(request(), session, { session.safe }, SilentPacketMode.AUTO, onPageFacts = { pages += it })
+            assertTrue(pages.isEmpty()); assertTrue(session.taps.isEmpty())
+        }
+    }
+    @Test fun pageObserverFailureCannotChangeSuccessfulDecisionOrReplayActions() = runBlocking {
+        val session = Session(listOf(chat(), chat(), details(), details(), chat(), chat(), panel(), panel(), result(), result()))
+        var observed = 0
+        assertEquals("claimed", session.runner.run(request(), session, { true }, SilentPacketMode.AUTO,
+            onPageFacts = { observed++; throw IllegalStateException("private observer failure") }))
+        assertEquals(10, observed); assertEquals(3, session.taps.size); assertEquals(1, session.backs)
+    }
+    @Test fun lateWrongTitleReportsMismatchInsteadOfUnverifiedGroupWithoutClicking() = runBlocking {
+        val session = Session(listOf(PacketVisualMatch(PacketPage(), emptyMap()), chat("其他群"), chat("其他群")))
+        val traces = mutableListOf<SilentPacketEngineEvent>()
+        val pages = mutableListOf<SilentPacketReadDiagnostic>()
+        assertEquals("mismatch", session.runner.run(request(), session, { true }, SilentPacketMode.AUTO,
+            onPageFacts = { pages += it }, onTrace = { _, event, _ -> traces += event }))
+        assertTrue(traces.contains(SilentPacketEngineEvent.GROUP_MISMATCH))
+        assertFalse(traces.contains(SilentPacketEngineEvent.GROUP_UNVERIFIED))
+        assertFalse(pages.last().groupComparison?.exactEqual ?: true)
+        assertEquals(3, pages.last().groupComparison?.observedCharacterCount)
+        assertTrue(session.taps.isEmpty()); assertEquals(0, session.backs)
+    }
+    @Test fun normalizationOnlyMatchStillCannotAuthorizeInfoOrPacketClick() = runBlocking {
+        val session = Session(listOf(PacketVisualMatch(PacketPage(), emptyMap()), chat("测 试群"), chat("测 试群")))
+        val pages = mutableListOf<SilentPacketReadDiagnostic>()
+        assertEquals("mismatch", session.runner.run(request(), session, { true }, SilentPacketMode.AUTO,
+            onPageFacts = { pages += it }))
+        assertTrue(pages.last().groupComparison?.whitespaceEqual == true)
+        assertTrue(pages.last().groupComparison?.normalizedEqual == true)
+        assertFalse(pages.last().groupComparison?.exactEqual ?: true)
+        assertTrue(session.taps.isEmpty()); assertEquals(0, session.backs)
+    }
+    @Test fun isolatedWrongOcrBeforeInfoCanRecoverOnlyWithExactDoubleFrameConfirmation() = runBlocking {
+        val session = Session(listOf(chat("误识别群"), chat(), chat(), details(), details(), chat(), chat(), panel(), panel(), result(), result()))
+        assertEquals("claimed", session.run())
+        assertEquals(listOf(3L, 7L, 9L), session.taps); assertEquals(1, session.backs)
+    }
+    @Test fun twoFreshStableWrongTitlesStopWithoutAnyAction() = runBlocking {
+        val session = Session(listOf(chat("错误群"), chat("错误群"), chat(), chat()))
+        assertEquals("mismatch", session.run())
+        assertEquals(2, session.captures); assertTrue(session.taps.isEmpty()); assertEquals(0, session.backs)
+    }
+    @Test fun changingWrongTitlesWaitOnlyUntilOriginalDeadlineAndNeverClick() = runBlocking {
+        val session = Session(List(40) { chat(if (it % 2 == 0) "错误甲" else "错误乙") })
+        val traces = mutableListOf<SilentPacketEngineEvent>()
+        assertEquals("unknown", session.runner.run(request(), session, { true }, SilentPacketMode.AUTO,
+            onTrace = { _, event, _ -> traces += event }))
+        assertEquals(SilentPacketEngineEvent.TIMEOUT, traces.last())
+        assertTrue(session.now >= 13_000); assertTrue(session.captures < 40)
+        assertTrue(session.taps.isEmpty()); assertEquals(0, session.backs)
+    }
+    @Test fun wrongTitleAfterInfoStillStopsOnFirstFrameWithoutRetry() = runBlocking {
+        val session = Session(listOf(chat(), chat(), chat("错误群"), details(), details()))
+        assertEquals("unknown", session.run())
+        assertEquals(3, session.captures); assertEquals(1, session.taps.size); assertEquals(0, session.backs)
+    }
+    @Test fun initialOcrStaleIsDiscardedBeforeActionsAndNextFreshFrameCanRecover() = runBlocking {
+        val session = Session(listOf(chat(), chat(), chat(), details(), details(), chat(), chat(), panel(), panel(), result(), result()))
+        session.readDelays.addLast(1600)
+        val pages = mutableListOf<SilentPacketReadDiagnostic>()
+        assertEquals("claimed", session.runner.run(request(), session, { true }, SilentPacketMode.AUTO,
+            onPageFacts = { pages += it }))
+        assertEquals(10, pages.size); assertTrue(pages.all { it.frameAgeMs <= 1000 })
+        assertEquals(listOf(3L, 7L, 9L), session.taps); assertEquals(1, session.backs)
+    }
+    @Test fun continuouslySlowOcrHasTwoDiscardRetriesAndCannotReachAnyAction() = runBlocking {
+        val session = Session(List(10) { chat() }); session.readDelay = 1600
+        val pages = mutableListOf<SilentPacketReadDiagnostic>()
+        assertEquals("unknown", session.runner.run(request(), session, { true }, SilentPacketMode.AUTO,
+            onPageFacts = { pages += it }))
+        assertEquals(3, session.captures); assertTrue(pages.isEmpty()); assertTrue(session.taps.isEmpty())
+    }
+    @Test fun ocrStaleAfterInfoDoesNotRetryOrReplaySubmittedAction() = runBlocking {
+        val session = Session(listOf(chat(), chat(), details(), details(), chat()))
+        session.readDelays.addAll(listOf(0L, 0L, 1600L))
+        assertEquals("unknown", session.run())
+        assertEquals(3, session.captures); assertEquals(1, session.taps.size); assertEquals(0, session.backs)
+    }
+    @Test fun wrongInfoConfirmationBeforeAnyTapNeedsNewExactDoubleFramesToRecover() = runBlocking {
+        val session = Session(listOf(chat(), chat("误识别群"), chat(), chat(), details(), details(), chat(), chat(), panel(), panel(), result(), result()))
+        assertEquals("claimed", session.run())
+        assertEquals(listOf(4L, 8L, 10L), session.taps); assertEquals(1, session.backs)
     }
 }

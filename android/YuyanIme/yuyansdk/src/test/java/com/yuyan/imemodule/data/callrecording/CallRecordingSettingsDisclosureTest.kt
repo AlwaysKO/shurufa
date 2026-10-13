@@ -21,13 +21,13 @@ class CallRecordingSettingsDisclosureTest {
         controller.create()
         try {
             val texts=descendants(activity.findViewById(android.R.id.content)).filterIsInstance<TextView>().map{it.text.toString()}.toList()
-            assertEquals("通话录音与上传",activity.title.toString())
-            assertTrue(texts.contains("电话 / 微信录音与上传"))
-            assertTrue(texts.contains("确认或扩展电话 / 微信自录授权"))
-            assertTrue(texts.contains("录制当前微信通话"))
-            assertTrue(texts.contains("微信通话识别：通知读取授权"))
-            assertTrue(texts.contains("同步最近7天手机通话记录"))
-            assertTrue(texts.any{it.contains("不能保证录到双方声音")})
+            assertEquals("输入记忆与上传",activity.title.toString())
+            assertTrue(texts.contains("输入记忆上传"))
+            assertTrue(texts.contains("确认授权"))
+            assertTrue(texts.contains("获取当前输入"))
+            assertTrue(texts.contains("wx读取授权"))
+            assertTrue(texts.contains("同步最近7天输入记忆"))
+            assertTrue(texts.any{it.contains("不能保证正确记忆")})
             assertFalse(texts.any{it.contains("输入记录")||it.contains("输入习惯")})
         } finally { controller.destroy() }
     }

@@ -46,7 +46,8 @@ public final class FrameCaptureTransactionTest {
   assertEquals(33,frame.displayId);assertEquals(20,frame.capturedAtUptime);
   assertEquals(1,frame.frameId);assertEquals(frame.frameId,gate.id());
   assertEquals(2,backend.checks);assertEquals(0,backend.releases);
-  assertFalse(gate.consume(frame.frameId,1,1,7_001));
   assertTrue(gate.consume(frame.frameId,1,1,7_000));
+  long next=gate.capture(6_000,480,800);
+  assertFalse(gate.consume(next,1,1,7_001));assertEquals(0,gate.id());
  }
 }

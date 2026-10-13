@@ -76,7 +76,7 @@ internal class SilentPacketReader(private val recognize: (suspend (Bitmap) -> Li
                 "${match.page.chatName}|$words"
             }
             return PacketVisualSnapshot(match, frame.displayId, IntRect(0, 0, bitmap.width, bitmap.height),
-                0, 0, frame.capturedAt, signatures)
+                0, 0, frame.capturedAt, signatures, silentPacketSourceFacts(framePixels))
         } finally { if (!bitmap.isRecycled) bitmap.recycle() }
     }
 

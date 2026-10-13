@@ -105,13 +105,36 @@ private fun toolbarDots(pixels: IntArray, width: Int, height: Int, lines: List<P
         val regionWidth = right - left
         val regionHeight = bottom - top
         if (regionWidth <= 0 || regionHeight <= 0) return@mapNotNull null
+        // Background dominates this small toolbar strip; choose one foreground polarity so the
+        // background itself cannot become a candidate when supporting dark-theme light icons.
+        val brightness = IntArray(256)
+        var opaque = 0
+        for (y in top until bottom) for (x in left until right) {
+            val pixel = pixels[y * width + x]
+            if (pixel ushr 24 >= 220) {
+                brightness[max(pixel shr 16 and 255, max(pixel shr 8 and 255, pixel and 255))]++
+                opaque++
+            }
+        }
+        if (opaque == 0) return@mapNotNull null
+        var background = 0
+        var cumulative = 0
+        while (background < 255) {
+            cumulative += brightness[background]
+            if (cumulative >= (opaque + 1) / 2) break
+            background++
+        }
         val mask = ByteArray(regionWidth * regionHeight)
         for (y in 0 until regionHeight) for (x in 0 until regionWidth) {
             val pixel = pixels[(y + top) * width + x + left]
             val r = pixel shr 16 and 255
             val g = pixel shr 8 and 255
             val b = pixel and 255
-            if (pixel ushr 24 >= 220 && max(r, max(g, b)) <= 115 && max(r, max(g, b)) - min(r, min(g, b)) <= 40)
+            val light = max(r, max(g, b))
+            val dark = min(r, min(g, b))
+            val contrasted = if (background >= 128) light <= 115 && background - light >= 90
+                else dark >= 140 && dark - background >= 90
+            if (pixel ushr 24 >= 220 && contrasted && light - dark <= 40)
                 mask[y * regionWidth + x] = 1
         }
         val dots = pixelComponents(mask, regionWidth, regionHeight, minimumPixels = 3).filter { part ->

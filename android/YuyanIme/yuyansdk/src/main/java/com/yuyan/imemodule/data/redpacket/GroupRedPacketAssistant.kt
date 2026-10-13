@@ -32,7 +32,6 @@ internal object GroupRedPacketAssistant {
     /** Monitor与操作入口均在主线程；保护先关闭，旧读取只能释放自身资源。 */
     fun protectForeground(protected: Boolean) {
         if (gameProtected == protected) return
-        if (Build.VERSION.SDK_INT >= 35) SilentPacketRuntime.protectForeground(protected)
         if (protected) {
             gameProtected = true
             val deferred = queued.toMutableList()

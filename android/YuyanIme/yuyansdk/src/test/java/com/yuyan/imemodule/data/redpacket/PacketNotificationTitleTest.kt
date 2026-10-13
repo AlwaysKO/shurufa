@@ -18,16 +18,15 @@ import org.robolectric.annotation.Config
 class PacketNotificationTitleTest {
     private val context = ApplicationProvider.getApplicationContext<Context>()
     private fun parse(conversation: String, title: String = "我自己的", group: Boolean? = null,
-                      text: String = "成员: [微信红包]恭喜发财"): PacketRequest? {
+                      text: String = "成员: [微信红包]恭喜发财", uid: Int = 128 * 100_000 + 10001): PacketRequest? {
         val notification = Notification.Builder(context, "chat")
             .setContentTitle(title).setContentText(text)
             .setContentIntent(PendingIntent.getActivity(context, 0, Intent("packet-title-test"), PendingIntent.FLAG_IMMUTABLE))
             .build()
         notification.extras.putCharSequence(Notification.EXTRA_CONVERSATION_TITLE, conversation)
         group?.let { notification.extras.putBoolean(Notification.EXTRA_IS_GROUP_CONVERSATION, it) }
-        val uid = 128 * 100_000 + 10001
         val sbn = StatusBarNotification("com.tencent.mm", "com.tencent.mm", 1, null, uid, 0, 0,
-            notification, UserHandle.getUserHandleForUid(uid), 1000)
+            notification, UserHandle.getUserHandleForUid(uid.coerceAtLeast(0)), 1000)
         return packetNotification(sbn, 1100)
     }
     @Test fun emptyConversationTitleFallsBackToValidTitle() {
@@ -46,5 +45,17 @@ class PacketNotificationTitleTest {
     @Test fun titleFallbackDoesNotRelaxGroupOrTextPolicy() {
         assertNull(parse(" ", group = false))
         assertNull(parse(" ", text = "成员: 普通文字"))
+    }
+
+    @Test fun requestPreservesRealNotificationUserAcrossDeferredCopy() {
+        for (user in listOf(0, 128)) {
+            val request = parse("测试群", uid = user * 100_000 + 10001)!!
+            assertEquals(user, request.targetUserId)
+            assertEquals(user, request.copy(deferredByGame = true).targetUserId)
+        }
+    }
+
+    @Test fun negativeNotificationUidCannotBecomePrimaryUserByIntegerDivision() {
+        assertNull(parse("测试群", uid = -1))
     }
 }

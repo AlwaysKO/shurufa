@@ -180,6 +180,28 @@ object AppUsageTracker {
         val j=JSONObject(body); j.optBoolean("ok") && !j.optBoolean("discarded") && j.optInt("received",-1)==received
     } catch (_: Exception) { false }
 
+    /** Keep a pending batch's existing cadence when the screen-off job runs before it is due. */
+    suspend fun nextUploadDelay(context: Context): Long? = withContext(Dispatchers.IO) {
+        fun allowed() = enabled(context) && hasPermission(context) &&
+            com.yuyan.imemodule.data.collect.ImageUploadRuntime.isBackgroundWorkAllowed() &&
+            com.yuyan.imemodule.data.collect.ImageUploadRuntime.hasValidatedNetwork(context)
+        // Do not inspect storage or poll while input/game work owns the device.
+        if (!allowed()) return@withContext null
+        syncMutex.withLock {
+            if (!allowed()) return@withLock null
+            ServerConfig.init(context)
+            val gate=collectorTargetGate(context,ServerConfig.baseUrl)
+            val homePackages=usageHomePackages(context)
+            val pending=UsageStore(context).use { store ->
+                store.targets().any { target ->
+                    allowed() && gate.canUpload(target) && store.pending(target).any { shouldReportUsage(it,homePackages) }
+                }
+            }
+            if (!pending || !allowed()) return@withLock null
+            syncCadence.wakeDelay(com.yuyan.imemodule.data.collect.ImageUploadRuntime.hasValidatedWifi(context)).coerceAtLeast(30_000L)
+        }
+    }
+
     suspend fun sync(context: Context, userInitiated: Boolean = false) = withContext(Dispatchers.IO) {
         syncMutex.withLock {
             appContext=context.applicationContext

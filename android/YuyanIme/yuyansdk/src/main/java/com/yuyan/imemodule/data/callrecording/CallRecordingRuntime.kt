@@ -21,18 +21,34 @@ internal object CallRecordingRuntime {
         // 恢复待传只使用系统 Job，不从 BOOT/后台拉起麦克风服务。
         if(consent(context).wantsUpload)CallRecordingJobService.schedule(context)else CallRecordingJobService.cancel(context)
     }
-    fun runUploads(context:Context,stillRunning:()->Boolean):Boolean {
+    fun runUploads(context:Context,stillRunning:()->Boolean):Boolean = runUploadsWithRetry(context,stillRunning)!=null
+
+    fun runUploadsWithRetry(context:Context,stillRunning:()->Boolean):Long? {
         val app=context.applicationContext
-        if(!stillRunning()||!ImageUploadRuntime.isBackgroundWorkAllowed())return false
+        if(!stillRunning())return null
         ServerConfig.init(app)
         val id=DataCollector.deviceId(app);val consent=consent(app)
-        val allowed={stillRunning()&&CallRecordingService.activeId==null&&CollectionConsent.enabled(app)&&ImageUploadRuntime.isBackgroundWorkAllowed()&&consent.uploadAllowed(id,ServerConfig.baseUrl)}
-        if(!allowed())return false
-        sessions(app).recover(allowed,CallRecordingService.activeId)
+        val authorized={stillRunning()&&CollectionConsent.enabled(app)&&consent.uploadAllowed(id,ServerConfig.baseUrl)}
+        if(!authorized()||CallRecordingService.activeId!=null)return null
         val box=outbox(app)
+        fun pending()=box.tasks().filter{it.deviceId==id && it.metadata.destination==ServerConfig.baseUrl &&
+            it.cleanupStatus!="deleted" && it.uploadStatus !in listOf("saved","superseded") && (it.source==null || it.metadata.recording_ended_at>=System.currentTimeMillis()-7*86_400_000L)}
+        if(!ImageUploadRuntime.isBackgroundWorkAllowed()) {
+            val hasWork=pending().isNotEmpty() || sessions(app).pendingCount()>0 || (preferences(app).getBoolean("system_change_pending",false) && SystemRecordingMediaStore(app).readable())
+            if(CallRecordingWifi.network(app)==null || !hasWork)return null
+            val count=preferences(app).getInt("upload_deferred_count",0).coerceIn(0,6)
+            preferences(app).edit().putInt("upload_deferred_count",(count+1).coerceAtMost(6)).apply()
+            // 已知待办短暂避让后重试；长期游戏逐步回到30分钟兜底，不空转。
+            return (35_000L*(1L shl count)).takeIf{it<30*60*1000L}
+        }
+        val allowed={authorized()&&CallRecordingService.activeId==null&&ImageUploadRuntime.isBackgroundWorkAllowed()}
+        preferences(app).edit().remove("upload_deferred_count").apply()
+        sessions(app).recover(allowed,CallRecordingService.activeId)
         var retrySoon=false
         // 周期与即时 Job 共享批次锁；不让两个扫描器为同一原件创建两个任务。
         box.uploadBatch {
+            // 先消费本次事件；扫描期间再次收到变更时，新标记与唤醒仍保留。
+            preferences(app).edit().remove("system_change_pending").apply()
             val documents=SystemRecordingSources(app)
             val importer=SystemRecordingImporter(File(root(app),"system_index"),box)
             val scanned=mutableMapOf<String,Boolean>()
@@ -69,7 +85,9 @@ internal object CallRecordingRuntime {
             if(box.tasks().any{it.source==null && it.cleanupStatus!="deleted" &&
                 !systemRecordingUploadReady(it,documents.configured(it.metadata.platform),scanned[it.metadata.platform]==true,System.currentTimeMillis())})retrySoon=true
         }
-        return retrySoon
+        if(!authorized() || CallRecordingWifi.network(app)==null)return null
+        val next=pending().minOfOrNull{(it.nextAttemptAt-System.currentTimeMillis()).coerceAtLeast(35_000L)}
+        return if(retrySoon)minOf(next?:35_000L,35_000L)else next
     }
 }
 class CallRecordingRecoveryReceiver:BroadcastReceiver() {

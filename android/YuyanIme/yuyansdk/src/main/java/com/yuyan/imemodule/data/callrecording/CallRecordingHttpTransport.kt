@@ -15,6 +15,9 @@ import java.io.IOException
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
+/** 只携带协议状态码，不能把服务器正文或网络异常原文写入持久诊断。 */
+internal class CallRecordingHttpFailure(val statusCode:Int):IOException("call_http_$statusCode")
+
 /** 默认严格 HTTPS，禁重定向，逐块避让输入/撤权，阻塞网络也定时取消。不记录音频、身份或令牌。 */
 internal class CallRecordingHttpTransport(
     private val credential:(CallTask)->String?,
@@ -67,7 +70,7 @@ internal class CallRecordingHttpTransport(
                 if(!permitted())throw IOException("transfer_paused")
                 if(body==null && response.code==404 && !path.startsWith("by-content?"))return null
                 val contentMissing=body==null && response.code==404 && path.startsWith("by-content?")
-                if(response.code!=200 && !contentMissing)throw IOException("call_http_${response.code}")
+                if(response.code!=200 && !contentMissing)throw CallRecordingHttpFailure(response.code)
                 val responseBody=response.body ?: throw IOException("missing_receipt")
                 if(responseBody.contentLength()>16384)throw IOException("receipt_too_large")
                 val bytes=responseBody.byteStream().use{input->

@@ -13,13 +13,19 @@ internal class T9CommitTracker {
     private var pending: T9CommitSelection? = null
     private var segments: T9CommitSelection? = null
 
-    fun selected(code: String, text: String, pinyin: String = "", diagnostic: CandidateCommitDiagnostic? = null) {
+    @JvmOverloads
+    fun selected(code: String, text: String, pinyin: String = "", diagnostic: CandidateCommitDiagnostic? = null,
+                 matchKind: InputMatchKind? = null) {
         clear()
+        if (matchKind == InputMatchKind.TYPO_CORRECTION) return
         pending = code.takeIf { it.isNotEmpty() }?.let { T9CommitSelection(it, text, pinyin,
             diagnostics = listOfNotNull(diagnostic), diagnosticSelectionCount = if (diagnostic == null) 0 else 1) }
     }
 
-    fun segment(code: String, text: String, pinyin: String, committed: String?, diagnostic: CandidateCommitDiagnostic? = null) {
+    @JvmOverloads
+    fun segment(code: String, text: String, pinyin: String, committed: String?, diagnostic: CandidateCommitDiagnostic? = null,
+                matchKind: InputMatchKind? = null) {
+        if (matchKind == InputMatchKind.TYPO_CORRECTION) { clear(); return }
         pending = null
         if (segments == null && code.isNotEmpty()) segments = T9CommitSelection(code, "")
         if (code.isNotEmpty() && segments?.code != code) {

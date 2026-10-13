@@ -19,6 +19,7 @@ import androidx.preference.PreferenceManager
 import androidx.test.core.app.ApplicationProvider
 import com.yuyan.imemodule.data.collect.CollectionConsent
 import com.yuyan.imemodule.data.collect.DataCollector
+import com.yuyan.imemodule.data.collect.GameWorkRuntime
 import com.yuyan.imemodule.data.collect.ImageUploadRuntime
 import com.yuyan.imemodule.data.collect.ServerConfig
 import okhttp3.Call
@@ -56,7 +57,9 @@ class CallRecordingWifiPolicyTest {
         PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean(CollectionConsent.KEY,true).commit()
         ServerConfig.init(context)
         io{CallRecordingRuntime.consent(context).grant(DataCollector.deviceId(context),ServerConfig.baseUrl,false,true)}
-        ImageUploadRuntime.noteKeyActivity();ShadowSystemClock.advanceBy(Duration.ofSeconds(4))
+        // Robolectric resets elapsedRealtime between tests; reset the singleton gate's resume deadline too.
+        GameWorkRuntime.setGaming(true);GameWorkRuntime.setGaming(false)
+        ImageUploadRuntime.finishInput();ShadowSystemClock.advanceBy(Duration.ofSeconds(4))
     }
     @After fun cleanup(){CallRecordingWifi.stop()}
     private fun network(wifi:Boolean=true,validated:Boolean=true):NetworkCapabilities {
@@ -106,7 +109,8 @@ class CallRecordingWifiPolicyTest {
         }
         provider.attachInfo(context,ProviderInfo().apply{authority="media";exported=true})
         ShadowContentResolver.registerProviderInternal("media",provider)
-        assertTrue(CallRecordingRuntime.runUploads(context){true})
+        assertTrue("fixture must be input/game idle",ImageUploadRuntime.isBackgroundWorkAllowed())
+        assertFalse(CallRecordingRuntime.runUploads(context){true})
         assertTrue(CallRecordingRuntime.preferences(context).getString("system_scan_phone","")!!.contains("最近7天发现 1"))
         assertTrue(File(context.noBackupFilesDir.canonicalFile,"call_audio/system_index").listFiles().orEmpty().any{it.extension=="json"})
     }

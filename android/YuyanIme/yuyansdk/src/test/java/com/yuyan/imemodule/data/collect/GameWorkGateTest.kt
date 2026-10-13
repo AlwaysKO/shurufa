@@ -10,6 +10,16 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class GameWorkGateTest {
+    @Test fun verifiedScreenOffCanReleaseStaleForegroundBlockButScreenOnRestoresIt() {
+        var off=false
+        val gate=GameWorkGate({10_000L},Executor{it.run()},{off})
+        gate.setGaming(true)
+        assertFalse(gate.isAllowed())
+        off=true
+        assertTrue("熄屏后的旧游戏或未知前台标记不得一直阻断上传",gate.isAllowed())
+        off=false
+        assertFalse("亮屏仍需重新核验前台，不能因之前熄屏放行游戏",gate.isAllowed())
+    }
     @Test fun gamePausesImmediatelyAndExitWaitsForStableIdle() {
         var now = 10_000L
         val gate = GameWorkGate({ now }, Executor { it.run() })

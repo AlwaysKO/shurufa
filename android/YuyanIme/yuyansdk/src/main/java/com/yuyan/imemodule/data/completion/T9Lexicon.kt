@@ -48,6 +48,37 @@ internal class T9Lexicon private constructor(entries: List<T9Candidate>) {
         return queryEntries(pinyinBuckets[code.first()].orEmpty(), code, limit, true)
     }
 
+    /** 无正常整词时的保守补救：保留前三键，只允许一次错键/漏键/多键或相邻交换。 */
+    fun queryCorrections(code: String, limit: Int = 2): List<T9Candidate> {
+        if (code.length !in 6..30) return emptyList()
+        val numeric = code.all { it in '2'..'9' }
+        if (!numeric && code.any { it !in 'a'..'z' }) return emptyList()
+        val entries = if (numeric) buckets[code.take(3)].orEmpty() else pinyinBuckets[code.first()].orEmpty()
+        return entries.asSequence().filter { kotlin.math.abs(it.syllables.sumOf(String::length) - code.length) <= 1 }
+            .map { it.candidate to it.syllables.joinToString("") }
+            .filter { (_, full) -> full.startsWith(code.take(3)) && oneEdit(code, full) }
+            .map { it.first }.sortedByDescending { it.frequency }.distinctBy { it.text }.take(limit).toList()
+    }
+
+    private fun oneEdit(input: String, target: String): Boolean {
+        if (input == target) return false
+        var left = 0
+        var right = 0
+        var edits = 0
+        while (left < input.length && right < target.length) {
+            if (input[left] == target[right]) { left++; right++; continue }
+            if (++edits > 1) return false
+            when {
+                input.length == target.length && left + 1 < input.length && right + 1 < target.length &&
+                    input[left] == target[right + 1] && input[left + 1] == target[right] -> { left += 2; right += 2 }
+                input.length == target.length -> { left++; right++ }
+                input.length > target.length -> left++
+                else -> right++
+            }
+        }
+        return edits + (input.length - left) + (target.length - right) == 1
+    }
+
     /** 只从已有双字词补充首字简拼，旧 query 的匹配与拒绝证据保持不变。 */
     fun queryInitialFull(code: String, limit: Int = 32, includeTexts: Set<String> = emptySet()): List<T9Candidate> {
         if (code.length !in 4..7 || code.any { it !in '2'..'9' }) return emptyList()
@@ -67,10 +98,13 @@ internal class T9Lexicon private constructor(entries: List<T9Candidate>) {
         limit: Int = 8,
         allowAbbreviations: Boolean = true,
         includeTexts: Set<String> = emptySet(),
+        acceptsReading: ((String) -> Boolean)? = null,
         onSpellingMatch: (String, Boolean) -> Unit = { _, _ -> },
     ): List<T9Candidate> {
         if (code.length !in 3..30 || code.any { it !in '2'..'9' }) return emptyList()
-        return queryEntries(buckets[code.take(3)].orEmpty(), code, limit, allowAbbreviations, onSpellingMatch, includeTexts)
+        val entries = buckets[code.take(3)].orEmpty()
+        return queryEntries(if (acceptsReading == null) entries else entries.filter { acceptsReading(it.candidate.pinyin) },
+            code, limit, allowAbbreviations, onSpellingMatch, includeTexts)
     }
 
     /** 只缩小扫描范围；内部简拼也入桶，保留后续匹配回调的拒绝证据和原始词条顺序。 */
