@@ -130,7 +130,9 @@ export function createDashboardCallRecordingsRouter(pool:pg.Pool):Router {
   r.get('/',handler(async(req,res)=>{
     const page=Number(req.query.page??1);
     if(!Number.isSafeInteger(page)||page<1||page>100000) fail(400,'invalid_page');
-    const params:unknown[]=[res.locals.userId], filters=['device_id=$1','deleted_at IS NULL'];
+    const params:unknown[]=[res.locals.userId], filters=['device_id=$1','deleted_at IS NULL', 'playback_excluded_reason IS NULL',
+      "metadata->>'quality_status' IS DISTINCT FROM 'suspected_silent'",
+      "COALESCE((metadata->>'audio_duration_ms')::bigint,0)>0"];
     const add=(sql:string,v:unknown)=>{params.push(v);filters.push(sql+'$'+params.length);};
     for(const [key,allowed] of [['platform',['phone','wechat']],['recording_status',['ended','interrupted','restricted']]] as const){
       const v=req.query[key];if(v!==undefined){if(typeof v!=='string'||!(allowed as readonly string[]).includes(v))fail(400,'invalid_filter');add(key+'=',v);}
@@ -147,11 +149,35 @@ export function createDashboardCallRecordingsRouter(pool:pg.Pool):Router {
     const device=String(res.locals.userId).toLowerCase(),id=idOf(req);
     const row=(await pool.query('SELECT audio_ciphertext,sha256,byte_size,metadata FROM call_recording WHERE device_id=$1 AND record_id=$2 AND deleted_at IS NULL',[device,id])).rows[0];
     if(!row)fail(404,'record_not_found');
-    const audio=decryptAudio(row.audio_ciphertext,await loadAudioKey(),`${device}:${id}`);
-    if(audio.length!==row.byte_size||hash(audio)!==row.sha256)fail(503,'stored_audio_invalid');
+    // 密钥配置/读取失败属于服务故障，不能把所有录音标记为损坏。
+    const key=await loadAudioKey();
+    let audio:Buffer;
     const mime=String(row.metadata?.mime_type??'audio/mp4');
-    if(!Object.hasOwn(audioExtensions,mime) || !audioHeaderMatches(audio,mime))fail(503,'stored_audio_invalid');
-    res.set({'Content-Type':mime,'X-Content-Type-Options':'nosniff','Content-Disposition':`inline; filename="call.${audioExtensions[mime]}"`});res.send(audio);
+    try {
+      audio=decryptAudio(row.audio_ciphertext,key,`${device}:${id}`);
+      if(audio.length!==row.byte_size||hash(audio)!==row.sha256||!Object.hasOwn(audioExtensions,mime)||!audioHeaderMatches(audio,mime))throw Error('invalid_audio');
+    } catch {
+      // 保留原件和回执，只从试听列表排除，不触发手机重复上传或清理原件。
+      await pool.query("UPDATE call_recording SET playback_excluded_reason='stored_audio_invalid' WHERE device_id=$1 AND record_id=$2 AND deleted_at IS NULL",[device,id]);
+      return fail(410,'stored_audio_invalid');
+    }
+    res.set({'Content-Type':mime,'X-Content-Type-Options':'nosniff','Content-Disposition':`inline; filename="call.${audioExtensions[mime]}"`,'Accept-Ranges':'bytes'});
+    // 原生播放器按需取片段，无需等整段音频下载完成才显示控件。
+    const range=req.range(audio.length);
+    if(range===-1){res.set('Content-Range',`bytes */${audio.length}`);res.sendStatus(416);return;}
+    if(range && range!==-2 && range.type==='bytes' && range.length===1){
+      const {start,end}=range[0];
+      res.set('Content-Range',`bytes ${start}-${end}/${audio.length}`);
+      res.status(206).send(audio.subarray(start,end+1));return;
+    }
+    res.send(audio);
+  }));
+  r.post('/:id/playback-failure',handler(async(req,res)=>{
+    const reason=req.body?.reason;
+    if(!['decode_error','unsupported_format'].includes(reason))fail(400,'invalid_playback_failure');
+    const result=await pool.query(`UPDATE call_recording SET playback_excluded_reason=$3
+      WHERE device_id=$1 AND record_id=$2 AND deleted_at IS NULL RETURNING record_id`,[res.locals.userId,idOf(req),reason]);
+    if(!result.rowCount)fail(404,'record_not_found');res.sendStatus(204);
   }));
   r.delete('/:id',handler(async(req,res)=>{
     const result=await pool.query("UPDATE call_recording SET audio_ciphertext=NULL,metadata='{}'::jsonb,deleted_at=COALESCE(deleted_at,NOW()) WHERE device_id=$1 AND record_id=$2 RETURNING record_id",[res.locals.userId,idOf(req)]);

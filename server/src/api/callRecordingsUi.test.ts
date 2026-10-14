@@ -6,6 +6,6 @@ it('通话记录入口与路由源码交付，按日选择且播放走鉴权请�
   expect(read('main.ts')).toContain("path: '/call-recordings'");
   const view=read('views/CallRecordingsView.vue');
   expect(view).toContain('type="date"');expect(view).not.toContain('datetime-local');
-  expect(view).toContain('URL.revokeObjectURL');expect(view).toContain('currentUserId');
+  expect(view).toContain('callAudioUrl');expect(view).toContain('currentUserId');
   expect(read('api/callRecordings.ts')).toContain('dashboardFetch');
 });

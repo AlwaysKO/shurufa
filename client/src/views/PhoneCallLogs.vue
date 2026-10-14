@@ -25,7 +25,7 @@ async function requestSync(){
   catch(e){if(alive&&active===requestController&&device===currentUserId.value&&!(e instanceof DOMException&&e.name==='AbortError'))error.value=e instanceof Error?e.message:'请求失败';}
   finally{if(active===requestController)requesting.value=false;}
 }
-watch([currentUserId,authenticated],()=>{cancel();rows.value=[];total.value=0;sync.value=null;page.value=1;void load();},{immediate:true});
+watch([currentUserId,authenticated],()=>{cancel();rows.value=[];total.value=0;sync.value=null;if(page.value!==1)page.value=1;else void load();},{immediate:true});
 watch(page,()=>{void load();});
 const state=computed(()=>({never:'尚未获取',pending:'等待手机同步',synced:'已同步',permission_required:'手机尚未授予通话记录权限',disabled:'手机同步未开启',failed:'手机读取失败，请稍后重试'}[sync.value?.status??'never']));
 const kind=(type:number)=>({1:'呼入',2:'呼出',3:'未接',4:'语音信箱',5:'拒接',6:'拦截',7:'其他设备接听'}[type]??'未知');

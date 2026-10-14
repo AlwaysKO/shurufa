@@ -16,8 +16,17 @@ export async function listCalls(device:string,filter:CallFilter,signal:AbortSign
   for(const [key,value] of Object.entries(filter))if(value!=='')params.set(key,String(value));
   return (await checked(await dashboardFetch(url(device)+'&'+params,{signal}))).json();
 }
-export async function callAudio(device:string,id:string,signal:AbortSignal):Promise<Blob> {
-  return (await checked(await dashboardFetch(url(device,`/${encodeURIComponent(id)}/audio`),{signal}))).blob();
+// 同源 Cookie 由浏览器携带，服务端仍逐次鉴权；不生成公开音频链接。
+export function callAudioUrl(device:string,id:string):string {
+  return url(device,`/${encodeURIComponent(id)}/audio`);
+}
+export async function checkCallAudio(device:string,id:string,signal:AbortSignal):Promise<Response> {
+  return dashboardFetch(callAudioUrl(device,id),{method:'HEAD',signal});
+}
+export async function excludeCallAudio(device:string,id:string,reason:'decode_error'|'unsupported_format',signal:AbortSignal):Promise<void> {
+  await checked(await dashboardFetch(url(device,`/${encodeURIComponent(id)}/playback-failure`),{
+    method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reason}),signal,
+  }));
 }
 export async function deleteCall(device:string,id:string):Promise<void> {
   await checked(await dashboardFetch(url(device,`/${encodeURIComponent(id)}`),{method:'DELETE'}));

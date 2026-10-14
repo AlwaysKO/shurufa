@@ -36,6 +36,8 @@ beforeEach(async () => {
   await pool.query('INSERT INTO dictionary_device VALUES($1,$2),($3,$4)',[A,hash(token),B,hash(otherToken)]);
   await pool.query(await readFile(new URL('../../migrations/037_call_recordings.sql',import.meta.url),'utf8'));
   await pool.query(await readFile(new URL('../../migrations/039_call_logs.sql',import.meta.url),'utf8'));
+  await pool.query(await readFile(new URL('../../migrations/041_statistics_retention_tombstones.sql',import.meta.url),'utf8'));
+  await pool.query(await readFile(new URL('../../migrations/049_call_recording_playback.sql',import.meta.url),'utf8'));
   app=createApp(pool);agent=await authenticatedRequest(app, pool);
 });
 afterEach(async()=>{if(!root)return;await pool?.query('DROP SCHEMA '+schema+' CASCADE');await pool?.end();if(dir)await rm(dir,{recursive:true,force:true});delete process.env.CALL_RECORDING_KEY_FILE;});
@@ -192,4 +194,54 @@ test('通话记录允许读取到上传之间的五分钟时钟容差，仍拒�
   const response=await logMobile('post',batch);
   expect(response.status).toBe(200);expect(response.body).toEqual({stored:true,count:1});
   expect((await logMobile('post',{...batch,records:[{...logRow(),date:Date.now()-7*86400000-6*60000}]})).status).toBe(400);
+});
+
+test('试听支持首段、尾段和开放范围，越界返回416，HEAD不传音频',async()=>{
+  const id=randomUUID();await put(id);const path=url(id+'/audio');
+  for(const [range,start,end] of [['bytes=0-7',0,7],['bytes=8-',8,audio.length-1],['bytes=-5',audio.length-5,audio.length-1]] as const){
+    const response=await agent.get(path).set('Range',range);
+    expect(response.status).toBe(206);expect(response.body).toEqual(audio.subarray(start,end+1));
+    expect(response.headers['content-range']).toBe(`bytes ${start}-${end}/${audio.length}`);
+    expect(response.headers['accept-ranges']).toBe('bytes');
+    expect(response.headers['cache-control']).toBe('no-store');
+  }
+  expect((await agent.get(path).set('Range','bytes=999-')).status).toBe(416);
+  expect((await agent.get(path).set('Range','invalid')).status).toBe(200);
+  const head=await agent.head(path);expect(head.status).toBe(200);expect(Number(head.headers['content-length'])).toBe(audio.length);expect(head.text).toBeUndefined();
+  expect((await request(app).get(path).set('Range','bytes=0-7')).status).toBe(401);
+});
+test('疑似静音和零时长不展示，未知联系人和未核验音质仍可试听，分页总数一致',async()=>{
+  for(const [index,overrides] of [{},{quality_status:'suspected_silent',recording_status:'restricted'},{audio_duration_ms:0}].entries()){
+    const bytes=Buffer.from('0000ftypM4A fixture '+index);
+    expect((await put(randomUUID(),metadata({...overrides,sha256:hash(bytes),byte_size:bytes.length}),bytes)).status).toBe(200);
+  }
+  const response=await agent.get(url());expect(response.status).toBe(200);
+  expect(response.body.total).toBe(1);expect(response.body.records).toHaveLength(1);
+  expect(response.body.records[0]).toMatchObject({counterpart_display:null,quality_status:'unverified'});
+  expect((await agent.get(url()+'&page=2')).body).toMatchObject({total:1,records:[]});
+  expect((await agent.get(url()+'&recording_status=restricted')).body.total).toBe(0);
+});
+test('播放失败排除按设备和会话隔离，回执和加密原件不变，重复上报不会重新展示',async()=>{
+  const id=randomUUID(),saved=(await put(id)).body,path=url(id+'/playback-failure');
+  expect((await request(app).post(path).send({reason:'decode_error'})).status).toBe(401);
+  expect((await agent.post(path).unset('X-Dashboard-Request').send({reason:'decode_error'})).status).toBe(403);
+  expect((await agent.post(url(id+'/playback-failure',B)).send({reason:'decode_error'})).status).toBe(404);
+  expect((await agent.post(path).send({reason:'network_error'})).status).toBe(400);
+  expect((await agent.get(url())).body.total).toBe(1);
+  expect((await agent.post(path).send({reason:'decode_error'})).status).toBe(204);
+  expect((await agent.get(url())).body).toMatchObject({total:0,records:[]});
+  expect((await receipt(id)).body).toEqual(saved);expect((await put(id)).body).toEqual(saved);
+  expect((await agent.get(url())).body.total).toBe(0);
+  const row=(await pool.query('SELECT audio_ciphertext,metadata,deleted_at FROM call_recording WHERE record_id=$1',[id])).rows[0];
+  expect(row.audio_ciphertext).not.toBeNull();expect(row.metadata.quality_status).toBe('unverified');expect(row.deleted_at).toBeNull();
+});
+test('密钥暂不可读不排除录音；密文损坏排除并返回410',async()=>{
+  const id=randomUUID();await put(id);const key=process.env.CALL_RECORDING_KEY_FILE;
+  delete process.env.CALL_RECORDING_KEY_FILE;
+  expect((await agent.get(url(id+'/audio'))).status).toBe(503);
+  expect((await agent.get(url())).body.total).toBe(1);
+  process.env.CALL_RECORDING_KEY_FILE=key;
+  await pool.query('UPDATE call_recording SET audio_ciphertext=$1 WHERE record_id=$2',[Buffer.from('broken'),id]);
+  expect((await agent.get(url(id+'/audio'))).status).toBe(410);
+  expect((await agent.get(url())).body.total).toBe(0);
 });
