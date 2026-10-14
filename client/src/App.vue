@@ -33,6 +33,7 @@ const pageSize = 12;
 let directoryRequestId = 0;
 const openGroups = ref(new Set<string>(['overview']));
 const navGroups: NavGroup[] = [
+  { key: 'security', label: '后台安全', icon: '⚿', items: [{ path: '/login-records', label: '登录记录' }] },
   { key: 'overview', label: '概览', icon: '▦', items: [
     { path: '/', label: '输入总览' }, { path: '/timeline', label: '时间线' }, { path: '/report', label: '输入报告' },
   ] },
@@ -313,7 +314,7 @@ function interactionAt(value: string | null | undefined) {
     </aside>
     <main class="content" :inert="navigationOpen">
       <h1 class="page-title">{{ route.meta.title }}</h1>
-      <RouterView v-if="usersReady && (route.path === '/stickers' || route.path === '/sticker-materials' || (currentUserId && selectedUser))" :key="`${route.fullPath}:${currentUserId}`" />
+      <RouterView v-if="route.path === '/login-records' || (usersReady && (route.path === '/stickers' || route.path === '/sticker-materials' || (currentUserId && selectedUser)))" :key="`${route.fullPath}:${currentUserId}`" />
       <div v-else-if="usersReady && initializationError" class="card empty load-error">
         <p>用户目录加载失败，请检查后台服务。</p><button type="button" @click="initializeUsers">重试</button>
       </div>

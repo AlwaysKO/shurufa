@@ -2006,7 +2006,7 @@ class InputView(context: Context, private val service: ImeService) : LifecycleRe
                 else CustomEngine.parseExpressionAtEnd(textBeforeCursor).let { CustomEngine.expressionCalculator(textBeforeCursor, it).let(::showSymbols) }
             }
             chinesePrediction && InputModeSwitcher.isChinese-> {
-                val textBeforeCursor = service.getTextBeforeCursor(10)
+                val textBeforeCursor = service.getTextBeforeCursor(20)
                 if (textBeforeCursor.isBlank()) resetCandidateWindow()
                 else {
                     DecodingInfo.getAssociateWord(textBeforeCursor)

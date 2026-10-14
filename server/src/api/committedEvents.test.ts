@@ -71,7 +71,7 @@ it('默认明细展示删除但不展示未上屏拼音，返回编辑证据并�
   await send(rows);
   // 已有地址，避免本测试触发IP解析网络请求。
   await pool.query("UPDATE input_event SET client_ip = NULL");
-  const agent = await authenticatedRequest(app);
+  const agent = await authenticatedRequest(app, pool);
   const response = await agent.get(`/api/v1/dashboard/events?user_id=${A}`);
   expect(response.status).toBe(200);
   expect(response.body.items.map((r: any) => r.event_type)).toEqual(['delete', 'commit']);
@@ -83,7 +83,7 @@ it('默认明细展示删除但不展示未上屏拼音，返回编辑证据并�
 it('从编辑前后文本也能搜索，缺少删除text不等于忽略整条记录', async () => {
   await send([event('external_delete', '', '会被删掉的文字', '会被', 1)]);
   await pool.query('UPDATE input_event SET client_ip = NULL');
-  const agent = await authenticatedRequest(app);
+  const agent = await authenticatedRequest(app, pool);
   const response = await agent.get(`/api/v1/dashboard/events?user_id=${A}&q=${encodeURIComponent('删掉')}`);
   expect(response.status).toBe(200); expect(response.body.total).toBe(1);
 });

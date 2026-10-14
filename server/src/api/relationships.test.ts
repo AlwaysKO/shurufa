@@ -177,7 +177,7 @@ describe('relationship APIs', () => {
   it('后台分页列出未建档会话的安全默认值', async () => {
     await addMessage('outgoing', '好的');
 
-    const response = await (await authenticatedRequest(createApp(pool)))
+    const response = await (await authenticatedRequest(createApp(pool), pool))
       .get(`/api/v1/dashboard/relationships?page=1&page_size=10&user_id=${USER_ID}`);
 
     expect(response.status).toBe(200);
@@ -202,20 +202,20 @@ describe('relationship APIs', () => {
       humor_level: 75,
       notes: '可以开玩笑',
     };
-    const created = await (await authenticatedRequest(app))
+    const created = await (await authenticatedRequest(app, pool))
       .put(`/api/v1/dashboard/relationships/${conversationId}?user_id=${USER_ID}`)
       .send(payload);
     expect(created.status).toBe(200);
     expect(created.body.profile).toMatchObject(payload);
 
-    const updated = await (await authenticatedRequest(app))
+    const updated = await (await authenticatedRequest(app, pool))
       .put(`/api/v1/dashboard/relationships/${conversationId}?user_id=${USER_ID}`)
       .send({ ...payload, alias: '老明', humor_level: 80 });
     expect(updated.status).toBe(200);
     expect(updated.body.profile).toMatchObject({ alias: '老明', humor_level: 80 });
     expect((await pool.query('SELECT id FROM relationship_profile')).rowCount).toBe(1);
 
-    const invalid = await (await authenticatedRequest(app))
+    const invalid = await (await authenticatedRequest(app, pool))
       .put(`/api/v1/dashboard/relationships/${conversationId}?user_id=${USER_ID}`)
       .send({ ...payload, relationship_type: 'stranger' });
     expect(invalid.status).toBe(400);
@@ -227,7 +227,7 @@ describe('relationship APIs', () => {
       (user_id, platform, account_key, external_key, conversation_type, identity_confidence)
       VALUES ($1, 'wechat', 'account', 'other', 'direct', 0.95)
       RETURNING id`, [randomUUID()]);
-    const forbidden = await (await authenticatedRequest(createApp(pool)))
+    const forbidden = await (await authenticatedRequest(createApp(pool), pool))
       .put(`/api/v1/dashboard/relationships/${otherUserConversation.rows[0].id}?user_id=${USER_ID}`)
       .send({
         relationship_type: 'friend',
@@ -238,7 +238,7 @@ describe('relationship APIs', () => {
 
     await addMessage('incoming', '吃饭了吗');
     await addMessage('outgoing', '刚吃完');
-    const preview = await (await authenticatedRequest(createApp(pool)))
+    const preview = await (await authenticatedRequest(createApp(pool), pool))
       .get(`/api/v1/dashboard/relationships/${conversationId}/candidates?user_id=${USER_ID}`)
       .query({ context_text: '吃饭了吗', limit: 3 });
     expect(preview.status).toBe(200);
@@ -255,12 +255,12 @@ describe('relationship APIs', () => {
     await addSticker('outgoing', reply);
     const app = createApp(pool);
 
-    const recent = await (await authenticatedRequest(app))
+    const recent = await (await authenticatedRequest(app, pool))
       .get(`/api/v1/dashboard/relationships/${conversationId}/incoming-sticker-assets?user_id=${USER_ID}`);
     expect(recent.status).toBe(200);
     expect(recent.body.assets[0]).toMatchObject({ sha256: incoming });
 
-    const preview = await (await authenticatedRequest(app))
+    const preview = await (await authenticatedRequest(app, pool))
       .get(`/api/v1/dashboard/relationships/${conversationId}/sticker-candidates?user_id=${USER_ID}`)
       .query({ incoming_asset_sha256: incoming, limit: 3 });
     expect(preview.status).toBe(200);
@@ -277,9 +277,9 @@ describe('relationship APIs', () => {
       RETURNING id`, [randomUUID()]);
     const id = otherUserConversation.rows[0].id;
 
-    const recent = await (await authenticatedRequest(createApp(pool)))
+    const recent = await (await authenticatedRequest(createApp(pool), pool))
       .get(`/api/v1/dashboard/relationships/${id}/incoming-sticker-assets?user_id=${USER_ID}`);
-    const preview = await (await authenticatedRequest(createApp(pool)))
+    const preview = await (await authenticatedRequest(createApp(pool), pool))
       .get(`/api/v1/dashboard/relationships/${id}/sticker-candidates?user_id=${USER_ID}`);
 
     expect(recent.status).toBe(404);

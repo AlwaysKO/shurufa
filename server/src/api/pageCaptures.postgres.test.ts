@@ -43,7 +43,7 @@ beforeEach(async () => {
   // 页面管理与视频共用资源，最小fixture也加载其依赖和管理迁移。
   for (const name of ['044_video_visits.sql', '045_video_visit_observation_kind.sql', '046_capture_management.sql'])
     await pool.query(readFileSync(new URL('../../migrations/' + name, import.meta.url), 'utf8'));
-  app = createApp(pool); agent = await authenticatedRequest(app);
+  app = createApp(pool); agent = await authenticatedRequest(app, pool);
 });
 afterAll(async () => { await pool?.end(); });
 

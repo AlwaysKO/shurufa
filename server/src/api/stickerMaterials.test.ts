@@ -47,7 +47,7 @@ beforeEach(async () => {
     { keyword: '你好', category: '问候' }, { keyword: '晚安', category: '问候' },
   ] }));
   vi.spyOn(process, 'cwd').mockReturnValue(join(root, 'server'));
-  app = createApp(pool); agent = await authenticatedRequest(app);
+  app = createApp(pool); agent = await authenticatedRequest(app, pool);
 });
 afterEach(async () => { vi.restoreAllMocks(); await pool.end(); if (root) await rm(root, { recursive: true, force: true }); });
 async function seedMaterials() {

@@ -27,7 +27,7 @@ beforeEach(async()=>{
  pool=new pg.Pool({host:join(cluster,'socket'),port:5432,user:'ko',database:'chat_images_test',max:4,options:`-c search_path=${schema}`});
  await pool.query(`CREATE SCHEMA ${schema}`);for(const sql of migrations)await pool.query(sql);
  root=join(cluster,schema);await mkdir(root,{recursive:true});vi.spyOn(process,'cwd').mockReturnValue(root);
- app=createApp(pool);agent=await authenticatedRequest(app);
+ app=createApp(pool);agent=await authenticatedRequest(app, pool);
 });
 afterAll(async()=>{vi.restoreAllMocks();await pool?.end();});
 async function conversation(platform='wechat',user=A){return Number((await pool.query(`INSERT INTO chat_conversation(user_id,platform,account_key,external_key,conversation_type,identity_confidence) VALUES($1,$2,'self',$3,'direct',1) RETURNING id`,[user,platform,randomUUID()])).rows[0].id);}

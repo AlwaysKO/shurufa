@@ -15,7 +15,7 @@ const choice = (text = '充电宝', count = 3) => ({ kind: 'choice', text, code:
 const word = { kind: 'word', text: '充电宝', code: '', pinyin: 'chong dian bao', source: 'selection', count: 0, weight: 0, last_used: 0 };
 const mobile = (id: string, method: 'get'|'post', path: string) => request(app)[method](`/api/v1/mobile/dictionary${path}`).set('X-Device-Id', id).set('X-Dictionary-Token', token);
 const upload = (id: string, entries = [choice()], sequence = 1) => mobile(id,'post','/report').send({sequence,entries,migration_status:'complete',imported:1});
-const dash = () => authenticatedRequest(app);
+const dash = () => authenticatedRequest(app, pool);
 beforeEach(async () => {
   if (process.env.DICTIONARY_TEST_DATABASE_URL) {
     const schema='dict_'+crypto.randomUUID().replaceAll('-','');

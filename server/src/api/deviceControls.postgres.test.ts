@@ -31,7 +31,7 @@ beforeEach(async()=>{
  pool=new pg.Pool({host:join(cluster,"socket"),port:5432,user:process.env.USER||"ko",database:"device_controls_test",max:6,options:`-c search_path=${schema}`});
  await pool.query(`CREATE SCHEMA ${schema}`);for(const sql of migrations)await pool.query(sql);
  root=join(cluster,schema);await mkdir(root,{recursive:true});vi.spyOn(process,"cwd").mockReturnValue(root);
- app=createApp(pool);agent=await authenticatedRequest(app);
+ app=createApp(pool);agent=await authenticatedRequest(app, pool);
  await pool.query("INSERT INTO device(id,name) VALUES($1,$2),($3,$4)",[A,"手机A",B,"手机B"]);
 });
 afterAll(async()=>{vi.restoreAllMocks();await pool?.end();});

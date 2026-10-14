@@ -62,7 +62,7 @@ class LockedPinyinCandidatesTest {
     @Test fun `未锁音同码补全按公共词频混排而非原生来源抢占首屏`() {
         val result = OfflineT9Candidates.select("6267", listOf("男人", "难受", "冒泡", "男生", "南区"),
             listOf("nan ren", "nan shou", "mao pao", "nan sheng", "nan qu")).firstPage
-        assertEquals("南山", result[5].text) // 当前公共词频第6，不为单个地名伪造权重。
+        assertTrue(result.map { it.text }.toString(), result.take(5).any { it.text == "南山" })
         assertTrue(result.indexOfFirst { it.text == "南山" } < result.indexOfFirst { it.text == "冒泡" })
         assertTrue(result.indexOfFirst { it.text == "男生" } < result.indexOfFirst { it.text == "难受" })
         assertEquals(3, result.first { it.text == "男生" }.nativeIndex)

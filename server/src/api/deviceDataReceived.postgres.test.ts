@@ -32,7 +32,7 @@ beforeEach(async () => {
   if (!cluster) return;
   await pool.query('TRUNCATE device,input_event,app_usage_segment,chat_conversation,media_asset,navigation_record,mobile_report_receipt,call_recording,phone_call_log,phone_call_log_sync,location_track,runtime_setting CASCADE');
   await pool.query('INSERT INTO device(id,name,last_seen_at) VALUES($1,\'A\',$3),($2,\'B\',$4)', [A, B, T2, T1]);
-  app = createApp(pool); agent = await authenticatedRequest(app);
+  app = createApp(pool); agent = await authenticatedRequest(app, pool);
 });
 afterAll(async () => { await pool?.end(); });
 const directory = (query = '') => agent.get(`/api/v1/dashboard/users${query}`);

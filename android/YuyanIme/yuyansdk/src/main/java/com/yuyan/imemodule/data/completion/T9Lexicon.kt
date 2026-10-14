@@ -42,6 +42,17 @@ internal class T9Lexicon private constructor(entries: List<T9Candidate>) {
 
     private val pinyinBuckets = entries.map { Entry(it, it.pinyin.split(' ')) }
         .groupBy { it.syllables.first().first() }
+    private val twoInitialBuckets = numericEntries.filter { it.syllables.size == 2 }
+        .groupBy { it.syllables.joinToString("") { syllable -> syllable.take(1) } }
+
+    fun queryShortWords(code: String, limit: Int = 32, includeTexts: Set<String> = emptySet()): List<T9Candidate> {
+        if (code.length !in 2..14 || code.any { it !in '2'..'9' }) return emptyList()
+        val entries = if (code.length == 2) twoInitialBuckets[code].orEmpty() else buckets[code.take(3)].orEmpty()
+        return entries.asSequence().filter { it.syllables.size in 2..3 }
+            .filter { InputSpellingMatch.shortWord(code, it.candidate.pinyin) != null }
+            .map { it.candidate }.sortedByDescending { it.frequency }
+            .filterIndexed { index, word -> index < limit || word.text in includeTexts }.toList()
+    }
 
     fun queryPinyin(code: String, limit: Int = 8): List<T9Candidate> {
         if (code.length !in 2..30 || code.any { it !in 'a'..'z' }) return emptyList()
@@ -49,14 +60,15 @@ internal class T9Lexicon private constructor(entries: List<T9Candidate>) {
     }
 
     /** 无正常整词时的保守补救：保留前三键，只允许一次错键/漏键/多键或相邻交换。 */
-    fun queryCorrections(code: String, limit: Int = 2): List<T9Candidate> {
+    fun queryCorrections(code: String, limit: Int = 2, allowEarlyTypo: Boolean = false): List<T9Candidate> {
         if (code.length !in 6..30) return emptyList()
         val numeric = code.all { it in '2'..'9' }
         if (!numeric && code.any { it !in 'a'..'z' }) return emptyList()
         val entries = if (numeric) buckets[code.take(3)].orEmpty() else pinyinBuckets[code.first()].orEmpty()
+        val prefixLength = if (allowEarlyTypo && !numeric) 1 else 3
         return entries.asSequence().filter { kotlin.math.abs(it.syllables.sumOf(String::length) - code.length) <= 1 }
             .map { it.candidate to it.syllables.joinToString("") }
-            .filter { (_, full) -> full.startsWith(code.take(3)) && oneEdit(code, full) }
+            .filter { (_, full) -> full.startsWith(code.take(prefixLength)) && oneEdit(code, full) }
             .map { it.first }.sortedByDescending { it.frequency }.distinctBy { it.text }.take(limit).toList()
     }
 
@@ -150,29 +162,39 @@ internal class T9Lexicon private constructor(entries: List<T9Candidate>) {
 
     /** 返回最少简拼音节数；每层最多保留 code.length 个状态，避免组合爆炸。 */
     private fun match(syllables: List<String>, code: String, trailingOnly: Boolean = false): Int? {
-        var states = mapOf(0 to 0)
+        var states = IntArray(code.length + 1) { Int.MAX_VALUE }
+        var next = IntArray(code.length + 1)
+        states[0] = 0
         for ((index, syllable) in syllables.withIndex()) {
-            val next = HashMap<Int, Int>()
-            for ((offset, penalty) in states) {
+            next.fill(Int.MAX_VALUE)
+            var anyNext = false
+            for (offset in states.indices) {
+                val penalty = states[offset]
+                if (penalty == Int.MAX_VALUE) continue
                 if (code.startsWith(syllable, offset)) {
                     val end = offset + syllable.length
-                    next[end] = minOf(next[end] ?: Int.MAX_VALUE, penalty)
+                    next[end] = minOf(next[end], penalty)
+                    anyNext = true
                 }
                 if ((!trailingOnly || index == syllables.lastIndex) &&
                     syllable.length > 1 && code.getOrNull(offset) == syllable.first()) {
-                    val prefixLengths = if (index == syllables.lastIndex) 1 until syllable.length else 1..1
-                    for (length in prefixLengths) {
-                        if (code.startsWith(syllable.take(length), offset)) {
+                    val lastLength = if (index == syllables.lastIndex)
+                        minOf(syllable.length - 1, code.length - offset) else 1
+                    for (length in 1..lastLength) {
+                        if (code.regionMatches(offset, syllable, 0, length)) {
                             val end = offset + length
-                            next[end] = minOf(next[end] ?: Int.MAX_VALUE, penalty + 1)
+                            next[end] = minOf(next[end], penalty + 1)
+                            anyNext = true
                         }
                     }
                 }
             }
-            if (next.isEmpty()) return null
+            if (!anyNext) return null
+            val previous = states
             states = next
+            next = previous
         }
-        return states[code.length]
+        return states[code.length].takeIf { it != Int.MAX_VALUE }
     }
 
     companion object {

@@ -92,7 +92,7 @@ test('真实PostgreSQL组删除提交后清理独占文件，共用图保留，�
     await expect(deleteStickerGroup(pool,'坏路径',{confirm:'DELETE',aliases:bad.aliases,assetKeys:bad.assets.map(stickerAssetKey)})).rejects.toThrow(/路径异常/);
     expect((await pool.query("SELECT file_name FROM sticker WHERE keywords='坏路径'")).rows).toEqual([{file_name:'../outside.gif'}]);
     expect((await pool.query("SELECT * FROM sticker_group_deletion WHERE keyword='坏路径'")).rows).toEqual([]);
-    const agent = await authenticatedRequest(createApp(pool));
+    const agent = await authenticatedRequest(createApp(pool), pool);
     await pool.query("INSERT INTO sticker_keyword(user_id,keyword) VALUES($1,'并发删除')",[OWNER]);
     const blocker = await pool.connect();
     try {

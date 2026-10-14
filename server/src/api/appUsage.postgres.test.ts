@@ -16,7 +16,7 @@ const get=(extra='',id:string=A)=>agent.get(`/api/v1/dashboard/app-usage?user_id
 beforeAll(async()=>{if(!root)return;pool=new pg.Pool({host:`${root}/socket`,user:'ko',database:'app_usage_test'});
 expect((await pool.query("SELECT current_setting('data_directory') AS dir")).rows[0].dir).toBe(`${root}/data`);
 for(const f of readdirSync(new URL('../../migrations/',import.meta.url)).filter(f=>f.endsWith('.sql')).sort()) await pool.query(readFileSync(new URL(`../../migrations/${f}`,import.meta.url),'utf8'));
-app=createApp(pool);agent=await authenticatedRequest(app);
+app=createApp(pool);agent=await authenticatedRequest(app, pool);
 });
 afterAll(async()=>{await pool?.end();});
 test('已有设备仅上报应用使用也更新目录最近活跃，使用服务器接收时间',async()=>{

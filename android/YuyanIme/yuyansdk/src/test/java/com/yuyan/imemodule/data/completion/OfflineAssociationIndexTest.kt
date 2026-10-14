@@ -56,4 +56,15 @@ class OfflineAssociationIndexTest {
         assertEquals(OfflineAssociationQuery.EMPTY, index.query("关山难越谁悲"))
         assertEquals(OfflineAssociationQuery.EMPTY, index.query("关山难道"))
     }
+    @Test fun longerContinuationBeatsAnUnrelatedExactTwoCharacterSuffix() {
+        val overlapping = OfflineAssociationIndex.parse(StringReader("床前\tP\t明月光\n明月\tP\t照我还"))
+        assertEquals(listOf("光"), overlapping.query("床前明月").partial)
+    }
+
+    @Test fun unknownOrDamagedRowsCannotBecomeSuggestions() {
+        val damaged = OfflineAssociationIndex.parse(StringReader("无效\tUNKNOWN\t内容\n残缺\tP\n正常\tD\t回复"))
+        assertEquals(OfflineAssociationQuery.EMPTY, damaged.query("无效"))
+        assertEquals(listOf("回复"), damaged.query("正常").partial)
+    }
+
 }

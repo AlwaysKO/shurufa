@@ -28,7 +28,7 @@ beforeEach(async () => {
   await pool.query(readFileSync(new URL('../../migrations/038_navigation_records.sql', import.meta.url), 'utf8'));
   await pool.query(readFileSync(new URL('../../migrations/041_statistics_retention_tombstones.sql', import.meta.url), 'utf8'));
   bytes = await sharp({ create: { width: 16, height: 16, channels: 3, background: '#abc' } }).png().toBuffer();
-  app = createApp(pool); agent = await authenticatedRequest(app);
+  app = createApp(pool); agent = await authenticatedRequest(app, pool);
 });
 afterEach(async () => { if (!enabled) return; await pool.query('DROP SCHEMA ' + schema + ' CASCADE'); await pool.end(); });
 

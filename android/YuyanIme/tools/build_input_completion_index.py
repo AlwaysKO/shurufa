@@ -5,6 +5,7 @@ import json
 import re
 import struct
 import subprocess
+from collections import Counter
 from pathlib import Path
 
 from generate_offline_associations import Simplifier, PUNCTUATION_PATTERN
@@ -27,7 +28,7 @@ def parse_readings(source):
         if not body or len(fields) < 3:
             continue
         text, reading, frequency = fields[:3]
-        if (re.fullmatch(r'[\u4e00-\u9fff]{3,20}', text) and
+        if (re.fullmatch(r'[\u4e00-\u9fff]{2,20}', text) and
                 re.fullmatch(r'[a-z]+(?: [a-z]+)+', reading) and
                 len(reading.split()) == len(text) and frequency.isdigit()):
             rows.append((text, reading, int(frequency)))
@@ -38,18 +39,75 @@ def completion_rows(entries, phrases):
     unique = {}
     for text, reading, frequency in entries:
         syllables = reading.split()
-        if len(text) != len(syllables) or not re.fullmatch(r'[a-z]+(?: [a-z]+)+', reading):
+        if (not re.fullmatch(r'[\u4e00-\u9fff]{2,20}', text) or
+                len(text) != len(syllables) or not re.fullmatch(r'[a-z]+(?: [a-z]+)+', reading)):
             continue
         keys = []
-        if len(text) == 3:
-            keys.append('a' + digits(''.join(s[0] for s in syllables)))
-        if 5 <= len(text) <= 20 and text in phrases:
+        if len(text) in (2, 3):
+            initials = ''.join(s[0] for s in syllables)
+            keys += ['a' + digits(initials), 'i' + initials]
+            mixed = syllables[0][0] + syllables[1] if len(text) == 2 else syllables[0] + syllables[1][0] + syllables[2]
+            keys += ['m' + mixed, 'm' + digits(mixed)]
+        if len(text) in (2, 3) or (5 <= len(text) <= 20 and text in phrases):
             full = ''.join(syllables)
             keys += ['p' + full, 'n' + digits(full)]
         for key in keys:
             item = (key, text, reading)
             unique[item] = max(frequency, unique.get(item, 0))
-    return sorted(((*key, freq) for key, freq in unique.items()), key=lambda r: (r[0], -r[3], r[1], r[2]))
+    ordered = sorted(((*key, freq) for key, freq in unique.items()), key=lambda r: (r[0], -r[3], r[1], r[2]))
+    rows = []
+    counts = {}
+    for row in ordered:
+        key = row[0]
+        limit = 32 if key.startswith('i') else (64 if key.startswith('a') and len(key) == 3 else None)
+        count = counts.get(key, 0)
+        if limit is None or count < limit:
+            rows.append(row)
+        counts[key] = count + 1
+    return sorted(rows + wide_prefix_rows(rows), key=lambda r: (r[0], -r[3], r[1], r[2]))
+
+
+def wide_prefix_rows(rows):
+    searchable = [row for row in rows if row[0][0] in 'pnm']
+    # Only descend into wide parents: a narrow prefix can never have a wide child.
+    depth = 4  # channel byte plus at least three input characters
+    counts = Counter(row[0][:depth] for row in searchable if len(row[0]) >= depth)
+    wide = set()
+    while counts:
+        parents = {key for key, count in counts.items() if count > 512}
+        if not parents:
+            break
+        wide.update(parents)
+        counts = Counter(row[0][:depth + 1] for row in searchable
+                         if len(row[0]) > depth and row[0][:depth] in parents)
+        depth += 1
+    fallback = {}
+    for key, text, reading, frequency in searchable:
+        syllables = reading.split()
+        if key[0] == 'm':
+            head = syllables[0][0] if len(syllables) == 2 else syllables[0] + syllables[1][0]
+        else:
+            head = ''.join(syllables[:-1])
+        if key[1:].isdigit():
+            head = digits(head)
+        for length in range(max(3, len(head) + 1), len(key)):
+            if key[0] == "m" and len(syllables) == 2 and length + 1 != len(key):
+                continue
+            if key[:length + 1] in wide:
+                item = ('b' + key[1:length + 1], text, reading)
+                fallback[item] = max(frequency, fallback.get(item, 0))
+    ordered = sorted(((*item, freq) for item, freq in fallback.items()),
+                     key=lambda r: (r[0], -r[3], r[1], r[2]))
+    counts = Counter()
+    result = []
+    seen_words = set()
+    for row in ordered:
+        word = (row[0], row[1])
+        if counts[row[0]] < 64 and word not in seen_words:
+            result.append(row)
+            seen_words.add(word)
+            counts[row[0]] += 1
+    return result
 
 
 def encode_index(rows):
@@ -113,7 +171,12 @@ def build(source, poetry, output):
     manifest = {'rime_revision': lock['revision'], 'poetry_revision': poetry_lock['revision'],
                 'daily_sha256': hashlib.sha256(daily.read_bytes()).hexdigest(),
                 'rows': len(rows), 'short_words': sum(row[0].startswith('a') for row in rows),
-                'long_phrases': sum(row[0].startswith('p') for row in rows),
+                'letter_initial_rows': sum(row[0].startswith('i') for row in rows),
+                'mixed_reading_rows': sum(row[0].startswith('m') for row in rows),
+                'wide_prefix_rows': sum(row[0].startswith('b') for row in rows),
+                'wide_prefix_buckets': len({row[0] for row in rows if row[0].startswith('b')}),
+                'short_full_reading_rows': sum(row[0].startswith('p') and len(row[1]) <= 3 for row in rows),
+                'long_phrases': sum(row[0].startswith('p') and len(row[1]) >= 5 for row in rows),
                 'generated_place_readings': len(generated), 'size': len(data),
                 'sha256': hashlib.sha256(data).hexdigest()}
     Path(str(output) + '.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')

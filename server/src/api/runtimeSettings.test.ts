@@ -18,7 +18,7 @@ beforeEach(async () => {
 
 describe('collector runtime setting', () => {
   it('后台保存HTTPS origin后移动端读取同一个规范地址', async () => {
-    const dashboard = await authenticatedRequest(createApp(pool));
+    const dashboard = await authenticatedRequest(createApp(pool), pool);
     const saved = await dashboard.put(`/api/v1/dashboard/settings/collector?user_id=${userId}`)
       .send({ collector_base_url: ' https://new.example.com/ ' });
     expect(saved.status).toBe(200);
@@ -30,7 +30,7 @@ describe('collector runtime setting', () => {
   });
 
   it('拒绝HTTP和带业务路径的地址且不覆盖原设置', async () => {
-    const dashboard = await authenticatedRequest(createApp(pool));
+    const dashboard = await authenticatedRequest(createApp(pool), pool);
     await dashboard.put(`/api/v1/dashboard/settings/collector?user_id=${userId}`)
       .send({ collector_base_url: 'https://good.example' });
     for (const value of ['http://bad.example', 'https://bad.example/api']) {

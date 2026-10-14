@@ -59,7 +59,7 @@ export interface CreateAppOptions {
 export function createApp(pool: pg.Pool, options: CreateAppOptions = {}): express.Express {
   const app = express();
   app.set('trust proxy', true); // 反代后 X-Forwarded-For 生效（事件记录客户端 IP）
-  const auth = createDashboardAuth();
+  const auth = createDashboardAuth(pool);
   const relationshipAiProvider = options.relationshipAiProvider ?? new DeepSeekProvider();
   app.use('/api/v1/mobile', cors());
   app.use(uploadTiming);

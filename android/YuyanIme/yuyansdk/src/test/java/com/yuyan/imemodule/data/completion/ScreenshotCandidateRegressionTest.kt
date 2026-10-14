@@ -85,7 +85,7 @@ class ScreenshotCandidateRegressionTest {
     @Test fun `混拼补充不越过完整单字和既有整词且支持退格再输入`() {
         val single = OfflineT9Candidates.select("74826", listOf("栓", "拴"), listOf("shuan", "shuan"))
         assertEquals(listOf("栓", "拴"), single.firstPage.take(2).map { it.text })
-        assertFalse("已有完整候选时不额外混入双字首字简拼", single.firstPage.any { it.text == "舒缓" })
+        assertFalse("已有完整候选时不额外混入双字首字简拼: ${single.firstPage}", single.firstPage.any { it.text == "舒缓" })
         for (code in listOf("552", "5526", "552", "5526")) {
             val selection = OfflineT9Candidates.select(code)
             if (code == "5526") assertEquals("看看", selection.firstPage.first().text)

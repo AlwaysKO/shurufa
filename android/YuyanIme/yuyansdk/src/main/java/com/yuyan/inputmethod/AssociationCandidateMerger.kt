@@ -28,23 +28,25 @@ internal object AssociationCandidateMerger {
                 .forEach { add(MergedAssociationCandidate(rime[it], AssociationCandidateSource.RIME, it)) }
         }
 
+        val partial = offline.partial.filterNot { it in offline.lowPriority }
+        val next = offline.next.filterNot { it in offline.lowPriority }
         when {
-            offline.partial.isNotEmpty() -> {
-                addPlain(offline.partial, AssociationCandidateSource.OFFLINE)
+            partial.isNotEmpty() -> {
+                addPlain(partial, AssociationCandidateSource.OFFLINE)
                 addRime(0..4)
                 addPlain(custom, AssociationCandidateSource.CUSTOM)
-                addPlain(offline.next, AssociationCandidateSource.OFFLINE)
+                addPlain(next, AssociationCandidateSource.OFFLINE)
                 addRime(5 until rime.size)
             }
-            offline.next.isNotEmpty() && offline.trailingPunctuation -> {
-                addPlain(offline.next, AssociationCandidateSource.OFFLINE)
+            next.isNotEmpty() && offline.trailingPunctuation -> {
+                addPlain(next, AssociationCandidateSource.OFFLINE)
                 addRime(0..4)
                 addPlain(custom, AssociationCandidateSource.CUSTOM)
                 addRime(5 until rime.size)
             }
-            offline.next.isNotEmpty() -> {
+            next.isNotEmpty() -> {
                 addPlain(custom, AssociationCandidateSource.CUSTOM)
-                addPlain(offline.next, AssociationCandidateSource.OFFLINE)
+                addPlain(next, AssociationCandidateSource.OFFLINE)
                 addRime(rime.indices)
             }
             else -> {
@@ -53,6 +55,7 @@ internal object AssociationCandidateMerger {
                 addRime(5 until rime.size)
             }
         }
+        addPlain(offline.lowPriority, AssociationCandidateSource.OFFLINE)
         addPlain(remote, AssociationCandidateSource.REMOTE)
     }
 }

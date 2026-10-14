@@ -34,7 +34,7 @@ beforeAll(async () => {
   await pool.query(sql.slice(sql.indexOf('CREATE TABLE IF NOT EXISTS input_event'), sql.indexOf('CREATE INDEX IF NOT EXISTS idx_event_device_time')));
   await pool.query('ALTER TABLE input_event ADD COLUMN client_ip TEXT; ALTER TABLE input_event ADD COLUMN ip_location TEXT; ALTER TABLE input_event ADD COLUMN network_type TEXT');
   await pool.query('CREATE TABLE location_track (user_id uuid, occurred_at timestamptz, latitude numeric, longitude numeric, address text, last_seen_at timestamptz)');
-  app = createApp(pool); agent = await authenticatedRequest(app);
+  app = createApp(pool); agent = await authenticatedRequest(app, pool);
 });
 afterAll(async () => {
   if (!pool) return;

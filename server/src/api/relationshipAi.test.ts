@@ -42,7 +42,7 @@ beforeEach(async () => {
 describe('relationship AI APIs', () => {
   it('lets dashboard train/read/preview and mobile request replies', async () => {
     const app = createApp(pool, { relationshipAiProvider: provider, relationshipAiMinMessages: 2 });
-    const auth = await authenticatedRequest(app);
+    const auth = await authenticatedRequest(app, pool);
     const trained = await auth.post(`/api/v1/dashboard/relationships/${conversationId}/ai-profile/train?user_id=${USER}`).send({});
     expect(trained.status).toBe(200);
     expect(trained.body.profile).toMatchObject({ version: 1, profile: { summary: '好友' } });
@@ -66,7 +66,7 @@ describe('relationship AI APIs', () => {
 
   it('validates requests and hides provider failures behind fallback', async () => {
     const app = createApp(pool, { relationshipAiProvider: provider, relationshipAiMinMessages: 3 });
-    const auth = await authenticatedRequest(app);
+    const auth = await authenticatedRequest(app, pool);
     const train = await auth.post(`/api/v1/dashboard/relationships/${conversationId}/ai-profile/train?user_id=${USER}`).send({});
     expect(train.status).toBe(409);
     expect(train.body.error).toBe('not_enough_messages');

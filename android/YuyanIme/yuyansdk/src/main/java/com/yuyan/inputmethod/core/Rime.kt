@@ -74,7 +74,7 @@ class Rime(fullCheck: Boolean) {
         @JvmStatic
         fun processKey(keycode: Int, mask: Int): Boolean {
             if (keycode <= 0 || keycode == 0xffffff) return false
-            setRimePageSize(100)
+            setRimePageSize(16)
             return processRimeKey(keycode, mask).also {
                 updateContext()
             }

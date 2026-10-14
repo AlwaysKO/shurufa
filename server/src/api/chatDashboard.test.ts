@@ -78,7 +78,7 @@ beforeEach(async () => {
 
 describe('chat dashboard API', () => {
   it('概览返回稳定的会话、消息和媒体计数', async () => {
-    const response = await (await authenticatedRequest(createApp(pool))).get(`/api/v1/dashboard/chat/overview?user_id=${userId}`);
+    const response = await (await authenticatedRequest(createApp(pool), pool)).get(`/api/v1/dashboard/chat/overview?user_id=${userId}`);
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
@@ -89,7 +89,7 @@ describe('chat dashboard API', () => {
   });
 
   it('会话列表返回稳定字段并支持分页', async () => {
-    const response = await (await authenticatedRequest(createApp(pool)))
+    const response = await (await authenticatedRequest(createApp(pool), pool))
       .get(`/api/v1/dashboard/chat/conversations?page=1&page_size=1&user_id=${userId}`);
 
     expect(response.status).toBe(200);
@@ -106,7 +106,7 @@ describe('chat dashboard API', () => {
   });
 
   it('消息列表返回资源 URL、方向、类型、发送者、文本、时间和平台', async () => {
-    const response = await (await authenticatedRequest(createApp(pool)))
+    const response = await (await authenticatedRequest(createApp(pool), pool))
       .get(`/api/v1/dashboard/chat/messages?conversation_id=${conversationId}&page=2&page_size=1&user_id=${userId}`);
 
     expect(response.status).toBe(200);
@@ -126,7 +126,7 @@ describe('chat dashboard API', () => {
   });
 
   it('删除当前用户的会话、消息和仅由该会话引用的媒体', async () => {
-    const response = await (await authenticatedRequest(createApp(pool)))
+    const response = await (await authenticatedRequest(createApp(pool), pool))
       .delete(`/api/v1/dashboard/chat/conversations/${conversationId}?user_id=${userId}`);
 
     expect(response.status).toBe(200);
@@ -137,7 +137,7 @@ describe('chat dashboard API', () => {
   });
 
   it('不能删除其他用户的会话', async () => {
-    const response = await (await authenticatedRequest(createApp(pool)))
+    const response = await (await authenticatedRequest(createApp(pool), pool))
       .delete(`/api/v1/dashboard/chat/conversations/${conversationId}?user_id=00000000-0000-4000-8000-000000000099`);
 
     expect(response.status).toBe(404);
@@ -145,7 +145,7 @@ describe('chat dashboard API', () => {
   });
 
   it('可删除单张截图并清理失去最后资源的空截图消息', async () => {
-    const response = await (await authenticatedRequest(createApp(pool)))
+    const response = await (await authenticatedRequest(createApp(pool), pool))
       .delete(`/api/v1/dashboard/chat/messages/${firstMessageId}/assets/${assetId}?user_id=${userId}`);
 
     expect(response.status).toBe(200);
@@ -165,7 +165,7 @@ describe('chat dashboard API', () => {
     [sharedMessage, userId, crypto.randomUUID(), conversationId, '1'.repeat(64), '2'.repeat(64)]);
     await pool.query('INSERT INTO chat_message_asset(message_id,asset_id) VALUES($1,$2)', [sharedMessage, assetId]);
 
-    const response = await (await authenticatedRequest(createApp(pool)))
+    const response = await (await authenticatedRequest(createApp(pool), pool))
       .delete(`/api/v1/dashboard/chat/messages/${firstMessageId}/assets/${assetId}?user_id=${userId}`);
 
     expect(response.status).toBe(200);
@@ -175,7 +175,7 @@ describe('chat dashboard API', () => {
   });
 
   it('不能删除其他用户消息中的图片', async () => {
-    const response = await (await authenticatedRequest(createApp(pool)))
+    const response = await (await authenticatedRequest(createApp(pool), pool))
       .delete(`/api/v1/dashboard/chat/messages/${firstMessageId}/assets/${assetId}?user_id=00000000-0000-4000-8000-000000000099`);
     expect(response.status).toBe(404);
     expect((await pool.query('SELECT 1 FROM chat_message_asset WHERE message_id=$1 AND asset_id=$2', [firstMessageId, assetId])).rowCount).toBe(1);
@@ -192,7 +192,7 @@ it('聊天消息跨页按采集时间倒序，同时间以ID倒序稳定排序�
       [id, userId, crypto.randomUUID(), conversationId, String(i + 1).padStart(64, '0'),
        new Date(i < 15 ? '2026-09-16T10:00:00Z' : '2026-09-17T10:00:00Z')]);
   }
-  const agent = await authenticatedRequest(createApp(pool));
+  const agent = await authenticatedRequest(createApp(pool), pool);
   const first = await agent.get(`/api/v1/dashboard/chat/messages?user_id=${userId}&conversation_id=${conversationId}&page=1&page_size=24`);
   const second = await agent.get(`/api/v1/dashboard/chat/messages?user_id=${userId}&conversation_id=${conversationId}&page=2&page_size=24`);
   expect(first.status).toBe(200);
@@ -220,7 +220,7 @@ it('平台筛选在分页前执行，概览只统计当前平台关联的去重�
     [id,userId,crypto.randomUUID(),rows[0].id,String(i + 1).repeat(64)]);
     await pool.query('INSERT INTO chat_message_asset (message_id,asset_id) VALUES ($1,$2)', [id,assetId]);
   }
-  const agent = await authenticatedRequest(createApp(pool));
+  const agent = await authenticatedRequest(createApp(pool), pool);
   for (const platform of ['wechat', 'qq', 'douyin']) {
     const empty = platform === 'douyin';
     const overview = await agent.get(`/api/v1/dashboard/chat/overview?user_id=${userId}&platform=${platform}`);
@@ -236,7 +236,7 @@ it('平台筛选在分页前执行，概览只统计当前平台关联的去重�
 });
 
 it('拒绝未知或重复的平台参数而不是悄悄返回全部聊天', async () => {
-  const agent = await authenticatedRequest(createApp(pool));
+  const agent = await authenticatedRequest(createApp(pool), pool);
   for (const route of ['overview', 'conversations']) {
     for (const query of ['platform=unknown', 'platform=qq&platform=wechat', 'platform=']) {
       expect((await agent.get(`/api/v1/dashboard/chat/${route}?user_id=${userId}&${query}`)).status).toBe(400);
@@ -254,7 +254,7 @@ it('平台媒体统计排除未关联图片与其他用户消息关联图片', a
       await pool.query('INSERT INTO chat_message_asset(message_id,asset_id) VALUES ($1,$2)', [foreign.rows[0].id, rows[0].id]);
     }
   }
-  const agent = await authenticatedRequest(createApp(pool));
+  const agent = await authenticatedRequest(createApp(pool), pool);
   expect((await agent.get(`/api/v1/dashboard/chat/overview?user_id=${userId}&platform=wechat`)).body.media_count).toBe(1);
   expect((await agent.get(`/api/v1/dashboard/chat/overview?user_id=${userId}&platform=qq`)).body.media_count).toBe(0);
 });
@@ -262,9 +262,9 @@ it('平台媒体统计排除未关联图片与其他用户消息关联图片', a
 it('消息查询提供原始设备与已有感知哈希，仅供相似截图展示',async()=>{
  await pool.query('UPDATE media_asset SET perceptual_hash=$1 WHERE id=$2',['123456789abcdef0',assetId]);
  const device=(await pool.query('SELECT device_id FROM chat_message WHERE id=$1',[firstMessageId])).rows[0].device_id;
- const response=await (await authenticatedRequest(createApp(pool))).get(`/api/v1/dashboard/chat/messages?conversation_id=${conversationId}&page=2&page_size=1&user_id=${userId}`);
+ const response=await (await authenticatedRequest(createApp(pool), pool)).get(`/api/v1/dashboard/chat/messages?conversation_id=${conversationId}&page=2&page_size=1&user_id=${userId}`);
  expect(response.status).toBe(200);expect(response.body.messages[0].device_id).toBe(device);expect(response.body.messages[0].assets[0].perceptual_hash).toBe('123456789abcdef0');
  await pool.query('UPDATE media_asset SET perceptual_hash=NULL WHERE id=$1',[assetId]);
- const legacy=await (await authenticatedRequest(createApp(pool))).get(`/api/v1/dashboard/chat/messages?conversation_id=${conversationId}&page=2&page_size=1&user_id=${userId}`);
+ const legacy=await (await authenticatedRequest(createApp(pool), pool)).get(`/api/v1/dashboard/chat/messages?conversation_id=${conversationId}&page=2&page_size=1&user_id=${userId}`);
  expect(legacy.body.messages[0].assets[0].perceptual_hash).toBeNull();
 });

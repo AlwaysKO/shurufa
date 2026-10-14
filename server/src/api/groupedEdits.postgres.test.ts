@@ -23,7 +23,7 @@ beforeAll(async () => {
     occurred_at timestamptz, package_name text, editor_id text, event_type text,
     text text, text_before text, text_after text, input_code text, metadata jsonb,
     client_ip text, ip_location text, network_type text)`);
-  agent = await authenticatedRequest(createApp(pool));
+  agent = await authenticatedRequest(createApp(pool), pool);
 });
 afterAll(async () => {
   if (!pool) return;

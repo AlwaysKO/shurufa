@@ -36,7 +36,7 @@ beforeEach(async () => {
   for (const file of readdirSync(dir).filter(x => /^(043|044|045|046)_/.test(x)).sort()) {
     const sql = readFileSync(new URL(file, dir), 'utf8'); await pool.query(sql); await pool.query(sql);
   }
-  app = createApp(pool); agent = await authenticatedRequest(app);
+  app = createApp(pool); agent = await authenticatedRequest(app, pool);
 });
 afterAll(async () => { await pool?.end(); });
 const page = (extra = {}) => ({ id: randomUUID(), package_name: 'com.tencent.mm', kind: 'conversation_list',

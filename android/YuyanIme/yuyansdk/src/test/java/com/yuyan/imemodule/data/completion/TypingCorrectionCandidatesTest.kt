@@ -45,6 +45,12 @@ class TypingCorrectionCandidatesTest {
             assertTrue(code, OfflineT9Candidates.select(code).firstPage.any { it.text == word })
         }
     }
+    @Test fun `全键首音节内部错位和漏键也可纠正`() {
+        for (input in listOf("bejing", "biejing")) {
+            val result = OfflineT9Candidates.select(input).firstPage
+            assertTrue(input + result.map { it.text }, result.any { it.text == "北京" && it.inputMatch?.kind == InputMatchKind.TYPO_CORRECTION })
+        }
+    }
     @Test fun `已有正常双字混拼时不注入纠错候选`() {
         for (code in listOf("424364", "924364", "524364")) {
             val result = OfflineT9Candidates.select(code).firstPage

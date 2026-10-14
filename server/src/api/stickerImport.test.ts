@@ -15,7 +15,7 @@ it('后台沿用登录与CSRF，助手令牌不授权关键词且不用选择手
   });
   const app = createApp(pool);
   expect((await request(app).post('/api/v1/dashboard/sticker-import/pairings')).status).toBe(401);
-  const agent = await authenticatedRequest(app);
+  const agent = await authenticatedRequest(app, pool);
   expect((await agent.post('/api/v1/dashboard/sticker-import/pairings')).status).toBe(201);
   expect(
     (await agent.post('/api/v1/dashboard/sticker-import/pairings').set('X-Dashboard-Request', ''))

@@ -27,7 +27,7 @@ internal data class CodedLearnedInput(val code: String, val choice: LearnedInput
 
 /** 独立数据库，不迁移或清空既有 Rime 用户库和剪贴板库。 */
 internal class LocalInputStore(context: Context, name: String = "local_input.db", private val now: () -> Long = System::currentTimeMillis) :
-    SQLiteOpenHelper(context.applicationContext, name, null, 12) {
+    SQLiteOpenHelper(context.applicationContext, name, null, 13) {
     private val json = Json { ignoreUnknownKeys = true }
     private val policyKey = context.getDatabasePath(name).absolutePath
 
@@ -55,6 +55,7 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
         createDictionarySyncTables(db)
         createDictionaryAdditionTables(db)
         createDictionaryHabitTables(db)
+        createPersonalWordReadingIndexes(db)
         db.execSQL("CREATE TABLE pending_event (id TEXT PRIMARY KEY NOT NULL, payload TEXT NOT NULL, online_confirmed_at INTEGER)")
         db.execSQL("CREATE TABLE event_target (event_id TEXT NOT NULL, target TEXT NOT NULL, PRIMARY KEY(event_id,target))")
         db.execSQL("CREATE INDEX event_target_url ON event_target(target)")
@@ -102,6 +103,7 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
             ReportImageIndex.createTables(db)
             db.execSQL("INSERT OR IGNORE INTO report_image_target SELECT t.report_id,t.target FROM report_target t JOIN pending_report r ON r.id=t.report_id WHERE r.kind='chat_asset'")
         }
+        if (oldVersion < 13) createPersonalWordReadingIndexes(db)
     }
 
     @Synchronized fun enqueue(event: MobileEvent, targets: List<String>) {
@@ -550,6 +552,14 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
         db.execSQL("CREATE INDEX personal_word_code ON personal_word(full_code)")
     }
 
+    private fun createPersonalWordReadingIndexes(db: SQLiteDatabase) {
+        for (table in listOf("personal_word", "dictionary_remote_word", "dictionary_added_word")) {
+            val exists = db.rawQuery("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", arrayOf(table))
+                .use { it.moveToFirst() }
+            if (exists) db.execSQL("CREATE INDEX IF NOT EXISTS ${table}_reading ON $table(pinyin,text)")
+        }
+    }
+
     /** 导入与本机点击分开，重复导入不增加次数，也不创建上传事件。未知读音只保留原词。 */
     @Synchronized fun rememberWord(text: String, pinyin: String, source: String): Boolean {
         if (text.length !in 1..30 || text.any { it !in '\u4e00'..'\u9fff' }) return false
@@ -564,18 +574,25 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
     }
 
     @Synchronized fun personalWords(code: String, preferredOnly: Boolean = false): List<T9Candidate> {
-        if (code.length !in 3..30 || !(code.all { it in '2'..'9' } || code.all { it in 'a'..'z' })) return emptyList()
+        if (code.length !in 2..30 || !(code.all { it in '2'..'9' } || code.all { it in 'a'..'z' })) return emptyList()
         val numeric = code.all { it in '2'..'9' }
         val prefix = if (numeric) code else T9Lexicon.digits(code)
-        val initials = if (numeric && code.length == 3) code.map {
-            "[${arrayOf("abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz")[it - '2']}]*"
+        val initials = if (code.length in 2..3) code.map {
+            if (numeric) "[${arrayOf("abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz")[it - '2']}]*"
+            else "$it*"
         }.joinToString(" ") else null
         val sources = if (preferredOnly) "SELECT text,pinyin,full_code FROM dictionary_added_word WHERE preferred=1"
             else "SELECT text,pinyin,full_code FROM personal_word UNION ALL SELECT text,pinyin,full_code FROM dictionary_remote_word UNION ALL SELECT text,pinyin,full_code FROM dictionary_added_word"
-        val condition = if (initials == null) "full_code GLOB ?" else "(full_code GLOB ? OR (length(text)=3 AND pinyin GLOB ?))"
-        val args = if (initials == null) arrayOf("$prefix*") else arrayOf("$prefix*", initials)
+        val fullWords = "SELECT text,pinyin FROM ($sources) WHERE full_code GLOB ?"
+        // 分开两个索引范围；OR 中的音节 GLOB 会迫使每次两三键输入扫描整张词表。
+        val firstLetters = if (numeric) arrayOf("abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz")[code[0] - '2']
+            else code.take(1)
+        val matches = if (initials == null) fullWords else
+            "$fullWords UNION ALL SELECT text,pinyin FROM ($sources) WHERE pinyin>=? AND pinyin<? AND length(text)=${code.length} AND pinyin GLOB ?"
+        val args = if (initials == null) arrayOf("$prefix*") else
+            arrayOf("$prefix*", firstLetters.first().toString(), (firstLetters.last() + 1).toString(), initials)
         return readableDatabase.rawQuery(
-            "SELECT DISTINCT text,pinyin FROM ($sources) WHERE $condition AND text NOT IN (SELECT text FROM dictionary_policy WHERE status!='enabled') ORDER BY text,pinyin", args,
+            "SELECT DISTINCT text,pinyin FROM ($matches) WHERE text NOT IN (SELECT text FROM dictionary_policy WHERE status!='enabled') ORDER BY text,pinyin", args,
         ).use { c -> buildList {
             while (c.moveToNext()) {
                 val reading = c.getString(1)

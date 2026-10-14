@@ -1,5 +1,6 @@
 package com.yuyan.imemodule.data.completion
 
+import com.yuyan.inputmethod.AssociationCandidateMerger
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -32,5 +33,26 @@ class OfflineAssociationAssetTest {
         assertTrue("休息" in index.query("早点").partial)
         assertTrue("告诉我" in index.query("到家").partial)
         assertTrue("安全" in index.query("注意").partial)
+    }
+
+    @Test fun dailyPrefixesRemainUsableAfterMoreThanTwoCharacters() {
+        val index = loadIndex()
+        assertTrue("回复你" in index.query("我晚点").partial)
+        assertTrue("联系你" in index.query("我晚点").partial)
+        assertTrue("发给我" in index.query("把文件").partial)
+        assertTrue("一下" in index.query("麻烦确认").partial)
+        assertTrue("上" in index.query("我在路").partial)
+    }
+
+    @Test fun shortLiteraryMatchesDoNotTakeOverDailyNativeAssociations() {
+        val index = loadIndex()
+        val result = AssociationCandidateMerger.merge(
+            index.query("然后"), listOf("呢", "再说", "回家"), emptyList(), emptyList(),
+        )
+        assertTrue(result.take(3).all { it.text in setOf("呢", "再说", "回家") })
+    }
+
+    @Test fun clearLiteraryPrefixBeatsAnUnrelatedShortSuffix() {
+        assertTrue("光" in loadIndex().query("床前明月").partial)
     }
 }

@@ -30,7 +30,7 @@ beforeEach(async () => {
   for (const file of ['007_chat_capture.sql', '020_runtime_settings.sql', '022_chat_conversation_merge.sql']) {
     await pool.query(readFileSync(new URL(`../../migrations/${file}`, import.meta.url), 'utf8'));
   }
-  agent = await authenticatedRequest(createApp(pool));
+  agent = await authenticatedRequest(createApp(pool), pool);
 });
 afterAll(async () => { await pool?.end(); });
 async function conversation(name = '待确认会话', options: { user?: string; platform?: string; account?: string; confidence?: number; key?: string } = {}) {

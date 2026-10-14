@@ -404,8 +404,9 @@ object RimeEngine {
         }
         personalCandidates?.let { selection ->
             showCandidates = showCandidates.take(customPhraseSize) + selection.firstPage.map {
-                it.nativeIndex?.let { index -> candidates[index] } ?: CandidateListItem(
-                    if (it.inputMatch?.kind == com.yuyan.imemodule.data.completion.InputMatchKind.TYPO_CORRECTION) "纠错" else "本地", it.text)
+                if (it.inputMatch?.kind == com.yuyan.imemodule.data.completion.InputMatchKind.TYPO_CORRECTION)
+                    CandidateListItem("纠错", it.text)
+                else it.nativeIndex?.let { index -> candidates[index] } ?: CandidateListItem("本地", it.text)
             }.ifEmpty {
                 getNextPageCandidates().asList()
             }

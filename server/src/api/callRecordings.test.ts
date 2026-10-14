@@ -36,7 +36,7 @@ beforeEach(async () => {
   await pool.query('INSERT INTO dictionary_device VALUES($1,$2),($3,$4)',[A,hash(token),B,hash(otherToken)]);
   await pool.query(await readFile(new URL('../../migrations/037_call_recordings.sql',import.meta.url),'utf8'));
   await pool.query(await readFile(new URL('../../migrations/039_call_logs.sql',import.meta.url),'utf8'));
-  app=createApp(pool);agent=await authenticatedRequest(app);
+  app=createApp(pool);agent=await authenticatedRequest(app, pool);
 });
 afterEach(async()=>{if(!root)return;await pool?.query('DROP SCHEMA '+schema+' CASCADE');await pool?.end();if(dir)await rm(dir,{recursive:true,force:true});delete process.env.CALL_RECORDING_KEY_FILE;});
 const put=(id:string, m=metadata(), bytes=audio, device=A, credential=token)=>request(app)

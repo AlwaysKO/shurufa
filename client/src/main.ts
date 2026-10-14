@@ -9,6 +9,7 @@ import { createApp } from 'vue';
 import { createRouter, createWebHistory } from 'vue-router';
 import App from './App.vue';
 import Login from './views/Login.vue';
+import LoginRecords from './views/LoginRecords.vue';
 import { authenticated, checkSession, onSessionExpired } from './auth';
 import Overview from './views/Overview.vue';
 import Timeline from './views/Timeline.vue';
@@ -33,6 +34,7 @@ import Relationships from './views/Relationships.vue';
 const router = createRouter({
   history: createWebHistory(),
   routes: [
+    { path: '/login-records', component: LoginRecords, meta: { title: '登录记录' } },
     { path: '/video-visits', component: VideoVisits, meta: { title: '视频与信息流停留' } },
     { path: '/page-captures', component: PageCaptures, meta: { title: '应用页面' } },
     { path: '/chat-capture-settings', component: ChatCaptureSettings, meta: { title: '聊天采集配置与诊断' } },

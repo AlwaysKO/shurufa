@@ -47,12 +47,12 @@ describe('设备用户隔离', () => {
   });
 
   it('后台必须指定用户且两台手机数据互不可见', async () => {
-    const missing = await (await authenticatedRequest(createApp(pool))).get('/api/v1/dashboard/chat/conversations');
+    const missing = await (await authenticatedRequest(createApp(pool), pool)).get('/api/v1/dashboard/chat/conversations');
     expect(missing.status).toBe(400);
 
-    const first = await (await authenticatedRequest(createApp(pool)))
+    const first = await (await authenticatedRequest(createApp(pool), pool))
       .get(`/api/v1/dashboard/chat/conversations?user_id=${DEVICE_A}`);
-    const second = await (await authenticatedRequest(createApp(pool)))
+    const second = await (await authenticatedRequest(createApp(pool), pool))
       .get(`/api/v1/dashboard/chat/conversations?user_id=${DEVICE_B}`);
 
     expect(first.status).toBe(200);

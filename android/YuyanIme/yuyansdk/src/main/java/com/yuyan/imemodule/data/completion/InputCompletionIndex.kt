@@ -40,39 +40,63 @@ internal class InputCompletionIndex(bytes: ByteBuffer) {
         return ""
     }
 
-    fun query(code: String): List<T9Candidate> {
-        val numeric = code.isNotEmpty() && code.all { it in '2'..'9' }
-        if (!numeric && (code.isEmpty() || code.any { it !in 'a'..'z' })) return emptyList()
-        val short = numeric && code.length == 3
-        if (!short && code.length !in 4..30) return emptyList()
-        val prefix = (if (short) "a" else if (numeric) "n" else "p") + code
+    private fun lowerBound(value: String): Int {
         var low = 0
         var high = count
         while (low < high) {
             val middle = (low + high).ushr(1)
-            if (key(middle) < prefix) low = middle + 1 else high = middle
+            if (key(middle) < value) low = middle + 1 else high = middle
         }
+        return low
+    }
+
+    fun query(code: String): List<T9Candidate> {
+        val numeric = code.isNotEmpty() && code.all { it in '2'..'9' }
+        if (!numeric && (code.isEmpty() || code.any { it !in 'a'..'z' })) return emptyList()
+        if (code.length !in 2..30) return emptyList()
+        val prefixes = buildList {
+            if (code.length in 2..3) add((if (numeric) "a" else "i") + code to true)
+            if (code.length >= 3) add((if (numeric) "n" else "p") + code to false)
+            if (code.length >= 3) add("m" + code to false)
+        }.distinct()
         val candidates = ArrayList<T9Candidate>()
-        for (index in low until minOf(count, low + MAX_BUCKET)) {
-            val found = key(index)
-            if (if (short) found != prefix else !found.startsWith(prefix)) break
-            val start = payload + data.getInt(12 + index * 4)
-            val end = payload + data.getInt(16 + index * 4)
-            val row = ByteArray(end - start)
-            data.duplicate().apply { position(start); get(row) }
-            val fields = row.toString(Charsets.UTF_8).split('\t')
-            if (fields.size != 4) continue
-            val reading = PersonalWordReading.normalize(fields[1], fields[2]) ?: continue
-            if (InputSpellingMatch.match(code, reading) == null) continue
-            candidates.add(T9Candidate(fields[1], reading, fields[3].toLongOrNull() ?: 0))
+        val visited = HashSet<Int>()
+        for ((requested, requestedExact) in prefixes) {
+            var prefix = requested
+            var exact = requestedExact
+            var low = lowerBound(prefix)
+            if (!exact && lowerBound(prefix + '\u007f') - low > MAX_PREFIX_ROWS) {
+                // 宽桶已在构建期按实际消费音节筛选并保留同源高频词，避免字典序截断。
+                prefix = "b" + code
+                exact = true
+                low = lowerBound(prefix)
+            }
+            for (index in low until minOf(count, low + MAX_BUCKET)) {
+                val found = key(index)
+                if (if (exact) found != prefix else !found.startsWith(prefix)) break
+                if (!visited.add(index)) continue
+                val start = payload + data.getInt(12 + index * 4)
+                val end = payload + data.getInt(16 + index * 4)
+                val row = ByteArray(end - start)
+                data.duplicate().apply { position(start); get(row) }
+                val fields = row.toString(Charsets.UTF_8).split('\t')
+                if (fields.size != 4) continue
+                val reading = PersonalWordReading.normalize(fields[1], fields[2]) ?: continue
+                if (InputSpellingMatch.match(code, reading) == null && InputSpellingMatch.shortWord(code, reading) == null) continue
+                candidates.add(T9Candidate(fields[1], reading, fields[3].toLongOrNull() ?: 0))
+            }
         }
-        return if (short) candidates else candidates.sortedWith(
+        val ordered = candidates.sortedWith(
             compareByDescending<T9Candidate> { it.frequency }.thenBy { it.text.length }.thenBy { it.text },
-        ).distinctBy { it.text }.take(2)
+        ).distinctBy { it.text }
+        // 三字简拼保留旧地名可找性；其余短词和固定长句分别有界。
+        return if (numeric && code.length == 3) ordered else
+            ordered.filter { it.text.length <= 3 }.take(32) + ordered.filter { it.text.length > 3 }.take(2)
     }
 
     companion object {
         private const val MAX_BUCKET = 4096
+        private const val MAX_PREFIX_ROWS = 512
         fun load(context: Context): InputCompletionIndex = context.assets.openFd("completion/input_completion.t9idx").use { asset ->
             asset.createInputStream().use { input ->
                 InputCompletionIndex(input.channel.map(FileChannel.MapMode.READ_ONLY, asset.startOffset, asset.length))

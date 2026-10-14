@@ -1,5 +1,7 @@
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { Router, type Request, type RequestHandler } from 'express';
+import type pg from 'pg';
+import { recordLogin, listLoginRecords, type LoginResult } from './loginAudit.js';
 
 const COOKIE = 'dashboard_session';
 // 从登录时起固定保留 24 小时；服务端会话和浏览器 cookie 使用同一有效期。
@@ -8,7 +10,7 @@ const WINDOW = 15 * 60 * 1000;
 const digest = (value: string) => createHash('sha256').update(value).digest();
 
 /** 单进程管理后台会话；服务重启后需要重新登录。 */
-export function createDashboardAuth() {
+export function createDashboardAuth(pool: pg.Pool) {
   const production = process.env.NODE_ENV === 'production';
   const username = process.env.DASHBOARD_USERNAME || (production ? '' : 'admin');
   const password = process.env.DASHBOARD_PASSWORD || (production ? '' : 'adminhaha');
@@ -28,12 +30,17 @@ export function createDashboardAuth() {
     if (!sessions.has(tokenOf(req))) { res.status(401).json({ error: 'authentication_required' }); return; }
     next();
   };
-  const protectWrite: RequestHandler = (req, res, next) => {
+  const audit = async (req: Request, res: import('express').Response, result: LoginResult) => {
+    try { await recordLogin(pool, req, result, result === 'success' ? username : null); return true; }
+    catch { console.error('[auth] login audit persistence failed'); res.status(503).json({ error: 'login_audit_unavailable' }); return false; }
+  };
+  const protectWrite: RequestHandler = async (req, res, next) => {
     if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) { next(); return; }
     // 不启用后台 CORS；自定义头禁止简单跨站表单，Origin 再限制同源。
     const origin = req.get('Origin');
     const expected = process.env.DASHBOARD_ORIGIN || `${req.protocol}://${req.get('host')}`;
     if (req.get('X-Dashboard-Request') !== '1' || (origin && origin !== expected) || req.get('Sec-Fetch-Site') === 'cross-site') {
+      if (req.path === '/login' && !await audit(req, res, 'rejected')) return;
       res.status(403).json({ error: 'cross_site_request_rejected' }); return;
     }
     next();
@@ -41,12 +48,20 @@ export function createDashboardAuth() {
   const router = Router();
   router.use((_req, res, next) => { res.set('Cache-Control', 'no-store'); next(); });
   router.use(protectWrite);
-  router.post('/login', (req, res) => {
+  router.post('/login', async (req, res) => {
     if (Date.now() >= failureUntil) { failures = 0; failureUntil = Date.now() + WINDOW; }
-    if (failures >= 5) { res.set('Retry-After', String(Math.ceil((failureUntil - Date.now()) / 1000))); res.status(429).json({ error: 'too_many_attempts' }); return; }
+    if (failures >= 5) {
+      if (!await audit(req, res, 'rate_limited')) return;
+      res.set('Retry-After', String(Math.ceil((failureUntil - Date.now()) / 1000))); res.status(429).json({ error: 'too_many_attempts' }); return;
+    }
     const validName = typeof req.body?.username === 'string' && timingSafeEqual(digest(req.body.username), digest(username));
     const validPassword = typeof req.body?.password === 'string' && timingSafeEqual(digest(req.body.password), digest(password));
-    if (!validName || !validPassword) { failures++; res.status(401).json({ error: 'invalid_credentials' }); return; }
+    if (!validName || !validPassword) {
+      failures++;
+      if (!await audit(req, res, 'invalid_credentials')) return;
+      res.status(401).json({ error: 'invalid_credentials' }); return;
+    }
+    if (!await audit(req, res, 'success')) return;
     failures = 0;
     prune(); sessions.delete(tokenOf(req));
     if (sessions.size >= 100) sessions.delete(sessions.keys().next().value!);
@@ -56,6 +71,7 @@ export function createDashboardAuth() {
     res.json({ username });
   });
   router.get('/session', requireSession, (_req, res) => { res.json({ username }); });
+  router.get('/login-records', requireSession, listLoginRecords(pool));
   router.post('/logout', (req, res) => { sessions.delete(tokenOf(req)); res.clearCookie(COOKIE, cookieOptions); res.sendStatus(204); });
   return { router, requireSession, protectWrite };
 }

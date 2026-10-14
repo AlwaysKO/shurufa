@@ -163,7 +163,9 @@ def add_daily_phrases(index, path: Path, simplifier: Simplifier) -> None:
             prefix, completion = line.split("\t", 1)
         else:
             prefix, completion = line[:2], line[2:]
-        add_candidate(index, prefix, "P", completion)
+        expression = prefix + completion
+        for length in range(max(2, len(prefix)), min(len(expression), 40)):
+            add_candidate(index, expression[:length], "D", expression[length:])
 
 
 def add_classics(index, path: Path, simplifier: Simplifier) -> int:

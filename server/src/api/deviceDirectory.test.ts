@@ -39,7 +39,7 @@ beforeEach(async () => {
 describe('dashboard user directory', () => {
   it('按最后人为操作排序，无证据为null，不使用后台联系时间代替', async () => {
     await pool.query("UPDATE device SET last_interaction_at=$2,last_interaction_source='touch' WHERE id=$1", [ids[0], '2026-10-09T16:00:00Z']);
-    const response = await (await authenticatedRequest(createApp(pool))).get('/api/v1/dashboard/users');
+    const response = await (await authenticatedRequest(createApp(pool), pool)).get('/api/v1/dashboard/users');
     expect(response.status).toBe(200);
     expect(response.body.users[0]).toMatchObject({ id: ids[0], last_interaction_at: '2026-10-09T16:00:00.000Z', last_interaction_source: 'touch' });
     expect(response.body.users[1].last_interaction_at).toBeNull();
@@ -53,7 +53,7 @@ describe('dashboard user directory', () => {
   });
 
   it('无需当前用户即可分页列出用户', async () => {
-    const response = await (await authenticatedRequest(createApp(pool)))
+    const response = await (await authenticatedRequest(createApp(pool), pool))
       .get('/api/v1/dashboard/users?page=2&page_size=10');
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({ total: 25, page: 2, page_size: 10 });
@@ -63,9 +63,9 @@ describe('dashboard user directory', () => {
   });
 
   it('支持名称、品牌、型号、设备 ID 搜索和精确 ID 查询', async () => {
-    const byBrand = await (await authenticatedRequest(createApp(pool))).get('/api/v1/dashboard/users?q=HONOR');
-    const byModel = await (await authenticatedRequest(createApp(pool))).get('/api/v1/dashboard/users?q=Model-25');
-    const exact = await (await authenticatedRequest(createApp(pool))).get(`/api/v1/dashboard/users?id=${ids[24]}`);
+    const byBrand = await (await authenticatedRequest(createApp(pool), pool)).get('/api/v1/dashboard/users?q=HONOR');
+    const byModel = await (await authenticatedRequest(createApp(pool), pool)).get('/api/v1/dashboard/users?q=Model-25');
+    const exact = await (await authenticatedRequest(createApp(pool), pool)).get(`/api/v1/dashboard/users?id=${ids[24]}`);
     expect(byBrand.body.users.map((row: { id: string }) => row.id)).toEqual([ids[24]]);
     expect(byModel.body.users.map((row: { id: string }) => row.id)).toEqual([ids[24]]);
     expect(exact.body.users.map((row: { id: string }) => row.id)).toEqual([ids[24]]);
@@ -73,10 +73,10 @@ describe('dashboard user directory', () => {
 
   it('支持设置易识别的用户名称和标签并参与搜索', async () => {
     const app = createApp(pool);
-    const updated = await (await authenticatedRequest(app))
+    const updated = await (await authenticatedRequest(app, pool))
       .patch(`/api/v1/dashboard/users/${ids[24]}?user_id=${ids[0]}`)
       .send({ dashboard_name: '上海客服 025', tags: '上海,客服,VIP' });
-    const searched = await (await authenticatedRequest(app)).get('/api/v1/dashboard/users?q=VIP');
+    const searched = await (await authenticatedRequest(app, pool)).get('/api/v1/dashboard/users?q=VIP');
     expect(updated.status).toBe(200);
     expect(updated.body.user).toMatchObject({ id: ids[24], dashboard_name: '上海客服 025', tags: '上海,客服,VIP' });
     expect(searched.body.users.map((row: { id: string }) => row.id)).toEqual([ids[24]]);
@@ -84,7 +84,7 @@ describe('dashboard user directory', () => {
 
   it('设备接口只返回当前用户自己的设备', async () => {
     vi.mocked(deviceDataReceivedAt).mockResolvedValue(new Map([[ids[24], new Date('2026-10-08T01:02:03Z')]]));
-    const response = await (await authenticatedRequest(createApp(pool)))
+    const response = await (await authenticatedRequest(createApp(pool), pool))
       .get(`/api/v1/dashboard/devices?user_id=${ids[24]}`);
     expect(response.status).toBe(200);
     expect(response.body.devices.map((row: { id: string }) => row.id)).toEqual([ids[24]]);
