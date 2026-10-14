@@ -17,7 +17,7 @@ internal class T9CommitTracker {
     fun selected(code: String, text: String, pinyin: String = "", diagnostic: CandidateCommitDiagnostic? = null,
                  matchKind: InputMatchKind? = null) {
         clear()
-        if (matchKind == InputMatchKind.TYPO_CORRECTION) return
+        if (matchKind == InputMatchKind.TYPO_CORRECTION || matchKind == InputMatchKind.SENTENCE_FALLBACK) return
         pending = code.takeIf { it.isNotEmpty() }?.let { T9CommitSelection(it, text, pinyin,
             diagnostics = listOfNotNull(diagnostic), diagnosticSelectionCount = if (diagnostic == null) 0 else 1) }
     }
@@ -25,7 +25,7 @@ internal class T9CommitTracker {
     @JvmOverloads
     fun segment(code: String, text: String, pinyin: String, committed: String?, diagnostic: CandidateCommitDiagnostic? = null,
                 matchKind: InputMatchKind? = null) {
-        if (matchKind == InputMatchKind.TYPO_CORRECTION) { clear(); return }
+        if (matchKind == InputMatchKind.TYPO_CORRECTION || matchKind == InputMatchKind.SENTENCE_FALLBACK) { clear(); return }
         pending = null
         if (segments == null && code.isNotEmpty()) segments = T9CommitSelection(code, "")
         if (code.isNotEmpty() && segments?.code != code) {

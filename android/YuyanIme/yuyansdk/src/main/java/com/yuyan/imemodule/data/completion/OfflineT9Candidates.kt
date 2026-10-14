@@ -30,6 +30,8 @@ internal object OfflineT9Candidates {
     @Volatile private var inputCompletions: InputCompletionIndex? = null
     @Volatile private var inputCompletionsAttempted = false
     @Volatile private var store: LocalInputStore? = null
+    @Volatile private var sentenceFallback: T9SentenceFallback? = null
+    @Volatile private var sentenceFallbackAttempted = false
 
     fun init(context: Context) {
         appContext = context.applicationContext
@@ -49,6 +51,14 @@ internal object OfflineT9Candidates {
             inputCompletionsAttempted = true
             try { inputCompletions = InputCompletionIndex.load(context) }
             catch (error: Exception) { Log.w("OfflineT9", "简拼补全索引不可用，保留既有输入", error) }
+        }
+        if (!sentenceFallbackAttempted) {
+            sentenceFallbackAttempted = true
+            try {
+                sentenceFallback = context.assets.open("completion/sentence_fallback.tsv.gzip").use { stream ->
+                    GZIPInputStream(stream).reader().use(T9SentenceFallback::load)
+                }
+            } catch (error: Exception) { Log.w("OfflineT9", "长串组合词典不可用，保留原生候选", error) }
         }
         if (lexicon != null) return
         try {
@@ -73,6 +83,17 @@ internal object OfflineT9Candidates {
         select(code, native).firstPage
 
     fun blockedCandidateTexts(): Set<String> = store?.blockedCandidateTexts().orEmpty()
+
+    internal fun cannotSpellWithoutInternalAbbreviation(code: String): Boolean =
+        sentenceFallback?.canSpellWithoutInternalAbbreviation(code) == false
+
+    private fun generatedSentences(code: String, blocked: Set<String>): List<RankedCandidate> =
+        sentenceFallback?.decode(code).orEmpty().filter { sentence -> blocked.none { it in sentence.text } }.map { sentence ->
+            RankedCandidate(sentence.text, sentence.pinyin,
+                inputMatch = InputSpellingMatch(InputMatchKind.SENTENCE_FALLBACK, code, sentence.typedPreedit),
+                lexicalEvidence = "generated")
+        }
+
 
     fun select(code: String, native: List<String> = emptyList(), nativeComments: List<String>? = null): CandidateSelection =
         selectInput(code, native, nativeComments, null)
@@ -122,6 +143,15 @@ internal object OfflineT9Candidates {
         }
         val numeric = code.length in 3..30 && code.all { it in '2'..'9' }
         val letters = code.length in 2..30 && code.all { it in 'a'..'z' }
+        if (constraint == null && code.length >= 31 && code.all { it in '2'..'9' }) {
+            val original = native.mapIndexed { index, text -> RankedCandidate(text, nativeComments?.getOrNull(index).orEmpty(), index) }
+            val hasCompleteNative = original.any { candidate ->
+                candidate.text.length > 1 && candidate.pinyin.isNotBlank() &&
+                    T9Spelling.preedit(code, candidate.pinyin)?.none(Char::isDigit) == true
+            }
+            return CandidateSelection((if (hasCompleteNative) emptyList() else generatedSentences(code, blocked)) + original,
+                native.size, blockedTexts = blocked)
+        }
         if (!numeric && !letters) return CandidateSelection(
             native.mapIndexed { index, text -> RankedCandidate(text, nativeIndex = index) }, native.size,
             blockedTexts = blocked,
@@ -452,11 +482,17 @@ internal object OfflineT9Candidates {
             (constraint == null || if (it.nativeIndex != null) matchesConstraint(it.text, it.pinyin) else constraint.matches(it.pinyin)) &&
                 (it.inputMatch?.kind != InputMatchKind.PHRASE_PREFIX || ++phraseCount <= 2)
         }
+        val generated = if (numeric && constraint == null && code.length >= 10 && !hasDictionaryWhole &&
+            nativeSentences.isEmpty() && preferred.isEmpty() && corrections.isEmpty() &&
+            extras.none { it.inputMatch?.kind in setOf(InputMatchKind.WHOLE_PHRASE, InputMatchKind.PHRASE_PREFIX, InputMatchKind.SHORT_WORD) } &&
+            ranked.none { it.wholeInput }) {
+            generatedSentences(code, blocked)
+        } else emptyList()
         if (timing != null) {
             timing[6] = SystemClock.uptimeMillis()
             if (timing[6] - timing[0] >= 32) Log.d("ImeLatencyDetail", "store_ms=${timing[1]-timing[0]} index_ms=${timing[2]-timing[1]} lexicon_ms=${timing[3]-timing[2]} match_ms=${timing[4]-timing[3]} combine_ms=${timing[5]-timing[4]} rank_ms=${timing[6]-timing[5]}")
         }
-        return CandidateSelection(ranked, native.size, rejected.toSet(), ::extraMatch, blocked) { text, reading ->
+        return CandidateSelection(generated + ranked, native.size, rejected.toSet(), ::extraMatch, blocked) { text, reading ->
             matchesConstraint(text, reading) && (trusted(text, reading) || nativeWhole(text, reading))
         }
     }

@@ -8,14 +8,65 @@ internal class T9SentenceFallback private constructor(
     private val fullWords: Map<String, List<Word>>,
     private val initials: Map<String, List<Word>>,
     private val endings: Map<String, List<Word>>,
+    private val completeSyllables: Set<String>,
+    private val syllablePrefixes: Set<String>,
 ) {
     data class Sentence(val text: String, val pinyin: String, val typedPreedit: String, val score: Double)
     data class DecodeResult(val candidates: List<Sentence>, val expandedEdges: Int)
     private data class Word(val text: String, val pinyin: String, val code: String, val frequency: Long)
     private data class Edge(val word: Word, val consumed: Int, val typed: String, val penalty: Double)
+    private data class ChunkPath(val score: Double, val previous: ChunkPath?, val sentence: Sentence)
     fun decode(code: String): List<Sentence> = decodeWithStats(code).candidates
+    /** Frequency-independent guard: only the final syllable may still be incomplete. */
+    fun canSpellWithoutInternalAbbreviation(code: String): Boolean {
+        if (code.isEmpty() || code.any { it !in '2'..'9' }) return false
+        val reachable = BooleanArray(code.length + 1)
+        reachable[0] = true
+        for (offset in code.indices) {
+            if (!reachable[offset]) continue
+            for (end in offset + 1..minOf(code.length, offset + 6)) {
+                val part = code.substring(offset, end)
+                if (end == code.length && part in syllablePrefixes) return true
+                if (part in completeSyllables) reachable[end] = true
+            }
+        }
+        return reachable.last()
+    }
     fun decodeWithStats(code: String): DecodeResult {
-        if (code.length !in 8..48 || code.any { it !in '2'..'9' }) return DecodeResult(emptyList(), 0)
+        if (code.length < 8 || code.any { it !in '2'..'9' }) return DecodeResult(emptyList(), 0)
+        if (code.length <= 48) return decodeChunk(code)
+        var paths = emptyList<ChunkPath>()
+        var expanded = 0
+        var offset = 0
+        while (offset < code.length) {
+            val end = minOf(code.length, offset + 48)
+            val chunk = decodeChunk(code.substring(offset, end))
+            expanded += chunk.expandedEdges
+            if (chunk.candidates.isEmpty()) return DecodeResult(emptyList(), expanded)
+            val combinations = if (paths.isEmpty()) chunk.candidates.map {
+                ChunkPath(it.score, null, it)
+            } else paths.flatMap { previous ->
+                chunk.candidates.map { ChunkPath(previous.score + it.score, previous, it) }
+            }
+            expanded += combinations.size
+            paths = combinations.sortedByDescending { it.score }.take(4)
+            offset = end
+        }
+        val candidates = paths.map { path ->
+            val chunks = ArrayList<Sentence>()
+            var node: ChunkPath? = path
+            while (node != null) {
+                chunks.add(node.sentence)
+                node = node.previous
+            }
+            chunks.reverse()
+            Sentence(chunks.joinToString("") { it.text }, chunks.joinToString(" ") { it.pinyin },
+                chunks.joinToString("'") { it.typedPreedit }, path.score)
+        }.distinctBy { it.text }
+        return DecodeResult(candidates, expanded)
+    }
+    /** Each independent chunk has a fixed beam and at most 48 consumed keys. */
+    private fun decodeChunk(code: String): DecodeResult {
         val paths = Array(code.length + 1) { mutableListOf<Sentence>() }
         paths[0].add(Sentence("", "", "", 0.0))
         var expanded = 0
@@ -37,7 +88,7 @@ internal class T9SentenceFallback private constructor(
             }
             for (path in paths[offset]) for (edge in edges) {
                 expanded++
-                if (path.text.length + edge.word.text.length > 30) continue
+                if (path.text.length + edge.word.text.length > 48) continue
                 val word = edge.word
                 val sentence = Sentence(path.text + word.text,
                     if (path.pinyin.isEmpty()) word.pinyin else path.pinyin + " " + word.pinyin,
@@ -76,13 +127,17 @@ internal class T9SentenceFallback private constructor(
                 compareByDescending<Word> { it.frequency }.thenBy { it.text }.thenBy { it.pinyin }
             ).distinctBy { it.text }.take(4)
             val singles = words.filter { it.text.length == 1 }
+            val completeSyllables = singles.mapTo(hashSetOf()) { it.code }
+            val syllablePrefixes = completeSyllables.flatMapTo(hashSetOf()) { code ->
+                (1..code.length).map { code.take(it) }
+            }
             val endings = mutableMapOf<String, MutableList<Word>>()
             singles.forEach { word ->
                 for (length in 2 until word.code.length) endings.getOrPut(word.code.take(length)) { mutableListOf() }.add(word)
             }
             return T9SentenceFallback(words.groupBy { it.code }.mapValues { top(it.value) },
                 singles.groupBy { it.code.take(1) }.mapValues { top(it.value) },
-                endings.mapValues { top(it.value) })
+                endings.mapValues { top(it.value) }, completeSyllables, syllablePrefixes)
         }
     }
 }

@@ -30,6 +30,22 @@ class ShortWordCandidatesTest {
         }
     }
 
+    @Test fun `日常短回复全拼优先于同码低频名字且保留名字可选`() {
+        val texts = listOf("那克西", "玛克辛", "那可真", "马克西")
+        val readings = listOf("na ke xi", "ma ke xin", "na ke zhen", "ma ke xi")
+        val results = OfflineT9Candidates.select("625394", texts, readings).firstPage
+        assertEquals(results.toString(), "那可以", results.first().text)
+        assertEquals("na ke yi", results.first().pinyin)
+        assertTrue(results.none { it.inputMatch?.kind == InputMatchKind.SENTENCE_FALLBACK })
+        for (text in texts.take(3)) assertTrue("保留已有候选$text: $results", results.any { it.text == text })
+        results.filter { it.nativeIndex != null }.forEach { assertEquals(texts[it.nativeIndex!!], it.text) }
+    }
+
+    @Test fun `日常短回复末音节尚未打全也可召回且不越过锁音`() {
+        assertTrue(OfflineT9Candidates.select("62539").firstPage.take(5).any { it.text == "那可以" })
+        assertFalse(OfflineT9Candidates.selectLocked("na'ke'xi", listOf("那克西"), listOf("na ke xi")).firstPage.any { it.text == "那可以" })
+    }
+
     @Test fun `双字简拼可召回且原生单字和同字异读索引仍完整`() {
         val result = OfflineT9Candidates.select("64", listOf("你", "拟"), listOf("ni", "ni"))
         assertEquals(listOf("你", "拟"), result.firstPage.take(2).map { it.text })

@@ -22,6 +22,7 @@ import com.yuyan.inputmethod.core.CandidateListItem
 import com.yuyan.inputmethod.core.Rime
 import com.yuyan.inputmethod.data.InputKey
 import com.yuyan.inputmethod.data.KeyRecordStack
+import com.yuyan.inputmethod.data.T9DeferredNativeInput
 import com.yuyan.inputmethod.util.DoublePinYinUtils
 import com.yuyan.inputmethod.util.LX17PinYinUtils
 import com.yuyan.inputmethod.util.QwertyPinYinUtils
@@ -31,6 +32,18 @@ import java.util.Locale
 
 object RimeEngine {
     private val keyRecordStack = KeyRecordStack()
+    private val deferredNativeInput = T9DeferredNativeInput()
+    private var fallbackStreak = 0
+    internal fun restoreDeferredNativeInput(replace: (Int, Int, String) -> Boolean = { pos, length, keys -> Rime.replaceKey(pos, length, keys) }): Boolean {
+        if (!deferredNativeInput.isActive) return true
+        val code = keyRecordStack.unlockedT9Digits()
+        if (code.isEmpty()) return false
+        val keys = code.map { "ADGJMPTW"[it - '2'] }.joinToString("")
+        if (!replace(0, deferredNativeInput.nativeLength, keys)) return false
+        deferredNativeInput.clear()
+        return true
+    }
+
     private var personalCandidates: CandidateSelection? = null
     private var nativeCandidateMetadata = CandidateSelection(emptyList(), 0)
     internal fun candidateForSelection(index: Int) = personalCandidates?.at(index - customPhraseSize)
@@ -78,6 +91,8 @@ object RimeEngine {
     }
 
     internal fun clearCachedCompositionForSchemaSwitch() {
+        deferredNativeInput.clear()
+        fallbackStreak = 0
         personalCandidates = null
         nativeCandidateMetadata = CandidateSelection(emptyList(), 0)
         t9CommitTracker.clear()
@@ -106,9 +121,26 @@ object RimeEngine {
         val keyCode = event.keyCode
         val keyChar = if(keyCode == KeyEvent.KEYCODE_APOSTROPHE) if(isFinish()) '/'.code else '\''.code
             else event.unicodeChar
-        if (keyRecordStack.pushKey(event))Rime.processKey(keyChar, event.action)
+        if (deferredNativeInput.isActive && (keyChar.toChar() !in "ADGJMPTW" || learningCode().isEmpty())) {
+            if (!restoreDeferredNativeInput()) return
+        }
+        var localSelection: CandidateSelection? = null
+        if (keyRecordStack.pushKey(event)) {
+            val code = learningCode()
+            val canStart = code.length in 12..48 && fallbackStreak >= 2 && customPhraseSize == 0 &&
+                OfflineT9Candidates.cannotSpellWithoutInternalAbbreviation(code)
+            if (deferredNativeInput.isActive || canStart) {
+                val preview = OfflineT9Candidates.select(code, emptyList(), emptyList())
+                if (deferredNativeInput.isActive || preview.firstPage.firstOrNull()?.inputMatch?.kind ==
+                    com.yuyan.imemodule.data.completion.InputMatchKind.SENTENCE_FALLBACK) {
+                    if (!deferredNativeInput.isActive) deferredNativeInput.start(code.length - 1)
+                    localSelection = preview
+                }
+            }
+            if (!deferredNativeInput.isActive) Rime.processKey(keyChar, event.action)
+        }
         val nativeDone = SystemClock.uptimeMillis()
-        updateCandidatesOrCommitText()
+        updateCandidatesOrCommitText(localSelection)
         val finished = SystemClock.uptimeMillis()
         // 只记录阶段耗时，不记录按键、拼音或候选正文。
         if (BuildConfig.DEBUG && finished - started >= 32) {
@@ -166,7 +198,10 @@ object RimeEngine {
         // 同步可能在候选显示之后到达，旧列表也不能再提交已禁词。
         val selected = candidateForSelection(index)
         val selectedText = selected?.text?.takeIf { it.isNotEmpty() } ?: showCandidates.getOrNull(index)?.text
-        if (selectedText in OfflineT9Candidates.blockedCandidateTexts()) return null
+        val blocked = OfflineT9Candidates.blockedCandidateTexts()
+        if (selectedText in blocked || (selected?.inputMatch?.kind ==
+                com.yuyan.imemodule.data.completion.InputMatchKind.SENTENCE_FALLBACK &&
+                selectedText != null && blocked.any { it in selectedText })) return null
         val code = learningCode(forCommit = true)
         if (selected?.inputMatch?.let { it.code != code } == true) {
             t9CommitTracker.clear()
@@ -199,6 +234,7 @@ object RimeEngine {
     }
 
     fun getNextPageCandidates(): Array<CandidateListItem> {
+        if (deferredNativeInput.isActive) return emptyArray()
         while (Rime.hasRight()) {
             Rime.processKey(getRimeKeycodeByName("Page_Down"), 0)
            val candidates = Rime.getRimeContext()!!.candidates
@@ -232,6 +268,7 @@ object RimeEngine {
     fun selectPinyin(index: Int) {
         // 锁音不改原始按键；保留明确选中的段，最终仍须整词/读音/编码三者一致。
         val pinyin = pinyins.getOrNull(index) ?: return
+        if (!restoreDeferredNativeInput()) return
         keyRecordStack.pushPinyinSelectAction(pinyin) { key ->
             Rime.replaceKey(key.posInInput, key.t9Keys().length, key.pinyin())
         } ?: return
@@ -273,6 +310,8 @@ object RimeEngine {
     }
 
     fun reset() {
+        deferredNativeInput.clear()
+        fallbackStreak = 0
         personalCandidates = null
         nativeCandidateMetadata = CandidateSelection(emptyList(), 0)
         t9CommitTracker.clear()
@@ -289,6 +328,11 @@ object RimeEngine {
     fun destroy() = Rime.destroy()
 
     fun processDelAction() {
+        if (deferredNativeInput.shouldHandleDelete(keyRecordStack.unlockedT9Digits().length)) {
+            keyRecordStack.pop()
+            deferredNativeInput.afterDelete(keyRecordStack.unlockedT9Digits().length)
+            return
+        }
         when (val lastKey = keyRecordStack.pop()) {
             is InputKey.PinyinKey -> {
                 val pinyinKey = keyRecordStack.restorePinyinToT9Key(lastKey) ?: return
@@ -320,8 +364,8 @@ object RimeEngine {
         }
     }
 
-    private fun updateCandidatesOrCommitText(): String? {
-        val rimeCommit = Rime.getRimeCommit()
+    private fun updateCandidatesOrCommitText(localSelection: CandidateSelection? = null): String? {
+        val rimeCommit = if (deferredNativeInput.isActive) null else Rime.getRimeCommit()
         if (rimeCommit != null) {
             keyRecordStack.clear()
             personalCandidates = null
@@ -338,13 +382,14 @@ object RimeEngine {
             showCandidates = emptyList()
             return preCommitText
         }
-        val candidates = Rime.getRimeContext()?.candidates?.asList() ?: emptyList()
+        val candidates = if (deferredNativeInput.isActive) emptyList() else Rime.getRimeContext()?.candidates?.asList() ?: emptyList()
         val blocked = OfflineT9Candidates.blockedCandidateTexts()
         nativeCandidateMetadata = CandidateSelection(candidates.mapIndexed { index, item ->
             RankedCandidate(item.text, item.comment, index)
         }, candidates.size)
         customPhraseSize = 0
-        val compositionText = Rime.compositionText
+        val compositionText = if (deferredNativeInput.isActive)
+            keyRecordStack.unlockedT9Digits().map { "ADGJMPTW"[it - '2'] }.joinToString("") else Rime.compositionText
         showCandidates = when {
             compositionText.isNotBlank() -> {
                 val phrase = CustomEngine.processPhrase(compositionText.replace("\'", ""))
@@ -358,7 +403,7 @@ object RimeEngine {
             }
             else -> candidates
         }
-        var count = Rime.compositionText.count { it in 'A'..'Z' }
+        var count = if (deferredNativeInput.isActive) 0 else Rime.compositionText.count { it in 'A'..'Z' }
         if (count > 0) {
             keyRecordStack.forEachReversed { inputKey ->
                 if (inputKey is InputKey.T9Key) inputKey.consumed = count-- <= 0
@@ -393,7 +438,7 @@ object RimeEngine {
             }
         }
         personalCandidates = when {
-            code.isNotEmpty() -> OfflineT9Candidates.select(code, candidates.map { it.text }, candidates.map { it.comment })
+            code.isNotEmpty() -> localSelection ?: OfflineT9Candidates.select(code, candidates.map { it.text }, candidates.map { it.comment })
             rimeSchema == CustomConstant.SCHEMA_ZH_T9 && !InputModeSwitcher.isEnglish &&
                 !AppPrefs.getInstance().input.chineseFanTi.getValue() && keyRecordStack.lockedT9Input() != null ->
                 OfflineT9Candidates.selectLocked(requireNotNull(keyRecordStack.lockedT9Input()), candidates.map { it.text }, candidates.map { it.comment })
@@ -402,6 +447,8 @@ object RimeEngine {
                 OfflineT9Candidates.rankNative(nativeCandidateMetadata.firstPage, candidates.size)
             else -> if (blocked.isEmpty()) null else CandidateSelection(nativeCandidateMetadata.firstPage, candidates.size, blockedTexts = blocked)
         }
+        fallbackStreak = if (personalCandidates?.firstPage?.firstOrNull()?.inputMatch?.kind ==
+            com.yuyan.imemodule.data.completion.InputMatchKind.SENTENCE_FALLBACK) fallbackStreak + 1 else 0
         personalCandidates?.let { selection ->
             showCandidates = showCandidates.take(customPhraseSize) + selection.firstPage.map {
                 if (it.inputMatch?.kind == com.yuyan.imemodule.data.completion.InputMatchKind.TYPO_CORRECTION)

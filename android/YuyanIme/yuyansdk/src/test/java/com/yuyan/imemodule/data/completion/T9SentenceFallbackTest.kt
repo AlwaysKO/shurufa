@@ -6,6 +6,21 @@ import java.util.Random
 import java.util.zip.GZIPInputStream
 
 class T9SentenceFallbackTest {
+    private fun production() = GZIPInputStream(java.io.File("src/main/assets/completion/sentence_fallback.tsv.gzip")
+        .inputStream()).reader().use(T9SentenceFallback::load)
+    @Test fun `normal full spelling stays enabled at every input prefix`() {
+        val decoder = production()
+        for (reading in listOf("bei jing tian qi zen me yang", "wo bu zai pang huang", "hen duo li zi",
+            "jin tian wan shang yi qi chi fan")) {
+            val full = digits(reading)
+            for (length in 1..full.length) assertTrue("$reading prefix=$length", decoder.canSpellWithoutInternalAbbreviation(full.take(length)))
+        }
+    }
+    @Test fun `internal impossible syllables and invalid input cannot count as full spelling`() {
+        val decoder = production()
+        for (code in listOf("64364526949767646646976666", "97", "", "2340", "nihao", "23'45"))
+            assertFalse(code, decoder.canSpellWithoutInternalAbbreviation(code))
+    }
     private fun fixture() = T9SentenceFallback.load("""
         你	ni	10000
         年	nian	9000
@@ -31,7 +46,7 @@ class T9SentenceFallbackTest {
             assertEquals(code, digits(result.typedPreedit))
             assertEquals(result.text.length, result.pinyin.split(' ').size)
             assertEquals(result.text.length, result.typedPreedit.split("'").size)
-            assertTrue(result.text.length <= 30)
+            assertTrue(result.text.length <= code.length)
             assertTrue(result.score.isFinite())
             result.pinyin.split(' ').zip(result.typedPreedit.split("'")).forEach { (full, typed) ->
                 assertTrue("actual syllable prefix", full.startsWith(typed))
@@ -45,8 +60,30 @@ class T9SentenceFallbackTest {
         validate("9999999999", fixture().decode("9999999999"))
     }
     @Test fun `invalid and out of bounds input produce no result`() {
-        for (code in listOf("", "2345678", "2".repeat(49), "23456780", "nihaonihao", "2345'6789")) {
+        for (code in listOf("", "2345678", "23456780", "nihaonihao", "2345'6789")) {
             assertTrue(fixture().decode(code).isEmpty())
+        }
+    }
+    @Test fun `long codes combine bounded chunks without truncating final short chunk`() {
+        val decoder = production()
+        val random = Random(137256)
+        for (length in listOf(49, 55, 96, 97, 137, 256)) {
+            for (code in listOf("9".repeat(length), CharArray(length) {
+                ('2'.code + random.nextInt(8)).toChar()
+            }.concatToString())) {
+                val result = decoder.decodeWithStats(code)
+                validate(code, result.candidates)
+                val chunks = (length + 47) / 48
+                assertTrue(result.expandedEdges <= length * 4 * 72 + chunks * 16)
+            }
+        }
+        val normal = digits("jin tian wan shang yi qi chi fan".repeat(10))
+        assertTrue(decoder.canSpellWithoutInternalAbbreviation(normal))
+    }
+    @Test fun `maximum length initials still preserve all input and multiple combinations`() {
+        val decoder = production()
+        for (code in listOf("9".repeat(48), "7".repeat(48), "97".repeat(24))) {
+            validate(code, decoder.decode(code))
         }
     }
     @Test fun `invalid rows cannot create mismatched characters or invented readings`() {
@@ -86,7 +123,7 @@ class T9SentenceFallbackTest {
             val result = decoder.decodeWithStats(code)
             maximumEdges = maxOf(maximumEdges, result.expandedEdges)
             assertTrue("bounded edges $code ${result.expandedEdges}", result.expandedEdges <= code.length * 4 * 72)
-            // At most 30 Han characters; extremely long runs may have no complete path.
+            // Every generated path must fully consume the input.
             if (result.candidates.isNotEmpty()) { validate(code, result.candidates); decoded++ }
         }
         println("FALLBACK_STRESS cases=${codes.size} decoded=$decoded maxEdges=$maximumEdges")
