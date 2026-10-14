@@ -90,15 +90,8 @@ onBeforeUnmount(()=>{closeImage();browser.invalidate();manager.invalidate();});
 </style>
 
 <style>
-/* 仅本页窄屏沿用素材页的顶部导航布局，不改变其他后台页面。 */
+/* 页面内部筛选适配；导航统一由 App 管理。 */
 @media (max-width:760px) {
-  .layout:has(.video-visits) { flex-direction:column; }
-  .layout:has(.video-visits)>.sidebar { position:static; width:100%; height:auto; padding:8px 0; }
-  .layout:has(.video-visits) .sidebar>.logo { display:none; }
-  .layout:has(.video-visits) .sidebar>.current-user { display:inline-flex; width:calc(50% - 16px); margin:4px 6px; vertical-align:middle; }
-  .layout:has(.video-visits) .sidebar-nav { display:flex; overflow-x:auto; gap:5px; align-items:flex-start; padding:6px 8px; }
-  .layout:has(.video-visits) .nav-group { width:130px; flex-shrink:0; }
-  .layout:has(.video-visits) .content { min-width:0; padding:12px; }
   .video-visits { min-width:0; padding:8px !important; }
   .video-visits .filters label { display:flex; flex-wrap:wrap; gap:6px; max-width:100%; }
   .video-visits .filters select { max-width:100%; }

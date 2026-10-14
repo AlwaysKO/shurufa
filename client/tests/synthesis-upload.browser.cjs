@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 const origin=process.env.DASHBOARD_TEST_ORIGIN||'http://127.0.0.1:5175';
 if(!['localhost','127.0.0.1','[::1]'].includes(new URL(origin).hostname))throw Error('仅允许本地UI');
 const bytes=Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7','base64');
-(async()=>{const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+(async()=>{const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE,args:['--no-sandbox']});
 try{
  const page=await browser.newPage();let listCalls=0,release,uploadId,report;
  const errors=[];page.on('pageerror',e=>errors.push(e.message));

@@ -54,7 +54,7 @@ function refreshAfterCleanup() { closeImage(); if (page.value !== 1) page.value 
     </div>
     <nav v-if="total > 20" aria-label="导航记录分页"><button :disabled="page <= 1 || loading" @click="page--">上一页</button><span>{{ page }} / {{ Math.ceil(total / 20) }}</span><button :disabled="page * 20 >= total || loading" @click="page++">下一页</button></nav>
     <dialog ref="dialog" @close="selected = null" @click="($event.target === dialog) && closeImage()">
-      <template v-if="selected"><header><strong>{{ selected.origin }} → {{ selected.destination }}</strong><button @click="closeImage">关闭</button></header>
+      <template v-if="selected"><header><strong tabindex="0">{{ selected.origin }} → {{ selected.destination }}</strong><button @click="closeImage">关闭</button></header>
         <img :src="navigationImageUrl(selected.id, currentUserId)" :alt="`${selected.origin}到${selected.destination}的路线总览`">
       </template>
     </dialog>
@@ -63,4 +63,11 @@ function refreshAfterCleanup() { closeImage(); if (page.value !== 1) page.value 
 
 <style scoped>
 .navigation-records{max-width:1100px;margin:auto;padding:24px;color:#263248}.hint,.empty{color:#64748b;line-height:1.7}.filters,nav{display:flex;align-items:center;gap:14px;margin:20px 0}button,select{border:1px solid #cbd5e1;border-radius:6px;padding:8px 12px;background:white;color:inherit}button{cursor:pointer}button:disabled{opacity:.5;cursor:default}.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}article{border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;background:white}.preview{display:block;width:100%;padding:0;border:0;border-radius:0;background:#f1f5f9}.preview img{display:block;width:100%;height:250px;object-fit:contain}.details{padding:16px}.badge{font-size:12px;color:#2563eb;background:#eff6ff;padding:4px 8px;border-radius:4px}time{display:block;margin-top:10px;font-size:12px;color:#64748b}.endpoint{display:inline-block;margin-right:10px;color:#16834a}.destination{color:#dc4b3e}.details p{overflow-wrap:anywhere}nav{justify-content:center}.error{color:#b42318}dialog{max-width:min(900px,95vw);max-height:95vh;border:0;border-radius:12px;padding:16px}dialog::backdrop{background:#0009}dialog header{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:12px}dialog img{display:block;max-width:100%;max-height:80vh;object-fit:contain;margin:auto}
+/* 原图标题可能包含完整长地址；标题独立滚动，关闭入口保持可见。 */
+dialog { position:fixed; inset:0; margin:auto; width:fit-content; max-height:95dvh; }
+dialog[open] { display:flex; flex-direction:column; }
+dialog header { flex-shrink:0; min-width:0; }
+dialog header strong { min-width:0; overflow-wrap:anywhere; max-height:30vh; max-height:30dvh; overflow:auto; }
+dialog header button { flex-shrink:0; }
+dialog img { min-height:0; }
 </style>

@@ -50,7 +50,16 @@ function renderSourceChart() {
   });
 }
 
-onMounted(load);
+function resizeChart() { chart?.resize(); }
+onMounted(() => {
+  window.addEventListener('resize', resizeChart);
+  load();
+});
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', resizeChart);
+  chart?.dispose();
+  chart = null;
+});
 </script>
 
 <template>

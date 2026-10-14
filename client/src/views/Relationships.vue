@@ -375,13 +375,13 @@ onMounted(() => load());
 
 <style scoped>
 .relationship-layout { display: grid; grid-template-columns: minmax(220px, 300px) minmax(0, 1fr); gap: 20px; }
-.relationship-list { margin: 0; }
-.relationship-item { width: 100%; display: grid; gap: 4px; padding: 12px; border: 0; border-bottom: 1px solid #f1f2f6; background: transparent; text-align: left; cursor: pointer; }
+.relationship-list { margin: 0; min-width: 0; }
+.relationship-item { min-width: 0; overflow-wrap: anywhere; width: 100%; display: grid; gap: 4px; padding: 12px; border: 0; border-bottom: 1px solid #f1f2f6; background: transparent; text-align: left; cursor: pointer; }
 .relationship-item:hover, .relationship-item.selected { background: #f1f3ff; }
 .relationship-item.selected { box-shadow: inset 3px 0 #3742fa; }
 .relationship-item strong { color: #2f3542; }
 .relationship-item span { color: #747d8c; font-size: 12px; }
-.detail-column { min-width: 0; }
+.detail-column { min-width: 0; overflow-wrap: anywhere; }
 .profile-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .profile-form label { display: grid; gap: 6px; color: #57606f; font-size: 13px; }
 .profile-form .wide { grid-column: 1 / -1; }

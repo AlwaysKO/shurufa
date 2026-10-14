@@ -793,6 +793,8 @@ onBeforeUnmount(() => {
   flex-wrap: wrap;
   gap: 6px;
 }
+.batch-results .library-badge,
+.material-keywords .library-badge { max-width:100%; white-space:normal; overflow-wrap:anywhere; }
 .material-card form {
   display: grid;
   gap: 8px;

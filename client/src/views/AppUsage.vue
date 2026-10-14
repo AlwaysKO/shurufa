@@ -163,7 +163,7 @@ const reasons: Record<string, string> = { switch: '切换应用', process_restar
         <template v-else-if="timeline">
           <p v-if="timeline.truncated" role="alert" class="gap">当天共 {{ timeline.total }} 段，当前仅展示按开始时间排序的前 {{ timeline.limit }} 段，后续区段已截断；请缩小 App 范围或查询下方分页明细。</p>
           <p v-else class="note">当天共 {{ timeline.total }} 段（含断档），全部展示。</p>
-          <div v-if="lanes.length" class="timeline-scroll">
+          <div v-if="lanes.length" class="timeline-scroll" role="region" aria-label="当天使用时间轴，可横向滚动" tabindex="0">
             <div class="timeline-grid">
               <div class="axis"><span v-for="hour in [0, 4, 8, 12, 16, 20, 24]" :key="hour">{{ String(hour).padStart(2, '0') }}:00</span></div>
               <div v-for="lane in lanes" :key="lane.key" class="timeline-lane">
@@ -181,7 +181,7 @@ const reasons: Record<string, string> = { switch: '切换应用', process_restar
       </div>
       <div class="card usage-records" :aria-busy="recordsLoading"><h3>使用时间段 / 断档 <small>共 {{ data.total }} 条</small></h3>
         <p class="note">相邻同一 App 的记录间隔不超过1分钟时合并展示；中间有其他 App 记录、锁屏或断档则不合并。起止跨度可能包含中断，“范围内时长”仅累加实际使用片段，不计中间空档。历史空档不一定是桌面。上方统计次数和时间轴仍按原始使用段，分页只影响本表。</p>
-        <div class="table-scroll"><table><thead><tr><th>App / 类型</th><th>开始时间</th><th>结束时间</th><th>范围内时长</th><th>结束 / 断档原因</th></tr></thead>
+        <div class="table-scroll" role="region" aria-label="应用使用记录，可横向滚动" tabindex="0"><table><thead><tr><th>App / 类型</th><th>开始时间</th><th>结束时间</th><th>范围内时长</th><th>结束 / 断档原因</th></tr></thead>
           <tbody><tr v-for="r in data.records" :key="r.id" :class="{ gap: r.kind === 'gap' }">
             <td>{{ r.kind === 'gap' ? '⚠ 数据断档' : appName(r.package_name!, r.app_name) }}<small v-if="r.package_name">{{ r.package_name }}</small><small v-if="(r.segment_count ?? 1) > 1" class="merged-note">短间隔合并 · {{ r.segment_count }}段</small></td>
             <td>{{ time(r.start_ms) }}</td><td>{{ time(r.end_ms) }}</td><td>{{ duration(r.duration_ms) }}</td><td>{{ reasons[r.end_reason] ?? r.end_reason }}</td>
@@ -194,6 +194,10 @@ const reasons: Record<string, string> = { switch: '切换应用', process_restar
   </section>
 </template>
 <style scoped>
+.usage-records [role="alert"] { overflow-wrap: anywhere; }
+.charts > .card { min-width: 0; }
+.rank > span { min-width: 0; overflow-wrap: anywhere; }
+
 .note,small{color:var(--text-muted,#888);font-size:12px;line-height:1.8}small{display:block}.summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.charts{display:grid;grid-template-columns:1fr 1fr;gap:16px}.rank{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:10px;color:inherit;cursor:pointer;display:grid;grid-template-columns:1fr auto;width:100%;text-align:left;margin:8px 0;gap:4px}.rank meter{grid-column:1/-1;width:100%}.day{display:flex;align-items:center;gap:12px;margin:12px 0}.day meter{flex:1;min-width:50px}.table-scroll{overflow-x:auto}table{width:100%;text-align:left;border-collapse:collapse}td,th{padding:10px;border-bottom:1px solid #8883;white-space:nowrap}.gap{color:#d89530}.filters{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.filters label{display:flex;align-items:center;gap:6px}input{padding:7px}.summary strong{font-size:22px}@media(max-width:900px){.summary,.charts{grid-template-columns:1fr}.day{flex-wrap:wrap}}
 .timeline-scroll{overflow-x:auto}.timeline-grid{min-width:700px}.axis{display:flex;justify-content:space-between;margin-left:150px;font-size:12px;color:#888;margin-bottom:8px}.timeline-lane{display:grid;grid-template-columns:150px 1fr;align-items:center;margin:7px 0}.lane-label{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:10px}.lane-track{position:relative;height:26px;overflow:hidden;background:repeating-linear-gradient(to right,transparent 0,transparent calc(16.666% - 1px),#8884 calc(16.666% - 1px),#8884 16.666%);border:1px solid #8883}.segment{position:absolute;top:2px;height:20px;min-width:2px;padding:0;border:0;border-radius:2px}.segment:focus{outline:2px solid currentColor;z-index:2}.segment-gap{background-image:repeating-linear-gradient(45deg,transparent,transparent 3px,#fff5 3px,#fff5 6px)}
 

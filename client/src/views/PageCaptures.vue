@@ -87,15 +87,8 @@ onBeforeUnmount(() => { closeImage(); browser.invalidate();manager.invalidate();
 </style>
 
 <style>
-/* 仅本页窄屏沿用素材页的顶部导航布局，不改变其他后台页面。 */
+/* 页面内部筛选适配；导航统一由 App 管理。 */
 @media (max-width:760px) {
-  .layout:has(.page-captures) { flex-direction:column; }
-  .layout:has(.page-captures)>.sidebar { position:static; width:100%; height:auto; padding:8px 0; }
-  .layout:has(.page-captures) .sidebar>.logo { display:none; }
-  .layout:has(.page-captures) .sidebar>.current-user { display:inline-flex; width:calc(50% - 16px); margin:4px 6px; vertical-align:middle; }
-  .layout:has(.page-captures) .sidebar-nav { display:flex; overflow-x:auto; gap:5px; align-items:flex-start; padding:6px 8px; }
-  .layout:has(.page-captures) .nav-group { width:130px; flex-shrink:0; }
-  .layout:has(.page-captures) .content { min-width:0; padding:12px; }
   .page-captures { min-width:0; padding:8px !important; }
   .page-captures .filters label { display:flex; flex-wrap:wrap; gap:6px; max-width:100%; }
   .page-captures .filters select { max-width:100%; }

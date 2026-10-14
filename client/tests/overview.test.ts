@@ -38,7 +38,10 @@ it('异步总览数据返回后先挂载图表容器再初始化图表', async (
   const find = (n: Node, id: string): Node | null => n.props.id === id ? n : n.children.map(c => find(c, id)).find(Boolean) ?? null;
   let respond!: (data: unknown) => void;
   const response = new Promise(resolve => { respond = resolve; });
-  const setOption = vi.fn(); const init = vi.fn(() => ({ setOption }));
+  const setOption = vi.fn(), resize = vi.fn(), dispose = vi.fn();
+  const listeners = new Map<string, () => void>();
+  const windowStub = { addEventListener: (name: string, fn: () => void) => listeners.set(name, fn), removeEventListener: (name: string) => listeners.delete(name) };
+  const init = vi.fn(() => ({ setOption, resize, dispose }));
   const module = { exports: {} as { default: Vue.Component } };
   const require = (name: string) => {
     if (name === '../components/RetentionCleanup.vue') return { default: { render: () => null } };
@@ -47,7 +50,7 @@ it('异步总览数据返回后先挂载图表容器再初始化图表', async (
     if (name === '../api') return { api: { overview: () => response } };
     throw new Error(`Unexpected import: ${name}`);
   };
-  new Function('require', 'module', 'exports', 'document', code)(require, module, module.exports, { getElementById: (id: string) => find(root, id) });
+  new Function('require', 'module', 'exports', 'document', 'window', code)(require, module, module.exports, { getElementById: (id: string) => find(root, id) }, windowStub);
   const app = renderer.createApp(module.exports.default);
   app.mount(root);
   try {
@@ -60,5 +63,9 @@ it('异步总览数据返回后先挂载图表容器再初始化图表', async (
     expect(init).toHaveBeenCalledTimes(1);
     expect(init).toHaveBeenCalledWith(find(root, 'source-chart'));
     expect(setOption.mock.calls[0][0].series[0].data.map((d: { value: number }) => d.value)).toEqual([145, 2, 0, 0]);
+    listeners.get('resize')?.();
+    expect(resize).toHaveBeenCalledTimes(1);
   } finally { app.unmount(); }
+  expect(dispose).toHaveBeenCalledTimes(1);
+  expect(listeners.size).toBe(0);
 });

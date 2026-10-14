@@ -116,13 +116,13 @@ async function mountStatisticsPage(name: string, api: Record<string, unknown>) {
  const script=compileScript(descriptor,{id:'statistics-page-race'});
  const code=ts.transpileModule(script.content,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
  const module={exports:{} as any};const chart={setOption:vi.fn(),resize(){},dispose(){}};
- new Function('require','module','exports','document',code)((id:string)=>{
+ new Function('require','module','exports','document','window',code)((id:string)=>{
   if(id==='vue')return Vue;
   if(id==='../api')return {api,appName:(v:string)=>v};
   if(id==='echarts')return {init:()=>chart,getInstanceByDom:()=>chart};
   if(id==='../components/RetentionCleanup.vue')return {default:{render:()=>null}};
   throw Error(id);
- },module,module.exports,{getElementById:()=>({})});
+ },module,module.exports,{getElementById:()=>({})},{addEventListener(){},removeEventListener(){}});
  let state:any;const renderer=Vue.createRenderer<any,any>({createElement:()=>({}),createText:()=>({}),createComment:()=>({}),setText(){},setElementText(){},parentNode:()=>null,nextSibling:()=>null,patchProp(){},insert(){},remove(){},insertStaticContent:()=>[{},{}]});
  const app=renderer.createApp({setup(){state=module.exports.default.setup({}, {expose(){}});return ()=>null;}});app.mount({});mounted.push(app);await settle();return {state,chart,unmount:()=>app.unmount()};
 }

@@ -42,7 +42,7 @@ function refreshAfterCleanup() { if (page.value !== 1) page.value = 1; else void
     <p v-if="sync?.request_id">请求已保存，等待手机联网并开启“同步手机通话记录”、授予通话记录权限。后台通常约 15 分钟检查一次，也可在手机录音设置中立即同步；系统后台限制可能延迟。</p>
     <p v-if="sync?.synced_at">上次成功同步：{{time(sync.synced_at)}}<span v-if="sync.truncated">；本次仅取最近 2,000 条。</span></p>
     <p v-if="error" role="alert" class="error">{{error}}</p><p v-if="!loading&&!rows.length&&!error">暂无已同步的手机通话记录。</p>
-    <div v-if="rows.length" class="table-wrap"><table><thead><tr><th>时间（北京时间）</th><th>联系人</th><th>号码</th><th>类型</th><th>通话时长</th></tr></thead><tbody><tr v-for="row in rows" :key="row.source_id"><td>{{time(row.date)}}</td><td>{{row.name||'未知'}}</td><td>{{row.number||'未知'}}</td><td>{{kind(row.type)}}</td><td>{{Math.floor(row.duration_seconds/60)}}分{{row.duration_seconds%60}}秒</td></tr></tbody></table></div>
+    <div v-if="rows.length" class="table-wrap" role="region" aria-label="手机通话记录，可横向滚动" tabindex="0"><table><thead><tr><th>时间（北京时间）</th><th>联系人</th><th>号码</th><th>类型</th><th>通话时长</th></tr></thead><tbody><tr v-for="row in rows" :key="row.source_id"><td>{{time(row.date)}}</td><td>{{row.name||'未知'}}</td><td>{{row.number||'未知'}}</td><td>{{kind(row.type)}}</td><td>{{Math.floor(row.duration_seconds/60)}}分{{row.duration_seconds%60}}秒</td></tr></tbody></table></div>
     <div v-if="total" class="actions"><span>共 {{total}} 条，第 {{page}} 页</span><button :disabled="page<=1||loading" @click="page--">上一页</button><button :disabled="page*50>=total||loading" @click="page++">下一页</button></div>
   </section>
 </template>

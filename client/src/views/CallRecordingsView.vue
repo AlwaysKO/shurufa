@@ -64,7 +64,7 @@ function refreshAfterCleanup() { stopAudio(); if (page.value !== 1) page.value =
     </div>
     <p v-if="error" role="alert" class="error">{{error}}</p><p v-if="loading">加载中…</p>
     <p v-else-if="!currentUserId">请先选择设备。</p><p v-else-if="!rows.length&&!error">此范围暂无已上传录音。手机待传、录音受限或尚未启用不会显示成上传成功。</p>
-    <div v-if="rows.length" class="table-wrap"><table><thead><tr><th>平台 / 类型</th><th>通话对象</th><th>通话起止</th><th>通话时长</th><th>录音起止</th><th>录音时长</th><th>录音状态 / 质量</th><th>上传</th><th>操作</th></tr></thead>
+    <div v-if="rows.length" class="table-wrap" role="region" aria-label="通话录音，可横向滚动" tabindex="0"><table><thead><tr><th>平台 / 类型</th><th>通话对象</th><th>通话起止</th><th>通话时长</th><th>录音起止</th><th>录音时长</th><th>录音状态 / 质量</th><th>上传</th><th>操作</th></tr></thead>
       <tbody><tr v-for="row in rows" :key="row.record_id">
         <td>{{row.platform==='phone'?'普通电话':'微信'}} / {{row.call_type==='video'?'视频（仅声音）':'语音'}}</td>
         <td>{{row.counterpart_display||'未知'}}</td><td>{{formatTime(row.call_started_at)}}<br>{{formatTime(row.call_ended_at)}}</td>

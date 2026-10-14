@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onBeforeUnmount, ref, watch } from 'vue';
 import ConfirmationDialog from './components/ConfirmationDialog.vue';
 import { cancelConfirmation, confirmation, useConfirmation } from './confirmation';
 import { authenticated, logout, loginName } from './auth';
@@ -65,6 +65,83 @@ watch(() => route.path, (path) => {
   if (group && !openGroups.value.has(group.key)) openGroups.value = new Set([...openGroups.value, group.key]);
 }, { immediate: true });
 
+// 桌面与手机复用同一份导航 DOM。
+const mobileNavigation = ref(false);
+const navigationOpen = ref(false);
+const navigation = ref<HTMLElement | null>(null);
+const navigationTrigger = ref<HTMLButtonElement | null>(null);
+const navigationClose = ref<HTMLButtonElement | null>(null);
+const directoryDialog = ref<HTMLElement | null>(null);
+let directoryPreviousFocus: HTMLElement | null = null;
+let mediaQuery: MediaQueryList | null = null;
+let navigationFocusedElement: HTMLElement | null = null;
+function rememberNavigationFocus(event: FocusEvent) {
+  navigationFocusedElement = event.target instanceof HTMLElement ? event.target : null;
+}
+function forgetNavigationFocus(event: FocusEvent) {
+  // CSS 断点会先隐藏元素并让浏览器失焦，再通知 matchMedia；只保留这种失焦。
+  if (event.relatedTarget || navigationFocusedElement?.getClientRects().length) navigationFocusedElement = null;
+}
+function closeNavigation(restoreFocus = true) {
+  if (!navigationOpen.value) return;
+  navigationOpen.value = false;
+  if (restoreFocus) void nextTick(() => {
+    if (authenticated.value && mobileNavigation.value && !directoryOpen.value && !confirmation.value) navigationTrigger.value?.focus();
+  });
+}
+function navigationKeydown(event: KeyboardEvent) {
+  if (confirmation.value || (!navigationOpen.value && !directoryOpen.value)) return;
+  const panel = directoryOpen.value ? directoryDialog.value : navigation.value;
+  if (event.key === 'Escape') { event.preventDefault(); directoryOpen.value ? closeDirectory() : closeNavigation(); return; }
+  if (event.key !== 'Tab') return;
+  const items = Array.from(panel?.querySelectorAll<HTMLElement>('button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled)') ?? [])
+    .filter(el => el.getClientRects().length > 0);
+  const first = items[0], last = items[items.length - 1];
+  if (!first || !last) return;
+  if (event.shiftKey && (document.activeElement === first || !panel?.contains(document.activeElement))) {
+    event.preventDefault(); last.focus();
+  } else if (!event.shiftKey && (document.activeElement === last || !panel?.contains(document.activeElement))) {
+    event.preventDefault(); first.focus();
+  }
+}
+// 使用类锁，避免与确认框保存/恢复 inline overflow 的生命周期互相覆盖。
+watch([navigationOpen, directoryOpen], ([navigationVisible, directoryVisible]) => {
+  if (typeof document === 'undefined') return;
+  const open = navigationVisible || directoryVisible;
+  document.body.classList.toggle('admin-overlay-open', open);
+  if (open) document.addEventListener('keydown', navigationKeydown, true);
+  else document.removeEventListener('keydown', navigationKeydown, true);
+}, { flush: 'sync' });
+watch(navigationOpen, (open) => { if (open) navigationClose.value?.focus(); }, { flush: 'post' });
+function updateNavigationViewport() {
+  const focused = document.activeElement === document.body ? navigationFocusedElement : document.activeElement;
+  const inNavigation = navigation.value?.contains(focused);
+  const onMobileControl = focused === navigationClose.value || focused === navigationTrigger.value;
+  mobileNavigation.value = mediaQuery?.matches ?? false;
+  if (!mobileNavigation.value) closeNavigation(false);
+  if (directoryOpen.value || confirmation.value) return;
+  if (mobileNavigation.value && inNavigation) void nextTick(() => navigationTrigger.value?.focus());
+  else if (!mobileNavigation.value && onMobileControl) void nextTick(() => {
+    (navigation.value?.querySelector<HTMLElement>('.nav-item.active') ?? navigation.value?.querySelector<HTMLElement>('.current-user'))?.focus();
+  });
+}
+watch(() => route.fullPath, () => closeNavigation());
+watch(authenticated, () => closeNavigation(false), { flush: 'sync' });
+onMounted(() => {
+  if (typeof window === 'undefined' || !window.matchMedia) return;
+  mediaQuery = window.matchMedia('(max-width: 760px)');
+  updateNavigationViewport();
+  mediaQuery.addEventListener('change', updateNavigationViewport);
+});
+onBeforeUnmount(() => {
+  closeNavigation(false);
+  if (typeof document !== 'undefined') {
+    document.body.classList.remove('admin-overlay-open');
+    document.removeEventListener('keydown', navigationKeydown, true);
+  }
+  mediaQuery?.removeEventListener('change', updateNavigationViewport);
+});
+
 let initializationRequestId = 0;
 async function initializeUsers() {
   const requestId = ++initializationRequestId;
@@ -115,9 +192,20 @@ async function loadDirectory(page = 1) {
   }
 }
 function openDirectory() {
+  directoryPreviousFocus = typeof document !== 'undefined' && document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  closeNavigation(false);
   directoryOpen.value = true; directoryActionError.value = ''; directoryNotice.value = ''; directoryQuery.value = ''; editingUser.value = null; editError.value = ''; void loadDirectory(1);
+  void nextTick(() => directoryDialog.value?.querySelector<HTMLInputElement>('input')?.focus());
 }
-function closeDirectory() { cancelConfirmation(); directoryOpen.value = false; directoryRequestId += 1; directoryLoading.value = false; }
+function closeDirectory() {
+  const wasOpen = directoryOpen.value;
+  cancelConfirmation(); directoryOpen.value = false; directoryRequestId += 1; directoryLoading.value = false;
+  if (wasOpen) void nextTick(() => {
+    if (!authenticated.value || confirmation.value || directoryOpen.value) return;
+    if (mobileNavigation.value) navigationTrigger.value?.focus();
+    else if (directoryPreviousFocus?.isConnected) directoryPreviousFocus.focus();
+  });
+}
 function chooseUser(user: DeviceRow) { selectedUser.value = user; setCurrentUserId(user.id); closeDirectory(); }
 function editUser(user: DeviceRow) {
   editingUser.value = user; editName.value = user.dashboard_name ?? ''; editTags.value = user.tags ?? ''; editError.value = '';
@@ -189,8 +277,14 @@ function interactionAt(value: string | null | undefined) {
 
 <template>
   <RouterView v-if="!authenticated && route.path === '/login'" />
-  <div v-if="authenticated" class="layout" :inert="!!confirmation">
-    <aside class="sidebar">
+  <div v-if="authenticated" class="layout" :inert="!!confirmation || directoryOpen">
+    <header @focusin="rememberNavigationFocus" @focusout="forgetNavigationFocus" class="mobile-header" :inert="navigationOpen">
+      <button ref="navigationTrigger" type="button" aria-label="打开导航" aria-controls="admin-navigation" :aria-expanded="navigationOpen" @click="navigationOpen = true">☰</button>
+      <span>{{ route.meta.title }}</span>
+    </header>
+    <div v-if="navigationOpen" class="navigation-backdrop" data-testid="navigation-backdrop" @click="closeNavigation()"></div>
+    <aside @focusin="rememberNavigationFocus" @focusout="forgetNavigationFocus" id="admin-navigation" ref="navigation" class="sidebar" :class="{ 'navigation-open': navigationOpen }" :role="mobileNavigation && navigationOpen ? 'dialog' : undefined" :aria-modal="mobileNavigation && navigationOpen ? true : undefined" aria-label="后台导航">
+      <button ref="navigationClose" class="navigation-close" type="button" aria-label="关闭导航" @click="closeNavigation()">×</button>
       <div class="logo">⌨️ 我的输入法</div>
       <button class="current-user" type="button" @click="signOut">{{ loginName }} · 退出登录</button>
       <p v-if="logoutError" role="alert">{{ logoutError }}</p>
@@ -210,14 +304,14 @@ function interactionAt(value: string | null | undefined) {
             <span class="group-arrow" :class="{ open: openGroups.has(group.key) }">›</span>
           </button>
           <div v-show="openGroups.has(group.key)" class="nav-children">
-            <RouterLink v-for="item in group.items" :key="item.path" :to="item.path" class="nav-item" :class="{ active: route.path === item.path }">
+            <RouterLink v-for="item in group.items" :key="item.path" :to="item.path" class="nav-item" @click="closeNavigation()" :class="{ active: route.path === item.path }">
               {{ item.label }}
             </RouterLink>
           </div>
         </section>
       </nav>
     </aside>
-    <main class="content">
+    <main class="content" :inert="navigationOpen">
       <h1 class="page-title">{{ route.meta.title }}</h1>
       <RouterView v-if="usersReady && (route.path === '/stickers' || route.path === '/sticker-materials' || (currentUserId && selectedUser))" :key="`${route.fullPath}:${currentUserId}`" />
       <div v-else-if="usersReady && initializationError" class="card empty load-error">
@@ -228,7 +322,7 @@ function interactionAt(value: string | null | undefined) {
 
     <Teleport to="body">
       <div v-if="directoryOpen" class="directory-mask" :inert="confirmation ? true : undefined" @click.self="closeDirectory">
-        <section class="directory-dialog" role="dialog" aria-modal="true" aria-label="选择用户">
+        <section ref="directoryDialog" class="directory-dialog" role="dialog" aria-modal="true" aria-label="选择用户">
           <header class="directory-header">
             <div><h2>选择用户</h2><p>共 {{ directoryTotal }} 台设备，按最后人为操作时间排序</p></div>
             <button type="button" class="close-button" @click="closeDirectory">×</button>
@@ -286,10 +380,13 @@ function interactionAt(value: string | null | undefined) {
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f5f6fa; color: #2f3542; }
+body.admin-overlay-open { overflow:hidden; }
 .layout { display: flex; min-height: 100vh; }
 .sidebar { position: sticky; top: 0; width: 224px; height: 100vh; overflow-y: auto; background: #293342; color: #fff; padding: 20px 0; flex-shrink: 0; }
 .logo { font-size: 16px; font-weight: 600; padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,.1); }
-.content { flex: 1; padding: 24px 32px; overflow-x: hidden; }
+.content { flex: 1; min-width: 0; padding: 24px 32px; }
+.mobile-header,.navigation-close { display:none; }
+.navigation-backdrop { position:fixed; inset:0; z-index:1100; background:rgba(20,28,40,.58); }
 .page-title { font-size: 20px; margin-bottom: 20px; }
 .card { background: #fff; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
 .card h3 { font-size: 14px; color: #747d8c; margin-bottom: 12px; }
@@ -327,9 +424,19 @@ button, input { font: inherit; }
 .directory-search { display:flex; gap:8px; padding:0 24px 16px; }.directory-search input { flex:1; min-width:0; padding:10px 12px; border:1px solid #dfe4ea; border-radius:8px; outline:none; }.directory-search input:focus { border-color:#5663ea; box-shadow:0 0 0 3px rgba(86,99,234,.12); }.directory-search button,.directory-footer button,.edit-panel button { padding:9px 16px; border:0; border-radius:7px; background:#4451e8; color:#fff; cursor:pointer; }.directory-search button:disabled { opacity:.55; cursor:not-allowed; }
 .edit-panel { display:grid; grid-template-columns:1fr 1fr auto; gap:8px; margin:0 24px 16px; padding:12px; border:1px solid #dfe3ff; border-radius:9px; background:#f7f8ff; }.edit-panel-title { grid-column:1/-1; display:flex; align-items:baseline; gap:10px; }.edit-panel-title strong { font-size:13px; }.edit-panel-title span { color:#8a94a3; font-size:11px; }.edit-panel input { min-width:0; padding:8px 10px; border:1px solid #dfe4ea; border-radius:7px; }.edit-panel>div:last-child { display:flex; gap:6px; }.edit-panel>div:last-child button:first-child { background:#e5e8ef; color:#596273; }.edit-panel button:disabled { opacity:.55; }.edit-error { grid-column:1/-1; color:#e74c3c; font-size:11px; }
 .directory-state { padding:60px 24px; text-align:center; color:#8a94a3; }.directory-state.error { color:#e74c3c; }.user-list { overflow-y:auto; padding:0 14px; border-block:1px solid #f0f2f5; }.user-row { display:flex; align-items:center; width:100%; border-bottom:1px solid #f3f4f6; background:#fff; color:#2f3542; }.user-row:hover { background:#f7f8ff; }.user-row.selected { background:#f0f2ff; }.user-select { display:flex; align-items:center; gap:12px; min-width:0; flex:1; padding:13px 10px; border:0; background:transparent; color:inherit; text-align:left; cursor:pointer; }.edit-user { margin-right:10px; padding:6px 10px; border:1px solid #dfe3eb; border-radius:6px; background:#fff; color:#657083; cursor:pointer; font-size:11px; }.edit-user:hover { border-color:#4451e8; color:#4451e8; }.user-row-avatar { width:38px; height:38px; background:#eef0ff; }
-.user-row-main { min-width:0; flex:1; display:flex; flex-direction:column; gap:3px; }.user-row-main strong { font-size:14px; }.user-row-main span { color:#697386; font-size:12px; }.user-row-main code { overflow:hidden; color:#a0a7b2; font-size:10px; text-overflow:ellipsis; }.user-row-meta { display:flex; flex-direction:column; align-items:flex-end; gap:6px; color:#a0a7b2; font-size:11px; }.user-row-meta b { padding:2px 7px; border-radius:10px; background:#4451e8; color:#fff; font-size:10px; }
+.user-row-main { min-width:0; flex:1; display:flex; flex-direction:column; gap:3px; }.user-row-main strong { font-size:14px; overflow-wrap:anywhere; }.user-row-main span { color:#697386; font-size:12px; }.user-row-main code { overflow:hidden; color:#a0a7b2; font-size:10px; text-overflow:ellipsis; }.user-row-meta { display:flex; flex-direction:column; align-items:flex-end; gap:6px; color:#a0a7b2; font-size:11px; }.user-row-meta b { padding:2px 7px; border-radius:10px; background:#4451e8; color:#fff; font-size:10px; }
 .directory-footer { display:flex; align-items:center; justify-content:space-between; padding:14px 24px; color:#7f8896; font-size:12px; }.directory-footer div { display:flex; gap:8px; }.directory-footer button { padding:7px 13px; }.directory-footer button:disabled { background:#dfe3eb; cursor:not-allowed; }
-@media(max-width:760px){.sidebar{width:190px}.content{padding:18px}.directory-mask{padding:10px}.user-select{display:grid;grid-template-columns:38px minmax(0,1fr);gap:8px 12px}.user-row-meta{grid-column:1/-1;align-items:flex-start;text-align:left}.user-row-time{justify-content:flex-start}.edit-panel{grid-template-columns:1fr}.edit-panel-title,.edit-error{grid-column:1}}
+@media(max-width:760px){
+.layout{flex-direction:column}
+.mobile-header{display:flex;align-items:center;gap:12px;min-height:56px;padding:6px 12px;background:#293342;color:#fff}
+.mobile-header span{min-width:0;overflow-wrap:anywhere;font-weight:600}
+.mobile-header button,.navigation-close{width:44px;min-height:44px;flex-shrink:0;border:1px solid rgba(255,255,255,.2);border-radius:8px;background:transparent;color:#fff;font-size:24px;cursor:pointer}
+.sidebar{display:none;position:fixed;inset:0 auto 0 0;width:min(300px,calc(100vw - 48px));height:100vh;height:100dvh;z-index:1200;overscroll-behavior:contain;padding-top:10px}
+.sidebar.navigation-open{display:block}
+.navigation-close{display:block;margin:0 10px 8px auto}
+.nav-group-title,.nav-item{min-height:44px;display:flex;align-items:center}
+.content{width:100%;padding:16px 12px}
+.directory-mask{padding:10px}.user-select{display:grid;grid-template-columns:38px minmax(0,1fr);gap:8px 12px}.user-row-meta{grid-column:1/-1;align-items:flex-start;text-align:left}.user-row-time{justify-content:flex-start}.edit-panel{grid-template-columns:1fr}.edit-panel-title,.edit-error{grid-column:1}}
 .user-actions { display:flex; flex-direction:column; align-items:flex-end; gap:8px; padding:10px; flex-shrink:0; }
 .user-actions .edit-user { margin-right:6px; }
 .saving-switch { display:flex; align-items:center; gap:7px; border:0; background:transparent; font-size:12px; color:#4251bd; cursor:pointer; }

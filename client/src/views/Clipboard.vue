@@ -52,7 +52,16 @@ function render() {
 }
 
 const fmtDate = (s: string) => (s ? new Date(s).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-');
-onMounted(load);
+function resizeChart() { chart?.resize(); }
+onMounted(() => {
+  window.addEventListener('resize', resizeChart);
+  load();
+});
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', resizeChart);
+  chart?.dispose();
+  chart = null;
+});
 </script>
 
 <template>
@@ -76,7 +85,7 @@ onMounted(load);
 
     <div class="card">
       <h3>最常复制的内容</h3>
-      <table>
+      <div class="table-scroll" role="region" aria-label="复制内容，可横向滚动" tabindex="0"><table>
         <thead>
           <tr><th>内容</th><th>次数</th><th>最近复制</th></tr>
         </thead>
@@ -87,9 +96,15 @@ onMounted(load);
             <td>{{ fmtDate(c.last_used_at) }}</td>
           </tr>
         </tbody>
-      </table>
+      </table></div>
       <div v-if="!data.top.length" class="empty">暂无复制记录</div>
     </div>
   </div>
   <div v-else class="empty">加载中…</div>
 </template>
+
+<style scoped>
+.table-scroll { max-width: 100%; overflow-x: auto; }
+table { min-width: 520px; }
+th { white-space: nowrap; }
+</style>

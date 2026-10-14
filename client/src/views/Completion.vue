@@ -60,6 +60,7 @@ onMounted(load);
 
     <div class="card">
       <h3>Top 补全候选（按使用次数）</h3>
+      <div class="table-scroll" role="region" aria-label="补全候选，可横向滚动" tabindex="0">
       <table>
         <thead>
           <tr><th>前缀</th><th>补全</th><th>次数</th><th>展示</th><th>接受</th><th>评分</th></tr>
@@ -75,8 +76,18 @@ onMounted(load);
           </tr>
         </tbody>
       </table>
+    </div>
       <div v-if="!stats.top.length" class="empty">暂无补全候选（高频短语使用 3 次后自动生成）</div>
     </div>
   </div>
   <div v-else class="empty">加载中…</div>
 </template>
+
+<style scoped>
+table { min-width: 680px; }
+th { white-space: nowrap; }
+td:first-child { min-width: 160px; max-width: 260px; overflow-wrap: anywhere; }
+td:nth-child(2) { min-width: 200px; }
+
+.table-scroll { max-width: 100%; overflow-x: auto; }
+</style>

@@ -136,7 +136,7 @@ onBeforeUnmount(() => {
   <div class="card">
     <h3>高频词 TOP 50</h3>
     <p v-if="loading" class="msg">加载中…</p>
-    <table v-else-if="phrases.length > 0" class="table">
+    <div v-else-if="phrases.length > 0" class="table-scroll" role="region" aria-label="高频词，可横向滚动" tabindex="0"><table class="table">
       <thead>
         <tr><th>#</th><th>词 / 句</th><th>次数</th><th>活跃天数</th><th>最近使用</th></tr>
       </thead>
@@ -149,12 +149,18 @@ onBeforeUnmount(() => {
           <td class="time">{{ fmtTime(p.last_used_at) }}</td>
         </tr>
       </tbody>
-    </table>
+    </table></div>
     <p v-else class="msg">暂无数据</p>
   </div>
 </template>
 
 <style scoped>
+.table-scroll { max-width: 100%; overflow-x: auto; }
+table { min-width: 520px; }
+th { white-space: nowrap; }
+
+.msg { overflow-wrap: anywhere; }
+
 .hint {
   margin-left: auto;
   font-size: 0.78em;

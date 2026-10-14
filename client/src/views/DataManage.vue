@@ -178,4 +178,11 @@ button.danger-btn:disabled { opacity: .4; cursor: not-allowed; }
 .msg.err { color: #ff4757; }
 .collector-form { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
 .collector-form input { min-width:min(460px, 100%); padding:8px 10px; border:1px solid #dfe4ea; border-radius:6px; }
+@media (max-width: 760px) {
+  .form-row { flex-wrap:wrap; }
+  .form-row > label { width:100%; }
+  .form-row input[type='text'] { min-width:0; width:100%; }
+  .form-row input[type='date'] { min-width:0; max-width:100%; }
+  .radios label { width:auto; }
+}
 </style>

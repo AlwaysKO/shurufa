@@ -133,6 +133,9 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.filters select { max-width: 100%; }
+.meta { flex-wrap: wrap; overflow-wrap: anywhere; }
+
 .count {
   font-weight: normal;
   color: var(--muted, #888);

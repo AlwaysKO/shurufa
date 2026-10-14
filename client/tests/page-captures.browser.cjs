@@ -78,10 +78,25 @@ async function assertCentered(page){
   assert(requests.some(x=>x.platform==='douyin'&&x.kind==='payment'&&x.page==='2'),'筛选/分页未传递');
   await page.screenshot({path:output+'/page-ui-desktop.png',fullPage:true});
   await page.locator('.cards .preview').first().click();
+  // 独立业务隔离用例：程序态触发设备上下文变化，不代表用户能穿透原生 modal 点击背景。
+  // 保持原图打开，刻意沿现有处理器切换身份，验证 watcher 会自动关闭 modal 并清除旧图。
+  assert(await page.locator('dialog[open]').count()===1,'程序态切设备前原图必须仍打开');
   await page.locator('.current-user').filter({hasText:'切换'}).evaluate(el=>el.click());
   await page.locator('.user-select').filter({hasText:'虚构设备 B'}).evaluate(el=>el.click());
   await page.waitForFunction(id=>Array.from(document.querySelectorAll('.cards img')).some(x=>x.src.includes(id)),B);
-  assert(await page.locator('dialog[open]').count()===0,'切手机未关闭原图');
+  assert(await page.locator('dialog[open]').count()===0,'程序态切手机未自动关闭原图');
+  assert(!await page.locator(`.cards img[src*="${A}"]`).count(),'程序态切手机仍显示旧手机图片');
+  // 恢复 A，再单独验证真实用户交互路径；不把上面的程序调用计为点击可达性证据。
+  await page.locator('.current-user').filter({hasText:'切换'}).click();
+  await page.locator('.user-select').filter({hasText:'虚构设备 A'}).click();
+  await page.waitForFunction(id=>Array.from(document.querySelectorAll('.cards img')).some(x=>x.src.includes(id)),A);
+  await page.locator('.cards .preview').first().click();
+  // 原生模态框使背景 inert：用户必须先关闭原图，再通过真实点击切换设备。
+  await page.keyboard.press('Escape');
+  await page.locator('.current-user').filter({hasText:'切换'}).click();
+  await page.locator('.user-select').filter({hasText:'虚构设备 B'}).click();
+  await page.waitForFunction(id=>Array.from(document.querySelectorAll('.cards img')).some(x=>x.src.includes(id)),B);
+  assert(await page.locator('dialog[open]').count()===0,'切手机后不应恢复旧原图');
   assert(!await page.locator(`.cards img[src*="${A}"]`).count(),'切手机仍显示旧手机图片');
   await page.setViewportSize({width:390,height:844});
   assert(await page.locator('.page-captures').evaluate(el=>el.getBoundingClientRect().width>300),'窄屏侧栏挤压应用页面');
@@ -91,6 +106,7 @@ async function assertCentered(page){
   await assertCentered(page);
   await page.screenshot({path:output+'/page-ui-mobile-modal.png'});
   await page.keyboard.press('Escape');
+  await page.getByRole('button',{name:'打开导航',exact:true}).click();
   await page.getByRole('button',{name:'fixture · 退出登录',exact:true}).click();
   await page.waitForURL('**/login');
   assert(await page.locator('.page-captures').count()===0,'退出仍保留私有页面');

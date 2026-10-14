@@ -220,5 +220,7 @@ onMounted(()=>load(1)); onBeforeUnmount(()=>{alive=false;generation++;});
 </template>
 <style scoped>
 .dictionary-page .library-row{flex-wrap:wrap}
+.target-label strong{min-width:0;overflow-wrap:anywhere}
+.dictionary-page p{overflow-wrap:anywhere}
 .device-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px}.device-card{padding:16px;background:#f7f9fc;border:1px solid #e0e5f0;border-radius:12px}.device-card.chosen{border-color:var(--lib-accent);background:#f3f4ff}.target-label{display:flex;gap:10px;align-items:center}.device-card small{display:block;overflow-wrap:anywhere;color:#64748b}.dictionary-page p{line-height:1.7;color:#64748b}.batch-actions,.row-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.batch-actions{margin:16px 0}.row-actions{flex-wrap:nowrap}.table-scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;white-space:nowrap}td,th{padding:12px;text-align:left;border-bottom:1px solid #e2e8f0}button:disabled{cursor:default;opacity:.5}.library-row .library-input{width:auto;min-width:150px;flex:1}.dictionary-page section+section{margin-top:20px}.dictionary-page summary{cursor:pointer;font-size:13px;color:#64748b}
 </style>

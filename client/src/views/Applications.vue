@@ -51,7 +51,16 @@ function render(rows: Array<{ packageName: string; name: string; chars: number; 
   });
 }
 
-onMounted(load);
+function resizeChart() { chart?.resize(); }
+onMounted(() => {
+  window.addEventListener('resize', resizeChart);
+  load();
+});
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', resizeChart);
+  chart?.dispose();
+  chart = null;
+});
 </script>
 
 <template>

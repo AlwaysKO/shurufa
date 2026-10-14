@@ -108,18 +108,6 @@
   .content-library .phrase-item { flex-wrap:wrap; gap:12px; } .content-library .phrase-body { min-width:70%; } .content-library .phrase-item>.library-actions { margin-left:auto; }
   .content-library .library-stat { min-width:100px; padding:14px; } .content-library .library-stat strong { font-size:20px; }
 }
-/* 只在这两页窄屏时把后台导航移到上方，避免固定侧栏挤压表单和图片。 */
-@media (max-width:760px) {
-  .layout:has(.content-library) { flex-direction:column; }
-  .layout:has(.content-library)>.sidebar { position:static; width:100%; height:auto; padding:8px 0; }
-  .layout:has(.content-library) .sidebar>.logo { display:none; }
-  .layout:has(.content-library) .sidebar>.current-user { display:inline-flex; width:calc(50% - 16px); min-height:60px; margin:4px 6px; vertical-align:middle; }
-  .layout:has(.content-library) .sidebar-nav { display:flex; overflow-x:auto; gap:5px; align-items:flex-start; padding:6px 8px; }
-  .layout:has(.content-library) .nav-group { width:130px; flex-shrink:0; }
-  .layout:has(.content-library) .nav-group-title { padding:8px; }
-  .layout:has(.content-library) .nav-children { padding-left:5px; }
-  .layout:has(.content-library)>.content { padding:20px 14px; width:100%; }
-}
 @media (max-width:760px) {
   .content-library .library-stats { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
   .content-library .library-stat { min-width:0; }
@@ -155,3 +143,6 @@
 .alias-editor { display: grid; gap: 10px; margin: 12px 0; }
 .alias-editor .library-row .library-input { min-width: 0; }
 .alias-editor .library-row .text-button { flex-shrink: 0; }
+
+/* 中等宽度的关键词详情也允许操作换行，不挤出图库列。 */
+.content-library .keyword-gallery .section-heading { flex-wrap:wrap; }

@@ -296,7 +296,7 @@ const summary = computed(() => {
       </button>
     </details>
 
-    <div class="table-scroll">
+    <div class="table-scroll" role="region" aria-label="位置记录，可横向滚动" tabindex="0">
     <table class="table">
       <thead>
         <tr>
@@ -354,6 +354,10 @@ const summary = computed(() => {
 </template>
 
 <style scoped>
+.table { min-width: 1100px; }
+.table td:first-child { min-width: 100px; }
+.table td:nth-child(3) { min-width: 200px; }
+
 .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
 .toolbar select, .toolbar input { padding: 6px 8px; border: 1px solid #ddd; border-radius: 6px; background: #fff; }
 .btn { padding: 6px 14px; background: #3742fa; color: #fff; border: none; border-radius: 6px; cursor: pointer; }

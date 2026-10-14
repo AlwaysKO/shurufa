@@ -330,7 +330,8 @@ onMounted(async () => {
   <div v-if="error" class="empty">加载失败：{{ error }}</div>
   <div v-else class="card" style="padding: 0">
     <div v-if="loading" class="empty" role="status">加载中…</div>
-    <table v-else>
+    <div v-else class="table-scroll" role="region" aria-label="行为明细，可横向滚动" tabindex="0">
+    <table>
       <thead>
         <tr>
           <th style="width: 48px">选择</th>
@@ -398,6 +399,7 @@ onMounted(async () => {
         </tr>
       </tbody>
     </table>
+    </div>
     <div v-if="!items.length && !loading" class="empty">没有符合条件的行为记录</div>
 
     <div v-if="!loading" class="pager">
@@ -410,6 +412,14 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+table { min-width: 1000px; }
+th { white-space: nowrap; }
+td:nth-child(4), td:nth-child(9) { min-width: 180px; }
+
+.table-scroll { max-width: 100%; overflow-x: auto; }
+.filters label { min-width: 0; max-width: 100%; }
+.filters select { max-width: 100%; }
+
 .selection-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 13px; color: #57606f; }
 .selection-toolbar button:disabled { opacity: .5; cursor: not-allowed; }
 .delete-record { padding: 5px 10px; border: 1px solid #ffc9c9; border-radius: 5px; background: #fff5f5; color: #c0392b; cursor: pointer; white-space: nowrap; }

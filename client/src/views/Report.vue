@@ -209,7 +209,7 @@ onBeforeUnmount(() => {
 
     <div class="card">
       <h3>常用位置</h3>
-      <table>
+      <div class="table-scroll" role="region" aria-label="常用位置，可横向滚动" tabindex="0"><table>
         <thead>
           <tr><th>位置</th><th>停留次数</th><th>最后出现</th></tr>
         </thead>
@@ -220,7 +220,7 @@ onBeforeUnmount(() => {
             <td>{{ new Date(l.last_seen_at).toLocaleString() }}</td>
           </tr>
         </tbody>
-      </table>
+      </table></div>
       <div v-if="data.top_locations.length === 0" class="empty">暂无数据（需开启位置采集）</div>
     </div>
   </div>
@@ -228,7 +228,11 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.table-scroll { max-width: 100%; overflow-x: auto; }
+table { min-width: 520px; }
+th { white-space: nowrap; }
+
+.grid-2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
 .headline-card { font-size: 15px; color: #2f3542; line-height: 1.7; border-left: 4px solid #3742fa; }
 .date-label { font-size: 14px; color: #2f3542; padding: 0 4px; align-self: center; }
 .rank-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
@@ -239,7 +243,7 @@ onBeforeUnmount(() => {
 .source-empty { display: flex; align-items: center; justify-content: center; }
 .phrase-list { list-style: none; }
 .phrase-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f2f6; font-size: 14px; }
-.phrase-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.phrase-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .phrase-count { font-size: 12px; color: #747d8c; flex-shrink: 0; margin-left: 12px; }
-@media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .grid-2 { grid-template-columns: minmax(0, 1fr); } }
 </style>
