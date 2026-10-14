@@ -144,9 +144,11 @@ class ExpressionContentSender(
             else -> error("unsupported image MIME")
         }
         val file = expression.file
+        val gifRewrite = if (extension == "gif" && file.isFile) GifDeliveryMetadata.inspect(file) else null
+        val openSource = { gifRewrite?.open(file) ?: file.inputStream() }
         val properExtension = file.extension.equals(extension, ignoreCase = true) ||
             (extension == "jpg" && file.extension.equals("jpeg", ignoreCase = true))
-        if (properExtension && runCatching { contentUri(file) }.isSuccess) {
+        if (gifRewrite == null && properExtension && runCatching { contentUri(file) }.isSuccess) {
             // 已有授权路径保持原发送行为；只有我们管理的交付副本需要刷新回收保护。
             val deliveryRoot = File(context.cacheDir, "expression/ime-delivery").canonicalFile
             if (file.canonicalFile.parentFile == deliveryRoot) deliveryCacheMutex.withLock {
@@ -158,7 +160,7 @@ class ExpressionContentSender(
         check(file.isFile)
         // 查询原件是无后缀的SHA文件，不能直接暴露其目录或假装Provider已支持。
         check(file.length() <= DELIVERY_CACHE_MAX_BYTES)
-        val source = file.inputStream().use(::fingerprint)
+        val source = openSource().use(::fingerprint)
         check(source.size <= DELIVERY_CACHE_MAX_BYTES)
         deliveryCacheMutex.withLock {
             currentCoroutineContext().ensureActive()
@@ -185,7 +187,7 @@ class ExpressionContentSender(
                 }
             }
             check(bytes + source.size <= DELIVERY_CACHE_MAX_BYTES) { "delivery cache full" }
-            val saved = file.inputStream().use { cache.writeVerified("ime-delivery", name, source.sha256, it) }
+            val saved = openSource().use { cache.writeVerified("ime-delivery", name, source.sha256, it) }
             // 写入失败时writeVerified可能返回查询缓存原件，不能把它误当作可授权文件。
             check(saved?.canonicalFile == target.canonicalFile)
             currentCoroutineContext().ensureActive()

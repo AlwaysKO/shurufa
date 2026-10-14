@@ -154,6 +154,33 @@ class WechatGifCommandTest {
         assertArrayEquals(bytes, context.contentResolver.openInputStream(uri)!!.use { it.readBytes() })
     }
 
+    @Test fun duplicateXmpIsRemovedOnlyFromTheGifDeliveryCopy() = runSending {
+        val gif = context.assets.open("expression/prebuilt/thanks-nuotuan-bow.gif").use { it.readBytes() }
+        val packed = gif[10].toInt() and 255
+        val prefixSize = 13 + if (packed and 128 != 0) 3 * (1 shl ((packed and 7) + 1)) else 0
+        val xmp = java.io.ByteArrayOutputStream().apply {
+            write(byteArrayOf(0x21, 0xff.toByte(), 11))
+            write("XMP DataXMP".toByteArray(Charsets.US_ASCII))
+            repeat(4) { write(255); write(ByteArray(255) { 65 }) }
+            write(0)
+        }.toByteArray()
+        val prefix = gif.copyOfRange(0, prefixSize)
+        val framesAndExtensions = gif.copyOfRange(prefixSize, gif.size)
+        val original = prefix + java.io.ByteArrayOutputStream().apply { repeat(32) { write(xmp) } }.toByteArray() + framesAndExtensions
+        val expected = prefix + xmp + framesAndExtensions
+        // 已有.gif和Provider路径也必须覆盖，不能只修无后缀的搜索缓存。
+        val file = File(context.cacheDir, "expression/xmp-source/repeated.gif").apply {
+            parentFile!!.mkdirs(); writeBytes(original)
+        }
+        val sent = deliver(preparedFile = file)
+        assertEquals(ExpressionSendResult.WechatSubmitted, sent.result)
+        val uri = sent.data!!.getParcelable<Uri>("EXP_PATH_URI")!!
+        assertEquals("image/gif", context.contentResolver.getType(uri))
+        assertArrayEquals(expected, context.contentResolver.openInputStream(uri)!!.use { it.readBytes() })
+        assertArrayEquals("图库原件不能改写", original, file.readBytes())
+        assertEquals("重复发送复用同一交付副本", uri, deliver(preparedFile = file).granted)
+    }
+
     private fun unsharedGif(): File = File(context.cacheDir, "expression-query/originals/delivery-edge-source").apply {
         parentFile!!.mkdirs()
         context.assets.open("expression/prebuilt/thanks-nuotuan-bow.gif").use { writeBytes(it.readBytes()) }
