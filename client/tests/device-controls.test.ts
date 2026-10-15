@@ -4,6 +4,7 @@ import ts from 'typescript';
 import * as Vue from 'vue';
 import { afterEach, expect, it, vi } from '../../server/node_modules/vitest/dist/index.js';
 import * as usageEvidence from '../src/usageEvidence';
+import * as navigationState from '../src/navigationState';
 import * as confirmation from '../src/confirmation';
 const settle = async () => { for (let i=0;i<12;i++) await Promise.resolve(); await Vue.nextTick(); };
 const mounted: Vue.App[]=[];
@@ -22,6 +23,7 @@ async function setup(overrides: Record<string,unknown>={}) {
   if(id==='./auth')return {authenticated,logout:vi.fn(),loginName:Vue.ref('admin')};
   if(id==='vue-router')return {useRoute:()=>route};
   if(id==='./usageEvidence')return usageEvidence;
+  if(id==='./navigationState')return navigationState;
   if(id==='./confirmation')return confirmation;
   if(id.endsWith('.vue'))return {default:{render:()=>null}};
   throw Error(id);

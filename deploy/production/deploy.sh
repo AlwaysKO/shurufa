@@ -46,6 +46,7 @@ fi
 cd "$release/client"
 npm ci --no-audit --no-fund
 npm run build
+python3 "$release/client/scripts/retain-release-assets.py" "$base/releases" "$release"
 set -a
 source "$config/production.env"
 set +a

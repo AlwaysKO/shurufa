@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { evidenceTime, evidenceSource, usageEvidenceDetails } from './usageEvidence';
+import { navigationFailure, navigationLoading, reloadFailedPage } from './navigationState';
 import { computed, nextTick, onMounted, onBeforeUnmount, ref, watch } from 'vue';
 import ConfirmationDialog from './components/ConfirmationDialog.vue';
 import { cancelConfirmation, confirmation, useConfirmation } from './confirmation';
@@ -272,6 +273,11 @@ function subtitle(user: DeviceRow) {
 </script>
 
 <template>
+  <div v-if="navigationFailure" class="navigation-error" role="alert">
+    页面加载失败，可能是后台已更新或网络中断。
+    <button type="button" @click="reloadFailedPage">刷新并打开目标页面</button>
+  </div>
+  <div v-else-if="navigationLoading" class="navigation-loading" role="status">正在打开页面…</div>
   <RouterView v-if="!authenticated && route.path === '/login'" />
   <div v-if="authenticated" class="layout" :inert="!!confirmation || directoryOpen">
     <header @focusin="rememberNavigationFocus" @focusout="forgetNavigationFocus" class="mobile-header" :inert="navigationOpen">
@@ -414,6 +420,9 @@ th { color: #747d8c; font-weight: 500; background: #fafbfc; }
 .empty { color: #a4b0be; text-align: center; padding: 40px 0; font-size: 14px; }
 .load-error p { margin-bottom:12px; color:#d35454; }.load-error button { padding:8px 18px; border:0; border-radius:7px; background:#4451e8; color:#fff; cursor:pointer; }
 
+.navigation-error,.navigation-loading { position:fixed; top:12px; left:50%; transform:translateX(-50%); z-index:1500; max-width:calc(100vw - 24px); width:max-content; padding:12px 16px; border-radius:8px; box-shadow:0 2px 12px #0002; background:#fff; color:#334155; }
+.navigation-error { border:1px solid #e5b0a9; color:#9f2929; }
+.navigation-error button { margin-left:8px; padding:8px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; cursor:pointer; }
 button, input { font: inherit; }
 .current-user { display:flex; align-items:center; gap:9px; width:calc(100% - 20px); margin:12px 10px 8px; padding:11px; border:1px solid rgba(255,255,255,.12); border-radius:9px; background:rgba(255,255,255,.06); color:#fff; text-align:left; cursor:pointer; }
 .current-user:hover { background:rgba(255,255,255,.1); }

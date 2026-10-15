@@ -2,6 +2,7 @@ import { createApp } from 'vue';
 import { createRouter, createWebHistory } from 'vue-router';
 import App from './App.vue';
 import { authenticated, checkSession, onSessionExpired } from './auth';
+import { trackNavigation } from './navigationState';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -37,6 +38,7 @@ const router = createRouter({
   ],
 });
 
+trackNavigation(router);
 router.beforeEach(async (to) => {
   if (to.path === '/login') return authenticated.value ? '/' : true;
   // 已登录时直接切页；每个后台 API 仍由服务端验证会话，401 会统一退回登录。
@@ -44,4 +46,5 @@ router.beforeEach(async (to) => {
 });
 onSessionExpired(() => { if (router.currentRoute.value.path !== '/login') void router.replace('/login'); });
 const app = createApp(App).use(router);
-void router.isReady().then(() => app.mount('#app'));
+// Also render the recovery action if the initial lazy page fails to load.
+void router.isReady().then(() => app.mount('#app'), () => app.mount('#app'));
