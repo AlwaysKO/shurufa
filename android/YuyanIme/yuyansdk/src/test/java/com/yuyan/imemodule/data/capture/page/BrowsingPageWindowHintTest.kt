@@ -5,6 +5,21 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class BrowsingPageWindowHintTest {
+    @Test fun prioritySnapshotMayArriveOnSecondReadButNavigationLossCancelsIt() = runBlocking {
+        val snapshot = BrowsePageSnapshot(BrowsePageToken("com.tencent.mm", 7, 1),
+            com.yuyan.imemodule.data.capture.ui.IntRect(0, 0, 1000, 2000), emptyList())
+        var reads = 0
+        val waits = mutableListOf<Long>()
+        assertEquals(snapshot, resolveBrowsingWindowHint(current = { true },
+            read = { if (++reads == 1) null else snapshot }, wait = { waits += it }))
+        assertEquals(2, reads); assertEquals(listOf(800L), waits)
+        reads = 0
+        var current = true
+        assertNull(resolveBrowsingWindowHint(current = { current },
+            read = { if (++reads == 1) null else snapshot }, wait = { current = false }))
+        assertEquals(1, reads)
+    }
+
     @Test fun emptyRootGetsOneDelayedRecheckBeforeCandidateIsCreated() = runBlocking {
         var reads = 0
         val waits = mutableListOf<Long>()

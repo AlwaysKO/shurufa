@@ -151,6 +151,7 @@ class BalancedLocationService : Service() {
 
     private fun receive(location: Location) {
         if (!started || !allowed()) { finishSession(); return }
+        android.util.Log.d("LocationCapture", "received fix=${location.time} received=${System.currentTimeMillis()} provider=${location.provider} accuracy=${if (location.hasAccuracy()) location.accuracy else null}")
         val elapsed = SystemClock.elapsedRealtime()
         // A deep-sleep-delayed timeout is not allowed to extend the previous window.
         if (fixSelection.delayMs(elapsed) == 0L) {
@@ -163,13 +164,14 @@ class BalancedLocationService : Service() {
         fixSelection.delayMs(elapsed)?.let { handler.postDelayed(selectionTimeout, it) }
     }
 
-    private fun observeSelectedLocation(location: Location) {
+    private fun observeSelectedLocation(observation: ReceivedLocation) {
+        val location = observation.location
         val oldInterval = policy.intervalMs
-        policy.observe(System.currentTimeMillis(), LocationCandidate(location.latitude, location.longitude,
+        policy.observe(observation.receivedAtMs, LocationCandidate(location.latitude, location.longitude,
             if (location.hasAccuracy()) location.accuracy else Float.POSITIVE_INFINITY, location.time,
             location.provider, location.elapsedRealtimeNanos),
-            LocationSpeedQuality.from(location).speedMps, SystemClock.elapsedRealtime())
-        DataCollector.reportBalancedLocation(this, location)
+            LocationSpeedQuality.from(location).motionSpeedMps, SystemClock.elapsedRealtime())
+        DataCollector.reportBalancedLocation(this, location, observation.receivedAtMs)
         if (oldInterval != policy.intervalMs) registerUpdates()
         handler.removeCallbacks(confirmationTimeout)
         if (started) policy.confirmationDelayMs(SystemClock.elapsedRealtime())?.let {
@@ -201,8 +203,8 @@ class BalancedLocationService : Service() {
             override fun onProviderDisabled(provider: String) { if (started && !allowed()) finishSession() }
         }
         activeListener = listener
-        // Only validated Wi-Fi stays use lower-frequency requests. Elsewhere the target
-        // is one minute regardless of screen state; Android may still defer delivery.
+        // Moving targets 30 seconds; confirmed stays use one minute on cellular and
+        // five minutes on validated Wi-Fi. Android may still defer delivery.
         var registered = false
         for (provider in listOf(LocationManager.NETWORK_PROVIDER, LocationManager.GPS_PROVIDER)) {
             try {

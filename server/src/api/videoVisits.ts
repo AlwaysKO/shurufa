@@ -52,7 +52,8 @@ export function createMobileVideoVisitsRouter(pool: pg.Pool): Router {
           const imageIds = [...new Set([r.first_image_id, r.last_image_id].filter((x): x is string => x !== null))];
           const found = new Set<string>();
           if (imageIds.length) {
-            const images = await db.query('SELECT id FROM page_capture WHERE user_id=$1 AND platform=$2 AND id=ANY($3::uuid[]) FOR KEY SHARE', [user, r.platform, imageIds]);
+            const images = await db.query('SELECT id,kind FROM page_capture WHERE user_id=$1 AND platform=$2 AND id=ANY($3::uuid[]) FOR KEY SHARE', [user, r.platform, imageIds]);
+            if (images.rows.some(x => x.kind === 'video_call')) throw new InvalidVisit('video call screenshot is not a feed frame');
             images.rows.forEach(x => found.add(x.id));
             const deletedImages = await db.query(`SELECT id FROM capture_tombstone WHERE user_id=$1 AND platform=$2
               AND record_type='page' AND id=ANY($3::uuid[])`, [user, r.platform, imageIds]);

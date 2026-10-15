@@ -77,3 +77,11 @@ it('旧原图错误只标记所属记录，不误标记刚打开的新原图', a
   const view = read('views/PageCaptures.vue'); expect(view).toContain('@error="browser.imageFailed(selectedRow)"');
   expect(view).not.toContain('@error="browser.selected');
 });
+
+it('微信视频通话有独立类型标签与筛选，不归入视频号信息流', () => {
+  expect(pageKindLabels.video_call).toBe('微信视频通话');
+  const url = new URL(pageCaptureListUrl({ ...query(), platform: 'wechat', kind: 'video_call' }), 'https://example.com');
+  expect(url.searchParams.get('kind')).toBe('video_call');
+  expect(url.searchParams.get('platform')).toBe('wechat');
+  expect(pageKindLabels.media_feed).toContain('信息流');
+});

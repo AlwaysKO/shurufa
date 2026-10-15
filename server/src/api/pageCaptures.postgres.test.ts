@@ -43,6 +43,10 @@ beforeEach(async () => {
   // 页面管理与视频共用资源，最小fixture也加载其依赖和管理迁移。
   for (const name of ['044_video_visits.sql', '045_video_visit_observation_kind.sql', '046_capture_management.sql'])
     await pool.query(readFileSync(new URL('../../migrations/' + name, import.meta.url), 'utf8'));
+  const videoCallMigration = new URL('../../migrations/051_wechat_video_call_pages.sql', import.meta.url);
+  if (existsSync(videoCallMigration)) {
+    const sql = readFileSync(videoCallMigration, 'utf8'); await pool.query(sql); await pool.query(sql);
+  }
   app = createApp(pool); agent = await authenticatedRequest(app, pool);
 });
 afterAll(async () => { await pool?.end(); });
@@ -163,4 +167,57 @@ test('完整迁移链兼容，新页面不写聊天会话或消息', async () =>
   const r = record(); expect((await post(r)).status).toBe(200);
   expect((await image(r.id)).body).toEqual(bytes);
   for (const table of ['chat_conversation', 'chat_message']) expect(Number((await pool.query(`SELECT COUNT(*) AS n FROM ${table}`)).rows[0].n)).toBe(0);
+});
+
+
+test('微信视频通话截图独立入库筛选，管理删除后重传仅返回绑定舍弃回执', async () => {
+  const r = record({ kind: 'video_call' });
+  expect((await post(r)).status).toBe(200);
+  expect((await post(r)).body).toEqual({ ok: true, id: r.id, sha256: r.sha256 });
+  await post(record({ kind: 'payment' }));
+  const filtered = await list(A, '&platform=wechat&kind=video_call');
+  expect(filtered.status).toBe(200); expect(filtered.body.total).toBe(1);
+  expect(filtered.body.records[0]).toMatchObject({ id: r.id, platform: 'wechat', kind: 'video_call' });
+  expect((await list(B, '&kind=video_call')).body.total).toBe(0);
+  expect((await image(r.id)).body).toEqual(bytes);
+  const edited = await agent.patch(`/api/v1/dashboard/page-captures/${r.id}?user_id=${A}`).send({ title: '通话截图', note: '仅一张画面' });
+  expect(edited.status).toBe(200);
+  const preview = await agent.post(`/api/v1/dashboard/page-captures/cleanup/preview?user_id=${A}`).send({ days: 7, kind: 'video_call' });
+  expect(preview.status).toBe(200); expect(preview.body.total).toBe(1);
+  const deleted = await agent.post(`/api/v1/dashboard/page-captures/delete?user_id=${A}`).send({ ids: [r.id], confirm: 'DELETE' });
+  expect(deleted.body.deleted).toBe(1);
+  expect((await post(r)).body).toEqual({ ok: true, id: r.id, sha256: r.sha256, discarded: true });
+  expect((await list(A, '&kind=video_call')).body.total).toBe(0);
+  expect((await list(A, '&kind=payment')).body.total).toBe(1);
+});
+
+test('视频通话仅允许微信，关闭保存仍校验平台与图片', async () => {
+  const r = record({ kind: 'video_call' });
+  await pool.query('INSERT INTO runtime_setting VALUES($1,$2)', [`device_save_uploads:${A}`, 'false']);
+  expect((await post(r)).body).toEqual({ ok: true, id: r.id, sha256: r.sha256, discarded: true });
+  expect((await post({ ...r, package_name: 'com.ss.android.ugc.aweme' })).status).toBe(400);
+  expect((await post({ ...r, sha256: 'f'.repeat(64) })).status).toBe(400);
+  expect((await list()).body.total).toBe(0);
+});
+
+test('视频通话迁移保留旧类型约束且数据库拒绝非微信视频通话', async () => {
+  const r = record({ kind: 'video_call' });
+  expect((await post(r)).status).toBe(200);
+  await pool.query(readFileSync(new URL('../../migrations/051_wechat_video_call_pages.sql', import.meta.url), 'utf8'));
+  await expect(pool.query('UPDATE page_capture SET platform=$1 WHERE user_id=$2 AND id=$3', ['douyin', A, r.id])).rejects.toMatchObject({ code: '23514' });
+  await expect(pool.query('UPDATE page_capture SET kind=$1 WHERE user_id=$2 AND id=$3', ['chat', A, r.id])).rejects.toMatchObject({ code: '23514' });
+  expect((await list(A, '&kind=video_call')).body.total).toBe(1);
+});
+
+
+test('微信视频通话图片不能关联为视频号停留，拒绝后应用页面仍可见', async () => {
+  const r = record({ kind: 'video_call' });
+  expect((await post(r)).status).toBe(200);
+  const visit = { id: randomUUID(), platform: 'wechat', observation_kind: 'confirmed_video',
+    entered_at: r.captured_at, ended_at: r.captured_at + 10000, duration_ms: 10000,
+    exit_reason: 'background', complete: true, first_image_id: r.id, last_image_id: null };
+  const result = await request(app).post('/api/v1/mobile/video-visits').set('X-Device-Id', A).send(visit);
+  expect(result.status).toBe(400);
+  expect((await pool.query('SELECT id FROM video_visit')).rowCount).toBe(0);
+  expect((await list(A, '&kind=video_call')).body.total).toBe(1);
 });

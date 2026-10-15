@@ -116,11 +116,21 @@ class PageCaptureOutboxTest {
                 Triple("com.tencent.mm", frame(kind = PageKind.CHAT), 1000L),
                 Triple("com.tencent.mm", frame(kind = null), 1000L),
                 Triple("com.taobao.taobao", frame(), 1000L),
+                Triple("com.ss.android.ugc.aweme", frame(kind = PageKind.VIDEO_CALL), 1000L),
                 Triple("com.tencent.mm", frame(""), 1000L),
                 Triple("com.tencent.mm", frame().copy(width = 0), 1000L),
                 Triple("com.tencent.mm", frame(), -1L),
             )) assertEquals(PageWriteStatus.INVALID, s.enqueue(pkg, image, at).status)
             assertTrue(s.pending().isEmpty())
+        }
+    }
+    @Test fun wechatVideoCallImageSurvivesReopenWithItsOwnCategory() {
+        val id = PageCaptureOutbox(app).use { outbox ->
+            outbox.enqueue("com.tencent.mm", frame(kind = PageKind.VIDEO_CALL), 1000).id!!
+        }
+        PageCaptureOutbox(app).use { outbox ->
+            assertEquals(PageKind.VIDEO_CALL, outbox.pending().single().kind)
+            assertArrayEquals("image".toByteArray(), outbox.image(id))
         }
     }
     @Test fun revocationDuringTransactionRollsBackNewFrame() {

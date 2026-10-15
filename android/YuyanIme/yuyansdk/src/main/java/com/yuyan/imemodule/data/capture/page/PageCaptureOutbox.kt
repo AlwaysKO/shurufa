@@ -78,7 +78,7 @@ internal class PageCaptureOutbox(
         if (!authorized()) return PageWriteResult(PageWriteStatus.DISCARDED)
         val kind = frame.page.kind
         if (packageName !in setOf("com.tencent.mm", "com.ss.android.ugc.aweme") ||
-            kind == null || kind == PageKind.CHAT || capturedAt <= 0 ||
+            kind == null || kind == PageKind.CHAT || (kind == PageKind.VIDEO_CALL && packageName != "com.tencent.mm") || capturedAt <= 0 ||
             frame.width !in 1..8192 || frame.height !in 1..8192 || frame.bytes.size !in 1..3 * 1024 * 1024)
             return PageWriteResult(PageWriteStatus.INVALID)
         val bytes = frame.bytes.copyOf()

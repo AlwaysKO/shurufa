@@ -7,7 +7,7 @@ internal data class BrowsePageToken(val packageName: String, val windowId: Int, 
  * 普通浏览的单槽、事件驱动调度；无定时器、不取帧、不处理聊天发送或视频首尾。
  * 只有可信的页面变化/停滚入口调用 changed，不能把视频播放内容变化直接送入。
  * 后台串行使用；reserveAttempt 必须原子持久预留设备共享预算，未接入前禁止启用。
- * 此处三分钟间隔仅是进程内额外保护，跨进程预算/间隔由预留实现保证。
+ * 此处按应用三分钟间隔仅是进程内额外保护，跨进程预算/间隔由预留实现保证。
  */
 internal class BrowsingCaptureSchedule {
     private data class Candidate(val page: BrowsePageToken, val changedAt: Long)
@@ -17,7 +17,7 @@ internal class BrowsingCaptureSchedule {
     private var reserving = false
     private var newestGeneration = -1L
     private var closedGeneration = -1L
-    private var lastAttempt: Long? = null
+    private val lastAttempts = mutableMapOf<String, Long>()
     private var revision = 0L
 
     @Synchronized fun changed(page: BrowsePageToken, elapsed: Long) {
@@ -53,7 +53,7 @@ internal class BrowsingCaptureSchedule {
     @Synchronized fun remainingDelay(elapsed: Long): Long? {
         val pending = candidate ?: return null
         val stable = if (elapsed < pending.changedAt) 800L else (800L - (elapsed - pending.changedAt)).coerceAtLeast(0)
-        val interval = lastAttempt?.let {
+        val interval = lastAttempts[pending.page.packageName]?.let {
             if (elapsed < it) 180_000L else (180_000L - (elapsed - it)).coerceAtLeast(0)
         } ?: 0L
         return maxOf(stable, interval)
@@ -77,14 +77,14 @@ internal class BrowsingCaptureSchedule {
             return null
         }
         if (!allowed || elapsed < pending.changedAt || elapsed - pending.changedAt < 800) return null
-        if (lastAttempt?.let { elapsed < it || elapsed - it < 180_000 } == true) return null
+        if (lastAttempts[pending.page.packageName]?.let { elapsed < it || elapsed - it < 180_000 } == true) return null
         candidate = null // 无论预算拒绝/异常，均须新事件，不轮询同一页面。
         consumedThrough = maxOf(consumedThrough, elapsed)
         val expectedRevision = revision
         reserving = true
         try {
             if (!reserveAttempt()) return null
-            lastAttempt = elapsed
+            lastAttempts[pending.page.packageName] = elapsed
             if (revision != expectedRevision) return null
             return pending.page
         } finally {

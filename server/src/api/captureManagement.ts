@@ -27,7 +27,7 @@ export function captureWhere(type: CaptureType, user: string, filters: Record<st
   const clauses = ['c.user_id=$1'];
   const add = (sql: string, value: unknown) => { params.push(value); clauses.push(sql.replace('?', '$' + params.length)); };
   const enums: Record<string, string[]> = { platform: ['wechat', 'douyin'] };
-  if (type === 'page') enums.kind = ['conversation_list', 'payment', 'media_feed', 'image_post', 'mini_app'];
+  if (type === 'page') enums.kind = ['conversation_list', 'payment', 'media_feed', 'image_post', 'mini_app', 'video_call'];
   else {
     enums.observation_kind = ['confirmed_video', 'unconfirmed_feed'];
     enums.exit_reason = ['page_changed', 'switched', 'exit', 'background', 'locked', 'interrupted'];

@@ -58,6 +58,36 @@ class LocationBatchRetentionTest {
         app.deleteDatabase(name)
     }
 
+    @Test fun `precise network walking retains thirty second turns without guessing speed`() = runBlocking {
+        val offsets = listOf(0.0 to 0.0, 35.0 to 0.0, 35.0 to 35.0, 0.0 to 35.0, 0.0 to 0.0)
+        for ((step, offset) in offsets.withIndex()) {
+            val p = point(start + step * 30_000, 23.13 + offset.first / 111_195).apply {
+                longitude = 113.3 + offset.second / 102_000
+                provider = "network"; accuracy = 3.79f
+                speed = 1.17f; speedAccuracyMetersPerSecond = .72583693f
+            }
+            DataCollector.persistLocation(app, p, true) { p.time + 5_000 }
+            cancelWake()
+        }
+        assertEquals("real walking turns must not be thinned to a straight chord", 5,
+            store.pendingReports(ServerConfig.baseUrl).size)
+    }
+
+    @Test fun `fresh received points survive sleep and retain thirty second captures in one batch`() = runBlocking {
+        for (step in 0..4) {
+            val captured = start + step * 30_000
+            DataCollector.persistLocation(app, point(captured, 23.13 + step * .001), true,
+                receivedAtMs = captured) { start + 300_000 + step }
+            cancelWake()
+        }
+        val pending = store.pendingReports(ServerConfig.baseUrl)
+        assertEquals(5, pending.size)
+        assertEquals((0..4).map { start + it * 30_000 }, pending.map {
+            OffsetDateTime.parse(Json.parseToJsonElement(it.payload).jsonObject.getValue("occurred_at").jsonPrimitive.content)
+                .toInstant().toEpochMilli()
+        }.sorted())
+    }
+
     @Test fun `fixed selection overhead plus tiny jitter preserves minute captures`() = runBlocking {
         DataCollector.persistLocation(app, point(start), true) { start + 5_002 }
         cancelWake()
@@ -194,7 +224,7 @@ class LocationBatchRetentionTest {
         assertEquals((0..4).map { start + it * 60_000 }, capturedTimes)
         assertEquals(start + 240_150, PreferenceManager.getDefaultSharedPreferences(app).getLong(baselineKey, -1))
         resetJumpFilter()
-        DataCollector.persistLocation(app, point(start + 270_000, 23.135), true) { start + 270_150 }
+        DataCollector.persistLocation(app, point(start + 269_999, 23.135), true) { start + 270_150 }
         assertEquals(5, store.pendingReports(ServerConfig.baseUrl).size)
         DataCollector.persistLocation(app, point(start + 300_000, 23.136), true) { start + 300_150 }
         cancelWake()
@@ -220,7 +250,7 @@ class LocationBatchRetentionTest {
     @Test fun `stationary fixes and dense moving callbacks do not create extra records`() = runBlocking {
         DataCollector.persistLocation(app, point(start), true) { start }
         cancelWake()
-        DataCollector.persistLocation(app, point(start + 30_000, 23.131), true) { start + 30_000 }
+        DataCollector.persistLocation(app, point(start + 29_999, 23.131), true) { start + 29_999 }
         DataCollector.persistLocation(app, point(start + 300_000), true) { start + 300_000 }
         assertEquals(1, store.pendingReports(ServerConfig.baseUrl).size)
         assertEquals(start, PreferenceManager.getDefaultSharedPreferences(app).getLong(baselineKey, -1))

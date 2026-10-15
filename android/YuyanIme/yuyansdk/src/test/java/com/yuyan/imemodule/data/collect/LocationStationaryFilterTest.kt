@@ -14,6 +14,21 @@ class LocationStationaryFilterTest {
         return filter.accept(candidate.locationTimeMs, candidate, speed)
     }
 
+    @Test fun `precise network oscillation without positive speed evidence stays filtered`() {
+        val filter = LocationJumpFilter()
+        var last: UploadedLocation? = null
+        var reports = 0
+        for ((index, north) in listOf(0.0, 100.0, 2.0, 98.0, -2.0, 103.0, 0.0).withIndex()) {
+            val p = point(index * 30L, north, 5f, "network")
+            if (filter.accept(p.locationTimeMs, p, null, last) &&
+                LocationUploadPolicy.shouldUpload(p.locationTimeMs, p, last)) {
+                reports++
+                last = UploadedLocation(p.latitude,p.longitude,p.accuracyMeters,p.locationTimeMs,p.locationTimeMs,p.provider)
+            }
+        }
+        assertEquals(1, reports)
+    }
+
     @Test fun `precise walking twenty metre steps are confirmed below fifty metres`() {
         val filter = LocationJumpFilter()
         val first = point(0, 0.0, 5f, "gps")
@@ -77,10 +92,10 @@ class LocationStationaryFilterTest {
 
     @Test fun `small accepted changes do not migrate the stationary anchor`() {
         val filter = LocationJumpFilter()
-        observe(filter, 0, accuracy = 10f)
-        assertTrue(observe(filter, 30, 30.0, accuracy = 10f))
-        assertFalse(observe(filter, 60, 60.0, accuracy = 10f))
-        assertTrue(observe(filter, 90, 90.0, accuracy = 10f))
+        observe(filter, 0, accuracy = 15f)
+        assertTrue(observe(filter, 30, 30.0, accuracy = 15f))
+        assertFalse(observe(filter, 60, 60.0, accuracy = 15f))
+        assertTrue(observe(filter, 90, 90.0, accuracy = 15f))
     }
 
     @Test fun `return to anchor clears pending drift instead of confirming another excursion`() {
@@ -114,7 +129,7 @@ class LocationStationaryFilterTest {
     }
 
     @Test fun `only current trusted positive speed can bypass confirmation`() {
-        for (speed in listOf(0f, 1.5f, null)) {
+        for (speed in listOf(0f, 0.3f, null)) {
             val filter = LocationJumpFilter()
             observe(filter, 0, speed = 100f)
             assertFalse(observe(filter, 30, 90.0, speed = speed))
@@ -182,7 +197,7 @@ class LocationStationaryFilterTest {
     @Test fun `inside anchor accepted fix can retry storage without moving the anchor`() {
         val filter = LocationJumpFilter()
         observe(filter, 0, accuracy = 10f)
-        val inside = point(30, 30.0, 10f)
+        val inside = point(30, 15.0, 10f)
         assertTrue(filter.accept(inside.locationTimeMs, inside, null))
         assertTrue(filter.accept(inside.locationTimeMs + 1000, inside, null))
         assertFalse(observe(filter, 60, 60.0, accuracy = 10f))

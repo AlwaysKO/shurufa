@@ -12,6 +12,29 @@
 
 ## Android Studio 打包
 
+### Mac
+
+1. Android Studio 打开 `/Users/pj/project/shurufa/android/YuyanIme`，等待 Gradle 同步完成。
+2. `View > Tool Windows > Build Variants` 中将 `app` 选为 `offlineDebug`，与当前手机的 debug 包保持一致。
+3. `Build > Generate Bundle(s) / APK(s) > Generate APK(s)`。菜单也可能显示为 `Generate App Bundles or APKs`；旧版名称是 `Build Bundle(s) / APK(s) > Build APK(s)`。
+4. 等待 Build 成功，点击通知中的 `locate` 查找构建文件。本项目执行 `assembleOfflineDebug` 后会用原签名验证并自动复制到项目根 `apk/`，命名包含日期、版本和短 SHA256。原始输出在 `android/YuyanIme/app/build/unix/outputs/apk/offline/debug/`。
+
+无需新建签名密钥或使用签名向导。绿色 Run 用于连接手机调试，产物可能带 `testOnly`；分享安装包使用上述 Generate APKs 或下列 assemble 命令。
+
+在 Android Studio 的 Terminal 中也可执行（使用项目本机 JDK17 与 SDK 环境）：
+
+```bash
+cd /Users/pj/project/shurufa
+source .runtime/macos/android-env.sh
+./android/YuyanIme/gradlew -p android/YuyanIme :app:assembleOfflineDebug --offline -Pandroid.injected.testOnly=false
+```
+
+若 IDE 的 Gradle JDK 配置错误，在 `Android Studio > Settings > Build, Execution, Deployment > Build Tools > Gradle` 选择项目使用的 JDK17。本机 SDK 路径 `/Users/pj/Library/Android/sdk`。
+
+官方菜单说明：https://developer.android.com/build/build-for-release 。
+
+### Windows / WSL
+
 正常使用 Build APKs / Generate APKs，或在 YuyanIme 根目录的 Terminal 执行：
 
 ```powershell

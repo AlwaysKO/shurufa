@@ -10,6 +10,7 @@ internal data class LocationSpeedQuality(
     val speedMps: Float?,
     val quality: String,
     val reason: String,
+    val motionSpeedMps: Float? = null,
 ) {
     companion object {
         fun from(location: Location): LocationSpeedQuality {
@@ -27,7 +28,9 @@ internal data class LocationSpeedQuality(
                 else -> "accurate"
             }
             val trusted = reason == "accurate"
-            return LocationSpeedQuality(raw, raw.takeIf { trusted }, if (trusted) "trusted" else "unreliable", reason)
+            // 仅当速度的误差下界仍明确为正时，才用于确认慢速步行；显示原始可信速度不变。
+            val motionSpeed = raw.takeIf { trusted && it - location.speedAccuracyMetersPerSecond > 0.3f }
+            return LocationSpeedQuality(raw, raw.takeIf { trusted }, if (trusted) "trusted" else "unreliable", reason, motionSpeed)
         }
     }
 }

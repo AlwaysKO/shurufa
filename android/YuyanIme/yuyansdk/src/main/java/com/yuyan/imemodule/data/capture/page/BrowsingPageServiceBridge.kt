@@ -64,7 +64,7 @@ internal class BrowsingPageServiceBridge(
         },
         reserve = { packageName ->
             if (!eligible() || !ImageUploadRuntime.isBackgroundWorkAllowed()) false
-            else budget.reserveNow().also { status("budget_${it.name.lowercase()}", packageName) } == BrowseBudgetResult.ALLOWED
+            else budget.reserveNow(packageName).also { status("budget_${it.name.lowercase()}", packageName) } == BrowseBudgetResult.ALLOWED
         },
         capture = { snapshot, current ->
             val navigation = videoSequence.get()
@@ -74,34 +74,47 @@ internal class BrowsingPageServiceBridge(
                 snapshot.labels, chatVerified = snapshot.chatVerified, current = {
                     current() && navigation == videoSequence.get() && consent == CollectionConsent.epoch &&
                         policy == ChatCaptureSettings.revision() && eligible() && ChatCaptureSettings.rule(snapshot.page.packageName).enabled
-                }, acceptKind = { it != PageKind.MEDIA_FEED },
+                }, acceptKind = ::acceptOrdinaryPageKind,
                 captureKey = PageFrameCaptureKey(snapshot.page.packageName, snapshot.page.windowId, navigation, consent, policy))
         },
         outcome = ::status,
-        persistentIntervalRemaining = { budget.remainingIntervalNow() },
+        persistentIntervalRemaining = { packageName -> budget.remainingIntervalNow(packageName) },
         shouldCapture = { snapshot, decision ->
             val visit = videoVisits?.activeVisit()
             val platform = if (snapshot.page.packageName == "com.tencent.mm") "wechat" else "douyin"
-            decision.kind != PageKind.MEDIA_FEED && !(visit?.platform == platform &&
+            acceptOrdinaryPageKind(decision.kind) && !(visit?.platform == platform &&
                 visit.videoKey == "feed-window:${snapshot.page.windowId}")
         },
     )
-    // 视频观察独立于普通页面三分钟调度；仅事件触发，无持续取帧。
+    // 支付探测与视频观察独立于普通页面三分钟调度；复用同一物理帧，仅事件触发。
     private val videoSequence = java.util.concurrent.atomic.AtomicLong()
     private var videoObservation: Job? = null
     private var videoFirstFrame: Job? = null
     private val videoLifetime = SupervisorJob(BrowsingPageWorker.scope.coroutineContext[Job])
     private val videoScope = CoroutineScope(BrowsingPageWorker.scope.coroutineContext + videoLifetime)
     private val videoBudget = BrowsingCaptureBudgetStore(context, videoFrames = true)
+    private val paymentBudget = BrowsingCaptureBudgetStore(context, paymentPages = true)
+    private val videoCallSchedule = WechatVideoCallScreenshotSchedule()
+    @Volatile private var videoCallFrame: Job? = null
+    private val callSignals = com.yuyan.imemodule.data.callrecording.WechatCallSignals.connect { active, source ->
+        val recheck = videoCallSchedule.onCallSignal(active, source)
+        if (!active || source != "wechat_video") videoCallFrame?.cancel()
+        if (recheck) videoScope.launch {
+            // 接通可以只更新原呼叫窗口内容；通知只唤起核验，不直接授权截图。
+            if (eligible()) observePriorityPage()
+        }
+    }
 
     private fun cancelVideoObservation() {
         videoSequence.incrementAndGet()
         reader.clearSharedFrame()
         videoObservation?.cancel()
         videoFirstFrame?.cancel()
+        videoCallSchedule.invalidate()
+        videoCallFrame?.cancel()
     }
 
-    private fun observeVideoPage() {
+    private fun observePriorityPage() {
         cancelVideoObservation()
         val sequence = videoSequence.get()
         val consent = CollectionConsent.epoch
@@ -113,54 +126,108 @@ internal class BrowsingPageServiceBridge(
                 delay(800)
                 previousDrain?.join()
                 if (!current()) return@launch
-                val active = readActiveBrowsingWindow(service) ?: return@launch
-                if (!ChatCaptureSettings.rule(active.first).enabled) return@launch
-                val snapshot = readBrowsingPageSnapshot(service, BrowsePageToken(active.first, active.second, sequence)) ?: return@launch
+                val snapshot = resolveBrowsingWindowHint(current = ::current, read = {
+                    val active = readActiveBrowsingWindow(service)
+                    if (active == null || active.first != "com.tencent.mm") videoCallSchedule.leave()
+                    if (active == null || !ChatCaptureSettings.rule(active.first).enabled) null
+                    else readBrowsingPageSnapshot(service, BrowsePageToken(active.first, active.second, sequence))
+                }, wait = { delay(it) }) ?: return@launch
                 if (!current()) return@launch
-                val decision = PageCapturePolicy.classify(active.first, snapshot.bounds, snapshot.labels, chatVerified = snapshot.chatVerified)
-                if (decision.kind == PageKind.MEDIA_FEED) {
+                val decision = PageCapturePolicy.classify(snapshot.page.packageName, snapshot.bounds, snapshot.labels, chatVerified = snapshot.chatVerified)
+                if (decision.kind != null && decision.kind != PageKind.VIDEO_CALL) videoCallSchedule.leave()
+                if (decision.kind == PageKind.VIDEO_CALL) {
+                    captureVideoCallAfterStable(snapshot, sequence)
+                } else if (decision.kind == PageKind.MEDIA_FEED) {
                     val generation = videoVisits?.generation() ?: return@launch
-                    videoVisits.observeFeed(generation, active.first, active.second, SystemClock.elapsedRealtime(),
+                    videoVisits.observeFeed(generation, snapshot.page.packageName, snapshot.page.windowId, SystemClock.elapsedRealtime(),
                         System.currentTimeMillis(), ::current) { visit ->
                         if (visit.firstImage == null && videoFirstFrame?.isActive != true && current()) {
-                            videoFirstFrame = captureVideoFirstFrame(snapshot, sequence, visit)
+                            videoFirstFrame = capturePriorityFrame(snapshot, sequence, visit, decision)
                         }
                     }
-                } else if (decision.reason == "insufficient_evidence" && videoVisits?.activeVisit() == null) {
-                    // 空树不能直接计时；候选物理帧仍须通过同帧安全分类。
-                    videoFirstFrame = captureVideoFirstFrame(snapshot, sequence, null)
+                } else if (decision.kind == PageKind.PAYMENT || decision.reason == "insufficient_evidence") {
+                    // 微信支付可能是空树；先作有预算的同帧识别，不能因普通页面冷却而丢掉它。
+                    videoFirstFrame = capturePriorityFrame(snapshot, sequence, null, decision)
                 }
             } catch (cancelled: CancellationException) { throw cancelled }
             catch (_: Exception) { status("video_observation_failed") }
         }
     }
 
-    private fun captureVideoFirstFrame(snapshot: BrowsePageSnapshot, sequence: Long, visit: VideoVisit?): Job =
+    private fun capturePriorityFrame(snapshot: BrowsePageSnapshot, sequence: Long, visit: VideoVisit?,
+        decision: PageDecision): Job =
         videoScope.launch {
             val consent = CollectionConsent.epoch
             val policy = ChatCaptureSettings.revision()
-            val generation = videoVisits?.generation() ?: return@launch
+            val generation = videoVisits?.generation()
             fun current() = sequence == videoSequence.get() && eligible() &&
                 consent == CollectionConsent.epoch && policy == ChatCaptureSettings.revision() &&
                 ChatCaptureSettings.rule(snapshot.page.packageName).enabled &&
-                (visit == null || videoVisits.activeVisit()?.id == visit.id) && videoVisits.generation() == generation
+                (visit == null || videoVisits?.activeVisit()?.id == visit.id) && videoVisits?.generation() == generation
             try {
-                if (!current() || !ImageUploadRuntime.isBackgroundWorkAllowed() || !outbox.hasCapacity()) return@launch
-                if (videoBudget.reserveNow() != BrowseBudgetResult.ALLOWED) return@launch
-                reader.readAndPersist(outbox, snapshot.page.packageName, snapshot.page.windowId, snapshot.bounds,
+                if (!current()) return@launch
+                if (decision.kind == PageKind.PAYMENT || decision.reason == "insufficient_evidence") {
+                    // 刚从聊天输入跳转时可仍处于输入保护期；同一导航等到允许，不直接漏掉支付。
+                    if (!ImageUploadRuntime.awaitBackgroundWorkAllowed(::current) || !current()) return@launch
+                    // 仅本次导航保留一次秒级延后；离开页面即取消，不轮询等待额度恢复。
+                    val remaining = paymentBudget.remainingIntervalNow()
+                    if (remaining != null && remaining in 1L..1_000L) delay(remaining)
+                    if (!current() || !ImageUploadRuntime.isBackgroundWorkAllowed() || !outbox.hasCapacity()) return@launch
+                }
+                if (!ImageUploadRuntime.isBackgroundWorkAllowed() || !outbox.hasCapacity()) return@launch
+                val kinds = reservePriorityPageKinds(decision,
+                    reservePayment = {
+                        paymentBudget.reserveNow().also { status("budget_${it.name.lowercase()}", snapshot.page.packageName) } == BrowseBudgetResult.ALLOWED
+                    },
+                    reserveVideo = {
+                        videoVisits != null && (visit != null || videoVisits.activeVisit() == null) &&
+                            videoBudget.reserveNow() == BrowseBudgetResult.ALLOWED
+                    })
+                if (kinds.isEmpty() || !current()) return@launch
+                val result = reader.readAndPersist(outbox, snapshot.page.packageName, snapshot.page.windowId, snapshot.bounds,
                     snapshot.labels, chatVerified = snapshot.chatVerified, current = ::current,
-                    acceptKind = { it == PageKind.MEDIA_FEED },
+                    acceptKind = { it in kinds },
                     captureKey = PageFrameCaptureKey(snapshot.page.packageName, snapshot.page.windowId, sequence, consent, policy),
                     onPersisted = { frame, result, elapsed, wall ->
-                        if (current() && frame.page.kind == PageKind.MEDIA_FEED) {
+                        // 未知树的早期探测只能确认通话候选，不能提前落盘通话图。
+                        if (current() && frame.page.kind == PageKind.VIDEO_CALL)
+                            captureVideoCallAfterStable(snapshot, sequence)
+                        if (current() && generation != null && frame.page.kind == PageKind.MEDIA_FEED) {
                             if (visit == null) videoVisits.pageCaptured(generation, snapshot.page.packageName, PageKind.MEDIA_FEED,
                                 result, elapsed, wall, snapshot.page.windowId, consent, policy, ::current, freshFrame = true)
                             else videoVisits.attachFirstFrame(generation, visit, result, consent, policy, ::current)
                         }
                     })
+                status(result.status.name.lowercase(), snapshot.page.packageName)
             } catch (cancelled: CancellationException) { throw cancelled }
-            catch (_: Exception) { status("video_frame_failed") }
+            catch (_: Exception) { status("capture_or_storage_failed", snapshot.page.packageName) }
         }
+
+    private fun captureVideoCallAfterStable(snapshot: BrowsePageSnapshot, sequence: Long) {
+        val consent = CollectionConsent.epoch
+        val policy = ChatCaptureSettings.revision()
+        val ticket = videoCallSchedule.observe(snapshot.page.packageName, snapshot.page.windowId,
+            SystemClock.elapsedRealtime()) ?: return
+        fun current() = videoCallSchedule.isCurrent(ticket) && sequence == videoSequence.get() &&
+            eligible() && consent == CollectionConsent.epoch && policy == ChatCaptureSettings.revision() &&
+            ChatCaptureSettings.rule(snapshot.page.packageName).enabled
+        videoCallFrame = videoScope.launch {
+            try {
+                delay(5_000)
+                if (!current() || !ImageUploadRuntime.awaitBackgroundWorkAllowed(::current) || !current() ||
+                    !outbox.hasCapacity()) return@launch
+                val fresh = readBrowsingPageSnapshot(service, snapshot.page) ?: return@launch
+                if (!current() || !videoCallSchedule.take(ticket, SystemClock.elapsedRealtime())) return@launch
+                // 不复用5秒前的探测图；重新取帧并核对当前画面仍为已接通视频通话。
+                val result = reader.readAndPersist(outbox, fresh.page.packageName, fresh.page.windowId, fresh.bounds,
+                    fresh.labels, chatVerified = fresh.chatVerified, current = ::current,
+                    acceptKind = { it == PageKind.VIDEO_CALL })
+                if (result.status in setOf(PageWriteStatus.SAVED, PageWriteStatus.DUPLICATE)) videoCallSchedule.saved(ticket)
+                status(result.status.name.lowercase(), fresh.page.packageName)
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { status("capture_or_storage_failed", snapshot.page.packageName) }
+        }
+    }
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -176,7 +243,7 @@ internal class BrowsingPageServiceBridge(
             close()
             throw failure
         }
-        observeVideoPage()
+        observePriorityPage()
     }
     private fun status(code: String, packageName: String? = null) {
         android.util.Log.i("BrowsingPageCapture", code)
@@ -184,9 +251,11 @@ internal class BrowsingPageServiceBridge(
     }
 
     fun onEvent(event: AccessibilityEvent) {
+        if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED && event.packageName?.toString() != "com.tencent.mm")
+            videoCallSchedule.leave()
         when (event.eventType) {
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED, AccessibilityEvent.TYPE_WINDOWS_CHANGED,
-            AccessibilityEvent.TYPE_VIEW_SCROLLED -> observeVideoPage()
+            AccessibilityEvent.TYPE_VIEW_SCROLLED -> observePriorityPage()
         }
         when (event.eventType) {
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {
@@ -226,29 +295,30 @@ internal class BrowsingPageServiceBridge(
         windowHint?.cancel()
         windowHint = null
     }
-    fun invalidate() { cancelWindowHint(); cancelVideoObservation(); driver.invalidate() }
+    fun invalidate() { cancelWindowHint(); cancelVideoObservation(); videoCallSchedule.leave(); driver.invalidate() }
     fun close() {
         if (!closed.compareAndSet(false, true)) return
         cancelWindowHint()
         cancelVideoObservation()
+        callSignals.close()
         videoLifetime.cancel()
         runCatching { context.unregisterReceiver(receiver) }
         val stopped = driver.close()
         BrowsingPageWorker.lastDrain = BrowsingPageWorker.scope.launch {
             stopped.join()
             videoLifetime.join()
-            runCatching { try { outbox.close() } finally { try { budget.close() } finally { videoBudget.close() } } }
+            runCatching { try { outbox.close() } finally { try { budget.close() } finally { try { videoBudget.close() } finally { paymentBudget.close() } } } }
                 .onFailure { status("storage_close_failed") }
         }
     }
 }
 
 /** 同一次拓扑事件最多补核验一次；无候选截帧、无预算操作，失效或取消后不重放。 */
-internal suspend fun resolveBrowsingWindowHint(
+internal suspend fun <T> resolveBrowsingWindowHint(
     current: () -> Boolean,
-    read: () -> Pair<String, Int>?,
+    read: () -> T?,
     wait: suspend (Long) -> Unit,
-): Pair<String, Int>? {
+): T? {
     if (!current()) return null
     val first = read()
     if (!current()) return null

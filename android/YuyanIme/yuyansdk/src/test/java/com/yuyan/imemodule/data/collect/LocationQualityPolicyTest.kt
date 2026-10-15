@@ -14,6 +14,19 @@ class LocationQualityPolicyTest {
     private fun point(time: Long, latitude: Double = 23.13, provider: String = "gps") =
         LocationCandidate(latitude, 113.3, 15f, time, provider, (time - start + 1_000_000) * 1_000_000)
 
+    @Test fun `walking speed supports motion only when its error lower bound is positive`() {
+        val location = Location("network").apply {
+            accuracy = 3.79f; speed = 1.17f; speedAccuracyMetersPerSecond = .72583693f
+        }
+        assertEquals(1.17f, LocationSpeedQuality.from(location).motionSpeedMps)
+        for (speed in listOf(0f, .3f, .8f)) {
+            location.speed = speed; location.speedAccuracyMetersPerSecond = .5f
+            assertNull(LocationSpeedQuality.from(location).motionSpeedMps)
+        }
+        location.speed = 1.17f; location.removeSpeedAccuracy()
+        assertNull(LocationSpeedQuality.from(location).motionSpeedMps)
+    }
+
     @Test fun `missing and invalid speeds are unavailable`() {
         for (speed in listOf(null, -1f, Float.NaN, Float.POSITIVE_INFINITY)) {
             val location = Location("network").apply { accuracy = 10f; if (speed != null) this.speed = speed }

@@ -10,7 +10,7 @@ internal class BalancedLocationPolicy {
     // Geographical state remains independent of transport. Off Wi-Fi even a stay
     // requests minute samples; the bounded 30-second movement confirmation remains.
     val intervalMs: Long
-        get() = if (validatedWifi) samplingIntervalMs else minOf(samplingIntervalMs, MOVING_INTERVAL_MS)
+        get() = if (validatedWifi) samplingIntervalMs else minOf(samplingIntervalMs, NON_WIFI_STATIONARY_INTERVAL_MS)
 
     fun updateNetwork(wifi: Boolean) { validatedWifi = wifi }
     private var anchor: LocationCandidate? = null
@@ -38,7 +38,7 @@ internal class BalancedLocationPolicy {
         val oldAnchor = anchor
         val gap = candidate.locationTimeMs - previousTime
         previousTime = candidate.locationTimeMs
-        val moving = speedMps?.let { it.isFinite() && it > 1.5f } == true ||
+        val moving = speedMps?.let { it.isFinite() && it > 0.3f } == true ||
             (oldAnchor != null && distance(oldAnchor, candidate) > LocationUploadPolicy.movementThreshold(oldAnchor, candidate))
         if (oldAnchor == null || moving || gap > 600_000 ||
             (!wasConfirming && samplingIntervalMs == MOVING_INTERVAL_MS && gap > 90_000)) {
@@ -71,7 +71,8 @@ internal class BalancedLocationPolicy {
     }
 
     companion object {
-        const val MOVING_INTERVAL_MS = 60_000L
+        const val MOVING_INTERVAL_MS = 30_000L
+        private const val NON_WIFI_STATIONARY_INTERVAL_MS = 60_000L
         private const val CONFIRMATION_INTERVAL_MS = 30_000L
         const val STATIONARY_INTERVAL_MS = 300_000L
         private const val CONFIRMATION_WINDOW_MS = 60_000L

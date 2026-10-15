@@ -39,7 +39,7 @@ internal class LocationJumpFilter {
         // observations or an earlier speed are not evidence that motion continued.
         val reference = lastAccepted ?: old
         val motionInterval = elapsed(reference, candidate)
-        val speedSupportsMove = speedMps != null && speedMps.isFinite() && speedMps > 1.5f &&
+        val speedSupportsMove = speedMps != null && speedMps.isFinite() && speedMps > 0.3f &&
             motionInterval in 1L..600_000L &&
             LocationUploadPolicy.distanceMeters(reference, candidate) <=
                 speedMps * 1.5 * (motionInterval / 1000.0) + reference.accuracyMeters + candidate.accuracyMeters

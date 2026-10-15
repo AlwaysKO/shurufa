@@ -1,4 +1,4 @@
-export type PageCaptureKind = 'conversation_list' | 'payment' | 'media_feed' | 'image_post' | 'mini_app';
+export type PageCaptureKind = 'conversation_list' | 'payment' | 'media_feed' | 'image_post' | 'mini_app' | 'video_call';
 export interface PageCaptureRow {
   title?: string; note?: string;
   id: string;
@@ -20,7 +20,7 @@ export interface PageCaptureQuery {
 }
 export interface PageCaptureList { records: PageCaptureRow[]; total: number; page_size: number }
 export const pageKindLabels: Record<PageCaptureKind, string> = {
-  conversation_list: '会话列表', payment: '支付相关页面', media_feed: '信息流（未确认视频）', image_post: '图文', mini_app: '小程序',
+  conversation_list: '会话列表', payment: '支付相关页面', media_feed: '信息流（未确认视频）', image_post: '图文', mini_app: '小程序', video_call: '微信视频通话',
 };
 export function pageCaptureListUrl(query: PageCaptureQuery): string {
   const params = new URLSearchParams({ user_id: query.userId, page: String(query.page) });

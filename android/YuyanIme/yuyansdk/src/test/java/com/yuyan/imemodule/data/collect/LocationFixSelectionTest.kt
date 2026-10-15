@@ -40,7 +40,7 @@ class LocationFixSelectionTest {
             val points = if (gpsFirst) listOf(gps, network) else listOf(network, gps)
             points.forEachIndexed { i, p -> selector.offer(now, 1_000L + i * 1_000L, p) }
             gps.latitude = 0.0
-            val selected = selector.take(now + 5_000)!!
+            val selected = selector.take(now + 5_000)!!.location
             assertEquals("gps", selected.provider)
             assertEquals(23.0, selected.latitude, .000001)
             assertNull(selector.delayMs(6_000))
@@ -52,22 +52,31 @@ class LocationFixSelectionTest {
         repeat(5) { selector.offer(now + it * 1_000, 1_000L + it * 1_000, fix("network", 0, 25f)) }
         assertEquals(1_000L, selector.delayMs(5_000))
         assertEquals(0L, selector.delayMs(60_000))
-        assertEquals("network", selector.take(now + 5_000)!!.provider)
+        assertEquals("network", selector.take(now + 5_000)!!.location.provider)
     }
 
-    @Test fun `old gps cannot replace current network and delayed expired window drops stale fix`() {
+    @Test fun `old gps cannot replace current network and sleep preserves fresh receipt`() {
         val selector = LocationFixSelection()
         selector.offer(now, 0, fix("network", 0, 25f))
         selector.offer(now, 1_000, fix("gps", 50_000, 5f))
-        assertEquals("network", selector.take(now + 5_000)!!.provider)
+        assertEquals("network", selector.take(now + 5_000)!!.location.provider)
         selector.offer(now, 10_000, fix("gps", 0, 5f))
-        assertNull(selector.take(now + 60_001))
+        assertEquals(now, selector.take(now + 60_001)!!.location.time)
+    }
+
+    @Test fun `fresh callback is retained when sleep delays selection past one minute`() {
+        val selector = LocationFixSelection()
+        selector.offer(now, 0, fix("gps", 0, 5f))
+        val selected = selector.take(now + 90_000)?.location
+        assertNotNull("scheduler delay must not erase an originally fresh observation", selected)
+        assertEquals(now, selected!!.time)
     }
 
     @Test fun `invalid callbacks do not arm deadline and clear removes pending selection`() {
         val selector = LocationFixSelection()
         selector.offer(now, 0, fix("gps", -1, 5f))
         selector.offer(now, 0, fix("network", 0, 120f))
+        selector.offer(now, 0, fix("gps", 60_001, 5f))
         assertNull(selector.delayMs(0))
         selector.offer(now, 0, fix("gps", 0, 5f))
         selector.clear()
@@ -80,19 +89,19 @@ class LocationFixSelectionTest {
         selector.offer(now, 0, fix("gps", 10_000, 5f))
         selector.offer(now, 1_000, fix("network", 0, 30f))
         selector.offer(now, 2_000, fix("gps", 20_000, 1f))
-        val selected = selector.take(now + 5_000)!!
+        val selected = selector.take(now + 5_000)!!.location
         assertEquals(now - 10_000, selected.time)
         assertEquals(5f, selected.accuracy)
     }
 
-    @Test fun `newer fallback survives when best fix expires at deadline`() {
+    @Test fun `best fix fresh on receipt survives delayed selection`() {
         val selector = LocationFixSelection()
         selector.offer(now, 0, fix("gps", 59_000, 5f))
         selector.offer(now, 1_000, fix("network", 50_000, 30f))
-        val selected = selector.take(now + 5_000)
-        assertNotNull("a newer still-valid fallback must remain", selected)
-        assertEquals("network", selected!!.provider)
-        assertEquals(now - 50_000, selected.time)
+        val selected = selector.take(now + 5_000)?.location
+        assertNotNull("a fix validated on receipt must remain", selected)
+        assertEquals("gps", selected!!.provider)
+        assertEquals(now - 59_000, selected.time)
     }
 
     @Test fun `callback flood keeps at most thirty two newest times without extending deadline`() {
@@ -105,7 +114,7 @@ class LocationFixSelectionTest {
         assertEquals(32, candidates.size)
         assertEquals(now - 9_200L, candidates.keys.minOf { it as Long })
         assertEquals(4_600L, selector.delayMs(400))
-        assertEquals(now - 6_100L, selector.take(now + 5_000)!!.time)
+        assertEquals(now - 6_100L, selector.take(now + 5_000)!!.location.time)
         assertTrue(candidates.isEmpty())
     }
 
@@ -118,7 +127,7 @@ class LocationFixSelectionTest {
         }
         selector.offer(now, 1_000, gps)
         gps.speed = 100f; gps.altitude = 999.0
-        val selected = selector.take(now + 5_000)!!
+        val selected = selector.take(now + 5_000)!!.location
         assertEquals("gps", selected.provider)
         assertEquals(3f, selected.speed)
         assertEquals(.4f, selected.speedAccuracyMetersPerSecond)

@@ -7,11 +7,20 @@ import org.junit.Test
 class LocationUploadPolicyTest {
     private val now = 1_800_000_000_000L
 
-    @Test fun `selection slack cannot bypass clock rollback old captures or dense callbacks`() {
+    @Test fun `thirty second capture cadence survives delayed enqueue`() {
+        val captured = now - 90_000
+        val last = uploaded(locationTimeMs = captured - 30_000, uploadedAtMs = now - 1)
+        assertTrue(LocationUploadPolicy.shouldUpload(now,
+            candidate(latitude = 23.136, locationTimeMs = captured), last, receivedAtMs = captured))
+        assertFalse(LocationUploadPolicy.shouldUpload(now,
+            candidate(latitude = 23.136, locationTimeMs = captured), last, receivedAtMs = captured + 60_001))
+    }
+
+    @Test fun `capture cadence cannot bypass clock rollback old captures or dense callbacks`() {
         val last = uploaded(locationTimeMs = now - 60_000, uploadedAtMs = now - 55_000)
         val moved = candidate(latitude = 23.136)
         assertTrue(LocationUploadPolicy.shouldUpload(now, moved, last))
-        assertFalse(LocationUploadPolicy.shouldUpload(now, moved, last.copy(uploadedAtMs = now - 54_999)))
+        assertTrue(LocationUploadPolicy.shouldUpload(now, moved, last.copy(uploadedAtMs = now - 54_999)))
         assertTrue(LocationUploadPolicy.shouldUpload(now, moved, last.copy(locationTimeMs = now - 60_001)))
         assertFalse(LocationUploadPolicy.shouldUpload(now, moved.copy(locationTimeMs = now - 60_001),
             last.copy(locationTimeMs = now - 120_001)))
@@ -61,18 +70,18 @@ class LocationUploadPolicyTest {
     }
 
     @Test
-    fun `successful persistence keeps fifty five second hard floor even with older captures`() {
+    fun `delayed persistence does not impose an extra wall clock cooldown`() {
         val last = uploaded(uploadedAtMs = now - 54_999)
         val moved = candidate(latitude = 23.136)
 
-        assertFalse(LocationUploadPolicy.shouldUpload(now, moved, last))
+        assertTrue(LocationUploadPolicy.shouldUpload(now, moved, last))
         assertTrue(LocationUploadPolicy.shouldUpload(now, moved, last.copy(uploadedAtMs = now - 55_000)))
     }
 
     @Test
-    fun `fresh moved points before one minute are suppressed`() {
+    fun `fresh moved points before thirty seconds are suppressed`() {
         val moved = candidate(latitude = 23.136)
-        for (elapsed in listOf(30_000L, 59_999L)) {
+        for (elapsed in listOf(10_000L, 29_999L)) {
             assertFalse("elapsed=$elapsed",
                 LocationUploadPolicy.shouldUpload(now, moved, uploaded(locationTimeMs = now - elapsed, uploadedAtMs = now - elapsed)))
         }
@@ -80,9 +89,9 @@ class LocationUploadPolicyTest {
     }
 
     @Test
-    fun `restored persistence time controls cooldown despite older capture time`() {
+    fun `restored capture time controls cadence despite delayed persistence`() {
         val restored = uploaded(locationTimeMs = now - 360_000, uploadedAtMs = now - 54_999)
-        assertFalse(LocationUploadPolicy.shouldUpload(now, candidate(latitude = 23.136), restored))
+        assertTrue(LocationUploadPolicy.shouldUpload(now, candidate(latitude = 23.136), restored))
         assertTrue(LocationUploadPolicy.shouldUpload(now + 1, candidate(latitude = 23.136), restored))
     }
 

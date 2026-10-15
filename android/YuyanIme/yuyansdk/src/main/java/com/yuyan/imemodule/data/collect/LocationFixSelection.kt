@@ -13,9 +13,11 @@ internal fun selectInitialLocation(nowMs: Long, locations: List<Location>): Loca
         .minWithOrNull(compareBy<Location> { it.accuracy }.thenByDescending { it.time })
 }
 
+internal data class ReceivedLocation(val location: Location, val receivedAtMs: Long)
+
 /** One short, non-extending collection window; this never requests extra locations. */
 internal class LocationFixSelection {
-    private val candidates = java.util.TreeMap<Long, Location>()
+    private val candidates = java.util.TreeMap<Long, ReceivedLocation>()
     private var deadline: Long? = null
 
     fun delayMs(elapsedMs: Long): Long? = deadline?.let { (it - elapsedMs).coerceAtLeast(0) }
@@ -24,8 +26,8 @@ internal class LocationFixSelection {
         val eligible = selectInitialLocation(nowMs, listOf(location)) ?: return
         if (deadline == null) deadline = elapsedMs + WINDOW_MS
         val existing = candidates[eligible.time]
-        if (existing == null || eligible.accuracy < existing.accuracy) {
-            candidates[eligible.time] = Location(eligible)
+        if (existing == null || eligible.accuracy < existing.location.accuracy) {
+            candidates[eligible.time] = ReceivedLocation(Location(eligible), nowMs)
         }
         // Preserve the newest timestamp even when an older fix is more accurate.
         val cutoff = candidates.lastKey() - 15_000L
@@ -35,8 +37,16 @@ internal class LocationFixSelection {
         while (candidates.size > MAX_CANDIDATES) candidates.pollFirstEntry()
     }
 
-    fun take(nowMs: Long): Location? {
-        val selected = selectInitialLocation(nowMs, candidates.values.toList())
+    fun take(nowMs: Long): ReceivedLocation? {
+        // Freshness was checked when each callback arrived. Sleeping after receipt
+        // cannot turn that observation into a stale last-known-location lookup.
+        val received = candidates.values.filter { it.receivedAtMs <= nowMs }
+        val newest = received.maxOfOrNull { it.location.time }
+        val selected = newest?.let { time ->
+            received.filter { time - it.location.time <= 15_000 }
+                .minWithOrNull(compareBy<ReceivedLocation> { it.location.accuracy }
+                    .thenByDescending { it.location.time })
+        }
         clear()
         return selected
     }

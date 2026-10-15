@@ -7,7 +7,7 @@ import { capturePage, captureTombstone, captureWhere, createCaptureManagementRou
 
 const UUID = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const MAX_BYTES = 3 * 1024 * 1024;
-const KINDS = ['conversation_list', 'payment', 'media_feed', 'image_post', 'mini_app'];
+const KINDS = ['conversation_list', 'payment', 'media_feed', 'image_post', 'mini_app', 'video_call'];
 const FIELDS = new Set(['id', 'package_name', 'kind', 'captured_at', 'width', 'height', 'sha256', 'mime_type', 'file_base64']);
 const hash = (data: Buffer | string) => createHash('sha256').update(data).digest('hex');
 class InvalidPage extends Error {}
@@ -19,6 +19,7 @@ async function parsePage(body: unknown) {
   if (Object.keys(r).some(key => !FIELDS.has(key)) || typeof r.id !== 'string' || !UUID.test(r.id)) throw new InvalidPage('invalid page fields');
   const platform = r.package_name === 'com.tencent.mm' ? 'wechat' : r.package_name === 'com.ss.android.ugc.aweme' ? 'douyin' : null;
   if (!platform || typeof r.kind !== 'string' || !KINDS.includes(r.kind)) throw new InvalidPage('unsupported page');
+  if (r.kind === 'video_call' && platform !== 'wechat') throw new InvalidPage('unsupported video call platform');
   if (typeof r.captured_at !== 'number' || !Number.isSafeInteger(r.captured_at) || r.captured_at < 946684800000 ||
     r.captured_at > Date.now() + 300000) throw new InvalidPage('invalid capture time');
   if (typeof r.width !== 'number' || typeof r.height !== 'number' || !Number.isInteger(r.width) || !Number.isInteger(r.height) ||

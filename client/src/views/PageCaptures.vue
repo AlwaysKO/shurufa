@@ -36,7 +36,7 @@ onBeforeUnmount(() => { closeImage(); browser.invalidate();manager.invalidate();
   <section class="page-captures">
     <h2>应用页面</h2>
     <p class="hint">微信、抖音的非聊天页面单独保存，不参与联系人会话合并。这里仅展示已成功入库的截图；没有记录不代表没有使用应用。</p>
-    <p class="hint">视频与信息流停留在对应菜单查看。支付相关截图不代表后台已核实交易结果。</p>
+    <p class="hint">视频号与信息流停留在对应菜单查看；微信视频通话截图在本页单独分类。支付相关截图不代表后台已核实交易结果。</p>
     <div class="filters">
       <label>应用 <select v-model="platform" aria-label="应用"><option value="">全部</option><option value="wechat">微信</option><option value="douyin">抖音</option></select></label>
       <label>页面类型 <select v-model="kind" aria-label="页面类型"><option value="">全部</option><option v-for="(label, value) in ordinaryKinds" :key="value" :value="value">{{ label }}</option></select></label>

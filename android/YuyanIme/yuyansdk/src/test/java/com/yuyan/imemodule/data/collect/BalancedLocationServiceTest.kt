@@ -153,7 +153,7 @@ class BalancedLocationServiceTest {
             val policy = org.robolectric.util.ReflectionHelpers.getField<BalancedLocationPolicy>(controller.get(), "policy")
             val anchor = org.robolectric.util.ReflectionHelpers.getField<LocationCandidate>(policy, "anchor")
             assertEquals("sampling must use the same best fix as persistence", "gps", anchor.provider)
-            assertEquals(60_000L, lm.getLegacyLocationRequests("gps").single().intervalMillis)
+            assertEquals(30_000L, lm.getLegacyLocationRequests("gps").single().intervalMillis)
         } finally { controller.destroy() }
     }
 
@@ -340,12 +340,12 @@ class BalancedLocationServiceTest {
                 // Sampling policy now consumes the selected fix, not the first provider callback.
                 shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(5))
         }
-        assertEquals(60_000L, lm.getLegacyLocationRequests(LocationManager.GPS_PROVIDER).single().intervalMillis)
+        assertEquals(30_000L, lm.getLegacyLocationRequests(LocationManager.GPS_PROVIDER).single().intervalMillis)
         // Android 12+ encodes passive requests with PASSIVE_INTERVAL; minUpdateInterval is the delivery throttle.
         fun passiveInterval() = if (android.os.Build.VERSION.SDK_INT >= 31)
             lm.getLocationRequests(LocationManager.PASSIVE_PROVIDER).single().minUpdateIntervalMillis
         else lm.getLegacyLocationRequests(LocationManager.PASSIVE_PROVIDER).single().intervalMillis
-        assertEquals(60_000L, passiveInterval())
+        assertEquals(30_000L, passiveInterval())
         // Supply an observation history without making the test wait two wall-clock minutes.
         val now = System.currentTimeMillis()
         val policy = org.robolectric.util.ReflectionHelpers.getField<BalancedLocationPolicy>(service, "policy")
@@ -360,8 +360,8 @@ class BalancedLocationServiceTest {
         assertEquals(30_000L, lm.getLegacyLocationRequests(LocationManager.GPS_PROVIDER).single().intervalMillis)
         assertEquals(30_000L, passiveInterval())
         sample(23.1401, now)
-        assertEquals(60_000L, lm.getLegacyLocationRequests(LocationManager.GPS_PROVIDER).single().intervalMillis)
-        assertEquals(60_000L, passiveInterval())
+        assertEquals(30_000L, lm.getLegacyLocationRequests(LocationManager.GPS_PROVIDER).single().intervalMillis)
+        assertEquals(30_000L, passiveInterval())
         service.onStartCommand(Intent().setAction(BalancedLocationService.ACTION_STOP), 0, 2)
         controller.destroy()
     }

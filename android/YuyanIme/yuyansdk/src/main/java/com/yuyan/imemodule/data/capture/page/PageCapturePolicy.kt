@@ -4,7 +4,7 @@ import com.yuyan.imemodule.data.capture.media.ConversationTitleSimplifier
 import com.yuyan.imemodule.data.capture.ui.IntRect
 import com.yuyan.imemodule.data.capture.ui.UiNodeSnapshot
 
-internal enum class PageKind { CHAT, CONVERSATION_LIST, PAYMENT, MEDIA_FEED, IMAGE_POST, MINI_APP }
+internal enum class PageKind { CHAT, CONVERSATION_LIST, PAYMENT, MEDIA_FEED, IMAGE_POST, MINI_APP, VIDEO_CALL }
 internal data class PageLabel(val text: String, val bounds: IntRect, val editable: Boolean = false, val password: Boolean = false)
 internal data class PageDecision(val kind: PageKind?, val reason: String, val contentKey: String? = null)
 
@@ -82,6 +82,18 @@ internal object PageCapturePolicy {
         val top = navigation(inBand(0.0, .22))
         val bottom = navigation(inBand(.86, 1.0))
         val isWechat = packageName == "com.tencent.mm"
+        val callControls = navigation(inBand(.45, 1.0))
+        val callText = visible.map(::normalized)
+        val callDuration = inBand(.08, .85).any { normalized(it).matches(Regex("\\d{1,2}:\\d{2}(?::\\d{2})?")) }
+        val waitingForCall = callText.any { text ->
+            listOf("等待对方", "邀请你", "正在呼叫", "通话已结束", "对方已拒绝", "未接通").any(text::contains)
+        }
+        if (isWechat && !waitingForCall && (callDuration || "视频通话中" in callText) &&
+            callControls.any { it in setOf("挂断", "结束通话") } &&
+            callControls.any { it in setOf("切换摄像头", "转换摄像头", "翻转摄像头") } &&
+            callControls.any { it in setOf("切到语音通话", "切换到语音通话", "切换语音通话") }) {
+            return PageDecision(PageKind.VIDEO_CALL, "wechat_connected_video_call")
+        }
         if (isWechat && top.any { com.yuyan.imemodule.data.capture.media.canonicalWechatPageTitle(it) == "微信" } &&
             bottom.containsAll(setOf("微信", "通讯录", "发现", "我"))) {
             return PageDecision(PageKind.CONVERSATION_LIST, "wechat_navigation")

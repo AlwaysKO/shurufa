@@ -12,6 +12,7 @@ class BrowsingPageDriverTest {
         var delegated = false
         var restoredInterval: Long? = 0L
         val reservedPackages = mutableListOf<String>()
+        val intervalPackages = mutableListOf<String>()
         val reported = mutableListOf<Pair<String, String>>()
         var read: suspend (BrowsePageToken) -> BrowsePageSnapshot? = { p ->
             reads++; BrowsePageSnapshot(p, IntRect(0, 0, 500, 1000), emptyList())
@@ -21,7 +22,7 @@ class BrowsingPageDriverTest {
         val driver = BrowsingPageDriver(scope, { now }, { epoch }, { allowed },
             { current -> idle(current) }, { ms -> wait(ms) }, { room },
             { p -> read(p) }, { pkg -> reserves++; reservedPackages += pkg; quota },
-            { _, current -> if (current()) captures++; PageWriteResult(PageWriteStatus.SAVED) }, { code, pkg -> reported += code to pkg }, persistentIntervalRemaining = { restoredInterval }, shouldCapture = { _, _ -> !delegated })
+            { _, current -> if (current()) captures++; PageWriteResult(PageWriteStatus.SAVED) }, { code, pkg -> reported += code to pkg }, persistentIntervalRemaining = { pkg -> intervalPackages += pkg; restoredInterval }, shouldCapture = { _, _ -> !delegated })
     }
     @Test fun delegatedVideoDoesNotConsumeOrdinaryCaptureBudget() = runBlocking {
         val f = Fixture(this)
@@ -111,12 +112,13 @@ class BrowsingPageDriverTest {
         yield(); assertEquals(1, f.captures)
         f.driver.close().join()
     }
-    @Test fun twoAppsShareIntervalAndReadFreshPageAfterWaiting() = runBlocking {
+    @Test fun twoAppsHaveIndependentIntervalsAndReadFreshPage() = runBlocking {
         val f = Fixture(this)
         f.driver.changed("com.tencent.mm", 1, BrowsePageEvent.WINDOW)!!.join()
         f.driver.changed("com.ss.android.ugc.aweme", 2, BrowsePageEvent.SCROLL)!!.join()
-        assertEquals(180800L, f.now); assertEquals(2, f.captures); assertEquals(2, f.reads)
+        assertEquals(1600L, f.now); assertEquals(2, f.captures); assertEquals(2, f.reads)
         assertEquals(listOf("com.tencent.mm", "com.ss.android.ugc.aweme"), f.reservedPackages)
+        assertEquals(f.reservedPackages, f.intervalPackages)
         assertEquals(listOf("saved" to "com.tencent.mm", "saved" to "com.ss.android.ugc.aweme"), f.reported)
         f.driver.close().join()
     }

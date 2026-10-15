@@ -20,14 +20,18 @@ class BrowsingCaptureScheduleTest {
         assertNull(s.take(1499, b, true) { true })
         assertEquals(b, s.take(1500, b, true) { true })
     }
-    @Test fun intervalIsSharedAcrossBothAppsAndFailedPictures() {
+    @Test fun intervalIsSeparateAcrossAppsButFailedPicturesStillConsumeSameAppInterval() {
         val s = BrowsingCaptureSchedule()
         s.changed(a, 0)
         assertEquals(a, s.take(800, a, true) { true })
         // 取帧失败/重复也已经消耗尝试，不能退还间隔。
         s.changed(b, 900)
-        assertNull(s.take(180799, b, true) { true })
-        assertEquals(b, s.take(180800, b, true) { true })
+        assertEquals(800L, s.remainingDelay(900))
+        assertEquals(b, s.take(1700, b, true) { true })
+        val again = a.copy(generation = 3)
+        s.changed(again, 1800)
+        assertNull(s.take(180799, again, true) { true })
+        assertEquals(again, s.take(180800, again, true) { true })
     }
     @Test fun blockedInputRetainsOnlyCurrentCandidateWithoutReserving() {
         val s = BrowsingCaptureSchedule(); s.changed(a, 0)
@@ -99,8 +103,7 @@ class BrowsingCaptureScheduleTest {
             true
         })
         assertEquals(1, reserved)
-        assertNull(s.take(180899, b, true) { true })
-        assertEquals(b, s.take(180900, b, true) { true })
+        assertEquals(b, s.take(1800, b, true) { true })
     }
     @Test fun reservationExceptionDoesNotLeaveSchedulerLockedOrReuseCandidate() {
         val s = BrowsingCaptureSchedule(); s.changed(a, 100)

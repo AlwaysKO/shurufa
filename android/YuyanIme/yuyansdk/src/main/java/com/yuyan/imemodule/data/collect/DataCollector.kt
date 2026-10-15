@@ -734,14 +734,15 @@ object DataCollector {
         }
     }
 
-    internal fun reportBalancedLocation(context: Context, loc: Location) =
-        reportLocation(context, loc, fromBalancedService = true)
+    internal fun reportBalancedLocation(context: Context, loc: Location, receivedAtMs: Long = System.currentTimeMillis()) =
+        reportLocation(context, loc, fromBalancedService = true, receivedAtMs = receivedAtMs)
 
-    private fun reportLocation(context: Context, loc: Location, fromBalancedService: Boolean = false) {
+    private fun reportLocation(context: Context, loc: Location, fromBalancedService: Boolean = false,
+        receivedAtMs: Long = System.currentTimeMillis()) {
         if (balancedLocationOwner != fromBalancedService) return
         if (!locationTrackingEnabled || !hasLocationPermission(context)) return  // 开关关闭后不再上报（双保险）
         val snapshot = Location(loc)
-        scope.launch { persistLocation(context, snapshot, fromBalancedService) }
+        scope.launch { persistLocation(context, snapshot, fromBalancedService, receivedAtMs) }
     }
 
     /** 入队与网络批次分开；时间在持久化互斥区内读取，避免排队时间改变节流基准。 */
@@ -749,6 +750,7 @@ object DataCollector {
         context: Context,
         loc: Location,
         fromBalancedService: Boolean,
+        receivedAtMs: Long? = null,
         now: () -> Long = System::currentTimeMillis,
     ) {
         val candidate = LocationCandidate(
@@ -761,12 +763,20 @@ object DataCollector {
         )
         locationUploadMutex.withLock {
             val nowMs = now()
+            val observedAt = receivedAtMs ?: nowMs
+            fun trace(outcome: String) = Log.d("LocationCapture",
+                "$outcome fix=${loc.time} received=$observedAt processed=$nowMs provider=${loc.provider} accuracy=${candidate.accuracyMeters}")
+            if (observedAt > nowMs) { trace("clock_rollback"); return@withLock }
             if (!locationTrackingEnabled || !hasLocationPermission(context) ||
                 balancedLocationOwner != fromBalancedService) return@withLock
             val lastUploaded = readLastUploadedLocation()
             val speed = LocationSpeedQuality.from(loc)
-            if (!locationJumpFilter.accept(nowMs, candidate, speed.speedMps, lastUploaded)) return@withLock
-            if (!LocationUploadPolicy.shouldUpload(nowMs, candidate, lastUploaded)) return@withLock
+            if (!locationJumpFilter.accept(observedAt, candidate, speed.motionSpeedMps, lastUploaded)) {
+                trace("quality_or_motion_rejected"); return@withLock
+            }
+            if (!LocationUploadPolicy.shouldUpload(nowMs, candidate, lastUploaded, observedAt)) {
+                trace("cadence_or_displacement_rejected"); return@withLock
+            }
             val report = LocationReport(
                 deviceId = deviceId(context),
                 latitude = loc.latitude,
@@ -781,7 +791,8 @@ object DataCollector {
             if (enqueueReport(context, "location", json.encodeToString(LocationReport.serializer(), report))) {
                 // 节流以成功落盘为界，不以网络成功为界；断网期间仍保存移动轨迹。
                 saveLastUploadedLocation(candidate, nowMs)
-            }
+                trace("saved")
+            } else trace("enqueue_failed")
         }
     }
 
