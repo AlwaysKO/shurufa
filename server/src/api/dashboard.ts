@@ -1,4 +1,5 @@
 import { usageEvidenceColumns } from '../lib/deviceUsageEvidence.js';
+import { beijingDay } from '../lib/beijingDay.js';
 import { createStatisticsRetentionRouter } from './statisticsRetention.js';
 import { activityConditions, CONTENT_TYPE_SQL, BEHAVIOR_TYPES } from './activityQuery.js';
 import { createActivityRetentionRouter } from './activityRetention.js';
@@ -52,7 +53,9 @@ export function createDashboardRouter(pool: pg.Pool): Router {
   /** 输入总览：今日/近7天/累计统计，输入方式占比，删除修改次数 */
   router.get('/overview', async (req, res, next) => {
     try {
-      const days = Math.min(Number(req.query.days ?? 7) || 7, 365);
+      const days = Math.min(Math.max(Math.floor(Number(req.query.days ?? 7) || 7), 1), 365);
+      const day = beijingDay();
+      const periodStart = new Date(day.start.getTime() - (days - 1) * 86_400_000);
 
       const today = await pool.query(
         `SELECT
@@ -61,18 +64,18 @@ export function createDashboardRouter(pool: pg.Pool): Router {
            COUNT(*) FILTER (WHERE event_type = 'clipboard_change') AS clipboard_count,
            COUNT(*) FILTER (WHERE event_type = 'delete') AS delete_count
          FROM input_event
-         WHERE user_id = $1 AND occurred_at >= date_trunc('day', NOW())`,
-        [res.locals.userId],
+         WHERE user_id = $1 AND occurred_at >= $2 AND occurred_at < $3`,
+        [res.locals.userId, day.start, day.end],
       );
 
       const period = await pool.query(
         `SELECT
            COUNT(*) AS event_count,
            COALESCE(SUM(length(text)) FILTER (WHERE event_type IN ('commit','candidate_commit','paste','paste_inferred','external_insert','voice')), 0)::bigint AS input_chars,
-           COUNT(DISTINCT date(occurred_at)) AS active_days
+           COUNT(DISTINCT (occurred_at AT TIME ZONE 'Asia/Shanghai')::date) AS active_days
          FROM input_event
-         WHERE user_id = $1 AND occurred_at >= $2`,
-        [res.locals.userId, daysAgo(days)],
+         WHERE user_id = $1 AND occurred_at >= $2 AND occurred_at < $3`,
+        [res.locals.userId, periodStart, day.end],
       );
 
       // 输入方式占比（近 N 天）
@@ -83,8 +86,8 @@ export function createDashboardRouter(pool: pg.Pool): Router {
            COALESCE(SUM(length(text)) FILTER (WHERE event_type = 'external_insert'), 0)::bigint AS external_inserted,
            COALESCE(SUM(length(text)) FILTER (WHERE event_type = 'voice'), 0)::bigint AS voiced
          FROM input_event
-         WHERE user_id = $1 AND occurred_at >= $2`,
-        [res.locals.userId, daysAgo(days)],
+         WHERE user_id = $1 AND occurred_at >= $2 AND occurred_at < $3`,
+        [res.locals.userId, periodStart, day.end],
       );
 
       const total = await pool.query(
@@ -98,6 +101,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
 
       res.json({
         days,
+        today_range: { date: day.date, timezone: 'Asia/Shanghai', from: day.start.toISOString(), to: day.end.toISOString() },
         today: today.rows[0],
         period: period.rows[0],
         total_chars: total.rows[0].total_chars,

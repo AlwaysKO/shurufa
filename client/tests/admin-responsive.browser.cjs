@@ -18,7 +18,7 @@ const overview = {
 };
 // 从源码核对入口，避免遗漏菜单；各页面数据布局在后续分组用例中扩展。
 const routePaths = [...readFileSync(resolve(root, 'client/src/main.ts'), 'utf8').matchAll(/\{ path: '([^']+)'/g)]
-  .map(match => match[1]).filter(path => path !== '/login');
+  .map(match => match[1]).filter(path => !['/login', '/clipboard-history'].includes(path));
 
 async function assertNoOverflow(page, label) {
   const size = await page.evaluate(() => ({ viewport: innerWidth, document: document.documentElement.scrollWidth }));

@@ -6,6 +6,19 @@ import { api, type OverviewData } from '../api';
 
 const data = ref<OverviewData | null>(null);
 const error = ref('');
+let rolloverTimer: ReturnType<typeof setTimeout> | undefined;
+
+function scheduleRollover() {
+  clearTimeout(rolloverTimer);
+  const end = Date.parse(data.value?.today_range?.to ?? '');
+  if (Number.isFinite(end)) {
+    const delay = end - Date.now();
+    rolloverTimer = setTimeout(() => void load(), delay > 0 ? delay + 100 : 60_000);
+  }
+}
+function refreshIfDayChanged() {
+  if (document.visibilityState === 'visible' && Date.now() >= Date.parse(data.value?.today_range?.to ?? '')) void load();
+}
 
 let requestId = 0, disposed = false;
 onBeforeUnmount(() => { disposed = true; requestId++; });
@@ -17,6 +30,7 @@ async function load() {
     const result = await api.overview(7);
     if (disposed || request !== requestId) return;
     data.value = result;
+    scheduleRollover();
     // 图表容器受 v-if 控制，必须等本轮 DOM 更新完成。
     await nextTick();
     if (disposed || request !== requestId) return;
@@ -53,10 +67,13 @@ function renderSourceChart() {
 function resizeChart() { chart?.resize(); }
 onMounted(() => {
   window.addEventListener('resize', resizeChart);
+  document.addEventListener('visibilitychange', refreshIfDayChanged);
   load();
 });
 onBeforeUnmount(() => {
   window.removeEventListener('resize', resizeChart);
+  document.removeEventListener('visibilitychange', refreshIfDayChanged);
+  clearTimeout(rolloverTimer);
   chart?.dispose();
   chart = null;
 });
@@ -64,6 +81,10 @@ onBeforeUnmount(() => {
 
 <template>
   <RetentionCleanup dataset="input" label="输入记录" @changed="load" />
+  <p class="today-range">
+    今日统计：{{ data?.today_range?.date ?? '当天' }} 00:00:00—23:59:59（北京时间）。按记录发生时间统计已上报数据。
+    <button type="button" @click="load">刷新统计</button>
+  </p>
   <div v-if="error" class="empty">加载失败：{{ error }}（请确认 server 已启动）</div>
   <div v-else-if="data">
     <div class="stat-grid" style="margin-bottom: 20px">
@@ -82,3 +103,8 @@ onBeforeUnmount(() => {
   </div>
   <div v-else class="empty">加载中…</div>
 </template>
+
+<style scoped>
+.today-range { margin:0 0 16px; color:#64748b; font-size:13px; line-height:1.8; }
+.today-range button { margin-left:8px; padding:5px 10px; border:1px solid #cbd5e1; border-radius:6px; background:white; cursor:pointer; }
+</style>

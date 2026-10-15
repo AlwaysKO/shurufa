@@ -14,7 +14,7 @@ const q = ref('');
 const pkg = ref('');
 const days = ref<number | null>(7);
 
-/** 来源 App 下拉选项：接口 TOP20 合并列表页出现的包名 */
+/** 来源选项独立加载，不阻塞历史记录。 */
 const appOptions = ref<Set<string>>(new Set());
 
 let requestId = 0, disposed = false;
@@ -53,7 +53,7 @@ function search() {
 }
 
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize)));
-const fmtTime = (s: string) => new Date(s).toLocaleString('zh-CN', { hour12: false });
+const fmtTime = (s: string) => new Date(s).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
 
 /** 内容类型徽标：服务端只分 text/image/voice，链接/邮箱/电话用正则本地识别 */
 const typeBadge = (item: ActivityItem) => {
@@ -72,16 +72,18 @@ const displayText = (item: ActivityItem) => {
   return '[空]';
 };
 
-onMounted(async () => {
-  // 预载近 30 天 TOP 来源 App 作为下拉选项
+async function loadAppOptions() {
   try {
-    const d = await api.apps(30);
+    const d = await api.eventApps();
     if (disposed) return;
-    appOptions.value = new Set(d.apps.map((a) => a.package_name).filter(Boolean));
+    appOptions.value = new Set([...appOptions.value, ...d.apps.map((a) => a.package_name).filter(Boolean)]);
   } catch {
     /* 加载失败不阻塞 */
   }
-  load();
+}
+onMounted(() => {
+  void load();
+  void loadAppOptions();
 });
 </script>
 
@@ -99,15 +101,15 @@ onMounted(async () => {
       <option v-for="p in [...appOptions].sort()" :key="p" :value="p">{{ appName(p) }}（{{ p }}）</option>
     </select>
 
-    <input v-model="q" type="search" class="input search" placeholder="搜索复制内容…" @keyup.enter="search()" />
+    <input v-model="q" type="search" class="input search" placeholder="搜索复制或粘贴内容…" @keyup.enter="search()" />
     <button class="btn" @click="search()">搜索</button>
   </div>
 
   <div class="card">
-    <h3>复制 / 粘贴记录 <span class="count">共 {{ total }} 条</span></h3>
+    <h3>复制 / 粘贴记录 <span class="count">共 {{ total }} 条 · 北京时间</span></h3>
 
     <p v-if="loading" class="msg">加载中…</p>
-    <p v-else-if="error" class="msg err">{{ error }}</p>
+    <p v-else-if="error" class="msg err" role="alert">{{ error }} <button class="btn" @click="load()">重试</button></p>
     <p v-else-if="items.length === 0" class="msg">暂无记录，复制或粘贴内容后会显示在这里</p>
 
     <div v-else class="list">

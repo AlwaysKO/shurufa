@@ -81,7 +81,7 @@ it('预览中重复点击只产生一个任务，预览失败显示服务端说�
  view.api.previewStatisticsCleanup.mockRejectedValueOnce(Error('记录过多'));await view.find('retention-keep-30')!.props.onClick();await settle();expect(view.text()).toContain('记录过多');
 });
 it('所有历史统计页面接入对应清理类别',()=>{
- const pages:Record<string,string[]>={Overview:['input'],Timeline:['input'],Applications:['input'],WordCloud:['input'],Clipboard:['clipboard'],ClipboardHistory:['clipboard'],AppUsage:['app-usage'],LocationTrack:['locations'],NavigationRecords:['navigation'],Report:['input','locations'],CallRecordingsView:['call-recordings'],PhoneCallLogs:['call-logs']};
+ const pages:Record<string,string[]>={Overview:['input'],Timeline:['input'],Applications:['input'],WordCloud:['input'],ClipboardStatistics:['clipboard'],ClipboardHistory:['clipboard'],AppUsage:['app-usage'],LocationTrack:['locations'],NavigationRecords:['navigation'],Report:['input','locations'],CallRecordingsView:['call-recordings'],PhoneCallLogs:['call-logs']};
  for(const [name,datasets] of Object.entries(pages)){const source=readFileSync(new URL(`../src/views/${name}.vue`,import.meta.url),'utf8');for(const dataset of datasets)expect(source,`${name} ${dataset}`).toMatch(new RegExp(`<RetentionCleanup[^>]*dataset="${dataset}"`));}
 });
 it('通用清理API绑定当前手机并传递服务端错误',async()=>{
@@ -122,7 +122,7 @@ async function mountStatisticsPage(name: string, api: Record<string, unknown>) {
   if(id==='echarts')return {init:()=>chart,getInstanceByDom:()=>chart};
   if(id==='../components/RetentionCleanup.vue')return {default:{render:()=>null}};
   throw Error(id);
- },module,module.exports,{getElementById:()=>({})},{addEventListener(){},removeEventListener(){}});
+ },module,module.exports,{getElementById:()=>({}),addEventListener(){},removeEventListener(){}},{addEventListener(){},removeEventListener(){}});
  let state:any;const renderer=Vue.createRenderer<any,any>({createElement:()=>({}),createText:()=>({}),createComment:()=>({}),setText(){},setElementText(){},parentNode:()=>null,nextSibling:()=>null,patchProp(){},insert(){},remove(){},insertStaticContent:()=>[{},{}]});
  const app=renderer.createApp({setup(){state=module.exports.default.setup({}, {expose(){}});return ()=>null;}});app.mount({});mounted.push(app);await settle();return {state,chart,unmount:()=>app.unmount()};
 }
@@ -130,13 +130,34 @@ it.each(['Overview','ClipboardHistory'])('%s 清理刷新后迟到旧查询不�
  const old=deferred<any>();const fresh=name==='Overview'?{total_chars:'0',source_distribution:{typed:0,pasted:0,external:0,voice:0}}:{items:[],total:0};
  const stale=name==='Overview'?{total_chars:'999',source_distribution:{typed:999,pasted:0,external:0,voice:0}}:{items:[{id:'deleted',package_name:'old.app'}],total:999};
  const query=vi.fn().mockReturnValueOnce(old.promise).mockResolvedValue(fresh);
- const view=await mountStatisticsPage(name,name==='Overview'?{overview:query}:{events:query,apps:async()=>({apps:[]})});
+ const view=await mountStatisticsPage(name,name==='Overview'?{overview:query}:{events:query,eventApps:async()=>({apps:[]})});
  await view.state.load();old.resolve(stale);await settle();
  if(name==='Overview'){expect(view.state.data.value.total_chars).toBe('0');expect(view.chart.setOption).toHaveBeenCalledTimes(1);}
  else {expect(view.state.items.value).toEqual([]);expect(view.state.total.value).toBe(0);expect([...view.state.appOptions.value]).toEqual([]);}
 });
 it.each(['Overview','ClipboardHistory'])('%s 卸载后迟到查询不更新状态',async name=>{
- const old=deferred<any>();const query=vi.fn().mockReturnValue(old.promise);const view=await mountStatisticsPage(name,name==='Overview'?{overview:query}:{events:query,apps:async()=>({apps:[]})});view.unmount();
+ const old=deferred<any>();const query=vi.fn().mockReturnValue(old.promise);const view=await mountStatisticsPage(name,name==='Overview'?{overview:query}:{events:query,eventApps:async()=>({apps:[]})});view.unmount();
  old.resolve(name==='Overview'?{total_chars:'999',source_distribution:{}}:{items:[{id:'deleted'}],total:999});await settle();
  if(name==='Overview'){expect(view.state.data.value).toBeNull();expect(view.chart.setOption).not.toHaveBeenCalled();}else expect(view.state.total.value).toBe(0);
+});
+it('剪贴板来源选项未返回时，历史列表仍立即查询并可展示', async()=>{
+ const pendingApps=deferred<any>();
+ const events=vi.fn().mockResolvedValue({items:[{id:'copy-1',package_name:'copy.app'}],total:1});
+ const view=await mountStatisticsPage('ClipboardHistory',{events,eventApps:()=>pendingApps.promise});
+ expect(events).toHaveBeenCalledOnce();expect(view.state.total.value).toBe(1);
+ pendingApps.resolve({apps:[{package_name:'other.app'}]});await settle();
+ expect([...view.state.appOptions.value].sort()).toEqual(['copy.app','other.app']);
+});
+it('总览在北京午夜后自动刷新，卸载后停止跨日计时',async()=>{
+ vi.useFakeTimers();
+ try {
+  vi.setSystemTime(new Date('2026-10-15T15:59:59Z'));
+  const result=(date:string,to:string)=>({today_range:{date,to},today:{},period:{},source_distribution:{typed:0,pasted:0,external:0,voice:0}});
+  const overview=vi.fn().mockResolvedValueOnce(result('2026-10-15','2026-10-15T16:00:00Z')).mockResolvedValue(result('2026-10-16','2026-10-16T16:00:00Z'));
+  const view=await mountStatisticsPage('Overview',{overview});
+  expect(overview).toHaveBeenCalledOnce();
+  await vi.advanceTimersByTimeAsync(1200);await settle();
+  expect(overview).toHaveBeenCalledTimes(2);expect(view.state.data.value.today_range.date).toBe('2026-10-16');
+  view.unmount();await vi.advanceTimersByTimeAsync(86400000);expect(overview).toHaveBeenCalledTimes(2);
+ } finally {vi.useRealTimers();}
 });

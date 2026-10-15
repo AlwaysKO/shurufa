@@ -155,7 +155,7 @@ const tile = '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><
   for (const [path, emptyText, errorText, ready] of [
    ['/wordcloud', '暂无数据', '加载失败', '#wordcloud-chart canvas'],
    ['/user-phrases', '把常说的话收藏在这里', '加载失败', '.phrase-item'],
-   ['/clipboard', '暂无复制记录', '加载失败', '#clipboard-chart canvas'],
+   ['/clipboard?tab=statistics', '暂无复制记录', '加载失败', '#clipboard-chart canvas'],
    ['/locations', '暂无位置数据', '503', '.leaflet-tile-loaded'],
    ['/relationships', '暂无可建档会话', '加载关系档案失败', '.profile-form'],
   ]) {

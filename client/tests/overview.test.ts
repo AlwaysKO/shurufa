@@ -50,7 +50,7 @@ it('异步总览数据返回后先挂载图表容器再初始化图表', async (
     if (name === '../api') return { api: { overview: () => response } };
     throw new Error(`Unexpected import: ${name}`);
   };
-  new Function('require', 'module', 'exports', 'document', 'window', code)(require, module, module.exports, { getElementById: (id: string) => find(root, id) }, windowStub);
+  new Function('require', 'module', 'exports', 'document', 'window', code)(require, module, module.exports, { ...windowStub, getElementById: (id: string) => find(root, id) }, windowStub);
   const app = renderer.createApp(module.exports.default);
   app.mount(root);
   try {

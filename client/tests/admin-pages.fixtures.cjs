@@ -35,7 +35,7 @@ const data = {
   '/api/v1/dashboard/relationships/1/sticker-candidates': { candidates: [] },
 };
 const pages = [
- ['/', '#source-chart canvas'], ['/timeline', '#heatmap-chart canvas'], ['/report', '#report-source-chart canvas'], ['/apps', '#apps-chart canvas'], ['/phrases', '.phrase-item'], ['/user-phrases', '.phrase-item'], ['/wordcloud', '#wordcloud-chart canvas'], ['/completion', 'tbody tr'], ['/app-usage', '.timeline-lane'], ['/activity', 'tbody tr'], ['/clipboard', '#clipboard-chart canvas'], ['/clipboard-history', '.list > *'], ['/call-recordings', '.calls tbody tr'], ['/locations', '.leaflet-tile-loaded'], ['/relationships', '.profile-form'],
+ ['/', '#source-chart canvas'], ['/timeline', '#heatmap-chart canvas'], ['/report', '#report-source-chart canvas'], ['/apps', '#apps-chart canvas'], ['/phrases', '.phrase-item'], ['/user-phrases', '.phrase-item'], ['/wordcloud', '#wordcloud-chart canvas'], ['/completion', 'tbody tr'], ['/app-usage', '.timeline-lane'], ['/activity', 'tbody tr'], ['/clipboard?tab=statistics', '#clipboard-chart canvas'], ['/clipboard-history', '.list > *'], ['/call-recordings', '.calls tbody tr'], ['/locations', '.leaflet-tile-loaded'], ['/relationships', '.profile-form'],
 ];
 // 分页专用响应：不同统计值用于证明翻页不会覆盖上方统计。
 const usagePages = [1, 2].map(page => ({

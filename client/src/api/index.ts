@@ -44,6 +44,7 @@ function withDashboardUser(url: string): string {
 }
 
 export interface OverviewData {
+  today_range?: { date: string; timezone: string; from: string; to: string };
   days: number;
   today: { input_events: string; input_chars: string; clipboard_count: string; delete_count: string };
   period: { event_count: string; input_chars: string; active_days: string };
