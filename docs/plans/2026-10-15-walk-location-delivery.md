@@ -28,3 +28,11 @@ Android Handler文档指出deep sleep会延迟postDelayed执行：https://develo
 - 最终 `:yuyansdk:testOfflineDebugUnitTest --tests '*Location*Test' --offline`：13类202项，失败/错误/跳过均0；JDK17、1024MiB、单worker、每8类重启，测试结果与二进制在本批`.runtime/walk-location-20261015/`独立目录，避免并行会话报告覆盖。日志`green-final.log`，XML`test-xml/`。
 - 当前源码 `:app:compileOfflineDebugKotlin --offline` 退出0，日志`app-compile.log`；`git diff --check`通过。独立只读审查无必须修复问题。
 - 本轮未打包、未安装或操作手机页面、未提交/推送、未部署后台。原有其他会话的页面采集改动保留。实际30秒回调密度、绕圈轨迹完整性、熄屏恢复和耗电仍须用户通过Android Studio覆盖安装后真机验收。
+
+## 用户后续要求打包：Mac交付
+
+- 用户明确要求打包并说明Mac版Android Studio手动操作，取代前述本轮不打包的边界；仍未授权自动安装或Git提交发布。
+- `:app:assembleOfflineDebug --offline -Pandroid.injected.testOnly=false`成功，产物包含当前源码及本轮定位修复，交付文件 `/Users/pj/project/shurufa/apk/shurufa-2026-10-15-v20261015.21-2026101521-debug-401a7137.apk`。
+- 实际版本 `20261015.21` / `2026101521`，包名`com.yuyan.pinyin.offline.debug`，arm64-v8a、minSDK23/target36、非testOnly，189378624字节。
+- SHA256 `401a71370c7d4dcf5c11f07d65fc062583685b620adec44987aa78c69b3f4102`；原始构建与交付副本一致。API23/27/28/32/36均核实固定原证书；证据 `apk-build.log`、`apk-verification.log`、`apk-badging.txt`、`delivery.json`在本批`.runtime`。
+- 手动打包步骤补入`android/YuyanIme/tools/SIGNING.md`的Mac部分。未安装手机，真实散步/耗电验收边界不变。

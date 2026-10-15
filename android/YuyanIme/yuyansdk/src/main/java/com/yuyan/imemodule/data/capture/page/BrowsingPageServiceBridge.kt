@@ -117,6 +117,8 @@ internal class BrowsingPageServiceBridge(
     private fun observePriorityPage() {
         cancelVideoObservation()
         val sequence = videoSequence.get()
+        val enteredElapsed = SystemClock.elapsedRealtime()
+        val enteredWall = System.currentTimeMillis()
         val consent = CollectionConsent.epoch
         val policy = ChatCaptureSettings.revision()
         fun current() = sequence == videoSequence.get() && eligible() &&
@@ -139,15 +141,15 @@ internal class BrowsingPageServiceBridge(
                     captureVideoCallAfterStable(snapshot, sequence)
                 } else if (decision.kind == PageKind.MEDIA_FEED) {
                     val generation = videoVisits?.generation() ?: return@launch
-                    videoVisits.observeFeed(generation, snapshot.page.packageName, snapshot.page.windowId, SystemClock.elapsedRealtime(),
-                        System.currentTimeMillis(), ::current) { visit ->
+                    videoVisits.observeFeed(generation, snapshot.page.packageName, snapshot.page.windowId, enteredElapsed,
+                        enteredWall, ::current) { visit ->
                         if (visit.firstImage == null && videoFirstFrame?.isActive != true && current()) {
-                            videoFirstFrame = capturePriorityFrame(snapshot, sequence, visit, decision)
+                            videoFirstFrame = capturePriorityFrame(snapshot, sequence, visit, decision, enteredElapsed, enteredWall)
                         }
                     }
                 } else if (decision.kind == PageKind.PAYMENT || decision.reason == "insufficient_evidence") {
                     // 微信支付可能是空树；先作有预算的同帧识别，不能因普通页面冷却而丢掉它。
-                    videoFirstFrame = capturePriorityFrame(snapshot, sequence, null, decision)
+                    videoFirstFrame = capturePriorityFrame(snapshot, sequence, null, decision, enteredElapsed, enteredWall)
                 }
             } catch (cancelled: CancellationException) { throw cancelled }
             catch (_: Exception) { status("video_observation_failed") }
@@ -155,7 +157,7 @@ internal class BrowsingPageServiceBridge(
     }
 
     private fun capturePriorityFrame(snapshot: BrowsePageSnapshot, sequence: Long, visit: VideoVisit?,
-        decision: PageDecision): Job =
+        decision: PageDecision, enteredElapsed: Long, enteredWall: Long): Job =
         videoScope.launch {
             val consent = CollectionConsent.epoch
             val policy = ChatCaptureSettings.revision()
@@ -166,6 +168,11 @@ internal class BrowsingPageServiceBridge(
                 (visit == null || videoVisits?.activeVisit()?.id == visit.id) && videoVisits?.generation() == generation
             try {
                 if (!current()) return@launch
+                val feed = decision.kind == PageKind.MEDIA_FEED
+                if (feed) {
+                    if (!awaitVideoFeedDwell(enteredElapsed, SystemClock::elapsedRealtime, ::current) { delay(it) }) return@launch
+                    if (!ImageUploadRuntime.awaitBackgroundWorkAllowed(::current) || !current()) return@launch
+                }
                 if (decision.kind == PageKind.PAYMENT || decision.reason == "insufficient_evidence") {
                     // 刚从聊天输入跳转时可仍处于输入保护期；同一导航等到允许，不直接漏掉支付。
                     if (!ImageUploadRuntime.awaitBackgroundWorkAllowed(::current) || !current()) return@launch
@@ -182,23 +189,35 @@ internal class BrowsingPageServiceBridge(
                     reserveVideo = {
                         videoVisits != null && (visit != null || videoVisits.activeVisit() == null) &&
                             videoBudget.reserveNow() == BrowseBudgetResult.ALLOWED
-                    })
-                if (kinds.isEmpty() || !current()) return@launch
+                    }, feedReady = feed)
+                fun deferUnknownFeed() {
+                    if (decision.kind == null && decision.reason == "insufficient_evidence" && current()) {
+                        videoFirstFrame = capturePriorityFrame(snapshot, sequence, null,
+                            PageDecision(PageKind.MEDIA_FEED, "deferred_feed_probe"), enteredElapsed, enteredWall)
+                    }
+                }
+                if (!current()) return@launch
+                if (kinds.isEmpty()) { deferUnknownFeed(); return@launch }
+                var sawFeed = false
                 val result = reader.readAndPersist(outbox, snapshot.page.packageName, snapshot.page.windowId, snapshot.bounds,
                     snapshot.labels, chatVerified = snapshot.chatVerified, current = ::current,
                     acceptKind = { it in kinds },
-                    captureKey = PageFrameCaptureKey(snapshot.page.packageName, snapshot.page.windowId, sequence, consent, policy),
-                    onPersisted = { frame, result, elapsed, wall ->
+                    // 视频必须取新帧，避免在途早期探测回填缓存后被复用；物理截图槽仍共用。
+                    captureKey = if (feed) null else PageFrameCaptureKey(snapshot.page.packageName, snapshot.page.windowId, sequence, consent, policy),
+                    onPersisted = { frame, result, _, _ ->
                         // 未知树的早期探测只能确认通话候选，不能提前落盘通话图。
                         if (current() && frame.page.kind == PageKind.VIDEO_CALL)
                             captureVideoCallAfterStable(snapshot, sequence)
                         if (current() && generation != null && frame.page.kind == PageKind.MEDIA_FEED) {
+                            sawFeed = true
+                            if (!feed) return@readAndPersist
                             if (visit == null) videoVisits.pageCaptured(generation, snapshot.page.packageName, PageKind.MEDIA_FEED,
-                                result, elapsed, wall, snapshot.page.windowId, consent, policy, ::current, freshFrame = true)
+                                result, enteredElapsed, enteredWall, snapshot.page.windowId, consent, policy, ::current, freshFrame = true)
                             else videoVisits.attachFirstFrame(generation, visit, result, consent, policy, ::current)
                         }
                     })
                 status(result.status.name.lowercase(), snapshot.page.packageName)
+                if (sawFeed) deferUnknownFeed()
             } catch (cancelled: CancellationException) { throw cancelled }
             catch (_: Exception) { status("capture_or_storage_failed", snapshot.page.packageName) }
         }

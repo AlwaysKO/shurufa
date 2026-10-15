@@ -33,7 +33,7 @@ onBeforeUnmount(()=>{closeImage();browser.invalidate();manager.invalidate();});
   <section class="video-visits">
     <h2>视频与信息流停留</h2>
     <p class="hint">观看时长按进入视频到划走、退出或锁屏的前台停留计算，不是播放时长或视频长度；返回同一视频另记一次。未确认单条视频时，仅展示信息流页面停留。</p>
-    <p class="hint">点击首帧可放大。新采集记录没有截图时直接舍弃；有图但异常中断的记录标明未知时间。时间均为北京时间。</p>
+    <p class="hint">视频号与抖音信息流停留满3秒后截取一次首帧，划走时记录结束时间，停留时长包含等待截图的3秒。点击首帧可放大。新采集记录没有截图时直接舍弃；有图但异常中断的记录标明未知时间。时间均为北京时间。</p>
     <div class="filters">
       <label>应用 <select v-model="platform" aria-label="应用"><option value="">全部</option><option value="wechat">微信</option><option value="douyin">抖音</option></select></label>
       <label>记录类型 <select v-model="observation_kind" aria-label="记录类型"><option value="">全部</option><option value="confirmed_video">已确认视频</option><option value="unconfirmed_feed">信息流页面停留</option></select></label>

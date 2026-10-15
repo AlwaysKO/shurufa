@@ -13,6 +13,13 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [30])
 class PriorityPageCaptureTest {
+    @Test fun earlyUnknownProbeKeepsPaymentTimingWithoutSpendingVideoBudget() {
+        assertEquals(setOf(PageKind.PAYMENT), reservePriorityPageKinds(
+            PageDecision(null, "insufficient_evidence"), { true },
+            { error("video must wait three seconds") }, feedReady = false))
+        assertTrue(reservePriorityPageKinds(PageDecision(PageKind.MEDIA_FEED, "feed_navigation"),
+            { error("feed cannot use payment budget") }, { error("too early") }, feedReady = false).isEmpty())
+    }
     @Test fun ordinaryQuotaCannotPersistPaymentOrFeedEvenWhenTreeWasUnknown() = runBlocking {
         val app = ApplicationProvider.getApplicationContext<Application>()
         app.deleteDatabase(File(app.noBackupFilesDir, "page_capture_outbox.db").absolutePath)

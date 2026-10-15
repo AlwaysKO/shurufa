@@ -37,6 +37,54 @@ class VideoVisitMonitorTest {
         m.confirmVideo(m.generation(), "wechat", "video", elapsed, wall, firstImage = "00000000-0000-4000-8000-000000000001")
         idle()
     }
+    @Test fun bothPlatformsKeepInitialThreeSecondsAndEndAtSwipeEvent() = kotlinx.coroutines.runBlocking {
+        for (pkg in listOf("com.tencent.mm", "com.ss.android.ugc.aweme")) {
+            val m = monitor(); idle()
+            val startedElapsed = elapsed
+            val startedWall = wall
+            m.observeFeed(m.generation(), pkg, 10, startedElapsed, startedWall, { true }); idle()
+            val visit = requireNotNull(m.activeVisit())
+            elapsed += 800; wall += 800
+            assertTrue(awaitVideoFeedDwell(startedElapsed, { elapsed }, { m.activeVisit()?.id == visit.id }) {
+                elapsed += it; wall += it
+            })
+            m.attachFirstFrame(m.generation(), visit,
+                PageWriteResult(PageWriteStatus.SAVED, "00000000-0000-4000-8000-000000000001"),
+                com.yuyan.imemodule.data.collect.CollectionConsent.epoch, 0, { true }); idle()
+            elapsed += 2000; wall += 2000
+            m.contentScrolled(pkg)
+            elapsed += 9000; wall += 9000 // 模拟后台处理迟到，不得延长停留。
+            idle()
+            VideoVisitStore(app).use {
+                val end = it.completed().single()
+                assertEquals(startedWall, end.enteredAt)
+                assertEquals(startedWall + 5000, end.endedAt)
+                assertEquals(5000L, end.durationMillis)
+                assertEquals(VideoExitReason.PAGE_CHANGED, end.reason)
+            }
+            m.close(); idle()
+            app.deleteDatabase(File(app.noBackupFilesDir, "video_visits.db").absolutePath)
+        }
+    }
+
+    @Test fun swipeAt2999MillisDiscardsBothPlatformsWithoutPersistingVisit() = kotlinx.coroutines.runBlocking {
+        for (pkg in listOf("com.tencent.mm", "com.ss.android.ugc.aweme")) {
+            val m = monitor(); idle()
+            val started = elapsed
+            m.observeFeed(m.generation(), pkg, 10, elapsed, wall, { true }); idle()
+            val generation = m.generation()
+            elapsed += 800; wall += 800
+            assertFalse(awaitVideoFeedDwell(started, { elapsed }, { m.generation() == generation }) {
+                elapsed = started + 2999; wall += 2199
+                m.contentScrolled(pkg); idle()
+            })
+            VideoVisitStore(app).use {
+                assertNull(it.active())
+                assertTrue(it.completed().isEmpty())
+            }
+            m.close(); idle()
+        }
+    }
     @Test fun verifiedSameFeedWindowEventsKeepClockAndImageCanArriveLater() {
         val m = monitor(); idle()
         m.observeFeed(m.generation(), "com.tencent.mm", 10, elapsed, wall, { true }); idle()

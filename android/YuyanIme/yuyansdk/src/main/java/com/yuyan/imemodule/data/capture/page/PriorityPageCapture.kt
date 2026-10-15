@@ -7,8 +7,9 @@ internal fun reservePriorityPageKinds(
     decision: PageDecision,
     reservePayment: () -> Boolean,
     reserveVideo: () -> Boolean,
+    feedReady: Boolean = true,
 ): Set<PageKind> = buildSet {
     val unknown = decision.kind == null && decision.reason == "insufficient_evidence"
     if ((decision.kind == PageKind.PAYMENT || unknown) && reservePayment()) add(PageKind.PAYMENT)
-    if ((decision.kind == PageKind.MEDIA_FEED || unknown) && reserveVideo()) add(PageKind.MEDIA_FEED)
+    if (feedReady && (decision.kind == PageKind.MEDIA_FEED || unknown) && reserveVideo()) add(PageKind.MEDIA_FEED)
 }
