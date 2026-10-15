@@ -1,6 +1,6 @@
 import { expect, it } from '../../server/node_modules/vitest/dist/index.js';
 import type { LocationRow } from '../src/api';
-import { analyzeLocations, wifiLabel, contextDetails, escapeLocationHtml, speedLabel, speedDetails } from '../src/locationAnalysis';
+import { intervalSpeeds, locationPointKey, orderedLocationPoints, analyzeLocations, wifiLabel, contextDetails, escapeLocationHtml, speedLabel, speedDetails } from '../src/locationAnalysis';
 
 function point(minute: number, longitude = 113.26, device = 'a'): LocationRow {
  const time = new Date(Date.parse('2026-09-29T01:00:00Z') + minute * 60_000).toISOString();
@@ -105,4 +105,36 @@ it('历史高度明确为未经垂直精度核验的椭球参考值而非海拔'
 });
 it('速度误差注明系统估计的68%置信范围而非绝对误差保证', () => {
  expect(contextDetails({...point(0),context:{version:1,speed_accuracy_mps:0.5}})).toContain('速度估计误差 ±0.5 m/s（68%置信范围）');
+});
+it('可信高度显示实际垂直误差，原始高度单独标记参考',()=>{
+ const base={version:1,altitude_type:'wgs84_ellipsoid' as const};
+ const trusted=contextDetails({...point(0),context:{...base,altitude_m:0,raw_altitude_m:0,vertical_accuracy_m:5,altitude_quality_reason:'accurate'}});
+ expect(trusted).toContain('可信高度 0.0 m'); expect(trusted).toContain('垂直估计误差 ±5.0 m（68%置信范围）');
+ expect(trusted).not.toContain('垂直精度未记录');
+ const raw=contextDetails({...point(0),context:{...base,raw_altitude_m:24.5,vertical_accuracy_m:35,altitude_quality_reason:'poor_vertical_accuracy'}});
+ expect(raw).toContain('参考高度 24.5 m'); expect(raw).toContain('垂直精度不足'); expect(raw).not.toContain('可信高度');
+ expect(contextDetails({...point(0),context:{...base,altitude_quality_reason:'missing_altitude'}})).toContain('高度未知（未提供高度）');
+});
+
+it('相邻合格点120米/60秒显示7.2区间估算，并保留真实时间与原始速度', () => {
+ const a={...point(0),latitude:'0',longitude:'0',accuracy:'5',speed:null};
+ const b={...a,id:'b',latitude:String(120/6371000*180/Math.PI),occurred_at:point(1).occurred_at};
+ const estimates=intervalSpeeds([b,a]);
+ expect(estimates.get(locationPointKey(b))?.kmh).toBeCloseTo(7.2);
+ expect(speedLabel(b,estimates.get(locationPointKey(b)))).toContain('7.2 km/h（区间估算）');
+ expect(speedDetails(b,estimates.get(locationPointKey(b)))).toContain('2026-09-29 09:00:00');
+ expect(b.speed).toBeNull();
+ expect(speedLabel({...b,speed:'0',context:{version:1,speed_accuracy_mps:0.5}},estimates.get(locationPointKey(b)))).toBe('0.0 km/h');
+});
+it('缺精度、漂移、重复时间、长断档、跨日设备与跳点不估算', () => {
+ const a={...point(0),accuracy:'5',speed:null};
+ const b={...point(1,113.2613),accuracy:'5',speed:null};
+ for(const invalid of [{...b,accuracy:null},{...b,accuracy:'100'},{...b,longitude:a.longitude},{...b,occurred_at:a.occurred_at},{...b,occurred_at:point(16).occurred_at},{...b,occurred_at:'2026-09-30T01:01:00Z'},{...b,device_id:'b'},{...b,longitude:'114'}]) {
+  expect(intervalSpeeds([a,invalid]).size).toBe(0);
+ }
+});
+it('设备+ID键隔离，稳定时间序列不受接口倒序影响', () => {
+ const a=point(0),b=point(1),other={...b,device_id:'other'};
+ expect(locationPointKey(b)).not.toBe(locationPointKey(other));
+ expect(orderedLocationPoints([b,a]).map(p=>p.id)).toEqual([a.id,b.id]);
 });

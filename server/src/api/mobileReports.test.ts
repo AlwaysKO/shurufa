@@ -140,3 +140,24 @@ it('公共图库使用次数跨设备归集，重发报告不重复计数', asyn
   for(let i=0;i<2;i++) expect((await request(app).post('/reports').send(report)).status).toBe(200);
   expect((await pool.query('SELECT use_count FROM sticker')).rows[0].use_count).toBe(1);
 });
+
+it.each(['/reports','/location'])('高度诊断通过 %s 原样保存且不伪造可信高度',async path=>{
+ const context={version:1,raw_altitude_m:0,vertical_accuracy_m:35,altitude_type:'wgs84_ellipsoid',altitude_quality_reason:'poor_vertical_accuracy'};
+ const payload={device_id:device,latitude:31,longitude:121,occurred_at:'2026-10-15T01:00:00Z',context};
+ expect((await request(app).post(path).send(path==='/reports'?{id:crypto.randomUUID(),kind:'location',payload}:payload)).status).toBe(200);
+ expect((await pool.query('SELECT context FROM location_track')).rows[0].context).toEqual(context);
+});
+it.each([{raw_altitude_m:100001},{raw_altitude_m:-20001},{raw_altitude_m:'0'},
+ {vertical_accuracy_m:-1},{vertical_accuracy_m:100001},{altitude_type:'sea_level'},
+ {altitude_quality_reason:'probably'}])('拒绝非法高度证据 %j',async fields=>{
+ expect((await request(app).post('/reports').send({id:crypto.randomUUID(),kind:'location',payload:{latitude:31,longitude:121,context:{version:1,...fields}}})).status).toBe(400);
+});
+it.each([false,true])('高度能力变更不能改变已发送报告的幂等 payload（初次新格式=%s）',async extended=>{
+ const legacy={version:1,altitude_m:0};
+ const modern={...legacy,raw_altitude_m:0,vertical_accuracy_m:5,altitude_type:'wgs84_ellipsoid',altitude_quality_reason:'accurate'};
+ const base={id:crypto.randomUUID(),kind:'location',payload:{latitude:31,longitude:121,occurred_at:'2026-10-15T01:00:00Z',context:extended?modern:legacy}};
+ expect((await request(app).post('/reports').send(base)).status).toBe(200);
+ expect((await request(app).post('/reports').send({...base,payload:{...base.payload,context:extended?legacy:modern}})).status).toBe(409);
+ expect((await request(app).post('/reports').send(base)).status).toBe(200);
+ expect((await pool.query('SELECT * FROM location_track')).rows).toHaveLength(1);
+});

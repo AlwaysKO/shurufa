@@ -4,7 +4,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { api, deviceLabel, type DeviceRow, type LocationRow } from '../api';
-import { analyzeLocations, locationDay, wifiLabel, networkLabel, contextDetails, durationLabel, escapeLocationHtml, speedLabel, speedDetails } from '../locationAnalysis';
+import { intervalSpeeds, locationPointKey, orderedLocationPoints, analyzeLocations, locationDay, wifiLabel, networkLabel, contextDetails, durationLabel, escapeLocationHtml, speedLabel, speedDetails } from '../locationAnalysis';
 
 const devices = ref<DeviceRow[]>([]);
 const locations = ref<LocationRow[]>([]);
@@ -19,6 +19,15 @@ const hasMore = ref(false);
 const visibleLocations = computed(() => locations.value);
 const analysis = computed(() => analyzeLocations(visibleLocations.value));
 const routeSegments = computed(() => analysis.value.segments.filter(segment => segment.length > 1));
+const estimates = computed(() => intervalSpeeds(visibleLocations.value));
+const selectedKey = ref<string | null>(null);
+const candidateKeys = ref<string[]>([]);
+const candidates = computed(() => candidateKeys.value.map(key => locations.value.find(row => locationPointKey(row) === key)).filter((row): row is LocationRow => !!row));
+const selectedPoint = computed(() => locations.value.find(row => locationPointKey(row) === selectedKey.value));
+const pointSpeed = (point: LocationRow) => speedLabel(point, estimates.value.get(locationPointKey(point)));
+const pointSpeedDetails = (point: LocationRow) => speedDetails(point, estimates.value.get(locationPointKey(point)));
+const hitMarkers = new Map<string, L.CircleMarker>();
+const visualMarkers = new Map<string, L.CircleMarker>();
 let refreshTimer: ReturnType<typeof setTimeout> | null = null;
 let latestRequest = 0;
 let disposed = false;
@@ -82,6 +91,8 @@ async function loadLocations(background = false) {
   const request = ++latestRequest;
   today.value = locationDay(new Date().toISOString());
   if (!background) {
+    selectedKey.value = null;
+    candidateKeys.value = [];
     loading.value = true;
     locations.value = [];
     hasMore.value = false;
@@ -93,9 +104,12 @@ async function loadLocations(background = false) {
     if (disposed || request !== latestRequest) return;
     const mapChanged = data.locations.length !== locations.value.length || data.locations.some((row, index) => {
       const previous = locations.value[index];
-      return row.id !== previous?.id || row.address !== previous.address || row.last_seen_at !== previous.last_seen_at;
+      return JSON.stringify(row) !== JSON.stringify(previous);
     });
     locations.value = data.locations;
+    const validKeys = new Set(locations.value.map(locationPointKey));
+    if (selectedKey.value && !validKeys.has(selectedKey.value)) selectedKey.value = null;
+    candidateKeys.value = candidateKeys.value.filter(key => validKeys.has(key));
     hasMore.value = data.has_more === true;
     error.value = '';
     // 自动更新状态时不重画地图；地址变化时更新标记，但保留用户缩放和中心点。
@@ -112,37 +126,64 @@ async function loadLocations(background = false) {
   }
 }
 
+function choosePoint(point: LocationRow, openPopup = true) {
+  selectedKey.value = locationPointKey(point);
+  for (const [key, marker] of visualMarkers) marker.setStyle({ color: key === selectedKey.value ? '#f59e0b' : '#fff', weight: key === selectedKey.value ? 4 : 2 });
+  // 同坐标可能还有其他设备的大圆点；视觉层置顶但保持非交互，命中圈仍可点击。
+  visualMarkers.get(selectedKey.value)?.bringToFront();
+  if (openPopup) hitMarkers.get(selectedKey.value)?.openPopup();
+}
+function nearbyPoints(point: LocationRow, clicked: L.LatLng) {
+  if (!map) return;
+  const origin = map.latLngToContainerPoint(clicked);
+  candidateKeys.value = orderedLocationPoints(visibleLocations.value).filter(row => {
+    const lat = Number(row.latitude), lng = Number(row.longitude);
+    return Number.isFinite(lat) && Number.isFinite(lng) && map!.latLngToContainerPoint([lat, lng]).distanceTo(origin) <= 22;
+  }).sort((a, b) => Date.parse(a.occurred_at) - Date.parse(b.occurred_at) || a.device_id.localeCompare(b.device_id) || a.id.localeCompare(b.id)).map(locationPointKey);
+  choosePoint(point);
+}
 function renderMap(recenter = true) {
   if (!map) return;
-  if (layer) layer.remove();
+  const keepPopupOpen = selectedKey.value ? hitMarkers.get(selectedKey.value)?.isPopupOpen() === true : false;
+  layer.remove();
+  hitMarkers.clear(); visualMarkers.clear();
   layer = L.layerGroup().addTo(map);
-
-  const pts = [...visibleLocations.value].reverse().filter(p => Number.isFinite(Number(p.latitude)) && Math.abs(Number(p.latitude)) <= 90 && Number.isFinite(Number(p.longitude)) && Math.abs(Number(p.longitude)) <= 180);
+  const pts = orderedLocationPoints(visibleLocations.value).filter(p => p.latitude !== '' && p.longitude !== '' && Number.isFinite(Number(p.latitude)) && Math.abs(Number(p.latitude)) <= 90 && Number.isFinite(Number(p.longitude)) && Math.abs(Number(p.longitude)) <= 180);
   if (pts.length === 0) return;
+  const starts = new Set(analysis.value.segments.map(segment => locationPointKey(segment[0]!)));
+  const ends = new Set(analysis.value.segments.map(segment => locationPointKey(segment[segment.length - 1]!)));
   for (const segment of routeSegments.value) {
-    L.polyline(
-      segment.map((p) => [Number(p.latitude), Number(p.longitude)]),
-      { color: '#3742fa', weight: 3, opacity: 0.7 },
-    ).addTo(layer);
+    L.polyline(segment.map(p => [Number(p.latitude), Number(p.longitude)]),
+      { color: '#3742fa', weight: 3, opacity: 0.7, interactive: false, className: 'location-route' }).addTo(layer);
+    for (let i = 1; i < segment.length; i++) {
+      const a = segment[i - 1]!, b = segment[i]!;
+      const lat = (Number(a.latitude) + Number(b.latitude)) / 2, lng = (Number(a.longitude) + Number(b.longitude)) / 2;
+      const dx = (Number(b.longitude) - Number(a.longitude)) * Math.cos(lat * Math.PI / 180), dy = Number(b.latitude) - Number(a.latitude);
+      if (dx === 0 && dy === 0) continue;
+      const angle = -Math.atan2(dy, dx) * 180 / Math.PI;
+      L.marker([lat, lng], { interactive: false, keyboard: false, icon: L.divIcon({ className: 'location-direction', iconSize: [16, 16], iconAnchor: [8, 8], html: `<span style="display:block;transform:rotate(${angle}deg);color:#3742fa" aria-hidden="true">➤</span>` }) }).addTo(layer);
+    }
   }
-  pts.forEach((p, i) => {
-    const lat = Number(p.latitude);
-    const lng = Number(p.longitude);
-    const isFirst = i === 0;
-    const isLast = i === pts.length - 1;
-    const color = isFirst ? '#2ecc71' : isLast ? '#e74c3c' : '#3742fa';
-    L.circleMarker([lat, lng], { radius: isFirst || isLast ? 8 : 5, color: '#fff', weight: 2, fillColor: color, fillOpacity: 0.9 })
-      .addTo(layer)
-      .bindPopup(
+  for (const p of pts) {
+    const lat = Number(p.latitude), lng = Number(p.longitude), key = locationPointKey(p);
+    const isFirst = starts.has(key), isLast = ends.has(key);
+    const endpoint = isFirst && isLast ? '独立采样点' : isFirst ? '本段起点' : isLast ? '本段终点' : '采样点';
+    const visual = L.circleMarker([lat, lng], { radius: isFirst || isLast ? 8 : 5, color: '#fff', weight: 2, fillColor: isFirst ? '#2ecc71' : isLast ? '#e74c3c' : '#3742fa', fillOpacity: 0.9, interactive: false, className: `location-point${isFirst ? ' location-start' : ''}${isLast ? ' location-end' : ''}` }).addTo(layer);
+    visualMarkers.set(key, visual);
+    const hit = L.circleMarker([lat, lng], { radius: 20, opacity: 0, fillOpacity: 0, weight: 0, className: 'location-hit', bubblingMouseEvents: false })
+      .addTo(layer).bindPopup(
         `<b>${escapeLocationHtml(p.address ?? `${lat.toFixed(4)}, ${lng.toFixed(4)}`)}</b><br>` +
-          `${formatBeijingTime(p.occurred_at)}（北京时间）<br>` +
-          `${escapeLocationHtml(providers[p.provider ?? ''] ?? p.provider ?? '-')} · 精度 ${escapeLocationHtml(String(p.accuracy ?? '-'))}m · 速度 ${escapeLocationHtml(speedLabel(p))}<br>` +
-          `Wi-Fi：${escapeLocationHtml(wifiLabel(p))}<br>${escapeLocationHtml(contextDetails(p))}` +
-          `<details><summary>速度诊断</summary>${escapeLocationHtml(speedDetails(p))}</details>`,
-      );
-  });
-  const last = pts[pts.length - 1];
+        `${endpoint} · ${escapeLocationHtml(rowDevice(p))}<br>${formatBeijingTime(p.occurred_at)}（北京时间）<br>` +
+        `${escapeLocationHtml(providers[p.provider ?? ''] ?? p.provider ?? '-')} · 精度 ${escapeLocationHtml(String(p.accuracy ?? '-'))}m · 速度 ${escapeLocationHtml(pointSpeed(p))}<br>` +
+        `Wi-Fi：${escapeLocationHtml(wifiLabel(p))}<br>${escapeLocationHtml(contextDetails(p))}` +
+        `<details><summary>速度诊断</summary>${escapeLocationHtml(pointSpeedDetails(p))}</details>`,
+        { autoPan: false, maxWidth: 280, className: 'location-popup' },
+      ).on('click', (event: L.LeafletMouseEvent) => nearbyPoints(p, event.latlng));
+    hitMarkers.set(key, hit);
+  }
+  const last = [...pts].sort((a, b) => Date.parse(a.occurred_at) - Date.parse(b.occurred_at)).at(-1)!;
   if (recenter) map.setView([Number(last.latitude), Number(last.longitude)], Math.max(map.getZoom(), 13));
+  if (selectedPoint.value) choosePoint(selectedPoint.value, keepPopupOpen);
 }
 
 function timeRange(row: LocationRow): string {
@@ -194,6 +235,8 @@ watch([selectedDay, endDay, deviceId], () => loadLocations());
 
 function focusPoint(point: LocationRow) {
   map?.setView([Number(point.latitude), Number(point.longitude)], 16);
+  candidateKeys.value = [locationPointKey(point)];
+  choosePoint(point);
 }
 function rowDevice(point: LocationRow) {
   const device = devices.value.find(item => item.id === point.device_id);
@@ -215,6 +258,7 @@ onBeforeUnmount(() => {
   latestRequest += 1;
   clearRefresh();
   layer.remove();
+  hitMarkers.clear(); visualMarkers.clear();
   map?.remove();
   map = null;
 });
@@ -222,7 +266,8 @@ onBeforeUnmount(() => {
 const summary = computed(() => {
   const n = visibleLocations.value.length;
   if (n === 0) return '暂无位置数据';
-  const t = timeRange(visibleLocations.value[0]);
+  const latest = visibleLocations.value.reduce((a, b) => (Date.parse(b.occurred_at) || -Infinity) > (Date.parse(a.occurred_at) || -Infinity) ? b : a);
+  const t = timeRange(latest);
   return `共 ${n} 条采样，最近记录（北京时间）：${t}`;
 });
 </script>
@@ -251,7 +296,7 @@ const summary = computed(() => {
       <span v-if="error" class="err">{{ error }}</span>
     </div>
 
-    <p class="analysis-hint">新版手机仅在位置有效变化时上报，位置不变不重复上报。均衡模式移动时约 30 秒采样，停留后约 5 分钟检查；实际频率受权限、信号和系统限制。静止缺报无法确认准确停留或 Wi-Fi 连接时长。路线连线不代表实际经过的道路；超过 15 分钟的缺口、跨日和不同设备分段显示。</p>
+    <p class="analysis-hint">新版手机仅在位置有效变化时上报，位置不变不重复上报。非 Wi-Fi 时目标约 1 分钟采样；Wi-Fi 下移动约 1 分钟、确认地理位置稳定后约 5 分钟检查；实际频率受权限、信号和系统限制。静止缺报无法确认准确停留或 Wi-Fi 连接时长。路线连线不代表实际经过的道路；超过 15 分钟的缺口、跨日和不同设备分段显示。</p>
     <p v-if="hasMore" class="coverage-warning" role="status">所选日期范围记录超过 1000 条，仅分析已加载的最近记录。可缩短日期范围或选择单台设备；这里的里程与停留不代表完整行程。</p>
     <div v-if="visibleLocations.length" class="location-stats">
       <div><strong>{{ routeSegments.length }}</strong><span>有连续观测的路线段</span></div>
@@ -264,6 +309,14 @@ const summary = computed(() => {
       还有 {{ unresolvedAddresses.length }} 条地址未完成，页面会自动更新；解析失败后按提示时间重试。
     </p>
     <div id="loc-map" class="map"></div>
+    <section v-if="candidates.length" class="point-selection" aria-label="选择采样点">
+      <h3>选择采样点（按时间排序）</h3>
+      <p>点击位置附近共 {{ candidates.length }} 条记录；绿色为分段起点，红色为终点，箭头按采样时间前进。</p>
+      <button v-for="point in candidates" :key="locationPointKey(point)" data-testid="location-candidate" :aria-pressed="selectedKey === locationPointKey(point)" @click="choosePoint(point)">
+        {{ selectedKey === locationPointKey(point) ? '已选择 · ' : '' }}{{ formatBeijingTime(point.occurred_at) }} · {{ rowDevice(point) }} · {{ addressLabel(point) }}
+      </button>
+      <p v-if="selectedPoint" data-testid="selected-location">已选择：{{ formatBeijingTime(selectedPoint.occurred_at) }} · {{ addressLabel(selectedPoint) }} · {{ pointSpeed(selectedPoint) }}</p>
+    </section>
 
     <div v-if="visibleLocations.length" class="location-insights">
       <section>
@@ -312,7 +365,7 @@ const summary = computed(() => {
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(r, i) in visibleLocations" :key="r.id">
+        <tr v-for="(r, i) in visibleLocations" :key="locationPointKey(r)">
           <td>{{ visibleLocations.length - i }}<small class="address-detail">{{ rowDevice(r) }}</small></td>
           <td class="mono">{{ Number(r.latitude).toFixed(4) }}, {{ Number(r.longitude).toFixed(4) }}</td>
           <td>
@@ -324,8 +377,8 @@ const summary = computed(() => {
           </td>
           <td>{{ providers[r.provider ?? ''] ?? r.provider ?? '-' }}</td>
           <td>{{ r.accuracy ?? '-' }} m</td>
-          <td>{{ speedLabel(r) }}
-            <details><summary>速度诊断</summary><small>{{ speedDetails(r) }}</small></details>
+          <td>{{ pointSpeed(r) }}
+            <details><summary>速度诊断</summary><small>{{ pointSpeedDetails(r) }}</small></details>
           </td>
           <td class="context-cell">
             <strong>{{ wifiLabel(r) }}</strong>
@@ -354,6 +407,15 @@ const summary = computed(() => {
 </template>
 
 <style scoped>
+.point-selection { padding: 12px; margin-bottom: 16px; background: #fff; overflow-wrap: anywhere; }
+.point-selection h3 { margin: 0 0 8px; font-size: 15px; }
+.point-selection p { font-size: 13px; color: #64748b; }
+.point-selection button { display: block; width: 100%; min-height: 44px; text-align: left; padding: 8px; margin: 5px 0; white-space: normal; overflow-wrap: anywhere; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; }
+.point-selection button[aria-pressed="true"] { border-color: #d97706; background: #fffbeb; }
+.map :deep(.location-direction) { pointer-events: none; }
+.map :deep(.location-popup) { overflow-wrap: anywhere; }
+.map :deep(.leaflet-popup-content) { max-width: min(260px, 65vw); max-height: 230px; overflow: auto; }
+
 .table { min-width: 1100px; }
 .table td:first-child { min-width: 100px; }
 .table td:nth-child(3) { min-width: 200px; }

@@ -3,6 +3,7 @@ import { parse, compileScript } from '@vue/compiler-sfc';
 import ts from 'typescript';
 import * as Vue from 'vue';
 import { afterEach, expect, it, vi } from '../../server/node_modules/vitest/dist/index.js';
+import * as usageEvidence from '../src/usageEvidence';
 import * as confirmation from '../src/confirmation';
 const settle = async () => { for (let i=0;i<12;i++) await Promise.resolve(); await Vue.nextTick(); };
 const mounted: Vue.App[]=[];
@@ -20,6 +21,7 @@ async function setup(overrides: Record<string,unknown>={}) {
   if(id==='./api')return {api,currentUserId:current,setCurrentUserId:(id:string)=>current.value=id,deviceLabel:(u:any)=>u.name??u.id};
   if(id==='./auth')return {authenticated,logout:vi.fn(),loginName:Vue.ref('admin')};
   if(id==='vue-router')return {useRoute:()=>route};
+  if(id==='./usageEvidence')return usageEvidence;
   if(id==='./confirmation')return confirmation;
   if(id.endsWith('.vue'))return {default:{render:()=>null}};
   throw Error(id);
@@ -85,28 +87,29 @@ it('删除或切换开关进行中，既有编辑表单也不能并发提交',as
  const updateUser=vi.fn(async()=>({user:A}));const {state}=await setup({updateUser});state.editUser(A);state.userAction.value=B.id;await state.saveUser();expect(updateUser).not.toHaveBeenCalled();
 });
 
-it('目录仅展示最后人为操作，说明离线补传和已收到记录范围',()=>{
+it('目录主显示使用证据，明确离线补传和已收到记录范围',()=>{
  const source=readFileSync(new URL('../src/App.vue',import.meta.url),'utf8');
- expect(source).toContain('按最后人为操作时间排序');
- expect(source).toContain('最后人为操作');expect(source).toContain('interactionAt(user.last_interaction_at)');
+ expect(source).toContain('按最近使用记录时间排序');
+ expect(source).toContain('最近使用记录');expect(source).toContain('evidenceTime(user.latest_usage_at)');
+ expect(source).toContain('usageEvidenceDetails(user)');
  expect(source).not.toContain('最近联系服务器');expect(source).not.toContain('最近业务入库');
- expect(source).toContain('已收到的操作记录');expect(source).toContain('离线');expect(source).toContain('联网补传');expect(source).toContain('不表示当前在线');
+ expect(source).toContain('已收到的使用记录');expect(source).toContain('离线');expect(source).toContain('联网补传');expect(source).toContain('不表示当前在线');
 });
 it('人为操作时间固定北京时间、包含年份和秒，缺失和非法时间不造时间',async()=>{
  const {state}=await setup();
- expect(state.interactionAt('2026-10-08T12:04:14Z')).toBe('2026-10-08 20:04:14');
- expect(state.interactionAt('2026-10-08T16:00:00Z')).toBe('2026-10-09 00:00:00');
- expect(state.interactionAt(null)).toBe('未知（未收到操作记录）');
- expect(state.interactionAt(undefined)).toBe('未知（未收到操作记录）');
- expect(state.interactionAt('invalid')).toBe('未知（未收到操作记录）');
+ expect(state.evidenceTime('2026-10-08T12:04:14Z')).toBe('2026-10-08 20:04:14');
+ expect(state.evidenceTime('2026-10-08T16:00:00Z')).toBe('2026-10-09 00:00:00');
+ expect(state.evidenceTime(null)).toBe('未知（未收到记录）');
+ expect(state.evidenceTime(undefined)).toBe('未知（未收到记录）');
+ expect(state.evidenceTime('invalid')).toBe('未知（未收到记录）');
 });
 it('目录有人为操作记录时只取实际操作时间，无操作记录不回退到联系和入库时间',async()=>{
  const actual={...A,last_interaction_at:'2026-10-08T12:04:14Z',last_seen_at:'2026-10-09T16:58:35Z',last_data_received_at:'2026-10-09T16:18:22Z'};
  const missing={...B,last_interaction_at:null,last_seen_at:actual.last_seen_at,last_data_received_at:actual.last_data_received_at};
  const legacy={...B,id:'legacy',last_seen_at:actual.last_seen_at,last_data_received_at:actual.last_data_received_at};
  const {state}=await setup({users:vi.fn(async()=>({users:[actual,missing,legacy],total:3,page:1}))});
- expect(state.directoryUsers.value.map((user:any)=>state.interactionAt(user.last_interaction_at))).toEqual([
-  '2026-10-08 20:04:14','未知（未收到操作记录）','未知（未收到操作记录）',
+ expect(state.directoryUsers.value.map((user:any)=>state.evidenceTime(user.last_interaction_at))).toEqual([
+  '2026-10-08 20:04:14','未知（未收到记录）','未知（未收到记录）',
  ]);
  const source=readFileSync(new URL('../src/App.vue',import.meta.url),'utf8');
  expect(source).not.toContain('user.last_seen_at');expect(source).not.toContain('user.last_data_received_at');

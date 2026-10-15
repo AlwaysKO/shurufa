@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import type pg from 'pg';
+import { parseDeviceUsageEvidence, saveDeviceUsageEvidence } from '../lib/deviceUsageEvidence.js';
+import { parseDeviceInteraction } from '../lib/deviceInteraction.js';
 import { savingFlags } from '../lib/deviceSaving.js';
 import { withStatisticsRetentionLock } from '../lib/statisticsRetentionLock.js';
 // 精确排除自身发行变体，不能误伤以相似前缀命名的其他应用。保留历史原始记录。
@@ -8,7 +10,7 @@ const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const text=(v:unknown,max:number)=>typeof v==='string' && v.trim().length>0 && v.length<=max && !v.includes('\0');
 function validRecords(records:unknown): records is Array<Record<string,unknown>> {
  const now=Date.now()+300000;
- return Array.isArray(records) && records.length>=1 && records.length<=200 && records.every(r=>r && typeof r==='object'
+ return Array.isArray(records) && records.length>=0 && records.length<=200 && records.every(r=>r && typeof r==='object'
   && typeof r.id==='string' && UUID.test(r.id) && ['usage','gap'].includes(r.kind)
   && Number.isSafeInteger(r.start_ms) && Number.isSafeInteger(r.end_ms) && r.start_ms>=946684800000 && r.end_ms>r.start_ms && r.end_ms<=now
   && text(r.end_reason,80) && (r.kind==='gap' ? r.package_name===null && r.app_name===null : text(r.package_name,255) && (r.app_name===null || text(r.app_name,256))));
@@ -16,21 +18,28 @@ function validRecords(records:unknown): records is Array<Record<string,unknown>>
 export function createMobileAppUsageRouter(pool:pg.Pool) {
  const router=Router();
  router.post('/app-usage/batch',async(req,res,next)=>{
-  const records=req.body?.records;
-  if(!req.get('X-Device-Id') || !validRecords(records)){res.status(400).json({error:'invalid app usage batch'});return;}
+  const records=req.body?.records === undefined ? [] : req.body.records;
+  const user=String(res.locals.userId).toLowerCase();
+  const evidence=parseDeviceUsageEvidence(req.body?.usage_evidence,user);
+  const interaction=parseDeviceInteraction(req.body ?? {});
+  if(!req.get('X-Device-Id') || !validRecords(records) || evidence===false || interaction===false || (!records.length && !evidence)){res.status(400).json({error:'invalid app usage batch'});return;}
   try {
-   const user=String(res.locals.userId).toLowerCase();
    // 在校验之后检查保存开关：关闭也不能把坏请求当作有效回执。
    const flags=await savingFlags(pool,[user]);
    await pool.query('INSERT INTO device(id) VALUES($1) ON CONFLICT(id) DO NOTHING',[user]);
-   if(flags.get(user)===false){res.json({ok:true,received:records.length,discarded:true});return;}
-   await withStatisticsRetentionLock(pool,'app-usage',user,db=>db.query(`INSERT INTO app_usage_segment(user_id,id,kind,package_name,app_name,start_ms,end_ms,end_reason)
+   const ack=(disposition:'saved'|'discarded')=>evidence ? {usage_evidence_ack:{version:evidence.version,disposition}} : {};
+   if(flags.get(user)===false){res.json({ok:true,received:records.length,discarded:true,...ack('discarded')});return;}
+   await withStatisticsRetentionLock(pool,'app-usage',user,async db=>{
+    if(records.length) await db.query(`INSERT INTO app_usage_segment(user_id,id,kind,package_name,app_name,start_ms,end_ms,end_reason)
      SELECT $1,r.id,r.kind,r.package_name,r.app_name,r.start_ms,r.end_ms,r.end_reason
      FROM jsonb_to_recordset($2::jsonb) AS r(id uuid,kind text,package_name text,app_name text,start_ms bigint,end_ms bigint,end_reason text)
      WHERE NOT EXISTS (SELECT 1 FROM retention_deleted_record d WHERE d.user_id=$1 AND d.dataset='app-usage'
        AND d.record_key=r.id::text AND d.source_version='')
-     ON CONFLICT(user_id,id) DO NOTHING`,[user,JSON.stringify(records)]));
-   res.json({ok:true,received:records.length});
+     ON CONFLICT(user_id,id) DO NOTHING`,[user,JSON.stringify(records)]);
+    if(evidence) await saveDeviceUsageEvidence(db,user,evidence);
+    if(interaction) await db.query(`UPDATE device SET last_interaction_at=$2,last_interaction_source=$3 WHERE id=$1 AND (last_interaction_at IS NULL OR last_interaction_at<$2::timestamptz)`,[user,interaction.at,interaction.source]);
+   });
+   res.json({ok:true,received:records.length,...ack('saved')});
   }catch(error){next(error);}
  });return router;
 }

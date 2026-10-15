@@ -52,7 +52,7 @@ class PersonalWordQueryIndexTest {
             store.writableDatabase.version = 12
         }
         withStore(name) { store ->
-            assertEquals(13, store.writableDatabase.version)
+            assertEquals(14, store.writableDatabase.version)
             assertReadingIndexes(store.writableDatabase)
             assertTrue(store.personalWords("25").any { it.text == "北京" })
             assertEquals(1, store.learned("25").single().count.toInt())

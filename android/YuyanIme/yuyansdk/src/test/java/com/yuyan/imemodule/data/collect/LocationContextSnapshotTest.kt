@@ -102,4 +102,40 @@ class LocationContextSnapshotTest {
         assertNull(malformed.wifi?.linkSpeedMbps)
     }
 
+    @Test fun `raw ellipsoid height survives absent vertical accuracy including API23`() {
+        val context = ApplicationProvider.getApplicationContext<Application>()
+        val location = Location("gps").apply { altitude = 0.0 }
+        val encoded = Json.parseToJsonElement(Json.encodeToString(LocationContext.serializer(), LocationContextSnapshot.capture(context, location, "balanced"))).jsonObject
+        assertEquals("0.0", encoded["raw_altitude_m"]?.jsonPrimitive?.content)
+        assertEquals("wgs84_ellipsoid", encoded["altitude_type"]?.jsonPrimitive?.content)
+        assertEquals("missing_vertical_accuracy", encoded["altitude_quality_reason"]?.jsonPrimitive?.content)
+        assertNull(encoded["altitude_m"])
+    }
+    @Test @Config(sdk = [26, 31]) fun `valid raw altitude and precision distinguish trusted zero from inaccurate height`() {
+        val context = ApplicationProvider.getApplicationContext<Application>()
+        val location = Location("gps").apply { altitude = 0.0; verticalAccuracyMeters = 5f }
+        fun encoded() = Json.parseToJsonElement(Json.encodeToString(LocationContext.serializer(), LocationContextSnapshot.capture(context, location, "balanced"))).jsonObject
+        assertEquals("accurate", encoded()["altitude_quality_reason"]?.jsonPrimitive?.content)
+        assertEquals("5.0", encoded()["vertical_accuracy_m"]?.jsonPrimitive?.content)
+        assertEquals("0.0", encoded()["altitude_m"]?.jsonPrimitive?.content)
+        location.verticalAccuracyMeters = 35f
+        assertEquals("poor_vertical_accuracy", encoded()["altitude_quality_reason"]?.jsonPrimitive?.content)
+        assertEquals("0.0", encoded()["raw_altitude_m"]?.jsonPrimitive?.content)
+        assertNull(encoded()["altitude_m"])
+        for (invalid in listOf(Double.NaN, Double.POSITIVE_INFINITY, -20001.0, 100001.0)) {
+            location.altitude = invalid
+            assertNull(encoded()["raw_altitude_m"])
+            assertEquals("invalid_altitude", encoded()["altitude_quality_reason"]?.jsonPrimitive?.content)
+        }
+        location.altitude = 0.0
+        for (invalidError in listOf(Float.NaN, Float.POSITIVE_INFINITY, -1f, 100001f)) {
+            location.verticalAccuracyMeters = invalidError
+            assertNull(encoded()["vertical_accuracy_m"])
+            assertEquals("0.0", encoded()["raw_altitude_m"]?.jsonPrimitive?.content)
+            assertEquals("poor_vertical_accuracy", encoded()["altitude_quality_reason"]?.jsonPrimitive?.content)
+        }
+        location.removeAltitude()
+        assertEquals("missing_altitude", encoded()["altitude_quality_reason"]?.jsonPrimitive?.content)
+    }
+
 }

@@ -4,8 +4,15 @@ import kotlin.math.*
 
 /** Sampling state is session-local: absence of observations is never evidence of a stay. */
 internal class BalancedLocationPolicy {
-    var intervalMs = MOVING_INTERVAL_MS
-        private set
+    private var samplingIntervalMs = MOVING_INTERVAL_MS
+    private var validatedWifi = false
+
+    // Geographical state remains independent of transport. Off Wi-Fi even a stay
+    // requests minute samples; the bounded 30-second movement confirmation remains.
+    val intervalMs: Long
+        get() = if (validatedWifi) samplingIntervalMs else minOf(samplingIntervalMs, MOVING_INTERVAL_MS)
+
+    fun updateNetwork(wifi: Boolean) { validatedWifi = wifi }
     private var anchor: LocationCandidate? = null
     private var previousTime = 0L
     private var observations = 0
@@ -15,13 +22,13 @@ internal class BalancedLocationPolicy {
     fun observe(nowMs: Long, candidate: LocationCandidate, speedMps: Float?, elapsedMs: Long = nowMs) {
         if (!jumpFilter.accept(nowMs, candidate, speedMps)) {
             if (jumpFilter.needsConfirmation) {
-                if (confirmationStartedAt == null && intervalMs == STATIONARY_INTERVAL_MS) confirmationStartedAt = elapsedMs
+                if (confirmationStartedAt == null && samplingIntervalMs == STATIONARY_INTERVAL_MS) confirmationStartedAt = elapsedMs
                 confirmationStartedAt?.let {
-                    intervalMs = if (elapsedMs - it in 0 until CONFIRMATION_WINDOW_MS) CONFIRMATION_INTERVAL_MS else STATIONARY_INTERVAL_MS
+                    samplingIntervalMs = if (elapsedMs - it in 0 until CONFIRMATION_WINDOW_MS) CONFIRMATION_INTERVAL_MS else STATIONARY_INTERVAL_MS
                 }
             } else if (confirmationStartedAt != null) {
                 confirmationStartedAt = null
-                intervalMs = STATIONARY_INTERVAL_MS
+                samplingIntervalMs = STATIONARY_INTERVAL_MS
             }
             return
         }
@@ -32,27 +39,27 @@ internal class BalancedLocationPolicy {
         val gap = candidate.locationTimeMs - previousTime
         previousTime = candidate.locationTimeMs
         val moving = speedMps?.let { it.isFinite() && it > 1.5f } == true ||
-            (oldAnchor != null && distance(oldAnchor, candidate) > max(50.0, oldAnchor.accuracyMeters + candidate.accuracyMeters.toDouble()))
+            (oldAnchor != null && distance(oldAnchor, candidate) > LocationUploadPolicy.movementThreshold(oldAnchor, candidate))
         if (oldAnchor == null || moving || gap > 600_000 ||
-            (!wasConfirming && intervalMs == MOVING_INTERVAL_MS && gap > 90_000)) {
+            (!wasConfirming && samplingIntervalMs == MOVING_INTERVAL_MS && gap > 90_000)) {
             anchor = candidate
             observations = 1
-            intervalMs = MOVING_INTERVAL_MS
+            samplingIntervalMs = MOVING_INTERVAL_MS
             return
         }
         observations++
         if (observations >= 4 && candidate.locationTimeMs - oldAnchor.locationTimeMs >= 120_000) {
-            intervalMs = STATIONARY_INTERVAL_MS
+            samplingIntervalMs = STATIONARY_INTERVAL_MS
         }
     }
 
     fun confirmationDelayMs(elapsedMs: Long): Long? = confirmationStartedAt
-        ?.takeIf { intervalMs == CONFIRMATION_INTERVAL_MS }
+        ?.takeIf { samplingIntervalMs == CONFIRMATION_INTERVAL_MS }
         ?.let { (CONFIRMATION_WINDOW_MS - (elapsedMs - it)).coerceIn(0, CONFIRMATION_WINDOW_MS) }
 
     /** Expiry changes sampling only; a missing fix cannot confirm movement or create a report. */
     fun endConfirmation() {
-        if (confirmationStartedAt != null) intervalMs = STATIONARY_INTERVAL_MS
+        if (confirmationStartedAt != null) samplingIntervalMs = STATIONARY_INTERVAL_MS
     }
 
     private fun distance(a: LocationCandidate, b: LocationCandidate): Double {

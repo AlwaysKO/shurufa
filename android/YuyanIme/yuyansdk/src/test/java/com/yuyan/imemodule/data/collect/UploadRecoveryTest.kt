@@ -57,4 +57,66 @@ class UploadRecoveryTest {
         assertTrue(scheduler.allPendingJobs.isEmpty())
     }
 
+    @Test fun `cancel followed by stale completion cannot recreate work`() {
+        consent(true); UploadRecovery.wake(app)
+        val running=scheduler.allPendingJobs.single()
+        UploadRecovery.started(running.extras.getString("token"))
+        UploadRecovery.wake(app,60_000L)
+        UploadRecovery.cancel(app)
+        UploadRecovery.finished(app)
+        UploadRecovery.wake(app,120_000L)
+        assertEquals(1,scheduler.allPendingJobs.size)
+    }
+    @Test fun `stale finished callback cannot stop a newer running token`() {
+        consent(true);UploadRecovery.wake(app)
+        val old=scheduler.allPendingJobs.single()
+        UploadRecovery.started(old.extras.getString("token"))
+        UploadRecovery.cancel(app);UploadRecovery.wake(app)
+        val current=scheduler.allPendingJobs.single()
+        UploadRecovery.started(current.extras.getString("token"))
+        UploadRecovery.finished(app,old.extras.getString("token"))
+        UploadRecovery.wake(app,60_000L)
+        assertSame(current,scheduler.getPendingJob(current.id))
+        scheduler.cancel(current.id)
+        UploadRecovery.finished(app,current.extras.getString("token"))
+        assertEquals(60_000L,scheduler.getPendingJob(current.id)!!.minLatencyMillis)
+    }
+    @Test fun `multiple categories keep earliest appointment and repeated signals cannot postpone it`() {
+        consent(true);UploadRecovery.cancel(app)
+        UploadRecovery.wake(app,240_000L)
+        UploadRecovery.wake(app,60_000L)
+        val earliest=scheduler.allPendingJobs.single()
+        UploadRecovery.wake(app,180_000L)
+        assertSame(earliest,scheduler.allPendingJobs.single())
+        assertEquals(60_000L,earliest.minLatencyMillis)
+    }
+
+    @Test fun `stale system stop cannot cancel newly started service work`() {
+        consent(true)
+        val controller=org.robolectric.Robolectric.buildService(UploadRecoveryJobService::class.java).create()
+        val service=controller.get()
+        val parent=kotlinx.coroutines.SupervisorJob()
+        val paused=object:kotlinx.coroutines.CoroutineDispatcher() {
+            override fun dispatch(context:kotlin.coroutines.CoroutineContext,block:Runnable)=Unit
+        }
+        org.robolectric.util.ReflectionHelpers.setField(service,"scope",kotlinx.coroutines.CoroutineScope(parent+paused))
+        fun params(token:String):android.app.job.JobParameters {
+            val result=org.robolectric.shadow.api.Shadow.newInstanceOf(android.app.job.JobParameters::class.java)
+            org.robolectric.util.ReflectionHelpers.setField(result,"extras",android.os.PersistableBundle().apply{putString("token",token)})
+            return result
+        }
+        try {
+            val old=params("old");val current=params("current")
+            assertTrue(service.onStartJob(old))
+            val replaced=org.robolectric.util.ReflectionHelpers.getField<kotlinx.coroutines.Job>(service,"job")
+            assertTrue(service.onStartJob(current))
+            assertTrue("Starting B must retire the old A coroutine",replaced.isCancelled)
+            val running=org.robolectric.util.ReflectionHelpers.getField<kotlinx.coroutines.Job>(service,"job")
+            assertFalse(service.onStopJob(old))
+            assertTrue("Stale stop must not cancel the new coroutine",running.isActive)
+            assertTrue(service.onStopJob(params("current")))
+            assertTrue(running.isCancelled)
+        } finally { parent.cancel();controller.destroy() }
+    }
+
 }

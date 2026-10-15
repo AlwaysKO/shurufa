@@ -33,8 +33,7 @@ internal class LocationJumpFilter {
         val interval = elapsed(old, candidate)
         if (interval <= 0) return false
         val distance = LocationUploadPolicy.distanceMeters(old, candidate)
-        val uncertainty = old.accuracyMeters.toDouble() + candidate.accuracyMeters
-        if (distance <= max(50.0, uncertainty)) return acceptPosition(candidate, moveAnchor = false)
+        if (distance <= LocationUploadPolicy.movementThreshold(old, candidate)) return acceptPosition(candidate, moveAnchor = false)
 
         // Only this fix's credible moving speed can support its displacement. Missing
         // observations or an earlier speed are not evidence that motion continued.

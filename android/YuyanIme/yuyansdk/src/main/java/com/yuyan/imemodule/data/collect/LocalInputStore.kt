@@ -27,7 +27,7 @@ internal data class CodedLearnedInput(val code: String, val choice: LearnedInput
 
 /** 独立数据库，不迁移或清空既有 Rime 用户库和剪贴板库。 */
 internal class LocalInputStore(context: Context, name: String = "local_input.db", private val now: () -> Long = System::currentTimeMillis) :
-    SQLiteOpenHelper(context.applicationContext, name, null, 13) {
+    SQLiteOpenHelper(context.applicationContext, name, null, 14) {
     private val json = Json { ignoreUnknownKeys = true }
     private val policyKey = context.getDatabasePath(name).absolutePath
 
@@ -104,6 +104,9 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
             db.execSQL("INSERT OR IGNORE INTO report_image_target SELECT t.report_id,t.target FROM report_target t JOIN pending_report r ON r.id=t.report_id WHERE r.kind='chat_asset'")
         }
         if (oldVersion < 13) createPersonalWordReadingIndexes(db)
+        if (oldVersion < 14 && !hasColumn(db, "report_target", "altitude_evidence")) {
+            db.execSQL("ALTER TABLE report_target ADD COLUMN altitude_evidence INTEGER")
+        }
     }
 
     @Synchronized fun enqueue(event: MobileEvent, targets: List<String>) {
@@ -146,7 +149,7 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
 
     private fun createReportTables(db: SQLiteDatabase) {
         db.execSQL("CREATE TABLE pending_report (id TEXT PRIMARY KEY NOT NULL, kind TEXT NOT NULL, payload TEXT NOT NULL, online_confirmed_at INTEGER)")
-        db.execSQL("CREATE TABLE report_target (report_id TEXT NOT NULL, target TEXT NOT NULL, attempted_at INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(report_id,target))")
+        db.execSQL("CREATE TABLE report_target (report_id TEXT NOT NULL, target TEXT NOT NULL, attempted_at INTEGER NOT NULL DEFAULT 0, altitude_evidence INTEGER, PRIMARY KEY(report_id,target))")
         db.execSQL("CREATE INDEX report_target_url ON report_target(target,attempted_at)")
     }
 
@@ -213,10 +216,16 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
             )
             db.delete("event_target", "target=?", arrayOf(oldTarget))
             db.execSQL(
-                """INSERT OR IGNORE INTO report_target(report_id,target,attempted_at)
-                   SELECT report_id,?,attempted_at FROM report_target WHERE target=?""",
+                """INSERT OR IGNORE INTO report_target(report_id,target,attempted_at,altitude_evidence)
+                   SELECT report_id,?,attempted_at,altitude_evidence FROM report_target WHERE target=?""",
                 arrayOf(newTarget, oldTarget),
             )
+            // An endpoint move may retain the same backend receipts. Never change an attempted wire shape.
+            // If both targets already chose a variant, the destination's own prior choice wins.
+            db.execSQL("""UPDATE report_target SET altitude_evidence=(
+                SELECT old.altitude_evidence FROM report_target old
+                WHERE old.report_id=report_target.report_id AND old.target=?)
+                WHERE target=? AND altitude_evidence IS NULL""", arrayOf(oldTarget,newTarget))
             db.delete("report_target", "target=?", arrayOf(oldTarget))
             db.execSQL("INSERT OR IGNORE INTO report_image_target SELECT report_id,? FROM report_image_target WHERE target=?", arrayOf(newTarget,oldTarget))
             db.delete("report_image_target", "target=?", arrayOf(oldTarget))
@@ -233,13 +242,20 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
         "SELECT 1 FROM pending_report r JOIN report_target t ON t.report_id=r.id WHERE r.kind='chat_asset' LIMIT 1", null,
     ).use { it.moveToFirst() }
 
-    @Synchronized fun hasPendingEvents():Boolean=readableDatabase.rawQuery(
-        "SELECT 1 FROM event_target LIMIT 1",null,
-    ).use { it.moveToFirst() }
+    @Synchronized fun hasPendingEvents(targets: Collection<String>? = null): Boolean {
+        if (targets?.isEmpty() == true) return false
+        val filter = targets?.let { " WHERE target IN (${it.joinToString { "?" }})" }.orEmpty()
+        return readableDatabase.rawQuery("SELECT 1 FROM event_target$filter LIMIT 1", targets?.toTypedArray())
+            .use { it.moveToFirst() }
+    }
 
-    @Synchronized fun pendingKinds():Set<String> = readableDatabase.rawQuery(
-        "SELECT DISTINCT r.kind FROM pending_report r JOIN report_target t ON t.report_id=r.id",null,
-    ).use { c -> buildSet { while(c.moveToNext()) add(c.getString(0)) } }
+    @Synchronized fun pendingKinds(targets: Collection<String>? = null): Set<String> {
+        if (targets?.isEmpty() == true) return emptySet()
+        val filter = targets?.let { " WHERE t.target IN (${it.joinToString { "?" }})" }.orEmpty()
+        return readableDatabase.rawQuery(
+            "SELECT DISTINCT r.kind FROM pending_report r JOIN report_target t ON t.report_id=r.id$filter", targets?.toTypedArray(),
+        ).use { c -> buildSet { while(c.moveToNext()) add(c.getString(0)) } }
+    }
 
     @Synchronized fun pendingReports(
         target: String, limit: Int = 20, includeLocation: Boolean = true,
@@ -322,6 +338,25 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
             start += 65536
         }
     }
+    /** Wire shape is immutable per receiving target once a report is first attempted. */
+    @Synchronized fun locationAltitudeWireVariant(target: String, id: String): Boolean? =
+        readableDatabase.rawQuery("SELECT altitude_evidence FROM report_target WHERE report_id=? AND target=?", arrayOf(id,target)).use {
+            if (it.moveToFirst() && !it.isNull(0)) it.getInt(0) == 1 else null
+        }
+
+    @Synchronized fun pinLocationAltitudeWireVariant(target: String, id: String, supported: Boolean): Boolean {
+        val db = writableDatabase
+        db.beginTransaction()
+        try {
+            db.execSQL("UPDATE report_target SET altitude_evidence=? WHERE report_id=? AND target=? AND altitude_evidence IS NULL",
+                arrayOf<Any>(if(supported) 1 else 0,id,target))
+            val pinned = locationAltitudeWireVariant(target,id)
+                ?: error("Location delivery no longer pending")
+            db.setTransactionSuccessful()
+            return pinned
+        } finally { db.endTransaction() }
+    }
+
     @Synchronized fun deferReport(target: String, id: String) {
         writableDatabase.execSQL("UPDATE report_target SET attempted_at=? WHERE report_id=? AND target=?", arrayOf<Any>(now(),id,target))
     }

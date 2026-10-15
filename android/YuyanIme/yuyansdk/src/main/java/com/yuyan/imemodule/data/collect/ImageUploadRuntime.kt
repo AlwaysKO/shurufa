@@ -114,7 +114,7 @@ object ImageUploadRuntime {
     internal fun prepareChatCall(context: Context, target: String, http: OkHttpClient, request: Request, allowed: () -> Boolean = { true }, preserveCallTimeout: Boolean = false): Call? {
         observe(context)
         val image = request.url.encodedPath in setOf("/api/v1/mobile/chat/assets", "/api/v1/mobile/page-captures")
-        val anyNetwork = request.url.encodedPath in setOf("/api/v1/mobile/chat/messages/batch", "/api/v1/mobile/navigation-records")
+        val anyNetwork = request.url.encodedPath in setOf("/api/v1/mobile/chat/messages/batch", "/api/v1/mobile/navigation-records", "/api/v1/mobile/video-visits")
         val tracker = if(image) imageCancellations else cancellations
         val token=tracker.token()
         val ready = { allowed() && when {

@@ -36,6 +36,10 @@ internal data class LocationContext(
     @SerialName("is_interactive") val isInteractive: Boolean? = null,
     @SerialName("power_save") val powerSave: Boolean? = null,
     @SerialName("altitude_m") val altitudeM: Double? = null,
+    @SerialName("raw_altitude_m") val rawAltitudeM: Double? = null,
+    @SerialName("vertical_accuracy_m") val verticalAccuracyM: Float? = null,
+    @SerialName("altitude_type") val altitudeType: String? = null,
+    @SerialName("altitude_quality_reason") val altitudeQualityReason: String? = null,
     @SerialName("bearing_deg") val bearingDeg: Float? = null,
     @SerialName("speed_accuracy_mps") val speedAccuracyMps: Float? = null,
     @SerialName("raw_speed_mps") val rawSpeedMps: Float? = null,
@@ -56,6 +60,16 @@ internal data class ConnectedWifi(
 internal object LocationContextSnapshot {
     fun capture(context: Context, location: Location, mode: String, nowMs: Long = System.currentTimeMillis()): LocationContext {
         val speed = LocationSpeedQuality.from(location)
+        val rawAltitude = location.altitude.takeIf { location.hasAltitude() && it.isFinite() && it in -20000.0..100000.0 }
+        val verticalAccuracy = if (Build.VERSION.SDK_INT >= 26 && location.hasVerticalAccuracy())
+            location.verticalAccuracyMeters.takeIf { it.isFinite() && it in 0f..100000f } else null
+        val altitudeReason = when {
+            !location.hasAltitude() -> "missing_altitude"
+            rawAltitude == null -> "invalid_altitude"
+            Build.VERSION.SDK_INT < 26 || !location.hasVerticalAccuracy() -> "missing_vertical_accuracy"
+            verticalAccuracy == null || verticalAccuracy > 20f -> "poor_vertical_accuracy"
+            else -> "accurate"
+        }
         val battery = runCatching { context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED)) }.getOrNull()
         val percent = battery?.let {
             val level = it.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
@@ -78,6 +92,10 @@ internal object LocationContextSnapshot {
             isInteractive = runCatching { power?.isInteractive }.getOrNull(),
             powerSave = runCatching { power?.isPowerSaveMode }.getOrNull(),
             altitudeM = verifiedEllipsoidAltitude(location),
+            rawAltitudeM = rawAltitude,
+            verticalAccuracyM = verticalAccuracy,
+            altitudeType = if (rawAltitude != null) "wgs84_ellipsoid" else null,
+            altitudeQualityReason = altitudeReason,
             bearingDeg = location.bearing.takeIf { location.hasBearing() && it.isFinite() && it >= 0 && it < 360 },
             speedAccuracyMps = if (Build.VERSION.SDK_INT >= 26) location.speedAccuracyMetersPerSecond
                 .takeIf { location.hasSpeedAccuracy() && it.isFinite() && it in 0f..10000f } else null,

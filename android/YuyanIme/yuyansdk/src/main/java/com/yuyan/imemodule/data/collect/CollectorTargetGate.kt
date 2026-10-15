@@ -19,6 +19,15 @@ internal class CollectorTargetGate(
 ) {
     private val onlineTarget = onlineTarget.trimEnd('/')
 
+    /** 只检查当前网络/USB资格，不做健康 HTTP，也不消费任何批次资格。 */
+    fun canAttempt(target: String): Boolean {
+        val normalized = target.trimEnd('/')
+        val online = onlineAvailable()
+        if (normalized == onlineTarget && !ImageUploadSchedule.isUsbTarget(normalized)) return online
+        if (!online && !ImageUploadSchedule.isUsbTarget(normalized)) return false
+        return usbConnected()
+    }
+
     fun canUpload(target: String): Boolean {
         val normalized = target.trimEnd('/')
         val online = onlineAvailable()

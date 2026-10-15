@@ -49,6 +49,41 @@ class CollectorFlushSignalTest {
         job.cancel();signal.wake();clock.advanceBy(1_800_000)
         assertFalse(continued);assertTrue(job.isCancelled)
     }
+    @Test fun `普通待传按真实剩余到期待机而不是每三十秒唤醒`() {
+        val clock=ManualDelay()
+        val job=CoroutineScope(clock).launch{CollectorFlushSignal().awaitNext(true,false,240_000L)}
+        clock.advanceBy(239_999);assertFalse(job.isCompleted)
+        clock.advanceBy(1);assertTrue(job.isCompleted)
+    }
+    @Test fun `新事件可以打断五分钟批次等待`() {
+        val clock=ManualDelay();val signal=CollectorFlushSignal();var event=false
+        val job=CoroutineScope(clock).launch{event=signal.awaitNext(true,false,300_000L)}
+        clock.advanceBy(60_000);signal.wake();assertTrue(job.isCompleted);assertTrue(event)
+    }
+    @Test fun `队列查询失败不会结束循环或每五秒自动重试`() {
+        val clock=ManualDelay();val signal=CollectorFlushSignal();var attempts=0
+        val errors=mutableListOf<Throwable>()
+        val job=CoroutineScope(clock+CoroutineExceptionHandler { _,e -> errors+=e }).launch {
+            while(true) signal.guardedCycle { attempts++;error("storage unavailable") }
+        }
+        clock.advanceBy(1_799_999)
+        assertFalse(job.isCompleted);assertEquals(1,attempts);assertTrue(errors.isEmpty())
+        clock.advanceBy(1);assertEquals(2,attempts)
+        signal.wake();assertEquals(3,attempts)
+        job.cancel()
+    }
+    @Test fun `轮询保护必须传播取消而不是等待三十分钟`() {
+        val clock=ManualDelay();val job=CoroutineScope(clock).launch {
+            CollectorFlushSignal().guardedCycle { throw CancellationException("stopped") }
+        }
+        assertTrue(job.isCancelled)
+    }
+    @Test fun `真实轮询入口在保护内读取待传元数据`() {
+        val source=java.io.File("src/main/java/com/yuyan/imemodule/data/collect/DataCollector.kt").readText()
+        val loop=source.substringAfter("flushJob = scope.launch").substringBefore("ensureLocationUpdates(app)")
+        assertTrue(loop.contains("flushSignal.guardedCycle {"))
+        assertTrue(loop.indexOf("flushSignal.guardedCycle {") < loop.indexOf("nextUploadDelay(app)"))
+    }
     private class ManualDelay:CoroutineDispatcher(),Delay {
         var now=0L
         private val tasks=mutableListOf<Pair<Long,Runnable>>()

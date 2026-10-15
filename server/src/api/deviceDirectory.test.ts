@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { newDb } from 'pg-mem';
 import type pg from 'pg';
 import request from 'supertest';
@@ -27,6 +28,7 @@ beforeEach(async () => {
     dashboard_name TEXT, tags TEXT, last_interaction_at TIMESTAMPTZ, last_interaction_source TEXT,
     first_seen_at TIMESTAMPTZ DEFAULT NOW(), last_seen_at TIMESTAMPTZ DEFAULT NOW()
   )`);
+  await pool.query(readFileSync(new URL('../../migrations/050_device_usage_evidence.sql',import.meta.url),'utf8'));
   for (const [index, id] of ids.entries()) {
     await pool.query(`INSERT INTO device(id,name,platform,model,brand,last_seen_at)
       VALUES($1,$2,'android',$3,$4,$5)`, [
@@ -37,12 +39,22 @@ beforeEach(async () => {
 });
 
 describe('dashboard user directory', () => {
-  it('按最后人为操作排序，无证据为null，不使用后台联系时间代替', async () => {
+  it('按最近使用证据排序，交互只作补充，缺少使用证据不回填联系时间', async () => {
     await pool.query("UPDATE device SET last_interaction_at=$2,last_interaction_source='touch' WHERE id=$1", [ids[0], '2026-10-09T16:00:00Z']);
     const response = await (await authenticatedRequest(createApp(pool), pool)).get('/api/v1/dashboard/users');
     expect(response.status).toBe(200);
     expect(response.body.users[0]).toMatchObject({ id: ids[0], last_interaction_at: '2026-10-09T16:00:00.000Z', last_interaction_source: 'touch' });
     expect(response.body.users[1].last_interaction_at).toBeNull();
+    expect(response.body.users[0].latest_usage_at).toBeNull();
+    expect(response.body.users[0].last_screen_off_at).toBeNull();
+  });
+
+  it('应用使用主时间优先于交互时间和联系时间，分项证据返回目录', async () => {
+    await pool.query("UPDATE device SET last_interaction_at='2026-10-15T10:00:00Z' WHERE id=$1",[ids[0]]);
+    await pool.query("UPDATE device SET latest_usage_at='2026-10-15T02:10:00Z',latest_usage_source='usage_screen_off',last_screen_off_at='2026-10-15T02:10:00Z',last_screen_off_source='usage_screen_off' WHERE id=$1",[ids[24]]);
+    const response=await (await authenticatedRequest(createApp(pool),pool)).get('/api/v1/dashboard/users');
+    expect(response.status).toBe(200);
+    expect(response.body.users[0]).toMatchObject({id:ids[24],latest_usage_at:'2026-10-15T02:10:00.000Z',latest_usage_source:'usage_screen_off',last_screen_off_at:'2026-10-15T02:10:00.000Z'});
   });
 
   it('保留回环地址识别工具', () => {

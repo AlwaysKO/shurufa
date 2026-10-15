@@ -15,9 +15,11 @@ internal class CollectorSyncCadence(
         lastStarted=current
         return true
     }
-    @Synchronized fun wakeDelay(wifi: Boolean): Long {
-        val elapsed=lastStarted?.let { now()-it } ?: return 5_000L
+    /** 精确只读到期查询；不消费上传资格，也不因切换网络重置时钟。 */
+    @Synchronized fun remainingDelay(wifi: Boolean): Long {
+        val elapsed=lastStarted?.let { now()-it } ?: return 0L
         val interval=if(wifi)wifiIntervalMs else mobileIntervalMs
-        return if(elapsed<0)5_000L else (interval-elapsed).coerceAtLeast(5_000L)
+        return if(elapsed<0)0L else (interval-elapsed).coerceAtLeast(0L)
     }
+    @Synchronized fun wakeDelay(wifi: Boolean): Long = remainingDelay(wifi).coerceAtLeast(5_000L)
 }

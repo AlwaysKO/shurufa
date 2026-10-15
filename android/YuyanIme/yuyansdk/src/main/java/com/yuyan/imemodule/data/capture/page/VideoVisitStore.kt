@@ -13,13 +13,13 @@ import java.io.File
  * completed 是待交接记录，尚无远端回执时不删除。网络交接由集成层负责。
  */
 internal class VideoVisitStore(context: Context) : SQLiteOpenHelper(
-    context.applicationContext, File(context.noBackupFilesDir, "video_visits.db").absolutePath, null, 2,
+    context.applicationContext, File(context.noBackupFilesDir, "video_visits.db").absolutePath, null, 3,
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL("CREATE TABLE active (id INTEGER PRIMARY KEY CHECK(id=1), payload TEXT NOT NULL)")
-        db.execSQL("CREATE TABLE completed (id TEXT PRIMARY KEY, entered_at INTEGER NOT NULL, payload TEXT NOT NULL, retry_after INTEGER NOT NULL DEFAULT 0, platform TEXT NOT NULL)")
+        db.execSQL("CREATE TABLE completed (id TEXT PRIMARY KEY, entered_at INTEGER NOT NULL, payload TEXT NOT NULL, retry_after INTEGER NOT NULL DEFAULT 0, platform TEXT NOT NULL, first_image_id TEXT, last_image_id TEXT)")
         db.execSQL("CREATE INDEX completed_order ON completed(entered_at,id)")
         db.execSQL("CREATE INDEX completed_delivery ON completed(platform,retry_after,entered_at,id)")
     }
@@ -35,6 +35,18 @@ internal class VideoVisitStore(context: Context) : SQLiteOpenHelper(
                 }
             }
             db.execSQL("CREATE INDEX completed_delivery ON completed(platform,retry_after,entered_at,id)")
+        }
+        if (oldVersion < 3) {
+            db.execSQL("ALTER TABLE completed ADD COLUMN first_image_id TEXT")
+            db.execSQL("ALTER TABLE completed ADD COLUMN last_image_id TEXT")
+            // 仅一次迁移解码原始 payload；保留其字节、重试时间与所有待传行。
+            db.rawQuery("SELECT id,payload FROM completed", null).use { cursor ->
+                while (cursor.moveToNext()) {
+                    val visit = json.decodeFromString<VideoVisit>(cursor.getString(1))
+                    db.execSQL("UPDATE completed SET first_image_id=?,last_image_id=? WHERE id=?",
+                        arrayOf<Any?>(visit.firstImage, visit.lastImage, cursor.getString(0)))
+                }
+            }
         }
     }
 
@@ -75,15 +87,44 @@ internal class VideoVisitStore(context: Context) : SQLiteOpenHelper(
     ).use { cursor -> buildList { while (cursor.moveToNext()) add(json.decodeFromString<VideoVisit>(cursor.getString(0))) } }
 
     /** SQL 单次有界读取；回拨后不让未来退避时间无限阻塞。 */
-    fun due(now: Long, limit: Int = 20, platforms: Set<String> = setOf("wechat", "douyin")): List<VideoVisit> {
+    fun due(now: Long, limit: Int = 20, platforms: Set<String> = setOf("wechat", "douyin"), blockedImageIds: Set<String> = emptySet()): List<VideoVisit> {
         val selected = platforms.intersect(setOf("wechat", "douyin")).toList()
         if (selected.isEmpty()) return emptyList()
         val placeholders = selected.joinToString(",") { "?" }
+        val (dependencyClause, dependencyArgs) = dependencyFilter(blockedImageIds)
         return readableDatabase.rawQuery(
-            "SELECT payload FROM completed WHERE platform IN ($placeholders) AND (retry_after<=? OR retry_after>?) " +
-                "ORDER BY retry_after,entered_at,id LIMIT ?",
-            (selected + listOf(now.toString(), (now + RETRY_MILLIS).toString(), limit.coerceIn(0, 200).toString())).toTypedArray(),
+            "SELECT payload FROM completed WHERE platform IN ($placeholders) AND (retry_after<=? OR retry_after>?)" +
+                dependencyClause + " ORDER BY retry_after,entered_at,id LIMIT ?",
+            (selected + listOf(now.toString(), (now + RETRY_MILLIS).toString()) + dependencyArgs +
+                limit.coerceIn(0, 200).toString()).toTypedArray(),
         ).use { cursor -> buildList { while (cursor.moveToNext()) add(json.decodeFromString<VideoVisit>(cursor.getString(0))) } }
+    }
+
+    /** 有界索引查询，仅返回启用平台最早重试时间，不读取或确认 payload。 */
+    fun nextDeliveryDelay(now: Long, platforms: Set<String>, blockedImageIds: Set<String> = emptySet()): Long? {
+        val selected = platforms.intersect(setOf("wechat", "douyin")).toList()
+        if (selected.isEmpty()) return null
+        val placeholders = selected.joinToString(",") { "?" }
+        val (dependencyClause, dependencyArgs) = dependencyFilter(blockedImageIds)
+        return readableDatabase.rawQuery(
+            "SELECT retry_after FROM completed WHERE platform IN ($placeholders)" + dependencyClause + " ORDER BY retry_after LIMIT 1",
+            (selected + dependencyArgs).toTypedArray(),
+        ).use { cursor ->
+            if (!cursor.moveToFirst()) null else {
+                val remaining = cursor.getLong(0) - now
+                if (remaining > RETRY_MILLIS) 0L else remaining.coerceAtLeast(0L)
+            }
+        }
+    }
+
+    /** PageCaptureOutbox 最多100条，仅按引用列过滤，不解析积压 payload、不读图片。 */
+    private fun dependencyFilter(blockedImageIds: Set<String>): Pair<String, List<String>> {
+        if (blockedImageIds.isEmpty()) return "" to emptyList()
+        require(blockedImageIds.size <= 100)
+        val ids = blockedImageIds.toList()
+        val placeholders = ids.joinToString(",") { "?" }
+        return (" AND (first_image_id IS NULL OR first_image_id NOT IN ($placeholders))" +
+            " AND (last_image_id IS NULL OR last_image_id NOT IN ($placeholders))") to (ids + ids)
     }
 
     fun defer(visit: VideoVisit, now: Long) {
@@ -108,8 +149,8 @@ internal class VideoVisitStore(context: Context) : SQLiteOpenHelper(
 
     private fun saveCompleted(db: SQLiteDatabase, visit: VideoVisit) {
         check(visit.reason != null)
-        db.execSQL("INSERT INTO completed(id,entered_at,payload,platform) VALUES(?,?,?,?)",
-            arrayOf<Any>(visit.id, visit.enteredAt, json.encodeToString(visit), visit.platform))
+        db.execSQL("INSERT INTO completed(id,entered_at,payload,platform,first_image_id,last_image_id) VALUES(?,?,?,?,?,?)",
+            arrayOf<Any?>(visit.id, visit.enteredAt, json.encodeToString(visit), visit.platform, visit.firstImage, visit.lastImage))
     }
 
     private fun <T> transaction(block: (SQLiteDatabase, VideoVisitTracker) -> T): T {

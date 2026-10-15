@@ -1,3 +1,4 @@
+import { usageEvidenceColumns } from '../lib/deviceUsageEvidence.js';
 import { createStatisticsRetentionRouter } from './statisticsRetention.js';
 import { activityConditions, CONTENT_TYPE_SQL, BEHAVIOR_TYPES } from './activityQuery.js';
 import { createActivityRetentionRouter } from './activityRetention.js';
@@ -421,9 +422,9 @@ export function createDashboardRouter(pool: pg.Pool): Router {
         pool.query(
           `SELECT id, dashboard_name, tags, name, platform, model, os_version, app_version,
                   brand, sdk_int, screen_resolution, locale, region, hardware, rom_version, ram_mb,
-                  last_seen_at, last_interaction_at, last_interaction_source
+                  last_seen_at, last_interaction_at, last_interaction_source, ${usageEvidenceColumns}
            FROM device WHERE ${where}
-           ORDER BY last_interaction_at DESC NULLS LAST, id
+           ORDER BY latest_usage_at DESC NULLS LAST, id
            LIMIT $3 OFFSET $4`,
           [q, id, pageSize, (page - 1) * pageSize],
         ),
@@ -455,7 +456,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
          WHERE id::text = $1
          RETURNING id, dashboard_name, tags, name, platform, model, os_version, app_version,
                    brand, sdk_int, screen_resolution, locale, region, hardware, rom_version, ram_mb,
-                   last_seen_at, last_interaction_at, last_interaction_source`,
+                   last_seen_at, last_interaction_at, last_interaction_source, ${usageEvidenceColumns}`,
         [req.params.id, dashboardName, tags],
       );
       if (!result.rows[0]) {
@@ -474,7 +475,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
       const result = await pool.query(
         `SELECT id, dashboard_name, tags, name, platform, model, os_version, app_version,
                 brand, sdk_int, screen_resolution, locale, region, hardware, rom_version, ram_mb,
-                last_seen_at, last_interaction_at, last_interaction_source
+                last_seen_at, last_interaction_at, last_interaction_source, ${usageEvidenceColumns}
          FROM device WHERE id = $1 ORDER BY last_seen_at DESC`,
         [res.locals.userId],
       );

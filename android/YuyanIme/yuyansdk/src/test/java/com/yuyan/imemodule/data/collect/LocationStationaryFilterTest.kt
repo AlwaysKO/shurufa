@@ -14,6 +14,30 @@ class LocationStationaryFilterTest {
         return filter.accept(candidate.locationTimeMs, candidate, speed)
     }
 
+    @Test fun `precise walking twenty metre steps are confirmed below fifty metres`() {
+        val filter = LocationJumpFilter()
+        val first = point(0, 0.0, 5f, "gps")
+        val last = UploadedLocation(first.latitude, first.longitude, 5f, start, start, "gps")
+        assertTrue(filter.accept(start, first, null))
+        assertFalse("one short excursion is not confirmed", observe(filter, 60, 20.0, 5f, "gps"))
+        val next = point(120, 40.0, 5f, "gps")
+        assertTrue(filter.accept(next.locationTimeMs, next, null))
+        assertTrue("confirmed walking must survive upload threshold",
+            LocationUploadPolicy.shouldUpload(next.locationTimeMs, next, last))
+    }
+
+    @Test fun `precise pick up put down noise stays inside fixed anchor`() {
+        val filter = LocationJumpFilter()
+        val first = point(0, 0.0, 5f, "gps")
+        val last = UploadedLocation(first.latitude, first.longitude, 5f, start, start, "gps")
+        filter.accept(start, first, null)
+        listOf(2.0, -5.0, 4.0, 0.0).forEachIndexed { i, north ->
+            val p = point((i+1)*60L, north, 5f, "gps")
+            assertTrue(filter.accept(p.locationTimeMs, p, null))
+            assertFalse(LocationUploadPolicy.shouldUpload(p.locationTimeMs, p, last))
+        }
+    }
+
     @Test fun `alternating network drift has no movement reports after the first point`() {
         val filter = LocationJumpFilter()
         var last: UploadedLocation? = null
@@ -30,7 +54,7 @@ class LocationStationaryFilterTest {
         assertEquals(1, reports)
     }
 
-    @Test fun `movement is confirmed during cooldown and reported at five minutes`() {
+    @Test fun `movement is confirmed during cooldown and enqueued after one minute`() {
         val filter = LocationJumpFilter()
         val first = point(0)
         val last = UploadedLocation(first.latitude, first.longitude, first.accuracyMeters,
@@ -39,7 +63,7 @@ class LocationStationaryFilterTest {
         assertFalse(observe(filter, 30, 90.0))
         val confirmed = point(60, 95.0)
         assertTrue(filter.accept(confirmed.locationTimeMs, confirmed, null, last))
-        assertFalse(LocationUploadPolicy.shouldUpload(confirmed.locationTimeMs, confirmed, last))
+        assertTrue(LocationUploadPolicy.shouldUpload(confirmed.locationTimeMs, confirmed, last))
         val next = point(300, 98.0)
         assertTrue(filter.accept(next.locationTimeMs, next, null, last))
         assertTrue(LocationUploadPolicy.shouldUpload(next.locationTimeMs, next, last))

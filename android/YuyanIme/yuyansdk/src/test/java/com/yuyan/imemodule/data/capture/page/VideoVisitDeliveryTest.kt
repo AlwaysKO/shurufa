@@ -29,6 +29,40 @@ class VideoVisitDeliveryTest {
     }
     private fun ack(v: VideoVisit, discard: Boolean = false) = PageUploadResponse(200,
         JSONObject().put("ok", true).put("record", videoVisitPayload(v)).apply { if(discard) put("discarded", true) }.toString())
+    @Test fun startedRequestKeepsReceiptAfterStartBudgetExpires() = runBlocking {
+        VideoVisitStore(app).use { store ->
+            repeat(3) { finished(store) }
+            var elapsed=0L
+            val result=VideoVisitDelivery(store,{ now },{ true },
+                { if(elapsed < 20_000L) Closeable {} else null },
+                { row, _ -> elapsed+=15_000L;ack(row) }).runOnce(limit=100)
+            assertEquals(2,result.saved)
+            assertEquals(1,store.completed().size)
+        }
+        val source=File("src/main/java/com/yuyan/imemodule/data/capture/page/VideoVisitSync.kt").readText()
+        val current=source.substringAfter("fun current()").substringBefore("VideoVisitStore(app)")
+        assertFalse("The receipt guard must not expire an already started request",current.contains("elapsedRealtime() < deadline"))
+    }
+    @Test fun fiveMinuteBatchDrainsMoreThanTwoButNeverAnUnboundedBacklog() = runBlocking {
+        VideoVisitStore(app).use { s ->
+            repeat(105) { finished(s) }
+            val result=VideoVisitDelivery(s,{ now },{ true },{ Closeable {} },{ row, _ -> ack(row) }).runOnce(limit=100)
+            assertEquals(100,result.saved)
+            assertEquals(5,s.completed().size)
+        }
+    }
+    @Test fun pendingDelayRespectsDeferredRowsAndDisabledPlatforms() {
+        VideoVisitStore(app).use { s ->
+            assertNull(s.nextDeliveryDelay(now,setOf("wechat")))
+            val row=finished(s)
+            assertNull(s.nextDeliveryDelay(now,setOf("douyin")))
+            assertEquals(0L,s.nextDeliveryDelay(now,setOf("wechat")))
+            s.defer(row,now)
+            assertEquals(30_000L,s.nextDeliveryDelay(now,setOf("wechat")))
+            assertEquals(20_000L,s.nextDeliveryDelay(now+10_000,setOf("wechat")))
+            assertEquals(0L,s.nextDeliveryDelay(now-1,setOf("wechat")))
+        }
+    }
     @Test fun imageDependencyConflictRecoversAfterPageAckAndStoreReopen() = runBlocking {
         val remoteImages = mutableSetOf<String>()
         lateinit var visit: VideoVisit

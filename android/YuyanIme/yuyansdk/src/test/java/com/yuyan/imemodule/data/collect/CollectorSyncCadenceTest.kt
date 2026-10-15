@@ -4,6 +4,35 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class CollectorSyncCadenceTest {
+    @Test fun exactRemainingTimeQueryIsReadOnlyAndDoesNotRoundEarlyEligibility() {
+        var now=0L
+        val cadence=CollectorSyncCadence(300_000L,300_000L) { now }
+        assertEquals(0L,cadence.remainingDelay(false))
+        assertTrue(cadence.tryStart(true))
+        assertEquals(300_000L,cadence.remainingDelay(false))
+        now=299_999
+        assertEquals(1L,cadence.remainingDelay(true))
+        assertEquals(1L,cadence.remainingDelay(false))
+        assertFalse(cadence.tryStart(false))
+        now=300_000
+        assertEquals(0L,cadence.remainingDelay(true))
+        assertTrue(cadence.tryStart(false))
+        now=0
+        assertEquals(0L,cadence.remainingDelay(true))
+    }
+    @Test fun explicitFiveMinuteCadenceQueriesDoNotConsumeOrResetAttempts() {
+        var now=0L
+        val cadence=CollectorSyncCadence(300_000L,300_000L) { now }
+        repeat(3) { assertEquals(5000L,cadence.wakeDelay(false)) }
+        assertTrue(cadence.tryStart(true))
+        now=299_999
+        assertFalse(cadence.tryStart(false))
+        assertEquals(5000L,cadence.wakeDelay(false))
+        now=300_000; assertTrue(cadence.tryStart(false))
+        // Failed HTTP attempts still occupy a batch; repeated wakeups cannot hammer it.
+        repeat(10) { now+=1000; assertFalse(cadence.tryStart(it%2==0)) }
+        assertEquals(290_000L,cadence.wakeDelay(true))
+    }
     @Test fun explicitSyncBypassesAutomaticDelayButNextAutomaticBatchStillWaits() {
         var now=0L
         val cadence=CollectorSyncCadence { now }

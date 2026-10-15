@@ -141,6 +141,17 @@ export interface DeviceRow {
   ram_mb: number | null;
   last_seen_at: string;
   last_data_received_at?: string | null;
+  latest_usage_at?: string | null;
+  latest_usage_source?: string | null;
+  last_app_activity_at?: string | null;
+  last_app_activity_source?: string | null;
+  last_app_activity_received_at?: string | null;
+  last_screen_off_at?: string | null;
+  last_screen_off_source?: string | null;
+  last_screen_off_received_at?: string | null;
+  last_lock_at?: string | null;
+  last_lock_source?: string | null;
+  last_lock_received_at?: string | null;
   last_interaction_at?: string | null;
   last_interaction_source?: 'touch' | 'key' | 'ime_input' | 'usage_interaction' | null;
 }
@@ -219,6 +230,10 @@ export interface LocationContext {
   is_interactive?: boolean | null;
   power_save?: boolean | null;
   altitude_m?: number | null;
+  raw_altitude_m?: number | null;
+  vertical_accuracy_m?: number | null;
+  altitude_type?: 'wgs84_ellipsoid' | null;
+  altitude_quality_reason?: 'accurate' | 'missing_altitude' | 'invalid_altitude' | 'missing_vertical_accuracy' | 'poor_vertical_accuracy' | null;
   bearing_deg?: number | null;
   speed_accuracy_mps?: number | null;
   raw_speed_mps?: number | null;

@@ -135,6 +135,27 @@ class ScreenshotUploadDeviceIdleTest {
         val nav=request.newBuilder().url(ServerConfig.baseUrl+"/api/v1/mobile/navigation-records").build()
         assertNull(ImageUploadRuntime.prepareChatCall(context,ServerConfig.baseUrl,OkHttpClient(),nav))
     }
+    @Test fun cellularVideoMetadataRequestWritesBodyButPageAndChatImagesRemainBlocked() {
+        val (context,caps)=ready()
+        Shadows.shadowOf(caps).removeTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+        Shadows.shadowOf(caps).addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
+        val payload="{\"id\":\"visit\",\"first_image_id\":\"reference-only\"}"
+        val request=Request.Builder().url(ServerConfig.baseUrl+"/api/v1/mobile/video-visits")
+            .post(payload.toRequestBody()).build()
+        val call=ImageUploadRuntime.prepareChatCall(context,ServerConfig.baseUrl,OkHttpClient(),request)
+        assertNotNull("视频结束元数据必须可走流量",call)
+        try {
+            val sink=Buffer(); call!!.request().body!!.writeTo(sink)
+            assertEquals(payload,sink.readUtf8())
+            ImageUploadRuntime.noteKeyActivity()
+            try { call.request().body!!.writeTo(Buffer()); fail("元数据仍须避让输入") } catch (_: IOException) { }
+        } finally { if(call!=null)ImageUploadRuntime.finishChatCall(call) }
+        ShadowSystemClock.advanceBy(Duration.ofMillis(3001))
+        for(path in listOf("/api/v1/mobile/chat/assets","/api/v1/mobile/page-captures")) {
+            assertNull(ImageUploadRuntime.prepareChatCall(context,ServerConfig.baseUrl,OkHttpClient(),
+                request.newBuilder().url(ServerConfig.baseUrl+path).build()))
+        }
+    }
     @Test fun screenOffHasLargerBudgetAndLitScreenRequestHasTimeToSendLargeImageSlowly() {
         val (context, _) = ready()
         val power = context.getSystemService(Context.POWER_SERVICE) as PowerManager

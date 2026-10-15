@@ -8,8 +8,10 @@ class VideoVisitUploadWiringTest {
     private fun source(path: String) = File("src/main/java/com/yuyan/imemodule/$path").readText()
     @Test fun existingCollectorOwnsWakeFlushAndCancellation() {
         val source = source("data/collect/DataCollector.kt")
-        for (call in listOf("VideoVisitSync.hasPending(app)", "VideoVisitSync.hasDue(app)", "VideoVisitSync.flush(app)", "VideoVisitSync.cancel()"))
+        for (call in listOf("VideoVisitSync.nextUploadDelay(app, includePaused = true)", "VideoVisitSync.flush(app)", "VideoVisitSync.cancel()"))
             assertTrue(call, source.contains(call))
+        val imageFastPath=source.substringAfter("val imagesPending =").substringBefore("// 视频结束元数据")
+        assertFalse("Video metadata must never drive the one-second image path",imageFastPath.contains("VideoVisitSync"))
         assertTrue(source("data/capture/page/VideoVisitServiceBridge.kt").contains("DataCollector.requestSync()"))
     }
     @Test fun syncUsesWifiScopeAndExistingSmallRequestTransportWithoutTimer() {

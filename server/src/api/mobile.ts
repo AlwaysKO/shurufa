@@ -73,7 +73,7 @@ export function createMobileRouter(pool: pg.Pool): Router {
 
   router.get('/config', async (_req, res, next) => {
     try {
-      res.json({ collector_base_url: await collectorBaseUrl(pool) });
+      res.json({ collector_base_url: await collectorBaseUrl(pool), capabilities: { usage_evidence: 1, location_altitude_evidence: 1 } });
     } catch (err) { next(err); }
   });
 

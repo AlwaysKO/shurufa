@@ -35,6 +35,8 @@ internal class EventDelivery(
     private val onChatDelivery: (String, String) -> Unit = { _, _ -> },
     private val tryStartImage: (String, Long) -> java.io.Closeable? = { _, _ -> java.io.Closeable {} },
     private val interaction: () -> HumanInteraction? = { null },
+    private val locationAltitudeSupported: (String) -> Boolean = { false },
+    private val locationTargetAllowed: (String) -> Boolean = { true },
 ) {
     private val locks = ConcurrentHashMap<String, Any>()
     private val registered = java.util.Collections.newSetFromMap(ConcurrentHashMap<String, Boolean>())
@@ -57,6 +59,8 @@ internal class EventDelivery(
     ): Boolean = synchronized(locks.getOrPut(target) { Any() }) {
         require(maxBatches > 0)
         val started = nowMillis()
+        // At most one discovery per drain, including transient failures and multiple batches.
+        var altitudeSupported: Boolean? = null
         repeat(maxBatches) { batch ->
             if (batch > 0 && nowMillis() - started >= 5_000) return@synchronized true
             beforeBatch() // 取消必须传播，不能在网络失败捕获中吞掉。
@@ -64,6 +68,8 @@ internal class EventDelivery(
             val ok = flushBatch(target, selection, canStartRequest = {
                 beforeRequest()
                 nowMillis() - started < 5_000
+            }, altitudeSupported = {
+                altitudeSupported ?: locationAltitudeSupported(target).also { altitudeSupported = it }
             }) { acknowledged += it }
             if (!ok) return@synchronized false
             if (acknowledged == 0) return@synchronized true
@@ -79,8 +85,10 @@ internal class EventDelivery(
         target: String,
         selection: DeliverySelection,
         canStartRequest: () -> Boolean = { true },
+        altitudeSupported: () -> Boolean = { locationAltitudeSupported(target) },
         confirmed: (Int) -> Unit,
     ): Boolean {
+        val supportsAltitude by lazy(altitudeSupported)
         return try {
             if (!allowed(null)) return false
             if (!canStartRequest()) return true
@@ -133,7 +141,28 @@ internal class EventDelivery(
                         }
                         filtered.toString()
                     } else if (isChat) report.payload else buildJsonObject {
-                        put("id", report.id); put("kind", report.kind); put("payload", json.parseToJsonElement(report.payload))
+                        var reportPayload = json.parseToJsonElement(report.payload)
+                        if (report.kind == "location") {
+                            if (!locationTargetAllowed(target)) return false
+                            val body = reportPayload.jsonObject
+                            val context = body["context"] as? JsonObject
+                            val addedFields = setOf("raw_altitude_m", "vertical_accuracy_m", "altitude_type", "altitude_quality_reason")
+                            if (context != null && context.keys.any { it in addedFields }) {
+                                val existingVariant = store.locationAltitudeWireVariant(target, report.id)
+                                val candidate = existingVariant ?: supportsAltitude
+                                // Discovery can block: recheck before pinning or posting, including the drain budget.
+                                if (!allowed("location") || !locationTargetAllowed(target)) return false
+                                if (!canStartRequest()) return eventsOk && reportsOk
+                                val pinned = existingVariant ?: store.pinLocationAltitudeWireVariant(target, report.id, candidate)
+                                if (!pinned) {
+                                    // Wire-only downgrade, never mutate metadata for another target or retry.
+                                    reportPayload = JsonObject(body + ("context" to JsonObject(context.filterKeys { it !in addedFields })))
+                                }
+                            }
+                            if (!allowed("location") || !locationTargetAllowed(target)) return false
+                            if (!canStartRequest()) return eventsOk && reportsOk
+                        }
+                        put("id", report.id); put("kind", report.kind); put("payload", reportPayload)
                     }.toString()
                     if (report.kind == "chat_asset") {
                         // 读取队列后可能再次开始打字；暂停不是失败，不改变重试次序。

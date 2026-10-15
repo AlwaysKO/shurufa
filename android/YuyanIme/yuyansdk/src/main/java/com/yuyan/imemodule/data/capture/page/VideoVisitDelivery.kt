@@ -31,10 +31,10 @@ internal class VideoVisitDelivery(
     private val prepare: () -> Closeable?,
     private val send: suspend (VideoVisit, ByteArray) -> PageUploadResponse?,
 ) {
-    suspend fun runOnce(): VideoDeliveryResult {
+    suspend fun runOnce(limit: Int = 2, blockedImageIds: Set<String> = emptySet()): VideoDeliveryResult {
         var saved = 0; var discarded = 0; var failed = 0
         val platforms = setOf("wechat", "douyin").filter { allowed(it) }.toSet()
-        for (row in store.due(now(), limit = 2, platforms = platforms)) {
+        for (row in store.due(now(), limit = limit.coerceIn(0, 100), platforms = platforms, blockedImageIds = blockedImageIds)) {
             currentCoroutineContext().ensureActive()
             if (!allowed(row.platform)) break
             try {

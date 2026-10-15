@@ -6,6 +6,11 @@ import android.content.Context
 import android.content.Intent
 import android.location.Location
 import android.location.LocationManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.net.NetworkInfo
+import org.robolectric.shadows.ShadowNetworkCapabilities
+import org.robolectric.shadows.ShadowNetworkInfo
 import androidx.preference.PreferenceManager
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.*
@@ -28,6 +33,190 @@ class BalancedLocationServiceTest {
         val lm = shadowOf(app.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
         lm.setProviderEnabled(LocationManager.GPS_PROVIDER, true)
         lm.setProviderEnabled(LocationManager.NETWORK_PROVIDER, true)
+        network(true)
+    }
+
+    private fun network(wifi: Boolean, validated: Boolean = true) {
+        val cm = app.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val shadow = shadowOf(cm)
+        shadow.setActiveNetworkInfo(ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.CONNECTED,
+            if (wifi) ConnectivityManager.TYPE_WIFI else ConnectivityManager.TYPE_MOBILE, 0, true, true))
+        val caps = ShadowNetworkCapabilities.newInstance()
+        shadowOf(caps).addTransportType(if (wifi) NetworkCapabilities.TRANSPORT_WIFI else NetworkCapabilities.TRANSPORT_CELLULAR)
+        shadowOf(caps).addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        if (validated) shadowOf(caps).addCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+        shadow.setNetworkCapabilities(cm.activeNetwork, caps)
+        shadow.networkCallbacks.toList().forEach { it.onCapabilitiesChanged(cm.activeNetwork!!, caps) }
+        shadowOf(android.os.Looper.getMainLooper()).idle()
+    }
+
+    @Test @Config(sdk = [31], shadows = [FailingLocationManager::class])
+    fun `failed provider registration during late flush cannot reopen stopped selection`() {
+        PreferenceManager.getDefaultSharedPreferences(app).edit().putBoolean(CollectionConsent.KEY, true)
+            .putBoolean(BalancedLocationService.KEY, true).commit()
+        val controller = Robolectric.buildService(BalancedLocationService::class.java).create()
+        try {
+            val service = controller.get()
+            service.onStartCommand(Intent(), 0, 1)
+            val lm = shadowOf(app.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+            val callback = lm.getLocationUpdateListeners("gps").single()
+            val now = System.currentTimeMillis()
+            val policy = org.robolectric.util.ReflectionHelpers.getField<BalancedLocationPolicy>(service, "policy")
+            for (i in 0..4) {
+                val time = now - 180_000 + i * 30_000
+                policy.observe(time, LocationCandidate(23.13, 113.3, 5f, time, "gps"), null)
+            }
+            assertEquals(300_000L, policy.intervalMs)
+            val move = Location("gps").apply {
+                latitude = 23.131; longitude = 113.3; accuracy = 5f; time = now
+                speed = 5f; speedAccuracyMetersPerSecond = .5f
+            }
+            callback.onLocationChanged(move)
+            org.robolectric.shadows.ShadowSystemClock.advanceBy(java.time.Duration.ofSeconds(6))
+            FailingLocationManager.failRegistration = true
+            callback.onLocationChanged(move)
+            assertFalse("registration failure ends the session", BalancedLocationService.isRunning)
+            val selector = org.robolectric.util.ReflectionHelpers.getField<LocationFixSelection>(service, "fixSelection")
+            assertNull("the callback must not reopen a stopped window", selector.delayMs(android.os.SystemClock.elapsedRealtime()))
+        } finally { FailingLocationManager.failRegistration = false; controller.destroy() }
+    }
+
+    @Test fun `late callback closes expired monotonic window without extending its deadline`() {
+        PreferenceManager.getDefaultSharedPreferences(app).edit().putBoolean(CollectionConsent.KEY, true)
+            .putBoolean(BalancedLocationService.KEY, true).commit()
+        val controller = Robolectric.buildService(BalancedLocationService::class.java).create()
+        try {
+            val service = controller.get()
+            service.onStartCommand(Intent(), 0, 1)
+            val lm = shadowOf(app.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+            val callback = lm.getLocationUpdateListeners("gps").single()
+            fun fix(provider: String, accuracy: Float) = Location(provider).apply {
+                latitude = 23.13; longitude = 113.3; this.accuracy = accuracy; time = System.currentTimeMillis()
+            }
+            callback.onLocationChanged(fix("network", 30f))
+            // Advance monotonic time without dispatching the queued deadline (like a late wake).
+            org.robolectric.shadows.ShadowSystemClock.advanceBy(java.time.Duration.ofSeconds(6))
+            callback.onLocationChanged(fix("gps", 5f))
+            val policy = org.robolectric.util.ReflectionHelpers.getField<BalancedLocationPolicy>(service, "policy")
+            val anchor = org.robolectric.util.ReflectionHelpers.getField<LocationCandidate>(policy, "anchor")
+            assertEquals("expired window was flushed before accepting the new callback", "network", anchor.provider)
+            val selector = org.robolectric.util.ReflectionHelpers.getField<LocationFixSelection>(service, "fixSelection")
+            assertEquals(5_000L, selector.delayMs(android.os.SystemClock.elapsedRealtime()))
+        } finally { controller.destroy() }
+    }
+
+    @Test fun `selection deadline survives repeat start but stop and permission loss clear it`() {
+        for (revoke in listOf(false, true)) {
+            val prefs = PreferenceManager.getDefaultSharedPreferences(app)
+            prefs.edit().putBoolean(CollectionConsent.KEY, true).putBoolean(BalancedLocationService.KEY, true).commit()
+            val controller = Robolectric.buildService(BalancedLocationService::class.java).create()
+            try {
+                val service = controller.get()
+                service.onStartCommand(Intent(), 0, 1)
+                val lm = shadowOf(app.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+                lm.getLocationUpdateListeners("gps").single().onLocationChanged(Location("network").apply {
+                    latitude = 23.13; longitude = 113.3; accuracy = 25f; time = System.currentTimeMillis()
+                })
+                val selector = org.robolectric.util.ReflectionHelpers.getField<LocationFixSelection>(service, "fixSelection")
+                val deadline = selector.delayMs(android.os.SystemClock.elapsedRealtime())
+                assertEquals(5_000L, deadline)
+                service.onStartCommand(Intent(), 0, 2)
+                assertEquals(deadline, selector.delayMs(android.os.SystemClock.elapsedRealtime()))
+                if (revoke) prefs.edit().putBoolean(CollectionConsent.KEY, false).commit()
+                else service.onStartCommand(Intent().setAction(BalancedLocationService.ACTION_STOP), 0, 3)
+                shadowOf(android.os.Looper.getMainLooper()).idle()
+                assertNull(selector.delayMs(android.os.SystemClock.elapsedRealtime()))
+                shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(6))
+                assertFalse(BalancedLocationService.isRunning)
+                assertTrue(lm.getLocationUpdateListeners().isEmpty())
+            } finally { controller.destroy() }
+        }
+    }
+
+    @Test fun `network first cannot leave sampling anchor different from selected precise gps`() {
+        PreferenceManager.getDefaultSharedPreferences(app).edit().putBoolean(CollectionConsent.KEY, true)
+            .putBoolean(BalancedLocationService.KEY, true).commit()
+        val controller = Robolectric.buildService(BalancedLocationService::class.java).create()
+        try {
+            controller.get().onStartCommand(Intent(), 0, 1)
+            val lm = shadowOf(app.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+            val main = shadowOf(android.os.Looper.getMainLooper())
+            val now = System.currentTimeMillis()
+            val callback = lm.getLocationUpdateListeners("gps").single()
+            for (provider in listOf("network", "gps")) {
+                callback.onLocationChanged(Location(provider).apply {
+                    latitude = 23.13; longitude = 113.3
+                    accuracy = if (provider == "gps") 5f else 40f; time = now
+                })
+            }
+            main.idleFor(java.time.Duration.ofSeconds(5))
+            val policy = org.robolectric.util.ReflectionHelpers.getField<BalancedLocationPolicy>(controller.get(), "policy")
+            val anchor = org.robolectric.util.ReflectionHelpers.getField<LocationCandidate>(policy, "anchor")
+            assertEquals("sampling must use the same best fix as persistence", "gps", anchor.provider)
+            assertEquals(60_000L, lm.getLegacyLocationRequests("gps").single().intervalMillis)
+        } finally { controller.destroy() }
+    }
+
+    @Test fun `losing validated wifi immediately restores minute requests without duplicate subscriptions`() {
+        PreferenceManager.getDefaultSharedPreferences(app).edit().putBoolean(CollectionConsent.KEY, true)
+            .putBoolean(BalancedLocationService.KEY, true).commit()
+        val cm = app.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val before = shadowOf(cm).networkCallbacks.size
+        val controller = Robolectric.buildService(BalancedLocationService::class.java).create()
+        try {
+            val service = controller.get()
+            service.onStartCommand(Intent(), 0, 1)
+            val lm = shadowOf(app.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+            val now = System.currentTimeMillis()
+            val policy = org.robolectric.util.ReflectionHelpers.getField<BalancedLocationPolicy>(service, "policy")
+            (0..3).forEach {
+                val time = now - 122_000 + it * 30_000
+                policy.observe(time, LocationCandidate(23.13, 113.3, 15f, time), null)
+            }
+            lm.getLocationUpdateListeners(LocationManager.GPS_PROVIDER).single().onLocationChanged(Location("gps").apply {
+                latitude = 23.13; longitude = 113.3; accuracy = 15f; time = now - 2_000
+            })
+            shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(5))
+            assertEquals(300_000L, lm.getLegacyLocationRequests(LocationManager.GPS_PROVIDER).single().intervalMillis)
+            network(true, validated = false)
+            assertEquals(60_000L, lm.getLegacyLocationRequests(LocationManager.GPS_PROVIDER).single().intervalMillis)
+            val listener = lm.getLocationUpdateListeners(LocationManager.GPS_PROVIDER).single()
+            network(false)
+            service.onStartCommand(Intent(), 0, 2)
+            assertSame(listener, lm.getLocationUpdateListeners(LocationManager.GPS_PROVIDER).single())
+            assertEquals(before + 1, shadowOf(cm).networkCallbacks.size)
+            network(true)
+            assertEquals(300_000L, lm.getLegacyLocationRequests(LocationManager.GPS_PROVIDER).single().intervalMillis)
+        } finally { controller.destroy() }
+        assertEquals(before, shadowOf(cm).networkCallbacks.size)
+    }
+
+    @Test fun `non wifi stationary session keeps one minute system requests`() = stationaryWithoutWifi(screenOn = true)
+
+    @Test fun `screen off non wifi stationary session keeps one minute requests`() = stationaryWithoutWifi(screenOn = false)
+
+    private fun stationaryWithoutWifi(screenOn: Boolean) {
+        network(false)
+        shadowOf(app.getSystemService(android.os.PowerManager::class.java)).setIsInteractive(screenOn)
+        PreferenceManager.getDefaultSharedPreferences(app).edit().putBoolean(CollectionConsent.KEY, true)
+            .putBoolean(BalancedLocationService.KEY, true).commit()
+        val controller = Robolectric.buildService(BalancedLocationService::class.java).create()
+        try {
+            val service = controller.get()
+            service.onStartCommand(Intent(), 0, 1)
+            val lm = shadowOf(app.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+            val now = System.currentTimeMillis()
+            val policy = org.robolectric.util.ReflectionHelpers.getField<BalancedLocationPolicy>(service, "policy")
+            (0..3).forEach {
+                val time = now - 122_000 + it * 30_000
+                policy.observe(time, LocationCandidate(23.13, 113.3, 15f, time), null)
+            }
+            lm.getLocationUpdateListeners(LocationManager.GPS_PROVIDER).single().onLocationChanged(Location("gps").apply {
+                latitude = 23.13; longitude = 113.3; accuracy = 15f; time = now - 2_000
+            })
+            shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(5))
+            assertEquals(60_000L, lm.getLegacyLocationRequests(LocationManager.GPS_PROVIDER).single().intervalMillis)
+        } finally { controller.destroy() }
     }
 
     @Test fun `service cannot collect before consent even if balanced setting is enabled`() {
@@ -148,6 +337,8 @@ class BalancedLocationServiceTest {
                 this.latitude = latitude; longitude = 113.3; accuracy = 15f; time = capturedAt
             }
             lm.getLocationUpdateListeners(LocationManager.GPS_PROVIDER).toList().forEach { it.onLocationChanged(location) }
+                // Sampling policy now consumes the selected fix, not the first provider callback.
+                shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(5))
         }
         assertEquals(60_000L, lm.getLegacyLocationRequests(LocationManager.GPS_PROVIDER).single().intervalMillis)
         // Android 12+ encodes passive requests with PASSIVE_INTERVAL; minUpdateInterval is the delivery throttle.
@@ -175,7 +366,11 @@ class BalancedLocationServiceTest {
         controller.destroy()
     }
 
-    @Test fun `confirmation requests return to five minutes without another location callback`() {
+    @Test fun `confirmation requests return to five minutes without another location callback`() = confirmationExpiry(wifiAfter = true)
+
+    @Test fun `confirmation timeout after losing wifi returns to one minute without a location callback`() = confirmationExpiry(wifiAfter = false)
+
+    private fun confirmationExpiry(wifiAfter: Boolean) {
         PreferenceManager.getDefaultSharedPreferences(app).edit().putBoolean(CollectionConsent.KEY, true)
             .putBoolean(BalancedLocationService.KEY, true).commit()
         val controller = Robolectric.buildService(BalancedLocationService::class.java).create()
@@ -194,13 +389,17 @@ class BalancedLocationServiceTest {
                     this.latitude = latitude; longitude = 113.3; accuracy = 15f; this.time = time
                 }
                 lm.getLocationUpdateListeners(LocationManager.GPS_PROVIDER).toList().forEach { it.onLocationChanged(location) }
+                // Sampling policy now consumes the selected fix, not the first provider callback.
+                shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(5))
             }
             sample(23.13, now - 2000)
             assertEquals(300_000L, lm.getLegacyLocationRequests(LocationManager.GPS_PROVIDER).single().intervalMillis)
             sample(23.14, now - 1000)
             assertEquals(30_000L, lm.getLegacyLocationRequests(LocationManager.GPS_PROVIDER).single().intervalMillis)
+            if (!wifiAfter) network(false)
             shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(60))
-            assertEquals(300_000L, lm.getLegacyLocationRequests(LocationManager.GPS_PROVIDER).single().intervalMillis)
+            assertEquals(if (wifiAfter) 300_000L else 60_000L,
+                lm.getLegacyLocationRequests(LocationManager.GPS_PROVIDER).single().intervalMillis)
         } finally { controller.destroy() }
     }
 
@@ -253,6 +452,17 @@ class BalancedLocationServiceTest {
             assertFalse(BalancedLocationService.isRunning)
             assertTrue("缺权限只能暂停", prefs.getBoolean(BalancedLocationService.KEY, false))
         } finally { controller.destroy() }
+    }
+
+    @org.robolectric.annotation.Implements(LocationManager::class)
+    class FailingLocationManager : org.robolectric.shadows.ShadowLocationManager() {
+        @org.robolectric.annotation.Implementation
+        public override fun requestLocationUpdates(provider: String, minTime: Long, minDistance: Float,
+            listener: android.location.LocationListener, looper: android.os.Looper?) {
+            if (failRegistration) throw IllegalArgumentException("provider unavailable during registration")
+            super.requestLocationUpdates(provider, minTime, minDistance, listener, looper)
+        }
+        companion object { @JvmField var failRegistration = false }
     }
 
 }

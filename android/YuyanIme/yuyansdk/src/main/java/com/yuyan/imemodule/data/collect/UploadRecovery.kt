@@ -64,20 +64,41 @@ internal object UploadRecovery {
         }
         scheduler.schedule(JobInfo.Builder(JOB_ID, component)
             .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+            .setBackoffCriteria(300_000L, JobInfo.BACKOFF_POLICY_EXPONENTIAL)
             .setMinimumLatency(delay).setExtras(extras).build())
     }
 
+    internal suspend fun scheduleNext(context: Context, token: String? = null) {
+        currentCoroutineContext().ensureActive()
+        if (!CollectionConsent.enabled(context)) return
+        val delay = listOfNotNull(
+            DataCollector.nextUploadDelay(context),
+            com.yuyan.imemodule.data.capture.page.VideoVisitSync.nextUploadDelay(context, includePaused = true),
+            AppUsageTracker.nextUploadDelay(context, includePaused = true),
+        ).minOrNull()
+        currentCoroutineContext().ensureActive()
+        synchronized(this) {
+            if (token != null && (!running || token != startedToken)) return
+            if (delay != null) wake(context, delay)
+        }
+    }
+
     @Synchronized fun started(token: String?) { startedToken = token; running = true }
-    @Synchronized internal fun finished(context: Context) {
+    @Synchronized internal fun finished(context: Context, token: String? = startedToken) {
+        if (!running || token != startedToken) return
         running = false
         val due = followUpAt
         followUpAt = null
         if (due != null) wake(context, due - SystemClock.elapsedRealtime())
     }
-    @Synchronized internal fun stopped() { running = false; followUpAt = null }
+    @Synchronized internal fun stopped(token: String? = startedToken) {
+        if (token != startedToken) return
+        running = false; followUpAt = null
+    }
     @Synchronized fun cancel(context: Context) {
         (context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler).cancel(JOB_ID)
         startedToken = null
+        running = false
         followUpAt = null
     }
 }
@@ -86,8 +107,13 @@ internal object UploadRecovery {
 class UploadRecoveryJobService : JobService() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var job: Job? = null
+    private var token: String? = null
     override fun onStartJob(params: JobParameters): Boolean {
-        UploadRecovery.started(params.extras.getString("token"))
+        // 同一 Service 被交付新批次时退休旧协程；不全局取消新批次的网络。
+        job?.cancel()
+        val activeToken = params.extras.getString("token")
+        token = activeToken
+        UploadRecovery.started(activeToken)
         if (!CollectionConsent.enabled(this)) { UploadRecovery.stopped(); return false }
         job = scope.launch {
             var retry = false
@@ -102,7 +128,7 @@ class UploadRecoveryJobService : JobService() {
                         ).awaitAll()
                     }
                     retry = outcomes.any { !it }
-                    AppUsageTracker.nextUploadDelay(applicationContext)?.let { UploadRecovery.wake(applicationContext, it) }
+                    UploadRecovery.scheduleNext(applicationContext, activeToken)
                 }
                 ensureActive()
             } catch (_: CancellationException) {
@@ -111,13 +137,14 @@ class UploadRecoveryJobService : JobService() {
             }
             catch (_: Exception) { retry = true }
             jobFinished(params, retry && CollectionConsent.enabled(this@UploadRecoveryJobService))
-            UploadRecovery.finished(applicationContext)
+            UploadRecovery.finished(applicationContext, activeToken)
         }
         return true
     }
     override fun onStopJob(params: JobParameters): Boolean {
+        if (params.extras.getString("token") != token) return false
         job?.cancel(); job = null
-        UploadRecovery.stopped()
+        UploadRecovery.stopped(params.extras.getString("token"))
         DataCollector.cancelTransfers()
         return CollectionConsent.enabled(this)
     }
@@ -125,5 +152,5 @@ class UploadRecoveryJobService : JobService() {
         block(); true
     } catch (_: CancellationException) { currentCoroutineContext().ensureActive(); false } catch (_: Exception) { false }
 
-    override fun onDestroy() { scope.cancel(); UploadRecovery.stopped(); super.onDestroy() }
+    override fun onDestroy() { scope.cancel(); UploadRecovery.stopped(token); super.onDestroy() }
 }

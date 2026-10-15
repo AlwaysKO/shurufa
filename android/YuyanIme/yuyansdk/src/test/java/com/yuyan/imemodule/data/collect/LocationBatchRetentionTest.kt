@@ -1,0 +1,284 @@
+package com.yuyan.imemodule.data.collect
+
+import android.Manifest
+import android.app.Application
+import android.location.Location
+import androidx.preference.PreferenceManager
+import androidx.test.core.app.ApplicationProvider
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import org.junit.After
+import org.junit.Assert.*
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
+import org.robolectric.annotation.Config
+import java.time.OffsetDateTime
+import java.util.UUID
+
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [28])
+class LocationBatchRetentionTest {
+    private lateinit var app: Application
+    private lateinit var store: LocalInputStore
+    private lateinit var name: String
+    private val start = 1_800_000_000_000L
+    private val baselineKey = "collector_last_location_uploaded_at"
+
+    @Before fun setup() {
+        app = ApplicationProvider.getApplicationContext()
+        val prefs = PreferenceManager.getDefaultSharedPreferences(app)
+        prefs.edit().clear().putBoolean(CollectionConsent.KEY, true).commit()
+        shadowOf(app).grantPermissions(Manifest.permission.ACCESS_COARSE_LOCATION)
+        name = "location-retention-${UUID.randomUUID()}.db"
+        store = LocalInputStore(app, name)
+        setField("prefs", prefs)
+        setField("appContext", app)
+        setField("eventStore", store)
+        setField("balancedLocationOwner", true)
+        resetJumpFilter()
+        ServerConfig.init(app)
+    }
+
+    @After fun cleanup() {
+        cancelWake()
+        setField("eventStore", null)
+        setField("appContext", null)
+        setField("prefs", null)
+        setField("balancedLocationOwner", false)
+        store.close()
+        app.deleteDatabase(name)
+    }
+
+    @Test fun `fixed selection overhead plus tiny jitter preserves minute captures`() = runBlocking {
+        DataCollector.persistLocation(app, point(start), true) { start + 5_002 }
+        cancelWake()
+        DataCollector.persistLocation(app, point(start + 60_000, 23.131), true) { start + 65_001 }
+        cancelWake()
+        assertEquals(2, store.pendingReports(ServerConfig.baseUrl).size)
+    }
+
+    @Test fun `two real service windows preserve movement after restored minute cooldown`() = runBlocking {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(app)
+        prefs.edit().putBoolean(BalancedLocationService.KEY, true).commit()
+        val manager = app.getSystemService(android.content.Context.LOCATION_SERVICE) as android.location.LocationManager
+        shadowOf(manager).setProviderEnabled("gps", true)
+        shadowOf(manager).setProviderEnabled("network", true)
+        val controller = org.robolectric.Robolectric.buildService(BalancedLocationService::class.java).create()
+        val mutex = DataCollector::class.java.getDeclaredField("locationUploadMutex")
+            .apply { isAccessible = true }.get(DataCollector) as Mutex
+        try {
+            controller.get().onStartCommand(android.content.Intent(), 0, 1)
+            var now = System.currentTimeMillis()
+            shadowOf(manager).getLocationUpdateListeners("gps").single()
+                .onLocationChanged(point(now - 5_002))
+            shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(5))
+            withTimeout(10_000) { while (store.pendingReports(ServerConfig.baseUrl).size < 1) delay(20) }
+            mutex.lock(); mutex.unlock()
+            cancelWake()
+            // Robolectric advances Handler's clock, not java.lang.System wall time.
+            // Restore only the durable cooldown times to represent the previous minute;
+            // both selections and both SQLite enqueues still execute through the real service.
+            now = System.currentTimeMillis()
+            prefs.edit().putLong("collector_last_location_time", now - 65_002)
+                .putLong(baselineKey, now - 55_500).commit()
+            resetJumpFilter() // Restore the runtime filter against that durable previous-minute baseline.
+            shadowOf(manager).getLocationUpdateListeners("gps").single()
+                .onLocationChanged(point(now - 5_002, 23.131))
+            shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(5))
+            // Wait for durable state, not an arbitrary sleep or a network request.
+            withTimeout(10_000) { while (store.pendingReports(ServerConfig.baseUrl).size < 2) delay(20) }
+            mutex.lock(); mutex.unlock()
+            cancelWake()
+            assertEquals(2, store.pendingReports(ServerConfig.baseUrl).size)
+        } finally { controller.destroy(); cancelWake() }
+    }
+
+    @Test fun `service bounded window still saves network when no gps arrives`() = runBlocking {
+        PreferenceManager.getDefaultSharedPreferences(app).edit().putBoolean(BalancedLocationService.KEY, true).commit()
+        val manager = app.getSystemService(android.content.Context.LOCATION_SERVICE) as android.location.LocationManager
+        shadowOf(manager).setProviderEnabled("gps", true)
+        shadowOf(manager).setProviderEnabled("network", true)
+        val controller = org.robolectric.Robolectric.buildService(BalancedLocationService::class.java).create()
+        try {
+            controller.get().onStartCommand(android.content.Intent(), 0, 1)
+            val callback = shadowOf(manager).getLocationUpdateListeners("network").single()
+            val now = System.currentTimeMillis()
+            callback.onLocationChanged(point(now).apply { provider = "network"; accuracy = 30f })
+            shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(5))
+            val report = withTimeout(10_000) {
+                while (store.pendingReports(ServerConfig.baseUrl).isEmpty()) delay(20)
+                store.pendingReports(ServerConfig.baseUrl).single()
+            }
+            val payload = Json.parseToJsonElement(report.payload).jsonObject
+            assertEquals("network", payload.getValue("provider").jsonPrimitive.content)
+            assertEquals(now / 1000 * 1000,
+                OffsetDateTime.parse(payload.getValue("occurred_at").jsonPrimitive.content).toInstant().toEpochMilli())
+        } finally { controller.destroy(); cancelWake() }
+    }
+
+    @Test fun `service chooses better same time gps before network occupies minute slot`() = runBlocking {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(app)
+        prefs.edit().putBoolean(BalancedLocationService.KEY, true).commit()
+        val manager = app.getSystemService(android.content.Context.LOCATION_SERVICE) as android.location.LocationManager
+        shadowOf(manager).setProviderEnabled("gps", true)
+        shadowOf(manager).setProviderEnabled("network", true)
+        val controller = org.robolectric.Robolectric.buildService(BalancedLocationService::class.java).create()
+        try {
+            controller.get().onStartCommand(android.content.Intent(), 0, 1)
+            val callback = shadowOf(manager).getLocationUpdateListeners("gps").single()
+            val now = System.currentTimeMillis()
+            callback.onLocationChanged(point(now).apply { provider = "network"; accuracy = 40f })
+            // Let the real old asynchronous persistence finish: this is the race under test.
+            delay(200)
+            callback.onLocationChanged(point(now).apply { accuracy = 5f })
+            shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(5))
+            val report = withTimeout(10_000) {
+                while (store.pendingReports(ServerConfig.baseUrl).isEmpty()) delay(20)
+                store.pendingReports(ServerConfig.baseUrl).single()
+            }
+            assertEquals("gps", Json.parseToJsonElement(report.payload).jsonObject.getValue("provider").jsonPrimitive.content)
+        } finally { controller.destroy(); cancelWake() }
+    }
+
+    @Test fun `minute capture cadence survives bounded selection completion jitter`() = runBlocking {
+        DataCollector.persistLocation(app, point(start), true) { start + 5_000 }
+        cancelWake()
+        DataCollector.persistLocation(app, point(start + 60_000, 23.131), true) { start + 64_000 }
+        cancelWake()
+        assertEquals(2, store.pendingReports(ServerConfig.baseUrl).size)
+    }
+
+    @Test fun `continuous precise walking saves confirmed short displacement`() = runBlocking {
+        for (minute in 0..6) {
+            val p = point(start + minute * 60_000, 23.13 + minute * 20.0 / 111_195).apply {
+                accuracy = 5f; removeSpeed(); removeSpeedAccuracy()
+            }
+            DataCollector.persistLocation(app, p, true) { p.time }
+            cancelWake()
+        }
+        val pending = store.pendingReports(ServerConfig.baseUrl)
+        assertEquals(4, pending.size)
+        assertEquals(listOf(0L, 120_000L, 240_000L, 360_000L), pending.map {
+            OffsetDateTime.parse(Json.parseToJsonElement(it.payload).jsonObject.getValue("occurred_at").jsonPrimitive.content)
+                .toInstant().toEpochMilli() - start
+        }.sorted())
+    }
+
+    @Test fun `five minute batch retains five distinct moving points and capture times after reopening`() = runBlocking {
+        for (minute in 0..4) {
+            val capturedAt = start + minute * 60_000
+            DataCollector.persistLocation(app, point(capturedAt, 23.13 + minute * .001), true) { capturedAt + 150 }
+            cancelWake()
+        }
+        store.close()
+        store = LocalInputStore(app, name)
+        setField("eventStore", store)
+        // 模拟重新读取持久 prefs，而不是仅检查内存中最后一个点。
+        setField("prefs", PreferenceManager.getDefaultSharedPreferences(app))
+        val pending = store.pendingReports(ServerConfig.baseUrl)
+        assertEquals(5, pending.size)
+        assertEquals(5, pending.map { it.id }.distinct().size)
+        val capturedTimes = pending.map {
+            val payload = Json.parseToJsonElement(it.payload).jsonObject
+            OffsetDateTime.parse(payload.getValue("occurred_at").jsonPrimitive.content).toInstant().toEpochMilli()
+        }.sorted()
+        assertEquals((0..4).map { start + it * 60_000 }, capturedTimes)
+        assertEquals(start + 240_150, PreferenceManager.getDefaultSharedPreferences(app).getLong(baselineKey, -1))
+        resetJumpFilter()
+        DataCollector.persistLocation(app, point(start + 270_000, 23.135), true) { start + 270_150 }
+        assertEquals(5, store.pendingReports(ServerConfig.baseUrl).size)
+        DataCollector.persistLocation(app, point(start + 300_000, 23.136), true) { start + 300_150 }
+        cancelWake()
+        assertEquals(6, store.pendingReports(ServerConfig.baseUrl).size)
+    }
+
+    @Test fun `failed durable enqueue does not advance baseline and same accepted fix can retry`() = runBlocking {
+        DataCollector.persistLocation(app, point(start), true) { start }
+        cancelWake()
+        // 真实 SQLite 写入失败，不模拟 policy 或 enqueue 的返回值。
+        store.writableDatabase.execSQL("CREATE TRIGGER fail_location BEFORE INSERT ON pending_report BEGIN SELECT RAISE(ABORT, 'test disk failure'); END")
+        val moved = point(start + 60_000, 23.131)
+        DataCollector.persistLocation(app, moved, true) { start + 60_000 }
+        assertEquals(start, PreferenceManager.getDefaultSharedPreferences(app).getLong(baselineKey, -1))
+        assertEquals(1, store.pendingReports(ServerConfig.baseUrl).size)
+        store.writableDatabase.execSQL("DROP TRIGGER fail_location")
+        DataCollector.persistLocation(app, moved, true) { start + 60_000 }
+        cancelWake()
+        assertEquals(start + 60_000, PreferenceManager.getDefaultSharedPreferences(app).getLong(baselineKey, -1))
+        assertEquals(2, store.pendingReports(ServerConfig.baseUrl).size)
+    }
+
+    @Test fun `stationary fixes and dense moving callbacks do not create extra records`() = runBlocking {
+        DataCollector.persistLocation(app, point(start), true) { start }
+        cancelWake()
+        DataCollector.persistLocation(app, point(start + 30_000, 23.131), true) { start + 30_000 }
+        DataCollector.persistLocation(app, point(start + 300_000), true) { start + 300_000 }
+        assertEquals(1, store.pendingReports(ServerConfig.baseUrl).size)
+        assertEquals(start, PreferenceManager.getDefaultSharedPreferences(app).getLong(baselineKey, -1))
+    }
+
+    @Test fun `callback snapshots mutable location before asynchronous persistence`() = runBlocking {
+        val mutex = DataCollector::class.java.getDeclaredField("locationUploadMutex")
+            .apply { isAccessible = true }.get(DataCollector) as Mutex
+        val capturedAt = System.currentTimeMillis()
+        val original = point(capturedAt)
+        mutex.lock()
+        try {
+            DataCollector.reportBalancedLocation(app, original)
+            original.latitude = 24.0
+            original.time = capturedAt - 1_000
+        } finally {
+            mutex.unlock()
+        }
+        val report = withTimeout(10_000) {
+            while (store.pendingReports(ServerConfig.baseUrl).isEmpty()) delay(20)
+            store.pendingReports(ServerConfig.baseUrl).single()
+        }
+        // 队列可见时回调仍可能正在保存 prefs；等待其临界区结束再清理单例。
+        mutex.lock()
+        mutex.unlock()
+        cancelWake()
+        val payload = Json.parseToJsonElement(report.payload).jsonObject
+        assertEquals("23.13", payload.getValue("latitude").jsonPrimitive.content)
+        val reportedAt = OffsetDateTime.parse(payload.getValue("occurred_at").jsonPrimitive.content).toInstant().toEpochMilli()
+        assertEquals(capturedAt / 1000 * 1000, reportedAt)
+    }
+
+    private fun point(timeMs: Long, lat: Double = 23.13) = Location("gps").apply {
+        latitude = lat
+        longitude = 113.3
+        accuracy = 15f
+        time = timeMs
+        speed = 5f
+        speedAccuracyMetersPerSecond = .5f
+    }
+
+    private fun resetJumpFilter() {
+        val filter = DataCollector::class.java.getDeclaredField("locationJumpFilter")
+            .apply { isAccessible = true }.get(DataCollector)
+        for (name in listOf("anchor", "lastAccepted", "latest", "recentPrecise")) {
+            LocationJumpFilter::class.java.getDeclaredField(name).apply { isAccessible = true }.set(filter, null)
+        }
+        val pending = LocationJumpFilter::class.java.getDeclaredField("pending").apply { isAccessible = true }.get(filter)
+        (pending as MutableMap<*, *>).clear()
+    }
+
+    private fun cancelWake() {
+        val field = DataCollector::class.java.getDeclaredField("wakeJob").apply { isAccessible = true }
+        (field.get(DataCollector) as? Job)?.cancel()
+        field.set(DataCollector, null)
+    }
+
+    private fun setField(name: String, value: Any?) {
+        DataCollector::class.java.getDeclaredField(name).apply { isAccessible = true }.set(DataCollector, value)
+    }
+}

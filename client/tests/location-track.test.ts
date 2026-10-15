@@ -31,11 +31,13 @@ async function mountLocations(locations: LocationRow[], overrides: Record<string
   });
   const popups: string[] = [];
   const lines: unknown[] = [];
+  const markers: any[] = [];
   const layer = () => ({ addTo() { return this; }, remove() {} });
   const leaflet = {
-    map: () => ({ setView() { return this; }, getZoom: () => 13, remove() {} }),
+    map: () => ({ setView() { return this; }, getZoom: () => 13, remove() {}, closePopup() {}, latLngToContainerPoint: (p: any) => ({x:(p[1]??p.lng)*100,y:(p[0]??p.lat)*100,distanceTo(q:any){return Math.hypot(this.x-q.x,this.y-q.y);}}) }),
     layerGroup: layer, tileLayer: layer, polyline: (points: unknown) => { lines.push(points); return layer(); },
-    circleMarker: () => ({ ...layer(), bindPopup(html: string) { popups.push(html); return this; } }),
+    circleMarker: (coords:any, options:any) => { const marker={ ...layer(), coords, options, handlers:{} as any, bindPopup(html: string) { popups.push(html); return this; }, on(name:string, fn:any){this.handlers[name]=fn;return this;},openPopup(){return this;},isPopupOpen(){return false;},bringToFront(){return this;},setStyle(style:any){Object.assign(this.options,style);return this;} }; markers.push(marker);return marker; },
+    marker: layer, divIcon: (options:any)=>options,
   };
   const api = { devices: vi.fn(async () => ({ devices: [] })), locations: vi.fn(async () => ({ locations })) };
   Object.assign(api, overrides);
@@ -56,7 +58,7 @@ async function mountLocations(locations: LocationRow[], overrides: Record<string
   const app = renderer.createApp(module.exports.default); app.mount(root); mounted.push(app);
   for (let i = 0; i < 8; i++) { await Promise.resolve(); await Vue.nextTick(); }
   const all = (n: Node): Node[] => [n, ...n.children.flatMap(all)];
-  return { api, popups, lines, unmount: () => app.unmount(), all: () => all(root), text: () => all(root).map(n => n.text).join(' '), summary: () => all(root).find(n => n.props.class === 'summary')?.text,
+  return { api, popups, lines, markers, unmount: () => app.unmount(), all: () => all(root), text: () => all(root).map(n => n.text).join(' '), summary: () => all(root).find(n => n.props.class === 'summary')?.text,
     cells: () => all(root).filter(n => n.tag === 'td').map(n => n.text) };
 }
 
@@ -304,4 +306,23 @@ it('日期顺序自动收拢为单日，未来日期不提交，清空结束日�
  expect(future.value).toBe('2026-09-25');expect(view.api.locations).toHaveBeenCalledTimes(count);
  find('location-end-date').props.onChange({target:{value:''}});await settle();
  expect(view.api.locations).toHaveBeenLastCalledWith({from:'2026-09-30',to:'2026-09-30',device_id:undefined,limit:1000});
+});
+
+it('地图按真实时间排序且命中区至少20px，重叠候选按时间选中，设备端点分别标识',async()=>{
+ const a={...point('2026-09-29T01:00:00Z'),id:'a'},b={...point('2026-09-29T01:01:00Z'),id:'b'},c={...point('2026-09-29T01:02:00Z'),id:'c',device_id:'other'};
+ const view=await mountLocations([b,c,a]);
+ const hits=view.markers.filter(m=>m.options.className?.includes('location-hit'));
+ expect(hits).toHaveLength(3);expect(hits.every(m=>m.options.radius>=20)).toBe(true);
+ hits[0].handlers.click({latlng:{lat:23.13,lng:113.26}});await settle();
+ const candidates=view.all().filter(n=>n.props['data-testid']==='location-candidate');
+ expect(candidates).toHaveLength(3);
+ expect(view.text()).toContain('选择采样点');
+ candidates[1].props.onClick();await settle();
+ expect(view.text()).toContain('已选择');
+ expect(view.markers.filter(m=>m.options.className?.includes('location-start'))).toHaveLength(2);
+});
+
+it('最近记录取实际最新事件，不依赖接口数组倒序',async()=>{
+ const view=await mountLocations([{...point('2026-09-29T01:00:00Z'),id:'a'},{...point('2026-09-29T01:02:00Z'),id:'b'}]);
+ expect(view.summary()).toContain('2026-09-29 09:02:00');
 });

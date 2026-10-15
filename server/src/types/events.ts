@@ -69,3 +69,12 @@ export interface SessionInfo {
   editor_id?: string | null;
   event_count?: number;
 }
+
+/** 原始系统使用事件快照；version只在证据变化时生成，不能使用上传时钟。 */
+export interface DeviceUsageEvidence {
+  version: string;
+  device_id: string;
+  app_activity?: { at_ms: number; source: 'usage_resume' | 'usage_pause' };
+  screen_off?: { at_ms: number; source: 'usage_screen_off' };
+  lock?: { at_ms: number; source: 'usage_keyguard_shown' };
+}

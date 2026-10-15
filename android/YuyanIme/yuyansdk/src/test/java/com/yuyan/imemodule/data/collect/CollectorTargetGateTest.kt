@@ -11,6 +11,16 @@ class CollectorTargetGateTest {
     private val online = "https://my.dog8ball.com"
     private val local = "http://127.0.0.1:3000"
 
+    @Test fun `attempt query never probes health and failed local health does not affect online`() {
+        var health=0
+        val gate=CollectorTargetGate(online,usbConnected={ true },localHealthy={ health++;false })
+        assertTrue(gate.canAttempt(local)); assertTrue(gate.canAttempt(online))
+        org.junit.Assert.assertEquals(0,health)
+        assertFalse(gate.canUpload(local)); assertTrue(gate.canUpload(online))
+        org.junit.Assert.assertEquals(1,health)
+        val offline=CollectorTargetGate(online,usbConnected={ false },localHealthy={ error("must not probe") },onlineAvailable={ false })
+        assertFalse(offline.canAttempt(local)); assertFalse(offline.canAttempt(online))
+    }
     @Test fun `offline usb preserves local delivery without opening online target`() {
         val checked = mutableListOf<String>()
         val gate = CollectorTargetGate(online, usbConnected = { true }, localHealthy = { checked.add(it); true }, onlineAvailable = { false })

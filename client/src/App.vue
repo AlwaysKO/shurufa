@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { evidenceTime, evidenceSource, usageEvidenceDetails } from './usageEvidence';
 import { computed, nextTick, onMounted, onBeforeUnmount, ref, watch } from 'vue';
 import ConfirmationDialog from './components/ConfirmationDialog.vue';
 import { cancelConfirmation, confirmation, useConfirmation } from './confirmation';
@@ -267,13 +268,7 @@ async function deleteUser(user: DeviceRow) {
 function subtitle(user: DeviceRow) {
   return user.tags?.trim() || [user.brand, user.model].filter(Boolean).join(' ') || user.id;
 }
-function interactionAt(value: string | null | undefined) {
-  const unknown = '未知（未收到操作记录）';
-  if (!value) return unknown;
-  const date = new Date(value);
-  if (!Number.isFinite(date.getTime())) return unknown;
-  return date.toLocaleString('sv-SE', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' });
-}
+
 </script>
 
 <template>
@@ -325,10 +320,10 @@ function interactionAt(value: string | null | undefined) {
       <div v-if="directoryOpen" class="directory-mask" :inert="confirmation ? true : undefined" @click.self="closeDirectory">
         <section ref="directoryDialog" class="directory-dialog" role="dialog" aria-modal="true" aria-label="选择用户">
           <header class="directory-header">
-            <div><h2>选择用户</h2><p>共 {{ directoryTotal }} 台设备，按最后人为操作时间排序</p></div>
+            <div><h2>选择用户</h2><p>共 {{ directoryTotal }} 台设备，按最近使用记录时间排序</p></div>
             <button type="button" class="close-button" @click="closeDirectory">×</button>
           </header>
-          <p class="directory-time-note">时间均为北京时间，仅展示已收到的操作记录；离线操作需等待联网补传。不表示当前在线，也不代表消息或图片已全部同步。</p>
+          <p class="directory-time-note">时间均为北京时间，仅展示已收到的使用记录（应用活动、熄屏或锁屏），不等于最后触摸；离线记录需等待联网补传。不表示当前在线，也不代表消息或图片已全部同步。</p>
           <form class="directory-search" @submit.prevent="loadDirectory(1)">
             <input v-model="directoryQuery" placeholder="搜索名称、品牌、型号或设备 ID" autofocus />
             <button type="submit" :disabled="directoryLoading">搜索</button>
@@ -351,10 +346,18 @@ function interactionAt(value: string | null | undefined) {
                 <span class="user-row-avatar">📱</span>
                 <span class="user-row-main"><strong>{{ deviceLabel(user) }}</strong><span>{{ subtitle(user) }}</span><code>{{ user.id }}</code></span>
                 <span class="user-row-meta">
-                  <span class="user-row-time"><span>最后人为操作</span><time>{{ interactionAt(user.last_interaction_at) }}</time></span>
+                  <span class="user-row-time"><span>最近使用记录 · {{ evidenceSource(user.latest_usage_source) }}</span><time>{{ evidenceTime(user.latest_usage_at) }}</time></span>
                   <b v-if="user.id === currentUserId">当前</b>
                 </span>
               </button>
+              <details class="usage-evidence">
+                <summary>查看分项时间证据（北京时间）</summary>
+                <p>事件发生时间与服务器收到时间分开；交互未覆盖全部操作，熄屏可能晚于最后一次操作。未知不表示没有发生。</p>
+                <div v-for="item in usageEvidenceDetails(user)" :key="item.label">
+                  <strong>{{ item.label }}</strong>：{{ item.at }} · {{ item.source }}
+                  <small v-if="item.label !== '最近记录的交互'">服务器收到：{{ item.received }}</small>
+                </div>
+              </details>
               <div class="user-actions">
                 <button type="button" role="switch" :aria-checked="user.save_uploads !== false" :aria-label="`${deviceLabel(user)} 保存上报数据`" class="saving-switch" :class="{ off: user.save_uploads === false }" :disabled="!!userAction || editSaving" @click="toggleSaving(user)">
                   <span class="switch-track" aria-hidden="true"></span><span>保存上报数据：{{ user.save_uploads === false ? '关' : '开' }}</span>
@@ -379,6 +382,11 @@ function interactionAt(value: string | null | undefined) {
 </template>
 
 <style>
+.usage-evidence { flex-basis: 100%; order: 3; box-sizing: border-box; padding: 8px 12px; font-size: 12px; color: #64748b; overflow-wrap: anywhere; }
+.usage-evidence summary { cursor: pointer; padding: 4px 0; }
+.usage-evidence p { line-height: 1.6; }
+.usage-evidence small { display: block; margin: 3px 0 8px; }
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f5f6fa; color: #2f3542; }
 body.admin-overlay-open { overflow:hidden; }
@@ -447,4 +455,5 @@ button, input { font: inherit; }
 .delete-user { padding:6px 10px; border:1px solid #efc7c7; border-radius:6px; background:#fff; color:#c23b3b; cursor:pointer; font-size:11px; }
 .user-actions button:disabled { opacity:.5; cursor:wait; }.directory-action-message { padding:10px 24px; margin:0; font-size:13px; color:#367154; line-height:1.6; }.directory-action-message.error { color:#bd3939; }
 @media(max-width:560px){.user-row{flex-wrap:wrap}.user-select{flex-basis:100%}.user-actions{width:100%;flex-direction:row;justify-content:space-between;padding:0 10px 12px}.directory-action-message{padding:10px 16px}}
+.user-row { flex-wrap: wrap; }
 </style>

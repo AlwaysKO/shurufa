@@ -26,7 +26,7 @@ describe('collector runtime setting', () => {
 
     const mobile = await request(createApp(pool)).get('/api/v1/mobile/config').set('X-Device-Id', userId);
     expect(mobile.status).toBe(200);
-    expect(mobile.body).toEqual({ collector_base_url: 'https://new.example.com' });
+    expect(mobile.body).toEqual({ collector_base_url: 'https://new.example.com', capabilities: { usage_evidence: 1, location_altitude_evidence: 1 } });
   });
 
   it('拒绝HTTP和带业务路径的地址且不覆盖原设置', async () => {

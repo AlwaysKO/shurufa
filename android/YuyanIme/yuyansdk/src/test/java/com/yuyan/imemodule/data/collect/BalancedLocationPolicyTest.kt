@@ -7,8 +7,42 @@ class BalancedLocationPolicyTest {
     private val start = 1_800_000_000_000L
     private fun point(time: Long, lat: Double = 23.13) = LocationCandidate(lat, 113.3, 15f, time)
 
-    @Test fun `single unconfirmed jump briefly checks movement then restores stationary sampling`() {
+    @Test fun `precise continuous walking does not enter wifi stationary cadence`() {
+        val policy = BalancedLocationPolicy().apply { updateNetwork(true) }
+        for (minute in 0..6) {
+            val time = start + minute * 60_000
+            policy.observe(time, LocationCandidate(23.13 + minute * 20.0 / 111_195,
+                113.3, 5f, time, "gps"), null)
+            assertEquals(60_000L, policy.intervalMs)
+        }
+    }
+
+    @Test fun `non wifi stationary observations retain one minute sampling`() {
         val policy = BalancedLocationPolicy()
+        (0..4).forEach { policy.observe(start + it * 30_000, point(start + it * 30_000), null) }
+        assertEquals(60_000L, policy.intervalMs)
+    }
+
+    @Test fun `network transition preserves geographical stay and confirmation expiry uses current network`() {
+        val policy = BalancedLocationPolicy().apply { updateNetwork(true) }
+        (0..4).forEach { policy.observe(start + it * 30_000, point(start + it * 30_000), null) }
+        assertEquals(300_000L, policy.intervalMs)
+        policy.updateNetwork(false)
+        assertEquals(60_000L, policy.intervalMs)
+        policy.updateNetwork(true)
+        assertEquals(300_000L, policy.intervalMs)
+        policy.observe(start + 150_000, point(start + 150_000, 23.15), null)
+        assertEquals(30_000L, policy.intervalMs)
+        policy.updateNetwork(false)
+        policy.endConfirmation()
+        assertEquals(60_000L, policy.intervalMs)
+        assertNull(policy.confirmationDelayMs(start + 210_000))
+        policy.updateNetwork(true)
+        assertEquals(300_000L, policy.intervalMs)
+    }
+
+    @Test fun `single unconfirmed jump briefly checks movement then restores stationary sampling`() {
+        val policy = BalancedLocationPolicy().apply { updateNetwork(true) }
         (0..4).forEach { policy.observe(start + it * 30_000, point(start + it * 30_000), null) }
         policy.observe(start + 150_000, point(start + 150_000, 23.15), null)
         assertEquals(30_000L, policy.intervalMs)
@@ -17,7 +51,7 @@ class BalancedLocationPolicyTest {
     }
 
     @Test fun `unconfirmed excursions do not keep stationary high frequency forever`() {
-        val policy = BalancedLocationPolicy()
+        val policy = BalancedLocationPolicy().apply { updateNetwork(true) }
         (0..4).forEach { policy.observe(start + it * 30_000, point(start + it * 30_000), null) }
         policy.observe(start + 150_000, point(start + 150_000, 23.131), null)
         assertEquals(30_000L, policy.intervalMs)
@@ -30,7 +64,7 @@ class BalancedLocationPolicyTest {
     }
 
     @Test fun `one minute samples establish a stay and confirmed motion restores one minute`() {
-        val policy = BalancedLocationPolicy()
+        val policy = BalancedLocationPolicy().apply { updateNetwork(true) }
         assertEquals(60_000L, policy.intervalMs)
         (0..2).forEach { policy.observe(start + it * 60_000, point(start + it * 60_000), 0f) }
         assertEquals(60_000L, policy.intervalMs)
@@ -45,7 +79,7 @@ class BalancedLocationPolicyTest {
     }
 
     @Test fun `stale points and sparse observations cannot establish a stay`() {
-        val policy = BalancedLocationPolicy()
+        val policy = BalancedLocationPolicy().apply { updateNetwork(true) }
         policy.observe(start, point(start), null)
         policy.observe(start + 120_000, point(start), null)
         policy.observe(start + 300_000, point(start + 300_000), null)
@@ -53,32 +87,33 @@ class BalancedLocationPolicyTest {
     }
 
     @Test fun `speed restores movement even inside uncertainty radius`() {
-        val policy = BalancedLocationPolicy()
+        val policy = BalancedLocationPolicy().apply { updateNetwork(true) }
         (0..4).forEach { policy.observe(start + it * 30_000, point(start + it * 30_000), 0f) }
         policy.observe(start + 150_000, point(start + 150_000), 2f)
         assertEquals(60_000L, policy.intervalMs)
     }
 
-    @Test fun `balanced thirty second sampling still requires five minutes and movement to report`() {
+    @Test fun `balanced thirty second sampling still requires one minute and movement to report`() {
         val last = UploadedLocation(23.13, 113.3, 15f, start, start)
         assertFalse(LocationUploadPolicy.shouldUpload(start + 300_000, point(start + 300_000), last))
         assertFalse(LocationUploadPolicy.shouldUpload(start + 300_000, point(start), last))
         assertFalse(LocationUploadPolicy.shouldUpload(start + 29_999, point(start + 29_999, 23.14), last))
         assertFalse(LocationUploadPolicy.shouldUpload(start + 30_000, point(start + 30_000), last))
         assertFalse(LocationUploadPolicy.shouldUpload(start + 30_000, point(start + 30_000, 23.14), last))
-        assertTrue(LocationUploadPolicy.shouldUpload(start + 300_000, point(start + 300_000, 23.14), last))
+        assertTrue(LocationUploadPolicy.shouldUpload(start + 60_000, point(start + 60_000, 23.14), last))
     }
     @Test fun `long observation gap resets stay confidence`() {
-        val policy = BalancedLocationPolicy()
+        val policy = BalancedLocationPolicy().apply { updateNetwork(true) }
         (0..4).forEach { policy.observe(start + it * 30_000, point(start + it * 30_000), null) }
         policy.observe(start + 1_200_000, point(start + 1_200_000), null)
         assertEquals(60_000L, policy.intervalMs)
     }
 
-    @Test fun `five minute report interval starts at successful persistence`() {
+    @Test fun `minute captures tolerate bounded selection delay but dense captures do not`() {
         val last = UploadedLocation(23.13, 113.3, 15f, start, start + 150)
-        assertFalse(LocationUploadPolicy.shouldUpload(start + 300_020, point(start + 300_000, 23.14), last))
-        assertTrue(LocationUploadPolicy.shouldUpload(start + 300_150, point(start + 300_000, 23.14), last))
+        assertFalse(LocationUploadPolicy.shouldUpload(start + 59_999, point(start + 59_999, 23.14), last))
+        assertTrue(LocationUploadPolicy.shouldUpload(start + 60_020, point(start + 60_000, 23.14), last))
+        assertTrue(LocationUploadPolicy.shouldUpload(start + 60_150, point(start + 60_000, 23.14), last))
     }
 
 }

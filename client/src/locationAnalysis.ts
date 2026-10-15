@@ -106,6 +106,32 @@ export function analyzeLocations(rows: LocationRow[]) {
   return { segments, stays, wifiSessions, distanceMeters, excludedPoints };
 }
 
+export const locationPointKey = (point: LocationRow) => JSON.stringify([point.device_id, point.id]);
+export function orderedLocationPoints(rows: LocationRow[]) {
+  return [...rows].sort((a, b) => a.device_id.localeCompare(b.device_id) ||
+    (Number.isFinite(timestamp(a)) ? timestamp(a) : Infinity) - (Number.isFinite(timestamp(b)) ? timestamp(b) : Infinity) || a.id.localeCompare(b.id));
+}
+export interface IntervalSpeed { kmh: number; from: string; to: string }
+/** 相邻采样直线位移的区间平均值，不是道路里程或瞬时速度。 */
+export function intervalSpeeds(rows: LocationRow[]) {
+  const result = new Map<string, IntervalSpeed>();
+  const ordered = orderedLocationPoints(rows);
+  for (let i = 1; i < ordered.length; i++) {
+    const a = ordered[i - 1]!, b = ordered[i]!;
+    if (a.device_id !== b.device_id || !validLocationPoint(a) || !validLocationPoint(b) || !continuous(a, b)) continue;
+    const aError = nonnegative(a.accuracy), bError = nonnegative(b.accuracy);
+    if (aError == null || bError == null || aError > 50 || bError > 50) continue;
+    const meters = distance(a, b);
+    // 至少为合计误差的两倍，且超过微小抖动，避免将误差范围内的变化解释成速度。
+    if (meters <= Math.max(10, 2 * (aError + bError))) continue;
+    const kmh = meters / (timestamp(b) - timestamp(a)) * 3600;
+    if (kmh > 70 * 3.6) continue;
+    result.set(locationPointKey(b), { kmh, from: a.occurred_at, to: b.occurred_at });
+  }
+  return result;
+}
+const intervalTime = (value: string) => new Date(value).toLocaleString('sv-SE', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' });
+
 export function wifiLabel(point: LocationRow) {
   const wifi = point.context?.wifi;
   if (!wifi) return '未采集';
@@ -140,19 +166,20 @@ function speedIssue(point: LocationRow): string | null {
   return null;
 }
 /** 新旧记录共用手机端精度门槛；缺少证据时不把原始读数当作实际速度。 */
-export function speedLabel(point: LocationRow) {
+export function speedLabel(point: LocationRow, estimate?: IntervalSpeed) {
+  if (speedIssue(point) != null && estimate) return `${estimate.kmh.toFixed(1)} km/h（区间估算）`;
   if (point.speed == null && point.context?.raw_speed_mps == null &&
       point.context?.speed_quality !== 'unreliable') return '未知（未提供速度）';
   const issue = speedIssue(point);
   return issue == null ? `${(Number(point.speed) * 3.6).toFixed(1)} km/h` : `未知（${issue}）`;
 }
-export function speedDetails(point: LocationRow) {
+export function speedDetails(point: LocationRow, estimate?: IntervalSpeed) {
   const raw = nonnegative(point.context?.raw_speed_mps ?? point.speed);
   const issue = speedIssue(point);
   const rawLabel = raw == null ? null : Number.isFinite(raw * 3.6)
     ? `原始速度 ${(raw * 3.6).toFixed(1)} km/h（仅供排查）`
     : `原始速度 ${raw} m/s（仅供排查，速度换算超出可显示范围）`;
-  return [rawLabel, issue].filter(Boolean).join(' · ');
+  return [estimate && issue != null ? `区间估算：${intervalTime(estimate.from)} ～ ${intervalTime(estimate.to)}（北京时间），按采样点直线位移计算，非瞬时速度或道路里程` : null, rawLabel, issue].filter(Boolean).join(' · ');
 }
 export function contextDetails(point: LocationRow) {
   const c = point.context;
@@ -162,7 +189,14 @@ export function contextDetails(point: LocationRow) {
   if (c.charging != null) details.push(c.charging ? '充电中' : '未充电');
   if (c.is_interactive != null) details.push(c.is_interactive ? '亮屏' : '熄屏');
   if (c.power_save != null) details.push(c.power_save ? '省电模式' : '正常电源模式');
-  if (c.altitude_m != null) details.push(`参考高度 ${c.altitude_m.toFixed(1)} m（WGS84 椭球高，非海拔；垂直精度未记录）`);
+  const height = c.altitude_m ?? c.raw_altitude_m;
+  const trusted = c.altitude_m != null && c.altitude_quality_reason === 'accurate' &&
+    c.vertical_accuracy_m != null && c.vertical_accuracy_m >= 0 && c.vertical_accuracy_m <= 20;
+  const altitudeReason = ({ accurate: '', missing_altitude: '未提供高度', invalid_altitude: '高度值无效',
+    missing_vertical_accuracy: '未提供垂直精度', poor_vertical_accuracy: '垂直精度不足' } as const)[c.altitude_quality_reason ?? 'accurate'];
+  if (height != null) details.push(`${trusted ? '可信' : '参考'}高度 ${height.toFixed(1)} m（WGS84 椭球高，非海拔；${
+    c.vertical_accuracy_m != null ? `垂直估计误差 ±${c.vertical_accuracy_m.toFixed(1)} m（68%置信范围）` : '垂直精度未记录'}${altitudeReason ? `；${altitudeReason}` : ''}）`);
+  else if (c.altitude_quality_reason) details.push(`高度未知（${altitudeReason || '未提供高度'}）`);
   if (c.bearing_deg != null) details.push(`移动方向 ${c.bearing_deg.toFixed(0)}°`);
   if (c.speed_accuracy_mps != null) details.push(`速度估计误差 ±${c.speed_accuracy_mps.toFixed(1)} m/s（68%置信范围）`);
   return details.join(' · ') || '未采集';

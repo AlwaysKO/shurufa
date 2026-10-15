@@ -23,4 +23,14 @@ class ImageUploadCollectorWiringTest {
         assertTrue(source.contains("selection=selection"))
         assertTrue(source.contains("retryGate.blocks(target,android.os.SystemClock.elapsedRealtime(),false)"))
     }
+    @Test fun imageFastPathDoesNotRescanUsageRecoveryEverySecond() {
+        val flush = source.substringAfter("private fun flushEvents(").substringBefore("suspend fun refreshBackgroundResources")
+        assertTrue(flush.contains("if (syncDictionary) appContext?.let"))
+        assertTrue(flush.contains("try { UploadRecovery.scheduleNext(app) }"))
+        assertTrue(flush.contains("catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }"))
+        assertTrue(flush.contains("catch (_: Exception)"))
+        val wake = source.substringAfter("@Synchronized fun requestSync(").substringBefore("fun setCollectionEnabled(")
+        assertTrue(!wake.substringAfter("wakeJob = scope.launch").contains("scheduleNext"))
+    }
+
 }

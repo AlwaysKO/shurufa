@@ -19,11 +19,7 @@ import com.yuyan.imemodule.data.collect.collectorTargetGate
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
@@ -36,13 +32,13 @@ object AppUsageTracker {
     private val scope=CoroutineScope(SupervisorJob()+Dispatchers.IO)
     private val sampleLock=Any()
     private val syncMutex=Mutex()
-    private val syncCadence=com.yuyan.imemodule.data.collect.CollectorSyncCadence(wifiIntervalMs=300_000L, now=SystemClock::elapsedRealtime)
+    private val syncCadence=com.yuyan.imemodule.data.collect.CollectorSyncCadence(wifiIntervalMs=300_000L, mobileIntervalMs=300_000L, now=SystemClock::elapsedRealtime)
     private val http=OkHttpClient.Builder().addInterceptor(GameWorkRuntime.interceptor).connectTimeout(5,TimeUnit.SECONDS).readTimeout(10,TimeUnit.SECONDS).callTimeout(15,TimeUnit.SECONDS).build()
     private val names=AppNameResolver()
     private var loop: Job?=null
     private var processSampled=false
     @Volatile private var appContext: Context?=null
-    private val uploads=UsageUploadGate { GameWorkRuntime.isBackgroundAllowed() && appContext?.let { enabled(it) && hasPermission(it) } == true }
+    private val uploads=UsageUploadGate { com.yuyan.imemodule.data.collect.ImageUploadRuntime.isBackgroundWorkAllowed() && appContext?.let { enabled(it) && hasPermission(it) } == true }
     private fun requested(context: Context)=PreferenceManager.getDefaultSharedPreferences(context).getBoolean(KEY,false)
     fun enabled(context: Context)=requested(context) && CollectionConsent.enabled(context)
     @Suppress("DEPRECATION")
@@ -121,9 +117,18 @@ object AppUsageTracker {
             val elapsed=SystemClock.elapsedRealtime(); val boot=boot(context)
             val original=store.state() ?: UsageState(cursor=now,boot=boot,elapsed=elapsed,observedAt=now)
             val targets=ServerConfig.eventTargets
+            fun saveAndHandoff(result: UsageReduction, events: List<UsageEvent> = emptyList()) {
+                val evidenceChanged=store.save(result, targets, events)
+                // 只有实际新记录/原始证据成功落盘才交给系统；不在 syncMutex 内递归查询 nextUploadDelay。
+                if ((result.records.isNotEmpty() || evidenceChanged) && enabled(context) && hasPermission(context)) runCatching {
+                    val delay = syncCadence.wakeDelay(com.yuyan.imemodule.data.collect.ImageUploadRuntime.hasValidatedWifi(context))
+                    val paused = !com.yuyan.imemodule.data.collect.ImageUploadRuntime.isBackgroundWorkAllowed()
+                    com.yuyan.imemodule.data.collect.UploadRecovery.wake(context, if (paused) maxOf(delay, 300_000L) else delay)
+                }.onFailure { Log.w("AppUsage", "Usage recovery handoff deferred") }
+            }
             fun saveGap(reason: String, suspended: Boolean) {
                 val r=UsageSessionEngine.gap(original,now,reason)
-                store.save(r.copy(state=r.state.copy(suspended=suspended,boot=boot,elapsed=elapsed,observedAt=now)),targets)
+                saveAndHandoff(r.copy(state=r.state.copy(suspended=suspended,boot=boot,elapsed=elapsed,observedAt=now)))
             }
             if(!hasPermission(context)) {
                 if(!original.suspended) saveGap("permission_lost",true)
@@ -144,12 +149,13 @@ object AppUsageTracker {
             val events=try { query(context,state.cursor,until) } catch (_: Exception) {
                 saveGap("query_unavailable",true); return@use
             }
+            if(!enabled(context) || !hasPermission(context)) return@use
             val result=UsageSessionEngine.reduce(state,events,until)
             records.addAll(result.records)
             val homePackages=usageHomePackages(context)
-            store.save(result.copy(state=result.state.copy(boot=boot,elapsed=elapsed,observedAt=now),records=records.filter { shouldReportUsage(it,homePackages) }.map { r ->
+            saveAndHandoff(result.copy(state=result.state.copy(boot=boot,elapsed=elapsed,observedAt=now),records=records.filter { shouldReportUsage(it,homePackages) }.map { r ->
                 r.copy(appName=r.packageName?.let { names.resolve(context,it) })
-            }),targets)
+            }), events)
             store.prune(now-7*DAY,ServerConfig.baseUrl)
         }
     }
@@ -181,24 +187,40 @@ object AppUsageTracker {
     } catch (_: Exception) { false }
 
     /** Keep a pending batch's existing cadence when the screen-off job runs before it is due. */
-    suspend fun nextUploadDelay(context: Context): Long? = withContext(Dispatchers.IO) {
+    suspend fun nextUploadDelay(context: Context, includePaused: Boolean = false): Long? = withContext(Dispatchers.IO) {
         fun allowed() = enabled(context) && hasPermission(context) &&
             com.yuyan.imemodule.data.collect.ImageUploadRuntime.isBackgroundWorkAllowed() &&
             com.yuyan.imemodule.data.collect.ImageUploadRuntime.hasValidatedNetwork(context)
-        // Do not inspect storage or poll while input/game work owns the device.
+        // 系统恢复暂停时仅查目标关系，不解码记录或枚举应用；五分钟再判实际可上报记录。
+        if (includePaused && enabled(context) && hasPermission(context) &&
+            com.yuyan.imemodule.data.collect.ImageUploadRuntime.hasValidatedNetwork(context) &&
+            !com.yuyan.imemodule.data.collect.ImageUploadRuntime.isBackgroundWorkAllowed()) {
+            val gate = collectorTargetGate(context, ServerConfig.baseUrl)
+            return@withContext UsageStore(context).use { store ->
+                300_000L.takeIf { store.targets().any(gate::canAttempt) }
+            }
+        }
         if (!allowed()) return@withContext null
         syncMutex.withLock {
             if (!allowed()) return@withLock null
             ServerConfig.init(context)
             val gate=collectorTargetGate(context,ServerConfig.baseUrl)
             val homePackages=usageHomePackages(context)
-            val pending=UsageStore(context).use { store ->
-                store.targets().any { target ->
-                    allowed() && gate.canUpload(target) && store.pending(target).any { shouldReportUsage(it,homePackages) }
-                }
+            val capabilities=UsageEvidenceCapabilities(context)
+            val cadence=syncCadence.wakeDelay(com.yuyan.imemodule.data.collect.ImageUploadRuntime.hasValidatedWifi(context)).coerceAtLeast(30_000L)
+            val pendingDelay=UsageStore(context).use { store ->
+                store.targets().mapNotNull { target ->
+                    if(!allowed() || !gate.canAttempt(target)) return@mapNotNull null
+                    val records=store.pending(target).any { shouldReportUsage(it,homePackages) }
+                    when {
+                        records -> cadence
+                        !store.hasPendingEvidence(target) -> null
+                        capabilities.supported(target)==false -> maxOf(cadence,capabilities.retryDelay(target))
+                        else -> cadence
+                    }
+                }.minOrNull()
             }
-            if (!pending || !allowed()) return@withLock null
-            syncCadence.wakeDelay(com.yuyan.imemodule.data.collect.ImageUploadRuntime.hasValidatedWifi(context)).coerceAtLeast(30_000L)
+            if (!allowed()) null else pendingDelay
         }
     }
 
@@ -209,22 +231,35 @@ object AppUsageTracker {
             sample(context)
             if(!hasPermission(context) || !com.yuyan.imemodule.data.collect.ImageUploadRuntime.isBackgroundWorkAllowed() ||
                 !com.yuyan.imemodule.data.collect.collectorNetworkAvailable(context)) return@withLock
-            // 仍按原频率本地采样，仅合并移动网络上的批量上报。
-            if(!syncCadence.tryStart(com.yuyan.imemodule.data.collect.ImageUploadRuntime.hasValidatedWifi(context),userInitiated)) return@withLock
+            // 未到期时连本地目标健康探测也不执行；只读检查不消费空队列资格。
+            if(!userInitiated && syncCadence.remainingDelay(com.yuyan.imemodule.data.collect.ImageUploadRuntime.hasValidatedWifi(context))>0) return@withLock
             ServerConfig.init(context)
             val gate=collectorTargetGate(context,ServerConfig.baseUrl)
             val homePackages=usageHomePackages(context)
             UsageStore(context).use { store ->
+                var batchStarted=false
                 for(target in store.targets()) {
                     currentCoroutineContext().ensureActive()
-                    if(!enabled(context) || !hasPermission(context) || !GameWorkRuntime.isBackgroundAllowed()) break
-                    if(!gate.canUpload(target)) continue
+                    if(!enabled(context) || !hasPermission(context) || !com.yuyan.imemodule.data.collect.ImageUploadRuntime.isBackgroundWorkAllowed()) break
                     val batch=store.pendingForUpload(target,homePackages)
-                    if(batch.isEmpty()) continue
+                    val capabilities=UsageEvidenceCapabilities(context)
+                    val pendingEvidence=store.pendingEvidence(target)
+                    val supported=capabilities.supported(target)
+                    if((batch.isEmpty() && (pendingEvidence==null || supported==false)) || !gate.canAttempt(target)) continue
+                    // 空队列、被过滤记录及无网络/USB资格不消费；健康探测失败也占本批，避免30秒反复联网。
+                    if(!batchStarted) {
+                        if(!syncCadence.tryStart(com.yuyan.imemodule.data.collect.ImageUploadRuntime.hasValidatedWifi(context),userInitiated)) break
+                        batchStarted=true
+                    }
+                    // 单个目标健康失败不阻塞本批其他目标；只有实际回执才能清理待传。
+                    if(!gate.canUpload(target)) continue
                     try {
-                        if (uploadUsageBatch(http,target,DataCollector.deviceId(context),batch,uploads)) {
-                            store.acknowledge(target,batch.map { it.id },ServerConfig.baseUrl)
-                        }
+                        val deviceId=DataCollector.deviceId(context)
+                        val evidence=pendingEvidence?.takeIf { supported ?: capabilities.fetch(http,target,deviceId,uploads) }
+                        val receipt=uploadUsageEvidenceBatch(http,target,deviceId,batch,evidence,
+                            com.yuyan.imemodule.data.collect.HumanInteractionRuntime.snapshot(context),uploads)
+                        if(receipt.recordsAccepted && batch.isNotEmpty()) store.acknowledge(target,batch.map { it.id },ServerConfig.baseUrl)
+                        if(evidence!=null && receipt.evidenceDisposition!=null) store.acknowledgeEvidence(target,evidence.version,receipt.evidenceDisposition)
                     } catch (e: Exception) {
                         if(e is CancellationException) throw e
                         // Retain this target's batch; an unavailable server must not block the other.
@@ -238,13 +273,5 @@ object AppUsageTracker {
 
 /** Only an explicit matching receipt can release this target's durable queue. */
 internal fun uploadUsageBatch(http: OkHttpClient, target: String, deviceId: String, batch: List<UsageRecord>, gate: UsageUploadGate? = null): Boolean {
-    val payload=JSONObject().put("records",JSONArray().apply { batch.forEach { put(it.toJson()) } }).toString()
-    val request=Request.Builder().url(target.trimEnd('/')+"/api/v1/mobile/app-usage/batch")
-        .header("X-Device-Id",deviceId).post(payload.toRequestBody("application/json".toMediaType())).build()
-    val call=if(gate!=null) gate.prepare(http,request) ?: return false else http.newCall(request)
-    try {
-        return call.execute().use { response ->
-            response.isSuccessful && AppUsageTracker.acceptsReceipt(response.body?.string().orEmpty(),batch.size)
-        }
-    } finally { gate?.finish(call) }
+    return uploadUsageEvidenceBatch(http,target,deviceId,batch,null,gate=gate).recordsAccepted
 }

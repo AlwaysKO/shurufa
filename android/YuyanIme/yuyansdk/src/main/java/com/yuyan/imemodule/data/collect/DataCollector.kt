@@ -158,26 +158,22 @@ object DataCollector {
         BackgroundRefreshRuntime.start(app)
         if (flushJob == null) {
             flushJob = scope.launch {
-                var regularDue = android.os.SystemClock.elapsedRealtime() + FLUSH_INTERVAL_MS
                 while (true) {
-                    val online = ImageUploadRuntime.hasValidatedNetwork(app)
-                    val pending = online && (delivery?.hasPendingInteraction(ServerConfig.eventTargets) == true || eventStore?.hasPendingUploads() == true ||
-                        com.yuyan.imemodule.data.navigation.NavigationSync.hasPending(app) ||
-                        com.yuyan.imemodule.data.capture.page.PageCaptureSync.hasPending(app) ||
-                        com.yuyan.imemodule.data.capture.page.VideoVisitSync.hasPending(app))
-                    val imagesPending = ImageUploadRuntime.canUploadScreenshot(app, ServerConfig.baseUrl) &&
-                        (eventStore?.hasPendingImages() == true || com.yuyan.imemodule.data.capture.page.PageCaptureSync.hasDue(app) ||
-                            com.yuyan.imemodule.data.capture.page.VideoVisitSync.hasDue(app))
-                    // 新入队或批次结束只唤醒重算，不绕过同步节流；空队列半小时兜底。
-                    if (flushSignal.awaitNext(pending, imagesPending)) continue
-                    if (!collectorNetworkAvailable(app) || !GameWorkRuntime.isBackgroundAllowed()) continue
-                    val now = android.os.SystemClock.elapsedRealtime()
-                    if (now >= regularDue) {
-                        regularDue = now + FLUSH_INTERVAL_MS
-                        flushEvents()
-                    } else if (imagesPending) {
-                        // 已准备图片按独立资格补传，不等待输入空闲或提高词库同步频率。
-                        flushEvents(syncDictionary = false)
+                    flushSignal.guardedCycle {
+                        val ordinaryDelay = nextUploadDelay(app)
+                        val videoDelay = com.yuyan.imemodule.data.capture.page.VideoVisitSync.nextUploadDelay(app, includePaused = true)
+                        val nextDelay = listOfNotNull(ordinaryDelay, videoDelay).minOrNull()
+                        val online = ImageUploadRuntime.hasValidatedNetwork(app)
+                        val navigationPending = online && com.yuyan.imemodule.data.navigation.NavigationSync.hasPending(app)
+                        val imagePending = ImageUploadRuntime.hasValidatedWifi(app) &&
+                            (eventStore?.hasPendingImages() == true || com.yuyan.imemodule.data.capture.page.PageCaptureSync.hasPending(app))
+                        val imagesPending = ImageUploadRuntime.canUploadScreenshot(app, ServerConfig.baseUrl) &&
+                            (eventStore?.hasPendingImages() == true || com.yuyan.imemodule.data.capture.page.PageCaptureSync.hasDue(app))
+                        // 视频结束元数据不是图片，不得走一秒续传。图片与导航保留独立等待。
+                        val wait = if (imagePending || navigationPending) minOf(nextDelay ?: FLUSH_INTERVAL_MS, FLUSH_INTERVAL_MS) else nextDelay
+                        if (flushSignal.awaitNext(nextDelay != null || imagePending || navigationPending, imagesPending, wait)) return@guardedCycle
+                        if (!collectorNetworkAvailable(app) || !GameWorkRuntime.isBackgroundAllowed()) return@guardedCycle
+                        if (imagesPending) flushEvents(syncDictionary = false) else flushEvents()
                     }
                 }
             }
@@ -240,6 +236,14 @@ object DataCollector {
             romVersion = Build.DISPLAY,
             ramMb = (totalMem() / 1024 / 1024).toInt(),
         )
+        val capabilities = com.yuyan.imemodule.data.usage.UsageEvidenceCapabilities(context)
+        val locationTargetAllowed: (String) -> Boolean = { target ->
+            CollectionConsent.enabled(context) && locationTrackingEnabled && hasLocationPermission(context) &&
+                ImageUploadRuntime.isBackgroundWorkAllowed() && collectorNetworkAvailable(context) &&
+                // drain already performed the health check; rechecks must not add one HTTP per point.
+                CollectorTargetGate(ServerConfig.baseUrl, { isUsbDataLink(context) }, { false },
+                    { ImageUploadRuntime.hasValidatedNetwork(context) }).canAttempt(target)
+        }
         delivery = EventDelivery(
             store = store(context),
             http = http,
@@ -248,7 +252,7 @@ object DataCollector {
             onlineTarget = { ServerConfig.baseUrl },
             allowed = { kind -> CollectionConsent.enabled(context) && GameWorkRuntime.isBackgroundAllowed() &&
                 (kind == null || kind == "chat_asset" || ImageUploadRuntime.isInputIdle()) &&
-                (kind != "location" || locationTrackingEnabled) },
+                (kind != "location" || (locationTrackingEnabled && hasLocationPermission(context))) },
             beginImageRead = { ImageUploadRuntime.beginUploadRead() },
             chatAllowed = { target -> ImageUploadRuntime.canUploadScreenshot(context,target) || ImageUploadRuntime.canUploadChatMessages(context,target) },
             prepareChatCall = { target, request -> ImageUploadRuntime.prepareChatCall(context,target,http,request) },
@@ -257,6 +261,11 @@ object DataCollector {
             maxImageBytes = { target -> ImageUploadRuntime.maxImageBytes(context, target) },
             tryStartImage = { target, bytes -> ImageUploadRuntime.tryStartImage(context, target, bytes) },
             interaction = { HumanInteractionRuntime.snapshot(context) },
+            locationTargetAllowed = locationTargetAllowed,
+            locationAltitudeSupported = { target ->
+                capabilities.ensureAltitudeSupported(http, target, info.id,
+                    com.yuyan.imemodule.data.usage.UsageUploadGate { locationTargetAllowed(target) })
+            },
         )
         requestSync()
     }
@@ -326,7 +335,7 @@ object DataCollector {
             if (CollectionConsent.epoch != consentEpoch || !CollectionConsent.enabled(app)) return@offer
             store(app).enqueue(checkNotNull(event), targets)
             // 已提交后调度失败不能把这一项当作落盘失败。定时补传仍会发现持久记录。
-            runCatching { requestSync() }
+            runCatching { requestSync(pendingKind = "event") }
         }
     }
 
@@ -347,7 +356,15 @@ object DataCollector {
     }
 
     private fun flushEvents(syncDictionary: Boolean = true) { scope.launch {
-        try { flushNow(syncDictionary) } finally { flushSignal.wake() }
+        try {
+            flushNow(syncDictionary)
+            // 图片一秒快路径不反复扫描 usage/video；普通/事件批次和系统 Job 负责续约。
+            if (syncDictionary) appContext?.let { app ->
+                try { UploadRecovery.scheduleNext(app) }
+                catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
+                catch (_: Exception) { Log.w(TAG, "恢复调度暂不可用，保留待传及系统兜底") }
+            }
+        } finally { flushSignal.wake() }
     } }
 
     suspend fun refreshBackgroundResources(app: Context, localOnly: Boolean = false) = withContext(Dispatchers.IO) {
@@ -382,7 +399,7 @@ object DataCollector {
         if(!collectorNetworkAvailable(app)) return@coroutineScope
         if(syncDictionary && !ImageUploadRuntime.hasValidatedNetwork(app)) BackgroundRefreshRuntime.refreshUsbResources(app)
         val idle=ImageUploadRuntime.isInputIdle()
-        // 导航与图片有独立资格，不能被普通数据15分钟的间隔阻塞。
+        // 导航与图片有独立资格，不由普通数据的五分钟批次决定。
         launch { com.yuyan.imemodule.data.navigation.NavigationSync.flush(app) }
         launch { com.yuyan.imemodule.data.capture.page.PageCaptureSync.flush(app) }
         launch { com.yuyan.imemodule.data.capture.page.VideoVisitSync.flush(app) }
@@ -390,9 +407,8 @@ object DataCollector {
         if(!flushMutex.tryLock())return@coroutineScope
         try {
         val wifi=ImageUploadRuntime.hasValidatedWifi(app)
-        val kinds=eventStore?.pendingKinds().orEmpty() +
-            if (uploader.hasPendingInteraction(ServerConfig.eventTargets)) setOf("human_interaction") else emptySet()
-        val selection=uploadPlan.select(wifi,idle,kinds,eventStore?.hasPendingEvents()==true,
+        val (kinds, events) = eligiblePending(app)
+        val selection=uploadPlan.select(wifi,idle,kinds,events,
             ImageUploadRuntime.canUploadScreenshot(app,ServerConfig.baseUrl))
         val images=selection.images
         if(!selection.events && !selection.regular && !selection.location && !selection.chatText && !images)return@coroutineScope
@@ -435,8 +451,11 @@ object DataCollector {
                     .get()
                     .build()
                 http.newCall(request).execute().use { response ->
-                    if (!response.isSuccessful) null else json.parseToJsonElement(response.body?.string().orEmpty())
-                        .jsonObject["collector_base_url"]?.jsonPrimitive?.contentOrNull
+                    if (!response.isSuccessful) null else {
+                        val body=response.body?.string().orEmpty()
+                        com.yuyan.imemodule.data.usage.UsageEvidenceCapabilities(context).record(current,body)
+                        json.parseToJsonElement(body).jsonObject["collector_base_url"]?.jsonPrimitive?.contentOrNull
+                    }
                 }
             } catch (_: Exception) { null }
         }
@@ -468,7 +487,7 @@ object DataCollector {
             ServerConfig.init(context)
             store(context).enqueueReport(PendingReport(UUID.randomUUID().toString(), kind, safePayload),
                 if (kind == "chat_asset" || kind == "chat_messages") listOf(ServerConfig.baseUrl) else ServerConfig.eventTargets)
-            requestSync()
+            runCatching { requestSync(pendingKind = kind) }
             true
         } catch (_: Exception) { Log.e(TAG, "报告落盘失败，保留原数据重试"); false }
     }
@@ -501,19 +520,48 @@ object DataCollector {
             ServerConfig.init(context)
             if (!CollectionConsent.enabled(context) || !ImageUploadRuntime.isBackgroundWorkAllowed()) return false
             store(context).enqueueChatBatch(pending, listOf(ServerConfig.baseUrl))
-            requestSync()
+            runCatching { requestSync(pendingKind = "chat_messages") }
             true
         } catch (_: Exception) { Log.e(TAG, "聊天批次交接失败，保留原数据重试"); false }
     }
 
-    @Synchronized fun requestSync(wifiRestored: Boolean = false) {
+    /** IO 线程只读队列元数据；不读取图片载荷、不发健康 HTTP、不消费批次。 */
+    private fun eligiblePending(context: Context): Pair<Set<String>, Boolean> {
+        val local = store(context)
+        val gate = CollectorTargetGate(ServerConfig.baseUrl, { isUsbDataLink(context) }, { false },
+            { ImageUploadRuntime.hasValidatedNetwork(context) })
+        val targets = (ServerConfig.eventTargets + local.targets() + local.reportTargets()).distinct().filter(gate::canAttempt)
+        val locationEnabled = PreferenceManager.getDefaultSharedPreferences(context).getBoolean(KEY_LOCATION_ENABLE, true)
+        val kinds = local.pendingKinds(targets).filterTo(mutableSetOf()) { it != "location" || locationEnabled }
+        if (delivery?.hasPendingInteraction(targets) == true) kinds += "human_interaction"
+        return kinds to local.hasPendingEvents(targets)
+    }
+
+    internal fun nextUploadDelay(context: Context): Long? {
+        if (!CollectionConsent.enabled(context) || !collectorNetworkAvailable(context)) return null
+        val (kinds, events) = eligiblePending(context)
+        val delay = uploadPlan.nextUploadDelay(ImageUploadRuntime.hasValidatedWifi(context), kinds, events) ?: return null
+        // 暂停只查小型索引；系统级最多五分钟重查，不能以空队列半小时处理。
+        return if (ImageUploadRuntime.isBackgroundWorkAllowed()) delay else maxOf(delay, 300_000L)
+    }
+
+    @Synchronized fun requestSync(wifiRestored: Boolean = false, pendingKind: String? = null) {
         flushSignal.wake()
+        appContext?.let { app ->
+            // 已持久化后的交接不能影响落盘成功语义；不在输入线程查询数据库。
+            runCatching {
+                val due = pendingKind?.let {
+                    uploadPlan.nextUploadDelay(ImageUploadRuntime.hasValidatedWifi(app), setOf(it), it == "event")
+                } ?: 300_000L
+                UploadRecovery.wake(app, if (ImageUploadRuntime.isBackgroundWorkAllowed()) due else maxOf(due, 300_000L))
+            }
+        }
         if (wakeJob?.isActive == true) {
             if (!wifiRestored) return
             wakeJob?.cancel()
         }
         wakeJob = scope.launch {
-            val app=appContext ?: return@launch
+            if (appContext == null) return@launch
             delay(5_000L)
             flushEvents()
         }
@@ -692,6 +740,17 @@ object DataCollector {
     private fun reportLocation(context: Context, loc: Location, fromBalancedService: Boolean = false) {
         if (balancedLocationOwner != fromBalancedService) return
         if (!locationTrackingEnabled || !hasLocationPermission(context)) return  // 开关关闭后不再上报（双保险）
+        val snapshot = Location(loc)
+        scope.launch { persistLocation(context, snapshot, fromBalancedService) }
+    }
+
+    /** 入队与网络批次分开；时间在持久化互斥区内读取，避免排队时间改变节流基准。 */
+    internal suspend fun persistLocation(
+        context: Context,
+        loc: Location,
+        fromBalancedService: Boolean,
+        now: () -> Long = System::currentTimeMillis,
+    ) {
         val candidate = LocationCandidate(
             latitude = loc.latitude,
             longitude = loc.longitude,
@@ -700,30 +759,28 @@ object DataCollector {
             provider = loc.provider,
             elapsedRealtimeNanos = loc.elapsedRealtimeNanos,
         )
-        scope.launch {
-            locationUploadMutex.withLock {
-                val nowMs = System.currentTimeMillis()
-                if (!locationTrackingEnabled || !hasLocationPermission(context) ||
-                    balancedLocationOwner != fromBalancedService) return@withLock
-                val lastUploaded = readLastUploadedLocation()
-                val speed = LocationSpeedQuality.from(loc)
-                if (!locationJumpFilter.accept(nowMs, candidate, speed.speedMps, lastUploaded)) return@withLock
-                if (!LocationUploadPolicy.shouldUpload(nowMs, candidate, lastUploaded)) return@withLock
-                val report = LocationReport(
-                    deviceId = deviceId(context),
-                    latitude = loc.latitude,
-                    longitude = loc.longitude,
-                    accuracy = if (loc.hasAccuracy()) loc.accuracy else null,
-                    provider = loc.provider,
-                    speed = speed.speedMps,
-                    occurredAt = iso8601.get().format(Date(loc.time)),
-                    context = runCatching { LocationContextSnapshot.capture(context, loc,
-                        if (fromBalancedService) "balanced" else "opportunistic") }.getOrNull(),
-                )
-                if (enqueueReport(context, "location", json.encodeToString(LocationReport.serializer(), report))) {
-                    // 节流以成功落盘为界，不以网络成功为界；断网期间仍保存移动轨迹。
-                    saveLastUploadedLocation(candidate, nowMs)
-                }
+        locationUploadMutex.withLock {
+            val nowMs = now()
+            if (!locationTrackingEnabled || !hasLocationPermission(context) ||
+                balancedLocationOwner != fromBalancedService) return@withLock
+            val lastUploaded = readLastUploadedLocation()
+            val speed = LocationSpeedQuality.from(loc)
+            if (!locationJumpFilter.accept(nowMs, candidate, speed.speedMps, lastUploaded)) return@withLock
+            if (!LocationUploadPolicy.shouldUpload(nowMs, candidate, lastUploaded)) return@withLock
+            val report = LocationReport(
+                deviceId = deviceId(context),
+                latitude = loc.latitude,
+                longitude = loc.longitude,
+                accuracy = if (loc.hasAccuracy()) loc.accuracy else null,
+                provider = loc.provider,
+                speed = speed.speedMps,
+                occurredAt = iso8601.get().format(Date(loc.time)),
+                context = runCatching { LocationContextSnapshot.capture(context, loc,
+                    if (fromBalancedService) "balanced" else "opportunistic") }.getOrNull(),
+            )
+            if (enqueueReport(context, "location", json.encodeToString(LocationReport.serializer(), report))) {
+                // 节流以成功落盘为界，不以网络成功为界；断网期间仍保存移动轨迹。
+                saveLastUploadedLocation(candidate, nowMs)
             }
         }
     }

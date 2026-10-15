@@ -16,6 +16,10 @@ import android.content.pm.ServiceInfo
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
@@ -31,9 +35,31 @@ import com.yuyan.imemodule.ui.activity.SettingsActivity
 class BalancedLocationService : Service() {
     private val handler = Handler(Looper.getMainLooper())
     private val policy = BalancedLocationPolicy()
+    private val fixSelection = LocationFixSelection()
+    private val selectionTimeout = Runnable { flushSelectedLocation() }
+
+    private fun flushSelectedLocation() {
+        handler.removeCallbacks(selectionTimeout)
+        if (!started || !allowed()) { fixSelection.clear(); finishSession(); return }
+        fixSelection.take(System.currentTimeMillis())?.let { observeSelectedLocation(it) }
+    }
     private lateinit var manager: LocationManager
     private lateinit var preferences: SharedPreferences
     private var started = false
+    private var connectivity: ConnectivityManager? = null
+    private var networkRegistered = false
+    private val networkChanged = Runnable {
+        if (started) {
+            val oldInterval = policy.intervalMs
+            policy.updateNetwork(ImageUploadRuntime.hasValidatedWifi(this))
+            if (oldInterval != policy.intervalMs) registerUpdates()
+        }
+    }
+    private val networkCallback = object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) { handler.post(networkChanged) }
+        override fun onCapabilitiesChanged(network: Network, capabilities: NetworkCapabilities) { handler.post(networkChanged) }
+        override fun onLost(network: Network) { handler.post(networkChanged) }
+    }
     private var appOps: AppOpsManager? = null
     private var locationStateRegistered = false
     private val permissionChanged = Runnable {
@@ -99,6 +125,8 @@ class BalancedLocationService : Service() {
             started = true
             isRunning = true
             DataCollector.setBalancedLocationOwner(true)
+            observeNetwork()
+            policy.updateNetwork(ImageUploadRuntime.hasValidatedWifi(this))
             registerUpdates()
             if (started) handler.postDelayed(checkPermission, PERMISSION_FALLBACK_MS)
         } catch (_: Exception) {
@@ -123,6 +151,19 @@ class BalancedLocationService : Service() {
 
     private fun receive(location: Location) {
         if (!started || !allowed()) { finishSession(); return }
+        val elapsed = SystemClock.elapsedRealtime()
+        // A deep-sleep-delayed timeout is not allowed to extend the previous window.
+        if (fixSelection.delayMs(elapsed) == 0L) {
+            flushSelectedLocation()
+            // Flushing may change cadence and fail provider registration, ending ownership.
+            if (!started || !allowed()) { finishSession(); return }
+        }
+        fixSelection.offer(System.currentTimeMillis(), elapsed, location)
+        handler.removeCallbacks(selectionTimeout)
+        fixSelection.delayMs(elapsed)?.let { handler.postDelayed(selectionTimeout, it) }
+    }
+
+    private fun observeSelectedLocation(location: Location) {
         val oldInterval = policy.intervalMs
         policy.observe(System.currentTimeMillis(), LocationCandidate(location.latitude, location.longitude,
             if (location.hasAccuracy()) location.accuracy else Float.POSITIVE_INFINITY, location.time,
@@ -134,6 +175,18 @@ class BalancedLocationService : Service() {
         if (started) policy.confirmationDelayMs(SystemClock.elapsedRealtime())?.let {
             handler.postDelayed(confirmationTimeout, it)
         }
+    }
+
+    private fun observeNetwork() {
+        if (networkRegistered) return
+        connectivity = getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+        val cm = connectivity ?: return
+        networkRegistered = runCatching {
+            if (Build.VERSION.SDK_INT >= 24) cm.registerDefaultNetworkCallback(networkCallback)
+            else cm.registerNetworkCallback(NetworkRequest.Builder()
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).build(), networkCallback)
+            true
+        }.getOrDefault(false)
     }
 
     @Suppress("MissingPermission")
@@ -148,8 +201,8 @@ class BalancedLocationService : Service() {
             override fun onProviderDisabled(provider: String) { if (started && !allowed()) finishSession() }
         }
         activeListener = listener
-        // During stays the OS receives genuinely lower-frequency, zero-distance requests,
-        // detecting renewed motion in ~5 minutes; unchanged fixes never enter the upload queue.
+        // Only validated Wi-Fi stays use lower-frequency requests. Elsewhere the target
+        // is one minute regardless of screen state; Android may still defer delivery.
         var registered = false
         for (provider in listOf(LocationManager.NETWORK_PROVIDER, LocationManager.GPS_PROVIDER)) {
             try {
@@ -182,6 +235,9 @@ class BalancedLocationService : Service() {
         val owned = started
         started = false
         isRunning = false
+        if (networkRegistered) runCatching { connectivity?.unregisterNetworkCallback(networkCallback) }
+        networkRegistered = false
+        fixSelection.clear()
         handler.removeCallbacksAndMessages(null)
         removeUpdates()
         if (owned) DataCollector.setBalancedLocationOwner(false)

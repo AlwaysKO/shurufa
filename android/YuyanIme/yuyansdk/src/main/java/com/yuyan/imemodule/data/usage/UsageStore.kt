@@ -16,15 +16,31 @@ internal fun usageRecordFromJson(j: JSONObject) = UsageRecord(j.getString("id"),
 /** Transactions bind cursor advancement to per-target delivery records.
  * The device-owned queue must not travel through system or keyboard database backups.
  */
-internal class UsageStore(context: Context): SQLiteOpenHelper(context.applicationContext,java.io.File(context.noBackupFilesDir,"app_usage.db").absolutePath,null,2), java.io.Closeable {
+internal class UsageStore(context: Context): SQLiteOpenHelper(context.applicationContext,java.io.File(context.noBackupFilesDir,"app_usage.db").absolutePath,null,3), java.io.Closeable {
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL("CREATE TABLE state (id INTEGER PRIMARY KEY CHECK(id=1), payload TEXT NOT NULL)")
         db.execSQL("CREATE TABLE record (id TEXT PRIMARY KEY, end_ms INTEGER NOT NULL, payload TEXT NOT NULL, start_ms INTEGER NOT NULL CHECK(end_ms>start_ms), online_confirmed_at INTEGER)")
         db.execSQL("CREATE TABLE delivery (record_id TEXT NOT NULL, target TEXT NOT NULL, acknowledged INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(record_id,target))")
         db.execSQL("CREATE INDEX pending_delivery ON delivery(target,acknowledged)")
+        createEvidenceTables(db)
     }
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         if (oldVersion < 2) db.execSQL("ALTER TABLE record ADD COLUMN online_confirmed_at INTEGER")
+        if (oldVersion < 3) createEvidenceTables(db)
+    }
+    private fun createEvidenceTables(db: SQLiteDatabase) {
+        db.execSQL("CREATE TABLE evidence (id INTEGER PRIMARY KEY CHECK(id=1), payload TEXT NOT NULL)")
+        db.execSQL("CREATE TABLE evidence_delivery (target TEXT PRIMARY KEY, version TEXT NOT NULL, payload TEXT NOT NULL, disposition TEXT CHECK(disposition IN ('saved','discarded')))")
+    }
+    fun pendingEvidence(target: String): UsageEvidence? = readableDatabase.rawQuery(
+        "SELECT payload FROM evidence_delivery WHERE target=? AND disposition IS NULL",arrayOf(target)
+    ).use { c -> if(c.moveToFirst()) UsageEvidence.fromJson(JSONObject(c.getString(0))) else null }
+    fun hasPendingEvidence(target: String): Boolean = readableDatabase.rawQuery(
+        "SELECT 1 FROM evidence_delivery WHERE target=? AND disposition IS NULL",arrayOf(target)
+    ).use { it.moveToFirst() }
+    fun acknowledgeEvidence(target: String, version: String, disposition: String) {
+        require(disposition in setOf("saved","discarded"))
+        writableDatabase.execSQL("UPDATE evidence_delivery SET disposition=? WHERE target=? AND version=? AND disposition IS NULL",arrayOf(disposition,target,version))
     }
     fun state(): UsageState? = readableDatabase.rawQuery("SELECT payload FROM state WHERE id=1",null).use { c ->
         if(!c.moveToFirst()) return@use null
@@ -33,10 +49,27 @@ internal class UsageStore(context: Context): SQLiteOpenHelper(context.applicatio
             j.optBoolean("blocked"),j.optBoolean("suspended"),j.optBoolean("locked"),j.optInt("boot",-1),j.optLong("elapsed",0),j.optLong("observed",j.getLong("cursor")),
             candidate?.let { UsageActive(it.getString("pkg"),it.getString("token"),it.getLong("start")) })
     }
-    fun save(result: UsageReduction, targets: List<String>) {
+    fun save(result: UsageReduction, targets: List<String>, events: List<UsageEvent> = emptyList()): Boolean {
         val db=writableDatabase
         db.beginTransaction()
         try {
+            val previous=db.rawQuery("SELECT payload FROM evidence WHERE id=1",null).use { c ->
+                if(c.moveToFirst()) UsageEvidence.fromJson(JSONObject(c.getString(0))) else null
+            }
+            val evidence=UsageEvidence.advance(previous,events,state()?.cursor ?: result.state.cursor,result.state.cursor)
+            val changed=evidence?.version!=previous?.version
+            var deliveryChanged=false
+            if(evidence!=null) {
+                val payload=evidence.toJson().toString()
+                if(changed) db.execSQL("INSERT OR REPLACE INTO evidence(id,payload) VALUES(1,?)",arrayOf(payload))
+                targets.distinct().forEach { target ->
+                    // A new target gets the authorized snapshot. An empty poll never resurrects an ACK.
+                    val values=ContentValues().apply { put("target",target); put("version",evidence.version); put("payload",payload) }
+                    if(db.insertWithOnConflict("evidence_delivery",null,values,SQLiteDatabase.CONFLICT_IGNORE)!=-1L) deliveryChanged=true
+                    values.putNull("disposition")
+                    if(db.update("evidence_delivery",values,"target=? AND version<>?",arrayOf(target,evidence.version))>0) deliveryChanged=true
+                }
+            }
             result.records.forEach { r ->
                 // A constraint violation must roll back the cursor as well as this batch.
                 db.execSQL("INSERT INTO record(id,start_ms,end_ms,payload) SELECT ?,?,?,? WHERE NOT EXISTS (SELECT 1 FROM record WHERE id=?)",arrayOf<Any>(r.id,r.startMs,r.endMs,r.toJson().toString(),r.id))
@@ -51,9 +84,10 @@ internal class UsageStore(context: Context): SQLiteOpenHelper(context.applicatio
                 .put("suspended",s.suspended).put("locked",s.locked).put("boot",s.boot).put("elapsed",s.elapsed).put("observed",s.observedAt).put("candidate",candidate ?: JSONObject.NULL).toString()
             db.insertWithOnConflict("state",null,ContentValues().apply { put("id",1); put("payload",payload) },SQLiteDatabase.CONFLICT_REPLACE).also { check(it!=-1L) }
             db.setTransactionSuccessful()
+            return changed || deliveryChanged
         } finally { db.endTransaction() }
     }
-    fun targets(): List<String> = readableDatabase.rawQuery("SELECT DISTINCT target FROM delivery WHERE acknowledged=0",null).use { c -> buildList { while(c.moveToNext()) add(c.getString(0)) } }
+    fun targets(): List<String> = readableDatabase.rawQuery("SELECT target FROM delivery WHERE acknowledged=0 UNION SELECT target FROM evidence_delivery WHERE disposition IS NULL",null).use { c -> buildList { while(c.moveToNext()) add(c.getString(0)) } }
     fun pending(target: String): List<UsageRecord> = readableDatabase.rawQuery(
         "SELECT r.payload FROM record r JOIN delivery d ON r.id=d.record_id WHERE d.target=? AND d.acknowledged=0 ORDER BY r.end_ms,r.id LIMIT 200",arrayOf(target)
     ).use { c -> buildList { while(c.moveToNext()) add(usageRecordFromJson(JSONObject(c.getString(0)))) } }
