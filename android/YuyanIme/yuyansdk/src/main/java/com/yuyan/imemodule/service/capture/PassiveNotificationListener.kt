@@ -12,6 +12,7 @@ import com.yuyan.imemodule.data.capture.CaptureCoordinator
 import com.yuyan.imemodule.data.callrecording.WechatCallSignals
 import com.yuyan.imemodule.data.capture.CapturePersistResult
 import com.yuyan.imemodule.data.capture.RoomCaptureOutboxStore
+import com.yuyan.imemodule.data.capture.shouldDiscardUnconfirmedText
 import com.yuyan.imemodule.data.capture.db.CaptureDatabase
 import com.yuyan.imemodule.data.capture.net.CaptureUploader
 import com.yuyan.imemodule.data.capture.net.CaptureWorkSignal
@@ -235,6 +236,9 @@ class PassiveNotificationListener : NotificationListenerService() {
         return deferredMedia?.processNext(allowed) { snapshot, source ->
             val parsed = parser.parse(snapshot) ?: return@processNext false
             if (!CollectionConsent.allowsText(parsed.message.text) || !allowed()) return@processNext false
+            // 通知缩略图不构成聊天截图；结束旧暂存，避免重复解码被规则拒绝的消息。
+            if (shouldDiscardUnconfirmedText(parsed.conversation.identityConfidence,
+                    parsed.message.messageType.wireName, parsed.message.metadata, hasResource = true)) return@processNext true
             val asset = importer.importImage(Uri.fromFile(source)) ?: return@processNext false
             if (!allowed()) return@processNext false
             // 只有归一化后的 PNG 与原消息进入既有 outbox，原始编码文件不交给上传器。

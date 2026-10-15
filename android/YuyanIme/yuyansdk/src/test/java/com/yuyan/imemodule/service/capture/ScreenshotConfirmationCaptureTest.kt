@@ -1,6 +1,9 @@
 package com.yuyan.imemodule.service.capture
 
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.Rect
 import android.os.Looper
 import android.view.accessibility.AccessibilityNodeInfo
@@ -42,7 +45,7 @@ class ScreenshotConfirmationCaptureTest {
         }, deviceId = { "device" }, wakeUploader = {}))
         set("mediaCapturer", WindowMediaCapturer(service, ScreenshotSource { _, _ ->
             captures++
-            WindowScreenshotResult.Success(Bitmap.createBitmap(400, 800, Bitmap.Config.ARGB_8888), 0, 0)
+            WindowScreenshotResult.Success(chatSample(), 0, 0)
         }))
         set("screenshotIdentityResolver", object : ScreenshotConversationIdentityResolver {
             override suspend fun resolve(asset: PendingAssetEntity, expectedVersion: Long, titleInput: TitleOcrInput?): ScreenshotConversationIdentity {
@@ -117,9 +120,7 @@ class ScreenshotConfirmationCaptureTest {
         }
         set("coordinator", CaptureCoordinator(store = store, deviceId = { "device" }, wakeUploader = {}))
         set("mediaCapturer", WindowMediaCapturer(service, ScreenshotSource { _, _ ->
-            WindowScreenshotResult.Success(Bitmap.createBitmap(400, 800, Bitmap.Config.ARGB_8888).apply {
-                eraseColor(if (variant == 0) android.graphics.Color.WHITE else android.graphics.Color.LTGRAY)
-            }, 0, 0)
+            WindowScreenshotResult.Success(chatSample(variant), 0, 0)
         }))
         val tracker = WechatTitleStabilizer()
         var time = 0L
@@ -168,5 +169,19 @@ class ScreenshotConfirmationCaptureTest {
             WechatListCaptureTest.ServiceShadow.root = null
             files.forEach { File(it).delete() }
         }
+    }
+
+    private fun chatSample(variant: Int = 0): Bitmap = Bitmap.createBitmap(400, 800, Bitmap.Config.ARGB_8888).apply {
+        val canvas = Canvas(this)
+        canvas.drawColor(if (variant == 0) Color.WHITE else Color.LTGRAY)
+        val paint = Paint().apply { color = Color.rgb(247, 247, 247) }
+        canvas.drawRect(0f, 746f, 400f, 800f, paint)
+        paint.color = Color.BLACK
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = 2f
+        canvas.drawCircle(23f, 772f, 11f, paint)
+        canvas.drawCircle(378f, 772f, 11f, paint)
+        canvas.drawLine(373f, 772f, 383f, 772f, paint)
+        canvas.drawLine(378f, 767f, 378f, 777f, paint)
     }
 }

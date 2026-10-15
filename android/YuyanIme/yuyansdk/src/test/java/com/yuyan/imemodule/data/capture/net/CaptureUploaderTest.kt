@@ -65,8 +65,8 @@ class CaptureUploaderTest {
         val decoded=CaptureApi("http://localhost",DEVICE_ID).decodeMessagePayload(original.payloadJson)
         return original.copy(payloadJson=Json.encodeToString(decoded.copy(
             conversation=JsonObject(decoded.conversation + ("identity_confidence" to JsonPrimitive(.55))),
-            message=JsonObject(decoded.message + ("metadata" to buildJsonObject {
-                put("capture_source","notification");put("conversation_identity_status","pending")
+            message=JsonObject(decoded.message + ("message_type" to JsonPrimitive(if(requiredHash != null) "image" else "text")) + ("metadata" to buildJsonObject {
+                put("capture_source",if(requiredHash != null) "wechat_screenshot" else "notification");put("conversation_identity_status","pending")
                 put("identity_unavailable","true")
             })),
         )))
@@ -81,6 +81,35 @@ class CaptureUploaderTest {
         assertEquals(0,server.requestCount)
         assertFalse(dao.hasPendingMessage(message.id))
         assertEquals(message.fingerprint,dao.findSeen(message.fingerprint)?.fingerprint)
+    }
+
+    @Test fun pendingStickerWithoutScreenshotIsDiscardedFromOldRoomQueueWithoutHttp() = runBlocking {
+        val original = pendingNotification("sticker-no-image")
+        val api = CaptureApi("http://localhost", DEVICE_ID)
+        val payload = api.decodeMessagePayload(original.payloadJson)
+        val message = original.copy(payloadJson = Json.encodeToString(payload.copy(message = JsonObject(
+            payload.message + ("message_type" to JsonPrimitive("sticker")) + ("text" to JsonPrimitive("[动画表情]"))
+        ))))
+        dao.insertPendingMessage(message)
+        server.enqueue(MockResponse().setBody("{\"ok\":true}"))
+        assertEquals(UploadRunResult(1,0),uploader().runOnce(1000))
+        assertEquals(0,server.requestCount)
+        assertFalse(dao.hasPendingMessage(message.id))
+    }
+
+    @Test fun pendingStickerWithoutScreenshotNeverEntersAtomicReportQueue() = runBlocking {
+        val original = pendingNotification("sticker-no-image")
+        var batches = 0
+        val api = CaptureApi(server.url("/").toString(), DEVICE_ID, enqueueBatch = { batches++; true })
+        val payload = api.decodeMessagePayload(original.payloadJson)
+        val message = original.copy(payloadJson = Json.encodeToString(payload.copy(message = JsonObject(
+            payload.message + ("message_type" to JsonPrimitive("sticker")) + ("text" to JsonPrimitive("[动画表情]"))
+        ))))
+        dao.insertPendingMessage(message)
+        assertEquals(UploadRunResult(1,0),CaptureUploader(dao,api,assetFile={File(tempDir,it)}).runOnce(1000))
+        assertEquals(0,batches)
+        assertEquals(0,server.requestCount)
+        assertFalse(dao.hasPendingMessage(message.id))
     }
 
     @Test fun unconfirmedTextWithRoomAssetDependencyWaitsAndIsNeverDiscarded() = runBlocking {

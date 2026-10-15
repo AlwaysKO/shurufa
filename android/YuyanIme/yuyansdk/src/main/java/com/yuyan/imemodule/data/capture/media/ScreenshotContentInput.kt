@@ -22,7 +22,10 @@ class ScreenshotContentInput(
         private set
     var reason: ScreenshotContentReason = ScreenshotContentReason.NOT_REQUESTED
         private set
+    var bodyBoundaryVerified: Boolean = false
+        private set
     fun captureFrom(bitmap: Bitmap, density: Float = 1f, bodyBoundaryVerified: Boolean = true) {
+        this.bodyBoundaryVerified = bodyBoundaryVerified
         sha256 = exactPixelHash(bitmap, IntRect(0, bodyTopPx, bitmap.width, bitmap.height))
         wechatListSha256 = if (detectWechatList) wechatListNavigationTop(bitmap, density)?.let {
             exactPixelHash(bitmap, IntRect(0, bodyTopPx, bitmap.width, it))

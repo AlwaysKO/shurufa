@@ -38,6 +38,10 @@ internal class VideoVisitDelivery(
             currentCoroutineContext().ensureActive()
             if (!allowed(row.platform)) break
             try {
+                if (!row.hasCapturedFrame()) {
+                    if (store.discardWithoutFrames(row) { allowed(row.platform) }) discarded++
+                    continue
+                }
                 val preparation = prepare() ?: break
                 val payload = try {
                     if (!allowed(row.platform)) break

@@ -158,7 +158,7 @@ class CaptureCoordinatorTest {
         val pending = conversation.copy(platform = ChatPlatform.QQ, accountKey = "notification-screenshot",
             externalKey = "notification-fallback-v2:" + "a".repeat(64), identityConfidence = 0.55, displayName = "待确认截图")
         val shot = mediaMessage(IntRect(0, 0, 100, 80)).copy(mediaBounds = null, metadata = mapOf(
-            "capture_source" to "notification_screenshot_fallback", "source_package" to "com.tencent.mobileqq",
+            "capture_source" to "notification_screenshot_fallback", "source_package" to "com.tencent.mobileqq", "screenshot_chat_verified" to "true",
             "notification_key" to "thread", "conversation_identity_status" to "pending"))
         assertEquals(CapturePersistResult.INSERTED, coordinator.captureParsed(pending, listOf(shot), mapOf(0 to pendingAsset("qq-fallback"))))
         assertEquals(CapturePersistResult.ALREADY_PERSISTED, coordinator.captureParsed(pending, listOf(shot), mapOf(0 to pendingAsset("qq-fallback"))))
@@ -379,7 +379,7 @@ class CaptureCoordinatorTest {
             direction = ChatDirection.SYSTEM,
             messageType = ChatMessageType.IMAGE,
             metadata = mapOf(
-                "capture_source" to "wechat_empty_tree_screenshot",
+                "capture_source" to "wechat_empty_tree_screenshot", "screenshot_chat_verified" to "true",
                 "conversation_identity_status" to "pending",
             ),
         )
@@ -493,7 +493,16 @@ class CaptureCoordinatorTest {
         assertEquals(CapturePersistResult.FAILED, coordinator.captureParsed(parsed.conversation, listOf(parsed.message.copy(metadata = mapOf("capture_source" to "notification")))))
     }
 
-    @Test fun pendingNotificationWithImageOrDeferredMediaAndConfirmedTextRemainDurable() = runBlocking {
+    @Test fun unverifiedStickerNotificationWithoutScreenshotNeverEntersOutbox() = runBlocking {
+        val store = FakeStore()
+        val worker = coordinator(FakeAdapter(success()), store)
+        val parsed = com.yuyan.imemodule.data.capture.notification.NotificationParser().parse(
+            com.yuyan.imemodule.data.capture.notification.NotificationSnapshot("com.tencent.mm", "sticker", "任意联系人", "[动画表情]", 1000))!!
+        worker.captureParsed(parsed.conversation, listOf(parsed.message))
+        assertTrue(store.pending.isEmpty())
+    }
+
+    @Test fun pendingNotificationThumbnailsAndDeferredFlagsAreDroppedButConfirmedTextRemainsDurable() = runBlocking {
         val store = FakeStore()
         val worker = coordinator(FakeAdapter(success()), store)
         val parser = com.yuyan.imemodule.data.capture.notification.NotificationParser()
@@ -502,12 +511,12 @@ class CaptureCoordinatorTest {
         val confirmed=parsed("confirmed","peer")
         assertEquals(CapturePersistResult.INSERTED,worker.captureParsed(confirmed.conversation,listOf(confirmed.message)))
         val image=parsed("image")
-        assertEquals(CapturePersistResult.INSERTED,worker.captureParsed(image.conversation,listOf(image.message),mapOf(0 to pendingAsset("with-image"))))
+        assertEquals(CapturePersistResult.FAILED,worker.captureParsed(image.conversation,listOf(image.message),mapOf(0 to pendingAsset("with-image"))))
         val reference=parsed("reference")
-        assertEquals(CapturePersistResult.INSERTED,worker.captureParsed(reference.conversation,listOf(reference.message.copy(assetSha256=listOf("a".repeat(64))))))
+        assertEquals(CapturePersistResult.FAILED,worker.captureParsed(reference.conversation,listOf(reference.message.copy(assetSha256=listOf("a".repeat(64))))))
         val deferred=parsed("deferred")
-        assertEquals(CapturePersistResult.INSERTED,worker.captureParsed(deferred.conversation,listOf(deferred.message.copy(metadata=deferred.message.metadata+("asset_capture_deferred" to "quota")))))
-        assertEquals(4,store.pending.size)
+        assertEquals(CapturePersistResult.FAILED,worker.captureParsed(deferred.conversation,listOf(deferred.message.copy(metadata=deferred.message.metadata+("asset_capture_deferred" to "quota")))))
+        assertEquals(1,store.pending.size)
     }
 
     @Test fun unknownNotificationFallbackIsKeptAsPendingNotAsNamedConversation() = runBlocking {
@@ -516,7 +525,7 @@ class CaptureCoordinatorTest {
         val pending = conversation.copy(accountKey = "notification-screenshot",
             externalKey = "notification-fallback-v2:" + "a".repeat(64), identityConfidence = 0.55, displayName = "待确认截图")
         val shot = mediaMessage(IntRect(0, 0, 100, 80)).copy(mediaBounds = null, metadata = mapOf(
-            "capture_source" to "notification_screenshot_fallback", "source_package" to "com.tencent.mm",
+            "capture_source" to "notification_screenshot_fallback", "source_package" to "com.tencent.mm", "screenshot_chat_verified" to "true",
             "notification_key" to "thread", "conversation_identity_status" to "pending",
         ))
         assertEquals(CapturePersistResult.INSERTED, coordinator.captureParsed(pending, listOf(shot), mapOf(0 to pendingAsset("fallback"))))
@@ -553,7 +562,7 @@ class CaptureCoordinatorTest {
         val key = "screenshot-v2:pending:00000000-0000-4000-8000-000000000001"
         val old = conversation.copy(accountKey="wechat-empty-tree", externalKey=key, conversationType=ConversationType.UNKNOWN, identityConfidence=0.0)
         val shot = CapturedMessage(conversationKey=null, senderKey="$key:viewport", direction=ChatDirection.SYSTEM, messageType=ChatMessageType.IMAGE,
-            metadata=mapOf("capture_source" to "wechat_empty_tree_screenshot", "conversation_identity_status" to "pending"))
+            metadata=mapOf("capture_source" to "wechat_empty_tree_screenshot", "screenshot_chat_verified" to "true", "conversation_identity_status" to "pending"))
         assertEquals(CapturePersistResult.INSERTED,worker.captureParsed(old,listOf(shot),mapOf(0 to pendingAsset("image"))))
         val known = old.copy(externalKey="screenshot-v2:"+"a".repeat(64),displayName="已知",identityConfidence=0.85)
         worker.captureParsed(known,listOf(shot.copy(senderKey="${known.externalKey}:viewport",metadata=shot.metadata+mapOf("conversation_identity_status" to "confirmed","conversation_identity_previous_key" to key))),mapOf(0 to pendingAsset("image")))
@@ -651,7 +660,7 @@ class CaptureCoordinatorTest {
             externalKey="screenshot-v2:truncated:11111111-1111-1111-1111-111111111111",
             displayName="测试…店（名称被截断）",identityConfidence=.55)
         val image=CapturedMessage(conversationKey=null,senderKey="viewport",direction=ChatDirection.SYSTEM,
-            messageType=ChatMessageType.IMAGE,metadata=mapOf("capture_source" to "wechat_empty_tree_screenshot",
+            messageType=ChatMessageType.IMAGE,metadata=mapOf("capture_source" to "wechat_empty_tree_screenshot", "screenshot_chat_verified" to "true",
                 "conversation_identity_status" to "truncated","conversation_identity_source" to "on_device_title_ocr"))
         val assets=mapOf(0 to pendingAsset("truncated-image"))
         assertEquals(CapturePersistResult.INSERTED,coordinator.captureParsed(partial,listOf(image),assets))

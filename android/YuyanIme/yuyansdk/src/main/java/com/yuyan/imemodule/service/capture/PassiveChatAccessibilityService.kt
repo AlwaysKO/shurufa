@@ -888,11 +888,13 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                     val capturedAt = attempt?.capturedAtMillis ?: System.currentTimeMillis()
                     val screenshotCaptureId = java.util.UUID.randomUUID().toString()
                     val firstIdentity = resolver?.resolve(asset, resolverVersion, titleInput) ?: unresolvedWechatScreenshotIdentity()
+                    val chatVerified = resolver != null && firstIdentity.isChatPage && contentInput.bodyBoundaryVerified
                     if (!isCurrentScreenshotWindow(windowId, identityGeneration, captureToken)) return@withLock
                     CaptureTrace.record(if (firstIdentity.isChatPage) CaptureStage.IDENTITY_READY else CaptureStage.IDENTITY_REJECTED,
                         windowId, identityGeneration, flag = firstIdentity.status == "confirmed")
                     com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics.record(applicationContext, "wechat", "page", if (firstIdentity.isChatPage) "matched" else "rejected")
-                    if (!firstIdentity.isChatPage) {
+                    if (!firstIdentity.isChatPage ||
+                        ((firstIdentity.confidence < 0.8 || firstIdentity.status != "confirmed") && !chatVerified)) {
                         if (screenshotIdentityGeneration.get() == identityGeneration) screenshotUpdates.rejectScrollResume(screenshotScope)
                         return@withLock
                     }
@@ -927,6 +929,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                                 occurredAt = isoTimestamp(capturedAt),
                                 metadata = mapOf(
                                     "capture_source" to "wechat_empty_tree_screenshot",
+                                    "screenshot_chat_verified" to chatVerified.toString(),
                                     "screenshot_capture_id" to screenshotCaptureId,
                                     "identity_unavailable" to (identity.status != "confirmed").toString(),
                                     "conversation_identity_source" to identity.source,
@@ -1053,6 +1056,14 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                     scheduleFallbackRetry(request)
                     return@withLock
                 }
+                val listMetadata = wechatListMetadata(target.chatViewport?.isWechatConversationList == true ||
+                    frameIdentity?.isWechatConversationList() == true, contentInput.wechatListSha256)
+                val chatVerified = target.chatViewport?.isWechatConversationList == false ||
+                    (wechatEmptyTree && frameIdentity?.isChatPage == true && contentInput.bodyBoundaryVerified)
+                if (!chatVerified && listMetadata.isEmpty()) {
+                    completeFallback(request)
+                    return@withLock
+                }
                 val targetAfterCapture = currentFallbackTarget(request)
                 if (captureRequestGeneration.get() != captureToken || targetAfterCapture?.windowId != target.windowId ||
                     targetAfterCapture?.chatViewport != target.chatViewport || pendingFallbackRequest() != request) {
@@ -1070,8 +1081,6 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                     return@withLock
                 }
 
-                val listMetadata = wechatListMetadata(target.chatViewport?.isWechatConversationList == true ||
-                    frameIdentity?.isWechatConversationList() == true, contentInput?.wechatListSha256)
                 val persistResult = coordinator?.captureParsed(
                     conversation = if (listMetadata.isNotEmpty()) wechatListConversation else CapturedConversation(
                         platform = descriptor.platform,
@@ -1092,6 +1101,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                             occurredAt = isoTimestamp(request.postedAtMillis),
                             metadata = mapOf(
                                 "capture_source" to "notification_screenshot_fallback",
+                                "screenshot_chat_verified" to chatVerified.toString(),
                                 "conversation_identity_status" to "pending",
                                 "conversation_identity_source" to "notification_screenshot_unverified",
                                 "conversation_identity_observed_title" to observedTitle.orEmpty(),

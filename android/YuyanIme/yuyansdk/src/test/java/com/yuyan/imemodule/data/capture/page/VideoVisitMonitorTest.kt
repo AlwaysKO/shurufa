@@ -34,14 +34,15 @@ class VideoVisitMonitorTest {
         elapsed = { elapsed }, wall = { wall })
     private fun enter(m: VideoVisitMonitor) {
         idle()
-        m.confirmVideo(m.generation(), "wechat", "video", elapsed, wall)
+        m.confirmVideo(m.generation(), "wechat", "video", elapsed, wall, firstImage = "00000000-0000-4000-8000-000000000001")
         idle()
     }
     @Test fun verifiedSameFeedWindowEventsKeepClockAndImageCanArriveLater() {
         val m = monitor(); idle()
         m.observeFeed(m.generation(), "com.tencent.mm", 10, elapsed, wall, { true }); idle()
-        val visit = VideoVisitStore(app).use { it.active()!! }
+        val visit = requireNotNull(m.activeVisit())
         assertNull(visit.firstImage)
+        VideoVisitStore(app).use { assertNull(it.active()) }
         evidence = VideoForegroundEvidence(VideoWindowKind.APPLICATION, "com.tencent.mm", 10, feedVerified = true)
         elapsed += 2000; wall += 2000
         m.windowChanged("com.tencent.mm", 10); idle()
@@ -299,7 +300,7 @@ class VideoVisitMonitorTest {
     }
 
     @Test fun completedRecoverySwitchAndCloseWakeOnlyAfterPersistence() {
-        VideoVisitStore(app).use { it.enter("wechat", "before-restart", 1, 1) }
+        VideoVisitStore(app).use { it.enter("wechat", "before-restart", 1, 1, firstImage = "00000000-0000-4000-8000-000000000001") }
         var wakes = 0
         val m = VideoVisitMonitor(app, Handler(Looper.getMainLooper()),
             readForeground = { _, _ -> evidence }, allowed = { true }, interactive = { true },
@@ -308,7 +309,7 @@ class VideoVisitMonitorTest {
             })
         idle(); assertEquals(1, wakes)
         enter(m); assertEquals(1, wakes)
-        m.confirmVideo(m.generation(), "wechat", "next", 2000, 11000); idle()
+        m.confirmVideo(m.generation(), "wechat", "next", 2000, 11000, firstImage = "00000000-0000-4000-8000-000000000002"); idle()
         assertEquals(2, wakes)
         m.close(); idle(); assertEquals(3, wakes)
     }

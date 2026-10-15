@@ -14,6 +14,18 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk=[30])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class ScreenshotContentInputTest {
+    @Test fun boundaryEvidenceIsAvailableIndependentlyOfContentDeduplication() {
+        val bitmap = Bitmap.createBitmap(80, 100, Bitmap.Config.ARGB_8888)
+        try {
+            val input = ScreenshotContentInput(20)
+            assertFalse(input.bodyBoundaryVerified)
+            input.captureFrom(bitmap, bodyBoundaryVerified = true)
+            assertTrue(input.bodyBoundaryVerified)
+            assertNull(input.blocks)
+            input.captureFrom(bitmap, bodyBoundaryVerified = false)
+            assertFalse(input.bodyBoundaryVerified)
+        } finally { bitmap.recycle() }
+    }
     @Test fun mediaPipelineCapturesRawContentBeforeEncodingWithoutChangingAsset() = kotlinx.coroutines.runBlocking {
         val bitmap=Bitmap.createBitmap(80,100,Bitmap.Config.ARGB_8888).apply { eraseColor(Color.WHITE) }
         val capturer=WindowMediaCapturer(androidx.test.core.app.ApplicationProvider.getApplicationContext(),

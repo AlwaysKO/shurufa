@@ -6,14 +6,20 @@ internal fun shouldDiscardUnconfirmedText(
     identityConfidence: Double?, messageType: String?,
     metadata: Map<String, String>, hasResource: Boolean,
 ): Boolean {
-    if (messageType != "text" || hasResource || !metadata["asset_capture_deferred"].isNullOrBlank() ||
-        metadata["asset_capture_failed"] == "true" || "notification_media_readable" in metadata) return false
-    return identityConfidence?.let { it.isFinite() && it < .8 } == true ||
+    val pending = identityConfidence?.let { it.isFinite() && it < .8 } == true ||
         metadata["conversation_identity_status"] in setOf("pending", "truncated") ||
         metadata["identity_unavailable"] == "true"
+    if (!pending) return false
+    // 发起补截图、通知缩略图或“截图失败”标记都不是实际聊天截图。
+    if (messageType != "image" || !hasResource) return true
+    return when (metadata["capture_source"]) {
+        "wechat_screenshot", "douyin_screenshot", "qq_screenshot" -> false
+        "wechat_empty_tree_screenshot", "notification_screenshot_fallback" -> metadata["screenshot_chat_verified"] != "true"
+        else -> true
+    }
 }
 
-/** 只结束明确无资源的待确认文字；未知格式交给原校验，不误删媒体依赖。 */
+/** 待确认会话必须附带实际聊天截图；真实截图依赖暂不可用时仍交原队列重试。 */
 internal fun filterUnconfirmedTextMessages(batch: JsonObject): JsonObject? {
     val conversation = batch["conversation"] as? JsonObject ?: return batch
     val messages = batch["messages"] as? JsonArray ?: return batch

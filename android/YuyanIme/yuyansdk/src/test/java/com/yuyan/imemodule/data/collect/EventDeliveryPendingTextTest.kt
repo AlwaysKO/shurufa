@@ -17,10 +17,10 @@ import java.util.UUID
 class EventDeliveryPendingTextTest {
     private val hash="a".repeat(64)
     private fun message(id:String,pending:Boolean,asset:Boolean=false,kind:String="text",deferred:Boolean=false)=buildJsonObject {
-        put("id",id);put("direction","incoming");put("message_type",kind);put("text",id)
+        put("id",id);put("direction","incoming");put("message_type",if(asset) "image" else kind);put("text",id)
         put("asset_sha256",buildJsonArray { if(asset) add(hash) })
         put("metadata",buildJsonObject {
-            put("capture_source","notification");put("notification_messaging_style","true")
+            put("capture_source",if(asset) "wechat_screenshot" else "notification");put("notification_messaging_style","true")
             put("conversation_identity_status",if(pending) "pending" else "confirmed")
             put("identity_unavailable",pending.toString());put("identity_confidence",if(pending) ".55" else ".9")
             put("conversation_identity_source",if(pending) "notification_title_unverified" else "notification_shortcut")
@@ -50,6 +50,17 @@ class EventDeliveryPendingTextTest {
         }
     }
 
+    @Test fun pendingStickerInGenericQueueEndsWithoutPostingMessageOrForgingReceipt()=fixture{store,server,target->
+        store.enqueueReport(PendingReport("sticker","chat_messages",payload(true,message("sticker",true,kind="sticker"))),listOf(target,"other"))
+        assertTrue(EventDelivery(store,OkHttpClient(),"device","{}",onlineTarget={target}).drain(target))
+        assertEquals(1,server.requestCount)
+        assertEquals("/api/v1/mobile/device",server.takeRequest().path)
+        assertTrue(store.pendingReports(target).isEmpty())
+        store.readableDatabase.rawQuery("SELECT online_confirmed_at FROM pending_report WHERE id='sticker'",null).use {
+            assertTrue(it.moveToFirst()); assertTrue(it.isNull(0))
+        }
+    }
+
     @Test fun mixedBatchFiltersNoiseOnEveryRetryAndKeepsConfirmedTextAndAssets()=fixture{store,server,target->
         val original=payload(false,message("noise",true),message("confirmed",false),message("attached",true,asset=true),
             message("image-task",true,kind="image"),message("deferred",true,deferred=true))
@@ -67,7 +78,7 @@ class EventDeliveryPendingTextTest {
             if(request.path!!.endsWith("/messages/batch")) {
                 batches++
                 val sent=Json.parseToJsonElement(request.body.readUtf8()).jsonObject.getValue("messages").jsonArray
-                assertEquals(listOf("confirmed","attached","image-task","deferred"),sent.map{it.jsonObject.getValue("id").jsonPrimitive.content})
+                assertEquals(listOf("confirmed","attached"),sent.map{it.jsonObject.getValue("id").jsonPrimitive.content})
             }
         }
         assertEquals(2,batches)

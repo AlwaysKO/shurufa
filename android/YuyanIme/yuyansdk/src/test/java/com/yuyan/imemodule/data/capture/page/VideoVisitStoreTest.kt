@@ -34,7 +34,7 @@ class VideoVisitStoreTest {
 
     @Test fun versionOneMigrationPreservesActiveAndCompleted() {
         val file = File(app.noBackupFilesDir, "video_visits.db")
-        val visit = VideoVisit("00000000-0000-4000-8000-000000000001", "wechat", "local", 1000, 100)
+        val visit = VideoVisit("00000000-0000-4000-8000-000000000001", "wechat", "local", 1000, 100, firstImage = "image")
         val done = visit.copy(id = "00000000-0000-4000-8000-000000000002", reason = VideoExitReason.INTERRUPTED)
         android.database.sqlite.SQLiteDatabase.openOrCreateDatabase(file, null).use { db ->
             db.execSQL("CREATE TABLE active (id INTEGER PRIMARY KEY CHECK(id=1), payload TEXT NOT NULL)")
@@ -46,15 +46,15 @@ class VideoVisitStoreTest {
         }
         VideoVisitStore(app).use { s ->
             assertEquals(visit, s.active()); assertEquals(done, s.due(10000).single())
-            assertEquals(3, s.readableDatabase.version)
+            assertEquals(4, s.readableDatabase.version)
             assertTrue(s.acknowledge(done) { true }); assertEquals(visit, s.active())
         }
     }
 
-    @Test fun backgroundExitAndScreenOffPersistDurationWithoutImages() {
+    @Test fun backgroundExitAndScreenOffPersistDurationWithFirstFrameWithoutTail() {
         VideoVisitStore(app).use { store ->
             for (reason in listOf(VideoExitReason.BACKGROUND, VideoExitReason.EXIT, VideoExitReason.LOCKED)) {
-                val visit = store.enter("wechat", "video", 1_000, 10_000).active
+                val visit = store.enter("wechat", "video", 1_000, 10_000, firstImage = "image").active
                 store.finish(visit.id, 44_000, 53_000, reason)
                 assertNull(store.active())
             }
@@ -68,8 +68,8 @@ class VideoVisitStoreTest {
 
     @Test fun recoveryMarksOnlyActiveVisitIncompleteAndDoesNotInventAnEnd() {
         VideoVisitStore(app).use { store ->
-            store.enter("douyin", "first", 100, 1000)
-            store.enter("douyin", "second", 200, 1100)
+            store.enter("douyin", "first", 100, 1000, firstImage = "image")
+            store.enter("douyin", "second", 200, 1100, firstImage = "image")
         }
         VideoVisitStore(app).use { store ->
             store.recoverInterrupted()
@@ -86,7 +86,7 @@ class VideoVisitStoreTest {
 
     @Test fun failedEndWriteRollsBackActiveStateAndCanBeRetried() {
         VideoVisitStore(app).use { store ->
-            val visit = store.enter("wechat", "video", 100, 1000).active
+            val visit = store.enter("wechat", "video", 100, 1000, firstImage = "image").active
             store.writableDatabase.execSQL("CREATE TRIGGER fail_end BEFORE INSERT ON completed BEGIN SELECT RAISE(ABORT, 'disk failure'); END")
             assertTrue(runCatching { store.finish(visit.id, 200, 1100, VideoExitReason.BACKGROUND) }.isFailure)
             assertEquals(visit, store.active())
@@ -99,22 +99,22 @@ class VideoVisitStoreTest {
 
     @Test fun failedSwitchDoesNotLoseOldVisitOrCreateNewOne() {
         VideoVisitStore(app).use { store ->
-            val first = store.enter("wechat", "first", 100, 1000).active
+            val first = store.enter("wechat", "first", 100, 1000, firstImage = "image").active
             store.writableDatabase.execSQL("CREATE TRIGGER fail_end BEFORE INSERT ON completed BEGIN SELECT RAISE(ABORT, 'disk failure'); END")
-            assertTrue(runCatching { store.enter("wechat", "second", 200, 1100) }.isFailure)
+            assertTrue(runCatching { store.enter("wechat", "second", 200, 1100, firstImage = "image") }.isFailure)
             assertEquals(first, store.active())
         }
     }
 
     @Test fun activeCheckpointFailureRollsBackAlreadyInsertedCompletedRecord() {
         VideoVisitStore(app).use { store ->
-            val first = store.enter("wechat", "first", 100, 1000).active
+            val first = store.enter("wechat", "first", 100, 1000, firstImage = "image").active
             store.writableDatabase.execSQL("CREATE TRIGGER fail_active BEFORE INSERT ON active BEGIN SELECT RAISE(ABORT, 'checkpoint failure'); END")
-            assertTrue(runCatching { store.enter("wechat", "second", 200, 1100) }.isFailure)
+            assertTrue(runCatching { store.enter("wechat", "second", 200, 1100, firstImage = "image") }.isFailure)
             assertEquals(first, store.active())
             assertTrue(store.completed().isEmpty())
             store.writableDatabase.execSQL("DROP TRIGGER fail_active")
-            store.enter("wechat", "second", 200, 1100)
+            store.enter("wechat", "second", 200, 1100, firstImage = "image")
             assertEquals(first.id, store.completed().single().id)
         }
     }
@@ -130,8 +130,8 @@ class VideoVisitStoreTest {
 
     @Test fun lateEndAndLateFrameCannotModifyNextVisit() {
         VideoVisitStore(app).use { store ->
-            val first = store.enter("wechat", "first", 100, 1000).active
-            val second = store.enter("wechat", "second", 200, 1100).active
+            val first = store.enter("wechat", "first", 100, 1000, firstImage = "image").active
+            val second = store.enter("wechat", "second", 200, 1100, firstImage = "image").active
             assertNull(store.finish(first.id, 300, 1200, VideoExitReason.EXIT))
             assertFalse(store.attachFrame(first.id, "first", VideoFrameRole.LAST, "old"))
             assertEquals(second, store.active()); assertEquals(1, store.completed().size)
@@ -140,7 +140,7 @@ class VideoVisitStoreTest {
 
     @Test fun rejectedLateCallbacksDoNotRewriteUnchangedCheckpoint() {
         VideoVisitStore(app).use { store ->
-            val current = store.enter("wechat", "current", 100, 1000).active
+            val current = store.enter("wechat", "current", 100, 1000, firstImage = "image").active
             store.writableDatabase.execSQL("CREATE TRIGGER fail_active BEFORE INSERT ON active BEGIN SELECT RAISE(ABORT, 'unexpected rewrite'); END")
             assertFalse(store.attachFrame("old-id", "old-video", VideoFrameRole.LAST, "old-image"))
             assertNull(store.finish("old-id", 200, 1100, VideoExitReason.EXIT))

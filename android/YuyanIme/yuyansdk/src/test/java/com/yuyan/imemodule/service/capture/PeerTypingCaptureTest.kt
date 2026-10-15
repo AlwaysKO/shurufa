@@ -44,6 +44,8 @@ class PeerTypingCaptureTest {
         var captures = 0
         var enqueued = 0
         var resolvedIdentity = unresolvedWechatScreenshotIdentity("对方正在输入..8")
+        var hasInputBar = false
+        val persistedPayloads = mutableListOf<String>()
         val headers = mutableListOf<Pair<Boolean, Int?>>()
         val files = mutableSetOf<String>()
         fun node(id: String?, text: String?, bounds: Rect, clazz: String) = AccessibilityNodeInfo.obtain().apply {
@@ -76,12 +78,31 @@ class PeerTypingCaptureTest {
             override suspend fun enqueueIfNew(seenMessage: SeenMessageEntity, pendingMessage: PendingMessageEntity,
                 pendingAssets: List<PendingAssetEntity>): Boolean {
                 enqueued++
+                persistedPayloads += pendingMessage.payloadJson
                 return true
             }
         }, deviceId = { "test-device" }, wakeUploader = {}))
         set("mediaCapturer", WindowMediaCapturer(service, ScreenshotSource { _, _ ->
             captures++
-            WindowScreenshotResult.Success(Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888), 0, 0)
+            val bitmap = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
+            if (hasInputBar) {
+                val density = service.resources.displayMetrics.density
+                val canvas = android.graphics.Canvas(bitmap)
+                canvas.drawColor(android.graphics.Color.rgb(80, 100, 120))
+                val paint = android.graphics.Paint().apply { color = android.graphics.Color.rgb(247, 247, 247) }
+                val top = bitmap.height - 54 * density
+                canvas.drawRect(0f, top, bitmap.width.toFloat(), bitmap.height.toFloat(), paint)
+                paint.color = android.graphics.Color.BLACK
+                paint.style = android.graphics.Paint.Style.STROKE
+                paint.strokeWidth = 2 * density
+                val cy = top + 26 * density
+                val right = bitmap.width - 22 * density
+                canvas.drawCircle(23 * density, cy, 11 * density, paint)
+                canvas.drawCircle(right, cy, 11 * density, paint)
+                canvas.drawLine(right - 5 * density, cy, right + 5 * density, cy, paint)
+                canvas.drawLine(right, cy - 5 * density, right, cy + 5 * density, paint)
+            }
+            WindowScreenshotResult.Success(bitmap, 0, 0)
         }))
         set("screenshotIdentityResolver", object : ScreenshotConversationIdentityResolver {
             override suspend fun resolve(asset: PendingAssetEntity, expectedVersion: Long, titleInput: TitleOcrInput?): ScreenshotConversationIdentity {
@@ -128,6 +149,16 @@ class PeerTypingCaptureTest {
             assertEquals("OCR已拒绝的非聊天页面不能通过通知入口上报", 0, enqueued)
             // 被丢弃的状态帧和非聊天页不能更新已上报图片缓存。
             assertFalse(service.getSharedPreferences("notification_screenshot_fallback", 0).contains("last_screenshot_sha256"))
+            resolvedIdentity = unresolvedWechatScreenshotIdentity("普通标题").copy(isChatPage = true)
+            runRequest(NotificationScreenshotFallbackRequest("title-without-chat-controls", System.currentTimeMillis()))
+            assertEquals("仅有标题且无聊天输入栏不能作为明确聊天截图", 0, enqueued)
+            hasInputBar = true
+            runRequest(NotificationScreenshotFallbackRequest("verified-chat-controls", System.currentTimeMillis()))
+            assertEquals("输入栏与标题证据俱全时不要求复杂背景支持内容去重", 1, enqueued)
+            val metadata = kotlinx.serialization.json.Json.parseToJsonElement(persistedPayloads.single()).let {
+                (it as kotlinx.serialization.json.JsonObject)["message"] as kotlinx.serialization.json.JsonObject
+            }["metadata"] as kotlinx.serialization.json.JsonObject
+            assertEquals(kotlinx.serialization.json.JsonPrimitive("true"), metadata["screenshot_chat_verified"])
         } finally {
             CollectionConsent.setEnabled(service, false)
             service.onDestroy()

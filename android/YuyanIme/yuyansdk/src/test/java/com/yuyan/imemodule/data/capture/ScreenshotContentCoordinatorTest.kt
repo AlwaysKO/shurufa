@@ -40,7 +40,7 @@ class ScreenshotContentCoordinatorTest {
         direction = ChatDirection.SYSTEM,
         messageType = ChatMessageType.IMAGE,
         metadata = mapOf(
-            "capture_source" to "wechat_empty_tree_screenshot",
+            "capture_source" to "wechat_empty_tree_screenshot", "screenshot_chat_verified" to "true",
             "capture_kind" to "conversation_screenshot",
             "conversation_identity_status" to "confirmed",
         ),

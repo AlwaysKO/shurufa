@@ -56,6 +56,13 @@ const preview = (type: 'page-captures' | 'video-visits', extra = {}, user = A) =
 const batch = (type: 'page-captures' | 'video-visits', token: string, offset = 0, user = A) =>
   agent.post(`/api/v1/dashboard/${type}/cleanup/batch?user_id=${user}`).send({ token, offset, confirm: 'DELETE' });
 
+const framedVisit = async (extra = {}, user = A) => {
+  const v = visit(extra);
+  const p = page({ kind: 'media_feed', package_name: v.platform === 'wechat' ? 'com.tencent.mm' : 'com.ss.android.ugc.aweme' });
+  expect((await mobile('page-captures', p, user)).status).toBe(200);
+  return { ...v, first_image_id: p.id };
+};
+
 test('应用列表排除信息流及视频引用图，视频仍能访问共享原图且不会合并不同访问', async () => {
   const normal = page(), feed = page({ kind: 'media_feed' }), linked = page({ kind: 'image_post' });
   for (const r of [normal, feed, linked]) expect((await mobile('page-captures', r)).status).toBe(200);
@@ -79,8 +86,8 @@ test('北京日期含首尾日、名称备注关键词与视频状态筛选，�
   const searched = await list('page-captures', '&q=' + encodeURIComponent('100%_'));
   expect(searched.body.records).toHaveLength(1); expect(searched.body.records[0]).toMatchObject({ id: first.id, title: '原图名称', note: '备注100%_匹配' });
   expect((await mobile('page-captures', first)).body).toEqual({ ok: true, id: first.id, sha256: first.sha256 });
-  const v = visit(); await mobile('video-visits', v);
-  await mobile('video-visits', visit({ observation_kind: 'confirmed_video', complete: false, exit_reason: 'interrupted', ended_at: null, duration_ms: null }));
+  const v = await framedVisit(); await mobile('video-visits', v);
+  await mobile('video-visits', await framedVisit({ observation_kind: 'confirmed_video', complete: false, exit_reason: 'interrupted', ended_at: null, duration_ms: null }));
   expect((await agent.patch(`/api/v1/dashboard/video-visits/${v.id}?user_id=${A}`).send({ title: '视频名', note: '片段' })).status).toBe(200);
   const videos = await list('video-visits', '&observation_kind=unconfirmed_feed&complete=true&exit_reason=page_changed&q=' + encodeURIComponent('片段'));
   expect(videos.body.total).toBe(1); expect(videos.body.records[0]).toMatchObject({ ...v, title: '视频名', note: '片段' });
@@ -88,8 +95,10 @@ test('北京日期含首尾日、名称备注关键词与视频状态筛选，�
 });
 
 test('删除有设备隔离、严格确认及原始载荷墓碑，重试不复活、变内容冲突', async () => {
-  const p = page(), v = visit();
-  for (const u of [A, B]) { await mobile('page-captures', p, u); await mobile('video-visits', v, u); }
+  const p = page(), frame = page({ kind: 'media_feed' }), v = visit({ first_image_id: frame.id });
+  for (const u of [A, B]) {
+    await mobile('page-captures', p, u); await mobile('page-captures', frame, u); await mobile('video-visits', v, u);
+  }
   for (const [type, r] of [['page-captures', p], ['video-visits', v]] as const) {
     expect((await agent.post(`/api/v1/dashboard/${type}/delete?user_id=${A}`).send({ ids: [r.id] })).status).toBe(400);
     expect((await remove(type, [r.id])).body).toEqual({ deleted: 1 });
@@ -105,7 +114,7 @@ test('删除有设备隔离、严格确认及原始载荷墓碑，重试不复�
   expect((await request(app).post(`/api/v1/dashboard/video-visits/delete?user_id=${B}`).send({ ids: [v.id], confirm: 'DELETE' })).status).toBe(401);
 });
 
-test('删除视频只回收无人使用帧，页面删除不能破坏观看时长，晚到新访问保留时间不恢复已删图片', async () => {
+test('删除视频只回收无人使用帧，页面删除不能破坏观看时长，晚到无存续帧的新访问丢弃且不恢复已删图片', async () => {
   const shared = page({ kind: 'media_feed' }), last = page({ kind: 'media_feed' });
   await mobile('page-captures', shared); await mobile('page-captures', last);
   const one = visit({ first_image_id: shared.id, last_image_id: last.id }), two = visit({ first_image_id: shared.id });
@@ -118,8 +127,8 @@ test('删除视频只回收无人使用帧，页面删除不能破坏观看时�
   await remove('video-visits', [two.id]);
   expect((await pool.query('SELECT id FROM page_capture WHERE user_id=$1', [A])).rows).toHaveLength(0);
   const late = visit({ first_image_id: shared.id });
-  expect((await mobile('video-visits', late)).status).toBe(200);
-  expect((await list('video-visits')).body.records[0]).toMatchObject({ id: late.id, duration_ms: 10000, first_image_id: null });
+  expect((await mobile('video-visits', late)).body).toEqual({ ok: true, record: late, discarded: true });
+  expect((await list('video-visits')).body.total).toBe(0);
   expect((await mobile('page-captures', shared)).body.discarded).toBe(true);
 });
 
@@ -142,11 +151,12 @@ test('清理冻结范围及内容签名，排除新增/修改行、跨手机/跨
 });
 
 test('清理视频分页200条、视频筛选与业务删除原子回滚', async () => {
+  const framed = await framedVisit();
   for (let i = 0; i < 202; i++) {
-    const uploaded = await mobile('video-visits', visit());
+    const uploaded = await mobile('video-visits', { ...framed, id: randomUUID() });
     expect(uploaded.status, JSON.stringify(uploaded.body)).toBe(200);
   }
-  await mobile('video-visits', visit({ platform: 'douyin' }));
+  await mobile('video-visits', await framedVisit({ platform: 'douyin' }));
   const p = await preview('video-visits', { platform: 'wechat', complete: 'true', observation_kind: 'unconfirmed_feed' });
   expect(p.status).toBe(200); expect(p.body.total).toBe(202);
   const first = await batch('video-visits', p.body.token); expect(first.body).toMatchObject({ processed: 200, deleted: 200, done: false });

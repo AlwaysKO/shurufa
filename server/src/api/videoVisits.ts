@@ -35,7 +35,7 @@ export function createMobileVideoVisitsRouter(pool: pg.Pool): Router {
     try {
       const r = parseVisit(req.body), user = String(res.locals.userId).toLowerCase();
       const receipt = { ok: true, record: r };
-      if ((await savingFlags(pool, [user])).get(user) === false) { res.json({ ...receipt, discarded: true }); return; }
+      if ((r.first_image_id === null && r.last_image_id === null) || (await savingFlags(pool, [user])).get(user) === false) { res.json({ ...receipt, discarded: true }); return; }
       const digest = createHash('sha256').update(JSON.stringify(r)).digest('hex');
       const db = await pool.connect();
       let conflict = false, discarded = false, missing: string[] = [];
@@ -60,7 +60,11 @@ export function createMobileVideoVisitsRouter(pool: pg.Pool): Router {
             missing = imageIds.filter(id => !found.has(id.toLowerCase()) && !knownDeleted.has(id.toLowerCase()));
           }
           if (missing.length) await db.query('ROLLBACK');
-          else {
+          else if (found.size === 0) {
+            // 所有引用帧均已被明确删除，不再创建只有停留时间的空记录。
+            discarded = true;
+            await db.query('COMMIT');
+          } else {
             await db.query(`INSERT INTO video_visit(user_id,id,platform,entered_at,ended_at,duration_ms,exit_reason,complete,first_image_id,last_image_id,payload_sha256,observation_kind)
               VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) ON CONFLICT(user_id,id) DO NOTHING`,
             [user,r.id,r.platform,r.entered_at,r.ended_at,r.duration_ms,r.exit_reason,r.complete,

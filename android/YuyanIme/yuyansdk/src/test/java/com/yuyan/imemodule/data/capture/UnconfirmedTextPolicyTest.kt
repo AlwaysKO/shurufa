@@ -22,23 +22,40 @@ class UnconfirmedTextPolicyTest {
         assertNull(filterUnconfirmedTextMessages(batch(.55,message("noise"))))
         assertFalse(shouldDiscardUnconfirmedText(.95,"text",emptyMap(),false))
     }
-    @Test fun confirmedTextAndAllResourceOrMediaTasksArePreserved() {
-        assertFalse(shouldDiscardUnconfirmedText(.9,"text",mapOf("conversation_identity_status" to "confirmed"),false))
-        assertFalse(shouldDiscardUnconfirmedText(.55,"text",emptyMap(),true))
-        for (metadata in listOf(mapOf("asset_capture_deferred" to "quota"),mapOf("asset_capture_failed" to "true"),mapOf("notification_media_readable" to "false"))) {
-            assertFalse(shouldDiscardUnconfirmedText(.55,"text",metadata,false))
+    @Test fun pendingPlaceholdersRequireARealChatScreenshotRegardlessOfTypeOrRetryFlags() {
+        for (type in listOf("text", "sticker", "image", "video", "voice", "file")) {
+            for (flags in listOf(emptyMap(), mapOf("asset_capture_failed" to "true"),
+                mapOf("asset_capture_deferred" to "quota"), mapOf("notification_media_readable" to "true"))) {
+                assertTrue(type, shouldDiscardUnconfirmedText(.55, type, flags, false))
+            }
         }
-        for (type in listOf("image","video","voice","file")) assertFalse(shouldDiscardUnconfirmedText(.55,type,emptyMap(),false))
+        assertTrue(shouldDiscardUnconfirmedText(.55,"image",mapOf("capture_source" to "notification"),true))
+        for (source in listOf("wechat_empty_tree_screenshot", "notification_screenshot_fallback")) for (verified in listOf(emptyMap(), mapOf("screenshot_chat_verified" to "false"))) {
+            assertTrue(shouldDiscardUnconfirmedText(.55, "image",
+                verified + ("capture_source" to source), true))
+        }
+        for (source in listOf("wechat_screenshot", "douyin_screenshot", "qq_screenshot", "wechat_empty_tree_screenshot", "notification_screenshot_fallback")) {
+            assertFalse(shouldDiscardUnconfirmedText(.55,"image",mapOf("capture_source" to source, "screenshot_chat_verified" to "true"),true))
+            assertTrue(shouldDiscardUnconfirmedText(.55,"image",mapOf("capture_source" to source, "screenshot_chat_verified" to "true"),false))
+        }
+    }
+    @Test fun confirmedTextAndVerifiedScreenshotsArePreserved() {
+        assertFalse(shouldDiscardUnconfirmedText(.9,"text",mapOf("conversation_identity_status" to "confirmed"),false))
+        assertTrue(shouldDiscardUnconfirmedText(.55,"text",emptyMap(),true))
+        for (metadata in listOf(mapOf("asset_capture_deferred" to "quota"),mapOf("asset_capture_failed" to "true"),mapOf("notification_media_readable" to "false"))) {
+            assertTrue(shouldDiscardUnconfirmedText(.55,"text",metadata,false))
+        }
+        for (type in listOf("image","video","voice","file")) assertTrue(shouldDiscardUnconfirmedText(.55,type,emptyMap(),false))
         assertFalse(shouldDiscardUnconfirmedText(null,"text",emptyMap(),false))
         assertFalse(shouldDiscardUnconfirmedText(Double.NaN,"text",emptyMap(),false))
         assertFalse(shouldDiscardUnconfirmedText(Double.NEGATIVE_INFINITY,"text",emptyMap(),false))
         assertFalse(shouldDiscardUnconfirmedText(null,"text",mapOf("conversation_identity_status" to "unknown","identity_unavailable" to "false"),false))
     }
     @Test fun mixedBatchOnlyLosesExplicitPendingTextAndPreservesEnvelope() {
-        val original=batch(.9,message("noise","pending"),message("confirmed","confirmed"),message("asset","pending",resource=true),
+        val original=batch(.9,message("noise","pending"),message("confirmed","confirmed"),message("asset","pending",type="image",resource=true,extra=mapOf("capture_source" to "wechat_screenshot")),
             message("future-image","pending",extra=mapOf("asset_capture_deferred" to "quota")),message("image","pending",type="image"))
         val filtered=filterUnconfirmedTextMessages(original)!!
-        assertEquals(listOf("confirmed","asset","future-image","image"),filtered["messages"]!!.jsonArray.map { it.jsonObject["id"]!!.jsonPrimitive.content })
+        assertEquals(listOf("confirmed","asset"),filtered["messages"]!!.jsonArray.map { it.jsonObject["id"]!!.jsonPrimitive.content })
         assertEquals(original["conversation"],filtered["conversation"]);assertEquals(original["device_id"],filtered["device_id"])
     }
     @Test fun malformedMetadataIsPreservedWhileMissingOrNullMetadataUsesKnownConfidence() {

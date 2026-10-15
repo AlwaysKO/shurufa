@@ -25,6 +25,9 @@ internal data class VideoVisit(
     val observationKind: VideoObservationKind = VideoObservationKind.CONFIRMED_VIDEO,
 )
 
+/** 图片引用只在页面图片成功入队后附加；兼容历史只含尾帧的记录。 */
+internal fun VideoVisit.hasCapturedFrame(): Boolean = !firstImage.isNullOrBlank() || !lastImage.isNullOrBlank()
+
 internal data class VideoVisitChange(
     val active: VideoVisit,
     val started: Boolean,

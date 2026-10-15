@@ -16,6 +16,14 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [30])
 class NotificationScreenshotFallbackTest {
+    @Test fun knownNonChatPageCannotServeAsNotificationChatEvidence() {
+        val snapshot = com.yuyan.imemodule.data.capture.ui.UiNodeSnapshot(
+            null, "root", null, null, IntRect(0, 0, 1080, 1920), listOf(
+                com.yuyan.imemodule.data.capture.ui.UiNodeSnapshot("com.tencent.mm:id/title",
+                    "android.widget.TextView", "朋友圈", null, IntRect(180, 50, 850, 130), emptyList()),
+            ))
+        assertEquals(null, notificationChatViewport("com.tencent.mm", snapshot))
+    }
     @Test fun typingTitleCannotUseTheNotificationPathWithoutTitleOcr() {
         fun snapshot(title: String) = com.yuyan.imemodule.data.capture.ui.UiNodeSnapshot(
             null, "root", null, null, IntRect(0, 0, 1080, 1920), listOf(

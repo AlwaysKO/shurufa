@@ -24,7 +24,7 @@ class VideoVisitDeliveryTest {
         app.deleteDatabase(File(app.noBackupFilesDir, "page_capture_outbox.db").absolutePath)
     }
     private fun finished(s: VideoVisitStore): VideoVisit {
-        val v = s.enter("wechat", "private-local-key", 100, 1_791_503_900_000L).active
+        val v = s.enter("wechat", "private-local-key", 100, 1_791_503_900_000L, firstImage = "00000000-0000-4000-8000-000000000001").active
         return s.finish(v.id, 200, 1_791_503_900_100L, VideoExitReason.BACKGROUND)!!
     }
     private fun ack(v: VideoVisit, discard: Boolean = false) = PageUploadResponse(200,
@@ -106,7 +106,7 @@ class VideoVisitDeliveryTest {
     @Test fun disabledPlatformBacklogDoesNotHideEnabledPlatformBeyondTwentyRows() = runBlocking {
         VideoVisitStore(app).use { s ->
             repeat(21) { index ->
-                val v = s.enter("douyin", "old-$index", 100, 1_791_503_000_000L + index).active
+                val v = s.enter("douyin", "old-$index", 100, 1_791_503_000_000L + index, firstImage = "00000000-0000-4000-8000-000000000001").active
                 s.finish(v.id, 200, 1_791_503_000_100L + index, VideoExitReason.BACKGROUND)
             }
             val enabled = finished(s)
@@ -179,7 +179,7 @@ class VideoVisitDeliveryTest {
     }
     @Test fun interruptedPayloadKeepsUnknownTimeNull() {
         VideoVisitStore(app).use { s ->
-            s.enter("douyin", "private", 100, 1_791_503_900_000L); s.recoverInterrupted()
+            s.enter("douyin", "private", 100, 1_791_503_900_000L, firstImage = "00000000-0000-4000-8000-000000000001"); s.recoverInterrupted()
             val p = videoVisitPayload(s.completed().single())
             assertTrue(p.isNull("ended_at")); assertTrue(p.isNull("duration_ms"))
             assertEquals(false, p.getBoolean("complete")); assertEquals("interrupted", p.getString("exit_reason"))

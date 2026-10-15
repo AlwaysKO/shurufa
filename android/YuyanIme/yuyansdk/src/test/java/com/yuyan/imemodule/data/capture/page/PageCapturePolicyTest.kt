@@ -46,6 +46,54 @@ class PageCapturePolicyTest {
         assertEquals(PageKind.PAYMENT, classify(labels).kind)
         assertNull(classify(listOf(label("支付成功", 100, 750))).kind)
     }
+    private fun paymentCards() = listOf(label("微信支付", 420, 110),
+        label("我的账单", 150, 1900), label("支付服务", 450, 1900), label("优惠", 750, 1900),
+        label("¥5.00", 400, 1280), label("交易状态", 80, 1460),
+        label("支付成功，对方已收款", 280, 1460), label("查看交易详情", 80, 1600))
+
+    @Test fun wechatPaymentServiceCardsRequireNavigationAndTransactionEvidence() {
+        assertEquals(PageKind.PAYMENT, classify(paymentCards()).kind)
+        assertNull(classify(paymentCards().filterNot { it.text == "微信支付" }).kind)
+        assertNull(classify(paymentCards().filterNot { it.text == "支付服务" }).kind)
+        assertNull(classify(paymentCards().filterNot { it.text == "¥5.00" }).kind)
+        assertNull(classify(paymentCards().filterNot { it.text == "查看交易详情" }).kind)
+        assertNull(classify(paymentCards(), "com.ss.android.ugc.aweme").kind)
+        assertEquals(PageKind.CHAT, classify(paymentCards(), chat = true).kind)
+        assertEquals("sensitive_input", classify(paymentCards() + label("请输入支付密码", 100, 600)).reason)
+    }
+
+    private fun orderList() = listOf(label("商品名/订单号/快递单号", 120, 110),
+        label("全部", 30, 260), label("待支付", 220, 260), label("待发货", 420, 260),
+        label("待收货/使用", 600, 260), label("评价", 820, 260),
+        label("交易完成", 800, 610), label("¥89.90", 800, 700), label("合计¥89.90", 700, 870),
+        label("删除订单", 330, 1070), label("再来一单", 600, 1070), label("去评价", 800, 1070))
+
+    @Test fun realWechatOcrMayOmitCurrencyAndMergeStatusLine() {
+        val labels = listOf(label("微信支付", 420, 110), label("我的账单", 150, 1900),
+            label("支付服务", 450, 1900), label("优惠", 750, 1900),
+            PageLabel("使用零钱通支付", IntRect(370,1239,625,1271)),
+            PageLabel("5.00", IntRect(435,1323,618,1399)),
+            PageLabel("|交易状态支付成功,对方已收款", IntRect(62,1504,658,1542)),
+            label("查看交易详倩", 80,1641))
+        assertEquals(PageKind.PAYMENT, classify(labels).kind)
+        assertNull(classify(labels.filterNot { it.text.startsWith("使用") }).kind)
+        assertNull(classify(labels.filterNot { it.text.startsWith("|交易状态") }).kind)
+        assertNull(classify(labels.filterNot { it.text == "5.00" }).kind)
+        assertNull(classify(labels.map { if (it.text == "5.00") it.copy(bounds=IntRect(435,600,618,650)) else it }).kind)
+        assertNull(classify(labels + label("请输入支付密码", 100,600)).kind)
+    }
+
+    @Test fun douyinOrderListRequiresStatusTabsAndActualOrderCard() {
+        val pkg = "com.ss.android.ugc.aweme"
+        assertEquals(PageKind.PAYMENT, classify(orderList(), pkg).kind)
+        for (missing in listOf("待支付", "待发货", "待收货/使用", "交易完成"))
+            assertNull(missing, classify(orderList().filterNot { it.text == missing }, pkg).kind)
+        assertNull(classify(orderList().filterNot { it.text.contains("¥") }, pkg).kind)
+        assertNull(classify(orderList().filterNot { it.text in setOf("删除订单", "再来一单", "去评价") }, pkg).kind)
+        assertNull(classify(orderList()).kind)
+        assertNull(classify(orderList().map { if (it.bounds.top < 300) it.copy(bounds=IntRect(100,900,800,950)) else it }, pkg).kind)
+        assertEquals("sensitive_input", classify(orderList() + label("请输入验证码", 100, 600), pkg).reason)
+    }
     @Test fun billListRequiresHeaderPeriodSummariesAndDatedSignedTransaction() {
         val labels = listOf(label("账单", 420, 100), label("2026年10月", 100, 350),
             label("支出¥3.00 收入¥0.00", 100, 430), label("-3.00", 750, 750),

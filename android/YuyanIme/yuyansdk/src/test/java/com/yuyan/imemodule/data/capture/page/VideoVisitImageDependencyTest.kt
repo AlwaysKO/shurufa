@@ -109,20 +109,20 @@ class VideoVisitImageDependencyTest {
         val first=image("blocking")
         VideoVisitStore(app).use { store ->
             repeat(205) { visit(store,first,offset=it.toLong()) }
-            val noImage=visit(store,offset=1000)
+            val ready=visit(store,"00000000-0000-4000-8000-000000000008",offset=1000)
             val remote=visit(store,"00000000-0000-4000-8000-000000000009",offset=2000)
             val sent=mutableListOf<String>()
             val result=VideoVisitDelivery(store,{ now+3000 },{ true },{ Closeable {} },{ row, _ -> sent.add(row.id);receipt(row) })
                 .runOnce(limit=2,blockedImageIds=setOf(first))
             assertEquals(2,result.saved)
-            assertEquals(listOf(noImage.id,remote.id),sent)
+            assertEquals(listOf(ready.id,remote.id),sent)
             assertNull(store.nextDeliveryDelay(now+3000,setOf("wechat"),blockedImageIds=setOf(first)))
             assertEquals(205L,store.readableDatabase.rawQuery("SELECT COUNT(*) FROM completed",null).use { it.moveToFirst();it.getLong(0) })
         }
     }
 
     @Test fun versionTwoMigrationKeepsPayloadActiveAndBackoffWhileFillingReferenceColumns() {
-        val active=VideoVisit("00000000-0000-4000-8000-000000000001","wechat","active",now,100)
+        val active=VideoVisit("00000000-0000-4000-8000-000000000001","wechat","active",now,100,firstImage="active-image")
         val done=active.copy(id="00000000-0000-4000-8000-000000000002",reason=VideoExitReason.INTERRUPTED,
             firstImage="00000000-0000-4000-8000-000000000003",lastImage="00000000-0000-4000-8000-000000000004")
         val payload=Json.encodeToString(done)
@@ -133,10 +133,12 @@ class VideoVisitImageDependencyTest {
             db.execSQL("CREATE INDEX completed_delivery ON completed(platform,retry_after,entered_at,id)")
             db.execSQL("INSERT INTO active VALUES(1,?)",arrayOf(Json.encodeToString(active)))
             db.execSQL("INSERT INTO completed VALUES(?,?,?,?,?)",arrayOf(done.id,done.enteredAt,payload,now+12_000,done.platform))
+            val frameless=done.copy(id="00000000-0000-4000-8000-000000000005",firstImage=null,lastImage=null)
+            db.execSQL("INSERT INTO completed VALUES(?,?,?,?,?)",arrayOf(frameless.id,frameless.enteredAt,Json.encodeToString(frameless),0,frameless.platform))
             db.version=2
         }
         VideoVisitStore(app).use { store ->
-            assertEquals(3,store.readableDatabase.version)
+            assertEquals(4,store.readableDatabase.version)
             assertEquals(active,store.active()); assertEquals(done,store.completed().single())
             store.readableDatabase.rawQuery("SELECT payload,retry_after,first_image_id,last_image_id FROM completed",null).use { c ->
                 assertTrue(c.moveToFirst()); assertEquals(payload,c.getString(0)); assertEquals(now+12_000,c.getLong(1))
@@ -150,9 +152,9 @@ class VideoVisitImageDependencyTest {
     @Test fun sqlFiltersWaitingRowsWithoutDecodingTheirPayload() {
         val blocked="00000000-0000-4000-8000-000000000009"
         VideoVisitStore(app).use { store ->
-            assertEquals(3,store.writableDatabase.version)
+            assertEquals(4,store.writableDatabase.version)
             store.writableDatabase.execSQL("INSERT INTO completed(id,entered_at,payload,platform,first_image_id) VALUES('blocked',0,'not-json','wechat',?)",arrayOf(blocked))
-            val ready=visit(store)
+            val ready=visit(store,"remote-image")
             assertEquals(listOf(ready),store.due(now+1000,limit=1,blockedImageIds=setOf(blocked)))
             assertEquals(0L,store.nextDeliveryDelay(now,setOf("wechat"),blockedImageIds=setOf(blocked)))
         }

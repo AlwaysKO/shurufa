@@ -48,8 +48,30 @@ beforeEach(async () => {
 });
 afterAll(async () => { await pool?.end(); });
 
+const recordWithFrame = async (extra = {}, user = A) => {
+  const r = record(extra), imageId = randomUUID();
+  const page = { id: imageId, package_name: r.platform === 'wechat' ? 'com.tencent.mm' : 'com.ss.android.ugc.aweme',
+    kind: 'media_feed', captured_at: r.entered_at, width: 16, height: 20, sha256: hash(bytes),
+    mime_type: 'image/webp', file_base64: bytes.toString('base64') };
+  expect((await request(app).post('/api/v1/mobile/page-captures').set('X-Device-Id', user).send(page)).status).toBe(200);
+  return { ...r, first_image_id: imageId };
+};
+
+test('首尾都无图的完整和中断访问仅返回丢弃回执，不写入记录', async () => {
+  for (const observation_kind of ['confirmed_video', 'unconfirmed_feed']) {
+    for (const extra of [{}, { exit_reason: 'interrupted', complete: false, ended_at: null, duration_ms: null }]) {
+      const r = record({ observation_kind, ...extra });
+      const response = await post(r);
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ ok: true, record: r, discarded: true });
+    }
+  }
+  expect((await list()).body.total).toBe(0);
+  expect((await pool.query('SELECT id FROM video_visit')).rowCount).toBe(0);
+});
+
 test('完整载荷回执、并发幂等与冲突不覆盖', async () => {
-  const r = record();
+  const r = await recordWithFrame();
   expect((await post(r)).body).toEqual({ ok: true, record: r });
   expect((await Promise.all([post(r), post(r)])).map(x => x.status)).toEqual([200, 200]);
   expect((await post({ ...r, duration_ms: 9000 })).status).toBe(409);
@@ -70,7 +92,7 @@ test('严格字段、时间、完成状态、身份和枚举校验', async () =>
 test('异常结束不伪造时间，时钟回拨保留未知时长，可信单调时长不强等墙钟差', async () => {
   for (const extra of [{ exit_reason: 'interrupted', complete: false, ended_at: null, duration_ms: null },
     { complete: false, ended_at: 1779999999000, duration_ms: null }, { duration_ms: 9000 }]) {
-    const r = record(extra); expect((await post(r)).body).toEqual({ ok: true, record: r });
+    const r = await recordWithFrame(extra); expect((await post(r)).body).toEqual({ ok: true, record: r });
   }
 });
 test('图片依赖仅同设备同平台，缺失明确409且补图后可重试', async () => {
@@ -89,8 +111,8 @@ test('图片依赖仅同设备同平台，缺失明确409且补图后可重试',
   expect(Number((await pool.query('SELECT count(*) AS n FROM page_capture WHERE user_id=$1', [B])).rows[0].n)).toBe(1);
 });
 test('登录、手机隔离、分页筛选及设备级联', async () => {
-  for (let i = 0; i < 21; i++) expect((await post(record({ entered_at: 1780000000000 + i }))).status).toBe(200);
-  const b = record({ platform: 'douyin' }); await post(b, B);
+  for (let i = 0; i < 21; i++) expect((await post(await recordWithFrame({ entered_at: 1780000000000 + i }))).status).toBe(200);
+  const b = await recordWithFrame({ platform: 'douyin' }, B); await post(b, B);
   expect((await list()).body.records).toHaveLength(20);
   expect((await list(A, '&page=2')).body.records).toHaveLength(1);
   expect((await list(A, '&platform=douyin')).body.total).toBe(0);
@@ -111,9 +133,13 @@ test('关闭保存仍严格校验且完整绑定discarded回执，不写业务�
 test('COMMIT失败不能确认，成功/去重更新联系时间，失败/GET不推进', async () => {
   await pool.query(`CREATE FUNCTION fail_commit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'isolated commit failure'; END $$;
     CREATE CONSTRAINT TRIGGER fail_commit AFTER INSERT ON video_visit DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION fail_commit()`);
-  const r = record(); expect((await post(r)).status).toBe(500);
+  const r = await recordWithFrame();
+  await pool.query("UPDATE device SET last_seen_at='2000-01-01T00:00:00Z' WHERE id=$1", [A]);
+  expect((await post(r)).status).toBe(500);
+  await new Promise(resolve => setTimeout(resolve, 30));
+  expect((await pool.query('SELECT last_seen_at FROM device WHERE id=$1', [A])).rows[0].last_seen_at.getTime()).toBe(946684800000);
   expect((await list()).body.total).toBe(0);
-  expect((await pool.query('SELECT id FROM device WHERE id=$1', [A])).rowCount).toBe(0);
+  expect((await pool.query('SELECT id FROM video_visit WHERE user_id=$1', [A])).rowCount).toBe(0);
   await pool.query('DROP TRIGGER fail_commit ON video_visit');
   expect((await post(r)).status).toBe(200);
   for (const action of [() => post(r), () => list(), () => post(record({ platform: 'qq' }))]) {
@@ -128,12 +154,12 @@ test('完整迁移可重复执行且新访问不污染聊天', async () => {
   await pool.query('DROP TABLE video_visit,page_capture,device,runtime_setting CASCADE');
   const dir = new URL('../../migrations/', import.meta.url);
   for (const name of readdirSync(dir).filter(x => x.endsWith('.sql')).sort()) await pool.query(readFileSync(new URL(name, dir), 'utf8'));
-  expect((await post(record())).status).toBe(200);
+  expect((await post(await recordWithFrame())).status).toBe(200);
   for (const table of ['chat_conversation', 'chat_message']) expect(Number((await pool.query(`SELECT COUNT(*) AS n FROM ${table}`)).rows[0].n)).toBe(0);
 });
 
 test('并发相同ID不同载荷只有一个胜出且可绑定重传，接收时间不刷新', async () => {
-  const a = record(), b = { ...a, exit_reason: 'locked' };
+  const a = await recordWithFrame(), b = { ...a, exit_reason: 'locked' };
   const responses = await Promise.all([post(a), post(b)]);
   expect(responses.map(r => r.status).sort()).toEqual([200, 409]);
   const winner = responses[0].status === 200 ? a : b;
@@ -143,7 +169,7 @@ test('并发相同ID不同载荷只有一个胜出且可绑定重传，接收时
 });
 
 test('信息流停留独立语义入库和回执，不能省略或伪造观察类型', async () => {
-  const r = record({ observation_kind: 'unconfirmed_feed', exit_reason: 'page_changed' });
+  const r = await recordWithFrame({ observation_kind: 'unconfirmed_feed', exit_reason: 'page_changed' });
   expect((await post(r)).body).toEqual({ ok: true, record: r });
   expect((await list()).body.records[0]).toMatchObject(r);
   expect((await post({ ...r, observation_kind: 'confirmed_video' })).status).toBe(409);
@@ -161,9 +187,18 @@ test('045迁移兼容旧已确认记录且重复执行保留新信息流类型',
     VALUES($1,$2,'wechat',1780000000000,1780000010000,10000,'background',true,$3)`, [A,legacyId,'a'.repeat(64)]);
   await pool.query(readFileSync(new URL('../../migrations/045_video_visit_observation_kind.sql', import.meta.url), 'utf8'));
   expect((await pool.query('SELECT observation_kind FROM video_visit WHERE id=$1',[legacyId])).rows[0].observation_kind).toBe('confirmed_video');
-  const r = record({ observation_kind: 'unconfirmed_feed', exit_reason: 'page_changed' });
+  const r = await recordWithFrame({ observation_kind: 'unconfirmed_feed', exit_reason: 'page_changed' });
   expect((await post(r)).status).toBe(200);
   await pool.query(readFileSync(new URL('../../migrations/045_video_visit_observation_kind.sql', import.meta.url), 'utf8'));
   expect((await pool.query('SELECT observation_kind FROM video_visit WHERE id=$1',[r.id])).rows[0].observation_kind).toBe('unconfirmed_feed');
   await expect(pool.query("UPDATE video_visit SET observation_kind='unknown' WHERE id=$1",[r.id])).rejects.toMatchObject({code:'23514'});
+});
+
+test('仅尾帧存在也保留；引用尚未上传时不误当无图丢弃', async () => {
+  const framed = await recordWithFrame();
+  const r = { ...framed, first_image_id: null, last_image_id: framed.first_image_id };
+  expect((await post(r)).body).toEqual({ ok: true, record: r });
+  expect((await list()).body.records[0]).toMatchObject(r);
+  const missing = record({ last_image_id: randomUUID() });
+  expect((await post(missing)).status).toBe(409);
 });

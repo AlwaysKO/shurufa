@@ -10,12 +10,14 @@ import java.io.File
 /**
  * 本机独立日志，不参与聊天联系人分组，也不进入系统备份。
  * 在后台串行调用；每次从事务内快照构建状态机，落盘失败不会先清掉内存中的访问。
- * completed 是待交接记录，尚无远端回执时不删除。网络交接由集成层负责。
+ * completed 是待交接记录，有图且尚无远端回执时不删除。网络交接由集成层负责。
  */
 internal class VideoVisitStore(context: Context) : SQLiteOpenHelper(
-    context.applicationContext, File(context.noBackupFilesDir, "video_visits.db").absolutePath, null, 3,
+    context.applicationContext, File(context.noBackupFilesDir, "video_visits.db").absolutePath, null, 4,
 ) {
     private val json = Json { ignoreUnknownKeys = true }
+    // 等待首帧时只在本次进程中计时，不能生成无图片的磁盘日志。
+    private var framelessActive: VideoVisit? = null
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL("CREATE TABLE active (id INTEGER PRIMARY KEY CHECK(id=1), payload TEXT NOT NULL)")
@@ -48,9 +50,27 @@ internal class VideoVisitStore(context: Context) : SQLiteOpenHelper(
                 }
             }
         }
+        if (oldVersion < 4) {
+            for (table in listOf("active", "completed")) {
+                var afterRow = Long.MIN_VALUE
+                while (true) {
+                    // 关闭有界游标后再删除，避免跨 CursorWindow 时偏移被删行改变。
+                    val rows = db.rawQuery("SELECT rowid,payload FROM $table WHERE rowid>? ORDER BY rowid LIMIT 100",
+                        arrayOf(afterRow.toString())).use { cursor ->
+                        buildList {
+                            while (cursor.moveToNext()) add(cursor.getLong(0) to
+                                json.decodeFromString<VideoVisit>(cursor.getString(1)).hasCapturedFrame())
+                        }
+                    }
+                    if (rows.isEmpty()) break
+                    rows.filterNot { it.second }.forEach { db.delete(table, "rowid=?", arrayOf(it.first.toString())) }
+                    afterRow = rows.last().first
+                }
+            }
+        }
     }
 
-    fun active(): VideoVisit? = readActive(readableDatabase)
+    fun active(): VideoVisit? = framelessActive ?: readActive(readableDatabase)
     private fun readActive(db: SQLiteDatabase): VideoVisit? =
         db.rawQuery("SELECT payload FROM active WHERE id=1", null).use {
             if (it.moveToFirst()) json.decodeFromString<VideoVisit>(it.getString(0)) else null
@@ -60,9 +80,10 @@ internal class VideoVisitStore(context: Context) : SQLiteOpenHelper(
         observationKind: VideoObservationKind = VideoObservationKind.CONFIRMED_VIDEO): VideoVisitChange =
         transaction { db, tracker ->
             val change = tracker.enter(platform, videoKey, elapsed, wallTime, observationKind)
-            change.previous?.let { saveCompleted(db, it) }
+            val previous = change.previous?.takeIf { it.hasCapturedFrame() }
+            previous?.let { saveCompleted(db, it) }
             if (firstImage != null) tracker.attachFrame(change.active.id, videoKey, VideoFrameRole.FIRST, firstImage)
-            change.copy(active = requireNotNull(tracker.snapshot()))
+            change.copy(active = requireNotNull(tracker.snapshot()), previous = previous)
         }
 
     fun attachFrame(id: String, videoKey: String, role: VideoFrameRole, reference: String): Boolean =
@@ -70,14 +91,14 @@ internal class VideoVisitStore(context: Context) : SQLiteOpenHelper(
 
     fun finish(id: String, elapsed: Long, wallTime: Long, reason: VideoExitReason): VideoVisit? =
         transaction { db, tracker ->
-            tracker.finish(id, elapsed, wallTime, reason)?.also { saveCompleted(db, it) }
+            tracker.finish(id, elapsed, wallTime, reason)?.takeIf { it.hasCapturedFrame() }?.also { saveCompleted(db, it) }
         }
 
     /** 仅在新运行会话初始化时调用。不能将上次的 elapsed 时间接到本次继续计时。 */
     fun recoverInterrupted() = transaction { db, tracker ->
         tracker.snapshot()?.let { visit ->
             tracker.finish(visit.id, visit.lastObservedElapsed, visit.enteredAt, VideoExitReason.INTERRUPTED)
-                ?.also { saveCompleted(db, it) }
+                ?.takeIf { it.hasCapturedFrame() }?.also { saveCompleted(db, it) }
         }
     }
 
@@ -133,7 +154,13 @@ internal class VideoVisitStore(context: Context) : SQLiteOpenHelper(
     }
 
     /** 精确 payload 与二次作用域守卫；撤权或换目标不能清理待传。 */
-    fun acknowledge(visit: VideoVisit, allowed: () -> Boolean): Boolean {
+    fun acknowledge(visit: VideoVisit, allowed: () -> Boolean): Boolean = removeExact(visit, allowed)
+
+    /** 本地规则舍弃，不生成或模拟服务器保存回执。 */
+    fun discardWithoutFrames(visit: VideoVisit, allowed: () -> Boolean): Boolean =
+        !visit.hasCapturedFrame() && removeExact(visit, allowed)
+
+    private fun removeExact(visit: VideoVisit, allowed: () -> Boolean): Boolean {
         val db = writableDatabase
         db.beginTransaction()
         try {
@@ -148,7 +175,7 @@ internal class VideoVisitStore(context: Context) : SQLiteOpenHelper(
     private companion object { const val RETRY_MILLIS = 30_000L }
 
     private fun saveCompleted(db: SQLiteDatabase, visit: VideoVisit) {
-        check(visit.reason != null)
+        check(visit.reason != null && visit.hasCapturedFrame())
         db.execSQL("INSERT INTO completed(id,entered_at,payload,platform,first_image_id,last_image_id) VALUES(?,?,?,?,?,?)",
             arrayOf<Any?>(visit.id, visit.enteredAt, json.encodeToString(visit), visit.platform, visit.firstImage, visit.lastImage))
     }
@@ -156,17 +183,22 @@ internal class VideoVisitStore(context: Context) : SQLiteOpenHelper(
     private fun <T> transaction(block: (SQLiteDatabase, VideoVisitTracker) -> T): T {
         val db = writableDatabase
         db.beginTransaction()
+        val result: T
+        val active: VideoVisit?
         try {
-            val before = readActive(db)
-            val tracker = VideoVisitTracker(before)
-            val result = block(db, tracker)
-            val active = tracker.snapshot()
-            if (active != before) {
-                if (active == null) db.execSQL("DELETE FROM active WHERE id=1")
-                else db.execSQL("INSERT OR REPLACE INTO active(id,payload) VALUES(1,?)", arrayOf(json.encodeToString(active)))
+            val persisted = readActive(db)
+            val tracker = VideoVisitTracker(framelessActive ?: persisted)
+            result = block(db, tracker)
+            active = tracker.snapshot()
+            val checkpoint = active?.takeIf { it.hasCapturedFrame() }
+            if (checkpoint != persisted) {
+                if (checkpoint == null) db.execSQL("DELETE FROM active WHERE id=1")
+                else db.execSQL("INSERT OR REPLACE INTO active(id,payload) VALUES(1,?)", arrayOf(json.encodeToString(checkpoint)))
             }
             db.setTransactionSuccessful()
-            return result
         } finally { db.endTransaction() }
+        // 提交成功后才推进内存，首帧落盘或结束失败仍可按原边界重试。
+        framelessActive = active?.takeUnless { it.hasCapturedFrame() }
+        return result
     }
 }

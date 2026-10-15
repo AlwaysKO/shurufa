@@ -243,9 +243,11 @@ internal fun notificationChatViewport(
     val message = viewport.messages.singleOrNull()?.takeIf {
         it.metadata["capture_kind"] == "conversation_screenshot"
     } ?: return null
+    val isWechatList = packageName == WECHAT_PACKAGE && viewport.conversation.displayName == "微信" &&
+        message.metadata["capture_source"] == "wechat_page_screenshot"
+    if (message.metadata["capture_source"] != "${viewport.conversation.platform.wireName}_screenshot" && !isWechatList) return null
     return NotificationChatViewport(key, message.mediaBounds ?: return null, message.inputAreaBounds,
-        isWechatConversationList = packageName == WECHAT_PACKAGE && viewport.conversation.displayName == "微信" &&
-            message.metadata["capture_source"] == "wechat_page_screenshot")
+        isWechatConversationList = isWechatList)
 }
 
 internal fun notificationFallbackBounds(windowBounds: IntRect, statusBarBottom: Int = 0): IntRect =

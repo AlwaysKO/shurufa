@@ -36,12 +36,15 @@ class ChatContentDedupCaptureTest {
         fun set(name: String, value: Any) = service.javaClass.getDeclaredField(name).apply { isAccessible = true }.set(service, value)
         fun get(name: String): Any = requireNotNull(service.javaClass.getDeclaredField(name).apply { isAccessible = true }.get(service))
         val scope = get("backgroundScope") as CoroutineScope
+        var candidateNow = 0L
+        set("emptyCandidates", EmptyTreeCandidateProbe { candidateNow })
         val pending = mutableListOf<PendingMessageEntity>()
         val files = mutableSetOf<String>()
         val assetHashes = mutableListOf<String>()
         var variant = 0
         var offset = 0
         var height = 800
+        var inputBarVisible = true
         var identity = ScreenshotConversationIdentity("screenshot-v2:chat-a", "测试联系人", ConversationType.DIRECT,
             .95, "wechat_ocr_title", "confirmed", "测试联系人", exactTitleHash = "a".repeat(64))
         val store = object : CaptureOutboxStore {
@@ -52,7 +55,10 @@ class ChatContentDedupCaptureTest {
             }
         }
         val capturer = WindowMediaCapturer(service, ScreenshotSource { _, _ ->
-            WindowScreenshotResult.Success(sample(height, offset, variant), 0, 0)
+            val image = sample(height, offset, variant)
+            if (!inputBarVisible) Canvas(image).drawRect(0f, height - 54f, 360f, height.toFloat(),
+                Paint().apply { color = Color.rgb(238, 238, 238) })
+            WindowScreenshotResult.Success(image, 0, 0)
         })
         val recording = MediaAssetCapturer { window, bounds, requests -> capturer.capture(window, bounds, requests).also {
             files += it.values.map { asset -> asset.localPath }
@@ -115,6 +121,17 @@ class ChatContentDedupCaptureTest {
             identity = identity.copy(externalKey = "screenshot-v2:chat-b", exactTitleHash = "b".repeat(64))
             offset = 30
             capture(); assertEquals("不同会话不能共用内容历史", 5, pending.size)
+            identity = unresolvedWechatScreenshotIdentity("普通标题")
+            inputBarVisible = false
+            capture(); assertEquals("待确认空树标题缺少聊天输入栏不能保存", 5, pending.size)
+            inputBarVisible = true
+            candidateNow += 2_000L
+            capture(); assertEquals("有正向标题和像素输入栏证据保留待确认聊天截图", 6, pending.size)
+            assertTrue(pending.last().payloadJson.contains("\"screenshot_chat_verified\":\"true\""))
+            service.javaClass.getDeclaredField("screenshotIdentityResolver").apply { isAccessible = true }.set(service, null)
+            variant = 1
+            candidateNow += 2_000L
+            capture(); assertEquals("缺失识别器不能用默认未确认身份充当聊天证据", 6, pending.size)
         } finally {
             CollectionConsent.setEnabled(service, false); service.onDestroy(); ServiceShadow.root = null
             files.forEach { File(it).delete() }

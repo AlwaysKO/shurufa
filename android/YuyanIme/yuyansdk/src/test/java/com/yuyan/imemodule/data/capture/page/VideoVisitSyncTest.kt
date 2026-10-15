@@ -49,7 +49,7 @@ class VideoVisitSyncTest {
     }
     private fun pending(): VideoVisit = VideoVisitStore(app).use { store ->
         val now=System.currentTimeMillis()
-        val row=store.enter("wechat","test",100,now-100).active
+        val row=store.enter("wechat","test",100,now-100,firstImage="00000000-0000-4000-8000-000000000001").active
         store.finish(row.id,200,now,VideoExitReason.LOCKED)!!
     }
     @Test fun mobileMetadataIsDueWithoutPermittingImageUploads() {

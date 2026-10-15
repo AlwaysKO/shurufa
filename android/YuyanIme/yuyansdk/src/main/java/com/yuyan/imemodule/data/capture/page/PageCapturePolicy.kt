@@ -92,6 +92,36 @@ internal object PageCapturePolicy {
         val receiptHeader = inBand(0.0, .35).any { normalized(it) in setOf("支付成功", "收款成功", "转账成功", "交易详情") }
         val fields = inBand(.25, .95).map(::normalized).toSet()
         val amount = visible.any { normalized(it).matches(Regex("[¥￥]\\d+(?:[.,]\\d{1,2})?")) }
+        // 支付服务卡片不是单笔结果页：用固定顶栏、底栏和交易卡片共同确认。
+        val cardLabels = inBand(.22, .95)
+        val cardText = cardLabels.map(::normalized).toSet()
+        // OCR 可能漏掉货币符号、合并状态字段；仅在同一卡片的上下结构中接受裸金额。
+        val paymentCardAmount = if (isWechat && "微信支付" in top &&
+            bottom.containsAll(setOf("我的账单", "支付服务"))) {
+            val methods = cardLabels.filter { normalized(it).matches(Regex("使用.{1,16}支付")) }
+            val amounts = cardLabels.filter { normalized(it).matches(Regex("[¥￥]?\\d+\\.\\d{2}")) }
+            val statuses = cardLabels.filter {
+                normalized(it).trimStart('|', '丨', ':', '：').startsWith("交易状态")
+            }
+            methods.any { method -> amounts.any { value ->
+                value.bounds.top >= method.bounds.bottom && value.bounds.top - method.bounds.bottom <= height * .12 &&
+                    value.bounds.left < method.bounds.right && value.bounds.right > method.bounds.left &&
+                    statuses.any { status -> status.bounds.top >= value.bounds.bottom &&
+                        status.bounds.top - value.bounds.bottom <= height * .12 &&
+                        status.bounds.left < value.bounds.right && status.bounds.right > value.bounds.left }
+            } }
+        } else false
+        if (isWechat && "微信支付" in top && bottom.containsAll(setOf("我的账单", "支付服务")) &&
+            ((amount && "交易状态" in cardText && "查看交易详情" in cardText) || paymentCardAmount)) {
+            return PageDecision(PageKind.PAYMENT, "wechat_payment_cards")
+        }
+        // 订单列表按状态导航和真实订单卡片识别，不按商品广告或正文支付关键词放行。
+        if (!isWechat && top.containsAll(setOf("全部", "待支付", "待发货")) &&
+            top.any { it in setOf("待收货/使用", "待收货", "待使用") } && amount &&
+            cardText.any { it in setOf("交易完成", "待付款", "待支付", "待发货", "待收货", "退款成功") } &&
+            cardText.any { it in setOf("删除订单", "再来一单", "去评价", "查看物流", "确认收货", "取消订单") }) {
+            return PageDecision(PageKind.PAYMENT, "douyin_order_list")
+        }
         if (receiptHeader && amount && fields.count { it in setOf("收款方", "付款方", "支付方式", "交易时间", "交易单号") } >= 2) {
             return PageDecision(PageKind.PAYMENT, "receipt_structure")
         }

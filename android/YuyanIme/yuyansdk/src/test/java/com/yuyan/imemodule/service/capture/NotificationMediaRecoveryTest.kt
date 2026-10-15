@@ -65,14 +65,14 @@ class NotificationMediaRecoveryTest {
     }
 
     @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
-    fun temporaryImporterFailureRetainsOriginalAndLaterReplayPersistsOnlyPng() = runBlocking {
+    fun confirmedMediaImporterFailureRetainsOriginalAndLaterReplayPersistsOnlyPng() = runBlocking {
         val bitmap = Bitmap.createBitmap(8, 8, Bitmap.Config.ARGB_8888)
         val bytes = ByteArrayOutputStream().also { bitmap.compress(Bitmap.CompressFormat.JPEG, 90, it) }.toByteArray()
         bitmap.recycle()
         val queue = DeferredNotificationMedia(directory)
         field("deferredMedia").set(listener, queue)
         queue.stage(NotificationSnapshot("com.tencent.mm", "notice", "同事", "[图片]", 1000,
-            mediaUri = "content://expired/image", mediaUriReadable = true)) { bytes.inputStream() }
+            mediaUri = "content://expired/image", mediaUriReadable = true, stableConversationId = "confirmed-peer")) { bytes.inputStream() }
         val original = queue.pending().single().file
         var readable = false
         shadowOf(context.contentResolver).registerInputStreamSupplier(Uri.fromFile(original)) {
@@ -88,6 +88,21 @@ class NotificationMediaRecoveryTest {
         assertEquals("image/png", asset.mimeType)
         assertNotEquals(original.absolutePath, asset.localPath)
         assertTrue(queue.pending().isEmpty())
+    }
+
+    @Test fun pendingNotificationThumbnailIsDiscardedWithoutImportOrUpload() = runBlocking {
+        val queue = DeferredNotificationMedia(directory)
+        field("deferredMedia").set(listener, queue)
+        queue.stage(NotificationSnapshot("com.tencent.mm", "pending", "同事", "[图片]", 1000,
+            mediaUri = "content://expired/pending", mediaUriReadable = true)) { byteArrayOf(1, 2, 3).inputStream() }
+        val original = queue.pending().single().file
+        shadowOf(context.contentResolver).registerInputStreamSupplier(Uri.fromFile(original)) {
+            fail("未确认通知缩略图不应继续解码或重试")
+            original.inputStream()
+        }
+        assertTrue(replay())
+        assertTrue(queue.pending().isEmpty())
+        assertTrue(persisted.isEmpty())
     }
 
     @Test fun mediaAdmissionIsBoundedBeforeLaunchingAndCancellationReleasesCapacity() {
