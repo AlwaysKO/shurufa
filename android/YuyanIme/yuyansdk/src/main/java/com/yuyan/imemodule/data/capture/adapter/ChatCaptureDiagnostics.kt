@@ -12,6 +12,31 @@ import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 
+/** 最新状态会覆盖旧值；关键截图/保存结果另入本地有界历史。 */
+internal fun chatDiagnosticHistoryEvent(platform: String, stage: String, status: String): CaptureHistoryEvent? {
+    if (platform != "wechat") return null
+    return when (stage) {
+        "screenshot" -> when (status) {
+            "ready" -> CaptureHistoryEvent.CHAT_FRAME_READY
+            "failed" -> CaptureHistoryEvent.CHAT_FRAME_FAILED
+            "cancelled" -> CaptureHistoryEvent.CHAT_SCREENSHOT_CANCELLED
+            else -> null
+        }
+        "upload" -> when (status) {
+            "acknowledged" -> CaptureHistoryEvent.CHAT_UPLOAD_ACKNOWLEDGED
+            "failed" -> CaptureHistoryEvent.CHAT_UPLOAD_FAILED
+            else -> null
+        }
+        "persist" -> when (status) {
+            "inserted" -> CaptureHistoryEvent.CHAT_PERSIST_INSERTED
+            "duplicate" -> CaptureHistoryEvent.CHAT_PERSIST_DUPLICATE
+            "failed" -> CaptureHistoryEvent.CHAT_PERSIST_FAILED
+            else -> null
+        }
+        else -> null
+    }
+}
+
 /** release 同样启用。事件只更新十二槽内存；已有 Collector 在空闲时落盘与有界补传。 */
 object ChatCaptureDiagnostics {
     private val buffer = ChatDiagnosticsBuffer()
@@ -25,6 +50,11 @@ object ChatCaptureDiagnostics {
     fun cancel() { http.dispatcher.cancelAll() }
     fun record(context: Context, platform: String, stage: String, status: String, errorCode: Int? = null) {
         if (!CollectionConsent.enabled(context) || platform !in setOf("wechat", "douyin")) return
+        if (ChatCaptureSettings.rule("com.tencent.mm").enabled) {
+            chatDiagnosticHistoryEvent(platform, stage, status)?.let { event ->
+                try { CaptureHistory.record(context, event) } catch (_: RuntimeException) { }
+            }
+        }
         val id = deviceId ?: return
         val pkg = if (platform == "wechat") "com.tencent.mm" else "com.ss.android.ugc.aweme"
         val version = ChatCaptureSettings.version(pkg) ?: CaptureAppVersion(0, "未知")

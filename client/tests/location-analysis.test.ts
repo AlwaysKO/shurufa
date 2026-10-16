@@ -52,6 +52,24 @@ it('长缺口、跨日和不同设备不连成路线或累计停留',()=>{
  expect(result.segments).toHaveLength(5);expect(result.stays).toHaveLength(0);
  expect(result.distanceMeters).toBe(0);
 });
+it('近距离21分钟缺口单独标注，不作为连续路线、里程、停留或速度',()=>{
+ const a=point(0),b=point(21,113.2612);
+ const result=analyzeLocations([b,a]);
+ expect(result.gaps).toEqual([{start:a,end:b,durationMs:21*60_000}]);
+ expect(result.segments).toHaveLength(2);
+ expect(result.distanceMeters).toBe(0);expect(result.stays).toHaveLength(0);
+ expect(intervalSpeeds([a,b]).size).toBe(0);
+});
+it('近距离缺口不跨设备、跨日、无效点、超过30分钟或300米连接',()=>{
+ const a=point(0),b=point(21,113.2612);
+ for(const invalid of [{...b,device_id:'other'},point(31),point(21,113.265),
+   {...b,occurred_at:'2026-09-30T01:21:00Z'}]) {
+  expect(analyzeLocations([a,invalid]).gaps).toHaveLength(0);
+ }
+ expect(analyzeLocations([a,{...point(10),accuracy:'500'},b]).gaps).toHaveLength(0);
+ expect(analyzeLocations([a,point(15)]).gaps).toHaveLength(0);
+ expect(analyzeLocations([a,point(30)]).gaps).toHaveLength(1);
+});
 it('同地漂移不会累计成路程，慢慢漂走不形成跨区域停留',()=>{
  expect(analyzeLocations([point(0),point(5,113.2601),point(10,113.2602)]).distanceMeters).toBe(0);
  const result=analyzeLocations([0,1,2,3,4,5,6,7].map(i=>point(i,113.26+i*.0007)));

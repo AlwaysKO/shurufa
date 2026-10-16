@@ -36,6 +36,11 @@ export interface LocationSpan {
   end: LocationRow;
   durationMs: number;
 }
+export interface LocationGap {
+  start: LocationRow;
+  end: LocationRow;
+  durationMs: number;
+}
 function span(points: LocationRow[]): LocationSpan {
   return { points, start: points[0]!, end: points[points.length - 1]!, durationMs: timestamp(points[points.length - 1]!) - timestamp(points[0]!) };
 }
@@ -52,7 +57,7 @@ export function analyzeLocations(rows: LocationRow[]) {
     const group = byDevice.get(point.device_id) ?? [];
     group.push(point); byDevice.set(point.device_id, group);
   }
-  const segments: LocationRow[][] = [], stays: LocationSpan[] = [], wifiSessions: LocationSpan[] = [];
+  const segments: LocationRow[][] = [], stays: LocationSpan[] = [], wifiSessions: LocationSpan[] = [], gaps: LocationGap[] = [];
   let excludedPoints = 0, distanceMeters = 0;
   for (const group of byDevice.values()) {
     group.sort((a, b) => timestamp(a) - timestamp(b) || a.id.localeCompare(b.id));
@@ -71,6 +76,14 @@ export function analyzeLocations(rows: LocationRow[]) {
     for (const point of group) {
       if (!validLocationPoint(point)) { excludedPoints++; current = null; continue; }
       if (!current || !continuous(current[current.length - 1]!, point)) {
+        const previous = current?.[current.length - 1];
+        if (previous) {
+          const durationMs = timestamp(point) - timestamp(previous);
+          if (durationMs > MAX_GAP_MS && durationMs <= 30 * 60_000 &&
+              locationDay(previous.occurred_at) === locationDay(point.occurred_at) && distance(previous, point) <= 300) {
+            gaps.push({ start: previous, end: point, durationMs });
+          }
+        }
         current = []; segments.push(current);
       }
       current.push(point);
@@ -103,7 +116,7 @@ export function analyzeLocations(rows: LocationRow[]) {
   }
   stays.sort((a, b) => timestamp(b.start) - timestamp(a.start));
   wifiSessions.sort((a, b) => timestamp(b.start) - timestamp(a.start));
-  return { segments, stays, wifiSessions, distanceMeters, excludedPoints };
+  return { segments, stays, wifiSessions, gaps, distanceMeters, excludedPoints };
 }
 
 export const locationPointKey = (point: LocationRow) => JSON.stringify([point.device_id, point.id]);

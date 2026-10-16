@@ -18,23 +18,29 @@ internal class BalancedLocationPolicy {
     private var observations = 0
     private val jumpFilter = LocationJumpFilter()
     private var confirmationStartedAt: Long? = null
+    private var confirmationRetryAt = 0L
+    val isStationary: Boolean get() = samplingIntervalMs == STATIONARY_INTERVAL_MS
 
-    fun observe(nowMs: Long, candidate: LocationCandidate, speedMps: Float?, elapsedMs: Long = nowMs) {
+    fun observe(nowMs: Long, candidate: LocationCandidate, speedMps: Float?, elapsedMs: Long = nowMs): Boolean {
+        // Reissued cache coordinates and zero speed cannot establish a real stay.
+        if (candidate.knownCached) return false
         if (!jumpFilter.accept(nowMs, candidate, speedMps)) {
             if (jumpFilter.needsConfirmation) {
-                if (confirmationStartedAt == null && samplingIntervalMs == STATIONARY_INTERVAL_MS) confirmationStartedAt = elapsedMs
+                if (confirmationStartedAt == null && samplingIntervalMs == STATIONARY_INTERVAL_MS && elapsedMs >= confirmationRetryAt) confirmationStartedAt = elapsedMs
                 confirmationStartedAt?.let {
-                    samplingIntervalMs = if (elapsedMs - it in 0 until CONFIRMATION_WINDOW_MS) CONFIRMATION_INTERVAL_MS else STATIONARY_INTERVAL_MS
+                    if (elapsedMs - it in 0 until CONFIRMATION_WINDOW_MS) samplingIntervalMs = CONFIRMATION_INTERVAL_MS
+                    else endConfirmation(elapsedMs)
                 }
             } else if (confirmationStartedAt != null) {
                 confirmationStartedAt = null
                 samplingIntervalMs = STATIONARY_INTERVAL_MS
             }
-            return
+            return false
         }
-        if (candidate.locationTimeMs <= previousTime) return
+        if (candidate.locationTimeMs <= previousTime) return false
         val wasConfirming = confirmationStartedAt != null
         confirmationStartedAt = null
+        confirmationRetryAt = 0
         val oldAnchor = anchor
         val gap = candidate.locationTimeMs - previousTime
         previousTime = candidate.locationTimeMs
@@ -45,12 +51,13 @@ internal class BalancedLocationPolicy {
             anchor = candidate
             observations = 1
             samplingIntervalMs = MOVING_INTERVAL_MS
-            return
+            return true
         }
         observations++
         if (observations >= 4 && candidate.locationTimeMs - oldAnchor.locationTimeMs >= 120_000) {
             samplingIntervalMs = STATIONARY_INTERVAL_MS
         }
+        return true
     }
 
     fun confirmationDelayMs(elapsedMs: Long): Long? = confirmationStartedAt
@@ -58,8 +65,12 @@ internal class BalancedLocationPolicy {
         ?.let { (CONFIRMATION_WINDOW_MS - (elapsedMs - it)).coerceIn(0, CONFIRMATION_WINDOW_MS) }
 
     /** Expiry changes sampling only; a missing fix cannot confirm movement or create a report. */
-    fun endConfirmation() {
-        if (confirmationStartedAt != null) samplingIntervalMs = STATIONARY_INTERVAL_MS
+    fun endConfirmation(elapsedMs: Long? = null) {
+        confirmationStartedAt?.let {
+            samplingIntervalMs = STATIONARY_INTERVAL_MS
+            confirmationRetryAt = maxOf(elapsedMs ?: (it + CONFIRMATION_WINDOW_MS), it + CONFIRMATION_WINDOW_MS) + CONFIRMATION_COOLDOWN_MS
+            confirmationStartedAt = null
+        }
     }
 
     private fun distance(a: LocationCandidate, b: LocationCandidate): Double {
@@ -71,10 +82,11 @@ internal class BalancedLocationPolicy {
     }
 
     companion object {
-        const val MOVING_INTERVAL_MS = 30_000L
+        const val MOVING_INTERVAL_MS = 60_000L
         private const val NON_WIFI_STATIONARY_INTERVAL_MS = 60_000L
         private const val CONFIRMATION_INTERVAL_MS = 30_000L
         const val STATIONARY_INTERVAL_MS = 300_000L
-        private const val CONFIRMATION_WINDOW_MS = 60_000L
+        private const val CONFIRMATION_WINDOW_MS = 120_000L
+        private const val CONFIRMATION_COOLDOWN_MS = 60_000L
     }
 }

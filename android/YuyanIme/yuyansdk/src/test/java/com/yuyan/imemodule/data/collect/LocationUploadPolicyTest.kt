@@ -7,9 +7,9 @@ import org.junit.Test
 class LocationUploadPolicyTest {
     private val now = 1_800_000_000_000L
 
-    @Test fun `thirty second capture cadence survives delayed enqueue`() {
+    @Test fun `minute capture cadence survives delayed enqueue`() {
         val captured = now - 90_000
-        val last = uploaded(locationTimeMs = captured - 30_000, uploadedAtMs = now - 1)
+        val last = uploaded(locationTimeMs = captured - 60_000, uploadedAtMs = now - 1)
         assertTrue(LocationUploadPolicy.shouldUpload(now,
             candidate(latitude = 23.136, locationTimeMs = captured), last, receivedAtMs = captured))
         assertFalse(LocationUploadPolicy.shouldUpload(now,
@@ -79,9 +79,9 @@ class LocationUploadPolicyTest {
     }
 
     @Test
-    fun `fresh moved points before thirty seconds are suppressed`() {
+    fun `fresh moved points before one minute are suppressed`() {
         val moved = candidate(latitude = 23.136)
-        for (elapsed in listOf(10_000L, 29_999L)) {
+        for (elapsed in listOf(10_000L, 30_000L, 59_999L)) {
             assertFalse("elapsed=$elapsed",
                 LocationUploadPolicy.shouldUpload(now, moved, uploaded(locationTimeMs = now - elapsed, uploadedAtMs = now - elapsed)))
         }

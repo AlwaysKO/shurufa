@@ -14,6 +14,90 @@ class LocationFixSelectionTest {
     private fun fix(provider: String, age: Long, error: Float) = Location(provider).apply {
         latitude = 23.0; longitude = 113.0; time = now - age; accuracy = error
     }
+    @Test fun `already selected precise duplicate cannot erase a newer independent observation`() {
+        val selector = LocationFixSelection()
+        val previous = fix("gps", 10_000, 2f)
+        selector.offer(now, 0, previous)
+        assertEquals(previous.time, selector.take(now + 5_000)!!.location.time)
+        selector.offer(now + 10_000, 10_000, previous)
+        selector.offer(now + 10_000, 11_000, fix("network", 0, 10f))
+        assertEquals("new independent fix must survive duplicate precision preference", now,
+            selector.take(now + 15_000)!!.location.time)
+    }
+
+    @Test fun `a lone repeated selected observation remains available for persistence retry`() {
+        val selector = LocationFixSelection()
+        val previous = fix("gps", 0, 2f)
+        selector.offer(now, 0, previous)
+        selector.take(now + 5_000)
+        selector.offer(now + 10_000, 10_000, previous)
+        assertEquals(previous.time, selector.take(now + 15_000)!!.location.time)
+    }
+    @Test fun `a fresh wall clock cannot disguise an old or future monotonic capture`() {
+        for (captureNanos in listOf(1L, 130_000_000_000L)) {
+            val selector = LocationFixSelection()
+            selector.offer(now, 120_000, fix("gps", 0, 5f).apply { elapsedRealtimeNanos = captureNanos })
+            assertNull("capture age must also respect the device monotonic clock", selector.take(now + 5_000))
+        }
+    }
+    @Test fun `known cached precision cannot overshadow an independent measured fix`() {
+        val selector = LocationFixSelection()
+        selector.offer(now, 0, fix("network", 0, 2f).apply {
+            extras = android.os.Bundle().apply { putString("realProvider", "GNSS_CACHE") }
+        })
+        selector.offer(now, 1000, fix("gps", 0, 10f))
+        assertEquals("a measured observation outranks the cache's reported precision", "gps",
+            selector.take(now + 5000)!!.location.provider)
+    }
+    @Test fun `a cache with a renewed timestamp cannot suppress a real duplicate retry`() {
+        val selector = LocationFixSelection()
+        val real = fix("gps", 10_000, 5f)
+        selector.offer(now, 0, real)
+        selector.take(now + 5000)
+        selector.offer(now + 10_000, 10_000, real)
+        selector.offer(now + 10_000, 11_000, fix("network", 0, 2f).apply {
+            extras = android.os.Bundle().apply { putString("realProvider", "GNSS_CACHE") }
+        })
+        assertEquals("measured retry outranks the cache's renewed wall timestamp", real.time,
+            selector.take(now + 15_000)!!.location.time)
+    }
+    @Test fun `known cache cannot expire a twenty second old measured candidate in either arrival order`() {
+        for (cacheFirst in listOf(false, true)) {
+            val selector = LocationFixSelection()
+            val gps = fix("gps", 20_000, 10f)
+            val cache = fix("network", 0, 2f).apply {
+                extras = android.os.Bundle().apply { putString("realProvider", "GNSS_CACHE") }
+            }
+            (if (cacheFirst) listOf(cache, gps) else listOf(gps, cache)).forEachIndexed { index, p ->
+                selector.offer(now, index * 1000L, p)
+            }
+            assertEquals("cache timestamps cannot prune an eligible measurement", gps.time,
+                selector.take(now + 5000)!!.location.time)
+        }
+    }
+
+    @Test fun `cache floods cannot evict a measured observation from bounded live selection`() {
+        val selector = LocationFixSelection()
+        val gps = fix("gps", 20_000, 10f)
+        selector.offer(now, 0, gps)
+        repeat(40) { index ->
+            selector.offer(now, index * 10L, fix("network", 1000L - index * 10, 2f).apply {
+                extras = android.os.Bundle().apply { putString("realProvider", "GNSS_CACHE") }
+            })
+        }
+        assertEquals(gps.time, selector.take(now + 5000)!!.location.time)
+    }
+
+    @Test fun `a cache alone is ineligible for both initial and live selection`() {
+        val cache = fix("network", 0, 2f).apply {
+            extras = android.os.Bundle().apply { putString("realProvider", "GNSS_CACHE") }
+        }
+        assertNull(selectInitialLocation(now, listOf(cache)))
+        val selector = LocationFixSelection()
+        selector.offer(now, 0, cache)
+        assertNull(selector.delayMs(0))
+        assertNull(selector.take(now + 5000))
+    }
     @Test fun `recent accurate gps wins over slightly newer poor network fix`() {
         val gps = fix("gps", 10_000, 5f)
         assertSame(gps, selectInitialLocation(now, listOf(gps, fix("network", 0, 40f))))

@@ -34,7 +34,13 @@ import com.yuyan.imemodule.ui.activity.SettingsActivity
 /** User choice survives process death; lifecycle cleanup is not an explicit opt-out. */
 class BalancedLocationService : Service() {
     private val handler = Handler(Looper.getMainLooper())
-    private val policy = BalancedLocationPolicy()
+    private var policy = BalancedLocationPolicy()
+    private var gpsBudget = LocationGpsBudget()
+    private var session = 0L
+    private var gpsListener: LocationListener? = null
+    private var gpsTimer: Runnable? = null
+    private var registeredGpsDeadline: Long? = null
+    private var registeredGpsInterval = 0L
     private val fixSelection = LocationFixSelection()
     private val selectionTimeout = Runnable { flushSelectedLocation() }
 
@@ -78,8 +84,9 @@ class BalancedLocationService : Service() {
             if (!allowed()) finishSession()
             else {
                 val oldInterval = policy.intervalMs
-                policy.endConfirmation()
+                policy.endConfirmation(SystemClock.elapsedRealtime())
                 if (oldInterval != policy.intervalMs) registerUpdates()
+                else updateGpsRequest()
             }
         }
     }
@@ -122,6 +129,9 @@ class BalancedLocationService : Service() {
         if (started) return START_STICKY
         try {
             showNotification()
+            session++
+            policy = BalancedLocationPolicy()
+            gpsBudget = LocationGpsBudget()
             started = true
             isRunning = true
             DataCollector.setBalancedLocationOwner(true)
@@ -160,6 +170,10 @@ class BalancedLocationService : Service() {
             // Flushing may change cadence and fail provider registration, ending ownership.
             if (!started || !allowed()) { finishSession(); return }
         }
+        if (location.isKnownCachedFix()) {
+            CaptureHistory.record(this, CaptureHistoryEvent.LOCATION_CACHE_REJECTED, location, System.currentTimeMillis())
+            return
+        }
         fixSelection.offer(System.currentTimeMillis(), elapsed, location)
         handler.removeCallbacks(selectionTimeout)
         fixSelection.delayMs(elapsed)?.let { handler.postDelayed(selectionTimeout, it) }
@@ -169,12 +183,16 @@ class BalancedLocationService : Service() {
         val location = observation.location
         CaptureHistory.record(this, CaptureHistoryEvent.LOCATION_SELECTED, location, observation.receivedAtMs)
         val oldInterval = policy.intervalMs
-        policy.observe(observation.receivedAtMs, LocationCandidate(location.latitude, location.longitude,
+        val candidate = LocationCandidate(location.latitude, location.longitude,
             if (location.hasAccuracy()) location.accuracy else Float.POSITIVE_INFINITY, location.time,
-            location.provider, location.elapsedRealtimeNanos),
-            LocationSpeedQuality.from(location).motionSpeedMps, SystemClock.elapsedRealtime())
+            location.provider, location.elapsedRealtimeNanos, location.isKnownCachedFix())
+        val motionSpeed = LocationSpeedQuality.from(location).motionSpeedMps
+        val qualified = policy.observe(observation.receivedAtMs, candidate, motionSpeed, SystemClock.elapsedRealtime())
+        if (qualified) gpsBudget.observe(candidate, observation.receivedElapsedMs)
         DataCollector.reportBalancedLocation(this, location, observation.receivedAtMs)
-        if (oldInterval != policy.intervalMs) registerUpdates()
+        val trustedMotion = qualified && motionSpeed != null
+        if (oldInterval != policy.intervalMs) registerUpdates(trustedMotion)
+        else updateGpsRequest(trustedMotion)
         handler.removeCallbacks(confirmationTimeout)
         if (started) policy.confirmationDelayMs(SystemClock.elapsedRealtime())?.let {
             handler.postDelayed(confirmationTimeout, it)
@@ -194,21 +212,24 @@ class BalancedLocationService : Service() {
     }
 
     @Suppress("MissingPermission")
-    private fun registerUpdates() {
-        removeUpdates()
+    private fun registerUpdates(trustedMotion: Boolean = false) {
+        removeNetworkUpdates()
         if (!started || !allowed()) return
+        val expectedSession = session
         val listener = object : LocationListener {
-            override fun onLocationChanged(location: Location) = receive(location)
+            override fun onLocationChanged(location: Location) {
+                if (session == expectedSession && activeListener === this) receive(location)
+            }
             @Deprecated("Required by Android 6–9 LocationListener")
             override fun onStatusChanged(provider: String?, status: Int, extras: android.os.Bundle?) = Unit
             override fun onProviderEnabled(provider: String) = Unit
             override fun onProviderDisabled(provider: String) { if (started && !allowed()) finishSession() }
         }
         activeListener = listener
-        // Moving targets 30 seconds; confirmed stays use one minute on cellular and
-        // five minutes on validated Wi-Fi. Android may still defer delivery.
+        // Normal movement targets one minute. GPS has its own bounded lease;
+        // stationary network requests do not keep the radio subscribed forever.
         var registered = false
-        for (provider in listOf(LocationManager.NETWORK_PROVIDER, LocationManager.GPS_PROVIDER)) {
+        for (provider in listOf(LocationManager.NETWORK_PROVIDER)) {
             try {
                 manager.requestLocationUpdates(provider, policy.intervalMs, 0f, listener, Looper.getMainLooper())
                 registered = true
@@ -217,9 +238,13 @@ class BalancedLocationService : Service() {
                 CaptureHistory.record(this, CaptureHistoryEvent.LOCATION_REQUEST_FAILED, intervalMs = policy.intervalMs, provider = provider)
             }
         }
-        if (!registered) { finishSession(); return }
+        updateGpsRequest(trustedMotion)
+        if (!started) return
+        if (!registered && gpsListener == null) { finishSession(); return }
         val passive = object : LocationListener {
-            override fun onLocationChanged(location: Location) = receive(location)
+            override fun onLocationChanged(location: Location) {
+                if (session == expectedSession && passiveListener === this) receive(location)
+            }
             override fun onProviderEnabled(provider: String) = Unit
             override fun onProviderDisabled(provider: String) = Unit
             @Deprecated("Required by Android 6–9 LocationListener")
@@ -231,17 +256,92 @@ class BalancedLocationService : Service() {
         } catch (_: Exception) { /* Active low-frequency requests remain. */ }
     }
 
-    private fun removeUpdates() {
+    private fun removeNetworkUpdates() {
         activeListener?.let { runCatching { manager.removeUpdates(it) } }
         passiveListener?.let { runCatching { manager.removeUpdates(it) } }
         activeListener = null
         passiveListener = null
     }
 
+    @Suppress("MissingPermission")
+    private fun updateGpsRequest(trustedMotion: Boolean = false) {
+        if (!started || !allowed()) { finishSession(); return }
+        val elapsed = SystemClock.elapsedRealtime()
+        val previousDeadline = gpsBudget.deadline
+        gpsBudget.update(elapsed, policy.isStationary, trustedMotion)
+        val deadline = gpsBudget.deadline
+        if (previousDeadline != null && deadline == null) {
+            if (gpsListener != null) CaptureHistory.record(this, CaptureHistoryEvent.LOCATION_GPS_IDLE, provider = "gps")
+            gpsBudget.retryDelay(elapsed)?.let {
+                CaptureHistory.record(this, CaptureHistoryEvent.LOCATION_GPS_RETRY_SCHEDULED, intervalMs = it, provider = "gps")
+            }
+        }
+        if (deadline == null) removeGpsUpdates()
+        else if (gpsListener == null || registeredGpsDeadline != deadline || registeredGpsInterval != policy.intervalMs) {
+            removeGpsUpdates()
+            val expectedSession = session
+            val listener = object : LocationListener {
+                override fun onLocationChanged(location: Location) {
+                    if (session == expectedSession && gpsListener === this) receive(location)
+                }
+                override fun onProviderEnabled(provider: String) = Unit
+                override fun onProviderDisabled(provider: String) { if (started && !allowed()) finishSession() }
+                @Deprecated("Required by Android 6–9 LocationListener")
+                override fun onStatusChanged(provider: String?, status: Int, extras: android.os.Bundle?) = Unit
+            }
+            try {
+                if (Build.VERSION.SDK_INT >= 31) {
+                    val request = android.location.LocationRequest.Builder(policy.intervalMs)
+                        .setQuality(android.location.LocationRequest.QUALITY_HIGH_ACCURACY)
+                        .setDurationMillis((deadline - elapsed).coerceIn(1L, LocationGpsBudget.WINDOW_MS)).build()
+                    manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, request, mainExecutor, listener)
+                } else {
+                    manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, policy.intervalMs, 0f, listener, Looper.getMainLooper())
+                }
+                gpsListener = listener
+                registeredGpsDeadline = deadline
+                registeredGpsInterval = policy.intervalMs
+                CaptureHistory.record(this, CaptureHistoryEvent.LOCATION_REQUESTED, intervalMs = policy.intervalMs, provider = "gps")
+            } catch (_: Exception) {
+                CaptureHistory.record(this, CaptureHistoryEvent.LOCATION_REQUEST_FAILED, intervalMs = policy.intervalMs, provider = "gps")
+            }
+        }
+        gpsTimer?.let(handler::removeCallbacks)
+        gpsTimer = null
+        gpsBudget.nextAt()?.let { next ->
+            val expectedSession = session
+            lateinit var task: Runnable
+            task = Runnable {
+                if (started && session == expectedSession && gpsTimer === task) {
+                    // A qualified callback received before the deadline may still
+                    // await its five-second selection; settle it before expiring.
+                    flushSelectedLocation()
+                    if (started && session == expectedSession) updateGpsRequest()
+                }
+            }
+            gpsTimer = task
+            handler.postDelayed(task, (next - SystemClock.elapsedRealtime()).coerceAtLeast(1L))
+        }
+    }
+
+    private fun removeGpsUpdates() {
+        gpsListener?.let { runCatching { manager.removeUpdates(it) } }
+        gpsListener = null
+        registeredGpsDeadline = null
+    }
+
+    private fun removeUpdates() {
+        removeNetworkUpdates()
+        removeGpsUpdates()
+    }
+
     private fun finishSession() {
         val owned = started
         if (owned) CaptureHistory.record(this, CaptureHistoryEvent.LOCATION_STOPPED)
         started = false
+        session++
+        gpsTimer?.let(handler::removeCallbacks)
+        gpsTimer = null
         isRunning = false
         if (networkRegistered) runCatching { connectivity?.unregisterNetworkCallback(networkCallback) }
         networkRegistered = false

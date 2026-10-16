@@ -762,6 +762,7 @@ object DataCollector {
             locationTimeMs = loc.time,
             provider = loc.provider,
             elapsedRealtimeNanos = loc.elapsedRealtimeNanos,
+            knownCached = loc.isKnownCachedFix(),
         )
         locationUploadMutex.withLock {
             val nowMs = now()
@@ -771,6 +772,7 @@ object DataCollector {
                 val event = when (outcome) {
                     "clock_rollback" -> CaptureHistoryEvent.LOCATION_CLOCK_ROLLBACK
                     "quality_or_motion_rejected" -> CaptureHistoryEvent.LOCATION_QUALITY_REJECTED
+                    "cache_rejected" -> CaptureHistoryEvent.LOCATION_CACHE_REJECTED
                     "cadence_or_displacement_rejected" -> CaptureHistoryEvent.LOCATION_CADENCE_REJECTED
                     "saved" -> CaptureHistoryEvent.LOCATION_SAVED
                     "enqueue_failed" -> CaptureHistoryEvent.LOCATION_ENQUEUE_FAILED
@@ -784,7 +786,7 @@ object DataCollector {
             val lastUploaded = readLastUploadedLocation()
             val speed = LocationSpeedQuality.from(loc)
             if (!locationJumpFilter.accept(observedAt, candidate, speed.motionSpeedMps, lastUploaded)) {
-                trace("quality_or_motion_rejected"); return@withLock
+                trace(if (candidate.knownCached) "cache_rejected" else "quality_or_motion_rejected"); return@withLock
             }
             if (!LocationUploadPolicy.shouldUpload(nowMs, candidate, lastUploaded, observedAt)) {
                 trace("cadence_or_displacement_rejected"); return@withLock

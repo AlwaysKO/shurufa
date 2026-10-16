@@ -92,11 +92,21 @@ const tile='<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><re
    rows=rows.filter(r=>r.id!=='b');
    await page.waitForFunction(()=>!document.querySelector('[data-testid="selected-location"]'),null,{timeout:8000});
    await page.locator('.leaflet-popup').waitFor({state:'detached'});
+   rows.push(row('gap',23,23.132));
+   await page.locator('.location-gap').waitFor({state:'attached'});
+   assert.equal(await page.locator('.location-gap').count(),1);
+   assert.equal(await page.locator('.location-gap').getAttribute('stroke-dasharray'),'6 8');
+   assert.equal(await page.locator('.location-gap').evaluate(el=>el.classList.contains('leaflet-interactive')),false);
+   assert((await page.getByTestId('location-gap-hint').innerText()).includes('期间缺少定位点，路线未知'));
+   assert.equal(await page.locator('.location-route').count(),1,'缺口不能合并连续路线');
+   assert.equal(await page.locator('.location-direction').count(),1,'缺口不能生成路线方向');
+   await page.screenshot({path:resolve(output,`gap-${width}.png`),fullPage:true});
    // 筛选变化清空旧设备选择。
    await page.locator('.toolbar select').selectOption('other');
    await page.waitForFunction(()=>document.querySelectorAll('.location-hit').length===1);
    assert.equal(await page.locator('[data-testid="location-candidate"]').count(),0);
    assert.equal(await page.locator('.location-route').count(),0);
+   assert.equal(await page.locator('.location-gap').count(),0);
    checks.push(`${width}:真实命中外沿/重叠选择/转义/高亮/时间方向分段/自动刷新保留缩放与弹窗开关/删除清选择/设备切换`);
    // 目录与已有响应式外壳入口。
    if(width===390)await page.getByRole('button',{name:'打开导航',exact:true}).click();

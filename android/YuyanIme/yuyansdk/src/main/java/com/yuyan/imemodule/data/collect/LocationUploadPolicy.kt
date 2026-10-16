@@ -13,6 +13,7 @@ internal data class LocationCandidate(
     val locationTimeMs: Long,
     val provider: String? = null,
     val elapsedRealtimeNanos: Long = 0L,
+    val knownCached: Boolean = false,
 )
 
 internal data class UploadedLocation(
@@ -27,7 +28,7 @@ internal data class UploadedLocation(
 
 internal object LocationUploadPolicy {
     private const val MAX_LOCATION_AGE_MS = 60_000L
-    private const val MIN_CAPTURE_INTERVAL_MS = 30_000L
+    private const val MIN_CAPTURE_INTERVAL_MS = 60_000L
     private const val MAX_ACCURACY_METERS = 50f
     private const val EARTH_RADIUS_METERS = 6_371_000.0
 
@@ -37,6 +38,7 @@ internal object LocationUploadPolicy {
         lastUploaded: UploadedLocation?,
         receivedAtMs: Long = nowMs,
     ): Boolean {
+        if (candidate.knownCached) return false
         if (receivedAtMs > nowMs) return false
         val ageMs = receivedAtMs - candidate.locationTimeMs
         if (ageMs !in 0..MAX_LOCATION_AGE_MS) return false
@@ -47,7 +49,7 @@ internal object LocationUploadPolicy {
             !candidate.longitude.isFinite() || candidate.longitude !in -180.0..180.0) return false
         if (lastUploaded == null) return true
         if (candidate.locationTimeMs <= lastUploaded.locationTimeMs) return false
-        // 按实际定位时刻保留30秒有效变化；休眠或IO使入队集中时也不能吞掉中间点。
+        // 按实际定位时刻保留60秒有效变化；休眠或IO使入队集中时也不能吞掉中间点。
         if (nowMs < lastUploaded.uploadedAtMs) return false
         if (candidate.locationTimeMs - lastUploaded.locationTimeMs < MIN_CAPTURE_INTERVAL_MS) return false
 

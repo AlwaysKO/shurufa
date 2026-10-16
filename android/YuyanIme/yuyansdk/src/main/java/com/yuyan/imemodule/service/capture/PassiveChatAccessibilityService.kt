@@ -403,6 +403,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
 
     override fun onServiceConnected() {
         super.onServiceConnected()
+        CaptureTrace.bind(applicationContext)
         com.yuyan.imemodule.data.redpacket.PacketServiceState.nativeAccessibilityService = this
         if (videoVisitMonitor == null) {
             videoVisitMonitor = runCatching {
@@ -603,6 +604,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     private fun requestPromptChatCapture(expectedPackage: String, afterSend: Boolean) {
         if (destroyed || !CollectionConsent.enabled(this) || !isForegroundChatCapturePackage(expectedPackage) ||
             (!afterSend && scrollGate.isScrolling())) return
+        if (afterSend) CaptureTrace.record(CaptureStage.SEND_REQUESTED)
         val identityGeneration = screenshotIdentityGeneration.get()
         val recoverySequence = if (afterSend) sendRecoverySequence.incrementAndGet() else -1L
         val previous = promptCaptureJob?.takeIf { it.isActive }
@@ -637,12 +639,12 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                     delay(render.remainingMillis().coerceAtMost(30))
                 }
                 // 持续手动/自动滚动达到上限时放弃快帧，不能把到期当作画面已静止。
-                CaptureTrace.record(CaptureStage.PROMPT_STEP, generation = identityGeneration, value = 1, flag = render?.isSettled() == true)
+                CaptureTrace.record(CaptureStage.PROMPT_STEP, generation = identityGeneration, value = 1, flag = render?.isSettled() == true, historyEnabled = afterSend)
                 if (render != null && !render.isSettled()) return@launch
                 var waits = 0
                 while (!attempt.canTakeFrame() && waits++ < 25 && !destroyed &&
                     screenshotIdentityGeneration.get() == identityGeneration) delay(16)
-                CaptureTrace.record(CaptureStage.PROMPT_STEP, generation = identityGeneration, value = 2, flag = attempt.canTakeFrame())
+                CaptureTrace.record(CaptureStage.PROMPT_STEP, generation = identityGeneration, value = 2, flag = attempt.canTakeFrame(), historyEnabled = afterSend)
                 if (!attempt.canTakeFrame()) return@repeat
                 val root = rootInActiveWindow ?: return@launch
                 val windowId: Int
@@ -680,6 +682,9 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         }
         promptCaptureJob = promptJob
         promptJob.invokeOnCompletion { cause ->
+            if (afterSend && cause is kotlinx.coroutines.CancellationException) {
+                CaptureTrace.record(CaptureStage.PROMPT_CANCELLED, generation = identityGeneration)
+            }
             if (cause == null && afterSend && !attempt.isAccepted && !ordinaryViewportScheduled) {
                 // 快帧失败不等于永久放弃；只补一次普通空闲复查，不延长SEND许可。
                 mainHandler.post {

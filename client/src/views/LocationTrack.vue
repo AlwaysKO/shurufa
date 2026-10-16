@@ -152,6 +152,10 @@ function renderMap(recenter = true) {
   if (pts.length === 0) return;
   const starts = new Set(analysis.value.segments.map(segment => locationPointKey(segment[0]!)));
   const ends = new Set(analysis.value.segments.map(segment => locationPointKey(segment[segment.length - 1]!)));
+  for (const gap of analysis.value.gaps) {
+    L.polyline([gap.start, gap.end].map(p => [Number(p.latitude), Number(p.longitude)]),
+      { color: '#64748b', weight: 3, opacity: 0.8, dashArray: '6 8', interactive: false, className: 'location-gap' }).addTo(layer);
+  }
   for (const segment of routeSegments.value) {
     L.polyline(segment.map(p => [Number(p.latitude), Number(p.longitude)]),
       { color: '#3742fa', weight: 3, opacity: 0.7, interactive: false, className: 'location-route' }).addTo(layer);
@@ -296,7 +300,8 @@ const summary = computed(() => {
       <span v-if="error" class="err">{{ error }}</span>
     </div>
 
-    <p class="analysis-hint">新版手机仅在位置有效变化时上报，位置不变不重复上报。非 Wi-Fi 时目标约 1 分钟采样；Wi-Fi 下移动约 1 分钟、确认地理位置稳定后约 5 分钟检查；实际频率受权限、信号和系统限制。静止缺报无法确认准确停留或 Wi-Fi 连接时长。路线连线不代表实际经过的道路；超过 15 分钟的缺口、跨日和不同设备分段显示。</p>
+    <p class="analysis-hint">新版手机仅在位置有效变化时上报，位置不变不重复上报。移动时目标约 1 分钟采样，确认静止后降低频率；实际频率受权限、信号和系统限制。静止缺报无法确认准确停留或 Wi-Fi 连接时长。路线连线不代表实际经过的道路；超过 15 分钟的缺口分段显示，同日同设备、30 分钟内且相距不超过 300 米的缺口用灰色虚线标注，期间路线未知，不计入里程和停留。</p>
+    <p v-if="analysis.gaps.length" class="analysis-hint" data-testid="location-gap-hint">灰色虚线：{{ analysis.gaps.length }} 处近距离缺口，期间缺少定位点，路线未知。</p>
     <p v-if="hasMore" class="coverage-warning" role="status">所选日期范围记录超过 1000 条，仅分析已加载的最近记录。可缩短日期范围或选择单台设备；这里的里程与停留不代表完整行程。</p>
     <div v-if="visibleLocations.length" class="location-stats">
       <div><strong>{{ routeSegments.length }}</strong><span>有连续观测的路线段</span></div>
