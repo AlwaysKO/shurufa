@@ -202,6 +202,7 @@ internal class BrowsingPageServiceBridge(
                 val result = reader.readAndPersist(outbox, snapshot.page.packageName, snapshot.page.windowId, snapshot.bounds,
                     snapshot.labels, chatVerified = snapshot.chatVerified, current = ::current,
                     acceptKind = { it in kinds },
+                    waitForSlotMillis = if (decision.kind == PageKind.PAYMENT || decision.reason == "insufficient_evidence") 2000 else 0,
                     // 视频必须取新帧，避免在途早期探测回填缓存后被复用；物理截图槽仍共用。
                     captureKey = if (feed) null else PageFrameCaptureKey(snapshot.page.packageName, snapshot.page.windowId, sequence, consent, policy),
                     onPersisted = { frame, result, _, _ ->

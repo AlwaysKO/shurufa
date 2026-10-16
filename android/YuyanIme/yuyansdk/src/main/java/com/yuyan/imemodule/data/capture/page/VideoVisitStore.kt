@@ -13,7 +13,7 @@ import java.io.File
  * completed 是待交接记录，有图且尚无远端回执时不删除。网络交接由集成层负责。
  */
 internal class VideoVisitStore(context: Context) : SQLiteOpenHelper(
-    context.applicationContext, File(context.noBackupFilesDir, "video_visits.db").absolutePath, null, 4,
+    context.applicationContext, File(context.noBackupFilesDir, "video_visits.db").absolutePath, null, 5,
 ) {
     private val json = Json { ignoreUnknownKeys = true }
     // 等待首帧时只在本次进程中计时，不能生成无图片的磁盘日志。
@@ -38,9 +38,13 @@ internal class VideoVisitStore(context: Context) : SQLiteOpenHelper(
             }
             db.execSQL("CREATE INDEX completed_delivery ON completed(platform,retry_after,entered_at,id)")
         }
-        if (oldVersion < 3) {
-            db.execSQL("ALTER TABLE completed ADD COLUMN first_image_id TEXT")
-            db.execSQL("ALTER TABLE completed ADD COLUMN last_image_id TEXT")
+        // 已发布的版本4存在两种列结构，不能只凭 user_version 判断迁移完成。
+        val columns = db.rawQuery("PRAGMA table_info(completed)", null).use { cursor ->
+            buildSet { while (cursor.moveToNext()) add(cursor.getString(cursor.getColumnIndexOrThrow("name"))) }
+        }
+        val missing = listOf("first_image_id", "last_image_id").filterNot { it in columns }
+        if (oldVersion < 5 && missing.isNotEmpty()) {
+            missing.forEach { db.execSQL("ALTER TABLE completed ADD COLUMN $it TEXT") }
             // 仅一次迁移解码原始 payload；保留其字节、重试时间与所有待传行。
             db.rawQuery("SELECT id,payload FROM completed", null).use { cursor ->
                 while (cursor.moveToNext()) {

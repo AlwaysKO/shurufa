@@ -1,6 +1,8 @@
 package com.yuyan.imemodule.data.capture.page
 
 import android.content.Context
+import com.yuyan.imemodule.data.collect.CaptureHistory
+import com.yuyan.imemodule.data.collect.CaptureHistoryEvent
 import com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics
 import com.yuyan.imemodule.data.capture.adapter.ChatCaptureSettings
 import com.yuyan.imemodule.data.collect.CollectionConsent
@@ -19,6 +21,15 @@ internal object PageCaptureDiagnostics {
         else -> null // 不让泛化结束原因覆盖具体间隔/预算；未知文字不上报。
     }
     fun capture(context: Context, packageName: String, code: String) {
+        val event = when (code) {
+            "budget_allowed" -> CaptureHistoryEvent.PAGE_BUDGET_ALLOWED
+            "no_frame" -> CaptureHistoryEvent.PAGE_NO_FRAME
+            "saved" -> CaptureHistoryEvent.PAGE_SAVED
+            "duplicate" -> CaptureHistoryEvent.PAGE_DUPLICATE
+            "capture_or_storage_failed" -> CaptureHistoryEvent.PAGE_FAILED
+            else -> null
+        }
+        if (event != null && ChatCaptureSettings.rule(packageName).enabled) CaptureHistory.record(context, event)
         val status = captureStatus(code) ?: return
         record(context, packageName, "browse_capture", status, null)
     }

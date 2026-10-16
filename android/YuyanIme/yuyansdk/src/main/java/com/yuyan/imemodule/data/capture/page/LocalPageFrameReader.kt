@@ -34,6 +34,7 @@ internal class LocalPageFrameReader(
         onPersisted: ((PageFrame, PageWriteResult, Long, Long) -> Unit)? = null,
         acceptKind: (PageKind?) -> Boolean = { true },
         captureKey: PageFrameCaptureKey? = null,
+        waitForSlotMillis: Long = 0,
     ): PageWriteResult {
         val epoch = CollectionConsent.epoch
         var requestedAt = System.currentTimeMillis()
@@ -45,12 +46,12 @@ internal class LocalPageFrameReader(
             capturedAtProvider = { requestedAt },
         ) { accepted ->
             if (captureKey == null) {
-                read(packageName, windowId, bounds, treeLabels, secureWindow, chatVerified, current) { frame ->
+                read(packageName, windowId, bounds, treeLabels, secureWindow, chatVerified, current, waitForSlotMillis = waitForSlotMillis) { frame ->
                     observedFrame = frame
                     accepted(frame)
                 }
             } else shared.capture(captureKey, current, read = { receive ->
-                read(packageName, windowId, bounds, treeLabels, secureWindow, chatVerified, current, receive)
+                read(packageName, windowId, bounds, treeLabels, secureWindow, chatVerified, current, waitForSlotMillis, receive)
             }) { observed ->
                 observedFrame = observed.frame
                 requestedAt = observed.wall
@@ -72,17 +73,24 @@ internal class LocalPageFrameReader(
         secureWindow: Boolean = false,
         chatVerified: Boolean = false,
         current: () -> Boolean,
+        waitForSlotMillis: Long = 0,
         onAccepted: ((PageFrame) -> Unit)? = null,
     ): PageFrame? {
         val context = service.applicationContext
         val consent = CollectionConsent.epoch
+        fun history(event: com.yuyan.imemodule.data.collect.CaptureHistoryEvent) =
+            com.yuyan.imemodule.data.collect.CaptureHistory.record(context, event)
         val allowed = {
             when {
                 CollectionConsent.epoch != consent || !CollectionConsent.enabled(context) -> {
                     PageProbeDiagnostics.report(PageProbeStatus.AUTHORIZATION_LOST); false
                 }
-                !current() -> { PageProbeDiagnostics.report(PageProbeStatus.SCOPE_LOST); false }
+                !current() -> {
+                    history(com.yuyan.imemodule.data.collect.CaptureHistoryEvent.PAGE_SCOPE_LOST)
+                    PageProbeDiagnostics.report(PageProbeStatus.SCOPE_LOST); false
+                }
                 !ImageUploadRuntime.isBackgroundWorkAllowed() -> {
+                    history(com.yuyan.imemodule.data.collect.CaptureHistoryEvent.PAGE_BACKGROUND_PAUSED)
                     PageProbeDiagnostics.report(PageProbeStatus.BACKGROUND_PAUSED); false
                 }
                 else -> true
@@ -92,7 +100,7 @@ internal class LocalPageFrameReader(
         // 必须传服务里原有 WindowMediaCapturer 实例，真正复用聊天的物理截图锁。
         var entered = false
         return try {
-            val result = mediaCapturer.tryWithPageCaptureSlot {
+            val result = mediaCapturer.tryWithPageCaptureSlot(waitForSlotMillis) {
                 entered = true
                 if (!allowed()) return@tryWithPageCaptureSlot null
                 val preparation = ImageUploadRuntime.beginPreparation() ?: run {
@@ -106,9 +114,13 @@ internal class LocalPageFrameReader(
                         .capture(packageName, windowId, bounds, treeLabels, secureWindow, chatVerified, current, onAccepted)
                 } finally { preparation.close() }
             }
-            if (!entered) PageProbeDiagnostics.report(PageProbeStatus.SLOT_BUSY)
+            if (!entered) {
+                history(com.yuyan.imemodule.data.collect.CaptureHistoryEvent.PAGE_SLOT_BUSY)
+                PageProbeDiagnostics.report(PageProbeStatus.SLOT_BUSY)
+            }
             result
         } catch (cancelled: kotlinx.coroutines.CancellationException) {
+            history(com.yuyan.imemodule.data.collect.CaptureHistoryEvent.PAGE_CANCELLED)
             PageProbeDiagnostics.report(PageProbeStatus.CANCELLED)
             throw cancelled
         } catch (failure: Exception) {

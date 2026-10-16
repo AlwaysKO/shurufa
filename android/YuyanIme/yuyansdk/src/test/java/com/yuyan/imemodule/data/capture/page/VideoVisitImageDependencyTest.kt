@@ -138,7 +138,7 @@ class VideoVisitImageDependencyTest {
             db.version=2
         }
         VideoVisitStore(app).use { store ->
-            assertEquals(4,store.readableDatabase.version)
+            assertEquals(5,store.readableDatabase.version)
             assertEquals(active,store.active()); assertEquals(done,store.completed().single())
             store.readableDatabase.rawQuery("SELECT payload,retry_after,first_image_id,last_image_id FROM completed",null).use { c ->
                 assertTrue(c.moveToFirst()); assertEquals(payload,c.getString(0)); assertEquals(now+12_000,c.getLong(1))
@@ -149,10 +149,62 @@ class VideoVisitImageDependencyTest {
         }
     }
 
+    @Test fun collidedVersionFourWithoutImageColumnsRecoversWithoutLosingPayloadOrBackoff() {
+        val active=VideoVisit("00000000-0000-4000-8000-000000000001","wechat","active",now,100,firstImage="active-image")
+        val done=active.copy(id="00000000-0000-4000-8000-000000000002",reason=VideoExitReason.INTERRUPTED)
+        val payload=Json.encodeToString(done)
+        android.database.sqlite.SQLiteDatabase.openOrCreateDatabase(File(app.noBackupFilesDir,"video_visits.db"),null).use { db ->
+            db.execSQL("CREATE TABLE active (id INTEGER PRIMARY KEY CHECK(id=1),payload TEXT NOT NULL)")
+            db.execSQL("CREATE TABLE completed (id TEXT PRIMARY KEY,entered_at INTEGER NOT NULL,payload TEXT NOT NULL,retry_after INTEGER NOT NULL DEFAULT 0,platform TEXT NOT NULL)")
+            db.execSQL("INSERT INTO active VALUES(1,?)",arrayOf(Json.encodeToString(active)))
+            db.execSQL("INSERT INTO completed VALUES(?,?,?,?,?)",arrayOf(done.id,done.enteredAt,payload,now+12_000,done.platform))
+            db.version=4
+        }
+        VideoVisitStore(app).use { store ->
+            store.recoverInterrupted()
+            assertNull(store.active())
+            assertEquals(2,store.completed().size)
+            store.readableDatabase.rawQuery("SELECT payload,retry_after,first_image_id FROM completed WHERE id=?",arrayOf(done.id)).use { c ->
+                assertTrue(c.moveToFirst()); assertEquals(payload,c.getString(0)); assertEquals(now+12_000,c.getLong(1)); assertEquals(done.firstImage,c.getString(2))
+            }
+        }
+        VideoVisitStore(app).use { assertEquals(2,it.completed().size) }
+    }
+
+    @Test fun completeVersionFourDoesNotDecodeOrRewriteQueuedPayloads() {
+        VideoVisitStore(app).use { store ->
+            store.writableDatabase.execSQL("INSERT INTO completed(id,entered_at,payload,platform,first_image_id) VALUES('waiting',0,'future-format','wechat','image')")
+            store.writableDatabase.version=4
+        }
+        VideoVisitStore(app).use { store ->
+            assertEquals(5,store.readableDatabase.version)
+            assertEquals(emptyList<VideoVisit>(),store.due(now,blockedImageIds=setOf("image")))
+            store.readableDatabase.rawQuery("SELECT payload FROM completed",null).use { c ->
+                assertTrue(c.moveToFirst()); assertEquals("future-format",c.getString(0))
+            }
+        }
+    }
+
+    @Test fun partiallyMigratedVersionFourAddsOnlyMissingColumnAndBackfillsBothReferences() {
+        val visit=VideoVisit("00000000-0000-4000-8000-000000000001","wechat","fixture",now,100,
+            firstImage="first",lastImage="last",reason=VideoExitReason.INTERRUPTED)
+        android.database.sqlite.SQLiteDatabase.openOrCreateDatabase(File(app.noBackupFilesDir,"video_visits.db"),null).use { db ->
+            db.execSQL("CREATE TABLE active (id INTEGER PRIMARY KEY CHECK(id=1),payload TEXT NOT NULL)")
+            db.execSQL("CREATE TABLE completed (id TEXT PRIMARY KEY,entered_at INTEGER NOT NULL,payload TEXT NOT NULL,retry_after INTEGER NOT NULL DEFAULT 0,platform TEXT NOT NULL,first_image_id TEXT)")
+            db.execSQL("INSERT INTO completed VALUES(?,?,?,?,?,?)",arrayOf(visit.id,now,Json.encodeToString(visit),now+12000,"wechat","first"))
+            db.version=4
+        }
+        VideoVisitStore(app).use { store ->
+            assertEquals(visit,store.completed().single())
+            assertNull(store.nextDeliveryDelay(now,setOf("wechat"),blockedImageIds=setOf("last")))
+            assertEquals(12000L,store.nextDeliveryDelay(now,setOf("wechat")))
+        }
+    }
+
     @Test fun sqlFiltersWaitingRowsWithoutDecodingTheirPayload() {
         val blocked="00000000-0000-4000-8000-000000000009"
         VideoVisitStore(app).use { store ->
-            assertEquals(4,store.writableDatabase.version)
+            assertEquals(5,store.writableDatabase.version)
             store.writableDatabase.execSQL("INSERT INTO completed(id,entered_at,payload,platform,first_image_id) VALUES('blocked',0,'not-json','wechat',?)",arrayOf(blocked))
             val ready=visit(store,"remote-image")
             assertEquals(listOf(ready),store.due(now+1000,limit=1,blockedImageIds=setOf(blocked)))

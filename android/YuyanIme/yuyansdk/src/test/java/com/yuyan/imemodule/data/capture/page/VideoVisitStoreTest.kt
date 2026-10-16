@@ -46,7 +46,7 @@ class VideoVisitStoreTest {
         }
         VideoVisitStore(app).use { s ->
             assertEquals(visit, s.active()); assertEquals(done, s.due(10000).single())
-            assertEquals(4, s.readableDatabase.version)
+            assertEquals(5, s.readableDatabase.version)
             assertTrue(s.acknowledge(done) { true }); assertEquals(visit, s.active())
         }
     }

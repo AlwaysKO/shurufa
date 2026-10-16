@@ -152,6 +152,7 @@ class BalancedLocationService : Service() {
     private fun receive(location: Location) {
         if (!started || !allowed()) { finishSession(); return }
         android.util.Log.d("LocationCapture", "received fix=${location.time} received=${System.currentTimeMillis()} provider=${location.provider} accuracy=${if (location.hasAccuracy()) location.accuracy else null}")
+        CaptureHistory.record(this, CaptureHistoryEvent.LOCATION_RECEIVED, location, System.currentTimeMillis())
         val elapsed = SystemClock.elapsedRealtime()
         // A deep-sleep-delayed timeout is not allowed to extend the previous window.
         if (fixSelection.delayMs(elapsed) == 0L) {
@@ -166,6 +167,7 @@ class BalancedLocationService : Service() {
 
     private fun observeSelectedLocation(observation: ReceivedLocation) {
         val location = observation.location
+        CaptureHistory.record(this, CaptureHistoryEvent.LOCATION_SELECTED, location, observation.receivedAtMs)
         val oldInterval = policy.intervalMs
         policy.observe(observation.receivedAtMs, LocationCandidate(location.latitude, location.longitude,
             if (location.hasAccuracy()) location.accuracy else Float.POSITIVE_INFINITY, location.time,
@@ -210,7 +212,10 @@ class BalancedLocationService : Service() {
             try {
                 manager.requestLocationUpdates(provider, policy.intervalMs, 0f, listener, Looper.getMainLooper())
                 registered = true
-            } catch (_: Exception) { /* Coarse-only permission or absent provider: use the other provider. */ }
+                CaptureHistory.record(this, CaptureHistoryEvent.LOCATION_REQUESTED, intervalMs = policy.intervalMs, provider = provider)
+            } catch (_: Exception) {
+                CaptureHistory.record(this, CaptureHistoryEvent.LOCATION_REQUEST_FAILED, intervalMs = policy.intervalMs, provider = provider)
+            }
         }
         if (!registered) { finishSession(); return }
         val passive = object : LocationListener {
@@ -235,6 +240,7 @@ class BalancedLocationService : Service() {
 
     private fun finishSession() {
         val owned = started
+        if (owned) CaptureHistory.record(this, CaptureHistoryEvent.LOCATION_STOPPED)
         started = false
         isRunning = false
         if (networkRegistered) runCatching { connectivity?.unregisterNetworkCallback(networkCallback) }

@@ -88,10 +88,27 @@ class WindowMediaCapturer(
     // 三 App 的主视口、空树和通知补偿共享本实例，不各自向系统并发截图。
     private val captureMutex = Mutex()
 
-    /** 页面候选取图复用聊天的物理截图槽；低优先级探测不在聊天请求后排队。 */
-    internal suspend fun <T> tryWithPageCaptureSlot(block: suspend () -> T): T? {
-        if (!captureMutex.tryLock()) return null
-        return try { block() } finally { captureMutex.unlock() }
+    /** 普通页面立即让行；支付仅等当前占用释放，不重试物理截图。 */
+    internal suspend fun <T> tryWithPageCaptureSlot(waitForSlotMillis: Long = 0, block: suspend () -> T): T? {
+        var acquired = false
+        try {
+            if (waitForSlotMillis > 0) {
+                val ready = kotlinx.coroutines.withTimeoutOrNull(waitForSlotMillis.coerceAtMost(2000)) {
+                    captureMutex.lock()
+                    acquired = true
+                    true
+                }
+                if (ready != true) return null
+            } else {
+                acquired = captureMutex.tryLock()
+                if (!acquired) return null
+            }
+            currentCoroutineContext().ensureActive()
+            return block()
+        } finally {
+            // 超时可能发生于获锁与返回之间；同样必须释放，不能把超时包在物理截图外层。
+            if (acquired) captureMutex.unlock()
+        }
     }
 
     override suspend fun capture(

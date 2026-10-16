@@ -739,8 +739,10 @@ object DataCollector {
 
     private fun reportLocation(context: Context, loc: Location, fromBalancedService: Boolean = false,
         receivedAtMs: Long = System.currentTimeMillis()) {
-        if (balancedLocationOwner != fromBalancedService) return
-        if (!locationTrackingEnabled || !hasLocationPermission(context)) return  // 开关关闭后不再上报（双保险）
+        if (balancedLocationOwner != fromBalancedService || !locationTrackingEnabled || !hasLocationPermission(context)) {
+            CaptureHistory.record(context, CaptureHistoryEvent.LOCATION_GUARD_REJECTED, loc, receivedAtMs)
+            return
+        }
         val snapshot = Location(loc)
         scope.launch { persistLocation(context, snapshot, fromBalancedService, receivedAtMs) }
     }
@@ -764,11 +766,21 @@ object DataCollector {
         locationUploadMutex.withLock {
             val nowMs = now()
             val observedAt = receivedAtMs ?: nowMs
-            fun trace(outcome: String) = Log.d("LocationCapture",
-                "$outcome fix=${loc.time} received=$observedAt processed=$nowMs provider=${loc.provider} accuracy=${candidate.accuracyMeters}")
+            fun trace(outcome: String) {
+                Log.d("LocationCapture", "$outcome fix=${loc.time} received=$observedAt processed=$nowMs provider=${loc.provider} accuracy=${candidate.accuracyMeters}")
+                val event = when (outcome) {
+                    "clock_rollback" -> CaptureHistoryEvent.LOCATION_CLOCK_ROLLBACK
+                    "quality_or_motion_rejected" -> CaptureHistoryEvent.LOCATION_QUALITY_REJECTED
+                    "cadence_or_displacement_rejected" -> CaptureHistoryEvent.LOCATION_CADENCE_REJECTED
+                    "saved" -> CaptureHistoryEvent.LOCATION_SAVED
+                    "enqueue_failed" -> CaptureHistoryEvent.LOCATION_ENQUEUE_FAILED
+                    else -> CaptureHistoryEvent.LOCATION_GUARD_REJECTED
+                }
+                CaptureHistory.record(context, event, loc, observedAt)
+            }
             if (observedAt > nowMs) { trace("clock_rollback"); return@withLock }
             if (!locationTrackingEnabled || !hasLocationPermission(context) ||
-                balancedLocationOwner != fromBalancedService) return@withLock
+                balancedLocationOwner != fromBalancedService) { trace("guard_rejected"); return@withLock }
             val lastUploaded = readLastUploadedLocation()
             val speed = LocationSpeedQuality.from(loc)
             if (!locationJumpFilter.accept(observedAt, candidate, speed.motionSpeedMps, lastUploaded)) {

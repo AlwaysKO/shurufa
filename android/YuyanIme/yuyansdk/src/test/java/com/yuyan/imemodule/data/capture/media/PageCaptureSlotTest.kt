@@ -33,6 +33,38 @@ class PageCaptureSlotTest {
         assertNull(result); assertFalse(pageCalled)
         release.complete(Unit); chat.join()
     }
+    @Test fun paymentWaitsForBusySlotAndRunsOnceAfterRelease() = runBlocking {
+        val entered = CompletableDeferred<Unit>(); val release = CompletableDeferred<Unit>()
+        val media = WindowMediaCapturer(ApplicationProvider.getApplicationContext(), ScreenshotSource { _, _ ->
+            entered.complete(Unit); release.await(); WindowScreenshotResult.Unsupported
+        })
+        val chat = launch { media.capture(7, bounds, listOf(MediaCaptureRequest(0, bounds))) }
+        withTimeout(5000) { entered.await() }
+        var calls = 0
+        val payment = async(start = CoroutineStart.UNDISPATCHED) {
+            media.tryWithPageCaptureSlot(waitForSlotMillis = 2000) { calls++; "frame" }
+        }
+        assertFalse(payment.isCompleted); assertEquals(0, calls)
+        release.complete(Unit); chat.join()
+        assertEquals("frame", payment.await()); assertEquals(1, calls)
+    }
+    @Test fun timedOutOrCancelledPaymentNeverRunsLateOrLeaksSlot() = runBlocking {
+        val entered = CompletableDeferred<Unit>(); val release = CompletableDeferred<Unit>()
+        val media = WindowMediaCapturer(ApplicationProvider.getApplicationContext(), ScreenshotSource { _, _ ->
+            entered.complete(Unit); release.await(); WindowScreenshotResult.Unsupported
+        })
+        val chat = launch { media.capture(7, bounds, listOf(MediaCaptureRequest(0, bounds))) }
+        withTimeout(5000) { entered.await() }
+        var calls = 0
+        assertNull(media.tryWithPageCaptureSlot(waitForSlotMillis = 25) { calls++; "late" })
+        val payment = launch(start = CoroutineStart.UNDISPATCHED) {
+            media.tryWithPageCaptureSlot(waitForSlotMillis = 2000) { calls++ }
+        }
+        payment.cancelAndJoin()
+        release.complete(Unit); chat.join()
+        assertEquals(0, calls)
+        assertEquals("free", media.tryWithPageCaptureSlot { "free" })
+    }
     @Test fun ordinaryChatCannotStartPhysicalRequestWhilePageProbeOwnsSlot() = runBlocking {
         val entered = CompletableDeferred<Unit>(); val release = CompletableDeferred<Unit>()
         var chatCalled = false
