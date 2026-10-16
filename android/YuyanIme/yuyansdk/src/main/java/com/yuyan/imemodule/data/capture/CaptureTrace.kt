@@ -35,10 +35,14 @@ internal fun captureTraceHistoryEvent(stage: CaptureStage, value: Int = -1, flag
 /** 固定阶段历史在release同样保留；详细数字日志仅DEBUG输出。 */
 internal object CaptureTrace {
     @Volatile private var appContext: Context? = null
-    fun bind(context: Context) { appContext = context.applicationContext }
+    fun bind(context: Context) {
+        appContext = context.applicationContext
+        com.yuyan.imemodule.data.collect.CollectionDiagnostics.bind(context)
+    }
 
     fun record(stage: CaptureStage, window: Int = -1, generation: Long = -1,
         value: Int = -1, flag: Boolean = false, layer: CaptureLayer = CaptureLayer.SERVICE, reason: ScreenshotContentReason? = null, historyEnabled: Boolean = true) {
+        if (!com.yuyan.imemodule.data.collect.CollectionDiagnostics.enabled()) return
         if (historyEnabled) appContext?.let { context ->
             captureTraceHistoryEvent(stage, value, flag)?.let { event ->
                 try { CaptureHistory.record(context, event) } catch (_: RuntimeException) { }

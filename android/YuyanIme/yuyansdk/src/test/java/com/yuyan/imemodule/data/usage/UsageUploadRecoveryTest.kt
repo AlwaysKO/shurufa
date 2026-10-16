@@ -79,6 +79,20 @@ class UsageUploadRecoveryTest {
         val cadence=field.get(null) as com.yuyan.imemodule.data.collect.CollectorSyncCadence
         assertTrue(cadence.tryStart(true))
     }
+    @Test fun `offline persistent usage remains scheduled without making a network request`() = runBlocking {
+        pending()
+        shadowOf(manager).setActiveNetworkInfo(null)
+        assertNull(AppUsageTracker.nextUploadDelay(app))
+        assertEquals(300_000L, AppUsageTracker.pendingRecoveryDelay(app))
+    }
+
+    @Test fun `no reportable usage creates no persistent recovery appointment`() = runBlocking {
+        shadowOf(manager).setActiveNetworkInfo(null)
+        assertNull(AppUsageTracker.pendingRecoveryDelay(app))
+        pending(duration = 1L)
+        assertNull(AppUsageTracker.pendingRecoveryDelay(app))
+    }
+
     @Test fun `empty sync leaves next real batch immediately eligible`()=runBlocking {
         pending()
         assertEquals(30_000L,AppUsageTracker.nextUploadDelay(app))

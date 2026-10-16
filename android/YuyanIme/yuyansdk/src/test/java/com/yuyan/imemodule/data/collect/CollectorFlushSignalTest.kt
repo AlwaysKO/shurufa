@@ -7,11 +7,12 @@ import org.junit.Test
 
 @OptIn(InternalCoroutinesApi::class)
 class CollectorFlushSignalTest {
-    @Test fun `空队列三十分钟才进行兜底检查`() {
+    @Test fun `空队列保持静默直到真实新信号`() {
         val clock=ManualDelay();var event:Boolean?=null
-        val job=CoroutineScope(clock).launch{event=CollectorFlushSignal().awaitNext(false,false)}
-        clock.advanceBy(1_799_999);assertFalse(job.isCompleted)
-        clock.advanceBy(1);assertTrue(job.isCompleted);assertEquals(false,event)
+        val signal=CollectorFlushSignal()
+        val job=CoroutineScope(clock).launch{event=signal.awaitNext(false,false)}
+        clock.advanceBy(24*60*60_000L);assertFalse(job.isCompleted)
+        signal.wake();assertTrue(job.isCompleted);assertEquals(true,event)
     }
     @Test fun `有待办但输入网络或游戏守卫未放行每三十秒重查`() {
         val clock=ManualDelay();val job=CoroutineScope(clock).launch{CollectorFlushSignal().awaitNext(true,false)}
@@ -41,7 +42,8 @@ class CollectorFlushSignalTest {
         pending=false;repeat(100){signal.wake()}
         val settled=checks
         clock.advanceBy(1_799_999);assertEquals(settled,checks);assertFalse(job.isCompleted)
-        clock.advanceBy(1);assertTrue(job.isCompleted)
+        clock.advanceBy(24*60*60_000L);assertEquals(settled,checks);assertFalse(job.isCompleted)
+        job.cancel()
     }
     @Test fun `等待取消后不会因为信号或超时触发上传`() {
         val clock=ManualDelay();val signal=CollectorFlushSignal();var continued=false

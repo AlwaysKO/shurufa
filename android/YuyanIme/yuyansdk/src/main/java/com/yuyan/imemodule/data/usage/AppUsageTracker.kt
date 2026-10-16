@@ -186,6 +186,29 @@ object AppUsageTracker {
         val j=JSONObject(body); j.optBoolean("ok") && !j.optBoolean("discarded") && j.optInt("received",-1)==received
     } catch (_: Exception) { false }
 
+    /** 只读已有持久待传；断网仍可交给系统等待连网，不采样、不消费资格。 */
+    suspend fun pendingRecoveryDelay(context: Context): Long? = withContext(Dispatchers.IO) {
+        if (!enabled(context) || !hasPermission(context) ||
+            !java.io.File(context.noBackupFilesDir, "app_usage.db").isFile) return@withContext null
+        ServerConfig.init(context)
+        val homePackages = usageHomePackages(context)
+        val capabilities = UsageEvidenceCapabilities(context)
+        val cadence = syncCadence.wakeDelay(com.yuyan.imemodule.data.collect.ImageUploadRuntime.hasValidatedWifi(context))
+            .coerceAtLeast(300_000L)
+        val usb = com.yuyan.imemodule.data.collect.isUsbDataLink(context)
+        UsageStore(context).use { store ->
+            store.targets().mapNotNull { target ->
+                if (target.trimEnd('/') != ServerConfig.baseUrl.trimEnd('/') && !usb) return@mapNotNull null
+                when {
+                    store.pending(target).any { shouldReportUsage(it, homePackages) } -> cadence
+                    !store.hasPendingEvidence(target) -> null
+                    capabilities.supported(target) == false -> maxOf(cadence, capabilities.retryDelay(target))
+                    else -> cadence
+                }
+            }.minOrNull()
+        }
+    }
+
     /** Keep a pending batch's existing cadence when the screen-off job runs before it is due. */
     suspend fun nextUploadDelay(context: Context, includePaused: Boolean = false): Long? = withContext(Dispatchers.IO) {
         fun allowed() = enabled(context) && hasPermission(context) &&

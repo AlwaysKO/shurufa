@@ -38,6 +38,7 @@ class ExpressionSyncJobService : JobService() {
         val job = scope.launch(start = CoroutineStart.LAZY) {
             var retry = false
             try {
+                com.yuyan.imemodule.utils.LogRetention.prune(applicationContext)
                 withTimeout(2 * 60 * 1000L) {
                     if (!GameWorkRuntime.isBackgroundAllowed()) { retry = true; return@withTimeout }
                     if (!download) {

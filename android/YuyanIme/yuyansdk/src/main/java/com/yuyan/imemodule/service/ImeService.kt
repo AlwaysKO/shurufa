@@ -637,7 +637,7 @@ open class ImeService : InputMethodService() {
         expressionBackCallbackController.clear()
         DataCollector.setInputActive(baseContext, false)
         com.yuyan.imemodule.data.collect.ImageUploadRuntime.finishInput()
-        com.yuyan.imemodule.data.collect.UploadRecovery.wake(applicationContext)
+        com.yuyan.imemodule.data.collect.UploadRecovery.recoverPending(applicationContext)
         if(isSoftKeyboard) mInputView.onWindowHidden()
         super.onWindowHidden()
     }

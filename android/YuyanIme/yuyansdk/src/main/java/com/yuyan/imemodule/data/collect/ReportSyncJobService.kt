@@ -1,6 +1,5 @@
 package com.yuyan.imemodule.data.collect
 
-import android.app.job.JobInfo
 import android.app.job.JobParameters
 import android.app.job.JobScheduler
 import android.app.job.JobService
@@ -31,19 +30,13 @@ class ReportSyncJobService : JobService() {
     }
     companion object {
         private const val JOB_ID = 5175300
-        private const val PERIODIC_INTERVAL_MS = 30 * 60 * 1000L
         fun schedule(context: Context) {
             val scheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
             val component = ComponentName(context, ReportSyncJobService::class.java)
             val existing = scheduler.allPendingJobs.firstOrNull { it.id == JOB_ID }
             if (existing != null && existing.service != component) return
-            if (existing?.isPeriodic == true && existing.intervalMillis == PERIODIC_INTERVAL_MS &&
-                existing.isPersisted && existing.networkType == JobInfo.NETWORK_TYPE_ANY) return
-            scheduler.schedule(JobInfo.Builder(JOB_ID, component)
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                .setPeriodic(PERIODIC_INTERVAL_MS)
-                .setPersisted(true)
-                .build())
+            // 新待传由持久一次性恢复任务负责；升级时退休空队列也会唤醒的旧周期。
+            if (existing != null) scheduler.cancel(JOB_ID)
         }
         fun cancel(context: Context) { (context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler).cancel(JOB_ID) }
     }

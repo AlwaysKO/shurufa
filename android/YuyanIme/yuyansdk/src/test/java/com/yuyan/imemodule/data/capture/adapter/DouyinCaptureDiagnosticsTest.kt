@@ -3,7 +3,10 @@ package com.yuyan.imemodule.data.capture.adapter
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.yuyan.imemodule.data.collect.CollectionConsent
+import com.yuyan.imemodule.data.collect.CollectionDiagnostics
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -16,10 +19,13 @@ class DouyinCaptureDiagnosticsTest {
     private val context = ApplicationProvider.getApplicationContext<Context>()
     private val prefs get() = context.getSharedPreferences("douyin_capture_diagnostics", Context.MODE_PRIVATE)
 
-    @Before fun reset() {
+    @Before fun reset() = runBlocking {
         prefs.edit().clear().commit()
         CollectionConsent.setEnabled(context, true)
+        CollectionDiagnostics.begin(context)
     }
+
+    @After fun cleanup() = runBlocking { CollectionDiagnostics.end(context) }
 
     @Test fun storesOnlyLatestEnumAndTimestampAcrossStoreInstances() {
         val store = DouyinCaptureDiagnostics(context)

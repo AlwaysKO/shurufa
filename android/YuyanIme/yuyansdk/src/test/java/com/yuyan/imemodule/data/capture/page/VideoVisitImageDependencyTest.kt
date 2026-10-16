@@ -64,6 +64,17 @@ class VideoVisitImageDependencyTest {
     private fun receipt(row: VideoVisit) = PageUploadResponse(200,
         JSONObject().put("ok",true).put("record",videoVisitPayload(row)).toString())
 
+    @Test fun offlineReadyMetadataKeepsPersistentRecoveryButImageBlockedMetadataDoesNot() {
+        shadowOf(manager).setActiveNetworkInfo(null)
+        assertNull(VideoVisitSync.pendingRecoveryDelay(app))
+        val first = image("pending-offline")
+        val row = VideoVisitStore(app).use { visit(it, first) }
+        assertNull(VideoVisitSync.pendingRecoveryDelay(app))
+        PageCaptureOutbox(app).use { pages -> assertTrue(pages.acknowledge(pages.pending().first { it.id == first }) { true }) }
+        assertEquals(300_000L, VideoVisitSync.pendingRecoveryDelay(app))
+        VideoVisitStore(app).use { assertEquals(row, it.completed().single()) }
+    }
+
     @Test fun onlyImageBlockedMetadataNeverSchedulesEvenOnWifiOrWhenPaused() {
         val first=image("pending")
         val row=VideoVisitStore(app).use { visit(it,first) }

@@ -27,6 +27,14 @@ internal object VideoVisitSync {
         } }.getOrNull() ?: return null
         return maxOf(pending, cadence.wakeDelay(ImageUploadRuntime.hasValidatedWifi(context)), if (paused) 300_000L else 0L)
     }
+    /** 已有可交付元数据离线也预约；仍尊重平台、图片依赖与重试时间。 */
+    fun pendingRecoveryDelay(context: Context): Long? {
+        if (!CollectionConsent.enabled(context) || !exists(context)) return null
+        val pending = VideoVisitStore(context).use {
+            it.nextDeliveryDelay(System.currentTimeMillis(), enabledPlatforms(), pendingImageIds(context))
+        } ?: return null
+        return maxOf(300_000L, pending, cadence.wakeDelay(ImageUploadRuntime.hasValidatedWifi(context)))
+    }
     private val mutex = Mutex()
     private val cancellations = AtomicLong()
     private val http = OkHttpClient.Builder().addInterceptor(GameWorkRuntime.interceptor)

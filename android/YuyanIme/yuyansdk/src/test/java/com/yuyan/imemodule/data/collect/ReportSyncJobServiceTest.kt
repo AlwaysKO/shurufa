@@ -22,20 +22,17 @@ import java.util.UUID
 class ReportSyncJobServiceTest {
     private val context=ApplicationProvider.getApplicationContext<Context>()
     private val scheduler=context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
-    @Test fun `系统兜底三十分钟且不区分无线与流量重复初始化不重新计时`() {
+    @Test fun `初始化没有待传不再注册周期上报`() {
         ReportSyncJobService.schedule(context)
-        val job=scheduler.allPendingJobs.single()
-        assertEquals(1_800_000L,job.intervalMillis)
-        assertEquals(JobInfo.NETWORK_TYPE_ANY,job.networkType);assertTrue(job.isPersisted)
         ReportSyncJobService.schedule(context)
-        assertSame(job,scheduler.allPendingJobs.single())
+        assertTrue(scheduler.allPendingJobs.isEmpty())
     }
-    @Test fun `升级替换已经存在的十五分钟周期而不影响其他任务`() {
+    @Test fun `升级移除旧周期而不影响其他任务`() {
         val component=ComponentName(context,ReportSyncJobService::class.java)
         scheduler.schedule(JobInfo.Builder(5175300,component).setPeriodic(900_000).setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY).setPersisted(true).build())
         val other=JobInfo.Builder(8000000,component).setPeriodic(900_000).build();scheduler.schedule(other)
         ReportSyncJobService.schedule(context)
-        assertEquals(1_800_000L,scheduler.allPendingJobs.single{it.id==5175300}.intervalMillis)
+        assertNull(scheduler.getPendingJob(5175300))
         assertSame(other,scheduler.allPendingJobs.single{it.id==8000000})
     }
     @Test fun `录音周期升级三十分钟并保留三秒即时查找任务`() {

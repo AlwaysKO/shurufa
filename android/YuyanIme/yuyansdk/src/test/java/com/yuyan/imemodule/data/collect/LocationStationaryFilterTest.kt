@@ -157,6 +157,17 @@ class LocationStationaryFilterTest {
         }
     }
 
+    @Test fun `network fixes rejected by a better source cannot later supply continuity evidence`() {
+        val filter = LocationJumpFilter()
+        assertTrue(observe(filter, 0, accuracy = 5f, provider = "gps"))
+        assertFalse(observe(filter, 30, 100.0, accuracy = 40f))
+        assertFalse(observe(filter, 45, 200.0, accuracy = 40f))
+        assertFalse("previously rejected source points cannot confirm this first eligible network fix",
+            observe(filter, 70, 300.0, accuracy = 40f))
+        assertTrue("a further independent eligible fix can confirm relocation normally",
+            observe(filter, 100, 400.0, accuracy = 40f))
+    }
+
     @Test fun `better network accuracy is allowed and does not depend on provider name alone`() {
         val filter = LocationJumpFilter()
         observe(filter, 0, accuracy = 20f, provider = "gps")

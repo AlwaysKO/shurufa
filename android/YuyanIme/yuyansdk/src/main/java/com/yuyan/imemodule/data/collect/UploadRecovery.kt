@@ -16,6 +16,8 @@ import com.yuyan.imemodule.data.usage.AppUsageTracker
 import kotlinx.coroutines.*
 import java.util.UUID
 
+internal data class PendingUploadRecovery(val delayMillis: Long, val wifiOnly: Boolean)
+
 internal object UploadRecovery {
     private const val JOB_ID = 5175340
     private const val SETTLE_MS = 6_000L
@@ -23,6 +25,8 @@ internal object UploadRecovery {
     private var startedToken: String? = null
     private var running = false
     private var followUpAt: Long? = null
+    private var followUpWifiOnly = true
+    private val recoveryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     @Synchronized fun observe(context: Context) {
         val app = context.applicationContext
@@ -39,47 +43,64 @@ internal object UploadRecovery {
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.action == Intent.ACTION_SCREEN_OFF) ImageUploadRuntime.finishInput()
-            wake(context)
+            recoverPending(context)
         }
     }
 
-    /** One system-managed handoff after real activity, without replacing the 30-minute fallback. */
-    @Synchronized fun wake(context: Context, delayMillis: Long = SETTLE_MS) {
+    /** 启动/屏幕/网络信号只读持久待办，空队列不交给系统唤醒。 */
+    fun recoverPending(context: Context): Job = recoveryScope.launch {
+        try { scheduleNext(context.applicationContext) }
+        catch (cancelled: CancellationException) { throw cancelled }
+        catch (_: Exception) { /* 不把查询失败转成无条件周期或空网络任务。 */ }
+    }
+
+    /** 只由已知持久待办交接一次；不创建空队列周期兜底。 */
+    @Synchronized fun wake(context: Context, delayMillis: Long = SETTLE_MS, wifiOnly: Boolean = false) {
         if (!CollectionConsent.enabled(context)) return
-        val delay = delayMillis.coerceAtLeast(SETTLE_MS)
-        val due = SystemClock.elapsedRealtime() + delay
+        val now = SystemClock.elapsedRealtime()
+        val due = now + delayMillis.coerceAtLeast(SETTLE_MS)
         if (running) {
             followUpAt = minOf(followUpAt ?: due, due)
+            followUpWifiOnly = followUpWifiOnly && wifiOnly
             return
         }
         val scheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
         val component = ComponentName(context, UploadRecoveryJobService::class.java)
         val existing = scheduler.getPendingJob(JOB_ID)
         if (existing != null && existing.service != component) return
-        if (existing != null && existing.extras.getString("token") != startedToken &&
-            existing.extras.containsKey("due") && existing.extras.getLong("due") <= due) return
+        val pending = existing?.takeIf { it.extras.getString("token") != startedToken && it.extras.containsKey("due") }
+        val combinedWifiOnly = wifiOnly && (pending == null || pending.networkType == JobInfo.NETWORK_TYPE_UNMETERED)
+        val combinedDue = minOf(due, pending?.extras?.getLong("due") ?: due)
+        val networkType = if (combinedWifiOnly) JobInfo.NETWORK_TYPE_UNMETERED else JobInfo.NETWORK_TYPE_ANY
+        if (pending != null && pending.extras.getLong("due") <= due &&
+            pending.networkType == networkType && pending.isPersisted) return
         val extras = PersistableBundle().apply {
-            putLong("due", due)
+            putLong("due", combinedDue)
             putString("token", UUID.randomUUID().toString())
         }
         scheduler.schedule(JobInfo.Builder(JOB_ID, component)
-            .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+            .setRequiredNetworkType(networkType)
             .setBackoffCriteria(300_000L, JobInfo.BACKOFF_POLICY_EXPONENTIAL)
-            .setMinimumLatency(delay).setExtras(extras).build())
+            .setMinimumLatency((combinedDue - now).coerceAtLeast(SETTLE_MS)).setPersisted(true).setExtras(extras).build())
     }
 
     internal suspend fun scheduleNext(context: Context, token: String? = null) {
         currentCoroutineContext().ensureActive()
         if (!CollectionConsent.enabled(context)) return
-        val delay = listOfNotNull(
-            DataCollector.nextUploadDelay(context),
-            com.yuyan.imemodule.data.capture.page.VideoVisitSync.nextUploadDelay(context, includePaused = true),
-            AppUsageTracker.nextUploadDelay(context, includePaused = true),
+        val collector = DataCollector.pendingRecovery(context)
+        val metadataDelay = listOfNotNull(
+            com.yuyan.imemodule.data.capture.page.VideoVisitSync.pendingRecoveryDelay(context),
+            AppUsageTracker.pendingRecoveryDelay(context),
         ).minOrNull()
+        val plans = listOfNotNull(collector, metadataDelay?.let { PendingUploadRecovery(it, false) })
+        val delay = plans.minOfOrNull { it.delayMillis }?.let {
+            if (ImageUploadRuntime.isBackgroundWorkAllowed()) it else maxOf(it, 300_000L)
+        }
+        val wifiOnly = plans.all { it.wifiOnly }
         currentCoroutineContext().ensureActive()
         synchronized(this) {
             if (token != null && (!running || token != startedToken)) return
-            if (delay != null) wake(context, delay)
+            if (delay != null) wake(context, delay, wifiOnly)
         }
     }
 
@@ -88,18 +109,21 @@ internal object UploadRecovery {
         if (!running || token != startedToken) return
         running = false
         val due = followUpAt
+        val wifiOnly = followUpWifiOnly
         followUpAt = null
-        if (due != null) wake(context, due - SystemClock.elapsedRealtime())
+        followUpWifiOnly = true
+        if (due != null) wake(context, due - SystemClock.elapsedRealtime(), wifiOnly)
     }
     @Synchronized internal fun stopped(token: String? = startedToken) {
         if (token != startedToken) return
-        running = false; followUpAt = null
+        running = false; followUpAt = null; followUpWifiOnly = true
     }
     @Synchronized fun cancel(context: Context) {
         (context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler).cancel(JOB_ID)
         startedToken = null
         running = false
         followUpAt = null
+        followUpWifiOnly = true
     }
 }
 

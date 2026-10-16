@@ -71,6 +71,105 @@ class LocationBatchRetentionTest {
         assertEquals(1, store.pendingReports(ServerConfig.baseUrl).size)
     }
 
+    @Test fun `current trusted walking speed retains independent minute points below displacement floor`() = runBlocking {
+        for (minute in 0..3) {
+            val walking = point(start + minute * 60_000, 23.13 + minute * 5.0 / 111_195).apply {
+                accuracy = 5f; speed = 1.17f; speedAccuracyMetersPerSecond = .2f
+            }
+            DataCollector.persistLocation(app, walking, true) { walking.time }
+            cancelWake()
+        }
+        assertEquals("credible current walking must retain each minute, even for five metre endpoints", 4,
+            store.pendingReports(ServerConfig.baseUrl).size)
+    }
+
+    @Test fun `current trusted movement retains a fresh minute with the same endpoint`() = runBlocking {
+        DataCollector.persistLocation(app, point(start), true) { start }
+        cancelWake()
+        val returned = point(start + 60_000).apply {
+            accuracy = 5f; speed = 1.17f; speedAccuracyMetersPerSecond = .2f
+        }
+        DataCollector.persistLocation(app, returned, true) { returned.time }
+        cancelWake()
+        assertEquals("current speed is evidence even if a loop ends at the same coordinate", 2,
+            store.pendingReports(ServerConfig.baseUrl).size)
+    }
+
+    @Test fun `failed small movement persistence can retry that same observations own motion evidence`() = runBlocking {
+        DataCollector.persistLocation(app, point(start), true) { start }
+        cancelWake()
+        val walking = point(start + 60_000, 23.13 + 5.0 / 111_195).apply {
+            accuracy = 5f; speed = 1.17f; speedAccuracyMetersPerSecond = .2f
+        }
+        store.writableDatabase.execSQL("CREATE TRIGGER fail_location BEFORE INSERT ON pending_report BEGIN SELECT RAISE(ABORT, 'test disk failure'); END")
+        DataCollector.persistLocation(app, walking, true) { walking.time }
+        assertEquals(start, PreferenceManager.getDefaultSharedPreferences(app).getLong(baselineKey, -1))
+        store.writableDatabase.execSQL("DROP TRIGGER fail_location")
+        DataCollector.persistLocation(app, walking, true) { walking.time + 1000 }
+        cancelWake()
+        assertEquals("a failed write must not erase the exact fix's current movement evidence", 2,
+            store.pendingReports(ServerConfig.baseUrl).size)
+    }
+
+    @Test fun `independent precise slow walking confirms current progress without a speed value`() = runBlocking {
+        for (minute in 0..3) {
+            val walking = point(start + minute * 60_000, 23.13 + minute * 6.0 / 111_195).apply {
+                accuracy = 2f; removeSpeed(); removeSpeedAccuracy()
+            }
+            DataCollector.persistLocation(app, walking, true) { walking.time }
+            cancelWake()
+        }
+        assertEquals("after three independent observations confirm progress, following minute progress survives", 3,
+            store.pendingReports(ServerConfig.baseUrl).size)
+    }
+
+    @Test fun `an earlier moving fix cannot keep stationary or ambiguous new fixes reporting`() = runBlocking {
+        DataCollector.persistLocation(app, point(start), true) { start }
+        cancelWake()
+        DataCollector.persistLocation(app, point(start + 60_000, 23.131), true) { start + 60_000 }
+        cancelWake()
+        for (minute in 2..5) {
+            val stopped = point(start + minute * 60_000, 23.131).apply {
+                accuracy = 5f; speed = 0f; speedAccuracyMetersPerSecond = .2f
+            }
+            DataCollector.persistLocation(app, stopped, true) { stopped.time }
+            cancelWake()
+        }
+        assertEquals("past motion must not become a permanent stationary heartbeat", 2,
+            store.pendingReports(ServerConfig.baseUrl).size)
+    }
+
+    @Test fun `precise oscillation without speed does not become slow walking evidence`() = runBlocking {
+        for ((minute, north) in listOf(0.0, 6.0, 0.0, 6.0, 0.0, 6.0).withIndex()) {
+            val wobble = point(start + minute * 60_000, 23.13 + north / 111_195).apply {
+                accuracy = 2f; removeSpeed(); removeSpeedAccuracy()
+            }
+            DataCollector.persistLocation(app, wobble, true) { wobble.time }
+            cancelWake()
+        }
+        assertEquals(1, store.pendingReports(ServerConfig.baseUrl).size)
+    }
+
+    @Test fun `current speed cannot bypass cadence cache quality or an implausible jump`() = runBlocking {
+        DataCollector.persistLocation(app, point(start), true) { start }
+        cancelWake()
+        val candidates = listOf(
+            point(start + 59_999, 23.13001),
+            point(start + 60_000, 23.13001).apply { accuracy = 51f },
+            point(start + 60_000, 23.13001).apply {
+                extras = android.os.Bundle().apply { putString("realProvider", "GNSS_CACHE") }
+            },
+            point(start + 60_000, 23.23),
+        )
+        for (candidate in candidates) {
+            candidate.speed = 1.17f; candidate.speedAccuracyMetersPerSecond = .2f
+            DataCollector.persistLocation(app, candidate, true) { start + 60_000 }
+            cancelWake()
+        }
+        assertEquals(1, store.pendingReports(ServerConfig.baseUrl).size)
+        assertEquals(start, PreferenceManager.getDefaultSharedPreferences(app).getLong(baselineKey, -1))
+    }
+
     @Test fun `moving known cache cannot advance a durable location baseline`() = runBlocking {
         DataCollector.persistLocation(app, point(start), true) { start }
         cancelWake()
@@ -216,7 +315,7 @@ class LocationBatchRetentionTest {
         assertEquals(2, store.pendingReports(ServerConfig.baseUrl).size)
     }
 
-    @Test fun `continuous precise walking saves confirmed short displacement`() = runBlocking {
+    @Test fun `continuous precise walking retains each minute after independent confirmation`() = runBlocking {
         for (minute in 0..6) {
             val p = point(start + minute * 60_000, 23.13 + minute * 20.0 / 111_195).apply {
                 accuracy = 5f; removeSpeed(); removeSpeedAccuracy()
@@ -225,8 +324,8 @@ class LocationBatchRetentionTest {
             cancelWake()
         }
         val pending = store.pendingReports(ServerConfig.baseUrl)
-        assertEquals(4, pending.size)
-        assertEquals(listOf(0L, 120_000L, 240_000L, 360_000L), pending.map {
+        assertEquals(6, pending.size)
+        assertEquals(listOf(0L, 120_000L, 180_000L, 240_000L, 300_000L, 360_000L), pending.map {
             OffsetDateTime.parse(Json.parseToJsonElement(it.payload).jsonObject.getValue("occurred_at").jsonPrimitive.content)
                 .toInstant().toEpochMilli() - start
         }.sorted())
@@ -276,11 +375,11 @@ class LocationBatchRetentionTest {
         assertEquals(2, store.pendingReports(ServerConfig.baseUrl).size)
     }
 
-    @Test fun `stationary fixes and dense moving callbacks do not create extra records`() = runBlocking {
+    @Test fun `dense current motion and later stationary fixes do not bypass minute cadence`() = runBlocking {
         DataCollector.persistLocation(app, point(start), true) { start }
         cancelWake()
-        DataCollector.persistLocation(app, point(start + 29_999, 23.131), true) { start + 29_999 }
-        DataCollector.persistLocation(app, point(start + 300_000), true) { start + 300_000 }
+        DataCollector.persistLocation(app, point(start + 29_999, 23.13001), true) { start + 29_999 }
+        DataCollector.persistLocation(app, point(start + 300_000).apply { speed = 0f }, true) { start + 300_000 }
         assertEquals(1, store.pendingReports(ServerConfig.baseUrl).size)
         assertEquals(start, PreferenceManager.getDefaultSharedPreferences(app).getLong(baselineKey, -1))
     }

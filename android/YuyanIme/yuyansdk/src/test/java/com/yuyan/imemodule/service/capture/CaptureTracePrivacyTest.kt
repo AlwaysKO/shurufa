@@ -2,6 +2,8 @@ package com.yuyan.imemodule.service.capture
 
 import android.view.accessibility.AccessibilityEvent
 import com.yuyan.imemodule.data.collect.CollectionConsent
+import com.yuyan.imemodule.data.collect.CollectionDiagnostics
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -17,6 +19,7 @@ class CaptureTracePrivacyTest {
         ShadowLog.clear()
         val service = Robolectric.buildService(PassiveChatAccessibilityService::class.java).create().get()
         CollectionConsent.setEnabled(service, true)
+        runBlocking { CollectionDiagnostics.begin(service) }
         @Suppress("DEPRECATION")
         val event = AccessibilityEvent.obtain(AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED).apply {
             packageName = "com.tencent.mm"
@@ -31,6 +34,7 @@ class CaptureTracePrivacyTest {
             assertFalse(lines.joinToString().contains("private-"))
             assertFalse(lines.joinToString().contains("转文字"))
         } finally {
+            runBlocking { CollectionDiagnostics.end(service) }
             CollectionConsent.setEnabled(service, false)
             service.onDestroy()
             @Suppress("DEPRECATION")

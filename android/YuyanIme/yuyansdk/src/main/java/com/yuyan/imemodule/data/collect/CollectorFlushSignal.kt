@@ -10,9 +10,10 @@ internal class CollectorFlushSignal {
     suspend fun guardedCycle(block: suspend () -> Unit) {
         try { block() }
         catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
-        catch (_: Exception) { awaitNext(false, false) }
+        catch (_: Exception) { withTimeoutOrNull(30*60_000L) { signal.receive() } }
     }
     fun wake(){signal.trySend(Unit)}
     suspend fun awaitNext(pending:Boolean,imagesReady:Boolean,nextDelayMillis:Long?=null):Boolean =
-        withTimeoutOrNull(if(!pending)30*60_000L else if(imagesReady)1_000L else nextDelayMillis?.coerceAtLeast(5_000L) ?: 30_000L){signal.receive();true} ?: false
+        if (!pending) { signal.receive(); true }
+        else withTimeoutOrNull(if(imagesReady)1_000L else nextDelayMillis?.coerceAtLeast(5_000L) ?: 30_000L){signal.receive();true} ?: false
 }

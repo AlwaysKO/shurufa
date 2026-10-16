@@ -23,6 +23,13 @@ internal object PageCaptureSync {
     private fun exists(context: Context) = File(context.noBackupFilesDir, "page_capture_outbox.db").isFile
     fun hasPending(context: Context): Boolean = CollectionConsent.enabled(context) && exists(context) &&
         runCatching { PageCaptureOutbox(context).use { it.pending(1).isNotEmpty() } }.getOrDefault(false)
+    fun pendingRecoveryDelay(context: Context, now: Long = System.currentTimeMillis()): Long? {
+        if (!CollectionConsent.enabled(context) || !exists(context)) return null
+        val packages = setOf("com.tencent.mm", "com.ss.android.ugc.aweme").filterTo(mutableSetOf()) {
+            ChatCaptureSettings.rule(it).enabled
+        }
+        return PageCaptureOutbox(context).use { it.nextRecoveryDelay(now, packages) }
+    }
     fun hasDue(context: Context): Boolean = ImageUploadRuntime.isBackgroundWorkAllowed() &&
         CollectionConsent.enabled(context) && exists(context) && runCatching {
             PageCaptureOutbox(context).use { s -> s.due(System.currentTimeMillis()).any { ChatCaptureSettings.rule(it.packageName).enabled } }

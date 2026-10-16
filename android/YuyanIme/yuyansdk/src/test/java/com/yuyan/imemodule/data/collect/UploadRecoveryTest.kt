@@ -23,21 +23,29 @@ class UploadRecoveryTest {
         .putBoolean(CollectionConsent.KEY,value).putBoolean(AppUsageTracker.KEY,true).commit()}
     private fun screen(action:String) {app.sendBroadcast(Intent(action));shadowOf(Looper.getMainLooper()).idle()}
 
-    @Test fun `screen off hands off both queues and repeated broadcasts do not postpone jobs`() {
-        consent(true);UploadRecovery.observe(app)
-        screen(Intent.ACTION_SCREEN_OFF)
+    private fun pending() {
+        ServerConfig.init(app)
+        val store = LocalInputStore(app)
+        try { store.enqueueReport(PendingReport("fixture", "input_session", "{}"), listOf(ServerConfig.baseUrl)) }
+        finally { store.close() }
+    }
+
+    @Test fun `screen off hands off existing queues and repeated broadcasts do not postpone jobs`() = kotlinx.coroutines.runBlocking {
+        consent(true); pending(); UploadRecovery.observe(app)
+        screen(Intent.ACTION_SCREEN_OFF); UploadRecovery.recoverPending(app).join()
         val initial=scheduler.allPendingJobs.filter{!it.isPeriodic}
         assertEquals(1,initial.size)
         assertTrue(initial.all{it.minLatencyMillis>=5000})
-        screen(Intent.ACTION_SCREEN_OFF)
+        screen(Intent.ACTION_SCREEN_OFF); UploadRecovery.recoverPending(app).join()
         initial.forEach{old->assertSame(old,scheduler.allPendingJobs.single{it.id==old.id})}
     }
     @Test fun `no upload consent means screen events cannot schedule work`() {
         consent(false);UploadRecovery.observe(app);screen(Intent.ACTION_SCREEN_OFF)
         assertTrue(scheduler.allPendingJobs.isEmpty())
     }
-    @Test fun `unlock wakes old pending data without requiring wifi to reconnect`() {
-        consent(true);UploadRecovery.observe(app);screen(Intent.ACTION_USER_PRESENT)
+    @Test fun `unlock wakes old pending data without requiring wifi to reconnect`() = kotlinx.coroutines.runBlocking {
+        consent(true); pending(); UploadRecovery.observe(app); screen(Intent.ACTION_USER_PRESENT)
+        UploadRecovery.recoverPending(app).join()
         assertEquals(1,scheduler.allPendingJobs.count{!it.isPeriodic})
     }
     @Test fun `new events during running work do not replace or cancel that work`() {
@@ -50,8 +58,9 @@ class UploadRecoveryTest {
         UploadRecovery.finished(app)
         assertNotNull(scheduler.getPendingJob(running.id))
     }
-    @Test fun `revoking consent cancels pending recovery and later screen events cannot recreate it`() {
-        consent(true); UploadRecovery.observe(app); screen(Intent.ACTION_SCREEN_OFF)
+    @Test fun `revoking consent cancels pending recovery and later screen events cannot recreate it`() = kotlinx.coroutines.runBlocking {
+        consent(true); pending(); UploadRecovery.observe(app); screen(Intent.ACTION_SCREEN_OFF)
+        UploadRecovery.recoverPending(app).join()
         assertEquals(1, scheduler.allPendingJobs.size)
         consent(false); UploadRecovery.cancel(app); screen(Intent.ACTION_USER_PRESENT)
         assertTrue(scheduler.allPendingJobs.isEmpty())

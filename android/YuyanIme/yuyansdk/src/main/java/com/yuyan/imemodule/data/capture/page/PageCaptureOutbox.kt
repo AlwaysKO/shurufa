@@ -69,6 +69,13 @@ internal class PageCaptureOutbox(
         val until = now.coerceAtMost(Long.MAX_VALUE - 30_000) + 30_000
         writableDatabase.execSQL("UPDATE pages SET retry_after=? WHERE id=? AND sha256=?", arrayOf<Any>(until, row.id, row.sha256))
     }
+    fun nextRecoveryDelay(now: Long, packages: Set<String>): Long? {
+        if (packages.isEmpty()) return null
+        return readableDatabase.rawQuery(
+            "SELECT MIN(CASE WHEN retry_after<=? OR retry_after>? THEN 0 ELSE retry_after-? END) FROM pages WHERE package_name IN (${packages.joinToString { "?" }})",
+            (listOf(now.toString(), (now.coerceAtMost(Long.MAX_VALUE - 30_000) + 30_000).toString(), now.toString()) + packages).toTypedArray(),
+        ).use { if (it.moveToFirst() && !it.isNull(0)) it.getLong(0) else null }
+    }
     fun due(now: Long): List<PendingPageCapture> = readPending(100, now)
 
     /** 后台调用；capturedAt 是调用方冻结的取帧请求时间，不是视频播放位置。 */

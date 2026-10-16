@@ -142,6 +142,7 @@ object DataCollector {
     @Synchronized fun init(context: Context) {
         val app = context.applicationContext
         appContext = app
+        CollectionDiagnostics.bind(app)
         prefs = PreferenceManager.getDefaultSharedPreferences(app)
         currentDeviceId = deviceId(app)
         com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics.bindDeviceId(requireNotNull(currentDeviceId))
@@ -412,6 +413,8 @@ object DataCollector {
             ImageUploadRuntime.canUploadScreenshot(app,ServerConfig.baseUrl))
         val images=selection.images
         if(!selection.events && !selection.regular && !selection.location && !selection.chatText && !images)return@coroutineScope
+        if (syncDictionary && idle && (selection.events || selection.regular || selection.location || selection.chatText))
+            BackgroundRefreshRuntime.request(app)
         val onlineTarget=ServerConfig.baseUrl
         eventStore?.pruneExpiredLocalChatReports(onlineTarget,LOCAL_CHAT_RETENTION_MS)
         val targets=(ServerConfig.eventTargets+eventStore?.targets().orEmpty()+eventStore?.reportTargets().orEmpty()).distinct()
@@ -532,9 +535,32 @@ object DataCollector {
             { ImageUploadRuntime.hasValidatedNetwork(context) })
         val targets = (ServerConfig.eventTargets + local.targets() + local.reportTargets()).distinct().filter(gate::canAttempt)
         val locationEnabled = PreferenceManager.getDefaultSharedPreferences(context).getBoolean(KEY_LOCATION_ENABLE, true)
-        val kinds = local.pendingKinds(targets).filterTo(mutableSetOf()) { it != "location" || locationEnabled }
+        val kinds = local.deliverablePendingKinds(targets).filterTo(mutableSetOf()) { it != "location" || locationEnabled }
         if (delivery?.hasPendingInteraction(targets) == true) kinds += "human_interaction"
         return kinds to local.hasPendingEvents(targets)
+    }
+
+    /** IO线程只查持久待传，不要求当前在线；离线队列由系统等待网络恢复。 */
+    internal fun pendingRecovery(context: Context): PendingUploadRecovery? {
+        if (!CollectionConsent.enabled(context)) return null
+        ServerConfig.init(context)
+        val local = store(context)
+        val usb = isUsbDataLink(context)
+        val targets = (ServerConfig.eventTargets + local.targets() + local.reportTargets()).distinct()
+            .filter { it.trimEnd('/') == ServerConfig.baseUrl.trimEnd('/') || usb }
+        val locationEnabled = PreferenceManager.getDefaultSharedPreferences(context).getBoolean(KEY_LOCATION_ENABLE, true)
+        val kinds = local.deliverablePendingKinds(targets).filterTo(mutableSetOf()) { it != "location" || locationEnabled }
+        if (local.hasPendingEvents(targets) || kinds.any { it != "chat_asset" } ||
+            delivery?.hasPendingInteraction(targets) == true ||
+            (com.yuyan.imemodule.data.navigation.NavigationSettings.enabled(context) &&
+                com.yuyan.imemodule.data.navigation.NavigationSync.hasPending(context))) {
+            return PendingUploadRecovery(300_000L, false)
+        }
+        val imageDelay = if ("chat_asset" in kinds) 6_000L else null
+        val pageDelay = com.yuyan.imemodule.data.capture.page.PageCaptureSync.pendingRecoveryDelay(context)?.coerceAtLeast(6_000L)
+        val delay = listOfNotNull(imageDelay, pageDelay).minOrNull()
+        if (delay != null) return PendingUploadRecovery(delay, true)
+        return null
     }
 
     internal fun nextUploadDelay(context: Context): Long? {
@@ -549,21 +575,20 @@ object DataCollector {
         flushSignal.wake()
         appContext?.let { app ->
             // 已持久化后的交接不能影响落盘成功语义；不在输入线程查询数据库。
-            runCatching {
-                val due = pendingKind?.let {
-                    uploadPlan.nextUploadDelay(ImageUploadRuntime.hasValidatedWifi(app), setOf(it), it == "event")
-                } ?: 300_000L
-                UploadRecovery.wake(app, if (ImageUploadRuntime.isBackgroundWorkAllowed()) due else maxOf(due, 300_000L))
-            }
+            UploadRecovery.recoverPending(app)
         }
         if (wakeJob?.isActive == true) {
             if (!wifiRestored) return
             wakeJob?.cancel()
         }
         wakeJob = scope.launch {
-            if (appContext == null) return@launch
-            delay(5_000L)
-            flushEvents()
+            val app = appContext ?: return@launch
+            if (pendingRecovery(app) != null ||
+                com.yuyan.imemodule.data.capture.page.VideoVisitSync.hasPending(app) ||
+                com.yuyan.imemodule.data.usage.AppUsageTracker.nextUploadDelay(app, includePaused = true) != null) {
+                delay(5_000L)
+                flushEvents()
+            }
         }
     }
 
@@ -768,6 +793,7 @@ object DataCollector {
             val nowMs = now()
             val observedAt = receivedAtMs ?: nowMs
             fun trace(outcome: String) {
+                if (!CollectionDiagnostics.enabled(context)) return
                 Log.d("LocationCapture", "$outcome fix=${loc.time} received=$observedAt processed=$nowMs provider=${loc.provider} accuracy=${candidate.accuracyMeters}")
                 val event = when (outcome) {
                     "clock_rollback" -> CaptureHistoryEvent.LOCATION_CLOCK_ROLLBACK
@@ -788,7 +814,8 @@ object DataCollector {
             if (!locationJumpFilter.accept(observedAt, candidate, speed.motionSpeedMps, lastUploaded)) {
                 trace(if (candidate.knownCached) "cache_rejected" else "quality_or_motion_rejected"); return@withLock
             }
-            if (!LocationUploadPolicy.shouldUpload(nowMs, candidate, lastUploaded, observedAt)) {
+            if (!LocationUploadPolicy.shouldUpload(nowMs, candidate, lastUploaded, observedAt,
+                currentMotionEvidence = locationJumpFilter.hasCurrentMotionEvidence)) {
                 trace("cadence_or_displacement_rejected"); return@withLock
             }
             val report = LocationReport(

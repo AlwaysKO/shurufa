@@ -20,6 +20,7 @@ internal object PageProbeDiagnostics {
     private val reasons = setOf("unsupported_package", "secure_window", "sensitive_input",
         "editable_non_chat", "invalid_bounds", "verified_chat_adapter", "insufficient_evidence", "live_not_single_video")
     fun feedNavigation(evidence: FeedNavigationEvidence) {
+        if (!com.yuyan.imemodule.data.collect.CollectionDiagnostics.enabled()) return
         fun bit(value: Boolean) = if (value) 1 else 0
         Log.i("BrowsingPageProbe", "feed_navigation:labels=${evidence.labelCount.coerceIn(0, 10000)}" +
             ",top_follow=${bit(evidence.topFollow)},top_recommend=${bit(evidence.topRecommend)}" +
@@ -29,6 +30,7 @@ internal object PageProbeDiagnostics {
             ",top_contains_follow=${bit(evidence.topContainsFollow)},top_contains_recommend=${bit(evidence.topContainsRecommend)}")
     }
     fun report(status: PageProbeStatus, reason: String? = null, errorCode: Int? = null) {
+        if (!com.yuyan.imemodule.data.collect.CollectionDiagnostics.enabled()) return
         val detail = if (errorCode != null && status == PageProbeStatus.SYSTEM_FAILED) ":$errorCode"
             else if (reason != null) ":${reason.takeIf { it in reasons } ?: "unknown"}" else ""
         Log.i("BrowsingPageProbe", status.name.lowercase(Locale.ROOT) + detail)

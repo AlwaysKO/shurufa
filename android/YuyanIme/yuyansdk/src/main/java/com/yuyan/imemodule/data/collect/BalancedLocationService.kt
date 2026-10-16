@@ -161,7 +161,7 @@ class BalancedLocationService : Service() {
 
     private fun receive(location: Location) {
         if (!started || !allowed()) { finishSession(); return }
-        android.util.Log.d("LocationCapture", "received fix=${location.time} received=${System.currentTimeMillis()} provider=${location.provider} accuracy=${if (location.hasAccuracy()) location.accuracy else null}")
+        if (CollectionDiagnostics.enabled(this)) android.util.Log.d("LocationCapture", "received fix=${location.time} received=${System.currentTimeMillis()} provider=${location.provider} accuracy=${if (location.hasAccuracy()) location.accuracy else null}")
         CaptureHistory.record(this, CaptureHistoryEvent.LOCATION_RECEIVED, location, System.currentTimeMillis())
         val elapsed = SystemClock.elapsedRealtime()
         // A deep-sleep-delayed timeout is not allowed to extend the previous window.

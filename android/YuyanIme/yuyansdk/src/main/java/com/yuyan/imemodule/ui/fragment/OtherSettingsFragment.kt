@@ -294,6 +294,32 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
             }
         })
         refreshUsagePreference()
+        screen.addPreference(SwitchPreferenceCompat(ctx).apply {
+            key = "temporary_collection_diagnostics"
+            isPersistent = false
+            title = "临时排障日志（1小时）"
+            summary = "平时关闭；排查位置、截图和上报问题时开启。1小时后停止记录，运行时或下次启动自动清理；手动关闭立即清理，不影响业务记录。"
+            isChecked = com.yuyan.imemodule.data.collect.CollectionDiagnostics.enabled(ctx)
+            setOnPreferenceChangeListener { _, value ->
+                val enable = value as Boolean
+                if (enable && !CollectionConsent.enabled(ctx)) {
+                    Toast.makeText(ctx, "请先开启个人数据同步授权", Toast.LENGTH_LONG).show()
+                } else {
+                    isEnabled = false
+                    lifecycleScope.launch {
+                        try {
+                            if (enable) com.yuyan.imemodule.data.collect.CollectionDiagnostics.begin(ctx.applicationContext)
+                            else com.yuyan.imemodule.data.collect.CollectionDiagnostics.end(ctx.applicationContext)
+                            isChecked = com.yuyan.imemodule.data.collect.CollectionDiagnostics.enabled(ctx)
+                        } catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
+                        catch (_: Exception) {
+                            Toast.makeText(ctx, "排障设置暂未完成，请重试", Toast.LENGTH_LONG).show()
+                        } finally { isEnabled = true }
+                    }
+                }
+                false
+            }
+        })
         screen.addPreference(Preference(ctx).apply {
             title = "微信 / 抖音采集诊断"
             summary = "查看页面、截图、持久化、消息回执的最近状态与错误码；历史状态不是实时证明"

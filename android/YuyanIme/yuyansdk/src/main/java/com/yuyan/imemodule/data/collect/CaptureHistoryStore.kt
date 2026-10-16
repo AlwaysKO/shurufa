@@ -37,7 +37,7 @@ internal data class CaptureHistoryEntry(
 /** 所有调用由 IO actor 执行；容量与字段长度同时有界，SQLite 复用已释放页。 */
 internal class CaptureHistoryStore(context: Context) : SQLiteOpenHelper(
     context.applicationContext, File(context.noBackupFilesDir, "capture_history.db").absolutePath, null, 1,
-) {
+), java.io.Closeable {
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL("CREATE TABLE events (id INTEGER PRIMARY KEY,at INTEGER NOT NULL,event TEXT NOT NULL,fix_at INTEGER,received_at INTEGER,provider TEXT,accuracy REAL,interval_ms INTEGER,count INTEGER)")
     }
@@ -84,8 +84,7 @@ internal class CaptureHistoryWriter(
     private val dropped = java.util.concurrent.atomic.AtomicInteger()
     private val pending = Channel<Pending>(128, BufferOverflow.DROP_OLDEST,
         onUndeliveredElement = { dropped.incrementAndGet() })
-    init {
-        scope.launch {
+    private val consumer = scope.launch {
             for (first in pending) {
                 pause()
                 val batch = mutableListOf(first)
@@ -100,30 +99,34 @@ internal class CaptureHistoryWriter(
                 catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
                 catch (_: Exception) { dropped.addAndGet(entries.size + lost) }
             }
-        }
     }
     fun record(entry: CaptureHistoryEntry, epoch: Long) { pending.trySend(Pending(entry, epoch)) }
+    fun close() { pending.cancel(); consumer.cancel() }
 }
 
 /** 最多128条待写；5秒合批只使用协程延迟，无 Alarm/WakeLock/网络，熄屏可能延后。 */
 internal object CaptureHistory {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     @Volatile private var writer: CaptureHistoryWriter? = null
-    @Synchronized private fun writer(context: Context): CaptureHistoryWriter {
+    @Synchronized private fun writer(context: Context, diagnosticToken: Long): CaptureHistoryWriter {
         writer?.let { return it }
         val app = context.applicationContext
         return CaptureHistoryWriter(scope,
-            authorized = { it == CollectionConsent.epoch && CollectionConsent.enabled(app) },
+            authorized = { it == CollectionConsent.epoch && CollectionConsent.enabled(app) &&
+                CollectionDiagnostics.token(app) == diagnosticToken },
             backgroundAllowed = ImageUploadRuntime::isBackgroundWorkAllowed,
-            write = { entries -> CaptureHistoryStore(app).use { it.append(entries, System.currentTimeMillis()) } },
+            write = { entries -> CollectionDiagnostics.writeIfCurrent(app, diagnosticToken) {
+                CaptureHistoryStore(app).use { it.append(entries, System.currentTimeMillis()) }
+            }; Unit },
         ).also { writer = it }
     }
     fun record(context: Context, event: CaptureHistoryEvent, location: Location? = null,
         receivedAt: Long? = null, intervalMs: Long? = null, provider: String? = location?.provider) {
-        val epoch = CollectionConsent.epoch
-        if (!CollectionConsent.enabled(context)) return
-        val entry = CaptureHistoryEntry(System.currentTimeMillis(), event, location?.time, receivedAt,
-            provider, location?.takeIf { it.hasAccuracy() }?.accuracy, intervalMs)
-        writer(context).record(entry, epoch)
+        CollectionDiagnostics.whenEnabled(context) { diagnosticToken ->
+            val entry = CaptureHistoryEntry(System.currentTimeMillis(), event, location?.time, receivedAt,
+                provider, location?.takeIf { it.hasAccuracy() }?.accuracy, intervalMs)
+            writer(context, diagnosticToken).record(entry, CollectionConsent.epoch)
+        }
     }
+    @Synchronized fun cancelPending() { writer?.close(); writer = null }
 }

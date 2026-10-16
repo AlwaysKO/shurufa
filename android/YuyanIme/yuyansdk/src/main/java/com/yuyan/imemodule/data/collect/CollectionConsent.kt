@@ -18,6 +18,7 @@ object CollectionConsent {
         val changed = prefs.getBoolean(KEY, false) != enabled
         check(prefs.edit().putBoolean(KEY, enabled).commit())
         if (changed) consentEpoch.incrementAndGet()
+        if (changed && !enabled) CollectionDiagnostics.stop(context.applicationContext)
         if (changed) com.yuyan.imemodule.data.usage.AppUsageTracker.masterConsentChanged(context.applicationContext)
     }
     fun allowsEditor(editor: EditorInfo?): Boolean = editor != null &&

@@ -257,6 +257,36 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
         ).use { c -> buildSet { while(c.moveToNext()) add(c.getString(0)) } }
     }
 
+    /** 只把图片已按当前目标回执的聊天文字列为可交付；旧文字每次有限建索引，不读图。 */
+    @Synchronized fun deliverablePendingKinds(targets: Collection<String>? = null): Set<String> {
+        val activeTargets = targets?.distinct() ?: reportTargets()
+        if (activeTargets.isEmpty()) return emptySet()
+        val db = writableDatabase
+        for (target in activeTargets) {
+            ReportImageIndex.indexPending(db, target, includeImages = false, includeMessages = true) { id, length ->
+                readReportPayload(id, length)
+            }
+        }
+        return db.rawQuery(
+            """SELECT DISTINCT r.kind FROM pending_report r JOIN report_target t ON t.report_id=r.id
+               LEFT JOIN report_image_meta m ON m.report_id=r.id
+               WHERE t.target IN (${activeTargets.joinToString { "?" }})
+                 AND (r.kind!='chat_messages' OR (m.dependencies_valid=1
+                   AND NOT EXISTS (
+                     SELECT 1 FROM report_image_dependency d
+                     CROSS JOIN report_image_meta a INDEXED BY report_image_hash ON a.asset_sha256=d.sha256
+                     CROSS JOIN report_target at ON at.report_id=a.report_id
+                     WHERE d.report_id=r.id AND at.target=t.target)
+                   AND (NOT EXISTS (SELECT 1 FROM report_image_dependency d WHERE d.report_id=r.id)
+                     OR NOT EXISTS (
+                       SELECT 1 FROM pending_report a JOIN report_target at ON at.report_id=a.id
+                       LEFT JOIN report_image_meta am ON am.report_id=a.id
+                       WHERE at.target=t.target AND a.kind='chat_asset'
+                         AND (am.report_id IS NULL OR am.asset_sha256 IS NULL)))))""",
+            activeTargets.toTypedArray(),
+        ).use { rows -> buildSet { while (rows.moveToNext()) add(rows.getString(0)) } }
+    }
+
     @Synchronized fun pendingReports(
         target: String, limit: Int = 20, includeLocation: Boolean = true,
         maxImageBytes: () -> Long = { Long.MAX_VALUE },

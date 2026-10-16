@@ -15,6 +15,7 @@ internal fun reportingTraceLine(enabled: Boolean, stage: ReportingStage, online:
 /** 不接受内容字符串，禁止记录正文、标题、地址、凭据及响应正文。 */
 internal object ReportingTrace {
     fun record(stage: ReportingStage, online: Boolean, value: Int = -1, flag: Boolean = false) {
+        if (!CollectionDiagnostics.enabled()) return
         val line = reportingTraceLine(BuildConfig.DEBUG, stage, online, value, flag) ?: return
         try { Log.d("ReportDeliveryTrace", line) } catch (_: RuntimeException) { /* 诊断不得影响发送。 */ }
     }

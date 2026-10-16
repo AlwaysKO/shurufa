@@ -48,4 +48,5 @@ class ChatDiagnosticsBuffer {
         if (success && snapshots[key(snapshot)] == snapshot) dirty.remove(key(snapshot))
     }
     @Synchronized fun latest(): List<CaptureDiagnosticSnapshot> = snapshots.values.toList()
+    @Synchronized fun clear() { snapshots.clear(); dirty.clear(); attempts.clear() }
 }

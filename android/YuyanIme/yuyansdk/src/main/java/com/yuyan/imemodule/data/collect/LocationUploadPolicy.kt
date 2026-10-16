@@ -37,6 +37,7 @@ internal object LocationUploadPolicy {
         candidate: LocationCandidate,
         lastUploaded: UploadedLocation?,
         receivedAtMs: Long = nowMs,
+        currentMotionEvidence: Boolean = false,
     ): Boolean {
         if (candidate.knownCached) return false
         if (receivedAtMs > nowMs) return false
@@ -55,7 +56,7 @@ internal object LocationUploadPolicy {
 
         val previous = LocationCandidate(lastUploaded.latitude, lastUploaded.longitude,
             lastUploaded.accuracyMeters, lastUploaded.locationTimeMs, lastUploaded.provider)
-        return distanceMeters(previous, candidate) > movementThreshold(previous, candidate)
+        return currentMotionEvidence || distanceMeters(previous, candidate) > movementThreshold(previous, candidate)
     }
 
     internal fun movementThreshold(from: LocationCandidate, to: LocationCandidate): Double {

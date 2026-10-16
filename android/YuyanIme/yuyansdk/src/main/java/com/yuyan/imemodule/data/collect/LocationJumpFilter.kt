@@ -9,20 +9,29 @@ internal class LocationJumpFilter {
     private val pending = LinkedHashMap<String?, LocationCandidate>()
     private var latest: LocationCandidate? = null
     private var recentPrecise: LocationCandidate? = null
+    private var previousAccepted: LocationCandidate? = null
+    private var lastAcceptedMotion = false
+
+    var hasCurrentMotionEvidence = false
+        private set
 
     val needsConfirmation: Boolean get() = pending.isNotEmpty()
 
     fun accept(nowMs: Long, candidate: LocationCandidate, speedMps: Float?, baseline: UploadedLocation? = null): Boolean {
+        hasCurrentMotionEvidence = false
         if (!LocationUploadPolicy.shouldUpload(nowMs, candidate, null)) return false
         if (latest?.let { elapsed(it, candidate) <= 0 } == true) {
             // 已接受点可重试落盘；持久基准负责去重，待确认点不能靠重复投递确认。
-            return candidate == latest && candidate == lastAccepted
+            val retry = candidate == latest && candidate == lastAccepted
+            if (retry) hasCurrentMotionEvidence = lastAcceptedMotion
+            return retry
         }
         latest = candidate
         if (anchor == null) anchor = baseline?.let {
             LocationCandidate(it.latitude, it.longitude, it.accuracyMeters, it.locationTimeMs, it.provider)
         }?.takeIf { LocationUploadPolicy.shouldUpload(it.locationTimeMs, it, null) }
-        val old = anchor ?: return acceptPosition(candidate, moveAnchor = true)
+        val old = anchor ?: return acceptPosition(candidate, moveAnchor = true,
+            moving = speedMps?.let { it.isFinite() && it > 0.3f } == true)
         val precise = recentPrecise ?: old.takeIf(::isPreciseSatelliteFix)
         if (candidate.provider == "network" && precise != null &&
             elapsed(precise, candidate) in 0L..60_000L &&
@@ -33,8 +42,6 @@ internal class LocationJumpFilter {
         val interval = elapsed(old, candidate)
         if (interval <= 0) return false
         val distance = LocationUploadPolicy.distanceMeters(old, candidate)
-        if (distance <= LocationUploadPolicy.movementThreshold(old, candidate)) return acceptPosition(candidate, moveAnchor = false)
-
         // Only this fix's credible moving speed can support its displacement. Missing
         // observations or an earlier speed are not evidence that motion continued.
         val reference = lastAccepted ?: old
@@ -43,7 +50,11 @@ internal class LocationJumpFilter {
             motionInterval in 1L..600_000L &&
             LocationUploadPolicy.distanceMeters(reference, candidate) <=
                 speedMps * 1.5 * (motionInterval / 1000.0) + reference.accuracyMeters + candidate.accuracyMeters
-        if (speedSupportsMove) return acceptPosition(candidate, moveAnchor = true)
+        val continuousMove = continuousMotion(previousAccepted, lastAccepted, candidate)
+        if (distance <= LocationUploadPolicy.movementThreshold(old, candidate)) {
+            return acceptPosition(candidate, moveAnchor = false, moving = speedSupportsMove || continuousMove)
+        }
+        if (speedSupportsMove || continuousMove) return acceptPosition(candidate, moveAnchor = true, moving = true)
 
         val previousPending = pending[candidate.provider]
         if (previousPending != null && elapsed(previousPending, candidate) in 1L..600_000L) {
@@ -60,7 +71,7 @@ internal class LocationJumpFilter {
                 // Frequent passive fixes must not restart the one-second observation
                 // window. Reversed or changed-source fixes cannot use this shortcut.
                 if (elapsed(previousPending, candidate) < 1_000) return false
-                return acceptPosition(candidate, moveAnchor = true)
+                return acceptPosition(candidate, moveAnchor = true, moving = true)
             }
         }
         pending.remove(candidate.provider)
@@ -69,12 +80,30 @@ internal class LocationJumpFilter {
         return false
     }
 
-    private fun acceptPosition(candidate: LocationCandidate, moveAnchor: Boolean): Boolean {
+    private fun acceptPosition(candidate: LocationCandidate, moveAnchor: Boolean, moving: Boolean = false): Boolean {
         if (moveAnchor) anchor = candidate
+        previousAccepted = lastAccepted
         lastAccepted = candidate
+        hasCurrentMotionEvidence = moving
+        lastAcceptedMotion = moving
         if (isPreciseSatelliteFix(candidate)) recentPrecise = candidate
         pending.clear()
         return true
+    }
+
+    /** Three current independent fixes must show progress beyond their own error,
+     * a consistent direction, and bounded observation gaps and growth. */
+    private fun continuousMotion(a: LocationCandidate?, b: LocationCandidate?, c: LocationCandidate): Boolean {
+        if (a == null || b == null || a.provider != b.provider || b.provider != c.provider) return false
+        if (a.locationTimeMs >= b.locationTimeMs || b.locationTimeMs >= c.locationTimeMs ||
+            elapsed(a, b) !in 1_000L..120_000L || elapsed(b, c) !in 1_000L..120_000L) return false
+        val first = LocationUploadPolicy.distanceMeters(a, b)
+        val step = LocationUploadPolicy.distanceMeters(b, c)
+        val progress = LocationUploadPolicy.distanceMeters(a, c)
+        val error = b.accuracyMeters.toDouble() + c.accuracyMeters
+        if (first <= a.accuracyMeters + b.accuracyMeters || step <= error ||
+            progress <= LocationUploadPolicy.movementThreshold(a, c) || step > first * 3 + error) return false
+        return (progress * progress - first * first - step * step) / (2 * first * step) >= 0.5
     }
 
     private fun isPreciseSatelliteFix(candidate: LocationCandidate): Boolean =

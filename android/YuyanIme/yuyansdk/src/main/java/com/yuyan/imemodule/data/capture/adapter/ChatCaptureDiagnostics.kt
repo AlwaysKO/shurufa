@@ -41,45 +41,57 @@ internal fun chatDiagnosticHistoryEvent(platform: String, stage: String, status:
 object ChatCaptureDiagnostics {
     private val buffer = ChatDiagnosticsBuffer()
     private val mutex = Mutex()
-    private var loaded = false
+    @Volatile private var loaded = false
     @Volatile private var deviceId: String? = null
     fun bindDeviceId(value: String) { deviceId = value }
     private val http = OkHttpClient.Builder().addInterceptor(GameWorkRuntime.interceptor)
         .connectTimeout(3, TimeUnit.SECONDS).readTimeout(3, TimeUnit.SECONDS).callTimeout(5, TimeUnit.SECONDS).build()
     private val prefsName = "chat_capture_diagnostics_v1"
     fun cancel() { http.dispatcher.cancelAll() }
+    internal fun resetDiagnostics() { cancel(); buffer.clear(); loaded = false }
     fun record(context: Context, platform: String, stage: String, status: String, errorCode: Int? = null) {
         if (!CollectionConsent.enabled(context) || platform !in setOf("wechat", "douyin")) return
+        CollectionDiagnostics.whenEnabled(context) {
         if (ChatCaptureSettings.rule("com.tencent.mm").enabled) {
             chatDiagnosticHistoryEvent(platform, stage, status)?.let { event ->
                 try { CaptureHistory.record(context, event) } catch (_: RuntimeException) { }
             }
         }
-        val id = deviceId ?: return
+        val id = deviceId ?: return@whenEnabled
         val pkg = if (platform == "wechat") "com.tencent.mm" else "com.ss.android.ugc.aweme"
         val version = ChatCaptureSettings.version(pkg) ?: CaptureAppVersion(0, "未知")
         buffer.record(CaptureDiagnosticSnapshot(id, platform, version.code, version.name,
             ChatCaptureSettings.revision(), stage, status, errorCode, System.currentTimeMillis()))
+        }
     }
     private fun load(context: Context) {
         if (loaded) return
-        loaded = true
+        val token = CollectionDiagnostics.token(context) ?: return
         val raw = context.getSharedPreferences(prefsName, 0).getString("latest", null) ?: return
         if (raw.toByteArray(Charsets.UTF_8).size > 32768) return
-        runCatching { Json.decodeFromString<List<CaptureDiagnosticSnapshot>>(raw) }.getOrNull()
-            ?.takeIf { it.size <= 12 }?.forEach(buffer::record)
+        val snapshots = runCatching { Json.decodeFromString<List<CaptureDiagnosticSnapshot>>(raw) }.getOrNull()?.takeIf { it.size <= 12 }
+        CollectionDiagnostics.whenEnabled(context) { current ->
+            if (current == token) { snapshots?.forEach(buffer::record); loaded = true }
+        }
     }
     suspend fun latest(context: Context): List<CaptureDiagnosticSnapshot> = withContext(Dispatchers.IO) {
-        mutex.withLock { load(context.applicationContext); buffer.latest() }
+        mutex.withLock {
+            if (!CollectionDiagnostics.enabled(context)) emptyList()
+            else { load(context.applicationContext); buffer.latest() }
+        }
     }
     suspend fun flush(context: Context) = withContext(Dispatchers.IO) {
         val app = context.applicationContext
         mutex.withLock {
+            val token = CollectionDiagnostics.token(app) ?: return@withLock
             if (!CollectionConsent.enabled(app) || !ImageUploadRuntime.isBackgroundWorkAllowed()) return@withLock
             load(app)
-            app.getSharedPreferences(prefsName, 0).edit().putString("latest", Json.encodeToString(buffer.latest())).apply()
+            if (!CollectionDiagnostics.writeIfCurrent(app, token) {
+                app.getSharedPreferences(prefsName, 0).edit().putString("latest", Json.encodeToString(buffer.latest())).commit()
+            }) return@withLock
             val source = ServerConfig.baseUrl
-            val allowed = { CollectionConsent.enabled(app) && ImageUploadRuntime.isBackgroundWorkAllowed() && ServerConfig.baseUrl == source }
+            val allowed = { CollectionDiagnostics.token(app) == token && CollectionConsent.enabled(app) &&
+                ImageUploadRuntime.isBackgroundWorkAllowed() && ServerConfig.baseUrl == source }
             val reporter = ChatDiagnosticsReporter(buffer,
                 prepare = { request -> ImageUploadRuntime.prepareChatCall(app, source, http, request, allowed, preserveCallTimeout = true) },
                 finish = ImageUploadRuntime::finishChatCall)
