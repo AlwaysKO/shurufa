@@ -28,6 +28,7 @@ internal object CallRecordingMediaObserver {
                     CallRecordingRuntime.preferences(app).edit().putBoolean("system_change_pending",true).apply()
                 }
                 CallRecordingJobService.wake(app)
+                WechatCallUpload.mediaChanged(app)
             }
         }
         try {

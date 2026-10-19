@@ -21,6 +21,7 @@ internal class SystemRecordingImporter(
     private val root:File,private val outbox:CallRecordingOutbox,
     private val inspect:(File)->RecordedSystemAudio?=::inspectSystemRecording,
     private val now:()->Long=System::currentTimeMillis,
+    private val wechatEndedAt:()->Long?={null},
 ) {
     @Serializable private data class Entry(val observedAt:Long,val taskId:String?=null,val complete:Boolean=false)
     private val json=Json{encodeDefaults=true;ignoreUnknownKeys=true}
@@ -56,9 +57,13 @@ internal class SystemRecordingImporter(
                 var entry=read(key) ?: Entry(now()).also{write(key,it)}
                 if(entry.complete)continue
                 val existing=entry.taskId?.let{tasks[it]}
-                if(existing!=null){if(existing.uploadStatus=="saved")markSaved(existing);continue}
-                // 两次元数据一致，且超过最后一次写入 30 秒；不读正在增长的容器。
-                if(now()-entry.observedAt<30_000 || now()-doc.modifiedAt<30_000){waiting++;continue}
+                if(existing!=null){if(existing.uploadStatus in listOf("saved","superseded"))markSaved(existing);continue}
+                // 只有近期明确结束的微信通话缩短稳定期；仍需两次一致及复制前后核验。
+                val end=wechatEndedAt()
+                val recentWechat=doc.platform=="wechat" && end!=null && now()-end in 0..60_000 &&
+                    doc.modifiedAt in (end-5000)..now()
+                val stableMillis=if(recentWechat)2000L else 30_000L
+                if(now()-entry.observedAt<stableMillis || now()-doc.modifiedAt<stableMillis){waiting++;continue}
                 if(!current(doc)){waiting++;continue}
                 if(entry.taskId==null) {
                     val id=UUID.randomUUID().toString()
@@ -98,7 +103,8 @@ internal class SystemRecordingImporter(
     }
     fun markSaved(task:CallTask) {
         val source=task.source ?: return
-        check(task.uploadStatus=="saved" && task.receipt!=null)
+        // 迟到系统原件可引用已保存的同次微信自录；不能伪造该原件的上传回执。
+        check((task.uploadStatus=="saved" && task.receipt!=null) || outbox.confirmedWechatSystemDuplicate(task.id))
         val key=key(task.deviceId,task.metadata.destination,task.metadata.platform,source.uri,source.size,source.modifiedAt)
         val entry=read(key) ?: error("missing_system_recording_index")
         check(entry.taskId==task.id)

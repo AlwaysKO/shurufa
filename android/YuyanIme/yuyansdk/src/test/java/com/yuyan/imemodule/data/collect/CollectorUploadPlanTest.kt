@@ -3,6 +3,19 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class CollectorUploadPlanTest {
+    @Test fun screenshotConfirmationIsIndependentOfOrdinaryTextCadence() {
+        var now = 0L
+        val plan = CollectorUploadPlan { now }
+        assertTrue(plan.select(true, true, setOf("chat_messages"), false, true).chatText)
+        now = 1_000L
+        val ready = plan.select(true, true, setOf("chat_image_messages", "chat_messages"), false, true)
+        assertTrue(ready.images && ready.imageMessages)
+        assertFalse(ready.chatText || ready.regular)
+        assertFalse(plan.select(true, false, setOf("chat_image_messages"), false, true).imageMessages)
+        assertFalse(plan.select(false, true, setOf("chat_image_messages"), false, false).images)
+        assertNull(plan.nextUploadDelay(true, setOf("chat_image_messages"), false))
+    }
+
     @Test fun pendingQueryDoesNotConsumeSlotsAndImagesNeverScheduleNonImageWake() {
         var now=0L; val plan=CollectorUploadPlan { now }
         assertNull(plan.nextUploadDelay(false,emptySet(),false))

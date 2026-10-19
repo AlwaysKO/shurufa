@@ -266,18 +266,10 @@ onBeforeUnmount(() => {
   map?.remove();
   map = null;
 });
-
-const summary = computed(() => {
-  const n = visibleLocations.value.length;
-  if (n === 0) return '暂无位置数据';
-  const latest = visibleLocations.value.reduce((a, b) => (Date.parse(b.occurred_at) || -Infinity) > (Date.parse(a.occurred_at) || -Infinity) ? b : a);
-  const t = timeRange(latest);
-  return `共 ${n} 条采样，最近记录（北京时间）：${t}`;
-});
 </script>
 
 <template>
-  <RetentionCleanup dataset="locations" label="位置记录" :filters="{ device_id: deviceId || undefined }" :scope-label="deviceId ? (devices.find(d => d.id === deviceId) ? deviceLabel(devices.find(d => d.id === deviceId)!) : deviceId) : '全部设备的位置记录'" :context="[deviceId, selectedDay, endDay]" @changed="loadLocations()" />
+  <RetentionCleanup :show-description="false" dataset="locations" label="位置记录" :filters="{ device_id: deviceId || undefined }" :scope-label="deviceId ? (devices.find(d => d.id === deviceId) ? deviceLabel(devices.find(d => d.id === deviceId)!) : deviceId) : '全部设备的位置记录'" :context="[deviceId, selectedDay, endDay]" @changed="loadLocations()" />
   <div>
     <div class="toolbar">
       <select v-model="deviceId">
@@ -296,11 +288,9 @@ const summary = computed(() => {
       <button class="btn" @click="chooseDays(7)">近7天</button>
       <button class="btn" @click="chooseDays(30)">近30天</button>
       <button class="btn" :disabled="loading" @click="loadLocations()">刷新</button>
-      <span class="summary">{{ summary }}</span>
       <span v-if="error" class="err">{{ error }}</span>
     </div>
 
-    <p class="analysis-hint">新版手机仅在位置有效变化时上报，位置不变不重复上报。移动时目标约 1 分钟采样，确认静止后降低频率；实际频率受权限、信号和系统限制。静止缺报无法确认准确停留或 Wi-Fi 连接时长。路线连线不代表实际经过的道路；超过 15 分钟的缺口分段显示，同日同设备、30 分钟内且相距不超过 300 米的缺口用灰色虚线标注，期间路线未知，不计入里程和停留。</p>
     <p v-if="analysis.gaps.length" class="analysis-hint" data-testid="location-gap-hint">灰色虚线：{{ analysis.gaps.length }} 处近距离缺口，期间缺少定位点，路线未知。</p>
     <p v-if="hasMore" class="coverage-warning" role="status">所选日期范围记录超过 1000 条，仅分析已加载的最近记录。可缩短日期范围或选择单台设备；这里的里程与停留不代表完整行程。</p>
     <div v-if="visibleLocations.length" class="location-stats">

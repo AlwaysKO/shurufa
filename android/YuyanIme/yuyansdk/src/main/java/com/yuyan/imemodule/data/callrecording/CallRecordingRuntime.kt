@@ -41,7 +41,10 @@ internal object CallRecordingRuntime {
             // 已知待办短暂避让后重试；长期游戏逐步回到30分钟兜底，不空转。
             return (35_000L*(1L shl count)).takeIf{it<30*60*1000L}
         }
-        val allowed={authorized()&&CallRecordingService.activeId==null&&ImageUploadRuntime.isBackgroundWorkAllowed()}
+        val urgentEnd=WechatCallUpload.recentEnd(app)
+        val allowed={authorized()&&CallRecordingService.activeId==null&&ImageUploadRuntime.isBackgroundWorkAllowed() &&
+            // 新的结束事件会让已有历史批次让路；HTTP 的取消监视器也复用此检查。
+            WechatCallUpload.recentEnd(app).let{it==null || it==urgentEnd}}
         preferences(app).edit().remove("upload_deferred_count").apply()
         sessions(app).recover(allowed,CallRecordingService.activeId)
         var retrySoon=false
@@ -50,16 +53,18 @@ internal object CallRecordingRuntime {
             // 先消费本次事件；扫描期间再次收到变更时，新标记与唤醒仍保留。
             preferences(app).edit().remove("system_change_pending").apply()
             val documents=SystemRecordingSources(app)
-            val importer=SystemRecordingImporter(File(root(app),"system_index"),box)
+            val importer=SystemRecordingImporter(File(root(app),"system_index"),box,
+                wechatEndedAt={WechatCallUpload.recentEnd(app)})
             val scanned=mutableMapOf<String,Boolean>()
-            for(platform in listOf("phone","wechat")) {
+            for(platform in if(urgentEnd!=null)listOf("wechat")else listOf("phone","wechat")) {
                 if(!documents.configured(platform)) {
                     preferences(app).edit().putString("system_scan_$platform","尚无音频读取权限，请在设置中授权音频").apply()
                     continue
                 }
                 try {
                     val scan=documents.scan(platform,allowed)
-                    val result=importer.scan(scan.files,id,ServerConfig.baseUrl,allowed,documents::open,documents::unchanged)
+                    val files=if(urgentEnd==null)scan.files else scan.files.filter{it.modifiedAt>=urgentEnd-5000}
+                    val result=importer.scan(files,id,ServerConfig.baseUrl,allowed,documents::open,documents::unchanged)
                     scanned[platform]=scan.complete && result.finished && result.waiting==0 && result.errors==0
                     val time=java.text.SimpleDateFormat("MM-dd HH:mm",java.util.Locale.getDefault()).format(java.util.Date())
                     preferences(app).edit().putString("system_scan_$platform",
@@ -78,6 +83,7 @@ internal object CallRecordingRuntime {
                 },allowed=uploadAllowed,calls=CallRecordingWifi.client(wifi))
                 CallRecordingUploader(box,transport,uploadAllowed,{ServerConfig.baseUrl},
                     systemSourceExists=documents::exists,onSaved=importer::markSaved,
+                    selected={wechatRecordingSelected(it,urgentEnd)},
                     ready={task->(task.source==null || task.metadata.recording_ended_at>=System.currentTimeMillis()-7*86_400_000L) &&
                         systemRecordingUploadReady(task,documents.configured(task.metadata.platform),
                         scanned[task.metadata.platform]==true,System.currentTimeMillis())}).runOnce()

@@ -60,6 +60,16 @@ internal class BalancedLocationPolicy {
         return true
     }
 
+    fun motionProbeDelayMs(elapsedMs: Long): Long = (confirmationRetryAt - elapsedMs).coerceAtLeast(0L)
+
+    /** A sensor event asks for fresh evidence; it never confirms a location or movement. */
+    fun beginMotionProbe(elapsedMs: Long): Boolean {
+        if (!isStationary || motionProbeDelayMs(elapsedMs) > 0) return false
+        confirmationStartedAt = elapsedMs
+        samplingIntervalMs = CONFIRMATION_INTERVAL_MS
+        return true
+    }
+
     fun confirmationDelayMs(elapsedMs: Long): Long? = confirmationStartedAt
         ?.takeIf { samplingIntervalMs == CONFIRMATION_INTERVAL_MS }
         ?.let { (CONFIRMATION_WINDOW_MS - (elapsedMs - it)).coerceIn(0, CONFIRMATION_WINDOW_MS) }

@@ -5,8 +5,8 @@ import { useConfirmation } from '../confirmation';
 
 const props = withDefaults(defineProps<{
   dataset: RetentionDataset; label: string; filters?: RetentionFilters; scopeLabel?: string;
-  context?: unknown; disabled?: boolean;
-}>(), { filters: () => ({}), scopeLabel: '全部记录', disabled: false });
+  context?: unknown; disabled?: boolean; showDescription?: boolean;
+}>(), { filters: () => ({}), scopeLabel: '全部记录', disabled: false, showDescription: true });
 const emit = defineEmits<{ changed: []; busy: [value: boolean] }>();
 const busy = ref(false), status = ref(''), error = ref('');
 const confirm = useConfirmation();
@@ -66,7 +66,7 @@ async function cleanup(days: 1 | 7 | 30) {
 <template>
   <section class="retention-cleanup" :aria-label="`${label}旧记录清理`">
     <div class="retention-actions"><strong>{{ label }}清理</strong><button v-for="days in ([1, 7, 30] as const)" :key="days" type="button" :data-testid="`retention-keep-${days}`" :disabled="busy || disabled || !currentUserId" @click="cleanup(days)">保留最近{{ days }}天</button><span v-if="busy" role="status">处理中…</span></div>
-    <p>范围：当前手机 · {{ scopeLabel }}。清理跨全部分页，不受查看日期限制；点击后先预览。{{ note }}</p>
+    <p v-if="showDescription">范围：当前手机 · {{ scopeLabel }}。清理跨全部分页，不受查看日期限制；点击后先预览。{{ note }}</p>
     <p v-if="status" role="status">{{ status }}</p><p v-if="error" role="alert" class="retention-error">{{ error }}</p>
   </section>
 </template>

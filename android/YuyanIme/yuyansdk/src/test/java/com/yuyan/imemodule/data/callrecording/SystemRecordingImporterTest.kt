@@ -25,6 +25,50 @@ class SystemRecordingImporterTest {
         val doc=SystemRecordingDocument("content://test/recording","Call_20260930_123000.m4a",bytes.size.toLong(),now-60000,"phone")
         fun importer()=SystemRecordingImporter(File(root,"index"),box,{RecordedSystemAudio(60000,"audio/mp4")},{now})
     }
+    @Test fun `微信结束后两次稳定观察即可导入但不能首次观察直接读文件`()=io {
+        val f=Fixture();val ended=f.now
+        val doc=f.doc.copy(platform="wechat",modifiedAt=ended)
+        fun importer()=SystemRecordingImporter(File(f.root,"index"),f.box,
+            {RecordedSystemAudio(60000,"audio/mp4")},{f.now},wechatEndedAt={ended})
+        importer().scan(listOf(doc),device,target,{true},{error("首次观察不能读取")},{true})
+        f.now+=2000
+        val result=importer().scan(listOf(doc),device,target,{true},{f.bytes.inputStream()},{true})
+        assertEquals(1,result.imported);assertEquals(1,f.box.tasks().size)
+    }
+    @Test fun `微信快速检查仍拒绝增长和复制期间变化且电话维持原稳定期`()=io {
+        for(kind in listOf("growing","copy_changed","phone","old_end")) {
+            val f=Fixture();val ended=f.now
+            val doc=f.doc.copy(platform=if(kind=="phone")"phone"else"wechat",modifiedAt=ended)
+            fun importer()=SystemRecordingImporter(File(f.root,"index"),f.box,
+                {RecordedSystemAudio(60000,"audio/mp4")},{f.now},wechatEndedAt={if(kind=="old_end")ended-60001 else ended})
+            importer().scan(listOf(doc),device,target,{true},{error("首次不读")},{true});f.now+=2000
+            val next=if(kind=="growing")doc.copy(size=doc.size+1,modifiedAt=f.now)else doc
+            var checks=0
+            importer().scan(listOf(next),device,target,{true},{f.bytes.inputStream()},{++checks==1})
+            assertTrue(kind,f.box.tasks().isEmpty())
+        }
+    }
+    @Test fun `已保存自录的迟到系统原件记录完成索引重启不重导入`()=io {
+        val f=Fixture();val doc=f.doc.copy(platform="wechat",name="微信-20260930_132900.m4a",modifiedAt=f.now)
+        val(id,file)=f.box.createAudioFile();file.writeText("different local audio")
+        val local=f.box.enqueue(id,device,CallMetadata(platform="wechat",destination=target,
+            recording_started_at=f.now-60000,recording_ended_at=f.now,audio_duration_ms=60000))
+        f.box.acceptReceipt(local.id,CallReceipt(true,local.id,device,local.metadata.byte_size,local.metadata.sha256,"2026-09-30T00:00:00Z"))
+        f.box.cleanup(local.id)
+        val importer=f.importer()
+        importer.scan(listOf(doc),device,target,{true},{f.bytes.inputStream()},{true});f.now+=31000
+        importer.scan(listOf(doc),device,target,{true},{f.bytes.inputStream()},{true})
+        val transport=object:CallTransport {
+            override fun receipt(task:CallTask):CallReceipt?=error("已确认同次录音无需请求服务器")
+            override fun upload(task:CallTask,file:File,allowed:()->Boolean):CallReceipt=error("不能重传")
+        }
+        CallRecordingUploader(f.box,transport,{true},{target},onSaved=importer::markSaved).runOnce()
+        val duplicate=f.box.tasks().single{it.source!=null}
+        assertEquals("superseded",duplicate.uploadStatus)
+        File(f.root,"outbox/${duplicate.id}.json").delete()
+        f.importer().scan(listOf(doc),device,target,{true},{error("不能重新打开原件")},{true})
+        assertEquals(listOf(local.id),f.box.tasks().map{it.id})
+    }
     @Test fun `超过七天的原件不观察不打开即使刚复制过也跳过`()=io {
         val f=Fixture();var opened=0
         val old=f.doc.copy(name="微信-测试-202609201205.m4a",modifiedAt=f.now-60000)

@@ -239,7 +239,8 @@ class CallRecordingService:Service() {
             try{sessions.finish(active,metadata){ImageUploadRuntime.isInputIdle()}}catch(_:Exception){status("local_finalize_pending")}
         }
         activeId=null;recordingMono=0
-        CallRecordingJobService.wake(this)
+        if(callEnded && active?.metadata?.platform=="wechat")WechatCallUpload.finished(this)
+        else CallRecordingJobService.wake(this)
         scheduleHealth()
         if(!closing)updateNotification(if(expandedAllowed())"等待电话 / 微信通话 · 收音待验证"else"等待普通来电 · 其他范围需确认授权")
     }

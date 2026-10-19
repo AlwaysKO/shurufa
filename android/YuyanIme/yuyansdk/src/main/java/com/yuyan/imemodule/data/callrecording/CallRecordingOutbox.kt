@@ -72,6 +72,23 @@ internal class CallRecordingOutbox(
         if(file.exists() && !deleteAudio(file))return@exclusive false
         save(local.copy(uploadStatus="superseded",cleanupStatus="deleted",lastError=null));true
     }
+    fun supersedeLateWechatSystem(id:String):CallTask?=exclusive {
+        val system=read(id)
+        if(system.uploadStatus=="saved")return@exclusive null
+        val local=CallRecordingDuplicates.savedLocalFor(system,scan().first) ?: return@exclusive null
+        if(local.receipt?.let{matches(local,it)}!=true)return@exclusive null
+        // 只清理已核验同次通话的私有副本，外部系统原件不受影响。
+        val file=audioFile(id)
+        val cleaned=!file.exists() || deleteAudio(file)
+        system.copy(uploadStatus="superseded",duplicateOf=local.id,
+            cleanupStatus=if(cleaned)"deleted"else"pending",lastError=null).also{save(it)}
+    }
+    fun confirmedWechatSystemDuplicate(id:String):Boolean=exclusive {
+        val system=read(id)
+        if(system.uploadStatus!="superseded" || system.metadata.platform!="wechat")return@exclusive false
+        val local=system.duplicateOf?.let{read(it)} ?: return@exclusive false
+        local.uploadStatus=="saved" && local.receipt?.let{matches(local,it)}==true && CallRecordingDuplicates.sameCall(local,system)
+    }
     /** 坏清单原样保留，供运行入口显示诊断；不能让一个坏项饿死其他录音。 */
     fun invalidEntries():List<String> = exclusive {scan().second}
     private fun scan():Pair<List<CallTask>,List<String>> {

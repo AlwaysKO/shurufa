@@ -132,6 +132,60 @@ class CallRecordingDuplicatesTest {
         CallRecordingUploader(b,t,{true},{target},systemSourceExists={true}).runOnce()
         assertTrue(b.audioFile(local.id).exists())
     }
+    @Test fun `微信即时轮次不被历史录音上传堵住稳定复查或本次上传`()=io {
+        val b=box();val old=add(b,true,start=1000,end=61000)
+        val current=add(b,true,platform="wechat");val t=Transport()
+        CallRecordingUploader(b,t,{true},{target},selected={wechatRecordingSelected(it,160000)}).runOnce()
+        assertEquals(listOf(current.id),t.uploaded)
+        assertEquals(0,b.tasks().single{it.id==old.id}.attempts)
+        // 本次文件尚未出现时不能为了清积压占住即时检查；普通恢复仍可处理旧文件。
+        val later=Transport()
+        CallRecordingUploader(b,later,{true},{target},selected={wechatRecordingSelected(it,200000)}).runOnce()
+        assertTrue(later.uploaded.isEmpty())
+        CallRecordingUploader(b,later,{true},{target},selected={wechatRecordingSelected(it,null)}).runOnce()
+        assertEquals(listOf(old.id),later.uploaded)
+    }
+    @Test fun `已发现系统文件等待稳定时微信自录不抢先上传`()=io {
+        val b=box();val local=add(b,platform="wechat");val t=Transport()
+        val metadata=local.metadata.copy(call_ended_at=160000)
+        CallRecordingUploader(b,t,{true},{target},ready={systemRecordingUploadReady(it.copy(metadata=metadata),true,false,160001)}).runOnce()
+        assertTrue(t.uploaded.isEmpty())
+        val system=add(b,true,platform="wechat")
+        CallRecordingUploader(b,t,{true},{target},systemSourceExists={true}).runOnce()
+        assertEquals(listOf(system.id),t.uploaded)
+    }
+    @Test fun `微信已上传自录收到明确同次迟到系统原件不再上报且保留关联`()=io {
+        val b=box();val local=add(b,platform="wechat");val t=Transport()
+        CallRecordingUploader(b,t,{true},{target},systemSourceExists={true}).runOnce()
+        val system=add(b,true,platform="wechat")
+        CallRecordingUploader(b,t,{true},{target},systemSourceExists={true}).runOnce()
+        assertEquals(listOf(local.id),t.uploaded)
+        val duplicate=b.tasks().single{it.id==system.id}
+        assertEquals("superseded",duplicate.uploadStatus);assertEquals(local.id,duplicate.duplicateOf)
+        assertFalse(b.audioFile(system.id).exists())
+    }
+    @Test fun `迟到系统录音无本地回执或时间证据不足仍保留独立上传`()=io {
+        for(kind in listOf("unknown","partial","ambiguous","failed","phone")) {
+            val b=box();val platform=if(kind=="phone")"phone"else"wechat"
+            val local=add(b,platform=platform);val t=Transport();t.fail=kind=="failed"
+            CallRecordingUploader(b,t,{true},{target},systemSourceExists={true}).runOnce()
+            if(kind=="ambiguous")add(b,platform=platform)
+            val system=add(b,true,platform=platform,known=kind!="unknown",start=if(kind=="partial")110000 else 100000)
+            t.fail=false
+            CallRecordingUploader(b,t,{true},{target},systemSourceExists={true}).runOnce()
+            assertTrue(kind,system.id in t.uploaded)
+            assertNotEquals("superseded",b.tasks().single{it.id==system.id}.uploadStatus)
+        }
+    }
+    @Test fun `微信已结束自录立即具备上传条件电话仍等待系统副本`()=io {
+        val b=box()
+        val local=add(b,platform="wechat")
+        val ended=local.copy(metadata=local.metadata.copy(recording_status="ended",call_ended_at=160000))
+        assertTrue(systemRecordingUploadReady(ended,true,true,160001))
+        assertFalse(systemRecordingUploadReady(ended,true,false,160001))
+        assertFalse(systemRecordingUploadReady(ended.copy(metadata=ended.metadata.copy(platform="phone")),true,true,160001))
+        assertFalse(systemRecordingUploadReady(ended.copy(metadata=ended.metadata.copy(recording_status="interrupted",call_ended_at=null)),true,true,160001))
+    }
     @Test fun `配置系统目录后等待文件落盘扫描失败不抢先上传输入法版本`()=io {
         val b=box();val local=add(b);val system=add(b,true)
         assertFalse(systemRecordingUploadReady(local,true,true,170000))

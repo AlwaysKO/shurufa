@@ -93,4 +93,72 @@ class UploadDemandRecoveryTest {
         } finally { GameWorkRuntime.setGaming(false); UploadRecovery.cancel(app) }
     }
 
+    @Test fun typingDoesNotPostponeAlreadyPreparedChatImages() = kotlinx.coroutines.runBlocking {
+        val app = ApplicationProvider.getApplicationContext<Context>()
+        val scheduler = app.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+        PreferenceManager.getDefaultSharedPreferences(app).edit().putBoolean(CollectionConsent.KEY, true).commit()
+        ServerConfig.init(app)
+        val store = LocalInputStore(app)
+        try {
+            store.enqueueReport(PendingReport("ready-image", "chat_asset",
+                """{"sha256":"${"b".repeat(64)}","file_base64":"AA=="}"""), listOf(ServerConfig.baseUrl))
+        } finally { store.close() }
+        resetGameWorkRuntimeForTest()
+        resetImageInputForTest()
+        try {
+            UploadRecovery.cancel(app)
+            ImageUploadRuntime.noteKeyActivity()
+            assertFalse(ImageUploadRuntime.isInputIdle())
+            UploadRecovery.scheduleNext(app)
+            val job = scheduler.allPendingJobs.single()
+            assertEquals(6_000L, job.minLatencyMillis)
+            assertEquals(android.app.job.JobInfo.NETWORK_TYPE_UNMETERED, job.networkType)
+        } finally { resetImageInputForTest(); UploadRecovery.cancel(app) }
+    }
+
+    @Test fun mixedUsageAndImageRecoveryDoesNotPollImagesOnMobileNetwork() = kotlinx.coroutines.runBlocking {
+        val app = ApplicationProvider.getApplicationContext<Context>()
+        val scheduler = app.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+        val prefs = PreferenceManager.getDefaultSharedPreferences(app)
+        prefs.edit().putBoolean(CollectionConsent.KEY, true)
+            .putBoolean(com.yuyan.imemodule.data.usage.AppUsageTracker.KEY, true).commit()
+        val ops = app.getSystemService(Context.APP_OPS_SERVICE) as android.app.AppOpsManager
+        shadowOf(ops).setMode(android.app.AppOpsManager.OPSTR_GET_USAGE_STATS,
+            android.os.Process.myUid(), app.packageName, android.app.AppOpsManager.MODE_ALLOWED)
+        ServerConfig.init(app)
+        val store = LocalInputStore(app)
+        try { store.enqueueReport(PendingReport("image-with-usage", "chat_asset", "{}"), listOf(ServerConfig.baseUrl)) }
+        finally { store.close() }
+        com.yuyan.imemodule.data.usage.UsageStore(app).use { usage ->
+            val now = System.currentTimeMillis()
+            usage.save(com.yuyan.imemodule.data.usage.UsageReduction(
+                com.yuyan.imemodule.data.usage.UsageState(cursor = now), listOf(
+                    com.yuyan.imemodule.data.usage.UsageRecord("pending-usage", "usage", "com.example.reader", null,
+                        now - 10_000L, now, "lock"))), listOf(ServerConfig.baseUrl))
+        }
+        resetGameWorkRuntimeForTest(); resetImageInputForTest()
+        val manager = app.getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+        shadowOf(manager).setActiveNetworkInfo(org.robolectric.shadows.ShadowNetworkInfo.newInstance(
+            android.net.NetworkInfo.DetailedState.CONNECTED, android.net.ConnectivityManager.TYPE_MOBILE, 0, true, true))
+        val caps = org.robolectric.shadows.ShadowNetworkCapabilities.newInstance()
+        shadowOf(caps).apply {
+            addTransportType(android.net.NetworkCapabilities.TRANSPORT_CELLULAR)
+            addCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            addCapability(android.net.NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+        }
+        shadowOf(manager).setNetworkCapabilities(manager.activeNetwork, caps)
+        try {
+            assertTrue(ImageUploadRuntime.hasValidatedNetwork(app))
+            assertFalse(ImageUploadRuntime.hasValidatedWifi(app))
+            UploadRecovery.cancel(app)
+            UploadRecovery.scheduleNext(app)
+            val job = scheduler.allPendingJobs.single()
+            assertEquals(300_000L, job.minLatencyMillis)
+            assertEquals(android.app.job.JobInfo.NETWORK_TYPE_ANY, job.networkType)
+        } finally {
+            UploadRecovery.cancel(app)
+            app.deleteDatabase(java.io.File(app.noBackupFilesDir, "app_usage.db").absolutePath)
+        }
+    }
+
 }

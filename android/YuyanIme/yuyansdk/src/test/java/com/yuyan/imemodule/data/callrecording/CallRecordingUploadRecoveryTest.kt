@@ -71,6 +71,22 @@ class CallRecordingUploadRecoveryTest {
             recording_started_at=now-60_000,recording_ended_at=now-30_000,audio_duration_ms=30_000),
             source=SystemRecordingSource("content://media/external/audio/media/1",file.length(),now-30_000,false))
     }
+    @Test fun `仅上传授权也监听微信语音视频结束并立即预约而不启动自录服务`() {
+        ImageUploadRuntime.noteKeyActivity() // 本测试只验证接线，不执行真实网络传输。
+        for(text in listOf("语音通话中","视频通话中")) {
+            CallRecordingJobService.cancel(context)
+            CallRecordingJobService.schedule(context)
+            val now=System.currentTimeMillis()
+            WechatCallSignals.notification("com.tencent.mm","call",true,text,false,now,now)
+            WechatCallSignals.removed("com.tencent.mm","call",now)
+            val deadline=System.nanoTime()+2_000_000_000L
+            while(WechatCallUpload.recentEnd(context)==null && System.nanoTime()<deadline)Thread.sleep(5)
+            assertNotNull(text,WechatCallUpload.recentEnd(context))
+            val wake=scheduler.allPendingJobs.single{!it.isPeriodic}
+            assertEquals(0L,wake.minLatencyMillis)
+            assertFalse(CallRecordingService.isRunning)
+        }
+    }
     @Test fun `系统录音失败按已记录退避时间安排重试而非等三十分钟`()=io {
         val task=pending();val box=CallRecordingRuntime.outbox(context)
         box.markAttempt(task.id);box.fail(task.id,System.currentTimeMillis(),"network_error")

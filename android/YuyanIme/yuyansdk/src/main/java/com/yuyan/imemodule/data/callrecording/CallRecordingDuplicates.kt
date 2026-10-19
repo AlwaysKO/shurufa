@@ -19,6 +19,14 @@ internal object CallRecordingDuplicates {
         if(tasks.count{it.source==null && sameCall(it,system)}!=1)return null
         return system
     }
+    /** 已即时上传的微信自录，只有唯一且明确的同次通话证据才能接纳迟到原件。 */
+    fun savedLocalFor(system:CallTask,tasks:List<CallTask>):CallTask? {
+        if(system.source==null || system.metadata.platform!="wechat" || system.attempts!=0)return null
+        val local=tasks.filter{it.source==null && it.uploadStatus=="saved" && it.receipt!=null && sameCall(it,system)}
+            .singleOrNull() ?: return null
+        val preferred=preferredSystem(local.copy(attempts=0,uploadStatus="pending"),tasks) ?: return null
+        return local.takeIf{preferred.metadata.sha256==system.metadata.sha256 && preferred.metadata.byte_size==system.metadata.byte_size}
+    }
     fun sameCall(local:CallTask,system:CallTask):Boolean {
         if(local.source!=null || system.source==null || local.deviceId!=system.deviceId)return false
         val a=local.metadata;val b=system.metadata

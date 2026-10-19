@@ -6,4 +6,5 @@ internal data class DeliverySelection(
     val location:Boolean=true,
     val chatText:Boolean=true,
     val images:Boolean=true,
+    val imageMessages:Boolean=false,
 )

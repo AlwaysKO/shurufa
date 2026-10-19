@@ -101,6 +101,19 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
             }.setNegativeButton("取消", null).show()
     }
     private var balancedPreference: SwitchPreferenceCompat? = null
+    private var walkingPreference: SwitchPreferenceCompat? = null
+    private fun refreshWalkingPreference() {
+        val ctx = context ?: return
+        walkingPreference?.isChecked = PreferenceManager.getDefaultSharedPreferences(ctx)
+            .getBoolean(BalancedLocationService.WALKING_ASSIST_KEY, false) && BalancedLocationService.hasWalkingPermission(ctx)
+    }
+    private val walkingPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        val ctx = context ?: return@registerForActivityResult
+        if (granted && CollectionConsent.enabled(ctx)) {
+            PreferenceManager.getDefaultSharedPreferences(ctx).edit().putBoolean(BalancedLocationService.WALKING_ASSIST_KEY, true).apply()
+        } else Toast.makeText(ctx, "未开启步行辅助，原有定位继续工作", Toast.LENGTH_LONG).show()
+        refreshWalkingPreference()
+    }
     private val balancedStateListener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, key ->
         if (key == BalancedLocationService.KEY) {
             refreshBalancedPreference()
@@ -121,6 +134,7 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
         BalancedLocationService.restoreFromActivity(requireActivity())
         refreshBalancedPreference()
         refreshUsagePreference()
+        refreshWalkingPreference()
     }
 
     private fun requestBalancedNotificationPermission() {
@@ -320,6 +334,26 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
                 false
             }
         })
+        screen.addPreference(SwitchPreferenceCompat(ctx).apply {
+            walkingPreference = this
+            key = BalancedLocationService.WALKING_ASSIST_KEY
+            isPersistent = false
+            title = "步行辅助定位"
+            summary = "步行时辅助启动定位，不保存或上传步数。需允许身体活动权限；关闭不影响骑行运动检测。"
+            setOnPreferenceChangeListener { _, value ->
+                val enabled = value as Boolean
+                if (enabled && !CollectionConsent.enabled(ctx)) {
+                    Toast.makeText(ctx, "请先开启个人数据同步授权", Toast.LENGTH_LONG).show()
+                } else if (enabled && !BalancedLocationService.hasWalkingPermission(ctx) && Build.VERSION.SDK_INT >= 29) {
+                    walkingPermissionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
+                } else {
+                    PreferenceManager.getDefaultSharedPreferences(ctx).edit().putBoolean(BalancedLocationService.WALKING_ASSIST_KEY, enabled).apply()
+                }
+                refreshWalkingPreference()
+                false
+            }
+        })
+        refreshWalkingPreference()
         screen.addPreference(Preference(ctx).apply {
             title = "微信 / 抖音采集诊断"
             summary = "查看页面、截图、持久化、消息回执的最近状态与错误码；历史状态不是实时证明"

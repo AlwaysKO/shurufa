@@ -18,4 +18,7 @@ internal class ReportRetryGate {
 
     @Synchronized fun blocks(target: String, now: Long, regularSync: Boolean): Boolean =
         retries[target]?.let { now < it.until && (it.failed || !regularSync) } ?: false
+
+    @Synchronized fun remainingDelay(target: String, now: Long): Long =
+        retries[target]?.let { (it.until - now).coerceAtLeast(0L) } ?: 0L
 }

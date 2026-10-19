@@ -91,12 +91,15 @@ internal object UploadRecovery {
         val metadataDelay = listOfNotNull(
             com.yuyan.imemodule.data.capture.page.VideoVisitSync.pendingRecoveryDelay(context),
             AppUsageTracker.pendingRecoveryDelay(context),
-        ).minOrNull()
+        ).minOrNull()?.let { if (ImageUploadRuntime.isInputIdle()) it else maxOf(it, 300_000L) }
         val plans = listOfNotNull(collector, metadataDelay?.let { PendingUploadRecovery(it, false) })
-        val delay = plans.minOfOrNull { it.delayMillis }?.let {
-            if (ImageUploadRuntime.isBackgroundWorkAllowed()) it else maxOf(it, 300_000L)
-        }
         val wifiOnly = plans.all { it.wifiOnly }
+        val delay = plans.minOfOrNull {
+            if (!wifiOnly && it.wifiOnly && !ImageUploadRuntime.hasValidatedWifi(context)) maxOf(it.delayMillis, 300_000L)
+            else it.delayMillis
+        }?.let {
+            if (GameWorkRuntime.isBackgroundAllowed()) it else maxOf(it, 300_000L)
+        }
         currentCoroutineContext().ensureActive()
         synchronized(this) {
             if (token != null && (!running || token != startedToken)) return

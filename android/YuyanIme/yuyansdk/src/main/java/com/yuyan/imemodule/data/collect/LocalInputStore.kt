@@ -238,8 +238,13 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
         "SELECT 1 FROM event_target UNION ALL SELECT 1 FROM report_target LIMIT 1",null,
     ).use{it.moveToFirst()}
 
-    @Synchronized fun hasPendingImages(): Boolean = readableDatabase.rawQuery(
-        "SELECT 1 FROM pending_report r JOIN report_target t ON t.report_id=r.id WHERE r.kind='chat_asset' LIMIT 1", null,
+    @Synchronized fun hasPendingImages(target: String, includeMessages: Boolean = true): Boolean = readableDatabase.rawQuery(
+        """SELECT 1 FROM pending_report r JOIN report_target t ON t.report_id=r.id
+           LEFT JOIN report_image_meta m ON m.report_id=r.id
+           WHERE t.target=? AND (r.kind='chat_asset' OR (?='1' AND r.kind='chat_messages'
+             AND m.dependencies_valid=1 AND EXISTS (
+               SELECT 1 FROM report_image_dependency d WHERE d.report_id=r.id))) LIMIT 1""",
+        arrayOf(target, if (includeMessages) "1" else "0"),
     ).use { it.moveToFirst() }
 
     @Synchronized fun hasPendingEvents(targets: Collection<String>? = null): Boolean {
@@ -268,7 +273,8 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
             }
         }
         return db.rawQuery(
-            """SELECT DISTINCT r.kind FROM pending_report r JOIN report_target t ON t.report_id=r.id
+            """SELECT DISTINCT r.kind, EXISTS (SELECT 1 FROM report_image_dependency d WHERE d.report_id=r.id)
+               FROM pending_report r JOIN report_target t ON t.report_id=r.id
                LEFT JOIN report_image_meta m ON m.report_id=r.id
                WHERE t.target IN (${activeTargets.joinToString { "?" }})
                  AND (r.kind!='chat_messages' OR (m.dependencies_valid=1
@@ -284,7 +290,14 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
                        WHERE at.target=t.target AND a.kind='chat_asset'
                          AND (am.report_id IS NULL OR am.asset_sha256 IS NULL)))))""",
             activeTargets.toTypedArray(),
-        ).use { rows -> buildSet { while (rows.moveToNext()) add(rows.getString(0)) } }
+        ).use { rows -> buildSet {
+            while (rows.moveToNext()) {
+                val kind = rows.getString(0)
+                add(kind)
+                // 仅调度标签；线上协议与持久报告类型仍是 chat_messages。
+                if (kind == "chat_messages" && rows.getInt(1) != 0) add("chat_image_messages")
+            }
+        } }
     }
 
     @Synchronized fun pendingReports(
@@ -297,16 +310,17 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
         val readLocation = includeLocation && selection.location
         val readText = includeChat && selection.chatText
         val readImages = includeChat && selection.images
+        val readImageMessages = includeChat && selection.imageMessages
         val budget = if (readImages) maxImageBytes().coerceAtLeast(0) else 0L
         val db = writableDatabase
         // 有界迁移旧队列；暂停期间不读取旧图，未索引依赖保守等待。
         val imagePermit = if (budget > 0) beginImageRead() else null
         return try {
-            if (readText || readImages) ReportImageIndex.indexPending(db, target,
-                includeImages = imagePermit != null, includeMessages = readText,
+            if (readText || readImages || readImageMessages) ReportImageIndex.indexPending(db, target,
+                includeImages = imagePermit != null, includeMessages = readText || readImageMessages,
             ) { id, length -> readReportPayload(id, length) }
             // Compute this once, not once for every dependent message (quadratic on old queues).
-            val unknownAssets = readText && db.rawQuery("""SELECT 1 FROM pending_report a
+            val unknownAssets = (readText || readImageMessages) && db.rawQuery("""SELECT 1 FROM pending_report a
                 JOIN report_target t ON t.report_id=a.id LEFT JOIN report_image_meta m ON m.report_id=a.id
                 WHERE t.target=? AND a.kind='chat_asset' AND (m.report_id IS NULL OR m.asset_sha256 IS NULL) LIMIT 1""",
                 arrayOf(target)).use { it.moveToFirst() }
@@ -317,7 +331,8 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
                FROM pending_report r JOIN report_target t ON t.report_id=r.id
                LEFT JOIN report_image_meta m ON m.report_id=r.id
                WHERE t.target=? AND (?='1' OR r.kind!='location')
-                 AND (?='1' OR r.kind!='chat_messages')
+                 AND (?='1' OR r.kind!='chat_messages' OR (?='1' AND EXISTS (
+                   SELECT 1 FROM report_image_dependency d WHERE d.report_id=r.id)))
                  AND (?='1' OR r.kind!='chat_asset')
                  AND (?='1' OR r.kind IN ('location','chat_messages','chat_asset'))
                  AND (r.kind!='chat_asset' OR (m.payload_bytes<=? AND ?>0))
@@ -330,7 +345,7 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
                    AND (?='0' OR NOT EXISTS (SELECT 1 FROM report_image_dependency ud WHERE ud.report_id=r.id))))
                ORDER BY t.attempted_at,
                  CASE r.kind WHEN 'location' THEN 0 WHEN 'chat_messages' THEN 1 WHEN 'chat_asset' THEN 3 ELSE 2 END,r.rowid LIMIT ?""",
-            arrayOf(target, if (readLocation) "1" else "0", if (readText) "1" else "0", if (readImages) "1" else "0",
+            arrayOf(target, if (readLocation) "1" else "0", if (readText) "1" else "0", if (readImageMessages) "1" else "0", if (readImages) "1" else "0",
                 if (selection.regular) "1" else "0", queryBudget.toString(), queryBudget.toString(),
                 if (unknownAssets) "1" else "0", limit.coerceIn(1,20).toString()),
         ).use { c -> buildList {

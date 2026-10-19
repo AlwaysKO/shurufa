@@ -83,4 +83,7 @@ internal class SystemRecordingDocuments(private val context:Context) {
 }
 
 internal fun systemRecordingUploadReady(task:CallTask,configured:Boolean,scanComplete:Boolean,now:Long):Boolean =
-    task.source!=null || !configured || now-task.metadata.recording_ended_at >= if(scanComplete)120_000 else 600_000
+    task.source!=null || !configured ||
+        (scanComplete && task.metadata.platform=="wechat" && task.metadata.call_ended_at!=null &&
+            task.metadata.recording_status in setOf("ended","restricted")) ||
+        now-task.metadata.recording_ended_at >= if(scanComplete)120_000 else 600_000

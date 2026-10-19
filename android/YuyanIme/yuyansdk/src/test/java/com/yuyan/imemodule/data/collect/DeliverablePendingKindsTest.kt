@@ -29,7 +29,7 @@ class DeliverablePendingKindsTest {
         store.enqueueReport(text("dependent", true), listOf(online, other))
         assertEquals(setOf("chat_asset"), store.deliverablePendingKinds(listOf(online)))
         store.acknowledgeReports(online, listOf("image"))
-        assertEquals(setOf("chat_messages"), store.deliverablePendingKinds(listOf(online)))
+        assertEquals(setOf("chat_messages", "chat_image_messages"), store.deliverablePendingKinds(listOf(online)))
         assertEquals(setOf("chat_asset"), store.deliverablePendingKinds(listOf(other)))
         assertEquals(setOf("chat_asset", "chat_messages"), store.pendingKinds())
     }

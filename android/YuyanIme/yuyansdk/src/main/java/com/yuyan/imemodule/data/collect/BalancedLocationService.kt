@@ -13,6 +13,12 @@ import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
+import android.hardware.Sensor
+import android.hardware.SensorManager
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.TriggerEvent
+import android.hardware.TriggerEventListener
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
@@ -52,6 +58,82 @@ class BalancedLocationService : Service() {
     private lateinit var manager: LocationManager
     private lateinit var preferences: SharedPreferences
     private var started = false
+    private var motionListener: TriggerEventListener? = null
+    private var stepListener: SensorEventListener? = null
+    private val motionRearm = Runnable { updateMotionSensor() }
+    private val sensorManager by lazy { getSystemService(Context.SENSOR_SERVICE) as? SensorManager }
+    private val motionSensor by lazy { sensorManager?.getDefaultSensor(Sensor.TYPE_SIGNIFICANT_MOTION) }
+
+    private fun beginMotionProbe() {
+        if (!allowed()) { finishSession(); return }
+        val elapsed = SystemClock.elapsedRealtime()
+        if (policy.beginMotionProbe(elapsed)) {
+            registerUpdates()
+            if (started) policy.confirmationDelayMs(elapsed)?.let {
+                handler.removeCallbacks(confirmationTimeout)
+                handler.postDelayed(confirmationTimeout, it)
+            }
+        } else updateMotionSensor()
+    }
+
+    private fun updateStepSensor() {
+        if (!started || !allowed() || !policy.isStationary || !hasWalkingPermission(this) ||
+            !preferences.getBoolean(WALKING_ASSIST_KEY, false) || policy.motionProbeDelayMs(SystemClock.elapsedRealtime()) > 0) {
+            stepListener?.let { runCatching { sensorManager?.unregisterListener(it) } }
+            stepListener = null
+            return
+        }
+        if (stepListener != null) return
+        val sensor = sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR, true)
+            ?: sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR) ?: return
+        val signal = StepMovementSignal(SystemClock.elapsedRealtimeNanos())
+        val expectedSession = session
+        val listener = object : SensorEventListener {
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
+            override fun onSensorChanged(event: SensorEvent) {
+                val timestamp = event.timestamp
+                val value = event.values.firstOrNull() ?: return
+                handler.post {
+                    if (!started || session != expectedSession || stepListener !== this) return@post
+                    if (!allowed()) { finishSession(); return@post }
+                    if (!hasWalkingPermission(this@BalancedLocationService) || !preferences.getBoolean(WALKING_ASSIST_KEY, false)) {
+                        updateStepSensor(); return@post
+                    }
+                    if (signal.observe(timestamp, SystemClock.elapsedRealtimeNanos(), value)) beginMotionProbe()
+                }
+            }
+        }
+        stepListener = listener
+        if (runCatching { sensorManager?.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_NORMAL, handler) }.getOrDefault(false) != true)
+            stepListener = null
+    }
+
+    private fun updateMotionSensor() {
+        handler.removeCallbacks(motionRearm)
+        updateStepSensor()
+        if (!started || !allowed() || !policy.isStationary) {
+            motionListener?.let { runCatching { sensorManager?.cancelTriggerSensor(it, motionSensor) } }
+            motionListener = null
+            return
+        }
+        if (motionListener != null) return
+        val delay = policy.motionProbeDelayMs(SystemClock.elapsedRealtime())
+        if (delay > 0) { handler.postDelayed(motionRearm, delay); return }
+        val sensor = motionSensor ?: return
+        val expectedSession = session
+        val listener = object : TriggerEventListener() {
+            override fun onTrigger(event: TriggerEvent?) {
+                handler.post {
+                    if (!started || session != expectedSession || motionListener !== this) return@post
+                    motionListener = null // hardware one-shot has already disarmed itself
+                    beginMotionProbe()
+                }
+            }
+        }
+        motionListener = listener
+        if (runCatching { sensorManager?.requestTriggerSensor(listener, sensor) }.getOrDefault(false) != true)
+            motionListener = null
+    }
     private var connectivity: ConnectivityManager? = null
     private var networkRegistered = false
     private val networkChanged = Runnable {
@@ -69,7 +151,7 @@ class BalancedLocationService : Service() {
     private var appOps: AppOpsManager? = null
     private var locationStateRegistered = false
     private val permissionChanged = Runnable {
-        if (started && !allowed()) finishSession()
+        if (started) { if (!allowed()) finishSession() else updateMotionSensor() }
     }
     private val appOpsListener = AppOpsManager.OnOpChangedListener { _, changedPackage ->
         if (changedPackage == null || changedPackage == packageName) handler.post(permissionChanged)
@@ -90,8 +172,11 @@ class BalancedLocationService : Service() {
             }
         }
     }
-    private val preferenceListener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
-        if (started && !allowed()) finishSession()
+    private val preferenceListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (started) {
+            if (!allowed()) finishSession()
+            else if (key == WALKING_ASSIST_KEY) updateMotionSensor()
+        }
     }
     private val checkPermission = object : Runnable {
         override fun run() {
@@ -108,6 +193,11 @@ class BalancedLocationService : Service() {
         appOps = getSystemService(Context.APP_OPS_SERVICE) as? AppOpsManager
         for (op in listOf(AppOpsManager.OPSTR_FINE_LOCATION, AppOpsManager.OPSTR_COARSE_LOCATION)) {
             runCatching { appOps?.startWatchingMode(op, packageName, appOpsListener) }
+        }
+        if (Build.VERSION.SDK_INT >= 29) runCatching {
+            AppOpsManager.permissionToOp(android.Manifest.permission.ACTIVITY_RECOGNITION)?.let { op ->
+                appOps?.startWatchingMode(op, packageName, appOpsListener)
+            }
         }
         locationStateRegistered = runCatching {
             ContextCompat.registerReceiver(this, locationStateReceiver, IntentFilter().apply {
@@ -266,6 +356,7 @@ class BalancedLocationService : Service() {
     @Suppress("MissingPermission")
     private fun updateGpsRequest(trustedMotion: Boolean = false) {
         if (!started || !allowed()) { finishSession(); return }
+        updateMotionSensor()
         val elapsed = SystemClock.elapsedRealtime()
         val previousDeadline = gpsBudget.deadline
         gpsBudget.update(elapsed, policy.isStationary, trustedMotion)
@@ -339,6 +430,7 @@ class BalancedLocationService : Service() {
         val owned = started
         if (owned) CaptureHistory.record(this, CaptureHistoryEvent.LOCATION_STOPPED)
         started = false
+        updateMotionSensor()
         session++
         gpsTimer?.let(handler::removeCallbacks)
         gpsTimer = null
@@ -386,6 +478,9 @@ class BalancedLocationService : Service() {
 
     companion object {
         const val KEY = "balanced_location_enabled"
+        const val WALKING_ASSIST_KEY = "walking_location_assist"
+        fun hasWalkingPermission(context: Context): Boolean = Build.VERSION.SDK_INT < 29 ||
+            ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
         const val ACTION_STOP = "com.yuyan.imemodule.STOP_BALANCED_LOCATION"
         private const val CHANNEL = "balanced_location"
         private const val NOTIFICATION_ID = 2107

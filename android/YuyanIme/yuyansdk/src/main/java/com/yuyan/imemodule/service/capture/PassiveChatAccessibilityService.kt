@@ -65,6 +65,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -72,6 +73,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
 import com.yuyan.imemodule.data.capture.ActiveChatContext
 import com.yuyan.imemodule.data.capture.ActiveChatContextStore
 import com.yuyan.imemodule.data.capture.model.ChatDirection
@@ -124,6 +126,7 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     private var typingRecheck: Runnable? = null
     private var candidateRecheck: Runnable? = null
     private var promptCaptureJob: Job? = null
+    private val savedPromptConfirmation = AtomicReference<Job?>(null)
     private var promptCaptureGeneration = -1L
     private val sendRecoverySequence = AtomicLong()
     @Volatile private var pendingSendRender: SendRenderWait? = null
@@ -162,6 +165,8 @@ class PassiveChatAccessibilityService : AccessibilityService() {
     )
 
     private fun resetScreenshotIdentity() {
+        // 仅撤销已保存首图的后续确认；尚在处理的已接受帧仍须落盘。
+        savedPromptConfirmation.getAndSet(null)?.cancel()
         pendingSendRender = null
         eventReads.cancel()
         stableReads.cancel()
@@ -607,10 +612,11 @@ class PassiveChatAccessibilityService : AccessibilityService() {
         if (afterSend) CaptureTrace.record(CaptureStage.SEND_REQUESTED)
         val identityGeneration = screenshotIdentityGeneration.get()
         val recoverySequence = if (afterSend) sendRecoverySequence.incrementAndGet() else -1L
-        val previous = promptCaptureJob?.takeIf { it.isActive }
-        if (previous != null) {
-            // 同页最新发送帧优先于尚未处理的旧帧；其他会话已经取得的帧不能被替换。
-            if (!afterSend || promptCaptureGeneration != identityGeneration) return
+        // 导航取消确认后仍等它释放物理门控和互斥锁，不能因 isActive=false 跳过 join。
+        val previous = promptCaptureJob?.takeIf { !it.isCompleted }
+        if (previous?.isActive == true && promptCaptureGeneration == identityGeneration) {
+            // 同页发送替换旧帧；跨页只排队等待，不能取消另一会话尚未保存的已接受帧。
+            if (!afterSend) return
             previous.cancel()
         }
         promptCaptureGeneration = identityGeneration
@@ -961,23 +967,39 @@ class PassiveChatAccessibilityService : AccessibilityService() {
                         return result
                     }
                     persistScreenshotBeforeConfirmation(firstIdentity, ::persist) {
-                        if (attempt != null) return@persistScreenshotBeforeConfirmation null
-                        delay(800)
-                        if (!isCurrentScreenshotWindow(windowId, identityGeneration, captureToken)) return@persistScreenshotBeforeConfirmation null
-                        TitleOcrInput(titleBand.top, titleBand.height).use { confirmationInput ->
-                            val nextAsset = mediaCapturer?.capture(
-                                windowId = windowId,
-                                windowBounds = windowBounds,
-                                requests = listOf(MediaCaptureRequest(0, screenshotBounds, lossyWebp = true, titleOcrInput = confirmationInput, wechatInputBarDensity = displayMetrics.density, platform = ChatPlatform.WECHAT)),
-                            )?.get(0) ?: return@persistScreenshotBeforeConfirmation null
-                            if (!isCurrentScreenshotWindow(windowId, identityGeneration, captureToken)) return@persistScreenshotBeforeConfirmation null
-                            resolver?.resolve(nextAsset, resolverVersion, confirmationInput)?.takeIf { it.isChatPage }
+                        if (attempt != null) {
+                            // 回调只会在首图保存成功后进入；与导航重置串行登记，避免取消未落盘帧。
+                            val registered = withContext(Dispatchers.Main) {
+                                if (parent == null || promptCaptureJob !== parent ||
+                                    !isScreenshotRequestCurrent(identityGeneration, captureToken)) false
+                                else { savedPromptConfirmation.set(parent); true }
+                            }
+                            if (!registered) return@persistScreenshotBeforeConfirmation null
                         }
+                        // 首图已接受的许可只用于原帧落盘，不能借给第二帧绕过导航检查。
+                        // 新子任务保留当前 Job 的取消关系，彻底移除快帧上下文；withContext 会重新合入旧许可。
+                        CoroutineScope(currentCoroutineContext().minusKey(ChatCaptureAttempt)).async {
+                            if (!isCurrentScreenshotWindow(windowId, identityGeneration, captureToken)) return@async null
+                            delay(800)
+                            if (!isCurrentScreenshotWindow(windowId, identityGeneration, captureToken)) return@async null
+                            TitleOcrInput(titleBand.top, titleBand.height).use { confirmationInput ->
+                                val nextAsset = mediaCapturer?.capture(
+                                    windowId = windowId,
+                                    windowBounds = windowBounds,
+                                    requests = listOf(MediaCaptureRequest(0, screenshotBounds, lossyWebp = true, titleOcrInput = confirmationInput, wechatInputBarDensity = displayMetrics.density, platform = ChatPlatform.WECHAT)),
+                                )?.get(0) ?: return@async null
+                                if (!isCurrentScreenshotWindow(windowId, identityGeneration, captureToken)) return@async null
+                                resolver?.resolve(nextAsset, resolverVersion, confirmationInput)?.takeIf {
+                                    it.isChatPage && isCurrentScreenshotWindow(windowId, identityGeneration, captureToken)
+                                }
+                            }
+                        }.await()
                     }
                 }
             }
         }
         capture.invokeOnCompletion {
+            if (parent != null) savedPromptConfirmation.compareAndSet(parent, null)
             mainHandler.post {
                 if (isScreenshotRequestCurrent(identityGeneration, captureToken)) {
                     val needsConfirmation = !screenshotUpdates.accepts(windowId, identityGeneration, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED)

@@ -1,7 +1,9 @@
 package com.yuyan.imemodule.service.capture
 
 import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.Rect
 import android.os.Looper
 import android.view.accessibility.AccessibilityEvent
@@ -37,6 +39,88 @@ import java.util.concurrent.atomic.AtomicLong
 @Config(sdk = [30], qualifiers = "mdpi", shadows = [WechatListCaptureTest.ServiceShadow::class])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class WechatPromptCaptureTest {
+    @Test fun newPromptEntryConfirmsWithIndependentFrameWhileOriginalPageRemainsVisible() = runBlocking {
+        Harness(confirmNewTitle = true).use { h ->
+            h.request(afterSend = false)
+            h.until { h.pending.isNotEmpty() }
+            assertEquals("pending", h.metadata(0).getString("conversation_identity_status"))
+            val firstCaptureId = h.metadata(0).getString("screenshot_capture_id")
+            val confirmed = withTimeoutOrNull(1_500) { h.until { h.pending.size >= 2 }; true } == true
+            assertTrue("首图已落盘，同页应主动补独立确认帧，不能只等待两秒后的未知页探测", confirmed)
+            assertEquals(2, h.requestNanos.size)
+            assertEquals("confirmed", h.metadata(1).getString("conversation_identity_status"))
+            assertEquals(firstCaptureId, h.metadata(1).getString("screenshot_capture_id"))
+            assertEquals(h.pending.first().requiredAssetHashesJson, h.pending[1].requiredAssetHashesJson)
+        }
+    }
+
+    @Test fun navigationAfterPendingPromptSaveCannotUseNewPageToConfirmOriginalImage() = runBlocking {
+        Harness(confirmNewTitle = true).use { h ->
+            h.onSaved = { if (h.pending.size == 1) h.resetNavigation() }
+            h.request(afterSend = false)
+            h.until { h.pending.isNotEmpty() && h.promptJob()?.isActive != true }
+            ShadowSystemClock.advanceBy(Duration.ofSeconds(4))
+            Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(4))
+            repeat(30) { Shadows.shadowOf(Looper.getMainLooper()).idle(); delay(10) }
+            assertEquals("离页停止补确认，但保留已保存首图", 1, h.pending.size)
+            assertEquals(1, h.requestNanos.size)
+            assertEquals("pending", h.metadata(0).getString("conversation_identity_status"))
+            assertEquals("原会话", h.metadata(0).getString("conversation_identity_observed_title"))
+        }
+    }
+
+    @Test fun newConversationPromptDoesNotWaitForPreviousSavedImagesConfirmation() = runBlocking {
+        Harness(confirmNewTitle = true).use { h ->
+            h.request(afterSend = false)
+            h.until { h.pending.isNotEmpty() }
+            assertEquals("pending", h.metadata(0).getString("conversation_identity_status"))
+            assertEquals(1, h.requestNanos.size)
+            assertTrue("旧首图已经保存，但补确认仍在等待", h.promptJob()?.isActive == true)
+
+            h.resetNavigation()
+            h.request(afterSend = false)
+            val accepted = withTimeoutOrNull(250) {
+                h.until { h.frames.size >= 2 && h.frames[1].second.isAccepted }
+                true
+            } == true
+            assertTrue("新会话短暂停留也应立即取帧，不能等旧图800ms补确认释放任务和截图锁", accepted)
+            assertEquals("原会话", h.metadata(0).getString("conversation_identity_observed_title"))
+            h.until { h.pending.size >= 2 }
+            assertEquals("新会话", h.metadata(1).getString("conversation_identity_observed_title"))
+            assertEquals("pending", h.metadata(0).getString("conversation_identity_status"))
+        }
+    }
+
+    @Test fun acceptedPendingPromptFrameStillPersistsAfterNavigationBeforeTitleProcessing() = runBlocking {
+        Harness(confirmNewTitle = true).use { h ->
+            ImageUploadRuntime.noteKeyActivity()
+            h.request(afterSend = false)
+            h.until { h.frames.singleOrNull()?.second?.isAccepted == true }
+            assertTrue(h.pending.isEmpty())
+            h.resetNavigation()
+            WechatListCaptureTest.ServiceShadow.root = AccessibilityNodeInfo.obtain().apply {
+                packageName = "com.example.other"
+            }
+            ShadowSystemClock.advanceBy(Duration.ofSeconds(4))
+            h.until { h.pending.isNotEmpty() && h.promptJob()?.isActive != true }
+            assertEquals(1, h.pending.size)
+            assertEquals(1, h.requestNanos.size)
+            assertEquals("pending", h.metadata(0).getString("conversation_identity_status"))
+            assertEquals("原会话", h.metadata(0).getString("conversation_identity_observed_title"))
+            assertEquals(0, h.liveObservations.get())
+        }
+    }
+
+    @Test fun confirmedPromptIdentityDoesNotNeedAnotherPhysicalFrame() = runBlocking {
+        Harness().use { h ->
+            h.request(afterSend = false)
+            h.until { h.pending.isNotEmpty() && h.promptJob()?.isActive != true }
+            assertEquals(1, h.requestNanos.size)
+            assertEquals(1, h.pending.size)
+            assertEquals("confirmed", h.metadata(0).getString("conversation_identity_status"))
+        }
+    }
+
     @Test fun screenshotCarriesFixedBodyReasonWithoutChangingItsFingerprint() = runBlocking {
         Harness().use { h ->
             h.request(afterSend = false)
@@ -327,7 +411,7 @@ class WechatPromptCaptureTest {
         }
     }
 
-    private class Harness : AutoCloseable {
+    private class Harness(private val confirmNewTitle: Boolean = false) : AutoCloseable {
         val service = Robolectric.buildService(PassiveChatAccessibilityService::class.java).create().get()
         val frames = CopyOnWriteArrayList<Pair<Bitmap, ChatCaptureAttempt>>()
         val requestNanos = CopyOnWriteArrayList<Long>()
@@ -338,6 +422,7 @@ class WechatPromptCaptureTest {
         val liveObservations = AtomicInteger()
         private val files = CopyOnWriteArrayList<String>()
         var screenshotHook: suspend () -> WindowScreenshotResult? = { null }
+        var onSaved: () -> Unit = {}
         val windowId: Int
 
         init {
@@ -362,7 +447,7 @@ class WechatPromptCaptureTest {
                 if (attempt == null) {
                     ordinaryRequests.incrementAndGet()
                     return@ScreenshotSource WindowScreenshotResult.Success(
-                        Bitmap.createBitmap(400, 800, Bitmap.Config.ARGB_8888).apply { eraseColor(Color.WHITE) }, 0, 0)
+                        screenshotBitmap(), 0, 0)
                 }
                 // 模拟真实WindowScreenshotter在物理调用紧前进入在途阶段。
                 if (!attempt.beginFrameRequest()) return@ScreenshotSource WindowScreenshotResult.Failed(SCREENSHOT_BACKGROUND_PAUSED)
@@ -370,7 +455,7 @@ class WechatPromptCaptureTest {
                     if (result !is WindowScreenshotResult.Success) attempt.frameRequestFailed()
                     return@ScreenshotSource result
                 }
-                val bitmap = Bitmap.createBitmap(400, 800, Bitmap.Config.ARGB_8888).apply { eraseColor(Color.WHITE) }
+                val bitmap = screenshotBitmap()
                 frames += bitmap to requireNotNull(currentCoroutineContext()[ChatCaptureAttempt])
                 WindowScreenshotResult.Success(bitmap, 0, 0)
             }, encodeAsset = { _, _ -> encodes.incrementAndGet(); byteArrayOf(1, 2, 3) }))
@@ -379,30 +464,59 @@ class WechatPromptCaptureTest {
                     pendingAssets: List<PendingAssetEntity>): Boolean {
                     files += pendingAssets.map { it.localPath }
                     pending += pendingMessage
+                    onSaved()
                     return true
                 }
             }, deviceId = { "test" }, wakeUploader = {}))
             set("screenshotIdentityResolver", object : ScreenshotConversationIdentityResolver {
                 private var title = "原会话"
-                override fun reset() { title = "新会话" }
+                private val tracker = WechatTitleStabilizer()
+                private val observationTime = AtomicLong()
+                override fun version(): Long = tracker.version()
+                override fun reset() { title = "新会话"; tracker.reset() }
                 override suspend fun resolve(asset: PendingAssetEntity, expectedVersion: Long,
                     titleInput: TitleOcrInput?): ScreenshotConversationIdentity {
                     liveObservations.incrementAndGet()
-                    return identity(title)
+                    return if (confirmNewTitle) tracker.observe(title, titlePixels(title), observationTime.addAndGet(400), expectedVersion)
+                    else identity(title)
                 }
                 override fun snapshot(keepCurrent: () -> Boolean): ScreenshotConversationIdentityResolver {
                     val frozenTitle = title
+                    val frozen = tracker.fork()
                     return object : ScreenshotConversationIdentityResolver {
+                        override fun version(): Long = frozen.version()
                         override suspend fun resolve(asset: PendingAssetEntity, expectedVersion: Long,
                             titleInput: TitleOcrInput?): ScreenshotConversationIdentity {
                             if (keepCurrent()) liveObservations.incrementAndGet()
-                            return identity(frozenTitle)
+                            return if (confirmNewTitle) observeSnapshotTitle(tracker, frozen, expectedVersion,
+                                keepCurrent, frozenTitle, titlePixels(frozenTitle), observationTime.addAndGet(400))
+                            else identity(frozenTitle)
                         }
                     }
                 }
+                private fun titlePixels(name: String) = (if (name == "原会话") "a" else "b").repeat(64)
                 private fun identity(name: String) = screenshotConversationIdentity(name, "").copy(status = "confirmed", confidence = .95)
             })
         }
+
+        private fun screenshotBitmap(): Bitmap = Bitmap.createBitmap(400, 800, Bitmap.Config.ARGB_8888).apply {
+            eraseColor(Color.WHITE)
+            if (confirmNewTitle) {
+                val canvas = Canvas(this)
+                val paint = Paint().apply { color = Color.rgb(247, 247, 247) }
+                canvas.drawRect(0f, 746f, 400f, 800f, paint)
+                paint.color = Color.BLACK
+                paint.style = Paint.Style.STROKE
+                paint.strokeWidth = 2f
+                canvas.drawCircle(23f, 772f, 11f, paint)
+                canvas.drawCircle(378f, 772f, 11f, paint)
+                canvas.drawLine(373f, 772f, 383f, 772f, paint)
+                canvas.drawLine(378f, 767f, 378f, 777f, paint)
+            }
+        }
+
+        fun metadata(index: Int): org.json.JSONObject = org.json.JSONObject(pending[index].payloadJson)
+            .getJSONObject("message").getJSONObject("metadata")
 
         fun field(name: String): Any? = service.javaClass.getDeclaredField(name).apply { isAccessible = true }.get(service)
         private fun set(name: String, value: Any) { service.javaClass.getDeclaredField(name).apply { isAccessible = true }.set(service, value) }
