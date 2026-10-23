@@ -13,7 +13,7 @@ internal object CallRecordingDuplicates {
             else it.id to -1L
         }
         val sameContent=matches.values.singleOrNull() ?: return null
-        // 一条 URI 撤权不代表原件消失；只有至少一条来源仍可读才优先系统副本。
+        // 一条 URI 撤权不代表副本丢失；由调用者核验私有副本、保存回执或仍可读原件。
         val system=sameContent.firstOrNull(sourceExists) ?: return null
         // 两份本地片段都能匹配时，不凭相近时间将多次会话合并。
         if(tasks.count{it.source==null && sameCall(it,system)}!=1)return null

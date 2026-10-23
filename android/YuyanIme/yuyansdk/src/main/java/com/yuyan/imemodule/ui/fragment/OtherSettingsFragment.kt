@@ -443,6 +443,14 @@ class OtherSettingsFragment: ManagedPreferenceFragment(AppPrefs.getInstance().ot
             summary = "首次配置始终定位、自启动与后台运行；以后不重复要求开启记录"
             setOnPreferenceClickListener { showLocationRecoverySetup(); true }
         })
+        screen.addPreference(Preference(ctx).apply {
+            title = "后台运行设置"
+            summary = "集中检查无障碍、电池优化和启动管理；已完成的设置在覆盖安装后不重复提示"
+            setOnPreferenceClickListener {
+                startActivity(Intent(ctx, com.yuyan.imemodule.ui.setup.BackgroundSetupActivity::class.java))
+                true
+            }
+        })
         refreshBalancedPreference()
         screen.addPreference(R.string.export_user_data) {
             lifecycleScope.launch {

@@ -92,6 +92,7 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
         }
         status=text("")
         counts=text("")
+        text("系统录音写完后先复制到输入法私有目录，再通过 Wi-Fi 或手机流量上传。断网或失败保留副本，服务器确认保存后才清理副本；系统原文件不删除。")
         button("确认或扩展授权"){requestEnable()}
         button("通知读取授权"){
             try{startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))}

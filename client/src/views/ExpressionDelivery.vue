@@ -27,7 +27,7 @@ async function save() {
       if(extras===null||typeof extras!=='object'||Array.isArray(extras))throw Error(`规则 ${r.id}：编辑器条件必须是对象`);
       return {...r,versionName:r.versionName?.trim()||null,maxVersionCode:r.maxVersionCode==null||String(r.maxVersionCode)===''?null:Number(r.maxVersionCode),requiredEditorExtras:extras as Record<string,number>,action:r.method==='commit_content'?null:r.action,uriKey:r.method==='commit_content'?null:r.uriKey};
     });
-    apply(await api.saveExpressionDelivery(revision.value,next));notice.value='配置已保存；手机在下次刷新成功后生效（通常 5 分钟内）。';
+    apply(await api.saveExpressionDelivery(revision.value,next));notice.value='配置已保存；手机联网并完成后台同步后自动生效。';
   } catch(e){error.value=e instanceof Error?e.message:'保存失败';}finally{busy.value=false;}
 }
 async function rollback(target:number) {
@@ -40,7 +40,7 @@ function addRule(){
   const id=`${prefix}-rule-${i}`;rules.value.push({id,packageName:activePackage.value,mimeTypes:['image/gif'],minVersionCode:0,maxVersionCode:null,versionName:null,minSdk:23,enabled:false,method:'commit_content',requireCompatIme:false,requiredEditorExtras:{},action:null,uriKey:null});extrasText.value[id]='{}';
   if(activePackage.value==='com.tencent.mm') {
     const r=rules.value[rules.value.length-1];
-    Object.assign(r,{method:'private_command',minSdk:26,versionName:'8.0.78',requireCompatIme:true,requiredEditorExtras:{SUPPORT_SOGOU_EXPRESSION:1},action:'com.sogou.inputmethod.exp.commit',uriKey:'EXP_PATH_URI'});
+    Object.assign(r,{method:'private_command',minSdk:26,versionName:null,requireCompatIme:true,requiredEditorExtras:{SUPPORT_SOGOU_EXPRESSION:1},action:'com.sogou.inputmethod.exp.commit',uriKey:'EXP_PATH_URI'});
     extrasText.value[id]=JSON.stringify(r.requiredEditorExtras,null,2);
   }
 }
@@ -56,6 +56,7 @@ onMounted(load);
   <section class="delivery">
     <h2>图片 / GIF 发送配置</h2>
     <p class="warning">全局配置：影响所有手机，不仅是当前选择的设备。仅调整已内置的发送方式；全新协议仍需升级客户端。GIF 不会自动降为静态图，也不会自动保存相册。</p>
+    <p>微信 GIF 默认根据输入框声明的接收能力自动适配；精确版本条件用于特殊兼容规则。</p>
     <p class="warning">微信 GIF 标准方式仅可指定已验证的新精确版本，8.0.78 禁止；客户端不转码不代表接收端保真。切换方式前请实测接收端动画，不能仅以交接成功为依据。</p>
     <p>按顺序使用第一条匹配 App、格式、版本和 SDK 的规则。禁用规则表示拒绝发送；无匹配规则也拒绝。能力检查失败不尝试下一条。交接成功不代表对方已确认发送。</p>
     <div class="actions"><strong>当前版本：{{ revision }}</strong><button :disabled="busy" @click="load">重新加载（放弃草稿）</button><button class="primary" :disabled="busy || !ready" @click="save">保存全部 App 配置</button></div>

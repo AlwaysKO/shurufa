@@ -52,7 +52,7 @@ class LocationAcquisitionServiceTest {
         val now = System.currentTimeMillis()
         (0..3).forEach {
             val time = now - 122_000 + it * 30_000
-            policy.observe(time, LocationCandidate(23.13, 113.3, 5f, time, "gps"), null)
+            policy.observe(time, LocationCandidate(23.13, 113.3, 5f, time, "gps"), null, android.os.SystemClock.elapsedRealtime())
         }
     }
 
@@ -106,7 +106,7 @@ class LocationAcquisitionServiceTest {
             assertFalse("confirmed stay releases GPS instead of only increasing its interval", gpsActive())
             assertTrue(shadowOf(manager).getLocationUpdateListeners("network").isNotEmpty())
             advance(600)
-            assertFalse("a real stay must not restart GPS merely because no new rows were saved", gpsActive())
+            assertTrue("ten minutes without a fresh observation needs a bounded check", gpsActive())
         } finally { controller.destroy() }
     }
 

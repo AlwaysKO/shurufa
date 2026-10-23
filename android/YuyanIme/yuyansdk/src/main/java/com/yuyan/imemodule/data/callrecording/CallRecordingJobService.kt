@@ -64,7 +64,7 @@ class CallRecordingJobService:JobService() {
         private fun scheduler(c:Context)=c.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
         private fun builder(c:Context,id:Int)=JobInfo.Builder(id,ComponentName(c,CallRecordingJobService::class.java))
         fun schedule(context:Context){
-            CallRecordingWifi.observe(context)
+            CallRecordingNetwork.observe(context)
             CallRecordingMediaObserver.observe(context)
             WechatCallUpload.observe(context)
             val s=scheduler(context)
@@ -93,7 +93,7 @@ class CallRecordingJobService:JobService() {
             }
         }
         fun cancel(context:Context){
-            CallRecordingWifi.stop();CallRecordingMediaObserver.stop();WechatCallUpload.stop()
+            CallRecordingNetwork.stop();CallRecordingMediaObserver.stop();WechatCallUpload.stop()
             synchronized(this){
                 scheduler(context).cancel(JOB_ID);scheduler(context).cancel(WAKE_ID);startedWakeToken=null
                 wakeRunning=false;followUpDue=null

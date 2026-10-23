@@ -27,10 +27,27 @@ class ExpressionDeliveryPolicyTest {
         assertEquals("8.0.79", policy.rules.first().versionName)
         assertFalse(policy.rules[1].enabled)
     }
+    @Test fun oldVersionCacheUpgradesAutomaticallyAndHigherRevisionCanRollBack() {
+        val store = ExpressionDeliveryStore(prefs, "https://delivery.example")
+        val legacy = JSONObject(fixture()).put("revision", 1).apply {
+            getJSONArray("rules").getJSONObject(0).put("versionName", "8.0.78")
+        }
+        assertTrue(store.accept(legacy.toString()))
+        assertNull(store.current().match("com.tencent.mm", "image/gif", "8.0.79", 3200, 36))
+        val automatic = JSONObject(fixture()).put("revision", 2).toString()
+        assertTrue(store.accept(automatic))
+        assertNotNull(store.current().match("com.tencent.mm", "image/gif", "8.0.79", 3200, 36))
+        assertFalse(store.accept(legacy.toString()))
+        assertTrue(store.accept(legacy.put("revision", 3).toString()))
+        assertNull(store.current().match("com.tencent.mm", "image/gif", "8.0.79", 3200, 36))
+        assertFalse(store.accept(automatic))
+    }
+
     @Test fun matchingSeparatesAppsVersionsMimeAndAndroidCapabilities() {
         val policy = ExpressionDeliveryPolicy.defaults()
         assertNotNull(policy.match("com.tencent.mm", "image/gif", "8.0.78", 3180, 26))
-        assertNull(policy.match("com.tencent.mm", "image/gif", "8.0.79", 3181, 26))
+        assertNotNull(policy.match("com.tencent.mm", "image/gif", "8.0.79", 3200, 26))
+        assertNotNull(policy.match("com.tencent.mm", "image/gif", "future-version", 9999, 26))
         assertNull(policy.match("com.tencent.mm", "image/gif", "8.0.78", 3180, 25))
         assertEquals("commit_content", policy.match("com.tencent.mobileqq", "image/gif", null, null, 25)!!.method)
         assertNull(policy.match("unknown.app", "image/gif", "1", 1, 35))

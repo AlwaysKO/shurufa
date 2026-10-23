@@ -51,6 +51,22 @@ IDE Run也统一原签名，但testOnly包不复制到分享目录。
 
 ## 兼容与数据边界
 
+### 安装并检查后台设置
+
+需要电脑代安装并自动处理电池优化时，使用下列入口（先连接并授权设备）：
+
+```bash
+python3 android/YuyanIme/tools/install_with_setup.py /完整路径/交付包.apk \
+  --adb /Users/pj/Library/Android/sdk/platform-tools/adb \
+  --build-tools /Users/pj/Library/Android/sdk/build-tools/35.0.0
+```
+
+从项目根目录运行；按本机实际 SDK 版本调整 `--build-tools`，多设备连接时加 `--serial 设备序列号`。Windows 使用相应 Python/adb.exe/SDK 路径。需要可运行的 Java，签名检查沿用本项目交付校验。
+
+入口先验证原签名、非 testOnly 和项目包名，使用 `adb install -r` 覆盖安装，不主动强停、卸载、清数据或降级。只有安装成功后才添加目标应用的电池优化豁免并回读；厂商拒绝配置时明确报告安装已成功而配置未完成。输出中的无障碍启用不等于服务正在连接。
+
+普通 Android Studio 绿色 Run **不会**执行这个脚本；直接 Run 或手机安装 APK 时，由应用设置页在隐私确认和输入法配置后检查剩余项目。设置齐全时更新后不弹；缺项每次安装最多自动提示一次，跳过后可在「其他 → 后台运行设置」继续。电池豁免和无障碍读取系统实际状态；厂商启动管理无通用读取接口，需一次手动确认并保留。不会静默授予无障碍、改变采集开关或反复拉起系统页面。
+
 - 相同包名、相同签名且版本不降级，才能正常覆盖更新；签名统一不保证任何设备无条件安装。
 - 当前APK要求Android 6.0+和ARM64系统。系统管理/安装策略仍可能限制安装。
 - debug/release包名不同，release不能覆盖debug或自动迁移其数据/权限。

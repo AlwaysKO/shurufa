@@ -35,6 +35,19 @@ class SystemRecordingImporterTest {
         val result=importer().scan(listOf(doc),device,target,{true},{f.bytes.inputStream()},{true})
         assertEquals(1,result.imported);assertEquals(1,f.box.tasks().size)
     }
+    @Test fun `电话结束后两秒稳定复制且增长中仍不发布`()=io {
+        for(growing in listOf(false,true)) {
+            val f=Fixture();val ended=f.now
+            val doc=f.doc.copy(modifiedAt=ended)
+            val importer=SystemRecordingImporter(File(f.root,"index"),f.box,
+                {RecordedSystemAudio(60000,"audio/mp4")},{f.now},phoneEndedAt={ended})
+            importer.scan(listOf(doc),device,target,{true},{error("首次不能复制")},{true})
+            f.now+=2000
+            val next=if(growing)doc.copy(size=doc.size+1,modifiedAt=f.now)else doc
+            val result=importer.scan(listOf(next),device,target,{true},{f.bytes.inputStream()},{true})
+            assertEquals(if(growing)0 else 1,result.imported)
+        }
+    }
     @Test fun `微信快速检查仍拒绝增长和复制期间变化且电话维持原稳定期`()=io {
         for(kind in listOf("growing","copy_changed","phone","old_end")) {
             val f=Fixture();val ended=f.now
@@ -94,6 +107,33 @@ class SystemRecordingImporterTest {
         assertArrayEquals(original,f.box.audioFile(task.id).readBytes())
         f.importer().scan(listOf(f.doc),device,target,{true},{error("重复打开原件")},{true})
         assertEquals(1,f.box.tasks().size);assertArrayEquals(original,f.bytes)
+    }
+    @Test fun `复制后删除原件重启及上传失败不丢副本成功回执后才删除`()=io {
+        val f=Fixture();val original=File(f.root,"system-original.m4a").apply{parentFile.mkdirs();writeBytes(f.bytes)}
+        val importer=f.importer()
+        importer.scan(listOf(f.doc),device,target,{true},{original.inputStream()},{original.exists()})
+        f.now+=31000
+        importer.scan(listOf(f.doc),device,target,{true},{original.inputStream()},{original.exists()})
+        val task=f.box.tasks().single()
+        assertTrue(original.delete())
+        val reopened=CallRecordingOutbox(File(f.root,"outbox"))
+        var fail=true
+        val transport=object:CallTransport {
+            override fun receipt(task:CallTask):CallReceipt?=null
+            override fun upload(task:CallTask,file:File,allowed:()->Boolean):CallReceipt {
+                assertArrayEquals(f.bytes,file.readBytes())
+                if(fail)throw java.io.IOException("offline")
+                return CallReceipt(true,task.id,device,task.metadata.byte_size,task.metadata.sha256,"2026-09-30T00:00:00Z")
+            }
+        }
+        CallRecordingUploader(reopened,transport,{true},{target},now={f.now},onSaved=importer::markSaved).runOnce()
+        assertTrue(reopened.audioFile(task.id).exists())
+        assertEquals("failed",reopened.tasks().single().uploadStatus)
+        fail=false;f.now+=120000
+        CallRecordingUploader(reopened,transport,{true},{target},now={f.now},onSaved=importer::markSaved).runOnce()
+        assertEquals("saved",reopened.tasks().single().uploadStatus)
+        assertFalse(reopened.audioFile(task.id).exists())
+        assertFalse(original.exists())
     }
     @Test fun `保存回执后独立索引阻止被清理历史重复上传`()=io {
         val f=Fixture();val importer=f.importer()

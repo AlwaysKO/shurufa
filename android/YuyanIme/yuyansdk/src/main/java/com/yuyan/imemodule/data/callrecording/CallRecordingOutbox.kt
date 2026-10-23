@@ -139,6 +139,7 @@ internal class CallRecordingOutbox(
         val file=audioFile(task.id)
         file.isFile && file.length()==task.metadata.byte_size && sha256(file,allowed)==task.metadata.sha256
     }
+    fun hasSavedReceipt(task:CallTask):Boolean = task.uploadStatus=="saved" && task.receipt?.let{matches(task,it)}==true
     private fun read(id:String):CallTask {
         val atomic=AtomicFile(owned(id,"json"))
         val bytes=atomic.openRead().use{stream->

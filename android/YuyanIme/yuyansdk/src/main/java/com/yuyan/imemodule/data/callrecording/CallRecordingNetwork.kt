@@ -9,8 +9,8 @@ import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 
-/** 扫描与网络无关；仅有效 Wi-Fi 可上传，套接字和 DNS 固定到本次批次的网络。 */
-internal object CallRecordingWifi {
+/** 扫描与网络无关；有效 Wi-Fi 或移动网络均可上传，套接字和 DNS 固定到本次批次的网络。 */
+internal object CallRecordingNetwork {
     private var manager:ConnectivityManager?=null
     private var callback:ConnectivityManager.NetworkCallback?=null
     private var readyNetwork:Network?=null
@@ -18,8 +18,7 @@ internal object CallRecordingWifi {
         val cm=context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return null
         val active=cm.activeNetwork ?: return null
         val caps=cm.getNetworkCapabilities(active) ?: return null
-        active.takeIf{caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) &&
-            caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+        active.takeIf{caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
             caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)}
     }.getOrNull()
     fun client(network:Network):OkHttpClient=OkHttpClient.Builder()
@@ -39,12 +38,12 @@ internal object CallRecordingWifi {
         val listener=object:ConnectivityManager.NetworkCallback(){
             override fun onAvailable(network:Network){changed(app,this)}
             override fun onCapabilitiesChanged(network:Network,capabilities:NetworkCapabilities){changed(app,this)}
-            override fun onLost(network:Network){synchronized(this@CallRecordingWifi){
+            override fun onLost(network:Network){synchronized(this@CallRecordingNetwork){
                 if(callback===this && readyNetwork==network)readyNetwork=null
             }}
         }
         manager=cm;callback=listener
-        try{cm.registerNetworkCallback(NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+        try{cm.registerNetworkCallback(NetworkRequest.Builder()
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).build(),listener)}
         catch(_:Exception){manager=null;callback=null;readyNetwork=null} // 周期扫描仍保留30分钟兜底。
     }

@@ -3,7 +3,6 @@ package com.yuyan.imemodule.data.completion
 import android.content.Context
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.nio.channels.FileChannel
 
 /** 公开原词条的精确成员查询，不参与拼音解码或频率排序。 */
 internal class PublicPhraseIndex(bytes: ByteBuffer) {
@@ -53,11 +52,8 @@ internal class PublicPhraseIndex(bytes: ByteBuffer) {
     }
 
     companion object {
-        private const val ASSET = "completion/public_phrases.t9idx"
-        fun load(context: Context): PublicPhraseIndex = context.assets.openFd(ASSET).use { asset ->
-            asset.createInputStream().use { input ->
-                PublicPhraseIndex(input.channel.map(FileChannel.MapMode.READ_ONLY, asset.startOffset, asset.length))
-            }
-        }
+        fun load(context: Context): PublicPhraseIndex = PublicPhraseIndex(
+            IndexAssetCache.load(context, "public_phrases", "completion/public-phrase-sources/index-manifest.json"),
+        )
     }
 }

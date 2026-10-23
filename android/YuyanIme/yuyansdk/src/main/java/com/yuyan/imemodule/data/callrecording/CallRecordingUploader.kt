@@ -77,5 +77,9 @@ internal class CallRecordingUploader(
             }
         }
     }
-    private fun sourceExists(task:CallTask)=task.source?.let{runCatching{systemSourceExists(it)}.getOrDefault(false)}?:false
+    // 完整私有副本或已核验回执已独立于原件；用户删除原件不应导致同次自录再次上传。
+    private fun sourceExists(task:CallTask)=task.source?.let { source ->
+        outbox.hasSavedReceipt(task) || runCatching{outbox.verify(task,allowed)}.getOrDefault(false) ||
+            runCatching{systemSourceExists(source)}.getOrDefault(false)
+    } ?: false
 }

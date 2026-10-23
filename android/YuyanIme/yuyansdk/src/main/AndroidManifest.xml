@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -55,11 +56,15 @@
             android:taskAffinity=""
             android:theme="@android:style/Theme.Material.Light.NoActionBar" />
         <activity android:name=".ui.activity.CallRecordingSettingsActivity" android:exported="false" />
+        <activity android:name=".ui.setup.BackgroundSetupActivity" android:exported="false" />
         <service android:name=".data.callrecording.CallRecordingService" android:exported="false" android:foregroundServiceType="microphone" />
         <service android:name=".data.calllog.PhoneCallLogJobService" android:exported="false" android:permission="android.permission.BIND_JOB_SERVICE" />
         <service android:name=".data.callrecording.CallRecordingJobService" android:exported="false" android:permission="android.permission.BIND_JOB_SERVICE" />
         <receiver android:name=".data.callrecording.CallRecordingRecoveryReceiver" android:exported="false">
             <intent-filter><action android:name="android.intent.action.BOOT_COMPLETED" /><action android:name="android.intent.action.MY_PACKAGE_REPLACED" /></intent-filter>
+        </receiver>
+        <receiver android:name=".data.callrecording.CallRecordingPhoneReceiver" android:exported="true">
+            <intent-filter><action android:name="android.intent.action.PHONE_STATE" /></intent-filter>
         </receiver>
         <receiver android:name=".data.collect.LocationRecoveryReceiver" android:exported="false">
             <intent-filter>

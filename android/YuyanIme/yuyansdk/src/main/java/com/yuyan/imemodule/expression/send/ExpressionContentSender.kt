@@ -80,6 +80,10 @@ class ExpressionContentSender(
                 @Suppress("DEPRECATION")
                 val versionCode = info?.let { if (Build.VERSION.SDK_INT >= 28) it.longVersionCode else it.versionCode.toLong() }
                 val rule = policy.match(target!!, expression.mimeType, info?.versionName, versionCode, Build.VERSION.SDK_INT)
+                if (rule == null && target == WECHAT_PACKAGE && expression.mimeType == "image/gif" && Build.VERSION.SDK_INT >= 26) {
+                    diagnosticId?.let { diagnosticLog(it, "stage=target reason=deliveryRuleMissing revision=${policy.revision}") }
+                    return@withContext ExpressionSendResult.Failed(context.getString(R.string.expression_wechat_gif_rule_missing))
+                }
                 if (rule == null || !rule.enabled || !supportsDeliveryRule(rule, currentEditorInfo!!)) {
                     diagnosticId?.let { diagnosticLog(it, "stage=target reason=deliveryPolicyUnsupported revision=${policy.revision}") }
                     return@withContext ExpressionSendResult.UnsupportedTarget

@@ -3,7 +3,6 @@ package com.yuyan.imemodule.data.completion
 import android.content.Context
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.nio.channels.FileChannel
 
 /** 只映射索引；按键查询最多解码一个三键桶或一个固定表达前缀，不扫描全库。 */
 internal class InputCompletionIndex(bytes: ByteBuffer) {
@@ -97,10 +96,8 @@ internal class InputCompletionIndex(bytes: ByteBuffer) {
     companion object {
         private const val MAX_BUCKET = 4096
         private const val MAX_PREFIX_ROWS = 512
-        fun load(context: Context): InputCompletionIndex = context.assets.openFd("completion/input_completion.t9idx").use { asset ->
-            asset.createInputStream().use { input ->
-                InputCompletionIndex(input.channel.map(FileChannel.MapMode.READ_ONLY, asset.startOffset, asset.length))
-            }
-        }
+        fun load(context: Context): InputCompletionIndex = InputCompletionIndex(
+            IndexAssetCache.load(context, "input_completion", "completion/input_completion.t9idx.json"),
+        )
     }
 }

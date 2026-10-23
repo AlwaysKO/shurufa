@@ -87,6 +87,26 @@ class CallRecordingUploadRecoveryTest {
             assertFalse(CallRecordingService.isRunning)
         }
     }
+    @Test fun `微信结束断网也立即执行本地导入检查`() {
+        shadowOf(manager).setActiveNetworkInfo(null)
+        CallRecordingJobService.schedule(context)
+        WechatCallUpload.finished(context)
+        val deadline=System.nanoTime()+3_000_000_000L
+        while(CallRecordingRuntime.preferences(context).getString("system_scan_wechat",null)==null && System.nanoTime()<deadline)Thread.sleep(10)
+        assertNotNull("本地复制检查不应等WiFi",CallRecordingRuntime.preferences(context).getString("system_scan_wechat",null))
+        assertFalse(CallRecordingService.isRunning)
+    }
+    @Test fun `已复制队列超过七天仍保留并安排失败补传`()=io {
+        val box=CallRecordingRuntime.outbox(context)
+        val(id,file)=box.createAudioFile();file.writeText("old private audio")
+        val old=System.currentTimeMillis()-8*86400000L
+        val task=box.enqueue(id,DataCollector.deviceId(context),CallMetadata(destination=ServerConfig.baseUrl,
+            recording_started_at=old-60000,recording_ended_at=old,audio_duration_ms=60000),
+            source=SystemRecordingSource("content://media/external/audio/media/9",file.length(),old,false))
+        box.markAttempt(task.id);box.fail(task.id,System.currentTimeMillis(),"network_error")
+        assertNotNull(CallRecordingRuntime.runUploadsWithRetry(context){true})
+        assertTrue(file.exists());assertEquals(1,box.tasks().single().attempts)
+    }
     @Test fun `系统录音失败按已记录退避时间安排重试而非等三十分钟`()=io {
         val task=pending();val box=CallRecordingRuntime.outbox(context)
         box.markAttempt(task.id);box.fail(task.id,System.currentTimeMillis(),"network_error")
@@ -136,10 +156,10 @@ class CallRecordingUploadRecoveryTest {
         assertNull(CallRecordingRuntime.runUploadsWithRetry(context){true})
         assertTrue(box.audioFile(task.id).exists())
     }
-    @Test fun `流量和断网待传不产生短轮询且撤权也不重试`()=io {
+    @Test fun `流量待传仍预约重试而断网或撤权不空转`()=io {
         pending();ImageUploadRuntime.noteKeyActivity()
         network(wifi=false)
-        assertNull(CallRecordingRuntime.runUploadsWithRetry(context){true})
+        assertNotNull(CallRecordingRuntime.runUploadsWithRetry(context){true})
         shadowOf(manager).setActiveNetworkInfo(null)
         assertNull(CallRecordingRuntime.runUploadsWithRetry(context){true})
         network();CallRecordingRuntime.consent(context).revokeUpload()

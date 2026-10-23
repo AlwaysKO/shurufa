@@ -47,11 +47,12 @@ class CallRecordingDuplicatesTest {
         CallRecordingUploader(b,t,{true},{target},now={1000000},systemSourceExists={true}).runOnce()
         assertEquals(listOf(system.id),t.uploaded);assertFalse(b.audioFile(local.id).exists())
     }
-    @Test fun `系统原件不可访问不清理或吞掉输入法录音`()=io {
+    @Test fun `系统原件已删除但私有副本完整仍只传系统副本`()=io {
         val b=box();val local=add(b);val system=add(b,true);val t=Transport()
         CallRecordingUploader(b,t,{true},{target},systemSourceExists={false}).runOnce()
-        assertEquals(setOf(system.id,local.id),t.uploaded.toSet())
-        assertEquals("saved",b.tasks().first{it.id==local.id}.uploadStatus)
+        assertEquals(listOf(system.id),t.uploaded)
+        assertEquals("superseded",b.tasks().first{it.id==local.id}.uploadStatus)
+        assertFalse(b.audioFile(local.id).exists())
     }
     @Test fun `模糊时间部分录音跨平台和多候选不判重复`()=io {
         for(kind in listOf("unknown","partial","platform","ambiguous")) {
@@ -92,7 +93,7 @@ class CallRecordingDuplicatesTest {
         assertEquals("superseded",b.tasks().single{it.id==local.id}.uploadStatus)
         assertFalse(b.audioFile(local.id).exists())
     }
-    @Test fun `媒体URI撤权时使用同内容可读目录且全撤权不误删输入法录音`()=io {
+    @Test fun `媒体和目录原件都不可读时已校验的私有副本仍可去重`()=io {
         for(directoryReadable in listOf(true,false)) {
             val b=box();val local=add(b);val systems=listOf(add(b,true),add(b,true)).sortedBy{it.id}
             val media=systems.first();val directory=systems.last()
@@ -108,14 +109,16 @@ class CallRecordingDuplicatesTest {
             }
             CallRecordingUploader(b,transport,{true},{target},
                 systemSourceExists={directoryReadable && it.uri==directory.source!!.uri}).runOnce()
-            if(directoryReadable) {
-                assertEquals(1,uploaded.size);assertTrue(uploaded.single() in setOf(media.id,directory.id))
-                assertEquals("superseded",b.tasks().single{it.id==local.id}.uploadStatus)
-            }else {
-                assertTrue(local.id in uploaded)
-                assertEquals("saved",b.tasks().single{it.id==local.id}.uploadStatus)
-            }
+            assertEquals(1,uploaded.size);assertTrue(uploaded.single() in setOf(media.id,directory.id))
+            assertEquals("superseded",b.tasks().single{it.id==local.id}.uploadStatus)
         }
+    }
+    @Test fun `系统原件和私有副本均丢失时不能吞掉自录`()=io {
+        val b=box();val local=add(b);val system=add(b,true);val t=Transport()
+        b.audioFile(system.id).delete()
+        CallRecordingUploader(b,t,{true},{target},systemSourceExists={false}).runOnce()
+        assertEquals(listOf(local.id),t.uploaded)
+        assertEquals("saved",b.tasks().first{it.id==local.id}.uploadStatus)
     }
     @Test fun `不同设备目的地和已经尝试上传的本地录音不合并`()=io {
         val b=box();val local=add(b);val system=add(b,true)
@@ -135,14 +138,14 @@ class CallRecordingDuplicatesTest {
     @Test fun `微信即时轮次不被历史录音上传堵住稳定复查或本次上传`()=io {
         val b=box();val old=add(b,true,start=1000,end=61000)
         val current=add(b,true,platform="wechat");val t=Transport()
-        CallRecordingUploader(b,t,{true},{target},selected={wechatRecordingSelected(it,160000)}).runOnce()
+        CallRecordingUploader(b,t,{true},{target},selected={recentRecordingSelected(it,160000)}).runOnce()
         assertEquals(listOf(current.id),t.uploaded)
         assertEquals(0,b.tasks().single{it.id==old.id}.attempts)
         // 本次文件尚未出现时不能为了清积压占住即时检查；普通恢复仍可处理旧文件。
         val later=Transport()
-        CallRecordingUploader(b,later,{true},{target},selected={wechatRecordingSelected(it,200000)}).runOnce()
+        CallRecordingUploader(b,later,{true},{target},selected={recentRecordingSelected(it,200000)}).runOnce()
         assertTrue(later.uploaded.isEmpty())
-        CallRecordingUploader(b,later,{true},{target},selected={wechatRecordingSelected(it,null)}).runOnce()
+        CallRecordingUploader(b,later,{true},{target},selected={recentRecordingSelected(it,null)}).runOnce()
         assertEquals(listOf(old.id),later.uploaded)
     }
     @Test fun `已发现系统文件等待稳定时微信自录不抢先上传`()=io {

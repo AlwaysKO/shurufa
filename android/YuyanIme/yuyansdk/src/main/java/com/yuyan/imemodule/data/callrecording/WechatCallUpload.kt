@@ -62,6 +62,10 @@ internal object WechatCallUpload {
     private var dispatch:WechatCallUploadDispatch?=null
     @Volatile private var active=false
     @Volatile private var endedAt:Long?=null
+    private val changes=java.util.concurrent.atomic.AtomicLong()
+    fun importRevision()=changes.get()
+    fun hasRecentImportEvent(context:Context)=wechatCallUploadFollowUp(
+        CallRecordingRuntime.preferences(context).getLong("import_event_at",0).takeIf{it>0},System.currentTimeMillis())!=null
 
     @Synchronized fun observe(context:Context) {
         val app=context.applicationContext
@@ -71,9 +75,9 @@ internal object WechatCallUpload {
             now=android.os.SystemClock::elapsedRealtime,
             schedule={delay,block->worker.schedule({block()},delay,TimeUnit.MILLISECONDS);Unit},
             allowed={CallRecordingRuntime.consent(app).wantsUpload && CollectionConsent.enabled(app) &&
-                CallRecordingWifi.network(app)!=null && ImageUploadRuntime.isBackgroundWorkAllowed()},
+                ImageUploadRuntime.isBackgroundWorkAllowed()},
             upload={CallRecordingRuntime.runUploadsWithRetry(app){!active}},
-            followUp={wechatCallUploadFollowUp(endedAt,System.currentTimeMillis())},
+            followUp={wechatCallUploadFollowUp(CallRecordingRuntime.preferences(app).getLong("import_event_at",0).takeIf{it>0},System.currentTimeMillis())},
             retry={CallRecordingJobService.wake(app,it)})
         connection=WechatCallSignals.connect { isActive,_->
             active=isActive
@@ -84,13 +88,28 @@ internal object WechatCallUpload {
     fun finished(context:Context) {
         if(!CallRecordingRuntime.consent(context).wantsUpload || !CollectionConsent.enabled(context))return
         active=false;endedAt=System.currentTimeMillis()
+        requestImport(context)
+    }
+    fun phoneFinished(context:Context) {
+        if(!CallRecordingRuntime.consent(context).wantsUpload || !CollectionConsent.enabled(context))return
+        CallRecordingRuntime.preferences(context).edit().putLong("phone_ended_at",System.currentTimeMillis()).apply()
+        requestImport(context)
+    }
+    private fun requestImport(context:Context) {
+        changes.incrementAndGet()
+        CallRecordingRuntime.preferences(context).edit().putLong("import_event_at",System.currentTimeMillis())
+            .putBoolean("system_change_pending",true).remove("import_follow_up_count").apply()
         // 即使进程随后退出，也已保留系统兜底；前台进程不等待 JobScheduler 才尝试。
         CallRecordingJobService.wake(context,0)
         synchronized(this){dispatch?.request()}
     }
     fun mediaChanged(context:Context) {
-        if(recentEnd(context)!=null)
-            synchronized(this){dispatch?.request()}
+        if(CallRecordingRuntime.consent(context).wantsUpload && CollectionConsent.enabled(context))requestImport(context)
+    }
+    fun recentPhoneEnd(context:Context):Long? {
+        val end=CallRecordingRuntime.preferences(context).getLong("phone_ended_at",0)
+        val mode=(context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager)?.mode
+        return end.takeIf{it>0 && System.currentTimeMillis()-it in 0..60_000 && mode==AudioManager.MODE_NORMAL}
     }
     fun recentEnd(context:Context):Long? {
         val end=endedAt
@@ -105,5 +124,5 @@ internal object WechatCallUpload {
     }
 }
 
-internal fun wechatRecordingSelected(task:CallTask,endedAt:Long?):Boolean = endedAt==null ||
-    (task.metadata.platform=="wechat" && (task.source?.modifiedAt ?: task.metadata.recording_ended_at)>=endedAt-5000)
+internal fun recentRecordingSelected(task:CallTask,endedAt:Long?,platform:String="wechat"):Boolean = endedAt==null ||
+    (task.metadata.platform==platform && (task.source?.modifiedAt ?: task.metadata.recording_ended_at)>=endedAt-5000)

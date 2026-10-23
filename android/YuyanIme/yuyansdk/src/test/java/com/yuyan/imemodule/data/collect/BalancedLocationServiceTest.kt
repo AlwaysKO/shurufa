@@ -64,7 +64,7 @@ class BalancedLocationServiceTest {
             val policy = org.robolectric.util.ReflectionHelpers.getField<BalancedLocationPolicy>(service, "policy")
             for (i in 0..4) {
                 val time = now - 180_000 + i * 30_000
-                policy.observe(time, LocationCandidate(23.13, 113.3, 5f, time, "gps"), null)
+                policy.observe(time, LocationCandidate(23.13, 113.3, 5f, time, "gps"), null, android.os.SystemClock.elapsedRealtime())
             }
             assertEquals(300_000L, policy.intervalMs)
             val move = Location("gps").apply {
@@ -171,7 +171,7 @@ class BalancedLocationServiceTest {
             val policy = org.robolectric.util.ReflectionHelpers.getField<BalancedLocationPolicy>(service, "policy")
             (0..3).forEach {
                 val time = now - 122_000 + it * 30_000
-                policy.observe(time, LocationCandidate(23.13, 113.3, 15f, time), null)
+                policy.observe(time, LocationCandidate(23.13, 113.3, 15f, time), null, android.os.SystemClock.elapsedRealtime())
             }
             lm.getLocationUpdateListeners(LocationManager.GPS_PROVIDER).single().onLocationChanged(Location("gps").apply {
                 latitude = 23.13; longitude = 113.3; accuracy = 15f; time = now - 2_000
@@ -211,7 +211,7 @@ class BalancedLocationServiceTest {
             val policy = org.robolectric.util.ReflectionHelpers.getField<BalancedLocationPolicy>(service, "policy")
             (0..3).forEach {
                 val time = now - 122_000 + it * 30_000
-                policy.observe(time, LocationCandidate(23.13, 113.3, 15f, time), null)
+                policy.observe(time, LocationCandidate(23.13, 113.3, 15f, time), null, android.os.SystemClock.elapsedRealtime())
             }
             lm.getLocationUpdateListeners(LocationManager.GPS_PROVIDER).single().onLocationChanged(Location("gps").apply {
                 latitude = 23.13; longitude = 113.3; accuracy = 15f; time = now - 2_000
@@ -356,7 +356,7 @@ class BalancedLocationServiceTest {
         val policy = org.robolectric.util.ReflectionHelpers.getField<BalancedLocationPolicy>(service, "policy")
         (0..3).forEach {
             val time = now - 122_000 + it * 30_000
-            policy.observe(time, LocationCandidate(23.13, 113.3, 15f, time), null)
+            policy.observe(time, LocationCandidate(23.13, 113.3, 15f, time), null, android.os.SystemClock.elapsedRealtime())
         }
         sample(23.13, now - 2_000)
         assertTrue(lm.getLocationUpdateListeners(LocationManager.GPS_PROVIDER).isEmpty())
@@ -388,7 +388,7 @@ class BalancedLocationServiceTest {
             val policy = org.robolectric.util.ReflectionHelpers.getField<BalancedLocationPolicy>(service, "policy")
             (0..3).forEach {
                 val time = now - 122_000 + it * 30_000
-                policy.observe(time, LocationCandidate(23.13, 113.3, 15f, time), null)
+                policy.observe(time, LocationCandidate(23.13, 113.3, 15f, time), null, android.os.SystemClock.elapsedRealtime())
             }
             fun sample(latitude: Double, time: Long) {
                 val location = Location("gps").apply {

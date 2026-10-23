@@ -46,7 +46,7 @@ class LocationMotionWakeTest {
         val policy = ReflectionHelpers.getField<BalancedLocationPolicy>(service, "policy")
         val now = System.currentTimeMillis()
         (0..4).forEach { policy.observe(now - 180_000 + it * 30_000,
-            LocationCandidate(23.1, 113.3, 5f, now - 180_000 + it * 30_000, "gps"), null) }
+            LocationCandidate(23.1, 113.3, 5f, now - 180_000 + it * 30_000, "gps"), null, android.os.SystemClock.elapsedRealtime()) }
         assertTrue(policy.isStationary)
         ReflectionHelpers.callInstanceMethod<Void>(service, "updateGpsRequest", ReflectionHelpers.ClassParameter.from(Boolean::class.javaPrimitiveType, false))
         assertTrue(shadowOf(manager).getLocationUpdateListeners("gps").isEmpty())
@@ -70,7 +70,14 @@ class LocationMotionWakeTest {
             assertTrue(shadowOf(manager).getLocationUpdateListeners("gps").isEmpty())
             assertNull(MotionSensorShadow.listener)
             shadowOf(android.os.Looper.getMainLooper()).idleFor(Duration.ofSeconds(60))
-            assertNotNull("rearm after bounded confirmation cooldown", MotionSensorShadow.listener)
+            assertTrue(shadowOf(manager).getLocationUpdateListeners("gps").isEmpty())
+            shadowOf(android.os.Looper.getMainLooper()).idleFor(Duration.ofSeconds(420))
+            assertEquals("recovery does not wait for another motion event", 1,
+                shadowOf(manager).getLocationUpdateListeners("gps").size)
+            assertNull("active recovery releases the one-shot motion sensor", MotionSensorShadow.listener)
+            shadowOf(android.os.Looper.getMainLooper()).idleFor(Duration.ofSeconds(120))
+            assertTrue(shadowOf(manager).getLocationUpdateListeners("gps").isEmpty())
+            assertNull("unconfirmed shaking stays subject to cooldown", MotionSensorShadow.listener)
         } finally { c.destroy() }
     }
     @Test fun enabledFreshStepsStartGpsButOneStepAndDisabledAssistanceDoNot() {

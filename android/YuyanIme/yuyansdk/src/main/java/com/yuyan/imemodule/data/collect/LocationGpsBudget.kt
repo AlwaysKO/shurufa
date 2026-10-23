@@ -32,10 +32,13 @@ internal class LocationGpsBudget {
             return
         }
         if (deadline?.let { elapsedMs >= it } == true) {
+            val expiredAt = requireNotNull(deadline)
             deadline = null
-            retryAt = elapsedMs + BACKOFF[minOf(failures, BACKOFF.lastIndex)]
+            retryAt = expiredAt + BACKOFF[minOf(failures, BACKOFF.lastIndex)]
             failures++
-            return
+            // A delayed wake may already be past the cooldown. Use this wake to
+            // acquire one fresh bounded lease, never replay missed attempts.
+            if (elapsedMs < requireNotNull(retryAt)) return
         }
         val early = deadline == null && retryAt != null && elapsedMs < requireNotNull(retryAt) && trustedMotion && !earlyMotionUsed
         if (early) earlyMotionUsed = true

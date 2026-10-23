@@ -4,8 +4,7 @@ plugins {
 }
 
 android {
-    // 整词索引直接映射APK，避免启动时解压并加载百万词字符串。
-    androidResources { noCompress += ["t9idx"] }
+    // 词库索引随APK压缩，后台校验展开后仍以mmap查询；不在按键时解压。
     compileSdk 36
     namespace 'com.yuyan'
     defaultConfig {

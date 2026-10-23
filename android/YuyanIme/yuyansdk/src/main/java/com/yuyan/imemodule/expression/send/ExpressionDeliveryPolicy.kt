@@ -38,8 +38,9 @@ data class ExpressionDeliveryPolicy(val revision: Long, val rules: List<Expressi
         private val ruleKeys = setOf("id", "packageName", "mimeTypes", "minVersionCode", "maxVersionCode",
             "versionName", "minSdk", "enabled", "method", "requireCompatIme", "requiredEditorExtras", "action", "uriKey")
         fun defaults() = ExpressionDeliveryPolicy(0, listOf(
+            // 以当前输入框声明的协议能力协商，不因宿主版本名变化阻断同一协议。
             ExpressionDeliveryRule("wechat-gif", "com.tencent.mm", listOf("image/gif"),
-                versionName = "8.0.78", minSdk = 26, method = "private_command", requireCompatIme = true,
+                minSdk = 26, method = "private_command", requireCompatIme = true,
                 requiredEditorExtras = mapOf("SUPPORT_SOGOU_EXPRESSION" to 1),
                 action = "com.sogou.inputmethod.exp.commit", uriKey = "EXP_PATH_URI"),
             ExpressionDeliveryRule("wechat-static", "com.tencent.mm", mimes.drop(1)),

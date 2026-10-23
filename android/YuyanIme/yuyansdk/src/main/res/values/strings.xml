@@ -233,6 +233,7 @@
     <string name="expression_copy_image">复制图片</string>
     <string name="expression_cancel">取消</string>
     <string name="expression_chat_image_unsupported">当前聊天不支持图片输入</string>
+    <string name="expression_wechat_gif_rule_missing">当前微信暂无可用的 GIF 发送规则，兼容配置会自动更新</string>
     <string name="expression_target_image_unsupported">当前应用不支持图片发送</string>
     <string name="expression_image_expired">待发送图片已失效</string>
     <string name="expression_image_send_failed">图片发送失败</string>

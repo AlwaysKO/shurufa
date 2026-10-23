@@ -117,6 +117,22 @@ class WechatGifCommandTest {
         assertNull(sent.data!!.getParcelable<Uri>("EXP_PATH_URI"))
     }
 
+    @Test fun configuredWechat79UsesOriginalGifCommandAndBytes() = runSending {
+        installDeliveryConfig()
+        val authority = com.yuyan.imemodule.data.collect.ServerConfig.baseUrl
+        val prefs = context.getSharedPreferences("expression_delivery", 0)
+        val raw = prefs.getString("config:$authority", null)!!
+            .replace("com.example.updated.commit", "com.sogou.inputmethod.exp.commit")
+            .replace("NEW_GIF_URI", "EXP_PATH_URI")
+        prefs.edit().putString("config:$authority", raw).commit()
+        val sent = deliver(version = "8.0.79")
+        assertEquals(ExpressionSendResult.WechatSubmitted, sent.result)
+        assertEquals("com.sogou.inputmethod.exp.commit", sent.command)
+        val uri = sent.data!!.getParcelable<Uri>("EXP_PATH_URI")!!
+        assertEquals("image/gif", context.contentResolver.getType(uri))
+        assertArrayEquals(sent.file.readBytes(), context.contentResolver.openInputStream(uri)!!.use { it.readBytes() })
+    }
+
     @Test fun disabledCachedPolicyRejectsWithoutFallbackOrGrant() = runSending {
         installDeliveryConfig(version = "8.0.78", enabled = false)
         val sent = deliver()
@@ -284,8 +300,22 @@ class WechatGifCommandTest {
         assertEquals(ExpressionSendResult.UnsupportedTarget, result.result)
         assertNull(result.command); assertNull(result.granted)
     }
-    @Test fun unknownWechatVersionDoesNotGuessCompatibility() = runSending {
+    @Test fun declaredGifProtocolWorksAcrossVersionNames() = runSending {
+        for (version in listOf("8.0.79", "9.0.0", "future-version")) {
+            val result = deliver(version = version)
+            assertEquals(ExpressionSendResult.WechatSubmitted, result.result)
+            assertEquals("com.sogou.inputmethod.exp.commit", result.command)
+            assertNotNull(result.data!!.getParcelable<Uri>("EXP_PATH_URI"))
+        }
+    }
+    @Test fun missingConfiguredRouteExplainsAutomaticCompatibilityUpdates() = runSending {
+        installDeliveryConfig(version = "8.0.78")
         val result = deliver(version = "8.0.79")
+        assertEquals(ExpressionSendResult.Failed("当前微信暂无可用的 GIF 发送规则，兼容配置会自动更新"), result.result)
+        assertNull(result.command); assertNull(result.granted)
+    }
+    @Test fun newVersionWithoutDeclaredCapabilityDoesNotSendOrGrant() = runSending {
+        val result = deliver(version = "9.0.0", capability = 0)
         assertEquals(ExpressionSendResult.UnsupportedTarget, result.result)
         assertNull(result.command); assertNull(result.granted)
     }

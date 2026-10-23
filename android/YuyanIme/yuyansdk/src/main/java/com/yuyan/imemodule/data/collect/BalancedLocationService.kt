@@ -58,6 +58,7 @@ class BalancedLocationService : Service() {
     private lateinit var manager: LocationManager
     private lateinit var preferences: SharedPreferences
     private var started = false
+    private lateinit var elapsedWakeup: LocationElapsedWakeup
     private var motionListener: TriggerEventListener? = null
     private var stepListener: SensorEventListener? = null
     private val motionRearm = Runnable { updateMotionSensor() }
@@ -69,10 +70,6 @@ class BalancedLocationService : Service() {
         val elapsed = SystemClock.elapsedRealtime()
         if (policy.beginMotionProbe(elapsed)) {
             registerUpdates()
-            if (started) policy.confirmationDelayMs(elapsed)?.let {
-                handler.removeCallbacks(confirmationTimeout)
-                handler.postDelayed(confirmationTimeout, it)
-            }
         } else updateMotionSensor()
     }
 
@@ -161,17 +158,7 @@ class BalancedLocationService : Service() {
     }
     private var activeListener: LocationListener? = null
     private var passiveListener: LocationListener? = null
-    private val confirmationTimeout = Runnable {
-        if (started) {
-            if (!allowed()) finishSession()
-            else {
-                val oldInterval = policy.intervalMs
-                policy.endConfirmation(SystemClock.elapsedRealtime())
-                if (oldInterval != policy.intervalMs) registerUpdates()
-                else updateGpsRequest()
-            }
-        }
-    }
+    private val confirmationTimeout = Runnable { reconcileElapsedDeadlines() }
     private val preferenceListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         if (started) {
             if (!allowed()) finishSession()
@@ -188,6 +175,7 @@ class BalancedLocationService : Service() {
     override fun onCreate() {
         super.onCreate()
         manager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        elapsedWakeup = LocationElapsedWakeup(this, handler, ::reconcileElapsedDeadlines)
         preferences = PreferenceManager.getDefaultSharedPreferences(this)
         preferences.registerOnSharedPreferenceChangeListener(preferenceListener)
         appOps = getSystemService(Context.APP_OPS_SERVICE) as? AppOpsManager
@@ -267,6 +255,7 @@ class BalancedLocationService : Service() {
         fixSelection.offer(System.currentTimeMillis(), elapsed, location)
         handler.removeCallbacks(selectionTimeout)
         fixSelection.delayMs(elapsed)?.let { handler.postDelayed(selectionTimeout, it) }
+        scheduleElapsedWakeup()
     }
 
     private fun observeSelectedLocation(observation: ReceivedLocation) {
@@ -277,16 +266,13 @@ class BalancedLocationService : Service() {
             if (location.hasAccuracy()) location.accuracy else Float.POSITIVE_INFINITY, location.time,
             location.provider, location.elapsedRealtimeNanos, location.isKnownCachedFix())
         val motionSpeed = LocationSpeedQuality.from(location).motionSpeedMps
-        val qualified = policy.observe(observation.receivedAtMs, candidate, motionSpeed, SystemClock.elapsedRealtime())
+        val qualified = policy.observe(observation.receivedAtMs, candidate, motionSpeed, SystemClock.elapsedRealtime(),
+            observation.receivedElapsedMs)
         if (qualified) gpsBudget.observe(candidate, observation.receivedElapsedMs)
         DataCollector.reportBalancedLocation(this, location, observation.receivedAtMs)
         val trustedMotion = qualified && motionSpeed != null
         if (oldInterval != policy.intervalMs) registerUpdates(trustedMotion)
         else updateGpsRequest(trustedMotion)
-        handler.removeCallbacks(confirmationTimeout)
-        if (started) policy.confirmationDelayMs(SystemClock.elapsedRealtime())?.let {
-            handler.postDelayed(confirmationTimeout, it)
-        }
     }
 
     private fun observeNetwork() {
@@ -413,6 +399,31 @@ class BalancedLocationService : Service() {
             gpsTimer = task
             handler.postDelayed(task, (next - SystemClock.elapsedRealtime()).coerceAtLeast(1L))
         }
+        scheduleElapsedWakeup()
+    }
+
+    private fun scheduleElapsedWakeup() {
+        handler.removeCallbacks(confirmationTimeout)
+        if (!started) { elapsedWakeup.cancel(); return }
+        val now = SystemClock.elapsedRealtime()
+        val motionDelay = listOfNotNull(policy.confirmationDelayMs(now), policy.recoveryDelayMs(now)).minOrNull()
+        motionDelay?.let { handler.postDelayed(confirmationTimeout, it) }
+        val deadlines = listOfNotNull(gpsBudget.nextAt(),
+            motionDelay?.let { now + it },
+            fixSelection.delayMs(now)?.let { now + it },
+            policy.motionProbeDelayMs(now).takeIf { policy.isStationary && it > 0 }?.let { now + it })
+        elapsedWakeup.schedule(deadlines.minOrNull())
+    }
+
+    private fun reconcileElapsedDeadlines() {
+        if (!started || !allowed()) { finishSession(); return }
+        val now = SystemClock.elapsedRealtime()
+        if (fixSelection.delayMs(now) == 0L) flushSelectedLocation()
+        if (!started) return
+        val oldInterval = policy.intervalMs
+        if (policy.confirmationDelayMs(now) == 0L) policy.endConfirmation(now)
+        policy.beginRecovery(now)
+        if (oldInterval != policy.intervalMs) registerUpdates() else updateGpsRequest()
     }
 
     private fun removeGpsUpdates() {
@@ -430,6 +441,7 @@ class BalancedLocationService : Service() {
         val owned = started
         if (owned) CaptureHistory.record(this, CaptureHistoryEvent.LOCATION_STOPPED)
         started = false
+        elapsedWakeup.cancel()
         updateMotionSensor()
         session++
         gpsTimer?.let(handler::removeCallbacks)
@@ -452,6 +464,7 @@ class BalancedLocationService : Service() {
         if (locationStateRegistered) unregisterReceiver(locationStateReceiver)
         locationStateRegistered = false
         finishSession()
+        elapsedWakeup.close()
         super.onDestroy()
     }
 

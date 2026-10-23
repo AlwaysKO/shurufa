@@ -15,7 +15,7 @@ const record = (v: unknown): v is Record<string, unknown> => v !== null && typeo
 export function defaultDeliveryConfig(): DeliveryConfig {
   const standard = (id: string, packageName: string, mimeTypes = [...DELIVERY_MIMES]): DeliveryRule => ({ id, packageName, mimeTypes, minVersionCode: 0, maxVersionCode: null, versionName: null, minSdk: 23, enabled: true, method: 'commit_content', requireCompatIme: false, requiredEditorExtras: {}, action: null, uriKey: null });
   return { schemaVersion: 1, revision: 0, rules: [
-    { ...standard('wechat-gif', DELIVERY_PACKAGES[0], ['image/gif']), versionName: '8.0.78', minSdk: 26, method: 'private_command', requireCompatIme: true, requiredEditorExtras: { SUPPORT_SOGOU_EXPRESSION: 1 }, action: 'com.sogou.inputmethod.exp.commit', uriKey: 'EXP_PATH_URI' },
+    { ...standard('wechat-gif', DELIVERY_PACKAGES[0], ['image/gif']), minSdk: 26, method: 'private_command', requireCompatIme: true, requiredEditorExtras: { SUPPORT_SOGOU_EXPRESSION: 1 }, action: 'com.sogou.inputmethod.exp.commit', uriKey: 'EXP_PATH_URI' },
     standard('wechat-static', DELIVERY_PACKAGES[0], DELIVERY_MIMES.filter(m => m !== 'image/gif')),
     standard('qq-content', DELIVERY_PACKAGES[1]), standard('douyin-content', DELIVERY_PACKAGES[2]),
   ] };

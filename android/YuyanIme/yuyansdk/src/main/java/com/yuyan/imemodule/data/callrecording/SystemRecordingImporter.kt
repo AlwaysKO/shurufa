@@ -22,6 +22,7 @@ internal class SystemRecordingImporter(
     private val inspect:(File)->RecordedSystemAudio?=::inspectSystemRecording,
     private val now:()->Long=System::currentTimeMillis,
     private val wechatEndedAt:()->Long?={null},
+    private val phoneEndedAt:()->Long?={null},
 ) {
     @Serializable private data class Entry(val observedAt:Long,val taskId:String?=null,val complete:Boolean=false)
     private val json=Json{encodeDefaults=true;ignoreUnknownKeys=true}
@@ -58,11 +59,11 @@ internal class SystemRecordingImporter(
                 if(entry.complete)continue
                 val existing=entry.taskId?.let{tasks[it]}
                 if(existing!=null){if(existing.uploadStatus in listOf("saved","superseded"))markSaved(existing);continue}
-                // 只有近期明确结束的微信通话缩短稳定期；仍需两次一致及复制前后核验。
-                val end=wechatEndedAt()
-                val recentWechat=doc.platform=="wechat" && end!=null && now()-end in 0..60_000 &&
+                // 近期明确结束才缩短稳定期；仍需两次一致及复制前后核验。
+                val end=if(doc.platform=="wechat")wechatEndedAt()else phoneEndedAt()
+                val recentEnd=end!=null && now()-end in 0..60_000 &&
                     doc.modifiedAt in (end-5000)..now()
-                val stableMillis=if(recentWechat)2000L else 30_000L
+                val stableMillis=if(recentEnd)2000L else 30_000L
                 if(now()-entry.observedAt<stableMillis || now()-doc.modifiedAt<stableMillis){waiting++;continue}
                 if(!current(doc)){waiting++;continue}
                 if(entry.taskId==null) {

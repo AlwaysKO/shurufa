@@ -87,10 +87,20 @@ open class SettingsActivity : AppCompatActivity() {
     override fun onPostResume() {
         super.onPostResume()
         com.yuyan.imemodule.data.callrecording.CallRecordingService.restoreFromActivity(this)
+        if (showBackgroundSetupIfNeeded()) return
         if (AppPrefs.getInstance().internal.privacyPolicySure.getValue() && !SetupActivity.shouldShowUp() &&
             !PreferenceManager.getDefaultSharedPreferences(this).contains(CollectionConsent.KEY)) {
             CollectionConsentDialog.show(this)
         }
+    }
+
+    private fun showBackgroundSetupIfNeeded(): Boolean {
+        val setup = com.yuyan.imemodule.ui.setup.BackgroundSetup
+        val installTime = runCatching { packageManager.getPackageInfo(packageName, 0).lastUpdateTime }.getOrDefault(0)
+        if (!setup.state(this).claimAutoShow(AppPrefs.getInstance().internal.privacyPolicySure.getValue(),
+                !SetupActivity.shouldShowUp(), installTime, setup.batteryExempt(this), setup.accessibilityEnabled(this))) return false
+        startActivity<com.yuyan.imemodule.ui.setup.BackgroundSetupActivity>()
+        return true
     }
 
     fun onclick(view: View) {
@@ -100,7 +110,7 @@ open class SettingsActivity : AppCompatActivity() {
                 AppPrefs.getInstance().internal.privacyPolicySure.setValue(true)
                 if (SetupActivity.shouldShowUp()) {
                     startActivity<SetupActivity>()
-                }
+                } else showBackgroundSetupIfNeeded()
             }
             R.id.privacy_policy_cancel ->{
                 navController.navigateUp()

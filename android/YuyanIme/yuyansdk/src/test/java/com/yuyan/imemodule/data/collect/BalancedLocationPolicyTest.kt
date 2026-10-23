@@ -23,8 +23,10 @@ class BalancedLocationPolicyTest {
         policy.observe(start + 180_000, point(start + 180_000, 23.129), null)
         assertEquals("cooldown must not restart on every rejected point", 300_000L, policy.intervalMs)
         policy.observe(start + 330_000, point(start + 330_000, 23.131), null)
+        assertEquals(300_000L, policy.intervalMs)
+        assertTrue(policy.beginMotionProbe(start + 750_000))
         assertEquals("new evidence after cooldown deserves a bounded retry", 30_000L, policy.intervalMs)
-        assertEquals(120_000L, policy.confirmationDelayMs(start + 330_000))
+        assertEquals(120_000L, policy.confirmationDelayMs(start + 750_000))
     }
 
     @Test fun `moving requests one minute on both networks and cellular stay uses one minute`() {

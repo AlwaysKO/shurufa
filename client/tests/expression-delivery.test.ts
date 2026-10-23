@@ -30,6 +30,6 @@ it('真实API透传冲突解释和用户范围，不用泛化状态码掩盖恢�
  await expect(module.exports.api.rollbackExpressionDelivery(2,0)).rejects.toThrow('请重新加载');
 });
 
-it('新增微信GIF沿用保真私有参数且提示标准方式的版本限制',async()=>{const {state}=await setup();state.addRule();const r=state.visibleRules.value.at(-1);expect(r).toMatchObject({method:'private_command',minSdk:26,versionName:'8.0.78',requireCompatIme:true,action:'com.sogou.inputmethod.exp.commit',uriKey:'EXP_PATH_URI',requiredEditorExtras:{SUPPORT_SOGOU_EXPRESSION:1}});const s=readFileSync(new URL('../src/views/ExpressionDelivery.vue',import.meta.url),'utf8');expect(s).toContain('8.0.78 禁止');expect(s).toContain('客户端不转码不代表接收端保真');});
+it('新增微信GIF沿用保真私有参数且提示标准方式的版本限制',async()=>{const {state}=await setup();state.addRule();const r=state.visibleRules.value.at(-1);expect(r).toMatchObject({method:'private_command',minSdk:26,versionName:null,requireCompatIme:true,action:'com.sogou.inputmethod.exp.commit',uriKey:'EXP_PATH_URI',requiredEditorExtras:{SUPPORT_SOGOU_EXPRESSION:1}});const s=readFileSync(new URL('../src/views/ExpressionDelivery.vue',import.meta.url),'utf8');expect(s).toContain('8.0.78 禁止');expect(s).toContain('客户端不转码不代表接收端保真');});
 
 it('新增QQ抖音标准规则最低SDK为23，保留legacy宿主兼容',async()=>{const {state}=await setup();for(const pkg of ['com.tencent.mobileqq','com.ss.android.ugc.aweme']){state.activePackage.value=pkg;state.addRule();expect(state.visibleRules.value.at(-1)).toMatchObject({method:'commit_content',minSdk:23});}});
