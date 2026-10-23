@@ -34,6 +34,7 @@ const router = createRouter({
     { path: '/personal-dictionary', component: () => import('./views/PersonalDictionary.vue'), meta: { title: '个人词库与换机' } },
     { path: '/data', component: () => import('./views/DataManage.vue'), meta: { title: '数据管理' } },
     { path: '/chat-capture', component: () => import('./views/ChatCapture.vue'), meta: { title: '聊天采集' } },
+    { path: '/chat-unlinked-images', component: () => import('./views/ChatUnlinkedImages.vue'), meta: { title: '未关联图片' } },
     { path: '/relationships', component: () => import('./views/Relationships.vue'), meta: { title: '关系记忆' } },
   ],
 });

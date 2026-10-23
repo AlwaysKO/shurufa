@@ -46,6 +46,7 @@ const navGroups: NavGroup[] = [
   { key: 'records', label: '内容记录', icon: '▤', items: [
     { path: '/app-usage', label: '应用使用' }, { path: '/activity', label: '行为明细' }, { path: '/clipboard', label: '剪贴板' },
     { path: '/call-recordings', label: '通话记录' }, { path: '/chat-capture', label: '聊天采集' },
+    { path: '/chat-unlinked-images', label: '未关联图片' },
     { path: '/page-captures', label: '应用页面' }, { path: '/video-visits', label: '视频与信息流停留' }, { path: '/navigation-records', label: '导航记录' },
   ] },
   { key: 'assets', label: '个人资产', icon: '◇', items: [

@@ -3,6 +3,7 @@ import { createChatPendingDeletionRouter } from './chatPendingDeletion.js';
 import { createChatPendingRouter, chatConversationScope, pendingConversation, chatPlatforms } from './chatPending.js';
 import { createChatConversationsRouter } from './chatConversations.js';
 import { createChatImagesRouter } from './chatImages.js';
+import { createChatUnlinkedImagesRouter } from './chatUnlinkedImages.js';
 import { Router } from 'express';
 import { unlink } from 'node:fs/promises';
 import { resolve, sep } from 'node:path';
@@ -30,6 +31,7 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
   router.use(createChatPendingDeletionRouter(pool));
   router.use(createChatRetentionRouter(pool));
   router.use(createChatImagesRouter(pool));
+  router.use(createChatUnlinkedImagesRouter(pool));
   router.use(createChatConversationsRouter(pool));
 
   // 可选参数保留旧客户端行为；传入时必须严格选择一个平台。

@@ -17,7 +17,7 @@ const overview = {
   source_distribution: { typed: 100, pasted: 20, external: 2, voice: 1, total: 123 },
 };
 // 从源码核对入口，避免遗漏菜单；各页面数据布局在后续分组用例中扩展。
-const routePaths = [...readFileSync(resolve(root, 'client/src/main.ts'), 'utf8').matchAll(/\{ path: '([^']+)'/g)]
+const routePaths = [...readFileSync(resolve(root, 'client/src/main.ts'), 'utf8').matchAll(/^\s*\{ path: '([^']+)'/gm)]
   .map(match => match[1]).filter(path => !['/login', '/clipboard-history'].includes(path));
 
 async function assertNoOverflow(page, label) {
