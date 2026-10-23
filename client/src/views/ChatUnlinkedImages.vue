@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue';
+import { CaptureManagement } from '../captureManagement';
+import { captureMutation } from '../api/captureManagement';
 import { currentUserId } from '../api';
 import { authenticated, dashboardFetch } from '../auth';
 
@@ -9,6 +11,11 @@ const from = ref(''), to = ref(''), loading = ref(false), error = ref(''), owner
 const failed = ref<string[]>([]), selected = ref<ImageRow | null>(null), dialog = ref<HTMLDialogElement>();
 const pages = computed(() => Math.max(1, Math.ceil(total.value / pageSize)));
 const selectedIndex = computed(() => rows.value.findIndex(row => row.id === selected.value?.id));
+const manager = reactive(new CaptureManagement(captureMutation('chat/unlinked-images')));
+const confirmation = ref<HTMLElement>();
+const disabled = computed(() => loading.value || manager.busy || !authenticated.value || !currentUserId.value);
+async function complete(action: Promise<boolean>) { if (await action) await load(); }
+watch(() => [manager.pendingDelete.length, manager.cleanup], async () => { await nextTick(); confirmation.value?.scrollIntoView({ block: 'nearest' }); });
 let requestId = 0;
 const time = (value: string) => new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
 const size = (bytes: number) => bytes >= 1_048_576 ? `${(bytes / 1_048_576).toFixed(1)} MB` : `${Math.ceil(bytes / 1024)} KB`;
@@ -18,6 +25,8 @@ function showImage(row: ImageRow) { selected.value = row; dialog.value?.showModa
 function moveImage(delta: number) { const row = rows.value[selectedIndex.value + delta]; if (row) selected.value = row; }
 async function load() {
   const id = ++requestId, userId = currentUserId.value;
+  manager.setScope({ userId: authenticated.value ? userId : '', page: page.value, from: from.value, to: to.value });
+  manager.setRows([]);
   closeImage(); rows.value = []; total.value = 0; failed.value = []; error.value = ''; loading.value = false; owner.value = userId;
   if (!authenticated.value || !userId) return;
   loading.value = true;
@@ -30,13 +39,13 @@ async function load() {
     if (id !== requestId) return;
     total.value = result.total;
     if (page.value > pages.value) { page.value = pages.value; return; }
-    rows.value = result.images;
+    rows.value = result.images; manager.setRows(rows.value);
   } catch (e) { if (id === requestId) error.value = e instanceof Error ? e.message : '加载失败，请重试'; }
   finally { if (id === requestId) loading.value = false; }
 }
 watch([currentUserId, authenticated, from, to], () => { if (page.value !== 1) page.value = 1; else void load(); }, { immediate: true, flush: 'sync' });
 watch(page, () => void load(), { flush: 'sync' });
-onBeforeUnmount(() => { requestId++; closeImage(); });
+onBeforeUnmount(() => { requestId++; manager.invalidate(); closeImage(); });
 </script>
 
 <template>
@@ -47,9 +56,32 @@ onBeforeUnmount(() => { requestId++; closeImage(); });
     <div class="filters">
       <label>接收开始日期 <input v-model="from" type="date" aria-label="接收开始日期"></label>
       <label>接收结束日期 <input v-model="to" type="date" aria-label="接收结束日期"></label>
-      <button :disabled="loading || !authenticated || !currentUserId" @click="load">刷新</button>
+      <button :disabled="disabled" @click="load">刷新</button>
       <span>共 {{ total }} 张</span>
       <RouterLink to="/chat-capture">查看聊天记录</RouterLink>
+    </div>
+    <div class="actions" aria-label="图片清理">
+      <button :disabled="disabled || !rows.length" @click="manager.selectAll()">全选当前页</button>
+      <button :disabled="disabled || !manager.selectedIds.length" @click="manager.cancelSelection()">取消选择</button>
+      <button class="danger" :disabled="disabled || !manager.selectedIds.length" @click="manager.requestDelete()">删除所选（{{ manager.selectedIds.length }}）</button>
+      <button v-for="days in ([1, 7, 30] as const)" :key="days" :disabled="disabled" @click="manager.previewCleanup(days)">保留 {{ days }} 天</button>
+    </div>
+    <p class="hint">保留按钮清理当前手机、当前日期筛选范围内超过最近 N × 24 小时的图片，包含所有分页；以接收时间计算，先预览再确认。仅删除后台当前副本，手机后续补传可能重新出现。</p>
+    <p v-if="manager.error" role="alert">{{ manager.error }}</p>
+    <p v-if="manager.message" role="status">{{ manager.message }}</p>
+    <div v-if="manager.pendingDelete.length || manager.cleanup" ref="confirmation" class="confirmation" role="region" aria-label="删除确认">
+      <template v-if="manager.pendingDelete.length">
+        <p>确认删除当前手机的 {{ manager.pendingDelete.length }} 张未关联图片及无其他引用的文件？此操作无法撤销。</p>
+        <button class="danger" :disabled="manager.busy" @click="complete(manager.confirmDelete())">确认删除</button>
+        <button :disabled="manager.busy" @click="manager.pendingDelete = []">取消</button>
+      </template>
+      <template v-else-if="manager.cleanup">
+        <p>当前手机、当前日期筛选范围内，接收时间早于 {{ time(manager.cleanup.cutoff) }}（北京时间）的 {{ manager.cleanup.total }} 张图片将被清理。已关联或已变更的图片会跳过；此操作无法撤销。</p>
+        <p v-if="manager.cleanup.offset">已处理 {{ manager.cleanup.offset }} / {{ manager.cleanup.total }} 张</p>
+        <button class="danger" :disabled="manager.busy || !manager.cleanup.total" @click="complete(manager.confirmCleanup())">{{ manager.cleanup.offset ? '继续清理' : '确认清理' }}</button>
+        <button v-if="manager.busy" @click="manager.stopCleanup()">停止后续批次</button>
+        <button v-else @click="manager.cleanup = null">取消</button>
+      </template>
     </div>
     <p v-if="!authenticated">请登录后查看。</p>
     <p v-else-if="!currentUserId">请先在顶部选择手机。</p>
@@ -62,6 +94,10 @@ onBeforeUnmount(() => { requestId++; closeImage(); });
         <button v-else class="preview" :aria-label="`查看图片 ${row.id}`" @click="showImage(row)">
           <img :src="imageUrl(row)" alt="未关联图片" loading="lazy" @error="failed.push(row.id)">
         </button>
+        <div class="card-actions">
+          <label><input type="checkbox" :aria-label="`选择图片 ${row.id}`" :checked="manager.selectedIds.includes(row.id)" :disabled="disabled" @change="manager.toggle(row.id)">选择</label>
+          <button class="danger" :aria-label="`删除图片 ${row.id}`" :disabled="disabled" @click="manager.requestDelete(row.id)">删除</button>
+        </div>
         <div class="details"><strong>未关联图片 #{{ row.id }}</strong>
           <time>接收：{{ time(row.received_at) }}</time>
           <small>{{ row.width && row.height ? `${row.width} × ${row.height} · ` : '' }}{{ size(row.byte_size) }}</small>
@@ -89,7 +125,13 @@ onBeforeUnmount(() => { requestId++; closeImage(); });
 <style scoped>
 .unlinked-images { min-width: 0; }
 .hint { color: #64748b; line-height: 1.6; }
-.filters, nav, header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.filters, nav, header, .actions, .card-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.actions { margin: 16px 0; }
+.card-actions { padding: 12px 14px 0; justify-content: space-between; }
+.card-actions label { display: flex; align-items: center; gap: 6px; }
+.danger { color: #b91c1c; }
+.confirmation { padding: 16px; margin: 16px 0; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; line-height: 1.6; }
+.confirmation button { margin-right: 10px; }
 .filters { margin: 20px 0; }
 .filters label { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 input { padding: 7px; border: 1px solid #cbd5e1; border-radius: 6px; max-width: 100%; }
