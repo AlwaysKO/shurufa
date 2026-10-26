@@ -31,7 +31,10 @@ const visualMarkers = new Map<string, L.CircleMarker>();
 let refreshTimer: ReturnType<typeof setTimeout> | null = null;
 let latestRequest = 0;
 let disposed = false;
-const unresolvedAddresses = computed(() => locations.value.filter(row => !row.address && row.address_status && row.address_status !== 'resolved'));
+const resolutionStatus = (row: LocationRow) => !row.place_details && row.place_status ? row.place_status : row.address_status;
+const unresolvedAddresses = computed(() => locations.value.filter(row =>
+  (!row.address && row.address_status && row.address_status !== 'resolved') ||
+  (!row.place_details && row.place_status && row.place_status !== 'resolved')));
 
 let map: L.Map | null = null;
 let layer: L.LayerGroup = L.layerGroup();
@@ -67,8 +70,8 @@ function scheduleRefresh(requestFailed = false) {
   clearRefresh();
   if (disposed || (!requestFailed && unresolvedAddresses.value.length === 0)) return;
   let delay = requestFailed ? 10_000 : 5000;
-  if (!requestFailed && unresolvedAddresses.value.every(row => row.address_status === 'failed')) {
-    const retries = unresolvedAddresses.value.map(row => Date.parse(row.address_retry_at ?? ''));
+  if (!requestFailed && unresolvedAddresses.value.every(row => resolutionStatus(row) === 'failed')) {
+    const retries = unresolvedAddresses.value.map(row => Date.parse((!row.place_details && row.place_status ? row.place_retry_at : row.address_retry_at) ?? ''));
     delay = Math.max(5000, Math.min(300_000, ...retries.map(time => Number.isFinite(time) ? time - Date.now() : 30_000)));
   }
   refreshTimer = setTimeout(() => {
@@ -177,6 +180,7 @@ function renderMap(recenter = true) {
     const hit = L.circleMarker([lat, lng], { radius: 20, opacity: 0, fillOpacity: 0, weight: 0, className: 'location-hit', bubblingMouseEvents: false })
       .addTo(layer).bindPopup(
         `<b>${escapeLocationHtml(p.address ?? `${lat.toFixed(4)}, ${lng.toFixed(4)}`)}</b><br>` +
+        `门牌号：${escapeLocationHtml(p.place_details?.doorplate || '未确认')} · 店名：${escapeLocationHtml(p.place_details?.shop_name || '未确认')}<br>` +
         `${endpoint} · ${escapeLocationHtml(rowDevice(p))}<br>${formatBeijingTime(p.occurred_at)}（北京时间）<br>` +
         `${escapeLocationHtml(providers[p.provider ?? ''] ?? p.provider ?? '-')} · 精度 ${escapeLocationHtml(String(p.accuracy ?? '-'))}m · 速度 ${escapeLocationHtml(pointSpeed(p))}<br>` +
         `Wi-Fi：${escapeLocationHtml(wifiLabel(p))}<br>${escapeLocationHtml(contextDetails(p))}` +
@@ -301,7 +305,7 @@ onBeforeUnmount(() => {
     </div>
 
     <p v-if="unresolvedAddresses.length" class="address-hint" role="status">
-      还有 {{ unresolvedAddresses.length }} 条地址未完成，页面会自动更新；解析失败后按提示时间重试。
+      还有 {{ unresolvedAddresses.length }} 条地址或地点信息未完成，页面会自动更新；解析失败后按提示时间重试。
     </p>
     <div id="loc-map" class="map"></div>
     <section v-if="candidates.length" class="point-selection" aria-label="选择采样点">
@@ -351,6 +355,8 @@ onBeforeUnmount(() => {
           <th>#</th>
           <th>位置（坐标）</th>
           <th>地址</th>
+          <th>门牌号</th>
+          <th>店名</th>
           <th>来源</th>
           <th>精度</th>
           <th>速度</th>
@@ -368,6 +374,13 @@ onBeforeUnmount(() => {
             <template v-if="!r.address && r.address_status === 'failed'">
               <small v-if="r.address_error" class="address-detail">{{ r.address_error }}</small>
               <small v-if="r.address_retry_at" class="address-detail">下次重试：{{ formatBeijingTime(r.address_retry_at) }}（北京时间）</small>
+            </template>
+          </td>
+          <td>{{ r.place_details?.doorplate || '未确认' }}</td>
+          <td>{{ r.place_details?.shop_name || '未确认' }}
+            <template v-if="!r.place_details && r.place_status === 'failed'">
+              <small class="address-detail">{{ r.place_error || '解析失败，稍后重试' }}</small>
+              <small v-if="r.place_retry_at" class="address-detail">下次重试：{{ formatBeijingTime(r.place_retry_at) }}（北京时间）</small>
             </template>
           </td>
           <td>{{ providers[r.provider ?? ''] ?? r.provider ?? '-' }}</td>
@@ -393,7 +406,7 @@ onBeforeUnmount(() => {
           <td class="mono">{{ timeRange(r) }}</td>
         </tr>
         <tr v-if="!loading && visibleLocations.length === 0">
-          <td colspan="9" class="empty">所选日期范围暂无位置数据，可切换日期或设备查看。采集新记录需在手机设置中开启位置记录并授予权限。</td>
+          <td colspan="11" class="empty">所选日期范围暂无位置数据，可切换日期或设备查看。采集新记录需在手机设置中开启位置记录并授予权限。</td>
         </tr>
       </tbody>
     </table>

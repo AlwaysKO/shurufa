@@ -843,7 +843,7 @@ export function createDashboardRouter(pool: pg.Pool): Router {
       }
 
       const result = await pool.query(
-        `SELECT id, device_id, latitude, longitude, accuracy, provider, speed, address, context,
+        `SELECT id, device_id, latitude, longitude, accuracy, provider, speed, address, context, place_details,
                 occurred_at, first_seen_at, last_seen_at
          FROM location_track
          WHERE ${conds.join(' AND ')}
@@ -856,21 +856,29 @@ export function createDashboardRouter(pool: pg.Pool): Router {
         latitude: string;
         longitude: string;
         address: string | null;
+        place_details: unknown | null;
       }>;
 
       // 后台排队解析；返回真实状态，页面随后自动拉取结果。
       resolveMissingAddresses(
         pool,
-        rows.filter((r) => !r.address).map((r) => ({ id: r.id, lat: Number(r.latitude), lng: Number(r.longitude) })),
+        rows.filter((r) => !r.address || !r.place_details).map((r) => ({ id: r.id, lat: Number(r.latitude), lng: Number(r.longitude) })),
         userId,
       ).catch(() => { console.warn('[geocoder] 地址解析任务异常'); });
 
-      res.json({ days: rangeDays ?? (date === undefined ? days : 1), date, ...(hasRange ? { from, to } : {}), total: rows.length, has_more: result.rows.length > limit, locations: rows.map(row => ({
-        ...row,
-        ...(row.address
-          ? { address_status: 'resolved', address_error: null, address_retry_at: null }
-          : addressResolution(pool, userId, { id: row.id, lat: Number(row.latitude), lng: Number(row.longitude) })),
-      })) });
+      res.json({ days: rangeDays ?? (date === undefined ? days : 1), date, ...(hasRange ? { from, to } : {}), total: rows.length, has_more: result.rows.length > limit, locations: rows.map(row => {
+        const state = !row.address || !row.place_details
+          ? addressResolution(pool, userId, { id: row.id, lat: Number(row.latitude), lng: Number(row.longitude) }) : null;
+        return {
+          ...row,
+          address_status: row.address ? 'resolved' : state?.address_status ?? 'pending',
+          address_error: row.address ? null : state?.address_error ?? null,
+          address_retry_at: row.address ? null : state?.address_retry_at ?? null,
+          place_status: row.place_details ? 'resolved' : state?.address_status ?? 'pending',
+          place_error: row.place_details ? null : state?.address_error ?? null,
+          place_retry_at: row.place_details ? null : state?.address_retry_at ?? null,
+        };
+      }) });
     } catch (err) {
       next(err);
     }

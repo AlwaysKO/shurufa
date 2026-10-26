@@ -67,12 +67,11 @@ function point(occurred_at: string, first_seen_at = occurred_at, last_seen_at = 
     provider: 'gps', speed: null, address: '测试位置', occurred_at, first_seen_at, last_seen_at };
 }
 
-it('列表、最近记录与地图弹窗把01:00:56 UTC统一显示为09:00:56北京时间', async () => {
+it('列表与地图弹窗把01:00:56 UTC统一显示为09:00:56北京时间，旧摘要保持隐藏', async () => {
   const row = Object.freeze(point('2026-09-17T01:00:56.000Z'));
   const view = await mountLocations([row]);
   expect(view.cells()).toContain('2026-09-17 09:00:56');
-  expect(view.summary()).toContain('2026-09-17 09:00:56');
-  expect(view.summary()).toContain('北京时间');
+  expect(view.summary()).toBeUndefined();
   expect(view.popups[0]).toContain('2026-09-17 09:00:56');
   expect(view.popups[0]).toContain('北京时间');
   expect(view.text()).toContain('时间范围（北京时间）');
@@ -83,7 +82,6 @@ it('时间范围的起止时间都转换时区，正确处理跨日和午夜00�
   const view = await mountLocations([point('2026-09-17T16:00:56Z', '2026-09-17T15:59:59Z', '2026-09-17T16:00:56Z')]);
   const range = '2026-09-17 23:59:59 ~ 2026-09-18 00:00:56';
   expect(view.cells()).toContain(range);
-  expect(view.summary()).toContain(range);
   expect(view.popups[0]).toContain('2026-09-18 00:00:56');
 });
 
@@ -96,20 +94,19 @@ it('带+08:00偏移的时间不重复加八小时', async () => {
 it('带负时区偏移的时间同样按绝对时刻转换，不受浏览器时区影响', async () => {
   const view = await mountLocations([point('2026-09-16T18:00:56-07:00')]);
   expect(view.cells()).toContain('2026-09-17 09:00:56');
-  expect(view.summary()).toContain('2026-09-17 09:00:56');
   expect(view.popups[0]).toContain('2026-09-17 09:00:56');
 });
 
 it('无效时间显示占位符，不导致整个轨迹页面加载失败', async () => {
   const view = await mountLocations([point('invalid-time')]);
   expect(view.cells().at(-1)).toBe('-');
-  expect(view.summary()).not.toContain('Invalid Date');
+  expect(view.text()).not.toContain('Invalid Date');
   expect(view.popups[0]).toContain('-');
 });
 
 it('空轨迹保持原有空状态，不伪造最新时间', async () => {
   const view = await mountLocations([]);
-  expect(view.summary()).toBe('暂无位置数据');
+  expect(view.summary()).toBeUndefined();
   expect(view.popups).toEqual([]);
 });
 
@@ -168,10 +165,10 @@ it('切换日期立即清除旧轨迹，忽略过时响应；清空日期恢复�
   const find = (id: string) => view.all().find(n => n.props['data-testid'] === id)!;
   expect(find('location-prev-day')).toBeDefined();
   find('location-prev-day').props.onClick(); await settle();
-  expect(view.cells()).toEqual([]);
+  expect(view.summary()).toBeUndefined();
   find('location-prev-day').props.onClick(); await settle();
   resolveOld({ locations: [point('2026-09-28T01:00:00Z')] }); await settle();
-  expect(view.summary()).toBe('暂无位置数据');
+  expect(view.summary()).toBeUndefined();
   expect(view.text()).not.toContain('测试位置');
   expect(view.text()).toContain('所选日期范围暂无位置数据');
   find('location-date').props.onChange({ target: { value: '' } }); await settle();
@@ -322,7 +319,37 @@ it('地图按真实时间排序且命中区至少20px，重叠候选按时间选
  expect(view.markers.filter(m=>m.options.className?.includes('location-start'))).toHaveLength(2);
 });
 
-it('最近记录取实际最新事件，不依赖接口数组倒序',async()=>{
+it('旧采样摘要保持隐藏，列表保留最新定位时间',async()=>{
  const view=await mountLocations([{...point('2026-09-29T01:00:00Z'),id:'a'},{...point('2026-09-29T01:02:00Z'),id:'b'}]);
- expect(view.summary()).toContain('2026-09-29 09:02:00');
+ expect(view.summary()).toBeUndefined();
+ expect(view.cells()).toContain('2026-09-29 09:02:00');
+});
+
+it('列表与地图展示门牌和店名，空店名明确未确认且正确转义', async () => {
+  const row = { ...point('2026-10-26T01:00:00Z'),
+    place_details: { doorplate: '测试路12号', shop_name: '<测试店>', source: 'nominatim' }, place_status: 'resolved' } as LocationRow;
+  const view = await mountLocations([row]);
+  expect(view.text()).toContain('门牌号');
+  expect(view.text()).toContain('店名');
+  expect(view.text()).toContain('测试路12号');
+  expect(view.text()).toContain('<测试店>');
+  expect(view.popups.join(' ')).toContain('&lt;测试店&gt;');
+  const unknown = await mountLocations([{ ...row, place_details: { doorplate: null, shop_name: null, source: 'nominatim' } } as LocationRow]);
+  expect(unknown.text()).toContain('未确认');
+});
+
+
+it('已有地址的地点详情继续自动更新，成功但无店名后停止重试', async () => {
+  vi.useFakeTimers();
+  const initial = { ...point('2026-10-26T01:00:00Z'), place_details: null, place_status: 'resolving' } as LocationRow;
+  const completed = { ...initial, place_details: { doorplate: '测试路12号', shop_name: null, source: 'nominatim' }, place_status: 'resolved' } as LocationRow;
+  const locations = vi.fn().mockResolvedValueOnce({ locations: [initial] }).mockResolvedValue({ locations: [completed] });
+  const view = await mountLocations([], { locations });
+  expect(view.text()).not.toContain('测试路12号');
+  await vi.advanceTimersByTimeAsync(5000); await settle();
+  expect(view.text()).toContain('测试路12号');
+  expect(view.text()).toContain('未确认');
+  expect(locations).toHaveBeenCalledTimes(2);
+  await vi.advanceTimersByTimeAsync(30_000); await settle();
+  expect(locations).toHaveBeenCalledTimes(2);
 });

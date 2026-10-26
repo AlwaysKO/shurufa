@@ -1,7 +1,8 @@
 import type pg from 'pg';
+import { parseLocationPlace, type LocationPlace } from './locationPlace.js';
 
 type Coordinate = { id: string | number; lat: number; lng: number };
-type Result = { address: string | null; attempts: number; retryAt: number; error?: string };
+type Result = { details?: LocationPlace; address: string | null; attempts: number; retryAt: number; error?: string };
 type Job = { task?: Promise<void>; error?: string; retryAt: number };
 export type AddressResolution = {
   address_status: 'pending' | 'resolving' | 'failed';
@@ -23,6 +24,8 @@ const RETRY_DELAY = 30_000;
 export const locationKey = (lat: number, lng: number): string =>
   `${lat.toFixed(4)},${lng.toFixed(4)}`;
 
+const detailKey = (lat: number, lng: number) => `${lat},${lng}`;
+
 function poolJobs(pool: pg.Pool): Map<string, Job> {
   let states = jobs.get(pool);
   if (!states) { states = new Map(); jobs.set(pool, states); }
@@ -41,7 +44,8 @@ async function reverseOne(lat: number, lng: number, attempts: number): Promise<R
   try {
     const url = new URL(process.env.GEOCODER_REVERSE_URL || 'https://nominatim.openstreetmap.org/reverse');
     url.searchParams.set('lat', String(lat)); url.searchParams.set('lon', String(lng));
-    url.searchParams.set('format', 'jsonv2'); url.searchParams.set('zoom', '16');
+    url.searchParams.set('format', 'jsonv2'); url.searchParams.set('zoom', '18');
+    url.searchParams.set('polygon_geojson', '1');
     url.searchParams.set('accept-language', 'zh-CN');
     const res = await fetch(url, {
       headers: { 'User-Agent': 'personal-ime-tracker/0.1' }, signal: AbortSignal.timeout(8000),
@@ -55,14 +59,15 @@ async function reverseOne(lat: number, lng: number, attempts: number): Promise<R
     if (!data.display_name) return failed(attempts, '地址服务未返回有效地址');
     const a = data.address ?? {};
     const parts = [a.country, a.state ?? a.province, a.city ?? a.county ?? a.town, a.suburb ?? a.neighbourhood, a.road, a.house_number];
-    return { address: parts.filter(Boolean).join(' ') || data.display_name, attempts: 0, retryAt: 0 };
+    return { address: parts.filter(Boolean).join(' ') || data.display_name,
+      details: parseLocationPlace(data, lat, lng), attempts: 0, retryAt: 0 };
   } catch {
     return failed(attempts, '地址服务请求失败或超时');
   }
 }
 
 function lookup(c: Coordinate): Promise<Result> {
-  const key = locationKey(c.lat, c.lng);
+  const key = detailKey(c.lat, c.lng);
   const cached = cache.get(key);
   if (cached && (cached.address || cached.retryAt > Date.now())) return Promise.resolve(cached);
   const pending = inFlight.get(key);
@@ -84,12 +89,12 @@ function lookup(c: Coordinate): Promise<Result> {
 export function addressResolution(pool: pg.Pool, userId: string, c: Coordinate): AddressResolution {
   const job = poolJobs(pool).get(`${userId}:${c.id}`);
   if (job?.task) return { address_status: 'resolving', address_error: null, address_retry_at: null };
-  const result = job?.error ? job : cache.get(locationKey(c.lat, c.lng));
+  const result = job?.error ? job : cache.get(detailKey(c.lat, c.lng));
   if (result?.error) return { address_status: 'failed', address_error: result.error, address_retry_at: new Date(result.retryAt).toISOString() };
   return { address_status: 'pending', address_error: null, address_retry_at: null };
 }
 
-/** 合并并发请求，只补齐本次选中、当前用户的空地址，不改坐标/时间/已有地址。 */
+/** 合并并发请求，只补齐本次选中、当前用户的空地址及地点详情，不改坐标/时间/已有地址。 */
 export async function resolveMissingAddresses(pool: pg.Pool, coords: Coordinate[], userId: string): Promise<void> {
   const states = poolJobs(pool);
   await Promise.all(coords.map(c => {
@@ -97,7 +102,7 @@ export async function resolveMissingAddresses(pool: pg.Pool, coords: Coordinate[
     const existing = states.get(id);
     if (existing?.task) return existing.task;
     if (existing && existing.retryAt > Date.now()) return;
-    const cached = cache.get(locationKey(c.lat, c.lng));
+    const cached = cache.get(detailKey(c.lat, c.lng));
     if (cached && !cached.address && cached.retryAt > Date.now()) return;
     const job: Job = { retryAt: 0 };
     states.set(id, job);
@@ -110,8 +115,9 @@ export async function resolveMissingAddresses(pool: pg.Pool, coords: Coordinate[
           return;
         }
         await pool.query(
-          'UPDATE location_track SET address = $1 WHERE id = $2 AND user_id = $3 AND address IS NULL',
-          [result.address, c.id, userId],
+          'UPDATE location_track SET address = COALESCE(address, $1), place_details = COALESCE(place_details, $4::jsonb) ' +
+          'WHERE id = $2 AND user_id = $3 AND (address IS NULL OR place_details IS NULL)',
+          [result.address, c.id, userId, JSON.stringify(result.details)],
         );
         states.delete(id);
       } catch {

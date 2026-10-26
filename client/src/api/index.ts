@@ -251,6 +251,10 @@ export interface LocationRow {
   provider: string | null;
   speed: string | null;
   address: string | null;
+  place_details?: { doorplate: string | null; shop_name: string | null; source: 'nominatim' } | null;
+  place_status?: 'pending' | 'resolving' | 'failed' | 'resolved';
+  place_error?: string | null;
+  place_retry_at?: string | null;
   occurred_at: string;
   first_seen_at: string;
   last_seen_at: string;

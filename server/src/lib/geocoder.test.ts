@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type pg from 'pg';
 import { newDb } from 'pg-mem';
+import { readFileSync } from 'node:fs';
 
 let geocoder: typeof import('./geocoder.js');
 let fetchMock: ReturnType<typeof vi.fn>;
@@ -46,11 +47,11 @@ it('同坐标的多条记录都回填缓存地址，SQL只补当前用户指定�
   await geocoder.resolveMissingAddresses(pool, [coordinate(2)], userId);
   expect(fetchMock).toHaveBeenCalledTimes(1);
   expect(query).toHaveBeenCalledTimes(2);
-  expect(query.mock.calls.map(c => c[1])).toEqual([
+  expect(query.mock.calls.map(c => c[1].slice(0, 3))).toEqual([
     ['测试国家 测试城市', 1, userId], ['测试国家 测试城市', 2, userId],
   ]);
   for (const [sql] of query.mock.calls) {
-    expect(sql).toMatch(/WHERE id = \$2 AND user_id = \$3 AND address IS NULL/);
+    expect(sql).toMatch(/WHERE id = \$2 AND user_id = \$3 AND \(address IS NULL OR place_details IS NULL\)/);
     expect(sql).not.toMatch(/DELETE|TRUNCATE|occurred_at\s*=|latitude\s*=/i);
   }
 });
@@ -123,10 +124,31 @@ it('真实SQL在纯内存数据库中只补当前用户空地址，保留其他�
       (1, $1, NULL, 1, 2, '2026-09-17T01:00:56Z'),
       (2, $2, NULL, 1, 2, '2026-09-17T01:00:56Z'),
       (3, $1, '原有地址', 1, 2, '2026-09-17T01:00:56Z')`, [userId, otherUser]);
+    await pool.query(readFileSync(new URL('../../migrations/053_location_place_details.sql', import.meta.url), 'utf8'));
     await geocoder.resolveMissingAddresses(pool, [coordinate(1), coordinate(2), coordinate(3)], userId);
     const { rows } = await pool.query('SELECT * FROM location_track ORDER BY id');
     expect(rows.map(row => row.address)).toEqual(['测试国家 测试城市', null, '原有地址']);
+    expect(rows[0].place_details).toMatchObject({ doorplate: null, shop_name: null });
+    expect(rows[1].place_details).toBeNull();
+    expect(rows[2].place_details).toMatchObject({ doorplate: null, shop_name: null });
     for (const row of rows) expect(row).toMatchObject({ latitude: 1, longitude: 2, occurred_at: '2026-09-17T01:00:56Z' });
     expect(fetchMock).toHaveBeenCalledTimes(1);
   } finally { await pool.end(); }
+});
+
+it('建筑级解析保存门牌详情，即使没有可靠店名也持久化空结果', async () => {
+  const { pool, query } = poolFixture();
+  fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ display_name: '测试地址',
+    address: { road: '测试路', house_number: '12号' } }) });
+  await geocoder.resolveMissingAddresses(pool, [coordinate(1)], userId);
+  const url = new URL(String(fetchMock.mock.calls[0][0]));
+  expect(url.searchParams.get('zoom')).toBe('18');
+  expect(url.searchParams.get('polygon_geojson')).toBe('1');
+  expect(JSON.parse(query.mock.calls[0][1][3])).toMatchObject({ doorplate: '测试路12号', shop_name: null });
+});
+it('相隔几米的坐标不共用店名详情缓存', async () => {
+  const { pool } = poolFixture();
+  const task = geocoder.resolveMissingAddresses(pool, [coordinate(1, 1.00001), coordinate(2, 1.00002)], userId);
+  await drain(); await task;
+  expect(fetchMock).toHaveBeenCalledTimes(2);
 });

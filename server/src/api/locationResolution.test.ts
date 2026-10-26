@@ -36,7 +36,7 @@ it('位置接口不等待解析完成，返回明确状态并仅调度当前用�
   const userId = '00000000-0000-4000-8000-000000000001';
   const rows = [
     { id: '1', latitude: '1', longitude: '2', address: null },
-    { id: '2', latitude: '3', longitude: '4', address: '已有地址' },
+    { id: '2', latitude: '3', longitude: '4', address: '已有地址', place_details: { doorplate: null, shop_name: null } },
   ];
   const pool = { query: vi.fn().mockResolvedValue({ rows }) } as unknown as pg.Pool;
   vi.mocked(resolveMissingAddresses).mockImplementation(() => new Promise(() => {}));
@@ -97,4 +97,18 @@ it.each([
  const response=await request(app).get('/locations').query({from,to});
  expect(response.status).toBe(200);expect(response.body.days).toBe(days);
  expect(query.mock.calls[0][1]).toEqual(['owner',new Date(start),new Date(end),201]);
+});
+
+it('已有地址但没有门牌详情也排队补齐，解析成功的空详情不重复请求', async () => {
+  const rows = [{ id: '1', latitude: '1', longitude: '2', address: '保留旧地址', place_details: null },
+    { id: '2', latitude: '1', longitude: '2', address: '已有地址', place_details: { doorplate: null, shop_name: null, source: 'nominatim' } }];
+  const pool = { query: vi.fn().mockResolvedValue({ rows }) } as unknown as pg.Pool;
+  vi.mocked(resolveMissingAddresses).mockResolvedValue(undefined);
+  vi.mocked(addressResolution).mockReturnValue({ address_status: 'resolving', address_error: null, address_retry_at: null });
+  const app = express(); app.use((_req, res, next) => { res.locals.userId = 'owner'; next(); });
+  app.use(createDashboardRouter(pool));
+  const response = await request(app).get('/locations');
+  expect(resolveMissingAddresses).toHaveBeenCalledWith(pool, [{ id: '1', lat: 1, lng: 2 }], 'owner');
+  expect(response.body.locations[0]).toMatchObject({ address: '保留旧地址', address_status: 'resolved', place_status: 'resolving' });
+  expect(response.body.locations[1]).toMatchObject({ place_status: 'resolved' });
 });
