@@ -133,6 +133,7 @@ async function load(): Promise<void> {
 
 function search() {
   page.value = 1;
+  pageJump.value = 1;
   load();
 }
 
@@ -167,6 +168,29 @@ function resetFilters() {
 }
 
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize)));
+const pageJump = ref<number | string>(1);
+watch(page, value => { pageJump.value = value; });
+const validPageJump = computed(() => Number.isSafeInteger(Number(pageJump.value))
+  && Number(pageJump.value) >= 1 && Number(pageJump.value) <= totalPages.value);
+const pageLinks = computed(() => {
+  const pages = new Set([1, totalPages.value]);
+  for (let n = Math.max(1, page.value - 2); n <= Math.min(totalPages.value, page.value + 2); n++) pages.add(n);
+  const links: Array<number | string> = [];
+  let previous = 0;
+  for (const n of [...pages].sort((a, b) => a - b)) {
+    if (previous && n - previous > 1) links.push(`gap-${previous}`);
+    links.push(n); previous = n;
+  }
+  return links;
+});
+function changePage(next: number) {
+  if (loading.value || deleteBusy.value || !Number.isSafeInteger(next) || next < 1 || next > totalPages.value) return;
+  pageJump.value = next;
+  if (next === page.value) return;
+  page.value = next;
+  void load();
+}
+function jumpToPage() { if (validPageJump.value) changePage(Number(pageJump.value)); }
 const fmtTime = (s: string) => new Date(s).toLocaleString('zh-CN', { hour12: false });
 const deviceOf = (id: string) => devices.value.find((d) => d.id === id);
 
@@ -402,12 +426,27 @@ onMounted(async () => {
     </div>
     <div v-if="!items.length && !loading" class="empty">没有符合条件的行为记录</div>
 
-    <div v-if="!loading" class="pager">
-      <span>共 {{ total }} {{ grouped ? '组' : '条' }} · 每页 {{ pageSize }} {{ grouped ? '组' : '条' }}</span>
-      <button :disabled="page <= 1" @click="page--; load()">上一页</button>
-      <span>{{ page }} / {{ totalPages }}</span>
-      <button :disabled="page >= totalPages" @click="page++; load()">下一页</button>
-    </div>
+    <nav class="pager" aria-label="行为明细分页" :aria-busy="loading">
+      <span class="page-summary" role="status">共 {{ total }} {{ grouped ? '组' : '条' }} · 每页 {{ pageSize }} {{ grouped ? '组' : '条' }} · 第 {{ page }} / {{ totalPages }} 页</span>
+      <div class="page-links">
+        <button data-testid="activity-page-first" :disabled="loading || deleteBusy || page <= 1" @click="changePage(1)">首页</button>
+        <button data-testid="activity-page-prev" :disabled="loading || deleteBusy || page <= 1" @click="changePage(page - 1)">上一页</button>
+        <template v-for="link in pageLinks" :key="link">
+          <button v-if="typeof link === 'number'" :data-testid="`activity-page-${link}`" :aria-label="`第${link}页`"
+            :aria-current="page === link ? 'page' : undefined" :class="{ active: page === link }"
+            :disabled="loading || deleteBusy" @click="changePage(link)">{{ link }}</button>
+          <span v-else class="page-gap" aria-hidden="true">…</span>
+        </template>
+        <button data-testid="activity-page-next" :disabled="loading || deleteBusy || page >= totalPages" @click="changePage(page + 1)">下一页</button>
+        <button data-testid="activity-page-last" :disabled="loading || deleteBusy || page >= totalPages" @click="changePage(totalPages)">末页</button>
+      </div>
+      <div class="page-jump">
+        <label>跳至 <input v-model="pageJump" data-testid="activity-page-jump-input" type="number" min="1" :max="totalPages" step="1"
+          aria-label="跳转页码" :title="`请输入 1 至 ${totalPages} 的整数页码`" :disabled="loading || deleteBusy"
+          @keydown.enter.prevent="jumpToPage" /> 页</label>
+        <button data-testid="activity-page-jump" :disabled="loading || deleteBusy || !validPageJump" @click="jumpToPage">跳转</button>
+      </div>
+    </nav>
   </div>
 </template>
 
@@ -478,14 +517,21 @@ td:nth-child(4), td:nth-child(9) { min-width: 180px; }
 .dev { cursor: help; border-bottom: 1px dashed #a4b0be; }
 .pager {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: 12px;
+  gap: 10px 16px;
   padding: 12px 20px;
   font-size: 13px;
   color: #57606f;
 }
+.page-summary { margin-right: auto; }
+.page-links, .page-jump, .page-jump label { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.page-jump { flex-wrap: nowrap; }
+.page-jump input { width: 72px; min-height: 32px; padding: 4px 8px; border: 1px solid #dfe4ea; border-radius: 6px; font: inherit; }
+.page-gap { padding: 0 3px; }
 .pager button {
+  min-height: 32px;
   padding: 4px 12px;
   border-radius: 6px;
   border: 1px solid #dfe4ea;
@@ -493,5 +539,13 @@ td:nth-child(4), td:nth-child(9) { min-width: 180px; }
   cursor: pointer;
   font-size: 13px;
 }
+.pager button.active { background: #3742fa; border-color: #3742fa; color: white; }
+.pager button:not(:disabled):not(.active):hover { border-color: #3742fa; color: #3742fa; }
+.pager button:focus-visible, .page-jump input:focus-visible { outline: 2px solid #3742fa; outline-offset: 2px; }
 .pager button:disabled { opacity: 0.4; cursor: not-allowed; }
+@media (max-width: 600px) {
+  .pager { justify-content: flex-start; padding: 12px; }
+  .page-summary { flex-basis: 100%; }
+  .pager button { padding: 4px 8px; }
+}
 </style>

@@ -266,6 +266,66 @@ it('行为明细每页20条，整段及原始模式翻页均固定请求20', asy
   expect(events.mock.calls.at(-1)![0]).toMatchObject({ page: 1, page_size: 20, grouped: false });
 });
 
+it('行为分页支持首页末页、数字页和跳页，保留筛选并清空本页选择', async () => {
+  const events = vi.fn().mockResolvedValue({ total: 401, items: [editGroup] });
+  const view = await mount('Activity', { events, devices: async () => ({ devices: [] }) });
+  const source = view.find('source-app')!;
+  source.props['onUpdate:modelValue']('com.example.chat'); source.props.onChange(); await settle();
+  view.find('select-page')!.props.onClick(); await settle();
+  view.find('activity-page-jump-input')!.props['onUpdate:modelValue']('10'); await settle();
+  view.find('activity-page-jump')!.props.onClick(); await settle();
+  expect(events.mock.calls.at(-1)![0]).toMatchObject({ page: 10, page_size: 20, package_name: 'com.example.chat', grouped: true });
+  expect(view.find('selection-count')!.text).toContain('0');
+  expect(view.find('activity-page-10')!.props['aria-current']).toBe('page');
+  expect(view.find('activity-page-5')).toBeUndefined();
+  expect(view.find('activity-page-1')).toBeDefined();
+  expect(view.find('activity-page-21')).toBeDefined();
+  view.find('activity-page-12')!.props.onClick(); await settle();
+  view.find('activity-page-last')!.props.onClick(); await settle();
+  expect(view.find('activity-page-next')!.props.disabled).toBe(true);
+  expect(view.find('activity-page-last')!.props.disabled).toBe(true);
+  view.find('activity-page-first')!.props.onClick(); await settle();
+  expect(events.mock.calls.slice(-3).map(call => call[0].page)).toEqual([12, 21, 1]);
+  expect(view.find('activity-page-prev')!.props.disabled).toBe(true);
+  expect(view.find('activity-page-first')!.props.disabled).toBe(true);
+});
+
+it('跳页拒绝空值、小数和越界，回车跳页且加载中不重复请求，切换筛选重置页码', async () => {
+  let finish!: (value: unknown) => void;
+  const events = vi.fn().mockResolvedValue({ total: 100, items: [] });
+  const view = await mount('Activity', { events, devices: async () => ({ devices: [] }) });
+  for (const value of ['', '0', '-1', '1.5', '6', 'abc']) {
+    view.find('activity-page-jump-input')!.props['onUpdate:modelValue'](value); await settle();
+    expect(view.find('activity-page-jump')!.props.disabled).toBe(true);
+    view.find('activity-page-jump')!.props.onClick(); await settle();
+  }
+  expect(events).toHaveBeenCalledTimes(1);
+  events.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+  view.find('activity-page-jump-input')!.props['onUpdate:modelValue']('4'); await settle();
+  view.find('activity-page-jump-input')!.props.onKeydown({ key: 'Enter', preventDefault() {} }); await settle();
+  expect(events.mock.calls.at(-1)![0].page).toBe(4);
+  expect(view.find('activity-page-next')!.props.disabled).toBe(true);
+  view.find('activity-page-next')!.props.onClick(); await settle();
+  expect(events).toHaveBeenCalledTimes(2);
+  finish({ total: 100, items: [] }); await settle();
+  view.find('mode-raw')!.props.onClick(); await settle();
+  expect(events.mock.calls.at(-1)![0]).toMatchObject({ page: 1, grouped: false });
+  expect(view.find('activity-page-1')!.props['aria-current']).toBe('page');
+});
+
+it('跳转后总数减少时回到有效末页，空列表保持第一页', async () => {
+  const events = vi.fn().mockResolvedValueOnce({ total: 201, items: [] })
+    .mockResolvedValueOnce({ total: 21, items: [] }).mockResolvedValue({ total: 21, items: [editGroup] });
+  const view = await mount('Activity', { events, devices: async () => ({ devices: [] }) });
+  view.find('activity-page-last')!.props.onClick(); await settle();
+  expect(events.mock.calls.map(call => call[0].page)).toEqual([1, 11, 2]);
+  expect(view.find('activity-page-2')!.props['aria-current']).toBe('page');
+  events.mockResolvedValue({ total: 0, items: [] });
+  view.find('mode-raw')!.props.onClick(); await settle();
+  expect(view.text()).toContain('第 1 / 1 页');
+  expect(view.find('activity-page-last')!.props.disabled).toBe(true);
+});
+
 it('批量清理保留DELETE校验，必须经自定义确认，取消不提交且使用确认时的筛选快照', async () => {
   const cleanup = vi.fn().mockResolvedValue({ scope: 'events', deleted: { events: 1 } });
   const confirm = vi.fn().mockReturnValue(false); vi.stubGlobal('confirm', confirm);
