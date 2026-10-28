@@ -54,7 +54,7 @@ const image=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR
    assert.equal(await page.locator('.sidebar a[href="/chat-unlinked-images"]').count(),1);
    assert(await page.locator('.hint').first().textContent().then(s=>s.includes('来源应用')));
    await page.getByRole('button',{name:'查看图片 1',exact:true}).click();
-   await page.getByRole('dialog').waitFor();assert(await page.getByRole('dialog').textContent().then(s=>s.includes('原始采集时间未知')));
+   await page.getByRole('dialog').waitFor();assert(await page.getByRole('dialog').textContent().then(s=>s.includes('截图/采集：未知（未关联）')&&s.includes('上传接收：')));
    await page.getByRole('button',{name:'下一张',exact:true}).click();assert(await page.getByRole('dialog').textContent().then(s=>s.includes('#2')));
    await page.keyboard.press('Escape');assert.equal(await page.getByRole('dialog').count(),0);
    // Full-page bottom actions must show a centered modal, including repeated same-count selection.

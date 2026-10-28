@@ -147,11 +147,13 @@ it('单张聊天图片提供独立删除并调用消息资源接口', async () =
   }
 });
 
-it('截图名称显示聊天名称和精确到秒的采集时间，不暴露内部哈希', async () => {
+it('截图名称只显示会话名，时间单独明确标注，不暴露内部哈希', async () => {
   const view = await mountChatCapture();
   const label = view.find('chat-image-label-message-1')?.text ?? '';
 
-  expect(label).toMatch(/^对方 \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
+  expect(label).toBe('对方');
+  expect(view.text()).toContain('截图/采集：');
+  expect(view.text()).toContain('上传接收：');
   expect(label).not.toContain('title:');
   expect(label).not.toContain(':viewport');
 });
@@ -329,14 +331,14 @@ it('切换App后旧会话消息迟到也不会重新出现', async () => {
   expect(view.find('chat-tab-qq')!.props['aria-selected']).toBe(true);
 });
 
-it('抖音聊天截图标签显示会话名和采集时间，不显示内部viewport标识', async () => {
+it('抖音截图的会话名和时间分别标注，不显示内部viewport标识', async () => {
   const view = await mountChatCapture({chatMessages: async () => ({total: 1, messages: [{
     id: 'douyin-image', platform: 'douyin', direction: 'system', message_type: 'image',
     sender_key: 'viewport', captured_at: '2026-09-17T00:00:00Z',
     metadata: {capture_source: 'douyin_screenshot', capture_kind: 'conversation_screenshot'}, assets: [],
   }]})});
   expect(view.find('chat-image-label-douyin-image')!.text).toContain('对方');
-  expect(view.find('chat-image-label-douyin-image')!.text).toContain('2026-09-17');
+  expect(view.text()).toContain('2026/09/17');
 });
 
 const nextImage = (n: number) => ({ image: { message_id: `message-${n}`, asset_id: n, url: `/uploads/chat/${n}.png`, alt: `图片${n}`, captured_at: '2026-09-18T00:00:00Z', ordinal: n, total: 30 } });
@@ -1116,7 +1118,7 @@ it('相似截图默认留首张，展开全部原图和时间，原始总计不�
  const toggle=view.find('similar-toggle-message-3:3');expect(toggle).toBeDefined();expect(view.text()).toContain('相似截图，可展开');expect(view.text()).toContain('共 3 张');expect(view.text()).toContain('相似不等于重复');expect(view.text()).toContain('原图全部保留');expect(view.text()).toContain('共 3 项');
  expect(view.find('open-chat-image-3')).toBeDefined();expect(view.find('open-chat-image-2')).toBeUndefined();
  toggle!.props.onClick();await settle();for(const n of [1,2,3])expect(view.find(`open-chat-image-${n}`)).toBeDefined();
- expect(view.all().filter(n=>n.tag==='time').map(n=>n.props.datetime)).toEqual(rows.map(r=>r.captured_at));
+ expect(view.all().filter(n=>n.tag==='time' && n.props.datetime).map(n=>n.props.datetime)).toEqual(rows.map(r=>r.captured_at));
  view.find('open-chat-image-2')!.props.onClick();await settle();expect(view.find('chat-image-preview-image')!.props.src).toBe('/scoped/uploads/chat/2.png');
 });
 it('全选仅选择展开图片，收起移除隐藏选择，单图删除不删除整组',async()=>{
@@ -1139,4 +1141,18 @@ it('image消息带不同正文不被相似截图折叠隐藏',async()=>{
  const view=await mountChatCapture({chatMessages:async()=>({total:3,messages:rows})});
  expect(view.text()).toContain('明天下午三点见');expect(view.find('similar-toggle-message-3:3')).toBeUndefined();
  for(const n of [1,2,3])expect(view.find(`open-chat-image-${n}`)).toBeDefined();
+});
+
+it('截图与图片上传时间分开显示，首次预览及跨页切图均保留两者，缺失不回填', async () => {
+  const image = { ...screenshot(1), captured_at: '2026-10-27T17:15:03Z' };
+  image.assets = [{ ...image.assets[0], received_at: '2026-10-28T04:32:32Z' } as any];
+  const view = await mountChatCapture({ chatMessages: async () => ({ total: 1, messages: [image] }),
+    chatAdjacentImage: async () => ({ image: { ...nextImage(2).image, captured_at: '2026-10-27T16:08:56Z', received_at: '2026-10-28T04:32:13Z' } }) });
+  expect(view.text()).toContain('2026/10/28 01:15:03'); expect(view.text()).toContain('2026/10/28 12:32:32');
+  view.find('open-chat-image-1')!.props.onClick(); await settle();
+  expect(view.text()).toContain('截图/采集：2026/10/28 01:15:03'); expect(view.text()).toContain('上传接收：2026/10/28 12:32:32');
+  view.find('chat-image-next')!.props.onClick(); await settle();
+  expect(view.text()).toContain('截图/采集：2026/10/28 00:08:56'); expect(view.text()).toContain('上传接收：2026/10/28 12:32:13');
+  const missing = await mountChatCapture(); missing.find('open-chat-image-8')!.props.onClick(); await settle();
+  expect(missing.text()).toContain('上传接收：未知');
 });

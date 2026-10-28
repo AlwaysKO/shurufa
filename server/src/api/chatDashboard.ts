@@ -169,7 +169,7 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
         const placeholders = messageIds.map((_, index) => `$${index + 1}`).join(', ');
         const assets = await pool.query(
           `SELECT ma.message_id, ma.role, ma.position, a.id, a.sha256, a.perceptual_hash,
-                  a.mime_type, a.storage_path, a.width, a.height
+                  a.mime_type, a.storage_path, a.width, a.height, a.created_at AS received_at
            FROM chat_message_asset ma
            JOIN media_asset a ON a.id = ma.asset_id
            WHERE ma.message_id IN (${placeholders}) AND a.user_id=$${messageIds.length+1}
@@ -189,6 +189,7 @@ export function createChatDashboardRouter(pool: pg.Pool): Router {
             role: asset.role,
             position: asset.position,
             url: `/uploads/${asset.storage_path}`,
+            received_at: iso(asset.received_at),
           });
           assetsByMessage.set(messageId, items);
         }

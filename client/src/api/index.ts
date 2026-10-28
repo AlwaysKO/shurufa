@@ -418,13 +418,15 @@ export interface ChatConversationRow {
 
 export interface ChatImageTarget { message_id: string; asset_id: number }
 export interface ChatPreviewImage extends ChatImageTarget {
-  url: string; alt: string; captured_at: string; ordinal: number; total: number;
+  url: string; alt: string; captured_at: string; received_at?: string | null; ordinal: number; total: number;
 }
 export interface ChatImageDeleteRequest {
   confirm: 'DELETE'; conversation_id: number; images: ChatImageTarget[]; platform?: ChatConversationRow['platform']; group_name?: string;
 }
 
 export interface ChatMessageAsset {
+  /** 同手机、同内容图片首次被服务器接收的时间；不是聊天记录关联时间。 */
+  received_at?: string | null;
   perceptual_hash?: string | null;
   id: number;
   sha256: string;

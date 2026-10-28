@@ -122,7 +122,8 @@ onBeforeUnmount(() => { requestId++; manager.invalidate(); confirmation.value?.c
           <button class="danger" :aria-label="`删除图片 ${row.id}`" :disabled="disabled" @click="manager.requestDelete(row.id)">删除</button>
         </div>
         <div class="details"><strong>未关联图片 #{{ row.id }}</strong>
-          <time>接收：{{ time(row.received_at) }}</time>
+          <time>截图/采集：未知（未关联）</time>
+          <time :datetime="row.received_at">上传接收：{{ time(row.received_at) }}（北京）</time>
           <small>{{ row.width && row.height ? `${row.width} × ${row.height} · ` : '' }}{{ size(row.byte_size) }}</small>
         </div>
       </article>
@@ -135,7 +136,7 @@ onBeforeUnmount(() => { requestId++; manager.invalidate(); confirmation.value?.c
       @keydown.left.prevent="moveImage(-1)" @keydown.right.prevent="moveImage(1)">
       <template v-if="selected">
         <header><strong>未关联图片 #{{ selected.id }}</strong><button aria-label="关闭原图" @click="closeImage">关闭</button></header>
-        <p>接收：{{ time(selected.received_at) }}（北京时间）· 原始采集时间未知</p>
+        <p>截图/采集：未知（未关联）<br>上传接收：{{ time(selected.received_at) }}（北京时间，图片首次入库）</p>
         <img :key="selected.id" :src="imageUrl(selected)" alt="未关联图片原图">
         <nav aria-label="本页图片浏览"><button :disabled="selectedIndex <= 0" @click="moveImage(-1)">上一张</button>
           <span>本页 {{ selectedIndex + 1 }} / {{ rows.length }}</span>

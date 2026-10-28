@@ -125,6 +125,16 @@ describe('chat dashboard API', () => {
     ]);
   });
 
+  it('资源上传时间使用图片首次入库时间，保留独立采集时间', async () => {
+    await pool.query("UPDATE media_asset SET created_at='2026-08-21T04:32:32Z' WHERE id=$1", [assetId]);
+    await pool.query("UPDATE chat_message SET created_at='2026-08-22T00:00:00Z' WHERE id=$1", [firstMessageId]);
+    const response = await (await authenticatedRequest(createApp(pool), pool)).get(`/api/v1/dashboard/chat/messages?conversation_id=${conversationId}&user_id=${userId}`);
+    expect(response.status).toBe(200);
+    const image = response.body.messages.find((m: any) => m.id === firstMessageId);
+    expect(image.captured_at).toBe('2026-08-20T10:00:00.000Z');
+    expect(image.assets[0].received_at).toBe('2026-08-21T04:32:32.000Z');
+  });
+
   it('删除当前用户的会话、消息和仅由该会话引用的媒体', async () => {
     const response = await (await authenticatedRequest(createApp(pool), pool))
       .delete(`/api/v1/dashboard/chat/conversations/${conversationId}?user_id=${userId}`);

@@ -145,3 +145,22 @@ test('图库混合附件保留非图片项，过滤跨用户附件且图片导�
  const first=await get(1),second=await get(2);expect(first.status).toBe(200);expect(first.body.total).toBe(2);expect(first.body.messages[0].assets.map((a:any)=>a.id)).toEqual([picture.id]);expect(second.body.messages[0].assets.map((a:any)=>a.id)).toEqual([video.id]);
  expect((await adjacent(c,m,picture.id)).body.image).toBeNull();
 });
+
+test('两种列表和跨页原图导航同时返回采集与图片首次接收时间，迟传不改变排序', async () => {
+  const c = await conversation(), newer = await message(c, { time: '2026-10-27T17:15:03Z' }), older = await message(c, { time: '2026-10-27T15:50:30Z' });
+  const first = await asset(), second = await asset(); await link(newer, first.id); await link(older, second.id);
+  await pool.query("UPDATE media_asset SET created_at=$1 WHERE id=$2", ['2026-10-28T04:32:32Z', first.id]);
+  await pool.query("UPDATE media_asset SET created_at=$1 WHERE id=$2", ['2026-10-28T06:00:00Z', second.id]);
+  await pool.query("UPDATE chat_message SET created_at='2026-10-28T07:00:00Z' WHERE conversation_id=$1", [c]);
+  const before = (await pool.query('SELECT id,captured_at,created_at FROM chat_message WHERE conversation_id=$1 ORDER BY id', [c])).rows;
+  for (const gallery of [false, true]) {
+    const list = await agent.get('/api/v1/dashboard/chat/messages').query({ user_id: A, conversation_id: c, gallery, page_size: 1 });
+    expect(list.status).toBe(200); expect(list.body.total).toBe(2);
+    expect(list.body.messages[0]).toMatchObject({ id: newer, captured_at: '2026-10-27T17:15:03.000Z', assets: [expect.objectContaining({ received_at: '2026-10-28T04:32:32.000Z' })] });
+  }
+  const next = await adjacent(c, newer, first.id); expect(next.status).toBe(200);
+  expect(next.body.image.message_id).toBe(older);
+  expect(new Date(next.body.image.captured_at).toISOString()).toBe('2026-10-27T15:50:30.000Z');
+  expect(new Date(next.body.image.received_at).toISOString()).toBe('2026-10-28T06:00:00.000Z');
+  expect((await pool.query('SELECT id,captured_at,created_at FROM chat_message WHERE conversation_id=$1 ORDER BY id', [c])).rows).toEqual(before);
+});

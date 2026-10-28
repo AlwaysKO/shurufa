@@ -118,7 +118,7 @@ function toggleConversationSelection(conversation: ChatConversationRow, checked:
     ? [...new Set([...selectedConversationIds.value, conversation.id])]
     : selectedConversationIds.value.filter(id => id !== conversation.id);
 }
-const previewImage = ref<(ChatImageTarget & { src: string; alt: string; ordinal?: number; total?: number }) | null>(null);
+const previewImage = ref<(ChatImageTarget & { src: string; alt: string; captured_at: string | null; received_at?: string | null; ordinal?: number; total?: number }) | null>(null);
 const previewEl = ref<HTMLDivElement | null>(null);
 const previewLoading = ref(false);
 const previewError = ref('');
@@ -191,23 +191,17 @@ async function confirmAction(message: string, options?: {title: string; confirmT
   try { return await askConfirmation(message, options); } finally { confirming.value = false; }
 }
 
-function formatTime(value: string | null): string {
-  if (!value) return '-';
-  return new Date(value).toLocaleString('zh-CN', { hour12: false });
-}
-
-function formatImageLabelTime(value: string): string {
-  const date = new Date(value);
-  const pad = (part: number) => String(part).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} `
-    + `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+function formatTime(value: string | null | undefined): string {
+  if (!value || !Number.isFinite(Date.parse(value))) return '未知';
+  return new Intl.DateTimeFormat('zh-CN', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }).format(new Date(value));
 }
 
 function messageDisplayName(message: ChatMessageRow): string {
   if ((message.metadata.capture_source === 'wechat_empty_tree_screenshot' ||
       message.metadata.capture_kind === 'conversation_screenshot') && selected.value) {
     const chatName = displayName(selected.value);
-    return `${chatName} ${formatImageLabelTime(message.captured_at)}`;
+    return chatName;
   }
   return message.sender_name || message.sender_key;
 }
@@ -217,7 +211,8 @@ async function openImagePreview(message: ChatMessageRow, asset: ChatMessageAsset
   ++previewRequest;
   previewLoading.value = false; previewError.value = ''; previewBoundary.value = null;
   previousFocus = typeof document === 'undefined' ? null : document.activeElement as HTMLElement | null;
-  previewImage.value = { message_id: message.id, asset_id: asset.id, src: scopedAssetUrl(asset.url), alt: message.text || message.message_type };
+  previewImage.value = { message_id: message.id, asset_id: asset.id, src: scopedAssetUrl(asset.url), alt: message.text || message.message_type,
+    captured_at: message.captured_at, received_at: asset.received_at };
   await nextTick();
   previewEl.value?.focus();
 }
@@ -894,7 +889,7 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
             <span :data-testid="`chat-image-label-${message.id}`">{{ messageDisplayName(message) }}</span>
             <span class="badge">{{ directionNames[message.direction] }}</span>
             <span class="badge">{{ message.message_type }}</span>
-            <time :datetime="message.captured_at" title="采集时间">{{ formatTime(message.captured_at) }}</time>
+            <time v-if="!message.assets.some(isImage)" :datetime="message.captured_at" title="北京时间">采集：{{ formatTime(message.captured_at) }}（北京）</time>
           </div>
           <div v-if="pendingGroup && message.pending_diagnostic" class="pending-diagnostic">
             <strong>{{ message.pending_diagnostic.non_chat_evidence === 'title_only' ? '疑似非聊天页面，请看图确认' : pendingReasonNames[message.pending_diagnostic.reason] }}</strong>
@@ -911,6 +906,11 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
           <p v-if="message.text" class="message-text">{{ message.text }}</p>
           <div v-if="message.assets.length" class="media-grid">
             <div v-for="asset in message.assets" :key="asset.id + ':' + asset.role" class="media-item">
+              <div v-if="isImage(asset)" class="image-times" :data-testid="`chat-image-times-${message.id}-${asset.id}`">
+                <strong>截图/采集：<time :datetime="message.captured_at">{{ formatTime(message.captured_at) }}</time></strong>
+                <span>上传接收：<time :datetime="asset.received_at || undefined">{{ formatTime(asset.received_at) }}</time></span>
+                <small>北京时间 · 上传接收为图片首次入库时间</small>
+              </div>
               <label v-if="isImage(asset)" class="image-select">
                 <input v-model="selectedImageKeys" type="checkbox" :value="imageKey(message.id, asset.id)" :disabled="loading || mutationBusy"
                   :data-testid="`select-chat-image-${message.id}-${asset.id}`" />选择此图片
@@ -978,6 +978,11 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
       @pointerdown="startSwipe" @pointerup="endSwipe" @pointercancel="swipeStart = null">
       <img class="image-preview-image" :src="previewImage.src" :alt="previewImage.alt" draggable="false" @dragstart.prevent data-testid="chat-image-preview-image" />
       <figcaption class="image-preview-caption" aria-live="polite">
+        <div class="preview-times" data-testid="chat-preview-times">
+          <strong>截图/采集：{{ formatTime(previewImage.captured_at) }}</strong>
+          <span>上传接收：{{ formatTime(previewImage.received_at) }}</span>
+          <small>北京时间 · 图片首次接收</small>
+        </div>
         <span v-if="previewLoading">加载图片中…</span>
         <span v-else-if="previewError">{{ previewError }}</span>
         <span v-else-if="previewImage.ordinal">第 {{ previewImage.ordinal }} / {{ previewImage.total }} 张 · 当前会话，最新在前</span>
@@ -1001,10 +1006,15 @@ onBeforeUnmount(() => { closeImagePreview(); disposed = true; latestRequest += 1
 .image-selection-toolbar button { padding: 6px 10px; border: 1px solid #dfe4ea; border-radius: 6px; background: white; cursor: pointer; }
 .image-select { display: flex; gap: 6px; align-items: center; font-size: 12px; cursor: pointer; }
 .delete-notice { color: #23704b; font-size: 13px; }
-.image-preview-figure { margin: 0; min-width: 0; touch-action: pan-y pinch-zoom; user-select: none; }
+.image-preview-figure { margin: 0; min-width: 0; max-width: 92vw; max-height: calc(100dvh - 80px); overflow-y: auto; touch-action: pan-y pinch-zoom; user-select: none; }
 .image-preview-nav { position: fixed; top: 50%; z-index: 1; width: 42px; height: 52px; border: 0; border-radius: 8px; background: rgba(255,255,255,.9); font-size: 36px; cursor: pointer; transform: translateY(-50%); }
 .image-preview-nav.previous { left: 10px; } .image-preview-nav.next { right: 10px; }
-.image-preview-caption { position: fixed; bottom: 12px; left: 55px; right: 55px; text-align: center; color: white; font-size: 13px; pointer-events: none; }
+.image-preview-caption { text-align: center; color: white; font-size: 13px; line-height: 1.5; margin-top: 10px; }
+.image-times, .preview-times { display: grid; gap: 4px; line-height: 1.5; overflow-wrap: anywhere; }
+.image-times { font-size: 12px; color: #64748b; }
+.image-times strong { color: #334155; font-weight: 600; }
+.image-times small, .preview-times small { font-size: 11px; opacity: .8; }
+.preview-times { margin-bottom: 6px; }
 
 .platform-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
 .platform-tabs button { padding: 9px 24px; border: 1px solid #d5dbe5; border-radius: 8px; background: white; cursor: pointer; }
@@ -1066,7 +1076,7 @@ button:disabled { cursor: not-allowed; opacity: .5; }
 .capture-pager > span:first-child { margin-right: auto; }
 .capture-pager button, .error button { padding: 5px 10px; border: 1px solid #dfe4ea; border-radius: 6px; background: #fff; cursor: pointer; }
 .image-preview-overlay { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 32px; background: rgba(15, 18, 28, .82); }
-.image-preview-image { display: block; max-width: 92vw; max-height: 82vh; object-fit: contain; border-radius: 8px; box-shadow: 0 16px 48px rgba(0, 0, 0, .35); }
+.image-preview-image { display: block; max-width: 92vw; max-height: max(100px, calc(100dvh - 220px)); margin: 0 auto; object-fit: contain; border-radius: 8px; box-shadow: 0 16px 48px rgba(0, 0, 0, .35); }
 .image-preview-close { position: fixed; top: 18px; right: 22px; width: 42px; height: 42px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .92); color: #2f3542; font-size: 30px; line-height: 1; cursor: pointer; }
 .error { padding: 10px 14px; margin-bottom: 16px; border-radius: 6px; background: #fff0f0; color: #c0392b; }
 @media (max-width: 1200px) { .timeline { grid-template-columns: repeat(4, minmax(0, 1fr)); } }

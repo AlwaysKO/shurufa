@@ -21,7 +21,7 @@ export function createChatImagesRouter(pool: pg.Pool): Router {
     }
     try {
       const result = await pool.query(`WITH images AS (
-        SELECT m.id AS message_id, m.captured_at, m.text, a.id AS asset_id, a.storage_path, MIN(ma.position) AS position
+        SELECT m.id AS message_id, m.captured_at, m.text, a.id AS asset_id, a.storage_path, a.created_at AS received_at, MIN(ma.position) AS position
         FROM chat_message m
         JOIN chat_conversation c ON c.id=m.conversation_id AND c.user_id=m.user_id
         JOIN chat_message_asset ma ON ma.message_id=m.id
@@ -41,7 +41,7 @@ export function createChatImagesRouter(pool: pg.Pool): Router {
       const image = row.image;
       res.json({ image: image ? {
         message_id: image.message_id, asset_id: Number(image.asset_id), url: `/uploads/${image.storage_path}`,
-        alt: image.text || '聊天图片', captured_at: image.captured_at,
+        alt: image.text || '聊天图片', captured_at: image.captured_at, received_at: image.received_at,
         ordinal: Number(image.ordinal), total: Number(image.total),
       } : null });
     } catch (error) { next(error); }
