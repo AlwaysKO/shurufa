@@ -1,4 +1,5 @@
 import type pg from 'pg';
+import { reverseAmap, amapErrorMessage } from './amapGeocoder.js';
 import { parseLocationPlace, type LocationPlace } from './locationPlace.js';
 
 type Coordinate = { id: string | number; lat: number; lng: number };
@@ -24,7 +25,14 @@ const RETRY_DELAY = 30_000;
 export const locationKey = (lat: number, lng: number): string =>
   `${lat.toFixed(4)},${lng.toFixed(4)}`;
 
-const detailKey = (lat: number, lng: number) => `${lat},${lng}`;
+const source = () => process.env.AMAP_WEB_SERVICE_KEY?.trim() ? 'amap' : 'nominatim';
+const detailKey = (lat: number, lng: number) => `${source()}:${lat},${lng}`;
+export function needsPlaceResolution(value: unknown): boolean {
+  if (!value) return true;
+  const details = value as Partial<LocationPlace>;
+  return source() === 'amap' && details.source === 'nominatim' && !details.doorplate && !details.shop_name;
+}
+const legacyEmpty = "($5::text = 'amap' AND place_details->>'source' = 'nominatim' AND COALESCE(place_details->>'doorplate', '') = '' AND COALESCE(place_details->>'shop_name', '') = '')";
 
 function poolJobs(pool: pg.Pool): Map<string, Job> {
   let states = jobs.get(pool);
@@ -41,6 +49,11 @@ function failed(attempts: number, error: string, retryAfter = 0): Result {
 }
 
 async function reverseOne(lat: number, lng: number, attempts: number): Promise<Result> {
+  const key = process.env.AMAP_WEB_SERVICE_KEY?.trim();
+  if (key) {
+    try { return { ...await reverseAmap(lat, lng, key), attempts: 0, retryAt: 0 }; }
+    catch (error) { return failed(attempts, amapErrorMessage(error)); }
+  }
   try {
     const url = new URL(process.env.GEOCODER_REVERSE_URL || 'https://nominatim.openstreetmap.org/reverse');
     url.searchParams.set('lat', String(lat)); url.searchParams.set('lon', String(lng));
@@ -75,7 +88,7 @@ function lookup(c: Coordinate): Promise<Result> {
   const task = queue.then(async () => {
     const wait = nextRequestAt - Date.now();
     if (wait > 0) await new Promise(resolve => setTimeout(resolve, wait));
-    nextRequestAt = Date.now() + REQUEST_INTERVAL;
+    nextRequestAt = Date.now() + (source() === 'amap' ? 0 : REQUEST_INTERVAL);
     const result = await reverseOne(c.lat, c.lng, (cached?.attempts ?? 0) + 1);
     cache.set(key, result);
     return result;
@@ -115,9 +128,9 @@ export async function resolveMissingAddresses(pool: pg.Pool, coords: Coordinate[
           return;
         }
         await pool.query(
-          'UPDATE location_track SET address = COALESCE(address, $1), place_details = COALESCE(place_details, $4::jsonb) ' +
-          'WHERE id = $2 AND user_id = $3 AND (address IS NULL OR place_details IS NULL)',
-          [result.address, c.id, userId, JSON.stringify(result.details)],
+          `UPDATE location_track SET address = COALESCE(address, $1), place_details = CASE WHEN place_details IS NULL OR ${legacyEmpty} THEN $4::jsonb ELSE place_details END ` +
+          `WHERE id = $2 AND user_id = $3 AND (address IS NULL OR place_details IS NULL OR ${legacyEmpty})`,
+          [result.address, c.id, userId, JSON.stringify(result.details), result.details?.source],
         );
         states.delete(id);
       } catch {

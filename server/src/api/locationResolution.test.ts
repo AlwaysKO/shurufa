@@ -5,8 +5,8 @@ import { afterEach, expect, it, vi } from 'vitest';
 import { createDashboardRouter } from './dashboard.js';
 import { resolveMissingAddresses, addressResolution } from '../lib/geocoder.js';
 
-vi.mock('../lib/geocoder.js', () => ({ resolveMissingAddresses: vi.fn(), addressResolution: vi.fn() }));
-afterEach(() => vi.resetAllMocks());
+vi.mock('../lib/geocoder.js', async importOriginal => ({ ...await importOriginal<typeof import('../lib/geocoder.js')>(), resolveMissingAddresses: vi.fn(), addressResolution: vi.fn() }));
+afterEach(() => { vi.resetAllMocks(); vi.unstubAllEnvs(); });
 
 it('指定日期按北京时间零点到次日零点查询，并保留用户和设备范围', async () => {
   const query = vi.fn().mockResolvedValue({ rows: [] });
@@ -111,4 +111,18 @@ it('已有地址但没有门牌详情也排队补齐，解析成功的空详情�
   expect(resolveMissingAddresses).toHaveBeenCalledWith(pool, [{ id: '1', lat: 1, lng: 2 }], 'owner');
   expect(response.body.locations[0]).toMatchObject({ address: '保留旧地址', address_status: 'resolved', place_status: 'resolving' });
   expect(response.body.locations[1]).toMatchObject({ place_status: 'resolved' });
+});
+
+it('配置高德后，旧双空详情仍返回待解析状态，已解析的高德空结果不重复排队', async () => {
+  vi.stubEnv('AMAP_WEB_SERVICE_KEY', 'synthetic-test-key');
+  const empty = { doorplate: null, shop_name: null };
+  const rows = [{ id: '1', latitude: '1', longitude: '2', address: '旧地址', place_details: { ...empty, source: 'nominatim' } },
+    { id: '2', latitude: '1', longitude: '2', address: '旧地址', place_details: { ...empty, source: 'amap' } }];
+  const pool = { query: vi.fn().mockResolvedValue({ rows }) } as unknown as pg.Pool;
+  vi.mocked(resolveMissingAddresses).mockResolvedValue(undefined);
+  vi.mocked(addressResolution).mockReturnValue({ address_status: 'resolving', address_error: null, address_retry_at: null });
+  const app = express(); app.use((_req, res, next) => { res.locals.userId='owner'; next(); }); app.use(createDashboardRouter(pool));
+  const response = await request(app).get('/locations');
+  expect(resolveMissingAddresses).toHaveBeenCalledWith(pool, [{ id: '1', lat: 1, lng: 2 }], 'owner');
+  expect(response.body.locations[0].place_status).toBe('resolving'); expect(response.body.locations[1].place_status).toBe('resolved');
 });

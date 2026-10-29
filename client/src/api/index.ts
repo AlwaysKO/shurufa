@@ -251,7 +251,7 @@ export interface LocationRow {
   provider: string | null;
   speed: string | null;
   address: string | null;
-  place_details?: { doorplate: string | null; shop_name: string | null; source: 'nominatim' } | null;
+  place_details?: { doorplate: string | null; shop_name: string | null; source: 'nominatim' | 'amap'; building_name?: string | null; shop_match?: 'contained_aoi' } | null;
   place_status?: 'pending' | 'resolving' | 'failed' | 'resolved';
   place_error?: string | null;
   place_retry_at?: string | null;

@@ -9,7 +9,7 @@ import { Router } from 'express';
 import { deviceDataReceivedAt } from '../lib/deviceDataReceived.js';
 import type pg from 'pg';
 import { resolveMissingIps } from '../lib/ipgeo.js';
-import { addressResolution, resolveMissingAddresses } from '../lib/geocoder.js';
+import { addressResolution, resolveMissingAddresses, needsPlaceResolution } from '../lib/geocoder.js';
 import { queryGroupedEdits } from './groupedEdits.js';
 import { createActivityDeletionRouter } from './activityDeletion.js';
 import { collectorBaseUrl, saveCollectorBaseUrl } from '../lib/runtimeSettings.js';
@@ -862,21 +862,21 @@ export function createDashboardRouter(pool: pg.Pool): Router {
       // 后台排队解析；返回真实状态，页面随后自动拉取结果。
       resolveMissingAddresses(
         pool,
-        rows.filter((r) => !r.address || !r.place_details).map((r) => ({ id: r.id, lat: Number(r.latitude), lng: Number(r.longitude) })),
+        rows.filter((r) => !r.address || needsPlaceResolution(r.place_details)).map((r) => ({ id: r.id, lat: Number(r.latitude), lng: Number(r.longitude) })),
         userId,
       ).catch(() => { console.warn('[geocoder] 地址解析任务异常'); });
 
       res.json({ days: rangeDays ?? (date === undefined ? days : 1), date, ...(hasRange ? { from, to } : {}), total: rows.length, has_more: result.rows.length > limit, locations: rows.map(row => {
-        const state = !row.address || !row.place_details
+        const state = !row.address || needsPlaceResolution(row.place_details)
           ? addressResolution(pool, userId, { id: row.id, lat: Number(row.latitude), lng: Number(row.longitude) }) : null;
         return {
           ...row,
           address_status: row.address ? 'resolved' : state?.address_status ?? 'pending',
           address_error: row.address ? null : state?.address_error ?? null,
           address_retry_at: row.address ? null : state?.address_retry_at ?? null,
-          place_status: row.place_details ? 'resolved' : state?.address_status ?? 'pending',
-          place_error: row.place_details ? null : state?.address_error ?? null,
-          place_retry_at: row.place_details ? null : state?.address_retry_at ?? null,
+          place_status: !needsPlaceResolution(row.place_details) ? 'resolved' : state?.address_status ?? 'pending',
+          place_error: !needsPlaceResolution(row.place_details) ? null : state?.address_error ?? null,
+          place_retry_at: !needsPlaceResolution(row.place_details) ? null : state?.address_retry_at ?? null,
         };
       }) });
     } catch (err) {

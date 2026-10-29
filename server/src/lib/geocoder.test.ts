@@ -13,6 +13,7 @@ function poolFixture() {
 }
 const success = () => ({ ok: true, status: 200, json: async () => ({ display_name: '测试地址', address: { country: '测试国家', city: '测试城市' } }) });
 beforeEach(async () => {
+  vi.stubEnv('AMAP_WEB_SERVICE_KEY', '');
   vi.useFakeTimers(); vi.setSystemTime(new Date('2026-09-17T00:00:00Z'));
   vi.resetModules();
   fetchMock = vi.fn().mockResolvedValue(success());
@@ -51,7 +52,7 @@ it('同坐标的多条记录都回填缓存地址，SQL只补当前用户指定�
     ['测试国家 测试城市', 1, userId], ['测试国家 测试城市', 2, userId],
   ]);
   for (const [sql] of query.mock.calls) {
-    expect(sql).toMatch(/WHERE id = \$2 AND user_id = \$3 AND \(address IS NULL OR place_details IS NULL\)/);
+    expect(sql).toMatch(/WHERE id = \$2 AND user_id = \$3 AND \(address IS NULL OR place_details IS NULL OR/);
     expect(sql).not.toMatch(/DELETE|TRUNCATE|occurred_at\s*=|latitude\s*=/i);
   }
 });

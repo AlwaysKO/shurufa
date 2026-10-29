@@ -1,4 +1,4 @@
-export type LocationPlace = { doorplate: string | null; shop_name: string | null; source: 'nominatim' };
+export type LocationPlace = { doorplate: string | null; shop_name: string | null; source: 'nominatim' | 'amap'; building_name?: string | null; shop_match?: 'contained_aoi' };
 const object = (value: unknown): Record<string, unknown> =>
   value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
 const text = (value: unknown): string | null =>

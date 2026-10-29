@@ -353,3 +353,15 @@ it('已有地址的地点详情继续自动更新，成功但无店名后停止�
   await vi.advanceTimersByTimeAsync(30_000); await settle();
   expect(locations).toHaveBeenCalledTimes(2);
 });
+
+
+it('旧非空对象中的双空详情继续轮询升级，显示高德所属楼宇并转义地图弹窗', async () => {
+  vi.useFakeTimers();
+  const initial = { ...point('2026-10-30T01:00:00Z'), place_details: { doorplate: null, shop_name: null, source: 'nominatim' }, place_status: 'resolving' } as LocationRow;
+  const completed = { ...initial, place_details: { doorplate: '测试路12号', shop_name: null, source: 'amap', building_name: '<测试大厦>' }, place_status: 'resolved' } as LocationRow;
+  const locations = vi.fn().mockResolvedValueOnce({ locations: [initial] }).mockResolvedValue({ locations: [completed] });
+  const view = await mountLocations([], { locations }); await vi.advanceTimersByTimeAsync(5000); await settle();
+  expect(view.text()).toContain('<测试大厦>'); expect(view.text()).toContain('高德所属楼宇/地点');
+  expect(view.popups.join(' ')).toContain('&lt;测试大厦&gt;');
+  await vi.advanceTimersByTimeAsync(30_000); await settle(); expect(locations).toHaveBeenCalledTimes(2);
+});

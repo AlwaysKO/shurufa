@@ -31,10 +31,10 @@ const visualMarkers = new Map<string, L.CircleMarker>();
 let refreshTimer: ReturnType<typeof setTimeout> | null = null;
 let latestRequest = 0;
 let disposed = false;
-const resolutionStatus = (row: LocationRow) => !row.place_details && row.place_status ? row.place_status : row.address_status;
+const resolutionStatus = (row: LocationRow) => row.place_status && row.place_status !== 'resolved' ? row.place_status : row.address_status;
 const unresolvedAddresses = computed(() => locations.value.filter(row =>
   (!row.address && row.address_status && row.address_status !== 'resolved') ||
-  (!row.place_details && row.place_status && row.place_status !== 'resolved')));
+  (row.place_status && row.place_status !== 'resolved')));
 
 let map: L.Map | null = null;
 let layer: L.LayerGroup = L.layerGroup();
@@ -71,7 +71,7 @@ function scheduleRefresh(requestFailed = false) {
   if (disposed || (!requestFailed && unresolvedAddresses.value.length === 0)) return;
   let delay = requestFailed ? 10_000 : 5000;
   if (!requestFailed && unresolvedAddresses.value.every(row => resolutionStatus(row) === 'failed')) {
-    const retries = unresolvedAddresses.value.map(row => Date.parse((!row.place_details && row.place_status ? row.place_retry_at : row.address_retry_at) ?? ''));
+    const retries = unresolvedAddresses.value.map(row => Date.parse((row.place_status && row.place_status !== 'resolved' ? row.place_retry_at : row.address_retry_at) ?? ''));
     delay = Math.max(5000, Math.min(300_000, ...retries.map(time => Number.isFinite(time) ? time - Date.now() : 30_000)));
   }
   refreshTimer = setTimeout(() => {
@@ -180,7 +180,7 @@ function renderMap(recenter = true) {
     const hit = L.circleMarker([lat, lng], { radius: 20, opacity: 0, fillOpacity: 0, weight: 0, className: 'location-hit', bubblingMouseEvents: false })
       .addTo(layer).bindPopup(
         `<b>${escapeLocationHtml(p.address ?? `${lat.toFixed(4)}, ${lng.toFixed(4)}`)}</b><br>` +
-        `门牌号：${escapeLocationHtml(p.place_details?.doorplate || '未确认')} · 店名：${escapeLocationHtml(p.place_details?.shop_name || '未确认')}<br>` +
+        `门牌号：${escapeLocationHtml(p.place_details?.doorplate || '未确认')} · 店名 / 楼宇：${escapeLocationHtml(p.place_details?.shop_name || p.place_details?.building_name || '未确认')}<br>` +
         `${endpoint} · ${escapeLocationHtml(rowDevice(p))}<br>${formatBeijingTime(p.occurred_at)}（北京时间）<br>` +
         `${escapeLocationHtml(providers[p.provider ?? ''] ?? p.provider ?? '-')} · 精度 ${escapeLocationHtml(String(p.accuracy ?? '-'))}m · 速度 ${escapeLocationHtml(pointSpeed(p))}<br>` +
         `Wi-Fi：${escapeLocationHtml(wifiLabel(p))}<br>${escapeLocationHtml(contextDetails(p))}` +
@@ -356,7 +356,7 @@ onBeforeUnmount(() => {
           <th>位置（坐标）</th>
           <th>地址</th>
           <th>门牌号</th>
-          <th>店名</th>
+          <th>店名 / 楼宇</th>
           <th>来源</th>
           <th>精度</th>
           <th>速度</th>
@@ -377,8 +377,9 @@ onBeforeUnmount(() => {
             </template>
           </td>
           <td>{{ r.place_details?.doorplate || '未确认' }}</td>
-          <td>{{ r.place_details?.shop_name || '未确认' }}
-            <template v-if="!r.place_details && r.place_status === 'failed'">
+          <td>{{ r.place_details?.shop_name || r.place_details?.building_name || '未确认' }}
+            <small v-if="r.place_details?.source === 'amap' && (r.place_details.shop_name || r.place_details.building_name)" class="address-detail">{{ r.place_details.shop_name ? '高德商户匹配' : '高德所属楼宇/地点' }}</small>
+            <template v-if="r.place_status === 'failed'">
               <small class="address-detail">{{ r.place_error || '解析失败，稍后重试' }}</small>
               <small v-if="r.place_retry_at" class="address-detail">下次重试：{{ formatBeijingTime(r.place_retry_at) }}（北京时间）</small>
             </template>
