@@ -69,3 +69,10 @@ it('APP 图表显示真实名字、同名不同包仍分开且悬浮可核对包
     expect(tip).toContain('聊天'); expect(tip).toContain('org.example.second'); expect(tip).toContain('8');
   } finally { app.unmount(); }
 });
+
+it('行为明细截图中的历史包名显示常见名称，包名占位不覆盖兜底', () => {
+  expect(appName('com.ss.android.ugc.aweme')).toBe('抖音');
+  expect(appName('com.hihonor.contacts')).toBe('联系人');
+  expect(appName('com.ss.android.ugc.aweme', 'com.ss.android.ugc.aweme')).toBe('抖音');
+  expect(appName('com.hihonor.contacts', '电话')).toBe('电话');
+});

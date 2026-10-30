@@ -1069,11 +1069,14 @@ export const networkName = (t: string | null): string =>
 
 /** 优先系统真实名称，其次常见名称映射；未知应用保留完整包名。 */
 export const appName = (pkg: string | null, reportedName?: string | null): string => {
-  if (reportedName?.trim()) return reportedName.trim();
+  const name = reportedName?.trim();
+  if (name && name !== pkg) return name;
   if (!pkg) return '未知';
   const map: Record<string, string> = {
     'com.tencent.mm': '微信',
     'com.tencent.mobileqq': 'QQ',
+    'com.ss.android.ugc.aweme': '抖音',
+    'com.hihonor.contacts': '联系人',
     'com.android.chrome': 'Chrome',
     'com.android.browser': '浏览器',
     'com.google.android.gm': 'Gmail',

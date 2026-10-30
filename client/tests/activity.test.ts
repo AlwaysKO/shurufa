@@ -32,7 +32,7 @@ async function mount(name: string, api: Record<string, any>) {
     if (id === 'vue') return Vue;
     if (id === '../confirmation') return { useConfirmation: () => async (message: string) => Boolean(await globalThis.confirm?.(message)) };
     if (id === 'vue-router') return { useRoute: () => ({ query: {} }) };
-    if (id === '../api') return { api, currentUserId: Vue.ref('user-a'), appName: (s: string) => s, deviceDetailLines: () => [], deviceLabel: () => '', eventTypeName: (s: string) => s, networkName: (s: string) => s };
+    if (id === '../api') return { api, currentUserId: Vue.ref('user-a'), appName: (s: string, name?: string | null) => name?.trim() || s, deviceDetailLines: () => [], deviceLabel: () => '', eventTypeName: (s: string) => s, networkName: (s: string) => s };
     if (id === '../data/phrasePresets') return presets;
     if (id.endsWith('.css')) return {};
     throw new Error(`Unexpected import: ${id}`);
@@ -465,4 +465,21 @@ it('行为清理空预览不确认也不执行批次',async()=>{
  const confirm=vi.fn(),batch=vi.fn();vi.stubGlobal('confirm',confirm);
  const view=await mount('Activity',{devices:async()=>({devices:[]}),events:async()=>({total:0,items:[]}),previewActivityCleanup:async()=>({token:'t',total_events:0}),deleteActivityCleanupBatch:batch});
  view.find('activity-keep-30')!.props.onClick();await settle();expect(view.text()).toContain('没有需要清理');expect(confirm).not.toHaveBeenCalled();expect(batch).not.toHaveBeenCalled();
+});
+
+it('明细名称随历史来源异步加载更新，整段与原始模式一致并保留包名提示', async () => {
+  let resolveApps!: (value: any) => void;
+  const row = { ...editGroup, package_name: 'org.example.notes' };
+  const view = await mount('Activity', {
+    devices: async () => ({ devices: [] }),
+    events: async () => ({ total: 1, items: [row] }),
+    eventApps: () => new Promise(resolve => { resolveApps = resolve; }),
+  });
+  const cells = () => view.all().filter(n => n.tag === 'td');
+  expect(cells().some(n => n.text === 'org.example.notes')).toBe(true);
+  resolveApps({ apps: [{ package_name: 'org.example.notes', app_name: '我的笔记' }] });
+  await settle();
+  expect(cells().some(n => n.text === '我的笔记' && n.props.title === 'org.example.notes')).toBe(true);
+  view.find('mode-raw')!.props.onClick(); await settle();
+  expect(cells().some(n => n.text === '我的笔记')).toBe(true);
 });

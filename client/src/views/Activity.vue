@@ -26,6 +26,7 @@ const type = ref<'all' | 'text' | 'paste' | 'voice' | 'image' | 'delete'>('all')
 const deviceId = ref('');
 const packageName = ref('');
 const sourceApps = ref<Array<{ package_name: string; app_name: string | null }>>([]);
+const sourceAppNames = computed(() => new Map(sourceApps.value.map(app => [app.package_name, app.app_name])));
 const sourceAppsLoading = ref(false);
 const sourceAppsError = ref(false);
 const days = ref<number | null>(null);
@@ -404,7 +405,7 @@ onMounted(async () => {
               <small>设备上报的文本快照，不代表消息已发送。</small>
             </details>
           </td>
-          <td>{{ appName(item.package_name) }}</td>
+          <td :title="item.package_name ?? undefined">{{ appName(item.package_name, sourceAppNames.get(item.package_name ?? '')) }}</td>
           <td>
             <span v-if="deviceDetailLines(deviceOf(item.device_id)).length" class="dev" :title="deviceDetailLines(deviceOf(item.device_id)).join('\n')">
               {{ deviceLabel(deviceOf(item.device_id)) }}
