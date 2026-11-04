@@ -257,6 +257,7 @@ object AppUsageTracker {
             // 未到期时连本地目标健康探测也不执行；只读检查不消费空队列资格。
             if(!userInitiated && syncCadence.remainingDelay(com.yuyan.imemodule.data.collect.ImageUploadRuntime.hasValidatedWifi(context))>0) return@withLock
             ServerConfig.init(context)
+            if(!com.yuyan.imemodule.data.collect.BackendAddressMigration.recover(context))return@withLock
             val gate=collectorTargetGate(context,ServerConfig.baseUrl)
             val homePackages=usageHomePackages(context)
             UsageStore(context).use { store ->

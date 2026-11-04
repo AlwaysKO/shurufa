@@ -23,10 +23,12 @@ internal object PhoneCallLogRuntime {
         if(!running()||!ImageUploadRuntime.isBackgroundWorkAllowed()||!CollectionConsent.enabled(app)||!consent(app).enabled||!lock.tryLock())return
         try {
             ServerConfig.init(app)
+            if(!com.yuyan.imemodule.data.collect.BackendAddressMigration.recover(app))return
+            val targetEpoch=ServerConfig.onlineEpoch
             val device=DataCollector.deviceId(app);val target=ServerConfig.baseUrl
             val consent=consent(app);val ticket=consent.revision;val masterEpoch=CollectionConsent.epoch
             val allowed={running()&&ImageUploadRuntime.isBackgroundWorkAllowed()&&CollectionConsent.enabled(app)&&CollectionConsent.epoch==masterEpoch&&
-                consent.revision==ticket&&consent.allowed(device,target)&&ServerConfig.baseUrl==target}
+                ServerConfig.onlineEpoch==targetEpoch&&consent.revision==ticket&&consent.allowed(device,target)&&ServerConfig.baseUrl==target}
             if(!allowed())return
             val http=PhoneCallLogHttp(target,device,{app.getSharedPreferences("personal_dictionary_sync_v1",0).getString("token",null)},allowed)
             val request=http.requestId()

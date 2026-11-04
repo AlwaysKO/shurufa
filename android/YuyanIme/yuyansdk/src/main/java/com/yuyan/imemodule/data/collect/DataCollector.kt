@@ -147,6 +147,8 @@ object DataCollector {
         currentDeviceId = deviceId(app)
         com.yuyan.imemodule.data.capture.adapter.ChatCaptureDiagnostics.bindDeviceId(requireNotNull(currentDeviceId))
         ServerConfig.init(app)
+        scope.launch { runCatching { BackendAddressMigration.recover(app) }
+            .onFailure { Log.w(TAG,"后台地址迁移待恢复，保留队列") } }
         com.yuyan.imemodule.data.usage.AppUsageTracker.start(app)
         if (CollectionConsent.enabled(app)) {
             CompletionSync.init(app)
@@ -393,6 +395,7 @@ object DataCollector {
         if (!GameWorkRuntime.isBackgroundAllowed()) return@coroutineScope
         val uploader=delivery ?: return@coroutineScope
         val app=appContext ?: return@coroutineScope
+        if(!BackendAddressMigration.recover(app))return@coroutineScope
         if(!CollectionConsent.enabled(app)) {
             eventStore?.pruneExpiredLocalChatReports(ServerConfig.baseUrl,LOCAL_CHAT_RETENTION_MS)
             return@coroutineScope
@@ -439,7 +442,7 @@ object DataCollector {
     }
 
     private suspend fun refreshOnlineServerUrl(context: Context) = onlineConfigMutex.withLock {
-        if (!ImageUploadRuntime.isBackgroundWorkAllowed()) return@withLock
+        if (!ImageUploadRuntime.isBackgroundWorkAllowed() || !BackendAddressMigration.recover(context)) return@withLock
         val elapsed = android.os.SystemClock.elapsedRealtime()
         if (lastOnlineConfigRefreshElapsed != 0L &&
             elapsed - lastOnlineConfigRefreshElapsed in 0 until ONLINE_CONFIG_REFRESH_MS
@@ -467,8 +470,8 @@ object DataCollector {
             return@withLock
         }
         if (discovered == null) return@withLock
-        val (oldTarget, newTarget) = ServerConfig.updateOnlineServerUrl(discovered) ?: return@withLock
-        store(context).replaceTarget(oldTarget, newTarget)
+        ServerConfig.updateOnlineServerUrl(discovered) ?: return@withLock
+        check(BackendAddressMigration.recover(context)) { "backend_migration_deferred" }
         Log.i(TAG, "线上同步目标已按后台配置更新")
     }
 

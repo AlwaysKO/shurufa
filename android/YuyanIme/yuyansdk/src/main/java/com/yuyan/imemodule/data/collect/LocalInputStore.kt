@@ -30,6 +30,7 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
     SQLiteOpenHelper(context.applicationContext, name, null, 14) {
     private val json = Json { ignoreUnknownKeys = true }
     private val policyKey = context.getDatabasePath(name).absolutePath
+    private val appContext = context.applicationContext
 
     // 上传队列与候选使用独立 helper；WAL 允许按键读取已提交快照，不等后台写事务。
     init { setWriteAheadLoggingEnabled(true) }
@@ -109,16 +110,18 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
         }
     }
 
-    @Synchronized fun enqueue(event: MobileEvent, targets: List<String>) {
+    @Synchronized fun enqueue(event: MobileEvent, targets: List<String>): Unit {
         require(targets.isNotEmpty())
         val db = writableDatabase
         db.beginTransaction()
         try {
+            // 先取得队列写锁再解析；配置先发布日志、随后迁移也取得同一写锁。
+            val resolvedTargets=targets.map{BackendAddressMigration.resolveTarget(appContext,it)}.distinct()
             val inserted = db.insertWithOnConflict("pending_event", null, ContentValues().apply {
                 put("id", event.id); put("payload", json.encodeToString(MobileEvent.serializer(), event))
             }, SQLiteDatabase.CONFLICT_IGNORE)
             // 重复入队不能复活已经确认的目标。
-            if (inserted != -1L) targets.distinct().forEach { target ->
+            if (inserted != -1L) resolvedTargets.forEach { target ->
                 db.execSQL("INSERT INTO event_target(event_id,target) VALUES(?,?)", arrayOf(event.id, target))
             }
             db.setTransactionSuccessful()
@@ -153,15 +156,17 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
         db.execSQL("CREATE INDEX report_target_url ON report_target(target,attempted_at)")
     }
 
-    @Synchronized fun enqueueReport(report: PendingReport, targets: List<String>) {
+    @Synchronized fun enqueueReport(report: PendingReport, targets: List<String>): Unit {
         require(targets.isNotEmpty())
         val db = writableDatabase
         db.beginTransaction()
         try {
+            // 先取得队列写锁再解析；配置先发布日志、随后迁移也取得同一写锁。
+            val resolvedTargets=targets.map{BackendAddressMigration.resolveTarget(appContext,it)}.distinct()
             val inserted = db.insertWithOnConflict("pending_report", null, ContentValues().apply {
                 put("id", report.id); put("kind", report.kind); put("payload", report.payload)
             }, SQLiteDatabase.CONFLICT_IGNORE)
-            if (inserted != -1L) targets.distinct().forEach { target ->
+            if (inserted != -1L) resolvedTargets.forEach { target ->
                 db.execSQL("INSERT INTO report_target(report_id,target) VALUES(?,?)", arrayOf(report.id, target))
             }
             if (inserted != -1L) ReportImageIndex.index(db, report.id, report.kind,
@@ -177,11 +182,13 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
     /** 图片真实载荷及消息依赖共同提交，Room 才能移交；重复交接复用同 hash 的载荷。 */
     @Synchronized fun enqueueChatBatch(reports: List<PendingReport>, targets: List<String>) = enqueueChatBatch(reports.asSequence(),targets)
 
-    @Synchronized fun enqueueChatBatch(reports: Sequence<PendingReport>, targets: List<String>) {
+    @Synchronized fun enqueueChatBatch(reports: Sequence<PendingReport>, targets: List<String>): Unit {
         require(targets.isNotEmpty())
         val db = writableDatabase
         db.beginTransaction()
         try {
+            // 先取得队列写锁再解析；配置先发布日志、随后迁移也取得同一写锁。
+            val resolvedTargets=targets.map{BackendAddressMigration.resolveTarget(appContext,it)}.distinct()
             var count = 0
             reports.forEach { report ->
                 require(report.kind == "chat_asset" || report.kind == "chat_messages")
@@ -189,14 +196,14 @@ internal class LocalInputStore(context: Context, name: String = "local_input.db"
                 if (report.kind == "chat_asset") {
                     val hash = json.parseToJsonElement(report.payload).jsonObject["sha256"]!!.jsonPrimitive.content
                     val existing = db.rawQuery("SELECT m.report_id FROM report_image_meta m JOIN pending_report r ON r.id=m.report_id WHERE r.kind='chat_asset' AND m.asset_sha256=? LIMIT 1", arrayOf(hash)).use { if(it.moveToFirst()) it.getString(0) else null }
-                    if (existing == null) enqueueReport(report, targets)
-                    else targets.distinct().forEach { target ->
+                    if (existing == null) enqueueReport(report, resolvedTargets)
+                    else resolvedTargets.forEach { target ->
                         db.execSQL("INSERT OR IGNORE INTO report_target(report_id,target) VALUES(?,?)", arrayOf(existing,target))
                         db.execSQL("INSERT OR IGNORE INTO report_image_target(report_id,target) VALUES(?,?)", arrayOf(existing,target))
                     }
                 } else {
-                    enqueueReport(report, targets)
-                    targets.distinct().forEach { target -> db.execSQL("INSERT OR IGNORE INTO report_target(report_id,target) VALUES(?,?)", arrayOf(report.id,target)) }
+                    enqueueReport(report, resolvedTargets)
+                    resolvedTargets.forEach { target -> db.execSQL("INSERT OR IGNORE INTO report_target(report_id,target) VALUES(?,?)", arrayOf(report.id,target)) }
                 }
             }
             require(count > 0)

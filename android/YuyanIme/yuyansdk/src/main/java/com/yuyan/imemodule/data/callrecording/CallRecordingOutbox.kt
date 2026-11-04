@@ -18,6 +18,7 @@ internal class CallRecordingOutbox(
     private val maxPendingBytes:Long=512L*1024*1024,
     private val deleteAudio:(File)->Boolean={it.delete()},
     private val maxCompletedTasks:Int=100,
+    private val resolveTarget:(String)->String={it},
 ) {
     private val lock=locks.getOrPut(root.absolutePath){Any()}
     private val uploadLock=uploadLocks.getOrPut(root.absolutePath){java.util.concurrent.locks.ReentrantLock()}
@@ -26,6 +27,19 @@ internal class CallRecordingOutbox(
     fun uploadBatch(block:()->Unit) {
         checkWorker();if(!uploadLock.tryLock())return
         try {block()} finally {uploadLock.unlock()}
+    }
+    /** 与上传批次串行；逐个 AtomicFile 提交，崩溃后重放不更换 UUID 或音频。 */
+    fun replaceTarget(device:String,old:String,next:String) {
+        checkWorker();require(validDestination(next))
+        uploadLock.lock()
+        try { exclusive {
+            for(task in scan().first) {
+                if(task.deviceId!=device || task.metadata.destination!=old ||
+                    task.uploadStatus in listOf("saved","superseded") || task.cleanupStatus=="deleted")continue
+                save(task.copy(metadata=task.metadata.copy(destination=next),uploadStatus="pending",
+                    nextAttemptAt=0,lastError=null,receipt=null,serverRecordId=null))
+            }
+        } } finally {uploadLock.unlock()}
     }
     fun createAudioFile(id:String=UUID.randomUUID().toString()):Pair<String,File> = exclusive {
         ensureRoot()
@@ -45,6 +59,7 @@ internal class CallRecordingOutbox(
     }
     fun audioFile(id:String):File { checkWorker();return owned(id,"m4a") }
     fun enqueue(id:String,deviceId:String,metadata:CallMetadata,allowed:()->Boolean={true},source:SystemRecordingSource?=null):CallTask = exclusive {
+        val metadata=metadata.copy(destination=resolveTarget(metadata.destination))
         require(validId(deviceId));require(validDestination(metadata.destination))
         require(metadata.consent_version=="call-audio-v1")
         require(metadata.audio_duration_ms in 0..7_200_000 && metadata.recording_ended_at>=metadata.recording_started_at)
@@ -57,16 +72,17 @@ internal class CallRecordingOutbox(
         val task=CallTask(id,deviceId,metadata.copy(byte_size=file.length(),sha256=sha256(file,allowed)),source=source)
         check(allowed()){"transfer_paused"};save(task);task
     }
+    fun resolveDestination(target:String)=resolveTarget(target)
     fun tasks():List<CallTask> = exclusive {scan().first}
     fun linkDuplicate(id:String,systemId:String?)=exclusive {
         val local=read(id)
         check(local.source==null && local.attempts==0 && local.uploadStatus !in listOf("saved","superseded"))
-        if(systemId!=null)check(CallRecordingDuplicates.sameCall(local,read(systemId)))
+        if(systemId!=null)check(CallRecordingDuplicates.sameCall(local,read(systemId),resolveTarget))
         save(local.copy(duplicateOf=systemId))
     }
     fun cleanupDuplicate(id:String,systemId:String):Boolean=exclusive {
         val local=read(id);val system=read(systemId)
-        if(local.duplicateOf!=systemId || local.attempts!=0 || !CallRecordingDuplicates.sameCall(local,system) ||
+        if(local.duplicateOf!=systemId || local.attempts!=0 || !CallRecordingDuplicates.sameCall(local,system,resolveTarget) ||
             system.uploadStatus!="saved" || system.receipt==null || !matches(system,system.receipt))return@exclusive false
         val file=audioFile(id)
         if(file.exists() && !deleteAudio(file))return@exclusive false
@@ -75,7 +91,7 @@ internal class CallRecordingOutbox(
     fun supersedeLateWechatSystem(id:String):CallTask?=exclusive {
         val system=read(id)
         if(system.uploadStatus=="saved")return@exclusive null
-        val local=CallRecordingDuplicates.savedLocalFor(system,scan().first) ?: return@exclusive null
+        val local=CallRecordingDuplicates.savedLocalFor(system,scan().first,resolveTarget) ?: return@exclusive null
         if(local.receipt?.let{matches(local,it)}!=true)return@exclusive null
         // 只清理已核验同次通话的私有副本，外部系统原件不受影响。
         val file=audioFile(id)
@@ -87,7 +103,7 @@ internal class CallRecordingOutbox(
         val system=read(id)
         if(system.uploadStatus!="superseded" || system.metadata.platform!="wechat")return@exclusive false
         val local=system.duplicateOf?.let{read(it)} ?: return@exclusive false
-        local.uploadStatus=="saved" && local.receipt?.let{matches(local,it)}==true && CallRecordingDuplicates.sameCall(local,system)
+        local.uploadStatus=="saved" && local.receipt?.let{matches(local,it)}==true && CallRecordingDuplicates.sameCall(local,system,resolveTarget)
     }
     /** 坏清单原样保留，供运行入口显示诊断；不能让一个坏项饿死其他录音。 */
     fun invalidEntries():List<String> = exclusive {scan().second}

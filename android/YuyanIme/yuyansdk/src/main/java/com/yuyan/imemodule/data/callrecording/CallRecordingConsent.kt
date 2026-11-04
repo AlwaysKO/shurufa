@@ -1,10 +1,11 @@
 package com.yuyan.imemodule.data.callrecording
 import android.content.SharedPreferences
-internal class CallRecordingConsent(private val prefs:SharedPreferences) {
+internal class CallRecordingConsent(private val prefs:SharedPreferences,
+    private val resolveTarget:(String)->String={it}) {
     val wantsRecording:Boolean get()=prefs.getBoolean("record",false)
     val wantsUpload:Boolean get()=prefs.getBoolean("upload",false)
     val destination:String get()=prefs.getString("destination","")?:""
-    private fun matches(device:String,target:String)=prefs.getString("version",null)=="call-audio-v1" && prefs.getString("device",null)==device && destination==target && CallRecordingOutbox.validDestination(target)
+    private fun matches(device:String,target:String)=prefs.getString("version",null)=="call-audio-v1" && prefs.getString("device",null)==device && resolveTarget(destination)==target && CallRecordingOutbox.validDestination(target)
     fun recordingAllowed(device:String,target:String)=wantsRecording&&matches(device,target)
     val hasExpandedRecordingScope:Boolean get()=prefs.getString("recording_scope",null)=="phone_wechat_v2"
     fun expandedRecordingAllowed(device:String,target:String)=recordingAllowed(device,target)&&hasExpandedRecordingScope
@@ -17,7 +18,7 @@ internal class CallRecordingConsent(private val prefs:SharedPreferences) {
         save(device,target,true,true,true)
         true
     }
-    /** 调用方在 IO 线程提交；只有显式同意才更改绑定，不静默迁移授权。 */
+    /** 调用方在 IO 线程提交；手工授权仍须显式同意；后台同业务地址迁移另走 replaceTarget。 */
     fun grant(device:String,target:String,record:Boolean,upload:Boolean)=synchronized(lock) {
         save(device,target,record,upload,false)
     }
@@ -26,6 +27,16 @@ internal class CallRecordingConsent(private val prefs:SharedPreferences) {
         check(prefs.edit().putString("version","call-audio-v1").putString("device",device).putString("destination",target)
             .putString("recording_scope",if(combined)"phone_wechat_v2" else null)
             .putLong("revision",revision+1).putBoolean("combined_accepted",combined).putBoolean("record",record).putBoolean("upload",upload).commit())
+    }
+    /** 仅后台受信配置迁移入口使用；不改变任何开关或扩大同意范围。 */
+    fun replaceTarget(device:String,old:String,next:String)=synchronized(lock) {
+        require(CallRecordingOutbox.validDestination(next))
+        if(migrationSource(device)!=old)return@synchronized
+        check(prefs.edit().putString("destination",next).putLong("revision",revision+1).commit())
+    }
+    fun migrationSource(device:String):String?=destination.takeIf {
+        prefs.getString("version",null)=="call-audio-v1" && prefs.getString("device",null)==device &&
+            CallRecordingOutbox.validDestination(it)
     }
     fun revokeRecording()=revoke(record=true,upload=false)
     fun revokeUpload()=revoke(record=false,upload=true)

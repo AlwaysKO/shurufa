@@ -24,7 +24,7 @@ internal class CallRecordingUploader(
         val initial=outbox.tasks()
         for(local in initial.filter{selected(it) && it.source==null && it.attempts==0 && it.cleanupStatus!="deleted" && it.uploadStatus!="saved"}) {
             if(!allowed())return@uploadBatch
-            val system=CallRecordingDuplicates.preferredSystem(local,initial,::sourceExists)
+            val system=CallRecordingDuplicates.preferredSystem(local,initial,::sourceExists,outbox::resolveDestination)
             outbox.linkDuplicate(local.id,system?.takeIf{sourceExists(it)}?.id)
         }
         // 系统文件先获得持久回执，之后才有资格清理对应的本地副本。
@@ -32,6 +32,13 @@ internal class CallRecordingUploader(
             if(task.cleanupStatus=="deleted" || !selected(task))continue
             fun permitted()=allowed() && onlineTarget()==task.metadata.destination
             try {
+                // 原地址已确认的历史不重放；受信同业务迁移仅恢复合法私有副本清理。
+                if(task.uploadStatus=="saved" && task.metadata.destination!=onlineTarget() &&
+                    outbox.resolveDestination(task.metadata.destination)==onlineTarget() && allowed() && outbox.hasSavedReceipt(task)) {
+                    onSaved(task)
+                    if(allowed())outbox.cleanup(task.id)
+                    continue
+                }
                 if(!permitted()){outbox.pause(task.id);continue}
                 if(task.source!=null && task.attempts==0) {
                     val duplicate=outbox.supersedeLateWechatSystem(task.id)

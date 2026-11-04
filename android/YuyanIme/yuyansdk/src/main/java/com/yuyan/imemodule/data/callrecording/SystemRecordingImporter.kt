@@ -23,6 +23,7 @@ internal class SystemRecordingImporter(
     private val now:()->Long=System::currentTimeMillis,
     private val wechatEndedAt:()->Long?={null},
     private val phoneEndedAt:()->Long?={null},
+    private val previousTargets:()->List<String> = {emptyList()},
 ) {
     @Serializable private data class Entry(val observedAt:Long,val taskId:String?=null,val complete:Boolean=false)
     private val json=Json{encodeDefaults=true;ignoreUnknownKeys=true}
@@ -50,12 +51,12 @@ internal class SystemRecordingImporter(
             try {
                 // 升级纠正混合目录分类时，旧平台已发布/已保存的同一原件不能再次上传。
                 val otherPlatform=if(doc.platform=="phone")"wechat"else"phone"
-                val prior=read(key(device,target,otherPlatform,doc.uri,doc.size,doc.modifiedAt))
+                val prior=findEntry(device,target,otherPlatform,doc.uri,doc.size,doc.modifiedAt)
                 if(prior?.complete==true)continue
                 val priorTask=prior?.taskId?.let{tasks[it]}
                 if(priorTask!=null){if(priorTask.uploadStatus=="saved")markSaved(priorTask);continue}
                 val key=key(device,target,doc.platform,doc.uri,doc.size,doc.modifiedAt)
-                var entry=read(key) ?: Entry(now()).also{write(key,it)}
+                var entry=findEntry(device,target,doc.platform,doc.uri,doc.size,doc.modifiedAt) ?: Entry(now()).also{write(key,it)}
                 if(entry.complete)continue
                 val existing=entry.taskId?.let{tasks[it]}
                 if(existing!=null){if(existing.uploadStatus in listOf("saved","superseded"))markSaved(existing);continue}
@@ -107,9 +108,17 @@ internal class SystemRecordingImporter(
         // 迟到系统原件可引用已保存的同次微信自录；不能伪造该原件的上传回执。
         check((task.uploadStatus=="saved" && task.receipt!=null) || outbox.confirmedWechatSystemDuplicate(task.id))
         val key=key(task.deviceId,task.metadata.destination,task.metadata.platform,source.uri,source.size,source.modifiedAt)
-        val entry=read(key) ?: error("missing_system_recording_index")
+        val entry=findEntry(task.deviceId,task.metadata.destination,task.metadata.platform,source.uri,source.size,source.modifiedAt) ?: error("missing_system_recording_index")
         check(entry.taskId==task.id)
         if(!entry.complete)write(key,entry.copy(complete=true))
+    }
+    /** 地址迁移保留旧索引；包括已回收清单的完成索引，不能重新导入已确认原件。 */
+    private fun findEntry(device:String,target:String,platform:String,uri:String,size:Long,modified:Long):Entry? {
+        val entries=(listOf(target)+previousTargets()).distinct().mapNotNull { read(key(device,it,platform,uri,size,modified)) }
+        val entry=entries.firstOrNull{it.complete} ?: entries.firstOrNull{it.taskId!=null} ?: entries.firstOrNull() ?: return null
+        val currentKey=key(device,target,platform,uri,size,modified)
+        if(read(currentKey)!=entry)write(currentKey,entry)
+        return entry
     }
     private fun key(device:String,target:String,platform:String,uri:String,size:Long,modified:Long)=
         UUID.nameUUIDFromBytes(listOf(device,target,platform,uri,size.toString(),modified.toString()).joinToString("\u0000").toByteArray()).toString()

@@ -17,6 +17,7 @@ internal fun usageRecordFromJson(j: JSONObject) = UsageRecord(j.getString("id"),
  * The device-owned queue must not travel through system or keyboard database backups.
  */
 internal class UsageStore(context: Context): SQLiteOpenHelper(context.applicationContext,java.io.File(context.noBackupFilesDir,"app_usage.db").absolutePath,null,3), java.io.Closeable {
+    private val appContext=context.applicationContext
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL("CREATE TABLE state (id INTEGER PRIMARY KEY CHECK(id=1), payload TEXT NOT NULL)")
         db.execSQL("CREATE TABLE record (id TEXT PRIMARY KEY, end_ms INTEGER NOT NULL, payload TEXT NOT NULL, start_ms INTEGER NOT NULL CHECK(end_ms>start_ms), online_confirmed_at INTEGER)")
@@ -53,6 +54,7 @@ internal class UsageStore(context: Context): SQLiteOpenHelper(context.applicatio
         val db=writableDatabase
         db.beginTransaction()
         try {
+            val targets=targets.map{com.yuyan.imemodule.data.collect.BackendAddressMigration.resolveTarget(appContext,it)}.distinct()
             val previous=db.rawQuery("SELECT payload FROM evidence WHERE id=1",null).use { c ->
                 if(c.moveToFirst()) UsageEvidence.fromJson(JSONObject(c.getString(0))) else null
             }
@@ -86,6 +88,31 @@ internal class UsageStore(context: Context): SQLiteOpenHelper(context.applicatio
             db.setTransactionSuccessful()
             return changed || deliveryChanged
         } finally { db.endTransaction() }
+    }
+    /** 只搬未确认投递；不把旧地址的确认伪造成新地址已保存。 */
+    fun replaceTarget(old:String,next:String) {
+        if(old==next)return
+        val db=writableDatabase;db.beginTransaction()
+        try {
+            db.execSQL("INSERT OR IGNORE INTO delivery(record_id,target) SELECT record_id,? FROM delivery WHERE target=? AND acknowledged=0",arrayOf(next,old))
+            db.delete("delivery","target=? AND acknowledged=0",arrayOf(old))
+            // 同版本的新端真实回执保留；不同版本的未确认快照仍需投递。
+            db.rawQuery("SELECT version,payload FROM evidence_delivery WHERE target=? AND disposition IS NULL",arrayOf(old)).use { c ->
+                if(c.moveToFirst()) {
+                    // evidence 是全局单调推进的授权快照；切址期间新端可能已取得更新版本。
+                    val latest=db.rawQuery("SELECT payload FROM evidence WHERE id=1",null).use { e ->
+                        if(e.moveToFirst())e.getString(0) else c.getString(1)
+                    }
+                    val version=JSONObject(latest).getString("version")
+                    val values=ContentValues().apply {put("target",next);put("version",version);put("payload",latest);putNull("disposition")}
+                    db.update("evidence_delivery",values,"target=? AND version<>?",arrayOf(next,version))
+                    check(db.insertWithOnConflict("evidence_delivery",null,values,SQLiteDatabase.CONFLICT_IGNORE)!=-1L ||
+                        db.rawQuery("SELECT 1 FROM evidence_delivery WHERE target=?",arrayOf(next)).use{it.moveToFirst()})
+                }
+            }
+            db.delete("evidence_delivery","target=? AND disposition IS NULL",arrayOf(old))
+            db.setTransactionSuccessful()
+        } finally {db.endTransaction()}
     }
     fun targets(): List<String> = readableDatabase.rawQuery("SELECT target FROM delivery WHERE acknowledged=0 UNION SELECT target FROM evidence_delivery WHERE disposition IS NULL",null).use { c -> buildList { while(c.moveToNext()) add(c.getString(0)) } }
     fun pending(target: String): List<UsageRecord> = readableDatabase.rawQuery(

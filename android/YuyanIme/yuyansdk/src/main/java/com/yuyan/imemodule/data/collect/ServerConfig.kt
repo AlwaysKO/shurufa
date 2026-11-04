@@ -40,12 +40,25 @@ object ServerConfig {
         val old = baseUrl
         if (old == normalized) return null
         val saved = checkNotNull(prefs) { "ServerConfig is not initialized" }
-            .edit().putString(KEY_ONLINE_SERVER_URL, normalized).commit()
+            .edit().putString(KEY_ONLINE_SERVER_URL, normalized)
+            // 地址与恢复日志必须一次提交，避免新地址已生效但旧队列失去迁移线索。
+            .putString(BackendAddressMigration.HISTORY_KEY,
+                BackendAddressMigration.append(checkNotNull(prefs), old, normalized)).commit()
         if (!saved) return null
         targetEpoch++
         return old to normalized
     }
 
+    /** 升级前已切址的遗留授权：只补恢复日志，不改当前地址。 */
+    @Synchronized internal fun rememberPreviousTarget(old:String) {
+        if(normalizeOnlineServerUrl(old)!=old || old==baseUrl)return
+        val saved=checkNotNull(prefs)
+        // 遗留补迁也必须有已接收的后台地址，不能把打包默认值当作远端迁移授权。
+        if(normalizeOnlineServerUrl(saved.getString(KEY_ONLINE_SERVER_URL,null))!=baseUrl)return
+        if(BackendAddressMigration.resolveTarget(saved,old)==baseUrl)return
+        check(saved.edit().putString(BackendAddressMigration.HISTORY_KEY,
+            BackendAddressMigration.append(saved,old,baseUrl)).commit())
+    }
 }
 
 internal fun resolveServerBaseUrl(

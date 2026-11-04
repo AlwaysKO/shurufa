@@ -14,6 +14,15 @@ internal class PhoneCallLogConsent(private val prefs:SharedPreferences) {
         check(prefs.edit().putBoolean("enabled",true).putString("device",device).putString("destination",target)
             .putLong("revision",revision+1).commit());true
     }
+    fun replaceTarget(device:String,old:String,next:String)=synchronized(lock) {
+        require(CallRecordingOutbox.validDestination(next))
+        if(prefs.getString("device",null)!=device || prefs.getString("destination",null)!=old)return@synchronized
+        check(prefs.edit().putString("destination",next).putLong("revision",revision+1)
+            .remove("last_fingerprint").commit())
+    }
+    fun migrationSource(device:String):String?=prefs.getString("destination",null)?.takeIf {
+        prefs.getString("device",null)==device && CallRecordingOutbox.validDestination(it)
+    }
     fun revoke()=synchronized(lock){prefs.edit().putBoolean("enabled",false).putLong("revision",revision+1).apply()}
     private companion object{val lock=Any()}
 }

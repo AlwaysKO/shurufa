@@ -6,7 +6,8 @@ import java.io.File
 
 /** 崩溃时保留私有文件与录音日志；只在输入空闲时解析和哈希，不上传未封装音频。 */
 internal class CallRecordingSessions(private val root:File,private val outbox:CallRecordingOutbox,
-    private val inspectAudio:(File)->Long? = ::inspectRecordedAudio) {
+    private val inspectAudio:(File)->Long? = ::inspectRecordedAudio,
+    private val resolveTarget:(String)->String = {it}) {
     private val json=Json{encodeDefaults=true;ignoreUnknownKeys=true}
     fun begin(device:String,metadata:CallMetadata):CallTask {
         val(id,_)=outbox.createAudioFile()
@@ -38,7 +39,7 @@ internal class CallRecordingSessions(private val root:File,private val outbox:Ca
         if(!allowed())return
         val duration=inspectAudio(outbox.audioFile(task.id)) ?: return
         if(duration !in 1..7_200_000 || !allowed())return
-        val metadata=task.metadata.copy(audio_duration_ms=duration,
+        val metadata=task.metadata.copy(destination=resolveTarget(task.metadata.destination),audio_duration_ms=duration,
             recording_ended_at=maxOf(task.metadata.recording_ended_at,task.metadata.recording_started_at+duration))
         if(outbox.tasks().none{it.id==task.id})outbox.enqueue(task.id,task.deviceId,metadata,allowed)
         atomic(task.id).delete()

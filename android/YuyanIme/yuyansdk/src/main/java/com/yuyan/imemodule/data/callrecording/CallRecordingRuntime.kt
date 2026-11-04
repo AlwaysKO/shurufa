@@ -5,17 +5,19 @@ import android.content.Intent
 import android.content.BroadcastReceiver
 import com.yuyan.imemodule.data.collect.CollectionConsent
 import com.yuyan.imemodule.data.collect.DataCollector
+import com.yuyan.imemodule.data.collect.BackendAddressMigration
 import com.yuyan.imemodule.data.collect.ServerConfig
 import com.yuyan.imemodule.data.collect.ImageUploadRuntime
 import java.io.File
 
 internal object CallRecordingRuntime {
     fun preferences(context:Context)=context.applicationContext.getSharedPreferences("call_audio_consent_v1",Context.MODE_PRIVATE)
-    fun consent(context:Context)=CallRecordingConsent(preferences(context))
+    fun consent(context:Context)=CallRecordingConsent(preferences(context),
+        resolveTarget={BackendAddressMigration.resolveTarget(context,it)})
     // Android 可将系统私有根目录映射为 /data/data；仅归一化系统给出的根，子目录仍拒绝链接。
     private fun root(context:Context)=File(context.noBackupFilesDir.canonicalFile,"call_audio")
-    fun outbox(context:Context)=CallRecordingOutbox(File(root(context),"outbox"))
-    fun sessions(context:Context)=CallRecordingSessions(File(root(context),"sessions"),outbox(context))
+    fun outbox(context:Context)=CallRecordingOutbox(File(root(context),"outbox"),resolveTarget={BackendAddressMigration.resolveTarget(context,it)})
+    fun sessions(context:Context)=CallRecordingSessions(File(root(context),"sessions"),outbox(context),resolveTarget={BackendAddressMigration.resolveTarget(context,it)})
     fun restore(context:Context){
         com.yuyan.imemodule.data.calllog.PhoneCallLogRuntime.restore(context)
         // 恢复待传只使用系统 Job，不从 BOOT/后台拉起麦克风服务。
@@ -27,11 +29,15 @@ internal object CallRecordingRuntime {
         val app=context.applicationContext
         if(!stillRunning())return null
         ServerConfig.init(app)
+        if(!BackendAddressMigration.recover(app))return null
+        val target=ServerConfig.baseUrl;val epoch=ServerConfig.onlineEpoch
         val id=DataCollector.deviceId(app);val consent=consent(app)
-        val authorized={stillRunning()&&CollectionConsent.enabled(app)&&consent.uploadAllowed(id,ServerConfig.baseUrl)}
+        val ticket=consent.revision;val masterEpoch=CollectionConsent.epoch
+        val authorized={stillRunning()&&CollectionConsent.enabled(app)&&CollectionConsent.epoch==masterEpoch &&
+            consent.revision==ticket && ServerConfig.onlineEpoch==epoch && ServerConfig.baseUrl==target && consent.uploadAllowed(id,target)}
         if(!authorized()||CallRecordingService.activeId!=null)return null
         val box=outbox(app)
-        fun pending()=box.tasks().filter{it.deviceId==id && it.metadata.destination==ServerConfig.baseUrl &&
+        fun pending()=box.tasks().filter{it.deviceId==id && it.metadata.destination==target &&
             it.cleanupStatus!="deleted" && it.uploadStatus !in listOf("saved","superseded")}
         if(!ImageUploadRuntime.isBackgroundWorkAllowed()) {
             val sources=SystemRecordingSources(app)
@@ -62,7 +68,7 @@ internal object CallRecordingRuntime {
             preferences(app).edit().remove("system_change_pending").apply()
             val documents=SystemRecordingSources(app)
             val importer=SystemRecordingImporter(File(root(app),"system_index"),box,
-                wechatEndedAt={WechatCallUpload.recentEnd(app)},phoneEndedAt={WechatCallUpload.recentPhoneEnd(app)})
+                wechatEndedAt={WechatCallUpload.recentEnd(app)},phoneEndedAt={WechatCallUpload.recentPhoneEnd(app)},previousTargets={BackendAddressMigration.previousTargets(app,target)})
             val scanned=mutableMapOf<String,Boolean>()
             for(platform in if(urgentEnd!=null)listOf("wechat","phone")else listOf("phone","wechat")) {
                 if(!documents.configured(platform)) {
@@ -72,7 +78,7 @@ internal object CallRecordingRuntime {
                 try {
                     val scan=documents.scan(platform,allowed)
                     val files=if(urgentEnd==null || platform!="wechat")scan.files else scan.files.filter{it.modifiedAt>=urgentEnd-5000}
-                    val result=importer.scan(files,id,ServerConfig.baseUrl,allowed,documents::open,documents::unchanged)
+                    val result=importer.scan(files,id,target,allowed,documents::open,documents::unchanged)
                     scanned[platform]=scan.complete && result.finished && result.waiting==0 && result.errors==0
                     val time=java.text.SimpleDateFormat("MM-dd HH:mm",java.util.Locale.getDefault()).format(java.util.Date())
                     preferences(app).edit().putString("system_scan_$platform",
