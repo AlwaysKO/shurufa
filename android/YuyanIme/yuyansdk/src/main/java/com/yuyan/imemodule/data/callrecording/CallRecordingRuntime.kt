@@ -43,7 +43,7 @@ internal object CallRecordingRuntime {
             val sources=SystemRecordingSources(app)
             val localWork=(preferences(app).getBoolean("system_change_pending",false) ||
                 preferences(app).getBoolean("system_import_waiting",false)) && (sources.readable("phone") || sources.readable("wechat"))
-            val hasWork=pending().isNotEmpty() || sessions(app).pendingCount()>0 || localWork
+            val hasWork=pending().any{CallRecordingNetwork.allowsSize(app,it.metadata.byte_size)} || sessions(app).pendingCount()>0 || localWork
             if((CallRecordingNetwork.network(app)==null && !localWork) || !hasWork)return null
             val count=preferences(app).getInt("upload_deferred_count",0).coerceIn(0,6)
             preferences(app).edit().putInt("upload_deferred_count",(count+1).coerceAtMost(6)).apply()
@@ -82,7 +82,7 @@ internal object CallRecordingRuntime {
                     scanned[platform]=scan.complete && result.finished && result.waiting==0 && result.errors==0
                     val time=java.text.SimpleDateFormat("MM-dd HH:mm",java.util.Locale.getDefault()).format(java.util.Date())
                     preferences(app).edit().putString("system_scan_$platform",
-                        "$time 检查：最近7天发现 ${scan.files.size}；新入队 ${result.imported}；等待文件写完 ${result.waiting}；读取/格式异常 ${result.errors}"+
+                        "$time 检查：普通7天 / 回收站30天发现 ${scan.files.size}；新入队 ${result.imported}；等待文件写完 ${result.waiting}；读取/格式异常 ${result.errors}"+
                             if(!scan.complete)"；部分来源暂不可读，下次重试"else "").apply()
                     if(result.waiting>0 || !result.finished)retrySoon=true
                 }catch(e:kotlinx.coroutines.CancellationException){throw e}
@@ -97,6 +97,7 @@ internal object CallRecordingRuntime {
                 },allowed=uploadAllowed,calls=CallRecordingNetwork.client(network))
                 CallRecordingUploader(box,transport,uploadAllowed,{ServerConfig.baseUrl},
                     systemSourceExists=documents::exists,onSaved=importer::markSaved,
+                    taskAllowed={CallRecordingNetwork.allowsSize(app,it.metadata.byte_size)},
                     selected={recentRecordingSelected(it,urgentEnd?:phoneEnd,if(urgentEnd!=null)"wechat"else"phone")},
                     ready={task->systemRecordingUploadReady(task,documents.configured(task.metadata.platform),
                         scanned[task.metadata.platform]==true,System.currentTimeMillis())}).runOnce()
@@ -112,7 +113,7 @@ internal object CallRecordingRuntime {
         if(retrySoon)preferences(app).edit().putInt("import_follow_up_count",(followUps+1).coerceAtMost(2)).apply()
         else preferences(app).edit().remove("import_follow_up_count").apply()
         if(CallRecordingNetwork.network(app)==null)return localRetry
-        val next=pending().minOfOrNull{(it.nextAttemptAt-System.currentTimeMillis()).coerceAtLeast(35_000L)}
+        val next=pending().filter{CallRecordingNetwork.allowsSize(app,it.metadata.byte_size)}.minOfOrNull{(it.nextAttemptAt-System.currentTimeMillis()).coerceAtLeast(35_000L)}
         return listOfNotNull(localRetry,next).minOrNull()
     }
 }

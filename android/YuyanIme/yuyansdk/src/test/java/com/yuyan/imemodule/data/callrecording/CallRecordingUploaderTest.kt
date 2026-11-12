@@ -34,6 +34,14 @@ class CallRecordingUploaderTest {
             return saved ?: CallReceipt(true,task.id,task.deviceId,task.metadata.byte_size,task.metadata.sha256,"2026-09-30T00:00:00Z")
         }
     }
+    @Test fun `任务网络不满足不请求且网络切换中止后保留副本`()=io {
+        val box=box();val task=enqueue(box);val network=Transport();var eligible=false
+        fun run()=CallRecordingUploader(box,network,{true},{"https://example.test"},taskAllowed={eligible}).runOnce()
+        run();assertEquals(0,network.queries);assertEquals(0,box.tasks().single().attempts)
+        eligible=true;network.revoke={eligible=false};run()
+        assertEquals("paused",box.tasks().single().uploadStatus);assertTrue(box.audioFile(task.id).exists())
+        eligible=true;network.revoke=null;run();assertFalse(box.audioFile(task.id).exists())
+    }
     @Test fun `不同本地ID同内容后台已保存时不上传并保存原回执供恢复清理`()=io {
         val box=box();val task=enqueue(box);val network=Transport()
         val originalId=UUID.randomUUID().toString()

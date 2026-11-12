@@ -13,6 +13,19 @@ import java.util.concurrent.Executors
 @Config(sdk=[28])
 class CallRecordingSessionsTest {
     private fun io(block:()->Unit){val e=Executors.newSingleThreadExecutor();try{e.submit(block).get()}finally{e.shutdownNow()}}
+    @Test fun `自录按原六十四MiB预留且重建队列后仍遵守总容量`()=io {
+        val context=ApplicationProvider.getApplicationContext<Context>();val root=File(context.noBackupFilesDir,UUID.randomUUID().toString())
+        val audioRoot=File(root,"outbox");val sessionsRoot=File(root,"sessions");val device=UUID.randomUUID().toString()
+        val metadata=CallMetadata(destination="https://example.test",recording_started_at=1000,recording_ended_at=1000,audio_duration_ms=0)
+        repeat(8) {
+            val sessions=CallRecordingSessions(sessionsRoot,CallRecordingOutbox(audioRoot))
+            sessions.begin(device,metadata)
+        }
+        val sessions=CallRecordingSessions(sessionsRoot,CallRecordingOutbox(audioRoot))
+        assertEquals(8,sessions.pendingCount())
+        assertThrows(IllegalStateException::class.java){sessions.begin(device,metadata)}
+        assertEquals(8,audioRoot.listFiles()!!.count{it.extension=="m4a"})
+    }
     @Test fun `输入忙时保留已结束日志后续恢复入队且不重复`()=io {
         val context=ApplicationProvider.getApplicationContext<Context>();val root=File(context.noBackupFilesDir,UUID.randomUUID().toString())
         val box=CallRecordingOutbox(File(root,"outbox"));val sessions=CallRecordingSessions(File(root,"sessions"),box,inspectAudio={1000})

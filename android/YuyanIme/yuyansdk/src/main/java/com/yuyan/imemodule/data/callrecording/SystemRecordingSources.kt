@@ -9,7 +9,8 @@ import java.io.InputStream
 internal class SystemRecordingSources(context: Context) {
     private val media = SystemRecordingMediaStore(context)
     private val documents = SystemRecordingDocuments(context)
-    fun readable(platform: String) = media.readable() || documents.readable(platform)
+    private val trash = SystemRecordingTrash(context)
+    fun readable(platform: String) = media.readable() || documents.readable(platform) || trash.readable()
     fun configured(platform: String) = readable(platform) || documents.tree(platform) != null
 
     data class Scan(val files: List<SystemRecordingDocument>, val complete: Boolean)
@@ -29,15 +30,16 @@ internal class SystemRecordingSources(context: Context) {
         if(documents.readable(platform) || documents.tree(platform) != null) read {
             documents.list(platform, allowed).also { complete = complete && documents.scanComplete }
         }
+        if(trash.readable()) read { trash.list(platform, allowed) }
         val now = System.currentTimeMillis()
-        return Scan(files.distinctBy { it.uri }.filter { systemRecordingWithinSevenDays(it, now) }, complete)
+        return Scan(files.distinctBy { it.uri }.filter { systemRecordingWithinImportWindow(it, now) }, complete)
     }
 
     fun open(doc: SystemRecordingDocument): InputStream =
-        if(isMedia(doc.uri)) media.open(doc) else documents.open(doc)
+        if(SystemRecordingTrash.owns(doc.uri)) trash.open(doc) else if(isMedia(doc.uri)) media.open(doc) else documents.open(doc)
     fun unchanged(doc: SystemRecordingDocument) =
-        if(isMedia(doc.uri)) media.unchanged(doc) else documents.unchanged(doc)
+        if(SystemRecordingTrash.owns(doc.uri)) trash.unchanged(doc) else if(isMedia(doc.uri)) media.unchanged(doc) else documents.unchanged(doc)
     fun exists(source: SystemRecordingSource) =
-        if(isMedia(source.uri)) media.exists(source) else documents.exists(source)
+        if(SystemRecordingTrash.owns(source.uri)) trash.exists(source) else if(isMedia(source.uri)) media.exists(source) else documents.exists(source)
     private fun isMedia(uri: String) = Uri.parse(uri).authority == "media"
 }

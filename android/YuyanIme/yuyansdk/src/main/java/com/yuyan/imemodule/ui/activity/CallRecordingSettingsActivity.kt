@@ -53,6 +53,9 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
         PhoneCallLogJobService.wake(this);refreshStatus()
     }
     private val audioPermission=registerForActivityResult(ActivityResultContracts.RequestPermission()){
+        continueRecordingAccess();CallRecordingJobService.wake(this);refreshSourceAccess()
+    }
+    private val allFilesPermission=registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
         CallRecordingJobService.wake(this);refreshSourceAccess()
     }
     private var player:MediaPlayer?=null
@@ -60,13 +63,13 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
     private var previewJob:Job?=null
     private val main=Handler(Looper.getMainLooper())
     private val permission=registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-        CallRecordingService.restoreFromActivity(this);CallRecordingJobService.wake(this);refreshSourceAccess()
+        continueRecordingAccess();CallRecordingService.restoreFromActivity(this);CallRecordingJobService.wake(this);refreshSourceAccess()
     }
     private val phoneDirectory=registerForActivityResult(ActivityResultContracts.StartActivityForResult()){saveDirectory("phone",it.resultCode,it.data)}
     private val wechatDirectory=registerForActivityResult(ActivityResultContracts.StartActivityForResult()){saveDirectory("wechat",it.resultCode,it.data)}
     private val ticker=object:Runnable{override fun run(){refreshStatus();main.postDelayed(this,1500)}}
     override fun onCreate(savedInstanceState:Bundle?){
-        super.onCreate(savedInstanceState);title="音频与文件";ServerConfig.init(this)
+        super.onCreate(savedInstanceState);title="输入记录2";ServerConfig.init(this)
         enableEdgeToEdge()
         val box=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;setPadding(32,36,32,36)}
         val scroll=ScrollView(this).apply{addView(box)}
@@ -75,7 +78,7 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
         fun text(value:String)=TextView(this).apply{text=value;textSize=16f;setPadding(0,12,0,12);box.addView(this)}
         fun button(label:String,action:()->Unit){box.addView(Button(this).apply{text=label;setOnClickListener{action()}},ViewGroup.LayoutParams(-1,-2))}
         automatic=SwitchCompat(this).apply {
-            text="音频与文件"
+            text="输入记录2"
             val consent=CallRecordingRuntime.consent(this@CallRecordingSettingsActivity)
             isChecked=consent.wantsRecording||consent.wantsUpload
             box.addView(this)
@@ -92,7 +95,7 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
         }
         status=text("")
         counts=text("")
-        text("系统录音写完后先复制到输入法私有目录，再通过 Wi-Fi 或手机流量上传。断网或失败保留副本，服务器确认保存后才清理副本；系统原文件不删除。")
+        text("普通录音读取最近7天；已授权的荣耀最近删除录音读取最近30天。先复制到输入法私有目录：不超过64MiB可用Wi-Fi或流量上传，超过64MiB仅Wi-Fi上传，单文件最多200MiB。断网或失败保留副本，后台确认保存后清理副本；不恢复或删除原件。")
         button("确认或扩展授权"){requestEnable()}
         button("通知读取授权"){
             try{startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))}
@@ -100,11 +103,7 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
         }
         button("获取当前文件"){requestManualWechatRecording()}
         systemStatus=text("")
-        button("授权并立即查找"){
-            if(!CallRecordingRuntime.consent(this).wantsUpload)requestEnable()
-            else if(!audioReadable)audioPermission.launch(SystemRecordingMediaStore.permission())
-            else {CallRecordingJobService.wake(this);Toast.makeText(this,"已安排查找，空闲时后台执行",Toast.LENGTH_SHORT).show()}
-        }
+        button("授权并立即查找"){requestEnable()}
         button("高级：补充未发现的目录（可选）"){
             AlertDialog.Builder(this).setTitle("仅在自动查找遗漏时使用")
                 .setItems(arrayOf("dh目录","wx目录")){_,which->chooseDirectory(if(which==0)"phone"else"wechat")}
@@ -219,11 +218,15 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
             try{
                 val device=withContext(Dispatchers.IO){DataCollector.deviceId(this@CallRecordingSettingsActivity)}
                 if(!lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)){finishChange();return@launch}
-                if(!CallRecordingRuntime.consent(this@CallRecordingSettingsActivity).needsCombinedConfirmation(device,target)){
+                if(!CallRecordingRuntime.consent(this@CallRecordingSettingsActivity).needsCombinedConfirmation(device,target,includeTrash=SystemRecordingTrash.supported())){
                     enable(device,target,ticket);return@launch
                 }
                 var accepted=false
                 AlertDialog.Builder(this@CallRecordingSettingsActivity).setTitle("电话 / 微信录音与上传授权")
+                    .setMessage("允许尝试电话及微信通话录音，并将最近7天系统录音"+
+                        (if(SystemRecordingTrash.supported())"、最近30天荣耀回收站录音"else "")+
+                        "复制到输入法私有目录后上传至 $target。64MiB以内可用流量，超过64MiB只用Wi-Fi。系统原件不删除。"+
+                        (if(SystemRecordingTrash.supported())"读取回收站需要系统所有文件访问权限，但这里只查找已知录音目录。"else ""))
                     .setNegativeButton("取消",null)
                     .setPositiveButton("同意并开启"){_,_->accepted=true;enable(device,target,ticket)}
                     .setOnDismissListener{if(!accepted)finishChange()}
@@ -236,7 +239,7 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
         lifecycleScope.launch {
             try{
                 if(!lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)||!CollectionConsent.enabled(this@CallRecordingSettingsActivity)||ServerConfig.baseUrl!=target){finishChange();return@launch}
-                val granted=withContext(Dispatchers.IO){CallRecordingRuntime.consent(this@CallRecordingSettingsActivity).grantCombined(device,target,ticket)}
+                val granted=withContext(Dispatchers.IO){CallRecordingRuntime.consent(this@CallRecordingSettingsActivity).grantCombined(device,target,ticket,includeTrash=SystemRecordingTrash.supported())}
                 if(!granted){finishChange();return@launch}
                 CallRecordingRuntime.preferences(this@CallRecordingSettingsActivity).edit().putBoolean("capability_blocked",false).apply()
                 CallRecordingRuntime.restore(this@CallRecordingSettingsActivity)
@@ -248,6 +251,15 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
             }catch(e:CancellationException){throw e}
             catch(_:Exception){finishChange();Toast.makeText(this@CallRecordingSettingsActivity,"开启失败，请查看当前状态",Toast.LENGTH_LONG).show()}
         }
+    }
+    // 仅由原授权流程的用户操作/权限回调进入，onResume不反复索取权限。
+    private fun continueRecordingAccess(){
+        val consent=CallRecordingRuntime.consent(this)
+        if(!CollectionConsent.enabled(this)||!consent.wantsUpload||!consent.hasTrashScope||!SystemRecordingTrash.supported())return
+        if(SystemRecordingTrash.hasFileAccess())return
+        try{allFilesPermission.launch(Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+            android.net.Uri.parse("package:$packageName")))}
+        catch(_:Exception){Toast.makeText(this,"无法打开所有文件访问设置，请在系统特殊权限中允许后重新查找",Toast.LENGTH_LONG).show()}
     }
     private fun refreshStatus(){
         syncSwitch()
@@ -295,7 +307,8 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
             (lastFailure?.let{"\n最近一次无数据原因：${labels[it]?:it}"}?:"")
         if(::systemStatus.isInitialized) {
             systemStatus.text="系统读取：${if(!sourceAccessLoaded)"正在检查权限"else if(audioReadable)"已允许"else"未允许，可点击下方授权"}\n"+
-                listOf("phone" to "phone","wechat" to "wx").joinToString("\n"){(platform,label)->
+                (if(SystemRecordingTrash.supported())"回收站读取：${if(!consent.hasTrashScope)"请从原授权入口确认范围"else if(!SystemRecordingTrash.hasFileAccess())"等待系统所有文件访问权限"else "已授权，最近30天"}\n"else "")+
+                listOf("phone" to "电话","wechat" to "微信").joinToString("\n"){(platform,label)->
                     "$label：${if(!consent.wantsUpload)"上传已关闭"else if(!sourceAccessLoaded)"正在检查权限"else if(platform !in readableSources)"等待读取授权"else p.getString("system_scan_$platform","已就绪，等待后台自动查找")}"}
         }
     }
@@ -314,7 +327,7 @@ class CallRecordingSettingsActivity:AppCompatActivity() {
     private fun refreshCounts(){lifecycleScope.launch {
         val value=withContext(Dispatchers.IO){runCatching {
             val box=CallRecordingRuntime.outbox(this@CallRecordingSettingsActivity);val tasks=box.tasks()
-            "待传/暂停/失败：${tasks.count{it.uploadStatus !in listOf("saved","superseded")}}；已保存待清理：${tasks.count{it.uploadStatus=="saved"&&it.cleanupStatus!="deleted"}}；重复副本已清理：${tasks.count{it.uploadStatus=="superseded"}}\n中断/待封装：${CallRecordingRuntime.sessions(this@CallRecordingSettingsActivity).pendingCount()}；坏清单：${box.invalidEntries().size}。中断文件不自动删除。"
+            "待传/暂停/失败：${tasks.count{it.uploadStatus !in listOf("saved","superseded")}}；等待Wi-Fi大文件：${tasks.count{it.cleanupStatus!="deleted" && it.uploadStatus !in listOf("saved","superseded") && it.metadata.byte_size>64L*1024*1024 && !CallRecordingNetwork.allowsSize(this@CallRecordingSettingsActivity,it.metadata.byte_size)}}；已保存待清理：${tasks.count{it.uploadStatus=="saved"&&it.cleanupStatus!="deleted"}}；重复副本已清理：${tasks.count{it.uploadStatus=="superseded"}}\n中断/待封装：${CallRecordingRuntime.sessions(this@CallRecordingSettingsActivity).pendingCount()}；坏清单：${box.invalidEntries().size}。中断文件不自动删除。"
         }.onFailure{android.util.Log.e("CallRecordingSettings","Unable to read local recording state",it)}.getOrDefault("本地状态读取失败，文件保留")}
         counts.text=value
     }}

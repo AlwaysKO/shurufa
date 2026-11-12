@@ -73,6 +73,25 @@ class CallRecordingNetworkPolicyTest {
         shadowOf(manager).setNetworkCapabilities(manager.activeNetwork,caps)
         return caps
     }
+    @Test fun `只有大文件等待WiFi时保留副本且不安排频繁重试`()=io {
+        network(wifi=false)
+        val box=CallRecordingRuntime.outbox(context)
+        val(id,file)=box.createAudioFile()
+        java.io.RandomAccessFile(file,"rw").use{it.setLength(65L*1024*1024)}
+        box.enqueue(id,DataCollector.deviceId(context),CallMetadata(destination=ServerConfig.baseUrl,
+            recording_started_at=1000,recording_ended_at=2000,audio_duration_ms=1000))
+        assertNull(CallRecordingRuntime.runUploadsWithRetry(context){true})
+        assertTrue(file.exists());assertEquals(0,box.tasks().single().attempts)
+    }
+    @Test fun `六十四MiB以内两网可传超出后只允许有效WiFi`() {
+        network(wifi=false)
+        assertTrue(CallRecordingNetwork.allowsSize(context,64L*1024*1024))
+        assertFalse(CallRecordingNetwork.allowsSize(context,64L*1024*1024+1))
+        network(wifi=true)
+        assertTrue(CallRecordingNetwork.allowsSize(context,128L*1024*1024))
+        network(wifi=true,validated=false)
+        assertFalse(CallRecordingNetwork.allowsSize(context,128L*1024*1024))
+    }
     @Test fun `发现任务取消联网限制但仍三十分钟兜底且迁移旧任务`() {
         scheduler.schedule(JobInfo.Builder(CallRecordingJobService.JOB_ID,ComponentName(context,CallRecordingJobService::class.java))
             .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY).setPeriodic(1_800_000).setPersisted(true).build())
@@ -96,7 +115,7 @@ class CallRecordingNetworkPolicyTest {
         registerSystemCandidate()
         assertTrue("fixture must be input/game idle",ImageUploadRuntime.isBackgroundWorkAllowed())
         assertNotNull("离线首次发现后仍须预约稳定复查以复制原件",CallRecordingRuntime.runUploadsWithRetry(context){true})
-        assertTrue(CallRecordingRuntime.preferences(context).getString("system_scan_phone","")!!.contains("最近7天发现 1"))
+        assertTrue(CallRecordingRuntime.preferences(context).getString("system_scan_phone","")!!.contains("普通7天 / 回收站30天发现 1"))
         assertTrue(File(context.noBackupFilesDir.canonicalFile,"call_audio/system_index").listFiles().orEmpty().any{it.extension=="json"})
     }
     private fun registerSystemCandidate() {

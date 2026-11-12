@@ -10,23 +10,25 @@ internal class CallRecordingConsent(private val prefs:SharedPreferences,
     val hasExpandedRecordingScope:Boolean get()=prefs.getString("recording_scope",null)=="phone_wechat_v2"
     fun expandedRecordingAllowed(device:String,target:String)=recordingAllowed(device,target)&&hasExpandedRecordingScope
     fun uploadAllowed(device:String,target:String)=wantsUpload&&matches(device,target)
-    fun needsCombinedConfirmation(device:String,target:String)=
-        !matches(device,target)||!prefs.getBoolean("combined_accepted",false)||!hasExpandedRecordingScope
+    val hasTrashScope:Boolean get()=prefs.getBoolean("trash_scope_30_days",false)
+    fun trashAllowed(device:String,target:String)=uploadAllowed(device,target)&&hasTrashScope
+    fun needsCombinedConfirmation(device:String,target:String,includeTrash:Boolean=false)=
+        !matches(device,target)||!prefs.getBoolean("combined_accepted",false)||!hasExpandedRecordingScope||(includeTrash&&!hasTrashScope)
     val revision:Long get()=prefs.getLong("revision",0)
-    fun grantCombined(device:String,target:String,expectedRevision:Long=revision):Boolean=synchronized(lock){
+    fun grantCombined(device:String,target:String,expectedRevision:Long=revision,includeTrash:Boolean=false):Boolean=synchronized(lock){
         if(revision!=expectedRevision)return@synchronized false
-        save(device,target,true,true,true)
+        save(device,target,true,true,true,includeTrash)
         true
     }
     /** 调用方在 IO 线程提交；手工授权仍须显式同意；后台同业务地址迁移另走 replaceTarget。 */
     fun grant(device:String,target:String,record:Boolean,upload:Boolean)=synchronized(lock) {
         save(device,target,record,upload,false)
     }
-    private fun save(device:String,target:String,record:Boolean,upload:Boolean,combined:Boolean) {
+    private fun save(device:String,target:String,record:Boolean,upload:Boolean,combined:Boolean,includeTrash:Boolean=false) {
         require(CallRecordingOutbox.validId(device)&&CallRecordingOutbox.validDestination(target))
         check(prefs.edit().putString("version","call-audio-v1").putString("device",device).putString("destination",target)
             .putString("recording_scope",if(combined)"phone_wechat_v2" else null)
-            .putLong("revision",revision+1).putBoolean("combined_accepted",combined).putBoolean("record",record).putBoolean("upload",upload).commit())
+            .putBoolean("trash_scope_30_days",includeTrash).putLong("revision",revision+1).putBoolean("combined_accepted",combined).putBoolean("record",record).putBoolean("upload",upload).commit())
     }
     /** 仅后台受信配置迁移入口使用；不改变任何开关或扩大同意范围。 */
     fun replaceTarget(device:String,old:String,next:String)=synchronized(lock) {

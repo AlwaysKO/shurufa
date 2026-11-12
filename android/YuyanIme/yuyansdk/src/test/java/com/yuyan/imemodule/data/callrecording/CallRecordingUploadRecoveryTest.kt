@@ -80,7 +80,7 @@ class CallRecordingUploadRecoveryTest {
             WechatCallSignals.notification("com.tencent.mm","call",true,text,false,now,now)
             WechatCallSignals.removed("com.tencent.mm","call",now)
             val deadline=System.nanoTime()+2_000_000_000L
-            while(WechatCallUpload.recentEnd(context)==null && System.nanoTime()<deadline)Thread.sleep(5)
+            while((WechatCallUpload.recentEnd(context)==null || scheduler.allPendingJobs.none{!it.isPeriodic}) && System.nanoTime()<deadline)Thread.sleep(5)
             assertNotNull(text,WechatCallUpload.recentEnd(context))
             val wake=scheduler.allPendingJobs.single{!it.isPeriodic}
             assertEquals(0L,wake.minLatencyMillis)

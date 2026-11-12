@@ -18,6 +18,7 @@ internal class CallRecordingUploader(
     private val systemSourceExists:(SystemRecordingSource)->Boolean={false},
     private val onSaved:(CallTask)->Unit={},
     private val ready:(CallTask)->Boolean={true},
+    private val taskAllowed:(CallTask)->Boolean={true},
     private val selected:(CallTask)->Boolean={true},
 ) {
     fun runOnce()=outbox.uploadBatch {
@@ -30,7 +31,7 @@ internal class CallRecordingUploader(
         // 系统文件先获得持久回执，之后才有资格清理对应的本地副本。
         for(task in outbox.tasks().sortedBy{if(it.source!=null)0 else 1}) {
             if(task.cleanupStatus=="deleted" || !selected(task))continue
-            fun permitted()=allowed() && onlineTarget()==task.metadata.destination
+            fun permitted()=allowed() && taskAllowed(task) && onlineTarget()==task.metadata.destination
             try {
                 // 原地址已确认的历史不重放；受信同业务迁移仅恢复合法私有副本清理。
                 if(task.uploadStatus=="saved" && task.metadata.destination!=onlineTarget() &&

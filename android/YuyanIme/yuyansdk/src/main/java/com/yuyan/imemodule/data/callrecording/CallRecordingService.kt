@@ -182,7 +182,7 @@ class CallRecordingService:Service() {
             audio.setAudioSource(MediaRecorder.AudioSource.MIC)
             audio.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);audio.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
             audio.setAudioChannels(1);audio.setAudioSamplingRate(24000);audio.setAudioEncodingBitRate(32000)
-            audio.setMaxDuration(7_200_000);audio.setMaxFileSize(CallRecordingOutbox.MAX_AUDIO_BYTES)
+            audio.setMaxDuration(7_200_000);audio.setMaxFileSize(CallRecordingOutbox.MAX_SELF_RECORDING_BYTES)
             audio.setOutputFile(CallRecordingRuntime.outbox(this).audioFile(active.id).absolutePath)
             audio.setOnInfoListener{_,what,_->if(what==MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED||what==MediaRecorder.MEDIA_RECORDER_INFO_MAX_FILESIZE_REACHED)worker.post{if(recorder===audio){stopRecording(false,"recording_limit");status("limit_reached")}}}
             audio.setOnErrorListener{_,_,_->worker.post{if(recorder===audio)restrict("recorder_error")}}

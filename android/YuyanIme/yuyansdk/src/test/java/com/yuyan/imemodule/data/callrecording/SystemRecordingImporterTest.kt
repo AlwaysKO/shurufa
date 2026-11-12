@@ -25,6 +25,17 @@ class SystemRecordingImporterTest {
         val doc=SystemRecordingDocument("content://test/recording","Call_20260930_123000.m4a",bytes.size.toLong(),now-60000,"phone")
         fun importer()=SystemRecordingImporter(File(root,"index"),box,{RecordedSystemAudio(60000,"audio/mp4")},{now})
     }
+    @Test fun `回收站录音按三十天复制并保留原录音时间且普通来源仍为七天`()=io {
+        val f=Fixture()
+        val old=f.doc.copy(name="微信-测试-202609201205.m4a",trashed=true)
+        repeat(2){f.importer().scan(listOf(old),device,target,{true},{f.bytes.inputStream()},{true});f.now+=31000}
+        val task=f.box.tasks().single()
+        assertEquals(systemRecordingStartTime("20260920120500"),task.metadata.recording_started_at)
+        assertFalse(task.source!!.startTimeKnown)
+        assertArrayEquals(f.bytes,f.box.audioFile(task.id).readBytes())
+        assertFalse(systemRecordingWithinImportWindow(old.copy(name="微信-测试-202608201205.m4a"),f.now))
+        assertFalse(systemRecordingWithinImportWindow(old.copy(trashed=false),f.now))
+    }
     @Test fun `微信结束后两次稳定观察即可导入但不能首次观察直接读文件`()=io {
         val f=Fixture();val ended=f.now
         val doc=f.doc.copy(platform="wechat",modifiedAt=ended)

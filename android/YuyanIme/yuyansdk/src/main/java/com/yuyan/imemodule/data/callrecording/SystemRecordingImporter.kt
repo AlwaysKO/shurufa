@@ -12,7 +12,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.UUID
 
-internal data class SystemRecordingDocument(val uri:String,val name:String,val size:Long,val modifiedAt:Long,val platform:String)
+internal data class SystemRecordingDocument(val uri:String,val name:String,val size:Long,val modifiedAt:Long,val platform:String,val trashed:Boolean=false)
 internal data class RecordedSystemAudio(val duration:Long,val mime:String)
 internal data class SystemImportResult(val imported:Int,val waiting:Int,val errors:Int,val finished:Boolean)
 
@@ -46,7 +46,7 @@ internal class SystemRecordingImporter(
         for(doc in documents) {
             if(!allowed())return SystemImportResult(imported,waiting,errors,false)
             if(doc.size !in 1..CallRecordingOutbox.MAX_AUDIO_BYTES || doc.modifiedAt<=0){errors++;continue}
-            if(!systemRecordingWithinSevenDays(doc,now()))continue
+            if(!systemRecordingWithinImportWindow(doc,now()))continue
             var stagedId:String?=null
             try {
                 // 升级纠正混合目录分类时，旧平台已发布/已保存的同一原件不能再次上传。
@@ -90,7 +90,7 @@ internal class SystemRecordingImporter(
                 val audio=inspect(file)
                 if(audio==null || audio.duration !in 1..7_200_000){errors++;continue}
                 val namedStart=systemRecordingStartTime(doc.name)
-                val start=namedStart ?: (doc.modifiedAt-audio.duration).coerceAtLeast(0)
+                val start=namedStart ?: (if(doc.trashed)systemRecordingNamedTime(doc.name) else null) ?: (doc.modifiedAt-audio.duration).coerceAtLeast(0)
                 val metadata=CallMetadata(platform=doc.platform,destination=target,
                     recording_started_at=start,recording_ended_at=start+audio.duration,
                     audio_duration_ms=audio.duration,mime_type=audio.mime,call_duration_estimated=namedStart==null)
@@ -151,14 +151,18 @@ internal fun systemRecordingStartTime(name:String):Long? {
     return runCatching{SimpleDateFormat("yyyyMMddHHmmss",Locale.ROOT).apply{isLenient=false}.parse(value)?.time}.getOrNull()
 }
 
-/** 分钟精度仅用于七天范围过滤，不能作为同次通话的精确匹配证据。 */
-internal fun systemRecordingWithinSevenDays(doc:SystemRecordingDocument,now:Long):Boolean {
-    val minute=Regex("(?<![0-9])(20[0-9]{10})(?![0-9])").findAll(doc.name).toList().singleOrNull()?.value
-    val named=systemRecordingStartTime(doc.name) ?: minute?.let {
+/** 分钟精度可以展示原时间，但不能作为同次通话的精确匹配证据。 */
+internal fun systemRecordingNamedTime(name:String):Long? {
+    val minute=Regex("(?<![0-9])(20[0-9]{10})(?![0-9])").findAll(name).toList().singleOrNull()?.value
+    return systemRecordingStartTime(name) ?: minute?.let {
         runCatching{SimpleDateFormat("yyyyMMddHHmm",Locale.ROOT).apply{isLenient=false}.parse(it)?.time}.getOrNull()
     }
-    val recordedAt=named ?: doc.modifiedAt
-    return recordedAt>=now-7*86_400_000L && recordedAt<=now
+}
+internal fun systemRecordingWithinSevenDays(doc:SystemRecordingDocument,now:Long)=systemRecordingWithinDays(doc,now,7)
+internal fun systemRecordingWithinImportWindow(doc:SystemRecordingDocument,now:Long)=systemRecordingWithinDays(doc,now,if(doc.trashed)30 else 7)
+private fun systemRecordingWithinDays(doc:SystemRecordingDocument,now:Long,days:Int):Boolean {
+    val recordedAt=systemRecordingNamedTime(doc.name) ?: if(doc.trashed)return false else doc.modifiedAt
+    return recordedAt>=now-days*86_400_000L && recordedAt<=now
 }
 
 internal fun inspectSystemRecording(file:File):RecordedSystemAudio? {

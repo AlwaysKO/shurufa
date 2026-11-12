@@ -10,7 +10,7 @@ internal class CallRecordingSessions(private val root:File,private val outbox:Ca
     private val resolveTarget:(String)->String = {it}) {
     private val json=Json{encodeDefaults=true;ignoreUnknownKeys=true}
     fun begin(device:String,metadata:CallMetadata):CallTask {
-        val(id,_)=outbox.createAudioFile()
+        val(id,_)=outbox.createAudioFile(selfRecorded=true)
         val task=CallTask(id,device,metadata.copy(recording_status="interrupted",failure_reason="process_interrupted"))
         write(task);return task
     }

@@ -21,14 +21,12 @@ class CallRecordingSettingsDisclosureTest {
         controller.create()
         try {
             val texts=descendants(activity.findViewById(android.R.id.content)).filterIsInstance<TextView>().map{it.text.toString()}.toList()
-            assertEquals("输入记忆与上传",activity.title.toString())
-            assertTrue(texts.contains("输入记忆上传"))
-            assertTrue(texts.contains("确认授权"))
-            assertTrue(texts.contains("获取当前输入"))
-            assertTrue(texts.contains("wx读取授权"))
-            assertTrue(texts.contains("同步最近7天输入记忆"))
-            assertTrue(texts.any{it.contains("不能保证正确记忆")})
-            assertFalse(texts.any{it.contains("输入记录")||it.contains("输入习惯")})
+            assertEquals("输入记录2",activity.title.toString())
+            assertTrue(texts.contains("输入记录2"))
+            assertTrue(texts.contains("确认或扩展授权"))
+            assertTrue(texts.contains("授权并立即查找"))
+            assertTrue(texts.any{it.contains("最近30天")&&it.contains("超过64MiB仅Wi-Fi")&&it.contains("不恢复或删除原件")})
+
         } finally { controller.destroy() }
     }
 

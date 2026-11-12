@@ -21,6 +21,13 @@ internal object CallRecordingNetwork {
         active.takeIf{caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
             caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)}
     }.getOrNull()
+    fun allowsSize(context:Context,bytes:Long):Boolean {
+        val active=network(context) ?: return false
+        if(bytes<=64L*1024*1024)return true
+        val cm=context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return false
+        val caps=cm.getNetworkCapabilities(active) ?: return false
+        return caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) && !caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
+    }
     fun client(network:Network):OkHttpClient=OkHttpClient.Builder()
         .socketFactory(network.socketFactory)
         .dns(object:okhttp3.Dns{override fun lookup(hostname:String)=network.getAllByName(hostname).toList()})

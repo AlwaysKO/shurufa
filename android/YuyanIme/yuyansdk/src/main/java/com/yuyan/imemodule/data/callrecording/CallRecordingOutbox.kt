@@ -41,21 +41,26 @@ internal class CallRecordingOutbox(
             }
         } } finally {uploadLock.unlock()}
     }
-    fun createAudioFile(id:String=UUID.randomUUID().toString()):Pair<String,File> = exclusive {
+    fun createAudioFile(id:String=UUID.randomUUID().toString(),selfRecorded:Boolean=false):Pair<String,File> = exclusive {
         ensureRoot()
-        val reservation=minOf(MAX_AUDIO_BYTES,maxPendingBytes)
+        val reservation=minOf(if(selfRecorded)MAX_SELF_RECORDING_BYTES else MAX_AUDIO_BYTES,maxPendingBytes)
         val used=root.listFiles().orEmpty().filter{it.extension=="m4a"}.sumOf{
-            if(File(root,it.nameWithoutExtension+".json").exists())it.length() else maxOf(it.length(),reservation)
+            if(File(root,it.nameWithoutExtension+".json").exists())it.length() else {
+                val limit=if(owned(it.nameWithoutExtension,"self-recording").isFile)MAX_SELF_RECORDING_BYTES else MAX_AUDIO_BYTES
+                maxOf(it.length(),minOf(limit,maxPendingBytes))
+            }
         }
         check(used+reservation<=maxPendingBytes){"call_queue_full"}
         check(root.listFiles().orEmpty().size<20000){"call_queue_full"}
         val file=audioFile(id)
-        check(file.createNewFile());id to file
+        check(file.createNewFile())
+        if(selfRecorded)try{check(owned(id,"self-recording").createNewFile())}catch(e:Exception){file.delete();throw e}
+        id to file
     }
     /** 只供导入器回收未发布的私有传输缓存；已发布任务及外部原件不受影响。 */
     fun discardUnqueuedImport(id:String)=exclusive {
         check(!owned(id,"json").exists() && !File(owned(id,"json").path+".bak").exists())
-        val file=audioFile(id);check(!file.exists()||file.delete())
+        val file=audioFile(id);check(!file.exists()||file.delete());owned(id,"self-recording").delete()
     }
     fun audioFile(id:String):File { checkWorker();return owned(id,"m4a") }
     fun enqueue(id:String,deviceId:String,metadata:CallMetadata,allowed:()->Boolean={true},source:SystemRecordingSource?=null):CallTask = exclusive {
@@ -70,7 +75,7 @@ internal class CallRecordingOutbox(
         // 文件完成且落盘后，才发布持久化队列清单。
         FileOutputStream(file,true).use{it.fd.sync()}
         val task=CallTask(id,deviceId,metadata.copy(byte_size=file.length(),sha256=sha256(file,allowed)),source=source)
-        check(allowed()){"transfer_paused"};save(task);task
+        check(allowed()){"transfer_paused"};save(task);owned(id,"self-recording").delete();task
     }
     fun resolveDestination(target:String)=resolveTarget(target)
     fun tasks():List<CallTask> = exclusive {scan().first}
@@ -142,6 +147,7 @@ internal class CallRecordingOutbox(
         val file=audioFile(id)
         // 只删除本队列按 UUID 命名的私有文件，不跟随符号链接或外部路径。
         if(file.exists() && !deleteAudio(file))return@exclusive false
+        owned(id,"self-recording").delete()
         save(t.copy(cleanupStatus="deleted"))
         // 成功状态只留有界近期诊断；失败/待传/损坏清单不回收。
         val all=scan().first
@@ -182,7 +188,8 @@ internal class CallRecordingOutbox(
     }
     private fun ensureRoot(){check(root.mkdirs()||root.isDirectory);require(root.canonicalFile==root.absoluteFile){"unsafe_queue_path"}}
     companion object {
-        const val MAX_AUDIO_BYTES=64L*1024*1024
+        const val MAX_AUDIO_BYTES=200L*1024*1024
+        const val MAX_SELF_RECORDING_BYTES=64L*1024*1024
         private val locks=ConcurrentHashMap<String,Any>()
         private val uploadLocks=ConcurrentHashMap<String,java.util.concurrent.locks.ReentrantLock>()
         fun checkWorker(){check(Looper.myLooper()!=Looper.getMainLooper()){"call_audio_requires_io_worker"}}
