@@ -13,7 +13,7 @@ HERE = Path(__file__).resolve().parent
 
 @unittest.skipUnless(shutil.which('nginx'), 'local nginx required')
 class RecordingBodyLimitTest(unittest.TestCase):
-    def test_recording_limit_is_64_mib_without_expanding_other_routes(self):
+    def test_recording_limit_is_200_mib_without_expanding_other_routes(self):
         for source in (HERE / 'nginx.conf', HERE.parent / 'nginx/shurufa.conf'):
             with self.subTest(config=source.name), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
@@ -54,8 +54,8 @@ class RecordingBodyLimitTest(unittest.TestCase):
                                 'Expect: 100-continue\r\nConnection: close\r\n\r\n').encode())
                             return int(client.recv(1024).split(b' ')[1])
                     recording = '/api/v1/mobile/call-recordings/test'
-                    self.assertEqual(100, status(recording, 64 * 1024 * 1024))
-                    self.assertEqual(413, status(recording, 64 * 1024 * 1024 + 1))
+                    self.assertEqual(100, status(recording, 200 * 1024 * 1024))
+                    self.assertEqual(413, status(recording, 200 * 1024 * 1024 + 1))
                     self.assertEqual(413, status('/api/v1/mobile/chat/assets', 37 * 1024 * 1024))
                 finally:
                     process.terminate()

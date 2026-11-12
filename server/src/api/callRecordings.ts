@@ -5,7 +5,7 @@ import { createMobileCallLogsRouter, createDashboardCallLogsRouter } from './cal
 import { savingFlags } from '../lib/deviceSaving.js';
 import { encryptAudio, decryptAudio, loadAudioKey } from '../calls/storage.js';
 
-const MAX_BYTES = 64 * 1024 * 1024, MAX_DURATION = 2 * 60 * 60 * 1000;
+const MAX_BYTES = 200 * 1024 * 1024, MAX_DURATION = 2 * 60 * 60 * 1000;
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 const hash = (value: Buffer|string) => createHash('sha256').update(value).digest('hex');
 class CallError extends Error { constructor(readonly status: number, message: string) { super(message); } }

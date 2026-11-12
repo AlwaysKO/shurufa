@@ -38,14 +38,31 @@ beforeEach(async () => {
   await pool.query(await readFile(new URL('../../migrations/039_call_logs.sql',import.meta.url),'utf8'));
   await pool.query(await readFile(new URL('../../migrations/041_statistics_retention_tombstones.sql',import.meta.url),'utf8'));
   await pool.query(await readFile(new URL('../../migrations/049_call_recording_playback.sql',import.meta.url),'utf8'));
+  await pool.query(await readFile(new URL('../../migrations/054_call_recording_size.sql',import.meta.url),'utf8'));
   app=createApp(pool);agent=await authenticatedRequest(app, pool);
 });
 afterEach(async()=>{if(!root)return;await pool?.query('DROP SCHEMA '+schema+' CASCADE');await pool?.end();if(dir)await rm(dir,{recursive:true,force:true});delete process.env.CALL_RECORDING_KEY_FILE;});
 const put=(id:string, m=metadata(), bytes=audio, device=A, credential=token)=>request(app)
   .put(`/api/v1/mobile/call-recordings/${id}`).set('X-Device-Id',device).set('X-Dictionary-Token',credential)
-  .set('X-Call-Metadata',Buffer.from(JSON.stringify(m)).toString('base64')).set('Content-Type','application/octet-stream').send(bytes);
+  .set('Connection','close').set('X-Call-Metadata',Buffer.from(JSON.stringify(m)).toString('base64')).set('Content-Type','application/octet-stream').send(bytes);
 const receipt=(id:string,device=A,credential=token)=>request(app).get(`/api/v1/mobile/call-recordings/${id}/receipt`).set('X-Device-Id',device).set('X-Dictionary-Token',credential);
 const url=(id='',device=A)=>`/api/v1/dashboard/call-recordings${id?'/' + id:''}?user_id=${device}`;
+test('大于旧64MiB的录音可持久保存并按内容去重',async()=>{
+  const bytes=Buffer.alloc(65*1024*1024);audio.copy(bytes);
+  const id=randomUUID(), m=metadata({byte_size:bytes.length,sha256:hash(bytes)});
+  const response=await put(id,m,bytes);
+  expect(response.status).toBe(200);
+  expect(response.body.byte_size).toBe(bytes.length);
+  const existing=await request(app).get(`/api/v1/mobile/call-recordings/by-content?sha256=${m.sha256}&byte_size=${bytes.length}`)
+    .set('X-Device-Id',A).set('X-Dictionary-Token',token);
+  expect(existing.status).toBe(200);expect(existing.body.record_id).toBe(id);
+},30000);
+test('内容预检接受200MiB边界并拒绝超限',async()=>{
+  const query=(size:number)=>request(app).get(`/api/v1/mobile/call-recordings/by-content?sha256=${hash(audio)}&byte_size=${size}`)
+    .set('X-Device-Id',A).set('X-Dictionary-Token',token);
+  expect((await query(200*1024*1024)).status).toBe(404);
+  expect((await query(200*1024*1024+1)).status).toBe(400);
+});
 test('持久保存回执与内容匹配、密文存储、重试幂等',async()=>{
   const id=randomUUID(), first=await put(id);
   expect(first.status).toBe(200);expect(first.body).toMatchObject({stored:true,record_id:id,device_id:A,byte_size:audio.length,sha256:hash(audio)});
@@ -91,7 +108,7 @@ test('保存关闭、密钥缺失、长度/哈希错误、元数据超限均不�
   const id=randomUUID();
   expect((await put(id,metadata({sha256:'f'.repeat(64)}))).status).toBe(400);
   expect((await put(id,metadata({byte_size:audio.length+1}))).status).toBe(400);
-  expect((await put(id,metadata({byte_size:64*1024*1024+1}))).status).toBe(413);
+  expect((await put(id,metadata({byte_size:200*1024*1024+1}))).status).toBe(413);
   expect((await put(id,metadata({audio_duration_ms:7200001}))).status).toBe(400);
   expect((await put(id,metadata({recording_status:'recording'}))).status).toBe(400);
   expect((await put(id,metadata({counterpart_display:'x'.repeat(201),counterpart_source:'user'}))).status).toBe(400);
@@ -132,9 +149,9 @@ test('并发重复上传仅有一条记录，不同内容不能抢占原记录',
   const changed=Buffer.from('0000ftypM4A other recording');
   expect((await put(id,metadata({sha256:hash(changed),byte_size:changed.length}),changed)).status).toBe(409);
 });
-test('实际请求体超过64MiB也拒绝，不信任声明的长度',async()=>{
+test('实际请求体超过200MiB也拒绝，不信任声明的长度',async()=>{
   const id=randomUUID();
-  const r=await put(id,metadata({byte_size:64*1024*1024}),Buffer.alloc(64*1024*1024+1));
+  const r=await put(id,metadata({byte_size:200*1024*1024}),Buffer.alloc(200*1024*1024+1));
   expect(r.status).toBe(413);expect((await receipt(id)).status).toBe(404);
 },15000);
 
